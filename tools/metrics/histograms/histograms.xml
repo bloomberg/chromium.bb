@@ -55295,6 +55295,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="134" label="psc1"/>
   <int value="135" label="psc2"/>
   <int value="136" label="xnk"/>
+  <int value="137" label="appref-ms"/>
+  <int value="138" label="gadget"/>
+  <int value="139" label="efi"/>
+  <int value="140" label="fon"/>
 </enum>
 
 <enum name="DownloadItem.DangerType" type="int">
@@ -69292,6 +69296,91 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="65" label="CMD"/>
   <int value="66" label="APP"/>
   <int value="67" label="OSX"/>
+  <int value="68" label="SWF"/>
+  <int value="69" label="SPL"/>
+  <int value="70" label="APPLICATION"/>
+  <int value="71" label="ASP"/>
+  <int value="72" label="ASX"/>
+  <int value="73" label="CFG"/>
+  <int value="74" label="CHI"/>
+  <int value="75" label="CHM"/>
+  <int value="76" label="CPL"/>
+  <int value="77" label="FXP"/>
+  <int value="78" label="HLP"/>
+  <int value="79" label="HTT"/>
+  <int value="80" label="INF"/>
+  <int value="81" label="INI"/>
+  <int value="82" label="INS"/>
+  <int value="83" label="ISP"/>
+  <int value="84" label="LNK"/>
+  <int value="85" label="LOCAL"/>
+  <int value="86" label="MANIFEST"/>
+  <int value="87" label="MAU"/>
+  <int value="88" label="MMC"/>
+  <int value="89" label="MOF"/>
+  <int value="90" label="OCX"/>
+  <int value="91" label="OPS"/>
+  <int value="92" label="PCD"/>
+  <int value="93" label="PLG"/>
+  <int value="94" label="PRF"/>
+  <int value="95" label="PRG"/>
+  <int value="96" label="PST"/>
+  <int value="97" label="CRT"/>
+  <int value="98" label="ADE"/>
+  <int value="99" label="ADP"/>
+  <int value="100" label="MAD"/>
+  <int value="101" label="MAF"/>
+  <int value="102" label="MAG"/>
+  <int value="103" label="MAM"/>
+  <int value="104" label="MAQ"/>
+  <int value="105" label="MAR"/>
+  <int value="106" label="MAS"/>
+  <int value="107" label="MAT"/>
+  <int value="108" label="MAV"/>
+  <int value="109" label="MAW"/>
+  <int value="110" label="MDA"/>
+  <int value="111" label="MDB"/>
+  <int value="112" label="MDE"/>
+  <int value="113" label="MDT"/>
+  <int value="114" label="MDW"/>
+  <int value="115" label="MDZ"/>
+  <int value="116" label="SHB"/>
+  <int value="117" label="SHS"/>
+  <int value="118" label="VSD"/>
+  <int value="119" label="VSMACROS"/>
+  <int value="120" label="VSS"/>
+  <int value="121" label="VST"/>
+  <int value="122" label="VSW"/>
+  <int value="123" label="WS"/>
+  <int value="124" label="WSC"/>
+  <int value="125" label="WSH"/>
+  <int value="126" label="XBAP"/>
+  <int value="127" label="XNK"/>
+  <int value="128" label="JNLP"/>
+  <int value="129" label="PL"/>
+  <int value="130" label="PY"/>
+  <int value="131" label="PYC"/>
+  <int value="132" label="PYW"/>
+  <int value="133" label="RB"/>
+  <int value="134" label="BASH"/>
+  <int value="135" label="CSH"/>
+  <int value="136" label="KSH"/>
+  <int value="137" label="SH"/>
+  <int value="138" label="SHAR"/>
+  <int value="139" label="TCSH"/>
+  <int value="140" label="COMMAND"/>
+  <int value="141" label="DEB"/>
+  <int value="142" label="RPM"/>
+  <int value="143" label="DEX"/>
+  <int value="144" label="APPREF_MS"/>
+  <int value="145" label="GADGET"/>
+  <int value="146" label="EFI"/>
+  <int value="147" label="FON"/>
+  <int value="148" label="BZIP2"/>
+  <int value="149" label="GZIP"/>
+  <int value="150" label="TAZ"/>
+  <int value="151" label="TBZ"/>
+  <int value="152" label="TBZ2"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">

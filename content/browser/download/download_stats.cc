@@ -209,6 +209,10 @@ const base::FilePath::CharType* kDangerousFileTypes[] = {
   FILE_PATH_LITERAL(".psc1"),
   FILE_PATH_LITERAL(".psc2"),
   FILE_PATH_LITERAL(".xnk"),
+  FILE_PATH_LITERAL(".appref-ms"),
+  FILE_PATH_LITERAL(".gadget"),
+  FILE_PATH_LITERAL(".efi"),
+  FILE_PATH_LITERAL(".fon"),
 };
 
 // Maps extensions to their matching UMA histogram int value.

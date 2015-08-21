@@ -249,6 +249,7 @@ message ClientDownloadRequest {
     ZIPPED_EXECUTABLE = 3;
     MAC_EXECUTABLE = 4;  // .dmg, .pkg, etc.
     ZIPPED_ARCHIVE = 5;  // .zip file containing another archive.
+    ARCHIVE = 6;         // Archive that doesn't have a specific DownloadType.
   }
   optional DownloadType download_type = 10 [default = WIN_EXECUTABLE];
 

@@ -144,6 +144,8 @@ const struct FileType {
     // Microsoft ClickOnce depolyment manifest. By default, opens with
     // dfshim.dll which should prompt the user before running untrusted code.
     {"application", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+    // ClickOnce application reference. Basically a .lnk for ClickOnce apps.
+    {"appref-ms", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
     // Active Server Pages source file.
     {"asp", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
@@ -180,8 +182,19 @@ const struct FileType {
     {"drv", DANGEROUS, DISALLOW_AUTO_OPEN},
     {"exe", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
+    // Font file, uses Portable Executable or New Executable format. Not
+    // supposed to contain executable code.
+    {"fon", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
     // Microsoft FoxPro Compiled Source.
     {"fxp", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Windows Sidebar Gadget (Vista & Win 7). ZIP archive containing html + js.
+    // Deprecated by Microsoft. Can run arbitrary code with user privileges.
+    // (https://technet.microsoft.com/library/security/2719662)
+    {"gadget", DANGEROUS, DISALLOW_AUTO_OPEN},
+
+    // MSProgramGroup (?).
     {"grp", DANGEROUS, ALLOW_AUTO_OPEN},
 
     // Windows legacy help file format.
@@ -359,13 +372,16 @@ const struct FileType {
     {"jnlp", DANGEROUS, DISALLOW_AUTO_OPEN},
 #endif
 
-  // Scripting languages. (Shells are handled below.)
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+    // Scripting languages. (Shells are handled below.)
     {"pl", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"py", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"pyc", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"pyw", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"rb", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
+    // Extensible Firmware Interface executable.
+    {"efi", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 #endif
 
   // Shell languages. (OS_ANDROID is OS_POSIX.) OS_WIN shells are handled above.

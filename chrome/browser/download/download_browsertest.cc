@@ -1749,6 +1749,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
           switches::kAshBrowserTests))
     return;
 #endif
+  // Disable SafeBrowsing so that danger will be determined by downloads system.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
+                                               false);
 
   // .swf file so that it's dangerous on all platforms (including CrOS).
   base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));

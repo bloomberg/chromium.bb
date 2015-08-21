@@ -325,8 +325,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
       StartExtractDmgFeatures();
 #endif
     } else {
-      DCHECK(!download_protection_util::IsArchiveFile(
-          item_->GetTargetFilePath()));
       StartExtractFileFeatures();
     }
   }
