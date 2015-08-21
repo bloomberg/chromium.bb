@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<body>
+<div id="log"></div>
+<table contenteditable="true"><tbody><tr><td>
+    <table><tbody><tr><td>
+        <ol id="ol"><li>AAA<br><br></li><li><br></li><li>BBB<br>CCC</li></ol>
+    </td></tr></tbody></table>
+    DDD<div style="-webkit-user-select: none;"></div><div style="display: inline-block; border:solid;"></div>
+</td></tr></tbody></table>
+<script>
+test(function () {
+    getSelection().selectAllChildren(ol);
+    document.execCommand('insertOrderedList');
+});
+</script>
+</body>

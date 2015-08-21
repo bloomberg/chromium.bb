@@ -106,6 +106,13 @@ InsertListCommand::InsertListCommand(Document& document, Type type)
 {
 }
 
+static bool inSameTreeAndOrdered(const VisiblePosition& shouldBeFormer, const VisiblePosition& shouldBeLater)
+{
+    const Position formerPosition = shouldBeFormer.deepEquivalent();
+    const Position laterPosition = shouldBeLater.deepEquivalent();
+    return Position::commonAncestorTreeScope(formerPosition, laterPosition) && comparePositions(formerPosition, laterPosition) <= 0;
+}
+
 void InsertListCommand::doApply()
 {
     if (!endingSelection().isNonOrphanedCaretOrRange())
@@ -153,7 +160,7 @@ void InsertListCommand::doApply()
             forceListCreation = !selectionHasListOfType(selection, listTag);
 
             VisiblePosition startOfCurrentParagraph = startOfSelection;
-            while (startOfCurrentParagraph.isNotNull() && !inSameParagraph(startOfCurrentParagraph, startOfLastParagraph, CanCrossEditingBoundary)) {
+            while (inSameTreeAndOrdered(startOfCurrentParagraph, startOfLastParagraph) && !inSameParagraph(startOfCurrentParagraph, startOfLastParagraph, CanCrossEditingBoundary)) {
                 // doApply() may operate on and remove the last paragraph of the selection from the document
                 // if it's in the same list item as startOfCurrentParagraph.  Return early to avoid an
                 // infinite loop and because there is no more work to be done.
