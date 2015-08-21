@@ -198,9 +198,11 @@ remoting.LegacyHostListApi.prototype.getSupportHost = function(supportId) {
       if (response && response.data &&
           response.data.jabberId && response.data.publicKey) {
         var host = new remoting.Host(supportId);
-        host.jabberId = response.data.jabberId;
-        host.publicKey = response.data.publicKey;
-        host.hostName = response.data.jabberId.split('/')[0];
+        host.jabberId = base.getStringAttr(response.data, 'jabberId', '');
+        host.publicKey = base.getStringAttr(response.data, 'publicKey', '');
+        host.hostName = host.jabberId.split('/')[0];
+        host.loggingChannel =
+              base.getStringAttr(response.data, 'loggingChannel', 'XMPP');
         return host;
       } else {
         console.error('Invalid "support-hosts" response from server.');
