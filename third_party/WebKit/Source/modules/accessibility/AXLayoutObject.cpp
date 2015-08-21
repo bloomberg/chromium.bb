@@ -1866,7 +1866,8 @@ AXObject::AXRange AXLayoutObject::selection() const
     // Find the closest node that has a corresponding AXObject.
     // This is because some nodes may be aria hidden or might not even have
     // a layout object if they are part of the shadow DOM.
-    while (anchorNode && !getUnignoredObjectFromNode(*anchorNode)) {
+    while (anchorNode
+        && !(anchorObject = getUnignoredObjectFromNode(*anchorNode))) {
         if (anchorNode->nextSibling())
             anchorNode = anchorNode->nextSibling();
         else
@@ -1879,7 +1880,8 @@ AXObject::AXRange AXLayoutObject::selection() const
     ASSERT(focusNode);
 
     RefPtrWillBeRawPtr<AXObject> focusObject = nullptr;
-    while (focusNode && !getUnignoredObjectFromNode(*focusNode)) {
+    while (focusNode
+        && !(focusObject = getUnignoredObjectFromNode(*focusNode))) {
         if (focusNode->previousSibling())
             focusNode = focusNode->previousSibling();
         else
