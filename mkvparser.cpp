@@ -31,8 +31,8 @@ void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision) {
 }
 
 long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len) {
-  assert(pReader);
-  assert(pos >= 0);
+  if (!pReader || pos < 0)
+    return E_FILE_FORMAT_INVALID;
 
   int status;
 
@@ -98,14 +98,14 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len) {
 
 long long mkvparser::GetUIntLength(IMkvReader* pReader, long long pos,
                                    long& len) {
-  assert(pReader);
-  assert(pos >= 0);
+  if (!pReader || pos < 0)
+    return E_FILE_FORMAT_INVALID;
 
   long long total, available;
 
   int status = pReader->Length(&total, &available);
-  assert(status >= 0);
-  assert((total < 0) || (available <= total));
+  if (status < 0 || (total >= 0 && available > total))
+    return E_FILE_FORMAT_INVALID;
 
   len = 1;
 
@@ -116,10 +116,8 @@ long long mkvparser::GetUIntLength(IMkvReader* pReader, long long pos,
 
   status = pReader->Read(pos, 1, &b);
 
-  if (status < 0)
+  if (status != 0)
     return status;
-
-  assert(status == 0);
 
   if (b == 0)  // we can't handle u-int values larger than 8 bytes
     return E_FILE_FORMAT_INVALID;
@@ -138,10 +136,7 @@ long long mkvparser::GetUIntLength(IMkvReader* pReader, long long pos,
 // high bit set.
 long long mkvparser::UnserializeUInt(IMkvReader* pReader, long long pos,
                                      long long size) {
-  assert(pReader);
-  assert(pos >= 0);
-
-  if ((size <= 0) || (size > 8))
+  if (!pReader || pos < 0 || (size <= 0) || (size > 8))
     return E_FILE_FORMAT_INVALID;
 
   long long result = 0;
@@ -165,10 +160,7 @@ long long mkvparser::UnserializeUInt(IMkvReader* pReader, long long pos,
 
 long mkvparser::UnserializeFloat(IMkvReader* pReader, long long pos,
                                  long long size_, double& result) {
-  assert(pReader);
-  assert(pos >= 0);
-
-  if ((size_ != 4) && (size_ != 8))
+  if (!pReader || pos < 0 || ((size_ != 4) && (size_ != 8)))
     return E_FILE_FORMAT_INVALID;
 
   const long size = static_cast<long>(size_);
@@ -199,8 +191,6 @@ long mkvparser::UnserializeFloat(IMkvReader* pReader, long long pos,
 
     result = f;
   } else {
-    assert(size == 8);
-
     union {
       double d;
       unsigned long long dd;
@@ -225,10 +215,8 @@ long mkvparser::UnserializeFloat(IMkvReader* pReader, long long pos,
 
 long mkvparser::UnserializeInt(IMkvReader* pReader, long long pos,
                                long long size, long long& result_ref) {
-  assert(pReader);
-  assert(pos >= 0);
-  assert(size > 0);
-  assert(size <= 8);
+  if (!pReader || pos < 0 || size < 1 || size > 8)
+    return E_FILE_FORMAT_INVALID;
 
   char first_byte = 0;
   const long status = pReader->Read(pos, 1, (unsigned char*)&first_byte);
@@ -336,8 +324,6 @@ long mkvparser::ParseElementHeader(IMkvReader* pReader, long long& pos,
 
 bool mkvparser::Match(IMkvReader* pReader, long long& pos,
                       unsigned long expected_id, long long& val) {
-  assert(pReader);
-  assert(pos >= 0);
   if (!pReader || pos < 0)
     return false;
 
@@ -345,18 +331,12 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
   long long available = 0;
 
   const long status = pReader->Length(&total, &available);
-  assert(status >= 0);
-  assert((total < 0) || (available <= total));
   if (status < 0 || (total >= 0 && available > total))
     return false;
 
   long len = 0;
 
   const long long id = ReadUInt(pReader, pos, len);
-  assert(id >= 0);
-  assert(len > 0);
-  assert(len <= 4);
-  assert((pos + len) <= available);
   if (id < 0 || len < 1 || len > 4 || (available - pos) > len)
     return false;
 
@@ -366,18 +346,12 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
   pos += len;  // consume id
 
   const long long size = ReadUInt(pReader, pos, len);
-  assert(size >= 0);
-  assert(size <= 8);
-  assert(len > 0);
-  assert(len <= 8);
-  assert((pos + len) <= available);
   if (size < 0 || size > 8 || len < 1 || len > 8 || (available - pos) > len)
     return false;
 
   pos += len;  // consume length of size of payload
 
   val = UnserializeUInt(pReader, pos, size);
-  assert(val >= 0);
   if (val < 0)
     return false;
 
@@ -389,8 +363,6 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
 bool mkvparser::Match(IMkvReader* pReader, long long& pos,
                       unsigned long expected_id,
                       unsigned char*& buf, size_t& buflen) {
-  assert(pReader);
-  assert(pos >= 0);
   if (!pReader || pos < 0)
     return false;
 
@@ -398,17 +370,11 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
   long long available = 0;
 
   long status = pReader->Length(&total, &available);
-  assert(status >= 0);
-  assert((total < 0) || (available <= total));
   if (status < 0 || (total >= 0 && available > total))
     return false;
 
   long len = 0;
   const long long id = ReadUInt(pReader, pos, len);
-  assert(id >= 0);
-  assert(len > 0);
-  assert(len <= 4);
-  assert((pos + len) <= available);
   if (id < 0 || len < 1 || len > 4 || (available - pos) > len)
     return false;
 
@@ -418,10 +384,6 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
   pos += len;  // consume id
 
   const long long size = ReadUInt(pReader, pos, len);
-  assert(size >= 0);
-  assert(len > 0);
-  assert(len <= 8);
-  assert((pos + len) <= available);
   if (size < 0 || len <= 0 || len > 8 || (available - pos) > len)
     return false;
 
@@ -436,7 +398,6 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
   if (rollover_check > LONG_LONG_MAX)
     return false;
 
-  assert((pos + size) <= available);
   if ((pos + size) > available)
     return false;
 
@@ -446,12 +407,10 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
   const long buflen_ = static_cast<long>(size);
 
   buf = new (std::nothrow) unsigned char[buflen_];
-  assert(buf);
   if (!buf)
     return false;
 
   status = pReader->Read(pos, buflen_, buf);
-  assert(status == 0);
   if (status != 0)
     return false;
 
@@ -483,7 +442,8 @@ void EBMLHeader::Init() {
 }
 
 long long EBMLHeader::Parse(IMkvReader* pReader, long long& pos) {
-  assert(pReader);
+  if (!pReader)
+    return E_FILE_FORMAT_INVALID;
 
   long long total, available;
 
@@ -554,8 +514,8 @@ long long EBMLHeader::Parse(IMkvReader* pReader, long long& pos) {
   if (result > 0)  // need more data
     return result;
 
-  assert(len > 0);
-  assert(len <= 8);
+  if (len < 1 || len > 8)
+    return E_FILE_FORMAT_INVALID;
 
   if ((total >= 0) && ((total - pos) < len))
     return E_FILE_FORMAT_INVALID;
@@ -638,7 +598,9 @@ long long EBMLHeader::Parse(IMkvReader* pReader, long long& pos) {
     pos += size;
   }
 
-  assert(pos == end);
+  if (pos != end)
+    return E_FILE_FORMAT_INVALID;
+
   return 0;
 }
 
@@ -817,11 +779,15 @@ long long Segment::ParseHeaders() {
   if (status < 0)  // error
     return status;
 
-  assert((total < 0) || (available <= total));
+  if (total > 0 && available > total)
+    return E_FILE_FORMAT_INVALID;
 
   const long long segment_stop = (m_size < 0) ? -1 : m_start + m_size;
-  assert((segment_stop < 0) || (total < 0) || (segment_stop <= total));
-  assert((segment_stop < 0) || (m_pos <= segment_stop));
+
+  if ((segment_stop >= 0 && total >= 0 && segment_stop > total) ||
+      (segment_stop >= 0 && m_pos > segment_stop)) {
+    return E_FILE_FORMAT_INVALID;
+  }
 
   for (;;) {
     if ((total >= 0) && (m_pos >= total))
@@ -1001,7 +967,8 @@ long long Segment::ParseHeaders() {
     m_pos = pos + size;  // consume payload
   }
 
-  assert((segment_stop < 0) || (m_pos <= segment_stop));
+  if (segment_stop >= 0 && m_pos > segment_stop)
+    return E_FILE_FORMAT_INVALID;
 
   if (m_pInfo == NULL)  // TODO: liberalize this behavior
     return E_FILE_FORMAT_INVALID;
