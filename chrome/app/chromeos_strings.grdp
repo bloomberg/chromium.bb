@@ -2350,7 +2350,7 @@ Press any key to continue exploring.
     Mirroring
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ENABLE_UNIFIED_DESKTOP" desc="The section title for the option to enable unified desktop mode.">
-    Enable Unified Desktop
+    Windows can span displays.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_SET_PRIMARY" desc="Button label to set a display primary.">
     Make primary
