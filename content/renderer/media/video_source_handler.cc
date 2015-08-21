@@ -23,7 +23,7 @@
 namespace content {
 
 // PpFrameReceiver implements MediaStreamVideoSink so that it can be attached
-// to video track to receive the captured frame.
+// to video track to receive captured frames.
 // It can be attached to a FrameReaderInterface to output the received frame.
 class PpFrameReceiver : public MediaStreamVideoSink {
  public:
@@ -36,18 +36,16 @@ class PpFrameReceiver : public MediaStreamVideoSink {
   ~PpFrameReceiver() override {}
 
   void SetReader(FrameReaderInterface* reader) {
+    DCHECK((reader_ && !reader) || (!reader_ && reader))
+        << " |reader| = " << reader << ", |reader_| = " << reader_;
     if (reader) {
-      DCHECK(!reader_);
-      MediaStreamVideoSink::AddToVideoTrack(
-          this,
-          media::BindToCurrentLoop(
-              base::Bind(
-                  &PpFrameReceiver::OnVideoFrame,
-                  weak_factory_.GetWeakPtr())),
-          track_);
+      AddToVideoTrack(this,
+                      media::BindToCurrentLoop(
+                          base::Bind(&PpFrameReceiver::OnVideoFrame,
+                                     weak_factory_.GetWeakPtr())),
+                      track_);
     } else {
-      DCHECK(reader_);
-      MediaStreamVideoSink::RemoveFromVideoTrack(this, track_);
+      RemoveFromVideoTrack(this, track_);
       weak_factory_.InvalidateWeakPtrs();
     }
     reader_ = reader;
@@ -56,39 +54,33 @@ class PpFrameReceiver : public MediaStreamVideoSink {
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     const base::TimeTicks& estimated_capture_time) {
     TRACE_EVENT0("video", "PpFrameReceiver::OnVideoFrame");
-    if (reader_) {
+    if (reader_)
       reader_->GotFrame(frame);
-    }
   }
 
  private:
-  blink::WebMediaStreamTrack track_;
+  const blink::WebMediaStreamTrack track_;
   FrameReaderInterface* reader_;
   base::WeakPtrFactory<PpFrameReceiver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PpFrameReceiver);
 };
 
-VideoSourceHandler::VideoSourceHandler(
-    MediaStreamRegistryInterface* registry)
+VideoSourceHandler::VideoSourceHandler(MediaStreamRegistryInterface* registry)
     : registry_(registry) {
 }
 
 VideoSourceHandler::~VideoSourceHandler() {
-  for (SourceInfoMap::iterator it = reader_to_receiver_.begin();
-       it != reader_to_receiver_.end();
-       ++it) {
-    delete it->second;
-  }
+  for (const auto& reader_and_receiver : reader_to_receiver_)
+    delete reader_and_receiver.second;
 }
 
 bool VideoSourceHandler::Open(const std::string& url,
                               FrameReaderInterface* reader) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const blink::WebMediaStreamTrack& track = GetFirstVideoTrack(url);
-  if (track.isNull()) {
+  if (track.isNull())
     return false;
-  }
   reader_to_receiver_[reader] = new SourceInfo(track, reader);
   return true;
 }
@@ -96,9 +88,8 @@ bool VideoSourceHandler::Open(const std::string& url,
 bool VideoSourceHandler::Close(FrameReaderInterface* reader) {
   DCHECK(thread_checker_. CalledOnValidThread());
   SourceInfoMap::iterator it = reader_to_receiver_.find(reader);
-  if (it == reader_to_receiver_.end()) {
+  if (it == reader_to_receiver_.end())
     return false;
-  }
   delete it->second;
   reader_to_receiver_.erase(it);
   return true;
@@ -106,13 +97,9 @@ bool VideoSourceHandler::Close(FrameReaderInterface* reader) {
 
 blink::WebMediaStreamTrack VideoSourceHandler::GetFirstVideoTrack(
     const std::string& url) {
-  blink::WebMediaStream stream;
-  if (registry_) {
-    stream = registry_->GetMediaStream(url);
-  } else {
-    stream =
-        blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
-  }
+  const blink::WebMediaStream stream = registry_
+      ? registry_->GetMediaStream(url)
+      : blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
 
   if (stream.isNull()) {
     LOG(ERROR) << "GetFirstVideoSource - invalid url: " << url;
@@ -123,8 +110,7 @@ blink::WebMediaStreamTrack VideoSourceHandler::GetFirstVideoTrack(
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   stream.videoTracks(video_tracks);
   if (video_tracks.isEmpty()) {
-    LOG(ERROR) << "GetFirstVideoSource - non video tracks available."
-               << " url: " << url;
+    LOG(ERROR) << "GetFirstVideoSource - no video tracks. url: " << url;
     return blink::WebMediaStreamTrack();
   }
 
@@ -134,10 +120,9 @@ blink::WebMediaStreamTrack VideoSourceHandler::GetFirstVideoTrack(
 void VideoSourceHandler::DeliverFrameForTesting(
     FrameReaderInterface* reader,
     const scoped_refptr<media::VideoFrame>& frame) {
-  SourceInfoMap::iterator it = reader_to_receiver_.find(reader);
-  if (it == reader_to_receiver_.end()) {
+  SourceInfoMap::const_iterator it = reader_to_receiver_.find(reader);
+  if (it == reader_to_receiver_.end())
     return;
-  }
   PpFrameReceiver* receiver = it->second->receiver_.get();
   receiver->OnVideoFrame(frame, base::TimeTicks());
 }

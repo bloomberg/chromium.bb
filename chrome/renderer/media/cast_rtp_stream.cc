@@ -102,11 +102,11 @@ bool IsHardwareVP8EncodingSupported() {
   }
 
   // Query for hardware VP8 encoder support.
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile> vea_profiles =
-      content::GetSupportedVideoEncodeAcceleratorProfiles();
-  for (size_t i = 0; i < vea_profiles.size(); ++i) {
-    if (vea_profiles[i].profile >= media::VP8PROFILE_MIN &&
-        vea_profiles[i].profile <= media::VP8PROFILE_MAX) {
+  const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+      vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
+  for (const auto& vea_profile : vea_profiles) {
+    if (vea_profile.profile >= media::VP8PROFILE_MIN &&
+        vea_profile.profile <= media::VP8PROFILE_MAX) {
       return true;
     }
   }
@@ -121,11 +121,11 @@ bool IsHardwareH264EncodingSupported() {
   }
 
   // Query for hardware H.264 encoder support.
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile> vea_profiles =
-      content::GetSupportedVideoEncodeAcceleratorProfiles();
-  for (size_t i = 0; i < vea_profiles.size(); ++i) {
-    if (vea_profiles[i].profile >= media::H264PROFILE_MIN &&
-        vea_profiles[i].profile <= media::H264PROFILE_MAX) {
+  const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+      vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
+  for (const auto& vea_profile : vea_profiles) {
+    if (vea_profile.profile >= media::H264PROFILE_MIN &&
+        vea_profile.profile <= media::H264PROFILE_MAX) {
       return true;
     }
   }
@@ -141,9 +141,7 @@ int NumberOfEncodeThreads() {
 
 std::vector<CastRtpParams> SupportedAudioParams() {
   // TODO(hclam): Fill in more codecs here.
-  std::vector<CastRtpParams> supported_params;
-  supported_params.push_back(CastRtpParams(DefaultOpusPayload()));
-  return supported_params;
+  return std::vector<CastRtpParams>(1, CastRtpParams(DefaultOpusPayload()));
 }
 
 std::vector<CastRtpParams> SupportedVideoParams() {
@@ -275,11 +273,9 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
       // These parameters are passed for each frame.
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& estimated_capture_time) {
-    base::TimeTicks timestamp;
-    if (estimated_capture_time.is_null())
-      timestamp = base::TimeTicks::Now();
-    else
-      timestamp = estimated_capture_time;
+    const base::TimeTicks timestamp = estimated_capture_time.is_null()
+                                          ? base::TimeTicks::Now()
+                                          : estimated_capture_time;
 
     // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
     TRACE_EVENT_INSTANT2(

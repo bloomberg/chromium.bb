@@ -45,26 +45,6 @@ class CONTENT_EXPORT MediaStreamVideoSource
     : public MediaStreamSource,
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  MediaStreamVideoSource();
-  virtual ~MediaStreamVideoSource();
-
-  // Returns the MediaStreamVideoSource object owned by |source|.
-  static MediaStreamVideoSource* GetVideoSource(
-      const blink::WebMediaStreamSource& source);
-
-  // Puts |track| in the registered tracks list.
-  void AddTrack(MediaStreamVideoTrack* track,
-                const VideoCaptureDeliverFrameCB& frame_callback,
-                const blink::WebMediaConstraints& constraints,
-                const ConstraintsCallback& callback);
-  void RemoveTrack(MediaStreamVideoTrack* track);
-
-  // Return true if |name| is a constraint supported by MediaStreamVideoSource.
-  static bool IsConstraintSupported(const std::string& name);
-
-  // Returns the task runner where video frames will be delivered on.
-  base::SingleThreadTaskRunner* io_task_runner() const;
-
   // Constraint keys used by a video source.
   // Specified by draft-alvestrand-constraints-resolution-00b
   static const char kMinAspectRatio[];  // minAspectRatio
@@ -85,6 +65,26 @@ class CONTENT_EXPORT MediaStreamVideoSource
     kDefaultFrameRate = 30,
     kUnknownFrameRate = 0,
   };
+
+  MediaStreamVideoSource();
+  virtual ~MediaStreamVideoSource();
+
+  // Returns the MediaStreamVideoSource object owned by |source|.
+  static MediaStreamVideoSource* GetVideoSource(
+      const blink::WebMediaStreamSource& source);
+
+  // Puts |track| in the registered tracks list.
+  void AddTrack(MediaStreamVideoTrack* track,
+                const VideoCaptureDeliverFrameCB& frame_callback,
+                const blink::WebMediaConstraints& constraints,
+                const ConstraintsCallback& callback);
+  void RemoveTrack(MediaStreamVideoTrack* track);
+
+  // Return true if |name| is a constraint supported by MediaStreamVideoSource.
+  static bool IsConstraintSupported(const std::string& name);
+
+  // Returns the task runner where video frames will be delivered on.
+  base::SingleThreadTaskRunner* io_task_runner() const;
 
  protected:
   void DoStopSource() override;
@@ -136,7 +136,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
  private:
   void OnSupportedFormats(const media::VideoCaptureFormats& formats);
 
-  // Finds the first WebMediaConstraints in |requested_constraints_| that allows
+  // Finds the first WebMediaConstraints in |track_descriptors_| that allows
   // the use of one of the |formats|.  |best_format| and |fulfilled_constraints|
   // are set to the results of this search-and-match operation.  Returns false
   // if no WebMediaConstraints allow the use any of the |formats|.
@@ -158,19 +158,19 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   media::VideoCaptureFormat current_format_;
 
-  struct RequestedConstraints {
-    RequestedConstraints(MediaStreamVideoTrack* track,
-                         const VideoCaptureDeliverFrameCB& frame_callback,
-                         const blink::WebMediaConstraints& constraints,
-                         const ConstraintsCallback& callback);
-    ~RequestedConstraints();
+  struct TrackDescriptor {
+    TrackDescriptor(MediaStreamVideoTrack* track,
+                    const VideoCaptureDeliverFrameCB& frame_callback,
+                    const blink::WebMediaConstraints& constraints,
+                    const ConstraintsCallback& callback);
+    ~TrackDescriptor();
 
     MediaStreamVideoTrack* track;
     VideoCaptureDeliverFrameCB frame_callback;
     blink::WebMediaConstraints constraints;
     ConstraintsCallback callback;
   };
-  std::vector<RequestedConstraints> requested_constraints_;
+  std::vector<TrackDescriptor> track_descriptors_;
 
   media::VideoCaptureFormats supported_formats_;
 

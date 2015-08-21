@@ -23,7 +23,7 @@ class MediaStreamRegistryInterface;
 class MediaStreamVideoSink;
 class PpFrameReceiver;
 
-// Interface used by the effects pepper plugin to get captured frame
+// Interface used by the effects pepper plugin to get captured frames
 // from the video track.
 class CONTENT_EXPORT FrameReaderInterface {
  public:
@@ -71,7 +71,7 @@ class CONTENT_EXPORT VideoSourceHandler {
 
   blink::WebMediaStreamTrack GetFirstVideoTrack(const std::string& url);
 
-  MediaStreamRegistryInterface* registry_;
+  MediaStreamRegistryInterface* const registry_;
   SourceInfoMap reader_to_receiver_;
 
   base::ThreadChecker thread_checker_;

@@ -167,9 +167,10 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
     const scoped_refptr<media::VideoFrame>& reference_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!black_frame_.get() ||
-      black_frame_->natural_size() != reference_frame->natural_size())
+      black_frame_->natural_size() != reference_frame->natural_size()) {
     black_frame_ =
         media::VideoFrame::CreateBlackFrame(reference_frame->natural_size());
+  }
 
   // Wrap |black_frame_| so we get a fresh timestamp we can modify. Frames
   // returned from this function may still be in use.

@@ -55,9 +55,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
 
   void OnReadyStateChanged(blink::WebMediaStreamSource::ReadyState state);
 
-  const blink::WebMediaConstraints& constraints() const {
-    return constraints_;
-  }
+  const blink::WebMediaConstraints& constraints() const { return constraints_; }
 
  private:
   // MediaStreamVideoSink is a friend to allow it to call AddSink() and
