@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("feedback") {
+source_set("feedback") {
   sources = [
     "feedback_common.cc",
     "feedback_common.h",
@@ -34,5 +34,21 @@ static_library("feedback") {
     "//content/public/common",
     "//net",
     "//third_party/zlib:zip",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "feedback_common_unittest.cc",
+    "feedback_data_unittest.cc",
+    "feedback_uploader_chrome_unittest.cc",
+    "feedback_uploader_unittest.cc",
+  ]
+  deps = [
+    ":feedback",
+    "//components/variations/net",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

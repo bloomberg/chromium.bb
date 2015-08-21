@@ -17,7 +17,7 @@ source_set("browser") {
     "//components/keyed_service/core",
     "//components/pref_registry",
     "//components/sessions",
-    "//components/ui/zoom:ui_zoom",
+    "//components/ui/zoom",
     "//components/web_cache/browser",
     "//components/web_modal",
     "//content/public/browser",

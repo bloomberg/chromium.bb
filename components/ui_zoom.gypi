@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/ui/zoom
       'target_name': 'ui_zoom',
       'type': 'static_library',
       'include_dirs': [

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("browser") {
+source_set("browser") {
   sources = [
     "data_reduction_proxy_bypass_protocol.cc",
     "data_reduction_proxy_bypass_protocol.h",
@@ -121,6 +121,7 @@ source_set("unit_tests") {
     "data_reduction_proxy_prefs_unittest.cc",
     "data_reduction_proxy_request_options_unittest.cc",
     "data_reduction_proxy_settings_unittest.cc",
+    "data_reduction_proxy_tamper_detection_unittest.cc",
     "data_usage_store_unittest.cc",
   ]
 

@@ -157,7 +157,7 @@ source_set("browser") {
     "//components/tracing:startup_tracing",
     "//components/translate/core/browser",
     "//components/translate/core/common",
-    "//components/ui/zoom:ui_zoom",
+    "//components/ui/zoom",
     "//components/undo",
     "//components/update_client",
     "//components/url_formatter",

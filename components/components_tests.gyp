@@ -185,7 +185,6 @@
       'undo/undo_manager_test.cc',
     ],
 
-    # Note: GN tests converted to here, need to do the rest.
     'audio_modem_unittest_sources': [
       'audio_modem/audio_player_unittest.cc',
       'audio_modem/audio_recorder_unittest.cc',
