@@ -266,11 +266,7 @@ public class MultiplexingGcmListener extends GCMBaseIntentService {
   protected void onMessage(Context context, Intent intent) {
     Intent newIntent = new Intent();
     newIntent.putExtra(Intents.EXTRA_OP_MESSAGE, true);
-
-    // Copy the extra keys containing the message payload into the new Intent.
-    for (String extraKey : intent.getExtras().keySet()) {
-      newIntent.putExtra(extraKey, intent.getStringExtra(extraKey));
-    }
+    newIntent.putExtras(intent);
     rebroadcast(newIntent);
   }
 
