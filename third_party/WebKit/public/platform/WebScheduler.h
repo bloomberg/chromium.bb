@@ -92,6 +92,7 @@ public:
     void postNonNestableIdleTask(const WebTraceLocation&, PassOwnPtr<IdleTask>);
     void postIdleTaskAfterWakeup(const WebTraceLocation&, PassOwnPtr<IdleTask>);
     void postLoadingTask(const WebTraceLocation&, PassOwnPtr<Task>);
+    void postTimerTask(const WebTraceLocation&, PassOwnPtr<Task>, long long delayMs);
 #endif
 };
 

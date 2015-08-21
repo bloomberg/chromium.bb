@@ -77,6 +77,8 @@ public:
     int requestAnimationFrame(FrameRequestCallback*) override;
     int webkitRequestAnimationFrame(FrameRequestCallback*) override;
     void cancelAnimationFrame(int id) override;
+    int requestIdleCallback(IdleRequestCallback*, double timeoutMillis) override;
+    void cancelIdleCallback(int id) override;
 
 private:
     explicit RemoteDOMWindow(RemoteFrame&);

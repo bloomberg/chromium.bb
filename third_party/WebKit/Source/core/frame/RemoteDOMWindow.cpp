@@ -328,6 +328,17 @@ void RemoteDOMWindow::cancelAnimationFrame(int id)
     ASSERT_NOT_REACHED();
 }
 
+int RemoteDOMWindow::requestIdleCallback(IdleRequestCallback*, double timeoutMillis)
+{
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+void RemoteDOMWindow::cancelIdleCallback(int id)
+{
+    ASSERT_NOT_REACHED();
+}
+
 RemoteDOMWindow::RemoteDOMWindow(RemoteFrame& frame)
     : m_frame(&frame)
 {

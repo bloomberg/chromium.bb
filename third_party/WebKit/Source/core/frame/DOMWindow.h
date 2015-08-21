@@ -28,6 +28,7 @@ class Element;
 class Frame;
 class FrameRequestCallback;
 class History;
+class IdleRequestCallback;
 class LocalDOMWindow;
 class MediaQueryList;
 class Navigator;
@@ -167,6 +168,10 @@ public:
     virtual int requestAnimationFrame(FrameRequestCallback*) = 0;
     virtual int webkitRequestAnimationFrame(FrameRequestCallback*) = 0;
     virtual void cancelAnimationFrame(int id) = 0;
+
+    // Idle callback extensions
+    virtual int requestIdleCallback(IdleRequestCallback*, double timeoutMillis) = 0;
+    virtual void cancelIdleCallback(int id) = 0;
 
     void captureEvents() { }
     void releaseEvents() { }

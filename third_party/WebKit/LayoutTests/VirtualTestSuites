@@ -163,5 +163,10 @@
     "prefix": "trustedeventsdefaultaction",
     "base": "fast/events",
     "args": ["--enable-blink-features=TrustedEventsDefaultAction"]
+  },
+  {
+    "prefix": "threaded",
+    "base": "fast/idle-callback",
+    "args": ["--enable-threaded-compositing"]
   }
 ]

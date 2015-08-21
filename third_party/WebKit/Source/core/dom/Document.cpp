@@ -91,6 +91,7 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptedAnimationController.h"
+#include "core/dom/ScriptedIdleTaskController.h"
 #include "core/dom/SelectorQuery.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/StyleEngine.h"
@@ -585,6 +586,8 @@ void Document::dispose()
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->clearDocumentPointer();
     m_scriptedAnimationController.clear();
+
+    m_scriptedIdleTaskController.clear();
 
     if (svgExtensions())
         accessSVGExtensions().pauseAnimations();
@@ -2135,6 +2138,8 @@ void Document::detach(const AttachContext& context)
     if (m_scriptedAnimationController)
         m_scriptedAnimationController->clearDocumentPointer();
     m_scriptedAnimationController.clear();
+
+    m_scriptedIdleTaskController.clear();
 
     if (svgExtensions())
         accessSVGExtensions().pauseAnimations();
@@ -5130,6 +5135,25 @@ void Document::serviceScriptedAnimations(double monotonicAnimationStartTime)
     m_scriptedAnimationController->serviceScriptedAnimations(monotonicAnimationStartTime);
 }
 
+ScriptedIdleTaskController& Document::ensureScriptedIdleTaskController()
+{
+    if (!m_scriptedIdleTaskController)
+        m_scriptedIdleTaskController = ScriptedIdleTaskController::create(this, loader()->timing());
+    return *m_scriptedIdleTaskController;
+}
+
+int Document::requestIdleCallback(IdleRequestCallback* callback, double timeoutMillis)
+{
+    return ensureScriptedIdleTaskController().registerCallback(callback, timeoutMillis);
+}
+
+void Document::cancelIdleCallback(int id)
+{
+    if (!m_scriptedIdleTaskController)
+        return;
+    m_scriptedIdleTaskController->cancelCallback(id);
+}
+
 PassRefPtrWillBeRawPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, int identifier, double pageX, double pageY, double screenX, double screenY, double radiusX, double radiusY, float rotationAngle, float force) const
 {
     // Match behavior from when these types were integers, and avoid surprises from someone explicitly
@@ -5660,6 +5684,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_documentTiming);
     visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_scriptedAnimationController);
+    visitor->trace(m_scriptedIdleTaskController);
     visitor->trace(m_taskRunner);
     visitor->trace(m_textAutosizer);
     visitor->trace(m_registrationContext);

@@ -1264,23 +1264,36 @@ void LocalDOMWindow::resizeTo(int width, int height) const
 int LocalDOMWindow::requestAnimationFrame(FrameRequestCallback* callback)
 {
     callback->m_useLegacyTimeBase = false;
-    if (Document* d = document())
-        return d->requestAnimationFrame(callback);
+    if (Document* doc = document())
+        return doc->requestAnimationFrame(callback);
     return 0;
 }
 
 int LocalDOMWindow::webkitRequestAnimationFrame(FrameRequestCallback* callback)
 {
     callback->m_useLegacyTimeBase = true;
-    if (Document* d = document())
-        return d->requestAnimationFrame(callback);
+    if (Document* document = this->document())
+        return document->requestAnimationFrame(callback);
     return 0;
 }
 
 void LocalDOMWindow::cancelAnimationFrame(int id)
 {
-    if (Document* d = document())
-        d->cancelAnimationFrame(id);
+    if (Document* document = this->document())
+        document->cancelAnimationFrame(id);
+}
+
+int LocalDOMWindow::requestIdleCallback(IdleRequestCallback* callback, double timeoutMillis)
+{
+    if (Document* document = this->document())
+        return document->requestIdleCallback(callback, timeoutMillis);
+    return 0;
+}
+
+void LocalDOMWindow::cancelIdleCallback(int id)
+{
+    if (Document* document = this->document())
+        document->cancelIdleCallback(id);
 }
 
 bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, bool useCapture)

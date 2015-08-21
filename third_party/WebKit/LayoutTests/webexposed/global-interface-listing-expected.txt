@@ -3054,6 +3054,10 @@ interface IDBVersionChangeEvent
     getter newVersion
     getter oldVersion
     method constructor
+interface IdleCallbackDeadline
+    getter didTimeout
+    getter timeRemaining
+    method constructor
 interface Image
     method constructor
 interface ImageBitmap
@@ -6296,6 +6300,7 @@ interface Window
     method blur
     method btoa
     method cancelAnimationFrame
+    method cancelIdleCallback
     method captureEvents
     method clearInterval
     method clearTimeout
@@ -6320,6 +6325,7 @@ interface Window
     method prompt
     method releaseEvents
     method requestAnimationFrame
+    method requestIdleCallback
     method resizeBy
     method resizeTo
     method scroll

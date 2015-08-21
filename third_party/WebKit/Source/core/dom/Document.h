@@ -122,6 +122,7 @@ class HTMLImportsController;
 class HTMLLinkElement;
 class HTMLScriptElement;
 class HitTestRequest;
+class IdleRequestCallback;
 class InputDeviceCapabilities;
 class LayoutPoint;
 class LiveNodeListBase;
@@ -146,6 +147,7 @@ class SVGUseElement;
 class ScriptRunner;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
+class ScriptedIdleTaskController;
 class SecurityOrigin;
 class SegmentedString;
 class SelectorQueryCache;
@@ -914,6 +916,9 @@ public:
     void cancelAnimationFrame(int id);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
+    int requestIdleCallback(IdleRequestCallback*, double timeoutMillis);
+    void cancelIdleCallback(int id);
+
     EventTarget* errorEventTarget() final;
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) final;
 
@@ -1065,6 +1070,7 @@ private:
     bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
 
     ScriptedAnimationController& ensureScriptedAnimationController();
+    ScriptedIdleTaskController& ensureScriptedIdleTaskController();
     SecurityContext& securityContext() final { return *this; }
     EventQueue* eventQueue() const final;
 
@@ -1333,6 +1339,7 @@ private:
     unsigned m_writeRecursionDepth;
 
     RefPtrWillBeMember<ScriptedAnimationController> m_scriptedAnimationController;
+    RefPtrWillBeMember<ScriptedIdleTaskController> m_scriptedIdleTaskController;
     OwnPtrWillBeMember<MainThreadTaskRunner> m_taskRunner;
     OwnPtrWillBeMember<TextAutosizer> m_textAutosizer;
 

@@ -59,4 +59,9 @@ void WebScheduler::postLoadingTask(const WebTraceLocation& location, PassOwnPtr<
     postLoadingTask(location, new blink::Task(task));
 }
 
+void WebScheduler::postTimerTask(const WebTraceLocation& location, PassOwnPtr<Task> task, long long delayMs)
+{
+    postTimerTask(location, new blink::Task(task), delayMs);
+}
+
 } // namespace blink
