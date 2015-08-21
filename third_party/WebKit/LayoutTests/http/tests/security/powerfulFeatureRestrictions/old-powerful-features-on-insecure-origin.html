@@ -89,7 +89,7 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
             this.done();
         }));
     }, 'device orientation');
-    
+
     promise_test(function(test) {
         return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
     }, 'requestMediaKeySystemAccess');
@@ -97,9 +97,18 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     // Tests for APIs that have been turned off on insecure origins
     async_test(function() {
         navigator.webkitGetUserMedia({ audio: true, video: true },
-            this.unreached_func('getUserMedia should call the error callback, but called the success callback instead.'),
+            this.unreached_func('navigator.webkitGetUserMedia should call the error callback, but called the success callback instead.'),
             this.step_func_done());
-    }, 'getUserMedia');
+    }, 'navigator.webkitGetUserMedia');
+
+    promise_test(function(test) {
+        return navigator.mediaDevices.getUserMedia({audio: true, video: true}).then(
+            test.unreached_func("navigator.mediaDevices.getUserMedia should reject the promise, but resolved instead."),
+            function(error) {
+                assert_equals(error.name, "NotSupportedError");
+                assert_equals(error.message, "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).");
+            });
+    }, 'navigator.mediaDevices.getUserMedia');
 }
 </script>
 </body>

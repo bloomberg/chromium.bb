@@ -11,6 +11,7 @@ PASS fullscreen
 PASS device motion 
 PASS device orientation 
 PASS requestMediaKeySystemAccess 
-PASS getUserMedia 
+PASS navigator.webkitGetUserMedia 
+PASS navigator.mediaDevices.getUserMedia 
 Harness: the test ran to completion.
 
