@@ -321,9 +321,15 @@ define('media_router_bindings', [
     this.sendRouteBinaryMessage = null;
 
     /**
-     * @type {function(string): Promise.<Array.<RouteMessage>>}
+     * @type {function(string):
+     *     Promise.<{messages: Array.<RouteMessage>, error: boolean}>}
      */
     this.listenForRouteMessages = null;
+
+    /**
+     * @type {function(string)}
+     */
+    this.stopListeningForRouteMessages = null;
 
     /**
      * @type {function()}
@@ -375,6 +381,7 @@ define('media_router_bindings', [
       'sendRouteMessage',
       'sendRouteBinaryMessage',
       'listenForRouteMessages',
+      'stopListeningForRouteMessages',
       'closeRoute',
       'joinRoute',
       'createRoute',
@@ -504,16 +511,27 @@ define('media_router_bindings', [
   /**
    * Listen for next batch of messages from one of the routeIds.
    * @param {!string} routeId
-   * @return {!Promise.<Array.<RouteMessage>>} Resolved with a list of messages,
-   *    an empty list if an error occurred.
+   * @return {!Promise.<{messages: Array.<RouteMessage>, error: boolean}>}
+   *     Resolved with a list of messages, and a boolean indicating if an error
+   *     occurred.
    */
   MediaRouteProvider.prototype.listenForRouteMessages = function(routeId) {
     return this.handlers_.listenForRouteMessages(routeId)
         .then(function(messages) {
-          return {'messages': messages.map(messageToMojo_)};
+          return {'messages': messages.map(messageToMojo_), 'error': false};
         }, function() {
-          return {'messages': []};
+          return {'messages': [], 'error': true};
         });
+  };
+
+  /**
+   * If there is an outstanding |listenForRouteMessages| promise for
+   * |routeId|, resolve that promise with an empty array.
+   * @param {!string} routeId
+   */
+  MediaRouteProvider.prototype.stopListeningForRouteMessages = function(
+      routeId) {
+    return this.handlers_.stopListeningForRouteMessages(routeId);
   };
 
   /**

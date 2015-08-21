@@ -375,12 +375,11 @@ void MediaRouterMojoImpl::UnregisterPresentationSessionMessagesObserver(
     return;
 
   observer_list->RemoveObserver(observer);
-  if (!observer_list->might_have_observers())
+  if (!observer_list->might_have_observers()) {
     messages_observers_.erase(route_id);
-  // TODO(imcheng): Queue a task to stop listening for messages by asking
-  // the extension to invoke the oustanding Mojo callback with empty list. We
-  // don't want the Mojo callback to exist indefinitely on the extension side
-  // and there is currently no way to cancel the callback from this side.
+    RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStopListeningForRouteMessages,
+                          base::Unretained(this), route_id));
+  }
 }
 
 void MediaRouterMojoImpl::DoCreateRoute(
@@ -446,15 +445,26 @@ void MediaRouterMojoImpl::DoListenForRouteMessages(
   }
 }
 
+void MediaRouterMojoImpl::DoStopListeningForRouteMessages(
+    const MediaRoute::Id& route_id) {
+  DVLOG_WITH_INSTANCE(1) << "StopListeningForRouteMessages";
+
+  // No need to erase |route_ids_listening_for_messages_| entry here.
+  // It will be removed when there are no more observers by the time
+  // |OnRouteMessagesReceived| is invoked.
+  media_route_provider_->StopListeningForRouteMessages(route_id);
+}
+
 void MediaRouterMojoImpl::OnRouteMessagesReceived(
     const MediaRoute::Id& route_id,
-    mojo::Array<interfaces::RouteMessagePtr> messages) {
+    mojo::Array<interfaces::RouteMessagePtr> messages,
+    bool error) {
   DVLOG(1) << "OnRouteMessagesReceived";
 
-  // Empty |messages| means no more messages will come from this route. We can
-  // stop listening.
-  if (messages.storage().empty()) {
-    DVLOG(2) << "Received empty messages for " << route_id;
+  // If |messages| is null, then no more messages will come from this route.
+  // We can stop listening.
+  if (error) {
+    DVLOG(2) << "Encountered error in OnRouteMessagesReceived for " << route_id;
     route_ids_listening_for_messages_.erase(route_id);
     return;
   }
@@ -467,19 +477,23 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
     return;
   }
 
-  ScopedVector<content::PresentationSessionMessage> session_messages;
-  session_messages.reserve(messages.size());
-  for (size_t i = 0; i < messages.size(); ++i) {
-    session_messages.push_back(
-        ConvertToPresentationSessionMessage(messages[i].Pass()).Pass());
+  // If |messages| is empty, then |StopListeningForRouteMessages| was invoked
+  // but we have added back an observer since. Keep listening for more messages,
+  // but do not notify observers with empty list.
+  if (!messages.storage().empty()) {
+    ScopedVector<content::PresentationSessionMessage> session_messages;
+    session_messages.reserve(messages.size());
+    for (size_t i = 0; i < messages.size(); ++i) {
+      session_messages.push_back(
+          ConvertToPresentationSessionMessage(messages[i].Pass()).Pass());
+    }
+    base::ObserverList<PresentationSessionMessagesObserver>::Iterator
+        observer_it(observer_list);
+    bool single_observer =
+        observer_it.GetNext() != nullptr && observer_it.GetNext() == nullptr;
+    FOR_EACH_OBSERVER(PresentationSessionMessagesObserver, *observer_list,
+                      OnMessagesReceived(session_messages, single_observer));
   }
-
-  base::ObserverList<PresentationSessionMessagesObserver>::Iterator
-      observer_it(observer_list);
-  bool single_observer =
-      observer_it.GetNext() != nullptr && observer_it.GetNext() == nullptr;
-  FOR_EACH_OBSERVER(PresentationSessionMessagesObserver, *observer_list,
-                    OnMessagesReceived(session_messages, single_observer));
 
   // Listen for more messages.
   media_route_provider_->ListenForRouteMessages(

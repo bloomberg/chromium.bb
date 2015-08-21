@@ -164,10 +164,17 @@ interface MediaRouteProvider {
 
   // Called when the MediaRouter is ready to get the next batch of messages
   // associated with |route_id|.
-  // |messages| returned will contain the batch of messages. If |messages| is
-  // empty, then there are no more messages for |route_id|, and subsequent calls
-  // will continue to return empty.
-  ListenForRouteMessages(string route_id) => (array<RouteMessage> messages);
+  // |messages| returned will contain the batch of messages.
+  // |messages| will be empty if |StopListeningForRouteMessages| was invoked.
+  // |error| indicates if a permanent error occurred. If true, then subsequent
+  // calls will also return with |error| being true.
+  ListenForRouteMessages(string route_id) =>
+      (array<RouteMessage> messages, bool error);
+
+  // Called when there are no more listeners for messages for |route_id|.
+  // Calling this will resolve the pending |ListenForRouteMessages| callback
+  // with an empty list.
+  StopListeningForRouteMessages(string route_id);
 };
 
 // Interface for a service which observes state changes across media

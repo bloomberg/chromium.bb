@@ -117,6 +117,8 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
   MOCK_METHOD2(ListenForRouteMessages,
                void(const mojo::String& route_id,
                     const ListenForRouteMessagesCallback& callback));
+  MOCK_METHOD1(StopListeningForRouteMessages,
+               void(const mojo::String& route_id));
   MOCK_METHOD1(ClearIssue, void(const mojo::String& issue_id));
   MOCK_METHOD0(StartObservingMediaRoutes, void());
   MOCK_METHOD0(StopObservingMediaRoutes, void());

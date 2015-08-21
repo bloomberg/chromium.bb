@@ -507,7 +507,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   // Simulate messages by invoking the saved mojo callback.
   // We expect one more ListenForRouteMessages call since |observer| was
   // still registered when the first set of messages arrived.
-  mojo_callback.Run(mojo_messages.Pass());
+  mojo_callback.Run(mojo_messages.Pass(), false);
   interfaces::MediaRouteProvider::ListenForRouteMessagesCallback
       mojo_callback_2;
   EXPECT_CALL(mock_media_route_provider_, ListenForRouteMessages(_, _))
@@ -521,7 +521,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   mojo_messages_2[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
   mojo_messages_2[0]->message = "foo";
   observer.reset();
-  mojo_callback_2.Run(mojo_messages_2.Pass());
+  mojo_callback_2.Run(mojo_messages_2.Pass(), false);
   ProcessEventLoop();
 }
 
@@ -574,7 +574,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   // Simulate messages by invoking the saved mojo callback.
   // We expect one more ListenForRouteMessages call since |observer| was
   // still registered when the first set of messages arrived.
-  mojo_callback.Run(mojo_messages.Pass());
+  mojo_callback.Run(mojo_messages.Pass(), false);
   interfaces::MediaRouteProvider::ListenForRouteMessagesCallback
       mojo_callback_2;
   EXPECT_CALL(mock_media_route_provider_, ListenForRouteMessages(_, _))
@@ -589,7 +589,30 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   mojo_messages_2[0]->message = "foo";
   observer1.reset();
   observer2.reset();
-  mojo_callback_2.Run(mojo_messages_2.Pass());
+  mojo_callback_2.Run(mojo_messages_2.Pass(), false);
+  ProcessEventLoop();
+}
+
+TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesError) {
+  MediaRoute::Id expected_route_id("foo");
+  interfaces::MediaRouteProvider::ListenForRouteMessagesCallback mojo_callback;
+  EXPECT_CALL(mock_media_route_provider_,
+              ListenForRouteMessages(Eq(expected_route_id), _))
+      .WillOnce(SaveArg<1>(&mojo_callback));
+
+  ListenForMessagesCallbackHandler handler(
+      ScopedVector<content::PresentationSessionMessage>(), true);
+
+  // Creating PresentationSessionMessagesObserver will register itself to the
+  // MediaRouter, which in turn will start listening for route messages.
+  scoped_ptr<PresentationSessionMessagesObserver> observer1(
+      new PresentationSessionMessagesObserver(
+          base::Bind(&ListenForMessagesCallbackHandler::Invoke,
+                     base::Unretained(&handler)),
+          expected_route_id, router()));
+  ProcessEventLoop();
+
+  mojo_callback.Run(mojo::Array<interfaces::RouteMessagePtr>(0), true);
   ProcessEventLoop();
 }
 
