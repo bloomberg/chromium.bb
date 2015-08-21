@@ -453,13 +453,20 @@ class BatteryUtilsLetBatteryCoolToTemperatureTest(BatteryUtilsTest):
       self.battery.LetBatteryCoolToTemperature(400)
 
   @mock.patch('time.sleep', mock.Mock())
-  def testLetBatteryCoolToTemperature_nexus5(self):
+  def testLetBatteryCoolToTemperature_nexus5Hot(self):
     self.battery._cache['profile'] = self._NEXUS_5
     with self.assertCalls(
         (self.call.battery.EnableBatteryUpdates(), []),
-        (self.call.battery._DischargeDevice(1), []),
         (self.call.battery.GetBatteryInfo(), {'temperature': '500'}),
         (self.call.battery._DischargeDevice(1), []),
+        (self.call.battery.GetBatteryInfo(), {'temperature': '400'})):
+      self.battery.LetBatteryCoolToTemperature(400)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testLetBatteryCoolToTemperature_nexus5Cool(self):
+    self.battery._cache['profile'] = self._NEXUS_5
+    with self.assertCalls(
+        (self.call.battery.EnableBatteryUpdates(), []),
         (self.call.battery.GetBatteryInfo(), {'temperature': '400'})):
       self.battery.LetBatteryCoolToTemperature(400)
 

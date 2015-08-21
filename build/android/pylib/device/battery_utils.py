@@ -496,15 +496,18 @@ class BatteryUtils(object):
       wait_period: time in seconds to wait between checking.
     """
     def cool_device():
-      if self._cache['profile']['name'] == 'Nexus 5':
-        self._DischargeDevice(1)
       temp = self.GetBatteryInfo().get('temperature')
       if temp is None:
         logging.warning('Unable to find current battery temperature.')
         temp = 0
       else:
         logging.info('Current battery temperature: %s', temp)
-      return int(temp) <= target_temp
+      if int(temp) <= target_temp:
+        return True
+      else:
+        if self._cache['profile']['name'] == 'Nexus 5':
+          self._DischargeDevice(1)
+        return False
 
     self._DiscoverDeviceProfile()
     self.EnableBatteryUpdates()
