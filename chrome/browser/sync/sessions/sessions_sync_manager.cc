@@ -823,7 +823,7 @@ void SessionsSyncManager::DeleteForeignSession(const std::string& tag) {
 
 void SessionsSyncManager::DeleteForeignSessionInternal(
     const std::string& tag, syncer::SyncChangeList* change_output) {
- if (tag == current_machine_tag()) {
+  if (tag == current_machine_tag()) {
     LOG(ERROR) << "Attempting to delete local session. This is not currently "
                << "supported.";
     return;
@@ -871,24 +871,16 @@ bool SessionsSyncManager::DisassociateForeignSession(
 // static
 GURL SessionsSyncManager::GetCurrentVirtualURL(
     const SyncedTabDelegate& tab_delegate) {
-  const int current_index = tab_delegate.GetCurrentEntryIndex();
-  const int pending_index = tab_delegate.GetPendingEntryIndex();
   const NavigationEntry* current_entry =
-      (current_index == pending_index) ?
-      tab_delegate.GetPendingEntry() :
-      tab_delegate.GetEntryAtIndex(current_index);
+      tab_delegate.GetCurrentEntryMaybePending();
   return current_entry->GetVirtualURL();
 }
 
 // static
 GURL SessionsSyncManager::GetCurrentFaviconURL(
     const SyncedTabDelegate& tab_delegate) {
-  const int current_index = tab_delegate.GetCurrentEntryIndex();
-  const int pending_index = tab_delegate.GetPendingEntryIndex();
   const NavigationEntry* current_entry =
-      (current_index == pending_index) ?
-      tab_delegate.GetPendingEntry() :
-      tab_delegate.GetEntryAtIndex(current_index);
+      tab_delegate.GetCurrentEntryMaybePending();
   return (current_entry->GetFavicon().valid ?
           current_entry->GetFavicon().url :
           GURL());
@@ -1005,7 +997,7 @@ void SessionsSyncManager::AssociateRestoredPlaceholderTab(
   }
 }
 
-// static.
+// static
 void SessionsSyncManager::SetSessionTabFromDelegate(
       const SyncedTabDelegate& tab_delegate,
       base::Time mtime,
@@ -1021,7 +1013,6 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   session_tab->user_agent_override.clear();
   session_tab->timestamp = mtime;
   const int current_index = tab_delegate.GetCurrentEntryIndex();
-  const int pending_index = tab_delegate.GetPendingEntryIndex();
   const int min_index = std::max(0, current_index - kMaxSyncNavigationCount);
   const int max_index = std::min(current_index + kMaxSyncNavigationCount,
                                  tab_delegate.GetEntryCount());
@@ -1029,8 +1020,7 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   session_tab->navigations.clear();
 
   for (int i = min_index; i < max_index; ++i) {
-    const NavigationEntry* entry = (i == pending_index) ?
-        tab_delegate.GetPendingEntry() : tab_delegate.GetEntryAtIndex(i);
+    const NavigationEntry* entry = tab_delegate.GetEntryAtIndexMaybePending(i);
     DCHECK(entry);
     if (!entry->GetVirtualURL().is_valid())
       continue;
@@ -1070,7 +1060,7 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   session_tab->session_storage_persistent_id.clear();
 }
 
-// static.
+// static
 void SessionsSyncManager::SetVariationIds(sessions::SessionTab* session_tab) {
   base::FieldTrial::ActiveGroups active_groups;
   base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);

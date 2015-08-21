@@ -40,7 +40,6 @@ class TabContentsSyncedTabDelegate
   content::WebContents* GetWebContents() const override;
   int GetSyncId() const override;
   void SetSyncId(int sync_id) override;
-  bool ShouldSync() const override;
 
  private:
   explicit TabContentsSyncedTabDelegate(content::WebContents* web_contents);

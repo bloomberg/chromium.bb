@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
-#include "chrome/browser/sync/sessions/sessions_util.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -100,8 +99,8 @@ TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
 }
 
 bool TabContentsSyncedTabDelegate::IsPinned() const {
-  const browser_sync::SyncedWindowDelegate* window =
-      browser_sync::SyncedWindowDelegate::FindById(GetWindowId());
+  const browser_sync::SyncedWindowDelegate* window = GetSyncedWindowDelegate();
+
   // We might not have a parent window, e.g. Developer Tools.
   return window ? window->IsTabPinned(this) : false;
 }
@@ -118,8 +117,4 @@ int TabContentsSyncedTabDelegate::GetSyncId() const {
 
 void TabContentsSyncedTabDelegate::SetSyncId(int sync_id) {
   sync_session_id_ = sync_id;
-}
-
-bool TabContentsSyncedTabDelegate::ShouldSync() const {
-  return browser_sync::sessions_util::ShouldSyncTab(*this);
 }

@@ -8,7 +8,6 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
-#include "chrome/browser/sync/sessions/sessions_util.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -113,11 +112,6 @@ int SyncedTabDelegateAndroid::GetSyncId() const {
 
 void SyncedTabDelegateAndroid::SetSyncId(int sync_id) {
   tab_android_->SetSyncId(sync_id);
-}
-
-
-bool SyncedTabDelegateAndroid::ShouldSync() const {
-  return sessions_util::ShouldSyncTab(*this);
 }
 
 // static

@@ -18,6 +18,7 @@ class WebContents;
 }
 
 namespace browser_sync {
+class SyncedWindowDelegate;
 
 // A SyncedTabDelegate is used to insulate the sync code from depending
 // directly on WebContents, NavigationController, and the extensions TabHelper.
@@ -45,6 +46,12 @@ class SyncedTabDelegate {
   virtual content::NavigationEntry* GetEntryAtIndex(int i) const = 0;
   virtual content::NavigationEntry* GetActiveEntry() const = 0;
 
+  // The idea here is that GetEntryAtIndex may not always return the pending
+  // entry when asked for the entry at the pending index. These convinience
+  // methods will check for this case and then call the correct entry accessor.
+  content::NavigationEntry* GetCurrentEntryMaybePending() const;
+  content::NavigationEntry* GetEntryAtIndexMaybePending(int i) const;
+
   // Supervised user related methods.
 
   virtual bool ProfileIsSupervised() const = 0;
@@ -60,11 +67,15 @@ class SyncedTabDelegate {
   virtual void SetSyncId(int sync_id) = 0;
 
   // Returns true if this tab should be synchronized.
-  virtual bool ShouldSync() const = 0;
+  bool ShouldSync() const;
 
   // Returns the SyncedTabDelegate associated with WebContents.
   static SyncedTabDelegate* ImplFromWebContents(
       content::WebContents* web_contents);
+
+ protected:
+  // Overridden by the tests to avoid interaction with static state.
+  virtual const SyncedWindowDelegate* GetSyncedWindowDelegate() const;
 };
 
 }  // namespace browser_sync

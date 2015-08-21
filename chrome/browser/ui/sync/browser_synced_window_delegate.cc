@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "chrome/browser/sync/sessions/sessions_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"

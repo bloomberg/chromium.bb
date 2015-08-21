@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
-#include "chrome/browser/sync/sessions/sessions_util.h"
 #include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -420,10 +419,6 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   int GetSyncId() const override { return sync_id_; }
   void SetSyncId(int sync_id) override { sync_id_ = sync_id; }
 
-  bool ShouldSync() const override {
-    return sessions_util::ShouldSyncTab(*this);
-  }
-
   void reset() {
     current_entry_index_ = 0;
     pending_entry_index_ = -1;
@@ -441,39 +436,6 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
 };
 
 }  // namespace
-
-// Test that we exclude tabs with only chrome:// and file:// schemed navigations
-// from ShouldSyncTab(..).
-TEST_F(SessionsSyncManagerTest, ValidTabs) {
-  SyncedTabDelegateFake tab;
-
-  // A null entry shouldn't crash.
-  tab.AppendEntry(NULL);
-  EXPECT_FALSE(tab.ShouldSync());
-  tab.reset();
-
-  // A chrome:// entry isn't valid.
-  scoped_ptr<content::NavigationEntry> entry(
-      content::NavigationEntry::Create());
-  entry->SetVirtualURL(GURL("chrome://preferences/"));
-  tab.AppendEntry(entry.Pass());
-  EXPECT_FALSE(tab.ShouldSync());
-
-
-  // A file:// entry isn't valid, even in addition to another entry.
-  scoped_ptr<content::NavigationEntry> entry2(
-      content::NavigationEntry::Create());
-  entry2->SetVirtualURL(GURL("file://bla"));
-  tab.AppendEntry(entry2.Pass());
-  EXPECT_FALSE(tab.ShouldSync());
-
-  // Add a valid scheme entry to tab, making the tab valid.
-  scoped_ptr<content::NavigationEntry> entry3(
-      content::NavigationEntry::Create());
-  entry3->SetVirtualURL(GURL("http://www.google.com"));
-  tab.AppendEntry(entry3.Pass());
-  EXPECT_FALSE(tab.ShouldSync());
-}
 
 // Make sure GetCurrentVirtualURL() returns the virtual URL of the pending
 // entry if the current entry is pending.
