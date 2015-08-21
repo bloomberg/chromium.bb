@@ -120,6 +120,20 @@ CGFloat GetNavigationViewWidth() {
   return self;
 }
 
+- (instancetype)initWithFrame:(CGRect)frame customView:(UIView*)customView {
+  self = [super initWithFrame:frame];
+  if (self) {
+    _customView.reset([customView retain]);
+    customView.frame =
+        CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame));
+    [self addSubview:customView];
+
+    [[self class] addBackgroundImageInView:self
+                             withImageName:@"autofill_keyboard_background"];
+  }
+  return self;
+}
+
 #pragma mark -
 #pragma mark UIInputViewAudioFeedback
 

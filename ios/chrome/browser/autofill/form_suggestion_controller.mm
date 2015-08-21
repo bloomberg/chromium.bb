@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
@@ -18,6 +19,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
@@ -262,11 +264,11 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 }
 
 - (void)updateKeyboard:(AutofillSuggestionState*)suggestionState {
-  if (!_suggestionState) {
+  if (!suggestionState) {
     if (accessoryViewUpdateBlock_)
       accessoryViewUpdateBlock_.get()(nil, self);
   } else {
-    [self updateKeyboardWithSuggestions:_suggestionState->suggestions];
+    [self updateKeyboardWithSuggestions:suggestionState->suggestions];
   }
 }
 
@@ -278,8 +280,14 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 }
 
 - (UIView*)suggestionViewWithSuggestions:(NSArray*)suggestions {
+  CGRect frame = [_webViewProxy getKeyboardAccessory].frame;
+  // Force the desired height on iPads running iOS 9 or later where the height
+  // of the inputAccessoryView is 0.
+  if (base::ios::IsRunningOnIOS9OrLater() && IsIPadIdiom()) {
+    frame.size.height = autofill::kInputAccessoryHeight;
+  }
   base::scoped_nsobject<FormSuggestionView> view([[FormSuggestionView alloc]
-      initWithFrame:[_webViewProxy getKeyboardAccessory].frame
+      initWithFrame:frame
              client:self
         suggestions:suggestions]);
   return view.autorelease();

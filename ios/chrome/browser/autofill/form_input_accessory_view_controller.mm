@@ -5,15 +5,16 @@
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 
 #include "base/ios/block_types.h"
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view.h"
+#import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/web/public/test/crw_test_js_injection_receiver.h"
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/crw_web_view_proxy.h"
@@ -25,6 +26,7 @@ namespace autofill {
 NSString* const kFormSuggestionAssistButtonPreviousElement = @"previousTap";
 NSString* const kFormSuggestionAssistButtonNextElement = @"nextTap";
 NSString* const kFormSuggestionAssistButtonDone = @"done";
+CGFloat const kInputAccessoryHeight = 44.0f;
 }  // namespace autofill
 
 namespace {
@@ -93,7 +95,7 @@ NSArray* FindDescendantToolbarItemsForActionName(UIView* root,
 // If there is only one part, the frame is returned in |leftFrame| and
 // |rightFrame| has size zero.
 //
-// Heuristics are used to compute this information. It returns true if the
+// Heuristics are used to compute this information. It returns false if the
 // number of |inputAccessoryView.subviews| is not 2.
 bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
                                   CGRect* leftFrame,
@@ -130,8 +132,8 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
              JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
                        providers:(NSArray*)providers;
 
-// Called when the keyboard did change frame.
-- (void)keyboardDidChangeFrame:(NSNotification*)notification;
+// Called when the keyboard will or did change frame.
+- (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification;
 
 // Called when the keyboard is dismissed.
 - (void)keyboardDidHide:(NSNotification*)notification;
@@ -187,6 +189,9 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   // forms.
   base::scoped_nsobject<NSArray> _providers;
 
+  // Whether suggestions have previously been shown.
+  BOOL _suggestionsHaveBeenShown;
+
   // The object that manages the currently-shown custom accessory view.
   base::WeakNSProtocol<id<FormInputAccessoryViewProvider>> _currentProvider;
 }
@@ -212,21 +217,47 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
     _providers.reset([providers copy]);
-    // There is no defined relation on the timing of JavaScript events and
-    // keyboard showing up. So it is necessary to listen to the keyboard
-    // notification to make sure the keyboard is updated.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(keyboardDidChangeFrame:)
-               name:UIKeyboardDidChangeFrameNotification
-             object:nil];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(keyboardDidHide:)
-               name:UIKeyboardDidHideNotification
-             object:nil];
+    _suggestionsHaveBeenShown = NO;
   }
   return self;
+}
+
+- (void)wasShown {
+  // There is no defined relation on the timing of JavaScript events and
+  // keyboard showing up. So it is necessary to listen to the keyboard
+  // notification to make sure the keyboard is updated.
+  if (base::ios::IsRunningOnIOS9OrLater() && IsIPadIdiom()) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(keyboardWillOrDidChangeFrame:)
+               name:UIKeyboardWillChangeFrameNotification
+             object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(textInputDidBeginEditing:)
+               name:UITextFieldTextDidBeginEditingNotification
+             object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(textInputDidBeginEditing:)
+               name:UITextViewTextDidBeginEditingNotification
+             object:nil];
+  }
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(keyboardWillOrDidChangeFrame:)
+             name:UIKeyboardDidChangeFrameNotification
+           object:nil];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(keyboardDidHide:)
+             name:UIKeyboardDidHideNotification
+           object:nil];
+}
+
+- (void)wasHidden {
+  [_customAccessoryView removeFromSuperview];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)dealloc {
@@ -253,20 +284,51 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 }
 
 - (void)showCustomInputAccessoryView:(UIView*)view {
-  [self restoreDefaultInputAccessoryView];
-  CGRect leftFrame;
-  CGRect rightFrame;
-  UIView* inputAccessoryView = [self.webViewProxy getKeyboardAccessory];
-  if (ComputeFramesOfKeyboardParts(inputAccessoryView, &leftFrame,
-                                   &rightFrame)) {
-    [self hideSubviewsInOriginalAccessoryView:inputAccessoryView];
+  DCHECK(view);
+  if (base::ios::IsRunningOnIOS9OrLater() && IsIPadIdiom()) {
+    // On iPads running iOS 9 or later, there's no inputAccessoryView available
+    // so we attach the custom view directly to the keyboard view instead.
+    [_customAccessoryView removeFromSuperview];
+
+    // If the keyboard isn't visible or no suggestions have been triggered yet,
+    // don't show the custom view.
+    int numSuggestions =
+        [[static_cast<FormSuggestionView*>(view) suggestions] count];
+    if (CGRectIntersection([UIScreen mainScreen].bounds, _keyboardFrame)
+                .size.height == 0 ||
+        CGRectEqualToRect(_keyboardFrame, CGRectZero) ||
+        (!_suggestionsHaveBeenShown && numSuggestions == 0)) {
+      _customAccessoryView.reset();
+      return;
+    }
+    _suggestionsHaveBeenShown = YES;
+
+    CGFloat height = autofill::kInputAccessoryHeight;
+    CGRect frame = CGRectMake(_keyboardFrame.origin.x, -height,
+                              _keyboardFrame.size.width, height);
     _customAccessoryView.reset(
-        [[FormInputAccessoryView alloc] initWithFrame:inputAccessoryView.frame
-                                             delegate:self
-                                           customView:view
-                                            leftFrame:leftFrame
-                                           rightFrame:rightFrame]);
-    [inputAccessoryView addSubview:_customAccessoryView];
+        [[FormInputAccessoryView alloc] initWithFrame:frame customView:view]);
+    UIView* keyboardView = [self getKeyboardView];
+    DCHECK(keyboardView);
+    [keyboardView addSubview:_customAccessoryView];
+  } else {
+    // On all other versions, the custom view replaces the default UI of the
+    // inputAccessoryView.
+    [self restoreDefaultInputAccessoryView];
+    CGRect leftFrame;
+    CGRect rightFrame;
+    UIView* inputAccessoryView = [self.webViewProxy getKeyboardAccessory];
+    if (ComputeFramesOfKeyboardParts(inputAccessoryView, &leftFrame,
+                                     &rightFrame)) {
+      [self hideSubviewsInOriginalAccessoryView:inputAccessoryView];
+      _customAccessoryView.reset([[FormInputAccessoryView alloc]
+          initWithFrame:inputAccessoryView.frame
+               delegate:self
+             customView:view
+              leftFrame:leftFrame
+             rightFrame:rightFrame]);
+      [inputAccessoryView addSubview:_customAccessoryView];
+    }
   }
 }
 
@@ -481,7 +543,32 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   passwords::RunSearchPipeline(findProviderBlocks, onProviderFound);
 }
 
-- (void)keyboardDidChangeFrame:(NSNotification*)notification {
+- (UIView*)getKeyboardView {
+  NSArray* windows = [UIApplication sharedApplication].windows;
+  if (windows.count < 2)
+    return nil;
+
+  UIWindow* window = windows[1];
+  for (UIView* subview in window.subviews) {
+    if ([NSStringFromClass([subview class]) rangeOfString:@"PeripheralHost"]
+            .location != NSNotFound) {
+      return subview;
+    }
+    if ([NSStringFromClass([subview class]) rangeOfString:@"SetContainer"]
+            .location != NSNotFound) {
+      for (UIView* subsubview in subview.subviews) {
+        if ([NSStringFromClass([subsubview class]) rangeOfString:@"SetHost"]
+                .location != NSNotFound) {
+          return subsubview;
+        }
+      }
+    }
+  }
+
+  return nil;
+}
+
+- (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification {
   if (!self.webState || !_currentProvider)
     return;
   CGRect keyboardFrame =
@@ -494,6 +581,13 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   }
   _keyboardFrame = keyboardFrame;
   [_currentProvider resizeAccessoryView];
+}
+
+// On iPads running iOS 9 or later, when any text field or text view (e.g.
+// omnibox, settings, card unmask dialog) begins editing, reset ourselves so
+// that we don't present our custom view over the keyboard.
+- (void)textInputDidBeginEditing:(NSNotification*)notification {
+  [self reset];
 }
 
 - (void)keyboardDidHide:(NSNotification*)notification {

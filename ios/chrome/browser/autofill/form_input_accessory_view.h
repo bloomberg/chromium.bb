@@ -24,6 +24,9 @@
                     leftFrame:(CGRect)leftFrame
                    rightFrame:(CGRect)rightFrame;
 
+// Initializes with |frame| to show |customView|. Navigation controls are not
+// shown.
+- (instancetype)initWithFrame:(CGRect)frame customView:(UIView*)customView;
 @end
 
 #endif  // IOS_CHROME_BROWSER_AUTOFILL_FORM_INPUT_ACCESSORY_VIEW_H_
