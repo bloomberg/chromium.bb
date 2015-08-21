@@ -145,7 +145,11 @@ def CheckForMissingDevices(options, devices):
   missing_devs = list(set(last_devices) - device_serials)
   new_missing_devs = list(set(missing_devs) - set(last_missing_devices))
 
-  if new_missing_devs and os.environ.get('BUILDBOT_SLAVENAME'):
+  buildbot_slavename = os.environ.get('BUILDBOT_SLAVENAME')
+  buildbot_buildername = os.environ.get('BUILDBOT_BUILDERNAME')
+  buildbot_buildnumber = os.environ.get('BUILDBOT_BUILDNUMBER')
+
+  if new_missing_devs and buildbot_slavename:
     logging.info('new_missing_devs %s' % new_missing_devs)
     devices_missing_msg = '%d devices not detected.' % len(missing_devs)
     bb_annotations.PrintSummaryText(devices_missing_msg)
@@ -155,12 +159,30 @@ def CheckForMissingDevices(options, devices):
                     'chrome-android-device-alert@google.com']
     cc_addresses = ['chrome-android-device-alert@google.com']
     subject = 'Devices offline on %s, %s, %s' % (
-      os.environ.get('BUILDBOT_SLAVENAME'),
-      os.environ.get('BUILDBOT_BUILDERNAME'),
-      os.environ.get('BUILDBOT_BUILDNUMBER'))
+        buildbot_slavename, buildbot_buildername, buildbot_buildnumber)
     msg = ('Please reboot the following devices:\n%s' %
            '\n'.join(map(str, new_missing_devs)))
     SendEmail(from_address, to_addresses, cc_addresses, subject, msg)
+
+  unauthorized_devices = adb_wrapper.AdbWrapper.Devices(
+      desired_state='unauthorized')
+  if unauthorized_devices:
+    logging.info('unauthorized devices:')
+    for ud in unauthorized_devices:
+      logging.info('  %s', ud)
+
+    if buildbot_slavename:
+      from_address = 'chrome-bot@chromium.org'
+      to_addresses = [
+          'jbudorick@chromium.org',
+          'chrome-android-device-alert@google.com']
+      subject = 'Unauthorized devices on %s' % buildbot_slavename
+      msg = ['The following devices are offline on %s' % buildbot_slavename]
+      msg += ['  %s' % ud for ud in unauthorized_devices]
+      msg += ['', 'Detected on %s #%s' % (buildbot_buildername,
+                                          buildbot_buildnumber)]
+      msg = '\n'.join(msg)
+      SendEmail(from_address, to_addresses, [], subject, msg)
 
   all_known_devices = list(device_serials | set(last_devices))
   device_list.WritePersistentDeviceList(last_devices_path, all_known_devices)
@@ -187,6 +209,8 @@ def CheckForMissingDevices(options, devices):
 
 
 def SendEmail(from_address, to_addresses, cc_addresses, subject, msg):
+  # TODO(jbudorick): Transition from email alerts for every failure to a more
+  # sustainable solution.
   msg_body = '\r\n'.join(['From: %s' % from_address,
                           'To: %s' % ', '.join(to_addresses),
                           'CC: %s' % ', '.join(cc_addresses),
@@ -353,7 +377,7 @@ def main():
   if options.device_status_dashboard:
     offline_devices = [
         device_utils.DeviceUtils(a)
-        for a in adb_wrapper.AdbWrapper.Devices(is_ready=False)
+        for a in adb_wrapper.AdbWrapper.Devices(desired_state=None)
         if a.GetState() == 'offline']
 
     perf_tests_results_helper.PrintPerfResult('BotDevices', 'OnlineDevices',
