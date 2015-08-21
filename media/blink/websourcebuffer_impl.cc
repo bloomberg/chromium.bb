@@ -81,6 +81,14 @@ blink::WebTimeRanges WebSourceBufferImpl::buffered() {
   return result;
 }
 
+bool WebSourceBufferImpl::evictCodedFrames(double currentPlaybackTime,
+                                           size_t newDataSize) {
+  // TODO(servolk): A dummy method to facilitate landing MSE GC changes.
+  // Will be replaced with actual implementation in CL
+  // https://codereview.chromium.org/1008463002/
+  return true;
+}
+
 void WebSourceBufferImpl::append(
     const unsigned char* data,
     unsigned length,
