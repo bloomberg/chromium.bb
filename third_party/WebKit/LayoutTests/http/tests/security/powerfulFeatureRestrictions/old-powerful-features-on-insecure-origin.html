@@ -27,6 +27,8 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
                                      mockLongitude,
                                      mockAccuracy);
 
+    // Tests for APIs that are deprecated, but still allowed, on
+    // insecure origins
     async_test(function() {
         navigator.geolocation.getCurrentPosition(
             this.step_func(function() {
@@ -70,17 +72,6 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     }, 'fullscreen');
 
     async_test(function() {
-        navigator.webkitGetUserMedia({ audio: true, video: true },
-                this.step_func(function() {
-                    this.done();
-                }),
-                this.step_func(function() {
-                    assert_unreached('getUserMedia should succeed, but failed.');
-                    this.done();
-                }));
-    }, 'getUserMedia');
-
-    async_test(function() {
         testRunner.setMockDeviceMotion(true, 0, true, 0, true, 0,
                                        true, 0, true, 0, true, 0,
                                        true, 0, true, 0, true, 0,
@@ -102,6 +93,13 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     promise_test(function(test) {
         return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
     }, 'requestMediaKeySystemAccess');
+
+    // Tests for APIs that have been turned off on insecure origins
+    async_test(function() {
+        navigator.webkitGetUserMedia({ audio: true, video: true },
+            this.unreached_func('getUserMedia should call the error callback, but called the success callback instead.'),
+            this.step_func_done());
+    }, 'getUserMedia');
 }
 </script>
 </body>

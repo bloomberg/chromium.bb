@@ -62,21 +62,19 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const MediaS
         return;
     }
 
+    UserMediaRequest* request = UserMediaRequest::create(navigator.frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);
+    if (!request) {
+        ASSERT(exceptionState.hadException());
+        return;
+    }
+
     String errorMessage;
     if (navigator.frame()->document()->isPrivilegedContext(errorMessage)) {
         UseCounter::count(navigator.frame(), UseCounter::GetUserMediaSecureOrigin);
     } else {
         UseCounter::countDeprecation(navigator.frame(), UseCounter::GetUserMediaInsecureOrigin);
         OriginsUsingFeatures::countAnyWorld(*navigator.frame()->document(), OriginsUsingFeatures::Feature::GetUserMediaInsecureOrigin);
-        if (navigator.frame()->settings()->strictPowerfulFeatureRestrictions()) {
-            exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("webkitGetUserMedia", "Navigator", errorMessage));
-            return;
-        }
-    }
-
-    UserMediaRequest* request = UserMediaRequest::create(navigator.frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);
-    if (!request) {
-        ASSERT(exceptionState.hadException());
+        request->failPermissionDenied(errorMessage);
         return;
     }
 
