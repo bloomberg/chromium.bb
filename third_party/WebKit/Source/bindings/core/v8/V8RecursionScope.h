@@ -95,7 +95,7 @@ public:
             : m_isolate(isolate)
 #endif
         {
-            ASSERT(!ScriptForbiddenScope::isScriptForbidden());
+            RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden());
 #if ENABLE(ASSERT)
             V8PerIsolateData::from(m_isolate)->incrementInternalScriptRecursionLevel();
 #endif
