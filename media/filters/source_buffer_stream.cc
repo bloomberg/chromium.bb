@@ -362,8 +362,6 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
 
   SetSelectedRangeIfNeeded(next_buffer_timestamp);
 
-  GarbageCollectIfNeeded();
-
   DVLOG(1) << __FUNCTION__ << " " << GetStreamTypeName()
            << ": done. ranges_=" << RangesToString(ranges_);
   DCHECK(IsRangeListSorted(ranges_));
@@ -612,47 +610,85 @@ void SourceBufferStream::SetConfigIds(const BufferQueue& buffers) {
   }
 }
 
-void SourceBufferStream::GarbageCollectIfNeeded() {
+bool SourceBufferStream::GarbageCollectIfNeeded(DecodeTimestamp media_time,
+                                                size_t newDataSize) {
+  DCHECK(media_time != kNoDecodeTimestamp());
   // Compute size of |ranges_|.
-  size_t ranges_size = 0;
-  for (RangeList::iterator itr = ranges_.begin(); itr != ranges_.end(); ++itr)
-    ranges_size += (*itr)->size_in_bytes();
+  size_t ranges_size = GetBufferedSize();
+
+  // Sanity and overflow checks
+  if ((newDataSize > memory_limit_) ||
+      (ranges_size + newDataSize < ranges_size))
+    return false;
 
   // Return if we're under or at the memory limit.
-  if (ranges_size <= memory_limit_)
-    return;
+  if (ranges_size + newDataSize <= memory_limit_)
+    return true;
 
-  size_t bytes_to_free = ranges_size - memory_limit_;
+  size_t bytes_to_free = ranges_size + newDataSize - memory_limit_;
 
   DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName() << ": Before GC"
-           << " ranges_size=" << ranges_size
+           << " media_time=" << media_time.InSecondsF()
            << " ranges_=" << RangesToString(ranges_)
-           << " memory_limit_=" << memory_limit_;
+           << " ranges_size=" << ranges_size
+           << " newDataSize=" << newDataSize
+           << " memory_limit_=" << memory_limit_
+           << " last_appended_buffer_timestamp_="
+           << last_appended_buffer_timestamp_.InSecondsF();
 
-  // Begin deleting after the last appended buffer.
-  size_t bytes_freed = FreeBuffersAfterLastAppended(bytes_to_free);
+  size_t bytes_freed = 0;
 
-  // Begin deleting from the front.
-  if (bytes_freed < bytes_to_free)
-    bytes_freed += FreeBuffers(bytes_to_free - bytes_freed, false);
+  // If last appended buffer position was earlier than the current playback time
+  // then try deleting data between last append and current media_time.
+  if (last_appended_buffer_timestamp_ != kNoDecodeTimestamp() &&
+      last_appended_buffer_timestamp_ < media_time) {
+    size_t between = FreeBuffersAfterLastAppended(bytes_to_free, media_time);
+    DVLOG(3) << __FUNCTION__ << " FreeBuffersAfterLastAppended "
+             << " released " << between << " bytes"
+             << " ranges_=" << RangesToString(ranges_);
+    bytes_freed += between;
 
-  // Begin deleting from the back.
-  if (bytes_freed < bytes_to_free)
-    bytes_freed += FreeBuffers(bytes_to_free - bytes_freed, true);
+    // If the last append happened before the current playback position
+    // |media_time|, then JS player is probably preparing to seek back and we
+    // should try to preserve all most recently appended data (which is in
+    // range_for_next_append_) from being removed by GC (see crbug.com/440173)
+    if (range_for_next_append_ != ranges_.end()) {
+      DCHECK((*range_for_next_append_)->GetStartTimestamp() <= media_time);
+      media_time = (*range_for_next_append_)->GetStartTimestamp();
+    }
+  }
+
+  // Try removing data from the front of the SourceBuffer up to |media_time|
+  // position.
+  if (bytes_freed < bytes_to_free) {
+    size_t front = FreeBuffers(bytes_to_free - bytes_freed, media_time, false);
+    DVLOG(3) << __FUNCTION__ << " Removed " << front << " bytes from the front"
+             << " ranges_=" << RangesToString(ranges_);
+    bytes_freed += front;
+  }
+
+  // Try removing data from the back of the SourceBuffer, until we reach the
+  // most recent append position.
+  if (bytes_freed < bytes_to_free) {
+    size_t back = FreeBuffers(bytes_to_free - bytes_freed, media_time, true);
+    DVLOG(3) << __FUNCTION__ << " Removed " << back << " bytes from the back"
+             << " ranges_=" << RangesToString(ranges_);
+    bytes_freed += back;
+  }
 
   DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName() << ": After GC"
+           << " bytes_to_free=" << bytes_to_free
            << " bytes_freed=" << bytes_freed
            << " ranges_=" << RangesToString(ranges_);
+
+  return bytes_freed >= bytes_to_free;
 }
 
 size_t SourceBufferStream::FreeBuffersAfterLastAppended(
-    size_t total_bytes_to_free) {
-  DecodeTimestamp next_buffer_timestamp = GetNextBufferTimestamp();
-  if (last_appended_buffer_timestamp_ == kNoDecodeTimestamp() ||
-      next_buffer_timestamp == kNoDecodeTimestamp() ||
-      last_appended_buffer_timestamp_ >= next_buffer_timestamp) {
-    return 0;
-  }
+    size_t total_bytes_to_free, DecodeTimestamp media_time) {
+  DVLOG(4) << __FUNCTION__ << " last_appended_buffer_timestamp_="
+            << last_appended_buffer_timestamp_.InSecondsF()
+            << " media_time=" << media_time.InSecondsF();
 
   DecodeTimestamp remove_range_start = last_appended_buffer_timestamp_;
   if (last_appended_buffer_is_keyframe_)
@@ -662,18 +698,21 @@ size_t SourceBufferStream::FreeBuffersAfterLastAppended(
       remove_range_start);
   if (remove_range_start_keyframe != kNoDecodeTimestamp())
     remove_range_start = remove_range_start_keyframe;
-  if (remove_range_start >= next_buffer_timestamp)
+  if (remove_range_start >= media_time)
     return 0;
 
   DecodeTimestamp remove_range_end;
   size_t bytes_freed = GetRemovalRange(remove_range_start,
-                                       next_buffer_timestamp,
+                                       media_time,
                                        total_bytes_to_free,
                                        &remove_range_end);
   if (bytes_freed > 0) {
+    DVLOG(4) << __FUNCTION__ << " removing ["
+             << remove_range_start.ToPresentationTime().InSecondsF() << ";"
+             << remove_range_end.ToPresentationTime().InSecondsF() << "]";
     Remove(remove_range_start.ToPresentationTime(),
            remove_range_end.ToPresentationTime(),
-           next_buffer_timestamp.ToPresentationTime());
+           media_time.ToPresentationTime());
   }
 
   return bytes_freed;
@@ -706,6 +745,7 @@ size_t SourceBufferStream::GetRemovalRange(
 }
 
 size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
+                                       DecodeTimestamp media_time,
                                        bool reverse_direction) {
   TRACE_EVENT2("media", "SourceBufferStream::FreeBuffers",
                "total bytes to free", total_bytes_to_free,
@@ -725,17 +765,24 @@ size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
 
     if (reverse_direction) {
       current_range = ranges_.back();
+      DVLOG(5) << "current_range=" << RangeToString(*current_range);
       if (current_range->LastGOPContainsNextBufferPosition()) {
         DCHECK_EQ(current_range, selected_range_);
+        DVLOG(5) << "current_range contains next read position, stopping GC";
         break;
       }
+      DVLOG(5) << "Deleting GOP from back: " << RangeToString(*current_range);
       bytes_deleted = current_range->DeleteGOPFromBack(&buffers);
     } else {
       current_range = ranges_.front();
-      if (current_range->FirstGOPContainsNextBufferPosition()) {
-        DCHECK_EQ(current_range, selected_range_);
+      DVLOG(5) << "current_range=" << RangeToString(*current_range);
+      if (!current_range->FirstGOPEarlierThanMediaTime(media_time)) {
+        // We have removed all data up to the GOP that contains current playback
+        // position, we can't delete any further.
+        DVLOG(5) << "current_range contains playback position, stopping GC";
         break;
       }
+      DVLOG(4) << "Deleting GOP from front: " << RangeToString(*current_range);
       bytes_deleted = current_range->DeleteGOPFromFront(&buffers);
     }
 
@@ -744,6 +791,7 @@ size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
     if (end_timestamp == last_appended_buffer_timestamp_) {
       DCHECK(last_appended_buffer_timestamp_ != kNoDecodeTimestamp());
       DCHECK(!new_range_for_append);
+
       // Create a new range containing these buffers.
       new_range_for_append = new SourceBufferRange(
           TypeToGapPolicy(GetType()),
@@ -761,6 +809,11 @@ size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
              *range_for_next_append_ != current_range);
       delete current_range;
       reverse_direction ? ranges_.pop_back() : ranges_.pop_front();
+    }
+
+    if (reverse_direction && new_range_for_append) {
+      // We don't want to delete any further, or we'll be creating gaps
+      break;
     }
   }
 
@@ -1221,8 +1274,10 @@ void SourceBufferStream::SeekAndSetSelectedRange(
 }
 
 void SourceBufferStream::SetSelectedRange(SourceBufferRange* range) {
-  DVLOG(1) << __FUNCTION__ << " " << GetStreamTypeName()
-           << ": " << selected_range_ << " -> " << range;
+  DVLOG(1) << __FUNCTION__ << " " << GetStreamTypeName() << ": "
+           << selected_range_ << " "
+           << (selected_range_ ? RangeToString(*selected_range_) : "")
+           << " -> " << range << " " << (range ? RangeToString(*range) : "");
   if (selected_range_)
     selected_range_->ResetNextBufferPosition();
   DCHECK(!range || range->HasNextBufferPosition());
@@ -1244,6 +1299,13 @@ base::TimeDelta SourceBufferStream::GetBufferedDuration() const {
     return base::TimeDelta();
 
   return ranges_.back()->GetBufferedEndTimestamp().ToPresentationTime();
+}
+
+size_t SourceBufferStream::GetBufferedSize() const {
+  size_t ranges_size = 0;
+  for (const auto& range : ranges_)
+    ranges_size += range->size_in_bytes();
+  return ranges_size;
 }
 
 void SourceBufferStream::MarkEndOfStream() {

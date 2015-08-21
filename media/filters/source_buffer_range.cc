@@ -346,6 +346,16 @@ size_t SourceBufferRange::GetRemovalGOP(
   return bytes_removed;
 }
 
+bool SourceBufferRange::FirstGOPEarlierThanMediaTime(
+    DecodeTimestamp media_time) const {
+  if (keyframe_map_.size() == 1u)
+    return (GetEndTimestamp() < media_time);
+
+  KeyframeMap::const_iterator second_gop = keyframe_map_.begin();
+  ++second_gop;
+  return second_gop->first <= media_time;
+}
+
 bool SourceBufferRange::FirstGOPContainsNextBufferPosition() const {
   if (!HasNextBufferPosition())
     return false;

@@ -57,6 +57,12 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   void Remove(base::TimeDelta start, base::TimeDelta end,
               base::TimeDelta duration);
 
+  // If the buffer is full, attempts to try to free up space, as specified in
+  // the "Coded Frame Eviction Algorithm" in the Media Source Extensions Spec.
+  // Returns false iff buffer is still full after running eviction.
+  // https://w3c.github.io/media-source/#sourcebuffer-coded-frame-eviction
+  bool EvictCodedFrames(DecodeTimestamp media_time, size_t newDataSize);
+
   // Signal to the stream that duration has changed to |duration|.
   void OnSetDuration(base::TimeDelta duration);
 
@@ -66,6 +72,9 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // Returns the duration of the buffered data.
   // Returns base::TimeDelta() if the stream has no buffered data.
   base::TimeDelta GetBufferedDuration() const;
+
+  // Returns the size of the buffered data in bytes.
+  size_t GetBufferedSize() const;
 
   // Signal to the stream that buffers handed in through subsequent calls to
   // Append() belong to a media segment that starts at |start_timestamp|.
@@ -243,6 +252,14 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // associated with |id|.
   void Remove(const std::string& id, base::TimeDelta start,
               base::TimeDelta end);
+
+  // If the buffer is full, attempts to try to free up space, as specified in
+  // the "Coded Frame Eviction Algorithm" in the Media Source Extensions Spec.
+  // Returns false iff buffer is still full after running eviction.
+  // https://w3c.github.io/media-source/#sourcebuffer-coded-frame-eviction
+  bool EvictCodedFrames(const std::string& id,
+                        base::TimeDelta currentMediaTime,
+                        size_t newDataSize);
 
   // Returns the current presentation duration.
   double GetDuration();

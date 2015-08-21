@@ -3334,13 +3334,17 @@ TEST_F(ChunkDemuxerTest, SetMemoryLimitType) {
 
   // Set different memory limits for audio and video.
   demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 10 * kBlockSize);
-  demuxer_->SetMemoryLimits(DemuxerStream::VIDEO, 5 * kBlockSize);
+  demuxer_->SetMemoryLimits(DemuxerStream::VIDEO, 5 * kBlockSize + 1);
 
   base::TimeDelta seek_time = base::TimeDelta::FromMilliseconds(1000);
 
   // Append data at the start that can be garbage collected:
   AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 0, 10);
   AppendSingleStreamCluster(kSourceId, kVideoTrackNum, 0, 5);
+
+  // We should be right at buffer limit, should pass
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(
+      kSourceId, base::TimeDelta::FromMilliseconds(0), 0));
 
   CheckExpectedRanges(DemuxerStream::AUDIO, "{ [0,230) }");
   CheckExpectedRanges(DemuxerStream::VIDEO, "{ [0,165) }");
@@ -3353,6 +3357,9 @@ TEST_F(ChunkDemuxerTest, SetMemoryLimitType) {
                             seek_time.InMilliseconds(), 10);
   AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
                             seek_time.InMilliseconds(), 5);
+
+  // We should delete first append, and be exactly at buffer limit
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time, 0));
 
   // Verify that the old data, and nothing more, has been garbage collected.
   CheckExpectedRanges(DemuxerStream::AUDIO, "{ [1000,1230) }");
@@ -3375,31 +3382,72 @@ TEST_F(ChunkDemuxerTest, GCDuringSeek) {
                             seek_time1.InMilliseconds(), 5);
   CheckExpectedRanges(kSourceId, "{ [1000,1115) }");
 
+  // We are under memory limit, so Evict should be a no-op.
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time1, 0));
+  CheckExpectedRanges(kSourceId, "{ [1000,1115) }");
+
   // Signal that the second seek is starting.
   demuxer_->StartWaitingForSeek(seek_time2);
 
-  // Append data to satisfy the second seek. This append triggers
-  // the garbage collection logic since we set the memory limit to
-  // 5 blocks.
+  // Append data to satisfy the second seek.
   AppendSingleStreamCluster(kSourceId, kAudioTrackNum,
                             seek_time2.InMilliseconds(), 5);
+  CheckExpectedRanges(kSourceId, "{ [500,615) [1000,1115) }");
 
-  // Verify that the buffers that cover |seek_time2| do not get
-  // garbage collected.
+  // We are now over our memory usage limit. We have just seeked to |seek_time2|
+  // so data around 500ms position should be preserved, while the previous
+  // append at 1000ms should be removed.
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time2, 0));
   CheckExpectedRanges(kSourceId, "{ [500,615) }");
 
   // Complete the seek.
   demuxer_->Seek(seek_time2, NewExpectedStatusCB(PIPELINE_OK));
 
-
-  // Append more data and make sure that the blocks for |seek_time2|
-  // don't get removed.
-  //
-  // NOTE: The current GC algorithm tries to preserve the GOP at the
-  //  current position as well as the last appended GOP. This is
-  //  why there are 2 ranges in the expectations.
+  // Append more data and make sure that we preserve both the buffered range
+  // around |seek_time2|, because that's the current playback position,
+  // and the newly appended range, since this is the most recent append.
   AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 700, 5);
-  CheckExpectedRanges(kSourceId, "{ [500,592) [792,815) }");
+  EXPECT_FALSE(demuxer_->EvictCodedFrames(kSourceId, seek_time2, 0));
+  CheckExpectedRanges(kSourceId, "{ [500,615) [700,815) }");
+}
+
+TEST_F(ChunkDemuxerTest, GCKeepPlayhead) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 5 * kBlockSize);
+
+  // Append data at the start that can be garbage collected:
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, 0, 10);
+  CheckExpectedRanges(kSourceId, "{ [0,230) }");
+
+  // We expect garbage collection to fail, as we don't want to spontaneously
+  // create gaps in source buffer stream. Gaps could break playback for many
+  // clients, who don't bother to check ranges after append.
+  EXPECT_FALSE(demuxer_->EvictCodedFrames(
+      kSourceId, base::TimeDelta::FromMilliseconds(0), 0));
+  CheckExpectedRanges(kSourceId, "{ [0,230) }");
+
+  // Increase media_time a bit, this will allow some data to be collected, but
+  // we are still over memory usage limit.
+  base::TimeDelta seek_time1 = base::TimeDelta::FromMilliseconds(23*2);
+  Seek(seek_time1);
+  EXPECT_FALSE(demuxer_->EvictCodedFrames(kSourceId, seek_time1, 0));
+  CheckExpectedRanges(kSourceId, "{ [46,230) }");
+
+  base::TimeDelta seek_time2 = base::TimeDelta::FromMilliseconds(23*4);
+  Seek(seek_time2);
+  EXPECT_FALSE(demuxer_->EvictCodedFrames(kSourceId, seek_time2, 0));
+  CheckExpectedRanges(kSourceId, "{ [92,230) }");
+
+  // media_time has progressed to a point where we can collect enough data to
+  // be under memory limit, so Evict should return true.
+  base::TimeDelta seek_time3 = base::TimeDelta::FromMilliseconds(23*6);
+  Seek(seek_time3);
+  EXPECT_TRUE(demuxer_->EvictCodedFrames(kSourceId, seek_time3, 0));
+  // Strictly speaking the current playback time is 23*6==138ms, so we could
+  // release data up to 138ms, but we only release as much data as necessary
+  // to bring memory usage under the limit, so we release only up to 115ms.
+  CheckExpectedRanges(kSourceId, "{ [115,230) }");
 }
 
 TEST_F(ChunkDemuxerTest, AppendWindow_Video) {
@@ -3752,6 +3800,57 @@ TEST_F(ChunkDemuxerTest, CuesBetweenClusters) {
   AppendData(kCuesHeader, sizeof(kCuesHeader));
   AppendCluster(GenerateCluster(46, 66, 5));
   CheckExpectedRanges(kSourceId, "{ [0,115) }");
+}
+
+TEST_F(ChunkDemuxerTest, EvictCodedFramesTest) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+  demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, 10 * kBlockSize);
+  demuxer_->SetMemoryLimits(DemuxerStream::VIDEO, 15 * kBlockSize);
+  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+
+  const char* kAudioStreamInfo = "0K 40K 80K 120K 160K 200K 240K 280K";
+  const char* kVideoStreamInfo = "0K 10 20K 30 40K 50 60K 70 80K 90 100K "
+      "110 120K 130 140K";
+  // Append 8 blocks (80 bytes) of data to audio stream and 15 blocks (150
+  // bytes) to video stream.
+  AppendMuxedCluster(
+      MuxedStreamInfo(kAudioTrackNum, kAudioStreamInfo),
+      MuxedStreamInfo(kVideoTrackNum, kVideoStreamInfo));
+  CheckExpectedBuffers(audio_stream, kAudioStreamInfo);
+  CheckExpectedBuffers(video_stream, kVideoStreamInfo);
+
+  // If we want to append 80 more blocks of muxed a+v data and the current
+  // position is 0, that will fail, because EvictCodedFrames won't remove the
+  // data after the current playback position.
+  ASSERT_FALSE(demuxer_->EvictCodedFrames(kSourceId,
+                                          base::TimeDelta::FromMilliseconds(0),
+                                          80));
+  // EvictCodedFrames has failed, so data should be unchanged.
+  Seek(base::TimeDelta::FromMilliseconds(0));
+  CheckExpectedBuffers(audio_stream, kAudioStreamInfo);
+  CheckExpectedBuffers(video_stream, kVideoStreamInfo);
+
+  // But if we pretend that playback position has moved to 120ms, that allows
+  // EvictCodedFrames to garbage-collect enough data to succeed.
+  ASSERT_TRUE(demuxer_->EvictCodedFrames(kSourceId,
+                                         base::TimeDelta::FromMilliseconds(120),
+                                         80));
+
+  Seek(base::TimeDelta::FromMilliseconds(0));
+  // Audio stream had 8 buffers, video stream had 15. We told EvictCodedFrames
+  // that the new data size is 8 blocks muxed, i.e. 80 bytes. Given the current
+  // ratio of video to the total data size (15 : (8+15) ~= 0.65) the estimated
+  // sizes of video and audio data in the new 80 byte chunk are 52 bytes for
+  // video (80*0.65 = 52) and 28 bytes for audio (80 - 52).
+  // Given these numbers MSE GC will remove just one audio block (since current
+  // audio size is 80 bytes, new data is 28 bytes, we need to remove just one 10
+  // byte block to stay under 100 bytes memory limit after append
+  // 80 - 10 + 28 = 98).
+  // For video stream 150 + 52 = 202. Video limit is 150 bytes. We need to
+  // remove at least 6 blocks to stay under limit.
+  CheckExpectedBuffers(audio_stream, "40K 80K 120K 160K 200K 240K 280K");
+  CheckExpectedBuffers(video_stream, "60K 70 80K 90 100K 110 120K 130 140K");
 }
 
 }  // namespace media

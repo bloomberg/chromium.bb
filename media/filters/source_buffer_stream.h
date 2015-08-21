@@ -90,6 +90,11 @@ class MEDIA_EXPORT SourceBufferStream {
   void Remove(base::TimeDelta start, base::TimeDelta end,
               base::TimeDelta duration);
 
+  // Frees up space if the SourceBufferStream is taking up too much memory.
+  // |media_time| is current playback position.
+  bool GarbageCollectIfNeeded(DecodeTimestamp media_time,
+                              size_t newDataSize);
+
   // Changes the SourceBufferStream's state so that it will start returning
   // buffers starting from the closest keyframe before |timestamp|.
   void Seek(base::TimeDelta timestamp);
@@ -119,6 +124,9 @@ class MEDIA_EXPORT SourceBufferStream {
   // to the end timestamp of the last buffered range. If no data is buffered
   // then base::TimeDelta() is returned.
   base::TimeDelta GetBufferedDuration() const;
+
+  // Returns the size of the buffered data in bytes.
+  size_t GetBufferedSize() const;
 
   // Notifies this object that end of stream has been signalled.
   void MarkEndOfStream();
@@ -150,19 +158,20 @@ class MEDIA_EXPORT SourceBufferStream {
  private:
   friend class SourceBufferStreamTest;
 
-  // Frees up space if the SourceBufferStream is taking up too much memory.
-  void GarbageCollectIfNeeded();
-
   // Attempts to delete approximately |total_bytes_to_free| amount of data
   // |ranges_|, starting at the front of |ranges_| and moving linearly forward
   // through the buffers. Deletes starting from the back if |reverse_direction|
-  // is true. Returns the number of bytes freed.
-  size_t FreeBuffers(size_t total_bytes_to_free, bool reverse_direction);
+  // is true. |media_time| is current playback position.
+  // Returns the number of bytes freed.
+  size_t FreeBuffers(size_t total_bytes_to_free,
+                     DecodeTimestamp media_time,
+                     bool reverse_direction);
 
   // Attempts to delete approximately |total_bytes_to_free| amount of data from
   // |ranges_|, starting after the last appended buffer before the current
-  // playback position.
-  size_t FreeBuffersAfterLastAppended(size_t total_bytes_to_free);
+  // playback position |media_time|.
+  size_t FreeBuffersAfterLastAppended(size_t total_bytes_to_free,
+                                      DecodeTimestamp media_time);
 
   // Gets the removal range to secure |byte_to_free| from
   // [|start_timestamp|, |end_timestamp|).

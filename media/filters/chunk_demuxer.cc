@@ -131,6 +131,12 @@ class SourceState {
   // ChunkDemuxerStreams managed by this object.
   void Remove(TimeDelta start, TimeDelta end, TimeDelta duration);
 
+  // If the buffer is full, attempts to try to free up space, as specified in
+  // the "Coded Frame Eviction Algorithm" in the Media Source Extensions Spec.
+  // Returns false iff buffer is still full after running eviction.
+  // https://w3c.github.io/media-source/#sourcebuffer-coded-frame-eviction
+  bool EvictCodedFrames(DecodeTimestamp media_time, size_t newDataSize);
+
   // Returns true if currently parsing a media segment, or false otherwise.
   bool parsing_media_segment() const { return parsing_media_segment_; }
 
@@ -194,6 +200,12 @@ class SourceState {
                     const StreamParser::TextBufferQueueMap& text_map);
 
   void OnSourceInitDone(const StreamParser::InitParameters& params);
+
+  // EstimateVideoDataSize uses some heuristics to estimate the size of the
+  // video size in the chunk of muxed audio/video data without parsing it.
+  // This is used by EvictCodedFrames algorithm, which happens before Append
+  // (and therefore before parsing is performed) to prepare space for new data.
+  size_t EstimateVideoDataSize(size_t muxed_data_chunk_size) const;
 
   CreateDemuxerStreamCB create_demuxer_stream_cb_;
   NewTextTrackCB new_text_track_cb_;
@@ -367,6 +379,78 @@ void SourceState::Remove(TimeDelta start, TimeDelta end, TimeDelta duration) {
        itr != text_stream_map_.end(); ++itr) {
     itr->second->Remove(start, end, duration);
   }
+}
+
+size_t SourceState::EstimateVideoDataSize(size_t muxed_data_chunk_size) const {
+  DCHECK(audio_);
+  DCHECK(video_);
+
+  size_t bufferedVideoSize = video_->GetBufferedSize();
+  size_t bufferedAudioSize = audio_->GetBufferedSize();
+  if (bufferedVideoSize == 0 || bufferedAudioSize == 0) {
+    // At this point either audio or video buffer is empty, which means buffer
+    // levels are probably low anyway and we should have enough space in the
+    // buffers for appending new data, so just take a very rough guess.
+    return muxed_data_chunk_size / 2;
+  }
+
+  // We need to estimate how much audio and video data is going to be in the
+  // newly appended data chunk to make space for the new data. And we need to do
+  // that without parsing the data (which will happen later, in the Append
+  // phase). So for now we can only rely on some heuristic here. Let's assume
+  // that the proportion of the audio/video in the new data chunk is the same as
+  // the current ratio of buffered audio/video.
+  // Longer term this should go away once we further change the MSE GC algorithm
+  // to work across all streams of a SourceBuffer (see crbug.com/520704).
+  CHECK(bufferedVideoSize + bufferedAudioSize > 0);
+  // Overflow check
+  CHECK(bufferedAudioSize <
+        std::numeric_limits<size_t>::max() - bufferedVideoSize);
+  size_t estimatedVideoData = (muxed_data_chunk_size * bufferedVideoSize) /
+      (bufferedVideoSize + bufferedAudioSize);
+  return estimatedVideoData;
+}
+
+bool SourceState::EvictCodedFrames(DecodeTimestamp media_time,
+                                   size_t newDataSize) {
+  bool success = true;
+
+  DVLOG(3) << __FUNCTION__ << " media_time=" << media_time.InSecondsF()
+           << " newDataSize=" << newDataSize
+           << " bufferedVideoSize=" << (video_ ? video_->GetBufferedSize() : 0)
+           << " bufferedAudioSize=" << (audio_ ? audio_->GetBufferedSize() : 0);
+
+  size_t newAudioSize = 0;
+  size_t newVideoSize = 0;
+  if (audio_ && video_) {
+    newVideoSize = EstimateVideoDataSize(newDataSize);
+    newAudioSize = newDataSize - newVideoSize;
+  } else if (video_) {
+    newVideoSize = newDataSize;
+  } else if (audio_) {
+    newAudioSize = newDataSize;
+  }
+
+  DVLOG(3) << __FUNCTION__ << " estimated audio/video sizes: "
+           << " newVideoSize=" << newVideoSize
+           << " newAudioSize=" << newAudioSize;
+
+  if (audio_)
+    success = audio_->EvictCodedFrames(media_time, newAudioSize) && success;
+
+  if (video_)
+    success = video_->EvictCodedFrames(media_time, newVideoSize) && success;
+
+  for (TextStreamMap::iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    success = itr->second->EvictCodedFrames(media_time, 0) && success;
+  }
+
+  DVLOG(3) << __FUNCTION__ << " result=" << success
+           << " bufferedVideoSize=" << (video_ ? video_->GetBufferedSize() : 0)
+           << " bufferedAudioSize=" << (audio_ ? audio_->GetBufferedSize() : 0);
+
+  return success;
 }
 
 Ranges<TimeDelta> SourceState::GetBufferedRanges(TimeDelta duration,
@@ -879,6 +963,12 @@ void ChunkDemuxerStream::Remove(TimeDelta start, TimeDelta end,
   stream_->Remove(start, end, duration);
 }
 
+bool ChunkDemuxerStream::EvictCodedFrames(DecodeTimestamp media_time,
+                                          size_t newDataSize) {
+  base::AutoLock auto_lock(lock_);
+  return stream_->GarbageCollectIfNeeded(media_time, newDataSize);
+}
+
 void ChunkDemuxerStream::OnSetDuration(TimeDelta duration) {
   base::AutoLock auto_lock(lock_);
   stream_->OnSetDuration(duration);
@@ -913,6 +1003,10 @@ Ranges<TimeDelta> ChunkDemuxerStream::GetBufferedRanges(
 
 TimeDelta ChunkDemuxerStream::GetBufferedDuration() const {
   return stream_->GetBufferedDuration();
+}
+
+size_t ChunkDemuxerStream::GetBufferedSize() const {
+  return stream_->GetBufferedSize();
 }
 
 void ChunkDemuxerStream::OnNewMediaSegment(DecodeTimestamp start_timestamp) {
@@ -1319,6 +1413,29 @@ Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges(const std::string& id) const {
 
   DCHECK(itr != source_state_map_.end());
   return itr->second->GetBufferedRanges(duration_, state_ == ENDED);
+}
+
+bool ChunkDemuxer::EvictCodedFrames(const std::string& id,
+                                    base::TimeDelta currentMediaTime,
+                                    size_t newDataSize) {
+  DVLOG(1) << __FUNCTION__ << "(" << id << ")"
+           << " media_time=" << currentMediaTime.InSecondsF()
+           << " newDataSize=" << newDataSize;
+  base::AutoLock auto_lock(lock_);
+
+  // Note: The direct conversion from PTS to DTS is safe here, since we don't
+  // need to know currentTime precisely for GC. GC only needs to know which GOP
+  // currentTime points to.
+  DecodeTimestamp media_time_dts =
+      DecodeTimestamp::FromPresentationTime(currentMediaTime);
+
+  DCHECK(!id.empty());
+  SourceStateMap::const_iterator itr = source_state_map_.find(id);
+  if (itr == source_state_map_.end()) {
+    LOG(WARNING) << __FUNCTION__ << " stream " << id << " not found";
+    return false;
+  }
+  return itr->second->EvictCodedFrames(media_time_dts, newDataSize);
 }
 
 void ChunkDemuxer::AppendData(

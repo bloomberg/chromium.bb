@@ -124,6 +124,8 @@ class SourceBufferRange {
       DecodeTimestamp start_timestamp, DecodeTimestamp end_timestamp,
       size_t bytes_to_free, DecodeTimestamp* end_removal_timestamp);
 
+  bool FirstGOPEarlierThanMediaTime(DecodeTimestamp media_time) const;
+
   // Indicates whether the GOP at the beginning or end of the range contains the
   // next buffer position.
   bool FirstGOPContainsNextBufferPosition() const;
