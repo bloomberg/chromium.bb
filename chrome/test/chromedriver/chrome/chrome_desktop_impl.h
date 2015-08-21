@@ -57,10 +57,6 @@ class ChromeDesktopImpl : public ChromeImpl {
 
   const base::CommandLine& command() const;
 
-  Status WaitForNewAppWindow(const base::TimeDelta& timeout,
-                             const std::string& app_id,
-                             std::string* web_view_id);
-
  private:
   base::Process process_;
   base::CommandLine command_;

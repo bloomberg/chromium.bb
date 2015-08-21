@@ -195,40 +195,6 @@ Status InitSessionHelper(
   return CheckSessionCreated(session);
 }
 
-Status SwitchToWebView(Session* session, const std::string& web_view_id) {
-  if (session->overridden_geoposition) {
-    WebView* web_view;
-    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
-    if (status.IsError())
-      return status;
-    status = web_view->ConnectIfNecessary();
-    if (status.IsError())
-      return status;
-    status = web_view->OverrideGeolocation(*session->overridden_geoposition);
-    if (status.IsError())
-      return status;
-  }
-
-  if (session->overridden_network_conditions) {
-    WebView* web_view;
-    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
-    if (status.IsError())
-      return status;
-    status = web_view->ConnectIfNecessary();
-    if (status.IsError())
-      return status;
-    status = web_view->OverrideNetworkConditions(
-        *session->overridden_network_conditions);
-    if (status.IsError())
-      return status;
-  }
-
-  session->window = web_view_id;
-  session->SwitchToTopFrame();
-  session->mouse_position = WebPoint(0, 0);
-  return Status(kOk);
-}
-
 }  // namespace
 
 Status ExecuteInitSession(
@@ -297,17 +263,7 @@ Status ExecuteLaunchApp(
   if (status.IsError())
     return status;
 
-  status = extension->LaunchApp(id);
-  if (status.IsError())
-    return status;
-
-  std::string web_view_id;
-  base::TimeDelta timeout = base::TimeDelta::FromSeconds(60);
-  status = desktop->WaitForNewAppWindow(timeout, id, &web_view_id);
-  if (status.IsError())
-    return status;
-
-  return SwitchToWebView(session, web_view_id);
+  return extension->LaunchApp(id);
 }
 
 Status ExecuteClose(
@@ -413,7 +369,38 @@ Status ExecuteSwitchToWindow(
 
   if (!found)
     return Status(kNoSuchWindow);
-  return SwitchToWebView(session, web_view_id);
+
+  if (session->overridden_geoposition) {
+    WebView* web_view;
+    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
+    if (status.IsError())
+      return status;
+    status = web_view->ConnectIfNecessary();
+    if (status.IsError())
+      return status;
+    status = web_view->OverrideGeolocation(*session->overridden_geoposition);
+    if (status.IsError())
+      return status;
+  }
+
+  if (session->overridden_network_conditions) {
+    WebView* web_view;
+    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
+    if (status.IsError())
+      return status;
+    status = web_view->ConnectIfNecessary();
+    if (status.IsError())
+      return status;
+    status = web_view->OverrideNetworkConditions(
+        *session->overridden_network_conditions);
+    if (status.IsError())
+      return status;
+  }
+
+  session->window = web_view_id;
+  session->SwitchToTopFrame();
+  session->mouse_position = WebPoint(0, 0);
+  return Status(kOk);
 }
 
 Status ExecuteSetTimeout(

@@ -1325,9 +1325,7 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     self.assertEqual(1, len(old_handles))
     driver.LaunchApp('gegjcdcfeiojglhifpmibkadodekakpc')
     new_window_handle = self.WaitForNewWindow(driver, old_handles)
-    current_window_handle = driver.GetCurrentWindowHandle()
-    self.assertEqual(new_window_handle, current_window_handle,
-        "focus should switch to the window that the app launches in")
+    driver.SwitchToWindow(new_window_handle)
     body_element = driver.FindElement('tag name', 'body')
     self.assertEqual('It works!', body_element.GetText())
 

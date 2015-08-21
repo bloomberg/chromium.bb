@@ -4,7 +4,6 @@
 
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
@@ -58,13 +57,6 @@ bool KillProcess(const base::Process& process, bool kill_gracefully) {
         base::TERMINATION_STATUS_STILL_RUNNING;
   }
   return true;
-}
-
-void GetWebViewIdForAppWindow(const std::string& url_prefix,
-                              std::string* web_view_id,
-                              const WebViewInfo& view) {
-  if (view.type == WebViewInfo::kApp && view.url.find(url_prefix) == 0)
-    *web_view_id = view.id;
 }
 
 }  // namespace
@@ -192,26 +184,4 @@ Status ChromeDesktopImpl::QuitImpl() {
 
 const base::CommandLine& ChromeDesktopImpl::command() const {
   return command_;
-}
-
-Status ChromeDesktopImpl::WaitForNewAppWindow(const base::TimeDelta& timeout,
-                                              const std::string& app_id,
-                                              std::string* web_view_id) {
-  base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
-  std::string url_prefix = "chrome-extension://" + app_id;
-  std::string web_view_id_tmp;
-  std::list<std::string> web_view_ids;
-  WebViewCallback callback =
-      base::Bind(&GetWebViewIdForAppWindow, url_prefix, &web_view_id_tmp);
-  while (base::TimeTicks::Now() < deadline) {
-    Status status = UpdateWebViewIds(&web_view_ids, callback);
-    if (status.IsError())
-      return status;
-    if (!web_view_id_tmp.empty()) {
-      *web_view_id = web_view_id_tmp;
-      return Status(kOk);
-    }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
-  }
-  return Status(kUnknownError, "timed out waiting for app window to appear");
 }
