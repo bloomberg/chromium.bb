@@ -41,7 +41,7 @@ def run_apptest(config, shell, args, apptest, isolate):
 
   fixtures = _get_fixtures(config, shell, args, apptest)
   fixtures = [f for f in fixtures if not f.startswith('DISABLED_')]
-  failed = []
+  failed = [apptest] if not fixtures else []
   for fixture in fixtures:
     arguments = args + ['--gtest_filter=%s' % fixture]
     failures = _run_apptest_with_retry(config, shell, arguments, apptest)[1]

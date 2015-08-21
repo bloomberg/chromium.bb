@@ -67,11 +67,12 @@ if config.target_os != config.OS_ANDROID:
                '--enable-html-viewer-test-interface',
                '--override-use-gl-with-osmesa-for-tests']
     },
-    {
-      'test': 'mojo:mandoline_browser_apptests',
-      'type': 'gtest_isolated',
-      'args': ['--use-headless-config']
-    },
+    # TODO(ben): These tests are disabled pending mandoline:browser refactoring.
+    #{
+    #  'test': 'mojo:mandoline_browser_apptests',
+    #  'type': 'gtest_isolated',
+    #  'args': ['--use-headless-config']
+    #},
     {
       'test': 'mojo:mandoline_frame_apptests',
       'type': 'gtest_isolated',
