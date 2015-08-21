@@ -193,12 +193,6 @@ def _Main(options, args, extra_env):
 
   xvfb_path = os.path.join(os.path.dirname(sys.argv[0]), '..', '..',
                            'third_party', 'xvfb', platform.architecture()[0])
-  special_xvfb_dir = None
-  fp_chromeos = options.factory_properties.get('chromeos', None)
-  if (fp_chromeos or
-      slave_utils.GypFlagIsOn(options, 'use_aura') or
-      slave_utils.GypFlagIsOn(options, 'chromeos')):
-    special_xvfb_dir = xvfb_path
 
   build_dir = os.path.normpath(os.path.abspath(options.build_dir))
   bin_dir = os.path.join(build_dir, options.target)
@@ -269,8 +263,7 @@ def _Main(options, args, extra_env):
       xvfb.StartVirtualX(
           slave_name, bin_dir,
           with_wm=(options.factory_properties.get('window_manager', 'True') ==
-                   'True'),
-          server_dir=special_xvfb_dir)
+                   'True'))
 
     if _UsingGtestJson(options):
       json_file_name = log_processor.PrepareJSONFile(

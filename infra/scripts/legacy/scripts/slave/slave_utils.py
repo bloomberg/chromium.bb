@@ -55,24 +55,6 @@ def SlaveBaseDir(chrome_dir):
   return result
 
 
-def GypFlagIsOn(options, flag):
-  value = GetGypFlag(options, flag, False)
-  # The values we understand as Off are False and a text zero.
-  if value is False or value == '0':
-    return False
-  return True
-
-
-def GetGypFlag(options, flag, default=None):
-  gclient = options.factory_properties.get('gclient_env', {})
-  defines = gclient.get('GYP_DEFINES', '')
-  gypflags = dict([(a, c if b == '=' else True) for (a, b, c) in
-                   [x.partition('=') for x in defines.split(' ')]])
-  if flag not in gypflags:
-    return default
-  return gypflags[flag]
-
-
 def LogAndRemoveFiles(temp_dir, regex_pattern):
   """Removes files in |temp_dir| that match |regex_pattern|.
   This function prints out the name of each directory or filename before
