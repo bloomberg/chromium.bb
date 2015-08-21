@@ -21,6 +21,24 @@
 // The port the quic server will listen on.
 int32 FLAGS_port = 6121;
 
+// TODO(rtenneti): Enable the following code when Chromium has a working
+// ProofSourceChromium.
+#if 0
+// The directory containing certificate files.
+char* FLAGS_certificate_dir = nullptr;
+// The name of the file containing the intermediate certificate.
+char* FLAGS_intermediate_certificate_name = "intermediate.crt";
+// The name of the file containing the leaf certificate.
+char* FLAGS_leaf_certificate_name = "test.example.com";
+bool FLAGS_disable_permission_validation = true;
+
+ProofSource* CreateProofSource(const string& base_directory,
+                               const string& intermediate_cert_name,
+                               const string& leaf_cert_name) {
+  return new net::ProofSourceChromium();
+}
+#endif
+
 int main(int argc, char *argv[]) {
   base::AtExitManager exit_manager;
   base::MessageLoopForIO message_loop;
@@ -63,6 +81,15 @@ int main(int argc, char *argv[]) {
   net::QuicConfig config;
   net::tools::QuicServer server(config, net::QuicSupportedVersions());
   server.SetStrikeRegisterNoStartupPeriod();
+
+  // TODO(rtenneti): Enable the following code when Chromium has a working
+  // ProofSourceChromium.
+  // if (!FLAGS_certificate_dir.empty()) {
+  //    server.SetProofSource(CreateProofSource(
+  //        FLAGS_certificate_dir,
+  //        FLAGS_intermediate_certificate_name,
+  //        FLAGS_leaf_certificate_name));
+  // }
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {

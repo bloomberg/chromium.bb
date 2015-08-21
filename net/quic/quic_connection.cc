@@ -320,7 +320,9 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       mtu_probe_count_(0),
       packets_between_mtu_probes_(kPacketsBetweenMtuProbesBase),
       next_mtu_probe_at_(kPacketsBetweenMtuProbesBase),
-      largest_received_packet_size_(0) {
+      largest_received_packet_size_(0),
+      goaway_sent_(false),
+      goaway_received_(false) {
   DVLOG(1) << ENDPOINT << "Created connection with connection_id: "
            << connection_id;
   framer_.set_visitor(this);
@@ -936,6 +938,8 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   DVLOG(1) << ENDPOINT << "Go away received with error "
            << QuicUtils::ErrorToString(frame.error_code)
            << " and reason:" << frame.reason_phrase;
+
+  goaway_received_ = true;
   if (FLAGS_quic_process_frames_inline) {
     visitor_->OnGoAway(frame);
     should_last_packet_instigate_acks_ = true;
@@ -2088,6 +2092,11 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
 void QuicConnection::SendGoAway(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const string& reason) {
+  if (goaway_sent_) {
+    return;
+  }
+  goaway_sent_ = true;
+
   DVLOG(1) << ENDPOINT << "Going away with error "
            << QuicUtils::ErrorToString(error)
            << " (" << error << ")";

@@ -304,14 +304,6 @@ SpdyHeaderBlock SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
     PopulateSpdy4RequestHeaderBlock(request_headers, scheme, host_and_port,
                                     path, &block);
   }
-  if (!FLAGS_spdy_strip_invalid_headers) {
-    if (block.find("host") != block.end()) {
-      block.erase(block.find("host"));
-    }
-    if (block.find("connection") != block.end()) {
-      block.erase(block.find("connection"));
-    }
-  }
   return block;
 }
 

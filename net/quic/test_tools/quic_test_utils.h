@@ -397,6 +397,12 @@ class MockConnection : public QuicConnection {
     return false;
   }
 
+  void ReallySendGoAway(QuicErrorCode error,
+                        QuicStreamId last_good_stream_id,
+                        const std::string& reason) {
+    QuicConnection::SendGoAway(error, last_good_stream_id, reason);
+  }
+
  private:
   scoped_ptr<QuicConnectionHelperInterface> helper_;
 

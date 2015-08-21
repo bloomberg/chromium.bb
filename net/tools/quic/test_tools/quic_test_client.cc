@@ -61,13 +61,16 @@ class RecordingProofVerifier : public ProofVerifier {
     for (unsigned i = 0; i < certs.size(); i++) {
       cert_pieces[i] = StringPiece(certs[i]);
     }
-    scoped_refptr<net::X509Certificate> cert =
-        net::X509Certificate::CreateFromDERCertChain(cert_pieces);
-    if (!cert.get()) {
-      return QUIC_FAILURE;
-    }
-
-    common_name_ = cert->subject().GetDisplayName();
+    // TODO(rtenneti): Fix after adding support for real certs. Currently,
+    // cert_pieces are "leaf" and "intermediate" and CreateFromDERCertChain
+    // fails to return cert from these cert_pieces.
+    //    scoped_refptr<net::X509Certificate> cert =
+    //        net::X509Certificate::CreateFromDERCertChain(cert_pieces);
+    //    if (!cert.get()) {
+    //      return QUIC_FAILURE;
+    //    }
+    //
+    //    common_name_ = cert->subject().GetDisplayName();
     return QUIC_SUCCESS;
   }
 
@@ -262,8 +265,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
   if (headers != nullptr) {
     SpdyHeaderBlock spdy_headers = SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
         *headers, stream->version());
-    if (FLAGS_spdy_strip_invalid_headers &&
-        headers->HasHeader("transfer-encoding")) {
+    if (headers->HasHeader("transfer-encoding")) {
       // We have tests which rely on sending a non-standards-compliant
       // T-E header.
       string encoding;

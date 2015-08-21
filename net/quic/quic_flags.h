@@ -26,9 +26,9 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_allow_ip_migration;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_conservative_receive_buffer;
 NET_EXPORT_PRIVATE extern bool FLAGS_increase_time_wait_list;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_max_cwnd;
-NET_EXPORT_PRIVATE extern bool FLAGS_spdy_strip_invalid_headers;
 NET_EXPORT_PRIVATE extern bool FLAGS_exact_stream_id_delta;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_limit_pacing_burst;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_handshake_confirmation;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_truncated_ack_handling;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

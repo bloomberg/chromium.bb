@@ -320,7 +320,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
     int port = endpoint.port();
     if (goaway_received) {
       QuicGoAwayFrame goaway(QUIC_NO_ERROR, 1, "");
-      session->OnGoAway(goaway);
+      session->connection()->OnGoAwayFrame(goaway);
     }
 
     factory_.OnSessionClosed(session);

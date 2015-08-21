@@ -637,14 +637,17 @@ SerializedPacket::SerializedPacket(
     QuicSequenceNumberLength sequence_number_length,
     QuicEncryptedPacket* packet,
     QuicPacketEntropyHash entropy_hash,
-    RetransmittableFrames* retransmittable_frames)
+    RetransmittableFrames* retransmittable_frames,
+    bool has_ack,
+    bool has_stop_waiting)
     : packet(packet),
       retransmittable_frames(retransmittable_frames),
       sequence_number(sequence_number),
       sequence_number_length(sequence_number_length),
       entropy_hash(entropy_hash),
-      is_fec_packet(false) {
-}
+      is_fec_packet(false),
+      has_ack(has_ack),
+      has_stop_waiting(has_stop_waiting) {}
 
 SerializedPacket::~SerializedPacket() {}
 

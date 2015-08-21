@@ -494,13 +494,21 @@ SerializedPacket QuicPacketCreator::SerializePacket(
     queued_retransmittable_frames_->set_needs_padding(needs_padding_);
   }
 
+  bool has_ack = false;
+  bool has_stop_waiting = false;
+  for (const QuicFrame& frame : queued_frames_) {
+    has_ack |= frame.type == ACK_FRAME;
+    has_stop_waiting |= frame.type == STOP_WAITING_FRAME;
+  }
+
   packet_size_ = 0;
   queued_frames_.clear();
   needs_padding_ = false;
   return SerializedPacket(header.packet_sequence_number,
                           header.public_header.sequence_number_length,
                           encrypted, QuicFramer::GetPacketEntropyHash(header),
-                          queued_retransmittable_frames_.release());
+                          queued_retransmittable_frames_.release(), has_ack,
+                          has_stop_waiting);
 }
 
 SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
@@ -534,7 +542,7 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
   SerializedPacket serialized(
       header.packet_sequence_number,
       header.public_header.sequence_number_length, encrypted,
-      QuicFramer::GetPacketEntropyHash(header), nullptr);
+      QuicFramer::GetPacketEntropyHash(header), nullptr, false, false);
   serialized.is_fec_packet = true;
   return serialized;
 }
@@ -555,7 +563,8 @@ QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
 }
 
 SerializedPacket QuicPacketCreator::NoPacket() {
-  return SerializedPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0, nullptr);
+  return SerializedPacket(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0, nullptr,
+                          false, false);
 }
 
 void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,

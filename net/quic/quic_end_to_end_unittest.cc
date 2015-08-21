@@ -137,9 +137,9 @@ class QuicEndToEndTest : public PlatformTest {
     server_config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
     server_thread_.reset(new ServerThread(
-         new QuicServer(server_config_, QuicSupportedVersions()),
-         server_address_,
-         strike_register_no_startup_period_));
+        new QuicServer(server_config_, QuicSupportedVersions()),
+        /*is_secure=*/true, server_address_,
+        strike_register_no_startup_period_));
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());

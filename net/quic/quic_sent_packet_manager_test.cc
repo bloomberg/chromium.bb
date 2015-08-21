@@ -187,13 +187,13 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
           QuicFrame(new QuicStreamFrame(kStreamId, false, 0, StringPiece())));
     }
     return SerializedPacket(sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
-                            packets_.back(), 0u, frames);
+                            packets_.back(), 0u, frames, false, false);
   }
 
   SerializedPacket CreateFecPacket(QuicPacketSequenceNumber sequence_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     SerializedPacket serialized(sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
-                                packets_.back(), 0u, nullptr);
+                                packets_.back(), 0u, nullptr, false, false);
     serialized.is_fec_packet = true;
     return serialized;
   }
@@ -549,6 +549,8 @@ TEST_F(QuicSentPacketManagerTest, MarkLostThenReviveAndDontRetransmitPacket) {
 }
 
 TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_disable_truncated_ack_handling,
+                              false);
   SendDataPacket(1);
   RetransmitAndSendPacket(1, 2);
   RetransmitAndSendPacket(2, 3);

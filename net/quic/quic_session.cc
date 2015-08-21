@@ -114,8 +114,6 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
                        kMinimumFlowControlSendWindow,
                        config_.GetInitialSessionFlowControlWindowToSend(),
                        false),
-      goaway_received_(false),
-      goaway_sent_(false),
       has_pending_handshake_(false) {
 }
 
@@ -185,7 +183,6 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
 
 void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
   DCHECK(frame.last_good_stream_id < next_stream_id_);
-  goaway_received_ = true;
 }
 
 void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
@@ -338,10 +335,10 @@ void QuicSession::SendRstStream(QuicStreamId id,
 }
 
 void QuicSession::SendGoAway(QuicErrorCode error_code, const string& reason) {
-  if (goaway_sent_) {
+  if (goaway_sent()) {
     return;
   }
-  goaway_sent_ = true;
+
   connection_->SendGoAway(error_code, largest_peer_created_stream_id_, reason);
 }
 
@@ -666,6 +663,14 @@ ReliableQuicStream* QuicSession::GetIncomingDynamicStream(
 void QuicSession::set_max_open_streams(size_t max_open_streams) {
   DVLOG(1) << "Setting max_open_streams_ to " << max_open_streams;
   max_open_streams_ = max_open_streams;
+}
+
+bool QuicSession::goaway_sent() const {
+  return connection_->goaway_sent();
+}
+
+bool QuicSession::goaway_received() const {
+  return connection_->goaway_received();
 }
 
 bool QuicSession::IsClosedStream(QuicStreamId id) {

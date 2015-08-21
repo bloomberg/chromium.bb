@@ -203,6 +203,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   QuicPacketCount EstimateMaxPacketsInFlight(
       QuicByteCount max_packet_length) const;
 
+  // Returns the size of the current congestion window size in bytes.
+  QuicByteCount GetCongestionWindowInBytes() const;
+
   // Returns the size of the slow start congestion window in nume of 1460 byte
   // TCP segments, aka ssthresh.  Some send algorithms do not define a slow
   // start threshold and will return 0.

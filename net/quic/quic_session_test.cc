@@ -578,8 +578,12 @@ TEST_P(QuicSessionTestServer, OnCanWriteLimitsNumWritesIfFlowControlBlocked) {
 }
 
 TEST_P(QuicSessionTestServer, SendGoAway) {
-  EXPECT_CALL(*connection_, SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId,
-                                       "Going Away."));
+  MockPacketWriter* writer = static_cast<MockPacketWriter*>(
+      QuicConnectionPeer::GetWriter(session_.connection()));
+  EXPECT_CALL(*writer, WritePacket(_, _, _, _))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
+  EXPECT_CALL(*connection_, SendGoAway(_, _, _))
+      .WillOnce(Invoke(connection_, &MockConnection::ReallySendGoAway));
   session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
   EXPECT_TRUE(session_.goaway_sent());
 
@@ -588,14 +592,6 @@ TEST_P(QuicSessionTestServer, SendGoAway) {
               SendRstStream(kTestStreamId, QUIC_STREAM_PEER_GOING_AWAY, 0))
       .Times(0);
   EXPECT_TRUE(session_.GetIncomingDynamicStream(kTestStreamId));
-}
-
-TEST_P(QuicSessionTestServer, DoNotSendGoAwayTwice) {
-  EXPECT_CALL(*connection_, SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId,
-                                       "Going Away.")).Times(1);
-  session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
-  EXPECT_TRUE(session_.goaway_sent());
-  session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
 }
 
 TEST_P(QuicSessionTestServer, IncreasedTimeoutAfterCryptoHandshake) {

@@ -1044,7 +1044,9 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
                    QuicSequenceNumberLength sequence_number_length,
                    QuicEncryptedPacket* packet,
                    QuicPacketEntropyHash entropy_hash,
-                   RetransmittableFrames* retransmittable_frames);
+                   RetransmittableFrames* retransmittable_frames,
+                   bool has_ack,
+                   bool has_stop_waiting);
   ~SerializedPacket();
 
   QuicEncryptedPacket* packet;
@@ -1053,6 +1055,8 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   QuicSequenceNumberLength sequence_number_length;
   QuicPacketEntropyHash entropy_hash;
   bool is_fec_packet;
+  bool has_ack;
+  bool has_stop_waiting;
 
   // Optional notifiers which will be informed when this packet has been ACKed.
   std::list<QuicAckNotifier*> notifiers;

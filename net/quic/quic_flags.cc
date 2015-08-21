@@ -71,9 +71,6 @@ bool FLAGS_increase_time_wait_list = true;
 // Limits QUIC's max CWND to 200 packets.
 bool FLAGS_quic_limit_max_cwnd = true;
 
-// If true, don't serialize invalid HTTP headers when converting HTTP to SPDY.
-bool FLAGS_spdy_strip_invalid_headers = true;
-
 // If true, instead of enforcing a fixed limit of 200 between the last
 // client-created stream ID and the next one, calculate the difference based on
 // get_max_open_streams().
@@ -87,3 +84,7 @@ bool FLAGS_quic_limit_pacing_burst = true;
 // disabling 0-rtt handshakes.
 // TODO(rtenneti): Enable this flag after fixing tests.
 bool FLAGS_quic_require_handshake_confirmation = false;
+
+// Disables special treatment of truncated acks, since older retransmissions are
+// proactively discarded in QUIC.
+bool FLAGS_quic_disable_truncated_ack_handling = true;

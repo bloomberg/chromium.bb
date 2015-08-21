@@ -186,9 +186,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // connection, or in a write-blocked stream.
   bool HasDataToWrite() const;
 
-  bool goaway_received() const { return goaway_received_; }
+  bool goaway_sent() const;
 
-  bool goaway_sent() const { return goaway_sent_; }
+  bool goaway_received() const;
 
   QuicErrorCode error() const { return error_; }
 
@@ -343,11 +343,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Used for connection-level flow control.
   QuicFlowController flow_controller_;
-
-  // Whether a GoAway has been received.
-  bool goaway_received_;
-  // Whether a GoAway has been sent.
-  bool goaway_sent_;
 
   // Indicate if there is pending data for the crypto stream.
   bool has_pending_handshake_;

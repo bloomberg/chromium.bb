@@ -18,6 +18,7 @@ namespace test {
 class ServerThread : public base::SimpleThread {
  public:
   ServerThread(QuicServer* server,
+               bool is_secure,
                const IPEndPoint& address,
                bool strike_register_no_startup_period);
 

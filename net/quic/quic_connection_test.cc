@@ -425,7 +425,9 @@ class TestConnection : public QuicConnection {
                   QuicPacketSequenceNumber sequence_number,
                   QuicPacket* packet,
                   QuicPacketEntropyHash entropy_hash,
-                  HasRetransmittableData retransmittable) {
+                  HasRetransmittableData retransmittable,
+                  bool has_ack,
+                  bool has_pending_frames) {
     RetransmittableFrames* retransmittable_frames =
         retransmittable == HAS_RETRANSMITTABLE_DATA
             ? new RetransmittableFrames(ENCRYPTION_NONE)
@@ -435,9 +437,9 @@ class TestConnection : public QuicConnection {
         QuicConnectionPeer::GetFramer(this)->EncryptPayload(
             ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize);
     delete packet;
-    OnSerializedPacket(SerializedPacket(sequence_number,
-                                        PACKET_6BYTE_SEQUENCE_NUMBER, encrypted,
-                                        entropy_hash, retransmittable_frames));
+    OnSerializedPacket(SerializedPacket(
+        sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER, encrypted, entropy_hash,
+        retransmittable_frames, has_ack, has_pending_frames));
   }
 
   QuicConsumedData SendStreamDataWithString(
@@ -3524,8 +3526,8 @@ TEST_P(QuicConnectionTest, SendScheduler) {
   // Test that if we send a packet without delay, it is not queued.
   QuicPacket* packet = ConstructDataPacket(1, 0, !kEntropyFlag);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
-  connection_.SendPacket(
-      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+  connection_.SendPacket(ENCRYPTION_NONE, 1, packet, kTestEntropyHash,
+                         HAS_RETRANSMITTABLE_DATA, false, false);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
 }
 
@@ -3533,8 +3535,8 @@ TEST_P(QuicConnectionTest, SendSchedulerEAGAIN) {
   QuicPacket* packet = ConstructDataPacket(1, 0, !kEntropyFlag);
   BlockOnNextWrite();
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
-  connection_.SendPacket(
-      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+  connection_.SendPacket(ENCRYPTION_NONE, 1, packet, kTestEntropyHash,
+                         HAS_RETRANSMITTABLE_DATA, false, false);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 }
 
@@ -3839,8 +3841,8 @@ TEST_P(QuicConnectionTest, SendWhenDisconnected) {
   EXPECT_FALSE(connection_.CanWriteStreamData());
   QuicPacket* packet = ConstructDataPacket(1, 0, !kEntropyFlag);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
-  connection_.SendPacket(
-      ENCRYPTION_NONE, 1, packet, kTestEntropyHash, HAS_RETRANSMITTABLE_DATA);
+  connection_.SendPacket(ENCRYPTION_NONE, 1, packet, kTestEntropyHash,
+                         HAS_RETRANSMITTABLE_DATA, false, false);
 }
 
 TEST_P(QuicConnectionTest, PublicReset) {
@@ -4678,6 +4680,15 @@ TEST_P(QuicConnectionTest, FecRTTMultiplierReceivedConnectionOption) {
   // New RTT multiplier is half of the old RTT multiplier.
   EXPECT_EQ(rtt_multiplier_for_fec_timeout,
             generator_->rtt_multiplier_for_fec_timeout() * 2);
+}
+
+TEST_P(QuicConnectionTest, DoNotSendGoAwayTwice) {
+  EXPECT_FALSE(connection_.goaway_sent());
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  connection_.SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId, "Going Away.");
+  EXPECT_TRUE(connection_.goaway_sent());
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
+  connection_.SendGoAway(QUIC_PEER_GOING_AWAY, kHeadersStreamId, "Going Away.");
 }
 
 }  // namespace

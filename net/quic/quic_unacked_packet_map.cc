@@ -88,8 +88,13 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
     QuicPacketSequenceNumber new_sequence_number,
     TransmissionType transmission_type,
     TransmissionInfo* info) {
-  DCHECK_GE(old_sequence_number, least_unacked_);
-  DCHECK_LT(old_sequence_number, least_unacked_ + unacked_packets_.size());
+  if (old_sequence_number < least_unacked_ ||
+      old_sequence_number > largest_sent_packet_) {
+    LOG(DFATAL) << "Old TransmissionInfo no longer exists for:"
+                << old_sequence_number << " least_unacked:" << least_unacked_
+                << " largest_sent:" << largest_sent_packet_;
+    return;
+  }
   DCHECK_GE(new_sequence_number, least_unacked_ + unacked_packets_.size());
   DCHECK_NE(NOT_RETRANSMISSION, transmission_type);
 
@@ -152,7 +157,11 @@ void QuicUnackedPacketMap::ClearAllPreviousRetransmissions() {
         LOG(DFATAL) << "all_transmissions must be nullptr or have multiple "
                     << "elements.  size:" << info->all_transmissions->size();
         delete info->all_transmissions;
+        info->all_transmissions = nullptr;
       } else {
+        LOG_IF(DFATAL, info->all_transmissions->front() != least_unacked_)
+            << "The first element of all transmissions should be least unacked:"
+            << least_unacked_ << " but is:" << info->all_transmissions->front();
         info->all_transmissions->pop_front();
         if (info->all_transmissions->size() == 1) {
           // Set the newer transmission's 'all_transmissions' entry to nullptr.
@@ -225,14 +234,15 @@ void QuicUnackedPacketMap::RemoveAckability(TransmissionInfo* info) {
 
 void QuicUnackedPacketMap::MaybeRemoveRetransmittableFrames(
     TransmissionInfo* transmission_info) {
-  if (transmission_info->retransmittable_frames != nullptr) {
-    if (transmission_info->retransmittable_frames->HasCryptoHandshake()
-            == IS_HANDSHAKE) {
-      --pending_crypto_packet_count_;
-    }
-    delete transmission_info->retransmittable_frames;
-    transmission_info->retransmittable_frames = nullptr;
+  if (transmission_info->retransmittable_frames == nullptr) {
+    return;
   }
+  if (transmission_info->retransmittable_frames->HasCryptoHandshake() ==
+      IS_HANDSHAKE) {
+    --pending_crypto_packet_count_;
+  }
+  delete transmission_info->retransmittable_frames;
+  transmission_info->retransmittable_frames = nullptr;
 }
 
 void QuicUnackedPacketMap::IncreaseLargestObserved(
@@ -299,7 +309,7 @@ void QuicUnackedPacketMap::CancelRetransmissionsForStream(
   for (UnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++sequence_number) {
     RetransmittableFrames* retransmittable_frames = it->retransmittable_frames;
-    if (!retransmittable_frames) {
+    if (retransmittable_frames == nullptr) {
       continue;
     }
     retransmittable_frames->RemoveFramesForStream(stream_id);

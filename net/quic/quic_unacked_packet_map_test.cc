@@ -34,9 +34,9 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
   SerializedPacket CreateRetransmittablePacket(
       QuicPacketSequenceNumber sequence_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
-                            packets_.back(), 0,
-                            new RetransmittableFrames(ENCRYPTION_NONE));
+    return SerializedPacket(
+        sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER, packets_.back(), 0,
+        new RetransmittableFrames(ENCRYPTION_NONE), false, false);
   }
 
   SerializedPacket CreateRetransmittablePacketForStream(
@@ -48,14 +48,14 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
     frame->stream_id = stream_id;
     frames->AddFrame(QuicFrame(frame));
     return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
-                            packets_.back(), 0, frames);
+                            packets_.back(), 0, frames, false, false);
   }
 
   SerializedPacket CreateNonRetransmittablePacket(
       QuicPacketSequenceNumber sequence_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
-                            packets_.back(), 0, nullptr);
+                            packets_.back(), 0, nullptr, false, false);
   }
 
   void VerifyInFlightPackets(QuicPacketSequenceNumber* packets,

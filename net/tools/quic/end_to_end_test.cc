@@ -257,11 +257,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   QuicTestClient* CreateQuicClient(QuicPacketWriterWrapper* writer) {
     QuicTestClient* client = new QuicTestClient(
-        server_address_,
-        server_hostname_,
-        false,  // not secure
-        client_config_,
-        client_supported_versions_);
+        server_address_, server_hostname_,
+        /*secure=*/true, client_config_, client_supported_versions_);
     client->UseWriter(writer);
     client->Connect();
     return client;
@@ -351,11 +348,10 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   }
 
   void StartServer() {
-    server_thread_.reset(
-        new ServerThread(
-            new QuicServer(server_config_, server_supported_versions_),
-            server_address_,
-            strike_register_no_startup_period_));
+    server_thread_.reset(new ServerThread(
+        new QuicServer(server_config_, server_supported_versions_),
+        /*is_secure=*/true, server_address_,
+        strike_register_no_startup_period_));
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());

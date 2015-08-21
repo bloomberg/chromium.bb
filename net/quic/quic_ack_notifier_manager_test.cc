@@ -42,7 +42,9 @@ class QuicAckNotifierManagerTest : public ::testing::Test {
     SerializedPacket packet(sequence_number, PACKET_4BYTE_SEQUENCE_NUMBER,
                             /*packet=*/nullptr,
                             /*entropy_hash=*/0,
-                            retransmittable ? &frames : nullptr);
+                            retransmittable ? &frames : nullptr,
+                            /*has_ack=*/false,
+                            /*has_stop_waiting=*/false);
 
     // Create and register a notifier.  Normally, this would be created by
     // QuicPacketGenerator.

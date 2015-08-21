@@ -233,7 +233,7 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
 
   // If we have received a truncated ack, then we need to clear out some
   // previous transmissions to allow the peer to actually ACK new packets.
-  if (ack_frame.is_truncated) {
+  if (ack_frame.is_truncated && !FLAGS_quic_disable_truncated_ack_handling) {
     unacked_packets_.ClearAllPreviousRetransmissions();
   }
 
@@ -407,6 +407,14 @@ void QuicSentPacketManager::RecordSpuriousRetransmissions(
   for (SequenceNumberList::const_reverse_iterator it =
            all_transmissions.rbegin();
        it != all_transmissions.rend() && *it > acked_sequence_number; ++it) {
+    // ianswett: Prevents crash in b/20552846.
+    if (*it < unacked_packets_.GetLeastUnacked() ||
+        *it > unacked_packets_.largest_sent_packet()) {
+      LOG(DFATAL) << "Retransmission out of range:" << *it
+                  << " least unacked:" << unacked_packets_.GetLeastUnacked()
+                  << " largest sent:" << unacked_packets_.largest_sent_packet();
+      return;
+    }
     const TransmissionInfo& retransmit_info =
         unacked_packets_.GetTransmissionInfo(*it);
 
@@ -905,6 +913,10 @@ QuicPacketCount QuicSentPacketManager::EstimateMaxPacketsInFlight(
 
 QuicPacketCount QuicSentPacketManager::GetCongestionWindowInTcpMss() const {
   return send_algorithm_->GetCongestionWindow() / kDefaultTCPMSS;
+}
+
+QuicByteCount QuicSentPacketManager::GetCongestionWindowInBytes() const {
+  return send_algorithm_->GetCongestionWindow();
 }
 
 QuicPacketCount QuicSentPacketManager::GetSlowStartThresholdInTcpMss() const {
