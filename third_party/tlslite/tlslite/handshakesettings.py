@@ -151,6 +151,7 @@ class HandshakeSettings(object):
         other.tlsIntolerant = self.tlsIntolerant
         other.tlsIntoleranceType = self.tlsIntoleranceType
         other.alertAfterHandshake = self.alertAfterHandshake
+        other.enableExtendedMasterSecret = self.enableExtendedMasterSecret
 
         if not cipherfactory.tripleDESPresent:
             other.cipherNames = [e for e in self.cipherNames if e != "3des"]
