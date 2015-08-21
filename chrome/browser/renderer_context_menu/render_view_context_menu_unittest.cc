@@ -28,6 +28,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 
 #include "extensions/browser/extension_prefs.h"
@@ -123,6 +124,8 @@ class RenderViewContextMenuTest : public testing::Test {
     menu->Init();
     return menu;
   }
+ private:
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 };
 
 // Generates a URLPatternSet with a single pattern
