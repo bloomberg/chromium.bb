@@ -700,6 +700,10 @@ blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
   return placeholder->plugin();
 }
 
+void BlinkTestRunner::OnWebTestProxyBaseDestroy(
+    test_runner::WebTestProxyBase* proxy) {
+}
+
 // RenderViewObserver  --------------------------------------------------------
 
 void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {

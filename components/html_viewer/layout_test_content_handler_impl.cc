@@ -14,6 +14,23 @@
 
 namespace html_viewer {
 
+class TestHTMLFrame : public HTMLFrame {
+ public:
+  explicit TestHTMLFrame(HTMLFrame::CreateParams* params) : HTMLFrame(params) {}
+
+ protected:
+  ~TestHTMLFrame() override {}
+
+ private:
+  // blink::WebFrameClient::
+  void didClearWindowObject(blink::WebLocalFrame* frame) override {
+    HTMLFrame::didClearWindowObject(frame);
+    blink::WebTestingSupport::injectInternalsObject(frame);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestHTMLFrame);
+};
+
 LayoutTestContentHandlerImpl::LayoutTestContentHandlerImpl(
     GlobalState* global_state,
     mojo::ApplicationImpl* app,
@@ -46,8 +63,12 @@ void LayoutTestContentHandlerImpl::StartApplication(
 
 HTMLFrame* LayoutTestContentHandlerImpl::CreateHTMLFrame(
     HTMLFrame::CreateParams* params) {
+  // The test harness isn't correctly set-up for iframes yet. So return a normal
+  // HTMLFrame for iframes.
+  if (params->parent)
+    return new HTMLFrame(params);
   using ProxyType = test_runner::WebTestProxy<
-      test_runner::WebFrameTestProxy<HTMLFrame, HTMLFrame::CreateParams*>,
+      test_runner::WebFrameTestProxy<TestHTMLFrame, HTMLFrame::CreateParams*>,
       HTMLFrame::CreateParams*>;
   // TODO(sky): this isn't right for all frame types, eg remote frames.
   ProxyType* proxy = new ProxyType(params);
@@ -57,8 +78,6 @@ HTMLFrame* LayoutTestContentHandlerImpl::CreateHTMLFrame(
   test_delegate_->set_test_proxy(proxy);
   test_interfaces_->SetWebView(proxy->web_view(), proxy);
   proxy->set_widget(proxy->web_view());
-  blink::WebTestingSupport::injectInternalsObject(
-      proxy->web_view()->mainFrame()->toWebLocalFrame());
   test_interfaces_->BindTo(proxy->web_view()->mainFrame());
   return proxy;
 }

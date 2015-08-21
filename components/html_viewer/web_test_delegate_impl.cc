@@ -228,7 +228,8 @@ void WebTestDelegateImpl::SetLocale(const std::string& locale) {
 
 void WebTestDelegateImpl::TestFinished() {
   test_interfaces_->SetTestIsRunning(false);
-  fprintf(stderr, "%s", proxy_->CaptureTree(false, false).c_str());
+  fprintf(stderr, "%s", proxy_ ? proxy_->CaptureTree(false, false).c_str()
+                               : dump_tree_.c_str());
 }
 
 void WebTestDelegateImpl::CloseRemainingWindows() {
@@ -322,6 +323,13 @@ blink::WebPlugin* WebTestDelegateImpl::CreatePluginPlaceholder(
     const blink::WebPluginParams& params) {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+void WebTestDelegateImpl::OnWebTestProxyBaseDestroy(
+    test_runner::WebTestProxyBase* base) {
+  DCHECK_EQ(proxy_, base);
+  dump_tree_ = proxy_->CaptureTree(false, false);
+  proxy_ = nullptr;
 }
 
 }  // namespace html_viewer

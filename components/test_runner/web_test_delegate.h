@@ -258,6 +258,8 @@ class WebTestDelegate {
   virtual blink::WebPlugin* CreatePluginPlaceholder(
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) = 0;
+
+  virtual void OnWebTestProxyBaseDestroy(WebTestProxyBase* proxy) = 0;
 };
 
 }  // namespace test_runner

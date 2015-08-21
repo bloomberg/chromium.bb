@@ -392,6 +392,7 @@ WebTestProxyBase::WebTestProxyBase()
 
 WebTestProxyBase::~WebTestProxyBase() {
   test_interfaces_->WindowClosed(this);
+  delegate_->OnWebTestProxyBaseDestroy(this);
 }
 
 void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {

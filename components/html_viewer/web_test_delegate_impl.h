@@ -112,10 +112,12 @@ class WebTestDelegateImpl : public test_runner::WebTestDelegate {
   blink::WebPlugin* CreatePluginPlaceholder(
       blink::WebLocalFrame* frame,
       const blink::WebPluginParams& params) override;
+  void OnWebTestProxyBaseDestroy(test_runner::WebTestProxyBase* base) override;
 
   test_runner::TestPreferences prefs_;
   test_runner::WebTestInterfaces* test_interfaces_;
   test_runner::WebTestProxyBase* proxy_;
+  std::string dump_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestDelegateImpl);
 };
