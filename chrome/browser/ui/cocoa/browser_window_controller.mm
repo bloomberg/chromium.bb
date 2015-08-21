@@ -1148,6 +1148,14 @@ using content::WebContents;
           }
           break;
         }
+        case IDC_SHOW_SIGNIN: {
+          Profile* original_profile =
+              browser_->profile()->GetOriginalProfile();
+          [AppController updateSigninItem:item
+                               shouldShow:enable
+                           currentProfile:original_profile];
+          break;
+        }
         case IDC_BOOKMARK_PAGE: {
           // Extensions have the ability to hide the bookmark page menu item.
           // This only affects the bookmark page menu item under the main menu.

@@ -1676,7 +1676,10 @@ if (!is_android) {
     }
     if (is_chromeos) {
       deps += [ "//chrome/browser/chromeos:unit_tests" ]
-      sources -= [ "../browser/signin/signin_manager_unittest.cc" ]
+      sources -= [
+        "../browser/signin/signin_global_error_unittest.cc",
+        "../browser/signin/signin_manager_unittest.cc",
+      ]
     }
     if (use_x11) {
       deps += [ "//ui/events/devices" ]

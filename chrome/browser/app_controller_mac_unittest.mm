@@ -91,3 +91,135 @@ TEST_F(AppControllerTest, LastProfile) {
 
   EXPECT_EQ(dest_path2, [ac lastProfile]->GetPath());
 }
+
+TEST_F(AppControllerTest, TestSigninMenuItemNoErrors) {
+  base::scoped_nsobject<NSMenuItem> syncMenuItem(
+      [[NSMenuItem alloc] initWithTitle:@""
+                                 action:@selector(commandDispatch)
+                          keyEquivalent:@""]);
+  [syncMenuItem setTag:IDC_SHOW_SYNC_SETUP];
+
+  NSString* startSignin = l10n_util::GetNSStringFWithFixup(
+      IDS_SYNC_MENU_PRE_SYNCED_LABEL,
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+
+  // Make sure shouldShow parameter is obeyed, and we get the default
+  // label if not signed in.
+  [AppController updateSigninItem:syncMenuItem
+                       shouldShow:YES
+                   currentProfile:profile_];
+
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:startSignin]);
+  EXPECT_FALSE([syncMenuItem isHidden]);
+
+  [AppController updateSigninItem:syncMenuItem
+                       shouldShow:NO
+                   currentProfile:profile_];
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:startSignin]);
+  EXPECT_TRUE([syncMenuItem isHidden]);
+
+  // Now sign in.
+  std::string username = "foo@example.com";
+  NSString* alreadySignedIn = l10n_util::GetNSStringFWithFixup(
+      IDS_SYNC_MENU_SYNCED_LABEL, base::UTF8ToUTF16(username));
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
+  signin->SetAuthenticatedAccountInfo(username, username);
+  ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile_);
+  sync->SetSyncSetupCompleted();
+  [AppController updateSigninItem:syncMenuItem
+                       shouldShow:YES
+                   currentProfile:profile_];
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:alreadySignedIn]);
+  EXPECT_FALSE([syncMenuItem isHidden]);
+}
+
+TEST_F(AppControllerTest, TestSigninMenuItemAuthError) {
+  base::scoped_nsobject<NSMenuItem> syncMenuItem(
+      [[NSMenuItem alloc] initWithTitle:@""
+                                 action:@selector(commandDispatch)
+                          keyEquivalent:@""]);
+  [syncMenuItem setTag:IDC_SHOW_SYNC_SETUP];
+
+  // Now sign in.
+  std::string username = "foo@example.com";
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
+  signin->SetAuthenticatedAccountInfo(username, username);
+  ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile_);
+  sync->SetSyncSetupCompleted();
+  // Force an auth error.
+  FakeAuthStatusProvider provider(
+      SigninErrorControllerFactory::GetForProfile(profile_));
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  provider.SetAuthError("user@gmail.com", error);
+  [AppController updateSigninItem:syncMenuItem
+                       shouldShow:YES
+                   currentProfile:profile_];
+  NSString* authError =
+      l10n_util::GetNSStringWithFixup(IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM);
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:authError]);
+  EXPECT_FALSE([syncMenuItem isHidden]);
+}
+
+// If there's a separator after the signin menu item, make sure it is hidden/
+// shown when the signin menu item is.
+TEST_F(AppControllerTest, TestSigninMenuItemWithSeparator) {
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  NSMenuItem* signinMenuItem = [menu addItemWithTitle:@""
+                                               action:@selector(commandDispatch)
+                                        keyEquivalent:@""];
+  [signinMenuItem setTag:IDC_SHOW_SYNC_SETUP];
+  NSMenuItem* followingSeparator = [NSMenuItem separatorItem];
+  [menu addItem:followingSeparator];
+  [signinMenuItem setHidden:NO];
+  [followingSeparator setHidden:NO];
+
+  [AppController updateSigninItem:signinMenuItem
+                       shouldShow:NO
+                   currentProfile:profile_];
+
+  EXPECT_FALSE([followingSeparator isEnabled]);
+  EXPECT_TRUE([signinMenuItem isHidden]);
+  EXPECT_TRUE([followingSeparator isHidden]);
+
+  [AppController updateSigninItem:signinMenuItem
+                       shouldShow:YES
+                   currentProfile:profile_];
+
+  EXPECT_FALSE([followingSeparator isEnabled]);
+  EXPECT_FALSE([signinMenuItem isHidden]);
+  EXPECT_FALSE([followingSeparator isHidden]);
+}
+
+// If there's a non-separator item after the signin menu item, it should not
+// change state when the signin menu item is hidden/shown.
+TEST_F(AppControllerTest, TestSigninMenuItemWithNonSeparator) {
+  base::scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  NSMenuItem* signinMenuItem = [menu addItemWithTitle:@""
+                                               action:@selector(commandDispatch)
+                                        keyEquivalent:@""];
+  [signinMenuItem setTag:IDC_SHOW_SYNC_SETUP];
+  NSMenuItem* followingNonSeparator =
+      [menu addItemWithTitle:@""
+                      action:@selector(commandDispatch)
+               keyEquivalent:@""];
+  [signinMenuItem setHidden:NO];
+  [followingNonSeparator setHidden:NO];
+
+  [AppController updateSigninItem:signinMenuItem
+                       shouldShow:NO
+                   currentProfile:profile_];
+
+  EXPECT_TRUE([followingNonSeparator isEnabled]);
+  EXPECT_TRUE([signinMenuItem isHidden]);
+  EXPECT_FALSE([followingNonSeparator isHidden]);
+
+  [followingNonSeparator setHidden:YES];
+  [AppController updateSigninItem:signinMenuItem
+                       shouldShow:YES
+                   currentProfile:profile_];
+
+  EXPECT_TRUE([followingNonSeparator isEnabled]);
+  EXPECT_FALSE([signinMenuItem isHidden]);
+  EXPECT_TRUE([followingNonSeparator isHidden]);
+}

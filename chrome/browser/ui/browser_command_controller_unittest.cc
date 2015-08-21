@@ -139,6 +139,7 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKeyIsApp) {
 TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
 
   TestingProfile* testprofile = browser()->profile()->AsTestingProfile();
   EXPECT_TRUE(testprofile);
@@ -148,6 +149,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
       browser()->command_controller()->command_updater(), testprofile);
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
 
   testprofile->SetGuestSession(false);
   IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),
@@ -157,6 +159,7 @@ TEST_F(BrowserCommandControllerTest, IncognitoCommands) {
       browser()->command_controller()->command_updater(), testprofile);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
 }
 
 TEST_F(BrowserCommandControllerTest, AppFullScreen) {
@@ -417,4 +420,36 @@ TEST_F(BrowserCommandControllerFullscreenTest,
   browser()->command_controller()->FullscreenStateChanged();
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
+}
+
+TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
+  // Set up a profile with an off the record profile.
+  scoped_ptr<TestingProfile> profile1 = TestingProfile::Builder().Build();
+  Profile* profile2 = profile1->GetOffTheRecordProfile();
+
+  EXPECT_EQ(profile2->GetOriginalProfile(), profile1.get());
+
+  // Create a new browser based on the off the record profile.
+  Browser::CreateParams profile_params(profile1->GetOffTheRecordProfile(),
+                                       chrome::GetActiveDesktop());
+  scoped_ptr<Browser> browser2(
+      chrome::CreateBrowserWithTestWindowForParams(&profile_params));
+
+  chrome::BrowserCommandController command_controller(browser2.get());
+  const CommandUpdater* command_updater = command_controller.command_updater();
+
+  // Check that the SYNC_SETUP command is updated on preference change.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+  profile1->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+}
+
+TEST_F(BrowserCommandControllerTest, OnSigninAllowedPrefChange) {
+  chrome::BrowserCommandController command_controller(browser());
+  const CommandUpdater* command_updater = command_controller.command_updater();
+
+  // Check that the SYNC_SETUP command is updated on preference change.
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
+  profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SYNC_SETUP));
 }

@@ -507,6 +507,11 @@ source_set("browser") {
                            ".",
                            "//chrome")
     deps += [ "//chrome/browser/chromeos" ]
+  } else {
+    # Non-ChromeOS.
+    sources += rebase_path(gypi_values.chrome_browser_non_chromeos_sources,
+                           ".",
+                           "//chrome")
   }
 
   if (is_ios) {
