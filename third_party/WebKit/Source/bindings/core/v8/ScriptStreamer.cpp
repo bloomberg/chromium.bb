@@ -288,6 +288,7 @@ private:
     void fetchDataFromResourceBuffer(size_t lengthOfBOM)
     {
         ASSERT(isMainThread());
+        MutexLocker locker(m_mutex); // For m_cancelled + m_queueTailPosition.
 
         // Get as much data from the ResourceBuffer as we can.
         const char* data = 0;
@@ -295,18 +296,15 @@ private:
         Vector<unsigned> chunkLengths;
         size_t dataLength = 0;
 
-        {
-            MutexLocker locker(m_mutex); // For m_cancelled + m_queueTailPosition.
-            if (!m_cancelled) {
-                while (unsigned length = m_resourceBuffer->getSomeData(data, m_queueTailPosition)) {
-                    // FIXME: Here we can limit based on the total length, if it turns
-                    // out that we don't want to give all the data we have (memory
-                    // vs. speed).
-                    chunks.append(data);
-                    chunkLengths.append(length);
-                    dataLength += length;
-                    m_queueTailPosition += length;
-                }
+        if (!m_cancelled) {
+            while (unsigned length = m_resourceBuffer->getSomeData(data, m_queueTailPosition)) {
+                // FIXME: Here we can limit based on the total length, if it turns
+                // out that we don't want to give all the data we have (memory
+                // vs. speed).
+                chunks.append(data);
+                chunkLengths.append(length);
+                dataLength += length;
+                m_queueTailPosition += length;
             }
         }
 
