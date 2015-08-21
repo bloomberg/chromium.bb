@@ -770,6 +770,23 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
                   .id());
   }
 
+  void RunWithRecommendedLocale(const char* const locales[],
+                                size_t locales_size) {
+    SetRecommendedLocales(locales, locales_size);
+    UploadAndInstallDeviceLocalAccountPolicy();
+    AddPublicSessionToDevicePolicy(kAccountId1);
+    EnableAutoLogin();
+
+    WaitForPolicy();
+
+    WaitForSessionStart();
+
+    EXPECT_EQ(locales[0], g_browser_process->GetApplicationLocale());
+    EXPECT_EQ(l10n_util::GetLanguage(locales[0]),
+              icu::Locale::getDefault().getLanguage());
+    VerifyKeyboardLayoutMatchesLocale();
+  }
+
   const std::string user_id_1_;
   const std::string user_id_2_;
   const std::string public_session_input_method_id_;
@@ -1949,6 +1966,29 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, InvalidRecommendedLocale) {
   EXPECT_EQ(l10n_util::GetLanguage(initial_locale_),
             icu::Locale::getDefault().getLanguage());
   VerifyKeyboardLayoutMatchesLocale();
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LocaleWithIME) {
+  // Specify a locale that has real IMEs in addition to a keyboard layout one.
+  const char* const kSingleLocaleWithIME[] = {"ja"};
+  RunWithRecommendedLocale(kSingleLocaleWithIME,
+                           arraysize(kSingleLocaleWithIME));
+
+  EXPECT_GT(chromeos::input_method::InputMethodManager::Get()
+                ->GetActiveIMEState()
+                ->GetNumActiveInputMethods(),
+            1u);
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LocaleWithNoIME) {
+  // Specify a locale that has only keyboard layout.
+  const char* const kSingleLocaleWithNoIME[] = {"de"};
+  RunWithRecommendedLocale(kSingleLocaleWithNoIME,
+                           arraysize(kSingleLocaleWithNoIME));
+
+  EXPECT_EQ(1u, chromeos::input_method::InputMethodManager::Get()
+                    ->GetActiveIMEState()
+                    ->GetNumActiveInputMethods());
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,

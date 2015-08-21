@@ -98,6 +98,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "url/gurl.h"
 
@@ -146,21 +147,33 @@ void InitLocaleAndInputMethodsForNewUser(
   // First, we'll set kLanguagePreloadEngines.
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
-  std::vector<std::string> input_method_ids;
 
+  input_method::InputMethodDescriptor preferred_input_method;
   if (!public_session_input_method.empty()) {
-    // If this is a public session and the user chose a
-    // |public_session_input_method|, set kLanguagePreloadEngines to this input
-    // method only.
-    input_method_ids.push_back(public_session_input_method);
-  } else {
-    // Otherwise, set kLanguagePreloadEngines to a list of input methods derived
-    // from the |locale| and the currently active input method.
-    manager->GetInputMethodUtil()->GetFirstLoginInputMethodIds(
-        locale,
-        session_manager->GetDefaultIMEState(profile)->GetCurrentInputMethod(),
-        &input_method_ids);
+    // If this is a public session and the user chose a valid
+    // |public_session_input_method|, use it as the |preferred_input_method|.
+    const input_method::InputMethodDescriptor* const descriptor =
+        manager->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
+            public_session_input_method);
+    if (descriptor) {
+      preferred_input_method = *descriptor;
+    } else {
+      LOG(WARNING) << "Public session is initialized with an invalid IME"
+                   << ", id=" << public_session_input_method;
+    }
   }
+
+  // If |preferred_input_method| is not set, use the currently active input
+  // method.
+  if (preferred_input_method.id().empty()) {
+    preferred_input_method =
+        session_manager->GetDefaultIMEState(profile)->GetCurrentInputMethod();
+  }
+
+  // Derive kLanguagePreloadEngines from |locale| and |preferred_input_method|.
+  std::vector<std::string> input_method_ids;
+  manager->GetInputMethodUtil()->GetFirstLoginInputMethodIds(
+      locale, preferred_input_method, &input_method_ids);
 
   // Save the input methods in the user's preferences.
   StringPrefMember language_preload_engines;

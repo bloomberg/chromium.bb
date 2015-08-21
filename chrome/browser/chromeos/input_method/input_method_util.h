@@ -83,10 +83,10 @@ class InputMethodUtil {
 
   // Gets the input method IDs suitable for the first user login, based on
   // the given language code (UI language), and the descriptor of the
-  // current input method.
+  // preferred input method.
   void GetFirstLoginInputMethodIds(
       const std::string& language_code,
-      const InputMethodDescriptor& current_input_method,
+      const InputMethodDescriptor& preferred_input_method,
       std::vector<std::string>* out_input_method_ids) const;
 
   // Gets the language codes associated with the given input method IDs.
