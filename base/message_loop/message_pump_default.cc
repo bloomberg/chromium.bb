@@ -4,6 +4,8 @@
 
 #include "base/message_loop/message_pump_default.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -52,6 +54,13 @@ void MessagePumpDefault::Run(Delegate* delegate) {
       event_.Wait();
     } else {
       TimeDelta delay = delayed_work_time_ - TimeTicks::Now();
+#if defined(OS_WIN)
+      // If the delay is greater than zero and under 1 ms we need to round up to
+      // 1 ms or else we will end up spinning until it counts down to zero
+      // because sub-ms waits aren't supported on Windows.
+      if (delay > TimeDelta())
+        delay = std::max(delay, TimeDelta::FromMilliseconds(1));
+#endif
       if (delay > TimeDelta()) {
         event_.TimedWait(delay);
       } else {
