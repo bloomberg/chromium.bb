@@ -814,8 +814,8 @@ private:
         return *m_rareData.get();
     }
 
-    bool needToSavePreviousBoxSizes(const LayoutBoxModelObject& paintInvalidationContainer);
-    void savePreviousBoxSizesIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer);
+    bool needToSavePreviousBoxSizes();
+    void savePreviousBoxSizesIfNeeded();
     LayoutSize computePreviousBorderBoxSize(const LayoutSize& previousBoundsSize) const;
 
     bool logicalHeightComputesAsNone(SizeType) const;

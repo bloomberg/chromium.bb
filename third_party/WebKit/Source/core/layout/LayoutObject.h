@@ -999,6 +999,7 @@ public:
     // The previous paint invalidation rect, in the the space of the paint invalidation container (*not* the graphics layer that paints
     // this object).
     LayoutRect previousPaintInvalidationRectIncludingCompositedScrolling(const LayoutBoxModelObject& paintInvalidationContainer) const;
+    LayoutSize previousPaintInvalidationRectSize() const { return previousPaintInvalidationRect().size(); }
     void setPreviousPaintInvalidationRect(const LayoutRect& rect) { m_previousPaintInvalidationRect = rect; }
 
     // Only adjusts if the paint invalidation container is not a composited scroller.

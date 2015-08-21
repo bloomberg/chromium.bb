@@ -1396,7 +1396,7 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
     }
 
     // This is for the next invalidatePaintIfNeeded so must be at the end.
-    savePreviousBoxSizesIfNeeded(newPaintInvalidationContainer);
+    savePreviousBoxSizesIfNeeded();
     return reason;
 }
 
@@ -4574,13 +4574,13 @@ void LayoutBox::setPageLogicalOffset(LayoutUnit offset)
     ensureRareData().m_pageLogicalOffset = offset;
 }
 
-bool LayoutBox::needToSavePreviousBoxSizes(const LayoutBoxModelObject& paintInvalidationContainer)
+bool LayoutBox::needToSavePreviousBoxSizes()
 {
     // If m_rareData is already created, always save.
     if (m_rareData)
         return true;
 
-    LayoutSize paintInvalidationSize = previousPaintInvalidationRectIncludingCompositedScrolling(paintInvalidationContainer).size();
+    LayoutSize paintInvalidationSize = previousPaintInvalidationRectSize();
     // Don't save old box sizes if the paint rect is empty because we'll
     // full invalidate once the paint rect becomes non-empty.
     if (paintInvalidationSize.isEmpty())
@@ -4604,9 +4604,9 @@ bool LayoutBox::needToSavePreviousBoxSizes(const LayoutBoxModelObject& paintInva
     return false;
 }
 
-void LayoutBox::savePreviousBoxSizesIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer)
+void LayoutBox::savePreviousBoxSizesIfNeeded()
 {
-    if (!needToSavePreviousBoxSizes(paintInvalidationContainer))
+    if (!needToSavePreviousBoxSizes())
         return;
 
     LayoutBoxRareData& rareData = ensureRareData();
