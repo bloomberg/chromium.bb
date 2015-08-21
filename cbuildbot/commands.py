@@ -61,6 +61,7 @@ _SWARMING_ADDITIONAL_TIMEOUT = 60 * 60
 _DEFAULT_HWTEST_TIMEOUT_MINS = 1440
 _SWARMING_EXPIRATION = 20 * 60
 _RUN_SUITE_PATH = '/usr/local/autotest/site_utils/run_suite.py'
+_ABORT_SUITE_PATH = '/usr/local/autotest/site_utils/abort_suite.py'
 
 
 # =========================== Command Helpers =================================
@@ -1121,20 +1122,24 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
   # Example for a specific config: link-paladin/R35-5542.0.0-rc1
   # Example for a config type: paladin/R35-5542.0.0-rc1
   substr = '%s/%s' % (config_type_or_name, version)
-
-  # Actually abort the build.
-  cmd = [_AUTOTEST_RPC_CLIENT,
-         _AUTOTEST_RPC_HOSTNAME,
-         'AbortSuiteByName',
-         '-i', substr,
-         '-s', suite]
-  if debug:
-    logging.info('AbortHWTests would run: %s', cros_build_lib.CmdToStr(cmd))
-  else:
-    try:
-      cros_build_lib.RunCommand(cmd)
-    except cros_build_lib.RunCommandError:
-      logging.warning('AbortHWTests failed', exc_info=True)
+  abort_args = ['-i', substr, '-s', suite]
+  try:
+    cmd = [_ABORT_SUITE_PATH] + abort_args
+    swarming_args = {
+        'swarming_server': topology.topology.get(
+            topology.SWARMING_PROXY_HOST_KEY),
+        'task_name': '-'.join(['abort', substr, suite]),
+        'dimension': ('os', 'Linux'),
+        'print_status_updates': True,
+        'expiration_secs': _SWARMING_EXPIRATION}
+    if debug:
+      logging.info('AbortHWTests would run the cmd via '
+                   'swarming, cmd: %s, swarming_args: %s',
+                   cros_build_lib.CmdToStr(cmd), str(swarming_args))
+    else:
+      swarming_lib.RunSwarmingCommand(cmd, **swarming_args)
+  except cros_build_lib.RunCommandError:
+    logging.warning('AbortHWTests failed', exc_info=True)
 
 
 def GenerateStackTraces(buildroot, board, test_results_dir,
