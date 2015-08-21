@@ -99,6 +99,7 @@ MediaStreamSpeech status=experimental
 MemoryInfoInWorkers status=experimental
 NavigatorConnect status=experimental
 NavigatorContentUtils
+WebNFC status=experimental
 NetworkInformation status=stable
 NewMediaPlaybackUi
 NotificationConstructor status=stable

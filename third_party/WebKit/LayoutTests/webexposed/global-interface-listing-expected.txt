@@ -3378,6 +3378,9 @@ interface MutationRecord
     getter target
     getter type
     method constructor
+interface NFC
+    method constructor
+    method requestAdapter
 interface NamedNodeMap
     getter length
     method constructor
@@ -3404,6 +3407,7 @@ interface Navigator
     getter maxTouchPoints
     getter mediaDevices
     getter mimeTypes
+    getter nfc
     getter onLine
     getter permissions
     getter platform
