@@ -298,6 +298,8 @@
       'browser/browser_util_win.h',
       'browser/browsing_data/browsing_data_appcache_helper.cc',
       'browser/browsing_data/browsing_data_appcache_helper.h',
+      'browser/browsing_data/browsing_data_cache_storage_helper.cc',
+      'browser/browsing_data/browsing_data_cache_storage_helper.h',
       'browser/browsing_data/browsing_data_channel_id_helper.cc',
       'browser/browsing_data/browsing_data_channel_id_helper.h',
       'browser/browsing_data/browsing_data_cookie_helper.cc',

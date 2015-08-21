@@ -1135,6 +1135,7 @@ enum HistogramValue {
   ENTERPRISE_DEVICEATTRIBUTES_GETDIRECTORYDEVICEID,
   CASTDEVICESPRIVATE_UPDATEDEVICES,
   SYSTEM_DISPLAY_ENABLEUNIFIEDDESKTOP,
+  BROWSINGDATA_REMOVECACHESTORAGE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

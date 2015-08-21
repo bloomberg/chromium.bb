@@ -12,8 +12,10 @@
 #include "base/files/file_util.h"
 #include "base/id_map.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
@@ -41,9 +43,9 @@ void DeleteOriginDidDeleteDir(
   callback.Run(rv ? storage::kQuotaStatusOk : storage::kQuotaErrorAbort);
 }
 
-std::set<GURL> ListOriginsOnDisk(base::FilePath root_path_) {
+std::set<GURL> ListOriginsOnDisk(base::FilePath root_path) {
   std::set<GURL> origins;
-  base::FileEnumerator file_enum(root_path_, false /* recursive */,
+  base::FileEnumerator file_enum(root_path, false /* recursive */,
                                  base::FileEnumerator::DIRECTORIES);
 
   base::FilePath path;
@@ -62,6 +64,24 @@ std::set<GURL> ListOriginsOnDisk(base::FilePath root_path_) {
   return origins;
 }
 
+std::vector<CacheStorageUsageInfo> GetAllOriginsUsageOnTaskRunner(
+    const base::FilePath root_path) {
+  std::vector<CacheStorageUsageInfo> entries;
+  const std::set<GURL> origins = ListOriginsOnDisk(root_path);
+  entries.reserve(origins.size());
+  for (const GURL& origin : origins) {
+    base::FilePath path =
+        CacheStorageManager::ConstructOriginPath(root_path, origin);
+    int64 size = base::ComputeDirectorySize(path);
+    base::File::Info file_info;
+    base::Time last_modified;
+    if (base::GetFileInfo(path, &file_info))
+      last_modified = file_info.last_modified;
+    entries.push_back(CacheStorageUsageInfo(origin, size, last_modified));
+  }
+  return entries;
+}
+
 void GetOriginsForHostDidListOrigins(
     const std::string& host,
     const storage::QuotaClient::GetOriginsCallback& callback,
@@ -73,6 +93,8 @@ void GetOriginsForHostDidListOrigins(
   }
   callback.Run(out_origins);
 }
+
+void EmptyQuotaStatusCallback(storage::QuotaStatusCode code) {}
 
 }  // namespace
 
@@ -184,16 +206,39 @@ void CacheStorageManager::SetBlobParametersForCache(
   blob_context_ = blob_storage_context;
 }
 
+void CacheStorageManager::GetAllOriginsUsage(
+    const CacheStorageContext::GetUsageInfoCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (IsMemoryBacked()) {
+    std::vector<CacheStorageUsageInfo> entries;
+    entries.reserve(cache_storage_map_.size());
+    for (const auto& origin_details : cache_storage_map_) {
+      entries.push_back(CacheStorageUsageInfo(
+          origin_details.first, origin_details.second->MemoryBackedSize(),
+          base::Time()));
+    }
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback, entries));
+    return;
+  }
+
+  PostTaskAndReplyWithResult(
+      cache_task_runner_.get(), FROM_HERE,
+      base::Bind(&GetAllOriginsUsageOnTaskRunner, root_path_),
+      base::Bind(callback));
+}
+
 void CacheStorageManager::GetOriginUsage(
     const GURL& origin_url,
     const storage::QuotaClient::GetUsageCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (IsMemoryBacked()) {
-    int64 sum = 0;
-    for (const auto& key_value : cache_storage_map_)
-      sum += key_value.second->MemoryBackedSize();
-    callback.Run(sum);
+    int64 usage = 0;
+    if (ContainsKey(cache_storage_map_, origin_url))
+      usage = cache_storage_map_[origin_url]->MemoryBackedSize();
+    callback.Run(usage);
     return;
   }
 
@@ -255,6 +300,11 @@ void CacheStorageManager::DeleteOriginData(
       base::Bind(&CacheStorageManager::DeleteOriginDidClose, origin, callback,
                  base::Passed(make_scoped_ptr(cache_storage)),
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CacheStorageManager::DeleteOriginData(const GURL& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DeleteOriginData(origin, base::Bind(&EmptyQuotaStatusCallback));
 }
 
 // static

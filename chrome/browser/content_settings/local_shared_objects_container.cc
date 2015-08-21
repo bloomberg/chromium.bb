@@ -5,6 +5,7 @@
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -35,19 +36,21 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
     : appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
       channel_ids_(new CannedBrowsingDataChannelIDHelper()),
-      cookies_(new CannedBrowsingDataCookieHelper(
-          profile->GetRequestContext())),
+      cookies_(
+          new CannedBrowsingDataCookieHelper(profile->GetRequestContext())),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
       file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile)->
-              GetIndexedDBContext())),
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetIndexedDBContext())),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
       service_workers_(new CannedBrowsingDataServiceWorkerHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile)->
-              GetServiceWorkerContext())),
-      session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
-}
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetServiceWorkerContext())),
+      cache_storages_(new CannedBrowsingDataCacheStorageHelper(
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetCacheStorageContext())),
+      session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {}
 
 LocalSharedObjectsContainer::~LocalSharedObjectsContainer() {
 }
@@ -62,6 +65,7 @@ size_t LocalSharedObjectsContainer::GetObjectCount() const {
   count += indexed_dbs()->GetIndexedDBCount();
   count += local_storages()->GetLocalStorageCount();
   count += service_workers()->GetServiceWorkerCount();
+  count += cache_storages()->GetCacheStorageCount();
   count += session_storages()->GetLocalStorageCount();
   return count;
 }
@@ -144,6 +148,16 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
       ++count;
   }
 
+  // Count cache storages for the domain of the given |origin|.
+  typedef CannedBrowsingDataCacheStorageHelper::PendingCacheStorageUsageInfo
+      CacheStorageInfo;
+  const std::set<CacheStorageInfo>& cache_storage_info =
+      cache_storages()->GetCacheStorageUsageInfo();
+  for (const CacheStorageInfo& it : cache_storage_info) {
+    if (SameDomainOrHost(origin, it.origin))
+      ++count;
+  }
+
   // Count filesystems for the domain of the given |origin|.
   typedef BrowsingDataFileSystemHelper::FileSystemInfo FileSystemInfo;
   typedef std::list<FileSystemInfo> FileSystemInfoList;
@@ -197,23 +211,16 @@ void LocalSharedObjectsContainer::Reset() {
   indexed_dbs_->Reset();
   local_storages_->Reset();
   service_workers_->Reset();
+  cache_storages_->Reset();
   session_storages_->Reset();
 }
 
 scoped_ptr<CookiesTreeModel>
 LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
   LocalDataContainer* container = new LocalDataContainer(
-      cookies(),
-      databases(),
-      local_storages(),
-      session_storages(),
-      appcaches(),
-      indexed_dbs(),
-      file_systems(),
-      NULL,
-      channel_ids(),
-      service_workers(),
-      NULL);
+      cookies(), databases(), local_storages(), session_storages(), appcaches(),
+      indexed_dbs(), file_systems(), NULL, channel_ids(), service_workers(),
+      cache_storages(), NULL);
 
   return make_scoped_ptr(new CookiesTreeModel(container, NULL, true));
 }
