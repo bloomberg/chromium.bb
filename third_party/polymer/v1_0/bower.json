@@ -59,6 +59,7 @@
     "paper-tabs": "PolymerElements/paper-tabs#~1.0.0",
     "paper-toggle-button": "PolymerElements/paper-toggle-button#~1.0.0",
     "paper-toolbar": "PolymerElements/paper-toolbar#~1.0.0",
+    "paper-tooltip": "PolymerElements/paper-tooltip#~1.0.0",
 
     "web-animations-js": "web-animations/web-animations-js#^2.0.0"
   }
