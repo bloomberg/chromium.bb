@@ -262,6 +262,11 @@ WebReferrerPolicy WebDocument::referrerPolicy() const
     return static_cast<WebReferrerPolicy>(constUnwrap<Document>()->referrerPolicy());
 }
 
+WebString WebDocument::outgoingReferrer()
+{
+    return WebString(unwrap<Document>()->outgoingReferrer());
+}
+
 WebElement WebDocument::createElement(const WebString& tagName)
 {
     TrackExceptionState exceptionState;
