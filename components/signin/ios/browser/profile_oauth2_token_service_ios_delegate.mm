@@ -245,7 +245,6 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
       new_account_ids.insert(account_id);
     }
   }
-  DCHECK_EQ(1U, new_account_ids.count(primary_account_id_));
 
   // Get the list of existing account ids.
   std::vector<std::string> old_account_ids = GetAccounts();
