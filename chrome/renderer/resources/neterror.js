@@ -170,6 +170,11 @@ function onDocumentLoad() {
     controlButtonDiv.insertBefore(primaryButton, secondaryButton);
   }
 
+  // Check for Google cached copy suggestion.
+  if (loadTimeData.valueExists('cacheButton')) {
+    setUpCachedButton(loadTimeData.getValue('cacheButton'));
+  }
+
   if (reloadButton.style.display == 'none' &&
       showSavedCopyButton.style.display == 'none') {
     detailsButton.classList.add('singular');
@@ -204,11 +209,6 @@ function onDocumentLoad() {
     var p = document.querySelector('#main-message p');
     p.innerHTML = loadTimeData.getString('primaryParagraph');
     p.hidden = false;
-  }
-
-  // Check for Google cached copy suggestion.
-  if (loadTimeData.valueExists('cacheButton')) {
-    setUpCachedButton(loadTimeData.getValue('cacheButton'));
   }
 }
 
