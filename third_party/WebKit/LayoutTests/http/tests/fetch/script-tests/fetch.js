@@ -55,7 +55,6 @@ promise_test(function(t) {
     // serialized with the exclude fragment flag set.
     assert_equals(request.url,
       BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200');
-    assert_equals(request.context, '');
 
     return fetch(request)
       .then(function(response) {
@@ -67,7 +66,6 @@ promise_test(function(t) {
           assert_equals(response.url,
             BASE_ORIGIN +
             '/fetch/resources/fetch-status.php?status=200');
-          assert_equals(request.context, '');
         });
   }, 'Request/response url attribute getter with fragment');
 
@@ -81,7 +79,6 @@ promise_test(function(t) {
     var request = new Request(redirect_original_url);
     assert_equals(request.url, redirect_original_url,
       'Request\'s url is the original URL');
-    assert_equals(request.context, '');
     assert_equals(request.redirect, 'follow');
 
     return fetch(request)
@@ -92,7 +89,6 @@ promise_test(function(t) {
             'Response\'s url is locationURL');
           assert_equals(request.url, redirect_original_url,
             'Request\'s url remains the original URL');
-          assert_equals(request.context, '');
         });
   }, 'Request/response url attribute getter with redirect');
 
@@ -106,7 +102,6 @@ promise_test(function(t) {
     var request = new Request(redirect_original_url, {redirect: 'manual'});
     assert_equals(request.url, redirect_original_url,
       'Request\'s url is the original URL');
-    assert_equals(request.context, '');
     assert_equals(request.redirect, 'manual');
 
     return fetch(request)
@@ -127,7 +122,6 @@ promise_test(function(t) {
     var request = new Request(redirect_original_url, {redirect: 'error'});
     assert_equals(request.url, redirect_original_url,
       'Request\'s url is the original URL');
-    assert_equals(request.context, '');
     assert_equals(request.redirect, 'error');
 
     return fetch(request)
@@ -176,14 +170,12 @@ promise_test(function(t) {
                     method: 'POST',
                     body: new Blob(['Test Blob'], {type: 'test/type'})
                   });
-    assert_equals(request.context, '');
     return fetch(request)
       .then(function(response) { return response.text(); })
       .then(evalJsonp)
       .then(function(result) {
           assert_equals(result.method, 'POST');
           assert_equals(result.body, 'Test Blob');
-          assert_equals(request.context, '');
         });
   }, 'Fetch with Blob body test');
 

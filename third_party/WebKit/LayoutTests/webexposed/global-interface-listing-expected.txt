@@ -3845,7 +3845,6 @@ interface RelatedEvent
     method constructor
 interface Request
     getter bodyUsed
-    getter context
     getter credentials
     getter headers
     getter method

@@ -29,7 +29,6 @@ enum RequestRedirect { "follow", "error", "manual" };
     readonly attribute ByteString method;
     readonly attribute USVString url;
     readonly attribute Headers headers;
-    [DeprecateAs=FetchAPIRequestContext] readonly attribute RequestContext context;
     readonly attribute DOMString referrer;
     readonly attribute RequestMode mode;
     readonly attribute RequestCredentials credentials;

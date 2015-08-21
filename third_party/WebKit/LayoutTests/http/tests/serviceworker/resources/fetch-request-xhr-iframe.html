@@ -58,7 +58,6 @@ function xhr_send(url_base, method, data, with_credentials) {
 function string_test() {
   return xhr_send(host_info['HTTP_ORIGIN'], 'POST', 'test string', false)
     .then(function(response) {
-        assert_equals(response.context, 'xmlhttprequest');
         assert_equals(response.method, 'POST');
         assert_equals(response.body, 'test string');
       });
@@ -68,7 +67,6 @@ function blob_test() {
   return xhr_send(host_info['HTTP_ORIGIN'], 'POST', new Blob(['test blob']),
                   false)
     .then(function(response) {
-        assert_equals(response.context, 'xmlhttprequest');
         assert_equals(response.method, 'POST');
         assert_equals(response.body, 'test blob');
       });

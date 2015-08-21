@@ -3366,7 +3366,6 @@ interface ReadableStream
     method getReader
 interface Request
     getter bodyUsed
-    getter context
     getter credentials
     getter headers
     getter method
