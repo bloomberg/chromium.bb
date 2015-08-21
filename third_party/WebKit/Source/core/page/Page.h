@@ -46,6 +46,7 @@ namespace blink {
 class AutoscrollController;
 class ChromeClient;
 class ClientRectList;
+class CompositedDisplayList;
 class ContextMenuClient;
 class ContextMenuController;
 class Document;
@@ -197,6 +198,9 @@ public:
     void didCommitLoad(LocalFrame*);
 
     void acceptLanguagesChanged();
+
+    void setCompositedDisplayList(PassOwnPtr<CompositedDisplayList>);
+    CompositedDisplayList* compositedDisplayListForTesting();
 
     static void networkStateChanged(bool online);
 

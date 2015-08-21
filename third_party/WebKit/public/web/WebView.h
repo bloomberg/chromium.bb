@@ -46,6 +46,7 @@ namespace blink {
 
 class WebAXObject;
 class WebAutofillClient;
+class WebCompositedDisplayList;
 class WebCredentialManagerClient;
 class WebDragData;
 class WebFrame;
@@ -451,6 +452,10 @@ public:
     // Sets the visibility of the WebView.
     virtual void setVisibilityState(WebPageVisibilityState visibilityState,
                                     bool isInitialState) { }
+
+    // Graphics -------------------------------------------------------------
+
+    virtual WebCompositedDisplayList* compositedDisplayList() { return nullptr; }
 
     // PageOverlay ----------------------------------------------------------
 

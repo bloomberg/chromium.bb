@@ -119,6 +119,9 @@ public:
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;
 
+    void setCompositedDisplayList(PassOwnPtr<CompositedDisplayList>) override;
+    CompositedDisplayList* compositedDisplayListForTesting() override;
+
     void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) override;
     void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) override;
 

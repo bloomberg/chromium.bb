@@ -2519,7 +2519,7 @@ void FrameView::compositeForSlimmingPaintV2()
     DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->displayItemList(), displayListDiff);
     OwnPtr<CompositedDisplayList> compositedDisplayList = adoptPtr(new CompositedDisplayList());
     compositingBuilder.build(*compositedDisplayList);
-    layoutView()->setCompositedDisplayList(compositedDisplayList.release());
+    page()->setCompositedDisplayList(compositedDisplayList.release());
 
     lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean);
 }

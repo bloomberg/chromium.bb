@@ -189,9 +189,6 @@ public:
     // It is very likely you do not want to call this method.
     void setShouldDoFullPaintInvalidationForViewAndAllDescendants();
 
-    void setCompositedDisplayList(PassOwnPtr<const CompositedDisplayList> compositedDisplayList) { m_compositedDisplayList = compositedDisplayList; }
-    const CompositedDisplayList* compositedDisplayList() const { return m_compositedDisplayList.get(); }
-
 private:
     void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
 
@@ -237,10 +234,6 @@ private:
     OwnPtrWillBePersistent<HitTestCache> m_hitTestCache;
 
     OwnPtrWillBePersistent<PendingSelection> m_pendingSelection;
-
-    // TODO(pdr): This is only temporarily here and will be moving
-    // when the API to cc is specified.
-    OwnPtr<const CompositedDisplayList> m_compositedDisplayList;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());

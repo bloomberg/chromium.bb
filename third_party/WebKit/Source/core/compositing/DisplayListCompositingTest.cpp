@@ -5,8 +5,9 @@
 #include "config.h"
 
 #include "core/layout/LayoutTestHelper.h"
-#include "core/layout/LayoutView.h"
+#include "core/page/Page.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "platform/graphics/CompositedDisplayList.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/transforms/TransformTestHelper.h"
 #include "platform/transforms/TransformationMatrix.h"
@@ -18,11 +19,11 @@ namespace {
 class DisplayListCompositingTest : public RenderingTest {
 public:
     DisplayListCompositingTest()
-        : m_layoutView(nullptr)
+        : m_page(nullptr)
         , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
 protected:
-    LayoutView& layoutView() { return *m_layoutView; }
+    Page& page() { return *m_page; }
 
 private:
     void SetUp() override
@@ -33,8 +34,8 @@ private:
         RenderingTest::SetUp();
         enableCompositing();
 
-        m_layoutView = document().view()->layoutView();
-        ASSERT_TRUE(m_layoutView);
+        m_page = document().page();
+        ASSERT_TRUE(m_page);
     }
 
     void TearDown() override
@@ -42,14 +43,15 @@ private:
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
-    LayoutView* m_layoutView;
+    Page* m_page;
     bool m_originalSlimmingPaintV2Enabled;
 };
 
 TEST_F(DisplayListCompositingTest, TransformTreeBuildingNoTransforms)
 {
     setBodyInnerHTML("<style>* { margin: 0; padding: 0;}</style><div>A</div>");
-    const auto* compositedDisplayList = layoutView().compositedDisplayList();
+    auto* compositedDisplayList = page().compositedDisplayListForTesting();
+    ASSERT_TRUE(compositedDisplayList);
     auto* tree = compositedDisplayList->transformTree.get();
 
     // There should only be a root transform node.
@@ -61,7 +63,8 @@ TEST_F(DisplayListCompositingTest, TransformTreeBuildingNoTransforms)
 TEST_F(DisplayListCompositingTest, TransformTreeBuildingMultipleTransforms)
 {
     setBodyInnerHTML("<style>* { margin: 0; padding: 0;}</style><div style=\"transform: translate3d(2px,3px,4px);\">X</div>");
-    const auto* compositedDisplayList = layoutView().compositedDisplayList();
+    auto* compositedDisplayList = page().compositedDisplayListForTesting();
+    ASSERT_TRUE(compositedDisplayList);
     auto* tree = compositedDisplayList->transformTree.get();
 
     ASSERT_EQ(2u, tree->nodeCount());
@@ -74,7 +77,8 @@ TEST_F(DisplayListCompositingTest, TransformTreeBuildingMultipleTransforms)
 
     // Add a nested 3d transform.
     setBodyInnerHTML("<style>* { margin: 0; padding: 0;}</style><div style=\"transform: translate3d(2px,3px,4px);\"><div style=\"transform: translate3d(5px,6px,7px);\">X</div></div>");
-    compositedDisplayList = layoutView().compositedDisplayList();
+    compositedDisplayList = page().compositedDisplayListForTesting();
+    ASSERT_TRUE(compositedDisplayList);
     tree = compositedDisplayList->transformTree.get();
 
     ASSERT_EQ(3u, tree->nodeCount());

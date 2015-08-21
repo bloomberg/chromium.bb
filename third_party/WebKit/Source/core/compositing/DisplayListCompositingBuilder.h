@@ -6,16 +6,10 @@
 #define DisplayListCompositingBuilder_h
 
 #include "core/CoreExport.h"
+#include "platform/graphics/CompositedDisplayList.h"
 #include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/DisplayItemTransformTree.h"
 
 namespace blink {
-
-struct CompositedDisplayList {
-    // TODO(pdr): Also add our SimpleLayers here.
-    // TODO(pdr): Add the additional property trees (e.g., clip, scroll, etc).
-    OwnPtr<const DisplayItemTransformTree> transformTree;
-};
 
 class CORE_EXPORT DisplayListCompositingBuilder {
 public:
