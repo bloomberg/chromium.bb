@@ -1775,10 +1775,6 @@ static void CalculateDrawPropertiesInternal(
       // layer can't directly support non-identity transforms.  It should just
       // forward top-level transforms to the rest of the tree.
       data_for_children.parent_matrix = combined_transform;
-
-      // The root surface does not contribute to any other surface, it has no
-      // target.
-      render_surface->set_contributes_to_drawn_surface(false);
     } else {
       // The owning layer's draw transform has a scale from content to layer
       // space which we do not want; so here we use the combined_transform
@@ -1806,10 +1802,6 @@ static void CalculateDrawPropertiesInternal(
       DCHECK(data_for_children.parent_matrix.IsIdentity());
       data_for_children.parent_matrix.Scale(combined_transform_scales.x(),
                                             combined_transform_scales.y());
-
-      // Even if the |layer_is_drawn|, it only contributes to a drawn surface
-      // when the |layer_is_visible|.
-      render_surface->set_contributes_to_drawn_surface(layer_is_visible);
     }
 
     // The opacity value is moved from the layer to its surface, so that the
@@ -2530,6 +2522,16 @@ void CalculateRenderSurfaceLayerListInternal(
       layer->ClearRenderSurfaceLayerList();
       layer->draw_properties().render_target = nullptr;
       return;
+    }
+    if (IsRootLayer(layer)) {
+      // The root surface does not contribute to any other surface, it has no
+      // target.
+      layer->render_surface()->set_contributes_to_drawn_surface(false);
+    } else {
+      // Even if the |layer_is_drawn|, it only contributes to a drawn surface
+      // when the |layer_is_visible|.
+      layer->render_surface()->set_contributes_to_drawn_surface(
+          layer_is_visible);
     }
 
     layer->ClearRenderSurfaceLayerList();
