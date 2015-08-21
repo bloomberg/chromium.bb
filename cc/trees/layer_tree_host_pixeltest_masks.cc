@@ -362,19 +362,17 @@ class CircleContentLayerClient : public ContentLayerClient {
 using LayerTreeHostMasksForBackgroundFiltersPixelTest =
     ParameterizedPixelResourceTest;
 
-INSTANTIATE_TEST_CASE_P(
-    PixelResourceTest,
-    LayerTreeHostMasksForBackgroundFiltersPixelTest,
-    ::testing::Values(
-        // SOFTWARE, Background filters aren't implemented in software
-        GL_GPU_RASTER_2D_DRAW,
-        GL_ONE_COPY_2D_STAGING_2D_DRAW,
-        GL_ONE_COPY_RECT_STAGING_2D_DRAW,
-        GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW,
-        GL_ZERO_COPY_2D_DRAW,
-        GL_ZERO_COPY_RECT_DRAW,
-        GL_ZERO_COPY_EXTERNAL_DRAW,
-        GL_ASYNC_UPLOAD_2D_DRAW));
+INSTANTIATE_TEST_CASE_P(PixelResourceTest,
+                        LayerTreeHostMasksForBackgroundFiltersPixelTest,
+                        ::testing::Values(SOFTWARE,
+                                          GL_GPU_RASTER_2D_DRAW,
+                                          GL_ONE_COPY_2D_STAGING_2D_DRAW,
+                                          GL_ONE_COPY_RECT_STAGING_2D_DRAW,
+                                          GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW,
+                                          GL_ZERO_COPY_2D_DRAW,
+                                          GL_ZERO_COPY_RECT_DRAW,
+                                          GL_ZERO_COPY_EXTERNAL_DRAW,
+                                          GL_ASYNC_UPLOAD_2D_DRAW));
 
 TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
        MaskOfLayerWithBackgroundFilter) {
@@ -394,7 +392,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   background->AddChild(blur);
 
   FilterOperations filters;
-  filters.Append(FilterOperation::CreateBlurFilter(1.5f));
+  filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
   blur->SetBackgroundFilters(filters);
 
   gfx::Size mask_bounds(100, 100);

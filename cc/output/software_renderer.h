@@ -91,6 +91,20 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
                     const TileDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawingFrame* frame,
                            const DrawQuad* quad);
+  bool ShouldApplyBackgroundFilters(const DrawingFrame* frame,
+                                    const RenderPassDrawQuad* quad) const;
+  SkBitmap ApplyImageFilter(SkImageFilter* filter,
+                            const RenderPassDrawQuad* quad,
+                            const SkBitmap* to_filter) const;
+  gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
+      const DrawingFrame* frame,
+      const RenderPassDrawQuad* quad,
+      const gfx::Transform& contents_device_transform) const;
+  SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
+  skia::RefPtr<SkShader> GetBackgroundFilterShader(
+      const DrawingFrame* frame,
+      const RenderPassDrawQuad* quad,
+      SkShader::TileMode content_tile_mode) const;
 
   RendererCapabilitiesImpl capabilities_;
   bool is_scissor_enabled_;

@@ -277,16 +277,87 @@ TEST_F(ImageFilterClippedPixelTest, ImageFilterClipped_Software) {
   RunPixelTestType(PIXEL_TEST_SOFTWARE);
 }
 
-TEST_F(LayerTreeHostFiltersPixelTest, ImageFilterScaled_GL) {
-  scoped_refptr<SolidColorLayer> background =
-      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+class ImageScaledBackgroundFilter : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
-  gfx::Rect rect(50, 50, 100, 100);
+    gfx::Rect rect(50, 50, 100, 100);
 
-  const int kInset = 3;
-  for (int i = 0; !rect.IsEmpty(); ++i) {
+    const int kInset = 3;
+    for (int i = 0; !rect.IsEmpty(); ++i) {
+      scoped_refptr<SolidColorLayer> layer =
+          CreateSolidColorLayer(rect, (i & 1) ? SK_ColorWHITE : SK_ColorRED);
+
+      gfx::Transform transform;
+      transform.Translate(rect.width() / 2.0, rect.height() / 2.0);
+      transform.RotateAboutZAxis(30.0);
+      transform.Translate(-rect.width() / 2.0, -rect.height() / 2.0);
+      layer->SetTransform(transform);
+
+      background->AddChild(layer);
+
+      rect.Inset(kInset, kInset);
+    }
+
+    scoped_refptr<SolidColorLayer> filter =
+        CreateSolidColorLayer(gfx::Rect(100, 0, 100, 200), SK_ColorTRANSPARENT);
+
+    background->AddChild(filter);
+
+    // Apply a scale to |background| so that we can see any scaling artifacts
+    // that may appear.
+    gfx::Transform background_transform;
+    static float scale = 1.1f;
+    background_transform.Scale(scale, scale);
+    background->SetTransform(background_transform);
+
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateGrayscaleFilter(1.0f));
+    filter->SetBackgroundFilters(filters);
+
+#if defined(OS_WIN)
+    // Windows has 153 pixels off by at most 2: crbug.com/225027
+    float percentage_pixels_large_error = 0.3825f;  // 153px / (200*200)
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 1.f;
+    int large_error_allowed = 2;
+    int small_error_allowed = 0;
+    pixel_comparator_.reset(new FuzzyPixelComparator(
+        true,  // discard_alpha
+        percentage_pixels_large_error, percentage_pixels_small_error,
+        average_error_allowed_in_bad_pixels, large_error_allowed,
+        small_error_allowed));
+#endif
+
+    RunPixelTest(test_type, background, image_name);
+  }
+};
+
+TEST_F(ImageScaledBackgroundFilter, ImageFilterScaled_GL) {
+  RunPixelTestType(PIXEL_TEST_GL,
+                   base::FilePath(FILE_PATH_LITERAL(
+                       "background_filter_on_scaled_layer_gl.png")));
+}
+
+TEST_F(ImageScaledBackgroundFilter, ImageFilterScaled_Software) {
+  RunPixelTestType(PIXEL_TEST_SOFTWARE,
+                   base::FilePath(FILE_PATH_LITERAL(
+                       "background_filter_on_scaled_layer_sw.png")));
+}
+
+class ImageBackgroundFilter : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {
+    // Add a white background with a rotated red rect in the center.
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+
+    gfx::Rect rect(50, 50, 100, 100);
+
     scoped_refptr<SolidColorLayer> layer =
-        CreateSolidColorLayer(rect, (i & 1) ? SK_ColorWHITE : SK_ColorRED);
+        CreateSolidColorLayer(rect, SK_ColorRED);
 
     gfx::Transform transform;
     transform.Translate(rect.width() / 2.0, rect.height() / 2.0);
@@ -296,42 +367,50 @@ TEST_F(LayerTreeHostFiltersPixelTest, ImageFilterScaled_GL) {
 
     background->AddChild(layer);
 
-    rect.Inset(kInset, kInset);
-  }
+    // Add a slightly transparent blue layer.
+    scoped_refptr<SolidColorLayer> filter =
+        CreateSolidColorLayer(gfx::Rect(100, 0, 100, 200), 0x220000FF);
 
-  scoped_refptr<SolidColorLayer> filter =
-      CreateSolidColorLayer(gfx::Rect(100, 0, 100, 200), SK_ColorTRANSPARENT);
+    // Add some rotation so that we can see that it blurs only under the layer.
+    gfx::Transform transform_filter;
+    transform_filter.RotateAboutZAxis(10.0);
+    filter->SetTransform(transform_filter);
 
-  background->AddChild(filter);
+    background->AddChild(filter);
 
-  // Apply a scale to |background| so that we can see any scaling artifacts that
-  // may appear.
-  gfx::Transform background_transform;
-  static float scale = 1.1f;
-  background_transform.Scale(scale, scale);
-  background->SetTransform(background_transform);
-
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateGrayscaleFilter(1.0f));
-  filter->SetBackgroundFilters(filters);
+    // Add a blur filter to the blue layer.
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(5.0f));
+    filter->SetBackgroundFilters(filters);
 
 #if defined(OS_WIN)
-  // Windows has 153 pixels off by at most 2: crbug.com/225027
-  float percentage_pixels_large_error = 0.3825f;  // 153px / (200*200)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 1.f;
-  int large_error_allowed = 2;
-  int small_error_allowed = 0;
-  pixel_comparator_.reset(new FuzzyPixelComparator(
-      true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
+    // Windows has 994 pixels off by at most 2: crbug.com/225027
+    float percentage_pixels_large_error = 2.4825f;  // 994px / (200*200)
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 1.f;
+    int large_error_allowed = 2;
+    int small_error_allowed = 0;
+    pixel_comparator_.reset(new FuzzyPixelComparator(
+        true,  // discard_alpha
+        percentage_pixels_large_error, percentage_pixels_small_error,
+        average_error_allowed_in_bad_pixels, large_error_allowed,
+        small_error_allowed));
 #endif
 
-  // TODO(hendrikw): Enable test in software as well: crbug.com/432157
-  RunPixelTest(PIXEL_TEST_GL, background,
-               base::FilePath(FILE_PATH_LITERAL("filter_on_scaled_layer.png")));
+    RunPixelTest(test_type, background, image_name);
+  }
+};
+
+TEST_F(ImageBackgroundFilter, BackgroundFilterRotated_GL) {
+  RunPixelTestType(
+      PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("background_filter_rotated_gl.png")));
+}
+
+TEST_F(ImageBackgroundFilter, BackgroundFilterRotated_Software) {
+  RunPixelTestType(
+      PIXEL_TEST_SOFTWARE,
+      base::FilePath(FILE_PATH_LITERAL("background_filter_rotated_sw.png")));
 }
 
 class ImageScaledRenderSurface : public LayerTreeHostFiltersPixelTest {
