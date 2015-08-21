@@ -119,7 +119,6 @@ CONTENT_EXPORT extern const char kEnableLCDText[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMemoryBenchmarking[];
 CONTENT_EXPORT extern const char kEnableNetworkInformation[];
-CONTENT_EXPORT extern const char kEnableOneCopy[];
 CONTENT_EXPORT extern const char kEnableOverlayFullscreenVideo[];
 CONTENT_EXPORT extern const char kEnablePersistentGpuMemoryBuffer[];
 CONTENT_EXPORT extern const char kEnablePinch[];

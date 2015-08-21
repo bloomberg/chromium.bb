@@ -199,7 +199,6 @@ const char kDisableNativeGpuMemoryBuffers[] =
 const char kDisableNotifications[]          = "disable-notifications";
 
 // Disable rasterizer that writes directly to GPU memory.
-// Overrides the kEnableOneCopy flag.
 const char kDisableOneCopy[]                = "disable-one-copy";
 
 // Disable Pepper3D.
@@ -382,9 +381,6 @@ const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
-
-// Enable rasterizer that writes directly to GPU memory.
-const char kEnableOneCopy[]                 = "enable-one-copy";
 
 // Enables use of hardware overlay for fullscreen video playback. Android only.
 // TODO(watk): Remove this once blink is updated to pass

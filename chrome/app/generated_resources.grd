@@ -6320,16 +6320,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
           If enabled, the renderer delegates compositing to the browser, merging both compositing passes.
         </message>
       </if>
-      <message name="IDS_FLAGS_ONE_COPY_NAME" desc="Name of about:flags option for one-copy rasterizer.">
-        Enable one-copy rasterizer
+      <message name="IDS_FLAGS_DISABLE_ONE_COPY_NAME" desc="Name of about:flags option for one-copy rasterizer.">
+        Disable one-copy rasterizer
       </message>
-      <message name="IDS_FLAGS_ONE_COPY_DESCRIPTION" desc="Description of about:flags option for one-copy rasterizer.">
-        If enabled, raster threads write to GPU memory.
+      <message name="IDS_FLAGS_DISABLE_ONE_COPY_DESCRIPTION" desc="Description of about:flags option for one-copy rasterizer.">
+        If disabled, raster threads won't write to GPU memory.
       </message>
-      <message name="IDS_FLAGS_ZERO_COPY_NAME" desc="Name of about:flags option for zero-copy rasterizer.">
+      <message name="IDS_FLAGS_ENABLE_ZERO_COPY_NAME" desc="Name of about:flags option for zero-copy rasterizer.">
         Enable zero-copy rasterizer
       </message>
-      <message name="IDS_FLAGS_ZERO_COPY_DESCRIPTION" desc="Description of about:flags option for zero-copy rasterizer.">
+      <message name="IDS_FLAGS_ENABLE_ZERO_COPY_DESCRIPTION" desc="Description of about:flags option for zero-copy rasterizer.">
         If enabled, raster threads write directly to GPU memory associated with tiles.
       </message>
       <message name="IDS_FLAGS_TAB_CAPTURE_UPSCALE_QUALITY_NAME" desc="">
