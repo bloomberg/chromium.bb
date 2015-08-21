@@ -1333,7 +1333,7 @@ private:
     unsigned m_writeRecursionDepth;
 
     RefPtrWillBeMember<ScriptedAnimationController> m_scriptedAnimationController;
-    OwnPtr<MainThreadTaskRunner> m_taskRunner;
+    OwnPtrWillBeMember<MainThreadTaskRunner> m_taskRunner;
     OwnPtrWillBeMember<TextAutosizer> m_textAutosizer;
 
     RefPtrWillBeMember<CustomElementRegistrationContext> m_registrationContext;

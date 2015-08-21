@@ -38,7 +38,7 @@ namespace blink {
 class MainThreadTask : public WebThread::Task {
     WTF_MAKE_NONCOPYABLE(MainThreadTask); WTF_MAKE_FAST_ALLOCATED(MainThreadTask);
 public:
-    MainThreadTask(WeakPtr<MainThreadTaskRunner> runner, PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
+    MainThreadTask(WeakPtrWillBeRawPtr<MainThreadTaskRunner> runner, PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
         : m_runner(runner)
         , m_task(task)
         , m_isInspectorTask(isInspectorTask)
@@ -48,7 +48,11 @@ public:
     void run() override;
 
 private:
+#if ENABLE(OILPAN)
+    CrossThreadWeakPersistent<MainThreadTaskRunner> m_runner;
+#else
     WeakPtr<MainThreadTaskRunner> m_runner;
+#endif
     OwnPtr<ExecutionContextTask> m_task;
     bool m_isInspectorTask;
 };
@@ -64,7 +68,9 @@ void MainThreadTask::run()
 
 MainThreadTaskRunner::MainThreadTaskRunner(ExecutionContext* context)
     : m_context(context)
+#if !ENABLE(OILPAN)
     , m_weakFactory(this)
+#endif
     , m_pendingTasksTimer(this, &MainThreadTaskRunner::pendingTasksTimerFired)
     , m_suspended(false)
 {
@@ -74,16 +80,21 @@ MainThreadTaskRunner::~MainThreadTaskRunner()
 {
 }
 
+DEFINE_TRACE(MainThreadTaskRunner)
+{
+    visitor->trace(m_context);
+}
+
 void MainThreadTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
     if (!task->taskNameForInstrumentation().isEmpty())
         InspectorInstrumentation::didPostExecutionContextTask(m_context, task.get());
-    Platform::current()->mainThread()->postTask(location, new MainThreadTask(m_weakFactory.createWeakPtr(), task, false));
+    Platform::current()->mainThread()->postTask(location, new MainThreadTask(createWeakPointerToSelf(), task, false));
 }
 
 void MainThreadTaskRunner::postInspectorTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    Platform::current()->mainThread()->postTask(location, new MainThreadTask(m_weakFactory.createWeakPtr(), task, true));
+    Platform::current()->mainThread()->postTask(location, new MainThreadTask(createWeakPointerToSelf(), task, true));
 }
 
 void MainThreadTaskRunner::perform(PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
@@ -129,6 +140,15 @@ void MainThreadTaskRunner::pendingTasksTimerFired(Timer<MainThreadTaskRunner>*)
         if (instrumenting)
             InspectorInstrumentation::didPerformExecutionContextTask(m_context);
     }
+}
+
+WeakPtrWillBeRawPtr<MainThreadTaskRunner> MainThreadTaskRunner::createWeakPointerToSelf()
+{
+#if ENABLE(OILPAN)
+    return this;
+#else
+    return m_weakFactory.createWeakPtr();
+#endif
 }
 
 } // namespace
