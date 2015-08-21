@@ -11,10 +11,10 @@ namespace blink {
 
 LayoutPagedFlowThread* LayoutPagedFlowThread::createAnonymous(Document& document, const ComputedStyle& parentStyle)
 {
-    LayoutPagedFlowThread* LayoutObject = new LayoutPagedFlowThread();
-    LayoutObject->setDocumentForAnonymous(&document);
-    LayoutObject->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
-    return LayoutObject;
+    LayoutPagedFlowThread* pagedFlowThread = new LayoutPagedFlowThread();
+    pagedFlowThread->setDocumentForAnonymous(&document);
+    pagedFlowThread->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
+    return pagedFlowThread;
 }
 
 int LayoutPagedFlowThread::pageCount()
