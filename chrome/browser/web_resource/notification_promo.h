@@ -25,11 +25,15 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace version_info {
+enum class Channel;
+}
+
 // Helper class for PromoResourceService that parses promo notification info
 // from json or prefs.
 class NotificationPromo {
  public:
-  static GURL PromoServerURL();
+  static GURL PromoServerURL(version_info::Channel channel);
 
   enum PromoType {
     NO_PROMO,
@@ -39,7 +43,7 @@ class NotificationPromo {
     MOBILE_NTP_WHATS_NEW_PROMO,
   };
 
-  NotificationPromo();
+  explicit NotificationPromo(PrefService* local_state);
   ~NotificationPromo();
 
   // Initialize from json/prefs.
@@ -56,10 +60,10 @@ class NotificationPromo {
 
   // Helpers for NewTabPageHandler.
   // Mark the promo as closed when the user dismisses it.
-  static void HandleClosed(PromoType promo_type);
+  static void HandleClosed(PromoType promo_type, PrefService* local_state);
   // Mark the promo has having been viewed. This returns true if views
   // exceeds the maximum allowed.
-  static bool HandleViewed(PromoType promo_type);
+  static bool HandleViewed(PromoType promo_type, PrefService* local_state);
 
   bool new_notification() const { return new_notification_; }
 
@@ -104,7 +108,7 @@ class NotificationPromo {
   // for the app launcher, and the user has already enabled the app launcher.
   bool CheckAppLauncher() const;
 
-  PrefService* prefs_;
+  PrefService* local_state_;
 
   PromoType promo_type_;
   std::string promo_text_;

@@ -24,6 +24,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace version_info {
+enum class Channel;
+}
+
 // A PromoResourceService fetches data from a web resource server to be used to
 // dynamically change the appearance of the New Tab Page. For example, it has
 // been used to fetch "tips" to be displayed on the NTP, or to display
@@ -37,7 +41,7 @@ class PromoResourceService : public ChromeWebResourceService {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static void MigrateUserPrefs(PrefService* user_prefs);
 
-  PromoResourceService();
+  PromoResourceService(PrefService* local_state, version_info::Channel channel);
   ~PromoResourceService() override;
 
   // Registers a callback called when the state of a web resource has been

@@ -3052,6 +3052,8 @@
       'browser/web_resource/chrome_web_resource_service.h',
       'browser/web_resource/notification_promo.cc',
       'browser/web_resource/notification_promo.h',
+      'browser/web_resource/notification_promo_helper.cc',
+      'browser/web_resource/notification_promo_helper.h',
       'browser/web_resource/promo_resource_service.cc',
       'browser/web_resource/promo_resource_service.h',
     ],

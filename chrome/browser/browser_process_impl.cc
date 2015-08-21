@@ -65,6 +65,7 @@
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1067,7 +1068,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableWebResources)) {
     DCHECK(!promo_resource_service_.get());
-    promo_resource_service_.reset(new PromoResourceService);
+    promo_resource_service_.reset(
+        new PromoResourceService(local_state(), chrome::GetChannel()));
     promo_resource_service_->StartAfterDelay();
   }
 

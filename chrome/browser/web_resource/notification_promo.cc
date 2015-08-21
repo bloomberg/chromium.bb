@@ -17,19 +17,13 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
-#include "chrome/common/channel_info.h"
-#include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/user_metrics.h"
 #include "net/base/url_util.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
-
-using base::UserMetricsAction;
 
 namespace {
 
@@ -81,13 +75,12 @@ std::string PlatformString() {
 }
 
 // Returns a string suitable for the Promo Server URL 'dist' value.
-const char* ChannelString() {
+const char* ChannelString(version_info::Channel channel) {
 #if defined (OS_WIN)
   // GetChannel hits the registry on Windows. See http://crbug.com/70898.
   // TODO(achuith): Move NotificationPromo::PromoServerURL to the blocking pool.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 #endif
-  const version_info::Channel channel = chrome::GetChannel();
   switch (channel) {
     case version_info::Channel::CANARY:
       return "canary";
@@ -190,8 +183,8 @@ void AppendQueryParameter(GURL* url,
 
 }  // namespace
 
-NotificationPromo::NotificationPromo()
-    : prefs_(g_browser_process->local_state()),
+NotificationPromo::NotificationPromo(PrefService* local_state)
+    : local_state_(local_state),
       promo_type_(NO_PROMO),
       promo_payload_(new base::DictionaryValue()),
       start_(0.0),
@@ -208,7 +201,7 @@ NotificationPromo::NotificationPromo()
       views_(0),
       closed_(false),
       new_notification_(false) {
-  DCHECK(prefs_);
+  DCHECK(local_state_);
 }
 
 NotificationPromo::~NotificationPromo() {}
@@ -296,7 +289,7 @@ void NotificationPromo::InitFromJson(const base::DictionaryValue& json,
 }
 
 void NotificationPromo::CheckForNewNotification() {
-  NotificationPromo old_promo;
+  NotificationPromo old_promo(local_state_);
   old_promo.InitFromPrefs(promo_type_);
   const double old_start = old_promo.start_;
   const double old_end = old_promo.end_;
@@ -359,16 +352,16 @@ void NotificationPromo::WritePrefs() {
   promo_list->Set(0, ntp_promo);  // Only support 1 promo for now.
 
   base::DictionaryValue promo_dict;
-  promo_dict.MergeDictionary(prefs_->GetDictionary(kPrefPromoObject));
+  promo_dict.MergeDictionary(local_state_->GetDictionary(kPrefPromoObject));
   promo_dict.Set(PromoTypeToString(promo_type_), promo_list);
-  prefs_->Set(kPrefPromoObject, promo_dict);
+  local_state_->Set(kPrefPromoObject, promo_dict);
   DVLOG(1) << "WritePrefs " << promo_dict;
 }
 
 void NotificationPromo::InitFromPrefs(PromoType promo_type) {
   promo_type_ = promo_type;
   const base::DictionaryValue* promo_dict =
-      prefs_->GetDictionary(kPrefPromoObject);
+      local_state_->GetDictionary(kPrefPromoObject);
   if (!promo_dict)
     return;
 
@@ -425,9 +418,9 @@ bool NotificationPromo::CanShow() const {
 }
 
 // static
-void NotificationPromo::HandleClosed(PromoType promo_type) {
-  content::RecordAction(UserMetricsAction("NTPPromoClosed"));
-  NotificationPromo promo;
+void NotificationPromo::HandleClosed(PromoType promo_type,
+                                     PrefService* local_state) {
+  NotificationPromo promo(local_state);
   promo.InitFromPrefs(promo_type);
   if (!promo.closed_) {
     promo.closed_ = true;
@@ -436,9 +429,9 @@ void NotificationPromo::HandleClosed(PromoType promo_type) {
 }
 
 // static
-bool NotificationPromo::HandleViewed(PromoType promo_type) {
-  content::RecordAction(UserMetricsAction("NTPPromoShown"));
-  NotificationPromo promo;
+bool NotificationPromo::HandleViewed(PromoType promo_type,
+                                     PrefService* local_state) {
+  NotificationPromo promo(local_state);
   promo.InitFromPrefs(promo_type);
   ++promo.views_;
   if (promo.first_view_time_ == 0) {
@@ -466,9 +459,9 @@ bool NotificationPromo::ExceedsMaxSeconds() const {
 }
 
 // static
-GURL NotificationPromo::PromoServerURL() {
+GURL NotificationPromo::PromoServerURL(version_info::Channel channel) {
   GURL url(promo_server_url);
-  AppendQueryParameter(&url, "dist", ChannelString());
+  AppendQueryParameter(&url, "dist", ChannelString(channel));
   AppendQueryParameter(&url, "osname", PlatformString());
   AppendQueryParameter(&url, "branding", version_info::GetVersionNumber());
   AppendQueryParameter(&url, "osver", base::SysInfo::OperatingSystemVersion());
