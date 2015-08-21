@@ -7,6 +7,7 @@ package org.chromium.chromoting;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
@@ -47,21 +48,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     // but within edge margin.
     private static final float EDGE_MARGIN = 0.1f;
 
-    // Fix the desktop height and adjust width accordingly.
-    private static final float HALF_DESKTOP_HEIGHT = 1.0f;
-
     // Distance to move camera each time.
     private static final float CAMERA_MOTION_STEP = 0.5f;
-
-    private static final FloatBuffer DESKTOP_TEXTURE_COORDINATES = makeFloatBuffer(new float[] {
-            // Texture coordinate data.
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f
-    });
 
     private static final FloatBuffer SKYBOX_POSITION_COORDINATES = makeFloatBuffer(new float[] {
             -HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE,  // (0) Top-left near
@@ -99,31 +87,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
             6, 2, 7,
             7, 2, 3
     });
-
-    private static final String DESKTOP_VERTEX_SHADER =
-            "uniform mat4 u_CombinedMatrix;"
-            + "attribute vec4 a_Position;"
-            + "attribute vec2 a_TexCoordinate;"
-            + "varying vec2 v_TexCoordinate;"
-            + "void main() {"
-            + "  v_TexCoordinate = a_TexCoordinate;"
-            + "  gl_Position = u_CombinedMatrix * a_Position;"
-            + "}";
-
-    private static final String DESKTOP_FRAGMENT_SHADER =
-            "precision highp float;"
-            + "uniform sampler2D u_Texture;"
-            + "varying vec2 v_TexCoordinate;"
-            + "const float borderWidth = 0.002;"
-            + "void main() {"
-            + "  if (v_TexCoordinate.x > (1.0 - borderWidth) || v_TexCoordinate.x < borderWidth"
-            + "      || v_TexCoordinate.y > (1.0 - borderWidth)"
-            + "      || v_TexCoordinate.y < borderWidth) {"
-            + "    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
-            + "  } else {"
-            + "    gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"
-            + "  }"
-            + "}";
 
     private static final String SKYBOX_VERTEX_SHADER =
             "uniform mat4 u_CombinedMatrix;"
@@ -165,11 +128,10 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
     private final Activity mActivity;
 
-    private float mHalfDesktopWidth;
     private float mCameraPosition;
 
     // Lock to allow multithreaded access to mCameraPosition.
-    private Object mCameraPositionLock = new Object();
+    private final Object mCameraPositionLock = new Object();
 
     private float[] mCameraMatrix;
     private float[] mViewMatrix;
@@ -189,14 +151,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     // Eye position in desktop.
     private float[] mEyePositionVector;
 
-    private int mDesktopCombinedMatrixHandle;
-    private int mPositionHandle;
-    private int mTextureDataHandle;
-    private int mTextureUniformHandle;
-    private int mTextureCoordinateHandle;
-    private int mProgramHandle;
-    private int mDesktopVertexShaderHandle;
-    private int mDesktopFragmentShaderHandle;
     private int mSkyboxVertexShaderHandle;
     private int mSkyboxFragmentShaderHandle;
     private int mSkyboxProgramHandle;
@@ -204,29 +158,25 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private int mSkyboxCombinedMatrixHandle;
     private int mSkyboxTextureUnitHandle;
     private int mSkyboxTextureDataHandle;
+    private CardboardActivityDesktop mDesktop;
     private CardboardActivityEyePoint mEyePoint;
 
     // Flag to indicate whether reload the desktop texture or not.
     private boolean mReloadTexture;
 
     /** Lock to allow multithreaded access to mReloadTexture. */
-    private Object mReloadTextureLock = new Object();
+    private final Object mReloadTextureLock = new Object();
 
     // Lock for eye position related operations.
-    // This protects access to mEyePositionVector as well as mDesktop{Height/Width}Pixels.
-    private Object mEyePositionLock = new Object();
-
-    private int mDesktopHeightPixels;
-    private int mDesktopWidthPixels;
-
-    private FloatBuffer mDesktopCoordinates;
+    // This protects access to mEyePositionVector.
+    private final Object mEyePositionLock = new Object();
 
     // Flag to signal that the skybox images are fully decoded and should be loaded
     // into the OpenGL textures.
     private boolean mLoadSkyboxImagesTexture;
 
     // Lock to allow multithreaded access to mLoadSkyboxImagesTexture.
-    private Object mLoadSkyboxImagesTextureLock = new Object();
+    private final Object mLoadSkyboxImagesTextureLock = new Object();
 
     private ChromotingDownloadManager mDownloadManager;
 
@@ -285,20 +235,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         // Enable depth testing.
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-        // Set handles for desktop drawing.
-        mDesktopVertexShaderHandle =
-                ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, DESKTOP_VERTEX_SHADER);
-        mDesktopFragmentShaderHandle =
-                ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, DESKTOP_FRAGMENT_SHADER);
-        mProgramHandle = ShaderHelper.createAndLinkProgram(mDesktopVertexShaderHandle,
-                mDesktopFragmentShaderHandle, new String[] {"a_Position", "a_TexCoordinate"});
-        mDesktopCombinedMatrixHandle =
-                GLES20.glGetUniformLocation(mProgramHandle, "u_CombinedMatrix");
-        mTextureUniformHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Texture");
-        mPositionHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Position");
-        mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
-        mTextureDataHandle = TextureHelper.createTextureHandle();
-
         // Set handlers for skybox drawing.
         GLES20.glEnable(GLES20.GL_TEXTURE_CUBE_MAP);
         mSkyboxVertexShaderHandle =
@@ -316,6 +252,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
                 GLES20.glGetUniformLocation(mSkyboxProgramHandle, "u_TextureUnit");
         mSkyboxTextureDataHandle = TextureHelper.createTextureHandle();
 
+        mDesktop = new CardboardActivityDesktop();
         mEyePoint = new CardboardActivityEyePoint();
     }
 
@@ -347,7 +284,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
         headTransform.getForwardVector(mForwardVector, 0);
         getLookingPosition();
-        maybeLoadTexture(mTextureDataHandle);
+        maybeLoadDesktopTexture();
         maybeLoadCubeMapAndCleanImages(mSkyboxTextureDataHandle);
     }
 
@@ -367,12 +304,10 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
     @Override
     public void onRendererShutdown() {
-        GLES20.glDeleteShader(mDesktopVertexShaderHandle);
-        GLES20.glDeleteShader(mDesktopFragmentShaderHandle);
+        mDesktop.cleanup();
         mEyePoint.cleanup();
         GLES20.glDeleteShader(mSkyboxVertexShaderHandle);
         GLES20.glDeleteShader(mSkyboxFragmentShaderHandle);
-        GLES20.glDeleteTextures(1, new int[] {mTextureDataHandle}, 0);
         GLES20.glDeleteTextures(1, new int[] {mSkyboxTextureDataHandle}, 0);
         mActivity.runOnUiThread(new Runnable() {
             public void run() {
@@ -386,9 +321,13 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     }
 
     private void drawDesktop() {
-        GLES20.glUseProgram(mProgramHandle);
+        if (!mDesktop.hasVideoFrame()) {
+            // This can happen if the client is connected, but a complete
+            // video frame has not yet been decoded.
+            return;
+        }
 
-         // Translate the desktop model.
+
         Matrix.setIdentityM(mDesktopModelMatrix, 0);
         Matrix.translateM(mDesktopModelMatrix, 0, DESKTOP_POSITION_X,
                 DESKTOP_POSITION_Y, DESKTOP_POSITION_Z);
@@ -397,34 +336,9 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         Matrix.multiplyMM(mDesktopCombinedMatrix, 0, mViewMatrix, 0, mDesktopModelMatrix, 0);
         Matrix.multiplyMM(mDesktopCombinedMatrix, 0, mProjectionMatrix,
                 0, mDesktopCombinedMatrix, 0);
+        mDesktop.setCombinedMatrix(mDesktopCombinedMatrix);
 
-        // Pass in model view project matrix.
-        GLES20.glUniformMatrix4fv(mDesktopCombinedMatrixHandle, 1, false,
-                mDesktopCombinedMatrix, 0);
-
-        if (mDesktopCoordinates == null) {
-            // This can happen if the client is connected, but a complete video frame has not yet
-            // been decoded.
-            return;
-        }
-        // Pass in the desktop position.
-        GLES20.glVertexAttribPointer(mPositionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT, false,
-                0, mDesktopCoordinates);
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-        // Pass in texture coordinate.
-        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, TEXTURE_COORDINATE_DATA_SIZE,
-                GLES20.GL_FLOAT, false, 0, DESKTOP_TEXTURE_COORDINATES);
-        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
-
-        // Pass in texture data.
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
-        GLES20.glUniform1i(mTextureUniformHandle, 0);
-
-        // Draw the desktop.
-        int totalPointNumber = 6;
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, totalPointNumber);
+        mDesktop.draw();
     }
 
     private void drawEyePoint() {
@@ -432,10 +346,10 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
             return;
         }
 
-        float eyePointX = clamp(mEyePositionVector[0], -mHalfDesktopWidth,
-                mHalfDesktopWidth);
-        float eyePointY = clamp(mEyePositionVector[1], -HALF_DESKTOP_HEIGHT,
-                HALF_DESKTOP_HEIGHT);
+        float eyePointX = clamp(mEyePositionVector[0], -mDesktop.getHalfWidth(),
+                mDesktop.getHalfWidth());
+        float eyePointY = clamp(mEyePositionVector[1], -mDesktop.getHalfHeight(),
+                mDesktop.getHalfHeight());
         Matrix.setIdentityM(mEyePointModelMatrix, 0);
         Matrix.translateM(mEyePointModelMatrix, 0, -eyePointX, -eyePointY,
                 DESKTOP_POSITION_Z);
@@ -475,14 +389,18 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
      */
     public PointF getMouseCoordinates() {
         PointF result = new PointF();
+        Point shapePixels = mDesktop.getFrameSizePixels();
+        int heightPixels = shapePixels.x;
+        int widthPixels = shapePixels.y;
+
         synchronized (mEyePositionLock) {
             // Due to the coordinate direction, we only have to inverse x.
-            result.x = (-mEyePositionVector[0] + mHalfDesktopWidth)
-                    / (2 * mHalfDesktopWidth) * mDesktopWidthPixels;
-            result.y = (mEyePositionVector[1] + HALF_DESKTOP_HEIGHT)
-                    / (2 * HALF_DESKTOP_HEIGHT) * mDesktopHeightPixels;
-            result.x = clamp(result.x, 0, mDesktopWidthPixels);
-            result.y = clamp(result.y, 0, mDesktopHeightPixels);
+            result.x = (-mEyePositionVector[0] + mDesktop.getHalfWidth())
+                    / (2 * mDesktop.getHalfWidth()) * widthPixels;
+            result.y = (mEyePositionVector[1] + mDesktop.getHalfHeight())
+                    / (2 * mDesktop.getHalfHeight()) * heightPixels;
+            result.x = clamp(result.x, 0, widthPixels);
+            result.y = clamp(result.y, 0, heightPixels);
         }
         return result;
     }
@@ -540,8 +458,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
      */
     public boolean isLookingAtDesktop() {
         synchronized (mEyePositionLock) {
-            return Math.abs(mEyePositionVector[0]) <= (mHalfDesktopWidth + EDGE_MARGIN)
-                && Math.abs(mEyePositionVector[1]) <= (HALF_DESKTOP_HEIGHT + EDGE_MARGIN);
+            return Math.abs(mEyePositionVector[0]) <= (mDesktop.getHalfWidth() + EDGE_MARGIN)
+                && Math.abs(mEyePositionVector[1]) <= (mDesktop.getHalfHeight() + EDGE_MARGIN);
         }
     }
 
@@ -551,7 +469,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
      */
     public boolean isLookingLeftOfDesktop() {
         synchronized (mEyePositionLock) {
-            return mEyePositionVector[0] >= (mHalfDesktopWidth + EDGE_MARGIN);
+            return mEyePositionVector[0] >= (mDesktop.getHalfWidth() + EDGE_MARGIN);
         }
     }
 
@@ -561,7 +479,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
      */
     public boolean isLookingRightOfDesktop() {
         synchronized (mEyePositionLock) {
-            return mEyePositionVector[0] <= -(mHalfDesktopWidth + EDGE_MARGIN);
+            return mEyePositionVector[0] <= -(mDesktop.getHalfWidth() + EDGE_MARGIN);
         }
     }
 
@@ -571,7 +489,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
      */
     public boolean isLookingAboveDesktop() {
         synchronized (mEyePositionLock) {
-            return mEyePositionVector[1] <= -(HALF_DESKTOP_HEIGHT + EDGE_MARGIN);
+            return mEyePositionVector[1] <= -(mDesktop.getHalfHeight() + EDGE_MARGIN);
         }
     }
 
@@ -581,7 +499,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
      */
     public boolean isLookingBelowDesktop() {
         synchronized (mEyePositionLock) {
-            return mEyePositionVector[1] >= (HALF_DESKTOP_HEIGHT + EDGE_MARGIN);
+            return mEyePositionVector[1] >= (mDesktop.getHalfHeight() + EDGE_MARGIN);
         }
     }
 
@@ -602,10 +520,10 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     }
 
     /**
-     * Link desktop texture with textureDataHandle if {@link mReloadTexture} is true.
+     * Link desktop texture with {@link CardboardActivityDesktop} if {@link mReloadTexture} is true.
      * @param textureDataHandle the handle we want attach texture to
      */
-    private void maybeLoadTexture(int textureDataHandle) {
+    private void maybeLoadDesktopTexture() {
         synchronized (mReloadTextureLock) {
             if (!mReloadTexture) {
                 return;
@@ -621,13 +539,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
             return;
         }
 
-        synchronized (mEyePositionLock) {
-            mDesktopHeightPixels = bitmap.getHeight();
-            mDesktopWidthPixels = bitmap.getWidth();
-        }
-
-        updateDesktopCoordinatesBuffer(bitmap);
-        TextureHelper.linkTexture(textureDataHandle, bitmap);
+        mDesktop.updateVideoFrame(bitmap);
 
         synchronized (mReloadTextureLock) {
             mReloadTexture = false;
@@ -637,34 +549,12 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     /**
      * Convert float array to a FloatBuffer for use in OpenGL calls.
      */
-    private static FloatBuffer makeFloatBuffer(float[] data) {
+    public static FloatBuffer makeFloatBuffer(float[] data) {
         FloatBuffer result = ByteBuffer
                 .allocateDirect(data.length * BYTE_PER_FLOAT)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         result.put(data).position(0);
         return result;
-    }
-
-    /**
-     *  Update the desktop coordinates based on the new bitmap. Note here we fix the
-     *  height of the desktop and vary width accordingly.
-     */
-    private void updateDesktopCoordinatesBuffer(Bitmap bitmap) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-        float newHalfDesktopWidth = width * HALF_DESKTOP_HEIGHT / height;
-        if (Math.abs(mHalfDesktopWidth - newHalfDesktopWidth) > 0.0001) {
-            mHalfDesktopWidth = newHalfDesktopWidth;
-            mDesktopCoordinates = makeFloatBuffer(new float[] {
-                // Desktop model coordinates.
-                -mHalfDesktopWidth, HALF_DESKTOP_HEIGHT, 0.0f,
-                -mHalfDesktopWidth, -HALF_DESKTOP_HEIGHT, 0.0f,
-                mHalfDesktopWidth, HALF_DESKTOP_HEIGHT, 0.0f,
-                -mHalfDesktopWidth, -HALF_DESKTOP_HEIGHT, 0.0f,
-                mHalfDesktopWidth, -HALF_DESKTOP_HEIGHT, 0.0f,
-                mHalfDesktopWidth, HALF_DESKTOP_HEIGHT, 0.0f
-            });
-        }
     }
 
     /**
