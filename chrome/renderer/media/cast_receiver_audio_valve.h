@@ -27,7 +27,7 @@ class CastReceiverAudioValve :
                int audio_delay_milliseconds,
                double volume,
                bool key_pressed) override;
-  void OnCaptureError() override;
+  void OnCaptureError(const std::string& message) override;
 
   // When this returns, no more calls will be forwarded to |cb|.
   void Stop();

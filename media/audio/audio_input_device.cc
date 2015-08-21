@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager_base.h"
@@ -177,7 +178,8 @@ void AudioInputDevice::OnStateChanged(
       // object.  Possibly require calling Initialize again or provide
       // a callback object via Start() and clear it in Stop().
       if (!audio_thread_.IsStopped())
-        callback_->OnCaptureError();
+        callback_->OnCaptureError(
+            "AudioInputDevice::OnStateChanged - audio thread still running");
       break;
     default:
       NOTREACHED();
@@ -296,8 +298,6 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
 }
 
 void AudioInputDevice::AudioThreadCallback::Process(uint32 pending_data) {
-  CHECK_EQ(current_segment_id_, static_cast<int>(pending_data));
-
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.
@@ -311,7 +311,20 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32 pending_data) {
             segment_length_ - sizeof(AudioInputBufferParameters));
 
   // Verify correct sequence.
-  CHECK_EQ(last_buffer_id_ + 1, buffer->params.id);
+  if (buffer->params.id != last_buffer_id_ + 1) {
+    std::string message = base::StringPrintf(
+        "Incorrect buffer sequence. Expected = %u. Actual = %u.",
+        last_buffer_id_ + 1, buffer->params.id);
+    LOG(ERROR) << message;
+    capture_callback_->OnCaptureError(message);
+  }
+  if (current_segment_id_ != static_cast<int>(pending_data)) {
+    std::string message = base::StringPrintf(
+        "Segment id not matching. Remote = %u. Local = %d.",
+        pending_data, current_segment_id_);
+    LOG(ERROR) << message;
+    capture_callback_->OnCaptureError(message);
+  }
   last_buffer_id_ = buffer->params.id;
 
   // Use pre-allocated audio bus wrapping existing block of shared memory.

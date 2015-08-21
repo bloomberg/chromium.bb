@@ -30,7 +30,7 @@ class AudioCapturerSource
                          bool key_pressed) = 0;
 
     // Signals an error has occurred.
-    virtual void OnCaptureError() = 0;
+    virtual void OnCaptureError(const std::string& message) = 0;
 
    protected:
     virtual ~CaptureCallback() {}

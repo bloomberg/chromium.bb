@@ -176,7 +176,7 @@ void CastReceiverSession::AudioCapturerSource::Initialize(
   if (params.sample_rate() !=
       cast_receiver_session_->audio_config_.rtp_timebase ||
       params.channels() != cast_receiver_session_->audio_config_.channels) {
-    callback->OnCaptureError();
+    callback->OnCaptureError(std::string());
     return;
   }
   audio_valve_ = new CastReceiverAudioValve(callback);

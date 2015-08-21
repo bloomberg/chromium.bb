@@ -561,8 +561,8 @@ void WebRtcAudioCapturer::Capture(const media::AudioBus* audio_source,
   }
 }
 
-void WebRtcAudioCapturer::OnCaptureError() {
-  NOTIMPLEMENTED();
+void WebRtcAudioCapturer::OnCaptureError(const std::string& message) {
+  WebRtcLogMessage("WAC::OnCaptureError: " + message);
 }
 
 media::AudioParameters WebRtcAudioCapturer::source_audio_parameters() const {

@@ -20,10 +20,10 @@ void CastReceiverAudioValve::Capture(const media::AudioBus* audio_source,
   }
 }
 
-void CastReceiverAudioValve::OnCaptureError() {
+void CastReceiverAudioValve::OnCaptureError(const std::string& message) {
   base::AutoLock lock(lock_);
   if (cb_) {
-    cb_->OnCaptureError();
+    cb_->OnCaptureError(message);
   }
 }
 
