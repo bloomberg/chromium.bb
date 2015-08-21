@@ -77,6 +77,7 @@
 #include "components/sync_driver/sync_stopped_reporter.h"
 #include "components/sync_driver/system_encryptor.h"
 #include "components/sync_driver/user_selectable_sync_type.h"
+#include "components/version_info/version_info_values.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -238,6 +239,7 @@ ProfileSyncService::ProfileSyncService(
       backup_finished_(false),
       clear_browsing_data_(base::Bind(&ClearBrowsingData)),
       browsing_data_remover_observer_(NULL),
+      passphrase_prompt_triggered_by_version_(false),
       weak_factory_(this),
       startup_controller_weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -276,6 +278,17 @@ ProfileSyncService::ProfileSyncService(
       new SessionsSyncManager(profile, local_device_.get(), router.Pass()));
   device_info_sync_service_.reset(
       new DeviceInfoSyncService(local_device_.get()));
+
+  std::string last_version = sync_prefs_.GetLastRunVersion();
+  std::string current_version = PRODUCT_VERSION;
+  sync_prefs_.SetLastRunVersion(current_version);
+
+  // Check for a major version change. Note that the versions have format
+  // MAJOR.MINOR.BUILD.PATCH.
+  if (last_version.substr(0, last_version.find('.')) !=
+      current_version.substr(0, current_version.find('.'))) {
+    passphrase_prompt_triggered_by_version_ = true;
+  }
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -581,17 +594,28 @@ void ProfileSyncService::OnDirectoryTypeStatusCounterUpdated(
 void ProfileSyncService::OnDataTypeRequestsSyncStartup(
     syncer::ModelType type) {
   DCHECK(syncer::UserTypes().Has(type));
-  if (backend_.get()) {
-    DVLOG(1) << "A data type requested sync startup, but it looks like "
-                "something else beat it to the punch.";
-    return;
-  }
 
   if (!GetPreferredDataTypes().Has(type)) {
     // We can get here as datatype SyncableServices are typically wired up
     // to the native datatype even if sync isn't enabled.
     DVLOG(1) << "Dropping sync startup request because type "
              << syncer::ModelTypeToString(type) << "not enabled.";
+    return;
+  }
+
+  // If this is a data type change after a major version update, reset the
+  // passphrase prompted state and notify observers.
+  if (IsPassphraseRequired() && passphrase_prompt_triggered_by_version_) {
+    // The major version has changed and a local syncable change was made.
+    // Reset the passphrase prompt state.
+    passphrase_prompt_triggered_by_version_ = false;
+    sync_prefs_.SetPassphrasePrompted(false);
+    NotifyObservers();
+  }
+
+  if (backend_.get()) {
+    DVLOG(1) << "A data type requested sync startup, but it looks like "
+                "something else beat it to the punch.";
     return;
   }
 

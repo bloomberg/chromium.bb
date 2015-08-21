@@ -37,8 +37,10 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_manager.h"
+#include "components/sync_driver/fake_data_type_controller.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "components/version_info/version_info_values.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -246,6 +248,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
     service_->SetClearingBrowseringDataForTesting(
         base::Bind(&ProfileSyncServiceTest::ClearBrowsingDataCallback,
                    base::Unretained(this)));
+    service_->RegisterDataTypeController(
+        new sync_driver::FakeDataTypeController(syncer::BOOKMARKS));
   }
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -263,14 +267,26 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void InitializeForNthSync() {
-    // Set first sync time before initialize to disable backup.
+    // Set first sync time before initialize to disable backup and simulate
+    // a complete sync setup.
     sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
     sync_prefs.SetFirstSyncTime(base::Time::Now());
+    sync_prefs.SetSyncSetupCompleted();
+    sync_prefs.SetKeepEverythingSynced(true);
     service_->Initialize();
   }
 
   void InitializeForFirstSync() {
     service_->Initialize();
+  }
+
+  void TriggerPassphraseRequired() {
+    service_->OnPassphraseRequired(syncer::REASON_DECRYPTION,
+                                   sync_pb::EncryptedData());
+  }
+
+  void TriggerDataTypeStartRequest() {
+    service_->OnDataTypeRequestsSyncStartup(syncer::BOOKMARKS);
   }
 
   void ExpectDataTypeManagerCreation(int times) {
@@ -367,7 +383,7 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
 // and notifies observers.
 TEST_F(ProfileSyncServiceTest, SetupInProgress) {
   CreateService(browser_sync::AUTO_START);
-  InitializeForNthSync();
+  InitializeForFirstSync();
 
   TestSyncServiceObserver observer(service());
   service()->AddObserver(&observer);
@@ -432,11 +448,13 @@ TEST_F(ProfileSyncServiceTest, EarlyRequestStop) {
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
       sync_driver::prefs::kSyncSuppressStart));
 
-  // Because of supression, this should fail.
-  InitializeForNthSync();
+  // Because of suppression, this should fail.
+  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+  sync_prefs.SetFirstSyncTime(base::Time::Now());
+  service()->Initialize();
   EXPECT_FALSE(service()->IsSyncActive());
 
-  // Remove suppression.  This should be enough to allow init to happen.
+  // Request start.  This should be enough to allow init to happen.
   ExpectDataTypeManagerCreation(1);
   ExpectSyncBackendHostCreation(1);
   service()->RequestStart();
@@ -725,6 +743,37 @@ TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
   service()->OnLocalSetPassphraseEncryption(nigori_state);
   PumpLoop();
   testing::Mock::VerifyAndClearExpectations(components_factory());
+}
+
+// Test that the passphrase prompt due to version change logic gets triggered
+// on a datatype type requesting startup, but only happens once.
+TEST_F(ProfileSyncServiceTest, PassphrasePromptDueToVersion) {
+  IssueTestTokens();
+  CreateService(browser_sync::AUTO_START);
+  ExpectDataTypeManagerCreation(1);
+  ExpectSyncBackendHostCreation(1);
+  InitializeForNthSync();
+
+  sync_driver::SyncPrefs sync_prefs(service()->profile()->GetPrefs());
+  EXPECT_EQ(PRODUCT_VERSION, sync_prefs.GetLastRunVersion());
+
+  sync_prefs.SetPassphrasePrompted(true);
+
+  // Until a datatype requests startup while a passphrase is required the
+  // passphrase prompt bit should remain set.
+  EXPECT_TRUE(sync_prefs.IsPassphrasePrompted());
+  TriggerPassphraseRequired();
+  EXPECT_TRUE(sync_prefs.IsPassphrasePrompted());
+
+  // Because the last version was unset, this run should be treated as a new
+  // version and force a prompt.
+  TriggerDataTypeStartRequest();
+  EXPECT_FALSE(sync_prefs.IsPassphrasePrompted());
+
+  // At this point further datatype startup request should have no effect.
+  sync_prefs.SetPassphrasePrompted(true);
+  TriggerDataTypeStartRequest();
+  EXPECT_TRUE(sync_prefs.IsPassphrasePrompted());
 }
 
 }  // namespace

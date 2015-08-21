@@ -71,6 +71,8 @@ extern const char kSyncShutdownCleanly[];
 
 extern const char kSyncInvalidationVersions[];
 
+extern const char kSyncLastRunVersion[];
+
 }  // namespace prefs
 
 }  // namespace sync_driver

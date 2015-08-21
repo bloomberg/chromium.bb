@@ -159,6 +159,13 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void UpdateInvalidationVersions(
       const std::map<syncer::ModelType, int64>& invalidation_versions);
 
+  // Will return the contents of the LastRunVersion preference. This may be an
+  // empty string if no version info was present, and is only valid at
+  // Sync startup time (after which the LastRunVersion preference will have been
+  // updated to the current version).
+  std::string GetLastRunVersion() const;
+  void SetLastRunVersion(const std::string& current_version);
+
  private:
   void RegisterPrefGroups();
 

@@ -83,6 +83,7 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
   registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
   registry->RegisterDictionaryPref(prefs::kSyncInvalidationVersions);
+  registry->RegisterStringPref(prefs::kSyncLastRunVersion, std::string());
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -106,6 +107,7 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncMemoryPressureWarningCount);
   pref_service_->ClearPref(prefs::kSyncShutdownCleanly);
   pref_service_->ClearPref(prefs::kSyncInvalidationVersions);
+  pref_service_->ClearPref(prefs::kSyncLastRunVersion);
 
   // TODO(nick): The current behavior does not clear
   // e.g. prefs::kSyncBookmarks.  Is that really what we want?
@@ -507,6 +509,14 @@ void SyncPrefs::UpdateInvalidationVersions(
   }
   pref_service_->Set(prefs::kSyncInvalidationVersions,
                      *invalidation_dictionary);
+}
+
+std::string SyncPrefs::GetLastRunVersion() const {
+  return pref_service_->GetString(prefs::kSyncLastRunVersion);
+}
+
+void SyncPrefs::SetLastRunVersion(const std::string& current_version) {
+  pref_service_->SetString(prefs::kSyncLastRunVersion, current_version);
 }
 
 }  // namespace sync_driver

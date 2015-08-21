@@ -96,7 +96,7 @@ bool SyncBackendHostMock::HasUnsyncedItems() const {
 }
 
 bool SyncBackendHostMock::IsNigoriEnabled() const {
- return false;
+ return true;
 }
 
 syncer::PassphraseType SyncBackendHostMock::GetPassphraseType() const {

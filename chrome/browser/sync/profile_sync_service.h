@@ -1068,6 +1068,12 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Used to save/restore nigori state across backend instances. May be null.
   scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state_;
 
+  // Whether the major version has changed since the last time Chrome ran,
+  // and therefore a passphrase required state should result in prompting
+  // the user. This logic is only enabled on platforms that consume the
+  // IsPassphrasePrompted sync preference.
+  bool passphrase_prompt_triggered_by_version_;
+
   base::WeakPtrFactory<ProfileSyncService> weak_factory_;
 
   // We don't use |weak_factory_| for the StartupController because the weak
