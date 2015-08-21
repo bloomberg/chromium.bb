@@ -44,8 +44,6 @@ class TestSuite {
 
   void ResetCommandLine();
 
-  void CreateAtExitManager();
-
   void AddTestLauncherResultPrinter();
 
   int Run();
