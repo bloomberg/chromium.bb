@@ -78,7 +78,7 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
       i != cookies.end(); ++i) {
     ScopedJavaLocalRef<jobject> java_cookie = Java_CookiesFetcher_createCookie(
         env, jobject_.obj(),
-        base::android::ConvertUTF8ToJavaString(env, i->Source()).obj(),
+        base::android::ConvertUTF8ToJavaString(env, i->Source().spec()).obj(),
         base::android::ConvertUTF8ToJavaString(env, i->Name()).obj(),
         base::android::ConvertUTF8ToJavaString(env, i->Value()).obj(),
         base::android::ConvertUTF8ToJavaString(env, i->Domain()).obj(),
@@ -155,7 +155,7 @@ void CookiesFetcher::RestoreToCookieJarInternal(
   base::Callback<void(bool success)> cb;
 
   monster->SetCookieWithDetailsAsync(
-      GURL(cookie.Source()), cookie.Name(), cookie.Value(), cookie.Domain(),
+      cookie.Source(), cookie.Name(), cookie.Value(), cookie.Domain(),
       cookie.Path(), cookie.ExpiryDate(), cookie.IsSecure(),
       cookie.IsHttpOnly(), cookie.IsFirstPartyOnly(), cookie.Priority(), cb);
 }

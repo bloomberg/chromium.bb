@@ -197,6 +197,43 @@ class CookiesTreeModelTest : public testing::Test {
     return make_scoped_ptr(cookies_model);
   }
 
+  // Checks that, when setting content settings for host nodes in the
+  // cookie tree, the content settings are applied to the expected URL.
+  void CheckContentSettingsUrlForHostNodes(
+      const CookieTreeNode* node,
+      CookieTreeNode::DetailedInfo::NodeType node_type,
+      content_settings::CookieSettings* cookie_settings,
+      const GURL& expected_url) {
+    if (!node->empty()) {
+      for (int i = 0; i < node->child_count(); ++i) {
+        const CookieTreeNode* child = node->GetChild(i);
+        CheckContentSettingsUrlForHostNodes(child,
+                                            child->GetDetailedInfo().node_type,
+                                            cookie_settings, expected_url);
+      }
+    }
+
+    ASSERT_EQ(node_type, node->GetDetailedInfo().node_type);
+
+    if (node_type == CookieTreeNode::DetailedInfo::TYPE_HOST) {
+      const CookieTreeHostNode* host =
+          static_cast<const CookieTreeHostNode*>(node);
+
+      if (expected_url.SchemeIsFile()) {
+        EXPECT_FALSE(host->CanCreateContentException());
+      } else {
+        cookie_settings->ResetCookieSetting(
+            ContentSettingsPattern::FromURLNoWildcard(expected_url),
+            ContentSettingsPattern::Wildcard());
+        EXPECT_FALSE(cookie_settings->IsCookieSessionOnly(expected_url));
+
+        host->CreateContentException(cookie_settings,
+                                     CONTENT_SETTING_SESSION_ONLY);
+        EXPECT_TRUE(cookie_settings->IsCookieSessionOnly(expected_url));
+      }
+    }
+  }
+
   std::string GetNodesOfChildren(
       const CookieTreeNode* node,
       CookieTreeNode::DetailedInfo::NodeType node_type) {
@@ -1347,6 +1384,94 @@ TEST_F(CookiesTreeModelTest, CookiesFilter) {
 
   cookies_model.UpdateSearchResults(base::string16());
   EXPECT_EQ("A,B,C,D", GetDisplayedCookies(&cookies_model));
+}
+
+// Tests that cookie source URLs are stored correctly in the cookies
+// tree model.
+TEST_F(CookiesTreeModelTest, CanonicalizeCookieSource) {
+  LocalDataContainer* container =
+      new LocalDataContainer(mock_browsing_data_cookie_helper_.get(),
+                             mock_browsing_data_database_helper_.get(),
+                             mock_browsing_data_local_storage_helper_.get(),
+                             mock_browsing_data_session_storage_helper_.get(),
+                             mock_browsing_data_appcache_helper_.get(),
+                             mock_browsing_data_indexed_db_helper_.get(),
+                             mock_browsing_data_file_system_helper_.get(),
+                             mock_browsing_data_quota_helper_.get(),
+                             mock_browsing_data_channel_id_helper_.get(),
+                             mock_browsing_data_service_worker_helper_.get(),
+                             mock_browsing_data_flash_lso_helper_.get());
+  CookiesTreeModel cookies_model(container, special_storage_policy(),
+                                 true /* group by cookie source */);
+
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("file:///tmp/test.html"), "A=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("http://example.com"), "B=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("http://example.com/"), "C=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("http://example.com/test"), "D=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("http://example.com:1234/"), "E=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("https://example.com/"), "F=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("http://user:pwd@example.com/"), "G=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("http://example.com/test?foo"), "H=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("http://example.com/test#foo"), "I=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("https://example2.com/test#foo"), "J=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("http://example3.com:1234/test#foo"), "K=1");
+  mock_browsing_data_cookie_helper_->AddCookieSamples(
+      GURL("http://user:pwd@example4.com/test?foo"), "L=1");
+  mock_browsing_data_cookie_helper_->Notify();
+
+  // Check that all the above example.com cookies go on the example.com
+  // host node.
+  cookies_model.UpdateSearchResults(
+      base::string16(base::ASCIIToUTF16("example.com")));
+  EXPECT_EQ("B,C,D,E,F,G,H,I", GetDisplayedCookies(&cookies_model));
+
+  TestingProfile profile;
+  content_settings::CookieSettings* cookie_settings =
+      CookieSettingsFactory::GetForProfile(&profile).get();
+
+  // Check that content settings for different URLs get applied to the
+  // correct URL. That is, setting a cookie on https://example2.com
+  // should create a host node for http://example2.com and thus content
+  // settings set on that host node should apply to http://example2.com.
+
+  cookies_model.UpdateSearchResults(
+      base::string16(base::ASCIIToUTF16("file://")));
+  EXPECT_EQ("A", GetDisplayedCookies(&cookies_model));
+  CheckContentSettingsUrlForHostNodes(
+      cookies_model.GetRoot(), CookieTreeNode::DetailedInfo::TYPE_ROOT,
+      cookie_settings, GURL("file:///test/tmp.html"));
+
+  cookies_model.UpdateSearchResults(
+      base::string16(base::ASCIIToUTF16("example2.com")));
+  EXPECT_EQ("J", GetDisplayedCookies(&cookies_model));
+  CheckContentSettingsUrlForHostNodes(
+      cookies_model.GetRoot(), CookieTreeNode::DetailedInfo::TYPE_ROOT,
+      cookie_settings, GURL("http://example2.com"));
+
+  cookies_model.UpdateSearchResults(
+      base::string16(base::ASCIIToUTF16("example3.com")));
+  EXPECT_EQ("K", GetDisplayedCookies(&cookies_model));
+  CheckContentSettingsUrlForHostNodes(
+      cookies_model.GetRoot(), CookieTreeNode::DetailedInfo::TYPE_ROOT,
+      cookie_settings, GURL("http://example3.com"));
+
+  cookies_model.UpdateSearchResults(
+      base::string16(base::ASCIIToUTF16("example4.com")));
+  EXPECT_EQ("L", GetDisplayedCookies(&cookies_model));
+  CheckContentSettingsUrlForHostNodes(
+      cookies_model.GetRoot(), CookieTreeNode::DetailedInfo::TYPE_ROOT,
+      cookie_settings, GURL("http://example4.com"));
 }
 
 }  // namespace

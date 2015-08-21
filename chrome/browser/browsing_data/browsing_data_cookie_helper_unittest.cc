@@ -21,7 +21,7 @@ class CookieExpectation {
   CookieExpectation() {}
 
   bool MatchesCookie(const net::CanonicalCookie& cookie) const {
-    if (!source_.empty() && source_ != cookie.Source())
+    if (!source_.is_empty() && source_ != cookie.Source())
       return false;
     if (!domain_.empty() && domain_ != cookie.Domain())
       return false;
@@ -34,7 +34,7 @@ class CookieExpectation {
     return true;
   }
 
-  std::string source_;
+  GURL source_;
   std::string domain_;
   std::string path_;
   std::string name_;
@@ -74,7 +74,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
                             const char* value) {
     CookieExpectation matcher;
     if (source)
-      matcher.source_ = source;
+      matcher.source_ = GURL(source);
     if (domain)
       matcher.domain_ = domain;
     if (path)
@@ -192,8 +192,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
 
   void DeleteCookie(BrowsingDataCookieHelper* helper, const GURL origin) {
     for (const auto& cookie : cookie_list_) {
-      if (cookie.Source() ==
-          net::CanonicalCookie::GetCookieSourceFromURL(origin))
+      if (cookie.Source() == origin)
         helper->DeleteCookie(cookie);
     }
   }

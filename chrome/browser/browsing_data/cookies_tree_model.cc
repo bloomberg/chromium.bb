@@ -115,6 +115,21 @@ std::string CanonicalizeHost(const GURL& url) {
   return retval;
 }
 
+// When creating a cookie tree node from a cookie, strip the port of the
+// cookie source and treat all non-file:// URLs as http://.
+GURL CanonicalizeCookieSource(const net::CanonicalCookie& cookie) {
+  GURL url = cookie.Source();
+  if (url.SchemeIsFile())
+    return url;
+
+  url::Replacements<char> replacements;
+  replacements.ClearPort();
+  if (url.SchemeIsCryptographic())
+    replacements.SetScheme("http", url::Component(0, 4));
+
+  return url.GetOrigin().ReplaceComponents(replacements);
+}
+
 #if defined(ENABLE_EXTENSIONS)
 bool TypeIsProtected(CookieTreeNode::DetailedInfo::NodeType type) {
   switch (type) {
@@ -1156,18 +1171,17 @@ void CookiesTreeModel::PopulateCookieInfoWithFilter(
   notifier->StartBatchUpdate();
   for (CookieList::iterator it = container->cookie_list_.begin();
        it != container->cookie_list_.end(); ++it) {
-    std::string source_string = it->Source();
-    if (source_string.empty() || !group_by_cookie_source_) {
+    GURL source = CanonicalizeCookieSource(*it);
+    if (source.is_empty() || !group_by_cookie_source_) {
       std::string domain = it->Domain();
       if (domain.length() > 1 && domain[0] == '.')
         domain = domain.substr(1);
 
       // We treat secure cookies just the same as normal ones.
-      source_string = std::string(url::kHttpScheme) +
-          url::kStandardSchemeSeparator + domain + "/";
+      source = GURL(std::string(url::kHttpScheme) +
+                    url::kStandardSchemeSeparator + domain + "/");
     }
 
-    GURL source(source_string);
     if (filter.empty() || (CookieTreeHostNode::TitleForUrl(source)
                                .find(filter) != base::string16::npos)) {
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(source);

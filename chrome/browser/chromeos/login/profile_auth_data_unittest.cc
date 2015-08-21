@@ -175,12 +175,12 @@ void ProfileAuthDataTest::VerifyUserCookies(
   net::CookieList user_cookies = GetUserCookies();
   ASSERT_EQ(2u, user_cookies.size());
   net::CanonicalCookie* cookie = &user_cookies[0];
-  EXPECT_EQ(kSAMLIdPCookieURL, cookie->Source());
+  EXPECT_EQ(GURL(kSAMLIdPCookieURL), cookie->Source());
   EXPECT_EQ(kCookieName, cookie->Name());
   EXPECT_EQ(expected_saml_idp_cookie_value, cookie->Value());
   EXPECT_EQ(kSAMLIdPCookieDomain, cookie->Domain());
   cookie = &user_cookies[1];
-  EXPECT_EQ(kGAIACookieURL, cookie->Source());
+  EXPECT_EQ(GURL(kGAIACookieURL), cookie->Source());
   EXPECT_EQ(kCookieName, cookie->Name());
   EXPECT_EQ(expected_gaia_cookie_value, cookie->Value());
   EXPECT_EQ(kGAIACookieDomain, cookie->Domain());
