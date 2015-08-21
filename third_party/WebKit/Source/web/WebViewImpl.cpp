@@ -36,7 +36,6 @@
 #include "core/InputTypeNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/dom/Document.h"
-#include "core/dom/ElementTraversal.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Text.h"
@@ -62,7 +61,6 @@
 #include "core/frame/SmartClip.h"
 #include "core/frame/TopControls.h"
 #include "core/frame/VisualViewport.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -2493,76 +2491,7 @@ int WebViewImpl::textInputFlags()
         }
     }
 
-    if (isListeningToKeyboardEvents(element))
-        flags |= WebTextInputFlagListeningToKeyboardEvents;
-
-    if (nextFocusableElementInForm(element, WebFocusTypeForward))
-        flags |= WebTextInputFlagHaveNextFocusableElement;
-
-    if (nextFocusableElementInForm(element, WebFocusTypeBackward))
-        flags |= WebTextInputFlagHavePreviousFocusableElement;
-
     return flags;
-}
-
-Element* WebViewImpl::nextFocusableElementInForm(Element* element, WebFocusType focusType)
-{
-    if (!element->isFormControlElement() && !element->isContentEditable())
-        return nullptr;
-
-    HTMLFormElement* formOwner = nullptr;
-    if (element->isContentEditable())
-        formOwner = Traversal<HTMLFormElement>::firstAncestor(*element);
-    else
-        formOwner = toHTMLFormControlElement(element)->formOwner();
-
-    if (!formOwner)
-        return nullptr;
-
-    Element* nextElement = element;
-    for (nextElement = page()->focusController().findFocusableElement(focusType, *nextElement); nextElement; nextElement = page()->focusController().findFocusableElement(focusType, *nextElement)) {
-        if (nextElement->isContentEditable() && nextElement->isDescendantOf(formOwner))
-            return nextElement;
-        if (!nextElement->isFormControlElement())
-            continue;
-        HTMLFormControlElement* formElement = toHTMLFormControlElement(nextElement);
-        if (formElement->formOwner() != formOwner)
-            continue;
-        // Skip disabled or readonly editable elements.
-        if (formElement->isDisabledOrReadOnly())
-            continue;
-        LayoutObject* layout = nextElement->layoutObject();
-        if (layout && layout->isTextControl()) {
-            // TODO(ajith.v) Extend it for Select element, Radio button and Check boxes
-            return nextElement;
-        }
-    }
-    return nullptr;
-}
-
-bool WebViewImpl::isListeningToKeyboardEvents(Element* element)
-{
-    if (!element->isFormControlElement() && !element->isContentEditable())
-        return false;
-    for (Node* node = element; node; node = node->parentNode()) {
-        if (node->hasEventListeners(EventTypeNames::keydown) || node->hasEventListeners(EventTypeNames::keypress) || node->hasEventListeners(EventTypeNames::keyup))
-            return true;
-    }
-    return false;
-}
-
-void WebViewImpl::advanceFocusInForm(WebFocusType focusType)
-{
-    Element* element = focusedElement();
-    if (!element)
-        return;
-
-    RefPtrWillBeRawPtr<Element> nextElement = nextFocusableElementInForm(element, focusType);
-    if (!nextElement)
-        return;
-
-    nextElement->scrollIntoViewIfNeeded(true /*centerIfNeeded*/);
-    nextElement->focus(false, focusType);
 }
 
 WebString WebViewImpl::inputModeOfFocusedElement()

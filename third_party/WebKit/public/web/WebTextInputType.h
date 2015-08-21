@@ -85,10 +85,7 @@ enum WebTextInputFlags {
     WebTextInputFlagAutocapitalizeNone = 1 << 6,
     WebTextInputFlagAutocapitalizeCharacters = 1 << 7,
     WebTextInputFlagAutocapitalizeWords = 1 << 8,
-    WebTextInputFlagAutocapitalizeSentences = 1 << 9,
-    WebTextInputFlagListeningToKeyboardEvents = 1 << 10,
-    WebTextInputFlagHaveNextFocusableElement = 1 << 11,
-    WebTextInputFlagHavePreviousFocusableElement = 1 << 12
+    WebTextInputFlagAutocapitalizeSentences = 1 << 9
 };
 
 } // namespace blink
