@@ -187,8 +187,10 @@ void PresentationServiceImpl::SetClient(
 void PresentationServiceImpl::ListenForScreenAvailability(
       const mojo::String& url) {
   DVLOG(2) << "ListenForScreenAvailability " << url;
-  if (!delegate_)
+  if (!delegate_) {
+    client_->OnScreenAvailabilityUpdated(url, false);
     return;
+  }
 
   const std::string& availability_url = url.get();
   if (screen_availability_listeners_.count(availability_url))
@@ -236,7 +238,11 @@ void PresentationServiceImpl::StartSession(
     const NewSessionMojoCallback& callback) {
   DVLOG(2) << "StartSession";
   if (!delegate_) {
-    InvokeNewSessionMojoCallbackWithError(callback);
+    callback.Run(
+          presentation::PresentationSessionInfoPtr(),
+          presentation::PresentationError::From(
+              PresentationError(PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+                                "No screens found.")));
     return;
   }
 
@@ -263,7 +269,11 @@ void PresentationServiceImpl::JoinSession(
     const NewSessionMojoCallback& callback) {
   DVLOG(2) << "JoinSession";
   if (!delegate_) {
-    InvokeNewSessionMojoCallbackWithError(callback);
+    callback.Run(
+          presentation::PresentationSessionInfoPtr(),
+          presentation::PresentationError::From(
+              PresentationError(PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
+                                "Error joining route: No matching route")));
     return;
   }
 
