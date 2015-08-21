@@ -56,46 +56,22 @@ void AwBrowserMainParts::PreEarlyInitialization() {
 }
 
 int AwBrowserMainParts::PreCreateThreads() {
-  base::MemoryMappedFile::Region pak_region =
-      base::MemoryMappedFile::Region::kWholeFile;
-
-  // TODO(primiano, mkosiba): GetApplicationLocale requires a ResourceBundle
-  // instance to be present to work correctly so we call this (knowing it will
-  // fail) just to create the ResourceBundle instance. We should refactor
-  // ResourceBundle/GetApplicationLocale to not require an instance to be
-  // initialized.
   ui::SetLocalePaksStoredInApk(true);
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
+  std::string locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
       base::android::GetDefaultLocale(),
       NULL,
       ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
-  std::string locale = l10n_util::GetApplicationLocale(std::string());
-  std::string pak_path = ui::GetPathForAndroidLocalePakWithinApk(locale);
-  int pak_fd = base::android::OpenApkAsset(pak_path, &pak_region);
-  if (pak_fd != -1) {
-    ui::ResourceBundle::CleanupSharedInstance();
-    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-        base::File(pak_fd), pak_region);
-  } else {
-    LOG(WARNING) << "Failed to load " << locale << ".pak from the apk. "
-                    "Bringing up WebView without any locale";
+  if (locale.empty()) {
+    LOG(WARNING) << "Failed to load locale .pak from the apk. "
+        "Bringing up WebView without any locale";
   }
 
   // Try to directly mmap the webviewchromium.pak from the apk. Fall back to
   // load from file, using PATH_SERVICE, otherwise.
-  pak_fd = base::android::OpenApkAsset("assets/webviewchromium.pak",
-                                       &pak_region);
-  if (pak_fd != -1) {
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
-        base::File(pak_fd), pak_region, ui::SCALE_FACTOR_NONE);
-  } else {
-    base::FilePath pak_path;
-    PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
-    LOG(WARNING) << "Cannot load webviewchromium.pak assets from the apk. "
-                    "Falling back loading it from " << pak_path.MaybeAsASCII();
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        pak_path.AppendASCII("webviewchromium.pak"), ui::SCALE_FACTOR_NONE);
-  }
+  base::FilePath pak_file_path;
+  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_file_path);
+  pak_file_path = pak_file_path.AppendASCII("webviewchromium.pak");
+  ui::LoadMainAndroidPackFile("assets/webviewchromium.pak", pak_file_path);
 
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(
       base::android::AttachCurrentThread());
