@@ -18,7 +18,7 @@ class TrayPopupLabelButtonBorder : public views::LabelButtonAssetBorder {
   TrayPopupLabelButtonBorder();
   ~TrayPopupLabelButtonBorder() override;
 
-  // views::LabelButtonBorder:
+  // views::LabelButtonAssetBorder:
   void Paint(const views::View& view, gfx::Canvas* canvas) override;
 
  private:

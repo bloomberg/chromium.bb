@@ -89,10 +89,10 @@ void TrayPopupLabelButtonBorder::Paint(const views::View& view,
     canvas->Save();
     canvas->Translate(gfx::Vector2d(view.width(), 0));
     canvas->Scale(-1, 1);
-    LabelButtonBorder::Paint(view, canvas);
+    LabelButtonAssetBorder::Paint(view, canvas);
     canvas->Restore();
   } else {
-    LabelButtonBorder::Paint(view, canvas);
+    LabelButtonAssetBorder::Paint(view, canvas);
   }
 }
 
