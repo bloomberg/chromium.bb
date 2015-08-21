@@ -13,6 +13,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/web_resource/web_resource_pref_names.h"
@@ -42,12 +43,12 @@ const NotificationPromo::PromoType kValidPromoTypes[] = {
 #endif
 };
 
-GURL GetPromoResourceURL(version_info::Channel channel) {
+GURL GetPromoResourceURL() {
   const std::string promo_server_url =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kPromoServerURL);
-  return promo_server_url.empty() ? NotificationPromo::PromoServerURL(channel)
-                                  : GURL(promo_server_url);
+  return promo_server_url.empty() ?
+      NotificationPromo::PromoServerURL() : GURL(promo_server_url);
 }
 
 bool IsTest() {
@@ -82,10 +83,9 @@ void PromoResourceService::MigrateUserPrefs(PrefService* user_prefs) {
   NotificationPromo::MigrateUserPrefs(user_prefs);
 }
 
-PromoResourceService::PromoResourceService(PrefService* local_state,
-                                           version_info::Channel channel)
-    : ChromeWebResourceService(local_state,
-                               GetPromoResourceURL(channel),
+PromoResourceService::PromoResourceService()
+    : ChromeWebResourceService(g_browser_process->local_state(),
+                               GetPromoResourceURL(),
                                true,  // append locale to URL
                                prefs::kNtpPromoResourceCacheUpdate,
                                kStartResourceFetchDelay,
@@ -139,7 +139,7 @@ void PromoResourceService::ScheduleNotificationOnInit() {
   // If the promo start is in the future, set a notification task to
   // invalidate the NTP cache at the time of the promo start.
   for (size_t i = 0; i < arraysize(kValidPromoTypes); ++i) {
-    NotificationPromo notification_promo(prefs_);
+    NotificationPromo notification_promo;
     notification_promo.InitFromPrefs(kValidPromoTypes[i]);
     ScheduleNotification(notification_promo);
   }
@@ -168,7 +168,7 @@ void PromoResourceService::PromoResourceStateChange() {
 
 void PromoResourceService::Unpack(const base::DictionaryValue& parsed_json) {
   for (size_t i = 0; i < arraysize(kValidPromoTypes); ++i) {
-    NotificationPromo notification_promo(prefs_);
+    NotificationPromo notification_promo;
     notification_promo.InitFromJson(parsed_json, kValidPromoTypes[i]);
     if (notification_promo.new_notification())
       ScheduleNotification(notification_promo);

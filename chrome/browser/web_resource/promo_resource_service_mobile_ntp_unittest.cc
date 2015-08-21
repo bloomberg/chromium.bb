@@ -6,42 +6,38 @@
 
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/web_resource/notification_promo.h"
-#include "chrome/browser/web_resource/notification_promo_mobile_ntp.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
-#include "components/version_info/version_info.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-version_info::Channel kChannel = version_info::Channel::UNKNOWN;
-}
+#include "chrome/browser/web_resource/notification_promo_mobile_ntp.h"
 
 class PromoResourceServiceMobileNtpTest : public testing::Test {
  public:
-  PromoResourceServiceMobileNtpTest() {
-    NotificationPromo::RegisterPrefs(local_state_.registry());
-    promo_resource_service_.reset(
-        new PromoResourceService(&local_state_, kChannel));
-  }
+  // |promo_resource_service_| must be created after |local_state_|.
+  PromoResourceServiceMobileNtpTest()
+      : local_state_(TestingBrowserProcess::GetGlobal()),
+        promo_resource_service_(new PromoResourceService) {}
 
  protected:
-  TestingPrefServiceSimple local_state_;
-  // |promo_resource_service_| must be created after |local_state_|.
+  ScopedTestingLocalState local_state_;
   scoped_ptr<PromoResourceService> promo_resource_service_;
   base::MessageLoop loop_;
 };
 
 class NotificationPromoMobileNtpTest {
  public:
-  explicit NotificationPromoMobileNtpTest(PrefService* local_state)
-      : local_state_(local_state),
-        mobile_promo_(local_state),
-        received_notification_(false) {}
+  NotificationPromoMobileNtpTest() : received_notification_(false) {}
 
   void Init(const std::string& json,
             const std::string& promo_text,
@@ -95,7 +91,7 @@ class NotificationPromoMobileNtpTest {
   // Create a new NotificationPromo from prefs and compare to current
   // notification.
   void TestInitFromPrefs() {
-    NotificationPromoMobileNtp prefs_mobile_promo(local_state_);
+    NotificationPromoMobileNtp prefs_mobile_promo;
     EXPECT_TRUE(prefs_mobile_promo.InitFromPrefs());
     EXPECT_TRUE(prefs_mobile_promo.valid());
     EXPECT_TRUE(mobile_promo_.valid());
@@ -123,7 +119,6 @@ class NotificationPromoMobileNtpTest {
   }
 
  private:
-  PrefService* local_state_;
   NotificationPromoMobileNtp mobile_promo_;
   bool received_notification_;
   scoped_ptr<base::DictionaryValue> test_json_;
@@ -135,7 +130,7 @@ class NotificationPromoMobileNtpTest {
 };
 
 TEST_F(PromoResourceServiceMobileNtpTest, NotificationPromoMobileNtpTest) {
-  NotificationPromoMobileNtpTest promo_test(&local_state_);
+  NotificationPromoMobileNtpTest promo_test;
 
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.

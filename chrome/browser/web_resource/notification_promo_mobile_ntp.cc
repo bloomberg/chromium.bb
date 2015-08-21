@@ -7,11 +7,11 @@
 #include "base/values.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 
-NotificationPromoMobileNtp::NotificationPromoMobileNtp(PrefService* local_state)
+NotificationPromoMobileNtp::NotificationPromoMobileNtp()
     : valid_(false),
       action_args_(NULL),
-      payload_(NULL),
-      notification_promo_(local_state) {}
+      payload_(NULL) {
+}
 
 NotificationPromoMobileNtp::~NotificationPromoMobileNtp() {
 }
