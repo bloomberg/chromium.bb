@@ -45,6 +45,10 @@ class ContentViewCore;
 class WebContents;
 }
 
+namespace offline_pages {
+struct OfflinePageItem;
+}
+
 namespace prerender {
 class PrerenderManager;
 }
@@ -197,6 +201,8 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   jlong GetBookmarkId(JNIEnv* env, jobject obj, jboolean only_editable);
 
+  jboolean IsOfflinePage(JNIEnv* env, jobject obj);
+
   void SetInterceptNavigationDelegate(JNIEnv* env,
                                       jobject obj,
                                       jobject delegate);
@@ -222,6 +228,8 @@ class TabAndroid : public CoreTabHelperDelegate,
 
  private:
   prerender::PrerenderManager* GetPrerenderManager() const;
+
+  const offline_pages::OfflinePageItem* GetOfflinePage(const GURL& url) const;
 
   JavaObjectWeakGlobalRef weak_java_tab_;
 

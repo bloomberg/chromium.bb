@@ -97,7 +97,9 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.snackbar.LoFiBarPopupController;
+import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -494,6 +496,27 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             public void onLoadStopped(Tab tab) {
                 postDeferredStartupIfNeeded();
                 showUpdateInfoBarIfNecessary();
+            }
+
+            @Override
+            public void onPageLoadStarted(Tab tab, String url) {
+                // If an offline page is being opened, show the hint.
+                // TODO(jianli): Show a reload button when there is a network.
+                if (tab.isOfflinePage()) {
+                    getSnackbarManager().showSnackbar(Snackbar.make(
+                            getString(R.string.enhanced_bookmark_viewing_offline_page),
+                            new SnackbarController() {
+                                @Override
+                                public void onAction(Object actionData) {}
+
+                                @Override
+                                public void onDismissNoAction(Object actionData) {}
+
+                                @Override
+                                public void onDismissForEachType(boolean isTimeout) {}
+                            }
+                    ));
+                }
             }
 
             @Override

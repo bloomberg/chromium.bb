@@ -779,18 +779,9 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
   Profile* profile = GetProfile();
 
   // If the url points to an offline page, replace it with the original url.
-  // Note that we first check if the url likely points to an offline page
-  // before calling GetPageByOfflineURL in order to avoid unnecessary lookup
-  // cost.
-  if (offline_pages::IsOfflinePagesEnabled() &&
-      offline_pages::android::OfflinePageBridge::MightBeOfflineURL(url)) {
-    offline_pages::OfflinePageModel* offline_page_model =
-        offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile);
-    const offline_pages::OfflinePageItem* offline_page =
-        offline_page_model->GetPageByOfflineURL(url);
-    if (offline_page)
-      url = offline_page->url;
-  }
+  const offline_pages::OfflinePageItem* offline_page = GetOfflinePage(url);
+  if (offline_page)
+    url = offline_page->url;
 
   // Get all the nodes for |url| and sort them by date added.
   std::vector<const bookmarks::BookmarkNode*> nodes;
@@ -809,6 +800,29 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
   }
 
   return -1;
+}
+
+jboolean TabAndroid::IsOfflinePage(JNIEnv* env, jobject obj) {
+  GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+      web_contents()->GetURL());
+  return GetOfflinePage(url) != nullptr;
+}
+
+const offline_pages::OfflinePageItem* TabAndroid::GetOfflinePage(
+    const GURL& url) const {
+  if (!offline_pages::IsOfflinePagesEnabled())
+    return nullptr;
+
+  // Note that we first check if the url likely points to an offline page
+  // before calling GetPageByOfflineURL in order to avoid unnecessary lookup
+  // cost.
+  if (!offline_pages::android::OfflinePageBridge::MightBeOfflineURL(url))
+    return nullptr;
+
+  offline_pages::OfflinePageModel* offline_page_model =
+      offline_pages::OfflinePageModelFactory::GetForBrowserContext(
+          GetProfile());
+  return offline_page_model->GetPageByOfflineURL(url);
 }
 
 bool TabAndroid::HasPrerenderedUrl(JNIEnv* env, jobject obj, jstring url) {

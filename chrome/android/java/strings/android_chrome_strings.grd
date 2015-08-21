@@ -1843,6 +1843,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_NO_RESULT" desc="Text explaining that no bookmarks are found to match a search query">
         No bookmarks found
       </message>
+      <message name="IDS_ENHANCED_BOOKMARK_VIEWING_OFFLINE_PAGE" desc="Text explaining that the user is viewing an offline copy of a web page.">
+        Viewing an offline copy of this page
+      </message>
       <message name="IDS_ACCESSIBILITY_ENHANCED_BOOKMARK_DRAWER_TOGGLE_BTN_OPEN" desc="Content description for the button to show the navigation drawer.">
         Open navigation drawer
       </message>
