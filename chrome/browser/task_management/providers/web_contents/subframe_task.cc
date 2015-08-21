@@ -33,7 +33,11 @@ SubframeTask::SubframeTask(content::RenderFrameHost* render_frame_host,
                            content::WebContents* web_contents)
     : RendererTask(AdjustTitle(render_frame_host->GetSiteInstance()),
                    nullptr,
-                   web_contents) {
+                   web_contents,
+                   render_frame_host->GetProcess()) {
+  // Note that we didn't get the RenderProcessHost from the WebContents, but
+  // rather from the RenderFrameHost. Out-of-process iframes reside on
+  // different processes than that of their main frame.
 }
 
 SubframeTask::~SubframeTask() {

@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -24,7 +25,8 @@ const gfx::ImageSkia* GetPanelIcon(Panel* panel) {
 PanelTask::PanelTask(Panel* panel, content::WebContents* web_contents)
     : RendererTask(GetCurrentPanelTitle(panel),
                    GetPanelIcon(panel),
-                   web_contents),
+                   web_contents,
+                   web_contents->GetRenderProcessHost()),
       panel_(panel) {
 }
 

@@ -23,7 +23,8 @@ class RendererTask : public Task {
  public:
   RendererTask(const base::string16& title,
                const gfx::ImageSkia* icon,
-               content::WebContents* web_contents);
+               content::WebContents* web_contents,
+               content::RenderProcessHost* render_process_host);
   ~RendererTask() override;
 
   // An abstract method that will be called when the event

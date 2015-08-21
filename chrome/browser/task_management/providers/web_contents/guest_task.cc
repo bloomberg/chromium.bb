@@ -5,6 +5,7 @@
 #include "chrome/browser/task_management/providers/web_contents/guest_task.h"
 
 #include "components/guest_view/browser/guest_view_base.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace task_management {
@@ -12,7 +13,8 @@ namespace task_management {
 GuestTask::GuestTask(content::WebContents* web_contents)
     : RendererTask(GetCurrentTitle(web_contents),
                    GetFaviconFromWebContents(web_contents),
-                   web_contents) {
+                   web_contents,
+                   web_contents->GetRenderProcessHost()) {
 }
 
 GuestTask::~GuestTask() {

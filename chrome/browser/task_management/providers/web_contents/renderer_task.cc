@@ -63,10 +63,11 @@ inline bool IsRendererResourceSamplingDisabled(int64 flags) {
 
 RendererTask::RendererTask(const base::string16& title,
                            const gfx::ImageSkia* icon,
-                           content::WebContents* web_contents)
-    : Task(title, icon, web_contents->GetRenderProcessHost()->GetHandle()),
+                           content::WebContents* web_contents,
+                           content::RenderProcessHost* render_process_host)
+    : Task(title, icon, render_process_host->GetHandle()),
       web_contents_(web_contents),
-      render_process_host_(web_contents->GetRenderProcessHost()),
+      render_process_host_(render_process_host),
       renderer_resources_sampler_(
           CreateRendererResourcesSampler(render_process_host_)),
       render_process_id_(render_process_host_->GetID()),

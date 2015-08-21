@@ -5,6 +5,7 @@
 #include "chrome/browser/task_management/providers/web_contents/prerender_task.h"
 
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -40,7 +41,8 @@ PrerenderTask::PrerenderTask(content::WebContents* web_contents)
     : RendererTask(
           PrefixTitle(RendererTask::GetTitleFromWebContents(web_contents)),
           GetPrerenderIcon(),
-          web_contents) {
+          web_contents,
+          web_contents->GetRenderProcessHost()) {
 }
 
 PrerenderTask::~PrerenderTask() {

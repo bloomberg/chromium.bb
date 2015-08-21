@@ -58,10 +58,11 @@ base::string16 AdjustAndLocalizeTitle(const base::string16& title,
 BackgroundContentsTask::BackgroundContentsTask(
     const base::string16& title,
     BackgroundContents* background_contents)
-    : RendererTask(AdjustAndLocalizeTitle(title,
-                                          background_contents->GetURL().spec()),
-                   GetDefaultIcon(),
-                   background_contents->web_contents()) {
+    : RendererTask(
+        AdjustAndLocalizeTitle(title, background_contents->GetURL().spec()),
+        GetDefaultIcon(),
+        background_contents->web_contents(),
+        background_contents->web_contents()->GetRenderProcessHost()) {
 }
 
 BackgroundContentsTask::~BackgroundContentsTask() {

@@ -4,12 +4,15 @@
 
 #include "chrome/browser/task_management/providers/web_contents/devtools_task.h"
 
+#include "content/public/browser/web_contents.h"
+
 namespace task_management {
 
 DevToolsTask::DevToolsTask(content::WebContents* web_contents)
     : RendererTask(RendererTask::GetTitleFromWebContents(web_contents),
                    RendererTask::GetFaviconFromWebContents(web_contents),
-                   web_contents) {
+                   web_contents,
+                   web_contents->GetRenderProcessHost()) {
 }
 
 DevToolsTask::~DevToolsTask() {
