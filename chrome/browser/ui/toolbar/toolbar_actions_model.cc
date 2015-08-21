@@ -176,26 +176,35 @@ ScopedVector<ToolbarActionViewController> ToolbarActionsModel::CreateActions(
 
   // toolbar_items() might not equate to toolbar_items_ in the case where a
   // subset are highlighted.
-  std::vector<ToolbarItem> items = toolbar_items();
-  for (const ToolbarItem& action : items) {
-    if (action.type == EXTENSION_ACTION) {
-      // Get the extension.
-      const extensions::Extension* extension = GetExtensionById(action.id);
-      DCHECK(extension);
+  for (const ToolbarItem& item : toolbar_items()) {
+    switch (item.type) {
+      case EXTENSION_ACTION: {
+        // Get the extension.
+        const extensions::Extension* extension = GetExtensionById(item.id);
+        DCHECK(extension);
 
-      // Create and add an ExtensionActionViewController for the extension.
-      action_list.push_back(new ExtensionActionViewController(
-          extension, browser, action_manager->GetExtensionAction(*extension),
-          bar));
-    } else if (action.type == COMPONENT_ACTION) {
-      DCHECK(use_redesign_);
-      // Find the corresponding action to |action|.
-      for (auto component_action : component_actions) {
-        if (component_action->GetId() == action.id) {
-          action_list.push_back(component_action);
-          break;
-        }
+        // Create and add an ExtensionActionViewController for the extension.
+        action_list.push_back(new ExtensionActionViewController(
+            extension, browser, action_manager->GetExtensionAction(*extension),
+            bar));
+        break;
       }
+      case COMPONENT_ACTION: {
+        DCHECK(use_redesign_);
+        // Find the index of the component action with the id.
+        auto iter = std::find_if(
+            component_actions.begin(), component_actions.end(),
+            [&item](const ToolbarActionViewController* action) {
+          return action->GetId() == item.id;
+        });
+        // We should always find a corresponding action.
+        DCHECK(iter != component_actions.end());
+        action_list.push_back(*iter);
+        break;
+      }
+      case UNKNOWN_ACTION:
+        NOTREACHED();  // Should never have an UNKNOWN_ACTION in toolbar_items.
+        break;
     }
   }
 
@@ -530,7 +539,12 @@ void ToolbarActionsModel::Populate(std::vector<std::string>* positions) {
   for (const std::string& id : component_ids)
     all_actions.push_back(ToolbarItem(id, COMPONENT_ACTION));
 
-  // Add each action id to the appropriate list.
+  // Add each action id to the appropriate list. Since the |sorted| list is
+  // created with enough room for each id in |positions| (which helps with
+  // proper order insertion), holes can be present if there isn't an action
+  // for each id. This is handled below when we add the actions to
+  // |toolbar_items_| to ensure that there are never any holes in
+  // |toolbar_items_| itself (or, relatedly, CreateActions()).
   for (const ToolbarItem& action : all_actions) {
     std::vector<std::string>::const_iterator pos =
         std::find(positions->begin(), positions->end(), action.id);
@@ -554,20 +568,27 @@ void ToolbarActionsModel::Populate(std::vector<std::string>* positions) {
   // observers to ensure that the extension system is always initialized before
   // using the extensions).
   for (const ToolbarItem& action : sorted) {
-    if (action.type == EXTENSION_ACTION) {
-      // It's possible for the extension order to contain items that aren't
-      // actually loaded on this machine.  For example, when extension sync is
-      // on, we sync the extension order as-is but double-check with the user
-      // before syncing NPAPI-containing extensions, so if one of those is not
-      // actually synced, we'll get a NULL in the list.  This sort of case can
-      // also happen if some error prevents an extension from loading.
-      if (GetExtensionById(action.id)) {
-        toolbar_items_.push_back(ToolbarItem(action.id, EXTENSION_ACTION));
-        ++browser_actions_count;
-      }
-    } else if (action.type == COMPONENT_ACTION) {
-      toolbar_items_.push_back(ToolbarItem(action.id, COMPONENT_ACTION));
-      ++component_actions_count;
+    switch (action.type) {
+      case EXTENSION_ACTION:
+        // It's possible for the extension order to contain items that aren't
+        // actually loaded on this machine.  For example, when extension sync is
+        // on, we sync the extension order as-is but double-check with the user
+        // before syncing NPAPI-containing extensions, so if one of those is not
+        // actually synced, we'll get a NULL in the list.  This sort of case can
+        // also happen if some error prevents an extension from loading.
+        if (GetExtensionById(action.id)) {
+          toolbar_items_.push_back(ToolbarItem(action.id, EXTENSION_ACTION));
+          ++browser_actions_count;
+        }
+        break;
+      case COMPONENT_ACTION:
+        toolbar_items_.push_back(ToolbarItem(action.id, COMPONENT_ACTION));
+        ++component_actions_count;
+        break;
+      case UNKNOWN_ACTION:
+        // Since |sorted| can have holes in it, they will be default-constructed
+        // ToolbarItems with an action type of UNKNOWN. Ignore them.
+        break;
     }
   }
 

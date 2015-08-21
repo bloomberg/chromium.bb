@@ -90,7 +90,7 @@ void SortContainer(std::vector<Type1>* to_sort,
       size_t j = i + 1;
       while (!equal(to_sort->at(j), reference[i])) {
         ++j;
-        DCHECK_LE(j, to_sort->size()) <<
+        DCHECK_LT(j, to_sort->size()) <<
             "Item in |reference| not found in |to_sort|.";
       }
       std::swap(to_sort->at(i), to_sort->at(j));

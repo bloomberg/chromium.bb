@@ -41,13 +41,14 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   // The different types of actions.
   enum ActionType {
+    UNKNOWN_ACTION,
     COMPONENT_ACTION,
     EXTENSION_ACTION,
   };
 
   // An action id and its corresponding ActionType.
   struct ToolbarItem {
-    ToolbarItem() {}
+    ToolbarItem() : type(UNKNOWN_ACTION) {}
     ToolbarItem(std::string action_id, ActionType action_type)
         : id(action_id), type(action_type) {}
 
