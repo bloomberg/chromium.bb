@@ -41,11 +41,10 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashTraits.h"
-#include "wtf/TypeTraits.h"
-#if ENABLE(GC_PROFILING)
 #include "wtf/InstanceCounter.h"
+#include "wtf/Threading.h"
+#include "wtf/TypeTraits.h"
 #include "wtf/text/WTFString.h"
-#endif
 
 namespace blink {
 
@@ -391,7 +390,7 @@ struct TypenameStringTrait {
     // This method is not thread safe.
     static const String& get()
     {
-        DEFINE_STATIC_LOCAL(String, typenameString, (WTF::extractTypeNameFromFunctionName(WTF::extractNameFunction<T>())));
+        AtomicallyInitializedStaticReference(AtomicString, typenameString, new AtomicString(WTF::extractTypeNameFromFunctionName(WTF::extractNameFunction<T>())));
         return typenameString;
     }
 };
