@@ -111,7 +111,6 @@
       'WebBindings.cpp',
       'WebBlob.cpp',
       'WebCache.cpp',
-      'WebCachedURLRequest.cpp',
       'WebColorName.cpp',
       'WebColorSuggestion.cpp',
       'WebCryptoNormalize.cpp',

@@ -535,7 +535,6 @@ source_set("blink_headers") {
     "web/WebKit.h",
     "web/WebPageSerializer.h",
     "web/WebPluginAction.h",
-    "web/WebCachedURLRequest.h",
     "web/WebSecurityOrigin.h",
     "web/WebFrameWidget.h",
     "web/WebColorChooser.h",

@@ -61,7 +61,6 @@ class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebAppBannerClient;
 class WebBluetooth;
-class WebCachedURLRequest;
 class WebColorChooser;
 class WebColorChooserClient;
 class WebContentDecryptionModule;
@@ -411,9 +410,6 @@ public:
 
 
     // Low-level resource notifications ------------------------------------
-
-    // An element will request a resource.
-    virtual void willRequestResource(WebLocalFrame*, const WebCachedURLRequest&) { }
 
     // A request is about to be sent out, and the client may modify it.  Request
     // is writable, and changes to the URL, for example, will change the request
