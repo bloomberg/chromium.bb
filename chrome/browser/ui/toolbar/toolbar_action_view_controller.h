@@ -31,7 +31,7 @@ class ToolbarActionViewController {
 
   // Returns the unique ID of this particular action. For extensions, this is
   // the extension id; for component actions, this is the name of the component.
-  virtual const std::string& GetId() const = 0;
+  virtual std::string GetId() const = 0;
 
   // Sets the view delegate, which can handle most of the front-end logic.
   virtual void SetDelegate(ToolbarActionViewDelegate* delegate) = 0;

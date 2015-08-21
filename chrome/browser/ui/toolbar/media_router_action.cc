@@ -27,7 +27,6 @@ using media_router::MediaRouterDialogController;
 MediaRouterAction::MediaRouterAction(Browser* browser)
     : media_router::IssuesObserver(GetMediaRouter(browser)),
       media_router::MediaRoutesObserver(GetMediaRouter(browser)),
-      id_(ComponentToolbarActionsFactory::kMediaRouterActionId),
       media_router_active_icon_(
           ui::ResourceBundle::GetSharedInstance()
               .GetImageNamed(IDR_MEDIA_ROUTER_ACTIVE_ICON)),
@@ -47,8 +46,8 @@ MediaRouterAction::MediaRouterAction(Browser* browser)
 MediaRouterAction::~MediaRouterAction() {
 }
 
-const std::string& MediaRouterAction::GetId() const {
-  return id_;
+std::string MediaRouterAction::GetId() const {
+  return ComponentToolbarActionsFactory::kMediaRouterActionId;
 }
 
 void MediaRouterAction::SetDelegate(ToolbarActionViewDelegate* delegate) {

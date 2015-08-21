@@ -27,7 +27,7 @@ class MediaRouterAction : public ToolbarActionViewController,
   ~MediaRouterAction() override;
 
   // ToolbarActionViewController implementation.
-  const std::string& GetId() const override;
+  std::string GetId() const override;
   void SetDelegate(ToolbarActionViewDelegate* delegate) override;
   gfx::Image GetIcon(content::WebContents* web_contents,
                      const gfx::Size& size) override;
@@ -68,8 +68,6 @@ class MediaRouterAction : public ToolbarActionViewController,
   void MaybeUpdateIcon();
 
   const gfx::Image* GetCurrentIcon() const;
-
-  const std::string id_;
 
   // Cached icons.
   // Indicates that the current Chrome profile is using at least one device.

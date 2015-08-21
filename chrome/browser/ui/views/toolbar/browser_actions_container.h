@@ -168,7 +168,7 @@ class BrowserActionsContainer
   }
 
   // Returns the ID of the action represented by the view at |index|.
-  const std::string& GetIdAt(size_t index) const;
+  std::string GetIdAt(size_t index) const;
 
   // Returns the ToolbarActionView* associated with the given |extension|, or
   // NULL if none exists.

@@ -61,7 +61,7 @@ ExtensionActionViewController::~ExtensionActionViewController() {
   DCHECK(!is_showing_popup());
 }
 
-const std::string& ExtensionActionViewController::GetId() const {
+std::string ExtensionActionViewController::GetId() const {
   return extension_->id();
 }
 

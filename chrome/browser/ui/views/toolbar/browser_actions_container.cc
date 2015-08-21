@@ -141,7 +141,7 @@ void BrowserActionsContainer::Init() {
   container_width_ = toolbar_actions_bar_->GetPreferredSize().width();
 }
 
-const std::string& BrowserActionsContainer::GetIdAt(size_t index) const {
+std::string BrowserActionsContainer::GetIdAt(size_t index) const {
   return toolbar_action_views_[index]->view_controller()->GetId();
 }
 

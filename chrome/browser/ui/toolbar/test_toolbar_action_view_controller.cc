@@ -22,7 +22,7 @@ TestToolbarActionViewController::TestToolbarActionViewController(
 TestToolbarActionViewController::~TestToolbarActionViewController() {
 }
 
-const std::string& TestToolbarActionViewController::GetId() const {
+std::string TestToolbarActionViewController::GetId() const {
   return id_;
 }
 
