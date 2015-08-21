@@ -26,6 +26,8 @@
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "media/blink/webmediaplayer_delegate.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -545,6 +547,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void unregisterProtocolHandler(const blink::WebString& scheme,
                                          const blink::WebURL& url);
   virtual blink::WebBluetooth* bluetooth();
+  virtual blink::WebUSBClient* usbClient();
 
 #if defined(ENABLE_WEBVR)
   blink::WebVRClient* webVRClient() override;
@@ -830,6 +833,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void RegisterMojoServices();
 
+  // Connects to a Mojo application and returns a proxy to its exposed
+  // ServiceProvider.
+  mojo::ServiceProviderPtr ConnectToApplication(const GURL& url);
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until SetWebFrame is called, and it is null after
   // frameDetached is called until destruction (which is asynchronous in the
@@ -985,6 +992,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   ServiceRegistryImpl service_registry_;
 
+  // The shell proxy used to connect to Mojo applications.
+  mojo::ShellPtr mojo_shell_;
+
   // The screen orientation dispatcher attached to the frame, lazily
   // initialized.
   ScreenOrientationDispatcher* screen_orientation_dispatcher_;
@@ -1005,6 +1015,8 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_ptr<blink::WebAppBannerClient> app_banner_client_;
 
   scoped_ptr<blink::WebBluetooth> bluetooth_;
+
+  scoped_ptr<blink::WebUSBClient> usb_client_;
 
 #if defined(ENABLE_WEBVR)
   // The VR dispatcher attached to the frame, lazily initialized.

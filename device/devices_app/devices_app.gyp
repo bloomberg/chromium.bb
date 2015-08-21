@@ -25,8 +25,9 @@
         'usb/type_converters.h',
       ],
       'dependencies': [
-        '<(DEPTH)/device/usb/usb.gyp:device_usb',
         'device_usb_mojo_bindings_lib',
+        '<(DEPTH)/device/core/core.gyp:device_core',
+        '<(DEPTH)/device/usb/usb.gyp:device_usb',
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_base',
         '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
         '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',

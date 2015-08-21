@@ -209,6 +209,7 @@
       'child/runtime_features.h',
       'child/scoped_child_process_reference.cc',
       'child/scoped_child_process_reference.h',
+      'child/scoped_web_callbacks.h',
       'child/shared_memory_data_consumer_handle.cc',
       'child/shared_memory_data_consumer_handle.h',
       'child/shared_memory_received_data_factory.cc',

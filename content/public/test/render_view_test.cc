@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
+#include "content/app/mojo/mojo_init.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -257,6 +258,10 @@ void RenderViewTest::SetUp() {
   view_params.enable_auto_resize = false;
   view_params.min_size = gfx::Size();
   view_params.max_size = gfx::Size();
+
+#if !defined(OS_IOS)
+  InitializeMojo();
+#endif
 
   // This needs to pass the mock render thread to the view.
   RenderViewImpl* view =

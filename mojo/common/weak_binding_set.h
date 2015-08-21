@@ -36,8 +36,10 @@ class WeakBindingSet {
 
   void CloseAllBindings() {
     for (const auto& it : bindings_) {
-      if (it)
+      if (it) {
         it->Close();
+        delete it.get();
+      }
     }
     bindings_.clear();
   }

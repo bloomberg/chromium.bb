@@ -19,6 +19,7 @@
     '../jingle/jingle.gyp:jingle_glue',
     '../media/blink/media_blink.gyp:media_blink',
     '../media/media.gyp:media',
+    '../mojo/mojo_base.gyp:mojo_application_bindings',
     '../mojo/mojo_base.gyp:mojo_environment_chromium',
     '../mojo/mojo_base.gyp:mojo_geometry_lib',
     '../mojo/mojo_base.gyp:mojo_url_type_converters',
@@ -413,6 +414,12 @@
       'renderer/stats_collection_observer.h',
       'renderer/text_input_client_observer.cc',
       'renderer/text_input_client_observer.h',
+      'renderer/usb/type_converters.cc',
+      'renderer/usb/type_converters.h',
+      'renderer/usb/web_usb_client_impl.cc',
+      'renderer/usb/web_usb_client_impl.h',
+      'renderer/usb/web_usb_device_impl.cc',
+      'renderer/usb/web_usb_device_impl.h',
       'renderer/web_ui_extension.cc',
       'renderer/web_ui_extension.h',
       'renderer/web_ui_extension_data.cc',
@@ -746,6 +753,12 @@
     ['OS=="android"', {
       'sources!': [
         'renderer/media/audio_decoder.cc',
+        'renderer/usb/type_converters.cc',
+        'renderer/usb/type_converters.h',
+        'renderer/usb/web_usb_client_impl.cc',
+        'renderer/usb/web_usb_client_impl.h',
+        'renderer/usb/web_usb_device_impl.cc',
+        'renderer/usb/web_usb_device_impl.h',
       ],
       'sources': [
         'renderer/external_popup_menu.cc',
@@ -767,6 +780,8 @@
         'renderer/java/gin_java_function_invocation_helper.h',
       ],
       'dependencies': [
+        '../device/devices_app/devices_app.gyp:device_usb_mojo_bindings_lib',
+        '../device/devices_app/devices_app.gyp:devices_app_public_cpp',
         '../media/cast/cast.gyp:cast_sender',
       ]
     }],

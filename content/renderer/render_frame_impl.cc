@@ -115,6 +115,7 @@
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
+#include "mojo/common/url_type_converters.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -125,6 +126,7 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/webusb/WebUSBClient.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
@@ -174,6 +176,8 @@
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #else
 #include "cc/blink/context_provider_web_context.h"
+#include "content/renderer/usb/web_usb_client_impl.h"
+#include "device/devices_app/public/cpp/constants.h"
 #endif
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -705,6 +709,8 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #endif
 
   manifest_manager_ = new ManifestManager(this);
+
+  GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&mojo_shell_));
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
@@ -3812,6 +3818,17 @@ blink::WebBluetooth* RenderFrameImpl::bluetooth() {
   return bluetooth_.get();
 }
 
+blink::WebUSBClient* RenderFrameImpl::usbClient() {
+#if !defined(OS_ANDROID)
+  if (!usb_client_) {
+    mojo::ServiceProviderPtr device_services =
+        ConnectToApplication(GURL(device::kDevicesMojoAppUrl));
+    usb_client_.reset(new WebUSBClientImpl(device_services.Pass()));
+  }
+#endif
+  return usb_client_.get();
+}
+
 #if defined(ENABLE_WEBVR)
 blink::WebVRClient* RenderFrameImpl::webVRClient() {
   if (!vr_dispatcher_)
@@ -5003,17 +5020,9 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
 #if defined(ENABLE_MOJO_MEDIA)
 media::interfaces::ServiceFactory* RenderFrameImpl::GetMediaServiceFactory() {
   if (!media_service_factory_) {
-    mojo::InterfacePtr<mojo::Shell> shell_ptr;
-    GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&shell_ptr));
-
-    mojo::ServiceProviderPtr service_provider;
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:media");
-    shell_ptr->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
-                                    nullptr, nullptr);
-
+    mojo::ServiceProviderPtr service_provider =
+        ConnectToApplication(GURL("mojo:media"));
     mojo::ConnectToService(service_provider.get(), &media_service_factory_);
-
     media_service_factory_.set_connection_error_handler(
         base::Bind(&RenderFrameImpl::OnMediaServiceFactoryConnectionError,
                    base::Unretained(this)));
@@ -5073,6 +5082,17 @@ void RenderFrameImpl::RegisterMojoServices() {
         base::Bind(&ImageDownloaderImpl::CreateMojoService,
                    base::Unretained(this)));
   }
+}
+
+mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
+    const GURL& url) {
+  DCHECK(mojo_shell_);
+  mojo::ServiceProviderPtr service_provider;
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From(url);
+  mojo_shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
+                                    nullptr, nullptr);
+  return service_provider.Pass();
 }
 
 }  // namespace content
