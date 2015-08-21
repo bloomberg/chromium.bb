@@ -12,12 +12,20 @@ import json
 import os
 import sys
 
+from logging import handlers as logging_handlers
+
 from chromite.lib import remote_access
 from chromite.lib import commandline
+from chromite.lib import cros_logging as logging
 from chromite.mobmonitor.checkfile import manager
 
 
 STATICDIR = '/etc/mobmonitor/static'
+
+LOGDIR = '/var/log/mobmonitor/'
+LOGFILE = 'mobmonitor.log'
+LOGFILE_SIZE_BYTES = 1024 * 1024
+LOGFILE_COUNT = 10
 
 
 class MobMonitorRoot(object):
@@ -86,6 +94,20 @@ class MobMonitorRoot(object):
     return json.dumps(manager.MapServiceStatusToDict(status))
 
 
+def SetupLogging(logdir):
+  logging.basicConfig(
+      level=logging.DEBUG,
+      format='%(asctime)s:%(name)s:%(levelname)-8s %(message)s',
+      datefmt='%Y-%m-%d %H:%M',
+      filename=os.path.join(logdir, LOGFILE),
+      filemode='w'
+  )
+  rotate = logging_handlers.RotatingFileHandler(
+      os.path.join(logdir, LOGFILE), maxBytes=LOGFILE_SIZE_BYTES,
+      backupCount=LOGFILE_COUNT)
+  logging.getLogger().addHandler(rotate)
+
+
 def ParseArguments(argv):
   """Creates the argument parser."""
   parser = commandline.ArgumentParser(description=__doc__)
@@ -96,7 +118,9 @@ def ParseArguments(argv):
   parser.add_argument('-p', '--port', type=int, default=9991,
                       help='The Mob* Monitor port.')
   parser.add_argument('-s', '--staticdir', default=STATICDIR,
-                      help='Mob* monitor web ui static content directory')
+                      help='Mob* Monitor web ui static content directory')
+  parser.add_argument('--logdir', dest='logdir', type='path', default=LOGDIR,
+                      help='Mob* Monitor log file directory.')
 
   return parser.parse_args(argv)
 
@@ -104,6 +128,9 @@ def ParseArguments(argv):
 def main(argv):
   options = ParseArguments(argv)
   options.Freeze()
+
+  # Configure logger.
+  SetupLogging(options.logdir)
 
   # Configure global cherrypy parameters.
   cherrypy.config.update(

@@ -17,6 +17,9 @@ from cherrypy.process import plugins
 from chromite.lib import cros_logging as logging
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 HCEXECUTION_IN_PROGRESS = 0
 HCEXECUTION_COMPLETED = 1
 
@@ -129,7 +132,8 @@ def DetermineHealthcheckStatus(hcname, healthcheck):
   except Exception as e:
     # Checkfiles may contain all kinds of errors! We do not want the
     # Mob* Monitor to fail, so catch generic exceptions.
-    logging.error('Failed to execute health check %s: %s', hcname, e)
+    LOGGER.error('Failed to execute health check %s: %s', hcname, e,
+                 exc_info=True)
     return HEALTHCHECK_STATUS(hcname, False,
                               'Failed to execute the health check.'
                               ' Please review the health check file.',
@@ -255,8 +259,8 @@ class CheckFileManager(object):
       stored_mtime, _ = self.service_checks[service].get(name, (None, None))
       if stored_mtime is None or mtime > stored_mtime:
         self.service_checks[service][name] = (mtime, obj)
-        logging.info('Updated healthcheck "%s" for service "%s" at time "%s"',
-                     name, service, mtime)
+        LOGGER.info('Updated healthcheck "%s" for service "%s" at time "%s"',
+                    name, service, mtime)
 
   def Execute(self, force=False):
     """Execute all health checks and collect healthcheck status information.
@@ -318,7 +322,8 @@ class CheckFileManager(object):
         file_, path, desc = imp.find_module(service_name, [self.checkdir])
         imp.load_module(service_name, file_, path, desc)
       except Exception as e:
-        logging.warning('Failed to import package %s: %s', service_name, e)
+        LOGGER.warning('Failed to import package %s: %s', service_name, e,
+                       exc_info=True)
         continue
 
       # Collect all of the service's health checks.
@@ -329,8 +334,9 @@ class CheckFileManager(object):
             healthchecks, mtime = ImportFile(service_name, filepath)
             self.Update(service_name, healthchecks, mtime)
           except Exception as e:
-            logging.warning('Failed to import module %s.%s: %s',
-                            service_name, file_[:-3], e)
+            LOGGER.warning('Failed to import module %s.%s: %s',
+                           service_name, file_[:-3], e,
+                           exc_info=True)
 
     self.Execute()
     self.ConsolidateServiceStates()
@@ -412,10 +418,12 @@ class CheckFileManager(object):
         self.Execute(force=True)
         self.ConsolidateServiceStates()
       except TypeError, e:
-        logging.error('Failed to execute the repair action "%s"'
-                      ' for service "%s": %s', action, service, e)
+        LOGGER.error('Failed to execute the repair action "%s"'
+                     ' for service "%s": %s', action, service, e,
+                     exc_info=True)
     else:
-      logging.error('Failed to retrieve a suitable repair function for'
-                    ' service="%s" and action="%s".', service, action)
+      LOGGER.error('Failed to retrieve a suitable repair function for'
+                   ' service="%s" and action="%s".', service, action,
+                   exc_info=True)
 
     return self.GetStatus(service)
