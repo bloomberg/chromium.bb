@@ -14,6 +14,12 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gl/gl_export.h"
 
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}
+}
+
 namespace gfx {
 
 // Encapsulates an image that can be bound to a texture, hiding platform
@@ -60,6 +66,12 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
                                     OverlayTransform transform,
                                     const Rect& bounds_rect,
                                     const RectF& crop_rect) = 0;
+
+  // Dumps information about the memory backing the GLImage to a dump named
+  // |dump_name|.
+  virtual void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                            uint64_t process_tracing_id,
+                            const std::string& dump_name) = 0;
 
  protected:
   virtual ~GLImage() {}

@@ -141,4 +141,11 @@ bool GLImageOzoneNativePixmap::ScheduleOverlayPlane(AcceleratedWidget widget,
                                        crop_rect);
 }
 
+void GLImageOzoneNativePixmap::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd,
+    uint64_t process_tracing_id,
+    const std::string& dump_name) {
+  // TODO(ericrk): Implement GLImage OnMemoryDump. crbug.com/514914
+}
+
 }  // namespace gfx

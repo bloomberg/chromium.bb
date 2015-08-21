@@ -201,6 +201,10 @@ class GPU_EXPORT Texture {
   void OnWillModifyPixels();
   void OnDidModifyPixels();
 
+  void DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
+                       uint64_t client_tracing_id,
+                       const std::string& dump_name) const;
+
  private:
   friend class MailboxManagerImpl;
   friend class MailboxManagerSync;

@@ -48,6 +48,9 @@ class GLImageSync : public gfx::GLImage {
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                    uint64_t process_tracing_id,
+                    const std::string& dump_name) override;
 
  protected:
   ~GLImageSync() override;
@@ -116,6 +119,12 @@ bool GLImageSync::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                        const gfx::RectF& crop_rect) {
   NOTREACHED();
   return false;
+}
+
+void GLImageSync::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                               uint64_t process_tracing_id,
+                               const std::string& dump_name) {
+  // TODO(ericrk): Implement GLImage OnMemoryDump. crbug.com/514914
 }
 
 #if !defined(OS_MACOSX)

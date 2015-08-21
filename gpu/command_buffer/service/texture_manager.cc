@@ -1295,6 +1295,38 @@ void Texture::OnDidModifyPixels() {
     image->DidModifyTexImage();
 }
 
+void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
+                              uint64_t client_tracing_id,
+                              const std::string& dump_name) const {
+  for (uint32_t face_index = 0; face_index < face_infos_.size(); ++face_index) {
+    const auto& level_infos = face_infos_[face_index].level_infos;
+    for (uint32_t level_index = 0; level_index < level_infos.size();
+         ++level_index) {
+      // Skip levels with no size. Textures will have empty levels for all
+      // potential mip levels which are not in use.
+      if (!level_infos[level_index].estimated_size)
+        continue;
+
+      if (level_infos[level_index].image) {
+        // If a level is backed by a GLImage, ask the GLImage to dump itself.
+        level_infos[level_index].image->OnMemoryDump(
+            pmd, client_tracing_id,
+            base::StringPrintf("%s/face_%d/level_%d", dump_name.c_str(),
+                               face_index, level_index));
+      } else {
+        // If a level is not backed by a GLImage, create a simple dump.
+        base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+            base::StringPrintf("%s/face_%d/level_%d", dump_name.c_str(),
+                               face_index, level_index));
+        dump->AddScalar(
+            base::trace_event::MemoryAllocatorDump::kNameSize,
+            base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+            static_cast<uint64_t>(level_infos[level_index].estimated_size));
+      }
+    }
+  }
+}
+
 TextureRef::TextureRef(TextureManager* manager,
                        GLuint client_id,
                        Texture* texture)
@@ -2062,10 +2094,6 @@ bool TextureManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
 
 void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
                                     TextureRef* ref) {
-  // TODO(ericrk): Trace image-backed textures. crbug.com/514914
-  if (ref->texture()->HasImages())
-    return;
-
   uint32_t size = ref->texture()->estimated_size();
 
   // Ignore unallocated texture IDs.
@@ -2075,6 +2103,7 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   std::string dump_name =
       base::StringPrintf("gl/client_%d/textures/texture_%d",
                          memory_tracker_->ClientId(), ref->client_id());
+
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(dump_name);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
@@ -2103,6 +2132,11 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
     importance = 2;
 
   pmd->AddOwnershipEdge(client_guid, service_guid, importance);
+
+  // Dump all sub-levels held by the texture. They will appear below the main
+  // gl/textures/client_X/texture_Y dump.
+  ref->texture()->DumpLevelMemory(pmd, memory_tracker_->ClientTracingId(),
+                                  dump_name);
 }
 
 }  // namespace gles2

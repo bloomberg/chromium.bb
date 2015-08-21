@@ -22,7 +22,9 @@ namespace gfx {
 
 class GL_EXPORT GLImageIOSurface : public GLImage {
  public:
-  GLImageIOSurface(const gfx::Size& size, unsigned internalformat);
+  GLImageIOSurface(gfx::GenericSharedMemoryId io_surface_id,
+                   const gfx::Size& size,
+                   unsigned internalformat);
 
   bool Initialize(IOSurfaceRef io_surface, BufferFormat format);
 
@@ -44,6 +46,9 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
                             OverlayTransform transform,
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                    uint64_t process_tracing_id,
+                    const std::string& dump_name) override;
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface();
 
@@ -54,6 +59,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   ~GLImageIOSurface() override;
 
  private:
+  gfx::GenericSharedMemoryId io_surface_id_;
   const gfx::Size size_;
   const unsigned internalformat_;
   BufferFormat format_;

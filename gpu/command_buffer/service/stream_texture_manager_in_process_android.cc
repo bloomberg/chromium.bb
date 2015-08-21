@@ -40,6 +40,9 @@ class GLImageImpl : public gfx::GLImage {
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                    uint64_t process_tracing_id,
+                    const std::string& dump_name) override;
 
  private:
   ~GLImageImpl() override;
@@ -97,6 +100,12 @@ bool GLImageImpl::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                        const gfx::RectF& crop_rect) {
   NOTREACHED();
   return false;
+}
+
+void GLImageImpl::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                               uint64_t process_tracing_id,
+                               const std::string& dump_name) {
+  // TODO(ericrk): Implement GLImage OnMemoryDump. crbug.com/514914
 }
 
 }  // anonymous namespace

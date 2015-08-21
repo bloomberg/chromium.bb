@@ -443,4 +443,17 @@ void GLImageMemory::DoBindTexImage(unsigned target) {
   }
 }
 
+void GLImageMemory::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                                 uint64_t process_tracing_id,
+                                 const std::string& dump_name) {
+  // Log size 0 if |ref_counted_memory_| has been released.
+  size_t size_in_bytes = memory_ ? SizeInBytes(size_, format_) : 0;
+
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(size_in_bytes));
+}
+
 }  // namespace gfx

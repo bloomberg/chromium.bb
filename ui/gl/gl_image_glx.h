@@ -36,6 +36,9 @@ class GL_EXPORT GLImageGLX : public GLImage {
                             OverlayTransform transform,
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                    uint64_t process_tracing_id,
+                    const std::string& dump_name) override;
 
  protected:
   ~GLImageGLX() override;

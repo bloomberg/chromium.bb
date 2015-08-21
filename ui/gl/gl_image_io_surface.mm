@@ -133,9 +133,11 @@ GLenum DataType(BufferFormat format) {
 
 }  // namespace
 
-GLImageIOSurface::GLImageIOSurface(const gfx::Size& size,
+GLImageIOSurface::GLImageIOSurface(gfx::GenericSharedMemoryId io_surface_id,
+                                   const gfx::Size& size,
                                    unsigned internalformat)
-    : size_(size),
+    : io_surface_id_(io_surface_id),
+      size_(size),
       internalformat_(internalformat),
       format_(BufferFormat::RGBA_8888) {}
 
@@ -211,6 +213,25 @@ bool GLImageIOSurface::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                             const RectF& crop_rect) {
   NOTREACHED();
   return false;
+}
+
+void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                                    uint64_t process_tracing_id,
+                                    const std::string& dump_name) {
+  // IOSurfaceGetAllocSize will return 0 if io_surface_ is invalid. In this case
+  // we log 0 for consistency with other GLImage memory dump functions.
+  size_t size_bytes = IOSurfaceGetAllocSize(io_surface_);
+
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(size_bytes));
+
+  auto guid = gfx::GetGenericSharedMemoryGUIDForTracing(process_tracing_id,
+                                                        io_surface_id_);
+  pmd->CreateSharedGlobalAllocatorDump(guid);
+  pmd->AddOwnershipEdge(dump->guid(), guid);
 }
 
 base::ScopedCFTypeRef<IOSurfaceRef> GLImageIOSurface::io_surface() {

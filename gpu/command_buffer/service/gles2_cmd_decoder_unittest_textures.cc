@@ -2775,6 +2775,10 @@ class MockGLImage : public gfx::GLImage {
                                           gfx::OverlayTransform,
                                           const gfx::Rect&,
                                           const gfx::RectF&));
+  MOCK_METHOD3(OnMemoryDump,
+               void(base::trace_event::ProcessMemoryDump*,
+                    uint64_t,
+                    const std::string&));
 
  protected:
   virtual ~MockGLImage() {}

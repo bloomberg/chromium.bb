@@ -43,6 +43,7 @@ GetGenericSharedMemoryGUIDForTracing(
 }  // namespace gfx
 
 namespace BASE_HASH_NAMESPACE {
+
 template <>
 struct hash<gfx::GenericSharedMemoryId> {
   size_t operator()(gfx::GenericSharedMemoryId key) const {

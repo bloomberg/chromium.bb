@@ -214,4 +214,10 @@ bool StreamTexture::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   return false;
 }
 
+void StreamTexture::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                                 uint64_t process_tracing_id,
+                                 const std::string& dump_name) {
+  // TODO(ericrk): Add OnMemoryDump for GLImages. crbug.com/514914
+}
+
 }  // namespace content
