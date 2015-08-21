@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -186,21 +188,28 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
 
     /**
      * Displays the account picker or the add account dialog and signs the user in.
+     *
+     * @return The fragment that was shown.
      */
-    private void displayAccountPicker() {
+    @VisibleForTesting
+    public DialogFragment displayAccountPicker() {
         Context context = getActivity();
-        if (context == null) return;
+        if (context == null) return null;
 
         if (!SigninManager.get(context).isSignInAllowed()) {
             if (SigninManager.get(context).isSigninDisabledByPolicy()) {
                 ManagedPreferencesUtils.showManagedByAdministratorToast(context);
             }
-            return;
+            return null;
         }
 
         if (AccountManagerHelper.get(context).hasGoogleAccounts()) {
+            if (getFragmentManager().findFragmentByTag(ACCOUNT_PICKER_DIALOG_TAG) != null) {
+                return null;
+            }
             ChooseAccountFragment chooserFragment = new ChooseAccountFragment();
             chooserFragment.show(getFragmentManager(), ACCOUNT_PICKER_DIALOG_TAG);
+            return chooserFragment;
         } else {
             AddGoogleAccountDialogFragment dialog = new AddGoogleAccountDialogFragment();
             dialog.setListener(new AddGoogleAccountListener() {
@@ -211,6 +220,7 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
                 }
             });
             dialog.show(getFragmentManager(), null);
+            return dialog;
         }
     }
 

@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.accounts.Account;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
@@ -22,14 +24,19 @@ import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
+import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.sync.ui.ChooseAccountFragment;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.sync.test.util.MockAccountManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Tests for the Settings menu.
@@ -207,6 +214,47 @@ public class PreferencesTest extends NativeLibraryTestBase {
         GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
         return locationPermission;
+    }
+
+    /**
+     * Tests that double-clicking on sign-in doesn't show two sign-in prompts.
+     *
+     * This is a regression test for http://crbug.com/515055.
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testDoubleSignin() throws Exception {
+        // Sets up state so that displayAccountPicker() shows a ChooseAccountFragment.
+        setUpTestAccount();
+        final Preferences prefActivity = startPreferences(getInstrumentation(),
+                MainPreferences.class.getName());
+        final MainPreferences mainPrefs = (MainPreferences) prefActivity.getFragmentForTest();
+
+        DialogFragment fragment1 = displayAccountPicker(mainPrefs);
+        DialogFragment fragment2 = displayAccountPicker(mainPrefs);
+        assertTrue(fragment1 instanceof ChooseAccountFragment);
+        assertNull(fragment2);
+    }
+
+    private DialogFragment displayAccountPicker(final MainPreferences mainPrefs) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<DialogFragment>() {
+            public DialogFragment call() {
+                return mainPrefs.displayAccountPicker();
+            }
+        });
+    }
+
+    private void setUpTestAccount() {
+        final Context context = getInstrumentation().getTargetContext();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SigninManager.get(context).onFirstRunCheckDone();
+            }
+        });
+        Account account = AccountManagerHelper.createAccountFromName("test@chromium.org");
+        MockAccountManager accountManager = new MockAccountManager(context, context, account);
+        AccountManagerHelper.overrideAccountManagerHelperForTests(context, accountManager);
     }
 
     // TODO(mvanouwerkerk): Write new preference intent tests for notification settings.
