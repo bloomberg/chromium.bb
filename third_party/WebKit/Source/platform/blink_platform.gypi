@@ -342,6 +342,7 @@
       'exported/WebURL.cpp',
       'exported/WebURLError.cpp',
       'exported/WebURLLoaderClient.cpp',
+      'exported/WebURLLoaderTestDelegate.cpp',
       'exported/WebURLLoadTiming.cpp',
       'exported/WebURLRequest.cpp',
       'exported/WebURLRequestPrivate.h',

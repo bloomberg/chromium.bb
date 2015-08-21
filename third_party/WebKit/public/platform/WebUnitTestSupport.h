@@ -30,23 +30,15 @@
 #include "WebCommon.h"
 #include "WebData.h"
 #include "WebString.h"
+#include "WebURLLoaderTestDelegate.h"
 #include "WebVector.h"
 
 namespace blink {
 
 class WebLayerTreeView;
 class WebURL;
-class WebURLLoader;
 class WebURLResponse;
-class WebURLLoaderClient;
 struct WebURLError;
-
-class WebURLLoaderTestDelegate {
-public:
-    ~WebURLLoaderTestDelegate() { }
-
-    virtual void didReceiveData(WebURLLoaderClient* originalClient, WebURLLoader*, const char* data, int dataLength, int encodedDataLength) { }
-};
 
 class WebUnitTestSupport {
 public:
@@ -64,7 +56,7 @@ public:
     virtual void serveAsynchronousMockedRequests() { }
 
     // Set a delegate that allows callbacks for all WebURLLoaderClients to be intercepted.
-    virtual void setLoaderDelegate(WebURLLoaderTestDelegate*) {}
+    virtual void setLoaderDelegate(WebURLLoaderTestDelegate*) { }
 
     // Returns the root directory of the WebKit code.
     virtual WebString webKitRootDir() { return WebString(); }
