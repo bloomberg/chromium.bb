@@ -40,9 +40,6 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_ANIMATED_PAGES_JS"
                  file="settings_page/settings_animated_pages.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_ANIMATIONS_JS"
-                 file="settings_page/settings_animations.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_APPEARANCE_PAGE_CSS"
                  file="appearance_page/appearance_page.css"
                  type="chrome_html" />

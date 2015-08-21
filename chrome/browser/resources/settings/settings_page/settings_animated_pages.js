@@ -42,8 +42,8 @@ Polymer({
       this.$.animatedPages.exitAnimation = 'slide-left-animation';
       this.$.animatedPages.entryAnimation = 'slide-from-right-animation';
     } else {
-      this.$.animatedPages.exitAnimation = 'settings-fade-out-animation';
-      this.$.animatedPages.entryAnimation = 'settings-fade-in-animation';
+      this.$.animatedPages.exitAnimation = 'fade-out-animation';
+      this.$.animatedPages.entryAnimation = 'fade-in-animation';
     }
 
     this.history_.push(page);
@@ -60,8 +60,8 @@ Polymer({
       this.$.animatedPages.exitAnimation = 'slide-right-animation';
       this.$.animatedPages.entryAnimation = 'slide-from-left-animation';
     } else {
-      this.$.animatedPages.exitAnimation = 'settings-fade-out-animation';
-      this.$.animatedPages.entryAnimation = 'settings-fade-in-animation';
+      this.$.animatedPages.exitAnimation = 'fade-out-animation';
+      this.$.animatedPages.entryAnimation = 'fade-in-animation';
     }
 
     this.$.animatedPages.selected = this.history_.slice(-1)[0];
