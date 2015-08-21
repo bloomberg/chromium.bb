@@ -136,9 +136,8 @@ class LayerPositionConstraintTest : public testing::Test {
   }
 
   void CommitAndUpdateImplPointers() {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root_.get(), root_->bounds(), &render_surface_layer_list);
+    LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(root_.get(),
+                                                        root_->bounds());
     inputs.inner_viewport_scroll_layer =
         layer_tree_host_->inner_viewport_scroll_layer();
     inputs.outer_viewport_scroll_layer =

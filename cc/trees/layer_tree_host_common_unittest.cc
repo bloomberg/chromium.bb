@@ -1258,10 +1258,8 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
   EXPECT_FALSE(render_surface1->render_surface());
 
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        parent.get(), parent->bounds(), &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(parent.get(),
+                                                        parent->bounds());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     // The root layer always creates a render surface
@@ -1270,11 +1268,9 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
   }
 
   {
-    RenderSurfaceLayerList render_surface_layer_list;
     render_surface1->SetForceRenderSurface(false);
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        parent.get(), parent->bounds(), &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(parent.get(),
+                                                        parent->bounds());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_TRUE(parent->render_surface());
     EXPECT_FALSE(render_surface1->render_surface());
@@ -1542,10 +1538,8 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
 
   // Case 1: nothing is clipped except the root render surface.
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), parent->bounds(), &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(root.get(),
+                                                        parent->bounds());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     ASSERT_TRUE(root->render_surface());
@@ -1565,11 +1559,9 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
   // not clipped explicitly because child2's surface already accounts for
   // that clip.
   {
-    RenderSurfaceLayerList render_surface_layer_list;
     parent->SetMasksToBounds(true);
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), parent->bounds(), &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(root.get(),
+                                                        parent->bounds());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     ASSERT_TRUE(root->render_surface());
@@ -1587,12 +1579,10 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
   // Case 3: child2 masksToBounds. The layer and subtree are clipped, and
   // child2's render surface is not clipped.
   {
-    RenderSurfaceLayerList render_surface_layer_list;
     parent->SetMasksToBounds(false);
     child2->SetMasksToBounds(true);
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), parent->bounds(), &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(root.get(),
+                                                        parent->bounds());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     ASSERT_TRUE(root->render_surface());
@@ -3499,10 +3489,8 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
                                true,
                                false);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(parent.get(),
+                                                      parent->bounds());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_FALSE(child->render_surface());
@@ -4713,10 +4701,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
 
   host()->SetRootLayer(root);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(root.get(),
+                                                      root->bounds());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   // The visible_layer_rect for the |surface_child| should not be clipped by
@@ -6642,9 +6628,8 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
   host()->SetRootLayer(root);
 
   gfx::Size device_viewport_size(768, 582);
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      host()->root_layer(), device_viewport_size, &render_surface_layer_list);
+  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(host()->root_layer(),
+                                                      device_viewport_size);
   inputs.device_scale_factor = 2.f;
   inputs.page_scale_factor = 1.f;
   inputs.page_scale_layer = NULL;

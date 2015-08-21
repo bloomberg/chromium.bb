@@ -143,9 +143,8 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
       FakeLayerTreeHost::Create(&client, &task_graph_runner);
   host->SetRootLayer(root);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(), gfx::Size(500, 500), &render_surface_layer_list);
+  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(root.get(),
+                                                      gfx::Size(500, 500));
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_FALSE(layer->contents_opaque());

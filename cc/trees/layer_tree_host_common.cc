@@ -23,6 +23,123 @@
 
 namespace cc {
 
+LayerTreeHostCommon::CalcDrawPropsMainInputs::CalcDrawPropsMainInputs(
+    Layer* root_layer,
+    const gfx::Size& device_viewport_size,
+    const gfx::Transform& device_transform,
+    float device_scale_factor,
+    float page_scale_factor,
+    const Layer* page_scale_layer,
+    const Layer* inner_viewport_scroll_layer,
+    const Layer* outer_viewport_scroll_layer)
+    : root_layer(root_layer),
+      device_viewport_size(device_viewport_size),
+      device_transform(device_transform),
+      device_scale_factor(device_scale_factor),
+      page_scale_factor(page_scale_factor),
+      page_scale_layer(page_scale_layer),
+      inner_viewport_scroll_layer(inner_viewport_scroll_layer),
+      outer_viewport_scroll_layer(outer_viewport_scroll_layer) {}
+
+LayerTreeHostCommon::CalcDrawPropsMainInputs::CalcDrawPropsMainInputs(
+    Layer* root_layer,
+    const gfx::Size& device_viewport_size,
+    const gfx::Transform& device_transform)
+    : CalcDrawPropsMainInputs(root_layer,
+                              device_viewport_size,
+                              device_transform,
+                              1.f,
+                              1.f,
+                              NULL,
+                              NULL,
+                              NULL) {}
+
+LayerTreeHostCommon::CalcDrawPropsMainInputs::CalcDrawPropsMainInputs(
+    Layer* root_layer,
+    const gfx::Size& device_viewport_size)
+    : CalcDrawPropsMainInputs(root_layer,
+                              device_viewport_size,
+                              gfx::Transform()) {}
+
+LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
+    LayerImpl* root_layer,
+    const gfx::Size& device_viewport_size,
+    const gfx::Transform& device_transform,
+    float device_scale_factor,
+    float page_scale_factor,
+    const LayerImpl* page_scale_layer,
+    const LayerImpl* inner_viewport_scroll_layer,
+    const LayerImpl* outer_viewport_scroll_layer,
+    const gfx::Vector2dF& elastic_overscroll,
+    const LayerImpl* elastic_overscroll_application_layer,
+    int max_texture_size,
+    bool can_use_lcd_text,
+    bool layers_always_allowed_lcd_text,
+    bool can_render_to_separate_surface,
+    bool can_adjust_raster_scales,
+    bool verify_property_trees,
+    LayerImplList* render_surface_layer_list,
+    int current_render_surface_layer_list_id,
+    PropertyTrees* property_trees)
+    : root_layer(root_layer),
+      device_viewport_size(device_viewport_size),
+      device_transform(device_transform),
+      device_scale_factor(device_scale_factor),
+      page_scale_factor(page_scale_factor),
+      page_scale_layer(page_scale_layer),
+      inner_viewport_scroll_layer(inner_viewport_scroll_layer),
+      outer_viewport_scroll_layer(outer_viewport_scroll_layer),
+      elastic_overscroll(elastic_overscroll),
+      elastic_overscroll_application_layer(
+          elastic_overscroll_application_layer),
+      max_texture_size(max_texture_size),
+      can_use_lcd_text(can_use_lcd_text),
+      layers_always_allowed_lcd_text(layers_always_allowed_lcd_text),
+      can_render_to_separate_surface(can_render_to_separate_surface),
+      can_adjust_raster_scales(can_adjust_raster_scales),
+      verify_property_trees(verify_property_trees),
+      render_surface_layer_list(render_surface_layer_list),
+      current_render_surface_layer_list_id(
+          current_render_surface_layer_list_id),
+      property_trees(property_trees) {}
+
+LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
+    CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
+                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Transform& device_transform,
+                                      LayerImplList* render_surface_layer_list)
+    : CalcDrawPropsImplInputs(root_layer,
+                              device_viewport_size,
+                              device_transform,
+                              1.f,
+                              1.f,
+                              NULL,
+                              NULL,
+                              NULL,
+                              gfx::Vector2dF(),
+                              NULL,
+                              std::numeric_limits<int>::max() / 2,
+                              false,
+                              false,
+                              true,
+                              false,
+                              true,
+                              render_surface_layer_list,
+                              0,
+                              GetPropertyTrees(root_layer)) {
+  DCHECK(root_layer);
+  DCHECK(render_surface_layer_list);
+}
+
+LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
+    CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
+                                      const gfx::Size& device_viewport_size,
+                                      LayerImplList* render_surface_layer_list)
+    : CalcDrawPropsImplInputsForTesting(root_layer,
+                                        device_viewport_size,
+                                        gfx::Transform(),
+                                        render_surface_layer_list) {}
+
 ScrollAndScaleSet::ScrollAndScaleSet()
     : page_scale_delta(1.f), top_controls_delta(0.f) {
 }
@@ -2038,8 +2155,7 @@ static void CalculateDrawPropertiesInternal(
 }  // NOLINT(readability/fn_size)
 
 static void ProcessCalcDrawPropsInputs(
-    const LayerTreeHostCommon::CalcDrawPropsInputs<LayerImpl, LayerImplList>&
-        inputs,
+    const LayerTreeHostCommon::CalcDrawPropsImplInputs& inputs,
     SubtreeGlobals* globals,
     DataForRecursion* data_for_recursion) {
   DCHECK(inputs.root_layer);
@@ -2458,8 +2574,7 @@ void CalculateRenderSurfaceLayerListInternal(
 }
 
 void CalculateRenderTarget(
-    LayerTreeHostCommon::CalcDrawPropsInputs<LayerImpl, LayerImplList>*
-        inputs) {
+    LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
   CalculateRenderTargetInternal(inputs->root_layer, true,
                                 inputs->can_render_to_separate_surface);
 }
@@ -2474,7 +2589,7 @@ void CalculateRenderSurfaceLayerList(
 }
 
 void CalculateDrawPropertiesAndVerify(
-    LayerTreeHostCommon::CalcDrawPropsInputs<LayerImpl, LayerImplList>* inputs,
+    LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs,
     PropertyTreeOption property_tree_option) {
   SubtreeGlobals globals;
   DataForRecursion data_for_recursion;
@@ -2558,15 +2673,17 @@ void CalculateDrawPropertiesAndVerify(
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsMainInputs* inputs) {
   LayerList update_layer_list;
-  UpdateRenderSurfaces(inputs->root_layer,
-                       inputs->can_render_to_separate_surface, gfx::Transform(),
-                       false);
+  bool can_render_to_separate_surface = true;
+  UpdateRenderSurfaces(inputs->root_layer, can_render_to_separate_surface,
+                       gfx::Transform(), false);
+  PropertyTrees* property_trees =
+      inputs->root_layer->layer_tree_host()->property_trees();
   BuildPropertyTreesAndComputeVisibleRects(
       inputs->root_layer, inputs->page_scale_layer,
       inputs->inner_viewport_scroll_layer, inputs->outer_viewport_scroll_layer,
       inputs->page_scale_factor, inputs->device_scale_factor,
       gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-      inputs->property_trees, &update_layer_list);
+      property_trees, &update_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(

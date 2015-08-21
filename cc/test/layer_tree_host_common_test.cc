@@ -66,19 +66,14 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
                 root_layer->bounds().height() * device_scale_factor);
 
-  render_surface_layer_list_.reset(new RenderSurfaceLayerList);
-
   // We are probably not testing what is intended if the root_layer bounds are
   // empty.
   DCHECK(!root_layer->bounds().IsEmpty());
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root_layer, device_viewport_size, render_surface_layer_list_.get());
+  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(root_layer,
+                                                      device_viewport_size);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_layer = page_scale_layer;
-  inputs.can_use_lcd_text = can_use_lcd_text;
-  inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
 

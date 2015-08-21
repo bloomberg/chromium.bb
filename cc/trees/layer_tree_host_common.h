@@ -31,89 +31,86 @@ class CC_EXPORT LayerTreeHostCommon {
                                         const gfx::Rect& layer_bound_rect,
                                         const gfx::Transform& transform);
 
-  template <typename LayerType, typename RenderSurfaceLayerListType>
-  struct CalcDrawPropsInputs {
+  struct CC_EXPORT CalcDrawPropsMainInputs {
    public:
-    CalcDrawPropsInputs(LayerType* root_layer,
-                        const gfx::Size& device_viewport_size,
-                        const gfx::Transform& device_transform,
-                        float device_scale_factor,
-                        float page_scale_factor,
-                        const LayerType* page_scale_layer,
-                        const LayerType* inner_viewport_scroll_layer,
-                        const LayerType* outer_viewport_scroll_layer,
-                        const gfx::Vector2dF& elastic_overscroll,
-                        const LayerType* elastic_overscroll_application_layer,
-                        int max_texture_size,
-                        bool can_use_lcd_text,
-                        bool layers_always_allowed_lcd_text,
-                        bool can_render_to_separate_surface,
-                        bool can_adjust_raster_scales,
-                        bool verify_property_trees,
-                        RenderSurfaceLayerListType* render_surface_layer_list,
-                        int current_render_surface_layer_list_id,
-                        PropertyTrees* property_trees)
-        : root_layer(root_layer),
-          device_viewport_size(device_viewport_size),
-          device_transform(device_transform),
-          device_scale_factor(device_scale_factor),
-          page_scale_factor(page_scale_factor),
-          page_scale_layer(page_scale_layer),
-          inner_viewport_scroll_layer(inner_viewport_scroll_layer),
-          outer_viewport_scroll_layer(outer_viewport_scroll_layer),
-          elastic_overscroll(elastic_overscroll),
-          elastic_overscroll_application_layer(
-              elastic_overscroll_application_layer),
-          max_texture_size(max_texture_size),
-          can_use_lcd_text(can_use_lcd_text),
-          layers_always_allowed_lcd_text(layers_always_allowed_lcd_text),
-          can_render_to_separate_surface(can_render_to_separate_surface),
-          can_adjust_raster_scales(can_adjust_raster_scales),
-          verify_property_trees(verify_property_trees),
-          render_surface_layer_list(render_surface_layer_list),
-          current_render_surface_layer_list_id(
-              current_render_surface_layer_list_id),
-          property_trees(property_trees) {}
-
-    LayerType* root_layer;
+    CalcDrawPropsMainInputs(Layer* root_layer,
+                            const gfx::Size& device_viewport_size,
+                            const gfx::Transform& device_transform,
+                            float device_scale_factor,
+                            float page_scale_factor,
+                            const Layer* page_scale_layer,
+                            const Layer* inner_viewport_scroll_layer,
+                            const Layer* outer_viewport_scroll_layer);
+    CalcDrawPropsMainInputs(Layer* root_layer,
+                            const gfx::Size& device_viewport_size,
+                            const gfx::Transform& device_transform);
+    CalcDrawPropsMainInputs(Layer* root_layer,
+                            const gfx::Size& device_viewport_size);
+    Layer* root_layer;
     gfx::Size device_viewport_size;
     gfx::Transform device_transform;
     float device_scale_factor;
     float page_scale_factor;
-    const LayerType* page_scale_layer;
-    const LayerType* inner_viewport_scroll_layer;
-    const LayerType* outer_viewport_scroll_layer;
+    const Layer* page_scale_layer;
+    const Layer* inner_viewport_scroll_layer;
+    const Layer* outer_viewport_scroll_layer;
+  };
+
+  struct CC_EXPORT CalcDrawPropsImplInputs {
+   public:
+    CalcDrawPropsImplInputs(
+        LayerImpl* root_layer,
+        const gfx::Size& device_viewport_size,
+        const gfx::Transform& device_transform,
+        float device_scale_factor,
+        float page_scale_factor,
+        const LayerImpl* page_scale_layer,
+        const LayerImpl* inner_viewport_scroll_layer,
+        const LayerImpl* outer_viewport_scroll_layer,
+        const gfx::Vector2dF& elastic_overscroll,
+        const LayerImpl* elastic_overscroll_application_layer,
+        int max_texture_size,
+        bool can_use_lcd_text,
+        bool layers_always_allowed_lcd_text,
+        bool can_render_to_separate_surface,
+        bool can_adjust_raster_scales,
+        bool verify_property_trees,
+        LayerImplList* render_surface_layer_list,
+        int current_render_surface_layer_list_id,
+        PropertyTrees* property_trees);
+
+    LayerImpl* root_layer;
+    gfx::Size device_viewport_size;
+    gfx::Transform device_transform;
+    float device_scale_factor;
+    float page_scale_factor;
+    const LayerImpl* page_scale_layer;
+    const LayerImpl* inner_viewport_scroll_layer;
+    const LayerImpl* outer_viewport_scroll_layer;
     gfx::Vector2dF elastic_overscroll;
-    const LayerType* elastic_overscroll_application_layer;
+    const LayerImpl* elastic_overscroll_application_layer;
     int max_texture_size;
     bool can_use_lcd_text;
     bool layers_always_allowed_lcd_text;
     bool can_render_to_separate_surface;
     bool can_adjust_raster_scales;
     bool verify_property_trees;
-    RenderSurfaceLayerListType* render_surface_layer_list;
+    LayerImplList* render_surface_layer_list;
     int current_render_surface_layer_list_id;
     PropertyTrees* property_trees;
   };
 
-  template <typename LayerType, typename RenderSurfaceLayerListType>
-  struct CalcDrawPropsInputsForTesting
-      : public CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType> {
-    CalcDrawPropsInputsForTesting(
-        LayerType* root_layer,
-        const gfx::Size& device_viewport_size,
-        const gfx::Transform& device_transform,
-        RenderSurfaceLayerListType* render_surface_layer_list);
-    CalcDrawPropsInputsForTesting(
-        LayerType* root_layer,
-        const gfx::Size& device_viewport_size,
-        RenderSurfaceLayerListType* render_surface_layer_list);
+  struct CC_EXPORT CalcDrawPropsImplInputsForTesting
+      : public CalcDrawPropsImplInputs {
+    CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
+                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Transform& device_transform,
+                                      LayerImplList* render_surface_layer_list);
+    CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
+                                      const gfx::Size& device_viewport_size,
+                                      LayerImplList* render_surface_layer_list);
   };
 
-  typedef CalcDrawPropsInputs<Layer, RenderSurfaceLayerList>
-      CalcDrawPropsMainInputs;
-  typedef CalcDrawPropsInputsForTesting<Layer, RenderSurfaceLayerList>
-      CalcDrawPropsMainInputsForTesting;
   static void UpdateRenderSurfaces(Layer* root_layer,
                                    bool can_render_to_separate_surface,
                                    const gfx::Transform& transform,
@@ -127,9 +124,6 @@ class CC_EXPORT LayerTreeHostCommon {
   static void PreCalculateMetaInformationForTesting(LayerImpl* root_layer);
   static void PreCalculateMetaInformationForTesting(Layer* root_layer);
 
-  typedef CalcDrawPropsInputs<LayerImpl, LayerImplList> CalcDrawPropsImplInputs;
-  typedef CalcDrawPropsInputsForTesting<LayerImpl, LayerImplList>
-      CalcDrawPropsImplInputsForTesting;
   static void CalculateDrawProperties(CalcDrawPropsImplInputs* inputs);
   static void CalculateDrawProperties(
       CalcDrawPropsImplInputsForTesting* inputs);
@@ -242,69 +236,6 @@ void LayerTreeHostCommon::CallFunctionForSubtree(LayerType* layer,
 
 CC_EXPORT PropertyTrees* GetPropertyTrees(Layer* layer);
 CC_EXPORT PropertyTrees* GetPropertyTrees(LayerImpl* layer);
-
-template <typename LayerType, typename RenderSurfaceLayerListType>
-LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
-                                                   RenderSurfaceLayerListType>::
-    CalcDrawPropsInputsForTesting(
-        LayerType* root_layer,
-        const gfx::Size& device_viewport_size,
-        const gfx::Transform& device_transform,
-        RenderSurfaceLayerListType* render_surface_layer_list)
-    : CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType>(
-          root_layer,
-          device_viewport_size,
-          device_transform,
-          1.f,
-          1.f,
-          NULL,
-          NULL,
-          NULL,
-          gfx::Vector2dF(),
-          NULL,
-          std::numeric_limits<int>::max() / 2,
-          false,
-          false,
-          true,
-          false,
-          true,
-          render_surface_layer_list,
-          0,
-          GetPropertyTrees(root_layer)) {
-  DCHECK(root_layer);
-  DCHECK(render_surface_layer_list);
-}
-
-template <typename LayerType, typename RenderSurfaceLayerListType>
-LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
-                                                   RenderSurfaceLayerListType>::
-    CalcDrawPropsInputsForTesting(
-        LayerType* root_layer,
-        const gfx::Size& device_viewport_size,
-        RenderSurfaceLayerListType* render_surface_layer_list)
-    : CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType>(
-          root_layer,
-          device_viewport_size,
-          gfx::Transform(),
-          1.f,
-          1.f,
-          NULL,
-          NULL,
-          NULL,
-          gfx::Vector2dF(),
-          NULL,
-          std::numeric_limits<int>::max() / 2,
-          false,
-          false,
-          true,
-          false,
-          true,
-          render_surface_layer_list,
-          0,
-          GetPropertyTrees(root_layer)) {
-  DCHECK(root_layer);
-  DCHECK(render_surface_layer_list);
-}
 
 }  // namespace cc
 
