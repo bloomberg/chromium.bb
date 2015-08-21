@@ -499,7 +499,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface StorageManager
 [Worker]     method constructor
 [Worker]     method persistentPermission
-[Worker]     method requestPersistent
 [Worker] interface SubtleCrypto
 [Worker]     method constructor
 [Worker]     method decrypt
@@ -628,6 +627,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter platform
 [Worker]     getter product
 [Worker]     getter services
+[Worker]     getter storage
 [Worker]     getter userAgent
 [Worker]     getter webkitPersistentStorage
 [Worker]     getter webkitTemporaryStorage

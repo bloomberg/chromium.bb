@@ -39,6 +39,8 @@
 
 namespace blink {
 
+class StorageManager;
+
 class WorkerNavigatorStorageQuota final : public GarbageCollected<WorkerNavigatorStorageQuota>, public HeapSupplement<WorkerNavigator> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
 public:
@@ -46,8 +48,11 @@ public:
 
     static DeprecatedStorageQuota* webkitTemporaryStorage(WorkerNavigator&);
     static DeprecatedStorageQuota* webkitPersistentStorage(WorkerNavigator&);
+    static StorageManager* storage(WorkerNavigator&);
+
     DeprecatedStorageQuota* webkitTemporaryStorage() const;
     DeprecatedStorageQuota* webkitPersistentStorage() const;
+    StorageManager* storage() const;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -57,6 +62,7 @@ private:
 
     mutable Member<DeprecatedStorageQuota> m_temporaryStorage;
     mutable Member<DeprecatedStorageQuota> m_persistentStorage;
+    mutable Member<StorageManager> m_storageManager;
 };
 
 } // namespace blink

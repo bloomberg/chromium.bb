@@ -594,7 +594,6 @@ interface ServiceWorkerRegistration
 interface StorageManager
     method constructor
     method persistentPermission
-    method requestPersistent
 interface SubtleCrypto
     method constructor
     method decrypt
@@ -743,6 +742,7 @@ interface WorkerNavigator
     getter platform
     getter product
     getter services
+    getter storage
     getter userAgent
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
