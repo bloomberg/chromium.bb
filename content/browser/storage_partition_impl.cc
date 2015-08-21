@@ -212,10 +212,11 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32 remove_mask) {
     quota_client_mask |= storage::QuotaClient::kAppcache;
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_INDEXEDDB)
     quota_client_mask |= storage::QuotaClient::kIndexedDatabase;
-  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS)
+  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS) {
     quota_client_mask |= storage::QuotaClient::kServiceWorker;
-  if (remove_mask & StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE)
     quota_client_mask |= storage::QuotaClient::kServiceWorkerCache;
+  }
+
 
   return quota_client_mask;
 }
@@ -789,8 +790,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       remove_mask & REMOVE_DATA_MASK_WEBSQL ||
       remove_mask & REMOVE_DATA_MASK_APPCACHE ||
       remove_mask & REMOVE_DATA_MASK_FILE_SYSTEMS ||
-      remove_mask & REMOVE_DATA_MASK_SERVICE_WORKERS ||
-      remove_mask & REMOVE_DATA_MASK_CACHE_STORAGE) {
+      remove_mask & REMOVE_DATA_MASK_SERVICE_WORKERS) {
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

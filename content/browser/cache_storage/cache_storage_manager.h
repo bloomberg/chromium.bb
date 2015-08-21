@@ -14,8 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/cache_storage_context.h"
-#include "content/public/browser/cache_storage_usage_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_client.h"
 #include "url/gurl.h"
@@ -46,10 +44,6 @@ class CONTENT_EXPORT CacheStorageManager {
 
   static scoped_ptr<CacheStorageManager> Create(
       CacheStorageManager* old_manager);
-
-  // Map a database identifier (computed from an origin) to the path.
-  static base::FilePath ConstructOriginPath(const base::FilePath& root_path,
-                                            const GURL& origin);
 
   virtual ~CacheStorageManager();
 
@@ -85,10 +79,9 @@ class CONTENT_EXPORT CacheStorageManager {
   }
 
  private:
-  friend class CacheStorageContextImpl;
+  friend class CacheStorageQuotaClient;
   friend class CacheStorageManagerTest;
   friend class CacheStorageMigrationTest;
-  friend class CacheStorageQuotaClient;
 
   typedef std::map<GURL, CacheStorage*> CacheStorageMap;
 
@@ -100,9 +93,7 @@ class CONTENT_EXPORT CacheStorageManager {
   // The returned CacheStorage* is owned by this manager.
   CacheStorage* FindOrCreateCacheStorage(const GURL& origin);
 
-  // QuotaClient and Browsing Data Deletion support
-  void GetAllOriginsUsage(
-      const CacheStorageContext::GetUsageInfoCallback& callback);
+  // QuotaClient support
   void GetOriginUsage(const GURL& origin_url,
                       const storage::QuotaClient::GetUsageCallback& callback);
   void GetOrigins(const storage::QuotaClient::GetOriginsCallback& callback);
@@ -111,7 +102,6 @@ class CONTENT_EXPORT CacheStorageManager {
       const storage::QuotaClient::GetOriginsCallback& callback);
   void DeleteOriginData(const GURL& origin,
                         const storage::QuotaClient::DeletionCallback& callback);
-  void DeleteOriginData(const GURL& origin);
   static void DeleteOriginDidClose(
       const GURL& origin,
       const storage::QuotaClient::DeletionCallback& callback,
@@ -136,6 +126,10 @@ class CONTENT_EXPORT CacheStorageManager {
   static base::FilePath ConstructLegacyOriginPath(
       const base::FilePath& root_path,
       const GURL& origin);
+  // Map a database identifier (computed from an origin) to the path. Exposed
+  // for testing.
+  static base::FilePath ConstructOriginPath(const base::FilePath& root_path,
+                                            const GURL& origin);
 
   // Migrate from old origin-based path to storage identifier-based path.
   // TODO(jsbell); Remove method and all calls after a few releases.

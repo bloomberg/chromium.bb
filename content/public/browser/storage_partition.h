@@ -41,11 +41,10 @@ namespace content {
 class AppCacheService;
 class BackgroundSyncContext;
 class BrowserContext;
-class CacheStorageContext;
-class DOMStorageContext;
-class GeofencingManager;
 class HostZoomLevelContext;
 class HostZoomMap;
+class DOMStorageContext;
+class GeofencingManager;
 class IndexedDBContext;
 class NavigatorConnectContext;
 class PlatformNotificationContext;
@@ -70,7 +69,6 @@ class CONTENT_EXPORT StoragePartition {
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
-  virtual CacheStorageContext* GetCacheStorageContext() = 0;
   virtual GeofencingManager* GetGeofencingManager() = 0;
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;
@@ -89,7 +87,6 @@ class CONTENT_EXPORT StoragePartition {
     REMOVE_DATA_MASK_WEBSQL = 1 << 6,
     REMOVE_DATA_MASK_WEBRTC_IDENTITY = 1 << 7,
     REMOVE_DATA_MASK_SERVICE_WORKERS = 1 << 8,
-    REMOVE_DATA_MASK_CACHE_STORAGE = 1 << 9,
     REMOVE_DATA_MASK_ALL = 0xFFFFFFFF,
 
     // Corresponds to storage::kStorageTypeTemporary.

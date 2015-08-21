@@ -81,20 +81,18 @@ class BrowsingDataRemover
     // from deleting history or downloads.
     REMOVE_NOCHECKS = 1 << 16,
     REMOVE_WEBRTC_IDENTITY = 1 << 17,
-    REMOVE_CACHE_STORAGE = 1 << 18,
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
     // protected-web origin.
     REMOVE_HOSTED_APP_DATA_TESTONLY = 1 << 31,
 
     // "Site data" includes cookies, appcache, file systems, indexedDBs, local
-    // storage, webSQL, service workers, cache storage, and plugin data.
+    // storage, webSQL, service workers, and plugin data.
     REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_FILE_SYSTEMS |
                        REMOVE_INDEXEDDB |
                        REMOVE_LOCAL_STORAGE |
                        REMOVE_PLUGIN_DATA |
                        REMOVE_SERVICE_WORKERS |
-                       REMOVE_CACHE_STORAGE |
                        REMOVE_WEBSQL |
                        REMOVE_CHANNEL_IDS |
                        REMOVE_SITE_USAGE_DATA |

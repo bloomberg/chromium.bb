@@ -5,7 +5,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
@@ -47,10 +46,6 @@ enum CocoaCookieDetailsType {
   // Detailed information about a Service Worker used for display in the
   // cookie tree.
   kCocoaCookieDetailsTypeTreeServiceWorker,
-
-  // Detailed information about Cache Storage used for display in the
-  // cookie tree.
-  kCocoaCookieDetailsTypeTreeCacheStorage,
 
   // Detailed information about a web database used for display
   // in the cookie prompt dialog.
@@ -103,15 +98,13 @@ enum CocoaCookieDetailsType {
   // kCocoaCookieDetailsTypeTreeDatabase,
   // kCocoaCookieDetailsTypePromptDatabase,
   // kCocoaCookieDetailsTypeTreeIndexedDB,
-  // kCocoaCookieDetailsTypeTreeServiceWorker,
-  // kCocoaCookieDetailsTypeTreeCacheStorage, and
+  // kCocoaCookieDetailsTypeTreeServiceWorker, and
   // kCocoaCookieDetailsTypeTreeAppCache nodes.
   base::scoped_nsobject<NSString> fileSize_;
 
   // Only set for types kCocoaCookieDetailsTypeTreeLocalStorage,
   // kCocoaCookieDetailsTypeTreeDatabase,
-  // kCocoaCookieDetailsTypeTreeServiceWorker,
-  // kCocoaCookieDetailsTypeTreeCacheStorage, and
+  // kCocoaCookieDetailsTypeTreeServiceWorker, and
   // kCocoaCookieDetailsTypeTreeIndexedDB nodes.
   base::scoped_nsobject<NSString> lastModified_;
 
@@ -121,8 +114,7 @@ enum CocoaCookieDetailsType {
   // Only set for type kCocoaCookieDetailsTypeCookie,
   // kCocoaCookieDetailsTypePromptDatabase,
   // kCocoaCookieDetailsTypePromptLocalStorage,
-  // kCocoaCookieDetailsTypePromptServiceWorker,
-  // kCocoaCookieDetailsTypePromptCacheStorage, and
+  // kCocoaCookieDetailsTypePromptServiceWorker, and
   // kCocoaCookieDetailsTypeTreeIndexedDB nodes.
   base::scoped_nsobject<NSString> domain_;
 
@@ -164,7 +156,6 @@ enum CocoaCookieDetailsType {
 - (BOOL)shouldShowAppCacheTreeDetailsView;
 - (BOOL)shouldShowIndexedDBTreeDetailsView;
 - (BOOL)shouldShowServiceWorkerTreeDetailsView;
-- (BOOL)shouldShowCacheStorageTreeDetailsView;
 
 - (NSString*)name;
 - (NSString*)content;
@@ -224,10 +215,6 @@ enum CocoaCookieDetailsType {
 // Used for ServiceWorker details in the cookie tree.
 - (id)initWithServiceWorkerUsageInfo:
     (const content::ServiceWorkerUsageInfo*)serviceWorker;
-
-// Used for CacheStorage details in the cookie tree.
-- (id)initWithCacheStorageUsageInfo:
-    (const content::CacheStorageUsageInfo*)cacheStorage;
 
 // A factory method to create a configured instance given a node from
 // the cookie tree in |treeNode|.

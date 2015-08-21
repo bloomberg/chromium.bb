@@ -32,15 +32,14 @@ enum OriginTypeMask {
   EXTENSION = BrowsingDataHelper::EXTENSION
 };
 
-const char kRemoveEverythingArguments[] =
-    "[{\"since\": 1000}, {"
+const char kRemoveEverythingArguments[] = "[{\"since\": 1000}, {"
     "\"appcache\": true, \"cache\": true, \"cookies\": true, "
     "\"downloads\": true, \"fileSystems\": true, \"formData\": true, "
     "\"history\": true, \"indexedDB\": true, \"localStorage\": true, "
     "\"serverBoundCertificates\": true, \"passwords\": true, "
-    "\"pluginData\": true, \"serviceWorkers\": true, \"cacheStorage\": true, "
-    "\"webSQL\": true"
+    "\"pluginData\": true, \"serviceWorkers\": true, \"webSQL\": true"
     "}]";
+
 
 class ExtensionBrowsingDataTest : public InProcessBrowserTest {
  public:
@@ -203,37 +202,35 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
 
     base::DictionaryValue* data_to_remove;
     EXPECT_TRUE(result->GetDictionary("dataToRemove", &data_to_remove));
-    int removal_mask =
-        GetAsMask(data_to_remove, "appcache",
-                  BrowsingDataRemover::REMOVE_APPCACHE) |
-        GetAsMask(data_to_remove, "cache", BrowsingDataRemover::REMOVE_CACHE) |
-        GetAsMask(data_to_remove, "cookies",
-                  BrowsingDataRemover::REMOVE_COOKIES |
-                      BrowsingDataRemover::REMOVE_WEBRTC_IDENTITY) |
-        GetAsMask(data_to_remove, "downloads",
-                  BrowsingDataRemover::REMOVE_DOWNLOADS) |
-        GetAsMask(data_to_remove, "fileSystems",
-                  BrowsingDataRemover::REMOVE_FILE_SYSTEMS) |
-        GetAsMask(data_to_remove, "formData",
-                  BrowsingDataRemover::REMOVE_FORM_DATA) |
-        GetAsMask(data_to_remove, "history",
-                  BrowsingDataRemover::REMOVE_HISTORY) |
-        GetAsMask(data_to_remove, "indexedDB",
-                  BrowsingDataRemover::REMOVE_INDEXEDDB) |
-        GetAsMask(data_to_remove, "localStorage",
-                  BrowsingDataRemover::REMOVE_LOCAL_STORAGE) |
-        GetAsMask(data_to_remove, "pluginData",
-                  BrowsingDataRemover::REMOVE_PLUGIN_DATA) |
-        GetAsMask(data_to_remove, "passwords",
-                  BrowsingDataRemover::REMOVE_PASSWORDS) |
-        GetAsMask(data_to_remove, "serviceWorkers",
-                  BrowsingDataRemover::REMOVE_SERVICE_WORKERS) |
-        GetAsMask(data_to_remove, "cacheStorage",
-                  BrowsingDataRemover::REMOVE_CACHE_STORAGE) |
-        GetAsMask(data_to_remove, "webSQL",
-                  BrowsingDataRemover::REMOVE_WEBSQL) |
-        GetAsMask(data_to_remove, "serverBoundCertificates",
-                  BrowsingDataRemover::REMOVE_CHANNEL_IDS);
+    int removal_mask = GetAsMask(data_to_remove, "appcache",
+                                 BrowsingDataRemover::REMOVE_APPCACHE) |
+                       GetAsMask(data_to_remove, "cache",
+                                 BrowsingDataRemover::REMOVE_CACHE) |
+                       GetAsMask(data_to_remove, "cookies",
+                                 BrowsingDataRemover::REMOVE_COOKIES |
+                                 BrowsingDataRemover::REMOVE_WEBRTC_IDENTITY) |
+                       GetAsMask(data_to_remove, "downloads",
+                                 BrowsingDataRemover::REMOVE_DOWNLOADS) |
+                       GetAsMask(data_to_remove, "fileSystems",
+                                 BrowsingDataRemover::REMOVE_FILE_SYSTEMS) |
+                       GetAsMask(data_to_remove, "formData",
+                                 BrowsingDataRemover::REMOVE_FORM_DATA) |
+                       GetAsMask(data_to_remove, "history",
+                                 BrowsingDataRemover::REMOVE_HISTORY) |
+                       GetAsMask(data_to_remove, "indexedDB",
+                                 BrowsingDataRemover::REMOVE_INDEXEDDB) |
+                       GetAsMask(data_to_remove, "localStorage",
+                                 BrowsingDataRemover::REMOVE_LOCAL_STORAGE) |
+                       GetAsMask(data_to_remove, "pluginData",
+                                 BrowsingDataRemover::REMOVE_PLUGIN_DATA) |
+                       GetAsMask(data_to_remove, "passwords",
+                                 BrowsingDataRemover::REMOVE_PASSWORDS) |
+                       GetAsMask(data_to_remove, "serviceWorkers",
+                                 BrowsingDataRemover::REMOVE_SERVICE_WORKERS) |
+                       GetAsMask(data_to_remove, "webSQL",
+                                 BrowsingDataRemover::REMOVE_WEBSQL) |
+                       GetAsMask(data_to_remove, "serverBoundCertificates",
+                           BrowsingDataRemover::REMOVE_CHANNEL_IDS);
     EXPECT_EQ(expected_removal_mask, removal_mask);
   }
 
@@ -294,7 +291,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemovalProhibited) {
   CheckRemovalPermitted("{\"serverBoundCertificates\": true}", true);
   CheckRemovalPermitted("{\"passwords\": true}", true);
   CheckRemovalPermitted("{\"serviceWorkers\": true}", true);
-  CheckRemovalPermitted("{\"cacheStorage\": true}", true);
   CheckRemovalPermitted("{\"webSQL\": true}", true);
 
   // The entire removal is prohibited if any part is.
@@ -384,8 +380,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
   // We can't remove plugin data inside a test profile.
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "serviceWorkers", BrowsingDataRemover::REMOVE_SERVICE_WORKERS);
-  RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
-      "cacheStorage", BrowsingDataRemover::REMOVE_CACHE_STORAGE);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "webSQL", BrowsingDataRemover::REMOVE_WEBSQL);
 }

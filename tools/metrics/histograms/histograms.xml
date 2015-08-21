@@ -58146,7 +58146,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1074" label="ENTERPRISE_DEVICEATTRIBUTES_GETDIRECTORYDEVICEID"/>
   <int value="1075" label="CASTDEVICESPRIVATE_UPDATEDEVICES"/>
   <int value="1076" label="SYSTEM_DISPLAY_ENABLEUNIFIEDDESKTOP"/>
-  <int value="1077" label="BROWSINGDATA_REMOVECACHESTORAGE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

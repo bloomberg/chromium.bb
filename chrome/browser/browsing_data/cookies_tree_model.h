@@ -18,7 +18,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
@@ -35,8 +34,6 @@ class BrowsingDataCookieHelper;
 class CookiesTreeModel;
 class CookieTreeAppCacheNode;
 class CookieTreeAppCachesNode;
-class CookieTreeCacheStorageNode;
-class CookieTreeCacheStoragesNode;
 class CookieTreeChannelIDNode;
 class CookieTreeChannelIDsNode;
 class CookieTreeCookieNode;
@@ -104,8 +101,6 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
       TYPE_CHANNEL_ID,        // Used for CookieTreeChannelIDNode.
       TYPE_SERVICE_WORKERS,   // This is used for CookieTreeServiceWorkersNode.
       TYPE_SERVICE_WORKER,    // This is used for CookieTreeServiceWorkerNode.
-      TYPE_CACHE_STORAGES,    // This is used for CookieTreeCacheStoragesNode.
-      TYPE_CACHE_STORAGE,     // This is used for CookieTreeCacheStorageNode.
       TYPE_FLASH_LSO,         // This is used for CookieTreeFlashLSONode.
     };
 
@@ -135,8 +130,6 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
         const net::ChannelIDStore::ChannelID* channel_id);
     DetailedInfo& InitServiceWorker(
         const content::ServiceWorkerUsageInfo* service_worker_info);
-    DetailedInfo& InitCacheStorage(
-        const content::CacheStorageUsageInfo* cache_storage_info);
     DetailedInfo& InitFlashLSO(const std::string& flash_lso_domain);
 
     NodeType node_type;
@@ -154,7 +147,6 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     const BrowsingDataQuotaHelper::QuotaInfo* quota_info = nullptr;
     const net::ChannelIDStore::ChannelID* channel_id = nullptr;
     const content::ServiceWorkerUsageInfo* service_worker_info = nullptr;
-    const content::CacheStorageUsageInfo* cache_storage_info = nullptr;
     std::string flash_lso_domain;
   };
 
@@ -222,7 +214,6 @@ class CookieTreeHostNode : public CookieTreeNode {
   CookieTreeFileSystemsNode* GetOrCreateFileSystemsNode();
   CookieTreeChannelIDsNode* GetOrCreateChannelIDsNode();
   CookieTreeServiceWorkersNode* GetOrCreateServiceWorkersNode();
-  CookieTreeCacheStoragesNode* GetOrCreateCacheStoragesNode();
   CookieTreeQuotaNode* UpdateOrCreateQuotaNode(
       std::list<BrowsingDataQuotaHelper::QuotaInfo>::iterator quota_info);
   CookieTreeFlashLSONode* GetOrCreateFlashLSONode(const std::string& domain);
@@ -255,7 +246,6 @@ class CookieTreeHostNode : public CookieTreeNode {
   CookieTreeQuotaNode* quota_child_ = nullptr;
   CookieTreeChannelIDsNode* channel_ids_child_ = nullptr;
   CookieTreeServiceWorkersNode* service_workers_child_ = nullptr;
-  CookieTreeCacheStoragesNode* cache_storages_child_ = nullptr;
   CookieTreeFlashLSONode* flash_lso_child_ = nullptr;
 
   // The URL for which this node was initially created.
@@ -627,42 +617,6 @@ class CookieTreeServiceWorkersNode : public CookieTreeNode {
   DISALLOW_COPY_AND_ASSIGN(CookieTreeServiceWorkersNode);
 };
 
-// CookieTreeCacheStorageNode -----------------------------------------------
-class CookieTreeCacheStorageNode : public CookieTreeNode {
- public:
-  // cache_storage_info should remain valid at least as long as the
-  // CookieTreeCacheStorageNode is valid.
-  explicit CookieTreeCacheStorageNode(
-      std::list<content::CacheStorageUsageInfo>::iterator cache_storage_info);
-  ~CookieTreeCacheStorageNode() override;
-
-  // CookieTreeNode methods:
-  void DeleteStoredObjects() override;
-  DetailedInfo GetDetailedInfo() const override;
-
- private:
-  // cache_storage_info_ is expected to remain valid as long as the
-  // CookieTreeCacheStorageNode is valid.
-  std::list<content::CacheStorageUsageInfo>::iterator cache_storage_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookieTreeCacheStorageNode);
-};
-
-class CookieTreeCacheStoragesNode : public CookieTreeNode {
- public:
-  CookieTreeCacheStoragesNode();
-  ~CookieTreeCacheStoragesNode() override;
-
-  DetailedInfo GetDetailedInfo() const override;
-
-  void AddCacheStorageNode(CookieTreeCacheStorageNode* child) {
-    AddChildSortedByTitle(child);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CookieTreeCacheStoragesNode);
-};
-
 // CookieTreeFlashLSONode ----------------------------------------------------
 class CookieTreeFlashLSONode : public CookieTreeNode {
  public:
@@ -767,7 +721,6 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void PopulateQuotaInfo(LocalDataContainer* container);
   void PopulateChannelIDInfo(LocalDataContainer* container);
   void PopulateServiceWorkerUsageInfo(LocalDataContainer* container);
-  void PopulateCacheStorageUsageInfo(LocalDataContainer* container);
   void PopulateFlashLSOInfo(LocalDataContainer* container);
 
   BrowsingDataCookieHelper* GetCookieHelper(const std::string& app_id);
@@ -835,10 +788,6 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
       ScopedBatchUpdateNotifier* notifier,
       const base::string16& filter);
   void PopulateServiceWorkerUsageInfoWithFilter(
-      LocalDataContainer* container,
-      ScopedBatchUpdateNotifier* notifier,
-      const base::string16& filter);
-  void PopulateCacheStorageUsageInfoWithFilter(
       LocalDataContainer* container,
       ScopedBatchUpdateNotifier* notifier,
       const base::string16& filter);

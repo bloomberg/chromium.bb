@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -49,7 +48,6 @@ typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
 typedef std::list<BrowsingDataQuotaHelper::QuotaInfo> QuotaInfoList;
 typedef net::ChannelIDStore::ChannelIDList ChannelIDList;
 typedef std::list<content::ServiceWorkerUsageInfo> ServiceWorkerUsageInfoList;
-typedef std::list<content::CacheStorageUsageInfo> CacheStorageUsageInfoList;
 typedef std::map<GURL, std::list<content::AppCacheInfo> > AppCacheInfoMap;
 typedef std::vector<std::string> FlashLSODomainList;
 
@@ -63,18 +61,18 @@ typedef std::vector<std::string> FlashLSODomainList;
 // the empty string, as no app can have an empty id.
 class LocalDataContainer {
  public:
-  LocalDataContainer(BrowsingDataCookieHelper* cookie_helper,
-                     BrowsingDataDatabaseHelper* database_helper,
-                     BrowsingDataLocalStorageHelper* local_storage_helper,
-                     BrowsingDataLocalStorageHelper* session_storage_helper,
-                     BrowsingDataAppCacheHelper* appcache_helper,
-                     BrowsingDataIndexedDBHelper* indexed_db_helper,
-                     BrowsingDataFileSystemHelper* file_system_helper,
-                     BrowsingDataQuotaHelper* quota_helper,
-                     BrowsingDataChannelIDHelper* channel_id_helper,
-                     BrowsingDataServiceWorkerHelper* service_worker_helper,
-                     BrowsingDataCacheStorageHelper* cache_storage_helper,
-                     BrowsingDataFlashLSOHelper* flash_data_helper);
+  LocalDataContainer(
+      BrowsingDataCookieHelper* cookie_helper,
+      BrowsingDataDatabaseHelper* database_helper,
+      BrowsingDataLocalStorageHelper* local_storage_helper,
+      BrowsingDataLocalStorageHelper* session_storage_helper,
+      BrowsingDataAppCacheHelper* appcache_helper,
+      BrowsingDataIndexedDBHelper* indexed_db_helper,
+      BrowsingDataFileSystemHelper* file_system_helper,
+      BrowsingDataQuotaHelper* quota_helper,
+      BrowsingDataChannelIDHelper* channel_id_helper,
+      BrowsingDataServiceWorkerHelper* service_worker_helper,
+      BrowsingDataFlashLSOHelper* flash_data_helper);
   virtual ~LocalDataContainer();
 
   // This method must be called to start the process of fetching the resources.
@@ -93,7 +91,6 @@ class LocalDataContainer {
   friend class CookieTreeQuotaNode;
   friend class CookieTreeChannelIDNode;
   friend class CookieTreeServiceWorkerNode;
-  friend class CookieTreeCacheStorageNode;
   friend class CookieTreeFlashLSONode;
 
   // Callback methods to be invoked when fetching the data is complete.
@@ -112,8 +109,6 @@ class LocalDataContainer {
   void OnChannelIDModelInfoLoaded(const ChannelIDList& channel_id_list);
   void OnServiceWorkerModelInfoLoaded(
       const ServiceWorkerUsageInfoList& service_worker_info);
-  void OnCacheStorageModelInfoLoaded(
-      const CacheStorageUsageInfoList& cache_storage_info);
   void OnFlashLSOInfoLoaded(const FlashLSODomainList& domains);
 
   // Pointers to the helper objects, needed to retreive all the types of locally
@@ -128,7 +123,6 @@ class LocalDataContainer {
   scoped_refptr<BrowsingDataQuotaHelper> quota_helper_;
   scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper_;
   scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper_;
-  scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;
 
   // Storage for all the data that was retrieved through the helper objects.
@@ -143,7 +137,6 @@ class LocalDataContainer {
   QuotaInfoList quota_info_list_;
   ChannelIDList channel_id_list_;
   ServiceWorkerUsageInfoList service_worker_info_list_;
-  CacheStorageUsageInfoList cache_storage_info_list_;
   FlashLSODomainList flash_lso_domain_list_;
 
   // A delegate, which must outlive this object. The update callbacks use the

@@ -47,7 +47,8 @@ class StoragePartitionImpl : public StoragePartition {
   storage::DatabaseTracker* GetDatabaseTracker() override;
   DOMStorageContextWrapper* GetDOMStorageContext() override;
   IndexedDBContextImpl* GetIndexedDBContext() override;
-  CacheStorageContextImpl* GetCacheStorageContext() override;
+  // TODO(jsbell): Expose this on the public API as well. crbug.com/466371
+  CacheStorageContextImpl* GetCacheStorageContext();
   ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
   GeofencingManager* GetGeofencingManager() override;
   HostZoomMap* GetHostZoomMap() override;

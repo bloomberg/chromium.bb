@@ -9,8 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/cache_storage_context.h"
-#include "content/public/browser/cache_storage_usage_info.h"
 
 namespace base {
 class FilePath;
@@ -36,8 +34,9 @@ class CacheStorageManager;
 // child processes/origins. Most logic is delegated to the owned
 // CacheStorageManager instance, which is only accessed on the IO
 // thread.
+// TODO(jsbell): Derive from a public CacheStorageContext. crbug.com/466371
 class CONTENT_EXPORT CacheStorageContextImpl
-    : NON_EXPORTED_BASE(public CacheStorageContext) {
+    : public base::RefCountedThreadSafe<CacheStorageContextImpl> {
  public:
   explicit CacheStorageContextImpl(BrowserContext* browser_context);
 
@@ -63,14 +62,11 @@ class CONTENT_EXPORT CacheStorageContextImpl
       net::URLRequestContextGetter* request_context_getter,
       ChromeBlobStorageContext* blob_storage_context);
 
-  // CacheStorageContext
-  void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
-  void DeleteForOrigin(const GURL& origin) override;
-
- protected:
-  ~CacheStorageContextImpl() override;
-
  private:
+  friend class base::RefCountedThreadSafe<CacheStorageContextImpl>;
+
+  ~CacheStorageContextImpl();
+
   void CreateCacheStorageManager(
       const base::FilePath& user_data_directory,
       const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
