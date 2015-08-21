@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<div id="sandbox"></div>
+<script>
+description("Outer scope rules wins, even with lower specificity.");
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(
+                    '::content #target { color: red; }')),
+            createDOM('content', {})),
+        createDOM('style', {},
+            document.createTextNode(
+                'span { color: green; }')),
+        createDOM('span', {'id': 'target'})));
+
+shouldBeEqualToString("getComputedStyle(target).color", "rgb(0, 128, 0)");
+</script>

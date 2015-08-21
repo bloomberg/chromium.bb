@@ -123,21 +123,6 @@ static StylePropertySet* rightToLeftDeclaration()
     return rightToLeftDecl;
 }
 
-static void collectScopedResolversForHostedShadowTrees(const Element* element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
-{
-    ElementShadow* shadow = element->shadow();
-    if (!shadow)
-        return;
-
-    // Adding scoped resolver for active shadow roots for shadow host styling.
-    for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
-        if (shadowRoot->numberOfStyles() > 0) {
-            if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver())
-                resolvers.append(resolver);
-        }
-    }
-}
-
 StyleResolver::StyleResolver(Document& document)
     : m_document(document)
     , m_viewportStyleResolver(ViewportStyleResolver::create(&document))
@@ -242,12 +227,12 @@ void StyleResolver::resetRuleFeatures()
 
 void StyleResolver::addTreeBoundaryCrossingScope(ContainerNode& scope)
 {
-    m_treeBoundaryCrossingRules.addScope(scope);
+    m_treeBoundaryCrossingScopes.add(&scope);
 }
 
 void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
 {
-    m_treeBoundaryCrossingRules.removeScope(treeScope.rootNode());
+    m_treeBoundaryCrossingScopes.remove(&treeScope.rootNode());
 
     ScopedStyleResolver* resolver = treeScope.scopedStyleResolver();
     if (!resolver)
@@ -348,11 +333,11 @@ StyleResolver::~StyleResolver()
 {
 }
 
-static inline ScopedStyleResolver* scopedResolverFor(const Element* element)
+static inline ScopedStyleResolver* scopedResolverFor(const Element& element)
 {
     // Ideally, returning element->treeScope().scopedStyleResolver() should be
     // enough, but ::cue and custom pseudo elements like ::-webkit-meter-bar pierce
-    // through a shadow dom boundary, yet they are not part of m_treeBoundaryCrossingRules.
+    // through a shadow dom boundary, yet they are not part of m_treeBoundaryCrossingScopes.
     // The assumption here is that these rules only pierce through one boundary and
     // that the scope of these elements do not have a style resolver due to the fact
     // that VTT scopes and UA shadow trees don't have <style> elements. This is
@@ -361,40 +346,94 @@ static inline ScopedStyleResolver* scopedResolverFor(const Element* element)
     // FIXME: Make ::cue and custom pseudo elements part of boundary crossing rules
     // when moving those rules to ScopedStyleResolver as part of issue 401359.
 
-    TreeScope* treeScope = &element->treeScope();
+    TreeScope* treeScope = &element.treeScope();
     if (ScopedStyleResolver* resolver = treeScope->scopedStyleResolver()) {
-        ASSERT(element->shadowPseudoId().isEmpty());
-        ASSERT(!element->isVTTElement());
+        ASSERT(element.shadowPseudoId().isEmpty());
+        ASSERT(!element.isVTTElement());
         return resolver;
     }
 
     treeScope = treeScope->parentTreeScope();
     if (!treeScope)
         return nullptr;
-    if (element->shadowPseudoId().isEmpty() && !element->isVTTElement())
+    if (element.shadowPseudoId().isEmpty() && !element.isVTTElement())
         return nullptr;
     return treeScope->scopedStyleResolver();
 }
 
-void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
+void StyleResolver::matchHostRules(const Element& element, ElementRuleCollector& collector, bool includeEmptyRules)
+{
+    ElementShadow* shadow = element.shadow();
+    if (!shadow)
+        return;
+
+    for (ShadowRoot* shadowRoot = shadow->oldestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
+        if (!shadowRoot->numberOfStyles())
+            continue;
+        if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver()) {
+            collector.clearMatchedRules();
+            resolver->collectMatchingShadowHostRules(collector, includeEmptyRules);
+            collector.sortAndTransferMatchedRules();
+            collector.finishAddingAuthorRulesForTreeScope();
+        }
+    }
+}
+
+void StyleResolver::matchElementScopeRules(ScopedStyleResolver& elementScopeResolver, ElementRuleCollector& collector, bool includeEmptyRules)
 {
     collector.clearMatchedRules();
-
-    CascadeOrder cascadeOrder = 0;
-    WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolversInShadowTree;
-    collectScopedResolversForHostedShadowTrees(element, resolversInShadowTree);
-
-    // Apply :host and :host-context rules from inner scopes.
-    for (int j = resolversInShadowTree.size() - 1; j >= 0; --j)
-        resolversInShadowTree.at(j)->collectMatchingShadowHostRules(collector, includeEmptyRules, ++cascadeOrder);
-
-    // Apply normal rules from element scope.
-    if (ScopedStyleResolver* resolver = scopedResolverFor(element))
-        resolver->collectMatchingAuthorRules(collector, includeEmptyRules, ++cascadeOrder);
-
-    // Apply /deep/ and ::shadow rules from outer scopes, and ::content from inner.
-    m_treeBoundaryCrossingRules.collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
+    elementScopeResolver.collectMatchingAuthorRules(collector, includeEmptyRules);
+    elementScopeResolver.collectMatchingTreeBoundaryCrossingRules(collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
+    collector.finishAddingAuthorRulesForTreeScope();
+}
+
+void StyleResolver::matchScopedRules(const Element& element, ElementRuleCollector& collector, bool includeEmptyRules)
+{
+    // Match rules from treeScopes in the reverse tree-of-trees order, since the
+    // cascading order for normal rules is such that when comparing rules from
+    // different shadow trees, the rule from the tree which comes first in the
+    // tree-of-trees order wins. From other treeScopes than the element's own
+    // scope, only tree-boundary-crossing rules may match.
+
+    ScopedStyleResolver* elementScopeResolver = scopedResolverFor(element);
+    bool matchElementScopeDone = !elementScopeResolver;
+
+    for (auto it = m_treeBoundaryCrossingScopes.rbegin(); it != m_treeBoundaryCrossingScopes.rend(); ++it) {
+        const TreeScope& scope = (*it)->treeScope();
+        ScopedStyleResolver* resolver = scope.scopedStyleResolver();
+        ASSERT(resolver);
+
+        if (!matchElementScopeDone && scope.isInclusiveAncestorOf(element.treeScope())) {
+
+            matchElementScopeDone = true;
+
+            // At this point, the iterator has either encountered the scope for the element
+            // itself (if that scope has boundary-crossing rules), or the iterator has moved
+            // to a scope which appears before the element's scope in the tree-of-trees order.
+            // Try to match all rules from the element's scope.
+
+            matchElementScopeRules(*elementScopeResolver, collector, includeEmptyRules);
+            if (resolver == elementScopeResolver) {
+                // Boundary-crossing rules already collected in matchElementScopeRules.
+                continue;
+            }
+        }
+
+        collector.clearMatchedRules();
+        resolver->collectMatchingTreeBoundaryCrossingRules(collector, includeEmptyRules);
+        collector.sortAndTransferMatchedRules();
+        collector.finishAddingAuthorRulesForTreeScope();
+    }
+
+    if (!matchElementScopeDone)
+        matchElementScopeRules(*elementScopeResolver, collector, includeEmptyRules);
+}
+
+void StyleResolver::matchAuthorRules(const Element& element, ElementRuleCollector& collector, bool includeEmptyRules)
+{
+    matchHostRules(element, collector, includeEmptyRules);
+    matchScopedRules(element, collector, includeEmptyRules);
 }
 
 void StyleResolver::matchUARules(ElementRuleCollector& collector)
@@ -447,9 +486,15 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
         }
     }
 
-    matchAuthorRules(state.element(), collector, false);
+    matchAuthorRules(*state.element(), collector, false);
 
     if (state.element()->isStyledElement()) {
+        // TODO(rune@opera.com): Adding style attribute rules here is probably too late
+        // when you have shadow piercing combinators. When we don't have piercing combinators,
+        // the style attribute always belong to the outermost scope whose rules apply to
+        // the element. Thus, applying inline style here is correct. Fixing this for piercing
+        // combinators means moving the code below into matchElementScopeRules and _not_
+        // invoking it for pseudo style requests.
         if (state.element()->inlineStyle()) {
             // Inline style is immutable as long as there is no CSSOM wrapper.
             bool isInlineStyleCacheable = !state.element()->inlineStyle()->isMutable();
@@ -758,7 +803,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
         collector.setPseudoStyleRequest(pseudoStyleRequest);
 
         matchUARules(collector);
-        matchAuthorRules(state.element(), collector, false);
+        matchAuthorRules(*state.element(), collector, false);
         collector.finishAddingAuthorRulesForTreeScope();
 
         if (!collector.matchedResult().hasMatchedProperties())
@@ -909,7 +954,7 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
 
     if (rulesToInclude & AuthorCSSRules) {
         collector.setSameOriginOnly(!(rulesToInclude & CrossOriginCSSRules));
-        matchAuthorRules(element, collector, rulesToInclude & EmptyCSSRules);
+        matchAuthorRules(*element, collector, rulesToInclude & EmptyCSSRules);
     }
 }
 
@@ -952,10 +997,25 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
     return true;
 }
 
+static void collectScopedResolversForHostedShadowTrees(const Element& element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
+{
+    ElementShadow* shadow = element.shadow();
+    if (!shadow)
+        return;
+
+    // Adding scoped resolver for active shadow roots for shadow host styling.
+    for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
+        if (shadowRoot->numberOfStyles() > 0) {
+            if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver())
+                resolvers.append(resolver);
+        }
+    }
+}
+
 StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, const AtomicString& animationName)
 {
     WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolvers;
-    collectScopedResolversForHostedShadowTrees(element, resolvers);
+    collectScopedResolversForHostedShadowTrees(*element, resolvers);
     if (ScopedStyleResolver* scopedResolver = element->treeScope().scopedStyleResolver())
         resolvers.append(scopedResolver);
 
@@ -1446,7 +1506,7 @@ DEFINE_TRACE(StyleResolver)
     visitor->trace(m_siblingRuleSet);
     visitor->trace(m_uncommonAttributeRuleSet);
     visitor->trace(m_watchedSelectorsRules);
-    visitor->trace(m_treeBoundaryCrossingRules);
+    visitor->trace(m_treeBoundaryCrossingScopes);
     visitor->trace(m_styleResourceLoader);
     visitor->trace(m_styleSharingLists);
     visitor->trace(m_pendingStyleSheets);

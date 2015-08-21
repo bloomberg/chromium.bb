@@ -2,7 +2,7 @@
 <script src="../../resources/js-test.js"></script>
 <div id="host">
   <div>
-    <span class="red" id="span">red?</span>
+    <span class="red" id="span">There should be no red</span>
   </div>
 </div>
 <script>
@@ -12,6 +12,6 @@ root.innerHTML = '<div><content></content></div><style>::content .red { color: g
 var root2 = root.firstChild.createShadowRoot();
 root2.innerHTML = '<style>::content .red { background-color: green; color: red; }</style><content></content>';
 var span = document.querySelector('#span');
-shouldBeEqualToString('getComputedStyle(span).color', 'rgb(255, 0, 0)');
+shouldBeEqualToString('getComputedStyle(span).color', 'rgb(0, 128, 0)');
 shouldBeEqualToString('getComputedStyle(span).backgroundColor', 'rgb(0, 128, 0)');
 </script>

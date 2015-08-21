@@ -15,7 +15,7 @@ PASS borderColorOf(getNodeInTreeOfTrees("host/host1/host2/span3")) is "rgb(0, 12
 PASS borderColorOf(getNodeInTreeOfTrees("host/host1/host2/host3/span4")) is not "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
-PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(255, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
 PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"

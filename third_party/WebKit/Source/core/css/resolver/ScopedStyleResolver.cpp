@@ -169,10 +169,18 @@ void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& c
 
 void ScopedStyleResolver::collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector& collector, bool includeEmptyRules, CascadeOrder cascadeOrder)
 {
+    if (!m_treeBoundaryCrossingRuleSet)
+        return;
+
+    ASSERT(!collector.scopeContainsLastMatchedElement());
+    collector.setScopeContainsLastMatchedElement(true);
+
     for (const auto& rules : *m_treeBoundaryCrossingRuleSet) {
         MatchRequest request(rules->m_ruleSet.get(), includeEmptyRules, &treeScope().rootNode(), rules->m_parentStyleSheet, rules->m_parentIndex);
         collector.collectMatchingRules(request, cascadeOrder, true);
     }
+
+    collector.setScopeContainsLastMatchedElement(false);
 }
 
 void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)

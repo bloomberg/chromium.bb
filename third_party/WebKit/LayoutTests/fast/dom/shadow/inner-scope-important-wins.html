@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<div id="sandbox"></div>
+<script>
+description("Inner scope !important rules wins, even with lower specificity.");
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(
+                    '::content span { color: green !important; }')),
+            createDOM('content', {})),
+        createDOM('style', {},
+            document.createTextNode(
+                '#target { color: red !important; }')),
+        createDOM('span', {'id': 'target'})));
+
+shouldBeEqualToString("getComputedStyle(target).color", "rgb(0, 128, 0)");
+</script>
