@@ -203,3 +203,50 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckParagraph) {
       // English, German, Spanish, and a misspelled word.
       base::UTF8ToUTF16("rocket Schwarzkommando destruyan pcnyhon"), expected);
 }
+
+// Ensure that suggestions are handled properly for multiple languages.
+TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
+  ReinitializeSpellCheck("en-US,es-ES");
+  static const struct {
+    // A string of text for checking.
+    const wchar_t* input;
+    // The position and the length of the first invalid word.
+    int expected_misspelling_start;
+    int expected_misspelling_length;
+    // A comma separated string of suggested words that should occur, in their
+    // expected order.
+    const wchar_t* expected_suggestions;
+  } kTestCases[] = {
+      {L"rocket", 0, 0},
+      {L"destruyan", 0, 0},
+      {L"rocet", 0, 5, L"rocket,roce,crochet,troce,rocen"},
+      {L"jum", 0, 3, L"hum,jun,ju,um,juma"},
+      {L"asdne", 0, 5, L"sadness,desasne"},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    blink::WebVector<blink::WebString> suggestions;
+    int misspelling_start;
+    int misspelling_length;
+    static_cast<blink::WebSpellCheckClient*>(provider())
+        ->spellCheck(blink::WebString(base::WideToUTF16(kTestCases[i].input)),
+                     misspelling_start, misspelling_length, &suggestions);
+
+    EXPECT_EQ(kTestCases[i].expected_misspelling_start, misspelling_start);
+    EXPECT_EQ(kTestCases[i].expected_misspelling_length, misspelling_length);
+    if (!kTestCases[i].expected_suggestions) {
+      EXPECT_EQ(0UL, suggestions.size());
+      continue;
+    }
+
+    std::vector<base::string16> expected_suggestions = base::SplitString(
+        base::WideToUTF16(kTestCases[i].expected_suggestions),
+        base::string16(1, ','), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+    EXPECT_EQ(expected_suggestions.size(), suggestions.size());
+    for (size_t j = 0;
+         j < std::min(expected_suggestions.size(), suggestions.size()); j++) {
+      EXPECT_EQ(expected_suggestions[j], base::string16(suggestions[j]));
+    }
+  }
+}

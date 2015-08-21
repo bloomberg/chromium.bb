@@ -172,6 +172,32 @@ SpellCheck::SpellCheck()
 SpellCheck::~SpellCheck() {
 }
 
+void SpellCheck::FillSuggestions(
+    const std::vector<std::vector<base::string16>>& suggestions_list,
+    std::vector<base::string16>* optional_suggestions) {
+  // A vector containing the indices of the current suggestion for each
+  // language's suggestion list.
+  std::vector<size_t> indices(suggestions_list.size(), 0);
+  // Take one suggestion at a time from each language's suggestions and add it
+  // to |optional_suggestions|.
+  for (size_t i = 0, num_empty = 0;
+       num_empty < suggestions_list.size() &&
+       optional_suggestions->size() <
+           chrome::spellcheck_common::kMaxSuggestions;
+       i = (i + 1) % suggestions_list.size()) {
+    if (indices[i] < suggestions_list[i].size()) {
+      const base::string16& suggestion = suggestions_list[i][indices[i]];
+      // Only add the suggestion if it's unique.
+      if (std::find(optional_suggestions->begin(), optional_suggestions->end(),
+                    suggestion) == optional_suggestions->end()) {
+        optional_suggestions->push_back(suggestion);
+      }
+      if (++indices[i] == suggestions_list[i].size())
+        num_empty++;
+    }
+  }
+}
+
 bool SpellCheck::OnControlMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SpellCheck, message)
@@ -264,6 +290,12 @@ bool SpellCheck::SpellCheckWord(
   int possible_misspelling_len;
   // The longest sequence of text that all languages agree is skippable.
   int agreed_skippable_len;
+  // A vector of vectors containing spelling suggestions from different
+  // languages.
+  std::vector<std::vector<base::string16>> suggestions_list;
+  // A vector to hold a language's misspelling suggestions between spellcheck
+  // calls.
+  std::vector<base::string16> language_suggestions;
 
   // This loop only advances if all languages agree that a sequence of text is
   // skippable.
@@ -274,18 +306,17 @@ bool SpellCheck::SpellCheckWord(
     agreed_skippable_len = text_length;
     *misspelling_start = 0;
     *misspelling_len = 0;
-
-    if (optional_suggestions)
-      optional_suggestions->clear();
+    suggestions_list.clear();
 
     for (ScopedVector<SpellcheckLanguage>::iterator language =
              languages_.begin();
          language != languages_.end();) {
+      language_suggestions.clear();
       SpellcheckLanguage::SpellcheckWordResult result =
-          (*language)->SpellCheckWord(text_begin, position_in_text, text_length,
-                                      tag, &possible_misspelling_start,
-                                      &possible_misspelling_len,
-                                      optional_suggestions);
+          (*language)->SpellCheckWord(
+              text_begin, position_in_text, text_length, tag,
+              &possible_misspelling_start, &possible_misspelling_len,
+              optional_suggestions ? &language_suggestions : nullptr);
 
       switch (result) {
         case SpellcheckLanguage::SpellcheckWordResult::IS_CORRECT:
@@ -301,6 +332,7 @@ bool SpellCheck::SpellCheckWord(
           if (position_in_text != possible_misspelling_start) {
             *misspelling_len = 0;
             position_in_text = possible_misspelling_start;
+            suggestions_list.clear();
             language = languages_.begin();
           } else {
             language++;
@@ -312,17 +344,25 @@ bool SpellCheck::SpellCheckWord(
           // If true, this means the spellchecker moved past a word that was
           // previously determined to be misspelled or skippable, which means
           // another spellcheck language marked it as correct.
-          language = position_in_text != *misspelling_start ? languages_.begin()
-                                                            : language + 1;
-          position_in_text = *misspelling_start;
+          if (position_in_text != *misspelling_start) {
+            suggestions_list.clear();
+            language = languages_.begin();
+            position_in_text = *misspelling_start;
+          } else {
+            suggestions_list.push_back(language_suggestions);
+            language++;
+          }
           break;
       }
     }
 
     // If |*misspelling_len| is non-zero, that means at least one language
     // marked a word misspelled and no other language considered it correct.
-    if (*misspelling_len != 0)
+    if (*misspelling_len != 0) {
+      if (optional_suggestions)
+        FillSuggestions(suggestions_list, optional_suggestions);
       return false;
+    }
   }
 
   NOTREACHED();

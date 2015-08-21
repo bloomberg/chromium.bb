@@ -121,6 +121,14 @@ class SpellCheck : public content::RenderProcessObserver,
    FRIEND_TEST_ALL_PREFIXES(SpellCheckTest,
        RequestSpellCheckMultipleTimesWithoutInitialization);
 
+   // Evenly fill |optional_suggestions| with a maximum of |kMaxSuggestions|
+   // suggestions from |suggestions_list|. suggestions_list[i][j] is the j-th
+   // suggestion from the i-th language's suggestions. |optional_suggestions|
+   // cannot be null.
+   static void FillSuggestions(
+       const std::vector<std::vector<base::string16>>& suggestions_list,
+       std::vector<base::string16>* optional_suggestions);
+
   // RenderProcessObserver implementation:
    bool OnControlMessageReceived(const IPC::Message& message) override;
 
