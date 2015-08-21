@@ -74,7 +74,8 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(
       global_state_(global_state),
       frame_(nullptr),
       delete_callback_(delete_callback),
-      frame_creation_callback_(frame_creation_callback) {
+      frame_creation_callback_(frame_creation_callback),
+      root_(nullptr) {
   // TODO(sky): nuke headless. We're not going to care about it anymore.
   DCHECK(!global_state_->is_headless());
 
@@ -164,15 +165,13 @@ HTMLDocumentOOPIF::BeforeLoadCache* HTMLDocumentOOPIF::GetBeforeLoadCache() {
 }
 
 void HTMLDocumentOOPIF::OnEmbed(View* root) {
+  root_ = root;
+
   // We're an observer until the document is loaded.
   root->AddObserver(this);
   resource_waiter_->set_root(root);
 
   LoadIfNecessary();
-}
-
-void HTMLDocumentOOPIF::OnUnembed() {
-  frame_->OnViewUnembed();
 }
 
 void HTMLDocumentOOPIF::OnViewManagerDestroyed(
@@ -220,6 +219,12 @@ mojo::ApplicationImpl* HTMLDocumentOOPIF::GetApp() {
 
 HTMLFrame* HTMLDocumentOOPIF::CreateHTMLFrame(HTMLFrame::CreateParams* params) {
   return frame_creation_callback_.Run(params);
+}
+
+void HTMLDocumentOOPIF::OnFrameSwappedToRemote() {
+  // When the frame becomes remote HTMLDocumentOOPIF is no longer needed.
+  // Deleting the ViewManager triggers deleting us.
+  delete root_->view_manager();
 }
 
 void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,

@@ -50,9 +50,6 @@ class WebViewImpl : public mojom::WebView,
 
   // Overridden from mojo::ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;
-  void OnEmbedForDescendant(mojo::View* view,
-                            mojo::URLRequestPtr request,
-                            mojo::ViewManagerClientPtr* client) override;
   void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
 
   // Overridden from mojo::ViewObserver:
@@ -67,13 +64,14 @@ class WebViewImpl : public mojom::WebView,
                                   HTMLMessageEvent* event) override;
   void LoadingStateChanged(bool loading) override;
   void ProgressChanged(double progress) override;
-  void RequestNavigate(Frame* source,
-                       mandoline::NavigationTargetType target_type,
-                       Frame* target_frame,
-                       mojo::URLRequestPtr request) override;
-
-  // Loads |request| in |frame|.
-  void NavigateExistingFrame(Frame* frame, mojo::URLRequestPtr request);
+  void NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) override;
+  bool CanNavigateFrame(
+      Frame* target,
+      mojo::URLRequestPtr request,
+      mandoline::FrameTreeClient** frame_tree_client,
+      scoped_ptr<mandoline::FrameUserData>* frame_user_data,
+      mojo::ViewManagerClientPtr* view_manager_client) override;
+  void DidStartNavigation(Frame* frame) override;
 
   mojo::ApplicationImpl* app_;
   mojom::WebViewClientPtr client_;

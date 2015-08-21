@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/stl_util.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_property.h"
@@ -56,7 +58,8 @@ Frame::Frame(FrameTree* tree,
       loading_(false),
       progress_(0.f),
       client_properties_(client_properties),
-      frame_tree_server_binding_(this) {
+      frame_tree_server_binding_(this),
+      weak_factory_(this) {
   if (view)
     SetView(view);
 }
@@ -84,20 +87,6 @@ void Frame::Init(Frame* parent) {
     if (parent)
       parent->Add(this);
   }
-
-  InitClient();
-}
-
-void Frame::Swap(FrameTreeClient* frame_tree_client,
-                 scoped_ptr<FrameUserData> user_data) {
-  while (!children_.empty())
-    delete children_[0];
-
-  user_data_ = user_data.Pass();
-  frame_tree_client_ = frame_tree_client;
-  frame_tree_server_binding_.Close();
-  loading_ = false;
-  progress_ = 0.f;
 
   InitClient();
 }
@@ -160,7 +149,24 @@ void Frame::InitClient() {
   if (frame_tree_client_) {
     frame_tree_client_->OnConnect(frame_tree_server_ptr.Pass(),
                                   tree_->change_id(), array.Pass());
+    tree_->delegate_->DidStartNavigation(this);
   }
+}
+
+void Frame::OnWillNavigateAck(FrameTreeClient* frame_tree_client,
+                              scoped_ptr<FrameUserData> user_data,
+                              mojo::ViewManagerClientPtr view_manager_client) {
+  while (!children_.empty())
+    delete children_[0];
+
+  user_data_ = user_data.Pass();
+  frame_tree_client_ = frame_tree_client;
+  frame_tree_server_binding_.Close();
+  loading_ = false;
+  progress_ = 0.f;
+
+  view_->Embed(view_manager_client.Pass());
+  InitClient();
 }
 
 void Frame::SetView(mojo::View* view) {
@@ -169,6 +175,8 @@ void Frame::SetView(mojo::View* view) {
   view_ = view;
   view_->SetLocalProperty(kFrame, this);
   view_->AddObserver(this);
+  if (pending_navigate_.get())
+    StartNavigate(pending_navigate_.Pass());
 }
 
 Frame* Frame::GetAncestorWithFrameTreeClient() {
@@ -201,6 +209,36 @@ void Frame::Remove(Frame* node) {
   children_.erase(iter);
 
   tree_->root()->NotifyRemoved(this, node, tree_->AdvanceChangeID());
+}
+
+void Frame::StartNavigate(mojo::URLRequestPtr request) {
+  pending_navigate_.reset();
+
+  // We need a View to navigate. When we get the View we'll complete the
+  // navigation.
+  // TODO(sky): consider state and what is not legal while waiting.
+  if (!view_) {
+    pending_navigate_ = request.Pass();
+    return;
+  }
+
+  FrameTreeClient* frame_tree_client = nullptr;
+  scoped_ptr<FrameUserData> user_data;
+  mojo::ViewManagerClientPtr view_manager_client;
+  if (!tree_->delegate_->CanNavigateFrame(this, request.Pass(),
+                                          &frame_tree_client, &user_data,
+                                          &view_manager_client)) {
+    return;
+  }
+
+  // TODO(sky): consider what state this should correspond to. Should we
+  // disallow certain operations until we get the ack?
+  Frame* ancestor_with_frame_tree_client = GetAncestorWithFrameTreeClient();
+  DCHECK(ancestor_with_frame_tree_client);
+  ancestor_with_frame_tree_client->frame_tree_client_->OnWillNavigate(
+      id_, base::Bind(&Frame::OnWillNavigateAck, weak_factory_.GetWeakPtr(),
+                      frame_tree_client, base::Passed(&user_data),
+                      base::Passed(&view_manager_client)));
 }
 
 void Frame::LoadingStartedImpl() {
@@ -388,11 +426,19 @@ void Frame::OnCreatedFrame(
 void Frame::RequestNavigate(mandoline::NavigationTargetType target_type,
                             uint32_t target_frame_id,
                             mojo::URLRequestPtr request) {
-  Frame* target_frame = tree_->root()->FindFrame(target_frame_id);
-  if (tree_->delegate_) {
-    tree_->delegate_->RequestNavigate(this, target_type, target_frame,
-                                      request.Pass());
+  if (target_type == NAVIGATION_TARGET_TYPE_EXISTING_FRAME) {
+    Frame* target_frame = tree_->root()->FindFrame(target_frame_id);
+    if (!target_frame) {
+      DVLOG(1) << "RequestNavigate EXIT_FRAME with no matching frame";
+      return;
+    }
+    if (target_frame != tree_->root()) {
+      target_frame->StartNavigate(request.Pass());
+      return;
+    }
+    // Else case if |target_frame| == root. Treat at top level request.
   }
+  tree_->delegate_->NavigateTopLevel(this, request.Pass());
 }
 
 void Frame::DidNavigateLocally(uint32_t frame_id, const mojo::String& url) {

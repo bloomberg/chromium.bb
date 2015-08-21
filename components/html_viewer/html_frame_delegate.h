@@ -30,6 +30,10 @@ class HTMLFrameDelegate {
   // Creates a new HTMLFrame. The delegate must return non-null.
   virtual HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) = 0;
 
+  // Invoked when the HTMLFrame the delegate is associated with is swapped
+  // to a remote frame.
+  virtual void OnFrameSwappedToRemote() = 0;
+
  protected:
   virtual ~HTMLFrameDelegate() {}
 };

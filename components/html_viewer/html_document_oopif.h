@@ -96,7 +96,6 @@ class HTMLDocumentOOPIF
 
   // ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;
-  void OnUnembed() override;
   void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
 
   // ViewObserver:
@@ -111,6 +110,7 @@ class HTMLDocumentOOPIF
   void OnFrameDidFinishLoad() override;
   mojo::ApplicationImpl* GetApp() override;
   HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) override;
+  void OnFrameSwappedToRemote() override;
 
   // mojo::InterfaceFactory<mojo::AxProvider>:
   void Create(mojo::ApplicationConnection* connection,
@@ -151,6 +151,8 @@ class HTMLDocumentOOPIF
   DeleteCallback delete_callback_;
 
   HTMLFrameCreationCallback frame_creation_callback_;
+
+  mojo::View* root_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentOOPIF);
 };

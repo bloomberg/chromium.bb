@@ -52,10 +52,6 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   void Init(Frame* parent);
 
-  // Deletes the children and initializes the new FrameTreeClient.
-  void Swap(FrameTreeClient* frame_tree_client,
-            scoped_ptr<FrameUserData> user_data);
-
   // Walks the View tree starting at |view| going up returning the first
   // Frame that is associated with |view|. For example, if |view|
   // has a Frame associated with it, then that is returned. Otherwise
@@ -101,6 +97,11 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   // Initializes the client by sending it the state of the tree.
   void InitClient();
 
+  // Called in response to FrameTreeClient::OnWillNavigate().
+  void OnWillNavigateAck(FrameTreeClient* frame_tree_client,
+                         scoped_ptr<FrameUserData> user_data,
+                         mojo::ViewManagerClientPtr view_manager_client);
+
   void SetView(mojo::View* view);
 
   // Returns the first ancestor (starting at |this|) that has a
@@ -113,6 +114,11 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   void Add(Frame* node);
   void Remove(Frame* node);
+
+  // Starts a new navigation to |request|. The navigation proceeds as long
+  // as there is a View and once OnWillNavigate() has returned. If there is
+  // no View the navigation waits until the View is available.
+  void StartNavigate(mojo::URLRequestPtr request);
 
   // The implementation of the various FrameTreeServer functions that take
   // frame_id call into these.
@@ -177,7 +183,13 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   ClientPropertyMap client_properties_;
 
+  // StartNavigate() stores the request here if the view isn't available at
+  // the time of StartNavigate().
+  mojo::URLRequestPtr pending_navigate_;
+
   mojo::Binding<FrameTreeServer> frame_tree_server_binding_;
+
+  base::WeakPtrFactory<Frame> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Frame);
 };

@@ -131,4 +131,9 @@ interface FrameTreeClient {
   OnPostMessageEvent(uint32 source_frame_id,
                      uint32 target_frame_id,
                      HTMLMessageEvent event);
+
+  // Called prior to starting a new navigation in |target_frame_id|. This is
+  // only called on the FrameTreeClient that is rendering to |target_frame_id|.
+  // The navigation does not start until the callback is received.
+  OnWillNavigate(uint32 target_frame_id) => ();
 };

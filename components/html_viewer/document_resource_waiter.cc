@@ -57,7 +57,7 @@ void DocumentResourceWaiter::Bind(
 
 void DocumentResourceWaiter::OnConnect(
     mandoline::FrameTreeServerPtr server,
-    uint32 change_id,
+    uint32_t change_id,
     mojo::Array<mandoline::FrameDataPtr> frame_data) {
   DCHECK(frame_data_.is_null());
   change_id_ = change_id;
@@ -69,13 +69,13 @@ void DocumentResourceWaiter::OnConnect(
     document_->LoadIfNecessary();
 }
 
-void DocumentResourceWaiter::OnFrameAdded(uint32 change_id,
+void DocumentResourceWaiter::OnFrameAdded(uint32_t change_id,
                                           mandoline::FrameDataPtr frame_data) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
 }
 
-void DocumentResourceWaiter::OnFrameRemoved(uint32 change_id,
+void DocumentResourceWaiter::OnFrameRemoved(uint32_t change_id,
                                             uint32_t frame_id) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
@@ -95,6 +95,13 @@ void DocumentResourceWaiter::OnPostMessageEvent(
     mandoline::HTMLMessageEventPtr event) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();
+}
+
+void DocumentResourceWaiter::OnWillNavigate(
+    uint32_t target_frame_id,
+    const OnWillNavigateCallback& callback) {
+  // It is assumed we receive OnConnect() (which unbinds) before anything else.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace html_viewer

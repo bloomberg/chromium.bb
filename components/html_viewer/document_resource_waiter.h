@@ -49,17 +49,19 @@ class DocumentResourceWaiter : public mandoline::FrameTreeClient {
  private:
   // mandoline::FrameTreeClient:
   void OnConnect(mandoline::FrameTreeServerPtr server,
-                 uint32 change_id,
+                 uint32_t change_id,
                  mojo::Array<mandoline::FrameDataPtr> frame_data) override;
-  void OnFrameAdded(uint32 change_id,
+  void OnFrameAdded(uint32_t change_id,
                     mandoline::FrameDataPtr frame_data) override;
-  void OnFrameRemoved(uint32 change_id, uint32_t frame_id) override;
+  void OnFrameRemoved(uint32_t change_id, uint32_t frame_id) override;
   void OnFrameClientPropertyChanged(uint32_t frame_id,
                                     const mojo::String& name,
                                     mojo::Array<uint8_t> new_value) override;
   void OnPostMessageEvent(uint32_t source_frame_id,
                           uint32_t target_frame_id,
                           mandoline::HTMLMessageEventPtr event) override;
+  void OnWillNavigate(uint32_t target_frame_id,
+                      const OnWillNavigateCallback& callback) override;
 
   GlobalState* global_state_;
   HTMLDocumentOOPIF* document_;

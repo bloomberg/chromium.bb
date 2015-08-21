@@ -42,15 +42,6 @@ class FrameTree {
                            FrameTreeClient* client,
                            scoped_ptr<FrameUserData> user_data);
 
-  // If frame->view() == |view|, then all of |frame|'s children are destroyed
-  // and |frame| is reused. Otherwise a new Frame is created as a child of
-  // |frame|. It is expected this is called from
-  // ViewManagerDelegate::OnEmbedForDescendant().
-  Frame* CreateOrReplaceFrame(Frame* frame,
-                              mojo::View* view,
-                              FrameTreeClient* frame_tree_client,
-                              scoped_ptr<FrameUserData> user_data);
-
   // Creates a new Frame parented to |parent|. The Frame is considered shared in
   // that it is sharing the FrameTreeClient/FrameTreeServer of |parent|. There
   // may or may not be a View identified by |frame_id| yet. See Frame for

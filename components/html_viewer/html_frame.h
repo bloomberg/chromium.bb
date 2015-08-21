@@ -95,10 +95,6 @@ class HTMLFrame : public blink::WebFrameClient,
 
   explicit HTMLFrame(CreateParams* params);
 
-  // Called when another app is embedded in the View this Frame is associated
-  // with.
-  void OnViewUnembed();
-
   // Closes and deletes this Frame.
   void Close();
 
@@ -277,6 +273,8 @@ class HTMLFrame : public blink::WebFrameClient,
       uint32_t source_frame_id,
       uint32_t target_frame_id,
       mandoline::HTMLMessageEventPtr serialized_event) override;
+  void OnWillNavigate(uint32_t target_frame_id,
+                      const OnWillNavigateCallback& callback) override;
 
   // blink::WebRemoteFrameClient:
   virtual void frameDetached(blink::WebRemoteFrameClient::DetachType type);

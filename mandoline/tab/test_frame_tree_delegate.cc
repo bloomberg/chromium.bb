@@ -21,9 +21,18 @@ void TestFrameTreeDelegate::LoadingStateChanged(bool loading) {}
 
 void TestFrameTreeDelegate::ProgressChanged(double progress) {}
 
-void TestFrameTreeDelegate::RequestNavigate(Frame* source,
-                                            NavigationTargetType target_type,
-                                            Frame* target_frame,
-                                            mojo::URLRequestPtr request) {}
+void TestFrameTreeDelegate::NavigateTopLevel(Frame* source,
+                                             mojo::URLRequestPtr request) {}
+
+bool TestFrameTreeDelegate::CanNavigateFrame(
+    Frame* target,
+    mojo::URLRequestPtr request,
+    FrameTreeClient** frame_tree_client,
+    scoped_ptr<FrameUserData>* frame_user_data,
+    mojo::ViewManagerClientPtr* view_manager_client) {
+  return false;
+}
+
+void TestFrameTreeDelegate::DidStartNavigation(Frame* frame) {}
 
 }  // namespace mandoline

@@ -38,24 +38,6 @@ Frame* FrameTree::CreateAndAddFrame(mojo::View* view,
                                user_data.Pass(), Frame::ClientPropertyMap());
 }
 
-Frame* FrameTree::CreateOrReplaceFrame(Frame* frame,
-                                       mojo::View* view,
-                                       FrameTreeClient* frame_tree_client,
-                                       scoped_ptr<FrameUserData> user_data) {
-  DCHECK(frame && frame->HasAncestor(&root_));
-
-  if (frame->view() == view) {
-    // It's important we Swap() here rather than destroy as otherwise the
-    // clients see a destroy followed by a new frame, which confuses html
-    // viewer.
-    DCHECK(frame != &root_);
-    frame->Swap(frame_tree_client, user_data.Pass());
-    return frame;
-  }
-
-  return CreateAndAddFrame(view, frame, frame_tree_client, user_data.Pass());
-}
-
 void FrameTree::CreateSharedFrame(
     Frame* parent,
     uint32_t frame_id,

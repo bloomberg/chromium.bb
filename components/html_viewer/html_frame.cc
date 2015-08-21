@@ -106,19 +106,6 @@ HTMLFrame* GetPreviousSibling(HTMLFrame* frame) {
   return (iter == frame->parent()->children().begin()) ? nullptr : *(--iter);
 }
 
-bool CanNavigateLocally(blink::WebFrame* frame,
-                        const blink::WebURLRequest& request) {
-  // If we have extraData() it means we already have the url response
-  // (presumably because we are being called via Navigate()). In that case we
-  // can go ahead and navigate locally.
-  if (request.extraData())
-    return true;
-
-  // Otherwise we don't know if we're the right app to handle this request. Ask
-  // host to do the navigation for us.
-  return false;
-}
-
 }  // namespace
 
 HTMLFrame::HTMLFrame(CreateParams* params)
@@ -203,18 +190,6 @@ HTMLFrame::HTMLFrame(CreateParams* params)
       remote_web_frame->setReplicatedName(state_.name);
     }
   }
-}
-
-void HTMLFrame::OnViewUnembed() {
-  // The view we're associated with is being unembedded (the view on the server
-  // side still exists, but we're no longer responsible for rendering to it).
-  // If we're local, we need to swap the frame to remote, unless we're at the
-  // top of the hierarchy, in which case someone else is going to render the
-  // tree.
-  if (!IsLocal() || frame_tree_manager_->local_root_ == this)
-    return;
-
-  SwapToRemote();
 }
 
 void HTMLFrame::Close() {
@@ -391,9 +366,9 @@ void HTMLFrame::UpdateWebViewSizeFromViewSize() {
 }
 
 void HTMLFrame::SwapToRemote() {
-  if (web_frame_->isWebRemoteFrame())
-    return;  // We already did the swap.
+  DCHECK(IsLocal());
 
+  HTMLFrameDelegate* delegate = delegate_;
   delegate_ = nullptr;
 
   blink::WebRemoteFrame* remote_frame =
@@ -414,6 +389,8 @@ void HTMLFrame::SwapToRemote() {
   remote_frame->setReplicatedSandboxFlags(state_.sandbox_flags);
   web_frame_ = remote_frame;
   SetView(nullptr);
+  if (delegate)
+    delegate->OnFrameSwappedToRemote();
 }
 
 void HTMLFrame::SwapToLocal(
@@ -585,6 +562,19 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
                                                         msg_event);
 }
 
+void HTMLFrame::OnWillNavigate(uint32_t target_frame_id,
+                               const OnWillNavigateCallback& callback) {
+  // Assume this process won't service the connection and swap to remote.
+  // It's entirely possible this process will service the connection and we
+  // don't need to swap, but the naive approach is much simpler.
+  HTMLFrame* target = frame_tree_manager_->root_->FindFrame(target_frame_id);
+  if (target && target->IsLocal() &&
+      target != frame_tree_manager_->local_root_) {
+    target->SwapToRemote();
+  }
+  callback.Run();
+}
+
 blink::WebStorageNamespace* HTMLFrame::createSessionStorageNamespace() {
   return new WebStorageNamespaceImpl();
 }
@@ -717,34 +707,26 @@ blink::WebCookieJar* HTMLFrame::cookieJar(blink::WebLocalFrame* frame) {
 
 blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
-  // TODO(sky): this branch basically does the same thing as the
-  // RequestNavigate() branch below. It would be nice to only have one.
-  if (parent_ && parent_->IsLocal() && GetLocalRoot() != this) {
-    // TODO(sky): this may be too early. I might want to wait to see if an embed
-    // actually happens, and swap then.
-    mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
-    view_->EmbedAllowingReembed(url_request.Pass());
-    // TODO(sky): I tried swapping the frame types here, but that resulted in
-    // the view never getting sized. Figure out why.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&HTMLFrame::SwapToRemote, weak_factory_.GetWeakPtr()));
-    return blink::WebNavigationPolicyIgnore;
-  }
-
+  // Allow the delegate to force a navigation type for the root.
   if (info.frame == web_frame() && this == frame_tree_manager_->root_ &&
       delegate_ && delegate_->ShouldNavigateLocallyInMainFrame()) {
     return info.defaultPolicy;
   }
 
-  if (CanNavigateLocally(info.frame, info.urlRequest))
-    return info.defaultPolicy;
+  // If we have extraData() it means we already have the url response
+  // (presumably because we are being called via Navigate()). In that case we
+  // can go ahead and navigate locally.
+  if (info.urlRequest.extraData()) {
+    DCHECK_EQ(blink::WebNavigationPolicyCurrentTab, info.defaultPolicy);
+    return blink::WebNavigationPolicyCurrentTab;
+  }
 
+  // Ask the FrameTreeServer to handle the navigation. By returning
+  // WebNavigationPolicyIgnore the load is suppressed.
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
   GetLocalRoot()->server_->RequestNavigate(
       WebNavigationPolicyToNavigationTarget(info.defaultPolicy), id_,
       url_request.Pass());
-
   return blink::WebNavigationPolicyIgnore;
 }
 

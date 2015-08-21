@@ -156,6 +156,10 @@ class TestFrameTreeClient : public FrameTreeClient {
   void OnPostMessageEvent(uint32_t source_frame_id,
                           uint32_t target_frame_id,
                           HTMLMessageEventPtr event) override {}
+  void OnWillNavigate(uint32_t frame_id,
+                      const OnWillNavigateCallback& callback) override {
+    callback.Run();
+  }
 
  private:
   int connect_count_;

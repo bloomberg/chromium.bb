@@ -4,6 +4,7 @@
 
 #include "mandoline/tab/web_view_impl.h"
 
+#include "base/callback.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "mandoline/tab/frame.h"
@@ -13,8 +14,9 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 // TODO(beng): remove once these classes are in the web_view namespace.
-using mandoline::FrameTreeClient;
 using mandoline::FrameConnection;
+using mandoline::FrameTreeClient;
+using mandoline::FrameUserData;
 
 namespace web_view {
 
@@ -73,27 +75,6 @@ void WebViewImpl::OnEmbed(mojo::View* root) {
     LoadRequest(pending_request_.Pass());
 }
 
-void WebViewImpl::OnEmbedForDescendant(mojo::View* view,
-                                       mojo::URLRequestPtr request,
-                                       mojo::ViewManagerClientPtr* client) {
-  // TODO(sky): move this to Frame/FrameTree.
-  Frame* frame = Frame::FindFirstFrameAncestor(view);
-  if (!frame || !frame->HasAncestor(frame_tree_->root())) {
-    // TODO(sky): add requestor url so that we can return false if it's not
-    // an app we expect.
-    scoped_ptr<mojo::ApplicationConnection> connection =
-        app_->ConnectToApplication(request.Pass());
-    connection->ConnectToService(client);
-    return;
-  }
-
-  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-  frame_connection->Init(app_, request.Pass(), client);
-  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-  frame_tree_->CreateOrReplaceFrame(frame, view, frame_tree_client,
-                                    frame_connection.Pass());
-}
-
 void WebViewImpl::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
 }
 
@@ -134,35 +115,23 @@ void WebViewImpl::ProgressChanged(double progress) {
   client_->ProgressChanged(progress);
 }
 
-void WebViewImpl::RequestNavigate(Frame* source,
-                                  mandoline::NavigationTargetType target_type,
-                                  Frame* target_frame,
-                                  mojo::URLRequestPtr request) {
-  // TODO: this needs security checks.
-  if (target_type == mandoline::NAVIGATION_TARGET_TYPE_EXISTING_FRAME &&
-      target_frame != frame_tree_->root()) {
-    if (target_frame && target_frame->view()) {
-      NavigateExistingFrame(target_frame, request.Pass());
-      return;
-    }
-    DVLOG(1) << "RequestNavigate() targeted existing frame that doesn't exist.";
-    return;
-  }
+void WebViewImpl::NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) {
   client_->TopLevelNavigate(request.Pass());
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WebViewImpl, private:
-
-void WebViewImpl::NavigateExistingFrame(Frame* frame,
-                                        mojo::URLRequestPtr request) {
+bool WebViewImpl::CanNavigateFrame(
+    Frame* target,
+    mojo::URLRequestPtr request,
+    FrameTreeClient** frame_tree_client,
+    scoped_ptr<FrameUserData>* frame_user_data,
+    mojo::ViewManagerClientPtr* view_manager_client) {
   scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-  mojo::ViewManagerClientPtr view_manager_client;
-  frame_connection->Init(app_, request.Pass(), &view_manager_client);
-  frame->view()->Embed(view_manager_client.Pass());
-  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-  frame_tree_->CreateOrReplaceFrame(frame, frame->view(), frame_tree_client,
-                                    frame_connection.Pass());
+  frame_connection->Init(app_, request.Pass(), view_manager_client);
+  *frame_tree_client = frame_connection->frame_tree_client();
+  *frame_user_data = frame_connection.Pass();
+  return true;
 }
+
+void WebViewImpl::DidStartNavigation(Frame* frame) {}
 
 }  // namespace web_view

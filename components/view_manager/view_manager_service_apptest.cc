@@ -1733,6 +1733,24 @@ TEST_F(ViewManagerServiceAppTest, EmbedFailsFromOtherConnection) {
                         view_3_3));
 }
 
+// Verifies Embed() from window manager on another connections view works.
+TEST_F(ViewManagerServiceAppTest, EmbedFromOtherConnection) {
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
+
+  Id view_1_1 = BuildViewId(connection_id_1(), 1);
+  Id view_2_2 = vm_client2()->CreateView(2);
+  ASSERT_TRUE(view_2_2);
+  ASSERT_TRUE(AddView(vm2(), view_1_1, view_2_2));
+
+  changes2()->clear();
+
+  // Establish a third connection in view_2_2.
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm1(), view_2_2));
+
+  WaitForAllMessages(vm2());
+  EXPECT_EQ(std::string(), SingleChangeToDescription(*changes2()));
+}
+
 // TODO(sky): need to better track changes to initial connection. For example,
 // that SetBounsdViews/AddView and the like don't result in messages to the
 // originating connection.
