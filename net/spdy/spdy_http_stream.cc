@@ -369,6 +369,10 @@ void SpdyHttpStream::OnDataSent() {
 void SpdyHttpStream::OnTrailers(const SpdyHeaderBlock& trailers) {}
 
 void SpdyHttpStream::OnClose(int status) {
+  // Cancel any pending reads from the upload data stream.
+  if (request_info_->upload_data_stream)
+    request_info_->upload_data_stream->Reset();
+
   if (stream_.get()) {
     stream_closed_ = true;
     closed_stream_status_ = status;
@@ -378,6 +382,7 @@ void SpdyHttpStream::OnClose(int status) {
     closed_stream_received_bytes_ = stream_->raw_received_bytes();
   }
   stream_.reset();
+
   bool invoked_callback = false;
   if (status == OK) {
     // We need to complete any pending buffered read now.

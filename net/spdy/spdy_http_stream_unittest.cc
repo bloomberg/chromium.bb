@@ -330,11 +330,69 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
       headers, &response, callback.callback()));
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
-  callback.WaitForResult();
+  EXPECT_EQ(OK, callback.WaitForResult());
 
-  // Because we abandoned the stream, we don't expect to find a session in the
-  // pool anymore.
+  // Because the server closed the connection, we there shouldn't be a session
+  // in the pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+}
+
+TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
+  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
+
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdyFrame> body(
+      framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_NONE));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0),  // Request
+      CreateMockWrite(*body, 1)  // First POST upload frame
+  };
+
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_CONNECTION_CLOSED, 2)  // Server hangs up early.
+  };
+
+  HostPortPair host_port_pair("www.example.org", 80);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
+
+  ChunkedUploadDataStream upload_stream(0);
+  // Append first chunk.
+  upload_stream.AppendData(kUploadData, kUploadDataSize, false);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.example.org/");
+  request.upload_data_stream = &upload_stream;
+
+  ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
+
+  TestCompletionCallback callback;
+  HttpResponseInfo response;
+  HttpRequestHeaders headers;
+  BoundNetLog net_log;
+  SpdyHttpStream http_stream(session_, true);
+  ASSERT_EQ(OK, http_stream.InitializeStream(&request, DEFAULT_PRIORITY,
+                                             net_log, CompletionCallback()));
+
+  EXPECT_EQ(ERR_IO_PENDING,
+            http_stream.SendRequest(headers, &response, callback.callback()));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  // Because the server closed the connection, we there shouldn't be a session
+  // in the pool anymore.
+  EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
+
+  // Appending a second chunk now should not result in a crash.
+  upload_stream.AppendData(kUploadData, kUploadDataSize, true);
+  // Appending data is currently done synchronously, but seems best to be
+  // paranoid.
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test to ensure the SpdyStream state machine does not get confused when a
