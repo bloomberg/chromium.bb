@@ -114,7 +114,7 @@ int LauncherProcessMain(int argc, char** argv) {
     message_loop.PostTask(FROM_HERE,
                           base::Bind(&mojo::runner::Context::Run,
                                      base::Unretained(&shell_context),
-                                     GURL("mojo:browser")));
+                                     GURL("mojo:desktop_ui")));
     message_loop.Run();
 
     // Must be called before |message_loop| is destroyed.

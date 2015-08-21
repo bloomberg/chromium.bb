@@ -6,7 +6,7 @@ import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
-mojo_native_application("browser") {
+mojo_native_application("desktop_ui") {
   sources = [
     "main.cc",
   ]
@@ -24,11 +24,14 @@ source_set("lib") {
   sources = [
     "browser_manager.cc",
     "browser_manager.h",
+    "browser_window.cc",
+    "browser_window.h",
   ]
 
   deps = [
     "public/interfaces",
     "//base",
+    "//mandoline/ui/aura",
     "//mandoline/tab/public/cpp",
     "//mandoline/tab/public/interfaces",
     "//mojo/application/public/cpp:sources",
@@ -38,22 +41,12 @@ source_set("lib") {
     "//mojo/services/tracing/public/interfaces",
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
+    "//ui/views",
     "//url",
   ]
-
-  if (is_mac || use_aura) {
-    sources += [
-      "desktop/desktop_ui.cc",
-      "desktop/desktop_ui.h",
-    ]
-    deps += [
-      "//mandoline/ui/aura",
-      "//ui/gfx",
-      "//ui/views",
-    ]
-  }
 }
 
 mojo_native_application("mandoline_browser_apptests") {
@@ -67,7 +60,7 @@ mojo_native_application("mandoline_browser_apptests") {
     "//base",
     "//base/test:test_config",
     "//components/view_manager/public/cpp",
-    "//mandoline/ui/browser:lib",
+    "//mandoline/ui/desktop_ui:lib",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
   ]

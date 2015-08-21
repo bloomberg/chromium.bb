@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_UI_BROWSER_DESKTOP_DESKTOP_UI_H_
-#define MANDOLINE_UI_BROWSER_DESKTOP_DESKTOP_UI_H_
+#ifndef MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
+#define MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
@@ -12,9 +12,8 @@
 #include "mandoline/tab/public/cpp/web_view.h"
 #include "mandoline/tab/public/interfaces/web_view.mojom.h"
 #include "mandoline/ui/aura/aura_init.h"
-#include "mandoline/ui/browser/browser_ui.h"
-#include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
-#include "mandoline/ui/browser/public/interfaces/view_embedder.mojom.h"
+#include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
+#include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
 #include "ui/views/controls/button/button.h"
@@ -33,24 +32,23 @@ class LabelButton;
 
 namespace mandoline {
 
+class BrowserManager;
 class ProgressView;
 
-class DesktopUI : public BrowserUI,
-                  public mojo::ViewManagerDelegate,
-                  public mojo::ViewManagerRootClient,
-                  public web_view::mojom::WebViewClient,
-                  public ViewEmbedder,
-                  public mojo::InterfaceFactory<ViewEmbedder>,
-                  public views::LayoutManager,
-                  public views::ButtonListener {
+class BrowserWindow : public mojo::ViewManagerDelegate,
+                      public mojo::ViewManagerRootClient,
+                      public web_view::mojom::WebViewClient,
+                      public ViewEmbedder,
+                      public mojo::InterfaceFactory<ViewEmbedder>,
+                      public views::LayoutManager,
+                      public views::ButtonListener {
  public:
-  DesktopUI(mojo::ApplicationImpl* app, BrowserManager* manager);
-  ~DesktopUI() override;
+  BrowserWindow(mojo::ApplicationImpl* app, BrowserManager* manager);
+  ~BrowserWindow() override;
+
+  void LoadURL(const GURL& url);
 
  private:
-  // Overridden from BrowserUI:
-  void LoadURL(const GURL& url) override;
-
   // Overridden from mojo::ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;
   void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
@@ -102,9 +100,9 @@ class DesktopUI : public BrowserUI,
   OmniboxPtr omnibox_;
   scoped_ptr<mojo::ApplicationConnection> omnibox_connection_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopUI);
+  DISALLOW_COPY_AND_ASSIGN(BrowserWindow);
 };
 
 }  // namespace mandoline
 
-#endif  // MANDOLINE_UI_BROWSER_DESKTOP_DESKTOP_UI_H_
+#endif  // MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_

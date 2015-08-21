@@ -20,7 +20,7 @@ executable("mandoline_runner") {
   deps = [
     ":jni_headers",
     "//base",
-    "//mandoline/ui/browser/public/interfaces",
+    "//mandoline/ui/desktop_ui/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/runner:lib",

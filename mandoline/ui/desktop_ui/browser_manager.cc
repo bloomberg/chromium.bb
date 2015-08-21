@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/browser/browser_manager.h"
+#include "mandoline/ui/desktop_ui/browser_manager.h"
 
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_observer.h"
-#include "mandoline/ui/browser/browser_ui.h"
+#include "mandoline/ui/desktop_ui/browser_window.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 
@@ -28,15 +28,15 @@ BrowserManager::~BrowserManager() {
   DCHECK(browsers_.empty());
 }
 
-BrowserUI* BrowserManager::CreateBrowser(const GURL& default_url) {
-  BrowserUI* browser = BrowserUI::Create(app_, this);
+BrowserWindow* BrowserManager::CreateBrowser(const GURL& default_url) {
+  BrowserWindow* browser = new BrowserWindow(app_, this);
   browsers_.insert(browser);
   browser->LoadURL(default_url);
   return browser;
 }
 
-void BrowserManager::BrowserUIClosed(BrowserUI* browser) {
-  scoped_ptr<BrowserUI> browser_owner(browser);
+void BrowserManager::BrowserWindowClosed(BrowserWindow* browser) {
+  scoped_ptr<BrowserWindow> browser_owner(browser);
   DCHECK_GT(browsers_.count(browser), 0u);
   browsers_.erase(browser);
   if (browsers_.empty())

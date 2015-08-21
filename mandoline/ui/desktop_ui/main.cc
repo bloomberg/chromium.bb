@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/browser/browser_manager.h"
+#include "mandoline/ui/desktop_ui/browser_manager.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 

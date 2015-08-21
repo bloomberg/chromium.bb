@@ -10,7 +10,7 @@ group("ui") {
   ]
   if (use_aura) {
     deps += [
-      "browser",
+      "desktop_ui",
       "omnibox",
     ]
   }

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MANDOLINE_UI_BROWSER_BROWSER_MANAGER_H_
-#define MANDOLINE_UI_BROWSER_BROWSER_MANAGER_H_
+#ifndef MANDOLINE_UI_DESKTOP_UI_BROWSER_MANAGER_H_
+#define MANDOLINE_UI_DESKTOP_UI_BROWSER_MANAGER_H_
 
 #include <set>
 
 #include "base/memory/scoped_vector.h"
-#include "mandoline/ui/browser/public/interfaces/launch_handler.mojom.h"
+#include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
@@ -21,7 +21,7 @@ class View;
 
 namespace mandoline {
 
-class BrowserUI;
+class BrowserWindow;
 
 // BrowserManager creates and manages the lifetime of Browsers.
 class BrowserManager : public mojo::ApplicationDelegate,
@@ -31,10 +31,10 @@ class BrowserManager : public mojo::ApplicationDelegate,
   BrowserManager();
   ~BrowserManager() override;
 
-  // BrowserManager owns the returned BrowserUI.
-  BrowserUI* CreateBrowser(const GURL& default_url);
+  // BrowserManager owns the returned BrowserWindow.
+  BrowserWindow* CreateBrowser(const GURL& default_url);
 
-  void BrowserUIClosed(BrowserUI* browser);
+  void BrowserWindowClosed(BrowserWindow* browser);
 
  private:
   // Overridden from LaunchHandler:
@@ -51,11 +51,11 @@ class BrowserManager : public mojo::ApplicationDelegate,
 
   mojo::ApplicationImpl* app_;
   mojo::WeakBindingSet<LaunchHandler> launch_handler_bindings_;
-  std::set<BrowserUI*> browsers_;
+  std::set<BrowserWindow*> browsers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserManager);
 };
 
 }  // namespace mandoline
 
-#endif  // MANDOLINE_UI_BROWSER_BROWSER_MANAGER_H_
+#endif  // MANDOLINE_UI_DESKTOP_UI_BROWSER_MANAGER_H_

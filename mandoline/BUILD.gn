@@ -42,9 +42,12 @@ group("tests") {
       "//components/resource_provider:resource_provider_unittests",
       "//components/view_manager:tests",
       "//mandoline/tab:mandoline_frame_apptests",
-      "//mandoline/ui/browser:mandoline_browser_apptests",
       "//media/mojo/services:tests",
       "//sql/mojo:apptests",
     ]
+
+    if (use_aura) {
+      deps += [ "//mandoline/ui/desktop_ui:mandoline_browser_apptests" ]
+    }
   }
 }

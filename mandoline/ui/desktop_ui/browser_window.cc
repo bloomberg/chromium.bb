@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/browser/desktop/desktop_ui.h"
+#include "mandoline/ui/desktop_ui/browser_window.h"
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
-#include "mandoline/ui/browser/browser_manager.h"
-#include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
+#include "mandoline/ui/desktop_ui/browser_manager.h"
+#include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/gfx/canvas.h"
@@ -57,9 +57,10 @@ class ProgressView : public views::View {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, public:
+// BrowserWindow, public:
 
-DesktopUI::DesktopUI(mojo::ApplicationImpl* app, BrowserManager* manager)
+BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
+                             BrowserManager* manager)
     : app_(app),
       view_manager_init_(app, this, this),
       manager_(manager),
@@ -70,12 +71,9 @@ DesktopUI::DesktopUI(mojo::ApplicationImpl* app, BrowserManager* manager)
       omnibox_view_(nullptr),
       web_view_(this) {}
 
-DesktopUI::~DesktopUI() {}
+BrowserWindow::~BrowserWindow() {}
 
-////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, BrowserUI implementation:
-
-void DesktopUI::LoadURL(const GURL& url) {
+void BrowserWindow::LoadURL(const GURL& url) {
   // Haven't been embedded yet, can't embed.
   // TODO(beng): remove this.
   if (!root_) {
@@ -89,10 +87,10 @@ void DesktopUI::LoadURL(const GURL& url) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, mojo::ViewManagerDelegate implementation:
+// BrowserWindow, mojo::ViewManagerDelegate implementation:
 
-void DesktopUI::OnEmbed(mojo::View* root) {
-  // DesktopUI does not support being embedded more than once.
+void BrowserWindow::OnEmbed(mojo::View* root) {
+  // BrowserWindow does not support being embedded more than once.
   CHECK(!root_);
 
   // Make it so we get OnWillEmbed() for any Embed()s done by other apps we
@@ -123,39 +121,39 @@ void DesktopUI::OnEmbed(mojo::View* root) {
   }
 }
 
-void DesktopUI::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
+void BrowserWindow::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
   root_ = nullptr;
-  manager_->BrowserUIClosed(this);
+  manager_->BrowserWindowClosed(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, mojo::ViewManagerRootClient implementation:
+// BrowserWindow, mojo::ViewManagerRootClient implementation:
 
-void DesktopUI::OnAccelerator(mojo::EventPtr event) {
+void BrowserWindow::OnAccelerator(mojo::EventPtr event) {
   DCHECK_EQ(mojo::KEYBOARD_CODE_BROWSER_BACK,
             event->key_data->windows_key_code);
   NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, web_view::mojom::WebViewClient implementation:
+// BrowserWindow, web_view::mojom::WebViewClient implementation:
 
-void DesktopUI::TopLevelNavigate(mojo::URLRequestPtr request) {
+void BrowserWindow::TopLevelNavigate(mojo::URLRequestPtr request) {
   Embed(request.Pass());
 }
 
-void DesktopUI::LoadingStateChanged(bool is_loading) {
+void BrowserWindow::LoadingStateChanged(bool is_loading) {
   progress_bar_->SetIsLoading(is_loading);
 }
 
-void DesktopUI::ProgressChanged(double progress) {
+void BrowserWindow::ProgressChanged(double progress) {
   progress_bar_->SetProgress(progress);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, ViewEmbedder implementation:
+// BrowserWindow, ViewEmbedder implementation:
 
-void DesktopUI::Embed(mojo::URLRequestPtr request) {
+void BrowserWindow::Embed(mojo::URLRequestPtr request) {
   const std::string string_url = request->url.To<std::string>();
   if (string_url == "mojo:omnibox") {
     EmbedOmnibox(omnibox_connection_.get());
@@ -172,21 +170,21 @@ void DesktopUI::Embed(mojo::URLRequestPtr request) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, mojo::InterfaceFactory<ViewEmbedder> implementation:
+// BrowserWindow, mojo::InterfaceFactory<ViewEmbedder> implementation:
 
-void DesktopUI::Create(mojo::ApplicationConnection* connection,
-                       mojo::InterfaceRequest<ViewEmbedder> request) {
+void BrowserWindow::Create(mojo::ApplicationConnection* connection,
+                           mojo::InterfaceRequest<ViewEmbedder> request) {
   view_embedder_bindings_.AddBinding(this, request.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, views::LayoutManager implementation:
+// BrowserWindow, views::LayoutManager implementation:
 
-gfx::Size DesktopUI::GetPreferredSize(const views::View* view) const {
+gfx::Size BrowserWindow::GetPreferredSize(const views::View* view) const {
   return gfx::Size();
 }
 
-void DesktopUI::Layout(views::View* host) {
+void BrowserWindow::Layout(views::View* host) {
   gfx::Rect omnibox_launcher_bounds = host->bounds();
   omnibox_launcher_bounds.Inset(10, 10, 10, host->bounds().height() - 40);
   omnibox_launcher_->SetBoundsRect(omnibox_launcher_bounds);
@@ -209,17 +207,18 @@ void DesktopUI::Layout(views::View* host) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, views::ButtonListener implementation:
+// BrowserWindow, views::ButtonListener implementation:
 
-void DesktopUI::ButtonPressed(views::Button* sender, const ui::Event& event) {
+void BrowserWindow::ButtonPressed(views::Button* sender,
+                                  const ui::Event& event) {
   DCHECK_EQ(sender, omnibox_launcher_);
   ShowOmnibox();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopUI, private:
+// BrowserWindow, private:
 
-void DesktopUI::Init(mojo::View* root) {
+void BrowserWindow::Init(mojo::View* root) {
   DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
   if (!aura_init_)
     aura_init_.reset(new AuraInit(root, app_->shell()));
@@ -251,7 +250,7 @@ void DesktopUI::Init(mojo::View* root) {
   root_->SetFocus();
 }
 
-void DesktopUI::ShowOmnibox() {
+void BrowserWindow::ShowOmnibox() {
   if (!omnibox_.get()) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:omnibox");
@@ -268,7 +267,7 @@ void DesktopUI::ShowOmnibox() {
   omnibox_->ShowForURL(mojo::String::From(current_url_.spec()));
 }
 
-void DesktopUI::EmbedOmnibox(mojo::ApplicationConnection* connection) {
+void BrowserWindow::EmbedOmnibox(mojo::ApplicationConnection* connection) {
   mojo::ViewManagerClientPtr view_manager_client;
   connection->ConnectToService(&view_manager_client);
   omnibox_view_->Embed(view_manager_client.Pass());
@@ -278,15 +277,6 @@ void DesktopUI::EmbedOmnibox(mojo::ApplicationConnection* connection) {
   //             currently prevents the embedded app from changing window z for
   //             its own window.
   omnibox_view_->MoveToFront();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserUI, public:
-
-// static
-BrowserUI* BrowserUI::Create(mojo::ApplicationImpl* application_impl,
-                             BrowserManager* manager) {
-  return new DesktopUI(application_impl, manager);
 }
 
 }  // namespace mandoline

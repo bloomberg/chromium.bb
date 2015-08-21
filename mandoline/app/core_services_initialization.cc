@@ -32,6 +32,9 @@ void InitCoreServicesForContext(mojo::runner::Context* context) {
 #endif
 
 #if defined(USE_AURA)
+  manager->RegisterApplicationPackageAlias(GURL("mojo:desktop_ui"),
+                                           GURL("mojo:core_services"),
+                                           "Core");
   manager->RegisterApplicationPackageAlias(
       GURL("mojo:omnibox"), GURL("mojo:core_services"), "Core");
 #endif
@@ -39,9 +42,6 @@ void InitCoreServicesForContext(mojo::runner::Context* context) {
       GURL("mojo:web_view"), GURL("mojo:core_services"), "Core");
   manager->RegisterApplicationPackageAlias(
       GURL("mojo:tracing"), GURL("mojo:core_services"), "Core");
-  manager->RegisterApplicationPackageAlias(GURL("mojo:browser"),
-                                           GURL("mojo:core_services"),
-                                           "Core");
 }
 
 }  // namespace mandoline

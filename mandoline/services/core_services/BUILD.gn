@@ -74,7 +74,7 @@ source_set("sources") {
   if (use_aura) {
     deps += [
       "//components/view_manager/public/cpp",
-      "//mandoline/ui/browser:lib",
+      "//mandoline/ui/desktop_ui:lib",
       "//mandoline/ui/omnibox:lib",
     ]
     sources += [ "application_delegate_factory_aura.cc" ]

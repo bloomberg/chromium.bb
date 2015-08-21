@@ -4,7 +4,7 @@
 
 #include "base/android/jni_string.h"
 #include "jni/MandolineActivity_jni.h"
-#include "mandoline/ui/browser/public/interfaces/launch_handler.mojom.h"
+#include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
 #include "mojo/runner/android/main.h"
 #include "mojo/runner/context.h"
 
