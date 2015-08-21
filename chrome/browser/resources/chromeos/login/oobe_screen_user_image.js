@@ -277,7 +277,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      */
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
-      $('oobe').classList.add('image-loading');
+      this.loading = true;
       var imageGrid = $('user-image-grid');
       imageGrid.updateAndFocus();
       chrome.send('onUserImageScreenShown');
@@ -288,7 +288,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      */
     onBeforeHide: function() {
       $('user-image-grid').stopCamera();
-      $('oobe').classList.remove('image-loading');
+      this.loading = false;
     },
 
     /**
@@ -302,6 +302,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
         $('user-image-grid').disabled = true;
         okButton.disabled = true;
         chrome.send('onUserImageAccepted');
+        this.loading = true;
       }
     },
 
@@ -330,13 +331,21 @@ login.createScreen('UserImageScreen', 'user-image', function() {
       imageGrid.focus();
     },
 
+    get loading() {
+      return this.classList.contains('loading');
+    },
+
+    set loading(value) {
+      this.classList.toggle('loading', value);
+      $('oobe').classList.toggle('image-loading', value);
+      Oobe.getInstance().updateScreenSize(this);
+    },
+
     /**
      * Hides curtain with spinner.
      */
     hideCurtain: function() {
-      this.classList.remove('loading');
-      $('oobe').classList.remove('image-loading');
-      Oobe.getInstance().updateScreenSize(this);
+      this.loading = false;
     },
 
     /**

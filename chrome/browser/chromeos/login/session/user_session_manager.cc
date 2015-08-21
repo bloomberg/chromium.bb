@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_member.h"
@@ -112,6 +113,10 @@ namespace {
 // Milliseconds until we timeout our attempt to fetch flags from the child
 // account service.
 static const int kFlagsFetchingLoginTimeoutMs = 1000;
+
+// The maximum ammount of time that we are willing to delay a browser restart
+// for, waiting for a session restore to finish.
+static const int kMaxRestartDelaySeconds = 10;
 
 // ChromeVox tutorial URL (used in place of "getting started" url when
 // accessibility is enabled).
@@ -284,6 +289,12 @@ void LogCustomSwitches(const std::set<std::string>& switches) {
        it != switches.end(); ++it) {
     VLOG(1) << "Switch leading to restart: '" << *it << "'";
   }
+}
+
+void RestartOnTimeout() {
+  LOG(WARNING) << "Restarting Chrome because the time out was reached."
+                  "The session restore has not finished.";
+  chrome::AttemptRestart();
 }
 
 }  // namespace
@@ -1496,6 +1507,12 @@ UserSessionManager::GetAuthRequestContext() const {
 }
 
 void UserSessionManager::AttemptRestart(Profile* profile) {
+  // Restart unconditionally in case if we are stuck somewhere in a session
+  // restore process. http://crbug.com/520346.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(RestartOnTimeout),
+      base::TimeDelta::FromSeconds(kMaxRestartDelaySeconds));
+
   if (CheckEasyUnlockKeyOps(base::Bind(&UserSessionManager::AttemptRestart,
                                        AsWeakPtr(), profile))) {
     return;
