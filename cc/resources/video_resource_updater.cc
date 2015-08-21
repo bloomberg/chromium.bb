@@ -382,6 +382,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   switch (video_frame->format()) {
     case media::PIXEL_FORMAT_ARGB:
     case media::PIXEL_FORMAT_XRGB:
+    case media::PIXEL_FORMAT_UYVY:
       DCHECK_EQ(1u, textures);
       switch (video_frame->mailbox_holder(0).texture_target) {
         case GL_TEXTURE_2D:

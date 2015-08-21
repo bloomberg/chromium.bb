@@ -72521,6 +72521,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="NV12 (Mac only)"/>
   <int value="7" label="ARGB"/>
   <int value="8" label="xRGB"/>
+  <int value="9" label="UYVY"/>
 </enum>
 
 <enum name="VideoPixelFormat" type="int">

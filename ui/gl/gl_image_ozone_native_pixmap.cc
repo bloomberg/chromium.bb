@@ -38,7 +38,7 @@ bool ValidFormat(gfx::BufferFormat format) {
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
     case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::UYVY_422:
       return false;
   }
 
@@ -61,7 +61,7 @@ EGLint FourCC(gfx::BufferFormat format) {
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
     case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::UYVY_422:
       NOTREACHED();
       return 0;
   }

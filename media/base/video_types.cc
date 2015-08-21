@@ -28,6 +28,8 @@ std::string VideoPixelFormatToString(VideoPixelFormat format) {
       return "PIXEL_FORMAT_XRGB";
     case PIXEL_FORMAT_NV12:
       return "PIXEL_FORMAT_NV12";
+    case PIXEL_FORMAT_UYVY:
+      return "PIXEL_FORMAT_UYVY";
   }
   NOTREACHED() << "Invalid VideoPixelFormat provided: " << format;
   return "";
@@ -46,6 +48,7 @@ bool IsYuvPlanar(VideoPixelFormat format) {
     case PIXEL_FORMAT_UNKNOWN:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_UYVY:
       return false;
   }
   return false;

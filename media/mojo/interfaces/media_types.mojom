@@ -101,7 +101,8 @@ enum VideoFormat {
   NV12,
   ARGB,
   XRGB,
-  FORMAT_MAX = XRGB,
+  UYVY,
+  FORMAT_MAX = UYVY,
 };
 
 // Kept in sync with media::ColorSpace via static_asserts.

@@ -26,6 +26,7 @@ static bool IsOpaque(const scoped_refptr<VideoFrame>& frame) {
     case PIXEL_FORMAT_YV24:
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_UYVY:
       return true;
     case PIXEL_FORMAT_YV12A:
     case PIXEL_FORMAT_ARGB:

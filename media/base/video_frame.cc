@@ -92,6 +92,7 @@ static gfx::Size SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_UNKNOWN:
         case PIXEL_FORMAT_ARGB:
         case PIXEL_FORMAT_XRGB:
+        case PIXEL_FORMAT_UYVY:
           break;
       }
   }
@@ -115,11 +116,28 @@ static gfx::Size CommonAlignment(VideoPixelFormat format) {
 // Returns the number of bytes per element for given |plane| and |format|.
 static int BytesPerElement(VideoPixelFormat format, size_t plane) {
   DCHECK(IsValidPlane(plane, format));
-  if (format == PIXEL_FORMAT_ARGB || format == PIXEL_FORMAT_XRGB)
-    return 4;
-  if (format == PIXEL_FORMAT_NV12 && plane == VideoFrame::kUVPlane)
-    return 2;
-  return 1;
+  switch (format) {
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_XRGB:
+      return 4;
+    case PIXEL_FORMAT_UYVY:
+      return 2;
+    case PIXEL_FORMAT_NV12: {
+      static const int bytes_per_element[] = {1, 2};
+      DCHECK_LT(plane, arraysize(bytes_per_element));
+      return bytes_per_element[plane];
+    }
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_YV12A:
+    case PIXEL_FORMAT_YV24:
+      return 1;
+    case PIXEL_FORMAT_UNKNOWN:
+      break;
+  }
+  NOTREACHED();
+  return 0;
 }
 
 // static
@@ -146,7 +164,7 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
     return true;
 
   // Make sure new formats are properly accounted for in the method.
-  static_assert(PIXEL_FORMAT_MAX == 8,
+  static_assert(PIXEL_FORMAT_MAX == 9,
                 "Added pixel format, please review IsValidConfig()");
 
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -503,6 +521,7 @@ size_t VideoFrame::NumPlanes(VideoPixelFormat format) {
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_UYVY:
       return 1;
     case PIXEL_FORMAT_NV12:
       return 2;

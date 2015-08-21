@@ -27,9 +27,10 @@ enum VideoPixelFormat {
       6,  // 12bpp with Y plane followed by a 2x2 interleaved UV plane.
   PIXEL_FORMAT_ARGB = 7,  // 32bpp ARGB, 1 plane.
   PIXEL_FORMAT_XRGB = 8,  // 24bpp XRGB, 1 plane.
+  PIXEL_FORMAT_UYVY = 9,  // 16bpp UYVY 4:2:2, 1 plane.
   // Please update UMA histogram enumeration when adding new formats here.
   PIXEL_FORMAT_MAX =
-      PIXEL_FORMAT_XRGB,  // Must always be equal to largest entry logged.
+      PIXEL_FORMAT_UYVY,  // Must always be equal to largest entry logged.
 };
 
 // Color space or color range used for the pixels.
@@ -47,7 +48,7 @@ enum ColorSpace {
 // Returns the name of a Format as a string.
 MEDIA_EXPORT std::string VideoPixelFormatToString(VideoPixelFormat format);
 
-// Returns true if |format| is a YUV non interleaved format.
+// Returns true if |format| is a YUV format with multiple planes.
 MEDIA_EXPORT bool IsYuvPlanar(VideoPixelFormat format);
 
 }  // namespace media

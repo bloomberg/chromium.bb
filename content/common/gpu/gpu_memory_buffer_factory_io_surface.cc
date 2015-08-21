@@ -32,10 +32,9 @@ int32 BytesPerElement(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::BGRA_8888:
       DCHECK_EQ(plane, 0);
       return 4;
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      static int32 bytes_per_element[] = {1, 2};
-      DCHECK_LT(static_cast<size_t>(plane), arraysize(bytes_per_element));
-      return bytes_per_element[plane];
+    case gfx::BufferFormat::UYVY_422:
+      DCHECK_EQ(plane, 0);
+      return 2;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
@@ -59,8 +58,8 @@ int32 PixelFormat(gfx::BufferFormat format) {
       return 'L008';
     case gfx::BufferFormat::BGRA_8888:
       return 'BGRA';
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return '420v';
+    case gfx::BufferFormat::UYVY_422:
+      return '2vuy';
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
@@ -84,8 +83,8 @@ const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
     {gfx::BufferFormat::R_8, gfx::BufferUsage::MAP},
     {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP},
     {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP},
-    {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::MAP},
-    {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::PERSISTENT_MAP},
+    {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::MAP},
+    {gfx::BufferFormat::UYVY_422, gfx::BufferUsage::PERSISTENT_MAP},
 };
 
 }  // namespace

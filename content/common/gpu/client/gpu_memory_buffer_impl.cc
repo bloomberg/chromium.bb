@@ -92,14 +92,10 @@ size_t GpuMemoryBufferImpl::SubsamplingFactor(gfx::BufferFormat format,
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::UYVY_422:
       return 1;
     case gfx::BufferFormat::YUV_420: {
       static size_t factor[] = {1, 2, 2};
-      DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
-      return factor[plane];
-    }
-    case gfx::BufferFormat::YUV_420_BIPLANAR: {
-      static size_t factor[] = {1, 2};
       DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
       return factor[plane];
     }
@@ -134,6 +130,7 @@ bool GpuMemoryBufferImpl::RowSizeInBytes(size_t width,
       *size_in_bytes = checked_size.ValueOrDie() & ~0x3;
       return true;
     case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::UYVY_422:
       checked_size *= 2;
       if (!checked_size.IsValid())
         return false;
@@ -149,10 +146,6 @@ bool GpuMemoryBufferImpl::RowSizeInBytes(size_t width,
     case gfx::BufferFormat::YUV_420:
       DCHECK_EQ(width % 2, 0u);
       *size_in_bytes = width / SubsamplingFactor(format, plane);
-      return true;
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      DCHECK_EQ(width % 2, 0u);
-      *size_in_bytes = width;
       return true;
   }
   NOTREACHED();

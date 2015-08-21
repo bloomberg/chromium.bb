@@ -114,7 +114,7 @@ void SetRow(gfx::BufferFormat format,
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
       return;
   }
@@ -138,7 +138,7 @@ GLenum InternalFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
       return 0;
   }

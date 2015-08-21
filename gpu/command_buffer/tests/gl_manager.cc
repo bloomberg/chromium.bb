@@ -52,14 +52,10 @@ size_t SubsamplingFactor(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::UYVY_422:
       return 1;
     case gfx::BufferFormat::YUV_420: {
       static size_t factor[] = {1, 2, 2};
-      DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
-      return factor[plane];
-    }
-    case gfx::BufferFormat::YUV_420_BIPLANAR: {
-      static size_t factor[] = {1, 2};
       DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
       return factor[plane];
     }
@@ -83,6 +79,7 @@ size_t StrideInBytes(size_t width, gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::R_8:
       return (width + 3) & ~0x3;
     case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::UYVY_422:
       DCHECK_EQ(plane, 0);
       return width * 2;
     case gfx::BufferFormat::RGBA_8888:
@@ -94,8 +91,6 @@ size_t StrideInBytes(size_t width, gfx::BufferFormat format, int plane) {
       return 0;
     case gfx::BufferFormat::YUV_420:
       return width / SubsamplingFactor(format, plane);
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return width;
   }
 
   NOTREACHED();

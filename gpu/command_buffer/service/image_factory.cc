@@ -77,7 +77,7 @@ bool ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       return ImageFormatToGpuMemoryBufferFormat(internalformat) == format;
     case gfx::BufferFormat::RGBA_4444:
       return internalformat == GL_RGBA;
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::UYVY_422:
       return false;
   }
 
@@ -107,7 +107,7 @@ bool ImageFactory::IsGpuMemoryBufferFormatSupported(
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::UYVY_422:
       return true;
   }
 
@@ -135,9 +135,10 @@ bool ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
     case gfx::BufferFormat::BGRX_8888:
       return true;
     case gfx::BufferFormat::YUV_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
       // U and V planes are subsampled by a factor of 2.
       return size.width() % 2 == 0 && size.height() % 2 == 0;
+    case gfx::BufferFormat::UYVY_422:
+      return size.width() % 2 == 0;
   }
 
   NOTREACHED();

@@ -47,7 +47,7 @@ bool ValidFormat(BufferFormat format) {
       return true;
     case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::UYVY_422:
       return false;
   }
 
@@ -69,7 +69,7 @@ bool IsCompressedFormat(BufferFormat format) {
     case BufferFormat::BGRA_8888:
     case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::UYVY_422:
       return false;
   }
 
@@ -98,7 +98,7 @@ GLenum TextureFormat(BufferFormat format) {
       return GL_BGRA_EXT;
     case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::UYVY_422:
       NOTREACHED();
       return 0;
   }
@@ -126,7 +126,7 @@ GLenum DataType(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::UYVY_422:
       NOTREACHED();
       return 0;
   }
@@ -207,7 +207,7 @@ bool GLImageMemory::StrideInBytes(size_t width,
       return true;
     case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
+    case BufferFormat::UYVY_422:
       NOTREACHED();
       return false;
   }
