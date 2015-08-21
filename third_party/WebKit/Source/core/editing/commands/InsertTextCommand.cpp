@@ -156,7 +156,7 @@ void InsertTextCommand::doApply()
     // is inserted just before them.
     // FIXME: We shouldn't really have to do this, but removing placeholders is a workaround for 9661.
     // If the caret is just before a placeholder, downstream will normalize the caret to it.
-    Position downstream(startPosition.downstream());
+    Position downstream(mostForwardCaretPosition(startPosition));
     if (lineBreakExistsAtPosition(downstream)) {
         // FIXME: This doesn't handle placeholders at the end of anonymous blocks.
         VisiblePosition caret(startPosition);
@@ -168,17 +168,17 @@ void InsertTextCommand::doApply()
     }
 
     // Insert the character at the leftmost candidate.
-    startPosition = startPosition.upstream();
+    startPosition = mostBackwardCaretPosition(startPosition);
 
     // It is possible for the node that contains startPosition to contain only unrendered whitespace,
     // and so deleteInsignificantText could remove it.  Save the position before the node in case that happens.
     ASSERT(startPosition.computeContainerNode());
     Position positionBeforeStartNode(positionInParentBeforeNode(*startPosition.computeContainerNode()));
-    deleteInsignificantText(startPosition, startPosition.downstream());
+    deleteInsignificantText(startPosition, mostForwardCaretPosition(startPosition));
     if (!startPosition.inDocument())
         startPosition = positionBeforeStartNode;
     if (!isVisuallyEquivalentCandidate(startPosition))
-        startPosition = startPosition.downstream();
+        startPosition = mostForwardCaretPosition(startPosition);
 
     startPosition = positionAvoidingSpecialElementBoundary(startPosition);
 

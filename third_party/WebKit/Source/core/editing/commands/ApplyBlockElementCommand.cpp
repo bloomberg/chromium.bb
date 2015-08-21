@@ -110,7 +110,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
 {
     // Special case empty unsplittable elements because there's nothing to split
     // and there's nothing to move.
-    Position start = startOfSelection.deepEquivalent().downstream();
+    Position start = mostForwardCaretPosition(startOfSelection.deepEquivalent());
     if (isAtUnsplittableElement(start)) {
         RefPtrWillBeRawPtr<HTMLElement> blockquote = createBlockElement();
         insertNodeAt(blockquote, start);

@@ -52,6 +52,36 @@ TEST_F(VisibleUnitsTest, inSameLine)
     EXPECT_TRUE(inSameLine(positionWithAffinityInComposedTree(*two->firstChild(), 0), positionWithAffinityInComposedTree(*four->firstChild(), 0)));
 }
 
+TEST_F(VisibleUnitsTest, mostBackwardCaretPositionAfterAnchor)
+{
+    const char* bodyContent = "<p id='host'><b id='one'>1</b></p><b id='two'>22</b>";
+    const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent);
+    updateLayoutAndStyleForPainting();
+
+    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
+
+    EXPECT_EQ(Position::lastPositionInNode(host.get()), mostForwardCaretPosition(Position::afterNode(host.get())));
+    EXPECT_EQ(PositionInComposedTree::lastPositionInNode(host.get()), mostForwardCaretPosition(PositionInComposedTree::afterNode(host.get())));
+}
+
+TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor)
+{
+    const char* bodyContent = "<p id='host'><b id='one'>1</b></p>";
+    const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    updateLayoutAndStyleForPainting();
+
+    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+    RefPtrWillBeRawPtr<Element> three = shadowRoot->getElementById("three");
+
+    EXPECT_EQ(Position(one->firstChild(), 1), mostBackwardCaretPosition(Position::afterNode(host.get())));
+    EXPECT_EQ(PositionInComposedTree(three->firstChild(), 3), mostBackwardCaretPosition(PositionInComposedTree::afterNode(host.get())));
+}
+
 TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor)
 {
     const char* bodyContent = "<p id='sample'>00</p>";

@@ -160,11 +160,6 @@ public:
     bool atStartOfTree() const;
     bool atEndOfTree() const;
 
-    // These return useful visually equivalent positions.
-    // FIXME: We should use mostForwardCaretPosition and mostBackwardPosition.
-    PositionAlgorithm<Strategy> upstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
-    PositionAlgorithm<Strategy> downstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
-
     static PositionAlgorithm<Strategy> beforeNode(Node* anchorNode);
     static PositionAlgorithm<Strategy> afterNode(Node* anchorNode);
     static PositionAlgorithm<Strategy> inParentBeforeNode(const Node& anchorNode);

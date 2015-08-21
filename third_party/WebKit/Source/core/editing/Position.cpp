@@ -467,18 +467,6 @@ bool PositionAlgorithm<Strategy>::atEndOfTree() const
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundaryCrossingRule rule) const
-{
-    return mostBackwardCaretPosition(*this, rule);
-}
-
-template <typename Strategy>
-PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
-{
-    return mostForwardCaretPosition(*this, rule);
-}
-
-template <typename Strategy>
 void PositionAlgorithm<Strategy>::debugPosition(const char* msg) const
 {
     static const char* const anchorTypes[] = {

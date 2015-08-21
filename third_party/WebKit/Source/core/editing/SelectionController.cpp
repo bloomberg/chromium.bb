@@ -91,8 +91,8 @@ VisibleSelection expandSelectionToRespectUserSelectAllAlgorithm(Node* targetNode
         return selection;
 
     VisibleSelection newSelection(selection);
-    newSelection.setBase(PositionType::beforeNode(rootUserSelectAll).upstream(CanCrossEditingBoundary));
-    newSelection.setExtent(PositionType::afterNode(rootUserSelectAll).downstream(CanCrossEditingBoundary));
+    newSelection.setBase(mostBackwardCaretPosition(PositionType::beforeNode(rootUserSelectAll), CanCrossEditingBoundary));
+    newSelection.setExtent(mostForwardCaretPosition(PositionType::afterNode(rootUserSelectAll), CanCrossEditingBoundary));
 
     return newSelection;
 }
@@ -252,22 +252,22 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
         // TODO(yosin) Should we use |Strategy::rootUserSelectAllForNode()|?
         Node* rootUserSelectAllForMousePressNode = EditingStrategy::rootUserSelectAllForNode(mousePressNode);
         if (rootUserSelectAllForMousePressNode && rootUserSelectAllForMousePressNode == EditingStrategy::rootUserSelectAllForNode(target)) {
-            newSelection.setBase(PositionType::beforeNode(rootUserSelectAllForMousePressNode).upstream(CanCrossEditingBoundary));
-            newSelection.setExtent(PositionType::afterNode(rootUserSelectAllForMousePressNode).downstream(CanCrossEditingBoundary));
+            newSelection.setBase(mostBackwardCaretPosition(PositionType::beforeNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
+            newSelection.setExtent(mostForwardCaretPosition(PositionType::afterNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
         } else {
             // Reset base for user select all when base is inside user-select-all area and extent < base.
             if (rootUserSelectAllForMousePressNode) {
                 PositionType eventPosition = Strategy::toPositionType(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position());
                 PositionType dragStartPosition = Strategy::toPositionType(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position());
                 if (eventPosition.compareTo(dragStartPosition) < 0)
-                    newSelection.setBase(PositionType::afterNode(rootUserSelectAllForMousePressNode).downstream(CanCrossEditingBoundary));
+                    newSelection.setBase(mostForwardCaretPosition(PositionType::afterNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
             }
 
             Node* rootUserSelectAllForTarget = EditingStrategy::rootUserSelectAllForNode(target);
             if (rootUserSelectAllForTarget && mousePressNode->layoutObject() && Strategy::toPositionType(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position()).compareTo(Strategy::toPositionType(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position())) < 0)
-                newSelection.setExtent(PositionType::beforeNode(rootUserSelectAllForTarget).upstream(CanCrossEditingBoundary));
+                newSelection.setExtent(mostBackwardCaretPosition(PositionType::beforeNode(rootUserSelectAllForTarget), CanCrossEditingBoundary));
             else if (rootUserSelectAllForTarget && mousePressNode->layoutObject())
-                newSelection.setExtent(PositionType::afterNode(rootUserSelectAllForTarget).downstream(CanCrossEditingBoundary));
+                newSelection.setExtent(mostForwardCaretPosition(PositionType::afterNode(rootUserSelectAllForTarget), CanCrossEditingBoundary));
             else
                 newSelection.setExtent(targetPosition);
         }

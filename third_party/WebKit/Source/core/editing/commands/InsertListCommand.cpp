@@ -395,7 +395,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
         // Try to avoid inserting it somewhere where it will be surrounded by
         // inline ancestors of start, since it is easier for editing to produce
         // clean markup when inline elements are pushed down as far as possible.
-        Position insertionPos(start.deepEquivalent().upstream());
+        Position insertionPos(mostBackwardCaretPosition(start.deepEquivalent()));
         // Also avoid the containing list item.
         Node* listChild = enclosingListChild(insertionPos.anchorNode());
         if (isHTMLLIElement(listChild))

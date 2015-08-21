@@ -137,8 +137,8 @@ StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldRes
 static bool needInterchangeNewlineAfter(const VisiblePosition& v)
 {
     VisiblePosition next = v.next();
-    Node* upstreamNode = next.deepEquivalent().upstream().anchorNode();
-    Node* downstreamNode = v.deepEquivalent().downstream().anchorNode();
+    Node* upstreamNode = mostBackwardCaretPosition(next.deepEquivalent()).anchorNode();
+    Node* downstreamNode = mostForwardCaretPosition(v.deepEquivalent()).anchorNode();
     // Add an interchange newline if a paragraph break is selected and a br won't already be added to the markup to represent it.
     return isEndOfParagraph(v) && isStartOfParagraph(next) && !(isHTMLBRElement(*upstreamNode) && upstreamNode == downstreamNode);
 }

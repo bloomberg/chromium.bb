@@ -94,7 +94,7 @@ void BreakBlockquoteCommand::doApply()
 
     // pos is a position equivalent to the caret.  We use downstream() so that pos will
     // be in the first node that we need to move (there are a few exceptions to this, see below).
-    Position pos = endingSelection().start().downstream();
+    Position pos = mostForwardCaretPosition(endingSelection().start());
 
     // Find the top-most blockquote from the start.
     HTMLQuoteElement* topBlockquote = toHTMLQuoteElement(highestEnclosingNodeOfType(pos, isMailHTMLBlockquoteElement));

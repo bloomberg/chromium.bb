@@ -1353,7 +1353,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
     if (selection.isNone())
         return NaturalWritingDirection;
 
-    Position position = selection.start().downstream();
+    Position position = mostForwardCaretPosition(selection.start());
 
     Node* node = position.anchorNode();
     if (!node)
@@ -1361,7 +1361,7 @@ WritingDirection EditingStyle::textDirectionForSelection(const VisibleSelection&
 
     Position end;
     if (selection.isRange()) {
-        end = selection.end().upstream();
+        end = mostBackwardCaretPosition(selection.end());
 
         ASSERT(end.document());
         Node* pastLast = Range::create(*end.document(), position.parentAnchoredEquivalent(), end.parentAnchoredEquivalent())->pastLastNode();

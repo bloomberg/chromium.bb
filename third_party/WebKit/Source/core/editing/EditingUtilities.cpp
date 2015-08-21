@@ -366,12 +366,12 @@ Position nextVisuallyDistinctCandidate(const Position& position)
         return Position();
 
     PositionIterator p(position);
-    Position downstreamStart = position.downstream();
+    Position downstreamStart = mostForwardCaretPosition(position);
 
     p.increment();
     while (!p.atEnd()) {
         Position candidate = p.computePosition();
-        if (isVisuallyEquivalentCandidate(candidate) && candidate.downstream() != downstreamStart)
+        if (isVisuallyEquivalentCandidate(candidate) && mostForwardCaretPosition(candidate) != downstreamStart)
             return candidate;
 
         p.increment();
@@ -417,12 +417,12 @@ PositionAlgorithm<Strategy> previousVisuallyDistinctCandidateAlgorithm(const Pos
         return PositionAlgorithm<Strategy>();
 
     PositionIteratorAlgorithm<Strategy> p(position);
-    PositionAlgorithm<Strategy> downstreamStart = position.downstream();
+    PositionAlgorithm<Strategy> downstreamStart = mostForwardCaretPosition(position);
 
     p.decrement();
     while (!p.atStart()) {
         PositionAlgorithm<Strategy> candidate = p.computePosition();
-        if (isVisuallyEquivalentCandidate(candidate) && candidate.downstream() != downstreamStart)
+        if (isVisuallyEquivalentCandidate(candidate) && mostForwardCaretPosition(candidate) != downstreamStart)
             return candidate;
 
         p.decrement();
@@ -704,7 +704,7 @@ Position positionAfterContainingSpecialElement(const Position& pos, HTMLElement*
 
 Element* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
 {
-    Position upstream(visiblePosition.deepEquivalent().upstream());
+    Position upstream(mostBackwardCaretPosition(visiblePosition.deepEquivalent()));
     if (isRenderedTableElement(upstream.anchorNode()) && upstream.atLastEditingPositionForNode())
         return toElement(upstream.anchorNode());
 
@@ -713,7 +713,7 @@ Element* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
 
 Element* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
 {
-    Position downstream(visiblePosition.deepEquivalent().downstream());
+    Position downstream(mostForwardCaretPosition(visiblePosition.deepEquivalent()));
     if (isRenderedTableElement(downstream.anchorNode()) && downstream.atFirstEditingPositionForNode())
         return toElement(downstream.anchorNode());
 
@@ -980,7 +980,7 @@ HTMLElement* outermostEnclosingList(Node* node, HTMLElement* rootList)
 // while ignoring whitespaces and unrendered nodes
 static bool isVisiblyAdjacent(const Position& first, const Position& second)
 {
-    return VisiblePosition(first).deepEquivalent() == VisiblePosition(second.upstream()).deepEquivalent();
+    return VisiblePosition(first).deepEquivalent() == VisiblePosition(mostBackwardCaretPosition(second)).deepEquivalent();
 }
 
 bool canMergeLists(Element* firstList, Element* secondList)
@@ -1181,7 +1181,7 @@ Position leadingWhitespacePosition(const Position& position, TextAffinity affini
     if (position.isNull())
         return Position();
 
-    if (isHTMLBRElement(*position.upstream().anchorNode()))
+    if (isHTMLBRElement(*mostBackwardCaretPosition(position).anchorNode()))
         return Position();
 
     Position prev = previousCharacterPosition(position, affinity);
@@ -1275,7 +1275,7 @@ int caretMaxOffset(const Node* n)
 
 bool lineBreakExistsAtVisiblePosition(const VisiblePosition& visiblePosition)
 {
-    return lineBreakExistsAtPosition(visiblePosition.deepEquivalent().downstream());
+    return lineBreakExistsAtPosition(mostForwardCaretPosition(visiblePosition.deepEquivalent()));
 }
 
 bool lineBreakExistsAtPosition(const Position& position)
@@ -1447,11 +1447,11 @@ Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selec
 
     // if the selection starts just before a paragraph break, skip over it
     if (isEndOfParagraph(visiblePosition))
-        return visiblePosition.next().deepEquivalent().downstream();
+        return mostForwardCaretPosition(visiblePosition.next().deepEquivalent());
 
     // otherwise, make sure to be at the start of the first selected node,
     // instead of possibly at the end of the last node before the selection
-    return visiblePosition.deepEquivalent().downstream();
+    return mostForwardCaretPosition(visiblePosition.deepEquivalent());
 }
 
 } // namespace blink

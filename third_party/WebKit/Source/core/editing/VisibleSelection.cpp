@@ -256,8 +256,8 @@ static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralR
 
     // TODO(yosin) We should not call |parentAnchoredEquivalent()|, it is
     // redundant.
-    const PositionAlgorithm<Strategy> normalizedStart = range.startPosition().downstream().parentAnchoredEquivalent();
-    const PositionAlgorithm<Strategy> normalizedEnd = range.endPosition().upstream().parentAnchoredEquivalent();
+    const PositionAlgorithm<Strategy> normalizedStart = mostForwardCaretPosition(range.startPosition()).parentAnchoredEquivalent();
+    const PositionAlgorithm<Strategy> normalizedEnd = mostBackwardCaretPosition(range.endPosition()).parentAnchoredEquivalent();
     // The order of the positions of |start| and |end| can be swapped after
     // upstream/downstream. e.g. editing/pasteboard/copy-display-none.html
     if (normalizedStart.compareTo(normalizedEnd) > 0)
@@ -294,7 +294,7 @@ EphemeralRange VisibleSelection::toNormalizedEphemeralRange() const
         // If the selection is a caret, move the range start upstream. This
         // helps us match the conventions of text editors tested, which make
         // style determinations based on the character before the caret, if any.
-        const Position start = m_start.upstream().parentAnchoredEquivalent();
+        const Position start = mostBackwardCaretPosition(m_start).parentAnchoredEquivalent();
         return EphemeralRange(start, start);
     }
     // If the selection is a range, select the minimum range that encompasses
@@ -581,7 +581,7 @@ SelectionType VisibleSelection::selectionType(const Position& start, const Posit
         ASSERT(end.isNull());
         return NoSelection;
     }
-    if (start == end || start.upstream() == end.upstream())
+    if (start == end || mostBackwardCaretPosition(start) == mostBackwardCaretPosition(end))
         return CaretSelection;
     return RangeSelection;
 }
@@ -592,7 +592,7 @@ SelectionType VisibleSelection::selectionType(const PositionInComposedTree& star
         ASSERT(end.isNull());
         return NoSelection;
     }
-    if (start == end || start.upstream() == end.upstream())
+    if (start == end || mostBackwardCaretPosition(start) == mostBackwardCaretPosition(end))
         return CaretSelection;
     return RangeSelection;
 }
@@ -699,14 +699,14 @@ void VisibleSelection::validate(TextGranularity granularity)
         // come through here before anyone uses it.
         // FIXME: Canonicalizing is good, but haven't we already done it (when we
         // set these two positions to VisiblePosition deepEquivalent()s above)?
-        m_start = m_start.downstream();
-        m_end = m_end.upstream();
+        m_start = mostForwardCaretPosition(m_start);
+        m_end = mostBackwardCaretPosition(m_end);
 
         // Even by downstreaming, |m_start| can be moved to the upper place from
         // the original position, same as |m_end|.
         // e.g.) editing/shadow/select-contenteditable-shadowhost.html
-        m_startInComposedTree = m_startInComposedTree.downstream();
-        m_endInComposedTree = m_endInComposedTree.upstream();
+        m_startInComposedTree = mostForwardCaretPosition(m_startInComposedTree);
+        m_endInComposedTree = mostBackwardCaretPosition(m_endInComposedTree);
         adjustStartAndEndInComposedTree();
 
         if (isCrossingSelectionBoundary(m_startInComposedTree, m_endInComposedTree))

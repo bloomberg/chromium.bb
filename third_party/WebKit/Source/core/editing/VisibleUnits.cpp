@@ -1500,7 +1500,7 @@ PositionAlgorithm<Strategy> downstreamIgnoringEditingBoundaries(PositionAlgorith
     PositionAlgorithm<Strategy> lastPosition;
     while (position != lastPosition) {
         lastPosition = position;
-        position = position.downstream(CanCrossEditingBoundary);
+        position = mostForwardCaretPosition(position, CanCrossEditingBoundary);
     }
     return position;
 }
@@ -1511,7 +1511,7 @@ PositionAlgorithm<Strategy> upstreamIgnoringEditingBoundaries(PositionAlgorithm<
     PositionAlgorithm<Strategy> lastPosition;
     while (position != lastPosition) {
         lastPosition = position;
-        position = position.upstream(CanCrossEditingBoundary);
+        position = mostBackwardCaretPosition(position, CanCrossEditingBoundary);
     }
     return position;
 }
@@ -2250,11 +2250,11 @@ PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree& po
 template <typename Strategy>
 static bool atEditingBoundary(const PositionAlgorithm<Strategy> positions)
 {
-    PositionAlgorithm<Strategy> nextPosition = positions.downstream(CanCrossEditingBoundary);
+    PositionAlgorithm<Strategy> nextPosition = mostForwardCaretPosition(positions, CanCrossEditingBoundary);
     if (positions.atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle())
         return true;
 
-    PositionAlgorithm<Strategy> prevPosition = positions.upstream(CanCrossEditingBoundary);
+    PositionAlgorithm<Strategy> prevPosition = mostBackwardCaretPosition(positions, CanCrossEditingBoundary);
     if (positions.atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle())
         return true;
 

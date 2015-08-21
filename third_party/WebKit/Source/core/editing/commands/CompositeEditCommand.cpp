@@ -700,9 +700,9 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
         return;
 
     // Delete collapsed whitespace so that inserting nbsps doesn't uncollapse it.
-    Position upstreamPos = position.upstream();
-    deleteInsignificantText(upstreamPos, position.downstream());
-    position = upstreamPos.downstream();
+    Position upstreamPos = mostBackwardCaretPosition(position);
+    deleteInsignificantText(upstreamPos, mostForwardCaretPosition(position));
+    position = mostForwardCaretPosition(upstreamPos);
 
     VisiblePosition visiblePos(position);
     VisiblePosition previousVisiblePos(visiblePos.previous());
@@ -714,7 +714,7 @@ void CompositeEditCommand::replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNee
 {
     if (!isCollapsibleWhitespace(visiblePosition.characterAfter()))
         return;
-    Position pos = visiblePosition.deepEquivalent().downstream();
+    Position pos = mostForwardCaretPosition(visiblePosition.deepEquivalent());
     if (!pos.computeContainerNode() || !pos.computeContainerNode()->isTextNode())
         return;
     replaceTextInNodePreservingMarkers(toText(pos.computeContainerNode()), pos.offsetInContainerNode(), 1, nonBreakingSpaceString());
@@ -838,7 +838,7 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
 
 void CompositeEditCommand::deleteInsignificantTextDownstream(const Position& pos)
 {
-    Position end = VisiblePosition(pos, VP_DEFAULT_AFFINITY).next().deepEquivalent().downstream();
+    Position end = mostForwardCaretPosition(VisiblePosition(pos, VP_DEFAULT_AFFINITY).next().deepEquivalent());
     deleteInsignificantText(pos, end);
 }
 
@@ -926,8 +926,8 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
     VisiblePosition next = visibleParagraphEnd.next();
     VisiblePosition visibleEnd = next.isNotNull() ? next : visibleParagraphEnd;
 
-    Position upstreamStart = visibleParagraphStart.deepEquivalent().upstream();
-    Position upstreamEnd = visibleEnd.deepEquivalent().upstream();
+    Position upstreamStart = mostBackwardCaretPosition(visibleParagraphStart.deepEquivalent());
+    Position upstreamEnd = mostBackwardCaretPosition(visibleEnd.deepEquivalent());
 
     // If there are no VisiblePositions in the same block as pos then
     // upstreamStart will be outside the paragraph
@@ -1084,7 +1084,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
     Node* destinationNode = destination.deepEquivalent().anchorNode();
     if (caretAfterDelete.deepEquivalent() != destination.deepEquivalent() && isStartOfParagraph(caretAfterDelete) && isEndOfParagraph(caretAfterDelete)) {
         // Note: We want the rightmost candidate.
-        Position position = caretAfterDelete.deepEquivalent().downstream();
+        Position position = mostForwardCaretPosition(caretAfterDelete.deepEquivalent());
         Node* node = position.anchorNode();
 
         // Bail if we'd remove an ancestor of our destination.
@@ -1135,8 +1135,8 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.
-    Position start = startOfParagraphToMove.deepEquivalent().downstream();
-    Position end = startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent() ? start : endOfParagraphToMove.deepEquivalent().upstream();
+    Position start = mostForwardCaretPosition(startOfParagraphToMove.deepEquivalent());
+    Position end = startOfParagraphToMove.deepEquivalent() == endOfParagraphToMove.deepEquivalent() ? start : mostBackwardCaretPosition(endOfParagraphToMove.deepEquivalent());
     if (comparePositions(start, end) > 0)
         end = start;
 
@@ -1210,8 +1210,8 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.
-    Position start = startOfParagraphToMove.deepEquivalent().downstream();
-    Position end = endOfParagraphToMove.deepEquivalent().upstream();
+    Position start = mostForwardCaretPosition(startOfParagraphToMove.deepEquivalent());
+    Position end = mostBackwardCaretPosition(endOfParagraphToMove.deepEquivalent());
 
     // FIXME: This is an inefficient way to preserve style on nodes in the paragraph to move. It
     // shouldn't matter though, since moved paragraphs will usually be quite small.
@@ -1392,7 +1392,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
     if (!lineBreakExistsAtVisiblePosition(caret))
         return false;
 
-    Position caretPos(caret.deepEquivalent().downstream());
+    Position caretPos(mostForwardCaretPosition(caret.deepEquivalent()));
     // A line break is either a br or a preserved newline.
     ASSERT(isHTMLBRElement(caretPos.anchorNode()) || (caretPos.anchorNode()->isTextNode() && caretPos.anchorNode()->layoutObject()->style()->preserveNewline()));
 
@@ -1444,7 +1444,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
             }
             // Don't insert outside an anchor if doing so would skip over a line break.  It would
             // probably be safe to move the line break so that we could still avoid the anchor here.
-            Position downstream(visiblePos.deepEquivalent().downstream());
+            Position downstream(mostForwardCaretPosition(visiblePos.deepEquivalent()));
             if (lineBreakExistsAtVisiblePosition(visiblePos) && downstream.anchorNode()->isDescendantOf(enclosingAnchor))
                 return original;
 

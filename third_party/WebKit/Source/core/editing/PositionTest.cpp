@@ -6,25 +6,12 @@
 #include "core/editing/Position.h"
 
 #include "core/editing/EditingTestBase.h"
+#include "core/editing/EditingUtilities.h"
 
 namespace blink {
 
 class PositionTest : public EditingTestBase {
 };
-
-TEST_F(PositionTest, downstreamAfterAnchor)
-{
-    const char* bodyContent = "<p id='host'><b id='one'>1</b></p><b id='two'>22</b>";
-    const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
-    setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
-    updateLayoutAndStyleForPainting();
-
-    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
-
-    EXPECT_EQ(Position::lastPositionInNode(host.get()), Position::afterNode(host.get()).downstream());
-    EXPECT_EQ(PositionInComposedTree::lastPositionInNode(host.get()), PositionInComposedTree::afterNode(host.get()).downstream());
-}
 
 // TODO(yoisn) We should move |NextNodeIndex| to "EditingUtilitiesTest.cpp".
 TEST_F(PositionTest, NextNodeIndex)
@@ -159,22 +146,6 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithEmptyShadowRoot)
     RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
 
     EXPECT_EQ(PositionInComposedTree(host, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(shadowRoot.get(), 0)));
-}
-
-TEST_F(PositionTest, upstreamAfterAnchor)
-{
-    const char* bodyContent = "<p id='host'><b id='one'>1</b></p>";
-    const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
-    setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
-    updateLayoutAndStyleForPainting();
-
-    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
-    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
-    RefPtrWillBeRawPtr<Element> three = shadowRoot->getElementById("three");
-
-    EXPECT_EQ(Position(one->firstChild(), 1), Position::afterNode(host.get()).upstream());
-    EXPECT_EQ(PositionInComposedTree(three->firstChild(), 3), PositionInComposedTree::afterNode(host.get()).upstream());
 }
 
 } // namespace blink

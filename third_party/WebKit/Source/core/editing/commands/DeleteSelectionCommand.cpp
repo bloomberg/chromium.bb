@@ -172,10 +172,10 @@ void DeleteSelectionCommand::initializePositionData()
     if (!isEditablePosition(end, ContentIsEditable, DoNotUpdateStyle))
         end = lastEditablePositionBeforePositionInRoot(end, highestEditableRoot(start));
 
-    m_upstreamStart = start.upstream();
-    m_downstreamStart = start.downstream();
-    m_upstreamEnd = end.upstream();
-    m_downstreamEnd = end.downstream();
+    m_upstreamStart = mostBackwardCaretPosition(start);
+    m_downstreamStart = mostForwardCaretPosition(start);
+    m_upstreamEnd = mostBackwardCaretPosition(end);
+    m_downstreamEnd = mostForwardCaretPosition(end);
 
     m_startRoot = editableRootForPosition(start);
     m_endRoot = editableRootForPosition(end);
@@ -233,8 +233,8 @@ void DeleteSelectionCommand::initializePositionData()
             pos = visiblePos.deepEquivalent();
             // Expand out one character upstream for smart delete and recalculate
             // positions based on this change.
-            m_upstreamStart = pos.upstream();
-            m_downstreamStart = pos.downstream();
+            m_upstreamStart = mostBackwardCaretPosition(pos);
+            m_downstreamStart = mostForwardCaretPosition(pos);
             m_leadingWhitespace = leadingWhitespacePosition(m_upstreamStart, visiblePos.affinity());
 
             setStartingSelectionOnSmartDelete(m_upstreamStart, m_upstreamEnd);
@@ -246,8 +246,8 @@ void DeleteSelectionCommand::initializePositionData()
             // Expand out one character downstream for smart delete and recalculate
             // positions based on this change.
             pos = VisiblePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY).next().deepEquivalent();
-            m_upstreamEnd = pos.upstream();
-            m_downstreamEnd = pos.downstream();
+            m_upstreamEnd = mostBackwardCaretPosition(pos);
+            m_downstreamEnd = mostForwardCaretPosition(pos);
             m_trailingWhitespace = trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY);
 
             setStartingSelectionOnSmartDelete(m_downstreamStart, m_downstreamEnd);
@@ -654,8 +654,8 @@ void DeleteSelectionCommand::mergeParagraphs()
     // The rule for merging into an empty block is: only do so if its farther to the right.
     // FIXME: Consider RTL.
     if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) && startOfParagraphToMove.absoluteCaretBounds().x() > mergeDestination.absoluteCaretBounds().x()) {
-        if (isHTMLBRElement(*mergeDestination.deepEquivalent().downstream().anchorNode())) {
-            removeNodeAndPruneAncestors(mergeDestination.deepEquivalent().downstream().anchorNode());
+        if (isHTMLBRElement(*mostForwardCaretPosition(mergeDestination.deepEquivalent()).anchorNode())) {
+            removeNodeAndPruneAncestors(mostForwardCaretPosition(mergeDestination.deepEquivalent()).anchorNode());
             m_endingPosition = startOfParagraphToMove.deepEquivalent();
             return;
         }
@@ -794,7 +794,7 @@ void DeleteSelectionCommand::doApply()
     // save this to later make the selection with
     TextAffinity affinity = m_selectionToDelete.affinity();
 
-    Position downstreamEnd = m_selectionToDelete.end().downstream();
+    Position downstreamEnd = mostForwardCaretPosition(m_selectionToDelete.end());
     bool rootWillStayOpenWithoutPlaceholder = downstreamEnd.computeContainerNode() == downstreamEnd.computeContainerNode()->rootEditableElement()
         || (downstreamEnd.computeContainerNode()->isTextNode() && downstreamEnd.computeContainerNode()->parentNode() == downstreamEnd.computeContainerNode()->rootEditableElement());
     bool lineBreakAtEndOfSelectionToDelete = lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd());

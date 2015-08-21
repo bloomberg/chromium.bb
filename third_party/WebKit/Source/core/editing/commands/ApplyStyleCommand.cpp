@@ -128,8 +128,8 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
     , m_style(style->copy())
     , m_editingAction(editingAction)
     , m_propertyLevel(propertyLevel)
-    , m_start(endingSelection().start().downstream())
-    , m_end(endingSelection().end().upstream())
+    , m_start(mostForwardCaretPosition(endingSelection().start()))
+    , m_end(mostBackwardCaretPosition(endingSelection().end()))
     , m_useEndingSelection(true)
     , m_styledInlineElement(nullptr)
     , m_removeOnly(false)
@@ -156,8 +156,8 @@ ApplyStyleCommand::ApplyStyleCommand(PassRefPtrWillBeRawPtr<Element> element, bo
     , m_style(EditingStyle::create())
     , m_editingAction(editingAction)
     , m_propertyLevel(PropertyDefault)
-    , m_start(endingSelection().start().downstream())
-    , m_end(endingSelection().end().upstream())
+    , m_start(mostForwardCaretPosition(endingSelection().start()))
+    , m_end(mostBackwardCaretPosition(endingSelection().end()))
     , m_useEndingSelection(true)
     , m_styledInlineElement(element)
     , m_removeOnly(removeOnly)
@@ -170,8 +170,8 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
     , m_style(style->copy())
     , m_editingAction(editingAction)
     , m_propertyLevel(PropertyDefault)
-    , m_start(endingSelection().start().downstream())
-    , m_end(endingSelection().end().upstream())
+    , m_start(mostForwardCaretPosition(endingSelection().start()))
+    , m_end(mostBackwardCaretPosition(endingSelection().end()))
     , m_useEndingSelection(true)
     , m_styledInlineElement(nullptr)
     , m_removeOnly(true)
@@ -366,7 +366,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
     else
         beyondEnd = NodeTraversal::next(*end.anchorNode());
 
-    start = start.upstream(); // Move upstream to ensure we do not add redundant spans.
+    start = mostBackwardCaretPosition(start); // Move upstream to ensure we do not add redundant spans.
     Node* startNode = start.anchorNode();
     ASSERT(startNode);
 
@@ -613,7 +613,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
     // This will ensure we remove all traces of the relevant styles from the selection
     // and prevent us from adding redundant ones, as described in:
     // <rdar://problem/3724344> Bolding and unbolding creates extraneous tags
-    Position removeStart = start.upstream();
+    Position removeStart = mostBackwardCaretPosition(start);
     WritingDirection textDirection = NaturalWritingDirection;
     bool hasTextDirection = style->textDirection(textDirection);
     RefPtrWillBeRawPtr<EditingStyle> styleWithoutEmbedding = nullptr;
@@ -632,7 +632,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
 
         Position embeddingRemoveEnd = end;
         if (endUnsplitAncestor && elementFullySelected(*endUnsplitAncestor, removeStart, end))
-            embeddingRemoveEnd = positionInParentBeforeNode(*endUnsplitAncestor).downstream();
+            embeddingRemoveEnd = mostForwardCaretPosition(positionInParentBeforeNode(*endUnsplitAncestor));
 
         if (embeddingRemoveEnd != removeStart || embeddingRemoveEnd != end) {
             styleWithoutEmbedding = style->copy();
@@ -1121,7 +1121,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
     ASSERT(comparePositions(start, end) <= 0);
     // FIXME: We should assert that start/end are not in the middle of a text node.
 
-    Position pushDownStart = start.downstream();
+    Position pushDownStart = mostForwardCaretPosition(start);
     // If the pushDownStart is at the end of a text node, then this node is not fully selected.
     // Move it to the next deep quivalent position to avoid removing the style from this node.
     // e.g. if pushDownStart was at Position("hello", 5) in <b>hello<div>world</div></b>, we want Position("world", 0) instead.
@@ -1129,7 +1129,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
     if (pushDownStartContainer && pushDownStartContainer->isTextNode()
         && pushDownStart.computeOffsetInContainerNode() == pushDownStartContainer->maxCharacterOffset())
         pushDownStart = nextVisuallyDistinctCandidate(pushDownStart);
-    Position pushDownEnd = end.upstream();
+    Position pushDownEnd = mostBackwardCaretPosition(end);
     // If pushDownEnd is at the start of a text node, then this node is not fully selected.
     // Move it to the previous deep equivalent position to avoid removing the style from this node.
     Node* pushDownEndContainer = pushDownEnd.computeContainerNode();
@@ -1208,7 +1208,7 @@ bool ApplyStyleCommand::elementFullySelected(HTMLElement& element, const Positio
     element.document().updateLayoutIgnorePendingStylesheets();
 
     return comparePositions(firstPositionInOrBeforeNode(&element), start) >= 0
-        && comparePositions(lastPositionInOrAfterNode(&element).upstream(), end) <= 0;
+        && comparePositions(mostBackwardCaretPosition(lastPositionInOrAfterNode(&element)), end) <= 0;
 }
 
 void ApplyStyleCommand::splitTextAtStart(const Position& start, const Position& end)

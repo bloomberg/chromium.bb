@@ -183,9 +183,9 @@ void InsertParagraphSeparatorCommand::doApply()
     }
 
     // Use the leftmost candidate.
-    insertionPosition = insertionPosition.upstream();
+    insertionPosition = mostBackwardCaretPosition(insertionPosition);
     if (!isVisuallyEquivalentCandidate(insertionPosition))
-        insertionPosition = insertionPosition.downstream();
+        insertionPosition = mostForwardCaretPosition(insertionPosition);
 
     // Adjust the insertion position after the delete
     insertionPosition = positionAvoidingSpecialElementBoundary(insertionPosition);
@@ -290,7 +290,7 @@ void InsertParagraphSeparatorCommand::doApply()
         }
 
         // find ending selection position easily before inserting the paragraph
-        insertionPosition = insertionPosition.downstream();
+        insertionPosition = mostForwardCaretPosition(insertionPosition);
 
         if (refNode)
             insertNodeBefore(blockToInsert, refNode);
@@ -328,7 +328,7 @@ void InsertParagraphSeparatorCommand::doApply()
 
     // Move downstream. Typing style code will take care of carrying along the
     // style of the upstream position.
-    insertionPosition = insertionPosition.downstream();
+    insertionPosition = mostForwardCaretPosition(insertionPosition);
 
     // At this point, the insertionPosition's node could be a container, and we want to make sure we include
     // all of the correct nodes when building the ancestor list.  So this needs to be the deepest representation of the position
@@ -339,13 +339,13 @@ void InsertParagraphSeparatorCommand::doApply()
     // we should move to its upstream or downstream position.
     if (editingIgnoresContent(insertionPosition.anchorNode())) {
         if (insertionPosition.atLastEditingPositionForNode())
-            insertionPosition = insertionPosition.downstream();
+            insertionPosition = mostForwardCaretPosition(insertionPosition);
         else if (insertionPosition.atFirstEditingPositionForNode())
-            insertionPosition = insertionPosition.upstream();
+            insertionPosition = mostBackwardCaretPosition(insertionPosition);
     }
 
     // Make sure we do not cause a rendered space to become unrendered.
-    // FIXME: We need the affinity for pos, but pos.downstream() does not give it
+    // FIXME: We need the affinity for pos, but mostForwardCaretPosition does not give it
     Position leadingWhitespace = leadingWhitespacePosition(insertionPosition, VP_DEFAULT_AFFINITY);
     // FIXME: leadingWhitespacePosition is returning the position before preserved newlines for positions
     // after the preserved newline, causing the newline to be turned into a nbsp.

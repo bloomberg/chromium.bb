@@ -270,7 +270,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     TypingCommand::insertText(*frame().document(), text, TypingCommand::SelectInsertedText | TypingCommand::PreventSpellChecking, TypingCommand::TextCompositionUpdate);
 
     // Find out what node has the composition now.
-    Position base = frame().selection().base().downstream();
+    Position base = mostForwardCaretPosition(frame().selection().base());
     Node* baseNode = base.anchorNode();
     if (!baseNode || !baseNode->isTextNode())
         return;
@@ -305,7 +305,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 void InputMethodController::setCompositionFromExistingText(const Vector<CompositionUnderline>& underlines, unsigned compositionStart, unsigned compositionEnd)
 {
     Element* editable = frame().selection().rootEditableElement();
-    Position base = frame().selection().base().downstream();
+    Position base = mostForwardCaretPosition(frame().selection().base());
     Node* baseNode = base.anchorNode();
     if (baseNode && editable->firstChild() == baseNode && editable->lastChild() == baseNode && baseNode->isTextNode()) {
         m_compositionNode = nullptr;

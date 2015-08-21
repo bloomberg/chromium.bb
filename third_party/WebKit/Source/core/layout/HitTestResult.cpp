@@ -27,6 +27,7 @@
 #include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/LocalFrame.h"
@@ -163,7 +164,7 @@ PositionWithAffinity HitTestResult::position() const
     if (!layoutObject)
         return PositionWithAffinity();
     if (m_innerPossiblyPseudoNode->isPseudoElement() && m_innerPossiblyPseudoNode->pseudoId() == BEFORE)
-        return Position(m_innerNode, PositionAnchorType::BeforeChildren).downstream();
+        return mostForwardCaretPosition(Position(m_innerNode, PositionAnchorType::BeforeChildren));
     return layoutObject->positionForPoint(localPoint());
 }
 

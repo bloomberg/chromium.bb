@@ -120,7 +120,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
     if (p.isNull())
         return Position();
 
-    Position downstreamStart = p.downstream();
+    Position downstreamStart = mostForwardCaretPosition(p);
     TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
 
     while (true) {
@@ -253,7 +253,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
 
         p = Position::editingPositionOf(layoutObject->node(), offset);
 
-        if ((isVisuallyEquivalentCandidate(p) && p.downstream() != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
+        if ((isVisuallyEquivalentCandidate(p) && mostForwardCaretPosition(p) != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
 
         ASSERT(p != m_deepPosition);
@@ -279,7 +279,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
     if (p.isNull())
         return Position();
 
-    Position downstreamStart = p.downstream();
+    Position downstreamStart = mostForwardCaretPosition(p);
     TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
 
     while (true) {
@@ -415,7 +415,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
 
         p = Position::editingPositionOf(layoutObject->node(), offset);
 
-        if ((isVisuallyEquivalentCandidate(p) && p.downstream() != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
+        if ((isVisuallyEquivalentCandidate(p) && mostForwardCaretPosition(p) != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
 
         ASSERT(p != m_deepPosition);
@@ -549,7 +549,7 @@ static PositionType canonicalizeCandidate(const PositionType& candidate)
     if (candidate.isNull())
         return PositionType();
     ASSERT(isVisuallyEquivalentCandidate(candidate));
-    PositionType upstream = candidate.upstream();
+    PositionType upstream = mostBackwardCaretPosition(candidate);
     if (isVisuallyEquivalentCandidate(upstream))
         return upstream;
     return candidate;
@@ -581,10 +581,10 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
 
     Node* node = position.computeContainerNode();
 
-    PositionType candidate = position.upstream();
+    PositionType candidate = mostBackwardCaretPosition(position);
     if (isVisuallyEquivalentCandidate(candidate))
         return candidate;
-    candidate = position.downstream();
+    candidate = mostForwardCaretPosition(position);
     if (isVisuallyEquivalentCandidate(candidate))
         return candidate;
 
@@ -666,7 +666,7 @@ UChar32 VisiblePosition::characterAfter() const
     // We canonicalize to the first of two equivalent candidates, but the second
     // of the two candidates is the one that will be inside the text node
     // containing the character after this visible position.
-    Position pos = m_deepPosition.downstream();
+    Position pos = mostForwardCaretPosition(m_deepPosition);
     if (!pos.isOffsetInAnchor())
         return 0;
     Node* containerNode = pos.computeContainerNode();

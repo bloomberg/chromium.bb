@@ -1023,13 +1023,13 @@ void ReplaceSelectionCommand::doApply()
     prepareWhitespaceAtPositionForSplit(insertionPos);
 
     // If the downstream node has been removed there's no point in continuing.
-    if (!insertionPos.downstream().anchorNode())
+    if (!mostForwardCaretPosition(insertionPos).anchorNode())
         return;
 
     // NOTE: This would be an incorrect usage of downstream() if downstream() were changed to mean the last position after
     // p that maps to the same visible position as p (since in the case where a br is at the end of a block and collapsed
     // away, there are positions after the br which map to the same visible position as [br, 0]).
-    HTMLBRElement* endBR = isHTMLBRElement(*insertionPos.downstream().anchorNode()) ? toHTMLBRElement(insertionPos.downstream().anchorNode()) : 0;
+    HTMLBRElement* endBR = isHTMLBRElement(*mostForwardCaretPosition(insertionPos).anchorNode()) ? toHTMLBRElement(mostForwardCaretPosition(insertionPos).anchorNode()) : 0;
     VisiblePosition originalVisPosBeforeEndBR;
     if (endBR)
         originalVisPosBeforeEndBR = VisiblePosition(positionBeforeNode(endBR)).previous();
@@ -1219,9 +1219,9 @@ void ReplaceSelectionCommand::doApply()
         // FIXME: Maintain positions for the start and end of inserted content instead of keeping nodes.  The nodes are
         // only ever used to create positions where inserted content starts/ends.
         moveParagraph(startOfParagraphToMove, endOfParagraph(startOfParagraphToMove), destination);
-        m_startOfInsertedContent = endingSelection().visibleStart().deepEquivalent().downstream();
+        m_startOfInsertedContent = mostForwardCaretPosition(endingSelection().visibleStart().deepEquivalent());
         if (m_endOfInsertedContent.isOrphan())
-            m_endOfInsertedContent = endingSelection().visibleEnd().deepEquivalent().upstream();
+            m_endOfInsertedContent = mostBackwardCaretPosition(endingSelection().visibleEnd().deepEquivalent());
     }
 
     Position lastPositionToSelect;
@@ -1250,7 +1250,7 @@ void ReplaceSelectionCommand::doApply()
             }
         } else {
             // Select up to the beginning of the next paragraph.
-            lastPositionToSelect = next.deepEquivalent().downstream();
+            lastPositionToSelect = mostForwardCaretPosition(next.deepEquivalent());
         }
     } else {
         mergeEndIfNeeded();
@@ -1312,7 +1312,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
     VisiblePosition startOfInsertedContent = positionAtStartOfInsertedContent();
     VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
 
-    Position endUpstream = endOfInsertedContent.deepEquivalent().upstream();
+    Position endUpstream = mostBackwardCaretPosition(endOfInsertedContent.deepEquivalent());
     Node* endNode = endUpstream.computeNodeBeforePosition();
     int endOffset = endNode && endNode->isTextNode() ? toText(endNode)->length() : 0;
     if (endUpstream.isOffsetInAnchor()) {
@@ -1336,7 +1336,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
 
     document().updateLayout();
 
-    Position startDownstream = startOfInsertedContent.deepEquivalent().downstream();
+    Position startDownstream = mostForwardCaretPosition(startOfInsertedContent.deepEquivalent());
     Node* startNode = startDownstream.computeNodeAfterPosition();
     unsigned startOffset = 0;
     if (startDownstream.isOffsetInAnchor()) {
@@ -1526,7 +1526,7 @@ bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& f
     if (elementToSplitToAvoidPastingIntoInlineElementsWithStyle(endingSelection().start()))
         return false;
 
-    RefPtrWillBeRawPtr<Node> nodeAfterInsertionPos = endingSelection().end().downstream().anchorNode();
+    RefPtrWillBeRawPtr<Node> nodeAfterInsertionPos = mostForwardCaretPosition(endingSelection().end()).anchorNode();
     Text* textNode = toText(fragment.firstChild());
     // Our fragment creation code handles tabs, spaces, and newlines, so we don't have to worry about those here.
 
