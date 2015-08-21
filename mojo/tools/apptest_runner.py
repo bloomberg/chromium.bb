@@ -9,6 +9,7 @@ import argparse
 import json
 import logging
 import os
+import string
 import sys
 import time
 
@@ -31,7 +32,9 @@ def main():
                       help='The path to write the JSON list of full results.')
   parser.add_argument('--test-list-file', metavar='FILENAME', type=file,
                       default=APPTESTS, help='The file listing tests to run.')
-  args = parser.parse_args()
+  parser.add_argument('--apptest-filter', default='',
+                      help='A comma-separated list of mojo:apptests to run.')
+  args, commandline_args = parser.parse_known_args()
 
   logger = logging.getLogger()
   logging.basicConfig(stream=sys.stdout, format='%(levelname)s:%(message)s')
@@ -57,22 +60,32 @@ def main():
   tests = []
   failed = []
   failed_suites = 0
+  apptest_filter = [a for a in string.split(args.apptest_filter, ',') if a]
+  gtest_filter = [a for a in commandline_args if a.startswith('--gtest_filter')]
   for _ in range(args.repeat_count):
     for test_dict in test_list:
       test = test_dict['test']
       test_name = test_dict.get('name', test)
       test_type = test_dict.get('type', 'gtest')
-      test_args = test_dict.get('args', [])
+      test_args = test_dict.get('args', []) + commandline_args
+      if apptest_filter and not set(apptest_filter) & set([test, test_name]):
+        continue;
 
       print 'Running %s...%s' % (test_name, ('\n' if args.verbose else '')),
       sys.stdout.flush()
 
       assert test_type in ('gtest', 'gtest_isolated')
       isolate = test_type == 'gtest_isolated'
-      (test, fail) = gtest.run_apptest(config, shell, test_args, test, isolate)
-      tests.extend(test)
+      (ran, fail) = gtest.run_apptest(config, shell, test_args, test, isolate)
+      # Ignore empty fixture lists when the commandline has a gtest filter flag.
+      if gtest_filter and not ran and not fail:
+        print '[ NO TESTS ] ' + (test_name if args.verbose else '')
+        continue
+      # Use the apptest name if the whole suite failed or no fixtures were run.
+      fail = [test_name] if (not ran and (not fail or fail == [test])) else fail
+      tests.extend(ran)
       failed.extend(fail)
-      result = test and not fail
+      result = ran and not fail
       print '[  PASSED  ]' if result else '[  FAILED  ]',
       print test_name if args.verbose or not result else ''
       # Abort when 3 apptest suites, or a tenth of all, have failed.

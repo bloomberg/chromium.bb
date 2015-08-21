@@ -41,7 +41,7 @@ def run_apptest(config, shell, args, apptest, isolate):
 
   fixtures = _get_fixtures(config, shell, args, apptest)
   fixtures = [f for f in fixtures if not f.startswith('DISABLED_')]
-  failed = [apptest] if not fixtures else []
+  failed = []
   for fixture in fixtures:
     arguments = args + ['--gtest_filter=%s' % fixture]
     failures = _run_apptest_with_retry(config, shell, arguments, apptest)[1]
@@ -62,7 +62,7 @@ def _run_apptest_with_retry(config, shell, args, apptest, retry_count=2):
     print 'Retrying failed tests (%d attempts remaining)' % retry_count
     arguments = args
     # Retry only the failing fixtures if there is no existing filter specified.
-    if failed != [apptest] and not [a for a in args if '--gtest_filter=' in a]:
+    if failed and not [a for a in args if a.startswith('--gtest_filter')]:
       arguments += ['--gtest_filter=%s' % ':'.join(failed)]
     failed = _run_apptest(config, shell, arguments, apptest)[1]
     retry_count -= 1
@@ -106,10 +106,11 @@ def _get_fixtures(config, shell, args, apptest):
   logging.getLogger().debug('Command: %s' % ' '.join(command))
   try:
     tests = _run_test_with_xvfb(config, shell, arguments, apptest)
-    logging.getLogger().debug('Tests for %s:\n%s' % (apptest, tests))
     # Remove log lines from the output and ensure it matches known formatting.
+    # Ignore empty fixture lists when the commandline has a gtest filter flag.
     tests = re.sub('^(\[|WARNING: linker:).*\n', '', tests, flags=re.MULTILINE)
-    if not re.match('^(\w*\.\r?\n(  \w*\r?\n)+)+', tests):
+    if (not re.match('^(\w*\.\r?\n(  \w*\r?\n)+)+', tests) and
+        not [a for a in args if a.startswith('--gtest_filter')]):
       raise Exception('Unrecognized --gtest_list_tests output:\n%s' % tests)
     test_list = []
     for line in tests.split('\n'):
@@ -119,6 +120,7 @@ def _get_fixtures(config, shell, args, apptest):
         suite = line.strip()
         continue
       test_list.append(suite + line.strip())
+    logging.getLogger().debug('Tests for %s: %s' % (apptest, test_list))
     return test_list
   except Exception as e:
     _print_exception(command, e)
@@ -209,7 +211,7 @@ def _run_test_with_timeout(config, shell, args, apptest, env, seconds=10):
 
 
 def _run_test(config, shell, args, apptest, env, result):
-  '''Run the test; put the shell/proc, output and any exception in |result|.'''
+  '''Run the test; put the shell/proc, output, and any exception in |result|.'''
   output = ''
   exception = ''
   try:
@@ -224,6 +226,8 @@ def _run_test(config, shell, args, apptest, env, result):
             process.returncode, stderr_output)
       elif config.is_verbose:
         output += '\n' + stderr_output
+      if output.startswith('This program contains tests'):
+        exception = 'Error: GTest printed help; check command line flags.'
     else:
       assert shell
       result.put(shell)
