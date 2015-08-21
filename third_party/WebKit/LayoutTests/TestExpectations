@@ -1875,3 +1875,5 @@ crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Fail
 # Temporarily allow failure until chromium change is landed and the test
 # expectation is updated.
 crbug.com/523073 media/video-display-aspect-ratio.html [ Pass Failure ]
+
+crbug.com/523403 [ Win Linux ] fast/text/atsui-rtl-override-selection.html [ NeedsRebaseline ]
