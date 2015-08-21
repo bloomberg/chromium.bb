@@ -55,7 +55,7 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
 }
 
 .gallery,
-.gallery .content {
+.gallery > .content {
   bottom: 0;
   left: 0;
   overflow: hidden;
@@ -198,6 +198,7 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
 .gallery > .toolbar.bottom {
   bottom: 0;
   height: 48px;
+  overflow: visible; /* For overwrite original bubble. */
 }
 
 .gallery > .toolbar.bottom > .slide-mode-toolbar {
@@ -337,7 +338,7 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
 .gallery .toolbar .bubble {
   bottom: 65px;
   font-size: 85%;
-  left: 50px;
+  left: 20px;
   position: absolute;
   width: 220px;
 }

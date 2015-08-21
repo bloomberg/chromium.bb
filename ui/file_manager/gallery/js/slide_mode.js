@@ -224,7 +224,6 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    */
   this.imageContainer_ = util.createChild(queryRequiredElement(
       this.document_, '.content'), 'image-container');
-  this.imageContainer_.addEventListener('click', this.onClick_.bind(this));
 
   this.document_.addEventListener('click', this.onDocumentClick_.bind(this));
 
@@ -260,28 +259,16 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
       (queryRequiredElement(document, 'files-toast'));
 
   /**
-   * @type {!HTMLElement}
-   * @private
+   * @private {!HTMLElement}
    * @const
    */
-  this.bubble_ = util.createChild(this.bottomToolbar_, 'bubble');
-  this.bubble_.hidden = true;
+  this.bubble_ = queryRequiredElement(this.bottomToolbar_, '.bubble');
 
-  /**
-   * @type {!HTMLElement}
-   * @const
-   */
-  var bubbleContent = util.createChild(this.bubble_);
-  bubbleContent.innerHTML = this.displayStringFunction_(
-      'GALLERY_OVERWRITE_BUBBLE');
+  var bubbleContent = queryRequiredElement(this.bubble_, '.content');
+  // GALLERY_OVERWRITE_BUBBLE contains <br> tag inside message.
+  bubbleContent.innerHTML = strf('GALLERY_OVERWRITE_BUBBLE');
 
-  util.createChild(this.bubble_, 'pointer bottom', 'span');
-
-  /**
-   * @type {!HTMLElement}
-   * @const
-   */
-  var bubbleClose = util.createChild(this.bubble_, 'close-x');
+  var bubbleClose = queryRequiredElement(this.bubble_, '.close-x');
   bubbleClose.addEventListener('click', this.onCloseBubble_.bind(this));
 
   /**
@@ -1044,20 +1031,9 @@ SlideMode.prototype.itemLoaded_ = function(
   this.overwriteOriginalCheckbox_.checked = false;
 
   var keys = {};
-  keys[SlideMode.OVERWRITE_BUBBLE_KEY] = 0;
   keys[SlideMode.OVERWRITE_ORIGINAL_KEY] = true;
   chrome.storage.local.get(keys,
       function(values) {
-        var times = values[SlideMode.OVERWRITE_BUBBLE_KEY];
-        if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
-          this.bubble_.hidden = false;
-          if (this.isEditing()) {
-            var items = {};
-            items[SlideMode.OVERWRITE_BUBBLE_KEY] = times + 1;
-            chrome.storage.local.set(items);
-          }
-        }
-
         // Users can overwrite original file only if loaded image is original
         // and writable.
         if (item.isOriginal() &&
@@ -1099,15 +1075,6 @@ SlideMode.prototype.requestPrefetch = function(direction, delay) {
 };
 
 // Event handlers.
-
-/**
- * Click handler for the image container.
- *
- * @param {!Event} event Mouse click event.
- * @private
- */
-SlideMode.prototype.onClick_ = function(event) {
-};
 
 /**
  * Click handler for the entire document.
@@ -1370,10 +1337,7 @@ SlideMode.prototype.onOverwriteOriginalCheckboxChanged_ = function() {
  */
 SlideMode.prototype.onCloseBubble_ = function() {
   this.bubble_.hidden = true;
-  var items = {};
-  items[SlideMode.OVERWRITE_BUBBLE_KEY] =
-      SlideMode.OVERWRITE_BUBBLE_MAX_TIMES;
-  chrome.storage.local.set(items);
+  this.setOverwriteBubbleCount_(SlideMode.OVERWRITE_BUBBLE_MAX_TIMES);
 };
 
 // Slideshow
@@ -1606,6 +1570,15 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
 
     this.touchHandlers_.enabled = false;
     this.dimmableUIController_.setDisabled(true);
+
+    // Show overwrite original bubble if it hasn't been shown for max times.
+    this.getOverwriteBubbleCount_().then(function(count) {
+      if (count >= SlideMode.OVERWRITE_BUBBLE_MAX_TIMES)
+        return;
+
+      this.setOverwriteBubbleCount_(count + 1);
+      this.bubble_.hidden = false;
+    }.bind(this));
   } else {
     this.editor_.getPrompt().hide();
     this.editor_.leaveModeGently();
@@ -1614,9 +1587,43 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     this.viewport_.setScreenBottom(0);
     this.imageView_.applyViewportChange();
 
+    this.bubble_.hidden = true;
+
     this.touchHandlers_.enabled = true;
     this.dimmableUIController_.setDisabled(false);
   }
+};
+
+/**
+ * Gets count of overwrite bubble.
+ * @return {!Promise<number>}
+ * @private
+ */
+SlideMode.prototype.getOverwriteBubbleCount_ = function() {
+  return new Promise(function(resolve, reject) {
+    var requests = {};
+    requests[SlideMode.OVERWRITE_BUBBLE_KEY] = 0;
+
+    chrome.storage.local.get(requests, function(results) {
+      if (!!chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+        return;
+      }
+
+      resolve(results[SlideMode.OVERWRITE_BUBBLE_KEY]);
+    });
+  });
+};
+
+/**
+ * Sets count of overwrite bubble.
+ * @param {number} value
+ * @private
+ */
+SlideMode.prototype.setOverwriteBubbleCount_ = function(value) {
+  var requests = {};
+  requests[SlideMode.OVERWRITE_BUBBLE_KEY] = value;
+  chrome.storage.local.set(requests);
 };
 
 /**
