@@ -39,7 +39,6 @@ class SkCanvas;
 namespace blink {
 class WebAXObject;
 class WebAudioDevice;
-class WebCachedURLRequest;
 class WebColorChooser;
 class WebColorChooserClient;
 class WebDataSource;
@@ -210,8 +209,6 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
                     bool did_block_entire_page);
   void DidDispatchPingLoader(blink::WebLocalFrame* frame,
                              const blink::WebURL& url);
-  void WillRequestResource(blink::WebLocalFrame* frame,
-                           const blink::WebCachedURLRequest& url_request);
   void WillSendRequest(blink::WebLocalFrame* frame,
                        unsigned identifier,
                        blink::WebURLRequest& request,

@@ -196,14 +196,6 @@ class WebFrameTestProxy : public Base {
     Base::didDispatchPingLoader(frame, url);
   }
 
-  virtual void willRequestResource(blink::WebLocalFrame* frame,
-                                   const blink::WebCachedURLRequest& request) {
-    // This is not implemented in RenderFrameImpl, so need to explicitly call
-    // into the base proxy.
-    base_proxy_->WillRequestResource(frame, request);
-    Base::willRequestResource(frame, request);
-  }
-
   virtual void didCreateDataSource(blink::WebLocalFrame* frame,
                                    blink::WebDataSource* ds) {
     Base::didCreateDataSource(frame, ds);
