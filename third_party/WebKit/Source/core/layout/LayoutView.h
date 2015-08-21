@@ -238,11 +238,10 @@ private:
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());
 
-// Suspends the LayoutState cached offset and clipRect optimization. Used under transforms
-// that cannot be represented by LayoutState (common in SVG) and when manipulating the layout
-// tree during layout in ways that can trigger paint invalidation of a non-child (e.g. when a list item
-// moves its list marker around). Note that even when disabled, LayoutState is still used to
-// store layoutDelta.
+// Suspends the PaintInvalidationState cached offset and clipRect optimization. Used under transforms
+// that cannot be represented by PaintInvalidationState (common in SVG) and when paint invalidation
+// containers don't follow the common tree-walk algorithm (e.g. when an absolute positioned descendant
+// is nested under a relatively positioned inline-block child).
 class ForceHorriblySlowRectMapping {
     WTF_MAKE_NONCOPYABLE(ForceHorriblySlowRectMapping);
 public:
