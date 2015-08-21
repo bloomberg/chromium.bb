@@ -7562,9 +7562,28 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="Update button text for password manager">
           Update password
         </message>
-        <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
+        <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option">
+          Never for this site
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON1" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
           Never
         </message>
+        <if expr="use_titlecase">
+          <message name="IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON2" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
+            No Thanks
+          </message>
+          <message name="IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON3" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
+            Don't Ask
+          </message>
+        </if>
+        <if expr="not use_titlecase">
+          <message name="IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON2" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
+            No thanks
+          </message>
+          <message name="IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON3" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
+            Don't ask
+          </message>
+        </if>
         <message name="IDS_PASSWORD_MANAGER_CANCEL_BUTTON" desc="Text for the 'Manage Passwords' bubble's 'Not now' option">
           Nope
         </message>

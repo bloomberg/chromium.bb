@@ -132,7 +132,7 @@ using namespace password_manager::mac::ui;
 
   // Never button.
   NSString* neverButtonText =
-      l10n_util::GetNSString(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
+      l10n_util::GetNSString(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON1);
   neverButton_.reset(
       [[self addButton:neverButtonText
                 toView:view
