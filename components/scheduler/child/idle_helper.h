@@ -146,11 +146,13 @@ class SCHEDULER_EXPORT IdleHelper
 
     void TraceIdleIdleTaskStart();
     void TraceIdleIdleTaskEnd();
-    void TraceEventIdlePeriodStateChange(IdlePeriodState new_state,
-                                         base::TimeTicks new_deadline,
-                                         base::TimeTicks optional_now);
 
    private:
+    void TraceEventIdlePeriodStateChange(IdlePeriodState new_state,
+                                         bool new_running_idle_task,
+                                         base::TraceTicks new_deadline,
+                                         base::TraceTicks optional_now);
+
     SchedulerHelper* helper_;  // NOT OWNED
     Delegate* delegate_;       // NOT OWNED
 
@@ -159,7 +161,8 @@ class SCHEDULER_EXPORT IdleHelper
 
     base::TraceTicks idle_period_deadline_for_tracing_;
     base::TraceTicks last_idle_task_trace_time_;
-    bool nestable_events_started_;
+    bool idle_period_trace_event_started_;
+    bool running_idle_task_for_tracing_;
     const char* tracing_category_;
     const char* disabled_by_default_tracing_category_;
     const char* idle_period_tracing_name_;

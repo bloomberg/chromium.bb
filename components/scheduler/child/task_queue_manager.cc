@@ -329,6 +329,8 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
   if (!pending_task.nestable && main_task_runner_->IsNested()) {
     // Defer non-nestable work to the main task runner.  NOTE these tasks can be
     // arbitrarily delayed so the additional delay should not be a problem.
+    // TODO(skyostil): Figure out a way to not forget which task queue the
+    // task is associated with. See http://crbug.com/522843.
     main_task_runner_->PostNonNestableTask(pending_task.posted_from,
                                            pending_task.task);
   } else {

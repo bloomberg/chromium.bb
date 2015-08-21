@@ -279,8 +279,6 @@ void IdleHelper::OnIdleTaskPostedOnMainThread() {
 
 base::TimeTicks IdleHelper::WillProcessIdleTask() {
   helper_->CheckOnValidThread();
-  DCHECK(IsInIdlePeriod(state_.idle_period_state()));
-
   state_.TraceIdleIdleTaskStart();
   return CurrentIdleTaskDeadline();
 }
@@ -325,7 +323,8 @@ IdleHelper::State::State(SchedulerHelper* helper,
     : helper_(helper),
       delegate_(delegate),
       idle_period_state_(IdlePeriodState::NOT_IN_IDLE_PERIOD),
-      nestable_events_started_(false),
+      idle_period_trace_event_started_(false),
+      running_idle_task_for_tracing_(false),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
@@ -360,9 +359,11 @@ void IdleHelper::State::UpdateState(IdlePeriodState new_state,
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
   if (is_tracing) {
     base::TimeTicks now(optional_now.is_null() ? helper_->Now() : optional_now);
-    TraceEventIdlePeriodStateChange(new_state, new_deadline, now);
-    idle_period_deadline_for_tracing_ =
-        base::TraceTicks::Now() + (new_deadline - now);
+    base::TraceTicks trace_now = base::TraceTicks::Now();
+    idle_period_deadline_for_tracing_ = trace_now + (new_deadline - now);
+    TraceEventIdlePeriodStateChange(
+        new_state, running_idle_task_for_tracing_,
+        idle_period_deadline_for_tracing_, trace_now);
   }
 
   idle_period_state_ = new_state;
@@ -382,11 +383,10 @@ void IdleHelper::State::TraceIdleIdleTaskStart() {
 
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
-  if (is_tracing && nestable_events_started_) {
-    last_idle_task_trace_time_ = base::TraceTicks::Now();
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-        tracing_category_, "RunningIdleTask", this,
-        last_idle_task_trace_time_.ToInternalValue());
+  if (is_tracing) {
+    TraceEventIdlePeriodStateChange(
+        idle_period_state_, true, idle_period_deadline_for_tracing_,
+        base::TraceTicks::Now());
   }
 }
 
@@ -395,69 +395,67 @@ void IdleHelper::State::TraceIdleIdleTaskEnd() {
 
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(tracing_category_, &is_tracing);
-  if (is_tracing && nestable_events_started_) {
-    if (!idle_period_deadline_for_tracing_.is_null() &&
-        base::TraceTicks::Now() > idle_period_deadline_for_tracing_) {
-      TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-          tracing_category_, "DeadlineOverrun", this,
-          std::max(idle_period_deadline_for_tracing_,
-                   last_idle_task_trace_time_).ToInternalValue());
-      TRACE_EVENT_NESTABLE_ASYNC_END0(tracing_category_, "DeadlineOverrun",
-                                      this);
-    }
-    TRACE_EVENT_NESTABLE_ASYNC_END0(tracing_category_, "RunningIdleTask", this);
+  if (is_tracing) {
+    TraceEventIdlePeriodStateChange(
+        idle_period_state_, false, idle_period_deadline_for_tracing_,
+        base::TraceTicks::Now());
   }
 }
 
 void IdleHelper::State::TraceEventIdlePeriodStateChange(
     IdlePeriodState new_state,
-    base::TimeTicks new_deadline,
-    base::TimeTicks now) {
+    bool new_running_idle_task,
+    base::TraceTicks new_deadline,
+    base::TraceTicks now) {
   TRACE_EVENT2(disabled_by_default_tracing_category_, "SetIdlePeriodState",
                "old_state",
                IdleHelper::IdlePeriodStateToString(idle_period_state_),
                "new_state", IdleHelper::IdlePeriodStateToString(new_state));
-  if (nestable_events_started_) {
-    // End async tracing events for the state we are leaving.
-    if (idle_period_state_ == IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
-      TRACE_EVENT_NESTABLE_ASYNC_END0(tracing_category_, "LongIdlePeriodPaused",
-                                      this);
-    }
-    if (IsInLongIdlePeriod(idle_period_state_) &&
-        !IsInLongIdlePeriod(new_state)) {
-      TRACE_EVENT_NESTABLE_ASYNC_END0(tracing_category_, "LongIdlePeriod",
-                                      this);
-    }
-    if (idle_period_state_ == IdlePeriodState::IN_SHORT_IDLE_PERIOD) {
-      TRACE_EVENT_NESTABLE_ASYNC_END0(tracing_category_, "ShortIdlePeriod",
-                                      this);
-    }
-    if (IsInIdlePeriod(idle_period_state_) && !IsInIdlePeriod(new_state)) {
-      TRACE_EVENT_NESTABLE_ASYNC_END0(tracing_category_,
-                                      idle_period_tracing_name_, this);
-      nestable_events_started_ = false;
+
+  if (idle_period_trace_event_started_ && running_idle_task_for_tracing_ &&
+      !new_running_idle_task) {
+    running_idle_task_for_tracing_ = false;
+    if (!idle_period_deadline_for_tracing_.is_null() &&
+        now > idle_period_deadline_for_tracing_) {
+      TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+          tracing_category_, idle_period_tracing_name_, this,
+          "DeadlineOverrun",
+          std::max(idle_period_deadline_for_tracing_,
+                   last_idle_task_trace_time_).ToInternalValue());
     }
   }
 
-  // Start async tracing events for the state we are entering.
-  if (IsInIdlePeriod(new_state) && !IsInIdlePeriod(idle_period_state_)) {
-    nestable_events_started_ = true;
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
-        tracing_category_, idle_period_tracing_name_, this,
-        "idle_period_length_ms", (new_deadline - now).ToInternalValue());
-  }
-  if (new_state == IdlePeriodState::IN_SHORT_IDLE_PERIOD) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(tracing_category_, "ShortIdlePeriod",
-                                      this);
-  }
-  if (IsInLongIdlePeriod(new_state) &&
-      !IsInLongIdlePeriod(idle_period_state_)) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(tracing_category_, "LongIdlePeriod",
-                                      this);
-  }
-  if (new_state == IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(tracing_category_, "LongIdlePeriodPaused",
-                                      this);
+  if (IsInIdlePeriod(new_state)) {
+    if (!idle_period_trace_event_started_) {
+      idle_period_trace_event_started_ = true;
+      TRACE_EVENT_ASYNC_BEGIN1(
+          tracing_category_, idle_period_tracing_name_, this,
+          "idle_period_length_ms", (new_deadline - now).ToInternalValue());
+    }
+
+    if (new_running_idle_task) {
+      last_idle_task_trace_time_ = now;
+      running_idle_task_for_tracing_ = true;
+      TRACE_EVENT_ASYNC_STEP_INTO0(
+          tracing_category_, idle_period_tracing_name_, this,
+          "RunningIdleTask");
+    } else if (new_state == IdlePeriodState::IN_SHORT_IDLE_PERIOD) {
+      TRACE_EVENT_ASYNC_STEP_INTO0(
+          tracing_category_, idle_period_tracing_name_, this,
+          "ShortIdlePeriod");
+    } else if (IsInLongIdlePeriod(new_state) &&
+        new_state != IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
+      TRACE_EVENT_ASYNC_STEP_INTO0(
+          tracing_category_, idle_period_tracing_name_, this,
+          "LongIdlePeriod");
+    } else if (new_state == IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
+      TRACE_EVENT_ASYNC_STEP_INTO0(
+          tracing_category_, idle_period_tracing_name_, this,
+          "LongIdlePeriodPaused");
+    }
+  } else if (idle_period_trace_event_started_) {
+    idle_period_trace_event_started_ = false;
+    TRACE_EVENT_ASYNC_END0(tracing_category_, idle_period_tracing_name_, this);
   }
 }
 
