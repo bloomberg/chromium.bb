@@ -691,7 +691,7 @@ ASSERT(context);
                           if method.overloads else
                           method.runtime_enabled_function) %}
 v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, {{cpp_class_or_partial}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}});
-v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
 v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "{{method.name}}"), function));
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}

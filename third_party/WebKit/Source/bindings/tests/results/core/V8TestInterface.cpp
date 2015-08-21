@@ -2632,34 +2632,34 @@ void V8TestInterface::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8:
     ASSERT(context);
     if (context && (context->isWorkerGlobalScope())) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::workerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0);
-        v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
         v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "workerExposedMethod"), function));
     }
     if (context && (context->isDocument())) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0);
-        v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
         v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "windowExposedMethod"), function));
     }
     if (context && (context->isDocument())) {
         if (RuntimeEnabledFeatures::featureNameEnabled()) {
             v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethodCallback, v8Undefined(), defaultSignature, 0);
-            v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+            v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
             v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "methodWithExposedAndRuntimeEnabledFlag"), function));
         }
     }
     if (context && (context->isDocument())) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback, v8Undefined(), defaultSignature, 1);
-        v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
         v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "overloadMethodWithExposedAndRuntimeEnabledFlag"), function));
     }
     if (context && ((context->isDocument() && RuntimeEnabledFeatures::featureNameEnabled()) || (context->isWorkerGlobalScope() && RuntimeEnabledFeatures::featureName2Enabled()))) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethodCallback, v8Undefined(), defaultSignature, 0);
-        v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
         v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "methodWithExposedHavingRuntimeEnabldFlag"), function));
     }
     if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0);
-        v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
         v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), function));
     }
 }

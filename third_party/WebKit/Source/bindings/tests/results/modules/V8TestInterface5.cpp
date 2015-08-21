@@ -1049,17 +1049,17 @@ void V8TestInterface5::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8
     ASSERT(context);
     if (context && (context->isWorkerGlobalScope())) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::workerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0);
-        v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
         v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "workerExposedMethod"), function));
     }
     if (context && (context->isDocument())) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::windowExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0);
-        v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
         v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "windowExposedMethod"), function));
     }
     if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, TestInterface5ImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0);
-        v8::Local<v8::Function> function = ->GetFunction(isolate->GetCurrentContext())).ToLocalChecked();
+        v8::Local<v8::Function> function = v8CallOrCrash(functionTemplate->GetFunction(isolate->GetCurrentContext()));
         v8CallOrCrash(prototypeObject->Set(isolate->GetCurrentContext(), v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), function));
     }
 }
