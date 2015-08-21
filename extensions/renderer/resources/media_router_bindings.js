@@ -332,6 +332,11 @@ define('media_router_bindings', [
     this.stopListeningForRouteMessages = null;
 
     /**
+     * @type {function(string)}
+     */
+    this.onPresentationSessionDetached = null;
+
+    /**
      * @type {function()}
      */
     this.startObservingMediaRoutes = null;
@@ -382,6 +387,7 @@ define('media_router_bindings', [
       'sendRouteBinaryMessage',
       'listenForRouteMessages',
       'stopListeningForRouteMessages',
+      'onPresentationSessionDetached',
       'closeRoute',
       'joinRoute',
       'createRoute',
@@ -532,6 +538,16 @@ define('media_router_bindings', [
   MediaRouteProvider.prototype.stopListeningForRouteMessages = function(
       routeId) {
     return this.handlers_.stopListeningForRouteMessages(routeId);
+  };
+
+  /**
+   * Indicates that the presentation session that was connected to |routeId| is
+   * no longer connected to it.
+   * @param {!string} routeId
+   */
+  MediaRouteProvider.prototype.onPresentationSessionDetached = function(
+      routeId) {
+    this.handlers_.onPresentationSessionDetached(routeId);
   };
 
   /**

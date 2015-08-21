@@ -49,6 +49,7 @@ class MediaRouterAndroid : public MediaRouter {
       scoped_ptr<std::vector<uint8>> data,
       const SendRouteMessageCallback& callback) override;
   void ClearIssue(const Issue::Id& issue_id) override;
+  void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
 
   // JNI functions.
   void OnSinksReceived(

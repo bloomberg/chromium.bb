@@ -124,6 +124,11 @@ void MediaRouterAndroid::ClearIssue(const Issue::Id& issue_id) {
   NOTIMPLEMENTED();
 }
 
+void MediaRouterAndroid::OnPresentationSessionDetached(
+    const MediaRoute::Id& route_id) {
+  NOTIMPLEMENTED();
+}
+
 void MediaRouterAndroid::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   const std::string& source_id = observer->source().id();

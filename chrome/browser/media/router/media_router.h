@@ -106,6 +106,11 @@ class MediaRouter : public KeyedService {
   // Clears the issue with the id |issue_id|.
   virtual void ClearIssue(const Issue::Id& issue_id) = 0;
 
+  // Indicates that a presentation session has detached from the underlying
+  // MediaRoute |route_id| (due to navigation, garbage collection, etc.)
+  virtual void OnPresentationSessionDetached(
+      const MediaRoute::Id& route_id) = 0;
+
  private:
   friend class IssuesObserver;
   friend class MediaSinksObserver;

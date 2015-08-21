@@ -79,6 +79,7 @@ class MediaRouterMojoImpl : public MediaRouter,
       scoped_ptr<std::vector<uint8>> data,
       const SendRouteMessageCallback& callback) override;
   void ClearIssue(const Issue::Id& issue_id) override;
+  void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
 
   const std::string& media_route_provider_extension_id() const {
     return media_route_provider_extension_id_;
@@ -155,6 +156,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   void DoListenForRouteMessages(const MediaRoute::Id& route_id);
   void DoStopListeningForRouteMessages(const MediaRoute::Id& route_id);
   void DoClearIssue(const Issue::Id& issue_id);
+  void DoOnPresentationSessionDetached(const MediaRoute::Id& route_id);
   void DoStartObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStartObservingMediaRoutes();

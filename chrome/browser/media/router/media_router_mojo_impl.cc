@@ -265,6 +265,13 @@ void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
                         base::Unretained(this), issue_id));
 }
 
+void MediaRouterMojoImpl::OnPresentationSessionDetached(
+    const MediaRoute::Id& route_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoOnPresentationSessionDetached,
+                        base::Unretained(this), route_id));
+}
+
 void MediaRouterMojoImpl::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -504,6 +511,12 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
 void MediaRouterMojoImpl::DoClearIssue(const Issue::Id& issue_id) {
   DVLOG_WITH_INSTANCE(1) << "DoClearIssue " << issue_id;
   media_route_provider_->ClearIssue(issue_id);
+}
+
+void MediaRouterMojoImpl::DoOnPresentationSessionDetached(
+    const MediaRoute::Id& route_id) {
+  DVLOG_WITH_INSTANCE(1) << "DoOnPresentationSessionDetached " << route_id;
+  media_route_provider_->OnPresentationSessionDetached(route_id);
 }
 
 void MediaRouterMojoImpl::DoStartObservingMediaSinks(

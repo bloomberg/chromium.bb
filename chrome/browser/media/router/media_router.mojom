@@ -175,6 +175,10 @@ interface MediaRouteProvider {
   // Calling this will resolve the pending |ListenForRouteMessages| callback
   // with an empty list.
   StopListeningForRouteMessages(string route_id);
+
+  // Indicates that the presentation session that was connected to route
+  // |route_id| is no longer connected to it.
+  OnPresentationSessionDetached(string route_id);
 };
 
 // Interface for a service which observes state changes across media

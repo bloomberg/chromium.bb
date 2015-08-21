@@ -203,6 +203,10 @@ bool PresentationFrame::HasScreenAvailabilityListenerForTest(
 
 void PresentationFrame::Reset() {
   route_id_to_presentation_.Clear();
+
+  for (const auto& pid_route_id : presentation_id_to_route_id_)
+    router_->OnPresentationSessionDetached(pid_route_id.second);
+
   presentation_id_to_route_id_.clear();
   sinks_observer_.reset();
   default_presentation_url_.clear();
