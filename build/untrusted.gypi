@@ -351,7 +351,7 @@
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
 
-                   '--compile_flags=^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(native_irt_compile_flags) ^(clang_irt_compile_flags)',
+                   '--compile_flags=^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(native_irt_compile_flags) -integrated-as',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_irt64) -L>(tc_lib_dir_irt64)  ^(link_flags) >(_link_flags) ^(native_irt_link_flags) >(libcpp_irt_stdlibs)',
@@ -394,7 +394,7 @@
                    '--name', '>(out_newlib64)',
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(native_irt_compile_flags) ^(clang_irt_compile_flags)',
+                   '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(native_irt_compile_flags) -integrated-as',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_irt64) ^(link_flags) >(_link_flags) ^(native_irt_link_flags) >(libcpp_irt_stdlibs)',
@@ -519,7 +519,7 @@
                    '--name', '>(out_newlib32)',
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m32 ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags) >(irt_flags_x86_32) ^(native_irt_compile_flags) ^(clang_irt_compile_flags)',
+                   '--compile_flags=-m32 ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags) >(irt_flags_x86_32) ^(native_irt_compile_flags) -integrated-as',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_irt32) -L>(tc_lib_dir_irt32) ^(link_flags) >(_link_flags) ^(native_irt_link_flags) >(libcpp_irt_stdlibs)',
@@ -562,7 +562,7 @@
                    '--name', '>(out_newlib32)',
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m32 >(irt_flags_x86_32) ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(native_irt_compile_flags) ^(clang_irt_compile_flags)',
+                   '--compile_flags=-m32 >(irt_flags_x86_32) ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags) ^(native_irt_compile_flags) -integrated-as',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_irt32) ^(link_flags) >(_link_flags) ^(native_irt_link_flags) >(libcpp_irt_stdlibs)',
@@ -919,7 +919,7 @@
                   '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(compile_flags) >(_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
-                  '--link_flags=-B>(tc_lib_dir_bionic_arm) ^(link_flags) >(_link_flags)',
+                  '--link_flags=-B>(tc_lib_dir_bionic_arm) ^(link_flags) >(_link_flags) >(libcpp_irt_stdlibs)',
                   '--source-list=^(source_list_bionic_arm)',
                 ],
               },
@@ -955,14 +955,14 @@
                   '<@(common_args)',
                   '>@(extra_args)',
                   '--arch', 'arm',
-                  '--build', 'newlib_nexe',
+                  '--build', 'newlib_nexe_clang',
                   '--name', '>(out_newlib_arm)',
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(native_irt_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags) -Wno-unused-local-typedefs ^(native_irt_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
-                  '--link_flags=-B>(tc_lib_dir_irt_arm) ^(native_irt_link_flags) ^(link_flags) >(_link_flags)',
+                  '--link_flags=-B>(tc_lib_dir_irt_arm) -L>(tc_lib_dir_irt_arm) ^(native_irt_link_flags) ^(link_flags) >(_link_flags) >(libcpp_irt_stdlibs)',
                   '--source-list=^(source_list_newlib_arm)',
                   '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                   '--irt-linker=<(DEPTH)/native_client/build/link_irt.py',
@@ -998,14 +998,14 @@
                   '<@(common_args)',
                   '>@(extra_args)',
                   '--arch', 'arm',
-                  '--build', 'newlib_nlib',
+                  '--build', 'newlib_nlib_clang',
                   '--name', '>(out_newlib_arm)',
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(native_irt_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags) -Wno-unused-local-typedefs ^(native_irt_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
-                  '--link_flags=-B>(tc_lib_dir_irt_arm) ^(native_irt_link_flags) ^(link_flags) >(_link_flags)',
+                  '--link_flags=-B>(tc_lib_dir_irt_arm) -L>(tc_lib_dir_irt_arm) ^(native_irt_link_flags) ^(link_flags) >(_link_flags) >(libcpp_irt_stdlibs)',
                   '--source-list=^(source_list_newlib_arm)',
                 ],
               },
@@ -1567,7 +1567,10 @@
       ],
       'native_irt_compile_flags': [
         # IRT compile/link flags to make the binary smaller.
-        # Omitted from non-IRT libraries to keep the libraries themselves small.
+        '-Os',
+        '-fno-exceptions',
+        # These are omitted from non-IRT libraries to keep the libraries
+        # themselves small.
         '-ffunction-sections',
         '-fdata-sections',
         # A debugger should be able to unwind IRT call frames. As the IRT is
@@ -1581,13 +1584,6 @@
       ],
       'native_irt_link_flags': [
         '-Wl,--gc-sections',
-      ],
-      # TODO(dschuff): merge this with native_irt_compile_flags when we use
-      # nacl-clang for the IRT on all arches.
-      'clang_irt_compile_flags': [
-        '-Os',
-        '-integrated-as',
-        '-fno-exceptions',
       ],
       'pnacl_irt_link_flags': [
         '-Wt,-ffunction-sections',

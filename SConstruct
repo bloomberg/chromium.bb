@@ -3495,15 +3495,13 @@ nacl_irt_env.ClearBits('pnacl_generate_pexe')
 nacl_irt_env.ClearBits('use_sandboxed_translator')
 
 # The choice of toolchain used to build the IRT does not depend on the toolchain
-# used to build user/test code. PNaCl is used on mips because that's currently
-# the only compiler for mips. nacl-clang is used on x86.
+# used to build user/test code. PNaCl is used on mips because that was until
+# recently the only compiler for mips. nacl-clang is used everywhere else.
+# TODO(dschuff): Use nacl-clang for Mips as well.
 if nacl_irt_env.Bit('build_mips32'):
   nacl_irt_env.SetBits('bitcode')
 else:
   nacl_irt_env.ClearBits('bitcode')
-# TODO(dschuff): Build IRT with nacl-clang for ARM
-# https://code.google.com/p/nativeclient/issues/detail?id=4088
-if nacl_irt_env.Bit('build_x86_64') or nacl_irt_env.Bit('build_x86_32'):
   nacl_irt_env.SetBits('nacl_clang')
 
 nacl_irt_env.Tool('naclsdk')

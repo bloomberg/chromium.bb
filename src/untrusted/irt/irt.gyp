@@ -98,14 +98,14 @@
       'variables': {
         'nlib_target': 'libirt_browser.a',
         'build_glibc': 0,
-        'build_newlib': 1,
+        'build_newlib': 0,
         'build_irt': 1,
       },
       'sources': ['<@(irt_sources)','<@(stub_sources)'],
       'conditions': [
         # Disable stub sources on ARM
         # TODO(dschuff): remove this when we switch to arm-nacl-clang
-        ['target_arch=="arm" or target_arch=="mipsel"', {
+        ['target_arch=="mipsel"', {
           'variables': {
             'stub_sources': []
           }
