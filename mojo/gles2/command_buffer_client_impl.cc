@@ -67,7 +67,9 @@ class CommandBufferClientImpl::SyncClientImpl
   }
 
   gpu::Capabilities GetCapabilities() {
-    return capabilities_.To<gpu::Capabilities>();
+    if (capabilities_)
+      return capabilities_.To<gpu::Capabilities>();
+    return gpu::Capabilities();
   }
 
  private:

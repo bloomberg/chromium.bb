@@ -55,7 +55,7 @@ void CommandBufferDriver::Initialize(
   bool success = DoInitialize(shared_state.Pass());
   mojo::GpuCapabilitiesPtr capabilities =
       success ? mojo::GpuCapabilities::From(decoder_->GetCapabilities())
-              : mojo::GpuCapabilities::New();
+              : nullptr;
   sync_client_->DidInitialize(success, capabilities.Pass());
 }
 
