@@ -94,36 +94,6 @@ def _ShutdownDBus():
     print ' cleared DBUS_SESSION_BUS_ADDRESS environment variable'
 
 
-def _RunGTestCommand(
-    options, command, extra_env, pipes=None):
-  """Runs a test, printing and possibly processing the output.
-
-  Args:
-    options: Options passed for this invocation of runtest.py.
-    command: A list of strings in a command (the command and its arguments).
-    extra_env: A dictionary of extra environment variables to set.
-    pipes: A list of command string lists which the output will be piped to.
-
-  Returns:
-    The process return code.
-  """
-  env = os.environ.copy()
-  if extra_env:
-    print 'Additional test environment:'
-    for k, v in sorted(extra_env.items()):
-      print '  %s=%s' % (k, v)
-  env.update(extra_env or {})
-
-  # Trigger bot mode (test retries, redirection of stdio, possibly faster,
-  # etc.) - using an environment variable instead of command-line flags because
-  # some internal waterfalls run this (_RunGTestCommand) for totally non-gtest
-  # code.
-  # TODO(phajdan.jr): Clean this up when internal waterfalls are fixed.
-  env.update({'CHROMIUM_TEST_LAUNCHER_BOT_MODE': '1'})
-
-  return chromium_utils.RunCommand(command, pipes=pipes, env=env)
-
-
 def _BuildTestBinaryCommand(_build_dir, test_exe_path, options):
   """Builds a command to run a test binary.
 
@@ -307,16 +277,40 @@ def _Main(options, args, extra_env):
           options.test_launcher_summary_output)
       command.append('--test-launcher-summary-output=%s' % json_file_name)
 
-    pipes = []
-    # See the comment in main() regarding offline symbolization.
+    command = _GenerateRunIsolatedCommand(build_dir, test_exe_path, options,
+                                          command)
+
+    env = os.environ.copy()
+    if extra_env:
+      print 'Additional test environment:'
+      for k, v in sorted(extra_env.items()):
+        print '  %s=%s' % (k, v)
+    env.update(extra_env or {})
+
+    # Trigger bot mode (test retries, redirection of stdio, possibly faster,
+    # etc.) - using an environment variable instead of command-line flags
+    # because some internal waterfalls run this for totally non-gtest code.
+    # TODO(phajdan.jr): Clean this up when internal waterfalls are fixed.
+    env.update({'CHROMIUM_TEST_LAUNCHER_BOT_MODE': '1'})
+
     if options.use_symbolization_script:
       symbolize_command = _GetSanitizerSymbolizeCommand(
           strip_path_prefix=options.strip_path_prefix)
-      pipes = [symbolize_command]
 
-    command = _GenerateRunIsolatedCommand(build_dir, test_exe_path, options,
-                                          command)
-    result = _RunGTestCommand(options, command, extra_env, pipes=pipes)
+      command_process = subprocess.Popen(
+          command, env=env, stdout=subprocess.PIPE)
+      symbolize_process = subprocess.Popen(
+          symbolize_command, env=env, stdin=command_process.stdout)
+      command_process.stdout.close()
+
+      command_process.wait()
+      symbolize_process.wait()
+
+      result = command_process.returncode
+      if result == 0:
+        result = symbolize_process.returncode
+    else:
+      result = subprocess.call(command, env=env)
   finally:
     if start_xvfb:
       xvfb.StopVirtualX(slave_name)

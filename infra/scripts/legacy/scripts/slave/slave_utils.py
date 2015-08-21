@@ -10,6 +10,7 @@ import glob
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -212,7 +213,7 @@ def RemoveChromeTemporaryFiles():
   elif chromium_utils.IsMac():
     nstempdir_path = '/usr/local/libexec/nstempdir'
     if os.path.exists(nstempdir_path):
-      ns_temp_dir = chromium_utils.GetCommandOutput([nstempdir_path]).strip()
+      ns_temp_dir = subprocess.check_output([nstempdir_path]).strip()
       if ns_temp_dir:
         LogAndRemoveFiles(ns_temp_dir, kLogRegex)
     for i in ('Chromium', 'Google Chrome'):
