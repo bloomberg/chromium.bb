@@ -45,6 +45,7 @@
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/Logging.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebURLRequest.h"
@@ -318,7 +319,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
             m_loadingImageDocument = false;
         }
 
-        if (referrerPolicy != ReferrerPolicyDefault)
+        if (RuntimeEnabledFeatures::referrerPolicyAttributeEnabled() && referrerPolicy != ReferrerPolicyDefault)
             resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, url, document.outgoingReferrer()));
 
         if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isNull())

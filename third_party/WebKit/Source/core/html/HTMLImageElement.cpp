@@ -270,7 +270,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         selectSourceURL(ImageLoader::UpdateIgnorePreviousError);
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
-    } else if (name == referrerpolicyAttr) {
+    } else if (RuntimeEnabledFeatures::referrerPolicyAttributeEnabled() && name == referrerpolicyAttr) {
         m_referrerPolicy = ReferrerPolicyDefault;
         if (!value.isNull())
             SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
