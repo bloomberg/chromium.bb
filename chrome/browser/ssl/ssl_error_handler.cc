@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ssl/ssl_error_classification.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -319,6 +321,63 @@ void SSLErrorHandler::DeleteSSLErrorHandler() {
   web_contents_->RemoveUserData(UserDataKey());
 }
 
+// Adds a message to console after navigation commits and then, deletes itself.
+// Also deletes itself if the navigation is stopped.
+class CommonNameMismatchRedirectObserver
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<CommonNameMismatchRedirectObserver> {
+ public:
+  static void AddToConsoleAfterNavigation(
+      content::WebContents* web_contents,
+      const std::string& request_url_hostname,
+      const std::string& suggested_url_hostname) {
+    web_contents->SetUserData(
+        UserDataKey(),
+        new CommonNameMismatchRedirectObserver(
+            web_contents, request_url_hostname, suggested_url_hostname));
+  }
+
+ private:
+  CommonNameMismatchRedirectObserver(content::WebContents* web_contents,
+                                     const std::string& request_url_hostname,
+                                     const std::string& suggested_url_hostname)
+      : WebContentsObserver(web_contents),
+        web_contents_(web_contents),
+        request_url_hostname_(request_url_hostname),
+        suggested_url_hostname_(suggested_url_hostname) {}
+  ~CommonNameMismatchRedirectObserver() override{};
+
+  // WebContentsObserver:
+  void NavigationStopped() override {
+    // This is the equivalent of "delete this". This object is now destroyed;
+    web_contents_->RemoveUserData(UserDataKey());
+  };
+
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& /* load_details */) override {
+    web_contents_->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_LOG,
+        base::StringPrintf(
+            "Redirecting navigation %s -> %s because the server presented a "
+            "certificate valid for %s but not for %s.",
+            request_url_hostname_.c_str(), suggested_url_hostname_.c_str(),
+            suggested_url_hostname_.c_str(), request_url_hostname_.c_str()));
+    web_contents_->RemoveUserData(UserDataKey());
+  };
+
+  void WebContentsDestroyed() override {
+    web_contents_->RemoveUserData(UserDataKey());
+  };
+
+  content::WebContents* web_contents_;
+  const std::string request_url_hostname_;
+  const std::string suggested_url_hostname_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommonNameMismatchRedirectObserver);
+};
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(CommonNameMismatchRedirectObserver);
+
 void SSLErrorHandler::CommonNameMismatchHandlerCallback(
     const CommonNameMismatchHandler::SuggestedUrlCheckResult& result,
     const GURL& suggested_url) {
@@ -326,6 +385,8 @@ void SSLErrorHandler::CommonNameMismatchHandlerCallback(
   if (result == CommonNameMismatchHandler::SuggestedUrlCheckResult::
                     SUGGESTED_URL_AVAILABLE) {
     RecordUMA(WWW_MISMATCH_URL_AVAILABLE);
+    CommonNameMismatchRedirectObserver::AddToConsoleAfterNavigation(
+        web_contents(), request_url_.host(), suggested_url.host());
     NavigateToSuggestedURL(suggested_url);
   } else {
     RecordUMA(WWW_MISMATCH_URL_NOT_AVAILABLE);
