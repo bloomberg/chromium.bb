@@ -82,9 +82,10 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private static final float BASE_PAGE_BRIGHTNESS_STATE_EXPANDED = .7f;
 
     /**
-     * The brightness of the base page when the Panel is maximized.
+     * The brightness of the base page when the Panel is maximized. This value matches the alert
+     * dialog brightness filter.
      */
-    private static final float BASE_PAGE_BRIGHTNESS_STATE_MAXIMIZED = .3f;
+    private static final float BASE_PAGE_BRIGHTNESS_STATE_MAXIMIZED = .4f;
 
     /**
      * The opacity of the search provider icon when the Panel is peeking.

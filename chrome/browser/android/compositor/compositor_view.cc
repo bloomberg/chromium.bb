@@ -247,7 +247,9 @@ void CompositorView::UpdateToolbarLayer(JNIEnv* env,
                                         jobject object,
                                         jint toolbar_resource_id,
                                         jfloat top_offset,
-                                        bool visible) {
+                                        jfloat brightness,
+                                        bool visible,
+                                        bool show_shadow) {
   // Ensure the toolbar resource is available before making the layer visible.
   ui::ResourceManager::Resource* resource =
       compositor_->GetResourceManager().GetResource(
@@ -258,10 +260,11 @@ void CompositorView::UpdateToolbarLayer(JNIEnv* env,
   toolbar_layer_->layer()->SetHideLayerAndSubtree(!visible);
   if (visible) {
     toolbar_layer_->layer()->SetPosition(gfx::PointF(0, top_offset));
-    toolbar_layer_->PushResource(resource, false, false, false);
+    toolbar_layer_->PushResource(resource, false, false, false, brightness);
 
     // If we're at rest, hide the shadow.  The Android view should be drawing.
-    toolbar_layer_->layer()->SetMasksToBounds(top_offset >= 0.f);
+    toolbar_layer_->layer()->SetMasksToBounds(top_offset >= 0.f
+                                              && !show_shadow);
   }
 }
 

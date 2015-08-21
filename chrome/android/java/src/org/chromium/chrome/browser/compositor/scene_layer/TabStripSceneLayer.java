@@ -91,7 +91,7 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
         final float width = layoutHelper.getWidth() * mDpToPx;
         final float height = layoutHelper.getHeight() * mDpToPx;
         nativeUpdateTabStripLayer(mNativePtr, width, height, yOffset * mDpToPx,
-                layoutHelper.getStripBrightness(),
+                layoutHelper.getBackgroundTabBrightness(), layoutHelper.getBrightness(),
                 shouldReaddBackground(layoutHelper.getOrientation()));
 
         CompositorButton newTabButton = layoutHelper.getNewTabButton();
@@ -137,7 +137,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
     private native void nativeBeginBuildingFrame(long nativeTabStripSceneLayer, boolean visible);
     private native void nativeFinishBuildingFrame(long nativeTabStripSceneLayer);
     private native void nativeUpdateTabStripLayer(long nativeTabStripSceneLayer, float width,
-            float height, float yOffset, float stripBrightness, boolean shouldReaddBackground);
+            float height, float yOffset, float backgroundTabBrightness, float brightness,
+            boolean shouldReaddBackground);
     private native void nativeUpdateNewTabButton(long nativeTabStripSceneLayer, int resourceId,
             float x, float y, float width, float height, boolean visible,
             ResourceManager resourceManager);

@@ -140,6 +140,7 @@ public class StripLayoutHelper {
     private float mLeftMargin;
     private float mRightMargin;
     private final boolean mIncognito;
+    private float mBrightness;
 
     // Tab menu item IDs
     public static final int ID_CLOSE_ALL_TABS = 0;
@@ -184,6 +185,7 @@ public class StripLayoutHelper {
                 res.getString(R.string.accessibility_toolbar_btn_new_incognito_tab));
         mContext = context;
         mIncognito = incognito;
+        mBrightness = 1.f;
 
         // Create tab menu
         mTabMenu = new ListPopupWindow(mContext);
@@ -242,8 +244,22 @@ public class StripLayoutHelper {
     /**
      * @return The brightness of background tabs in the tabstrip.
      */
-    public float getStripBrightness() {
+    public float getBackgroundTabBrightness() {
         return mInReorderMode ? 0.75f : 1.0f;
+    }
+
+    /**
+     * Sets the brightness for the entire tabstrip.
+     */
+    public void setBrightness(float brightness) {
+        mBrightness = brightness;
+    }
+
+    /**
+     * @return The brightness of the entire tabstrip.
+     */
+    public float getBrightness() {
+        return mBrightness;
     }
 
     /**

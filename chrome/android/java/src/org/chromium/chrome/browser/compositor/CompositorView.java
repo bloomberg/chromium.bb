@@ -355,7 +355,10 @@ public class CompositorView
         if (fullscreenManager == null) return;
 
         float offset = fullscreenManager.getControlOffset();
-        boolean useTexture = fullscreenManager.drawControlsAsTexture() || offset == 0;
+        boolean forceHideTopControlsAndroidView =
+                provider.getActiveLayout().forceHideTopControlsAndroidView();
+        boolean useTexture = fullscreenManager.drawControlsAsTexture() || offset == 0
+                || forceHideTopControlsAndroidView;
 
         float dpToPx = getContext().getResources().getDisplayMetrics().density;
         float layoutOffsetDp = provider.getActiveLayout().getTopControlsOffset(offset / dpToPx);
@@ -366,7 +369,8 @@ public class CompositorView
             useTexture = true;
         }
 
-        fullscreenManager.setHideTopControlsAndroidView(validLayoutOffset && layoutOffsetDp != 0.f);
+        fullscreenManager.setHideTopControlsAndroidView(forceHideTopControlsAndroidView
+                || (validLayoutOffset && layoutOffsetDp != 0.f));
 
         int flags = provider.getActiveLayout().getSizingFlags();
         if ((flags & SizingFlags.REQUIRE_FULLSCREEN_SIZE) != 0
@@ -375,7 +379,9 @@ public class CompositorView
             useTexture = false;
         }
 
-        nativeUpdateToolbarLayer(mNativeCompositorView, R.id.control_container, offset, useTexture);
+        nativeUpdateToolbarLayer(mNativeCompositorView, R.id.control_container, offset,
+                provider.getActiveLayout().getToolbarBrightness(), useTexture,
+                forceHideTopControlsAndroidView);
 
         if (progressBarDrawingInfo == null) return;
         nativeUpdateProgressBar(mNativeCompositorView,
@@ -433,8 +439,9 @@ public class CompositorView
         updateToolbarLayer(provider, forRotation, progressBarDrawingInfo);
 
         SceneLayer sceneLayer =
-                layout.getUpdatedSceneLayer(mCacheViewport, mCacheVisibleViewport, mLayerTitleCache,
-                        mTabContentManager, mResourceManager, provider.getFullscreenManager());
+                provider.getUpdatedActiveSceneLayer(mCacheViewport, mCacheVisibleViewport,
+                        mLayerTitleCache, mTabContentManager, mResourceManager,
+                        provider.getFullscreenManager());
 
         nativeSetSceneLayer(mNativeCompositorView, sceneLayer);
 
@@ -476,7 +483,7 @@ public class CompositorView
             float width, float height, float visibleXOffset, float visibleYOffset,
             float overdrawBottomHeight, float dpToPixel);
     private native void nativeUpdateToolbarLayer(long nativeCompositorView, int resourceId,
-            float topOffset, boolean visible);
+            float topOffset, float brightness, boolean visible, boolean showShadow);
     private native void nativeUpdateProgressBar(
             long nativeCompositorView,
             int progressBarX,

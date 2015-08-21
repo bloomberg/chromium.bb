@@ -83,7 +83,9 @@ class CompositorView : public content::CompositorClient,
                           jobject object,
                           jint toolbar_resource_id,
                           jfloat top_offset,
-                          bool visible);
+                          jfloat brightness,
+                          bool visible,
+                          bool show_shadow);
   void UpdateProgressBar(JNIEnv* env,
                          jobject object,
                          jint progress_bar_x,

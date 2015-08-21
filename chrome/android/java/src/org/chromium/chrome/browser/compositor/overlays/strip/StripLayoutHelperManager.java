@@ -158,8 +158,25 @@ public class StripLayoutHelperManager implements SceneOverlay {
         getActiveStripLayoutHelper().getVirtualViews(views);
     }
 
-    public float getStripBrightness() {
-        return getActiveStripLayoutHelper().getStripBrightness();
+    /**
+     * @return The brightness of background tabs in the tabstrip.
+     */
+    public float getBackgroundTabBrightness() {
+        return getActiveStripLayoutHelper().getBackgroundTabBrightness();
+    }
+
+    /**
+     * @param brightness Sets the brightness for the entire tabstrip.
+     */
+    public void setBrightness(float brightness) {
+        getActiveStripLayoutHelper().setBrightness(brightness);
+    }
+
+    /**
+     * @return The brightness of the entire tabstrip.
+     */
+    public float getBrightness() {
+        return getActiveStripLayoutHelper().getBrightness();
     }
 
     /**

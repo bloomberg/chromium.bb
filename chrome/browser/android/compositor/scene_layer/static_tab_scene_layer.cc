@@ -18,7 +18,8 @@ namespace android {
 StaticTabSceneLayer::StaticTabSceneLayer(JNIEnv* env, jobject jobj)
     : SceneLayer(env, jobj),
       last_set_tab_id_(-1),
-      background_color_(SK_ColorWHITE) {
+      background_color_(SK_ColorWHITE),
+      brightness_(1.f) {
 }
 
 StaticTabSceneLayer::~StaticTabSceneLayer() {
@@ -76,7 +77,7 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
   content_layer_->SetProperties(
       id, can_use_live_layer, can_use_ntp_fallback, static_to_view_blend,
       should_override_content_alpha, content_alpha_override, saturation,
-      brightness, gfx::Rect(content_viewport_size), content_viewport_size);
+      gfx::Rect(content_viewport_size), content_viewport_size);
 
   gfx::Size content_bounds(0, 0);
   content_bounds = content_layer_->layer()->bounds();
@@ -109,6 +110,16 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
   content_layer_->layer()->SetIsDrawable(true);
 
   layer_->AddChild(content_layer_->layer());
+
+  // Only applies the brightness filter if the value has changed and is less
+  // than 1.
+  if (brightness != brightness_) {
+    brightness_ = brightness;
+    cc::FilterOperations filters;
+    if (brightness_ < 1.f)
+      filters.Append(cc::FilterOperation::CreateBrightnessFilter(brightness_));
+    layer_->SetFilters(filters);
+  }
 }
 
 void StaticTabSceneLayer::SetContentSceneLayer(JNIEnv* env,

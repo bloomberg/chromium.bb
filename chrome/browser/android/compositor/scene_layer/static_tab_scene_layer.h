@@ -68,6 +68,7 @@ class StaticTabSceneLayer : public SceneLayer {
 
   int last_set_tab_id_;
   int background_color_;
+  float brightness_;
 
   DISALLOW_COPY_AND_ASSIGN(StaticTabSceneLayer);
 };

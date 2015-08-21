@@ -1161,6 +1161,27 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
+     * @return Whether or not to force the top controls Android view to hide.
+     */
+    public boolean forceHideTopControlsAndroidView() {
+        return false;
+    }
+
+    /**
+     * @return The toolbar brightness.
+     */
+    public float getToolbarBrightness() {
+        return 1.0f;
+    }
+
+    /**
+     * @return Whether the tabstrip's event filter is enabled.
+     */
+    public boolean isTabStripEventFilterEnabled() {
+        return true;
+    }
+
+    /**
      * Get an instance of {@link SceneLayer}. Any class inheriting {@link Layout}
      * should override this function in order for other functions to work.
      *

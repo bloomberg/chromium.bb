@@ -238,4 +238,19 @@ public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
         mTabListSceneLayer.pushLayers(getContext(), viewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager);
     }
+
+    @Override
+    public boolean forceHideTopControlsAndroidView() {
+        return true;
+    }
+
+    @Override
+    public float getToolbarBrightness() {
+        return mSearchPanel.getBasePageBrightness();
+    }
+
+    @Override
+    public boolean isTabStripEventFilterEnabled() {
+        return false;
+    }
 }

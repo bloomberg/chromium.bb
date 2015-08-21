@@ -37,7 +37,6 @@ class ContentLayer : public Layer {
                      bool should_override_content_alpha,
                      float content_alpha_override,
                      float saturation,
-                     float brightness,
                      const gfx::Rect& desired_bounds,
                      const gfx::Size& content_size);
   bool ShowingLiveLayer() { return !static_attached_ && content_attached_; }

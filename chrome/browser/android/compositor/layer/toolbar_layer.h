@@ -30,7 +30,8 @@ class ToolbarLayer : public Layer {
   void PushResource(ui::ResourceManager::Resource* resource,
                     bool anonymize,
                     bool anonymize_component_is_incognito,
-                    bool show_debug);
+                    bool show_debug,
+                    float brightness);
 
   void UpdateProgressBar(int progress_bar_x,
                          int progress_bar_y,
@@ -54,6 +55,7 @@ class ToolbarLayer : public Layer {
   scoped_refptr<cc::SolidColorLayer> progress_bar_background_layer_;
   scoped_refptr<cc::SolidColorLayer> anonymize_layer_;
   scoped_refptr<cc::SolidColorLayer> debug_layer_;
+  float brightness_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarLayer);
 };

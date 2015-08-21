@@ -23,7 +23,8 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env, jobject jobj)
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       model_selector_button_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      strip_brightness_(1.f),
+      background_tab_brightness_(1.f),
+      brightness_(1.f),
       write_index_(0),
       content_tree_(nullptr) {
   new_tab_button_->SetIsDrawable(true);
@@ -82,12 +83,21 @@ void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
                                              jfloat width,
                                              jfloat height,
                                              jfloat y_offset,
-                                             jfloat strip_brightness,
+                                             jfloat background_tab_brightness,
+                                             jfloat brightness,
                                              jboolean should_readd_background) {
-  strip_brightness_ = strip_brightness;
+  background_tab_brightness_ = background_tab_brightness;
   gfx::RectF content(0, y_offset, width, height);
   layer()->SetPosition(gfx::PointF(0, y_offset));
   tab_strip_layer_->SetBounds(gfx::Size(width, height));
+
+  if (brightness != brightness_) {
+    brightness_ = brightness;
+    cc::FilterOperations filters;
+    if (brightness_ < 1.f)
+      filters.Append(cc::FilterOperation::CreateBrightnessFilter(brightness_));
+    tab_strip_layer_->SetFilters(filters);
+  }
 
   // Content tree should not be affected by tab strip scene layer visibility.
   if (content_tree_)
@@ -189,7 +199,8 @@ void TabStripSceneLayer::PutStripTabLayer(JNIEnv* env,
   layer->SetProperties(id, close_button_resource, tab_handle_resource,
                        foreground, close_pressed, toolbar_width, x, y, width,
                        height, content_offset_x, close_button_alpha, is_loading,
-                       spinner_rotation, strip_brightness_, border_opacity);
+                       spinner_rotation, background_tab_brightness_,
+                       border_opacity);
 }
 
 scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(

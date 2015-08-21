@@ -66,7 +66,6 @@ void ContentLayer::SetProperties(int id,
                                  bool should_override_content_alpha,
                                  float content_alpha_override,
                                  float saturation,
-                                 float brightness,
                                  const gfx::Rect& desired_bounds,
                                  const gfx::Size& content_size) {
   scoped_refptr<cc::Layer> content_layer =
@@ -139,16 +138,6 @@ void ContentLayer::SetProperties(int id,
           cc::FilterOperation::CreateSaturateFilter(saturation));
     }
     static_layer->layer()->SetFilters(static_filter_operations_);
-  }
-
-  // Only worry about brightness on the content layer.
-  if (content_layer.get()) {
-    content_filter_operations_.Clear();
-    if (brightness < 1.0f) {
-      content_filter_operations_.Append(
-          cc::FilterOperation::CreateBrightnessFilter(brightness));
-    }
-    content_layer->SetFilters(content_filter_operations_);
   }
 }
 

@@ -7,7 +7,11 @@ package org.chromium.chrome.browser.compositor.layouts;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
+import org.chromium.chrome.browser.compositor.LayerTitleCache;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.ui.resources.ResourceManager;
 
 /**
  * Interface that give access the active layout. This is useful to isolate the renderer of
@@ -39,4 +43,20 @@ public interface LayoutProvider {
      * @return The manager in charge of handling fullscreen changes.
      */
     ChromeFullscreenManager getFullscreenManager();
+
+   /**
+     * Build a {@link SceneLayer} for the active layout if it hasn't already been built, and update
+     * it and return it.
+     *
+     * @param contentViewport   A viewport in which to display content.
+     * @param layerTitleCache   A layer title cache.
+     * @param tabContentManager A tab content manager.
+     * @param resourceManager   A resource manager.
+     * @param fullscreenManager A fullscreen manager.
+     * @return                  A {@link SceneLayer} that represents the content for this
+     *                          {@link Layout}.
+     */
+    SceneLayer getUpdatedActiveSceneLayer(Rect viewport, Rect contentViewport,
+            LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
+            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager);
 }

@@ -16,6 +16,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.Layout.SizingFlags;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
@@ -24,12 +25,14 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
+import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content.browser.SPenSupport;
+import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 import java.util.List;
@@ -260,6 +263,14 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      */
     public void removeSceneChangeObserver(SceneChangeObserver observer) {
         mSceneChangeObservers.removeObserver(observer);
+    }
+
+    @Override
+    public SceneLayer getUpdatedActiveSceneLayer(Rect viewport, Rect contentViewport,
+            LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
+            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
+        return mActiveLayout.getUpdatedSceneLayer(viewport, contentViewport, layerTitleCache,
+                tabContentManager, resourceManager, fullscreenManager);
     }
 
     /**
