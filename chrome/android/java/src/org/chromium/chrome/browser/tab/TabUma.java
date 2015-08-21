@@ -150,24 +150,24 @@ public class TabUma {
      */
     void recordTabStateTransition(int prevState, int newState, long delta) {
         if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_INACTIVE) {
-            recordLongTimesHistogram100("TabStateTransferTime.Active.Inactive", delta);
+            recordLongTimesHistogram100("Tabs.StateTransfer.Time_Active_Inactive", delta);
         } else if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_CLOSED) {
-            recordLongTimesHistogram100("TabStateTransferTime.Active.Close", delta);
+            recordLongTimesHistogram100("Tabs.StateTransfer.Time_Active_Closed", delta);
         } else if (prevState == TAB_STATE_INACTIVE && newState == TAB_STATE_ACTIVE) {
-            recordLongTimesHistogram100("TabStateTransferTime.Inactive.Active", delta);
+            recordLongTimesHistogram100("Tabs.StateTransfer.Time_Inactive_Active", delta);
         } else if (prevState == TAB_STATE_INACTIVE && newState == TAB_STATE_CLOSED) {
-            recordLongTimesHistogram100("TabStateTransferTime.Inactive.Close", delta);
+            recordLongTimesHistogram100("Tabs.StateTransfer.Time_Inactive_Close", delta);
         }
 
         if (prevState == TAB_STATE_INITIAL) {
-            RecordHistogram.recordEnumeratedHistogram("TabStateTransferTarget.Initial", newState,
+            RecordHistogram.recordEnumeratedHistogram("Tabs.StateTransfer.Target_Initial", newState,
                     TAB_STATE_MAX);
         } else if (prevState == TAB_STATE_ACTIVE) {
-            RecordHistogram.recordEnumeratedHistogram("TabStateTransferTarget.Active", newState,
+            RecordHistogram.recordEnumeratedHistogram("Tabs.StateTransfer.Target_Active", newState,
                     TAB_STATE_MAX);
         } else if (prevState == TAB_STATE_INACTIVE) {
-            RecordHistogram.recordEnumeratedHistogram("TabStateTransferTarget.Inactive", newState,
-                    TAB_STATE_MAX);
+            RecordHistogram.recordEnumeratedHistogram("Tabs.StateTransfer.Target_Inactive",
+                    newState, TAB_STATE_MAX);
         }
     }
 
