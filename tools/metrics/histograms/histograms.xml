@@ -258,6 +258,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.IsLastSharedAppInfoRetrieved"
+    enum="BooleanIsLastSharedAppInfoRetrieved">
+  <owner>jaekyun@chromium.org</owner>
+  <summary>
+    Signifies whether the last shared app information is retrieved successfully
+    or not. This is logged when configuring the direct sharing menu item.
+  </summary>
+</histogram>
+
 <histogram name="Android.KernelVersion" enum="AndroidKernelVersion">
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -53061,6 +53070,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanInappropriateFallback" type="int">
   <int value="0" label="Handshake successful"/>
   <int value="1" label="inappropriate_fallback alert"/>
+</enum>
+
+<enum name="BooleanIsLastSharedAppInfoRetrieved" type="int">
+  <int value="0" label="Not retrieved"/>
+  <int value="1" label="Retrieved"/>
 </enum>
 
 <enum name="BooleanIsMobileOptimized" type="int">

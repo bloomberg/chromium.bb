@@ -26,6 +26,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
+import android.util.Pair;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -37,6 +38,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.UiUtils;
@@ -46,6 +48,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A helper class that helps to start an intent to share titles and URLs.
@@ -57,6 +62,7 @@ public class ShareHelper {
     private static final String PACKAGE_NAME_KEY = "last_shared_package_name";
     private static final String CLASS_NAME_KEY = "last_shared_class_name";
     private static final String EXTRA_SHARE_SCREENSHOT_AS_STREAM = "share_screenshot_as_stream";
+    private static final long COMPONENT_INFO_READ_TIMEOUT_IN_MS = 1000;
 
     /**
      * Directory name for screenshots.
@@ -302,7 +308,7 @@ public class ShareHelper {
         Drawable directShareIcon = null;
         CharSequence directShareTitle = null;
 
-        ComponentName component = getLastShareComponentName(activity);
+        final ComponentName component = getLastShareComponentName(activity);
         boolean isComponentValid = false;
         if (component != null) {
             Intent intent = getShareIntent("", "", null);
@@ -318,14 +324,42 @@ public class ShareHelper {
             }
         }
         if (isComponentValid) {
+            boolean retrieved = false;
             try {
-                directShareIcon = activity.getPackageManager().getActivityIcon(component);
-                ApplicationInfo ai = activity.getPackageManager().getApplicationInfo(
-                        component.getPackageName(), 0);
-                directShareTitle = activity.getPackageManager().getApplicationLabel(ai);
-            } catch (NameNotFoundException exception) {
+                final PackageManager pm = activity.getPackageManager();
+                AsyncTask<Void, Void, Pair<Drawable, CharSequence>> task =
+                        new AsyncTask<Void, Void, Pair<Drawable, CharSequence>>() {
+                            @Override
+                            protected Pair<Drawable, CharSequence> doInBackground(Void... params) {
+                                Drawable directShareIcon = null;
+                                CharSequence directShareTitle = null;
+                                try {
+                                    directShareIcon = pm.getActivityIcon(component);
+                                    ApplicationInfo ai =
+                                            pm.getApplicationInfo(component.getPackageName(), 0);
+                                    directShareTitle = pm.getApplicationLabel(ai);
+                                } catch (NameNotFoundException exception) {
+                                    // Use the default null values.
+                                }
+                                return new Pair<Drawable, CharSequence>(
+                                        directShareIcon, directShareTitle);
+                            }
+                        };
+                task.execute();
+                Pair<Drawable, CharSequence> result =
+                        task.get(COMPONENT_INFO_READ_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
+                directShareIcon = result.first;
+                directShareTitle = result.second;
+                retrieved = true;
+            } catch (InterruptedException ie) {
+                // Use the default null values.
+            } catch (ExecutionException ee) {
+                // Use the default null values.
+            } catch (TimeoutException te) {
                 // Use the default null values.
             }
+            RecordHistogram.recordBooleanHistogram(
+                    "Android.IsLastSharedAppInfoRetrieved", retrieved);
         }
 
         item.setIcon(directShareIcon);
