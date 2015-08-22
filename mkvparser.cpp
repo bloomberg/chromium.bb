@@ -1194,7 +1194,8 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
       --m_clusterPreloadCount;
 
       m_pos = pos;  // consume payload
-      assert((segment_stop < 0) || (m_pos <= segment_stop));
+      if (segment_stop >= 0 && m_pos > segment_stop)
+        return E_FILE_FORMAT_INVALID;
 
       return 0;  // success
     }
@@ -2729,7 +2730,8 @@ long Segment::ParseNext(const Cluster* pCurr, const Cluster*& pResult,
     // Pos now points to start of payload
 
     pos += size;  // consume payload (that is, the current cluster)
-    assert((segment_stop < 0) || (pos <= segment_stop));
+    if (segment_stop >= 0 && pos > segment_stop)
+      return E_FILE_FORMAT_INVALID;
 
     // By consuming the payload, we are assuming that the curr
     // cluster isn't interesting.  That is, we don't bother checking
@@ -2865,7 +2867,8 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
       }
 
       pos += size;  // consume payload
-      assert((segment_stop < 0) || (pos <= segment_stop));
+      if (segment_stop >= 0 && pos > segment_stop)
+        return E_FILE_FORMAT_INVALID;
 
       continue;
     }
@@ -2875,7 +2878,8 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
         return E_FILE_FORMAT_INVALID;
 
       pos += size;  // consume payload
-      assert((segment_stop < 0) || (pos <= segment_stop));
+      if (segment_stop >= 0 && pos > segment_stop)
+        return E_FILE_FORMAT_INVALID;
 
       continue;
     }
@@ -3054,7 +3058,8 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
         return E_FILE_FORMAT_INVALID;
 
       pos += size;  // consume payload of sub-element
-      assert((segment_stop < 0) || (pos <= segment_stop));
+      if (segment_stop >= 0 && pos > segment_stop)
+        return E_FILE_FORMAT_INVALID;
     }  // determine cluster size
 
     cluster_size = pos - payload_pos;
@@ -3064,7 +3069,8 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
   }
 
   pos += cluster_size;  // consume payload
-  assert((segment_stop < 0) || (pos <= segment_stop));
+  if (segment_stop >= 0 && pos > segment_stop)
+    return E_FILE_FORMAT_INVALID;
 
   return 2;  // try to find a cluster that follows next
 }
