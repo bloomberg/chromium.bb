@@ -105,6 +105,11 @@ bool WebCryptoKey::isNull() const
     return m_private.isNull();
 }
 
+bool WebCryptoKey::keyUsageAllows(const blink::WebCryptoKeyUsage usage) const
+{
+    return ((m_private->usages & usage) != 0);
+}
+
 void WebCryptoKey::assign(const WebCryptoKey& other)
 {
     m_private = other.m_private;

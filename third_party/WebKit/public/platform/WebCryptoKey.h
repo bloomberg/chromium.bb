@@ -120,6 +120,8 @@ public:
 
     BLINK_PLATFORM_EXPORT bool isNull() const;
 
+    BLINK_PLATFORM_EXPORT bool keyUsageAllows(const blink::WebCryptoKeyUsage) const;
+
 private:
     BLINK_PLATFORM_EXPORT void assign(const WebCryptoKey& other);
     BLINK_PLATFORM_EXPORT void reset();
