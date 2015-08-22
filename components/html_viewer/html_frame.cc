@@ -73,6 +73,7 @@ using mojo::Rect;
 using mojo::ServiceProviderPtr;
 using mojo::URLResponsePtr;
 using mojo::View;
+using mojo::WeakBindToRequest;
 
 namespace html_viewer {
 namespace {

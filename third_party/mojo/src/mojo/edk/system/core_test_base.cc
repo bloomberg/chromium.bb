@@ -43,7 +43,7 @@ class MockDispatcher : public Dispatcher {
   // |Dispatcher| protected methods:
   void CloseImplNoLock() override {
     info_->IncrementCloseCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
   }
 
   MojoResult WriteMessageImplNoLock(
@@ -52,7 +52,7 @@ class MockDispatcher : public Dispatcher {
       std::vector<DispatcherTransport>* transports,
       MojoWriteMessageFlags /*flags*/) override {
     info_->IncrementWriteMessageCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
 
     if (num_bytes > GetConfiguration().max_message_num_bytes)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
@@ -69,7 +69,7 @@ class MockDispatcher : public Dispatcher {
                                    uint32_t* num_dispatchers,
                                    MojoReadMessageFlags /*flags*/) override {
     info_->IncrementReadMessageCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
 
     if (num_dispatchers) {
       *num_dispatchers = 1;
@@ -86,7 +86,7 @@ class MockDispatcher : public Dispatcher {
                                  UserPointer<uint32_t> /*num_bytes*/,
                                  MojoWriteDataFlags /*flags*/) override {
     info_->IncrementWriteDataCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
@@ -95,13 +95,13 @@ class MockDispatcher : public Dispatcher {
       UserPointer<uint32_t> /*buffer_num_bytes*/,
       MojoWriteDataFlags /*flags*/) override {
     info_->IncrementBeginWriteDataCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
   MojoResult EndWriteDataImplNoLock(uint32_t /*num_bytes_written*/) override {
     info_->IncrementEndWriteDataCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
@@ -109,7 +109,7 @@ class MockDispatcher : public Dispatcher {
                                 UserPointer<uint32_t> /*num_bytes*/,
                                 MojoReadDataFlags /*flags*/) override {
     info_->IncrementReadDataCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
@@ -117,13 +117,13 @@ class MockDispatcher : public Dispatcher {
                                      UserPointer<uint32_t> /*buffer_num_bytes*/,
                                      MojoReadDataFlags /*flags*/) override {
     info_->IncrementBeginReadDataCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
   MojoResult EndReadDataImplNoLock(uint32_t /*num_bytes_read*/) override {
     info_->IncrementEndReadDataCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
@@ -132,7 +132,7 @@ class MockDispatcher : public Dispatcher {
                                    uint32_t /*context*/,
                                    HandleSignalsState* signals_state) override {
     info_->IncrementAddAwakableCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
     if (signals_state)
       *signals_state = HandleSignalsState();
     if (info_->IsAddAwakableAllowed()) {
@@ -146,14 +146,14 @@ class MockDispatcher : public Dispatcher {
   void RemoveAwakableImplNoLock(Awakable* /*awakable*/,
                                 HandleSignalsState* signals_state) override {
     info_->IncrementRemoveAwakableCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
     if (signals_state)
       *signals_state = HandleSignalsState();
   }
 
   void CancelAllAwakablesNoLock() override {
     info_->IncrementCancelAllAwakablesCallCount();
-    mutex().AssertHeld();
+    lock().AssertAcquired();
   }
 
   scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
@@ -215,167 +215,167 @@ CoreTestBase_MockHandleInfo::~CoreTestBase_MockHandleInfo() {
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetCtorCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return ctor_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetDtorCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return dtor_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetCloseCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return close_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetWriteMessageCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return write_message_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetReadMessageCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return read_message_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetWriteDataCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return write_data_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetBeginWriteDataCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return begin_write_data_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetEndWriteDataCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return end_write_data_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetReadDataCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return read_data_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetBeginReadDataCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return begin_read_data_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetEndReadDataCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return end_read_data_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetAddAwakableCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return add_awakable_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetRemoveAwakableCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return remove_awakable_call_count_;
 }
 
 unsigned CoreTestBase_MockHandleInfo::GetCancelAllAwakablesCallCount() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return cancel_all_awakables_call_count_;
 }
 
 size_t CoreTestBase_MockHandleInfo::GetAddedAwakableSize() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return added_awakables_.size();
 }
 
 Awakable* CoreTestBase_MockHandleInfo::GetAddedAwakableAt(unsigned i) const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return added_awakables_[i];
 }
 
 void CoreTestBase_MockHandleInfo::IncrementCtorCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   ctor_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementDtorCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   dtor_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementCloseCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   close_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementWriteMessageCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   write_message_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementReadMessageCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   read_message_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementWriteDataCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   write_data_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementBeginWriteDataCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   begin_write_data_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementEndWriteDataCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   end_write_data_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementReadDataCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   read_data_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementBeginReadDataCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   begin_read_data_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementEndReadDataCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   end_read_data_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementAddAwakableCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   add_awakable_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementRemoveAwakableCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   remove_awakable_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementCancelAllAwakablesCallCount() {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   cancel_all_awakables_call_count_++;
 }
 
 void CoreTestBase_MockHandleInfo::AllowAddAwakable(bool alllow) {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   add_awakable_allowed_ = alllow;
 }
 
 bool CoreTestBase_MockHandleInfo::IsAddAwakableAllowed() const {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   return add_awakable_allowed_;
 }
 
 void CoreTestBase_MockHandleInfo::AwakableWasAdded(Awakable* awakable) {
-  MutexLocker locker(&mutex_);
+  base::AutoLock locker(lock_);
   added_awakables_.push_back(awakable);
 }
 

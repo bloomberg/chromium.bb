@@ -42,8 +42,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final : public Dispatcher {
       MojoCreateMessagePipeOptions* out_options);
 
   // Must be called before any other methods. (This method is not thread-safe.)
-  void Init(scoped_refptr<MessagePipe> message_pipe,
-            unsigned port) MOJO_NOT_THREAD_SAFE;
+  void Init(scoped_refptr<MessagePipe> message_pipe, unsigned port);
 
   // |Dispatcher| public methods:
   Type GetType() const override;
@@ -100,18 +99,16 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher final : public Dispatcher {
                                 HandleSignalsState* signals_state) override;
   void StartSerializeImplNoLock(Channel* channel,
                                 size_t* max_size,
-                                size_t* max_platform_handles) override
-      MOJO_NOT_THREAD_SAFE;
+                                size_t* max_platform_handles) override;
   bool EndSerializeAndCloseImplNoLock(
       Channel* channel,
       void* destination,
       size_t* actual_size,
-      embedder::PlatformHandleVector* platform_handles) override
-      MOJO_NOT_THREAD_SAFE;
+      embedder::PlatformHandleVector* platform_handles) override;
 
-  // This will be null if closed.
-  scoped_refptr<MessagePipe> message_pipe_ MOJO_GUARDED_BY(mutex());
-  unsigned port_ MOJO_GUARDED_BY(mutex());
+  // Protected by |lock()|:
+  scoped_refptr<MessagePipe> message_pipe_;  // This will be null if closed.
+  unsigned port_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);
 };

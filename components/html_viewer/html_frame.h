@@ -20,7 +20,6 @@
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebTextInputInfo.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace blink {
 class WebFrame;

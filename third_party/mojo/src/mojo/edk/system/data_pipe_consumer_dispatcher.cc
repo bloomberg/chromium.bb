@@ -35,11 +35,6 @@ DataPipeConsumerDispatcher::Deserialize(Channel* channel,
   return dispatcher;
 }
 
-DataPipe* DataPipeConsumerDispatcher::GetDataPipeForTest() {
-  MutexLocker locker(&mutex());
-  return data_pipe_.get();
-}
-
 DataPipeConsumerDispatcher::DataPipeConsumerDispatcher() {
 }
 
@@ -49,19 +44,19 @@ DataPipeConsumerDispatcher::~DataPipeConsumerDispatcher() {
 }
 
 void DataPipeConsumerDispatcher::CancelAllAwakablesNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   data_pipe_->ConsumerCancelAllAwakables();
 }
 
 void DataPipeConsumerDispatcher::CloseImplNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   data_pipe_->ConsumerClose();
   data_pipe_ = nullptr;
 }
 
 scoped_refptr<Dispatcher>
 DataPipeConsumerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
 
   scoped_refptr<DataPipeConsumerDispatcher> rv = Create();
   rv->Init(data_pipe_);
@@ -73,7 +68,7 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
     UserPointer<void> elements,
     UserPointer<uint32_t> num_bytes,
     MojoReadDataFlags flags) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
 
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD)) {
     // These flags are mutally exclusive.
@@ -104,7 +99,7 @@ MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
     UserPointer<const void*> buffer,
     UserPointer<uint32_t> buffer_num_bytes,
     MojoReadDataFlags flags) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
 
   // These flags may not be used in two-phase mode.
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD) ||
@@ -117,14 +112,14 @@ MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
 
 MojoResult DataPipeConsumerDispatcher::EndReadDataImplNoLock(
     uint32_t num_bytes_read) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
 
   return data_pipe_->ConsumerEndReadData(num_bytes_read);
 }
 
 HandleSignalsState DataPipeConsumerDispatcher::GetHandleSignalsStateImplNoLock()
     const {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   return data_pipe_->ConsumerGetHandleSignalsState();
 }
 
@@ -133,7 +128,7 @@ MojoResult DataPipeConsumerDispatcher::AddAwakableImplNoLock(
     MojoHandleSignals signals,
     uint32_t context,
     HandleSignalsState* signals_state) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   return data_pipe_->ConsumerAddAwakable(awakable, signals, context,
                                          signals_state);
 }
@@ -141,7 +136,7 @@ MojoResult DataPipeConsumerDispatcher::AddAwakableImplNoLock(
 void DataPipeConsumerDispatcher::RemoveAwakableImplNoLock(
     Awakable* awakable,
     HandleSignalsState* signals_state) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   data_pipe_->ConsumerRemoveAwakable(awakable, signals_state);
 }
 
@@ -167,7 +162,7 @@ bool DataPipeConsumerDispatcher::EndSerializeAndCloseImplNoLock(
 }
 
 bool DataPipeConsumerDispatcher::IsBusyNoLock() const {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   return data_pipe_->ConsumerIsBusy();
 }
 

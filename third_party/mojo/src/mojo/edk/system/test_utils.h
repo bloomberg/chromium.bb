@@ -25,7 +25,7 @@ MojoDeadline EpsilonDeadline();
 // the order of 100 ms.)
 MojoDeadline TinyDeadline();
 
-// |TestTimeouts::action_timeout()|, as a |MojoDeadline|. (Expect this to be on
+// |TestTimeouts::action_timeout()|, as a |MojoDeadline|.(Expect this to be on
 // the order of 10 s.)
 MojoDeadline ActionDeadline();
 

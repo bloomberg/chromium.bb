@@ -17,7 +17,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 using blink::WebSecurityOrigin;
 using blink::WebSocketHandle;

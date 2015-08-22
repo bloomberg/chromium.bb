@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/tests/message_queue.h"
+#include "mojo/public/cpp/bindings/lib/message_queue.h"
 
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
-namespace test {
+namespace internal {
 
 MessageQueue::MessageQueue() {
 }
@@ -20,6 +20,11 @@ MessageQueue::~MessageQueue() {
 
 bool MessageQueue::IsEmpty() const {
   return queue_.empty();
+}
+
+Message* MessageQueue::Peek() {
+  MOJO_DCHECK(!queue_.empty());
+  return queue_.front();
 }
 
 void MessageQueue::Push(Message* message) {
@@ -39,5 +44,5 @@ void MessageQueue::Pop() {
   queue_.pop();
 }
 
-}  // namespace test
+}  // namespace internal
 }  // namespace mojo
