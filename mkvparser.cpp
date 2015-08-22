@@ -1086,8 +1086,9 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
       if (m_pCues == NULL) {
         const long long element_size = (pos - idpos) + size;
 
-        m_pCues = new Cues(this, pos, size, idpos, element_size);
-        assert(m_pCues);  // TODO
+        m_pCues = new (std::nothrow) Cues(this, pos, size, idpos, element_size);
+        if (m_pCues == NULL)
+          return -1;
       }
 
       m_pos = pos + size;  // consume payload
@@ -1653,7 +1654,8 @@ long Segment::ParseCues(long long off, long long& pos, long& len) {
 
   m_pCues =
       new (std::nothrow) Cues(this, pos, size, element_start, element_size);
-  assert(m_pCues);  // TODO
+  if (m_pCues == NULL)
+    return -1;
 
   return 0;  // success
 }
@@ -2267,7 +2269,9 @@ bool CuePoint::Load(IMkvReader* pReader) {
   //   << " timecode=" << m_timecode
   //   << endl;
 
-  m_track_positions = new TrackPosition[m_track_positions_count];
+  m_track_positions = new (std::nothrow) TrackPosition[m_track_positions_count];
+  if (m_track_positions == NULL)
+    return false;
 
   // Now parse track positions
 
@@ -2860,8 +2864,10 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
       const long long element_size = element_stop - element_start;
 
       if (m_pCues == NULL) {
-        m_pCues = new Cues(this, pos, size, element_start, element_size);
-        assert(m_pCues);  // TODO
+        m_pCues = new (std::nothrow)
+            Cues(this, pos, size, element_start, element_size);
+        if (m_pCues == NULL)
+          return false;
       }
 
       pos += size;  // consume payload
@@ -6738,7 +6744,9 @@ long Cluster::CreateBlock(long long id,
     assert(m_entries_size == 0);
 
     m_entries_size = 1024;
-    m_entries = new BlockEntry*[m_entries_size];
+    m_entries = new (std::nothrow) BlockEntry*[m_entries_size];
+    if (m_entries == NULL)
+      return -1;
 
     m_entries_count = 0;
   } else {
@@ -6749,8 +6757,9 @@ long Cluster::CreateBlock(long long id,
     if (m_entries_count >= m_entries_size) {
       const long entries_size = 2 * m_entries_size;
 
-      BlockEntry** const entries = new BlockEntry*[entries_size];
-      assert(entries);
+      BlockEntry** const entries = new (std::nothrow) BlockEntry*[entries_size];
+      if (entries == NULL)
+        return -1;
 
       BlockEntry** src = m_entries;
       BlockEntry** const src_end = src + m_entries_count;
@@ -7290,7 +7299,9 @@ long Block::Parse(const Cluster* pCluster) {
       return E_FILE_FORMAT_INVALID;
 
     m_frame_count = 1;
-    m_frames = new Frame[m_frame_count];
+    m_frames = new (std::nothrow) Frame[m_frame_count];
+    if (m_frames == NULL)
+      return -1;
 
     Frame& f = m_frames[0];
     f.pos = pos;
@@ -7322,8 +7333,9 @@ long Block::Parse(const Cluster* pCluster) {
 
   m_frame_count = int(biased_count) + 1;
 
-  m_frames = new Frame[m_frame_count];
-  assert(m_frames);
+  m_frames = new (std::nothrow) Frame[m_frame_count];
+  if (m_frames == NULL)
+    return -1;
 
   if (!m_frames)
     return E_FILE_FORMAT_INVALID;
