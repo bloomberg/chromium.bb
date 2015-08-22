@@ -366,8 +366,8 @@ void SetSecurityStyleAndDetails(const GURL& url,
   blink::WebString key_exchange_string =
       blink::WebString::fromUTF8(key_exchange);
   blink::WebString mac_string = blink::WebString::fromUTF8(mac);
-  response->setSecurityDetails(protocol_string, cipher_string,
-                               key_exchange_string, mac_string,
+  response->setSecurityDetails(protocol_string, key_exchange_string,
+                               cipher_string, mac_string,
                                ssl_status.cert_id);
 }
 
