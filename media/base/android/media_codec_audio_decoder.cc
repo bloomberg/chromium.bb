@@ -40,6 +40,7 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
 }
 
 MediaCodecAudioDecoder::~MediaCodecAudioDecoder() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "AudioDecoder::~AudioDecoder()";
   ReleaseDecoderResources();
 }
@@ -62,6 +63,15 @@ void MediaCodecAudioDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
   configs_ = configs;
   if (!media_codec_bridge_)
     output_sampling_rate_ = configs.audio_sampling_rate;
+}
+
+void MediaCodecAudioDecoder::ReleaseDecoderResources() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DVLOG(1) << class_name() << "::" << __FUNCTION__;
+
+  DoEmergencyStop();
+
+  ReleaseMediaCodec();
 }
 
 void MediaCodecAudioDecoder::Flush() {
@@ -160,37 +170,55 @@ void MediaCodecAudioDecoder::OnOutputFormatChanged() {
 void MediaCodecAudioDecoder::Render(int buffer_index,
                                     size_t offset,
                                     size_t size,
-                                    bool render_output,
+                                    RenderMode render_mode,
                                     base::TimeDelta pts,
                                     bool eos_encountered) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts;
+  DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts << " "
+           << AsString(render_mode);
 
-  render_output = render_output && (size != 0u);
+  const bool do_play = (render_mode != kRenderSkip);
 
-  if (render_output) {
+  if (do_play) {
+    AudioCodecBridge* audio_codec =
+        static_cast<AudioCodecBridge*>(media_codec_bridge_.get());
+
+    DCHECK(audio_codec);
+
+    const bool postpone = (render_mode == kRenderAfterPreroll);
+
     int64 head_position =
-        (static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))
-            ->PlayOutputBuffer(buffer_index, size, offset);
+        audio_codec->PlayOutputBuffer(buffer_index, size, offset, postpone);
+
+    DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
+             << (postpone ? " POSTPONE" : "")
+             << " head_position:" << head_position;
 
     size_t new_frames_count = size / bytes_per_frame_;
     frame_count_ += new_frames_count;
     audio_timestamp_helper_->AddFrames(new_frames_count);
-    int64 frames_to_play = frame_count_ - head_position;
-    DCHECK_GE(frames_to_play, 0);
 
-    base::TimeDelta last_buffered = audio_timestamp_helper_->GetTimestamp();
-    base::TimeDelta now_playing =
-        last_buffered -
-        audio_timestamp_helper_->GetFrameDuration(frames_to_play);
+    if (!postpone) {
+      int64 frames_to_play = frame_count_ - head_position;
 
-    DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
-             << " will play: [" << now_playing << "," << last_buffered << "]";
+      DCHECK_GE(frames_to_play, 0) << class_name() << "::" << __FUNCTION__
+                                   << " pts:" << pts
+                                   << " frame_count_:" << frame_count_
+                                   << " head_position:" << head_position;
 
-    media_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(update_current_time_cb_, now_playing, last_buffered));
+      base::TimeDelta last_buffered = audio_timestamp_helper_->GetTimestamp();
+      base::TimeDelta now_playing =
+          last_buffered -
+          audio_timestamp_helper_->GetFrameDuration(frames_to_play);
+
+      DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
+               << " will play: [" << now_playing << "," << last_buffered << "]";
+
+      media_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(update_current_time_cb_, now_playing, last_buffered));
+    }
   }
 
   media_codec_bridge_->ReleaseOutputBuffer(buffer_index, false);

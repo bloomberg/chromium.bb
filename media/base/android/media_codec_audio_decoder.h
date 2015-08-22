@@ -30,6 +30,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
 
   bool HasStream() const override;
   void SetDemuxerConfigs(const DemuxerConfigs& configs) override;
+  void ReleaseDecoderResources() override;
   void Flush() override;
 
   // Sets the volume of the audio output.
@@ -46,7 +47,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
   void Render(int buffer_index,
               size_t offset,
               size_t size,
-              bool render_output,
+              RenderMode render_mode,
               base::TimeDelta pts,
               bool eos_encountered) override;
 

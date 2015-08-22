@@ -482,6 +482,24 @@ void MediaCodecPlayer::OnDemuxerDurationChanged(
   duration_ = duration;
 }
 
+void MediaCodecPlayer::SetDecodersTimeCallbackForTests(
+    DecodersTimeCallback cb) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  decoders_time_cb_ = cb;
+}
+
+bool MediaCodecPlayer::IsPrerollingForTests(DemuxerStream::Type type) const {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_decoder_ && video_decoder_);
+
+  if (type == DemuxerStream::AUDIO)
+    return audio_decoder_->IsPrerollingForTests();
+  else if (type == DemuxerStream::VIDEO)
+    return video_decoder_->IsPrerollingForTests();
+  else
+    return false;
+}
+
 // Events from Player, called on UI thread
 
 void MediaCodecPlayer::OnMediaMetadataChanged(base::TimeDelta duration,
@@ -555,12 +573,26 @@ void MediaCodecPlayer::OnPrefetchDone() {
   StartPlaybackOrBrowserSeek();
 }
 
+void MediaCodecPlayer::OnPrerollDone() {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__;
+
+  DCHECK(interpolator_.interpolating());
+
+  StartStatus status = StartDecoders(interpolator_.GetInterpolatedTime());
+  if (status != kStartOk)
+    GetMediaTaskRunner()->PostTask(FROM_HERE, internal_error_cb_);
+}
+
 void MediaCodecPlayer::OnStopDone() {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
 
-  if (!(audio_decoder_->IsStopped() && video_decoder_->IsStopped()))
+  if (!(audio_decoder_->IsStopped() && video_decoder_->IsStopped())) {
+    DVLOG(1) << __FUNCTION__ << " both audio and video has to be stopped"
+             << ", ignoring";
     return;  // Wait until other stream is stopped
+  }
 
   // At this point decoder threads should not be running
   if (interpolator_.interpolating())
@@ -636,13 +668,22 @@ void MediaCodecPlayer::OnTimeIntervalUpdate(DemuxerStream::Type type,
   DVLOG(2) << __FUNCTION__ << ": stream type:" << type << " [" << now_playing
            << "," << last_buffered << "]";
 
+  // For testing only: report time interval as we receive it from decoders
+  // as an indication of what is being rendered.
+  if (!decoders_time_cb_.is_null()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(decoders_time_cb_, type, now_playing, last_buffered));
+  }
+
   // I assume that audio stream cannot be added after we get configs by
   // OnDemuxerConfigsAvailable(), but that audio can finish early.
 
   if (type == DemuxerStream::VIDEO) {
     // Ignore video PTS if there is audio stream or if it's behind current
     // time as set by audio stream.
-    if (!AudioFinished() || now_playing < interpolator_.GetInterpolatedTime())
+    if (!AudioFinished() ||
+        (HasAudio() && now_playing < interpolator_.GetInterpolatedTime()))
       return;
   }
 
@@ -792,15 +833,38 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::StartPlaybackDecoders() {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
 
-  bool do_audio = !AudioFinished();
-  bool do_video = !VideoFinished();
+  // Configure all streams before the start since we may discover that browser
+  // seek is required.
+  MediaCodecPlayer::StartStatus status = ConfigureDecoders();
+  if (status != kStartOk)
+    return status;
+
+  // At this point decoder threads should not be running.
+  if (!interpolator_.interpolating())
+    interpolator_.StartInterpolating();
+
+  base::TimeDelta current_time = GetInterpolatedTime();
+
+  bool preroll_required = false;
+  status = MaybePrerollDecoders(current_time, &preroll_required);
+  if (preroll_required)
+    return status;
+
+  return StartDecoders(current_time);
+}
+
+MediaCodecPlayer::StartStatus MediaCodecPlayer::ConfigureDecoders() {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__;
+
+  const bool do_audio = !AudioFinished();
+  const bool do_video = !VideoFinished();
 
   // If there is nothing to play, the state machine should determine this at the
   // prefetch state and never call this method.
   DCHECK(do_audio || do_video);
 
-  // Configure all streams before the start since we may discover that browser
-  // seek is required. Start with video: if browser seek is required it would
+  // Start with video: if browser seek is required it would
   // not make sense to configure audio.
 
   if (do_video) {
@@ -823,25 +887,77 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::StartPlaybackDecoders() {
     }
   }
 
-  // At this point decoder threads should not be running.
-  if (!interpolator_.interpolating())
-    interpolator_.StartInterpolating();
+  return kStartOk;
+}
 
-  base::TimeDelta current_time = GetInterpolatedTime();
+MediaCodecPlayer::StartStatus MediaCodecPlayer::MaybePrerollDecoders(
+    base::TimeDelta current_time,
+    bool* preroll_required) {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << " current_time:" << current_time;
 
-  if (do_audio) {
-    if (!audio_decoder_->Start(current_time)) {
+  // If requested, preroll is always done in the beginning of the playback,
+  // after prefetch. The request might not happen at all though, in which case
+  // we won't have prerolling phase. We need the prerolling when we (re)create
+  // the decoder, because its configuration and initialization (getting input,
+  // but not making output) can take time, and after the seek because there
+  // could be some data to be skipped and there is again initialization after
+  // the flush.
+
+  int count = 0;
+  const bool do_audio_preroll = audio_decoder_->NotCompletedAndNeedsPreroll();
+  if (do_audio_preroll)
+    ++count;
+
+  const bool do_video_preroll = video_decoder_->NotCompletedAndNeedsPreroll();
+  if (do_video_preroll)
+    ++count;
+
+  if (count == 0) {
+    DVLOG(1) << __FUNCTION__ << ": preroll is not required, skipping";
+    *preroll_required = false;
+    return kStartOk;
+  }
+
+  *preroll_required = true;
+
+  DCHECK(count > 0);
+  DCHECK(do_audio_preroll || do_video_preroll);
+
+  DVLOG(1) << __FUNCTION__ << ": preroll for " << count << " stream(s)";
+
+  base::Closure preroll_cb = base::BarrierClosure(
+      count, base::Bind(&MediaCodecPlayer::OnPrerollDone, media_weak_this_));
+
+  if (do_audio_preroll) {
+    if (!audio_decoder_->Preroll(current_time, preroll_cb))
       return kStartFailed;
-    }
+  }
+
+  if (do_video_preroll) {
+    if (!video_decoder_->Preroll(current_time, preroll_cb))
+      return kStartFailed;
+  }
+
+  return kStartOk;
+}
+
+MediaCodecPlayer::StartStatus MediaCodecPlayer::StartDecoders(
+    base::TimeDelta current_time) {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << " current_time:" << current_time;
+
+  if (!AudioFinished()) {
+    if (!audio_decoder_->Start(current_time))
+      return kStartFailed;
 
     // Attach listener on UI thread
     ui_task_runner_->PostTask(FROM_HERE, attach_listener_cb_);
   }
 
-  if (do_video) {
-    if (!video_decoder_->Start(current_time)) {
+  if (!VideoFinished()) {
+    if (!video_decoder_->Start(current_time))
       return kStartFailed;
-    }
   }
 
   return kStartOk;

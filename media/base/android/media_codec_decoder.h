@@ -171,19 +171,20 @@ class MediaCodecDecoder {
   virtual void SetDemuxerConfigs(const DemuxerConfigs& configs) = 0;
 
   // Stops decoder thread, releases the MediaCodecBridge and other resources.
-  virtual void ReleaseDecoderResources();
+  virtual void ReleaseDecoderResources() = 0;
 
   // Flushes the MediaCodec, after that resets the AccessUnitQueue and blocks
   // the input. Decoder thread should not be running.
   virtual void Flush();
 
-  // Releases MediaCodecBridge.
-  void ReleaseMediaCodec();
+  // Releases MediaCodecBridge and any related buffers or references.
+  virtual void ReleaseMediaCodec();
 
   // Returns corresponding conditions.
   bool IsPrefetchingOrPlaying() const;
   bool IsStopped() const;
   bool IsCompleted() const;
+  bool NotCompletedAndNeedsPreroll() const;
 
   base::android::ScopedJavaLocalRef<jobject> GetMediaCrypto();
 
@@ -194,8 +195,13 @@ class MediaCodecDecoder {
   // Configures MediaCodec.
   ConfigStatus Configure();
 
-  // Starts the decoder thread and resumes the playback.
-  bool Start(base::TimeDelta current_time);
+  // Starts the decoder for prerolling. This method starts the decoder thread.
+  bool Preroll(base::TimeDelta preroll_timestamp,
+               const base::Closure& preroll_done_cb);
+
+  // Starts the decoder after preroll is not needed, starting decoder thread
+  // if it has not started yet.
+  bool Start(base::TimeDelta start_timestamp);
 
   // Stops the playback process synchronously. This method stops the decoder
   // thread synchronously, and then releases all MediaCodec buffers.
@@ -209,10 +215,22 @@ class MediaCodecDecoder {
   // Notification posted when asynchronous stop is done or playback completed.
   void OnLastFrameRendered(bool completed);
 
+  // Notification posted when last prerolled frame has been returned to codec.
+  void OnPrerollDone();
+
   // Puts the incoming data into AccessUnitQueue.
   void OnDemuxerDataAvailable(const DemuxerData& data);
 
+  // For testing only. Returns true if the decoder is in kPrerolling state.
+  bool IsPrerollingForTests() const;
+
  protected:
+  enum RenderMode {
+    kRenderSkip = 0,
+    kRenderAfterPreroll,
+    kRenderNow,
+  };
+
   // Returns true if the new DemuxerConfigs requires MediaCodec
   // reconfiguration.
   virtual bool IsCodecReconfigureNeeded(const DemuxerConfigs& curr,
@@ -224,7 +242,10 @@ class MediaCodecDecoder {
 
   // Associates PTS with device time so we can calculate delays.
   // We use delays for video decoder only.
-  virtual void SynchronizePTSWithTime(base::TimeDelta current_time) {}
+  virtual void AssociateCurrentTimeWithPTS(base::TimeDelta current_time) {}
+
+  // Invalidate delay calculation. We use delays for video decoder only.
+  virtual void DissociatePTSFromTime() {}
 
   // Processes the change of the output format, varies by stream.
   virtual void OnOutputFormatChanged() = 0;
@@ -234,16 +255,15 @@ class MediaCodecDecoder {
   virtual void Render(int buffer_index,
                       size_t offset,
                       size_t size,
-                      bool render_output,
+                      RenderMode render_mode,
                       base::TimeDelta pts,
                       bool eos_encountered) = 0;
 
   // Returns the number of delayed task (we might have them for video).
   virtual int NumDelayedRenderTasks() const;
 
-  // Releases output buffers that are dequeued and not released yet (video)
-  // if the |release| parameter is set and then remove the references to them.
-  virtual void ClearDelayedBuffers(bool release) {}
+  // Releases output buffers that are dequeued and not released yet (video).
+  virtual void ReleaseDelayedBuffers() {}
 
 #ifndef NDEBUG
   // For video, checks that access unit is the key frame or stand-alone EOS.
@@ -252,11 +272,16 @@ class MediaCodecDecoder {
 
   // Helper methods.
 
+  // Synchroniously stop decoder thread.
+  void DoEmergencyStop();
+
+  // Returns true if we are in the process of sync stop.
+  bool InEmergencyStop() const { return GetState() == kInEmergencyStop; }
+
   // Notifies the decoder if the frame is the last one.
   void CheckLastFrame(bool eos_encountered, bool has_delayed_tasks);
 
-  // Returns true is we are in the process of sync stop.
-  bool InEmergencyStop() const { return GetState() == kInEmergencyStop; }
+  const char* AsString(RenderMode render_mode);
 
   // Protected data.
 
@@ -282,6 +307,8 @@ class MediaCodecDecoder {
     kStopped = 0,
     kPrefetching,
     kPrefetched,
+    kPrerolling,
+    kPrerolled,
     kRunning,
     kStopping,
     kInEmergencyStop,
@@ -325,6 +352,7 @@ class MediaCodecDecoder {
   // These notifications are called on corresponding conditions.
   base::Closure prefetch_done_cb_;
   base::Closure starvation_cb_;
+  base::Closure preroll_done_cb_;
   base::Closure stop_done_cb_;
   base::Closure error_cb_;
 
@@ -334,9 +362,18 @@ class MediaCodecDecoder {
   // Callback used to post OnCodecError method.
   base::Closure internal_error_cb_;
 
+  // Callback for posting OnPrerollDone method.
+  base::Closure internal_preroll_done_cb_;
+
   // Internal state.
   DecoderState state_;
   mutable base::Lock state_lock_;
+
+  // Preroll timestamp is set if we need preroll and cleared after we done it.
+  base::TimeDelta preroll_timestamp_;
+
+  // Indicates that playback should start with preroll.
+  bool needs_preroll_;
 
   // Flag is set when the EOS is enqueued into MediaCodec. Reset by Flush.
   bool eos_enqueued_;

@@ -493,7 +493,10 @@ TEST_F(MediaCodecDecoderTest, AudioPlayTillCompletion) {
   EXPECT_TRUE(decoder_->IsCompleted());
 
   // Last buffered timestamp should be no less than PTS.
-  EXPECT_EQ(22, pts_stat_.num_values());
+  // The number of hits in pts_stat_ depends on the preroll implementation.
+  // We might not report the time for the first buffer after preroll that
+  // is written to the audio track. pts_stat_.num_values() is either 21 or 22.
+  EXPECT_LE(21, pts_stat_.num_values());
   EXPECT_LE(data_factory_->last_pts(), pts_stat_.max());
 
   DVLOG(0) << "AudioPlayTillCompletion stopping";

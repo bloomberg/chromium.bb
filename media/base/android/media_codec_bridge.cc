@@ -704,8 +704,10 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
   return true;
 }
 
-int64 AudioCodecBridge::PlayOutputBuffer(
-    int index, size_t size, size_t offset) {
+int64 AudioCodecBridge::PlayOutputBuffer(int index,
+                                         size_t size,
+                                         size_t offset,
+                                         bool postpone) {
   DCHECK_LE(0, index);
   int numBytes = base::checked_cast<int>(size);
 
@@ -717,8 +719,8 @@ int64 AudioCodecBridge::PlayOutputBuffer(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> byte_array = base::android::ToJavaByteArray(
           env, static_cast<uint8*>(buffer), numBytes);
-  return Java_MediaCodecBridge_playOutputBuffer(
-      env, media_codec(), byte_array.obj());
+  return Java_MediaCodecBridge_playOutputBuffer(env, media_codec(),
+                                                byte_array.obj(), postpone);
 }
 
 void AudioCodecBridge::SetVolume(double volume) {

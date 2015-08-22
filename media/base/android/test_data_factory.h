@@ -71,6 +71,7 @@ class TestDataFactory {
   base::TimeDelta regular_pts_;  // monotonically increasing PTS
   base::TimeDelta last_pts_;     // subclass can modify PTS, maintain the last
   bool starvation_mode_;         // true means no EOS at the end
+  bool eos_reached_;             // true if CreateChunk() returned EOS frame
 };
 
 }  // namespace media

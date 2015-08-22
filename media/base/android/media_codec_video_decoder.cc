@@ -37,6 +37,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
 }
 
 MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "VideoDecoder::~VideoDecoder()";
   ReleaseDecoderResources();
 }
@@ -67,11 +68,19 @@ void MediaCodecVideoDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
 
 void MediaCodecVideoDecoder::ReleaseDecoderResources() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-
   DVLOG(1) << class_name() << "::" << __FUNCTION__;
 
-  MediaCodecDecoder::ReleaseDecoderResources();
+  DoEmergencyStop();
+
+  ReleaseMediaCodec();
+
   surface_ = gfx::ScopedJavaSurface();
+}
+
+void MediaCodecVideoDecoder::ReleaseMediaCodec() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  MediaCodecDecoder::ReleaseMediaCodec();
   delayed_buffers_.clear();
 }
 
@@ -160,13 +169,20 @@ MediaCodecDecoder::ConfigStatus MediaCodecVideoDecoder::ConfigureInternal() {
   return kConfigOk;
 }
 
-void MediaCodecVideoDecoder::SynchronizePTSWithTime(
-    base::TimeDelta current_time) {
+void MediaCodecVideoDecoder::AssociateCurrentTimeWithPTS(base::TimeDelta pts) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
+  DVLOG(1) << class_name() << "::" << __FUNCTION__ << " pts:" << pts;
+
   start_time_ticks_ = base::TimeTicks::Now();
-  start_pts_ = current_time;
-  last_seen_pts_ = current_time;
+  start_pts_ = pts;
+  last_seen_pts_ = pts;
+}
+
+void MediaCodecVideoDecoder::DissociatePTSFromTime() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  start_pts_ = last_seen_pts_ = kNoTimestamp();
 }
 
 void MediaCodecVideoDecoder::OnOutputFormatChanged() {
@@ -187,14 +203,14 @@ void MediaCodecVideoDecoder::OnOutputFormatChanged() {
 void MediaCodecVideoDecoder::Render(int buffer_index,
                                     size_t offset,
                                     size_t size,
-                                    bool render_output,
+                                    RenderMode render_mode,
                                     base::TimeDelta pts,
                                     bool eos_encountered) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
            << " index:" << buffer_index << " size:" << size
-           << (eos_encountered ? " EOS" : "");
+           << (eos_encountered ? " EOS " : " ") << AsString(render_mode);
 
   // Normally EOS comes as a separate access unit that does not have data,
   // the corresponding |size| will be 0.
@@ -208,27 +224,49 @@ void MediaCodecVideoDecoder::Render(int buffer_index,
     last_seen_pts_ = pts;
   }
 
-  if (!render_output) {
-    ReleaseOutputBuffer(buffer_index, pts, size, false, eos_encountered);
-    return;
+  // Do not update time for stand-alone EOS.
+  const bool update_time = !(eos_encountered && size == 0u);
+
+  // For video we simplify the preroll operation and render the first frame
+  // after preroll during the preroll phase, i.e. without waiting for audio
+  // stream to finish prerolling.
+  switch (render_mode) {
+    case kRenderSkip:
+      ReleaseOutputBuffer(buffer_index, pts, false, false, eos_encountered);
+      return;
+    case kRenderAfterPreroll:
+      // We get here in the preroll phase. Render now as explained above.
+      // |start_pts_| is not set yet, thus we cannot calculate |time_to_render|.
+      ReleaseOutputBuffer(buffer_index, pts, (size > 0), update_time,
+                          eos_encountered);
+      return;
+    case kRenderNow:
+      break;
   }
+
+  DCHECK_EQ(kRenderNow, render_mode);
+  DCHECK_NE(kNoTimestamp(), start_pts_);  // start_pts_ must be set
 
   base::TimeDelta time_to_render =
       pts - (base::TimeTicks::Now() - start_time_ticks_ + start_pts_);
 
+  DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
+           << " ticks delta:" << (base::TimeTicks::Now() - start_time_ticks_)
+           << " time_to_render:" << time_to_render;
+
   if (time_to_render < base::TimeDelta()) {
     // Skip late frames
-    ReleaseOutputBuffer(buffer_index, pts, size, false, eos_encountered);
+    ReleaseOutputBuffer(buffer_index, pts, false, update_time, eos_encountered);
     return;
   }
 
   delayed_buffers_.insert(buffer_index);
 
-  bool do_render = size > 0;
+  const bool render = (size > 0);
   decoder_thread_.task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&MediaCodecVideoDecoder::ReleaseOutputBuffer,
-                            base::Unretained(this), buffer_index, pts,
-                            size, do_render, eos_encountered),
+                            base::Unretained(this), buffer_index, pts, render,
+                            update_time, eos_encountered),
       time_to_render);
 }
 
@@ -238,13 +276,11 @@ int MediaCodecVideoDecoder::NumDelayedRenderTasks() const {
   return delayed_buffers_.size();
 }
 
-void MediaCodecVideoDecoder::ClearDelayedBuffers(bool release) {
+void MediaCodecVideoDecoder::ReleaseDelayedBuffers() {
   // Media thread
   // Called when there is no decoder thread
-  if (release) {
-    for (int index : delayed_buffers_)
-      media_codec_bridge_->ReleaseOutputBuffer(index, false);
-  }
+  for (int index : delayed_buffers_)
+    media_codec_bridge_->ReleaseOutputBuffer(index, false);
 
   delayed_buffers_.clear();
 }
@@ -261,8 +297,8 @@ void MediaCodecVideoDecoder::VerifyUnitIsKeyFrame(
 
 void MediaCodecVideoDecoder::ReleaseOutputBuffer(int buffer_index,
                                                  base::TimeDelta pts,
-                                                 size_t size,
                                                  bool render,
+                                                 bool update_time,
                                                  bool eos_encountered) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
@@ -280,7 +316,7 @@ void MediaCodecVideoDecoder::ReleaseOutputBuffer(int buffer_index,
 
   // |update_current_time_cb_| might be null if there is audio stream.
   // Do not update current time for stand-alone EOS frames.
-  if (!update_current_time_cb_.is_null() && !(eos_encountered && !size)) {
+  if (!update_current_time_cb_.is_null() && update_time) {
     media_task_runner_->PostTask(FROM_HERE,
                                  base::Bind(update_current_time_cb_, pts, pts));
   }

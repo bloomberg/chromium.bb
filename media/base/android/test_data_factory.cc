@@ -60,7 +60,8 @@ TestDataFactory::TestDataFactory(const char* file_name_template,
                                  base::TimeDelta frame_period)
     : duration_(duration),
       frame_period_(frame_period),
-      starvation_mode_(false) {
+      starvation_mode_(false),
+      eos_reached_(false) {
   LoadPackets(file_name_template);
 }
 
@@ -69,6 +70,9 @@ TestDataFactory::~TestDataFactory() {}
 bool TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
   DCHECK(chunk);
   DCHECK(delay);
+
+  if (eos_reached_)
+    return false;
 
   *delay = base::TimeDelta();
 
@@ -85,6 +89,7 @@ bool TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
         return false;
 
       unit.is_end_of_stream = true;
+      eos_reached_ = true;
       break;  // EOS units have no data.
     }
 
@@ -104,6 +109,7 @@ bool TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
 void TestDataFactory::SeekTo(const base::TimeDelta& seek_time) {
   regular_pts_ = seek_time;
   last_pts_ = base::TimeDelta();
+  eos_reached_ = false;
 }
 
 void TestDataFactory::LoadPackets(const char* file_name_template) {

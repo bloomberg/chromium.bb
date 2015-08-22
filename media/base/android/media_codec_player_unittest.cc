@@ -48,8 +48,10 @@ bool AlwaysFalse() {
   return false;
 }
 
-// The method used to compare two TimeDelta values in expectations.
-bool AlmostEqual(base::TimeDelta a, base::TimeDelta b, double tolerance_ms) {
+// The method used to compare two time values of type T in expectations.
+// Type T requires that a difference of type base::TimeDelta is defined.
+template <typename T>
+bool AlmostEqual(T a, T b, double tolerance_ms) {
   return (a - b).magnitude().InMilliseconds() <= tolerance_ms;
 }
 
@@ -66,6 +68,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   MediaResourceGetter* GetMediaResourceGetter() override { return nullptr; }
   MediaUrlInterceptor* GetMediaUrlInterceptor() override { return nullptr; }
 
+  // Regular time update callback, reports current playback time to
+  // MediaPlayerManager.
   void OnTimeUpdate(int player_id,
                     base::TimeDelta current_timestamp,
                     base::TimeTicks current_time_ticks) override {
@@ -103,6 +107,24 @@ class MockMediaPlayerManager : public MediaPlayerManager {
 
   void OnMediaResourcesRequested(int player_id) {}
 
+  // Time update callback that reports the internal progress of the stream.
+  // Implementation dependent, used for testing only.
+  void OnDecodersTimeUpdate(DemuxerStream::Type stream_type,
+                            base::TimeDelta now_playing,
+                            base::TimeDelta last_buffered) {
+    PTSTime& hit = first_frame_hit_[stream_type];
+    if (hit.is_null())
+      hit = PTSTime(now_playing, base::TimeTicks::Now());
+  }
+
+  // First frame information
+  base::TimeDelta FirstFramePTS(DemuxerStream::Type stream_type) const {
+    return first_frame_hit_[stream_type].pts;
+  }
+  base::TimeTicks FirstFrameTime(DemuxerStream::Type stream_type) const {
+    return first_frame_hit_[stream_type].time;
+  }
+
   base::WeakPtr<MockMediaPlayerManager> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -115,6 +137,9 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     return pts_stat_.max() > pts;
   }
   bool IsSeekCompleted() const { return num_seeks_completed_ > 0; }
+  bool HasFirstFrame(DemuxerStream::Type stream_type) const {
+    return !first_frame_hit_[stream_type].is_null();
+  }
 
   struct MediaMetadata {
     base::TimeDelta duration;
@@ -130,6 +155,15 @@ class MockMediaPlayerManager : public MediaPlayerManager {
  private:
   bool playback_completed_;
   int num_seeks_completed_;
+
+  struct PTSTime {
+    base::TimeDelta pts;
+    base::TimeTicks time;
+    PTSTime() : pts(), time() {}
+    PTSTime(base::TimeDelta p, base::TimeTicks t) : pts(p), time(t) {}
+    bool is_null() const { return time.is_null(); }
+  };
+  PTSTime first_frame_hit_[DemuxerStream::NUM_TYPES];
 
   base::WeakPtrFactory<MockMediaPlayerManager> weak_ptr_factory_;
 
@@ -237,7 +271,7 @@ class MockDemuxerAndroid : public DemuxerAndroid {
   // DemuxerAndroid implementation
   void Initialize(DemuxerAndroidClient* client) override;
   void RequestDemuxerData(DemuxerStream::Type type) override;
-  void RequestDemuxerSeek(const base::TimeDelta& time_to_seek,
+  void RequestDemuxerSeek(const base::TimeDelta& seek_request,
                           bool is_browser_seek) override;
 
   // Sets the audio data factory.
@@ -248,6 +282,20 @@ class MockDemuxerAndroid : public DemuxerAndroid {
   // Sets the video data factory.
   void SetVideoFactory(scoped_ptr<VideoFactory> factory) {
     video_factory_ = factory.Pass();
+  }
+
+  // Accessors for data factories.
+  AudioFactory* audio_factory() const { return audio_factory_.get(); }
+  VideoFactory* video_factory() const { return video_factory_.get(); }
+
+  // Set the preroll interval after seek for audio stream.
+  void SetAudioPrerollInterval(base::TimeDelta value) {
+    audio_preroll_interval_ = value;
+  }
+
+  // Set the preroll interval after seek for video stream.
+  void SetVideoPrerollInterval(base::TimeDelta value) {
+    video_preroll_interval_ = value;
   }
 
   // Sets the delay in OnDemuxerSeekDone response.
@@ -270,6 +318,8 @@ class MockDemuxerAndroid : public DemuxerAndroid {
   scoped_ptr<DemuxerConfigs> pending_configs_;
   scoped_ptr<AudioFactory> audio_factory_;
   scoped_ptr<VideoFactory> video_factory_;
+  base::TimeDelta audio_preroll_interval_;
+  base::TimeDelta video_preroll_interval_;
   base::TimeDelta seek_done_delay_;
   int num_seeks_;
   int num_browser_seeks_;
@@ -309,12 +359,17 @@ void MockDemuxerAndroid::RequestDemuxerData(DemuxerStream::Type type) {
       delay);
 }
 
-void MockDemuxerAndroid::RequestDemuxerSeek(const base::TimeDelta& time_to_seek,
+void MockDemuxerAndroid::RequestDemuxerSeek(const base::TimeDelta& seek_request,
                                             bool is_browser_seek) {
   // Tell data factories to start next chunk with the new timestamp.
-  if (audio_factory_)
+  if (audio_factory_) {
+    base::TimeDelta time_to_seek =
+        std::max(base::TimeDelta(), seek_request - audio_preroll_interval_);
     audio_factory_->SeekTo(time_to_seek);
+  }
   if (video_factory_) {
+    base::TimeDelta time_to_seek =
+        std::max(base::TimeDelta(), seek_request - video_preroll_interval_);
     video_factory_->SeekTo(time_to_seek);
     video_factory_->RequestKeyFrame();
   }
@@ -326,7 +381,7 @@ void MockDemuxerAndroid::RequestDemuxerSeek(const base::TimeDelta& time_to_seek,
   // Post OnDemuxerSeekDone() to the player.
   DCHECK(client_);
   base::TimeDelta reported_seek_time =
-      is_browser_seek ? time_to_seek : kNoTimestamp();
+      is_browser_seek ? seek_request : kNoTimestamp();
   GetMediaTaskRunner()->PostDelayedTask(
       FROM_HERE, base::Bind(&DemuxerAndroidClient::OnDemuxerSeekDone,
                             base::Unretained(client_), reported_seek_time),
@@ -397,6 +452,14 @@ class MediaCodecPlayerTest : public testing::Test {
   // Helper method that starts video only stream. Waits till it actually
   // started.
   void StartVideoPlayback(base::TimeDelta duration);
+
+  // Helper method that starts audio and video streams with preroll.
+  // The preroll is achieved by setting significant video preroll interval
+  // so video will have to catch up with audio. To make room for this interval
+  // the Start() command is preceded by SeekTo().
+  void StartAVSeekAndPreroll(base::TimeDelta duration,
+                             base::TimeDelta seek_position,
+                             base::TimeDelta video_preroll);
 
   base::MessageLoop message_loop_;
   MockMediaPlayerManager manager_;
@@ -518,6 +581,47 @@ void MediaCodecPlayerTest::StartVideoPlayback(base::TimeDelta duration) {
       WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
                                   base::Unretained(&manager_)),
                        start_timeout));
+}
+
+void MediaCodecPlayerTest::StartAVSeekAndPreroll(
+    base::TimeDelta duration,
+    base::TimeDelta seek_position,
+    base::TimeDelta video_preroll) {
+  const base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
+
+  demuxer_->SetVideoPrerollInterval(video_preroll);
+
+  demuxer_->SetAudioFactory(
+      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+  demuxer_->SetVideoFactory(
+      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+
+  CreatePlayer();
+  SetVideoSurface();
+
+  // Set special testing callback to receive PTS from decoders.
+  player_->SetDecodersTimeCallbackForTests(
+      base::Bind(&MockMediaPlayerManager::OnDecodersTimeUpdate,
+                 base::Unretained(&manager_)));
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  // Issue SeekTo().
+  player_->SeekTo(seek_position);
+
+  // Start the playback.
+  player_->Start();
+
+  // Wait till preroll starts.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecPlayer::IsPrerollingForTests,
+                 base::Unretained(player_), DemuxerStream::VIDEO),
+      start_timeout));
 }
 
 TEST_F(MediaCodecPlayerTest, SetAudioConfigsBeforePlayerCreation) {
@@ -1056,6 +1160,317 @@ TEST_F(MediaCodecPlayerTest, VideoReleaseWhileWaitingForSeek) {
   // The player should have reported the seek completion to the manager.
   EXPECT_TRUE(WaitForCondition(base::Bind(
       &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
+}
+
+TEST_F(MediaCodecPlayerTest, VideoPrerollAfterSeek) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // A simple test for preroll for video stream only. After the seek is done
+  // the data factory generates the frames with pts before the seek time, and
+  // they should not be rendered. We deduce which frame is rendered by looking
+  // at the reported time progress.
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(600);
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(500);
+  base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
+
+  // Tell demuxer to make the first frame 100ms earlier than the seek request.
+  demuxer_->SetVideoPrerollInterval(base::TimeDelta::FromMilliseconds(100));
+
+  demuxer_->SetVideoFactory(
+      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+
+  CreatePlayer();
+  SetVideoSurface();
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  // Issue SeekTo().
+  player_->SeekTo(seek_position);
+
+  // Start the playback and make sure it is started.
+  player_->Start();
+
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       start_timeout));
+
+  // Wait for completion.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackCompleted,
+                                  base::Unretained(&manager_))));
+
+  // The first pts should be equal than seek position even if video frames
+  // started 100 ms eralier than the seek request.
+  EXPECT_EQ(seek_position, manager_.pts_stat_.min());
+
+  EXPECT_EQ(6, manager_.pts_stat_.num_values());
+}
+
+TEST_F(MediaCodecPlayerTest, AVPrerollAudioWaitsForVideo) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that during prerolling neither audio nor video plays and that both
+  // resume simultaneously after preroll is finished. In other words, test
+  // that preroll works.
+  // We put the video into the long preroll and intercept the time when first
+  // rendering happens in each stream. The moment of rendering is approximated
+  // with a decoder PTS that is delivered by a test-only callback.
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
+
+  // Set significant preroll interval. 500 ms means 25 frames, at 10 ms
+  // per frame it would take 250 ms to preroll.
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(1000);
+  base::TimeDelta preroll_intvl = base::TimeDelta::FromMilliseconds(500);
+  base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(1000);
+
+  StartAVSeekAndPreroll(duration, seek_position, preroll_intvl);
+
+  // Wait till preroll finishes and the real playback starts.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       preroll_timeout));
+
+  // Ensure that the first audio and video pts are close to each other and are
+  // reported at the close moments in time.
+
+  EXPECT_TRUE(manager_.HasFirstFrame(DemuxerStream::AUDIO));
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MockMediaPlayerManager::HasFirstFrame,
+                 base::Unretained(&manager_), DemuxerStream::VIDEO)));
+
+  EXPECT_TRUE(AlmostEqual(manager_.FirstFramePTS(DemuxerStream::AUDIO),
+                          manager_.FirstFramePTS(DemuxerStream::VIDEO), 10));
+
+  EXPECT_TRUE(AlmostEqual(manager_.FirstFrameTime(DemuxerStream::AUDIO),
+                          manager_.FirstFrameTime(DemuxerStream::VIDEO), 50));
+
+  // The playback should start at |seek_position|
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+}
+
+TEST_F(MediaCodecPlayerTest, AVPrerollReleaseAndRestart) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that player will resume prerolling if prerolling is interrupted by
+  // Release() and Start().
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
+
+  // Set significant preroll interval. 500 ms means 25 frames, at 10 ms
+  // per frame it would take 250 ms to preroll.
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(1000);
+  base::TimeDelta preroll_intvl = base::TimeDelta::FromMilliseconds(500);
+
+  base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
+  base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(1000);
+
+  StartAVSeekAndPreroll(duration, seek_position, preroll_intvl);
+
+  // Issue Release().
+  player_->Release();
+
+  // Make sure we have not been playing.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(400));
+
+  EXPECT_FALSE(manager_.HasFirstFrame(DemuxerStream::AUDIO));
+  EXPECT_FALSE(manager_.HasFirstFrame(DemuxerStream::VIDEO));
+
+  EXPECT_FALSE(player_->IsPrerollingForTests(DemuxerStream::AUDIO));
+  EXPECT_FALSE(player_->IsPrerollingForTests(DemuxerStream::VIDEO));
+  EXPECT_EQ(0, manager_.pts_stat_.num_values());
+
+  // Restart. Release() removed the video surface, we need to set it again.
+  SetVideoSurface();
+  player_->Start();
+
+  // The playback should pass through prerolling phase.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecPlayer::IsPrerollingForTests,
+                 base::Unretained(player_), DemuxerStream::VIDEO),
+      start_timeout));
+
+  // Wait till preroll finishes and the real playback starts.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       preroll_timeout));
+
+  // Ensure that the first audio and video pts are close to each other and are
+  // reported at the close moments in time.
+
+  EXPECT_TRUE(manager_.HasFirstFrame(DemuxerStream::AUDIO));
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MockMediaPlayerManager::HasFirstFrame,
+                 base::Unretained(&manager_), DemuxerStream::VIDEO)));
+
+  EXPECT_TRUE(AlmostEqual(manager_.FirstFramePTS(DemuxerStream::AUDIO),
+                          manager_.FirstFramePTS(DemuxerStream::VIDEO), 10));
+
+  EXPECT_TRUE(AlmostEqual(manager_.FirstFrameTime(DemuxerStream::AUDIO),
+                          manager_.FirstFrameTime(DemuxerStream::VIDEO), 50));
+
+  // The playback should start at |seek_position|
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+}
+
+TEST_F(MediaCodecPlayerTest, AVPrerollStopAndRestart) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that if Pause() happens during the preroll phase,
+  // we continue to do preroll after restart.
+
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1200);
+
+  // Set significant preroll interval. 500 ms means 25 frames, at 10 ms
+  // per frame it would take 250 ms to preroll.
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(1000);
+  base::TimeDelta preroll_intvl = base::TimeDelta::FromMilliseconds(500);
+
+  base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
+  base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(1000);
+
+  StartAVSeekAndPreroll(duration, seek_position, preroll_intvl);
+
+  // Video stream should be prerolling. Request to stop.
+  EXPECT_FALSE(IsPaused());
+  player_->Pause(true);
+
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecPlayerTest::IsPaused, base::Unretained(this))));
+
+  // Test that we have not been playing.
+  EXPECT_FALSE(manager_.HasFirstFrame(DemuxerStream::AUDIO));
+  EXPECT_FALSE(manager_.HasFirstFrame(DemuxerStream::VIDEO));
+
+  EXPECT_FALSE(player_->IsPrerollingForTests(DemuxerStream::AUDIO));
+  EXPECT_FALSE(player_->IsPrerollingForTests(DemuxerStream::VIDEO));
+  EXPECT_EQ(0, manager_.pts_stat_.num_values());
+
+  // Restart.
+  player_->Start();
+
+  // There should be preroll after the start.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecPlayer::IsPrerollingForTests,
+                 base::Unretained(player_), DemuxerStream::VIDEO),
+      start_timeout));
+
+  // Wait for a short period of time, so that preroll is still ongoing,
+  // and pause again.
+  WaitForDelay(base::TimeDelta::FromMilliseconds(100));
+
+  EXPECT_FALSE(IsPaused());
+  player_->Pause(true);
+
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecPlayerTest::IsPaused, base::Unretained(this))));
+
+  // Check that we still haven't started rendering.
+  EXPECT_FALSE(manager_.HasFirstFrame(DemuxerStream::AUDIO));
+  EXPECT_FALSE(manager_.HasFirstFrame(DemuxerStream::VIDEO));
+
+  EXPECT_FALSE(player_->IsPrerollingForTests(DemuxerStream::AUDIO));
+  EXPECT_FALSE(player_->IsPrerollingForTests(DemuxerStream::VIDEO));
+  EXPECT_EQ(0, manager_.pts_stat_.num_values());
+
+  // Restart again.
+  player_->Start();
+
+  // Wait till we start to play.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       preroll_timeout));
+
+  // Check that we did prerolling, i.e. audio did wait for video.
+  EXPECT_TRUE(manager_.HasFirstFrame(DemuxerStream::AUDIO));
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MockMediaPlayerManager::HasFirstFrame,
+                 base::Unretained(&manager_), DemuxerStream::VIDEO)));
+
+  EXPECT_TRUE(AlmostEqual(manager_.FirstFramePTS(DemuxerStream::AUDIO),
+                          manager_.FirstFramePTS(DemuxerStream::VIDEO), 10));
+
+  EXPECT_TRUE(AlmostEqual(manager_.FirstFrameTime(DemuxerStream::AUDIO),
+                          manager_.FirstFrameTime(DemuxerStream::VIDEO), 50));
+
+  // The playback should start at |seek_position|
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+}
+
+TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that when one stream ends in the preroll phase and another is not
+  // the preroll finishes and playback continues after it.
+
+  base::TimeDelta audio_duration = base::TimeDelta::FromMilliseconds(1100);
+  base::TimeDelta video_duration = base::TimeDelta::FromMilliseconds(900);
+  base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(1000);
+  base::TimeDelta video_preroll_intvl = base::TimeDelta::FromMilliseconds(200);
+
+  base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
+  base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(400);
+
+  demuxer_->SetVideoPrerollInterval(video_preroll_intvl);
+
+  demuxer_->SetAudioFactory(
+      scoped_ptr<AudioFactory>(new AudioFactory(audio_duration)));
+  demuxer_->SetVideoFactory(
+      scoped_ptr<VideoFactory>(new VideoFactory(video_duration)));
+
+  CreatePlayer();
+  SetVideoSurface();
+
+  // Set special testing callback to receive PTS from decoders.
+  player_->SetDecodersTimeCallbackForTests(
+      base::Bind(&MockMediaPlayerManager::OnDecodersTimeUpdate,
+                 base::Unretained(&manager_)));
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  // Issue SeekTo().
+  player_->SeekTo(seek_position);
+
+  // Start the playback.
+  player_->Start();
+
+  // The video decoder should start prerolling
+  // Wait till preroll starts.
+  EXPECT_TRUE(WaitForCondition(
+      base::Bind(&MediaCodecPlayer::IsPrerollingForTests,
+                 base::Unretained(player_), DemuxerStream::VIDEO),
+      start_timeout));
+
+  // Wait for playback to start.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       preroll_timeout));
+
+  EXPECT_TRUE(manager_.HasFirstFrame(DemuxerStream::AUDIO));
+
+  // Play till completion.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackCompleted,
+                                  base::Unretained(&manager_))));
+
+  // There should not be any video frames.
+  EXPECT_FALSE(manager_.HasFirstFrame(DemuxerStream::VIDEO));
 }
 
 }  // namespace media
