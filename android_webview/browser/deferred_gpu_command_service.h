@@ -46,6 +46,8 @@ class DeferredGpuCommandService
   bool UseVirtualizedGLContexts() override;
   scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache()
       override;
+  scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
+  framebuffer_completeness_cache() override;
   gpu::SyncPointManager* sync_point_manager() override;
 
   void RunTasks();
@@ -76,6 +78,8 @@ class DeferredGpuCommandService
 
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
+  scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
+      framebuffer_completeness_cache_;
   DISALLOW_COPY_AND_ASSIGN(DeferredGpuCommandService);
 };
 

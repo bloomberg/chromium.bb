@@ -299,11 +299,10 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_.reset(gles2::GLES2Decoder::Create(
       params.context_group
           ? params.context_group->decoder_->GetContextGroup()
-          : new gles2::ContextGroup(service_->mailbox_manager(),
-                                    NULL,
+          : new gles2::ContextGroup(service_->mailbox_manager(), NULL,
                                     service_->shader_translator_cache(),
-                                    NULL,
-                                    service_->subscription_ref_set(),
+                                    service_->framebuffer_completeness_cache(),
+                                    NULL, service_->subscription_ref_set(),
                                     service_->pending_valuebuffer_state(),
                                     bind_generates_resource)));
 
@@ -923,6 +922,14 @@ GpuInProcessThread::shader_translator_cache() {
   if (!shader_translator_cache_.get())
     shader_translator_cache_ = new gpu::gles2::ShaderTranslatorCache;
   return shader_translator_cache_;
+}
+
+scoped_refptr<gles2::FramebufferCompletenessCache>
+GpuInProcessThread::framebuffer_completeness_cache() {
+  if (!framebuffer_completeness_cache_.get())
+    framebuffer_completeness_cache_ =
+        new gpu::gles2::FramebufferCompletenessCache;
+  return framebuffer_completeness_cache_;
 }
 
 SyncPointManager* GpuInProcessThread::sync_point_manager() {

@@ -59,6 +59,8 @@ source_set("service_sources") {
     "error_state.h",
     "feature_info.cc",
     "feature_info.h",
+    "framebuffer_completeness_cache.cc",
+    "framebuffer_completeness_cache.h",
     "framebuffer_manager.cc",
     "framebuffer_manager.h",
     "gl_context_virtual.cc",

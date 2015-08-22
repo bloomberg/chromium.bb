@@ -209,12 +209,10 @@ GpuCommandBufferStub::GpuCommandBufferStub(
            attrib_parser.bind_generates_resource);
   } else {
     context_group_ = new gpu::gles2::ContextGroup(
-        mailbox_manager,
-        new GpuCommandBufferMemoryTracker(channel),
+        mailbox_manager, new GpuCommandBufferMemoryTracker(channel),
         channel_->gpu_channel_manager()->shader_translator_cache(),
-        NULL,
-        subscription_ref_set,
-        pending_valuebuffer_state,
+        channel_->gpu_channel_manager()->framebuffer_completeness_cache(), NULL,
+        subscription_ref_set, pending_valuebuffer_state,
         attrib_parser.bind_generates_resource);
   }
 

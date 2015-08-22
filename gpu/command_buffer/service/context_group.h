@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/framebuffer_completeness_cache.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/gpu_export.h"
 
@@ -56,6 +57,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
       const scoped_refptr<MailboxManager>& mailbox_manager,
       const scoped_refptr<MemoryTracker>& memory_tracker,
       const scoped_refptr<ShaderTranslatorCache>& shader_translator_cache,
+      const scoped_refptr<FramebufferCompletenessCache>&
+          framebuffer_completeness_cache,
       const scoped_refptr<FeatureInfo>& feature_info,
       const scoped_refptr<SubscriptionRefSet>& subscription_ref_set,
       const scoped_refptr<ValueStateMap>& pending_valuebuffer_state,
@@ -82,6 +85,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   ShaderTranslatorCache* shader_translator_cache() const {
     return shader_translator_cache_.get();
+  }
+
+  FramebufferCompletenessCache* framebuffer_completeness_cache() const {
+    return framebuffer_completeness_cache_.get();
   }
 
   bool bind_generates_resource() {
@@ -257,6 +264,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_refptr<MailboxManager> mailbox_manager_;
   scoped_refptr<MemoryTracker> memory_tracker_;
   scoped_refptr<ShaderTranslatorCache> shader_translator_cache_;
+  scoped_refptr<FramebufferCompletenessCache> framebuffer_completeness_cache_;
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_refptr<SubscriptionRefSet> subscription_ref_set_;
   scoped_refptr<ValueStateMap> pending_valuebuffer_state_;

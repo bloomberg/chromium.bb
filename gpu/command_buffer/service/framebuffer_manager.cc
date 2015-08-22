@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/framebuffer_completeness_cache.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_bindings.h"
@@ -20,24 +21,6 @@ DecoderFramebufferState::DecoderFramebufferState()
 }
 
 DecoderFramebufferState::~DecoderFramebufferState() {
-}
-
-Framebuffer::FramebufferComboCompleteMap*
-    Framebuffer::framebuffer_combo_complete_map_;
-
-// Framebuffer completeness is not cacheable on OS X because of dynamic
-// graphics switching.
-// http://crbug.com/180876
-#if defined(OS_MACOSX)
-bool Framebuffer::allow_framebuffer_combo_complete_map_ = false;
-#else
-bool Framebuffer::allow_framebuffer_combo_complete_map_ = true;
-#endif
-
-void Framebuffer::ClearFramebufferCompleteComboMap() {
-  if (framebuffer_combo_complete_map_) {
-    framebuffer_combo_complete_map_->clear();
-  }
 }
 
 class RenderbufferAttachment
@@ -260,14 +243,18 @@ FramebufferManager::TextureDetachObserver::TextureDetachObserver() {}
 FramebufferManager::TextureDetachObserver::~TextureDetachObserver() {}
 
 FramebufferManager::FramebufferManager(
-    uint32 max_draw_buffers, uint32 max_color_attachments,
-    ContextGroup::ContextType context_type)
+    uint32 max_draw_buffers,
+    uint32 max_color_attachments,
+    ContextGroup::ContextType context_type,
+    const scoped_refptr<FramebufferCompletenessCache>&
+        framebuffer_combo_complete_cache)
     : framebuffer_state_change_count_(1),
       framebuffer_count_(0),
       have_context_(true),
       max_draw_buffers_(max_draw_buffers),
       max_color_attachments_(max_color_attachments),
-      context_type_(context_type) {
+      context_type_(context_type),
+      framebuffer_combo_complete_cache_(framebuffer_combo_complete_cache) {
   DCHECK_GT(max_draw_buffers_, 0u);
   DCHECK_GT(max_color_attachments_, 0u);
 }
@@ -503,46 +490,40 @@ GLenum Framebuffer::IsPossiblyComplete() const {
 
 GLenum Framebuffer::GetStatus(
     TextureManager* texture_manager, GLenum target) const {
+  if (!manager_->GetFramebufferComboCompleteCache()) {
+    return glCheckFramebufferStatusEXT(target);
+  }
   // Check if we have this combo already.
   std::string signature;
-  if (allow_framebuffer_combo_complete_map_) {
-    size_t signature_size = sizeof(target);
-    for (AttachmentMap::const_iterator it = attachments_.begin();
-         it != attachments_.end(); ++it) {
-      Attachment* attachment = it->second.get();
-      signature_size += sizeof(it->first) +
-                        attachment->GetSignatureSize(texture_manager);
-    }
 
-    signature.reserve(signature_size);
-    signature.append(reinterpret_cast<const char*>(&target), sizeof(target));
+  size_t signature_size = sizeof(target);
+  for (AttachmentMap::const_iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    Attachment* attachment = it->second.get();
+    signature_size +=
+        sizeof(it->first) + attachment->GetSignatureSize(texture_manager);
+  }
 
-    for (AttachmentMap::const_iterator it = attachments_.begin();
-         it != attachments_.end(); ++it) {
-      Attachment* attachment = it->second.get();
-      signature.append(reinterpret_cast<const char*>(&it->first),
-                       sizeof(it->first));
-      attachment->AddToSignature(texture_manager, &signature);
-    }
-    DCHECK(signature.size() == signature_size);
+  signature.reserve(signature_size);
+  signature.append(reinterpret_cast<const char*>(&target), sizeof(target));
 
-    if (!framebuffer_combo_complete_map_) {
-      framebuffer_combo_complete_map_ = new FramebufferComboCompleteMap();
-    }
+  for (AttachmentMap::const_iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    Attachment* attachment = it->second.get();
+    signature.append(reinterpret_cast<const char*>(&it->first),
+                     sizeof(it->first));
+    attachment->AddToSignature(texture_manager, &signature);
+  }
+  DCHECK(signature.size() == signature_size);
 
-    FramebufferComboCompleteMap::const_iterator it =
-        framebuffer_combo_complete_map_->find(signature);
-    if (it != framebuffer_combo_complete_map_->end()) {
-      return GL_FRAMEBUFFER_COMPLETE;
-    }
+  if (manager_->GetFramebufferComboCompleteCache()->IsComplete(signature)) {
+    return GL_FRAMEBUFFER_COMPLETE;
   }
 
   GLenum result = glCheckFramebufferStatusEXT(target);
 
-  // Insert the new result into the combo map.
-  if (allow_framebuffer_combo_complete_map_ &&
-      result == GL_FRAMEBUFFER_COMPLETE) {
-    framebuffer_combo_complete_map_->insert(std::make_pair(signature, true));
+  if (result == GL_FRAMEBUFFER_COMPLETE) {
+    manager_->GetFramebufferComboCompleteCache()->SetComplete(signature);
   }
 
   return result;
@@ -778,5 +759,3 @@ void FramebufferManager::OnTextureRefDetached(TextureRef* texture) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-

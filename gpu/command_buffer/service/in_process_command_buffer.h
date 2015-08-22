@@ -51,6 +51,7 @@ class SyncPointManager;
 class ValueStateMap;
 
 namespace gles2 {
+class FramebufferCompletenessCache;
 class GLES2Decoder;
 class MailboxManager;
 class ShaderTranslatorCache;
@@ -144,6 +145,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     virtual bool UseVirtualizedGLContexts() = 0;
     virtual scoped_refptr<gles2::ShaderTranslatorCache>
         shader_translator_cache() = 0;
+    virtual scoped_refptr<gles2::FramebufferCompletenessCache>
+    framebuffer_completeness_cache() = 0;
     virtual SyncPointManager* sync_point_manager() = 0;
     scoped_refptr<gfx::GLShareGroup> share_group();
     scoped_refptr<gles2::MailboxManager> mailbox_manager();
@@ -279,6 +282,8 @@ class GPU_EXPORT GpuInProcessThread
   bool UseVirtualizedGLContexts() override;
   scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache()
       override;
+  scoped_refptr<gles2::FramebufferCompletenessCache>
+  framebuffer_completeness_cache() override;
   SyncPointManager* sync_point_manager() override;
 
  private:
@@ -287,6 +292,8 @@ class GPU_EXPORT GpuInProcessThread
 
   SyncPointManager* sync_point_manager_;  // Non-owning.
   scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
+  scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
+      framebuffer_completeness_cache_;
   DISALLOW_COPY_AND_ASSIGN(GpuInProcessThread);
 };
 

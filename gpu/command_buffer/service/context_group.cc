@@ -30,6 +30,8 @@ ContextGroup::ContextGroup(
     const scoped_refptr<MailboxManager>& mailbox_manager,
     const scoped_refptr<MemoryTracker>& memory_tracker,
     const scoped_refptr<ShaderTranslatorCache>& shader_translator_cache,
+    const scoped_refptr<FramebufferCompletenessCache>&
+        framebuffer_completeness_cache,
     const scoped_refptr<FeatureInfo>& feature_info,
     const scoped_refptr<SubscriptionRefSet>& subscription_ref_set,
     const scoped_refptr<ValueStateMap>& pending_valuebuffer_state,
@@ -38,6 +40,17 @@ ContextGroup::ContextGroup(
       mailbox_manager_(mailbox_manager),
       memory_tracker_(memory_tracker),
       shader_translator_cache_(shader_translator_cache),
+#if defined(OS_MACOSX)
+      // Framebuffer completeness is not cacheable on OS X because of dynamic
+      // graphics switching.
+      // http://crbug.com/180876
+      // TODO(tobiasjs): determine whether GPU switching is possible
+      // programmatically, rather than just hardcoding this behaviour
+      // for OS X.
+      framebuffer_completeness_cache_(NULL),
+#else
+      framebuffer_completeness_cache_(framebuffer_completeness_cache),
+#endif
       subscription_ref_set_(subscription_ref_set),
       pending_valuebuffer_state_(pending_valuebuffer_state),
       enforce_gl_minimums_(
@@ -154,8 +167,9 @@ bool ContextGroup::Initialize(
 
   buffer_manager_.reset(
       new BufferManager(memory_tracker_.get(), feature_info_.get()));
-  framebuffer_manager_.reset(new FramebufferManager(
-      max_draw_buffers_, max_color_attachments_, context_type));
+  framebuffer_manager_.reset(
+      new FramebufferManager(max_draw_buffers_, max_color_attachments_,
+                             context_type, framebuffer_completeness_cache_));
   renderbuffer_manager_.reset(new RenderbufferManager(
       memory_tracker_.get(), max_renderbuffer_size, max_samples,
       feature_info_.get()));

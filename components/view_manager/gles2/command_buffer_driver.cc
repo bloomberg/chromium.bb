@@ -96,8 +96,9 @@ bool CommandBufferDriver::DoInitialize(
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
       new gpu::gles2::ContextGroup(
           gpu_state_->mailbox_manager(), new GpuMemoryTracker,
-          new gpu::gles2::ShaderTranslatorCache, nullptr, nullptr, nullptr,
-          bind_generates_resource);
+          new gpu::gles2::ShaderTranslatorCache,
+          new gpu::gles2::FramebufferCompletenessCache, nullptr, nullptr,
+          nullptr, bind_generates_resource);
 
   command_buffer_.reset(
       new gpu::CommandBufferService(context_group->transfer_buffer_manager()));

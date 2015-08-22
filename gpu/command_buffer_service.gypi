@@ -61,6 +61,8 @@
     'command_buffer/service/error_state.h',
     'command_buffer/service/feature_info.cc',
     'command_buffer/service/feature_info.h',
+    "command_buffer/service/framebuffer_completeness_cache.cc",
+    "command_buffer/service/framebuffer_completeness_cache.h",
     'command_buffer/service/framebuffer_manager.cc',
     'command_buffer/service/framebuffer_manager.h',
     'command_buffer/service/gl_context_virtual.cc',

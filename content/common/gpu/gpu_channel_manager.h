@@ -35,6 +35,7 @@ namespace gpu {
 class SyncPointManager;
 union ValueState;
 namespace gles2 {
+class FramebufferCompletenessCache;
 class MailboxManager;
 class ProgramCache;
 class ShaderTranslatorCache;
@@ -92,6 +93,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 
   gpu::gles2::ProgramCache* program_cache();
   gpu::gles2::ShaderTranslatorCache* shader_translator_cache();
+  gpu::gles2::FramebufferCompletenessCache* framebuffer_completeness_cache();
 
   GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }
 
@@ -157,6 +159,8 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   gpu::SyncPointManager* sync_point_manager_;
   scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
   scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
+  scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
+      framebuffer_completeness_cache_;
   scoped_refptr<gfx::GLSurface> default_offscreen_surface_;
   GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
   IPC::SyncChannel* channel_;

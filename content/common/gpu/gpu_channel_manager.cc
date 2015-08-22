@@ -79,6 +79,14 @@ GpuChannelManager::shader_translator_cache() {
   return shader_translator_cache_.get();
 }
 
+gpu::gles2::FramebufferCompletenessCache*
+GpuChannelManager::framebuffer_completeness_cache() {
+  if (!framebuffer_completeness_cache_.get())
+    framebuffer_completeness_cache_ =
+        new gpu::gles2::FramebufferCompletenessCache;
+  return framebuffer_completeness_cache_.get();
+}
+
 void GpuChannelManager::RemoveChannel(int client_id) {
   Send(new GpuHostMsg_DestroyChannel(client_id));
   gpu_channels_.erase(client_id);

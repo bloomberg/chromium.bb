@@ -41,7 +41,7 @@ class ContextGroupTest : public GpuServiceTest {
     GpuServiceTest::SetUp();
     decoder_.reset(new MockGLES2Decoder());
     group_ = scoped_refptr<ContextGroup>(new ContextGroup(
-        NULL, NULL, NULL, NULL, NULL, NULL, kBindGeneratesResource));
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, kBindGeneratesResource));
   }
 
   scoped_ptr<MockGLES2Decoder> decoder_;

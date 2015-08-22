@@ -270,14 +270,10 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
     scoped_refptr<gles2::FeatureInfo> feature_info;
     if (command_line)
       feature_info = new gles2::FeatureInfo(*command_line);
-    context_group =
-        new gles2::ContextGroup(mailbox_manager_.get(),
-                                NULL,
-                                new gpu::gles2::ShaderTranslatorCache,
-                                feature_info,
-                                NULL,
-                                NULL,
-                                options.bind_generates_resource);
+    context_group = new gles2::ContextGroup(
+        mailbox_manager_.get(), NULL, new gpu::gles2::ShaderTranslatorCache,
+        new gpu::gles2::FramebufferCompletenessCache, feature_info, NULL, NULL,
+        options.bind_generates_resource);
   }
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));

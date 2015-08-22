@@ -174,8 +174,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   // For easier substring/extension matching
   DCHECK(normalized_init.extensions.empty() ||
          *normalized_init.extensions.rbegin() == ' ');
-  Framebuffer::ClearFramebufferCompleteComboMap();
-
   gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
   gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 
@@ -188,12 +186,9 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   if (command_line)
     feature_info = new FeatureInfo(*command_line);
   group_ = scoped_refptr<ContextGroup>(
-      new ContextGroup(NULL,
-                       memory_tracker_,
-                       new ShaderTranslatorCache,
-                       feature_info.get(),
-                       new SubscriptionRefSet,
-                       new ValueStateMap,
+      new ContextGroup(NULL, memory_tracker_, new ShaderTranslatorCache,
+                       new FramebufferCompletenessCache, feature_info.get(),
+                       new SubscriptionRefSet, new ValueStateMap,
                        normalized_init.bind_generates_resource));
   bool use_default_textures = normalized_init.bind_generates_resource;
 
