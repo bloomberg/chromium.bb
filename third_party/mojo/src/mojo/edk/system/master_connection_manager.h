@@ -9,10 +9,10 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/connection_manager.h"
+#include "mojo/edk/system/mutex.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
 
@@ -51,7 +51,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager final
   // thread", on which |master_process_delegate|'s methods will be called. Both
   // must stay alive at least until after |Shutdown()| has been called.
   void Init(scoped_refptr<base::TaskRunner> delegate_thread_task_runner,
-            embedder::MasterProcessDelegate* master_process_delegate);
+            embedder::MasterProcessDelegate* master_process_delegate)
+      MOJO_NOT_THREAD_SAFE;
 
   // Adds a slave process and sets up/tracks a connection to that slave (using
   // |platform_handle|). |slave_info| is used by the caller/implementation of
@@ -75,12 +76,12 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager final
       const ConnectionIdentifier& connection_id);
 
   // |ConnectionManager| methods:
-  void Shutdown() override;
+  void Shutdown() override MOJO_NOT_THREAD_SAFE;
   bool AllowConnect(const ConnectionIdentifier& connection_id) override;
   bool CancelConnect(const ConnectionIdentifier& connection_id) override;
-  bool Connect(const ConnectionIdentifier& connection_id,
-               ProcessIdentifier* peer_process_identifier,
-               embedder::ScopedPlatformHandle* platform_handle) override;
+  Result Connect(const ConnectionIdentifier& connection_id,
+                 ProcessIdentifier* peer_process_identifier,
+                 embedder::ScopedPlatformHandle* platform_handle) override;
 
  private:
   class Helper;
@@ -91,13 +92,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager final
                         const ConnectionIdentifier& connection_id);
   bool CancelConnectImpl(ProcessIdentifier process_identifier,
                          const ConnectionIdentifier& connection_id);
-  bool ConnectImpl(ProcessIdentifier process_identifier,
-                   const ConnectionIdentifier& connection_id,
-                   ProcessIdentifier* peer_process_identifier,
-                   embedder::ScopedPlatformHandle* platform_handle);
+  Result ConnectImpl(ProcessIdentifier process_identifier,
+                     const ConnectionIdentifier& connection_id,
+                     ProcessIdentifier* peer_process_identifier,
+                     embedder::ScopedPlatformHandle* platform_handle);
 
   // These should only be called on |private_thread_|:
-  void ShutdownOnPrivateThread();
+  void ShutdownOnPrivateThread() MOJO_NOT_THREAD_SAFE;
   // Signals |*event| on completion.
   void AddSlaveOnPrivateThread(embedder::SlaveInfo slave_info,
                                embedder::ScopedPlatformHandle platform_handle,
@@ -132,15 +133,15 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager final
   // The following members are only accessed on |private_thread_|:
   base::hash_map<ProcessIdentifier, Helper*> helpers_;  // Owns its values.
 
-  // Protects the members below (except in the constructor, |Init()|,
-  // |Shutdown()|/|ShutdownOnPrivateThread()|, and the destructor).
-  base::Lock lock_;
+  // Note: |mutex_| is not needed in the constructor, |Init()|,
+  // |Shutdown()|/|ShutdownOnPrivateThread()|, or the destructor
+  Mutex mutex_;
 
-  ProcessIdentifier next_process_identifier_;
+  ProcessIdentifier next_process_identifier_ MOJO_GUARDED_BY(mutex_);
 
   struct PendingConnectionInfo;
   base::hash_map<ConnectionIdentifier, PendingConnectionInfo*>
-      pending_connections_;  // Owns its values.
+      pending_connections_ MOJO_GUARDED_BY(mutex_);  // Owns its values.
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MasterConnectionManager);
 };

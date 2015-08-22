@@ -33,7 +33,7 @@ mojo::ScopedHandle CreateReadableHandle() {
 
 }  // namespace
 
-class StashServiceTest : public testing::Test, public mojo::ErrorHandler {
+class StashServiceTest : public testing::Test {
  public:
   enum Event {
     EVENT_NONE,
@@ -49,11 +49,11 @@ class StashServiceTest : public testing::Test, public mojo::ErrorHandler {
     stash_backend_.reset(new StashBackend(base::Bind(
         &StashServiceTest::OnHandleReadyToRead, base::Unretained(this))));
     stash_backend_->BindToRequest(mojo::GetProxy(&stash_service_));
-    stash_service_.set_error_handler(this);
+    stash_service_.set_connection_error_handler(base::Bind(&OnConnectionError));
     handles_ready_ = 0;
   }
 
-  void OnConnectionError() override { FAIL() << "Unexpected connection error"; }
+  static void OnConnectionError() { FAIL() << "Unexpected connection error"; }
 
   mojo::Array<StashedObjectPtr> RetrieveStash() {
     mojo::Array<StashedObjectPtr> stash;
@@ -271,7 +271,7 @@ TEST_F(StashServiceTest, NotifyOncePerStashOnReadableHandles) {
 // exists.
 TEST_F(StashServiceTest, ServiceWithDeletedBackend) {
   stash_backend_.reset();
-  stash_service_.set_error_handler(this);
+  stash_service_.set_connection_error_handler(base::Bind(&OnConnectionError));
 
   mojo::Array<StashedObjectPtr> stashed_objects;
   StashedObjectPtr stashed_object(StashedObject::New());

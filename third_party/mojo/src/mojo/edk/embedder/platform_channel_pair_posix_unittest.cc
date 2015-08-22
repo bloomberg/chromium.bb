@@ -15,10 +15,7 @@
 
 #include <deque>
 
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle.h"
@@ -128,9 +125,6 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
 }
 
 TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
   static const char kHello[] = "hello";
 
   PlatformChannelPair channel_pair;
@@ -150,9 +144,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     const char c = '0' + (i % 10);
     ScopedPlatformHandleVectorPtr platform_handles(new PlatformHandleVector);
     for (size_t j = 1; j <= i; j++) {
-      base::FilePath unused;
-      base::ScopedFILE fp(
-          base::CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
+      base::ScopedFILE fp(tmpfile());
       ASSERT_TRUE(fp);
       ASSERT_EQ(j, fwrite(std::string(j, c).data(), 1, j, fp.get()));
       platform_handles->push_back(
@@ -194,9 +186,6 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
 }
 
 TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
   static const char kHello[] = "hello";
 
   PlatformChannelPair channel_pair;
@@ -206,9 +195,7 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   const std::string file_contents("hello world");
 
   {
-    base::FilePath unused;
-    base::ScopedFILE fp(
-        base::CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
+    base::ScopedFILE fp(tmpfile());
     ASSERT_TRUE(fp);
     ASSERT_EQ(file_contents.size(),
               fwrite(file_contents.data(), 1, file_contents.size(), fp.get()));

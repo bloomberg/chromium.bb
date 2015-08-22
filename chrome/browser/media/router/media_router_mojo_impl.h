@@ -23,6 +23,7 @@
 #include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;

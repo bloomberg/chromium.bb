@@ -86,7 +86,7 @@ Core::~Core() {
 }
 
 MojoHandle Core::AddDispatcher(const scoped_refptr<Dispatcher>& dispatcher) {
-  base::AutoLock locker(handle_table_lock_);
+  MutexLocker locker(&handle_table_mutex_);
   return handle_table_.AddDispatcher(dispatcher);
 }
 
@@ -94,7 +94,7 @@ scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
   if (handle == MOJO_HANDLE_INVALID)
     return nullptr;
 
-  base::AutoLock locker(handle_table_lock_);
+  MutexLocker locker(&handle_table_mutex_);
   return handle_table_.GetDispatcher(handle);
 }
 
@@ -103,7 +103,7 @@ MojoResult Core::GetAndRemoveDispatcher(MojoHandle handle,
   if (handle == MOJO_HANDLE_INVALID)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  base::AutoLock locker(handle_table_lock_);
+  MutexLocker locker(&handle_table_mutex_);
   return handle_table_.GetAndRemoveDispatcher(handle, dispatcher);
 }
 
@@ -130,7 +130,7 @@ MojoResult Core::Close(MojoHandle handle) {
 
   scoped_refptr<Dispatcher> dispatcher;
   {
-    base::AutoLock locker(handle_table_lock_);
+    MutexLocker locker(&handle_table_mutex_);
     MojoResult result =
         handle_table_.GetAndRemoveDispatcher(handle, &dispatcher);
     if (result != MOJO_RESULT_OK)
@@ -138,7 +138,7 @@ MojoResult Core::Close(MojoHandle handle) {
   }
 
   // The dispatcher doesn't have a say in being closed, but gets notified of it.
-  // Note: This is done outside of |handle_table_lock_|. As a result, there's a
+  // Note: This is done outside of |handle_table_mutex_|. As a result, there's a
   // race condition that the dispatcher must handle; see the comment in
   // |Dispatcher| in dispatcher.h.
   return dispatcher->Close();
@@ -211,7 +211,7 @@ MojoResult Core::CreateMessagePipe(
 
   std::pair<MojoHandle, MojoHandle> handle_pair;
   {
-    base::AutoLock locker(handle_table_lock_);
+    MutexLocker locker(&handle_table_mutex_);
     handle_pair = handle_table_.AddDispatcherPair(dispatcher0, dispatcher1);
   }
   if (handle_pair.first == MOJO_HANDLE_INVALID) {
@@ -276,7 +276,7 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
   // and mark the handles as busy. If the call succeeds, we then remove the
   // handles from the handle table.
   {
-    base::AutoLock locker(handle_table_lock_);
+    MutexLocker locker(&handle_table_mutex_);
     MojoResult result = handle_table_.MarkBusyAndStartTransport(
         message_pipe_handle, handles_reader.GetPointer(), num_handles,
         &transports);
@@ -293,7 +293,7 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
     transports[i].End();
 
   {
-    base::AutoLock locker(handle_table_lock_);
+    MutexLocker locker(&handle_table_mutex_);
     if (rv == MOJO_RESULT_OK) {
       handle_table_.RemoveBusyHandles(handles_reader.GetPointer(), num_handles);
     } else {
@@ -335,7 +335,7 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
       UserPointer<MojoHandle>::Writer handles_writer(handles,
                                                      dispatchers.size());
       {
-        base::AutoLock locker(handle_table_lock_);
+        MutexLocker locker(&handle_table_mutex_);
         success = handle_table_.AddDispatcherVector(
             dispatchers, handles_writer.GetPointer());
       }
@@ -377,7 +377,7 @@ MojoResult Core::CreateDataPipe(
 
   std::pair<MojoHandle, MojoHandle> handle_pair;
   {
-    base::AutoLock locker(handle_table_lock_);
+    MutexLocker locker(&handle_table_mutex_);
     handle_pair = handle_table_.AddDispatcherPair(producer_dispatcher,
                                                   consumer_dispatcher);
   }
@@ -539,7 +539,7 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
   DCHECK(mapping);
   void* address = mapping->GetBase();
   {
-    base::AutoLock locker(mapping_table_lock_);
+    MutexLocker locker(&mapping_table_mutex_);
     result = mapping_table_.AddMapping(mapping.Pass());
   }
   if (result != MOJO_RESULT_OK)
@@ -550,7 +550,7 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
 }
 
 MojoResult Core::UnmapBuffer(UserPointer<void> buffer) {
-  base::AutoLock locker(mapping_table_lock_);
+  MutexLocker locker(&mapping_table_mutex_);
   return mapping_table_.RemoveMapping(buffer.GetPointerValue());
 }
 

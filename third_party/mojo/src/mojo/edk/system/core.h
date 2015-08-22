@@ -10,10 +10,10 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "mojo/edk/system/handle_table.h"
 #include "mojo/edk/system/mapping_table.h"
 #include "mojo/edk/system/memory.h"
+#include "mojo/edk/system/mutex.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
@@ -175,13 +175,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   embedder::PlatformSupport* const platform_support_;
 
-  // TODO(vtl): |handle_table_lock_| should be a reader-writer lock (if only we
+  // TODO(vtl): |handle_table_mutex_| should be a reader-writer lock (if only we
   // had them).
-  base::Lock handle_table_lock_;  // Protects |handle_table_|.
-  HandleTable handle_table_;
+  Mutex handle_table_mutex_;
+  HandleTable handle_table_ MOJO_GUARDED_BY(handle_table_mutex_);
 
-  base::Lock mapping_table_lock_;  // Protects |mapping_table_|.
-  MappingTable mapping_table_;
+  Mutex mapping_table_mutex_;
+  MappingTable mapping_table_ MOJO_GUARDED_BY(mapping_table_mutex_);
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Core);
 };

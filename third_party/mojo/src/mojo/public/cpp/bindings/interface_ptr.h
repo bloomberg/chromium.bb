@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_internal.h"
 #include "mojo/public/cpp/environment/environment.h"
@@ -74,6 +73,9 @@ class InterfacePtr {
       internal_state_.Bind(info.Pass(), waiter);
   }
 
+  // Returns whether or not this InterfacePtr is bound to a message pipe.
+  bool is_bound() const { return internal_state_.is_bound(); }
+
   // Returns a raw pointer to the local proxy. Caller does not take ownership.
   // Note that the local proxy is thread hostile, as stated above.
   Interface* get() const { return internal_state_.instance(); }
@@ -132,19 +134,6 @@ class InterfacePtr {
   // message pipe.
   void set_connection_error_handler(const Closure& error_handler) {
     internal_state_.set_connection_error_handler(error_handler);
-  }
-
-  // Similar to the method above but uses the ErrorHandler interface instead of
-  // a callback.
-  // NOTE: Deprecated. Please use the method above.
-  // TODO(yzshen): Remove this method once all callsites are converted.
-  void set_error_handler(ErrorHandler* error_handler) {
-    if (error_handler) {
-      set_connection_error_handler(
-          [error_handler]() { error_handler->OnConnectionError(); });
-    } else {
-      set_connection_error_handler(Closure());
-    }
   }
 
   // Unbinds the InterfacePtr and returns the information which could be used

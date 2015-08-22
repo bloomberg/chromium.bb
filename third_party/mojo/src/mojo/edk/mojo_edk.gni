@@ -95,3 +95,9 @@ template("mojo_edk_source_set") {
     }
   }
 }
+
+# Build EDK things with static thread annotation analysis enabled.
+# TODO(vtl): Should we set this at a higher level?
+if (is_clang) {
+  cflags = [ "-Wthread-safety" ]
+}

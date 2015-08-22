@@ -31,14 +31,14 @@ void EndpointRelayer::Init(ChannelEndpoint* endpoint0,
 }
 
 void EndpointRelayer::SetFilter(scoped_ptr<Filter> filter) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   filter_ = filter.Pass();
 }
 
 bool EndpointRelayer::OnReadMessage(unsigned port, MessageInTransit* message) {
   DCHECK(message);
 
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
 
   // If we're no longer the client, then reject the message.
   if (!endpoints_[port])
@@ -59,7 +59,7 @@ bool EndpointRelayer::OnReadMessage(unsigned port, MessageInTransit* message) {
 }
 
 void EndpointRelayer::OnDetachFromChannel(unsigned port) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
 
   if (endpoints_[port]) {
     endpoints_[port]->DetachFromClient();

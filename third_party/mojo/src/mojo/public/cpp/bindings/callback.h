@@ -37,7 +37,7 @@ class Callback<void(Args...)> {
   explicit Callback(Runnable* runnable) : sink_(runnable) {}
 
   // As above, but can take an object that isn't derived from Runnable, so long
-  // as it has a compatible operator() or Run() method.  operator() will be
+  // as it has a compatible operator() or Run() method. operator() will be
   // preferred if the type has both.
   template <typename Sink>
   Callback(const Sink& sink) {
@@ -46,6 +46,11 @@ class Callback<void(Args...)> {
         FunctorAdapter<Sink>, RunnableAdapter<Sink>>::type;
     sink_ = internal::SharedPtr<Runnable>(new sink_type(sink));
   }
+
+  // As above, but can take a compatible function pointer.
+  Callback(void (*function_ptr)(
+      typename internal::Callback_ParamTraits<Args>::ForwardType...))
+      : sink_(new FunctionPtrAdapter(function_ptr)) {}
 
   // Executes the callback function, invoking Pass() on move-only types.
   void Run(typename internal::Callback_ParamTraits<Args>::ForwardType... args)
@@ -73,7 +78,7 @@ class Callback<void(Args...)> {
     Sink sink;
   };
 
-  // Adapts a class that has a compatible operator() callable by Callback.
+  // Adapts a class that has a compatible operator() to be callable by Callback.
   template <typename Sink>
   struct FunctorAdapter : public Runnable {
     explicit FunctorAdapter(const Sink& sink) : sink(sink) {}
@@ -83,6 +88,20 @@ class Callback<void(Args...)> {
       sink.operator()(internal::Forward(args)...);
     }
     Sink sink;
+  };
+
+  // Adapts a function pointer.
+  struct FunctionPtrAdapter : public Runnable {
+    explicit FunctionPtrAdapter(void (*function_ptr)(
+        typename internal::Callback_ParamTraits<Args>::ForwardType...))
+        : function_ptr(function_ptr) {}
+    virtual void Run(
+        typename internal::Callback_ParamTraits<Args>::ForwardType... args)
+        const override {
+      (*function_ptr)(internal::Forward(args)...);
+    }
+    void (*function_ptr)(
+        typename internal::Callback_ParamTraits<Args>::ForwardType...);
   };
 
   internal::SharedPtr<Runnable> sink_;

@@ -16,6 +16,7 @@
 #include "base/test/test_timeouts.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/test_embedder.h"
+#include "mojo/edk/system/mutex.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
@@ -180,7 +181,7 @@ class TestAsyncWaiter {
   TestAsyncWaiter() : event_(true, false), wait_result_(MOJO_RESULT_UNKNOWN) {}
 
   void Awake(MojoResult result) {
-    base::AutoLock l(wait_result_lock_);
+    system::MutexLocker l(&wait_result_mutex_);
     wait_result_ = result;
     event_.Signal();
   }
@@ -188,15 +189,15 @@ class TestAsyncWaiter {
   bool TryWait() { return event_.TimedWait(TestTimeouts::action_timeout()); }
 
   MojoResult wait_result() const {
-    base::AutoLock l(wait_result_lock_);
+    system::MutexLocker l(&wait_result_mutex_);
     return wait_result_;
   }
 
  private:
   base::WaitableEvent event_;
 
-  mutable base::Lock wait_result_lock_;
-  MojoResult wait_result_;
+  mutable system::Mutex wait_result_mutex_;
+  MojoResult wait_result_ MOJO_GUARDED_BY(wait_result_mutex_);
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestAsyncWaiter);
 };

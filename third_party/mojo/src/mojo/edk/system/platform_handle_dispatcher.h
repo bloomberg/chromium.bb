@@ -48,14 +48,16 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher final
       override;
   void StartSerializeImplNoLock(Channel* channel,
                                 size_t* max_size,
-                                size_t* max_platform_handles) override;
+                                size_t* max_platform_handles) override
+      MOJO_NOT_THREAD_SAFE;
   bool EndSerializeAndCloseImplNoLock(
       Channel* channel,
       void* destination,
       size_t* actual_size,
-      embedder::PlatformHandleVector* platform_handles) override;
+      embedder::PlatformHandleVector* platform_handles) override
+      MOJO_NOT_THREAD_SAFE;
 
-  embedder::ScopedPlatformHandle platform_handle_;
+  embedder::ScopedPlatformHandle platform_handle_ MOJO_GUARDED_BY(mutex());
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformHandleDispatcher);
 };

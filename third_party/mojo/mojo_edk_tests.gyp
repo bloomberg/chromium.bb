@@ -17,6 +17,7 @@
         # target on iOS due to the presence of the js targets, which cause v8
         # to be built.
         'mojo_message_pipe_perftests',
+        'mojo_public_bindings_perftests',
         'mojo_public_bindings_unittests',
         'mojo_public_environment_unittests',
         'mojo_public_system_perftests',
@@ -52,6 +53,8 @@
         'src/mojo/public/cpp/bindings/tests/handle_passing_unittest.cc',
         'src/mojo/public/cpp/bindings/tests/interface_ptr_unittest.cc',
         'src/mojo/public/cpp/bindings/tests/map_unittest.cc',
+        'src/mojo/public/cpp/bindings/tests/message_queue.cc',
+        'src/mojo/public/cpp/bindings/tests/message_queue.h',
         'src/mojo/public/cpp/bindings/tests/request_response_unittest.cc',
         'src/mojo/public/cpp/bindings/tests/router_unittest.cc',
         'src/mojo/public/cpp/bindings/tests/sample_service_unittest.cc',
@@ -60,6 +63,24 @@
         'src/mojo/public/cpp/bindings/tests/struct_unittest.cc',
         'src/mojo/public/cpp/bindings/tests/type_conversion_unittest.cc',
         'src/mojo/public/cpp/bindings/tests/validation_unittest.cc',
+      ],
+    },
+    {
+      # GN version: //mojo/edk/test:mojo_public_bindings_perftests
+      'target_name': 'mojo_public_bindings_perftests',
+      'type': 'executable',
+      'dependencies': [
+        '../../testing/gtest.gyp:gtest',
+        'mojo_edk.gyp:mojo_run_all_unittests',
+        'mojo_public.gyp:mojo_cpp_bindings',
+        'mojo_public.gyp:mojo_environment_standalone',
+        'mojo_public.gyp:mojo_public_bindings_test_utils',
+        'mojo_public.gyp:mojo_public_test_interfaces',
+        'mojo_public.gyp:mojo_public_test_utils',
+        'mojo_public.gyp:mojo_utility',
+      ],
+      'sources': [
+        'src/mojo/public/cpp/bindings/tests/bindings_perftest.cc',
       ],
     },
     {
@@ -175,6 +196,7 @@
         'src/mojo/edk/system/message_pipe_test_utils.h',
         'src/mojo/edk/system/message_pipe_unittest.cc',
         'src/mojo/edk/system/multiprocess_message_pipe_unittest.cc',
+        'src/mojo/edk/system/mutex_unittest.cc',
         'src/mojo/edk/system/options_validation_unittest.cc',
         'src/mojo/edk/system/platform_handle_dispatcher_unittest.cc',
         'src/mojo/edk/system/raw_channel_unittest.cc',
@@ -187,6 +209,7 @@
         'src/mojo/edk/system/test_channel_endpoint_client.h',
         'src/mojo/edk/system/test_utils.cc',
         'src/mojo/edk/system/test_utils.h',
+        'src/mojo/edk/system/thread_annotations_unittest.cc',
         'src/mojo/edk/system/unique_identifier_unittest.cc',
         'src/mojo/edk/system/waiter_test_utils.cc',
         'src/mojo/edk/system/waiter_test_utils.h',
