@@ -13,21 +13,46 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace precache {
 
 namespace {
+
+using ::testing::_;
+
+const char kConfigURL[] = "http://config-url.com";
+const char kManifestURLPrefix[] = "http://manifest-url-prefix.com/";
+const char kCustomConfigURL[] = "http://custom-config-url.com";
+const char kCustomManifestURLPrefix[] =
+    "http://custom-manifest-url-prefix.com/";
+const char kManifestFetchFailureURL[] =
+    "http://manifest-url-prefix.com/manifest-fetch-failure.com";
+const char kBadManifestURL[] =
+    "http://manifest-url-prefix.com/bad-manifest.com";
+const char kGoodManifestURL[] =
+    "http://manifest-url-prefix.com/good-manifest.com";
+const char kCustomGoodManifestURL[] =
+    "http://custom-manifest-url-prefix.com/good-manifest.com";
+const char kResourceFetchFailureURL[] = "http://resource-fetch-failure.com";
+const char kGoodResourceURL[] = "http://good-resource.com";
+const char kForcedStartingURLManifestURL[] =
+    "http://manifest-url-prefix.com/forced-starting-url.com";
 
 class TestURLFetcherCallback {
  public:
@@ -40,15 +65,9 @@ class TestURLFetcherCallback {
     scoped_ptr<net::FakeURLFetcher> fetcher(new net::FakeURLFetcher(
         url, delegate, response_data, response_code, status));
 
-    if (response_code == net::HTTP_OK) {
-      scoped_refptr<net::HttpResponseHeaders> download_headers =
-          new net::HttpResponseHeaders("");
-      download_headers->AddHeader("Content-Type: text/html");
-      fetcher->set_response_headers(download_headers);
-    }
-
     total_response_bytes_ += response_data.size();
     requested_urls_.insert(url);
+
     return fetcher.Pass();
   }
 
@@ -78,6 +97,186 @@ class TestPrecacheDelegate : public PrecacheFetcher::PrecacheDelegate {
   bool was_on_done_called_;
 };
 
+class MockURLFetcherFactory : public net::URLFetcherFactory {
+ public:
+  typedef net::URLFetcher* DoURLFetcher(
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* delegate);
+
+  scoped_ptr<net::URLFetcher> CreateURLFetcher(
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* delegate) override {
+    return make_scoped_ptr(DoCreateURLFetcher(id, url, request_type, delegate));
+  }
+
+  // The method to mock out, instead of CreateURLFetcher. This is necessary
+  // because gmock can't handle move-only types such as scoped_ptr.
+  MOCK_METHOD4(DoCreateURLFetcher, DoURLFetcher);
+
+  // A fake successful response. When the action runs, it saves off a pointer to
+  // the FakeURLFetcher in its output parameter for later inspection.
+  testing::Action<DoURLFetcher> RespondWith(const std::string& body,
+                                            net::FakeURLFetcher** fetcher) {
+    return RespondWith(body, [](net::FakeURLFetcher* fetcher) {
+      fetcher->set_response_code(net::HTTP_OK);
+    }, fetcher);
+  }
+
+  // A fake custom response. When the action runs, it runs the given modifier to
+  // customize the FakeURLFetcher, and then saves off a pointer to the
+  // FakeURLFetcher in its output parameter for later inspection. The modifier
+  // should be a functor that takes a FakeURLFetcher* and returns void.
+  template <typename F>
+  testing::Action<DoURLFetcher> RespondWith(const std::string& body,
+                                            F modifier,
+                                            net::FakeURLFetcher** fetcher) {
+    return testing::MakeAction(
+        new FakeResponseAction<F>(body, modifier, fetcher));
+  }
+
+ private:
+  template <typename F>
+  class FakeResponseAction : public testing::ActionInterface<DoURLFetcher> {
+   public:
+    FakeResponseAction(const std::string& body,
+                       F modifier,
+                       net::FakeURLFetcher** fetcher)
+        : body_(body), modifier_(modifier), fetcher_(fetcher) {}
+
+    net::URLFetcher* Perform(
+        const testing::tuple<int,
+                             const GURL&,
+                             net::URLFetcher::RequestType,
+                             net::URLFetcherDelegate*>& args) {
+      *fetcher_ = new net::FakeURLFetcher(
+          testing::get<1>(args), testing::get<3>(args), body_, net::HTTP_OK,
+          net::URLRequestStatus::SUCCESS);
+      modifier_(*fetcher_);
+      return *fetcher_;
+    }
+
+   private:
+    std::string body_;
+    F modifier_;
+    net::FakeURLFetcher** fetcher_;
+  };
+};
+
+class PrecacheFetcherFetcherTest : public testing::Test {
+ public:
+  PrecacheFetcherFetcherTest()
+      : request_context_(new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get())),
+        scoped_url_fetcher_factory_(&factory_),
+        callback_(base::Bind(&PrecacheFetcherFetcherTest::Callback,
+                             base::Unretained(this))),
+        callback_called_(false) {}
+
+  void Callback(const net::URLFetcher&) { callback_called_ = true; }
+
+ protected:
+  base::MessageLoopForUI loop_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  MockURLFetcherFactory factory_;
+  net::ScopedURLFetcherFactory scoped_url_fetcher_factory_;
+  base::Callback<void(const net::URLFetcher&)> callback_;
+  bool callback_called_;
+};
+
+TEST_F(PrecacheFetcherFetcherTest, Config) {
+  GURL url(kConfigURL);
+
+  net::FakeURLFetcher* fetcher = nullptr;
+  EXPECT_CALL(factory_, DoCreateURLFetcher(_, url, net::URLFetcher::GET, _))
+      .WillOnce(factory_.RespondWith("", &fetcher));
+
+  PrecacheFetcher::Fetcher precache_fetcher(
+      request_context_.get(), url, callback_, false /* is_resource_request */);
+
+  loop_.RunUntilIdle();
+
+  ASSERT_NE(nullptr, fetcher);
+  EXPECT_EQ(kNoCookies, fetcher->GetLoadFlags());
+
+  EXPECT_EQ(true, callback_called_);
+}
+
+TEST_F(PrecacheFetcherFetcherTest, ResourceNotInCache) {
+  GURL url(kGoodResourceURL);
+
+  net::FakeURLFetcher *fetcher1 = nullptr, *fetcher2 = nullptr;
+  EXPECT_CALL(factory_, DoCreateURLFetcher(_, url, net::URLFetcher::GET, _))
+      .WillOnce(factory_.RespondWith(
+          "",
+          [](net::FakeURLFetcher* fetcher) {
+            fetcher->set_status(net::URLRequestStatus(
+                net::URLRequestStatus::FAILED, net::ERR_CACHE_MISS));
+          },
+          &fetcher1))
+      .WillOnce(factory_.RespondWith("", &fetcher2));
+
+  PrecacheFetcher::Fetcher precache_fetcher(
+      request_context_.get(), url, callback_, true /* is_resource_request */);
+
+  loop_.RunUntilIdle();
+
+  ASSERT_NE(nullptr, fetcher1);
+  EXPECT_EQ(net::LOAD_ONLY_FROM_CACHE | kNoCookies, fetcher1->GetLoadFlags());
+  ASSERT_NE(nullptr, fetcher2);
+  EXPECT_EQ(net::LOAD_VALIDATE_CACHE | kNoCookies, fetcher2->GetLoadFlags());
+
+  EXPECT_EQ(true, callback_called_);
+}
+
+TEST_F(PrecacheFetcherFetcherTest, ResourceHasStrongValidators) {
+  GURL url(kGoodResourceURL);
+
+  net::FakeURLFetcher *fetcher1 = nullptr, *fetcher2 = nullptr;
+  EXPECT_CALL(factory_, DoCreateURLFetcher(_, url, net::URLFetcher::GET, _))
+      .WillOnce(factory_.RespondWith(
+          "",
+          [](net::FakeURLFetcher* fetcher) {
+            std::string raw_headers("HTTP/1.1 200 OK\0ETag: foo\0\0", 27);
+            fetcher->set_response_headers(
+                make_scoped_refptr(new net::HttpResponseHeaders(raw_headers)));
+          },
+          &fetcher1))
+      .WillOnce(factory_.RespondWith("", &fetcher2));
+
+  PrecacheFetcher::Fetcher precache_fetcher(
+      request_context_.get(), url, callback_, true /* is_resource_request */);
+
+  loop_.RunUntilIdle();
+
+  ASSERT_NE(nullptr, fetcher1);
+  EXPECT_EQ(net::LOAD_ONLY_FROM_CACHE | kNoCookies, fetcher1->GetLoadFlags());
+  ASSERT_NE(nullptr, fetcher2);
+  EXPECT_EQ(net::LOAD_VALIDATE_CACHE | kNoCookies, fetcher2->GetLoadFlags());
+
+  EXPECT_EQ(true, callback_called_);
+}
+
+TEST_F(PrecacheFetcherFetcherTest, ResourceHasNoValidators) {
+  GURL url(kGoodResourceURL);
+
+  net::FakeURLFetcher* fetcher;
+  EXPECT_CALL(factory_, DoCreateURLFetcher(_, url, net::URLFetcher::GET, _))
+      .WillOnce(factory_.RespondWith("", &fetcher));
+
+  PrecacheFetcher::Fetcher precache_fetcher(
+      request_context_.get(), url, callback_, true /* is_resource_request */);
+
+  loop_.RunUntilIdle();
+
+  EXPECT_EQ(net::LOAD_ONLY_FROM_CACHE | kNoCookies, fetcher->GetLoadFlags());
+
+  EXPECT_EQ(true, callback_called_);
+}
+
 class PrecacheFetcherTest : public testing::Test {
  public:
   PrecacheFetcherTest()
@@ -89,6 +288,13 @@ class PrecacheFetcherTest : public testing::Test {
         expected_total_response_bytes_(0) {}
 
  protected:
+  void SetDefaultFlags() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kPrecacheConfigSettingsURL, kConfigURL);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kPrecacheManifestURLPrefix, kManifestURLPrefix);
+  }
+
   base::MessageLoopForUI loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   TestURLFetcherCallback url_callback_;
@@ -97,29 +303,8 @@ class PrecacheFetcherTest : public testing::Test {
   int expected_total_response_bytes_;
 };
 
-const char kConfigURL[] = "http://config-url.com";
-const char kManifestURLPrefix[] = "http://manifest-url-prefix.com/";
-const char kCustomConfigURL[] = "http://custom-config-url.com";
-const char kCustomManifestURLPrefix[] =
-    "http://custom-manifest-url-prefix.com/";
-const char kManifestFetchFailureURL[] =
-    "http://manifest-url-prefix.com/manifest-fetch-failure.com";
-const char kBadManifestURL[] =
-    "http://manifest-url-prefix.com/bad-manifest.com";
-const char kGoodManifestURL[] =
-    "http://manifest-url-prefix.com/good-manifest.com";
-const char kCustomGoodManifestURL[] =
-    "http://custom-manifest-url-prefix.com/good-manifest.com";
-const char kResourceFetchFailureURL[] = "http://resource-fetch-failure.com";
-const char kGoodResourceURL[] = "http://good-resource.com";
-const char kForcedStartingURLManifestURL[] =
-    "http://manifest-url-prefix.com/forced-starting-url.com";
-
 TEST_F(PrecacheFetcherTest, FullPrecache) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kPrecacheConfigSettingsURL, kConfigURL);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kPrecacheManifestURLPrefix, kManifestURLPrefix);
+  SetDefaultFlags();
 
   std::vector<std::string> starting_hosts;
   starting_hosts.push_back("manifest-fetch-failure.com");
@@ -165,7 +350,7 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
                                      &precache_delegate_);
     precache_fetcher.Start();
 
-    base::MessageLoop::current()->RunUntilIdle();
+    loop_.RunUntilIdle();
 
     // Destroy the PrecacheFetcher after it has finished, to record metrics.
   }
@@ -190,10 +375,7 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
 }
 
 TEST_F(PrecacheFetcherTest, CustomURLs) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kPrecacheConfigSettingsURL, kConfigURL);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kPrecacheManifestURLPrefix, kManifestURLPrefix);
+  SetDefaultFlags();
 
   std::vector<std::string> starting_hosts;
   starting_hosts.push_back("good-manifest.com");
@@ -216,7 +398,7 @@ TEST_F(PrecacheFetcherTest, CustomURLs) {
       kCustomManifestURLPrefix, &precache_delegate_);
   precache_fetcher.Start();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  loop_.RunUntilIdle();
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kCustomConfigURL));
@@ -229,10 +411,7 @@ TEST_F(PrecacheFetcherTest, CustomURLs) {
 }
 
 TEST_F(PrecacheFetcherTest, ConfigFetchFailure) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kPrecacheConfigSettingsURL, kConfigURL);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kPrecacheManifestURLPrefix, kManifestURLPrefix);
+  SetDefaultFlags();
 
   std::vector<std::string> starting_hosts(1, "good-manifest.com");
 
@@ -246,7 +425,7 @@ TEST_F(PrecacheFetcherTest, ConfigFetchFailure) {
                                    GURL(), std::string(), &precache_delegate_);
   precache_fetcher.Start();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  loop_.RunUntilIdle();
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kConfigURL));
@@ -257,10 +436,7 @@ TEST_F(PrecacheFetcherTest, ConfigFetchFailure) {
 }
 
 TEST_F(PrecacheFetcherTest, BadConfig) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kPrecacheConfigSettingsURL, kConfigURL);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kPrecacheManifestURLPrefix, kManifestURLPrefix);
+  SetDefaultFlags();
 
   std::vector<std::string> starting_hosts(1, "good-manifest.com");
 
@@ -273,7 +449,7 @@ TEST_F(PrecacheFetcherTest, BadConfig) {
                                    GURL(), std::string(), &precache_delegate_);
   precache_fetcher.Start();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  loop_.RunUntilIdle();
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kConfigURL));
@@ -284,8 +460,7 @@ TEST_F(PrecacheFetcherTest, BadConfig) {
 }
 
 TEST_F(PrecacheFetcherTest, Cancel) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kPrecacheConfigSettingsURL, kConfigURL);
+  SetDefaultFlags();
 
   std::vector<std::string> starting_hosts(1, "starting-url.com");
 
@@ -307,7 +482,7 @@ TEST_F(PrecacheFetcherTest, Cancel) {
     // This should not cause OnDone to be called on the precache delegate.
   }
 
-  base::MessageLoop::current()->RunUntilIdle();
+  loop_.RunUntilIdle();
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kConfigURL));
@@ -338,7 +513,7 @@ TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultConfigSettingsURL) {
                                    GURL(), std::string(), &precache_delegate_);
   precache_fetcher.Start();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  loop_.RunUntilIdle();
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(PRECACHE_CONFIG_SETTINGS_URL));
@@ -373,7 +548,7 @@ TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultManifestURLPrefix) {
                                    GURL(), std::string(), &precache_delegate_);
   precache_fetcher.Start();
 
-  base::MessageLoop::current()->RunUntilIdle();
+  loop_.RunUntilIdle();
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kConfigURL));

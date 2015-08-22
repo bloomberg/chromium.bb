@@ -20,8 +20,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -29,6 +28,13 @@
 using net::URLFetcher;
 
 namespace precache {
+
+// LOAD_DO_NOT_*_COOKIES is for privacy reasons. If a user clears their
+// cookies, but a tracking beacon is prefetched and the beacon specifies its
+// source URL in a URL param, the beacon site would be able to rebuild a
+// profile of the user.
+const int kNoCookies =
+    net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
 
 namespace {
 
@@ -127,58 +133,80 @@ class URLFetcherNullWriter : public net::URLFetcherResponseWriter {
 
 }  // namespace
 
-// Class that fetches a URL, and runs the specified callback when the fetch is
-// complete. This class exists so that a different method can be run in
-// response to different kinds of fetches, e.g. OnConfigFetchComplete when
-// configuration settings are fetched, OnManifestFetchComplete when a manifest
-// is fetched, etc.
-class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
- public:
-  // Construct a new Fetcher. This will create and start a new URLFetcher for
-  // the specified URL using the specified request context.
-  Fetcher(net::URLRequestContextGetter* request_context,
-          const GURL& url,
-          const base::Callback<void(const URLFetcher&)>& callback,
-          bool ignore_response_body);
-  ~Fetcher() override {}
-  void OnURLFetchComplete(const URLFetcher* source) override;
-  int64 response_bytes() { return response_bytes_; }
-  int64 network_response_bytes() { return network_response_bytes_; }
-
- private:
-  const base::Callback<void(const URLFetcher&)> callback_;
-  scoped_ptr<URLFetcher> url_fetcher_;
-  int64 response_bytes_;
-  int64 network_response_bytes_;
-
-  DISALLOW_COPY_AND_ASSIGN(Fetcher);
-};
-
 PrecacheFetcher::Fetcher::Fetcher(
     net::URLRequestContextGetter* request_context,
     const GURL& url,
     const base::Callback<void(const URLFetcher&)>& callback,
-    bool ignore_response_body)
-    : callback_(callback), response_bytes_(0), network_response_bytes_(0) {
-  url_fetcher_ = URLFetcher::Create(url, URLFetcher::GET, this);
-  url_fetcher_->SetRequestContext(request_context);
-  // LOAD_VALIDATE_CACHE allows us to refresh the cache by updating Date
-  // headers, without costing network bytes, as cache hits will return 304s.
-  // LOAD_DO_NOT_*_COOKIES is for privacy reasons. If a user clears their
-  // cookies, but a tracking beacon is prefetched and the beacon specifies its
-  // source URL in a URL param, the beacon site would be able to rebuild a
-  // profile of the user.
-  url_fetcher_->SetLoadFlags(net::LOAD_VALIDATE_CACHE |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES);
-  if (ignore_response_body) {
+    bool is_resource_request)
+    : request_context_(request_context),
+      url_(url),
+      callback_(callback),
+      is_resource_request_(is_resource_request),
+      response_bytes_(0),
+      network_response_bytes_(0) {
+  if (is_resource_request_)
+    LoadFromCache();
+  else
+    LoadFromNetwork();
+}
+
+PrecacheFetcher::Fetcher::~Fetcher() {}
+
+void PrecacheFetcher::Fetcher::LoadFromCache() {
+  fetch_stage_ = FetchStage::CACHE;
+  url_fetcher_cache_ = URLFetcher::Create(url_, URLFetcher::GET, this);
+  url_fetcher_cache_->SetRequestContext(request_context_);
+  url_fetcher_cache_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE | kNoCookies);
+  scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
+  url_fetcher_cache_->SaveResponseWithWriter(null_writer.Pass());
+  url_fetcher_cache_->Start();
+}
+
+void PrecacheFetcher::Fetcher::LoadFromNetwork() {
+  fetch_stage_ = FetchStage::NETWORK;
+  url_fetcher_network_ = URLFetcher::Create(url_, URLFetcher::GET, this);
+  url_fetcher_network_->SetRequestContext(request_context_);
+  if (is_resource_request_) {
+    // LOAD_VALIDATE_CACHE allows us to refresh Date headers for resources
+    // already in the cache. The Date headers are updated from 304s as well as
+    // 200s.
+    url_fetcher_network_->SetLoadFlags(net::LOAD_VALIDATE_CACHE | kNoCookies);
+    // We don't need a copy of the response body for resource requests. The
+    // request is issued only to populate the browser cache.
     scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
-    url_fetcher_->SaveResponseWithWriter(null_writer.Pass());
+    url_fetcher_network_->SaveResponseWithWriter(null_writer.Pass());
+  } else {
+    // Config and manifest requests do not need to be revalidated. It's okay if
+    // they expire from the cache minutes after we request them.
+    url_fetcher_network_->SetLoadFlags(kNoCookies);
   }
-  url_fetcher_->Start();
+  url_fetcher_network_->Start();
 }
 
 void PrecacheFetcher::Fetcher::OnURLFetchComplete(const URLFetcher* source) {
+  if (fetch_stage_ == FetchStage::CACHE &&
+      (source->GetStatus().error() == net::ERR_CACHE_MISS ||
+       (source->GetResponseHeaders() &&
+        source->GetResponseHeaders()->HasStrongValidators()))) {
+    // If the resource was not found in the cache, request it from the
+    // network.
+    //
+    // If the resource was found in the cache, but contains validators,
+    // request a refresh. The presence of validators increases the chance that
+    // we get a 304 response rather than a full one, thus allowing us to
+    // refresh the cache with minimal network load.
+    //
+    // TODO(twifkak): Add support for weak validators, which should be just as
+    // likely a guarantee that the response will be a 304.
+    LoadFromNetwork();
+    return;
+  }
+
+  // If any of:
+  // - The request was for a config or manifest.
+  // - The resource was a cache hit without validators.
+  // - The response came from the network.
+  // Then Fetcher is done with this URL and can return control to the caller.
   response_bytes_ = source->GetReceivedResponseContentLength();
   network_response_bytes_ = source->GetTotalReceivedBytes();
   callback_.Run(*source);
@@ -246,7 +274,7 @@ void PrecacheFetcher::Start() {
   fetcher_.reset(new Fetcher(request_context_.get(), config_url,
                              base::Bind(&PrecacheFetcher::OnConfigFetchComplete,
                                         base::Unretained(this)),
-                             false /* ignore_response_body */));
+                             false /* is_resource_request */));
 }
 
 void PrecacheFetcher::StartNextFetch() {
@@ -259,7 +287,7 @@ void PrecacheFetcher::StartNextFetch() {
         new Fetcher(request_context_.get(), resource_urls_to_fetch_.front(),
                     base::Bind(&PrecacheFetcher::OnResourceFetchComplete,
                                base::Unretained(this)),
-                    true /* ignore_response_body */));
+                    true /* is_resource_request */));
 
     resource_urls_to_fetch_.pop_front();
     return;
@@ -271,7 +299,7 @@ void PrecacheFetcher::StartNextFetch() {
         new Fetcher(request_context_.get(), manifest_urls_to_fetch_.front(),
                     base::Bind(&PrecacheFetcher::OnManifestFetchComplete,
                                base::Unretained(this)),
-                    false /* ignore_response_body */));
+                    false /* is_resource_request */));
 
     manifest_urls_to_fetch_.pop_front();
     return;
