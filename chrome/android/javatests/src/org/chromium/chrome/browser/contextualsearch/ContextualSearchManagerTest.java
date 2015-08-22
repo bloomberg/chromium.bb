@@ -1318,13 +1318,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests the tap triggered promo limit for opt-out.
+     * @SmallTest
+     * @Feature({"ContextualSearch"})
      */
-    @SmallTest
-    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add({
             ContextualSearchFieldTrial.PROMO_ON_LIMITED_TAPS + "=true",
             ContextualSearchFieldTrial.TAP_TRIGGERED_PROMO_LIMIT + "=2"})
+    @FlakyTest
     public void testTapTriggeredPromoLimitForOptOut()
             throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
