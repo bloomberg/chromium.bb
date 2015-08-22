@@ -1445,7 +1445,7 @@ void DeprecatedPaintLayer::collectFragments(DeprecatedPaintLayerFragments& fragm
         ancestorClipRect.intersect(dirtyRect);
     }
 
-    const LayoutSize subPixelAccumulationIfNeeded = compositingState() == PaintsIntoOwnBacking ? LayoutSize() : subPixelAccumulation;
+    const LayoutSize subPixelAccumulationIfNeeded = offsetFromRoot ? subPixelAccumulation : LayoutSize();
     for (size_t i = 0; i < fragments.size(); ++i) {
         DeprecatedPaintLayerFragment& fragment = fragments.at(i);
 

@@ -228,6 +228,8 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
     }
 
     DeprecatedPaintLayerPaintingInfo localPaintingInfo(paintingInfo);
+    if (m_paintLayer.compositingState() == PaintsIntoOwnBacking)
+        localPaintingInfo.subPixelAccumulation = m_paintLayer.subpixelAccumulation();
 
     DeprecatedPaintLayerFragments layerFragments;
     if (shouldPaintContent || shouldPaintOutline || isPaintingOverlayScrollbars) {

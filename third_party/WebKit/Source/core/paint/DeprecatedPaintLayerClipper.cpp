@@ -112,7 +112,7 @@ void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context
 
     if (!isClippingRoot && m_layoutObject.layer()->parent()) {
         backgroundRect = backgroundClipRect(context);
-        backgroundRect.move(roundedIntSize(context.subPixelAccumulation));
+        backgroundRect.move(context.subPixelAccumulation);
         backgroundRect.intersect(paintDirtyRect);
     } else {
         backgroundRect = paintDirtyRect;
