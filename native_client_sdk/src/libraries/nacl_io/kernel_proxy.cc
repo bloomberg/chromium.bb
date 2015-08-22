@@ -422,6 +422,14 @@ int KernelProxy::stat(const char* path, struct stat* buf) {
     return -1;
   }
 
+  /*
+   * newlib's scandir() assumes that directories are empty if st_size == 0.
+   * This is probably a bad assumption, but until we fix newlib always return
+   * a non-zero directory size.
+   */
+  if (node->IsaDir() && buf->st_size == 0)
+    buf->st_size = 4096;
+
   return 0;
 }
 
@@ -587,6 +595,14 @@ int KernelProxy::fstat(int fd, struct stat* buf) {
     errno = error;
     return -1;
   }
+
+  /*
+   * newlib's scandir() assumes that directories are empty if st_size == 0.
+   * This is probably a bad assumption, but until we fix newlib always return
+   * a non-zero directory size.
+   */
+  if (handle->node()->IsaDir() && buf->st_size == 0)
+    buf->st_size = 4096;
 
   return 0;
 }
