@@ -71,25 +71,6 @@ body {
   background-color: ${colorBackground};
 }
 
-.bare-minimum #footer {
-  color: ${colorTextRgba};
-}
-
-.bare-minimum .disclosure-triangle {
-  background-color: ${colorTextRgba};
-}
-
-.bare-minimum .footer-menu-button:hover,
-.bare-minimum .footer-menu-button[menu-shown],
-.bare-minimum #chrome-web-store-link:hover {
-  color: rgba(${colorText}, 0.85);
-}
-
-.bare-minimum .footer-menu-button:hover .disclosure-triangle,
-.bare-minimum .footer-menu-button[menu-shown] .disclosure-triangle {
-  background-color: rgba(${colorText}, 0.85);
-}
-
 .thumbnail-wrapper {
   /* This shows through at the (rounded) thumbnail's corners. */
   background-color: ${colorSectionBorder};

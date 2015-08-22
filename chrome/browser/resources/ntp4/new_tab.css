@@ -120,10 +120,6 @@ html[dir='rtl'] #notification-container {
   width: 100%;
 }
 
-body.bare-minimum #card-slider-frame {
-  bottom: 0;
-}
-
 #page-list {
   /* fill the apps-frame */
   display: -webkit-box;
@@ -145,7 +141,6 @@ body.bare-minimum #card-slider-frame {
 /* For themes that right-align their images, we flip the attribution to the
  * left to avoid conflicts. */
 html[themegravity='right'] #attribution,
-body.bare-minimum #attribution,
 html[dir='rtl'] #attribution {
   left: 0;
   right: auto;
@@ -201,25 +196,6 @@ html[dir='rtl'] #attribution {
   top: 4px;
   visibility: hidden;
   width: 32px;
-}
-
-body.bare-minimum #footer {
-  background: transparent;
-  bottom: auto;
-  font-weight: normal;
-  position: absolute;
-  right: 0;
-}
-
-html[dir='rtl'] body.bare-minimum #footer {
-  left: 0;
-  right: auto;
-}
-
-body.bare-minimum #footer-border,
-body.bare-minimum #logo-img,
-body.bare-minimum #dot-list {
-  visibility: hidden;
 }
 
 .starting-up * {
