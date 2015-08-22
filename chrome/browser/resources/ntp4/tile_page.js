@@ -500,15 +500,6 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Returns any extra padding to insert to the bottom of a tile page.  By
-     * default there is none, but subclasses can override.
-     * @type {number}
-     */
-    get extraBottomPadding() {
-      return 0;
-    },
-
-    /**
      * The notification content of this tile (if any, otherwise null).
      * @type {!HTMLElement}
      */
@@ -1105,20 +1096,8 @@ cr.define('ntp', function() {
       // the tiles, whichever is greater. It would be nicer if tilePage were
       // a flex box, and the tile grid could be box-flex: 1, but this exposes a
       // bug where repositioning tiles will cause the scroll position to reset.
-      this.tileGrid_.style.minHeight = (this.clientHeight -
-          this.tileGrid_.offsetTop - this.content_.offsetTop -
-          this.extraBottomPadding -
-          (this.footerNode_ ? this.footerNode_.clientHeight : 0)) + 'px';
-    },
-
-     /**
-      * Places an element at the bottom of the content div. Used in bare-minimum
-      * mode to hold #footer.
-      * @param {HTMLElement} footerNode The node to append to content.
-      */
-    appendFooter: function(footerNode) {
-      this.footerNode_ = footerNode;
-      this.content_.appendChild(footerNode);
+      this.tileGrid_.style.minHeight = this.clientHeight -
+          this.tileGrid_.offsetTop - this.content_.offsetTop + 'px';
     },
 
     /**
