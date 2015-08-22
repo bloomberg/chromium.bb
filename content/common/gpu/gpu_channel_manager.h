@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/gpu/gpu_memory_manager.h"
+#include "content/common/message_router.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -54,7 +55,6 @@ namespace content {
 class GpuChannel;
 class GpuMemoryBufferFactory;
 class GpuWatchdog;
-class MessageRouter;
 
 // A GpuChannelManager is a thread responsible for issuing rendering commands
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
@@ -63,11 +63,11 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
                           public IPC::Sender {
  public:
   // |broker| must outlive GpuChannelManager and any channels it creates.
-  GpuChannelManager(MessageRouter* router,
+  GpuChannelManager(IPC::SyncChannel* channel,
                     GpuWatchdog* watchdog,
+                    base::SingleThreadTaskRunner* task_runner,
                     base::SingleThreadTaskRunner* io_task_runner,
                     base::WaitableEvent* shutdown_event,
-                    IPC::SyncChannel* channel,
                     IPC::AttachmentBroker* broker,
                     gpu::SyncPointManager* sync_point_manager,
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory);
@@ -109,10 +109,25 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
     return gpu_memory_buffer_factory_;
   }
 
- private:
-  typedef base::ScopedPtrHashMap<int, scoped_ptr<GpuChannel>> GpuChannelMap;
+ protected:
+  virtual scoped_ptr<GpuChannel> CreateGpuChannel(
+      gfx::GLShareGroup* share_group,
+      gpu::gles2::MailboxManager* mailbox_manager,
+      int client_id,
+      uint64_t client_tracing_id,
+      bool allow_future_sync_points);
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // These objects manage channels to individual renderer processes there is
+  // one channel for each renderer process that has connected to this GPU
+  // process.
+  base::ScopedPtrHashMap<int32, scoped_ptr<GpuChannel>> gpu_channels_;
+
+ private:
   // Message handlers.
+  bool OnControlMessageReceived(const IPC::Message& msg);
   void OnEstablishChannel(int client_id,
                           uint64_t client_tracing_id,
                           bool share_context,
@@ -133,28 +148,22 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
                                 int client_id,
                                 int32 sync_point);
 
-  void OnFinalize();
-
   void OnUpdateValueState(int client_id,
                           unsigned int target,
                           const gpu::ValueState& state);
-
   void OnLoseAllContexts();
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // Used to send and receive IPC messages from the browser process.
+  IPC::SyncChannel* const channel_;
+  MessageRouter router_;
+
+  GpuWatchdog* watchdog_;
+
   base::WaitableEvent* shutdown_event_;
 
-  // Used to send and receive IPC messages from the browser process.
-  MessageRouter* const router_;
-
-  // These objects manage channels to individual renderer processes there is
-  // one channel for each renderer process that has connected to this GPU
-  // process.
-  GpuChannelMap gpu_channels_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   GpuMemoryManager gpu_memory_manager_;
-  GpuWatchdog* watchdog_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
   gpu::SyncPointManager* sync_point_manager_;
   scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
@@ -163,7 +172,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
       framebuffer_completeness_cache_;
   scoped_refptr<gfx::GLSurface> default_offscreen_surface_;
   GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
-  IPC::SyncChannel* channel_;
   // Must outlive this instance of GpuChannelManager.
   IPC::AttachmentBroker* attachment_broker_;
 

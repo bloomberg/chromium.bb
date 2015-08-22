@@ -196,6 +196,7 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
     IPC_MESSAGE_HANDLER(GpuMsg_Initialize, OnInitialize)
+    IPC_MESSAGE_HANDLER(GpuMsg_Finalize, OnFinalize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
     IPC_MESSAGE_HANDLER(GpuMsg_GetVideoMemoryUsageStats,
                         OnGetVideoMemoryUsageStats)
@@ -217,8 +218,15 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
     return true;
 #endif
 
+  return false;
+}
+
+bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
+  if (ChildThreadImpl::OnMessageReceived(msg))
+    return true;
+
   return gpu_channel_manager_.get() &&
-      gpu_channel_manager_->OnMessageReceived(msg);
+         gpu_channel_manager_->OnMessageReceived(msg);
 }
 
 void GpuChildThread::OnInitialize() {
@@ -250,17 +258,22 @@ void GpuChildThread::OnInitialize() {
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
   gpu_channel_manager_.reset(new GpuChannelManager(
-      GetRouter(), watchdog_thread_.get(),
+      channel(), watchdog_thread_.get(),
+      base::ThreadTaskRunnerHandle::Get().get(),
       ChildProcess::current()->io_task_runner(),
-      ChildProcess::current()->GetShutDownEvent(), channel(),
-      GetAttachmentBroker(), sync_point_manager_,
-      gpu_memory_buffer_factory_));
+      ChildProcess::current()->GetShutDownEvent(), GetAttachmentBroker(),
+      sync_point_manager_, gpu_memory_buffer_factory_));
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()
       ->GetGpuPlatformSupport()
       ->OnChannelEstablished(this);
 #endif
+}
+
+void GpuChildThread::OnFinalize() {
+  // Quit the GPU process
+  base::MessageLoop::current()->Quit();
 }
 
 void GpuChildThread::StopWatchdog() {

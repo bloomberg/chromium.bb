@@ -28,32 +28,32 @@
 namespace content {
 
 GpuChannelManager::GpuChannelManager(
-    MessageRouter* router,
+    IPC::SyncChannel* channel,
     GpuWatchdog* watchdog,
+    base::SingleThreadTaskRunner* task_runner,
     base::SingleThreadTaskRunner* io_task_runner,
     base::WaitableEvent* shutdown_event,
-    IPC::SyncChannel* channel,
     IPC::AttachmentBroker* broker,
     gpu::SyncPointManager* sync_point_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory)
-    : io_task_runner_(io_task_runner),
+    : task_runner_(task_runner),
+      io_task_runner_(io_task_runner),
+      channel_(channel),
+      watchdog_(watchdog),
       shutdown_event_(shutdown_event),
-      router_(router),
       gpu_memory_manager_(
           this,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
-      watchdog_(watchdog),
       sync_point_manager_(sync_point_manager),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
-      channel_(channel),
       attachment_broker_(broker),
       weak_factory_(this) {
-  DCHECK(router_);
+  DCHECK(task_runner);
   DCHECK(io_task_runner);
-  DCHECK(shutdown_event);
 }
 
 GpuChannelManager::~GpuChannelManager() {
+  // Destroy channels before anything else because of dependencies.
   gpu_channels_.clear();
   if (default_offscreen_surface_.get()) {
     default_offscreen_surface_->Destroy();
@@ -98,22 +98,19 @@ int GpuChannelManager::GenerateRouteID() {
 }
 
 void GpuChannelManager::AddRoute(int32 routing_id, IPC::Listener* listener) {
-  router_->AddRoute(routing_id, listener);
+  router_.AddRoute(routing_id, listener);
 }
 
 void GpuChannelManager::RemoveRoute(int32 routing_id) {
-  router_->RemoveRoute(routing_id);
+  router_.RemoveRoute(routing_id);
 }
 
 GpuChannel* GpuChannelManager::LookupChannel(int32 client_id) {
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(client_id);
-  if (iter == gpu_channels_.end())
-    return NULL;
-  else
-    return iter->second;
+  const auto& it = gpu_channels_.find(client_id);
+  return it != gpu_channels_.end() ? it->second : nullptr;
 }
 
-bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
+bool GpuChannelManager::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannelManager, msg)
     IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
@@ -122,23 +119,41 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
                         OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
-    IPC_MESSAGE_HANDLER(GpuMsg_Finalize, OnFinalize)
     IPC_MESSAGE_HANDLER(GpuMsg_UpdateValueState, OnUpdateValueState)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-bool GpuChannelManager::Send(IPC::Message* msg) { return router_->Send(msg); }
+bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
+  if (msg.routing_id() == MSG_ROUTING_CONTROL)
+    return OnControlMessageReceived(msg);
+
+  return router_.RouteMessage(msg);
+}
+
+bool GpuChannelManager::Send(IPC::Message* msg) {
+  return channel_->Send(msg);
+}
+
+scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
+    gfx::GLShareGroup* share_group,
+    gpu::gles2::MailboxManager* mailbox_manager,
+    int client_id,
+    uint64_t client_tracing_id,
+    bool allow_future_sync_points) {
+  return make_scoped_ptr(
+      new GpuChannel(this, watchdog_, share_group, mailbox_manager,
+                     task_runner_.get(), io_task_runner_.get(), client_id,
+                     client_tracing_id, false, allow_future_sync_points));
+}
 
 void GpuChannelManager::OnEstablishChannel(int client_id,
                                            uint64_t client_tracing_id,
                                            bool share_context,
                                            bool allow_future_sync_points) {
-  IPC::ChannelHandle channel_handle;
-
-  gfx::GLShareGroup* share_group = NULL;
-  gpu::gles2::MailboxManager* mailbox_manager = NULL;
+  gfx::GLShareGroup* share_group = nullptr;
+  gpu::gles2::MailboxManager* mailbox_manager = nullptr;
   if (share_context) {
     if (!share_group_.get()) {
       share_group_ = new gfx::GLShareGroup;
@@ -149,24 +164,11 @@ void GpuChannelManager::OnEstablishChannel(int client_id,
     mailbox_manager = mailbox_manager_.get();
   }
 
-  scoped_ptr<GpuChannel> channel(new GpuChannel(this,
-                                                watchdog_,
-                                                share_group,
-                                                mailbox_manager,
-                                                client_id,
-                                                client_tracing_id,
-                                                false,
-                                                allow_future_sync_points));
-  channel->Init(io_task_runner_.get(), shutdown_event_, attachment_broker_);
-  channel_handle.name = channel->GetChannelName();
-
-#if defined(OS_POSIX)
-  // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
-  // that it gets closed after it has been sent.
-  base::ScopedFD renderer_fd = channel->TakeRendererFileDescriptor();
-  DCHECK(renderer_fd.is_valid());
-  channel_handle.socket = base::FileDescriptor(renderer_fd.Pass());
-#endif
+  scoped_ptr<GpuChannel> channel =
+      CreateGpuChannel(share_group, mailbox_manager, client_id,
+                       client_tracing_id, allow_future_sync_points);
+  IPC::ChannelHandle channel_handle =
+      channel->Init(shutdown_event_, attachment_broker_);
 
   gpu_channels_.set(client_id, channel.Pass());
 
@@ -175,10 +177,9 @@ void GpuChannelManager::OnEstablishChannel(int client_id,
 
 void GpuChannelManager::OnCloseChannel(
     const IPC::ChannelHandle& channel_handle) {
-  for (GpuChannelMap::iterator iter = gpu_channels_.begin();
-       iter != gpu_channels_.end(); ++iter) {
-    if (iter->second->GetChannelName() == channel_handle.name) {
-      gpu_channels_.erase(iter);
+  for (auto it = gpu_channels_.begin(); it != gpu_channels_.end(); ++it) {
+    if (it->second->channel_id() == channel_handle.name) {
+      gpu_channels_.erase(it);
       return;
     }
   }
@@ -193,10 +194,10 @@ void GpuChannelManager::OnCreateViewCommandBuffer(
   DCHECK(surface_id);
   CreateCommandBufferResult result = CREATE_COMMAND_BUFFER_FAILED;
 
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(client_id);
-  if (iter != gpu_channels_.end()) {
-    result = iter->second->CreateViewCommandBuffer(
-        window, surface_id, init_params, route_id);
+  auto it = gpu_channels_.find(client_id);
+  if (it != gpu_channels_.end()) {
+    result = it->second->CreateViewCommandBuffer(window, surface_id,
+                                                 init_params, route_id);
   }
 
   Send(new GpuHostMsg_CommandBufferCreated(result));
@@ -236,10 +237,9 @@ void GpuChannelManager::OnUpdateValueState(
     int client_id, unsigned int target, const gpu::ValueState& state) {
   // Only pass updated state to the channel corresponding to the
   // render_widget_host where the event originated.
-  GpuChannelMap::const_iterator iter = gpu_channels_.find(client_id);
-  if (iter != gpu_channels_.end()) {
-    iter->second->HandleUpdateValueState(target, state);
-  }
+  auto it = gpu_channels_.find(client_id);
+  if (it != gpu_channels_.end())
+    it->second->HandleUpdateValueState(target, state);
 }
 
 void GpuChannelManager::OnLoadedShader(std::string program_proto) {
@@ -248,9 +248,8 @@ void GpuChannelManager::OnLoadedShader(std::string program_proto) {
 }
 
 bool GpuChannelManager::HandleMessagesScheduled() {
-  for (GpuChannelMap::iterator iter = gpu_channels_.begin();
-       iter != gpu_channels_.end(); ++iter) {
-    if (iter->second->handle_messages_scheduled())
+  for (auto& kv : gpu_channels_) {
+    if (kv.second->handle_messages_scheduled())
       return true;
   }
   return false;
@@ -258,22 +257,17 @@ bool GpuChannelManager::HandleMessagesScheduled() {
 
 uint64 GpuChannelManager::MessagesProcessed() {
   uint64 messages_processed = 0;
-
-  for (GpuChannelMap::iterator iter = gpu_channels_.begin();
-       iter != gpu_channels_.end(); ++iter) {
-    messages_processed += iter->second->messages_processed();
-  }
+  for (auto& kv : gpu_channels_)
+    messages_processed += kv.second->messages_processed();
   return messages_processed;
 }
 
 void GpuChannelManager::LoseAllContexts() {
-  for (GpuChannelMap::iterator iter = gpu_channels_.begin();
-       iter != gpu_channels_.end(); ++iter) {
-    iter->second->MarkAllContextsLost();
-  }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&GpuChannelManager::OnLoseAllContexts,
-                            weak_factory_.GetWeakPtr()));
+  for (auto& kv : gpu_channels_)
+    kv.second->MarkAllContextsLost();
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&GpuChannelManager::OnLoseAllContexts,
+                                    weak_factory_.GetWeakPtr()));
 }
 
 void GpuChannelManager::OnLoseAllContexts() {
@@ -286,11 +280,6 @@ gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
         gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
   }
   return default_offscreen_surface_.get();
-}
-
-void GpuChannelManager::OnFinalize() {
-  // Quit the GPU process
-  base::MessageLoop::current()->Quit();
 }
 
 }  // namespace content
