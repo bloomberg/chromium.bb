@@ -474,7 +474,7 @@ void MessageLoop::RunTask(const PendingTask& pending_task) {
 
   HistogramEvent(kTaskRunEvent);
 
-  TRACE_TASK_EXECUTION("toplevel", pending_task);
+  TRACE_TASK_EXECUTION("MessageLoop::RunTask", pending_task);
 
   FOR_EACH_OBSERVER(TaskObserver, task_observers_,
                     WillProcessTask(pending_task));
