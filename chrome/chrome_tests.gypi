@@ -448,7 +448,6 @@
       'browser/ui/ash/multi_user/multi_user_window_manager_test.h',
       'browser/ui/ash/shelf_browsertest.cc',
       'browser/ui/ash/system_tray_delegate_chromeos_browsertest_chromeos.cc',
-      'browser/ui/ash/system_tray_tray_cast_browsertest_chromeos.cc',
       'browser/ui/ash/volume_controller_browsertest_chromeos.cc',
       'browser/ui/autofill/autofill_dialog_controller_browsertest.cc',
       'browser/ui/autofill/autofill_dialog_view_tester.h',

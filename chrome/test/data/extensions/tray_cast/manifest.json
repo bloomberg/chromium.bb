@@ -5,9 +5,6 @@
   "background": {
     "scripts": ["background.js"]
   },
-  "permissions": [
-    "cast"
-  ],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwjUQp4bsqVWjak86Ha5eFFl2c5h9lgqvx7K6Bv30zJTdGw4REIvi5FcS/atdlfP/GzOGufPPKEIH2536KvQP/6o4e0jyK7kT5XUoO8K/CRy+hbu5Xyq61AT3kYEEvN6fgtuu41RDJl20AcBcmBRbeJTKhJcFYJKrZHK73KC53O9uP+fLbsMp7eHwYjirZ1kYUSWlcI+piD4eVSGGcbt0bG8ZSTuOOcFASSiKuWNU7NS/Zl1/esV04XbcS2C9Fsp8HI5FvJWSWEsNRvrWxQn+wvg8YfUKzHUiBr8WVGVUHM7KSO7m3rMl3JM6Be31DMhXMAsc41RRvNjAZpK+DLuP2wIDAQAB",
   "manifest_version": 2,
   "version": "0.1"
