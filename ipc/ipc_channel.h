@@ -52,7 +52,7 @@ class IPC_EXPORT Channel : public Endpoint {
     MODE_CLIENT_FLAG = 0x2,
     MODE_NAMED_FLAG = 0x4,
 #if defined(OS_POSIX)
-    MODE_OPEN_ACCESS_FLAG = 0x8, // Don't restrict access based on client UID.
+    MODE_OPEN_ACCESS_FLAG = 0x8,  // Don't restrict access based on client UID.
 #endif
   };
 
@@ -66,8 +66,8 @@ class IPC_EXPORT Channel : public Endpoint {
     MODE_NAMED_SERVER = MODE_SERVER_FLAG | MODE_NAMED_FLAG,
     MODE_NAMED_CLIENT = MODE_CLIENT_FLAG | MODE_NAMED_FLAG,
 #if defined(OS_POSIX)
-    MODE_OPEN_NAMED_SERVER = MODE_OPEN_ACCESS_FLAG | MODE_SERVER_FLAG |
-                             MODE_NAMED_FLAG
+    MODE_OPEN_NAMED_SERVER =
+        MODE_OPEN_ACCESS_FLAG | MODE_SERVER_FLAG | MODE_NAMED_FLAG
 #endif
   };
 
@@ -195,9 +195,9 @@ class IPC_EXPORT Channel : public Endpoint {
   // threads. This is constant for the lifetime of the |Channel|.
   virtual bool IsSendThreadSafe() const;
 
-  // NaCl in Non-SFI mode runs on Linux directly, and the following functions
-  // compiled on Linux are also needed. Please see also comments in
-  // components/nacl_nonsfi.gyp for more details.
+// NaCl in Non-SFI mode runs on Linux directly, and the following functions
+// compiled on Linux are also needed. Please see also comments in
+// components/nacl_nonsfi.gyp for more details.
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   // On POSIX an IPC::Channel wraps a socketpair(), this method returns the
   // FD # for the client end of the socket.
@@ -240,6 +240,26 @@ class IPC_EXPORT Channel : public Endpoint {
   // process such that it acts similar to if it was exec'd, for tests.
   static void NotifyProcessForkedForTesting();
 #endif
+
+ protected:
+  // An OutputElement is a wrapper around a Message or raw buffer while it is
+  // waiting to be passed to the system's underlying IPC mechanism.
+  class OutputElement {
+   public:
+    // Takes ownership of message.
+    OutputElement(Message* message);
+    // Takes ownership of the buffer.
+    OutputElement(void* buffer, size_t length);
+    ~OutputElement();
+    size_t size() const;
+    const void* data() const;
+    const Message* get_message() const { return message_.get(); }
+
+   private:
+    scoped_ptr<const Message> message_;
+    void* buffer_;
+    size_t length_;
+  };
 };
 
 #if defined(OS_POSIX)

@@ -143,17 +143,25 @@ MessageAttachmentSet::PeekBrokerableAttachments() const {
   return output;
 }
 
-std::vector<scoped_refptr<BrokerableAttachment>>
-MessageAttachmentSet::GetBrokerableAttachmentsForUpdating() {
-  std::vector<scoped_refptr<BrokerableAttachment>> output;
-  for (const scoped_refptr<MessageAttachment>& attachment : attachments_) {
-    if (attachment->GetType() ==
-        MessageAttachment::TYPE_BROKERABLE_ATTACHMENT) {
-      output.push_back(scoped_refptr<BrokerableAttachment>(
-          static_cast<BrokerableAttachment*>(attachment.get())));
+void MessageAttachmentSet::ReplacePlaceholderWithAttachment(
+    const scoped_refptr<BrokerableAttachment>& attachment) {
+  for (auto it = attachments_.begin(); it != attachments_.end(); ++it) {
+    if ((*it)->GetType() != MessageAttachment::TYPE_BROKERABLE_ATTACHMENT)
+      continue;
+    BrokerableAttachment* brokerable_attachment =
+        static_cast<BrokerableAttachment*>(it->get());
+
+    if (brokerable_attachment->GetBrokerableType() ==
+            BrokerableAttachment::PLACEHOLDER &&
+        brokerable_attachment->GetIdentifier() == attachment->GetIdentifier()) {
+      *it = attachment;
+      return;
     }
   }
-  return output;
+
+  // This function should only be called if there is a placeholder ready to be
+  // replaced.
+  NOTREACHED();
 }
 
 #if defined(OS_POSIX)

@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
+#include "ipc/attachment_broker.h"
+#include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
 
 #if !defined(NDEBUG)
@@ -164,11 +166,46 @@ class IPC_EXPORT Message : public base::Pickle {
   static void Log(std::string* name, const Message* msg, std::string* l) {
   }
 
-  // Find the end of the message data that starts at range_start.  Returns NULL
-  // if the entire message is not found in the given data range.
-  static const char* FindNext(const char* range_start, const char* range_end) {
-    return base::Pickle::FindNext(sizeof(Header), range_start, range_end);
-  }
+  // The static method FindNext() returns several pieces of information, which
+  // are aggregated into an instance of this struct.
+  struct NextMessageInfo {
+    NextMessageInfo();
+    ~NextMessageInfo();
+    // Whether an entire message was found in the given memory range. If this is
+    // false, the other fields are left uninitialized.
+    bool message_found;
+    // The start address is passed into FindNext() by the caller, so isn't
+    // repeated in this struct. The end address of the pickle should be used to
+    // construct a base::Pickle.
+    const char* pickle_end;
+    // The end address of the message should be used to determine the start
+    // address of the next message.
+    const char* message_end;
+    // If the message has brokerable attachments, this vector will contain the
+    // ids of the brokerable attachments. The caller of FindNext() is
+    // responsible for adding the attachments to the message.
+    std::vector<BrokerableAttachment::AttachmentId> attachment_ids;
+  };
+
+  static NextMessageInfo FindNext(const char* range_start,
+                                  const char* range_end);
+
+  struct SerializedAttachmentIds {
+    void* buffer;
+    size_t size;
+  };
+  // Creates a buffer that contains a serialization of the ids of the brokerable
+  // attachments of the message. This buffer is intended to be sent over the IPC
+  // channel immediately after the pickled message. The caller takes ownership
+  // of the buffer.
+  // This method should only be called if the message has brokerable
+  // attachments.
+  SerializedAttachmentIds SerializedIdsOfBrokerableAttachments();
+
+  // Adds a placeholder brokerable attachment that must be replaced before the
+  // message can be dispatched.
+  bool AddPlaceholderBrokerableAttachmentWithId(
+      BrokerableAttachment::AttachmentId id);
 
   // WriteAttachment appends |attachment| to the end of the set. It returns
   // false iff the set is full.
@@ -222,6 +259,12 @@ class IPC_EXPORT Message : public base::Pickle {
     int32 routing;  // ID of the view that this message is destined for
     uint32 type;    // specifies the user-defined message type
     uint32 flags;   // specifies control flags for the message
+#if USE_ATTACHMENT_BROKER
+    // The number of brokered attachments included with this message. The
+    // ids of the brokered attachment ids are sent immediately after the pickled
+    // message, before the next pickled message is sent.
+    uint32 num_brokered_attachments;
+#endif
 #if defined(OS_POSIX)
     uint16 num_fds; // the number of descriptors included with this message
     uint16 pad;     // explicitly initialize this to appease valgrind

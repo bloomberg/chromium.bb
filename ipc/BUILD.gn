@@ -82,6 +82,8 @@ component("ipc") {
     "param_traits_macros.h",
     "param_traits_read_macros.h",
     "param_traits_write_macros.h",
+    "placeholder_brokerable_attachment.cc",
+    "placeholder_brokerable_attachment.h",
     "struct_constructor_macros.h",
     "struct_destructor_macros.h",
     "unix_domain_socket_util.cc",
@@ -140,6 +142,9 @@ if (!is_android) {
       "ipc_sync_channel_unittest.cc",
       "ipc_sync_message_unittest.cc",
       "ipc_sync_message_unittest.h",
+      "ipc_test_message_generator.cc",
+      "ipc_test_message_generator.h",
+      "ipc_test_messages.h",
       "sync_socket_unittest.cc",
       "unix_domain_socket_util_unittest.cc",
     ]
