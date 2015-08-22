@@ -1,7 +1,7 @@
-From f4b79cfaefb87fa2c37a860c5a64f320a5265f99 Mon Sep 17 00:00:00 2001
+From 8451a8f615c1542a79ae190d4117e10f263857f7 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Mon, 23 Mar 2015 11:24:11 -0700
-Subject: [PATCH] [backport] Fix collation dequoting.
+Subject: [PATCH 11/11] [backport] Fix collation dequoting.
 
 Backport https://www.sqlite.org/src/info/eddc05e7bb31fae7
 "Fix a problem causing collation sequence names to be dequoted
@@ -201,5 +201,5 @@ index 2085415..0716ac7 100644
 +
 +
 -- 
-2.2.1
+2.4.5
 

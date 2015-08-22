@@ -7408,7 +7408,11 @@ int sqlite3_vtab_on_conflict(sqlite3 *);
 
 
 
-/* Begin recover.patch for Chromium */
+/* Begin recover virtual table patch for Chromium */
+/* Our patches don't conform to SQLite's amalgamation processing. Hack it. */
+#ifndef CHROMIUM_SQLITE_API
+#define CHROMIUM_SQLITE_API SQLITE_API
+#endif
 /*
 ** Call to initialize the recover virtual-table modules (see recover.c).
 **
@@ -7416,8 +7420,45 @@ int sqlite3_vtab_on_conflict(sqlite3 *);
 ** virtual table available to Web SQL.  Breaking it out allows only
 ** selected users to enable it (currently sql/recovery.cc).
 */
+CHROMIUM_SQLITE_API
 int recoverVtableInit(sqlite3 *db);
-/* End recover.patch for Chromium */
+/* End recover virtual table patch for Chromium */
+
+/* Begin WebDatabase patch for Chromium */
+/* Expose some SQLite internals for the WebDatabase vfs.
+** DO NOT EXTEND THE USE OF THIS.
+*/
+#ifndef CHROMIUM_SQLITE_API
+#define CHROMIUM_SQLITE_API SQLITE_API
+#endif
+#if defined(CHROMIUM_SQLITE_INTERNALS)
+#ifdef _WIN32
+CHROMIUM_SQLITE_API
+void chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle);
+#else  /* _WIN32 */
+CHROMIUM_SQLITE_API
+void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file);
+CHROMIUM_SQLITE_API
+int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
+                                               int fd,
+                                               int dirfd,
+                                               sqlite3_file* file,
+                                               const char* fileName,
+                                               int noLock);
+CHROMIUM_SQLITE_API
+int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
+                                              const char* fileName,
+                                              int flags,
+                                              int* fd);
+CHROMIUM_SQLITE_API
+void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file,
+                                                  int fd,
+                                                  int flags);
+CHROMIUM_SQLITE_API
+void chromium_sqlite3_destroy_reusable_file_handle(sqlite3_file* file);
+#endif  /* _WIN32 */
+#endif  /* CHROMIUM_SQLITE_INTERNALS */
+/* End WebDatabase patch for Chromium */
 
 /*
 ** Undo the hack that converts floating point types to integer for

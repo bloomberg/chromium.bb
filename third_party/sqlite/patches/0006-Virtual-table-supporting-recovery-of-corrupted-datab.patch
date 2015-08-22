@@ -1,7 +1,7 @@
-From 13a64d3c7fb541be8cb753c575837c1b84f5d9fd Mon Sep 17 00:00:00 2001
+From ec588be0416fab3e957d0901eb6e638543b01229 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Sat, 20 Jul 2013 11:42:21 -0700
-Subject: [PATCH 06/16] Virtual table supporting recovery of corrupted
+Subject: [PATCH 06/11] Virtual table supporting recovery of corrupted
  databases.
 
 "recover" implements a virtual table which uses the SQLite pager layer
@@ -19,14 +19,14 @@ third_party/sqlite/src/src/{recover,recover-alt}.c .
  third_party/sqlite/src/Makefile.linux-gcc  |    4 +
  third_party/sqlite/src/main.mk             |    4 +-
  third_party/sqlite/src/src/main.c          |    8 +
- third_party/sqlite/src/src/recover.c       | 2164 ++++++++++++++++++++++++++++
- third_party/sqlite/src/src/sqlite.h.in     |   11 +
+ third_party/sqlite/src/src/recover.c       | 2165 ++++++++++++++++++++++++++++
+ third_party/sqlite/src/src/sqlite.h.in     |   16 +
  third_party/sqlite/src/test/recover.test   |  147 ++
  third_party/sqlite/src/test/recover0.test  |  532 +++++++
  third_party/sqlite/src/test/recover1.test  |  429 ++++++
  third_party/sqlite/src/test/recover2.test  |  157 ++
  third_party/sqlite/src/tool/mksqlite3c.tcl |    2 +
- 11 files changed, 3458 insertions(+), 1 deletion(-)
+ 11 files changed, 3464 insertions(+), 1 deletion(-)
  create mode 100644 third_party/sqlite/src/src/recover.c
  create mode 100644 third_party/sqlite/src/test/recover.test
  create mode 100644 third_party/sqlite/src/test/recover0.test
@@ -46,10 +46,10 @@ index a2213e8..1389486 100644
    $(TOP)/src/rowset.c \
    $(TOP)/src/select.c \
 diff --git a/third_party/sqlite/src/Makefile.linux-gcc b/third_party/sqlite/src/Makefile.linux-gcc
-index 554bf56..e631816 100644
+index 4f6cdf1..dd8f46d 100644
 --- a/third_party/sqlite/src/Makefile.linux-gcc
 +++ b/third_party/sqlite/src/Makefile.linux-gcc
-@@ -82,6 +82,10 @@ OPTS += -DSQLITE_MEMDEBUG=1
+@@ -81,6 +81,10 @@ OPTS += -DSQLITE_MEMDEBUG=1
  # TODO(shess) I can't see why I need this setting.
  OPTS += -DOS_UNIX=1
  
@@ -110,10 +110,10 @@ index fc03700..d15ab9bb 100644
      rc = sqlite3IcuInit(db);
 diff --git a/third_party/sqlite/src/src/recover.c b/third_party/sqlite/src/src/recover.c
 new file mode 100644
-index 0000000..c996d53
+index 0000000..6882d6f
 --- /dev/null
 +++ b/third_party/sqlite/src/src/recover.c
-@@ -0,0 +1,2164 @@
+@@ -0,0 +1,2165 @@
 +/*
 +** 2012 Jan 11
 +**
@@ -1991,6 +1991,7 @@ index 0000000..c996d53
 +  0,                         /* xRename - rename the table */
 +};
 +
++CHROMIUM_SQLITE_API
 +int recoverVtableInit(sqlite3 *db){
 +  return sqlite3_create_module_v2(db, "recover", &recoverModule, NULL, 0);
 +}
@@ -2279,14 +2280,18 @@ index 0000000..c996d53
 +  return SQLITE_OK;
 +}
 diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
-index f1d4e40..28b5ef1 100644
+index 36aa999..333adfe 100644
 --- a/third_party/sqlite/src/src/sqlite.h.in
 +++ b/third_party/sqlite/src/src/sqlite.h.in
-@@ -7408,6 +7408,17 @@ int sqlite3_vtab_on_conflict(sqlite3 *);
+@@ -7408,6 +7408,22 @@ int sqlite3_vtab_on_conflict(sqlite3 *);
  
  
  
-+/* Begin recover.patch for Chromium */
++/* Begin recover virtual table patch for Chromium */
++/* Our patches don't conform to SQLite's amalgamation processing. Hack it. */
++#ifndef CHROMIUM_SQLITE_API
++#define CHROMIUM_SQLITE_API SQLITE_API
++#endif
 +/*
 +** Call to initialize the recover virtual-table modules (see recover.c).
 +**
@@ -2294,12 +2299,13 @@ index f1d4e40..28b5ef1 100644
 +** virtual table available to Web SQL.  Breaking it out allows only
 +** selected users to enable it (currently sql/recovery.cc).
 +*/
++CHROMIUM_SQLITE_API
 +int recoverVtableInit(sqlite3 *db);
-+/* End recover.patch for Chromium */
++/* End recover virtual table patch for Chromium */
 +
- /*
- ** Undo the hack that converts floating point types to integer for
- ** builds on processors without floating point support.
+ /* Begin WebDatabase patch for Chromium */
+ /* Expose some SQLite internals for the WebDatabase vfs.
+ ** DO NOT EXTEND THE USE OF THIS.
 diff --git a/third_party/sqlite/src/test/recover.test b/third_party/sqlite/src/test/recover.test
 new file mode 100644
 index 0000000..b5aa182
@@ -3603,5 +3609,5 @@ index 0e97923..9e2b0fe 100644
     fts3_aux.c
     fts3_expr.c
 -- 
-2.2.1
+2.4.5
 

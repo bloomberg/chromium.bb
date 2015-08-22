@@ -1875,6 +1875,7 @@ static sqlite3_module recoverModule = {
   0,                         /* xRename - rename the table */
 };
 
+CHROMIUM_SQLITE_API
 int recoverVtableInit(sqlite3 *db){
   return sqlite3_create_module_v2(db, "recover", &recoverModule, NULL, 0);
 }

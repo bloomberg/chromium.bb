@@ -5546,6 +5546,7 @@ int sqlite3_os_end(void){
   return SQLITE_OK;
 }
 
+CHROMIUM_SQLITE_API
 void chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle) {
   winFile* winSQLite3File = (winFile*)file;
   memset(file, 0, sizeof(*file));

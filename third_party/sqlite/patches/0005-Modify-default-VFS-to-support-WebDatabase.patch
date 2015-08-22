@@ -1,7 +1,7 @@
-From 67024286d2719aec049605896ef0afec6932f184 Mon Sep 17 00:00:00 2001
+From 4b957c2c198a53498fe18ad9668e2817ace98b1e Mon Sep 17 00:00:00 2001
 From: dumi <dumi@chromium.org>
 Date: Mon, 20 Jul 2009 23:40:51 +0000
-Subject: [PATCH 05/16] Modify default VFS to support WebDatabase.
+Subject: [PATCH 05/11] Modify default VFS to support WebDatabase.
 
 The renderer WebDatabase implementation needs to broker certain requests
 to the browser.  This modifies SQLite to allow monkey-patching the VFS
@@ -17,12 +17,13 @@ https://codereview.chromium.org/384075
 https://codereview.chromium.org/377039
 [Possibly not a complete list.]
 ---
- third_party/sqlite/src/src/os_unix.c | 95 ++++++++++++++++++++++++++++++------
- third_party/sqlite/src/src/os_win.c  |  7 +++
- 2 files changed, 86 insertions(+), 16 deletions(-)
+ third_party/sqlite/src/src/os_unix.c   | 100 +++++++++++++++++++++++++++------
+ third_party/sqlite/src/src/os_win.c    |   8 +++
+ third_party/sqlite/src/src/sqlite.h.in |  36 ++++++++++++
+ 3 files changed, 128 insertions(+), 16 deletions(-)
 
 diff --git a/third_party/sqlite/src/src/os_unix.c b/third_party/sqlite/src/src/os_unix.c
-index a9344ee..1624f6a 100644
+index a9344ee..75b71dc 100644
 --- a/third_party/sqlite/src/src/os_unix.c
 +++ b/third_party/sqlite/src/src/os_unix.c
 @@ -1321,6 +1321,12 @@ static int fileHasMoved(unixFile *pFile){
@@ -38,16 +39,18 @@ index a9344ee..1624f6a 100644
    return pFile->pInode!=0 &&
        (osStat(pFile->zPath, &buf)!=0 || buf.st_ino!=pFile->pInode->fileId.ino);
  #endif
-@@ -5615,6 +5621,73 @@ static int findCreateFileMode(
+@@ -5615,6 +5621,78 @@ static int findCreateFileMode(
  }
  
  /*
 +** Initializes a unixFile structure with zeros.
 +*/
++CHROMIUM_SQLITE_API
 +void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file) {
 +  memset(file, 0, sizeof(unixFile));
 +}
 +
++CHROMIUM_SQLITE_API
 +int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
 +                                               int fd,
 +                                               int dirfd,
@@ -66,6 +69,7 @@ index a9344ee..1624f6a 100644
 +** If a reusable file descriptor is not found, and a new UnixUnusedFd cannot
 +** be allocated, SQLITE_NOMEM is returned. Otherwise, SQLITE_OK is returned.
 +*/
++CHROMIUM_SQLITE_API
 +int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
 +                                              const char* fileName,
 +                                              int flags,
@@ -90,6 +94,7 @@ index a9344ee..1624f6a 100644
 +/*
 +** Marks 'fd' as the unused file descriptor for 'pFile'.
 +*/
++CHROMIUM_SQLITE_API
 +void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file,
 +                                                  int fd,
 +                                                  int flags) {
@@ -103,6 +108,7 @@ index a9344ee..1624f6a 100644
 +/*
 +** Destroys pFile's field that keeps track of the unused file descriptor.
 +*/
++CHROMIUM_SQLITE_API
 +void chromium_sqlite3_destroy_reusable_file_handle(sqlite3_file* file) {
 +  unixFile* unixSQLite3File = (unixFile*)file;
 +  sqlite3_free(unixSQLite3File->pUnused);
@@ -112,7 +118,7 @@ index a9344ee..1624f6a 100644
  ** Open the file zPath.
  ** 
  ** Previously, the SQLite OS layer used three functions in place of this
-@@ -5715,20 +5788,13 @@ static int unixOpen(
+@@ -5715,20 +5793,13 @@ static int unixOpen(
      sqlite3_randomness(0,0);
    }
  
@@ -137,7 +143,7 @@ index a9344ee..1624f6a 100644
  
      /* Database filenames are double-zero terminated if they are not
      ** URIs with parameters.  Hence, they can always be passed into
-@@ -5798,10 +5864,7 @@ static int unixOpen(
+@@ -5798,10 +5869,7 @@ static int unixOpen(
      *pOutFlags = flags;
    }
  
@@ -149,7 +155,7 @@ index a9344ee..1624f6a 100644
  
    if( isDelete ){
  #if OS_VXWORKS
-@@ -5893,7 +5956,7 @@ static int unixOpen(
+@@ -5893,7 +5961,7 @@ static int unixOpen(
  
  open_finished:
    if( rc!=SQLITE_OK ){
@@ -159,13 +165,14 @@ index a9344ee..1624f6a 100644
    return rc;
  }
 diff --git a/third_party/sqlite/src/src/os_win.c b/third_party/sqlite/src/src/os_win.c
-index 8ca2107..5b0a296 100644
+index 8ca2107..9320bfc 100644
 --- a/third_party/sqlite/src/src/os_win.c
 +++ b/third_party/sqlite/src/src/os_win.c
-@@ -5546,4 +5546,11 @@ int sqlite3_os_end(void){
+@@ -5546,4 +5546,12 @@ int sqlite3_os_end(void){
    return SQLITE_OK;
  }
  
++CHROMIUM_SQLITE_API
 +void chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle) {
 +  winFile* winSQLite3File = (winFile*)file;
 +  memset(file, 0, sizeof(*file));
@@ -174,6 +181,53 @@ index 8ca2107..5b0a296 100644
 +}
 +
  #endif /* SQLITE_OS_WIN */
+diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
+index f1d4e40..36aa999 100644
+--- a/third_party/sqlite/src/src/sqlite.h.in
++++ b/third_party/sqlite/src/src/sqlite.h.in
+@@ -7408,6 +7408,42 @@ int sqlite3_vtab_on_conflict(sqlite3 *);
+ 
+ 
+ 
++/* Begin WebDatabase patch for Chromium */
++/* Expose some SQLite internals for the WebDatabase vfs.
++** DO NOT EXTEND THE USE OF THIS.
++*/
++#ifndef CHROMIUM_SQLITE_API
++#define CHROMIUM_SQLITE_API SQLITE_API
++#endif
++#if defined(CHROMIUM_SQLITE_INTERNALS)
++#ifdef _WIN32
++CHROMIUM_SQLITE_API
++void chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle);
++#else  /* _WIN32 */
++CHROMIUM_SQLITE_API
++void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file);
++CHROMIUM_SQLITE_API
++int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
++                                               int fd,
++                                               int dirfd,
++                                               sqlite3_file* file,
++                                               const char* fileName,
++                                               int noLock);
++CHROMIUM_SQLITE_API
++int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
++                                              const char* fileName,
++                                              int flags,
++                                              int* fd);
++CHROMIUM_SQLITE_API
++void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file,
++                                                  int fd,
++                                                  int flags);
++CHROMIUM_SQLITE_API
++void chromium_sqlite3_destroy_reusable_file_handle(sqlite3_file* file);
++#endif  /* _WIN32 */
++#endif  /* CHROMIUM_SQLITE_INTERNALS */
++/* End WebDatabase patch for Chromium */
++
+ /*
+ ** Undo the hack that converts floating point types to integer for
+ ** builds on processors without floating point support.
 -- 
-2.2.1
+2.4.5
 

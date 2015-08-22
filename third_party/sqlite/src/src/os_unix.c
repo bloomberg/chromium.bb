@@ -5623,10 +5623,12 @@ static int findCreateFileMode(
 /*
 ** Initializes a unixFile structure with zeros.
 */
+CHROMIUM_SQLITE_API
 void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file) {
   memset(file, 0, sizeof(unixFile));
 }
 
+CHROMIUM_SQLITE_API
 int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
                                                int fd,
                                                int dirfd,
@@ -5645,6 +5647,7 @@ int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
 ** If a reusable file descriptor is not found, and a new UnixUnusedFd cannot
 ** be allocated, SQLITE_NOMEM is returned. Otherwise, SQLITE_OK is returned.
 */
+CHROMIUM_SQLITE_API
 int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
                                               const char* fileName,
                                               int flags,
@@ -5669,6 +5672,7 @@ int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file,
 /*
 ** Marks 'fd' as the unused file descriptor for 'pFile'.
 */
+CHROMIUM_SQLITE_API
 void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file,
                                                   int fd,
                                                   int flags) {
@@ -5682,6 +5686,7 @@ void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file,
 /*
 ** Destroys pFile's field that keeps track of the unused file descriptor.
 */
+CHROMIUM_SQLITE_API
 void chromium_sqlite3_destroy_reusable_file_handle(sqlite3_file* file) {
   unixFile* unixSQLite3File = (unixFile*)file;
   sqlite3_free(unixSQLite3File->pUnused);
