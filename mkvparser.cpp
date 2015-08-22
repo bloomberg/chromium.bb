@@ -4107,7 +4107,8 @@ long ContentEncoding::ParseContentEncAESSettingsEntry(
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   return 0;
@@ -4137,7 +4138,8 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
       ++encryption_count;
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   if (compression_count <= 0 && encryption_count <= 0)
@@ -4208,10 +4210,12 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -4262,7 +4266,8 @@ long ContentEncoding::ParseCompressionEntry(long long start, long long size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   // ContentCompAlgo is mandatory
@@ -4379,7 +4384,8 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   return 0;
