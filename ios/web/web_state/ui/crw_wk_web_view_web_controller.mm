@@ -1183,7 +1183,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (void)webView:(WKWebView *)webView
     didStartProvisionalNavigation:(WKNavigation *)navigation {
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
-  if (webViewURL.is_empty()) {
+  if (webViewURL.is_empty() && base::ios::IsRunningOnIOS9OrLater()) {
     // May happen on iOS9, however in didCommitNavigation: callback the URL
     // will be "about:blank". TODO(eugenebut): File radar for this issue
     // (crbug.com/523549).
