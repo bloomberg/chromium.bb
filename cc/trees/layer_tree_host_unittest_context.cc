@@ -1522,67 +1522,6 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostEviction);
 
-class LayerTreeHostContextTestSurfaceCreateCallback
-    : public LayerTreeHostContextTest {
- public:
-  LayerTreeHostContextTestSurfaceCreateCallback()
-      : LayerTreeHostContextTest() {}
-
-  void SetupTree() override {
-    picture_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
-    picture_layer_->SetBounds(gfx::Size(10, 20));
-    layer_tree_host()->SetRootLayer(picture_layer_);
-
-    LayerTreeHostContextTest::SetupTree();
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void DidCommit() override {
-    switch (layer_tree_host()->source_frame_number()) {
-      case 1:
-        EXPECT_EQ(1u, picture_layer_->output_surface_created_count());
-        layer_tree_host()->SetNeedsCommit();
-        break;
-      case 2:
-        EXPECT_EQ(1u, picture_layer_->output_surface_created_count());
-        layer_tree_host()->SetNeedsCommit();
-        break;
-      case 3:
-        EXPECT_EQ(1u, picture_layer_->output_surface_created_count());
-        break;
-      case 4:
-        EXPECT_EQ(2u, picture_layer_->output_surface_created_count());
-        layer_tree_host()->SetNeedsCommit();
-        break;
-    }
-  }
-
-  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
-    switch (LastCommittedSourceFrameNumber(impl)) {
-      case 0:
-        break;
-      case 1:
-        break;
-      case 2:
-        LoseContext();
-        break;
-      case 3:
-        EndTest();
-        break;
-    }
-  }
-
-  void AfterTest() override {}
-
- protected:
-  FakeContentLayerClient client_;
-  scoped_refptr<FakePictureLayer> picture_layer_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestSurfaceCreateCallback);
-
 class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
     : public LayerTreeHostContextTest {
  protected:

@@ -13,7 +13,6 @@ FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
     : PictureLayer(settings, client),
       update_count_(0),
       push_properties_count_(0),
-      output_surface_created_count_(0),
       always_update_resources_(false),
       disable_lcd_text_(false) {
   SetBounds(gfx::Size(1, 1));
@@ -26,7 +25,6 @@ FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
     : PictureLayer(settings, client, source.Pass()),
       update_count_(0),
       push_properties_count_(0),
-      output_surface_created_count_(0),
       always_update_resources_(false),
       disable_lcd_text_(false) {
   SetBounds(gfx::Size(1, 1));
@@ -53,11 +51,6 @@ bool FakePictureLayer::Update() {
 void FakePictureLayer::PushPropertiesTo(LayerImpl* layer) {
   PictureLayer::PushPropertiesTo(layer);
   push_properties_count_++;
-}
-
-void FakePictureLayer::OnOutputSurfaceCreated() {
-  PictureLayer::OnOutputSurfaceCreated();
-  output_surface_created_count_++;
 }
 
 }  // namespace cc

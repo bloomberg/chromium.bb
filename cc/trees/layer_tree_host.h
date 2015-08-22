@@ -399,8 +399,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool DoUpdateLayers(Layer* root_layer);
   void UpdateHudLayer();
 
-  void ReduceMemoryUsage();
-
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
 
   struct UIResourceClientData {

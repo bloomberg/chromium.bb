@@ -403,10 +403,6 @@ void LayerTreeHost::RequestNewOutputSurface() {
 
 void LayerTreeHost::DidInitializeOutputSurface() {
   output_surface_lost_ = false;
-  if (root_layer()) {
-    LayerTreeHostCommon::CallFunctionForSubtree(
-        root_layer(), [](Layer* layer) { layer->OnOutputSurfaceCreated(); });
-  }
   client_->DidInitializeOutputSurface();
 }
 
@@ -643,8 +639,6 @@ void LayerTreeHost::SetVisible(bool visible) {
   if (visible_ == visible)
     return;
   visible_ = visible;
-  if (!visible)
-    ReduceMemoryUsage();
   proxy_->SetVisible(visible);
 }
 
@@ -803,14 +797,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
         layer->IsSuitableForGpuRasterization();
   }
   return did_paint_content;
-}
-
-void LayerTreeHost::ReduceMemoryUsage() {
-  if (!root_layer())
-    return;
-
-  LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer(), [](Layer* layer) { layer->ReduceMemoryUsage(); });
 }
 
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {

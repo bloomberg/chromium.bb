@@ -376,10 +376,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual void SavePaintProperties();
   // Returns true iff anything was updated that needs to be committed.
   virtual bool Update();
-  virtual bool NeedMoreUpdates();
   virtual void SetIsMask(bool is_mask) {}
-  virtual void ReduceMemoryUsage() {}
-  virtual void OnOutputSurfaceCreated() {}
   virtual bool IsSuitableForGpuRasterization() const;
 
   virtual scoped_refptr<base::trace_event::ConvertableToTraceFormat>

@@ -1378,10 +1378,6 @@ bool Layer::Update() {
   return false;
 }
 
-bool Layer::NeedMoreUpdates() {
-  return false;
-}
-
 bool Layer::IsSuitableForGpuRasterization() const {
   return true;
 }
