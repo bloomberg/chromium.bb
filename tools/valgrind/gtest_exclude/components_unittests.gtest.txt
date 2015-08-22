@@ -3,3 +3,6 @@ WebDataServiceAutofillTest.ProfileUpdate
 
 # Fails under valgrind, see http://crbug.com/444516
 AudioDirectiveListTest.*
+
+# http://crbug.com/523462
+PluginsFieldTrialTest.NoPrefLeftBehind
