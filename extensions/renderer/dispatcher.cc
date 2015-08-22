@@ -439,7 +439,8 @@ void Dispatcher::WillReleaseScriptContext(
 // static
 void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     const GURL& url) {
-  g_service_worker_script_context_set.Get().Remove(url);
+  if (RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(url))
+    g_service_worker_script_context_set.Get().Remove(url);
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
