@@ -32,6 +32,7 @@
       </paper-icon-button>
     </paper-toolbar>
     <issue-banner id="issue-banner" issue="[[issue]]"
+        class$="[[computeIssueBannerClass_(issue)]]"
         hidden$="[[computeIssueBannerHidden_(currentView_, issue)]]">
     </issue-banner>
     <paper-menu id="cast-mode-list"

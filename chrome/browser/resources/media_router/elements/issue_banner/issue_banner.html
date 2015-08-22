@@ -6,36 +6,25 @@
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="issue_banner.css">
   <template>  
-    <div id="blocking-issue"
-        hidden$="[[computeIsBlockingIssueHidden_(issue)]]">
-      <div id="blocking-content">
-        <div>
-          <iron-icon icon="report-problem" id="blocking-issue-icon">
+    <div class$="[[computeIssueClass_(issue)]]">
+      <div>
+        <div hidden$="[[computeIsBlockingIssueHidden_(issue)]]">
+          <iron-icon icon="report-problem" id="blocking-icon">
           </iron-icon>
         </div>
-        <div id="blocking-issue-message">[[issue.message]]</div>
+        <div id="message">[[issue.message]]</div>
       </div>
-      <div id="blocking-issue-buttons">
-        <paper-button flat id="blocking-opt" class="button"
+      <div id="buttons">
+        <paper-button flat id="opt-button" class="button"
             on-click="onClickOptAction_"
             hidden$="[[computeOptionalActionHidden_(issue)]]">
           <span>[[secondaryActionButtonText_]]</span>
         </paper-button>
-        <paper-button flat id="blocking-default"
-            class="button action"
-            on-click="onClickDefaultAction_">
+        <paper-button flat id="default-button"
+            class="button action" on-click="onClickDefaultAction_">
           <span>[[defaultActionButtonText_]]</span>
         </paper-button>
       </div>
-    </div>
-    <div id="non-blocking-issue"
-        hidden$="[[computeIsNonBlockingIssueHidden_(issue)]]">
-      <div id="non-blocking-message">[[issue.message]]</div>
-      <span id="non-blocking-opt" on-click="onClickOptAction_"
-          hidden$="[[computeOptionalActionHidden_(issue)]]"
-          class="issue-action">[[secondaryActionButtonText_]]</span>
-      <span id="non-blocking-default" on-click="onClickDefaultAction_"
-          class="issue-action">[[defaultActionButtonText_]]</span>
     </div>
   </template>
 <script src="issue_banner.js"></script>

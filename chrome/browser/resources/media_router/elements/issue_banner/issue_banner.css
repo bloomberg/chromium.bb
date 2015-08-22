@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#blocking-issue {
+.blocking {
   overflow: hidden;
   padding-bottom: 15px;
   padding-top: 15px;
@@ -10,29 +10,34 @@
   text-align: center;
 }
 
-#blocking-issue-icon {
-  height: 75px;
-  padding: 15px;
-  width: 75px;
-}
-
-#blocking-issue-message {
+.blocking > div > #message {
   color: rgb(150, 150, 150);
   line-height: 1.125em;
   padding: 10px;
   vertical-align: middle;
 }
 
-.issue-action {
-  color: black;
-  cursor: pointer;
-  text-decoration: underline;
+#blocking-icon {
+  height: 75px;
+  padding: 15px;
+  width: 75px;
 }
 
-#non-blocking-issue {
-  -webkit-padding-start: 12px;
-  background-color: rgb(249, 236, 191);
-  line-height: 1.25em;
-  padding-bottom: 6px;
-  padding-top: 6px;
+.non-blocking {
+  background-color: rgb(66, 66, 66);
+  max-height: 65px;
+  overflow: hidden;
+  padding: 6px;
+}
+
+.non-blocking > #buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.non-blocking > div > #message {
+  color: white;
+  padding: 6px 6px 20px 6px;
 }

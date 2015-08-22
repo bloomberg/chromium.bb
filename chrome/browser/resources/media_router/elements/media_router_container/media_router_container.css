@@ -50,6 +50,16 @@
   margin: 0;
 }
 
+#issue-banner {
+  width: 100%;
+  z-index: 1;
+}
+
+#issue-banner.non-blocking {
+  bottom: 0;
+  position: fixed;
+}
+
 paper-item {
   cursor: pointer;
   font-size: 1.0em;

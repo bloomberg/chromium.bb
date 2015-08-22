@@ -266,6 +266,15 @@ Polymer({
   },
 
   /**
+   * @param {?media_router.Issue} issue The current issue.
+   * @return {string} The class for the issue banner.
+   * @private
+   */
+  computeIssueBannerClass_: function(issue) {
+    return issue && !issue.isBlocking ? 'non-blocking' : '';
+  },
+
+  /**
    * @param {CONTAINER_VIEW_} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to hide the issue banner.
