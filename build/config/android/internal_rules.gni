@@ -17,9 +17,6 @@ android_aapt_path = "$rebased_android_sdk_build_tools/aapt"
 
 template("android_lint") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
 
   jar_path = invoker.jar_path
   android_manifest = invoker.android_manifest
@@ -27,6 +24,13 @@ template("android_lint") {
   base_path = "$target_gen_dir/$target_name"
 
   action(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "data_deps",
+                             "public_deps",
+                             "testonly",
+                           ])
     script = "//build/android/gyp/lint.py"
     result_path = base_path + "/result.xml"
     config_path = base_path + "/config.xml"
@@ -60,16 +64,6 @@ template("android_lint") {
       "--java-files=$rebased_java_files",
       "--enable",
     ]
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.public_deps)) {
-      public_deps = invoker.public_deps
-    }
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
-    }
   }
 }
 
@@ -79,20 +73,17 @@ template("findbugs") {
   build_config = invoker.build_config
 
   action(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "testonly",
+                           ])
     script = "//build/android/findbugs_diff.py"
     depfile = "$target_gen_dir/$target_name.d"
     result_path = "$target_gen_dir/$target_name/result.xml"
     exclusions_file = "//build/android/findbugs_filter/findbugs_exclude.xml"
 
     rebased_build_config = rebase_path(build_config, root_build_dir)
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
-    }
 
     inputs = [
       "//build/android/pylib/utils/findbugs.py",
@@ -121,28 +112,22 @@ template("findbugs") {
 
 template("dex") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
 
   assert(defined(invoker.output))
   action(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "inputs",
+                             "sources",
+                             "testonly",
+                           ])
     script = "//build/android/gyp/dex.py"
     depfile = "$target_gen_dir/$target_name.d"
-    if (defined(invoker.sources)) {
-      sources = invoker.sources
-    }
     outputs = [
       depfile,
       invoker.output,
     ]
-    if (defined(invoker.inputs)) {
-      inputs = invoker.inputs
-    }
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
 
     rebased_output = rebase_path(invoker.output, root_build_dir)
 
@@ -173,19 +158,23 @@ template("dex") {
 # If base_dir is provided, the archive paths will be relative to it.
 template("zip") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
-
   assert(defined(invoker.inputs))
   assert(defined(invoker.output))
 
   rebase_inputs = rebase_path(invoker.inputs, root_build_dir)
   rebase_output = rebase_path(invoker.output, root_build_dir)
   action(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "data_deps",
+                             "deps",
+                             "public_deps",
+                             "inputs",
+                             "testonly",
+                             "visibility",
+                           ])
     script = "//build/android/gn/zip.py"
     depfile = "$target_gen_dir/$target_name.d"
-    inputs = invoker.inputs
     outputs = [
       depfile,
       invoker.output,
@@ -202,20 +191,6 @@ template("zip") {
         rebase_path(invoker.base_dir, root_build_dir),
       ]
     }
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.public_deps)) {
-      public_deps = invoker.public_deps
-    }
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
-    }
-
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
   }
 }
 
@@ -230,9 +205,6 @@ template("zip") {
 # build/android/gyp/util/build_utils.py:ExpandFileArgs
 template("write_build_config") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
 
   assert(defined(invoker.type))
   assert(defined(invoker.build_config))
@@ -244,18 +216,17 @@ template("write_build_config") {
          type == "android_resources" || type == "deps_dex")
 
   action(target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    deps = []
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "testonly",
+                             "visibility",
+                           ])
 
     script = "//build/android/gyp/write_build_config.py"
     depfile = "$target_gen_dir/$target_name.d"
     inputs = []
-
-    deps = []
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
 
     possible_deps_configs = []
     foreach(d, deps) {
@@ -391,9 +362,7 @@ template("write_build_config") {
 
 template("process_java_prebuilt") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   _input_jar_path = invoker.input_jar_path
   _output_jar_path = invoker.output_jar_path
@@ -408,6 +377,12 @@ template("process_java_prebuilt") {
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
     _output_jar_target = "${target_name}__proguard_process"
     action(_output_jar_target) {
+      forward_variables_from(invoker,
+                             [
+                               "data_deps",
+                               "deps",
+                               "public_deps",
+                             ])
       script = "//build/android/gyp/proguard.py"
       inputs = [
         android_sdk_jar,
@@ -436,36 +411,22 @@ template("process_java_prebuilt") {
         rebased_android_sdk_jar,
         "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
       ]
-
-      if (defined(invoker.deps)) {
-        deps = invoker.deps
-      }
-      if (defined(invoker.public_deps)) {
-        public_deps = invoker.public_deps
-      }
-      if (defined(invoker.data_deps)) {
-        data_deps = invoker.data_deps
-      }
     }
   } else {
     _output_jar_target = "${target_name}__copy_jar"
     copy(_output_jar_target) {
+      forward_variables_from(invoker,
+                             [
+                               "data_deps",
+                               "deps",
+                               "public_deps",
+                             ])
       sources = [
         _input_jar_path,
       ]
       outputs = [
         _output_jar_path,
       ]
-
-      if (defined(invoker.deps)) {
-        deps = invoker.deps
-      }
-      if (defined(invoker.public_deps)) {
-        public_deps = invoker.public_deps
-      }
-      if (defined(invoker.data_deps)) {
-        data_deps = invoker.data_deps
-      }
     }
   }
 
@@ -494,9 +455,7 @@ template("process_java_prebuilt") {
   }
 
   group(target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker, [ "visibility" ])
     public_deps = [
       ":${target_name}__jar_toc",
       ":$_output_jar_target",
@@ -506,12 +465,15 @@ template("process_java_prebuilt") {
 
 template("finalize_apk") {
   action(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "data_deps",
+                             "deps",
+                             "public_deps",
+                             "testonly",
+                           ])
     script = "//build/android/gyp/finalize_apk.py"
     depfile = "$target_gen_dir/$target_name.d"
-
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
-    }
 
     sources = [
       invoker.input_apk_path,
@@ -549,16 +511,6 @@ template("finalize_apk") {
         rebase_path(_rezip_jar_path, root_build_dir),
       ]
     }
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.public_deps)) {
-      public_deps = invoker.public_deps
-    }
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
-    }
   }
 }
 
@@ -566,9 +518,7 @@ template("finalize_apk") {
 # zipaligns the apk.
 template("create_apk") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   _android_manifest = invoker.android_manifest
   _base_path = invoker.base_path
@@ -820,9 +770,7 @@ template("create_apk") {
 
 template("java_prebuilt_impl") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
   _supports_android =
       defined(invoker.supports_android) && invoker.supports_android
 
@@ -894,12 +842,10 @@ template("java_prebuilt_impl") {
   }
 
   group(target_name) {
+    forward_variables_from(invoker, [ "data_deps" ])
     deps = [
       ":$process_jar_target_name",
     ]
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
-    }
     if (_supports_android) {
       deps += [ ":$dex_target_name" ]
     }
@@ -923,9 +869,7 @@ template("java_prebuilt_impl") {
 #     "${target_gen_dir}/${target_name}.jar.
 template("compile_java") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.java_files))
   assert(defined(invoker.build_config))
@@ -1056,9 +1000,7 @@ template("compile_java") {
   }
 
   group(final_target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker, [ "visibility" ])
     public_deps = [
       ":$finish_target_name",
     ]
@@ -1067,9 +1009,7 @@ template("compile_java") {
 
 template("java_library_impl") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(
       defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir) ||
@@ -1117,16 +1057,12 @@ template("java_library_impl") {
     build_config_deps = [ ":$build_config_target_name" ]
 
     write_build_config(build_config_target_name) {
+      forward_variables_from(invoker, [ "deps" ])
       type = "java_library"
       supports_android = _supports_android
       requires_android = _requires_android
       bypass_platform_checks = defined(invoker.bypass_platform_checks) &&
                                invoker.bypass_platform_checks
-
-      deps = []
-      if (defined(invoker.deps)) {
-        deps += invoker.deps
-      }
 
       build_config = _build_config
       jar_path = _jar_path
@@ -1178,6 +1114,15 @@ template("java_library_impl") {
   _compile_java_target = "${_template_name}__compile_java"
   _final_deps += [ ":$_compile_java_target" ]
   compile_java(_compile_java_target) {
+    forward_variables_from(invoker,
+                           [
+                             "dist_jar_path",
+                             "enable_errorprone",
+                             "jar_excluded_patterns",
+                             "manifest_entries",
+                             "proguard_config",
+                             "proguard_preprocess",
+                           ])
     jar_path = _jar_path
     build_config = _build_config
     java_files = _java_files
@@ -1185,25 +1130,6 @@ template("java_library_impl") {
     srcjars = _srcjars
     chromium_code = _chromium_code
     android = _requires_android
-
-    if (defined(invoker.enable_errorprone)) {
-      enable_errorprone = invoker.enable_errorprone
-    }
-    if (defined(invoker.jar_excluded_patterns)) {
-      jar_excluded_patterns = invoker.jar_excluded_patterns
-    }
-    if (defined(invoker.proguard_preprocess)) {
-      proguard_preprocess = invoker.proguard_preprocess
-    }
-    if (defined(invoker.proguard_config)) {
-      proguard_config = invoker.proguard_config
-    }
-    if (defined(invoker.dist_jar_path)) {
-      dist_jar_path = invoker.dist_jar_path
-    }
-    if (defined(invoker.manifest_entries)) {
-      manifest_entries = invoker.manifest_entries
-    }
 
     supports_android = _supports_android
     deps = build_config_deps
@@ -1282,9 +1208,7 @@ template("java_library_impl") {
   }
 
   group(target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker, [ "visibility" ])
     public_deps = _final_deps
     data_deps = _final_datadeps
   }
@@ -1293,9 +1217,7 @@ template("java_library_impl") {
 # Runs process_resources.py
 template("process_resources") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   zip_path = invoker.zip_path
   srcjar_path = invoker.srcjar_path
@@ -1310,10 +1232,11 @@ template("process_resources") {
   }
 
   action(target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
-
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "visibility",
+                           ])
     script = "//build/android/gyp/process_resources.py"
 
     depfile = "$target_gen_dir/$target_name.d"
@@ -1393,38 +1316,23 @@ template("process_resources") {
     if (defined(invoker.args)) {
       args += invoker.args
     }
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
   }
 }
 
 template("copy_ex") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
-
   action(target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
-
-    script = "//build/android/gyp/copy_ex.py"
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-
-    sources = []
-    if (defined(invoker.sources)) {
-      sources += invoker.sources
-    }
-
     inputs = []
-    if (defined(invoker.inputs)) {
-      inputs += invoker.inputs
-    }
+    sources = []
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "inputs",
+                             "sources",
+                             "testonly",
+                             "visibility",
+                           ])
+    script = "//build/android/gyp/copy_ex.py"
 
     depfile = "$target_gen_dir/$target_name.d"
     outputs = [
@@ -1457,11 +1365,13 @@ template("deps_dex") {
   build_config_target_name = "${target_name}__build_config"
 
   write_build_config(build_config_target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "dex_path",
+                           ])
     type = "deps_dex"
-    deps = invoker.deps
-
     build_config = build_config
-    dex_path = invoker.dex_path
   }
 
   rebased_build_config = rebase_path(build_config, root_build_dir)
@@ -1489,10 +1399,12 @@ template("generate_split_manifest") {
   assert(defined(invoker.split_name))
 
   action(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "testonly",
+                           ])
     depfile = "$target_gen_dir/$target_name.d"
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
     args = [
       "--main-manifest",
       rebase_path(invoker.main_manifest, root_build_dir),

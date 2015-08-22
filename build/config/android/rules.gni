@@ -32,9 +32,7 @@ assert(is_android)
 #   }
 template("generate_jni") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.sources))
   assert(defined(invoker.jni_package))
@@ -86,21 +84,15 @@ template("generate_jni") {
   }
 
   group(target_name) {
-    deps = [
-      ":$foreach_target_name",
-    ]
+    deps = []
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "public_deps",
+                             "visibility",
+                           ])
+    deps += [ ":$foreach_target_name" ]
     public_configs = [ ":jni_includes_${target_name}" ]
-
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-    if (defined(invoker.public_deps)) {
-      public_deps = invoker.public_deps
-    }
-
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
   }
 }
 
@@ -129,9 +121,7 @@ template("generate_jni") {
 #   }
 template("generate_jar_jni") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.classes))
   assert(defined(invoker.jni_package))
@@ -193,13 +183,14 @@ template("generate_jar_jni") {
   }
 
   group(target_name) {
-    deps = jni_actions
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-    if (defined(invoker.public_deps)) {
-      public_deps = invoker.public_deps
-    }
+    deps = []
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "public_deps",
+                             "visibility",
+                           ])
+    deps += jni_actions
     public_configs = [ ":jni_includes_${target_name}" ]
   }
 }
@@ -241,9 +232,7 @@ template("generate_jar_jni") {
 #   }
 template("java_cpp_template") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.sources))
   package_name = invoker.package_name + ""
@@ -259,6 +248,12 @@ template("java_cpp_template") {
   final_target_name = target_name
 
   action_foreach(apply_gcc_target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "public_deps",
+                             "data_deps",
+                           ])
     visibility = [ ":$zip_srcjar_target_name" ]
     script = "//build/android/gyp/gcc_preprocess.py"
     if (defined(invoker.inputs)) {
@@ -267,16 +262,6 @@ template("java_cpp_template") {
     depfile = "${target_gen_dir}/${target_name}_{{source_name_part}}.d"
 
     sources = invoker.sources
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.public_deps)) {
-      public_deps = invoker.public_deps
-    }
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
-    }
 
     gen_dir =
         "${target_gen_dir}/${target_name}/java_cpp_template/${package_name}"
@@ -322,9 +307,7 @@ template("java_cpp_template") {
   }
 
   group(final_target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker, [ "visibility" ])
     deps = [
       ":$zip_srcjar_target_name",
     ]
@@ -360,9 +343,7 @@ template("java_cpp_template") {
 #   }
 template("java_cpp_enum") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.sources))
   assert(defined(invoker.outputs))
@@ -409,9 +390,7 @@ template("java_cpp_enum") {
   }
 
   group(final_target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker, [ "visibility" ])
     deps = [
       ":$zip_srcjar_target_name",
     ]
@@ -433,17 +412,13 @@ template("java_cpp_enum") {
 #   }
 template("jinja_template") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.input))
   assert(defined(invoker.output))
 
   action(target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker, [ "visibility" ])
 
     sources = [
       invoker.input,
@@ -494,9 +469,7 @@ template("jinja_template") {
 #   }
 template("jinja_template_resources") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.resources))
   assert(defined(invoker.res_dir))
@@ -577,7 +550,11 @@ template("locale_pak_resources") {
   }
 
   action("${target_name}__create_resources_zip") {
-    sources = invoker.sources
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "sources",
+                           ])
     script = "//build/android/gyp/locale_pak_resources.py"
     depfile = "$target_gen_dir/$target_name.d"
 
@@ -586,7 +563,7 @@ template("locale_pak_resources") {
       _resources_zip,
     ]
 
-    _rebased_sources = rebase_path(invoker.sources, root_build_dir)
+    _rebased_sources = rebase_path(sources, root_build_dir)
     args = [
       "--locale-paks=${_rebased_sources}",
       "--resources-zip",
@@ -594,10 +571,6 @@ template("locale_pak_resources") {
       "--depfile",
       rebase_path(depfile, root_build_dir),
     ]
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
   }
 
   group(target_name) {
@@ -640,9 +613,7 @@ template("locale_pak_resources") {
 #   }
 template("android_resources") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.resource_dirs))
   assert(defined(invoker.android_manifest) || defined(invoker.custom_package))
@@ -658,57 +629,40 @@ template("android_resources") {
   final_target_name = target_name
 
   write_build_config(build_config_target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "android_manifest",
+                             "custom_package",
+                             "deps",
+                           ])
     visibility = [ ":$process_resources_target_name" ]
 
     type = "android_resources"
     resources_zip = zip_path
     srcjar = srcjar_path
     r_text = r_text_path
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.android_manifest)) {
-      android_manifest = invoker.android_manifest
-    }
-    if (defined(invoker.custom_package)) {
-      custom_package = invoker.custom_package
-    }
-  }
-
-  android_manifest = "//build/android/AndroidManifest.xml"
-  if (defined(invoker.android_manifest)) {
-    android_manifest = invoker.android_manifest
   }
 
   process_resources(process_resources_target_name) {
     visibility = [ ":$final_target_name" ]
-
-    resource_dirs = invoker.resource_dirs
-    if (defined(invoker.custom_package)) {
-      custom_package = invoker.custom_package
-    }
-
-    if (defined(invoker.v14_skip)) {
-      v14_skip = invoker.v14_skip
-    }
-
-    if (defined(invoker.shared_resources)) {
-      shared_resources = invoker.shared_resources
-    }
-
-    deps = [
-      ":$build_config_target_name",
-    ]
-    if (defined(invoker.deps)) {
-      # Invoker may have added deps that generate the input resources.
-      deps += invoker.deps
+    deps = []
+    forward_variables_from(invoker,
+                           [
+                             "android_manifest",
+                             "custom_package",
+                             "deps",
+                             "resource_dirs",
+                             "shared_resources",
+                             "v14_skip",
+                           ])
+    deps += [ ":$build_config_target_name" ]
+    if (!defined(android_manifest)) {
+      android_manifest = "//build/android/AndroidManifest.xml"
     }
   }
 
   group(final_target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker, [ "visibility" ])
     deps = [
       ":${target_name}__process_resources",
     ]
@@ -731,19 +685,15 @@ template("android_resources") {
 #  }
 template("java_strings_grd") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   base_path = "$target_gen_dir/$target_name"
   resources_zip = base_path + ".resources.zip"
   build_config = base_path + ".build_config"
 
   write_build_config("${target_name}__build_config") {
+    forward_variables_from(invoker, [ "deps" ])
     type = "android_resources"
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
   }
 
   # Put grit files into this subdirectory of target_gen_dir.
@@ -801,9 +751,7 @@ template("java_strings_grd") {
 #  }
 template("java_strings_grd_prebuilt") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   base_path = "$target_gen_dir/$target_name"
   resources_zip = base_path + ".resources.zip"
@@ -833,9 +781,7 @@ template("java_strings_grd_prebuilt") {
   }
 
   group(final_target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+    forward_variables_from(invoker, [ "visibility" ])
     deps = [
       ":$zip_target_name",
     ]
@@ -878,37 +824,7 @@ template("java_binary") {
   # TODO(cjhopman): This should not act like a java_library for dependents (i.e.
   # dependents shouldn't get the jar in their classpath, etc.).
   java_library_impl(target_name) {
-    if (defined(invoker.DEPRECATED_java_in_dir)) {
-      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
-    }
-    if (defined(invoker.chromium_code)) {
-      chromium_code = invoker.chromium_code
-    }
-    if (defined(invoker.data_deps)) {
-      deps = invoker.data_deps
-    }
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.enable_errorprone)) {
-      enable_errorprone = invoker.enable_errorprone
-    }
-    if (defined(invoker.java_files)) {
-      java_files = invoker.java_files
-    }
-    if (defined(invoker.srcjar_deps)) {
-      srcjar_deps = invoker.srcjar_deps
-    }
-    if (defined(invoker.srcjars)) {
-      srcjars = invoker.srcjars
-    }
-    if (defined(invoker.bypass_platform_checks)) {
-      bypass_platform_checks = invoker.bypass_platform_checks
-    }
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
-    }
-
+    forward_variables_from(invoker, "*")
     supports_android = false
     main_class = invoker.main_class
   }
@@ -940,35 +856,19 @@ template("junit_binary") {
   set_sources_assignment_filter([])
 
   java_binary(target_name) {
+    deps = []
+    forward_variables_from(invoker, "*")
     bypass_platform_checks = true
     main_class = "org.chromium.testing.local.JunitTestMain"
     testonly = true
 
-    if (defined(invoker.DEPRECATED_java_in_dir)) {
-      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
-    }
-    if (defined(invoker.chromium_code)) {
-      chromium_code = invoker.chromium_code
-    }
-    deps = [
+    deps += [
       "//testing/android/junit:junit_test_support",
       "//third_party/junit",
       "//third_party/mockito:mockito_java",
       "//third_party/robolectric:robolectric_java",
       "//third_party/robolectric:android-all-4.3_r2-robolectric-0",
     ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-    if (defined(invoker.java_files)) {
-      java_files = invoker.java_files
-    }
-    if (defined(invoker.srcjar_deps)) {
-      srcjar_deps = invoker.srcjar_deps
-    }
-    if (defined(invoker.srcjars)) {
-      srcjars = invoker.srcjars
-    }
   }
 }
 
@@ -1026,52 +926,7 @@ template("junit_binary") {
 template("java_library") {
   set_sources_assignment_filter([])
   java_library_impl(target_name) {
-    if (defined(invoker.DEPRECATED_java_in_dir)) {
-      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
-    }
-    if (defined(invoker.chromium_code)) {
-      chromium_code = invoker.chromium_code
-    }
-    if (defined(invoker.data_deps)) {
-      deps = invoker.data_deps
-    }
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.enable_errorprone)) {
-      enable_errorprone = invoker.enable_errorprone
-    }
-    if (defined(invoker.jar_excluded_patterns)) {
-      jar_excluded_patterns = invoker.jar_excluded_patterns
-    }
-    if (defined(invoker.java_files)) {
-      java_files = invoker.java_files
-    }
-    if (defined(invoker.proguard_config)) {
-      proguard_config = invoker.proguard_config
-    }
-    if (defined(invoker.proguard_preprocess)) {
-      proguard_preprocess = invoker.proguard_preprocess
-    }
-    if (defined(invoker.srcjar_deps)) {
-      srcjar_deps = invoker.srcjar_deps
-    }
-    if (defined(invoker.srcjars)) {
-      srcjars = invoker.srcjars
-    }
-    if (defined(invoker.bypass_platform_checks)) {
-      bypass_platform_checks = invoker.bypass_platform_checks
-    }
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
-    }
-    if (defined(invoker.jar_path)) {
-      jar_path = invoker.jar_path
-    }
-
-    if (defined(invoker.supports_android) && invoker.supports_android) {
-      supports_android = true
-    }
+    forward_variables_from(invoker, "*")
   }
 }
 
@@ -1097,25 +952,7 @@ template("java_library") {
 template("java_prebuilt") {
   set_sources_assignment_filter([])
   java_prebuilt_impl(target_name) {
-    jar_path = invoker.jar_path
-    if (defined(invoker.jar_dep)) {
-      jar_dep = invoker.jar_dep
-    }
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
-    }
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
-    }
-    if (defined(invoker.proguard_config)) {
-      proguard_config = invoker.proguard_config
-    }
-    if (defined(invoker.proguard_preprocess)) {
-      proguard_preprocess = invoker.proguard_preprocess
-    }
+    forward_variables_from(invoker, "*")
   }
 }
 
@@ -1174,51 +1011,7 @@ template("android_library") {
   assert(!defined(invoker.jar_path),
          "android_library does not support a custom jar path")
   java_library_impl(target_name) {
-    if (defined(invoker.DEPRECATED_java_in_dir)) {
-      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
-    }
-    if (defined(invoker.chromium_code)) {
-      chromium_code = invoker.chromium_code
-    }
-    if (defined(invoker.data_deps)) {
-      deps = invoker.data_deps
-    }
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.enable_errorprone)) {
-      enable_errorprone = invoker.enable_errorprone
-    }
-    if (defined(invoker.jar_excluded_patterns)) {
-      jar_excluded_patterns = invoker.jar_excluded_patterns
-    }
-    if (defined(invoker.java_files)) {
-      java_files = invoker.java_files
-    }
-    if (defined(invoker.proguard_config)) {
-      proguard_config = invoker.proguard_config
-    }
-    if (defined(invoker.proguard_preprocess)) {
-      proguard_preprocess = invoker.proguard_preprocess
-    }
-    if (defined(invoker.srcjar_deps)) {
-      srcjar_deps = invoker.srcjar_deps
-    }
-    if (defined(invoker.srcjars)) {
-      srcjars = invoker.srcjars
-    }
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
-    }
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
-    if (defined(invoker.dex_path)) {
-      dex_path = invoker.dex_path
-    }
-    if (defined(invoker.manifest_entries)) {
-      manifest_entries = invoker.manifest_entries
-    }
+    forward_variables_from(invoker, "*")
 
     supports_android = true
     requires_android = true
@@ -1245,11 +1038,12 @@ template("android_library") {
 template("android_standalone_library") {
   set_sources_assignment_filter([])
   deps_dex(target_name) {
-    deps = invoker.deps
-    dex_path = invoker.dex_path
-    if (defined(invoker.excluded_jars)) {
-      excluded_jars = invoker.excluded_jars
-    }
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "dex_path",
+                             "excluded_jars",
+                           ])
   }
 }
 
@@ -1278,24 +1072,9 @@ template("android_standalone_library") {
 template("android_java_prebuilt") {
   set_sources_assignment_filter([])
   java_prebuilt_impl(target_name) {
-    jar_path = invoker.jar_path
+    forward_variables_from(invoker, "*")
     supports_android = true
     requires_android = true
-    if (defined(invoker.testonly)) {
-      testonly = invoker.testonly
-    }
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
-    }
-    if (defined(invoker.proguard_config)) {
-      proguard_config = invoker.proguard_config
-    }
-    if (defined(invoker.proguard_preprocess)) {
-      proguard_preprocess = invoker.proguard_preprocess
-    }
   }
 }
 
@@ -1354,9 +1133,7 @@ template("android_java_prebuilt") {
 #   }
 template("android_apk") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   assert(defined(invoker.final_apk_path) || defined(invoker.apk_name))
   assert(defined(invoker.android_manifest))
@@ -1867,10 +1644,10 @@ template("instrumentation_test_apk") {
   }
 
   android_apk(target_name) {
-    if (defined(invoker.android_manifest)) {
-      android_manifest = invoker.android_manifest
-    }
-    data_deps = [
+    deps = []
+    data_deps = []
+    forward_variables_from(invoker, "*")
+    data_deps += [
       "//testing/android/driver:driver_apk",
       "//tools/android/forwarder2",
       "//tools/android/md5sum",
@@ -1878,36 +1655,7 @@ template("instrumentation_test_apk") {
     if (defined(test_runner_data_dep)) {
       data_deps += test_runner_data_dep
     }
-    if (defined(invoker.data_deps)) {
-      data_deps += invoker.data_deps
-    }
-    deps = [
-      "//testing/android/broker:broker_java",
-    ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-    if (defined(invoker.java_files)) {
-      java_files = invoker.java_files
-    }
-    if (defined(invoker.srcjar_deps)) {
-      srcjar_deps = invoker.srcjar_deps
-    }
-    if (defined(invoker.apk_name)) {
-      apk_name = invoker.apk_name
-    }
-    if (defined(invoker.final_apk_path)) {
-      final_apk_path = invoker.final_apk_path
-    }
-    if (defined(invoker.native_libs)) {
-      native_libs = invoker.native_libs
-    }
-    if (defined(invoker.apk_under_test)) {
-      apk_under_test = invoker.apk_under_test
-    }
-    if (defined(invoker.DEPRECATED_java_in_dir)) {
-      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
-    }
+    deps += [ "//testing/android/broker:broker_java" ]
   }
 }
 
@@ -2011,9 +1759,7 @@ template("unittest_apk") {
 #   }
 template("android_aidl") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
   aidl_path = "${android_sdk_build_tools}/aidl"
@@ -2088,9 +1834,7 @@ template("android_aidl") {
 #   }
 template("create_native_executable_dist") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
 
   dist_dir = invoker.dist_dir
   binary = invoker.binary
@@ -2182,6 +1926,7 @@ template("create_native_executable_dist") {
 #  }
 template("proto_java_library") {
   set_sources_assignment_filter([])
+  forward_variables_from(invoker, [ "testonly" ])
   _protoc_dep = "//third_party/android_protobuf:android_protoc($host_toolchain)"
   _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
   _protoc_bin = "$_protoc_out_dir/android_protoc"
@@ -2225,9 +1970,7 @@ template("proto_java_library") {
 # TODO(GYP): implement this.
 template("uiautomator_test") {
   set_sources_assignment_filter([])
-  if (defined(invoker.testonly)) {
-    testonly = invoker.testonly
-  }
+  forward_variables_from(invoker, [ "testonly" ])
   assert(target_name != "")
   assert(invoker.deps != [] || true)
   group(target_name) {
