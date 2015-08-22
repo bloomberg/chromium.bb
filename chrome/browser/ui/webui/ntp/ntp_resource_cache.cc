@@ -477,8 +477,11 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("showWebStoreIcon",
                             !prefs->GetBoolean(prefs::kHideWebStoreIcon));
 
-  bool bookmark_apps_enabled = extensions::util::IsNewBookmarkAppsEnabled();
-  load_time_data.SetBoolean("enableNewBookmarkApps", bookmark_apps_enabled);
+  load_time_data.SetBoolean("enableNewBookmarkApps",
+                            extensions::util::IsNewBookmarkAppsEnabled());
+
+  load_time_data.SetBoolean("canHostedAppsOpenInWindows",
+                            extensions::util::CanHostedAppsOpenInWindows());
 
   load_time_data.SetBoolean("canShowAppInfoDialog",
                             CanShowAppInfoDialog());

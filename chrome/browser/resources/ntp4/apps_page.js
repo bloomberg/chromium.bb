@@ -50,7 +50,7 @@ cr.define('ntp', function() {
       menu.appendChild(cr.ui.MenuItem.createSeparator());
       this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
       this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
-      if (loadTimeData.getBoolean('enableNewBookmarkApps') || !cr.isMac)
+      if (loadTimeData.getBoolean('canHostedAppsOpenInWindows'))
         this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
       this.launchFullscreen_ = this.appendMenuItem_('applaunchtypefullscreen');
 
@@ -136,16 +136,25 @@ cr.define('ntp', function() {
       this.launch_.textContent = app.appData.title;
 
       var launchTypeWindow = this.launchNewWindow_;
+      var hasLaunchType = false;
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
         launchTypeButton.checked = app.appData.launch_type == id;
-        // If bookmark apps are enabled, only show the "Open as window" button.
+        // There are three cases when a launch type is hidden:
+        //  1. packaged apps hide all launch types
+        //  2. canHostedAppsOpenInWindows is false and type is launchTypeWindow
+        //  3. enableNewBookmarkApps is true and type is anything except
+        //     launchTypeWindow
         launchTypeButton.hidden = app.appData.packagedApp ||
+            (!loadTimeData.getBoolean('canHostedAppsOpenInWindows') &&
+             launchTypeButton == launchTypeWindow) ||
             (loadTimeData.getBoolean('enableNewBookmarkApps') &&
              launchTypeButton != launchTypeWindow);
+        if (!launchTypeButton.hidden) hasLaunchType = true;
       });
 
-      this.launchTypeMenuSeparator_.hidden = app.appData.packagedApp;
+      this.launchTypeMenuSeparator_.hidden =
+          app.appData.packagedApp || !hasLaunchType;
 
       this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
       if (this.details_)
