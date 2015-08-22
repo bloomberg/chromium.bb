@@ -26,7 +26,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   }
 
   // Must be called before any other methods.
-  void Init(scoped_refptr<DataPipe> data_pipe);
+  void Init(scoped_refptr<DataPipe> data_pipe) MOJO_NOT_THREAD_SAFE;
 
   // |Dispatcher| public methods:
   Type GetType() const override;
@@ -37,7 +37,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
   Deserialize(Channel* channel, const void* source, size_t size);
 
   // Get access to the |DataPipe| for testing.
-  DataPipe* GetDataPipeForTest() { return data_pipe_.get(); }
+  DataPipe* GetDataPipeForTest();
 
  private:
   DataPipeConsumerDispatcher();
@@ -64,16 +64,18 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
                                 HandleSignalsState* signals_state) override;
   void StartSerializeImplNoLock(Channel* channel,
                                 size_t* max_size,
-                                size_t* max_platform_handles) override;
+                                size_t* max_platform_handles) override
+      MOJO_NOT_THREAD_SAFE;
   bool EndSerializeAndCloseImplNoLock(
       Channel* channel,
       void* destination,
       size_t* actual_size,
-      embedder::PlatformHandleVector* platform_handles) override;
+      embedder::PlatformHandleVector* platform_handles) override
+      MOJO_NOT_THREAD_SAFE;
   bool IsBusyNoLock() const override;
 
-  // Protected by |lock()|:
-  scoped_refptr<DataPipe> data_pipe_;  // This will be null if closed.
+  // This will be null if closed.
+  scoped_refptr<DataPipe> data_pipe_ MOJO_GUARDED_BY(mutex());
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(DataPipeConsumerDispatcher);
 };

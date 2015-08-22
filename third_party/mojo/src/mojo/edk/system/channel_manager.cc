@@ -57,7 +57,7 @@ void ChannelManager::ShutdownOnIOThread() {
   // consistency.
   ChannelIdToChannelMap channels;
   {
-    base::AutoLock locker(lock_);
+    MutexLocker locker(&mutex_);
     channels.swap(channels_);
   }
 
@@ -110,7 +110,7 @@ scoped_refptr<MessagePipeDispatcher> ChannelManager::CreateChannel(
 }
 
 scoped_refptr<Channel> ChannelManager::GetChannel(ChannelId channel_id) const {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   auto it = channels_.find(channel_id);
   DCHECK(it != channels_.end());
   return it->second;
@@ -123,7 +123,7 @@ void ChannelManager::WillShutdownChannel(ChannelId channel_id) {
 void ChannelManager::ShutdownChannelOnIOThread(ChannelId channel_id) {
   scoped_refptr<Channel> channel;
   {
-    base::AutoLock locker(lock_);
+    MutexLocker locker(&mutex_);
     auto it = channels_.find(channel_id);
     DCHECK(it != channels_.end());
     channel.swap(it->second);
@@ -138,7 +138,7 @@ void ChannelManager::ShutdownChannel(
     scoped_refptr<base::TaskRunner> callback_thread_task_runner) {
   scoped_refptr<Channel> channel;
   {
-    base::AutoLock locker(lock_);
+    MutexLocker locker(&mutex_);
     auto it = channels_.find(channel_id);
     DCHECK(it != channels_.end());
     channel.swap(it->second);
@@ -178,7 +178,7 @@ void ChannelManager::CreateChannelOnIOThreadHelper(
   channel->SetBootstrapEndpoint(bootstrap_channel_endpoint);
 
   {
-    base::AutoLock locker(lock_);
+    MutexLocker locker(&mutex_);
     CHECK(channels_.find(channel_id) == channels_.end());
     channels_[channel_id] = channel;
   }

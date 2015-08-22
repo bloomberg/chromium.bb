@@ -29,7 +29,7 @@ ChannelEndpoint::ChannelEndpoint(ChannelEndpointClient* client,
 bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
   DCHECK(message);
 
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
 
   switch (channel_state_) {
     case ChannelState::NOT_YET_ATTACHED:
@@ -53,7 +53,7 @@ bool ChannelEndpoint::ReplaceClient(ChannelEndpointClient* client,
                                     unsigned client_port) {
   DCHECK(client);
 
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   DCHECK(client_);
   DCHECK(client != client_.get() || client_port != client_port_);
   client_ = client;
@@ -62,7 +62,7 @@ bool ChannelEndpoint::ReplaceClient(ChannelEndpointClient* client,
 }
 
 void ChannelEndpoint::DetachFromClient() {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   DCHECK(client_);
   client_ = nullptr;
 
@@ -79,7 +79,7 @@ void ChannelEndpoint::AttachAndRun(Channel* channel,
   DCHECK(local_id.is_valid());
   DCHECK(remote_id.is_valid());
 
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   DCHECK(channel_state_ == ChannelState::NOT_YET_ATTACHED);
   DCHECK(!channel_);
   DCHECK(!local_id_.is_valid());
@@ -119,7 +119,7 @@ void ChannelEndpoint::DetachFromChannel() {
   scoped_refptr<ChannelEndpointClient> client;
   unsigned client_port = 0;
   {
-    base::AutoLock locker(lock_);
+    MutexLocker locker(&mutex_);
 
     if (client_) {
       // Take a ref, and call |OnDetachFromChannel()| outside the lock.
@@ -155,7 +155,7 @@ ChannelEndpoint::~ChannelEndpoint() {
 bool ChannelEndpoint::WriteMessageNoLock(scoped_ptr<MessageInTransit> message) {
   DCHECK(message);
 
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
 
   DCHECK(channel_);
   DCHECK(local_id_.is_valid());
@@ -187,7 +187,7 @@ void ChannelEndpoint::OnReadMessageForClient(
   // -- impose significant cost in the common case.)
   for (;;) {
     {
-      base::AutoLock locker(lock_);
+      MutexLocker locker(&mutex_);
       if (!channel_ || !client_) {
         // This isn't a failure per se. (It just means that, e.g., the other end
         // of the message point closed first.)

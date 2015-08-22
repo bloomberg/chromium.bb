@@ -26,6 +26,7 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/runner/child_process.mojom.h"
 #include "mojo/runner/native_application_support.h"

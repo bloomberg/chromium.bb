@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 
-#include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
+#include "mojo/edk/system/mutex.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +41,7 @@ class WaitingThread : public base::SimpleThread {
                      MojoDeadline* elapsed) {
     for (;;) {
       {
-        base::AutoLock locker(lock_);
+        MutexLocker locker(&mutex_);
         if (done_) {
           *result = result_;
           *context = context_;
@@ -68,7 +68,7 @@ class WaitingThread : public base::SimpleThread {
     elapsed = stopwatch.Elapsed();
 
     {
-      base::AutoLock locker(lock_);
+      MutexLocker locker(&mutex_);
       done_ = true;
       result_ = result;
       context_ = context;
@@ -79,11 +79,11 @@ class WaitingThread : public base::SimpleThread {
   const MojoDeadline deadline_;
   Waiter waiter_;  // Thread-safe.
 
-  base::Lock lock_;  // Protects the following members.
-  bool done_;
-  MojoResult result_;
-  uint32_t context_;
-  MojoDeadline elapsed_;
+  Mutex mutex_;
+  bool done_ MOJO_GUARDED_BY(mutex_);
+  MojoResult result_ MOJO_GUARDED_BY(mutex_);
+  uint32_t context_ MOJO_GUARDED_BY(mutex_);
+  MojoDeadline elapsed_ MOJO_GUARDED_BY(mutex_);
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(WaitingThread);
 };

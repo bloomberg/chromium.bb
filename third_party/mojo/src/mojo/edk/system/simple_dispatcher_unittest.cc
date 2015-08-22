@@ -28,9 +28,11 @@ class MockSimpleDispatcher final : public SimpleDispatcher {
   MockSimpleDispatcher()
       : state_(MOJO_HANDLE_SIGNAL_NONE,
                MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE) {}
+  explicit MockSimpleDispatcher(const HandleSignalsState& state)
+      : state_(state) {}
 
   void SetSatisfiedSignals(MojoHandleSignals new_satisfied_signals) {
-    base::AutoLock locker(lock());
+    MutexLocker locker(&mutex());
 
     // Any new signals that are set should be satisfiable.
     CHECK_EQ(new_satisfied_signals & ~state_.satisfied_signals,
@@ -45,7 +47,7 @@ class MockSimpleDispatcher final : public SimpleDispatcher {
   }
 
   void SetSatisfiableSignals(MojoHandleSignals new_satisfiable_signals) {
-    base::AutoLock locker(lock());
+    MutexLocker locker(&mutex());
 
     // Satisfied implies satisfiable.
     CHECK_EQ(new_satisfiable_signals & state_.satisfied_signals,
@@ -66,19 +68,17 @@ class MockSimpleDispatcher final : public SimpleDispatcher {
 
   scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
       override {
-    scoped_refptr<MockSimpleDispatcher> rv(new MockSimpleDispatcher());
-    rv->state_ = state_;
+    scoped_refptr<MockSimpleDispatcher> rv(new MockSimpleDispatcher(state_));
     return scoped_refptr<Dispatcher>(rv.get());
   }
 
   // |Dispatcher| override:
   HandleSignalsState GetHandleSignalsStateImplNoLock() const override {
-    lock().AssertAcquired();
+    mutex().AssertHeld();
     return state_;
   }
 
-  // Protected by |lock()|:
-  HandleSignalsState state_;
+  HandleSignalsState state_ MOJO_GUARDED_BY(mutex());
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MockSimpleDispatcher);
 };

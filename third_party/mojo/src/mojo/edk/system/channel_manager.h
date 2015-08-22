@@ -10,9 +10,9 @@
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel_id.h"
+#include "mojo/edk/system/mutex.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace base {
@@ -135,12 +135,15 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
   const scoped_refptr<base::TaskRunner> io_thread_task_runner_;
   ConnectionManager* const connection_manager_;
 
-  // Note: |Channel| methods should not be called under |lock_|.
-  mutable base::Lock lock_;  // Protects the members below.
+  // Note: |Channel| methods should not be called under |mutex_|.
+  // TODO(vtl): Annotate the above rule using |MOJO_ACQUIRED_{BEFORE,AFTER}()|,
+  // once clang actually checks such annotations.
+  // https://github.com/domokit/mojo/issues/313
+  mutable Mutex mutex_;
 
   using ChannelIdToChannelMap =
       base::hash_map<ChannelId, scoped_refptr<Channel>>;
-  ChannelIdToChannelMap channels_;
+  ChannelIdToChannelMap channels_ MOJO_GUARDED_BY(mutex_);
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ChannelManager);
 };

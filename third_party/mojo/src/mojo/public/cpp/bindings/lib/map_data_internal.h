@@ -13,21 +13,24 @@
 namespace mojo {
 namespace internal {
 
-inline const ArrayValidateParams* GetMapKeyValidateParamsDefault() {
-  // The memory allocated here never gets released to not cause an exit time
-  // destructor.
+namespace {
+const ArrayValidateParams* GetMapKeyValidateParamsDefault() {
+  // The memory allocated here never gets released because calling a
+  // destructor at exit time makes clang unhappy.
   static const ArrayValidateParams* validate_params =
       new ArrayValidateParams(0, false, nullptr);
   return validate_params;
 }
 
-inline const ArrayValidateParams* GetMapKeyValidateParamsForStrings() {
-  // The memory allocated here never gets released to not cause an exit time
-  // destructor.
+const ArrayValidateParams* GetMapKeyValidateParamsForStrings() {
+  // The memory allocated here never gets released because calling a
+  // destructor at exit time makes clang unhappy.
   static const ArrayValidateParams* validate_params = new ArrayValidateParams(
       0, false, new ArrayValidateParams(0, false, nullptr));
   return validate_params;
 }
+
+}  // namespace
 
 template <typename MapKey>
 struct MapKeyValidateParamsFactory {
