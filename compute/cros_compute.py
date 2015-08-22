@@ -2,7 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Script to run Chrome OS-specific GCE commands ."""
+"""Script to run Chrome OS-specific GCE commands .
+
+For managing VM instances in the fleet, see go/cros-gce-instance-admin
+For updating VM images for the fleet, see go/cros-gce-image-admin
+"""
 
 from __future__ import print_function
 
