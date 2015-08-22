@@ -17,6 +17,7 @@
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_text_input_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
+#include "components/html_viewer/devtools_agent_impl.h"
 #include "components/html_viewer/geolocation_client_impl.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_frame_delegate.h"
@@ -37,6 +38,7 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -150,6 +152,19 @@ HTMLFrame::HTMLFrame(CreateParams* params)
       local_web_frame->swap(remote_web_frame);
       web_frame_ = remote_web_frame;
     } else {
+      // Setup a DevTools agent if this is the local main frame and the browser
+      // side has set relevant client properties.
+      mojo::Array<uint8_t> devtools_id =
+          GetValueFromClientProperties("devtools-id", params->properties);
+      if (!devtools_id.is_null()) {
+        mojo::Array<uint8_t> devtools_state =
+            GetValueFromClientProperties("devtools-state", params->properties);
+        std::string devtools_state_str = devtools_state.To<std::string>();
+        devtools_agent_.reset(new DevToolsAgentImpl(
+            web_frame_->toWebLocalFrame(), devtools_id.To<std::string>(),
+            devtools_state.is_null() ? nullptr : &devtools_state_str));
+      }
+
       // Collect startup perf data for local main frames in test environments.
       // Child frames aren't tracked, and tracking remote frames is redundant.
       startup_performance_data_collector_ =
@@ -707,12 +722,6 @@ blink::WebCookieJar* HTMLFrame::cookieJar(blink::WebLocalFrame* frame) {
 
 blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
-  // Allow the delegate to force a navigation type for the root.
-  if (info.frame == web_frame() && this == frame_tree_manager_->root_ &&
-      delegate_ && delegate_->ShouldNavigateLocallyInMainFrame()) {
-    return info.defaultPolicy;
-  }
-
   // If we have extraData() it means we already have the url response
   // (presumably because we are being called via Navigate()). In that case we
   // can go ahead and navigate locally.

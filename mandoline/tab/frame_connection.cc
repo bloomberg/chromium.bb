@@ -5,7 +5,6 @@
 #include "mandoline/tab/frame_connection.h"
 
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
-#include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
@@ -61,10 +60,6 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   view_manager_interfaces.push_back(mojo::ViewManagerRoot::Name_);
   view_manager_interfaces.push_back(mojo::Surface::Name_);
   filter->filter.insert("mojo:view_manager", view_manager_interfaces.Pass());
-
-  mojo::Array<mojo::String> devtools_interfaces;
-  devtools_interfaces.push_back(devtools_service::DevToolsRegistry::Name_);
-  filter->filter.insert("mojo:devtools_service", devtools_interfaces.Pass());
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
   mojo::Array<mojo::String> font_service_interfaces;

@@ -10,6 +10,9 @@ source_set("lib") {
     "frame.h",
     "frame_connection.cc",
     "frame_connection.h",
+    "frame_devtools_agent.cc",
+    "frame_devtools_agent.h",
+    "frame_devtools_agent_delegate.h",
     "frame_tree.cc",
     "frame_tree.h",
     "frame_tree_delegate.h",
@@ -23,6 +26,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/clipboard/public/interfaces",
+    "//components/devtools_service/public/cpp",
     "//components/devtools_service/public/interfaces",
     "//components/resource_provider/public/interfaces",
     "//components/view_manager/public/cpp",
@@ -34,6 +38,7 @@ source_set("lib") {
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/interfaces",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//url",
   ]
 
   public_deps = [

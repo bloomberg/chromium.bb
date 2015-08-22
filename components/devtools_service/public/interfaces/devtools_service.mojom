@@ -21,8 +21,10 @@ interface DevToolsCoordinator {
 };
 
 interface DevToolsRegistry {
-  // Registers a DevTools agent.
-  RegisterAgent(DevToolsAgent agent);
+  // Registers a DevTools agent. |id| is the agent ID, which is used to identify
+  // the agent when the service and its clients communicate using the Chrome
+  // remote debugging protocol.
+  RegisterAgent(string id, DevToolsAgent agent);
 };
 
 interface DevToolsAgent {
@@ -30,14 +32,17 @@ interface DevToolsAgent {
   // DispatchProtocolMessage() calls. If a client doesn't want to receive
   // messages anymore, it could simply close the underlying message pipe of
   // |client|.
-  SetClient(DevToolsAgentClient client, string client_id);
+  SetClient(DevToolsAgentClient client);
 
   // Sends a command (in remote debugging protocol JSON format) to the agent.
   DispatchProtocolMessage(string message);
 };
 
 interface DevToolsAgentClient {
-  // Sends a notification or response message (in remote debugging protocol JSON
-  // format) to the client.
-  DispatchProtocolMessage(string message);
+  // Sends a notification or response message to the client. |message| is in
+  // remote debugging protocol JSON format. |call_id| is the "id" field of the
+  // message or 0 if such a field doesn't exist. If not empty or null, |state|
+  // is the state of the DevTools agent at the point when generating this
+  // message.
+  DispatchProtocolMessage(int32 call_id, string message, string? state);
 };

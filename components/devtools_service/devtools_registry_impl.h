@@ -46,7 +46,7 @@ class DevToolsRegistryImpl : public DevToolsRegistry {
 
  private:
   // DevToolsRegistry implementation.
-  void RegisterAgent(DevToolsAgentPtr agent) override;
+  void RegisterAgent(const mojo::String& id, DevToolsAgentPtr agent) override;
 
   void OnAgentConnectionError(const std::string& id);
 

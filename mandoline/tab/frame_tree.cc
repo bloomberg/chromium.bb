@@ -12,7 +12,8 @@ namespace mandoline {
 FrameTree::FrameTree(mojo::View* view,
                      FrameTreeDelegate* delegate,
                      FrameTreeClient* root_client,
-                     scoped_ptr<FrameUserData> user_data)
+                     scoped_ptr<FrameUserData> user_data,
+                     const Frame::ClientPropertyMap& client_properties)
     : view_(view),
       delegate_(delegate),
       root_(this,
@@ -21,7 +22,7 @@ FrameTree::FrameTree(mojo::View* view,
             ViewOwnership::DOESNT_OWN_VIEW,
             root_client,
             user_data.Pass(),
-            Frame::ClientPropertyMap()),
+            client_properties),
       progress_(0.f),
       change_id_(1u) {
   root_.Init(nullptr);

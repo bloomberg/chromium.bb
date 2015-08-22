@@ -202,7 +202,8 @@ class HTMLFrameTest : public ViewManagerTestBase {
     FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
     frame_tree_.reset(new FrameTree(view, frame_tree_delegate_.get(),
                                     frame_tree_client,
-                                    frame_connection.Pass()));
+                                    frame_connection.Pass(),
+                                    Frame::ClientPropertyMap()));
     frame_tree_delegate_->set_frame_tree(frame_tree_.get());
     view->Embed(view_manager_client.Pass());
     return result;

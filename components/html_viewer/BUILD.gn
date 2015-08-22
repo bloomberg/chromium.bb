@@ -139,7 +139,6 @@ source_set("lib") {
     "//cc/blink",
     "//cc/surfaces",
     "//components/clipboard/public/interfaces",
-    "//components/devtools_service/public/cpp",
     "//components/devtools_service/public/interfaces",
     "//components/html_viewer/public/interfaces",
     "//components/message_port",

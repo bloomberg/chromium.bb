@@ -4,94 +4,59 @@
 
 #include "components/html_viewer/devtools_agent_impl.h"
 
-#include <string>
-
-#include "base/json/json_reader.h"
+#include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/values.h"
-#include "mojo/application/public/cpp/connect.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace html_viewer {
 
 DevToolsAgentImpl::DevToolsAgentImpl(blink::WebLocalFrame* frame,
-                                     mojo::Shell* shell)
-    : frame_(frame), binding_(this), handling_page_navigate_request_(false) {
+                                     const std::string& id,
+                                     const std::string* state)
+    : frame_(frame), id_(id), binding_(this), cache_until_client_ready_(false) {
   DCHECK(frame);
-  DCHECK(shell);
-
-  mojo::ServiceProviderPtr devtools_service_provider;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = "mojo:devtools_service";
-  shell->ConnectToApplication(request.Pass(),
-                              mojo::GetProxy(&devtools_service_provider),
-                              nullptr,
-                              nullptr);
-  devtools_service::DevToolsRegistryPtr devtools_registry;
-  mojo::ConnectToService(devtools_service_provider.get(), &devtools_registry);
-
-  devtools_service::DevToolsAgentPtr agent;
-  binding_.Bind(&agent);
-  devtools_registry->RegisterAgent(agent.Pass());
-
   frame_->setDevToolsAgentClient(this);
+
+  if (state) {
+    cache_until_client_ready_ = true;
+    frame_->devToolsAgent()->reattach(blink::WebString::fromUTF8(id_),
+                                      blink::WebString::fromUTF8(*state));
+  }
 }
 
 DevToolsAgentImpl::~DevToolsAgentImpl() {
-  if (client_)
+  if (cache_until_client_ready_ || client_)
     frame_->devToolsAgent()->detach();
 }
 
+void DevToolsAgentImpl::BindToRequest(
+    mojo::InterfaceRequest<DevToolsAgent> request) {
+  binding_.Bind(request.Pass());
+}
+
 void DevToolsAgentImpl::SetClient(
-    devtools_service::DevToolsAgentClientPtr client,
-    const mojo::String& client_id) {
+    devtools_service::DevToolsAgentClientPtr client) {
   if (client_)
     frame_->devToolsAgent()->detach();
 
   client_ = client.Pass();
-  client_.set_connection_error_handler([this]() { OnConnectionError(); });
+  client_.set_connection_error_handler(base::Bind(
+      &DevToolsAgentImpl::OnConnectionError, base::Unretained(this)));
 
-  frame_->devToolsAgent()->attach(blink::WebString::fromUTF8(client_id));
+  if (cache_until_client_ready_) {
+    cache_until_client_ready_ = false;
+    for (const auto& message : cached_client_messages_)
+      client_->DispatchProtocolMessage(message.call_id, message.response,
+                                       message.state);
+    cached_client_messages_.clear();
+  } else {
+    frame_->devToolsAgent()->attach(blink::WebString::fromUTF8(id_));
+  }
 }
 
 void DevToolsAgentImpl::DispatchProtocolMessage(const mojo::String& message) {
-  // TODO(yzshen): (1) Eventually the handling code for Page.navigate (and some
-  // other commands) should live with the code managing tabs and navigation.
-  // We will need a DevToolsAgent implementation there as well, which handles
-  // some of the commands and relays messages between the DevTools service and
-  // the HTML viewer.
-  // (2) Consider refactoring and reusing the existing DevTools protocol parsing
-  // code.
-  do {
-    scoped_ptr<base::Value> value = base::JSONReader::Read(message.get());
-    base::DictionaryValue* command = nullptr;
-    if (!value || !value->GetAsDictionary(&command))
-      break;
-
-    std::string method;
-    if (!command->GetString("method", &method) || method != "Page.navigate")
-      break;
-
-    std::string url_string;
-    if (!command->GetString("params.url", &url_string))
-      break;
-
-    GURL url(url_string);
-    if (!url.is_valid())
-      break;
-
-    handling_page_navigate_request_ = true;
-    frame_->loadRequest(blink::WebURLRequest(url));
-    handling_page_navigate_request_ = false;
-
-    // The command should fall through to be handled by frame_->devToolsAgent().
-  } while (false);
-
   frame_->devToolsAgent()->dispatchOnInspectorBackend(
       blink::WebString::fromUTF8(message));
 }
@@ -99,8 +64,22 @@ void DevToolsAgentImpl::DispatchProtocolMessage(const mojo::String& message) {
 void DevToolsAgentImpl::sendProtocolMessage(int call_id,
                                             const blink::WebString& response,
                                             const blink::WebString& state) {
-  if (client_)
-    client_->DispatchProtocolMessage(response.utf8());
+  DCHECK(!response.isNull());
+
+  mojo::String response_str = response.utf8();
+  mojo::String state_str;
+  if (!state.isNull())
+    state_str = state.utf8();
+
+  if (client_) {
+    client_->DispatchProtocolMessage(call_id, response_str, state_str);
+  } else if (cache_until_client_ready_) {
+    cached_client_messages_.resize(cached_client_messages_.size() + 1);
+    CachedClientMessage& message = cached_client_messages_.back();
+    message.call_id = call_id;
+    message.response.Swap(&response_str);
+    message.state.Swap(&state_str);
+  }
 }
 
 void DevToolsAgentImpl::OnConnectionError() {

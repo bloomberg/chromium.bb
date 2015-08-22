@@ -1,5 +1,6 @@
 include_rules = [
   "+components/clipboard/public/interfaces",
+  "+components/devtools_service/public/cpp",
   "+components/devtools_service/public/interfaces",
   "+components/font_service/public/interfaces",
   "+components/resource_provider/public/interfaces",

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "components/html_viewer/ax_provider_impl.h"
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
@@ -36,7 +37,6 @@ class View;
 namespace html_viewer {
 
 class AxProviderImpl;
-class DevToolsAgentImpl;
 class DocumentResourceWaiter;
 class GlobalState;
 class HTMLFrameTreeManager;
@@ -54,7 +54,8 @@ class HTMLDocumentOOPIF
       public HTMLFrameDelegate,
       public mojo::InterfaceFactory<mojo::AxProvider>,
       public mojo::InterfaceFactory<mandoline::FrameTreeClient>,
-      public mojo::InterfaceFactory<TestHTMLViewer> {
+      public mojo::InterfaceFactory<TestHTMLViewer>,
+      public mojo::InterfaceFactory<devtools_service::DevToolsAgent> {
  public:
   using DeleteCallback = base::Callback<void(HTMLDocumentOOPIF*)>;
   using HTMLFrameCreationCallback =
@@ -106,7 +107,6 @@ class HTMLDocumentOOPIF
   void OnViewDestroyed(mojo::View* view) override;
 
   // HTMLFrameDelegate:
-  bool ShouldNavigateLocallyInMainFrame() override;
   void OnFrameDidFinishLoad() override;
   mojo::ApplicationImpl* GetApp() override;
   HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) override;
@@ -125,6 +125,11 @@ class HTMLDocumentOOPIF
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<TestHTMLViewer> request) override;
 
+  // mojo::InterfaceFactory<devtools_service::DevToolsAgent>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) override;
+
   scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::ApplicationImpl* html_document_app_;
   mojo::ApplicationConnection* connection_;
@@ -142,8 +147,6 @@ class HTMLDocumentOOPIF
 
   HTMLFrame* frame_;
 
-  scoped_ptr<DevToolsAgentImpl> devtools_agent_;
-
   scoped_ptr<DocumentResourceWaiter> resource_waiter_;
 
   scoped_ptr<BeforeLoadCache> before_load_cache_;
@@ -153,6 +156,11 @@ class HTMLDocumentOOPIF
   HTMLFrameCreationCallback frame_creation_callback_;
 
   mojo::View* root_;
+
+  // Cache interface request of DevToolsAgent if |frame_| hasn't been
+  // initialized.
+  mojo::InterfaceRequest<devtools_service::DevToolsAgent>
+      devtools_agent_request_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentOOPIF);
 };

@@ -28,7 +28,7 @@ class DevToolsAgentHost : public DevToolsAgentClient {
     virtual void OnAgentHostClosed(DevToolsAgentHost* agent_host) = 0;
   };
 
-  explicit DevToolsAgentHost(DevToolsAgentPtr agent);
+  DevToolsAgentHost(const std::string& id, DevToolsAgentPtr agent);
 
   ~DevToolsAgentHost() override;
 
@@ -49,7 +49,9 @@ class DevToolsAgentHost : public DevToolsAgentClient {
 
  private:
   // DevToolsAgentClient implementation.
-  void DispatchProtocolMessage(const mojo::String& message) override;
+  void DispatchProtocolMessage(int32_t call_id,
+                               const mojo::String& message,
+                               const mojo::String& state) override;
 
   const std::string id_;
 

@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/devtools_service/public/cpp/switches.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/devtools_agent_impl.h"
 #include "components/html_viewer/document_resource_waiter.h"
@@ -42,11 +41,6 @@ const char kEnableTestInterface[] = "enable-html-viewer-test-interface";
 bool IsTestInterfaceEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kEnableTestInterface);
-}
-
-bool EnableRemoteDebugging() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      devtools_service::kRemoteDebuggingPort);
 }
 
 }  // namespace
@@ -83,6 +77,9 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(
       static_cast<mojo::InterfaceFactory<mandoline::FrameTreeClient>*>(this));
   connection->AddService(static_cast<InterfaceFactory<AxProvider>*>(this));
   connection->AddService(&view_manager_client_factory_);
+  connection->AddService(
+      static_cast<mojo::InterfaceFactory<devtools_service::DevToolsAgent>*>(
+          this));
   if (IsTestInterfaceEnabled()) {
     connection->AddService(
         static_cast<mojo::InterfaceFactory<TestHTMLViewer>*>(this));
@@ -138,13 +135,13 @@ void HTMLDocumentOOPIF::Load() {
   frame_ = HTMLFrameTreeManager::CreateFrameAndAttachToTree(
       global_state_, view, resource_waiter_.Pass(), this);
 
-  // TODO(yzshen): http://crbug.com/498986 Creating DevToolsAgentImpl instances
-  // causes html_viewer_apptests flakiness currently. Before we fix that we
-  // cannot enable remote debugging (which is required by Telemetry tests) on
-  // the bots.
-  if (EnableRemoteDebugging() && !frame_->parent()) {
-    devtools_agent_.reset(new DevToolsAgentImpl(
-        frame_->web_frame()->toWebLocalFrame(), html_document_app_->shell()));
+  if (devtools_agent_request_.is_pending()) {
+    if (frame_->devtools_agent()) {
+      frame_->devtools_agent()->BindToRequest(devtools_agent_request_.Pass());
+    } else {
+      devtools_agent_request_ =
+          mojo::InterfaceRequest<devtools_service::DevToolsAgent>();
+    }
   }
 
   const GURL url(extra_data->synthetic_response->url);
@@ -189,10 +186,6 @@ void HTMLDocumentOOPIF::OnViewViewportMetricsChanged(
 void HTMLDocumentOOPIF::OnViewDestroyed(View* view) {
   resource_waiter_->root()->RemoveObserver(this);
   resource_waiter_->set_root(nullptr);
-}
-
-bool HTMLDocumentOOPIF::ShouldNavigateLocallyInMainFrame() {
-  return devtools_agent_ && devtools_agent_->handling_page_navigate_request();
 }
 
 void HTMLDocumentOOPIF::OnFrameDidFinishLoad() {
@@ -261,6 +254,17 @@ void HTMLDocumentOOPIF::Create(
     return;
   }
   resource_waiter_->Bind(request.Pass());
+}
+
+void HTMLDocumentOOPIF::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) {
+  if (frame_) {
+    if (frame_->devtools_agent())
+      frame_->devtools_agent()->BindToRequest(request.Pass());
+  } else {
+    devtools_agent_request_ = request.Pass();
+  }
 }
 
 }  // namespace html_viewer

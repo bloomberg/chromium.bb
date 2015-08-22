@@ -27,10 +27,12 @@ class FrameTree {
  public:
   // |view| is the view to do the initial embedding in. It is assumed |view|
   // outlives FrameTree.
+  // |client_properties| is the client properties for the root frame.
   FrameTree(mojo::View* view,
             FrameTreeDelegate* delegate,
             FrameTreeClient* root_client,
-            scoped_ptr<FrameUserData> user_data);
+            scoped_ptr<FrameUserData> user_data,
+            const Frame::ClientPropertyMap& client_properties);
   ~FrameTree();
 
   Frame* root() { return &root_; }

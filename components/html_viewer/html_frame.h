@@ -34,6 +34,7 @@ class View;
 
 namespace html_viewer {
 
+class DevToolsAgentImpl;
 class GeolocationClientImpl;
 class HTMLFrameDelegate;
 class HTMLFrameTreeManager;
@@ -125,6 +126,10 @@ class HTMLFrame : public blink::WebFrameClient,
   mojo::View* view() { return view_; }
 
   HTMLFrameTreeManager* frame_tree_manager() { return frame_tree_manager_; }
+
+  // Returns null if the browser side didn't request to setup an agent in this
+  // frame.
+  DevToolsAgentImpl* devtools_agent() { return devtools_agent_.get(); }
 
   // Returns true if this or one of the frames descendants is local.
   bool HasLocalDescendant() const;
@@ -330,6 +335,8 @@ class HTMLFrame : public blink::WebFrameClient,
   // This object is only valid in the context of performance tests.
   tracing::StartupPerformanceDataCollectorPtr
       startup_performance_data_collector_;
+
+  scoped_ptr<DevToolsAgentImpl> devtools_agent_;
 
   base::WeakPtrFactory<HTMLFrame> weak_factory_;
 

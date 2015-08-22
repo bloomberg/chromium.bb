@@ -10,6 +10,7 @@
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "mandoline/tab/frame_devtools_agent_delegate.h"
 #include "mandoline/tab/frame_tree_delegate.h"
 #include "mandoline/tab/public/interfaces/web_view.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
@@ -31,10 +32,13 @@ using mandoline::HTMLMessageEvent;
 
 namespace web_view {
 
+class FrameDevToolsAgent;
+
 class WebViewImpl : public mojom::WebView,
                     public mojo::ViewManagerDelegate,
                     public mojo::ViewObserver,
-                    public mandoline::FrameTreeDelegate {
+                    public mandoline::FrameTreeDelegate,
+                    public FrameDevToolsAgentDelegate {
  public:
   WebViewImpl(mojo::ApplicationImpl* app,
               mojom::WebViewClientPtr client,
@@ -73,6 +77,9 @@ class WebViewImpl : public mojom::WebView,
       mojo::ViewManagerClientPtr* view_manager_client) override;
   void DidStartNavigation(Frame* frame) override;
 
+  // Overridden from FrameDevToolsAgent::Delegate:
+  void HandlePageNavigateRequest(const GURL& url) override;
+
   mojo::ApplicationImpl* app_;
   mojom::WebViewClientPtr client_;
   mojo::StrongBinding<WebView> binding_;
@@ -81,6 +88,8 @@ class WebViewImpl : public mojom::WebView,
   mojo::ViewManagerClientFactory view_manager_client_factory_;
 
   mojo::URLRequestPtr pending_request_;
+
+  scoped_ptr<FrameDevToolsAgent> devtools_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewImpl);
 };

@@ -15,10 +15,6 @@ namespace html_viewer {
 
 class HTMLFrameDelegate {
  public:
-  // TODO(yzshen): Remove this check once the browser is able to navigate an
-  // existing html_viewer instance and about:blank page support is ready.
-  virtual bool ShouldNavigateLocallyInMainFrame() = 0;
-
   // Invoked when the Frame the delegate is attached to finishes loading. This
   // is not invoked for any child frames, only the frame returned from
   // HTMLFrameTreeManager::CreateFrameAndAttachToTree().
