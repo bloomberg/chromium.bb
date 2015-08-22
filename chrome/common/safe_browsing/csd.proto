@@ -470,6 +470,20 @@ message ClientIncidentReport {
     message OS {
       optional string os_name = 1;
       optional string os_version = 2;
+
+      message RegistryValue {
+        optional string name = 1;
+        optional uint32 type = 2;
+        optional bytes data = 3;
+      }
+
+      message RegistryKey {
+        optional string name = 1;
+        repeated RegistryValue value = 2;
+        repeated RegistryKey key = 3;
+      }
+
+      repeated RegistryKey registry_key = 3;
     }
     optional OS os = 1;
     message Machine {

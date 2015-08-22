@@ -225,4 +225,81 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
 }
 #endif  // _WIN64
 
+TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectRegistryData) {
+  // Ensure that all values and subkeys from the specified registry keys are
+  // correctly stored in the report.
+  registry_util::RegistryOverrideManager override_manager;
+  override_manager.OverrideRegistry(HKEY_CURRENT_USER);
+
+  const wchar_t kRootKey[] = L"Software\\TestKey";
+  const RegistryKeyInfo kRegKeysToCollect[] = {
+      {HKEY_CURRENT_USER, kRootKey},
+  };
+  const wchar_t kSubKey[] = L"SubKey";
+
+  // Check that if the key is not there, then the proto is left empty.
+  google::protobuf::RepeatedPtrField<
+      ClientIncidentReport_EnvironmentData_OS_RegistryKey> registry_data_pb;
+  CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
+  EXPECT_EQ(0, registry_data_pb.size());
+
+  base::win::RegKey key(
+      HKEY_CURRENT_USER, kRootKey,
+      KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_READ | KEY_CREATE_SUB_KEY);
+
+  const wchar_t kStringValueName[] = L"StringValue";
+  const wchar_t kDWORDValueName[] = L"DWORDValue";
+  const wchar_t kStringData[] = L"string data";
+  const DWORD kDWORDData = 0xdeadbeef;
+
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kStringValueName, kStringData));
+
+  CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
+
+  // Expect 1 registry key, 1 value.
+  EXPECT_EQ(1U, registry_data_pb.size());
+  EXPECT_EQ("HKEY_CURRENT_USER\\Software\\TestKey",
+            registry_data_pb.Get(0).name());
+  EXPECT_EQ(1U, registry_data_pb.Get(0).value_size());
+  EXPECT_EQ(base::WideToUTF8(kStringValueName),
+            registry_data_pb.Get(0).value(0).name());
+  EXPECT_EQ(REG_SZ, registry_data_pb.Get(0).value(0).type());
+  const char* value_data = registry_data_pb.Get(0).value(0).data().c_str();
+  EXPECT_EQ(kStringData,
+            std::wstring(reinterpret_cast<const wchar_t*>(&value_data[0])));
+
+  // Add another value.
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kDWORDValueName, kDWORDData));
+
+  CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
+
+  // Expect 1 registry key, 2 values.
+  EXPECT_EQ(1U, registry_data_pb.size());
+  EXPECT_EQ(2U, registry_data_pb.Get(0).value_size());
+
+  // Add a subkey.
+  const wchar_t kTestValueName[] = L"TestValue";
+  const wchar_t kTestData[] = L"test data";
+
+  ASSERT_EQ(ERROR_SUCCESS, key.CreateKey(kSubKey, KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_READ));
+  ASSERT_EQ(ERROR_SUCCESS, key.OpenKey(kSubKey, KEY_READ | KEY_SET_VALUE));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kTestValueName, kTestData));
+  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_READ));
+
+  CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
+
+  // Expect 1 subkey, 1 value.
+  EXPECT_EQ(1U, registry_data_pb.Get(0).key_size());
+  const ClientIncidentReport_EnvironmentData_OS_RegistryKey& subkey_pb =
+      registry_data_pb.Get(0).key(0);
+  EXPECT_EQ(base::WideToUTF8(kSubKey), subkey_pb.name());
+  EXPECT_EQ(1U, subkey_pb.value_size());
+  EXPECT_EQ(base::WideToUTF8(kTestValueName), subkey_pb.value(0).name());
+  value_data = subkey_pb.value(0).data().c_str();
+  EXPECT_EQ(kTestData,
+            std::wstring(reinterpret_cast<const wchar_t*>(&value_data[0])));
+  EXPECT_EQ(REG_SZ, subkey_pb.value(0).type());
+}
+
 }  // namespace safe_browsing

@@ -19,6 +19,9 @@ namespace safe_browsing {
 void CollectPlatformProcessData(
     ClientIncidentReport_EnvironmentData_Process* process);
 
+// Populates |os_data| with platform-specific data related to the OS.
+void CollectPlatformOSData(ClientIncidentReport_EnvironmentData_OS* os_data);
+
 namespace {
 
 ClientIncidentReport_EnvironmentData_Process_Channel MapChannelToProtobuf(
@@ -64,6 +67,7 @@ void CollectEnvironmentData(ClientIncidentReport_EnvironmentData* data) {
     ClientIncidentReport_EnvironmentData_OS* os = data->mutable_os();
     os->set_os_name(base::SysInfo::OperatingSystemName());
     os->set_os_version(base::SysInfo::OperatingSystemVersion());
+    CollectPlatformOSData(os);
   }
 
   // Machine
@@ -83,6 +87,11 @@ void CollectEnvironmentData(ClientIncidentReport_EnvironmentData* data) {
 #if !defined(OS_WIN)
 void CollectPlatformProcessData(
     ClientIncidentReport_EnvironmentData_Process* process) {
+  // Empty implementation for platforms that do not (yet) have their own
+  // implementations.
+}
+
+void CollectPlatformOSData(ClientIncidentReport_EnvironmentData_OS* os_data) {
   // Empty implementation for platforms that do not (yet) have their own
   // implementations.
 }
