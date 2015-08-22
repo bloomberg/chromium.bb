@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
@@ -45,10 +46,15 @@ enum class RequestType {
   REQUEST_TYPE_RELEASE = 2,
 };
 
-// DrmBridge supports session expiration event but doesn't provide detailed
-// status for each key ID, which is required by the EME spec. Use a dummy key ID
-// here to report session expiration info.
-const char kDummyKeyId[] = "Dummy Key Id";
+// These must be in sync with Android MediaDrm KEY_STATUS_XXX constants:
+// https://developer.android.com/reference/android/media/MediaDrm.KeyStatus.html
+enum class KeyStatus {
+  KEY_STATUS_USABLE = 0,
+  KEY_STATUS_EXPIRED = 1,
+  KEY_STATUS_OUTPUT_NOT_ALLOWED = 2,
+  KEY_STATUS_PENDING = 3,
+  KEY_STATUS_INTERNAL_ERROR = 4,
+};
 
 // Returns string session ID from jbyteArray (byte[] in Java).
 std::string GetSessionId(JNIEnv* env, jbyteArray j_session_id) {
@@ -92,6 +98,25 @@ MediaKeys::MessageType GetMessageType(RequestType request_type) {
 
   NOTREACHED();
   return MediaKeys::LICENSE_REQUEST;
+}
+
+CdmKeyInformation::KeyStatus ConvertKeyStatus(KeyStatus key_status) {
+  switch (key_status) {
+    case KeyStatus::KEY_STATUS_USABLE:
+      return CdmKeyInformation::USABLE;
+    case KeyStatus::KEY_STATUS_EXPIRED:
+      return CdmKeyInformation::EXPIRED;
+    case KeyStatus::KEY_STATUS_OUTPUT_NOT_ALLOWED:
+      return CdmKeyInformation::OUTPUT_RESTRICTED;
+    case KeyStatus::KEY_STATUS_PENDING:
+      // TODO(xhwang): This should probably be renamed to "PENDING".
+      return CdmKeyInformation::KEY_STATUS_PENDING;
+    case KeyStatus::KEY_STATUS_INTERNAL_ERROR:
+      return CdmKeyInformation::INTERNAL_ERROR;
+  }
+
+  NOTREACHED();
+  return CdmKeyInformation::INTERNAL_ERROR;
 }
 
 class KeySystemManager {
@@ -515,18 +540,42 @@ void MediaDrmBridge::OnSessionClosed(JNIEnv* env,
 void MediaDrmBridge::OnSessionKeysChange(JNIEnv* env,
                                          jobject j_media_drm,
                                          jbyteArray j_session_id,
-                                         bool has_additional_usable_key,
-                                         jint j_key_status) {
+                                         jobjectArray j_keys_info,
+                                         bool has_additional_usable_key) {
   if (has_additional_usable_key)
     player_tracker_.NotifyNewKey();
 
-  scoped_ptr<CdmKeyInformation> cdm_key_information(new CdmKeyInformation());
-  cdm_key_information->key_id.assign(kDummyKeyId,
-                                     kDummyKeyId + sizeof(kDummyKeyId));
-  cdm_key_information->status =
-      static_cast<CdmKeyInformation::KeyStatus>(j_key_status);
   CdmKeysInfo cdm_keys_info;
-  cdm_keys_info.push_back(cdm_key_information.release());
+
+  size_t size = env->GetArrayLength(j_keys_info);
+  DCHECK_GT(size, 0u);
+
+  for (size_t i = 0; i < size; ++i) {
+    ScopedJavaLocalRef<jobject> j_key_status(
+        env, env->GetObjectArrayElement(j_keys_info, i));
+
+    ScopedJavaLocalRef<jbyteArray> j_key_id =
+        Java_KeyStatus_getKeyId(env, j_key_status.obj());
+    std::vector<uint8> key_id;
+    JavaByteArrayToByteVector(env, j_key_id.obj(), &key_id);
+    DCHECK(!key_id.empty());
+
+    jint j_status_code =
+        Java_KeyStatus_getStatusCode(env, j_key_status.obj());
+    CdmKeyInformation::KeyStatus key_status =
+        ConvertKeyStatus(static_cast<KeyStatus>(j_status_code));
+
+    DVLOG(2) << __FUNCTION__ << "Key status change: "
+             << base::HexEncode(&key_id[0], key_id.size()) << ", "
+             << key_status;
+
+    // TODO(xhwang): Update CdmKeyInformation to take key_id and status in the
+    // constructor.
+    scoped_ptr<CdmKeyInformation> cdm_key_information(new CdmKeyInformation());
+    cdm_key_information->key_id = key_id;
+    cdm_key_information->status = key_status;
+    cdm_keys_info.push_back(cdm_key_information.release());
+  }
 
   session_keys_change_cb_.Run(GetSessionId(env, j_session_id),
                               has_additional_usable_key, cdm_keys_info.Pass());

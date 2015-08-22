@@ -151,13 +151,11 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
                        jobject j_media_drm,
                        jbyteArray j_session_id);
 
-  // Note: Key ID is not available in MediaDrm, so only a generic |j_key_status|
-  // and |has_additional_usable_key| are returned.
   void OnSessionKeysChange(JNIEnv* env,
                            jobject j_media_drm,
                            jbyteArray j_session_id,
-                           bool has_additional_usable_key,
-                           jint j_key_status);
+                           jobjectArray j_keys_info,
+                           bool has_additional_usable_key);
 
   // Called by the CDM when an error occurred in session |j_session_id|
   // unrelated to one of the MediaKeys calls that accept a |promise|.
