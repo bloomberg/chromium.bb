@@ -915,9 +915,6 @@ const char kDisablePullToRefreshEffect[]   = "disable-pull-to-refresh-effect";
 // Disable the locking feature of the screen orientation API.
 const char kDisableScreenOrientationLock[]  = "disable-screen-orientation-lock";
 
-// WebRTC is enabled by default on Android.
-const char kDisableWebRTC[]                 = "disable-webrtc";
-
 // Enable external animation system for Android compositor.
 // See also kEnableCompositorAnimationTimelines for renderer compositors.
 const char kEnableAndroidCompositorAnimationTimelines[] =

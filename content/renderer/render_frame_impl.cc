@@ -4696,12 +4696,6 @@ void RenderFrameImpl::InitializeUserMediaClient() {
   if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
     return;
 
-#if defined(OS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebRTC))
-    return;
-#endif
-
 #if defined(ENABLE_WEBRTC)
   DCHECK(!web_user_media_client_);
   web_user_media_client_ = new UserMediaClientImpl(

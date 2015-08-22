@@ -1707,12 +1707,6 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
 
 blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
     blink::WebMediaStreamCenterClient* client) {
-#if defined(OS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebRTC))
-    return NULL;
-#endif
-
 #if defined(ENABLE_WEBRTC)
   if (!media_stream_center_) {
     media_stream_center_ = GetContentClient()->renderer()

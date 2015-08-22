@@ -644,16 +644,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_DISABLE_WEBGL_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kDisableExperimentalWebGL)},
-    {"disable-webrtc",
-     IDS_FLAGS_DISABLE_WEBRTC_NAME,
-     IDS_FLAGS_DISABLE_WEBRTC_DESCRIPTION,
-     kOsAndroid,
-#if defined(OS_ANDROID)
-     SINGLE_VALUE_TYPE(switches::kDisableWebRTC)
-#else
-     SINGLE_VALUE_TYPE("")
-#endif
-    },
 #if defined(ENABLE_WEBRTC)
     {"disable-webrtc-hw-decoding",
      IDS_FLAGS_DISABLE_WEBRTC_HW_DECODING_NAME,
