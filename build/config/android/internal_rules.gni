@@ -107,6 +107,10 @@ template("findbugs") {
       rebase_path(result_path, root_build_dir),
       rebase_path(jar_path, root_build_dir),
     ]
+
+    if (findbugs_verbose) {
+      args += [ "-vv" ]
+    }
   }
 }
 
@@ -1185,12 +1189,17 @@ template("java_library_impl") {
         }
       }
 
+      if (defined(invoker.run_findbugs)) {
+        run_findbugs = invoker.run_findbugs
+      }
       if (run_findbugs) {
         _final_datadeps += [ ":${_template_name}__findbugs" ]
         findbugs("${_template_name}__findbugs") {
           build_config = _build_config
           jar_path = _jar_path
-          deps = build_config_deps
+          deps = [
+            ":$_compile_java_target",
+          ]
         }
       }
     }

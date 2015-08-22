@@ -48,6 +48,10 @@ if (is_android) {
     # Set to true to run findbugs on JAR targets.
     run_findbugs = false
 
+    # Set to true to enable verbose findbugs logging. This does nothing if
+    # run_findbugs is false.
+    findbugs_verbose = false
+
     # Set to true to enable the Errorprone compiler
     use_errorprone_java_compiler = false
   }

@@ -1369,6 +1369,10 @@ template("android_apk") {
     srcjar_deps = _srcjar_deps
     dex_path = base_path + ".dex.jar"
 
+    if (defined(invoker.run_findbugs)) {
+      run_findbugs = invoker.run_findbugs
+    }
+
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -1656,6 +1660,7 @@ template("instrumentation_test_apk") {
       data_deps += test_runner_data_dep
     }
     deps += [ "//testing/android/broker:broker_java" ]
+    run_findbugs = false
   }
 }
 

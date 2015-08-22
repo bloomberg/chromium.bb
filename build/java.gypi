@@ -227,6 +227,17 @@
         {
           'action_name': 'findbugs_<(_target_name)',
           'message': 'Running findbugs on <(_target_name)',
+          'variables': {
+            'additional_findbugs_args': [],
+            'findbugs_verbose%': 0,
+          },
+          'conditions': [
+            ['findbugs_verbose == 1', {
+              'variables': {
+                'additional_findbugs_args+': ['-vv'],
+              },
+            }],
+          ],
           'inputs': [
             '<(DEPTH)/build/android/findbugs_diff.py',
             '<(DEPTH)/build/android/findbugs_filter/findbugs_exclude.xml',
@@ -242,6 +253,7 @@
             'python', '<(DEPTH)/build/android/findbugs_diff.py',
             '--auxclasspath-gyp', '>(input_jars_paths)',
             '--stamp', '<(findbugs_stamp)',
+            '<@(additional_findbugs_args)',
             '<(jar_final_path)',
           ],
         },

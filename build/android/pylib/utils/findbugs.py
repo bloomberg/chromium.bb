@@ -142,11 +142,15 @@ def Run(exclude, classes_to_analyze, auxiliary_classes, output_file,
   cmd.extend(os.path.abspath(j) for j in jars or [])
 
   if output_file:
-    cmd_helper.RunCmd(cmd)
+    _, _, stderr = cmd_helper.GetCmdStatusOutputAndError(cmd)
+
     results_doc = xml.dom.minidom.parse(output_file)
   else:
-    raw_out = cmd_helper.GetCmdOutput(cmd)
+    _, raw_out, stderr = cmd_helper.GetCmdStatusOutputAndError(cmd)
     results_doc = xml.dom.minidom.parseString(raw_out)
+
+  for line in stderr.splitlines():
+    logging.debug('  %s', line)
 
   current_warnings_set = _ParseXmlResults(results_doc)
 

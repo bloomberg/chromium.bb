@@ -145,17 +145,35 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
   Returns:
     The 2-tuple (exit code, output).
   """
-  _ValidateAndLogCommand(args, cwd, shell)
-  pipe = Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-               shell=shell, cwd=cwd)
-  stdout, stderr = pipe.communicate()
+  status, stdout, stderr = GetCmdStatusOutputAndError(
+      args, cwd=cwd, shell=shell)
 
   if stderr:
     logging.critical(stderr)
   if len(stdout) > 4096:
     logging.debug('Truncated output:')
   logging.debug(stdout[:4096])
-  return (pipe.returncode, stdout)
+  return (status, stdout)
+
+def GetCmdStatusOutputAndError(args, cwd=None, shell=False):
+  """Executes a subprocess and returns its exit code, output, and errors.
+
+  Args:
+    args: A string or a sequence of program arguments. The program to execute is
+      the string or the first item in the args sequence.
+    cwd: If not None, the subprocess's current directory will be changed to
+      |cwd| before it's executed.
+    shell: Whether to execute args as a shell command. Must be True if args
+      is a string and False if args is a sequence.
+
+  Returns:
+    The 2-tuple (exit code, output).
+  """
+  _ValidateAndLogCommand(args, cwd, shell)
+  pipe = Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+               shell=shell, cwd=cwd)
+  stdout, stderr = pipe.communicate()
+  return (pipe.returncode, stdout, stderr)
 
 
 class TimeoutError(Exception):
