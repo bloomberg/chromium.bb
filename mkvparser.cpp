@@ -1504,10 +1504,12 @@ long SeekHead::Parse() {
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   ptrdiff_t count_ = ptrdiff_t(pEntry - m_entries);
   assert(count_ >= 0);
