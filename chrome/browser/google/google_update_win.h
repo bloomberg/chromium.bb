@@ -45,8 +45,7 @@ enum GoogleUpdateErrorCode {
   GOOGLE_UPDATE_DISABLED_BY_POLICY = 8,
   // Updates can not be downloaded because the administrator has disabled
   // manual (on-demand) updates.  Automatic background updates are allowed.
-  // DEPRECATED.
-  // GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY = 9,
+  GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY = 9,
   NUM_ERROR_CODES
 };
 

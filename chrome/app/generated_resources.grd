@@ -8318,6 +8318,14 @@ I don't think this site should be blocked!
           Update failed (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
         </message>
       </if>
+      <if expr="is_win">
+        <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
+          Updates are disabled by the administrator (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
+        </message>
+        <message name="IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL" desc="Status label: Manual upgrades are disabled by policy">
+          Manual updates are disabled by the administrator (error: <ph name="ERROR_NUMBER">$1<ex>1</ex></ph>)
+        </message>
+      </if>
       <if expr="chromeos">
         <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
           Updates are disabled by the administrator
