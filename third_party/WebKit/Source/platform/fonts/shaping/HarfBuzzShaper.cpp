@@ -602,7 +602,7 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
         // Don't normalize tabs as they are not treated as spaces for word-end.
         if (run.normalizeSpace() && Character::isNormalizedCanvasSpaceCharacter(character))
             character = spaceCharacter;
-        else if (Character::treatAsSpace(character))
+        else if (Character::treatAsSpace(character) && character != noBreakSpaceCharacter)
             character = spaceCharacter;
         else if (Character::treatAsZeroWidthSpaceInComplexScript(character))
             character = zeroWidthSpaceCharacter;
@@ -1172,7 +1172,7 @@ float HarfBuzzShaper::adjustSpacing(ShapeResult::RunInfo* run, size_t glyphIndex
         spacing += m_letterSpacing;
 
     bool treatAsSpace = Character::treatAsSpace(character);
-    if (treatAsSpace && currentCharacterIndex && (character != '\t' || !m_textRun.allowTabs()))
+    if (treatAsSpace && (currentCharacterIndex || character == noBreakSpaceCharacter) && (character != '\t' || !m_textRun.allowTabs()))
         spacing += m_wordSpacingAdjustment;
 
     if (!m_expansionOpportunityCount)
