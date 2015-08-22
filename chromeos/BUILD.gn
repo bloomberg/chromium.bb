@@ -43,15 +43,15 @@ component("chromeos") {
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
   configs += [ "//build/config/linux:dbus" ]
-  deps = [
-    "//testing/gmock",
+  public_deps = [
     ":chromeos",
     ":cryptohome_proto",
     ":power_manager_proto",
     ":test_support_without_gmock",
+    "//testing/gmock",
   ]
   sources = [
     "attestation/mock_attestation_flow.cc",

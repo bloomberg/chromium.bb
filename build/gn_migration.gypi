@@ -419,7 +419,7 @@
 
             # TODO(GYP): remove these when the corresponding root targets work.
             #"//cc/blink",
-            #"//components/ui/zoom:ui_zoom",
+            #"//components/ui/zoom",
             #"//content",
             #"//content/test:test_support",
             #"//device/battery",

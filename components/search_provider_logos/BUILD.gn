@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("search_provider_logos") {
+source_set("search_provider_logos") {
   sources = [
     "google_logo_api.cc",
     "google_logo_api.h",
@@ -14,11 +14,27 @@ static_library("search_provider_logos") {
     "logo_tracker.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
-    "//net",
     "//skia",
+  ]
+
+  deps = [
+    "//net",
     "//ui/gfx",
     "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "logo_cache_unittest.cc",
+    "logo_tracker_unittest.cc",
+  ]
+  deps = [
+    ":search_provider_logos",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

@@ -24,3 +24,15 @@ source_set("common") {
     "//url",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "translate_metrics_unittest.cc",
+    "translate_util_unittest.cc",
+  ]
+  deps = [
+    ":common",
+    "//testing/gtest",
+  ]
+}
