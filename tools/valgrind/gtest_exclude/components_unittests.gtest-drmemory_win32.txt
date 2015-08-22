@@ -1,2 +1,5 @@
 # http://crbug.com/514421
 WatcherMetricsProviderWinTest.DoesNotReportOwnProcessId
+
+# http://crbug.com/523462
+PluginsFieldTrialTest.NoPrefLeftBehind
