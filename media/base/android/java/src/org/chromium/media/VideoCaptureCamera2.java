@@ -441,10 +441,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         } catch (CameraAccessException ex) {
             Log.e(TAG, "abortCaptures: " + ex);
             return false;
-        } catch (IllegalArgumentException ex) {
-            Log.e(TAG, "abortCaptures: " + ex);
-            return false;
-        } catch (SecurityException ex) {
+        } catch (IllegalStateException ex) {
             Log.e(TAG, "abortCaptures: " + ex);
             return false;
         }
