@@ -5841,10 +5841,12 @@ long Cluster::Load(long long& pos, long& len) const {
     }
 
     pos += size;  // consume payload
-    assert((cluster_stop < 0) || (pos <= cluster_stop));
+    if (cluster_stop >= 0 && pos > cluster_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert((cluster_stop < 0) || (pos <= cluster_stop));
+  if (cluster_stop >= 0 && pos > cluster_stop)
+    return E_FILE_FORMAT_INVALID;
 
   if (timecode < 0)  // no timecode found
     return E_FILE_FORMAT_INVALID;
@@ -6014,13 +6016,15 @@ long Cluster::Parse(long long& pos, long& len) const {
       return this_->ParseSimpleBlock(size, pos, len);
 
     pos += size;  // consume payload
-    assert((cluster_stop < 0) || (pos <= cluster_stop));
+    if (cluster_stop >= 0 && pos > cluster_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   assert(m_element_size > 0);
 
   m_pos = pos;
-  assert((cluster_stop < 0) || (m_pos <= cluster_stop));
+  if (cluster_stop >= 0 && m_pos > cluster_stop)
+    return E_FILE_FORMAT_INVALID;
 
   if (m_entries_count > 0) {
     const long idx = m_entries_count - 1;
@@ -6663,7 +6667,8 @@ long Cluster::HasBlockEntries(
       return 1;  // have at least one entry
 
     pos += size;  // consume payload
-    assert((cluster_stop < 0) || (pos <= cluster_stop));
+    if (cluster_stop >= 0 && pos > cluster_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 }
 
@@ -6846,12 +6851,14 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
   if (bpos < 0)
     return E_FILE_FORMAT_INVALID;
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   assert(bsize >= 0);
 
   const long idx = m_entries_count;
