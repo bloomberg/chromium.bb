@@ -19,3 +19,15 @@ component("proxy_config") {
     "//net",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "proxy_config_dictionary_unittest.cc",
+    "proxy_prefs_unittest.cc",
+  ]
+  deps = [
+    ":proxy_config",
+    "//testing/gtest",
+  ]
+}

@@ -208,5 +208,10 @@ source_set("unit_tests") {
     "//content/public/common",
     "//testing/gtest",
   ]
+
+  if (is_linux) {
+    sources += [ "serialization/serialization_utils_unittest.cc" ]
+    deps += [ ":serialization" ]
+  }
 }
 # TODO(GYP): metrics_chromeos

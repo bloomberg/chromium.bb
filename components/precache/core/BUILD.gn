@@ -18,7 +18,7 @@ config("precache_config") {
   ]
 }
 
-static_library("core") {
+source_set("core") {
   sources = [
     "precache_database.cc",
     "precache_database.h",
@@ -45,5 +45,20 @@ static_library("core") {
 proto_library("proto") {
   sources = [
     "proto/precache.proto",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "precache_database_unittest.cc",
+    "precache_fetcher_unittest.cc",
+    "precache_url_table_unittest.cc",
+  ]
+  deps = [
+    ":core",
+    ":proto",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

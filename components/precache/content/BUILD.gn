@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("content") {
+source_set("content") {
   sources = [
     "precache_manager.cc",
     "precache_manager.h",
@@ -15,5 +15,17 @@ static_library("content") {
     "//components/precache/core",
     "//content/public/browser",
     "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "precache_manager_unittest.cc",
+  ]
+  deps = [
+    ":content",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
