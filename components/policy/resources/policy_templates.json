@@ -31,7 +31,7 @@
 #   'main' - a boolean value
 #   'list' - a list of string values
 #   'dict' - a dictionary value, containing other values indexed by strings
-#     NOTE: This type is not supported yet. http://crbug.com/108992
+#     NOTE: This type is not supported yet. https://crbug.com/108992
 #   'external' - a policy that references external data.
 #     NOTE: This type is currently supported on Chrome OS only.
 #
@@ -163,7 +163,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 'http://chromium.org',
+          'example_value': 'https://www.chromium.org',
           'id': 1,
           'caption': '''Configure the home page URL''',
           'desc': '''Configures the default home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
@@ -577,7 +577,7 @@
           'features': {
             'dynamic_refresh': True,
           },
-          # Mark this 'removed' when http://crbug.com/100216 is resolved.
+          # Mark this 'removed' when https://crbug.com/100216 is resolved.
           'deprecated': True,
           'example_value': False,
           'id': 94,
@@ -636,7 +636,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
-          # Mark this 'removed' when http://crbug.com/100216 is resolved.
+          # Mark this 'removed' when https://crbug.com/100216 is resolved.
           'deprecated': True,
           'example_value': False,
           'id': 155,
@@ -1240,7 +1240,7 @@
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--user-data-dir' flag or not.
 
-      See http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 
       If this policy is left not set the default profile path will be used and the user will be able to override it with the '--user-data-dir' command line flag.''',
       'label': '''Set user data directory''',
@@ -1261,7 +1261,7 @@
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--disk-cache-dir' flag or not.
 
-      See http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 
       If this policy is left not set the default cache directory will be used and the user will be able to override it with the '--disk-cache-dir' command line flag.''',
       'label': '''Set disk cache directory''',
@@ -1325,7 +1325,7 @@
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.
 
-      See http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 
       If this policy is left not set the default download directory will be used and the user will be able to change it.''',
       'label': '''Set download directory''',
@@ -1380,7 +1380,7 @@
       If you choose to auto detect the proxy server, all other options are ignored.
 
       For detailed examples, visit:
-      <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
+      <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
 
@@ -1450,7 +1450,7 @@
           If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
 
           For detailed examples, visit:
-          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
+          <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
           If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
 
@@ -1510,7 +1510,7 @@
           If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'.
 
           For detailed examples, visit:
-          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
+          <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
 
           If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
 
@@ -1540,7 +1540,7 @@
           You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
           For more options and detailed examples, visit:
-          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
+          <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
         },
         {
           'name': 'ProxyPacUrl',
@@ -1556,7 +1556,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 'http://internal.site/example.pac',
+          'example_value': 'https://internal.site/example.pac',
           'id': 24,
           'caption': '''URL to a proxy .pac file''',
           'desc': '''You can specify a URL to a proxy .pac file here.
@@ -1566,7 +1566,7 @@
           You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
           For detailed examples, visit:
-          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
+          <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
         },
         {
           'name': 'ProxyBypassList',
@@ -1582,7 +1582,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 'http://www.example1.com,http://www.example2.com,http://internalsite/',
+          'example_value': 'https://www.example1.com,https://www.example2.com,https://internalsite/',
           'id': 25,
           'caption': '''Proxy bypass rules''',
           'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here.
@@ -1592,7 +1592,7 @@
           You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
           For more detailed examples, visit:
-          <ph name="PROXY_HELP_URL">http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
+          <ph name="PROXY_HELP_URL">https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett<ex>https://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>''',
           'label': '''Comma-separated list of proxy bypass rules''',
         },
       ],
@@ -1601,7 +1601,7 @@
       # TODO(joaodasilva): Make this the default and deprecate the other proxy
       # policies once all providers are ready to load 'dict' policies.
       # This is currently an internal policy.
-      # http://crbug.com/108992, http://crbug.com/108996
+      # https://crbug.com/108992, https://crbug.com/108996
       'name': 'ProxySettings',
       'type': 'dict',
       'schema': {
@@ -2008,16 +2008,16 @@
             },
             'bcdefghijklmnopabcdefghijklmnopa' : {
               'installation_mode': 'force_installed',
-              'update_url': 'http://example.com/update_url',
+              'update_url': 'https://example.com/update_url',
               'allowed_permissions': ['downloads'],
             },
-            'update_url:http://www.example.com/update.xml': {
+            'update_url:https://www.example.com/update.xml': {
               'blocked_permissions': ['wallpaper'],
             },
             '*': {
               'installation_mode': 'blocked',
               'blocked_permissions': ['downloads', 'bookmarks'],
-              'install_sources': ['http://company-intranet/chromeapps'],
+              'install_sources': ['https://company-intranet/chromeapps'],
               'allowed_types': ['hosted_app'],
             },
           },
@@ -2169,7 +2169,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://example.com', 'http://chromium.org'],
+          'example_value': ['https://example.com', 'https://www.chromium.org'],
           'id': 38,
           'caption': '''URLs to open on startup''',
           'desc': '''If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened. If left not set no URL will be opened on start up.
@@ -2204,7 +2204,7 @@
     },
     {
       # TODO(joaodasilva): Flag these policies with 'can_be_recommended'
-      # after fixing http://crbug.com/106683
+      # after fixing https://crbug.com/106683
       'name': 'DefaultSearchProvider',
       'type': 'group',
       'caption': '''Default search provider''',
@@ -2300,7 +2300,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 'http://search.my.company/search?q={searchTerms}',
+          'example_value': 'https://search.my.company/search?q={searchTerms}',
           'id': 43,
           'caption': '''Default search provider search URL''',
           'desc': '''Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.
@@ -2316,7 +2316,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 'http://search.my.company/suggest?q={searchTerms}',
+          'example_value': 'https://search.my.company/suggest?q={searchTerms}',
           'id': 44,
           'caption': '''Default search provider suggest URL''',
           'desc': '''Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far.
@@ -2334,7 +2334,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 'http://search.my.company/suggest?q={searchTerms}',
+          'example_value': 'https://search.my.company/suggest?q={searchTerms}',
           'id': 45,
           'caption': '''Default search provider instant URL''',
           'desc': '''Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be replaced at query time by the text the user has entered so far.
@@ -2352,7 +2352,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 'http://search.my.company/favicon.ico',
+          'example_value': 'https://search.my.company/favicon.ico',
           'id': 46,
           'caption': '''Default search provider icon''',
           'desc': '''Specifies the favorite icon URL of the default search provider.
@@ -2394,7 +2394,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://search.my.company/suggest#q={searchTerms}', 'http://search.my.company/suggest/search#q={searchTerms}'],
+          'example_value': ['https://search.my.company/suggest#q={searchTerms}', 'https://search.my.company/suggest/search#q={searchTerms}'],
           'id': 161,
           'caption': '''List of alternate URLs for the default search provider''',
           'desc': '''Specifies a list of alternate URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be used to extract the search terms.
@@ -2430,7 +2430,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 'http://search.my.company/searchbyimage/upload',
+          'example_value': 'https://search.my.company/searchbyimage/upload',
           'id': 229,
           'caption': '''Parameter providing search-by-image feature for the default search provider''',
           'desc': '''Specifies the URL of the search engine used to provide image search. Search requests will be sent using the GET method. If the DefaultSearchProviderImageURLPostParams policy is set then image search requests will use the POST method instead.
@@ -2448,7 +2448,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': 'http://search.my.company/newtab',
+          'example_value': 'https://search.my.company/newtab',
           'id': 237,
           'caption': '''Default search provider new tab page URL''',
           'desc': '''Specifies the URL that a search engine uses to provide a new tab page.
@@ -2533,7 +2533,7 @@
     },
     {
       # TODO(joaodasilva): Flag these policies with 'can_be_recommended'
-      # after fixing http://crbug.com/106682
+      # after fixing https://crbug.com/106682
       'name': 'ContentSettings',
       'type': 'group',
       'caption': '''Content Settings''',
@@ -2858,7 +2858,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 77,
           'caption': '''Allow cookies on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set cookies.
@@ -2882,7 +2882,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 67,
           'caption': '''Block cookies on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to set cookies.
@@ -2906,7 +2906,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 68,
           'caption': '''Allow session only cookies on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set session only cookies.
@@ -2929,7 +2929,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 69,
           'caption': '''Allow images on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display images.
@@ -2948,7 +2948,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 70,
           'caption': '''Block images on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display images.
@@ -2967,7 +2967,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 71,
           'caption': '''Allow JavaScript on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
@@ -2986,7 +2986,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 72,
           'caption': '''Block JavaScript on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
@@ -3005,7 +3005,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 73,
           'caption': '''Allow plugins on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to run plugins.
@@ -3024,7 +3024,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 74,
           'caption': '''Block plugins on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run plugins.
@@ -3048,7 +3048,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 75,
           'caption': '''Allow popups on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to open popups.
@@ -3110,7 +3110,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 76,
           'caption': '''Block popups on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to open popups.
@@ -3129,7 +3129,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 105,
           'caption': '''Allow notifications on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display notifications.
@@ -3148,7 +3148,7 @@
             'dynamic_refresh': True,
             'per_profile': True,
           },
-          'example_value': ['http://www.example.com', '[*.]example.edu'],
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
           'id': 106,
           'caption': '''Block notifications on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
@@ -3343,14 +3343,14 @@
           'features': {
             'dynamic_refresh': False,
           },
-          'example_value': ['http://www.example.com', 'http://www.example.edu'],
+          'example_value': ['https://www.example.com', 'https://www.example.edu'],
           'id': 58,
           'caption': '''Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>''',
           'desc': '''Customize the list of URL patterns that should always be rendered by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
 
-          For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
+          For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
         },
         {
           'name': 'RenderInHostList',
@@ -3363,14 +3363,14 @@
           'features': {
             'dynamic_refresh': False,
           },
-          'example_value': ['http://www.example.com', 'http://www.example.edu'],
+          'example_value': ['https://www.example.com', 'https://www.example.edu'],
           'id': 59,
           'caption': '''Always render the following URL patterns in the host browser''',
           'desc': '''Customize the list of URL patterns that should always be rendered by the host browser.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
 
-          For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
+          For example patterns see https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.''',
         },
         {
           'name': 'AdditionalLaunchParameters',
@@ -3694,7 +3694,7 @@
 
       If you set this policy, <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> will use the provided directory.
 
-      See http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 
       If this setting is left not set the default profile directory will be used.''',
       'label': '''Set user data directory''',
@@ -3891,7 +3891,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'http://server:8080/path', '.exact.hostname.com', 'file://*', '*'],
+      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', '*'],
       'id': 103,
       'caption': '''Block access to a list of URLs''',
       'desc': '''Blocks access to the listed URLs.
@@ -3927,7 +3927,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'http://server:8080/path', '.exact.hostname.com'],
+      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com'],
       'id': 104,
       'caption': '''Allows access to a list of URLs''',
       'desc': '''Allows access to the listed URLs, as exceptions to the URL blacklist.
@@ -3998,7 +3998,7 @@
         'per_profile': True,
       },
       'deprecated': True,
-      'example_value': 'http://company-intranet/chromeapps',
+      'example_value': 'https://company-intranet/chromeapps',
       'id': 112,
       'caption': '''Enterprise web store URL (deprecated)''',
       'desc': '''This setting has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 29. The recommended way to set up organization-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.''',
@@ -4582,7 +4582,7 @@
       'features': {
         'dynamic_refresh': True,
       },
-      'example_value': [ 'http://google.com', 'chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaa/' ],
+      'example_value': [ 'https://google.com', 'chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaa/' ],
       'id': 137,
       'caption': '''Load specified urls on demo login''',
       'desc': '''This policy is active in retail mode only.
@@ -4671,7 +4671,7 @@
       'features': {
         'dynamic_refresh': True,
       },
-      'example_value': [ { "extension-id": "khgabmflimjjbclkmljlpmgaleanedem", "update-url": "http://clients2.google.com/service/update2/crx" } ],
+      'example_value': [ { "extension-id": "khgabmflimjjbclkmljlpmgaleanedem", "update-url": "https://clients2.google.com/service/update2/crx" } ],
       'id': 135,
       'caption': '''List of AppPack extensions''',
       'desc': '''This policy is active in retail mode only.
@@ -5120,7 +5120,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['http://www.example.com/', 'http://[*.]example.edu/'],
+      'example_value': ['https://www.example.com/', 'https://[*.]example.edu/'],
       'id': 208,
       'caption': '''URLs that will be granted access to audio capture devices without prompt''',
       'desc': '''Patterns in this list will be matched against the security
@@ -5164,7 +5164,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['http://www.example.com/', 'http://[*.]example.edu/'],
+      'example_value': ['https://www.example.com/', 'https://[*.]example.edu/'],
       'id': 209,
       'caption': '''URLs that will be granted access to video capture devices without prompt''',
       'desc': '''Patterns in this list will be matched against the security
@@ -5209,7 +5209,7 @@
 
       New devices start out with the timezone set to "US/Pacific".
 
-      The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "http://en.wikipedia.org/wiki/List_of_tz_database_time"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".''',
+      The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "https://en.wikipedia.org/wiki/Tz_database"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".''',
     },
     {
       'name': 'SystemUse24HourClock',
@@ -6210,7 +6210,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': 'http://www.example.com/terms_of_service.txt',
+      'example_value': 'https://www.example.com/terms_of_service.txt',
       'id': 186,
       'caption': '''Set the Terms of Service for a device-local account''',
       'desc': '''Sets the Terms of Service that the user must accept before starting a device-local account session.
@@ -6821,7 +6821,7 @@
           },
           'example_value': {
             'https://www.example.com': True,
-            'http://moose.org': False
+            'https://moose.org': False
           },
           'id': 206,
           'caption': '''Managed user manual exception URLs''',
@@ -6918,7 +6918,7 @@
       'caption': '''Managed Bookmarks''',
       'desc': '''Configures a list of managed bookmarks.
 
-      The policy is a list of bookmarks, and each bookmark is a dictionary containing the bookmark "name" and the target "url". A bookmark can also be configured as a folder. In that case, define the folder "name" but don't define an "url"; instead, define the folder contents as another list of bookmarks under the "children" key. Chrome will amend incomplete URLs as if they were submitted via the Omnibox. For example, "google.com" becomes "http://google.com/".
+      The policy is a list of bookmarks, and each bookmark is a dictionary containing the bookmark "name" and the target "url". A bookmark can also be configured as a folder. In that case, define the folder "name" but don't define an "url"; instead, define the folder contents as another list of bookmarks under the "children" key. Chrome will amend incomplete URLs as if they were submitted via the Omnibox. For example, "google.com" becomes "https://google.com/".
 
       These bookmarks are placed in a Managed bookmarks folder that can't be modified by the user, but the user can choose to hide it from the bookmark bar. Managed bookmarks are not synced to the user account and can't be modified by extensions.''',
     },
@@ -6955,7 +6955,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': { "url": "http://example.com/avatar.jpg", "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef" },
+      'example_value': { "url": "https://example.com/avatar.jpg", "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef" },
       'max_size': 524288,
       'id': 249,
       'caption': '''User avatar image''',
@@ -7001,7 +7001,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': { "url": "http://example.com/wallpaper.jpg", "hash": "baddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecaf" },
+      'example_value': { "url": "https://example.com/wallpaper.jpg", "hash": "baddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecaf" },
       'max_size': 16777216,
       'id': 262,
       'caption': '''Wallpaper image''',
@@ -7065,7 +7065,7 @@
 
       If this policy is left not set, or the list is empty or does not match one of the supported string tags, all deprecated web platform features will remain disabled.
 
-      While the policy itself is supported on the above platforms, the feature it is enabling may be available on fewer platforms. Not all deprecated Web Platform features can be re-enabled. Only the ones explicitly listed below can be for a limited period of time, which is different per feature. The general format of the string tag will be [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. As reference, you can find the intent behind the Web Platform feature changes at http://bit.ly/blinkintents.
+      While the policy itself is supported on the above platforms, the feature it is enabling may be available on fewer platforms. Not all deprecated Web Platform features can be re-enabled. Only the ones explicitly listed below can be for a limited period of time, which is different per feature. The general format of the string tag will be [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. As reference, you can find the intent behind the Web Platform feature changes at https://bit.ly/blinkintents.
       ''',
     },
     {
@@ -7537,8 +7537,8 @@
 
       These settings don't need to be configured manually!  Easy-to-use
       templates for Windows, Mac and Linux are available for download from <ph
-      name="POLICY_TEMPLATE_DOWNLOAD_URL">http://www.chromium.org/administrators/policy-templates<ex>
-      http://www.chromium.org/administrators/policy-templates</ex></ph>.
+      name="POLICY_TEMPLATE_DOWNLOAD_URL">https://www.chromium.org/administrators/policy-templates<ex>
+      https://www.chromium.org/administrators/policy-templates</ex></ph>.
 
       The recommended way to configure policy on Windows is via GPO, although
       provisioning policy via registry is still supported for Windows instances
@@ -7590,7 +7590,7 @@
     },
     'doc_complex_policies_on_windows': {
       'desc': '''Text pointing the user to a help article for complex policies on Windows''',
-      'text': '''encoded as a JSON string, for details see <ph name="COMPLEX_POLICIES_URL">http://www.chromium.org/administrators/complex-policies-on-windows<ex>http://www.chromium.org/administrators/complex-policies-on-windows</ex></ph>''',
+      'text': '''encoded as a JSON string, for details see <ph name="COMPLEX_POLICIES_URL">https://www.chromium.org/administrators/complex-policies-on-windows<ex>https://www.chromium.org/administrators/complex-policies-on-windows</ex></ph>''',
     },
   },
   'placeholders': [],
