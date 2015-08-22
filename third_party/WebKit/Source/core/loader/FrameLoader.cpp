@@ -482,7 +482,7 @@ void FrameLoader::finishedParsing()
     m_progressTracker->finishedParsing();
 
     if (client())
-        client()->dispatchDidFinishDocumentLoad(m_documentLoader->isCommittedButEmpty());
+        client()->dispatchDidFinishDocumentLoad(m_documentLoader ? m_documentLoader->isCommittedButEmpty() : true);
 
     checkCompleted();
 
@@ -1257,7 +1257,7 @@ void FrameLoader::processFragment(const KURL& url, LoadStartType loadStartType)
     // If scroll position is restored from history fragment then we should not override it unless
     // this is a same document reload.
     bool shouldScrollToFragment = (loadStartType == NavigationWithinSameDocument && !isBackForwardLoadType(m_loadType))
-        || !documentLoader()->initialScrollState().didRestoreFromHistory;
+        || (documentLoader() && !documentLoader()->initialScrollState().didRestoreFromHistory);
 
     view->processUrlFragment(url, shouldScrollToFragment ?
         FrameView::UrlFragmentScroll : FrameView::UrlFragmentDontScroll);
