@@ -4867,7 +4867,8 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
       ++count;
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   if (count <= 0)
@@ -4903,10 +4904,12 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   return 0;
 }
@@ -4999,10 +5002,12 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   VideoTrack* const pTrack =
       new (std::nothrow) VideoTrack(pSegment, element_start, element_size);
@@ -5197,10 +5202,12 @@ long AudioTrack::Parse(Segment* pSegment, const Info& info,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   AudioTrack* const pTrack =
       new (std::nothrow) AudioTrack(pSegment, element_start, element_size);
