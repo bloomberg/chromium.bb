@@ -1903,7 +1903,8 @@ bool Cues::LoadCuePoint() const {
 
     if (id != 0x3B) {  // CuePoint ID
       m_pos += size;  // consume payload
-      assert(m_pos <= stop);
+      if (m_pos > stop)
+        return false;
 
       continue;
     }
@@ -1924,7 +1925,8 @@ bool Cues::LoadCuePoint() const {
     --m_preload_count;
 
     m_pos += size;  // consume payload
-    assert(m_pos <= stop);
+    if (m_pos > stop)
+      return false;
 
     return true;  // yes, we loaded a cue point
   }
@@ -2303,7 +2305,8 @@ bool CuePoint::Load(IMkvReader* pReader) {
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return false;
   }
 
   assert(size_t(p - m_track_positions) == m_track_positions_count);
