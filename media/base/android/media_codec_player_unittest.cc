@@ -264,15 +264,22 @@ class VideoFactory : public TestDataFactory {
 
 class MockDemuxerAndroid : public DemuxerAndroid {
  public:
-  MockDemuxerAndroid()
-      : client_(nullptr), num_seeks_(0), num_browser_seeks_(0) {}
-  ~MockDemuxerAndroid() override {}
+  MockDemuxerAndroid(base::MessageLoop* ui_message_loop);
+  ~MockDemuxerAndroid() override;
 
   // DemuxerAndroid implementation
   void Initialize(DemuxerAndroidClient* client) override;
   void RequestDemuxerData(DemuxerStream::Type type) override;
   void RequestDemuxerSeek(const base::TimeDelta& seek_request,
                           bool is_browser_seek) override;
+
+  // Helper methods that enable using a weak pointer when posting to the player.
+  void OnDemuxerDataAvailable(const DemuxerData& chunk);
+  void OnDemuxerSeekDone(base::TimeDelta reported_seek_time);
+
+  // Sets the callback that is fired when demuxer is deleted (deletion
+  // happens on the Media thread).
+  void SetDemuxerDeletedCallback(base::Closure cb) { demuxer_deleted_cb_ = cb; }
 
   // Sets the audio data factory.
   void SetAudioFactory(scoped_ptr<AudioFactory> factory) {
@@ -314,18 +321,42 @@ class MockDemuxerAndroid : public DemuxerAndroid {
   bool ReceivedBrowserSeekRequest() const { return num_browser_seeks_ > 0; }
 
  private:
+  base::MessageLoop* ui_message_loop_;
   DemuxerAndroidClient* client_;
+
   scoped_ptr<DemuxerConfigs> pending_configs_;
   scoped_ptr<AudioFactory> audio_factory_;
   scoped_ptr<VideoFactory> video_factory_;
+
   base::TimeDelta audio_preroll_interval_;
   base::TimeDelta video_preroll_interval_;
   base::TimeDelta seek_done_delay_;
+
   int num_seeks_;
   int num_browser_seeks_;
 
+  base::Closure demuxer_deleted_cb_;
+
+  // NOTE: WeakPtrFactory must be the last data member to be destroyed first.
+  base::WeakPtrFactory<MockDemuxerAndroid> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MockDemuxerAndroid);
 };
+
+MockDemuxerAndroid::MockDemuxerAndroid(base::MessageLoop* ui_message_loop)
+    : ui_message_loop_(ui_message_loop),
+      client_(nullptr),
+      num_seeks_(0),
+      num_browser_seeks_(0),
+      weak_factory_(this) {}
+
+MockDemuxerAndroid::~MockDemuxerAndroid() {
+  DVLOG(1) << "MockDemuxerAndroid::" << __FUNCTION__;
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+
+  if (!demuxer_deleted_cb_.is_null())
+    ui_message_loop_->PostTask(FROM_HERE, demuxer_deleted_cb_);
+}
 
 void MockDemuxerAndroid::Initialize(DemuxerAndroidClient* client) {
   DVLOG(1) << "MockDemuxerAndroid::" << __FUNCTION__;
@@ -337,6 +368,8 @@ void MockDemuxerAndroid::Initialize(DemuxerAndroidClient* client) {
 }
 
 void MockDemuxerAndroid::RequestDemuxerData(DemuxerStream::Type type) {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+
   DemuxerData chunk;
   base::TimeDelta delay;
 
@@ -351,11 +384,11 @@ void MockDemuxerAndroid::RequestDemuxerData(DemuxerStream::Type type) {
 
   chunk.type = type;
 
-  // Post to Media thread.
-  DCHECK(client_);
+  // Post to the Media thread. Use the weak pointer to prevent the data arrival
+  // after the player has been deleted.
   GetMediaTaskRunner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&DemuxerAndroidClient::OnDemuxerDataAvailable,
-                            base::Unretained(client_), chunk),
+      FROM_HERE, base::Bind(&MockDemuxerAndroid::OnDemuxerDataAvailable,
+                            weak_factory_.GetWeakPtr(), chunk),
       delay);
 }
 
@@ -383,9 +416,21 @@ void MockDemuxerAndroid::RequestDemuxerSeek(const base::TimeDelta& seek_request,
   base::TimeDelta reported_seek_time =
       is_browser_seek ? seek_request : kNoTimestamp();
   GetMediaTaskRunner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&DemuxerAndroidClient::OnDemuxerSeekDone,
-                            base::Unretained(client_), reported_seek_time),
+      FROM_HERE, base::Bind(&MockDemuxerAndroid::OnDemuxerSeekDone,
+                            weak_factory_.GetWeakPtr(), reported_seek_time),
       seek_done_delay_);
+}
+
+void MockDemuxerAndroid::OnDemuxerDataAvailable(const DemuxerData& chunk) {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DCHECK(client_);
+  client_->OnDemuxerDataAvailable(chunk);
+}
+
+void MockDemuxerAndroid::OnDemuxerSeekDone(base::TimeDelta reported_seek_time) {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DCHECK(client_);
+  client_->OnDemuxerSeekDone(reported_seek_time);
 }
 
 void MockDemuxerAndroid::PostConfigs(const DemuxerConfigs& configs) {
@@ -421,13 +466,14 @@ void MockDemuxerAndroid::PostInternalConfigs() {
 class MediaCodecPlayerTest : public testing::Test {
  public:
   MediaCodecPlayerTest();
-  ~MediaCodecPlayerTest() override;
 
   // Conditions to wait for.
   bool IsPaused() const { return !(player_ && player_->IsPlaying()); }
 
  protected:
   typedef base::Callback<bool()> Predicate;
+
+  void TearDown() override;
 
   void CreatePlayer();
   void SetVideoSurface();
@@ -451,15 +497,21 @@ class MediaCodecPlayerTest : public testing::Test {
 
   // Helper method that starts video only stream. Waits till it actually
   // started.
-  void StartVideoPlayback(base::TimeDelta duration);
+  bool StartVideoPlayback(base::TimeDelta duration, const char* test_name);
 
   // Helper method that starts audio and video streams with preroll.
   // The preroll is achieved by setting significant video preroll interval
   // so video will have to catch up with audio. To make room for this interval
   // the Start() command is preceded by SeekTo().
-  void StartAVSeekAndPreroll(base::TimeDelta duration,
+  bool StartAVSeekAndPreroll(base::TimeDelta duration,
                              base::TimeDelta seek_position,
-                             base::TimeDelta video_preroll);
+                             base::TimeDelta video_preroll,
+                             const char* test_name);
+
+  // Callback sent when demuxer is being deleted.
+  void OnDemuxerDeleted() { demuxer_ = nullptr; }
+
+  bool IsDemuxerDeleted() const { return !demuxer_; }
 
   base::MessageLoop message_loop_;
   MockMediaPlayerManager manager_;
@@ -478,12 +530,34 @@ class MediaCodecPlayerTest : public testing::Test {
 };
 
 MediaCodecPlayerTest::MediaCodecPlayerTest()
-    : demuxer_(new MockDemuxerAndroid()), player_(nullptr) {
-}
+    : demuxer_(new MockDemuxerAndroid(&message_loop_)),
+      player_(nullptr),
+      is_timeout_expired_(false) {}
 
-MediaCodecPlayerTest::~MediaCodecPlayerTest() {
-  if (player_)
+void MediaCodecPlayerTest::TearDown() {
+  DVLOG(1) << __FUNCTION__;
+
+  // Wait till the player is destroyed on the Media thread.
+
+  if (player_) {
+    // The player deletes the demuxer on the Media thread. The demuxer's
+    // destructor sends a notification to the UI thread. When this notification
+    // arrives we can conclude that player started destroying its member
+    // variables. By that time the media codecs should have been released.
+
+    DCHECK(demuxer_);
+    demuxer_->SetDemuxerDeletedCallback(base::Bind(
+        &MediaCodecPlayerTest::OnDemuxerDeleted, base::Unretained(this)));
+
     player_->DeleteOnCorrectThread();
+
+    EXPECT_TRUE(
+        WaitForCondition(base::Bind(&MediaCodecPlayerTest::IsDemuxerDeleted,
+                                    base::Unretained(this)),
+                         base::TimeDelta::FromMilliseconds(500)));
+
+    player_ = nullptr;
+  }
 }
 
 void MediaCodecPlayerTest::CreatePlayer() {
@@ -556,18 +630,25 @@ bool MediaCodecPlayerTest::WaitForPlaybackBeyondPosition(
       timeout);
 }
 
-void MediaCodecPlayerTest::StartVideoPlayback(base::TimeDelta duration) {
+bool MediaCodecPlayerTest::StartVideoPlayback(base::TimeDelta duration,
+                                              const char* test_name) {
   const base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
 
   demuxer_->SetVideoFactory(
       scoped_ptr<VideoFactory>(new VideoFactory(duration)));
 
   CreatePlayer();
-  SetVideoSurface();
 
   // Wait till the player is initialized on media thread.
   EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
                                           base::Unretained(demuxer_))));
+
+  if (!demuxer_->IsInitialized()) {
+    DVLOG(0) << test_name << ": demuxer is not initialized";
+    return false;
+  }
+
+  SetVideoSurface();
 
   // Post configuration after the player has been initialized.
   demuxer_->PostInternalConfigs();
@@ -581,12 +662,19 @@ void MediaCodecPlayerTest::StartVideoPlayback(base::TimeDelta duration) {
       WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
                                   base::Unretained(&manager_)),
                        start_timeout));
+
+  if (!manager_.IsPlaybackStarted()) {
+    DVLOG(0) << test_name << ": playback did not start";
+    return false;
+  }
+
+  return true;
 }
 
-void MediaCodecPlayerTest::StartAVSeekAndPreroll(
-    base::TimeDelta duration,
-    base::TimeDelta seek_position,
-    base::TimeDelta video_preroll) {
+bool MediaCodecPlayerTest::StartAVSeekAndPreroll(base::TimeDelta duration,
+                                                 base::TimeDelta seek_position,
+                                                 base::TimeDelta video_preroll,
+                                                 const char* test_name) {
   const base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
 
   demuxer_->SetVideoPrerollInterval(video_preroll);
@@ -597,7 +685,6 @@ void MediaCodecPlayerTest::StartAVSeekAndPreroll(
       scoped_ptr<VideoFactory>(new VideoFactory(duration)));
 
   CreatePlayer();
-  SetVideoSurface();
 
   // Set special testing callback to receive PTS from decoders.
   player_->SetDecodersTimeCallbackForTests(
@@ -607,6 +694,13 @@ void MediaCodecPlayerTest::StartAVSeekAndPreroll(
   // Wait till the player is initialized on media thread.
   EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
                                           base::Unretained(demuxer_))));
+
+  if (!demuxer_->IsInitialized()) {
+    DVLOG(0) << test_name << ": demuxer is not initialized";
+    return false;
+  }
+
+  SetVideoSurface();
 
   // Post configuration after the player has been initialized.
   demuxer_->PostInternalConfigs();
@@ -622,6 +716,13 @@ void MediaCodecPlayerTest::StartAVSeekAndPreroll(
       base::Bind(&MediaCodecPlayer::IsPrerollingForTests,
                  base::Unretained(player_), DemuxerStream::VIDEO),
       start_timeout));
+
+  if (!player_->IsPrerollingForTests(DemuxerStream::VIDEO)) {
+    DVLOG(0) << test_name << ": preroll did not happen for video";
+    return false;
+  }
+
+  return true;
 }
 
 TEST_F(MediaCodecPlayerTest, SetAudioConfigsBeforePlayerCreation) {
@@ -732,7 +833,7 @@ TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1500);
 
-  StartVideoPlayback(duration);
+  ASSERT_TRUE(StartVideoPlayback(duration, "VideoPlayTillCompletion"));
 
   // Wait till completion.
   EXPECT_TRUE(
@@ -932,7 +1033,7 @@ TEST_F(MediaCodecPlayerTest, VideoReplaceSurface) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1500);
 
-  StartVideoPlayback(duration);
+  ASSERT_TRUE(StartVideoPlayback(duration, "VideoReplaceSurface"));
 
   // Wait for some time and check statistics.
   WaitForDelay(base::TimeDelta::FromMilliseconds(200));
@@ -961,7 +1062,7 @@ TEST_F(MediaCodecPlayerTest, VideoRemoveAndSetSurface) {
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
 
-  StartVideoPlayback(duration);
+  ASSERT_TRUE(StartVideoPlayback(duration, "VideoRemoveAndSetSurface"));
 
   // Wait for some time and check statistics.
   WaitForDelay(base::TimeDelta::FromMilliseconds(200));
@@ -1011,7 +1112,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_VideoReleaseAndStart) {
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
 
-  StartVideoPlayback(duration);
+  ASSERT_TRUE(StartVideoPlayback(duration, "VideoReleaseAndStart"));
 
   // Wait for some time and check statistics.
   WaitForDelay(base::TimeDelta::FromMilliseconds(200));
@@ -1060,7 +1161,7 @@ TEST_F(MediaCodecPlayerTest, VideoSeekAndRelease) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
   base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(1000);
 
-  StartVideoPlayback(duration);
+  ASSERT_TRUE(StartVideoPlayback(duration, "VideoSeekAndRelease"));
 
   // Wait for some time and check statistics.
   WaitForDelay(base::TimeDelta::FromMilliseconds(200));
@@ -1111,7 +1212,7 @@ TEST_F(MediaCodecPlayerTest, VideoReleaseWhileWaitingForSeek) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
   base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(1000);
 
-  StartVideoPlayback(duration);
+  ASSERT_TRUE(StartVideoPlayback(duration, "VideoReleaseWhileWaitingForSeek"));
 
   // Wait for some time and check statistics.
   WaitForDelay(base::TimeDelta::FromMilliseconds(200));
@@ -1186,6 +1287,10 @@ TEST_F(MediaCodecPlayerTest, VideoPrerollAfterSeek) {
   // Wait till the player is initialized on media thread.
   EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
                                           base::Unretained(demuxer_))));
+  if (!demuxer_->IsInitialized()) {
+    DVLOG(0) << "VideoPrerollAfterSeek: demuxer is not initialized";
+    return;
+  }
 
   // Post configuration after the player has been initialized.
   demuxer_->PostInternalConfigs();
@@ -1231,7 +1336,8 @@ TEST_F(MediaCodecPlayerTest, AVPrerollAudioWaitsForVideo) {
   base::TimeDelta preroll_intvl = base::TimeDelta::FromMilliseconds(500);
   base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(1000);
 
-  StartAVSeekAndPreroll(duration, seek_position, preroll_intvl);
+  ASSERT_TRUE(StartAVSeekAndPreroll(duration, seek_position, preroll_intvl,
+                                    "AVPrerollAudioWaitsForVideo"));
 
   // Wait till preroll finishes and the real playback starts.
   EXPECT_TRUE(
@@ -1273,7 +1379,8 @@ TEST_F(MediaCodecPlayerTest, AVPrerollReleaseAndRestart) {
   base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
   base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(1000);
 
-  StartAVSeekAndPreroll(duration, seek_position, preroll_intvl);
+  ASSERT_TRUE(StartAVSeekAndPreroll(duration, seek_position, preroll_intvl,
+                                    "AVPrerollReleaseAndRestart"));
 
   // Issue Release().
   player_->Release();
@@ -1338,7 +1445,8 @@ TEST_F(MediaCodecPlayerTest, AVPrerollStopAndRestart) {
   base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
   base::TimeDelta preroll_timeout = base::TimeDelta::FromMilliseconds(1000);
 
-  StartAVSeekAndPreroll(duration, seek_position, preroll_intvl);
+  ASSERT_TRUE(StartAVSeekAndPreroll(duration, seek_position, preroll_intvl,
+                                    "AVPrerollStopAndRestart"));
 
   // Video stream should be prerolling. Request to stop.
   EXPECT_FALSE(IsPaused());
@@ -1439,6 +1547,11 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
   // Wait till the player is initialized on media thread.
   EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
                                           base::Unretained(demuxer_))));
+
+  if (!demuxer_->IsInitialized()) {
+    DVLOG(0) << "AVPrerollVideoEndsWhilePrerolling: demuxer is not initialized";
+    return;
+  }
 
   // Post configuration after the player has been initialized.
   demuxer_->PostInternalConfigs();

@@ -94,6 +94,16 @@ MediaCodecPlayer::~MediaCodecPlayer()
 {
   DVLOG(1) << "MediaCodecPlayer::~MediaCodecPlayer";
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+
+  // Currently the unit tests wait for the MediaCodecPlayer destruction by
+  // watching the demuxer, which is destroyed as one of the member variables.
+  // Release the codecs here, before any member variable is destroyed to make
+  // the unit tests happy.
+
+  if (video_decoder_)
+    video_decoder_->ReleaseDecoderResources();
+  if (audio_decoder_)
+    audio_decoder_->ReleaseDecoderResources();
 }
 
 void MediaCodecPlayer::Initialize() {
