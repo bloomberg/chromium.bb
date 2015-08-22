@@ -1187,7 +1187,8 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
       --m_clusterPreloadCount;
 
       m_pos = pos;  // consume payload
-      assert((segment_stop < 0) || (m_pos <= segment_stop));
+      if (segment_stop >= 0 && m_pos > segment_stop)
+        return E_FILE_FORMAT_INVALID;
 
       return 0;  // success
     }
@@ -1496,10 +1497,12 @@ long SeekHead::Parse() {
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   ptrdiff_t count_ = ptrdiff_t(pEntry - m_entries);
   assert(count_ >= 0);
@@ -1893,7 +1896,8 @@ bool Cues::LoadCuePoint() const {
 
     if (id != 0x3B) {  // CuePoint ID
       m_pos += size;  // consume payload
-      assert(m_pos <= stop);
+      if (m_pos > stop)
+        return false;
 
       continue;
     }
@@ -1914,7 +1918,8 @@ bool Cues::LoadCuePoint() const {
     --m_preload_count;
 
     m_pos += size;  // consume payload
-    assert(m_pos <= stop);
+    if (m_pos > stop)
+      return false;
 
     return true;  // yes, we loaded a cue point
   }
@@ -2293,7 +2298,8 @@ bool CuePoint::Load(IMkvReader* pReader) {
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return false;
   }
 
   assert(size_t(p - m_track_positions) == m_track_positions_count);
@@ -2722,7 +2728,8 @@ long Segment::ParseNext(const Cluster* pCurr, const Cluster*& pResult,
     // Pos now points to start of payload
 
     pos += size;  // consume payload (that is, the current cluster)
-    assert((segment_stop < 0) || (pos <= segment_stop));
+    if (segment_stop >= 0 && pos > segment_stop)
+      return E_FILE_FORMAT_INVALID;
 
     // By consuming the payload, we are assuming that the curr
     // cluster isn't interesting.  That is, we don't bother checking
@@ -2858,7 +2865,8 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
       }
 
       pos += size;  // consume payload
-      assert((segment_stop < 0) || (pos <= segment_stop));
+      if (segment_stop >= 0 && pos > segment_stop)
+        return E_FILE_FORMAT_INVALID;
 
       continue;
     }
@@ -2868,7 +2876,8 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
         return E_FILE_FORMAT_INVALID;
 
       pos += size;  // consume payload
-      assert((segment_stop < 0) || (pos <= segment_stop));
+      if (segment_stop >= 0 && pos > segment_stop)
+        return E_FILE_FORMAT_INVALID;
 
       continue;
     }
@@ -3047,7 +3056,8 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
         return E_FILE_FORMAT_INVALID;
 
       pos += size;  // consume payload of sub-element
-      assert((segment_stop < 0) || (pos <= segment_stop));
+      if (segment_stop >= 0 && pos > segment_stop)
+        return E_FILE_FORMAT_INVALID;
     }  // determine cluster size
 
     cluster_size = pos - payload_pos;
@@ -3057,7 +3067,8 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
   }
 
   pos += cluster_size;  // consume payload
-  assert((segment_stop < 0) || (pos <= segment_stop));
+  if (segment_stop >= 0 && pos > segment_stop)
+    return E_FILE_FORMAT_INVALID;
 
   return 2;  // try to find a cluster that follows next
 }
@@ -4089,7 +4100,8 @@ long ContentEncoding::ParseContentEncAESSettingsEntry(
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   return 0;
@@ -4119,7 +4131,8 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
       ++encryption_count;
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   if (compression_count <= 0 && encryption_count <= 0)
@@ -4190,10 +4203,12 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -4244,7 +4259,8 @@ long ContentEncoding::ParseCompressionEntry(long long start, long long size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   // ContentCompAlgo is mandatory
@@ -4361,7 +4377,8 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   return 0;
@@ -4843,7 +4860,8 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
       ++count;
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   if (count <= 0)
@@ -4879,10 +4897,12 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   return 0;
 }
@@ -4975,10 +4995,12 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   VideoTrack* const pTrack =
       new (std::nothrow) VideoTrack(pSegment, element_start, element_size);
@@ -5173,10 +5195,12 @@ long AudioTrack::Parse(Segment* pSegment, const Info& info,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   AudioTrack* const pTrack =
       new (std::nothrow) AudioTrack(pSegment, element_start, element_size);
@@ -5240,10 +5264,12 @@ long Tracks::Parse() {
       ++count;
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   if (count <= 0)
     return 0;  // success
@@ -5462,10 +5488,12 @@ long Tracks::ParseTrackEntry(long long track_start, long long track_size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= track_stop);
+    if (pos > track_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == track_stop);
+  if (pos != track_stop)
+    return E_FILE_FORMAT_INVALID;
 
   if (info.number <= 0)  // not specified
     return E_FILE_FORMAT_INVALID;
@@ -5806,10 +5834,12 @@ long Cluster::Load(long long& pos, long& len) const {
     }
 
     pos += size;  // consume payload
-    assert((cluster_stop < 0) || (pos <= cluster_stop));
+    if (cluster_stop >= 0 && pos > cluster_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert((cluster_stop < 0) || (pos <= cluster_stop));
+  if (cluster_stop >= 0 && pos > cluster_stop)
+    return E_FILE_FORMAT_INVALID;
 
   if (timecode < 0)  // no timecode found
     return E_FILE_FORMAT_INVALID;
@@ -5979,13 +6009,15 @@ long Cluster::Parse(long long& pos, long& len) const {
       return this_->ParseSimpleBlock(size, pos, len);
 
     pos += size;  // consume payload
-    assert((cluster_stop < 0) || (pos <= cluster_stop));
+    if (cluster_stop >= 0 && pos > cluster_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
   assert(m_element_size > 0);
 
   m_pos = pos;
-  assert((cluster_stop < 0) || (m_pos <= cluster_stop));
+  if (cluster_stop >= 0 && m_pos > cluster_stop)
+    return E_FILE_FORMAT_INVALID;
 
   if (m_entries_count > 0) {
     const long idx = m_entries_count - 1;
@@ -6628,7 +6660,8 @@ long Cluster::HasBlockEntries(
       return 1;  // have at least one entry
 
     pos += size;  // consume payload
-    assert((cluster_stop < 0) || (pos <= cluster_stop));
+    if (cluster_stop >= 0 && pos > cluster_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 }
 
@@ -6811,12 +6844,14 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
   if (bpos < 0)
     return E_FILE_FORMAT_INVALID;
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   assert(bsize >= 0);
 
   const long idx = m_entries_count;
