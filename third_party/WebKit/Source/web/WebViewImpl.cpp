@@ -454,6 +454,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_zoomFactorOverride(0)
     , m_userGestureObserved(false)
     , m_shouldDispatchFirstVisuallyNonEmptyLayout(false)
+    , m_shouldDispatchFirstLayoutAfterFinishedParsing(false)
     , m_displayMode(WebDisplayModeBrowser)
     , m_elasticOverscroll(FloatSize())
 {
@@ -1899,11 +1900,19 @@ void WebViewImpl::layout()
         m_linkHighlights[i]->updateGeometry();
 
     if (FrameView* view = mainFrameImpl()->frameView()) {
+        LocalFrame* frame = mainFrameImpl()->frame();
+
         if (m_shouldDispatchFirstVisuallyNonEmptyLayout && view->isVisuallyNonEmpty()) {
             m_shouldDispatchFirstVisuallyNonEmptyLayout = false;
             // TODO(esprehn): Move users of this callback to something
             // better, the heuristic for "visually non-empty" is bad.
-            mainFrameImpl()->frame()->loader().client()->dispatchDidFirstVisuallyNonEmptyLayout();
+            // TODO(dglazkov): This should likely be a WebViewClient API.
+            frame->loader().client()->dispatchDidFirstVisuallyNonEmptyLayout();
+        }
+
+        if (m_shouldDispatchFirstLayoutAfterFinishedParsing && frame->document()->hasFinishedParsing())  {
+            m_shouldDispatchFirstLayoutAfterFinishedParsing = false;
+            client()->didFirstLayoutAfterFinishedParsing();
         }
     }
 }
@@ -4099,6 +4108,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_layerTreeView->setDeferCommits(true);
         m_layerTreeView->clearRootLayer();
         m_shouldDispatchFirstVisuallyNonEmptyLayout = true;
+        m_shouldDispatchFirstLayoutAfterFinishedParsing = true;
         page()->frameHost().visualViewport().clearLayersForTreeView(m_layerTreeView);
     }
 

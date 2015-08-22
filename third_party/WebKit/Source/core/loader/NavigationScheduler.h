@@ -90,6 +90,7 @@ public:
     ~NavigationScheduler();
 
     bool locationChangePending();
+    bool isNavigationScheduled() const;
 
     void scheduleRedirect(double delay, const String& url);
     void scheduleLocationChange(Document*, const String& url, bool replacesCurrentItem = true);

@@ -569,6 +569,7 @@ public:
     void setParsingState(ParsingState);
     bool parsing() const { return m_parsingState == Parsing; }
     bool isInDOMContentLoaded() const { return m_parsingState == InDOMContentLoaded; }
+    bool hasFinishedParsing() const { return m_parsingState == FinishedParsing; }
 
     bool shouldScheduleLayout() const;
     int elapsedTime() const;

@@ -196,6 +196,10 @@ public:
     // unless the view did not need a layout.
     virtual void didUpdateLayout() { }
 
+    // The frame's document finished layout immediately after the parsing finished.
+    // Another way to put it: first frame after DOMContentLoaded is dispatched.
+    virtual void didFirstLayoutAfterFinishedParsing() { }
+
     // Return true to swallow the input event if the embedder will start a disambiguation popup
     virtual bool didTapMultipleTargets(const WebSize& pinchViewportOffset, const WebRect& touchRect, const WebVector<WebRect>& targetRects) { return false; }
 

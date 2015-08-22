@@ -2116,6 +2116,11 @@ bool WebLocalFrameImpl::isResourceLoadInProgress() const
     return frame()->document()->fetcher()->requestCount();
 }
 
+bool WebLocalFrameImpl::isNavigationScheduled() const
+{
+    return frame() && frame()->navigationScheduler().isNavigationScheduled();
+}
+
 void WebLocalFrameImpl::setCommittedFirstRealLoad()
 {
     ASSERT(frame());

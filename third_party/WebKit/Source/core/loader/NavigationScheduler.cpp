@@ -158,6 +158,7 @@ public:
         request.setClientRedirect(ClientRedirect);
         frame->loader().load(request);
     }
+
 private:
     ScheduledRedirect(double delay, Document* originDocument, const String& url, bool replacesCurrentItem)
         : ScheduledURLNavigation(delay, originDocument, url, replacesCurrentItem, false)
@@ -277,6 +278,11 @@ NavigationScheduler::~NavigationScheduler()
 bool NavigationScheduler::locationChangePending()
 {
     return m_redirect && m_redirect->isLocationChange();
+}
+
+bool NavigationScheduler::isNavigationScheduled() const
+{
+    return m_redirect;
 }
 
 inline bool NavigationScheduler::shouldScheduleReload() const
