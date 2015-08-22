@@ -26,6 +26,9 @@ source_set("unit_tests") {
   sources = [
     "net_error_helper_core_unittest.cc",
   ]
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   deps = [
     ":renderer",
     "//testing/gtest",
