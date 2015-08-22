@@ -73,7 +73,7 @@ public:
     void setFilterQuality(SkFilterQuality);
     void setIsHidden(bool);
     void setImageBuffer(ImageBuffer*);
-    void didDraw();
+    void didDraw(const FloatRect&);
     bool writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
     void flush();
     void flushGpu();
@@ -133,6 +133,7 @@ private:
     GLenum m_lastFilter;
     OpacityMode m_opacityMode;
     IntSize m_size;
+    int m_recordingPixelCount;
 };
 
 } // namespace blink

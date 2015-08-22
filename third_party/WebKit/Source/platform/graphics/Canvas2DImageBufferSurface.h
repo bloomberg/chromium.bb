@@ -66,7 +66,7 @@ public:
     void setFilterQuality(SkFilterQuality filterQuality) override { m_layerBridge->setFilterQuality(filterQuality); }
     void setIsHidden(bool hidden) override { m_layerBridge->setIsHidden(hidden); }
     void setImageBuffer(ImageBuffer* imageBuffer) override { m_layerBridge->setImageBuffer(imageBuffer); }
-    void didDraw(const FloatRect& rect) override { m_layerBridge->didDraw(); }
+    void didDraw(const FloatRect& rect) override { m_layerBridge->didDraw(rect); }
     void flush() override { m_layerBridge->flush(); }
     void flushGpu() override { m_layerBridge->flushGpu(); }
     bool writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y) override { return m_layerBridge->writePixels(origInfo, pixels, rowBytes, x, y); }

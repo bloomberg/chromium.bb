@@ -32,6 +32,7 @@
 #include "SkSurface.h"
 
 #include "platform/TraceEvent.h"
+#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "public/platform/Platform.h"
@@ -139,6 +140,7 @@ void Canvas2DLayerBridge::startRecording()
     if (m_imageBuffer) {
         m_imageBuffer->resetCanvas(m_recorder->getRecordingCanvas());
     }
+    m_recordingPixelCount = 0;
 }
 
 SkCanvas* Canvas2DLayerBridge::canvas()
@@ -489,10 +491,15 @@ WebLayer* Canvas2DLayerBridge::layer() const
     return m_layer->layer();
 }
 
-void Canvas2DLayerBridge::didDraw()
+void Canvas2DLayerBridge::didDraw(const FloatRect& rect)
 {
-    if (m_isDeferralEnabled)
+    if (m_isDeferralEnabled) {
         m_haveRecordedDrawCommands = true;
+        IntRect pixelBounds = enclosingIntRect(rect);
+        m_recordingPixelCount += pixelBounds.width() * pixelBounds.height();
+        if (m_recordingPixelCount >= (m_size.width() * m_size.height() * ExpensiveCanvasHeuristicParameters::ExpensiveOverdrawThreshold))
+            disableDeferral();
+    }
 }
 
 void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
