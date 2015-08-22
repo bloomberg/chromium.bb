@@ -43,6 +43,9 @@ cr.define('options', function() {
     'service_worker': [['origin', 'label_service_worker_origin'],
                        ['size', 'label_service_worker_size'],
                        ['scopes', 'label_service_worker_scopes']],
+    'cache_storage': [['origin', 'label_cache_storage_origin'],
+                       ['size', 'label_cache_storage_size'],
+                       ['modified', 'label_cache_storage_last_modified']],
     'flash_lso': [['domain', 'label_cookie_domain']],
   };
 
@@ -252,6 +255,7 @@ cr.define('options', function() {
         fileSystem: false,
         channelIDs: 0,
         serviceWorker: false,
+        cacheStorage: false,
       };
       if (this.origin)
         this.origin.collectSummaryInfo(info);
@@ -273,6 +277,8 @@ cr.define('options', function() {
         list.push(loadTimeData.getString('cookie_channel_id'));
       if (info.serviceWorker)
         list.push(loadTimeData.getString('cookie_service_worker'));
+      if (info.cacheStorage)
+        list.push(loadTimeData.getString('cookie_cache_storage'));
       if (info.flashLSO)
         list.push(loadTimeData.getString('cookie_flash_lso'));
 
@@ -491,6 +497,8 @@ cr.define('options', function() {
           info.channelIDs++;
         } else if (this.data.type == 'service_worker') {
           info.serviceWorker = true;
+        } else if (this.data.type == 'cache_storage') {
+          info.cacheStorage = true;
         } else if (this.data.type == 'flash_lso') {
           info.flashLSO = true;
         }

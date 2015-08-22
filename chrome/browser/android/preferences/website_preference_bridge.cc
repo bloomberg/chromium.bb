@@ -481,6 +481,8 @@ class SiteDataDeleteHelper :
         storage_partition->GetIndexedDBContext();
     content::ServiceWorkerContext* service_worker_context =
         storage_partition->GetServiceWorkerContext();
+    content::CacheStorageContext* cache_storage_context =
+        storage_partition->GetCacheStorageContext();
     storage::FileSystemContext* file_system_context =
         storage_partition->GetFileSystemContext();
     LocalDataContainer* container = new LocalDataContainer(
@@ -494,6 +496,7 @@ class SiteDataDeleteHelper :
         BrowsingDataQuotaHelper::Create(profile_),
         BrowsingDataChannelIDHelper::Create(profile_->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
+        new BrowsingDataCacheStorageHelper(cache_storage_context),
         NULL);
 
     cookies_tree_model_.reset(new CookiesTreeModel(

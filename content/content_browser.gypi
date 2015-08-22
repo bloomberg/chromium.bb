@@ -112,6 +112,8 @@
       'public/browser/browser_thread.h',
       'public/browser/browser_thread_delegate.h',
       'public/browser/browser_url_handler.h',
+      'public/browser/cache_storage_context.h',
+      'public/browser/cache_storage_usage_info.h',
       'public/browser/cert_store.h',
       'public/browser/certificate_request_result_type.h',
       'public/browser/child_process_data.h',
