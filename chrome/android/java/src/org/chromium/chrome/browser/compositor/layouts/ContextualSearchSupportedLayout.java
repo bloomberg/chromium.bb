@@ -145,6 +145,8 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
         super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
                 resourceManager, fullscreenManager);
+        if (!mSearchPanel.isShowing()) return;
+
         if (mContextualSearchSceneLayer == null || mSearchPanel.getManagementDelegate() == null) {
             return;
         }
