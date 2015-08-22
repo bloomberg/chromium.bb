@@ -5271,10 +5271,12 @@ long Tracks::Parse() {
       ++count;
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   if (count <= 0)
     return 0;  // success
@@ -5493,10 +5495,12 @@ long Tracks::ParseTrackEntry(long long track_start, long long track_size,
     }
 
     pos += size;  // consume payload
-    assert(pos <= track_stop);
+    if (pos > track_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == track_stop);
+  if (pos != track_stop)
+    return E_FILE_FORMAT_INVALID;
 
   if (info.number <= 0)  // not specified
     return E_FILE_FORMAT_INVALID;
