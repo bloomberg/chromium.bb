@@ -43,7 +43,7 @@ component("chromeos") {
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   configs += [ "//build/config/linux:dbus" ]
   public_deps = [
