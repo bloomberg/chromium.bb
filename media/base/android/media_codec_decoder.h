@@ -232,6 +232,7 @@ class MediaCodecDecoder {
   // Renders the decoded frame and releases output buffer, or posts
   // a delayed task to do it at a later time,
   virtual void Render(int buffer_index,
+                      size_t offset,
                       size_t size,
                       bool render_output,
                       base::TimeDelta pts,

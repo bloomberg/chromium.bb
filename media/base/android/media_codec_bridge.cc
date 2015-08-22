@@ -4,6 +4,7 @@
 
 #include "media/base/android/media_codec_bridge.h"
 
+#include <algorithm>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
@@ -492,17 +493,23 @@ bool MediaCodecBridge::CopyFromOutputBuffer(int index,
                                             size_t offset,
                                             void* dst,
                                             int dst_size) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_buffer(
-      Java_MediaCodecBridge_getOutputBuffer(env, j_media_codec_.obj(), index));
-  void* src_data =
-      reinterpret_cast<uint8*>(env->GetDirectBufferAddress(j_buffer.obj())) +
-      offset;
-  int src_capacity = env->GetDirectBufferCapacity(j_buffer.obj()) - offset;
+  void* src_data = nullptr;
+  int src_capacity = GetOutputBufferAddress(index, offset, &src_data);
   if (src_capacity < dst_size)
     return false;
   memcpy(dst, src_data, dst_size);
   return true;
+}
+
+int MediaCodecBridge::GetOutputBufferAddress(int index,
+                                             size_t offset,
+                                             void** addr) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_buffer(
+      Java_MediaCodecBridge_getOutputBuffer(env, j_media_codec_.obj(), index));
+  *addr = reinterpret_cast<uint8*>(
+      env->GetDirectBufferAddress(j_buffer.obj())) + offset;
+  return env->GetDirectBufferCapacity(j_buffer.obj()) - offset;
 }
 
 bool MediaCodecBridge::FillInputBuffer(int index,
@@ -697,16 +704,19 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
   return true;
 }
 
-int64 AudioCodecBridge::PlayOutputBuffer(int index, size_t size) {
+int64 AudioCodecBridge::PlayOutputBuffer(
+    int index, size_t size, size_t offset) {
   DCHECK_LE(0, index);
   int numBytes = base::checked_cast<int>(size);
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> buf =
-      Java_MediaCodecBridge_getOutputBuffer(env, media_codec(), index);
-  uint8* buffer = static_cast<uint8*>(env->GetDirectBufferAddress(buf.obj()));
 
-  ScopedJavaLocalRef<jbyteArray> byte_array =
-      base::android::ToJavaByteArray(env, buffer, numBytes);
+  void* buffer = nullptr;
+  int capacity = GetOutputBufferAddress(index, offset, &buffer);
+  numBytes = std::min(capacity, numBytes);
+  CHECK_GE(numBytes, 0);
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> byte_array = base::android::ToJavaByteArray(
+          env, static_cast<uint8*>(buffer), numBytes);
   return Java_MediaCodecBridge_playOutputBuffer(
       env, media_codec(), byte_array.obj());
 }

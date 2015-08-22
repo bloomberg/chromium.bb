@@ -78,6 +78,7 @@ void VideoDecoderJob::SetDemuxerConfigs(const DemuxerConfigs& configs) {
 
 void VideoDecoderJob::ReleaseOutputBuffer(
     int output_buffer_index,
+    size_t offset,
     size_t size,
     bool render_output,
     base::TimeDelta current_presentation_timestamp,

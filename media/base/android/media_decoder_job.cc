@@ -495,6 +495,7 @@ void MediaDecoderJob::DecodeInternal(
         base::Bind(&MediaDecoderJob::ReleaseOutputBuffer,
                    base::Unretained(this),
                    buffer_index,
+                   offset,
                    size,
                    render_output,
                    presentation_timestamp,
@@ -518,8 +519,8 @@ void MediaDecoderJob::DecodeInternal(
   }
   ReleaseOutputCompletionCallback completion_callback = base::Bind(
       callback, status);
-  ReleaseOutputBuffer(buffer_index, size, render_output, presentation_timestamp,
-                      completion_callback);
+  ReleaseOutputBuffer(buffer_index, offset, size, render_output,
+                      presentation_timestamp, completion_callback);
 }
 
 void MediaDecoderJob::OnDecodeCompleted(

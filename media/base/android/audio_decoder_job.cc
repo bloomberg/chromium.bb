@@ -96,6 +96,7 @@ void AudioDecoderJob::ResetTimestampHelper() {
 
 void AudioDecoderJob::ReleaseOutputBuffer(
     int output_buffer_index,
+    size_t offset,
     size_t size,
     bool render_output,
     base::TimeDelta current_presentation_timestamp,
@@ -104,7 +105,7 @@ void AudioDecoderJob::ReleaseOutputBuffer(
   if (render_output) {
     int64 head_position = (static_cast<AudioCodecBridge*>(
         media_codec_bridge_.get()))->PlayOutputBuffer(
-            output_buffer_index, size);
+            output_buffer_index, size, offset);
     size_t new_frames_count = size / bytes_per_frame_;
     frame_count_ += new_frames_count;
     audio_timestamp_helper_->AddFrames(new_frames_count);

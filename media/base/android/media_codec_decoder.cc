@@ -633,7 +633,7 @@ bool MediaCodecDecoder::DepleteOutputBufferQueue() {
 
       case MEDIA_CODEC_OK:
         // We got the decoded frame
-        Render(buffer_index, size, true, pts, eos_encountered);
+        Render(buffer_index, offset, size, true, pts, eos_encountered);
         break;
 
       case MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER:

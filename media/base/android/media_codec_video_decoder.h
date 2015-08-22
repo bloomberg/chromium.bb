@@ -56,6 +56,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
   void SynchronizePTSWithTime(base::TimeDelta current_time) override;
   void OnOutputFormatChanged() override;
   void Render(int buffer_index,
+              size_t offset,
               size_t size,
               bool render_output,
               base::TimeDelta pts,

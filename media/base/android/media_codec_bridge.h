@@ -202,6 +202,11 @@ class MEDIA_EXPORT MediaCodecBridge {
   // started.
   bool StartInternal() WARN_UNUSED_RESULT;
 
+  // Called to get the buffer address given the output buffer index and offset.
+  // This function returns the size of the output and |addr| is the pointer to
+  // the address to read.
+  int GetOutputBufferAddress(int index, size_t offset, void** addr);
+
   jobject media_codec() { return j_media_codec_.obj(); }
   MediaCodecDirection direction_;
 
@@ -236,7 +241,7 @@ class AudioCodecBridge : public MediaCodecBridge {
   // Play the output buffer. This call must be called after
   // DequeueOutputBuffer() and before ReleaseOutputBuffer. Returns the playback
   // head position expressed in frames.
-  int64 PlayOutputBuffer(int index, size_t size);
+  int64 PlayOutputBuffer(int index, size_t size, size_t offset);
 
   // Set the volume of the audio output.
   void SetVolume(double volume);

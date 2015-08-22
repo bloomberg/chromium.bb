@@ -44,6 +44,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
   ConfigStatus ConfigureInternal() override;
   void OnOutputFormatChanged() override;
   void Render(int buffer_index,
+              size_t offset,
               size_t size,
               bool render_output,
               base::TimeDelta pts,

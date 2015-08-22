@@ -158,6 +158,7 @@ void MediaCodecAudioDecoder::OnOutputFormatChanged() {
 }
 
 void MediaCodecAudioDecoder::Render(int buffer_index,
+                                    size_t offset,
                                     size_t size,
                                     bool render_output,
                                     base::TimeDelta pts,
@@ -171,7 +172,7 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
   if (render_output) {
     int64 head_position =
         (static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))
-            ->PlayOutputBuffer(buffer_index, size);
+            ->PlayOutputBuffer(buffer_index, size, offset);
 
     size_t new_frames_count = size / bytes_per_frame_;
     frame_count_ += new_frames_count;
