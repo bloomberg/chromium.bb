@@ -242,7 +242,7 @@ bool IsPersistentGpuMemoryBufferEnabled() {
   if (IsZeroCopyUploadEnabled())
     return false;
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  return !command_line.HasSwitch(switches::kDisablePersistentGpuMemoryBuffer);
+  return command_line.HasSwitch(switches::kEnablePersistentGpuMemoryBuffer);
 }
 
 bool IsGpuRasterizationEnabled() {
