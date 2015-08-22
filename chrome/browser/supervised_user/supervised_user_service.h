@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"

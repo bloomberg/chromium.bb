@@ -11,7 +11,6 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/trace_event/memory_dump_provider.h"

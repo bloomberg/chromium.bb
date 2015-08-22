@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 
 namespace ui {

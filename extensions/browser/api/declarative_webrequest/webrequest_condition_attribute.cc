@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

@@ -4,6 +4,7 @@
 
 #include "base/trace_event/trace_buffer.h"
 
+#include "base/memory/scoped_vector.h"
 #include "base/trace_event/trace_event_impl.h"
 
 namespace base {

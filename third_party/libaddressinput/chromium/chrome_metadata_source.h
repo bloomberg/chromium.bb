@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/memory/scoped_vector.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 

@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_vector.h"
 
 namespace base {
 class FilePath;

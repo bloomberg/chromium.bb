@@ -5,7 +5,6 @@
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
 
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"

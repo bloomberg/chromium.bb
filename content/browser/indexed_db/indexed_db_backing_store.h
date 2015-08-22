@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

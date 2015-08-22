@@ -14,7 +14,6 @@
 #include <algorithm>  // NOLINT
 
 #include "base/i18n/bidi_line_iterator.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/themes/theme_properties.h"

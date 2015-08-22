@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"

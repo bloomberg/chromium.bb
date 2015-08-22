@@ -8,7 +8,6 @@
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"

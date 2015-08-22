@@ -5,7 +5,6 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"

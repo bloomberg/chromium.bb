@@ -12,7 +12,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/process/process_info.h"
 #include "base/run_loop.h"

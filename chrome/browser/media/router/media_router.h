@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_sink.h"

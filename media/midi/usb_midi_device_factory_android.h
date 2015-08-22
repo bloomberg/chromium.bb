@@ -11,7 +11,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "media/midi/usb_midi_device.h"
 #include "media/midi/usb_midi_export.h"

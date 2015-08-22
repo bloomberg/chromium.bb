@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"

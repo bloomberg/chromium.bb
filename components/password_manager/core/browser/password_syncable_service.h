@@ -18,6 +18,9 @@
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 
+template <typename T>
+class ScopedVector;
+
 namespace autofill {
 struct PasswordForm;
 }

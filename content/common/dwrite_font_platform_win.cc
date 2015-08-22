@@ -20,7 +20,6 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"

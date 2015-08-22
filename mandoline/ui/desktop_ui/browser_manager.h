@@ -7,7 +7,6 @@
 
 #include <set>
 
-#include "base/memory/scoped_vector.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"

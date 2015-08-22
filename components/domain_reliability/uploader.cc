@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"

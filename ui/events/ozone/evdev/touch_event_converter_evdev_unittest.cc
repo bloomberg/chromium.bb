@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"

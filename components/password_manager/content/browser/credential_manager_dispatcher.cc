@@ -5,7 +5,6 @@
 #include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 
 #include "base/bind.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"

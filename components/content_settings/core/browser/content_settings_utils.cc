@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_registry.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"

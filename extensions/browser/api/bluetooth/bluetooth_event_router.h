@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"

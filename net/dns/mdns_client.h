@@ -14,6 +14,9 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/record_parsed.h"
 
+template <typename T>
+class ScopedVector;
+
 namespace net {
 
 class DatagramServerSocket;

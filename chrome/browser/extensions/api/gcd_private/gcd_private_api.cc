@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"

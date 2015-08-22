@@ -8,7 +8,6 @@
 
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/abort_callback.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"

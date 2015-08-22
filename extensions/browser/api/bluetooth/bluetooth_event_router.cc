@@ -12,7 +12,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/notification_details.h"

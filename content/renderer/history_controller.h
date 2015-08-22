@@ -37,7 +37,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/renderer/history_entry.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"

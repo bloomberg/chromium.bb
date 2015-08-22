@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_video_sink.h"

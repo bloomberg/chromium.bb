@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"

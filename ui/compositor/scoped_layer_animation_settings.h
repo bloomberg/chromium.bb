@@ -7,7 +7,6 @@
 
 #include <set>
 
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 
 #include "ui/compositor/compositor_export.h"

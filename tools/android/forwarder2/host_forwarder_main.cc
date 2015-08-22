@@ -25,7 +25,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"

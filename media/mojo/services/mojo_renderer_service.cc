@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"

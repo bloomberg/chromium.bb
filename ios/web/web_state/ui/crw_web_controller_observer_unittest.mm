@@ -8,7 +8,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/test/web_test_util.h"

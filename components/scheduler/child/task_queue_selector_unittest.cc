@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/pending_task.h"
 #include "components/scheduler/child/task_queue_impl.h"
 #include "components/scheduler/child/task_queue_sets.h"

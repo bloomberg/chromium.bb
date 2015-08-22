@@ -16,7 +16,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"

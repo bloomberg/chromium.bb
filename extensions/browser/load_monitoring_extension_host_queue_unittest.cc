@@ -4,6 +4,7 @@
 
 #include <limits>
 
+#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/deferred_start_render_host.h"

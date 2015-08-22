@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/guid.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"

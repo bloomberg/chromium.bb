@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/media_source_helper.h"

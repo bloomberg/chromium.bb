@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"

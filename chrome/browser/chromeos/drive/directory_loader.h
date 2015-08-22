@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"

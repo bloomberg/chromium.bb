@@ -11,7 +11,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_registry.h"
 #include "base/prefs/pref_service.h"

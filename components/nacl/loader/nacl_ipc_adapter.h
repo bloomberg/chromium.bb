@@ -15,7 +15,6 @@
 #include "base/files/scoped_file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/pickle.h"
 #include "base/synchronization/condition_variable.h"

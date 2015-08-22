@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/html_viewer/blink_basic_type_converters.h"
 #include "mojo/services/network/public/cpp/web_socket_read_queue.h"
 #include "mojo/services/network/public/cpp/web_socket_write_queue.h"

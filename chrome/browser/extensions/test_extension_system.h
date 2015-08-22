@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 

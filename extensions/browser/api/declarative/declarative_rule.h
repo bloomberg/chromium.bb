@@ -17,7 +17,6 @@
 
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "components/url_matcher/url_matcher.h"

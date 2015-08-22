@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_database_task_manager.h"

@@ -14,6 +14,9 @@
 #include "base/strings/string16.h"
 #include "components/search_engines/template_url_service.h"
 
+template <typename T>
+class ScopedVector;
+
 class KeywordWebDataService;
 class PrefService;
 class TemplateURL;

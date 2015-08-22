@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"

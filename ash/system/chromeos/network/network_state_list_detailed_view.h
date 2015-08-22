@@ -11,7 +11,6 @@
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/system/user/login_status.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/chromeos/network/network_list_delegate.h"
 #include "ui/gfx/image/image.h"

@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"

@@ -13,7 +13,6 @@
 
 #include "base/files/scoped_file.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "media/capture/video/video_capture_device.h"
 
 namespace media {

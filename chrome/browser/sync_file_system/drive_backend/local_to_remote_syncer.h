@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/file_change.h"

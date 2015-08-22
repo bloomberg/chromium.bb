@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 #include "chrome/common/extensions/api/platform_keys_internal.h"
 #include "extensions/browser/extension_registry_factory.h"

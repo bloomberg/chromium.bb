@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/common/content_export.h"

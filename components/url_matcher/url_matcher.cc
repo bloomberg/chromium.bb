@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
 

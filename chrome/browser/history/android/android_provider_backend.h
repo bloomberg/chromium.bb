@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/supports_user_data.h"
 #include "components/history/core/browser/android/android_cache_database.h"
 #include "components/history/core/browser/android/android_history_types.h"

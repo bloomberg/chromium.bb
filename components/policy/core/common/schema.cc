@@ -13,7 +13,6 @@
 #include "base/containers/scoped_ptr_map.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "components/json_schema/json_schema_validator.h"

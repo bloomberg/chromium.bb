@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 
 #include "base/i18n/rtl.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_finder.h"

@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_vector.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/child/child_process.h"
 #include "content/common/child_process_messages.h"

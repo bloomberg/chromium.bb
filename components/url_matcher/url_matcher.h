@@ -10,7 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "components/url_matcher/regex_set_matcher.h"
 #include "components/url_matcher/substring_set_matcher.h"
 #include "components/url_matcher/url_matcher_export.h"

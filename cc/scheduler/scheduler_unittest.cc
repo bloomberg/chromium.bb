@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"

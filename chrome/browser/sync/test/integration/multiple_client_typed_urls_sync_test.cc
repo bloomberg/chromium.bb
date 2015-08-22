@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/i18n/number_formatting.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"

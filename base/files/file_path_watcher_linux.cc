@@ -28,6 +28,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"

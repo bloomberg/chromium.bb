@@ -8,7 +8,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"

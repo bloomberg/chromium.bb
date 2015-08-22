@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
