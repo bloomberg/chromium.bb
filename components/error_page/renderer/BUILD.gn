@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("renderer") {
+static_library("renderer") {
   sources = [
     "net_error_helper_core.cc",
     "net_error_helper_core.h",
@@ -18,16 +18,5 @@ source_set("renderer") {
     "//third_party/WebKit/public:blink",
     "//ui/base",
     "//url",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "net_error_helper_core_unittest.cc",
-  ]
-  deps = [
-    ":renderer",
-    "//testing/gtest",
   ]
 }

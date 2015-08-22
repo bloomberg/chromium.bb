@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-source_set("language_detection") {
+static_library("language_detection") {
   sources = [
     "language_detection_util.cc",
     "language_detection_util.h",
@@ -18,20 +18,8 @@ source_set("language_detection") {
 
   if (cld_version == 1) {
     deps += [ "//third_party/cld" ]
-  } else if (cld_version == 2) {
-    deps += [ "//third_party/cld_2:cld2_platform_impl" ]
-  } else {
-    assert(false, "Need a CLD version")
   }
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "language_detection_util_unittest.cc",
-  ]
-  deps = [
-    ":language_detection",
-    "//testing/gtest",
-  ]
+  if (cld_version == 2) {
+    deps += [ "//third_party/cld_2" ]
+  }
 }

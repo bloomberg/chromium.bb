@@ -513,7 +513,7 @@ group("both_gn_and_gyp") {
     # are pulled in automatically.
     deps += [
       "//cc/blink",
-      "//components/ui/zoom",
+      "//components/ui/zoom:ui_zoom",
       "//content",
       "//content/test:test_support",
       "//device/battery",

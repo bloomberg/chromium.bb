@@ -21,15 +21,3 @@ source_set("renderer") {
     "//third_party/WebKit/public:blink",
   ]
 }
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "dns_prefetch_queue_unittest.cc",
-    "renderer_dns_prefetch_unittest.cc",
-  ]
-  deps = [
-    ":renderer",
-    "//testing/gtest",
-  ]
-}

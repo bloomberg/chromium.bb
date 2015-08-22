@@ -21,20 +21,8 @@ source_set("test_support") {
     "testing/fake_db.h",
   ]
 
-  public_deps = [
+  deps = [
     ":leveldb_proto",
     "//components/leveldb_proto/testing/proto",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "proto_database_impl_unittest.cc",
-  ]
-  deps = [
-    ":test_support",
-    "//testing/gmock",
-    "//testing/gtest",
   ]
 }

@@ -618,7 +618,6 @@
       'translate/core/common/translate_metrics_unittest.cc',
       'translate/core/common/translate_util_unittest.cc',
       'translate/core/language_detection/language_detection_util_unittest.cc',
-      # TODO(GYP) bug 523060: these translate tests on iOS.
       'translate/ios/browser/js_translate_manager_unittest.mm',
       'translate/ios/browser/language_detection_controller_unittest.mm',
       'translate/ios/browser/translate_controller_unittest.mm',

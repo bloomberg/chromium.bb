@@ -118,7 +118,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "article_entry_unittest.cc",
-    "distillable_page_detector_unittest.cc",
     "distilled_content_store_unittest.cc",
     "distilled_page_prefs_unittests.cc",
     "distiller_unittest.cc",

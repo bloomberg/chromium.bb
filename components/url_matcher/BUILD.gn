@@ -23,7 +23,7 @@ component("url_matcher") {
 
   defines = [ "URL_MATCHER_IMPLEMENTATION" ]
 
-  public_deps = [
+  deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//third_party/re2",
@@ -31,19 +31,4 @@ component("url_matcher") {
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "regex_set_matcher_unittest.cc",
-    "string_pattern_unittest.cc",
-    "substring_set_matcher_unittest.cc",
-    "url_matcher_factory_unittest.cc",
-    "url_matcher_unittest.cc",
-  ]
-  deps = [
-    ":url_matcher",
-    "//testing/gtest",
-  ]
 }

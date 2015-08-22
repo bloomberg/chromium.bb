@@ -51,18 +51,3 @@ source_set("browser") {
     "//url",
   ]
 }
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "language_state_unittest.cc",
-    "translate_browser_metrics_unittest.cc",
-    "translate_language_list_unittest.cc",
-    "translate_prefs_unittest.cc",
-    "translate_script_unittest.cc",
-  ]
-  deps = [
-    ":browser",
-    "//testing/gtest",
-  ]
-}
