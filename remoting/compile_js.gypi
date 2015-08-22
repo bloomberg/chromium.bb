@@ -5,7 +5,7 @@
 {
   'variables': {
     'externs': ['../third_party/closure_compiler/externs/chrome_extensions.js',
-    '../third_party/closure_compiler/externs/metrics_private.js'],
+      '../third_party/closure_compiler/externs/metrics_private.js'],
     'script_args': ['--no-single-file'],
     'closure_args': [
       'jscomp_error=reportUnknownTypes',

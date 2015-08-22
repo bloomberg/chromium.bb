@@ -12,9 +12,10 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-(function () {
+(function() {
 
 var kExperimentsStorageName = 'remoting-experiments';
+var ACTIVE_FIELD_TRIALS = {'ChromotingQUIC': 'quic', 'ChromotingVP9': 'vp9'};
 
 /**
  * @param {Array.<string>} list
@@ -55,18 +56,58 @@ remoting.experiments.disable = function(experiment) {
 };
 
 /**
+ * Determines if the field-trial is enabled for this session.
+ *
+ * @param {string} trialName The FieldTrial to check for enabling.
+ * @return {Promise}
+ */
+function getTrialState(trialName) {
+  var deferred = new base.Deferred();
+  chrome.metricsPrivate.getFieldTrial(trialName,
+                                      function(/** string */ group) {
+                                        if (group == 'Enabled') {
+                                          deferred.resolve(true);
+                                        } else {
+                                          deferred.resolve(false);
+                                        }
+                                      });
+  return deferred.promise();
+};
+
+/**
  * Returns list of all enabled experiments.
  * @return {Promise}
  */
 remoting.experiments.get = function() {
-  return new Promise(function(resolve, reject) {
+
+  var localStorageList = new Promise(function(resolve, reject) {
     chrome.storage.local.get(kExperimentsStorageName, function(items) {
+      /** @type {Array<string>} */
+      var experiments = new Array();
       if (items.hasOwnProperty(kExperimentsStorageName)) {
-        resolve(items[kExperimentsStorageName]);
+        experiments = /** @type {Array<string>} */
+            (items[kExperimentsStorageName]);
       }
-      resolve([]);
+      resolve(experiments);
     });
   });
+
+  var trialNames = Object.keys(ACTIVE_FIELD_TRIALS);
+
+  return Promise.all([localStorageList].concat(
+                         trialNames.map(function(/** string */ trialName) {
+                           return getTrialState(trialName);
+                         })))
+      .then(function(results) {
+        /** @type {Array<string>} */
+        var list = results[0];
+        for (var i = 0; i < trialNames.length; ++i) {
+          if (results[i + 1]) {
+            list.push(ACTIVE_FIELD_TRIALS[trialNames[i]]);
+          }
+        }
+        return list;
+      });
 };
 
 })();

@@ -57,8 +57,10 @@ template("build_webapp_html") {
     action(target_jscompile) {
       js_files = remoting_webapp_js_proto_files + invoker.js_files
       externs =
-          remoting_webapp_js_externs_files +
-          [ "../../third_party/closure_compiler/externs/chrome_extensions.js" ]
+          remoting_webapp_js_externs_files + [
+            "../../third_party/closure_compiler/externs/chrome_extensions.js",
+            "../../third_party/closure_compiler/externs/metrics_private.js",
+          ]
 
       script = "../../third_party/closure_compiler/compile.py"
       inputs = js_files
