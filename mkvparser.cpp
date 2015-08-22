@@ -1332,7 +1332,7 @@ bool Segment::AppendCluster(Cluster* pCluster) {
   return true;
 }
 
-void Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
+bool Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
   assert(pCluster);
   assert(pCluster->m_index < 0);
   assert(idx >= m_clusterCount);
@@ -1345,7 +1345,9 @@ void Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
   if (count >= size) {
     const long n = (size <= 0) ? 2048 : 2 * size;
 
-    Cluster** const qq = new Cluster*[n];
+    Cluster** const qq = new (std::nothrow) Cluster*[n];
+    if (qq == NULL)
+      return false;
     Cluster** q = qq;
 
     Cluster** p = m_clusters;
@@ -1378,6 +1380,7 @@ void Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
 
   m_clusters[idx] = pCluster;
   ++m_clusterPreloadCount;
+  return true;
 }
 
 long Segment::Load() {
@@ -2123,7 +2126,10 @@ const BlockEntry* Segment::GetBlock(const CuePoint& cp,
 
   const ptrdiff_t idx = i - m_clusters;
 
-  PreloadCluster(pCluster, idx);
+  if (!PreloadCluster(pCluster, idx)) {
+    delete pCluster;
+    return NULL;
+  }
   assert(m_clusters);
   assert(m_clusterPreloadCount > 0);
   assert(m_clusters[idx] == pCluster);
@@ -2179,7 +2185,10 @@ const Cluster* Segment::FindOrPreloadCluster(long long requested_pos) {
 
   const ptrdiff_t idx = i - m_clusters;
 
-  PreloadCluster(pCluster, idx);
+  if (!PreloadCluster(pCluster, idx)) {
+    delete pCluster;
+    return NULL;
+  }
   assert(m_clusters);
   assert(m_clusterPreloadCount > 0);
   assert(m_clusters[idx] == pCluster);
@@ -2610,7 +2619,10 @@ const Cluster* Segment::GetNext(const Cluster* pCurr) {
 
   const ptrdiff_t idx_next = i - m_clusters;  // insertion position
 
-  PreloadCluster(pNext, idx_next);
+  if (!PreloadCluster(pNext, idx_next)) {
+    delete pNext;
+    return NULL;
+  }
   assert(m_clusters);
   assert(idx_next < m_clusterSize);
   assert(m_clusters[idx_next] == pNext);
@@ -2968,7 +2980,10 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
 
     const ptrdiff_t idx_next = i - m_clusters;  // insertion position
 
-    PreloadCluster(pNext, idx_next);
+    if (!PreloadCluster(pNext, idx_next)) {
+      delete pNext;
+      return -1;
+    }
     assert(m_clusters);
     assert(idx_next < m_clusterSize);
     assert(m_clusters[idx_next] == pNext);
