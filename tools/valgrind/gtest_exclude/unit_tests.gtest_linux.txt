@@ -22,3 +22,6 @@ ExtensionPathUtilTest.BasicPrettifyPathTest
 
 # http://crbug.com/483642
 MultiUserWindowManagerChromeOSTest.FullUserSwitchAnimationTests
+
+# http://crbug.com/523600
+ClientCertStoreChromeOSTest.Filter
