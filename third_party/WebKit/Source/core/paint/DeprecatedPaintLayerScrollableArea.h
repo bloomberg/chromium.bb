@@ -234,6 +234,8 @@ private:
     bool hasScrollableVerticalOverflow() const;
     bool visualViewportSuppliesScrollbars() const;
 
+    bool needsScrollbarReconstruction() const;
+
     void computeScrollDimensions();
 
     // TODO(bokan): This method hides the base class version and is subtly different.

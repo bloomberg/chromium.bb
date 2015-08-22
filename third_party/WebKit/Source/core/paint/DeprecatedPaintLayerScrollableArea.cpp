@@ -646,6 +646,13 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
 {
     ASSERT(box().hasOverflowClip());
 
+    if (needsScrollbarReconstruction()) {
+        if (m_hBar)
+            destroyScrollbar(HorizontalScrollbar);
+        if (m_vBar)
+            destroyScrollbar(VerticalScrollbar);
+    }
+
     DoubleSize originalScrollOffset = adjustedScrollOffset();
     computeScrollDimensions();
 
@@ -673,21 +680,18 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
         if (box().style()->overflowY() == OSCROLL && verticalScrollbar())
             verticalScrollbar()->setEnabled(hasVerticalOverflow);
     }
-    if (hasOverlayScrollbars()) {
-        if (!scrollSize(HorizontalScrollbar))
-            setHasHorizontalScrollbar(false);
-        if (!scrollSize(VerticalScrollbar))
-            setHasVerticalScrollbar(false);
-    }
-    // overflow:auto may need to lay out again if scrollbars got added/removed.
-    bool autoHorizontalScrollBarChanged = box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow);
-    bool autoVerticalScrollBarChanged = box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow);
 
-    if (!visualViewportSuppliesScrollbars() && (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)) {
-        if (box().hasAutoHorizontalScrollbar())
-            setHasHorizontalScrollbar(hasHorizontalOverflow);
-        if (box().hasAutoVerticalScrollbar())
-            setHasVerticalScrollbar(hasVerticalOverflow);
+    // We need to layout again if scrollbars are added or removed by overflow:auto,
+    // or by changing between native and custom.
+    bool horizontalScrollBarChanged = (box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow))
+        || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar());
+    bool verticalScrollBarChanged = (box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow))
+        || (box().style()->overflowY() == OSCROLL && !verticalScrollbar());
+    if (!visualViewportSuppliesScrollbars() && (horizontalScrollBarChanged || verticalScrollBarChanged)) {
+        if (box().hasAutoHorizontalScrollbar() || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar()))
+            setHasHorizontalScrollbar(box().style()->overflowX() == OSCROLL ? true : hasHorizontalOverflow);
+        if (box().hasAutoVerticalScrollbar() || (box().style()->overflowY() == OSCROLL && !verticalScrollbar()))
+            setHasVerticalScrollbar(box().style()->overflowY() == OSCROLL ? true : hasVerticalOverflow);
 
         if (hasVerticalOverflow || hasHorizontalOverflow)
             updateScrollCornerStyle();
@@ -698,15 +702,15 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
         if (box().document().hasAnnotatedRegions())
             box().document().setAnnotatedRegionsDirty(true);
 
-        if (box().style()->overflowX() == OAUTO || box().style()->overflowY() == OAUTO) {
+        // Our proprietary overflow: overlay value doesn't trigger a layout.
+        if ((horizontalScrollBarChanged && box().style()->overflowX() != OOVERLAY) || (verticalScrollBarChanged && box().style()->overflowY() != OOVERLAY)) {
             if (!m_inOverflowRelayout) {
-                // Our proprietary overflow: overlay value doesn't trigger a layout.
                 m_inOverflowRelayout = true;
                 SubtreeLayoutScope layoutScope(box());
                 layoutScope.setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
                 if (box().isLayoutBlock()) {
                     LayoutBlock& block = toLayoutBlock(box());
-                    block.scrollbarsChanged(autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);
+                    block.scrollbarsChanged(horizontalScrollBarChanged, verticalScrollBarChanged);
                     block.layoutBlock(true);
                 } else {
                     box().layout();
@@ -729,6 +733,13 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
             int clientHeight = box().pixelSnappedClientHeight();
             verticalScrollbar->setProportion(clientHeight, overflowRect().height());
         }
+    }
+
+    if (hasOverlayScrollbars()) {
+        if (!scrollSize(HorizontalScrollbar))
+            setHasHorizontalScrollbar(false);
+        if (!scrollSize(VerticalScrollbar))
+            setHasVerticalScrollbar(false);
     }
 
     bool hasOverflow = hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow();
@@ -956,6 +967,15 @@ static inline LayoutObject* layoutObjectForScrollbar(LayoutObject& layoutObject)
     }
 
     return &layoutObject;
+}
+
+bool DeprecatedPaintLayerScrollableArea::needsScrollbarReconstruction() const
+{
+    LayoutObject* actualLayoutObject = layoutObjectForScrollbar(box());
+    bool shouldUseCustom = actualLayoutObject->isBox() && actualLayoutObject->style()->hasPseudoStyle(SCROLLBAR);
+    bool hasAnyScrollbar = hasScrollbar();
+    bool hasCustom = (m_hBar && m_hBar->isCustomScrollbar()) || (m_vBar && m_vBar->isCustomScrollbar());
+    return hasAnyScrollbar && (shouldUseCustom != hasCustom);
 }
 
 PassRefPtrWillBeRawPtr<Scrollbar> DeprecatedPaintLayerScrollableArea::createScrollbar(ScrollbarOrientation orientation)
