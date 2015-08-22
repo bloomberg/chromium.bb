@@ -41,5 +41,7 @@ if env.Bit('linux') or env.Bit('clang') or env.Bit('mac'):
   # See gtest-port.h GTEST_DEFINE_STATIC_MUTEX_ define for more info
   env.Append(CCFLAGS=['-Wno-missing-field-initializers'])
 
-env.ComponentLibrary('gtest',
-                     ['${SOURCE_ROOT}/testing/gtest/src/gtest-all.cc'])
+env.ComponentLibrary(
+    'gtest',
+    [env.ComponentObject('gtest-all.o',
+                         '${SOURCE_ROOT}/testing/gtest/src/gtest-all.cc')])
