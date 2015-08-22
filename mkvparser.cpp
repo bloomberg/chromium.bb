@@ -1453,10 +1453,13 @@ long SeekHead::Parse() {
       ++void_element_count;
 
     pos += size;  // consume payload
-    assert(pos <= stop);
+
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   m_entries = new (std::nothrow) Entry[entry_count];
 
