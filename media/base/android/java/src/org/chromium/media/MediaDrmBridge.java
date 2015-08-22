@@ -215,8 +215,9 @@ public class MediaDrmBridge {
         mResetDeviceCredentialsPending = false;
         mProvisioningPending = false;
 
-        mMediaDrm.setOnEventListener(new MediaDrmListener());
+        mMediaDrm.setOnEventListener(new EventListener());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mMediaDrm.setOnExpirationUpdateListener(new ExpirationUpdateListener(), null);
             mMediaDrm.setOnKeyStatusChangeListener(new KeyStatusChangeListener(), null);
         }
 
@@ -910,6 +911,18 @@ public class MediaDrmBridge {
         });
     }
 
+    private void onSessionExpirationUpdate(final byte[] sessionId, final long expirationTime) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnSessionExpirationUpdate(
+                            mNativeMediaDrmBridge, sessionId, expirationTime);
+                }
+            }
+        });
+    }
+
     private void onLegacySessionError(final byte[] sessionId, final String errorMessage) {
         Log.e(TAG, "onLegacySessionError: %s", errorMessage);
         mHandler.post(new Runnable() {
@@ -933,16 +946,16 @@ public class MediaDrmBridge {
         });
     }
 
-    private class MediaDrmListener implements MediaDrm.OnEventListener {
+    private class EventListener implements MediaDrm.OnEventListener {
         @Override
         public void onEvent(
                 MediaDrm mediaDrm, byte[] sessionId, int event, int extra, byte[] data) {
             if (sessionId == null) {
-                Log.e(TAG, "MediaDrmListener: Null session.");
+                Log.e(TAG, "EventListener: Null session.");
                 return;
             }
             if (!sessionExists(sessionId)) {
-                Log.e(TAG, "MediaDrmListener: Invalid session %s", bytesToHexString(sessionId));
+                Log.e(TAG, "EventListener: Invalid session %s", bytesToHexString(sessionId));
                 return;
             }
             switch(event) {
@@ -1014,6 +1027,15 @@ public class MediaDrmBridge {
             Log.d(TAG, "KeysStatusChange: " + bytesToHexString(sessionId) + ", " + hasNewUsableKey);
 
             onSessionKeysChange(sessionId, getKeysInfo(keyInformation).toArray(), hasNewUsableKey);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private class ExpirationUpdateListener implements MediaDrm.OnExpirationUpdateListener {
+        @Override
+        public void onExpirationUpdate(MediaDrm md, byte[] sessionId, long expirationTime) {
+            Log.d(TAG, "ExpirationUpdate: " + bytesToHexString(sessionId) + ", " + expirationTime);
+            onSessionExpirationUpdate(sessionId, expirationTime);
         }
     }
 
@@ -1101,6 +1123,8 @@ public class MediaDrmBridge {
     private native void nativeOnSessionClosed(long nativeMediaDrmBridge, byte[] sessionId);
     private native void nativeOnSessionKeysChange(long nativeMediaDrmBridge, byte[] sessionId,
             Object[] keysInfo, boolean hasAdditionalUsableKey);
+    private native void nativeOnSessionExpirationUpdate(
+            long nativeMediaDrmBridge, byte[] sessionId, long expirationTime);
     private native void nativeOnLegacySessionError(
             long nativeMediaDrmBridge, byte[] sessionId, String errorMessage);
 

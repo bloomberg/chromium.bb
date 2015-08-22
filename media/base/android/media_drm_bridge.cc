@@ -263,12 +263,14 @@ MediaDrmBridge::MediaDrmBridge(
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const LegacySessionErrorCB& legacy_session_error_cb,
-    const SessionKeysChangeCB& session_keys_change_cb)
+    const SessionKeysChangeCB& session_keys_change_cb,
+    const SessionExpirationUpdateCB& session_expiration_update_cb)
     : scheme_uuid_(scheme_uuid),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       legacy_session_error_cb_(legacy_session_error_cb),
-      session_keys_change_cb_(session_keys_change_cb) {
+      session_keys_change_cb_(session_keys_change_cb),
+      session_expiration_update_cb_(session_expiration_update_cb) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
@@ -286,14 +288,13 @@ MediaDrmBridge::~MediaDrmBridge() {
 }
 
 // static
-// TODO(xhwang): Enable SessionExpirationUpdateCB when it is supported.
 scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
     const std::string& key_system,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
-    const SessionExpirationUpdateCB& /* session_expiration_update_cb */) {
+    const SessionExpirationUpdateCB& session_expiration_update_cb) {
   scoped_ptr<MediaDrmBridge> media_drm_bridge;
   if (!IsAvailable())
     return media_drm_bridge.Pass();
@@ -304,7 +305,8 @@ scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
 
   media_drm_bridge.reset(
       new MediaDrmBridge(scheme_uuid, session_message_cb, session_closed_cb,
-                         legacy_session_error_cb, session_keys_change_cb));
+                         legacy_session_error_cb, session_keys_change_cb,
+                         session_expiration_update_cb));
 
   if (media_drm_bridge->j_media_drm_.is_null())
     media_drm_bridge.reset();
@@ -579,6 +581,26 @@ void MediaDrmBridge::OnSessionKeysChange(JNIEnv* env,
 
   session_keys_change_cb_.Run(GetSessionId(env, j_session_id),
                               has_additional_usable_key, cdm_keys_info.Pass());
+}
+
+// According to MeidaDrm documentation [1], zero |expiry_time_ms| means the keys
+// will never expire. This will be translated into a NULL base::Time() [2],
+// which will then be mapped to a zero Java time [3]. The zero Java time is
+// passed to Blink which will then be translated to NaN [4], which is what the
+// spec uses to indicate that the license will never expire [5].
+// [1] http://developer.android.com/reference/android/media/MediaDrm.OnExpirationUpdateListener.html
+// [2] See base::Time::FromDoubleT()
+// [3] See base::Time::ToJavaTime()
+// [4] See MediaKeySession::expirationChanged()
+// [5] https://github.com/w3c/encrypted-media/issues/58
+void MediaDrmBridge::OnSessionExpirationUpdate(JNIEnv* env,
+                                               jobject j_media_drm,
+                                               jbyteArray j_session_id,
+                                               jlong expiry_time_ms) {
+  DVLOG(2) << __FUNCTION__ << ": " << expiry_time_ms << " ms";
+  session_expiration_update_cb_.Run(
+      GetSessionId(env, j_session_id),
+      base::Time::FromDoubleT(expiry_time_ms / 1000.0));
 }
 
 void MediaDrmBridge::OnLegacySessionError(JNIEnv* env,
