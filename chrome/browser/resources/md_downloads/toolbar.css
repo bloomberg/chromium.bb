@@ -32,6 +32,10 @@
   width: var(--downloads-item-width);
 }
 
+:host(:not([downloads-showing])) #actions {
+  justify-content: center;
+}
+
 #actions cr-button {
   -webkit-margin-end: 8px;
 }

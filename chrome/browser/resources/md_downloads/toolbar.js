@@ -14,6 +14,7 @@ cr.define('downloads', function() {
 
     properties: {
       downloadsShowing: {
+        reflectToAttribute: true,
         type: Boolean,
         value: false,
         observer: 'onDownloadsShowingChange_',
