@@ -1391,8 +1391,8 @@ long Segment::Load() {
   if (header_status > 0)  // underflow
     return E_BUFFER_NOT_FULL;
 
-  assert(m_pInfo);
-  assert(m_pTracks);
+  if (m_pInfo == NULL || m_pTracks == NULL)
+    return E_FILE_FORMAT_INVALID;
 
   for (;;) {
     const int status = LoadCluster();
