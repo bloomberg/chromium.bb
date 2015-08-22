@@ -29,8 +29,6 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/TextAffinity.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/layout/LayoutObject.h"
 #include "wtf/text/CString.h"
 #include <stdio.h>
 
@@ -297,119 +295,6 @@ template <typename Strategy>
 int PositionAlgorithm<Strategy>::compareTo(const PositionAlgorithm<Strategy>& other) const
 {
     return comparePositions(*this, other);
-}
-
-// TODO(yosin) We should move |uncheckedPreviousOffsetForBackwardDeletion()|
-// to "EditingUtilities.cpp" with |previousPositionOf()|.
-// TODO(yosin) To avoid forward declaration, we should move implementation of
-// |uncheckedPreviousOffsetForBackwardDeletion()| here.
-static int uncheckedPreviousOffsetForBackwardDeletion(const Node*, int current);
-
-template <typename Strategy>
-PositionAlgorithm<Strategy> previousPositionOfAlgorithm(const PositionAlgorithm<Strategy>& position, PositionMoveType moveType)
-{
-    Node* const node = position.anchorNode();
-    if (!node)
-        return position;
-
-    const int offset = position.computeEditingOffset();
-
-    if (offset > 0) {
-        if (editingIgnoresContent(node))
-            return PositionAlgorithm<Strategy>::beforeNode(node);
-        if (Node* child = Strategy::childAt(*node, offset - 1))
-            return PositionAlgorithm<Strategy>::lastPositionInOrAfterNode(child);
-
-        // There are two reasons child might be 0:
-        //   1) The node is node like a text node that is not an element, and
-        //      therefore has no children. Going backward one character at a
-        //      time is correct.
-        //   2) The old offset was a bogus offset like (<br>, 1), and there is
-        //      no child. Going from 1 to 0 is correct.
-        switch (moveType) {
-        case PositionMoveType::CodePoint:
-            return PositionAlgorithm<Strategy>(node, offset - 1);
-        case PositionMoveType::Character:
-            return PositionAlgorithm<Strategy>(node, uncheckedPreviousOffset(node, offset));
-        case PositionMoveType::BackwardDeletion:
-            return PositionAlgorithm<Strategy>(node, uncheckedPreviousOffsetForBackwardDeletion(node, offset));
-        }
-    }
-
-    if (ContainerNode* parent = Strategy::parent(*node)) {
-        if (editingIgnoresContent(parent))
-            return PositionAlgorithm<Strategy>::beforeNode(parent);
-        // TODO(yosin) We should use |Strategy::index(Node&)| instead of
-        // |Node::nodeIndex()|.
-        return PositionAlgorithm<Strategy>(parent, node->nodeIndex());
-    }
-    return position;
-}
-
-Position previousPositionOf(const Position& position, PositionMoveType moveType)
-{
-    return previousPositionOfAlgorithm<EditingStrategy>(position, moveType);
-}
-
-PositionInComposedTree previousPositionOf(const PositionInComposedTree& position, PositionMoveType moveType)
-{
-    return previousPositionOfAlgorithm<EditingInComposedTreeStrategy>(position, moveType);
-}
-
-template <typename Strategy>
-PositionAlgorithm<Strategy> nextPositionOfAlgorithm(const PositionAlgorithm<Strategy>& position, PositionMoveType moveType)
-{
-    ASSERT(moveType != PositionMoveType::BackwardDeletion);
-
-    Node* node = position.anchorNode();
-    if (!node)
-        return position;
-
-    const int offset = position.computeEditingOffset();
-
-    if (Node* child = Strategy::childAt(*node, offset))
-        return PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(child);
-
-    // TODO(yosin) We should use |Strategy::lastOffsetForEditing()| instead of
-    // DOM tree version.
-    if (!Strategy::hasChildren(*node) && offset < EditingStrategy::lastOffsetForEditing(node)) {
-        // There are two reasons child might be 0:
-        //   1) The node is node like a text node that is not an element, and
-        //      therefore has no children. Going forward one character at a time
-        //      is correct.
-        //   2) The new offset is a bogus offset like (<br>, 1), and there is no
-        //      child. Going from 0 to 1 is correct.
-        return PositionAlgorithm<Strategy>::editingPositionOf(node, (moveType == PositionMoveType::Character) ? uncheckedNextOffset(node, offset) : offset + 1);
-    }
-
-    if (ContainerNode* parent = Strategy::parent(*node))
-        return PositionAlgorithm<Strategy>::editingPositionOf(parent, Strategy::index(*node) + 1);
-    return position;
-}
-
-Position nextPositionOf(const Position& position, PositionMoveType moveType)
-{
-    return nextPositionOfAlgorithm<EditingStrategy>(position, moveType);
-}
-
-PositionInComposedTree nextPositionOf(const PositionInComposedTree& position, PositionMoveType moveType)
-{
-    return nextPositionOfAlgorithm<EditingInComposedTreeStrategy>(position, moveType);
-}
-
-int uncheckedPreviousOffset(const Node* n, int current)
-{
-    return n->layoutObject() ? n->layoutObject()->previousOffset(current) : current - 1;
-}
-
-static int uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current)
-{
-    return n->layoutObject() ? n->layoutObject()->previousOffsetForBackwardDeletion(current) : current - 1;
-}
-
-int uncheckedNextOffset(const Node* n, int current)
-{
-    return n->layoutObject() ? n->layoutObject()->nextOffset(current) : current + 1;
 }
 
 template <typename Strategy>

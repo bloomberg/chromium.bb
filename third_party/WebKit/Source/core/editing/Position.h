@@ -45,12 +45,6 @@ class Text;
 enum class TextAffinity;
 class TreeScope;
 
-enum class PositionMoveType {
-    CodePoint, // Move by a single code point.
-    Character, // Move to the next Unicode character break.
-    BackwardDeletion // Subject to platform conventions.
-};
-
 enum class PositionAnchorType : unsigned {
     OffsetInAnchor,
     BeforeAnchor,
@@ -395,21 +389,6 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
 {
     return toPositionInComposedTree(position);
 }
-
-// TODO(yosin) We should move |previousPositionOf()| and |nextPositionOf()|
-// to "EditingUtilities.h" with |uncheckedPreviousOffset()| and
-// |uncheckedNextOffset()|.
-// Move up or down the DOM by one position.
-// Offsets are computed using layout text for nodes that have layoutObjects -
-// but note that even when using composed characters, the result may be inside
-// a single user-visible character if a ligature is formed.
-CORE_EXPORT Position previousPositionOf(const Position&, PositionMoveType);
-CORE_EXPORT Position nextPositionOf(const Position&, PositionMoveType);
-CORE_EXPORT PositionInComposedTree previousPositionOf(const PositionInComposedTree&, PositionMoveType);
-CORE_EXPORT PositionInComposedTree nextPositionOf(const PositionInComposedTree&, PositionMoveType);
-
-CORE_EXPORT int uncheckedPreviousOffset(const Node*, int current);
-CORE_EXPORT int uncheckedNextOffset(const Node*, int current);
 
 } // namespace blink
 

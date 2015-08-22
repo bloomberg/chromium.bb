@@ -36,6 +36,12 @@
 
 namespace blink {
 
+enum class PositionMoveType {
+    CodePoint, // Move by a single code point.
+    Character, // Move to the next Unicode character break.
+    BackwardDeletion // Subject to platform conventions.
+};
+
 class Document;
 class Element;
 class HTMLBRElement;
@@ -47,7 +53,6 @@ class Node;
 class Range;
 class VisiblePosition;
 class VisibleSelection;
-
 
 // This file contains a set of helper functions used by the editing commands
 
@@ -176,6 +181,18 @@ inline Position lastPositionInOrAfterNode(Node* node)
 
 Position lastEditablePositionBeforePositionInRoot(const Position&, Node*);
 PositionInComposedTree lastEditablePositionBeforePositionInRoot(const PositionInComposedTree&, Node*);
+
+// Move up or down the DOM by one position.
+// Offsets are computed using layout text for nodes that have layoutObjects -
+// but note that even when using composed characters, the result may be inside
+// a single user-visible character if a ligature is formed.
+CORE_EXPORT Position previousPositionOf(const Position&, PositionMoveType);
+CORE_EXPORT Position nextPositionOf(const Position&, PositionMoveType);
+CORE_EXPORT PositionInComposedTree previousPositionOf(const PositionInComposedTree&, PositionMoveType);
+CORE_EXPORT PositionInComposedTree nextPositionOf(const PositionInComposedTree&, PositionMoveType);
+
+CORE_EXPORT int uncheckedPreviousOffset(const Node*, int current);
+CORE_EXPORT int uncheckedNextOffset(const Node*, int current);
 
 // comparision functions on Position
 
