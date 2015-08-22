@@ -288,6 +288,10 @@ class ChromotingInstance : public ClientUserInterface,
   // Weak reference to this instance, used for global logging and task posting.
   base::WeakPtrFactory<ChromotingInstance> weak_factory_;
 
+  base::TimeTicks connection_started_time;
+  base::TimeTicks connection_authenticated_time_;
+  base::TimeTicks connection_connected_time_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromotingInstance);
 };
 

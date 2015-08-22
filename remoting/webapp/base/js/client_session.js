@@ -135,8 +135,16 @@ remoting.ClientSession.EventHandler.prototype.onDisconnected =
 //
 // TODO(kelvinp): Merge this enum with remoting.ChromotingEvent.SessionState
 // once we have migrated away from XMPP-based logging (crbug.com/523423).
+// NOTE: The enums here correspond to the Chromoting.Connections enumerated
+// histogram defined in src/tools/metrics/histograms/histograms.xml. UMA
+// histograms don't work well with negative values, so only non-negative values
+// have been used for Chromoting.Connections.
+// The maximum values for the UMA enumerated histogram is included here for use
+// when uploading values to UMA.
+// The 2 lists should be kept in sync, and any new enums should be append-only.
 /** @enum {number} */
 remoting.ClientSession.State = {
+  MIN_STATE_ENUM: -3,
   CONNECTION_CANCELED: -3,  // Connection closed (gracefully) before connecting.
   CONNECTION_DROPPED: -2,  // Succeeded, but subsequently closed with an error.
   CREATED: -1,
@@ -146,7 +154,8 @@ remoting.ClientSession.State = {
   AUTHENTICATED: 3,
   CONNECTED: 4,
   CLOSED: 5,
-  FAILED: 6
+  FAILED: 6,
+  MAX_STATE_ENUM: 6,
 };
 
 /**
@@ -542,9 +551,38 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   }
 
   this.notifyStateChanges_(oldState, this.state_);
+  // Record state count in an UMA enumerated histogram.
+  recordState(this.state_);
   this.logger_.logClientSessionStateChange(
       this.state_, this.error_, this.xmppErrorCache_.getFirstError());
 };
+
+/**
+ * Records a Chromoting Connection State, stored in an UMA enumerated histogram.
+ * @param {remoting.ClientSession.State} state State identifier.
+ */
+function recordState(state) {
+  // According to src/base/metrics/histogram.h, for a UMA enumerated histogram,
+  // the upper limit should be 1 above the max-enum. Because SessionState's
+  // minimum enum value is negative, we'll just take the difference of the max
+  // and min enums.
+  var histogram_max = (remoting.ClientSession.State.MAX_STATE_ENUM -
+    remoting.ClientSession.State.MIN_STATE_ENUM);
+
+  var metricDescription = {
+    metricName: 'Chromoting.Connections',
+    type: 'histogram-linear',
+    // According to histogram.h, minimum should be 1. Values less than minimum
+    // end up in the 0th bucket.
+    min: 1,
+    max: histogram_max,
+    // The # of buckets should include 1 for underflow.
+    buckets: histogram_max + 1
+  };
+
+  chrome.metricsPrivate.recordValue(metricDescription, state -
+      remoting.ClientSession.State.MIN_STATE_ENUM);
+}
 
 /**
  * @param {remoting.ClientSession.State} oldState The new state for the session.

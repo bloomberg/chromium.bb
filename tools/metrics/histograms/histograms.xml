@@ -3816,6 +3816,47 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chromoting.Connections" enum="State">
+  <owner>anandc@chromium.com</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    Recorded every time a Chromoting connection enters a new state.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Connections.Durations.Closed" units="minutes">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The duration of sessions that were closed, normally by a user-initiated
+    action.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Connections.Durations.Failed" units="minutes">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>The duration of sessions that failed to connect.</summary>
+</histogram>
+
+<histogram name="Chromoting.Connections.Times.ToAuthenticate"
+    units="milliseconds">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The time taken to authenticate as part of a Chromoting connection request.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Connections.Times.ToConnect" units="milliseconds">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The time taken to connect to a remote-host, after a request has been
+    authenticated.
+  </summary>
+</histogram>
+
 <histogram name="Chromoting.Video.Bandwidth" units="Bytes/second">
   <owner>anandc@chromium.org</owner>
   <owner>sergeyu@chromium.org</owner>
@@ -71311,6 +71352,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Performed migration"/>
   <int value="1" label="No migration value"/>
   <int value="2" label="Reset migration"/>
+</enum>
+
+<enum name="State" type="int">
+  <int value="0" label="Canceled"/>
+  <int value="1" label="Dropped"/>
+  <int value="2" label="Created"/>
+  <int value="3" label="Unknown"/>
+  <int value="4" label="Initializing"/>
+  <int value="5" label="Connecting"/>
+  <int value="6" label="Authenticated"/>
+  <int value="7" label="Connected"/>
+  <int value="8" label="Closed"/>
+  <int value="9" label="Failed"/>
 </enum>
 
 <enum name="SuggestAppsDialogCloseReason" type="int">

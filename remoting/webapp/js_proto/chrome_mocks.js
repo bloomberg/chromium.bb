@@ -246,6 +246,13 @@ chromeMocks.Identity.prototype.mock$clearToken = function() {
 /** @type {chromeMocks.Identity} */
 chromeMocks.identity;
 
+/** @constructor */
+chromeMocks.MetricsPrivate = function() {};
+
+chromeMocks.MetricsPrivate.prototype.recordValue = function() {};
+
+/** @type {chromeMocks.MetricsPrivate} */
+chromeMocks.metricsPrivate;
 
 /** @constructor */
 chromeMocks.I18n = function() {};
@@ -288,8 +295,9 @@ chromeMocks.activate = function() {
 
   chromeMocks.i18n = new chromeMocks.I18n();
   chromeMocks.identity = new chromeMocks.Identity();
+  chromeMocks.metricsPrivate = new chromeMocks.MetricsPrivate();
 
-  ['identity', 'i18n', 'runtime', 'storage'].forEach(
+  ['identity', 'i18n', 'runtime', 'storage', 'metricsPrivate'].forEach(
     function(/** string */ component) {
       if (!chromeMocks[component]) {
         throw new Error('No mocks defined for chrome.' + component);

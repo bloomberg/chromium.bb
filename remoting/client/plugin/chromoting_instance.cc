@@ -66,6 +66,25 @@ const int kDefaultDPI = 96;
 // state, so we initialize it with 1k or random data.
 const int kRandomSeedSize = 1024;
 
+// The connection times and duration values are stored in UMA custom-time
+// histograms, that are log-scaled by default. The histogram specifications are
+// based off values seen over a recent 7-day period.
+// The connection times histograms are in milliseconds and the connection
+// duration histograms are in minutes.
+const char kTimeToAuthenticateHistogram[] =
+    "Chromoting.Connections.Times.ToAuthenticate";
+const char kTimeToConnectHistogram[] = "Chromoting.Connections.Times.ToConnect";
+const char kClosedSessionDurationHistogram[] =
+    "Chromoting.Connections.Durations.Closed";
+const char kFailedSessionDurationHistogram[] =
+    "Chromoting.Connections.Durations.Failed";
+const int kConnectionTimesHistogramMinMs = 1;
+const int kConnectionTimesHistogramMaxMs = 30000;
+const int kConnectionTimesHistogramBuckets = 50;
+const int kConnectionDurationHistogramMinMinutes = 1;
+const int kConnectionDurationHistogramMaxMinutes = 24 * 60;
+const int kConnectionDurationHistogramBuckets = 50;
+
 // TODO(sergeyu): Ideally we should just pass ErrorCode to the webapp
 // and let it handle it, but it would be hard to fix it now because
 // client plugin and webapp versions may not be in sync. It should be
@@ -362,6 +381,57 @@ void ChromotingInstance::OnVideoFrameDirtyRegion(
 void ChromotingInstance::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
+  pp::UMAPrivate uma(this);
+
+  switch (state) {
+    case protocol::ConnectionToHost::INITIALIZING:
+      NOTREACHED();
+      break;
+    case protocol::ConnectionToHost::CONNECTING:
+      connection_started_time = base::TimeTicks::Now();
+      break;
+    case protocol::ConnectionToHost::AUTHENTICATED:
+      connection_authenticated_time_ = base::TimeTicks::Now();
+      uma.HistogramCustomTimes(
+          kTimeToAuthenticateHistogram,
+          (connection_authenticated_time_ - connection_started_time)
+              .InMilliseconds(),
+          kConnectionTimesHistogramMinMs, kConnectionTimesHistogramMaxMs,
+          kConnectionTimesHistogramBuckets);
+      break;
+    case protocol::ConnectionToHost::CONNECTED:
+      connection_connected_time_ = base::TimeTicks::Now();
+      uma.HistogramCustomTimes(
+          kTimeToConnectHistogram,
+          (connection_connected_time_ - connection_authenticated_time_)
+              .InMilliseconds(),
+          kConnectionTimesHistogramMinMs, kConnectionTimesHistogramMaxMs,
+          kConnectionTimesHistogramBuckets);
+      break;
+    case protocol::ConnectionToHost::CLOSED:
+      if (!connection_connected_time_.is_null()) {
+        uma.HistogramCustomTimes(
+            kClosedSessionDurationHistogram,
+            (base::TimeTicks::Now() - connection_connected_time_)
+                .InMilliseconds(),
+            kConnectionDurationHistogramMinMinutes,
+            kConnectionDurationHistogramMaxMinutes,
+            kConnectionDurationHistogramBuckets);
+      }
+      break;
+    case protocol::ConnectionToHost::FAILED:
+      if (!connection_connected_time_.is_null()) {
+        uma.HistogramCustomTimes(
+            kFailedSessionDurationHistogram,
+            (base::TimeTicks::Now() - connection_connected_time_)
+                .InMilliseconds(),
+            kConnectionDurationHistogramMinMinutes,
+            kConnectionDurationHistogramMaxMinutes,
+            kConnectionDurationHistogramBuckets);
+      }
+      break;
+  }
+
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("state", protocol::ConnectionToHost::StateToString(state));
   data->SetString("error", ConnectionErrorToString(error));
