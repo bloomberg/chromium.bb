@@ -1219,7 +1219,10 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
   if (pCluster == NULL)
     return -1;
 
-  AppendCluster(pCluster);
+  if (!AppendCluster(pCluster)) {
+    delete pCluster;
+    return -1;
+  }
   assert(m_clusters);
   assert(idx < m_clusterSize);
   assert(m_clusters[idx] == pCluster);
@@ -1270,7 +1273,7 @@ long Segment::DoLoadClusterUnknownSize(long long& pos, long& len) {
   return 2;  // continue parsing
 }
 
-void Segment::AppendCluster(Cluster* pCluster) {
+bool Segment::AppendCluster(Cluster* pCluster) {
   assert(pCluster);
   assert(pCluster->m_index >= 0);
 
@@ -1285,7 +1288,9 @@ void Segment::AppendCluster(Cluster* pCluster) {
   if (count >= size) {
     const long n = (size <= 0) ? 2048 : 2 * size;
 
-    Cluster** const qq = new Cluster*[n];
+    Cluster** const qq = new (std::nothrow) Cluster*[n];
+    if (qq == NULL)
+      return false;
     Cluster** q = qq;
 
     Cluster** p = m_clusters;
@@ -1324,6 +1329,7 @@ void Segment::AppendCluster(Cluster* pCluster) {
 
   m_clusters[idx] = pCluster;
   ++m_clusterCount;
+  return true;
 }
 
 void Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {

@@ -999,7 +999,7 @@ class Segment {
   long DoLoadClusterUnknownSize(long long&, long&);
   long DoParseNext(const Cluster*&, long long&, long&);
 
-  void AppendCluster(Cluster*);
+  bool AppendCluster(Cluster*);
   void PreloadCluster(Cluster*, ptrdiff_t);
 
   // void ParseSeekHead(long long pos, long long size);
