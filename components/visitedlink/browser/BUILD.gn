@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("browser") {
-  output_name = "visitedlink_browser"
+source_set("browser") {
   sources = [
     "visitedlink_delegate.h",
     "visitedlink_event_listener.cc",
