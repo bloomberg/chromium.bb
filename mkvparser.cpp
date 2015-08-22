@@ -1216,8 +1216,8 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
   // status > 0 means we have an entry
 
   Cluster* const pCluster = Cluster::Create(this, idx, cluster_off);
-  // element_size);
-  assert(pCluster);
+  if (pCluster == NULL)
+    return -1;
 
   AppendCluster(pCluster);
   assert(m_clusters);
@@ -2112,7 +2112,8 @@ const BlockEntry* Segment::GetBlock(const CuePoint& cp,
   // assert(Cluster::HasBlockEntries(this, tp.m_pos));
 
   Cluster* const pCluster = Cluster::Create(this, -1, tp.m_pos);  //, -1);
-  assert(pCluster);
+  if (pCluster == NULL)
+    return NULL;
 
   const ptrdiff_t idx = i - m_clusters;
 
@@ -2167,8 +2168,8 @@ const Cluster* Segment::FindOrPreloadCluster(long long requested_pos) {
   // assert(Cluster::HasBlockEntries(this, tp.m_pos));
 
   Cluster* const pCluster = Cluster::Create(this, -1, requested_pos);
-  //-1);
-  assert(pCluster);
+  if (pCluster == NULL)
+    return NULL;
 
   const ptrdiff_t idx = i - m_clusters;
 
@@ -2598,7 +2599,8 @@ const Cluster* Segment::GetNext(const Cluster* pCurr) {
   assert(i == j);
 
   Cluster* const pNext = Cluster::Create(this, -1, off_next);
-  assert(pNext);
+  if (pNext == NULL)
+    return NULL;
 
   const ptrdiff_t idx_next = i - m_clusters;  // insertion position
 
@@ -2955,8 +2957,8 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
     Cluster* const pNext = Cluster::Create(this,
                                            -1,  // preloaded
                                            off_next);
-    // element_size);
-    assert(pNext);
+    if (pNext == NULL)
+      return -1;
 
     const ptrdiff_t idx_next = i - m_clusters;  // insertion position
 
@@ -6399,8 +6401,6 @@ Cluster* Cluster::Create(Segment* pSegment, long idx, long long off)
   const long long element_start = pSegment->m_start + off;
 
   Cluster* const pCluster = new Cluster(pSegment, idx, element_start);
-  // element_size);
-  assert(pCluster);
 
   return pCluster;
 }
