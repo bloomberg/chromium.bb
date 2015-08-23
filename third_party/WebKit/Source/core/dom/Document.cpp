@@ -596,7 +596,6 @@ void Document::dispose()
     DocumentLifecycleNotifier::notifyDocumentWasDisposed();
 
     m_canvasFontCache.clear();
-    m_nodeCount = 0;
 }
 #endif
 

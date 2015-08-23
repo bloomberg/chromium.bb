@@ -513,6 +513,9 @@ void ContainerNode::addChildNodesToDeletionQueue(Node*& head, Node*& tail, Conta
             next->setPreviousSibling(nullptr);
 
         if (!n->refCount()) {
+            if (n->inDocument())
+                container.document().decrementNodeCount();
+
 #if ENABLE(SECURITY_ASSERT)
             n->m_deletionHasBegun = true;
 #endif
