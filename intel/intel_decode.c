@@ -38,6 +38,9 @@
 #include "intel_chipset.h"
 #include "intel_bufmgr.h"
 
+/* The compiler throws ~90 warnings. Do not spam the build, until we fix them. */
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+
 /* Struct for tracking drm_intel_decode state. */
 struct drm_intel_decode {
 	/** stdio file where the output should land.  Defaults to stdout. */
