@@ -58,14 +58,30 @@ int drm_amdgpu[MAX_CARDS_SUPPORTED];
 
 /** The table of all known test suites to run */
 static CU_SuiteInfo suites[] = {
-	{ "Basic Tests", suite_basic_tests_init,
-	  suite_basic_tests_clean, basic_tests },
-	{ "BO Tests", suite_bo_tests_init,
-	  suite_bo_tests_clean, bo_tests },
-	{ "CS Tests", suite_cs_tests_init,
-	  suite_cs_tests_clean, cs_tests },
-	{ "VCE Tests", suite_vce_tests_init,
-	  suite_vce_tests_clean, vce_tests },
+	{
+		.pName = "Basic Tests",
+		.pInitFunc = suite_basic_tests_init,
+		.pCleanupFunc = suite_basic_tests_clean,
+		.pTests = basic_tests,
+	},
+	{
+		.pName = "BO Tests",
+		.pInitFunc = suite_bo_tests_init,
+		.pCleanupFunc = suite_bo_tests_clean,
+		.pTests = bo_tests,
+	},
+	{
+		.pName = "CS Tests",
+		.pInitFunc = suite_cs_tests_init,
+		.pCleanupFunc = suite_cs_tests_clean,
+		.pTests = cs_tests,
+	},
+	{
+		.pName = "VCE Tests",
+		.pInitFunc = suite_vce_tests_init,
+		.pCleanupFunc = suite_vce_tests_clean,
+		.pTests = vce_tests,
+	},
 	CU_SUITE_INFO_NULL,
 };
 
