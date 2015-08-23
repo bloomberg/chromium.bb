@@ -17,9 +17,7 @@ const char kUserDataKey[] = "InternalDocumentStateData";
 }
 
 InternalDocumentStateData::InternalDocumentStateData()
-    : did_first_visually_non_empty_layout_(false),
-      did_first_visually_non_empty_paint_(false),
-      http_status_code_(0),
+    : http_status_code_(0),
       is_overriding_user_agent_(false),
       must_reset_scroll_and_scale_state_(false),
       cache_policy_override_set_(false),

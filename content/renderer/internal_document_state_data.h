@@ -28,15 +28,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   static InternalDocumentStateData* FromDataSource(blink::WebDataSource* ds);
   static InternalDocumentStateData* FromDocumentState(DocumentState* ds);
 
-  // Set to true once RenderViewImpl::didFirstVisuallyNonEmptyLayout() is
-  // invoked.
-  bool did_first_visually_non_empty_layout() const {
-    return did_first_visually_non_empty_layout_;
-  }
-  void set_did_first_visually_non_empty_layout(bool value) {
-    did_first_visually_non_empty_layout_ = value;
-  }
-
   int http_status_code() const { return http_status_code_; }
   void set_http_status_code(int http_status_code) {
     http_status_code_ = http_status_code;
@@ -89,8 +80,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   ~InternalDocumentStateData() override;
 
  private:
-  bool did_first_visually_non_empty_layout_;
-  bool did_first_visually_non_empty_paint_;
   int http_status_code_;
   GURL searchable_form_url_;
   std::string searchable_form_encoding_;
