@@ -124,11 +124,6 @@ class PermissionBubbleManager
   void DocumentOnLoadCompletedInMainFrame() override;
   void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
-
-  // If a page on which permissions requests are pending is navigated,
-  // they will be finalized as if canceled by the user.
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& details) override;
   void WebContentsDestroyed() override;
 
   // PermissionBubbleView::Delegate:
