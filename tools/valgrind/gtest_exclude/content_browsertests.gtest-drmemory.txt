@@ -59,3 +59,6 @@ WebRtcGetUserMediaBrowserTest.*
 WebRtcBrowserTest.AddTwoMediaStreamsToOnePC
 WebRtcBrowserTest.CanSetupCallAndSendDtmf
 WebRtcBrowserTest.NegotiateNonCryptoCall
+
+# https://crbug.com/507012
+ServiceWorkerVersionBrowserTest.ReadResourceFailure_WaitingWorker
