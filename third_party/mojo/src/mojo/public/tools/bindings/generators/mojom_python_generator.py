@@ -146,13 +146,7 @@ def GetFieldType(kind, field=None):
       arguments.append('nullable=True')
     return '_descriptor.MapType(%s)' % ', '.join(arguments)
 
-  if mojom.IsUnionKind(kind):
-    arguments = [ 'lambda: %s' % GetFullyQualifiedName(kind) ]
-    if mojom.IsNullableKind(kind):
-      arguments.append('nullable=True')
-    return '_descriptor.UnionType(%s)' % ', '.join(arguments)
-
-  if mojom.IsStructKind(kind):
+  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     arguments = [ 'lambda: %s' % GetFullyQualifiedName(kind) ]
     if mojom.IsNullableKind(kind):
       arguments.append('nullable=True')
@@ -175,14 +169,15 @@ def GetFieldType(kind, field=None):
 
   return _kind_to_type[kind]
 
-def GetFieldDescriptor(field, index, min_version):
+def GetFieldDescriptor(packed_field):
+  field = packed_field.field
   class_name = 'SingleFieldGroup'
   if field.kind == mojom.BOOL:
     class_name = 'FieldDescriptor'
   arguments = [ '%r' % GetNameForElement(field) ]
   arguments.append(GetFieldType(field.kind, field))
-  arguments.append(str(index))
-  arguments.append(str(min_version))
+  arguments.append(str(packed_field.index))
+  arguments.append(str(packed_field.min_version))
   if field.default:
     if mojom.IsStructKind(field.kind):
       arguments.append('default_value=True')
@@ -190,19 +185,12 @@ def GetFieldDescriptor(field, index, min_version):
       arguments.append('default_value=%s' % ExpressionToText(field.default))
   return '_descriptor.%s(%s)' % (class_name, ', '.join(arguments))
 
-def GetStructFieldDescriptor(packed_field):
-  return GetFieldDescriptor(
-      packed_field.field, packed_field.index, packed_field.min_version)
-
-def GetUnionFieldDescriptor(field):
-  return GetFieldDescriptor(field, field.ordinal, 0)
-
 def GetFieldGroup(byte):
   if byte.packed_fields[0].field.kind == mojom.BOOL:
-    descriptors = map(GetStructFieldDescriptor, byte.packed_fields)
+    descriptors = map(GetFieldDescriptor, byte.packed_fields)
     return '_descriptor.BooleanGroup([%s])' % ', '.join(descriptors)
   assert len(byte.packed_fields) == 1
-  return GetStructFieldDescriptor(byte.packed_fields[0])
+  return GetFieldDescriptor(byte.packed_fields[0])
 
 def MojomToPythonImport(mojom):
   return mojom.replace('.mojom', '_mojom')
@@ -212,7 +200,6 @@ class Generator(generator.Generator):
   python_filters = {
     'expression_to_text': ExpressionToText,
     'field_group': GetFieldGroup,
-    'union_field_descriptor': GetUnionFieldDescriptor,
     'fully_qualified_name': GetFullyQualifiedName,
     'name': GetNameForElement,
   }
@@ -226,7 +213,6 @@ class Generator(generator.Generator):
       'module': resolver.ResolveConstants(self.module, ExpressionToText),
       'namespace': self.module.namespace,
       'structs': self.GetStructs(),
-      'unions': self.GetUnions(),
     }
 
   def GenerateFiles(self, args):

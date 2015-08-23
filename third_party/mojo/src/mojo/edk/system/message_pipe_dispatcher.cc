@@ -105,22 +105,22 @@ MessagePipeDispatcher::~MessagePipeDispatcher() {
 }
 
 MessagePipe* MessagePipeDispatcher::GetMessagePipeNoLock() const {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   return message_pipe_.get();
 }
 
 unsigned MessagePipeDispatcher::GetPortNoLock() const {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   return port_;
 }
 
 void MessagePipeDispatcher::CancelAllAwakablesNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   message_pipe_->CancelAllAwakables(port_);
 }
 
 void MessagePipeDispatcher::CloseImplNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   message_pipe_->Close(port_);
   message_pipe_ = nullptr;
   port_ = kInvalidPort;
@@ -128,7 +128,7 @@ void MessagePipeDispatcher::CloseImplNoLock() {
 
 scoped_refptr<Dispatcher>
 MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
 
   // TODO(vtl): Currently, there are no options, so we just use
   // |kDefaultCreateOptions|. Eventually, we'll have to duplicate the options
@@ -149,7 +149,7 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
          (transports->size() > 0 &&
           transports->size() <= GetConfiguration().max_message_num_handles));
 
-  mutex().AssertHeld();
+  lock().AssertAcquired();
 
   if (num_bytes > GetConfiguration().max_message_num_bytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
@@ -164,14 +164,14 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
     DispatcherVector* dispatchers,
     uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   return message_pipe_->ReadMessage(port_, bytes, num_bytes, dispatchers,
                                     num_dispatchers, flags);
 }
 
 HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateImplNoLock()
     const {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   return message_pipe_->GetHandleSignalsState(port_);
 }
 
@@ -180,7 +180,7 @@ MojoResult MessagePipeDispatcher::AddAwakableImplNoLock(
     MojoHandleSignals signals,
     uint32_t context,
     HandleSignalsState* signals_state) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   return message_pipe_->AddAwakable(port_, awakable, signals, context,
                                     signals_state);
 }
@@ -188,7 +188,7 @@ MojoResult MessagePipeDispatcher::AddAwakableImplNoLock(
 void MessagePipeDispatcher::RemoveAwakableImplNoLock(
     Awakable* awakable,
     HandleSignalsState* signals_state) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   message_pipe_->RemoveAwakable(port_, awakable, signals_state);
 }
 

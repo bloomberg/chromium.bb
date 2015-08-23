@@ -15,7 +15,6 @@
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace media_router {
 

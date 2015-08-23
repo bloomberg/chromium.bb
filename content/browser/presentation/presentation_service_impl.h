@@ -26,7 +26,6 @@
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 
@@ -49,6 +48,7 @@ using NewSessionMojoCallback = mojo::Callback<
 // from the renderer when the first presentation API request is handled.
 class CONTENT_EXPORT PresentationServiceImpl
     : public NON_EXPORTED_BASE(presentation::PresentationService),
+      public mojo::ErrorHandler,
       public WebContentsObserver,
       public PresentationServiceDelegate::Observer {
  public:
@@ -197,6 +197,10 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // Creates a binding between this object and |request|.
   void Bind(mojo::InterfaceRequest<presentation::PresentationService> request);
+
+  // mojo::ErrorHandler override.
+  // Note that this is called when the RenderFrameHost is deleted.
+  void OnConnectionError() override;
 
   // WebContentsObserver override.
   void DidNavigateAnyFrame(

@@ -106,4 +106,8 @@ void WebUSBDeviceImpl::reset(blink::WebUSBDeviceResetCallbacks* callbacks) {
   RejectAsNotImplemented(callbacks);
 }
 
+void WebUSBDeviceImpl::OnConnectionError() {
+  device_.reset();
+}
+
 }  // namespace content

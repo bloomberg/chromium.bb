@@ -22,7 +22,7 @@ struct SerializedPlatformHandleDispatcher {
 }  // namespace
 
 embedder::ScopedPlatformHandle PlatformHandleDispatcher::PassPlatformHandle() {
-  MutexLocker locker(&mutex());
+  base::AutoLock locker(lock());
   return platform_handle_.Pass();
 }
 
@@ -73,13 +73,13 @@ PlatformHandleDispatcher::~PlatformHandleDispatcher() {
 }
 
 void PlatformHandleDispatcher::CloseImplNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   platform_handle_.reset();
 }
 
 scoped_refptr<Dispatcher>
 PlatformHandleDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   return Create(platform_handle_.Pass());
 }
 

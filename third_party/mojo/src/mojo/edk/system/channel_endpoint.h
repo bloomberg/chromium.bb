@@ -7,9 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "mojo/edk/system/channel_endpoint_id.h"
 #include "mojo/edk/system/message_in_transit_queue.h"
-#include "mojo/edk/system/mutex.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
 
@@ -85,7 +85,7 @@ class MessageInTransit;
 //         shouldn't receive any more messages for that message pipe endpoint
 //         (local ID), but it must wait for the endpoint to detach. (It can't
 //         do so without a race, since it can't call into the message pipe
-//         under |mutex_|.) [TODO(vtl): When I add remotely-allocated IDs,
+//         under |lock_|.) [TODO(vtl): When I add remotely-allocated IDs,
 //         we'll have to remove the |EndpointInfo| from
 //         |local_id_to_endpoint_info_map_| -- i.e., remove the local ID,
 //         since it's no longer valid and may be reused by the remote side --
@@ -162,18 +162,19 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint final
   friend class base::RefCountedThreadSafe<ChannelEndpoint>;
   ~ChannelEndpoint();
 
-  bool WriteMessageNoLock(scoped_ptr<MessageInTransit> message)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  // Must be called with |lock_| held.
+  bool WriteMessageNoLock(scoped_ptr<MessageInTransit> message);
 
   // Helper for |OnReadMessage()|, handling messages for the client.
   void OnReadMessageForClient(scoped_ptr<MessageInTransit> message);
 
   // Resets |channel_| to null (and sets |channel_state_| to
   // |ChannelState::DETACHED|). This may only be called if |channel_| is
-  // non-null.
-  void ResetChannelNoLock() MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  // non-null. Must be called with |lock_| held.
+  void ResetChannelNoLock();
 
-  Mutex mutex_;
+  // Protects the members below.
+  base::Lock lock_;
 
   // |client_| must be valid whenever it is non-null. Before |*client_| gives up
   // its reference to this object, it must call |DetachFromClient()|.
@@ -181,17 +182,14 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint final
   // |Channel| needs to keep the |MessagePipe| alive for the "proxy-proxy" case.
   // Possibly we'll be able to eliminate that case when we have full
   // multiprocess support.
-  // WARNING: |ChannelEndpointClient| methods must not be called under |mutex_|.
-  // Thus to make such a call, a reference must first be taken under |mutex_|
-  // and the lock released.
-  // TODO(vtl): Annotate the above rule using |MOJO_ACQUIRED_{BEFORE,AFTER}()|,
-  // once clang actually checks such annotations.
-  // https://github.com/domokit/mojo/issues/313
+  // WARNING: |ChannelEndpointClient| methods must not be called under |lock_|.
+  // Thus to make such a call, a reference must first be taken under |lock_| and
+  // the lock released.
   // WARNING: Beware of interactions with |ReplaceClient()|. By the time the
   // call is made, the client may have changed. This must be detected and dealt
   // with.
-  scoped_refptr<ChannelEndpointClient> client_ MOJO_GUARDED_BY(mutex_);
-  unsigned client_port_ MOJO_GUARDED_BY(mutex_);
+  scoped_refptr<ChannelEndpointClient> client_;
+  unsigned client_port_;
 
   // State with respect to interaction with the |Channel|.
   enum class ChannelState {
@@ -203,17 +201,17 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint final
     // |DetachFromChannel()| has been called (|channel_| is null).
     DETACHED
   };
-  ChannelState channel_state_ MOJO_GUARDED_BY(mutex_);
+  ChannelState channel_state_;
   // |channel_| must be valid whenever it is non-null. Before |*channel_| gives
   // up its reference to this object, it must call |DetachFromChannel()|.
   // |local_id_| and |remote_id_| are valid if and only |channel_| is non-null.
-  Channel* channel_ MOJO_GUARDED_BY(mutex_);
-  ChannelEndpointId local_id_ MOJO_GUARDED_BY(mutex_);
-  ChannelEndpointId remote_id_ MOJO_GUARDED_BY(mutex_);
+  Channel* channel_;
+  ChannelEndpointId local_id_;
+  ChannelEndpointId remote_id_;
 
   // This queue is used before we're running on a channel and ready to send
   // messages to the channel.
-  MessageInTransitQueue channel_message_queue_ MOJO_GUARDED_BY(mutex_);
+  MessageInTransitQueue channel_message_queue_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ChannelEndpoint);
 };

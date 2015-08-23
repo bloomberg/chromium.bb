@@ -13,10 +13,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/memory.h"
-#include "mojo/edk/system/mutex.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
@@ -54,9 +54,9 @@ DispatcherTryStartTransport(Dispatcher* dispatcher);
 
 // A |Dispatcher| implements Mojo primitives that are "attached" to a particular
 // handle. This includes most (all?) primitives except for |MojoWait...()|. This
-// object is thread-safe, with its state being protected by a single mutex
-// |mutex_|, which is also made available to implementation subclasses (via the
-// |mutex()| method).
+// object is thread-safe, with its state being protected by a single lock
+// |lock_|, which is also made available to implementation subclasses (via the
+// |lock()| method).
 class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
     : public base::RefCountedThreadSafe<Dispatcher> {
  public:
@@ -73,9 +73,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual Type GetType() const = 0;
 
   // These methods implement the various primitives named |Mojo...()|. These
-  // take |mutex_| and handle races with |Close()|. Then they call out to
-  // subclasses' |...ImplNoLock()| methods (still under |mutex_|), which
-  // actually implement the primitives.
+  // take |lock_| and handle races with |Close()|. Then they call out to
+  // subclasses' |...ImplNoLock()| methods (still under |lock_|), which actually
+  // implement the primitives.
   // NOTE(vtl): This puts a big lock around each dispatcher (i.e., handle), and
   // prevents the various |...ImplNoLock()|s from releasing the lock as soon as
   // possible. If this becomes an issue, we can rethink this.
@@ -221,100 +221,91 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual ~Dispatcher();
 
   // These are to be overridden by subclasses (if necessary). They are called
-  // exactly once (first |CancelAllAwakablesNoLock()|, then |CloseImplNoLock()|)
-  // when the dispatcher is being closed.
-  virtual void CancelAllAwakablesNoLock() MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-  virtual void CloseImplNoLock() MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-
+  // exactly once -- first |CancelAllAwakablesNoLock()|, then
+  // |CloseImplNoLock()|,
+  // when the dispatcher is being closed. They are called under |lock_|.
+  virtual void CancelAllAwakablesNoLock();
+  virtual void CloseImplNoLock();
   virtual scoped_refptr<Dispatcher>
-  CreateEquivalentDispatcherAndCloseImplNoLock()
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_) = 0;
+  CreateEquivalentDispatcherAndCloseImplNoLock() = 0;
 
   // These are to be overridden by subclasses (if necessary). They are never
-  // called after the dispatcher has been closed. See the descriptions of the
-  // methods without the "ImplNoLock" for more information.
+  // called after the dispatcher has been closed. They are called under |lock_|.
+  // See the descriptions of the methods without the "ImplNoLock" for more
+  // information.
   virtual MojoResult WriteMessageImplNoLock(
       UserPointer<const void> bytes,
       uint32_t num_bytes,
       std::vector<DispatcherTransport>* transports,
-      MojoWriteMessageFlags flags) MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+      MojoWriteMessageFlags flags);
   virtual MojoResult ReadMessageImplNoLock(UserPointer<void> bytes,
                                            UserPointer<uint32_t> num_bytes,
                                            DispatcherVector* dispatchers,
                                            uint32_t* num_dispatchers,
-                                           MojoReadMessageFlags flags)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+                                           MojoReadMessageFlags flags);
   virtual MojoResult WriteDataImplNoLock(UserPointer<const void> elements,
                                          UserPointer<uint32_t> num_bytes,
-                                         MojoWriteDataFlags flags)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+                                         MojoWriteDataFlags flags);
   virtual MojoResult BeginWriteDataImplNoLock(
       UserPointer<void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,
-      MojoWriteDataFlags flags) MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-  virtual MojoResult EndWriteDataImplNoLock(uint32_t num_bytes_written)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+      MojoWriteDataFlags flags);
+  virtual MojoResult EndWriteDataImplNoLock(uint32_t num_bytes_written);
   virtual MojoResult ReadDataImplNoLock(UserPointer<void> elements,
                                         UserPointer<uint32_t> num_bytes,
-                                        MojoReadDataFlags flags)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+                                        MojoReadDataFlags flags);
   virtual MojoResult BeginReadDataImplNoLock(
       UserPointer<const void*> buffer,
       UserPointer<uint32_t> buffer_num_bytes,
-      MojoReadDataFlags flags) MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-  virtual MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+      MojoReadDataFlags flags);
+  virtual MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read);
   virtual MojoResult DuplicateBufferHandleImplNoLock(
       UserPointer<const MojoDuplicateBufferHandleOptions> options,
-      scoped_refptr<Dispatcher>* new_dispatcher)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+      scoped_refptr<Dispatcher>* new_dispatcher);
   virtual MojoResult MapBufferImplNoLock(
       uint64_t offset,
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
-      scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const
-      MOJO_SHARED_LOCKS_REQUIRED(mutex_);
+      scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping);
+  virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const;
   virtual MojoResult AddAwakableImplNoLock(Awakable* awakable,
                                            MojoHandleSignals signals,
                                            uint32_t context,
-                                           HandleSignalsState* signals_state)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+                                           HandleSignalsState* signals_state);
   virtual void RemoveAwakableImplNoLock(Awakable* awakable,
-                                        HandleSignalsState* signals_state)
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+                                        HandleSignalsState* signals_state);
 
   // These implement the API used to serialize dispatchers to a |Channel|
   // (described below). They will only be called on a dispatcher that's attached
   // to and "owned" by a |MessageInTransit|. See the non-"impl" versions for
   // more information.
   //
-  // Note: |StartSerializeImplNoLock()| is actually called with |mutex_| NOT
+  // Note: |StartSerializeImplNoLock()| is actually called with |lock_| NOT
   // held, since the dispatcher should only be accessible to the calling thread.
-  // On Debug builds, |EndSerializeAndCloseImplNoLock()| is called with |mutex_|
-  // held, to satisfy any |mutex_.AssertHeld()| (e.g., in |CloseImplNoLock()| --
-  // and anything it calls); disentangling those assertions is
+  // On Debug builds, |EndSerializeAndCloseImplNoLock()| is called with |lock_|
+  // held, to satisfy any |lock_.AssertAcquired()| (e.g., in |CloseImplNoLock()|
+  // -- and anything it calls); disentangling those assertions is
   // difficult/fragile, and would weaken our general checking of invariants.
   //
   // TODO(vtl): Consider making these pure virtual once most things support
   // being passed over a message pipe.
   virtual void StartSerializeImplNoLock(Channel* channel,
                                         size_t* max_size,
-                                        size_t* max_platform_handles)
-      MOJO_NOT_THREAD_SAFE;
+                                        size_t* max_platform_handles);
   virtual bool EndSerializeAndCloseImplNoLock(
       Channel* channel,
       void* destination,
       size_t* actual_size,
-      embedder::PlatformHandleVector* platform_handles) MOJO_NOT_THREAD_SAFE;
+      embedder::PlatformHandleVector* platform_handles);
 
   // This should be overridden to return true if/when there's an ongoing
   // operation (e.g., two-phase read/writes on data pipes) that should prevent a
   // handle from being sent over a message pipe (with status "busy").
-  virtual bool IsBusyNoLock() const MOJO_SHARED_LOCKS_REQUIRED(mutex_);
+  virtual bool IsBusyNoLock() const;
 
-  Mutex& mutex() const MOJO_LOCK_RETURNED(mutex_) { return mutex_; }
+  // Available to subclasses. (Note: Returns a non-const reference, just like
+  // |base::AutoLock|'s constructor takes a non-const reference.)
+  base::Lock& lock() const { return lock_; }
 
  private:
   friend class DispatcherTransport;
@@ -323,28 +314,19 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // the dispatcher must not be closed already. (This is the "equivalent" of
   // |CreateEquivalentDispatcherAndCloseNoLock()|, for situations where the
   // dispatcher must be disposed of instead of "transferred".)
-  void CloseNoLock() MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  void CloseNoLock();
 
   // Creates an equivalent dispatcher -- representing the same resource as this
   // dispatcher -- and close (i.e., disable) this dispatcher. I.e., this
   // dispatcher will look as though it was closed, but the resource it
   // represents will be assigned to the new dispatcher. This must be called
   // under the dispatcher's lock.
-  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseNoLock()
-      MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseNoLock();
 
   // API to serialize dispatchers to a |Channel|, exposed to only
   // |TransportData| (via |TransportData|). They may only be called on a
   // dispatcher attached to a |MessageInTransit| (and in particular not in
   // |CoreImpl|'s handle table).
-  //
-  // TODO(vtl): The serialization API (and related implementation methods,
-  // including |DispatcherTransport|'s methods) is marked
-  // |MOJO_NOT_THREAD_SAFE|. This is because the threading requirements are
-  // somewhat complicated (e.g., |HandleTableAccess::TryStartTransport()| is
-  // really a try-lock function, amongst other things). We could/should do a
-  // more careful job annotating these methods.
-  // https://github.com/domokit/mojo/issues/322
   //
   // Starts the serialization. Returns (via the two "out" parameters) the
   // maximum amount of space that may be needed to serialize this dispatcher to
@@ -358,7 +340,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // dispatcher cannot be serialized to the given |Channel|).
   void StartSerialize(Channel* channel,
                       size_t* max_size,
-                      size_t* max_platform_handles) MOJO_NOT_THREAD_SAFE;
+                      size_t* max_platform_handles);
   // Completes the serialization of this dispatcher to the given |Channel| and
   // closes it. (This call will always follow an earlier call to
   // |StartSerialize()|, with the same |Channel|.) This does so by writing to
@@ -373,13 +355,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   bool EndSerializeAndClose(Channel* channel,
                             void* destination,
                             size_t* actual_size,
-                            embedder::PlatformHandleVector* platform_handles)
-      MOJO_NOT_THREAD_SAFE;
+                            embedder::PlatformHandleVector* platform_handles);
 
   // This protects the following members as well as any state added by
   // subclasses.
-  mutable Mutex mutex_;
-  bool is_closed_ MOJO_GUARDED_BY(mutex_);
+  mutable base::Lock lock_;
+  bool is_closed_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };
@@ -394,15 +375,12 @@ class MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport {
  public:
   DispatcherTransport() : dispatcher_(nullptr) {}
 
-  void End() MOJO_NOT_THREAD_SAFE;
+  void End();
 
   Dispatcher::Type GetType() const { return dispatcher_->GetType(); }
-  bool IsBusy() const MOJO_NOT_THREAD_SAFE {
-    return dispatcher_->IsBusyNoLock();
-  }
-  void Close() MOJO_NOT_THREAD_SAFE { dispatcher_->CloseNoLock(); }
-  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndClose()
-      MOJO_NOT_THREAD_SAFE {
+  bool IsBusy() const { return dispatcher_->IsBusyNoLock(); }
+  void Close() { dispatcher_->CloseNoLock(); }
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndClose() {
     return dispatcher_->CreateEquivalentDispatcherAndCloseNoLock();
   }
 

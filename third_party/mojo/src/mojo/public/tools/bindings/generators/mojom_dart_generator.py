@@ -9,7 +9,6 @@ import re
 import shutil
 import sys
 
-import mojom.fileutil as fileutil
 import mojom.generate.constant_resolver as resolver
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
@@ -422,25 +421,20 @@ class Generator(generator.Generator):
   def GenerateFiles(self, args):
     elements = self.module.namespace.split('.')
     elements.append("%s.dart" % self.module.name)
-
-    lib_module = self.GenerateLibModule(args)
-    pkg_path = os.path.join("dart-pkg", "mojom/lib", *elements)
-    self.Write(lib_module, pkg_path)
-
-    gen_path = os.path.join("dart-gen", "mojom/lib", *elements)
-    full_gen_path = os.path.join(self.output_dir, gen_path)
-    self.Write(lib_module, gen_path)
-
+    path = os.path.join("dart-pkg", "mojom/lib", *elements)
+    self.Write(self.GenerateLibModule(args), path)
+    path = os.path.join("dart-gen", "mojom/lib", *elements)
+    self.Write(self.GenerateLibModule(args), path)
     link = self.MatchMojomFilePath("%s.dart" % self.module.name)
-    full_link_path = os.path.join(self.output_dir, link)
-    if os.path.exists(full_link_path):
-      os.unlink(full_link_path)
-    fileutil.EnsureDirectoryExists(os.path.dirname(full_link_path))
+    if os.path.exists(os.path.join(self.output_dir, link)):
+      os.unlink(os.path.join(self.output_dir, link))
     try:
       if sys.platform == "win32":
-        shutil.copy(full_gen_path, full_link_path)
+        shutil.copy(os.path.join(self.output_dir, path),
+                    os.path.join(self.output_dir, link))
       else:
-        os.symlink(full_gen_path, full_link_path)
+        os.symlink(os.path.join(self.output_dir, path),
+                   os.path.join(self.output_dir, link))
     except OSError as e:
       # Errno 17 is file already exists. If the link fails because file already
       # exists assume another instance of this script tried to create the same

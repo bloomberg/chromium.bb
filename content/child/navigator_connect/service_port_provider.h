@@ -11,7 +11,6 @@
 #include "content/child/worker_task_runner.h"
 #include "content/common/service_port_service.mojom.h"
 #include "third_party/WebKit/public/platform/modules/navigator_services/WebServicePortProvider.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 class GURL;
 

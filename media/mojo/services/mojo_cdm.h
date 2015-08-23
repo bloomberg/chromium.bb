@@ -14,7 +14,6 @@
 #include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/services/mojo_type_trait.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 class ServiceProvider;

@@ -169,10 +169,12 @@ void PresentationServiceImpl::Bind(
     mojo::InterfaceRequest<presentation::PresentationService> request) {
   binding_.reset(new mojo::Binding<presentation::PresentationService>(
       this, request.Pass()));
-  binding_->set_connection_error_handler([this]() {
-    DVLOG(1) << "Connection error";
-    delete this;
-  });
+  binding_->set_error_handler(this);
+}
+
+void PresentationServiceImpl::OnConnectionError() {
+  DVLOG(1) << "OnConnectionError";
+  delete this;
 }
 
 void PresentationServiceImpl::SetClient(

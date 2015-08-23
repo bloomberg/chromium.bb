@@ -89,7 +89,6 @@ mojo_edk_source_set("test_support_impl") {
 group("public_tests") {
   testonly = true
   deps = [
-    ":mojo_public_bindings_perftests",
     ":mojo_public_bindings_unittests",
     ":mojo_public_environment_unittests",
     ":mojo_public_system_perftests",
@@ -116,13 +115,6 @@ test("mojo_public_bindings_unittests") {
   deps = [
     ":run_all_unittests",
     "../../public/cpp/bindings/tests",
-  ]
-}
-
-test("mojo_public_bindings_perftests") {
-  deps = [
-    ":run_all_perftests",
-    "../../public/cpp/bindings/tests:perftests",
   ]
 }
 

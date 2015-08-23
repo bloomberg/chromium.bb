@@ -24,7 +24,6 @@
 #include "mojo/cc/context_provider_mojo.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace mandoline {
 namespace {

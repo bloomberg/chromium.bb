@@ -25,8 +25,9 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
   ~SimpleDispatcher() override;
 
   // To be called by subclasses when the state changes (so
-  // |GetHandleSignalsStateImplNoLock()| should be checked again).
-  void HandleSignalsStateChangedNoLock() MOJO_EXCLUSIVE_LOCKS_REQUIRED(mutex());
+  // |GetHandleSignalsStateImplNoLock()| should be checked again). Must be
+  // called under lock.
+  void HandleSignalsStateChangedNoLock();
 
   // |Dispatcher| protected methods:
   void CancelAllAwakablesNoLock() override;
@@ -38,7 +39,8 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
                                 HandleSignalsState* signals_state) override;
 
  private:
-  AwakableList awakable_list_ MOJO_GUARDED_BY(mutex());
+  // Protected by |lock()|:
+  AwakableList awakable_list_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(SimpleDispatcher);
 };

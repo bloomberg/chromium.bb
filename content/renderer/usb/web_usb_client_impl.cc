@@ -22,6 +22,7 @@
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceRequestOptions.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBError.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace content {

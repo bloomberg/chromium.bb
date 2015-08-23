@@ -177,14 +177,14 @@ MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
 }
 
 void SharedBufferDispatcher::CloseImplNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   DCHECK(shared_buffer_);
   shared_buffer_ = nullptr;
 }
 
 scoped_refptr<Dispatcher>
 SharedBufferDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   DCHECK(shared_buffer_);
   return CreateInternal(shared_buffer_.Pass());
 }
@@ -192,7 +192,7 @@ SharedBufferDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
 MojoResult SharedBufferDispatcher::DuplicateBufferHandleImplNoLock(
     UserPointer<const MojoDuplicateBufferHandleOptions> options,
     scoped_refptr<Dispatcher>* new_dispatcher) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
 
   MojoDuplicateBufferHandleOptions validated_options;
   MojoResult result = ValidateDuplicateOptions(options, &validated_options);
@@ -209,7 +209,7 @@ MojoResult SharedBufferDispatcher::MapBufferImplNoLock(
     uint64_t num_bytes,
     MojoMapBufferFlags flags,
     scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping) {
-  mutex().AssertHeld();
+  lock().AssertAcquired();
   DCHECK(shared_buffer_);
 
   if (offset > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))

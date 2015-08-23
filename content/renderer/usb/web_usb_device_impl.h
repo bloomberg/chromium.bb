@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDevice.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceInfo.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBError.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace mojo {
 class Shell;
@@ -21,7 +22,7 @@ class Shell;
 
 namespace content {
 
-class WebUSBDeviceImpl : public blink::WebUSBDevice {
+class WebUSBDeviceImpl : public blink::WebUSBDevice, public mojo::ErrorHandler {
  public:
   WebUSBDeviceImpl(device::usb::DeviceManagerPtr device_manager,
                    const blink::WebUSBDeviceInfo& device_info);
@@ -60,6 +61,9 @@ class WebUSBDeviceImpl : public blink::WebUSBDevice {
                 unsigned int timeout,
                 blink::WebUSBDeviceBulkTransferCallbacks* callbacks) override;
   void reset(blink::WebUSBDeviceResetCallbacks* callbacks) override;
+
+  // mojo::ErrorHandler implementation:
+  void OnConnectionError() override;
 
   device::usb::DeviceManagerPtr device_manager_;
 

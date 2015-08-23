@@ -7,6 +7,7 @@
 
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -101,8 +102,9 @@ class Binding {
   // Tears down the binding, closing the message pipe and leaving the interface
   // implementation unbound.
   ~Binding() {
-    if (internal_router_)
+    if (internal_router_) {
       Close();
+    }
   }
 
   // Completes a binding that was constructed with only an interface
@@ -183,6 +185,19 @@ class Binding {
   // the bound message pipe.
   void set_connection_error_handler(const Closure& error_handler) {
     connection_error_handler_ = error_handler;
+  }
+
+  // Similar to the method above but uses the ErrorHandler interface instead of
+  // a callback.
+  // NOTE: Deprecated. Please use the method above.
+  // TODO(yzshen): Remove this method once all callsites are converted.
+  void set_error_handler(ErrorHandler* error_handler) {
+    if (error_handler) {
+      set_connection_error_handler(
+          [error_handler]() { error_handler->OnConnectionError(); });
+    } else {
+      set_connection_error_handler(Closure());
+    }
   }
 
   // Returns the interface implementation that was previously specified. Caller

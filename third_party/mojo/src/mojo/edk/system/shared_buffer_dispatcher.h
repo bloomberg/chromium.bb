@@ -93,17 +93,14 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final
       scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping) override;
   void StartSerializeImplNoLock(Channel* channel,
                                 size_t* max_size,
-                                size_t* max_platform_handles) override
-      MOJO_NOT_THREAD_SAFE;
+                                size_t* max_platform_handles) override;
   bool EndSerializeAndCloseImplNoLock(
       Channel* channel,
       void* destination,
       size_t* actual_size,
-      embedder::PlatformHandleVector* platform_handles) override
-      MOJO_NOT_THREAD_SAFE;
+      embedder::PlatformHandleVector* platform_handles) override;
 
-  scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer_
-      MOJO_GUARDED_BY(mutex());
+  scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcher);
 };
