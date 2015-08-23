@@ -807,7 +807,6 @@ WrenchMenu::WrenchMenu(Browser* browser, int run_flags)
       bookmark_menu_(nullptr),
       feedback_menu_item_(nullptr),
       screenshot_menu_item_(nullptr),
-      extension_toolbar_(nullptr),
       run_flags_(run_flags) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
@@ -1137,7 +1136,6 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
         scoped_ptr<ExtensionToolbarMenuView> extension_toolbar(
             new ExtensionToolbarMenuView(browser_, this));
-        extension_toolbar_ = extension_toolbar.get();
         if (extension_toolbar->ShouldShow())
           item->AddChildView(extension_toolbar.release());
         else

@@ -178,8 +178,6 @@ class ToolbarView : public views::AccessiblePaneView,
     kVertSpacing = 5,
   };
 
-  WrenchMenu* wrench_menu_for_testing() { return wrench_menu_.get(); }
-
  protected:
   // AccessiblePaneView:
   bool SetPaneFocusAndFocusDefault() override;
