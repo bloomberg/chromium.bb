@@ -1743,6 +1743,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             getContentViewCore().getContainerView().addView(
                     mSadTabView, new FrameLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+            for (TabObserver observer : mObservers) observer.onContentChanged(this);
         }
         FullscreenManager fullscreenManager = getFullscreenManager();
         if (fullscreenManager != null) {
@@ -1754,7 +1755,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * Removes the sad tab view if present.
      */
     protected void removeSadTabIfPresent() {
-        if (isShowingSadTab()) getContentViewCore().getContainerView().removeView(mSadTabView);
+        if (isShowingSadTab()) {
+            getContentViewCore().getContainerView().removeView(mSadTabView);
+            for (TabObserver observer : mObservers) observer.onContentChanged(this);
+        }
         mSadTabView = null;
     }
 
