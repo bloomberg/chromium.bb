@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("renderer") {
-  output_name = "web_cache_renderer"
+source_set("renderer") {
   sources = [
     "web_cache_memory_dump_provider.cc",
     "web_cache_memory_dump_provider.h",
