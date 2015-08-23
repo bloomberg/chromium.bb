@@ -2,18 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-assert(!is_ios)
+if (!is_ios) {
+  static_library("renderer") {
+    output_name = "visitedlink_renderer"
+    sources = [
+      "visitedlink_slave.cc",
+      "visitedlink_slave.h",
+    ]
 
-source_set("renderer") {
-  sources = [
-    "visitedlink_slave.cc",
-    "visitedlink_slave.h",
-  ]
-
-  deps = [
-    "//base",
-    "//content/public/common",
-    "//content/public/renderer",
-    "//third_party/WebKit/public:blink",
-  ]
+    deps = [
+      "//base",
+      "//content/public/common",
+      "//content/public/renderer",
+      "//third_party/WebKit/public:blink",
+    ]
+  }
 }

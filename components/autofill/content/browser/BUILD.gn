@@ -70,7 +70,6 @@ source_set("unit_tests") {
     "content_autofill_driver_unittest.cc",
     "request_autocomplete_manager_unittest.cc",
     "wallet/full_wallet_unittest.cc",
-    "wallet/real_pan_wallet_client_unittest.cc",
     "wallet/wallet_address_unittest.cc",
     "wallet/wallet_service_url_unittest.cc",
   ]
@@ -87,7 +86,6 @@ source_set("unit_tests") {
     "//content/public/common",
     "//content/test:test_support",
     "//google_apis",
-    "//google_apis:test_support",
     "//ipc:test_support",
     "//net",
     "//net:test_support",

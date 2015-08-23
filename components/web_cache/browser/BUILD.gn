@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("browser") {
+static_library("browser") {
+  output_name = "web_cache_browser"
   sources = [
     "web_cache_manager.cc",
     "web_cache_manager.h",
@@ -16,18 +17,5 @@ source_set("browser") {
     "//components/web_cache/common",
     "//content/public/browser",
     "//third_party/WebKit/public:blink",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "web_cache_manager_unittest.cc",
-  ]
-  deps = [
-    ":browser",
-    "//base",
-    "//content/test:test_support",
-    "//testing/gtest",
   ]
 }

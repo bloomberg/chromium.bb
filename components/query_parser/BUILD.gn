@@ -16,15 +16,3 @@ source_set("query_parser") {
     "//third_party/icu",
   ]
 }
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "query_parser_unittest.cc",
-    "snippet_unittest.cc",
-  ]
-  deps = [
-    ":query_parser",
-    "//testing/gtest",
-  ]
-}

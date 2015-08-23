@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("common") {
+static_library("common") {
+  output_name = "visitedlink_common"
   sources = [
     "visitedlink_common.cc",
     "visitedlink_common.h",

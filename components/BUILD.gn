@@ -346,7 +346,6 @@ test("components_unittests") {
     "//components/precache/content:unit_tests",
     "//components/precache/core:unit_tests",
     "//components/proxy_config:unit_tests",
-    "//components/query_parser:unit_tests",
     "//components/rappor:unit_tests",
     "//components/search:unit_tests",
     "//components/search_engines:unit_tests",
@@ -450,8 +449,6 @@ test("components_unittests") {
       "//components/network_hints/renderer:unit_tests",
       "//components/safe_json:unit_tests",
       "//components/scheduler:unit_tests",
-      "//components/visitedlink/test:unit_tests",
-      "//components/web_cache/browser:unit_tests",
     ]
   }
 
