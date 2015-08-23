@@ -25,3 +25,5 @@ MultiUserWindowManagerChromeOSTest.FullUserSwitchAnimationTests
 
 # http://crbug.com/523600
 ClientCertStoreChromeOSTest.Filter
+ClientCertStoreChromeOSTest.RequestsAfterNSSInitSucceed
+ClientCertStoreChromeOSTest.CertRequestMatching
