@@ -55,13 +55,6 @@ v8::Local<v8::Value> ScriptValue::v8Value() const
     return m_value->newLocal(isolate());
 }
 
-v8::Local<v8::Value> ScriptValue::v8ValueUnsafe() const
-{
-    if (isEmpty())
-        return v8::Local<v8::Value>();
-    return m_value->newLocal(isolate());
-}
-
 v8::Local<v8::Value> ScriptValue::v8ValueFor(ScriptState* targetScriptState) const
 {
     if (isEmpty())

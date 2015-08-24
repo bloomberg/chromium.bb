@@ -169,8 +169,6 @@ public:
     }
 
     v8::Local<v8::Value> v8Value() const;
-    // TODO(bashi): Remove v8ValueUnsafe().
-    v8::Local<v8::Value> v8ValueUnsafe() const;
     // Returns v8Value() if a given ScriptState is the same as the
     // ScriptState which is associated with this ScriptValue. Otherwise
     // this "clones" the v8 value and returns it.
