@@ -1034,21 +1034,12 @@ class DeviceUtils(object):
       2nd element: a list of stale files under device_path, or [] when
         track_stale == False
     """
-    real_host_path = os.path.realpath(host_path)
     try:
-      real_device_path = self.RunShellCommand(
-          ['realpath', device_path], single_line=True, check_return=True)
-    except device_errors.CommandFailedError:
-      real_device_path = None
-    if not real_device_path:
-      return ([(host_path, device_path)], [])
-
-    try:
-      host_checksums = md5sum.CalculateHostMd5Sums([real_host_path])
-      interesting_device_paths = [real_device_path]
-      if not track_stale and os.path.isdir(real_host_path):
+      host_checksums = md5sum.CalculateHostMd5Sums([host_path])
+      interesting_device_paths = [device_path]
+      if not track_stale and os.path.isdir(host_path):
         interesting_device_paths = [
-            posixpath.join(real_device_path, os.path.relpath(p, real_host_path))
+            posixpath.join(device_path, os.path.relpath(p, host_path))
             for p in host_checksums.keys()]
       device_checksums = md5sum.CalculateDeviceMd5Sums(
           interesting_device_paths, self)
@@ -1057,8 +1048,8 @@ class DeviceUtils(object):
       return ([(host_path, device_path)], [])
 
     if os.path.isfile(host_path):
-      host_checksum = host_checksums.get(real_host_path)
-      device_checksum = device_checksums.get(real_device_path)
+      host_checksum = host_checksums.get(host_path)
+      device_checksum = device_checksums.get(device_path)
       if host_checksum != device_checksum:
         return ([(host_path, device_path)], [])
       else:
@@ -1066,8 +1057,8 @@ class DeviceUtils(object):
     else:
       to_push = []
       for host_abs_path, host_checksum in host_checksums.iteritems():
-        device_abs_path = '%s/%s' % (
-            real_device_path, os.path.relpath(host_abs_path, real_host_path))
+        device_abs_path = posixpath.join(
+            device_path, os.path.relpath(host_abs_path, host_path))
         device_checksum = device_checksums.pop(device_abs_path, None)
         if device_checksum != host_checksum:
           to_push.append((host_abs_path, device_abs_path))
