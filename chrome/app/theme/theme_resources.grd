@@ -989,8 +989,6 @@
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_CAPTURE" file="common/snapshot_wide.png" />
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_RECYCLE" file="common/discard_wide.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_WALLET_ICON" file="wallet.png" />
-      <structure type="chrome_scaled_image" name="IDR_WALLET_LOGO" file="common/wallet_logo.png" />
       <structure type="chrome_scaled_image" name="IDR_WARNING" file="common/alert_small.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_CENTER" file="mac/website_settings_tabstrip_center.png" />
