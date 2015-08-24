@@ -11,6 +11,7 @@
 #include <cstring>
 #include <new>
 #include <climits>
+#include <cmath>
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
@@ -205,6 +206,9 @@ long mkvparser::UnserializeFloat(IMkvReader* pReader, long long pos,
 
     result = d;
   }
+
+  if (std::isinf(result) || std::isnan(result))
+    return E_FILE_FORMAT_INVALID;
 
   return 0;
 }
