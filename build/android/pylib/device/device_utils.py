@@ -1013,14 +1013,12 @@ class DeviceUtils(object):
       all_changed_files += changed_files
       all_stale_files += stale_files
 
-    if delete_device_stale:
+    if delete_device_stale and all_stale_files:
       self.RunShellCommand(['rm', '-f'] + all_stale_files,
                              check_return=True)
 
-    if not all_changed_files:
-      return
-
-    self._PushFilesImpl(host_device_tuples, all_changed_files)
+    if all_changed_files:
+      self._PushFilesImpl(host_device_tuples, all_changed_files)
 
   def _GetChangedAndStaleFiles(self, host_path, device_path, track_stale=False):
     """Get files to push and delete
