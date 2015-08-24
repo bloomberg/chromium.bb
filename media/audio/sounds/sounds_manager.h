@@ -42,6 +42,10 @@ class MEDIA_EXPORT SoundsManager : public base::NonThreadSafe {
   // was not properly initialized.
   virtual bool Play(SoundKey key) = 0;
 
+  // Stops playing sound identified by |key|, returns false if SoundsManager
+  // was not properly initialized.
+  virtual bool Stop(SoundKey key) = 0;
+
   // Returns duration of the sound identified by |key|. If SoundsManager
   // was not properly initialized or |key| was not registered, this
   // method returns an empty value.

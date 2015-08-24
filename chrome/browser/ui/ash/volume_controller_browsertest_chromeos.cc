@@ -39,6 +39,10 @@ class SoundsManagerTestImpl : public media::SoundsManager {
     return true;
   }
 
+  bool Stop(SoundKey key) override {
+    return true;
+  }
+
   base::TimeDelta GetDuration(SoundKey /* key */) override {
     return base::TimeDelta();
   }
