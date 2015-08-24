@@ -203,6 +203,7 @@ class DromaeoJslibAttrPrototype(_DromaeoBenchmark):
     return 'dromaeo.jslibattrprototype'
 
 
+@benchmark.Disabled('win')  # crbug.com/523276
 class DromaeoJslibEventJquery(_DromaeoBenchmark):
   """Dromaeo JSLib event jquery JavaScript benchmark.
 
