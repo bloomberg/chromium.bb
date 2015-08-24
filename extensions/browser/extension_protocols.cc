@@ -557,10 +557,11 @@ net::HttpResponseHeaders* BuildHttpHeaders(
   return new net::HttpResponseHeaders(raw_headers);
 }
 
-net::URLRequestJobFactory::ProtocolHandler* CreateExtensionProtocolHandler(
-    bool is_incognito,
-    extensions::InfoMap* extension_info_map) {
-  return new ExtensionProtocolHandler(is_incognito, extension_info_map);
+scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+CreateExtensionProtocolHandler(bool is_incognito,
+                               extensions::InfoMap* extension_info_map) {
+  return make_scoped_ptr(
+      new ExtensionProtocolHandler(is_incognito, extension_info_map));
 }
 
 }  // namespace extensions

@@ -415,12 +415,11 @@ URLDataManagerIOSBackend::~URLDataManagerIOSBackend() {
 }
 
 // static
-net::URLRequestJobFactory::ProtocolHandler*
-URLDataManagerIOSBackend::CreateProtocolHandler(
-    BrowserState* browser_state) {
+scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+URLDataManagerIOSBackend::CreateProtocolHandler(BrowserState* browser_state) {
   DCHECK(browser_state);
-  return new ChromeProtocolHandler(browser_state,
-                                   browser_state->IsOffTheRecord());
+  return make_scoped_ptr(new ChromeProtocolHandler(
+      browser_state, browser_state->IsOffTheRecord()));
 }
 
 void URLDataManagerIOSBackend::AddDataSource(URLDataSourceIOSImpl* source) {

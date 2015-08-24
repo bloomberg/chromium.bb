@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -527,7 +528,8 @@ class ResourceLoaderTest : public testing::Test,
     }
   }
 
-  virtual net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler() {
+  virtual scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+  CreateProtocolHandler() {
     return net::URLRequestTestJob::CreateProtocolHandler();
   }
 
@@ -615,8 +617,9 @@ class ResourceLoaderTest : public testing::Test,
 
 class ClientCertResourceLoaderTest : public ResourceLoaderTest {
  protected:
-  net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler() override {
-    return new MockClientCertJobProtocolHandler;
+  scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> CreateProtocolHandler()
+      override {
+    return make_scoped_ptr(new MockClientCertJobProtocolHandler);
   }
 };
 

@@ -57,7 +57,7 @@ class StreamURLRequestJobTest : public testing::Test {
     registry_.reset(new StreamRegistry());
 
     url_request_job_factory_.SetProtocolHandler(
-        "blob", new MockProtocolHandler(registry_.get()));
+        "blob", make_scoped_ptr(new MockProtocolHandler(registry_.get())));
     url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 

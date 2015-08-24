@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/public/browser/url_data_source.h"
@@ -43,7 +44,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
 
   // Invoked to create the protocol handler for chrome://. |is_incognito| should
   // be set for incognito profiles. Called on the UI thread.
-  CONTENT_EXPORT static net::URLRequestJobFactory::ProtocolHandler*
+  CONTENT_EXPORT static scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
   CreateProtocolHandler(content::ResourceContext* resource_context,
                         bool is_incognito,
                         AppCacheServiceImpl* appcache_service,

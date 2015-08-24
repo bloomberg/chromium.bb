@@ -58,7 +58,7 @@ class SetResponseURLRequestContext: public net::TestURLRequestContext {
     net::URLRequestJobFactoryImpl* factory =
         new net::URLRequestJobFactoryImpl();
     factory->SetProtocolHandler(
-        "https", new FakeProtocolHandler(headers, response));
+        "https", make_scoped_ptr(new FakeProtocolHandler(headers, response)));
     context_storage_.set_job_factory(factory);
   }
 };

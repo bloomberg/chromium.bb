@@ -150,8 +150,8 @@ class BlobURLRequestJobTest : public testing::Test {
     disk_cache_entry_ = CreateDiskCacheEntry(
         disk_cache_backend_.get(), kTestDiskCacheKey, kTestDiskCacheData);
 
-    url_request_job_factory_.SetProtocolHandler("blob",
-                                                new MockProtocolHandler(this));
+    url_request_job_factory_.SetProtocolHandler(
+        "blob", make_scoped_ptr(new MockProtocolHandler(this)));
     url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 

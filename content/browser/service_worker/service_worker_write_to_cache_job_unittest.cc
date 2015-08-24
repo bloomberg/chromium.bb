@@ -280,8 +280,8 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     url_request_context_.reset(new net::URLRequestContext);
     mock_protocol_handler_ = new MockHttpProtocolHandler(&resource_context_);
     url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
-    url_request_job_factory_->SetProtocolHandler("https",
-                                                 mock_protocol_handler_);
+    url_request_job_factory_->SetProtocolHandler(
+        "https", make_scoped_ptr(mock_protocol_handler_));
     url_request_context_->set_job_factory(url_request_job_factory_.get());
 
     request_ = url_request_context_->CreateRequest(

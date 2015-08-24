@@ -39,8 +39,8 @@ class URLDataManagerIOSBackend : public base::SupportsUserData::Data {
 
   // Invoked to create the protocol handler for chrome://. |is_incognito| should
   // be set for incognito browser states. Called on the UI thread.
-  static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
-      BrowserState* browser_state);
+  static scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+  CreateProtocolHandler(BrowserState* browser_state);
 
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(URLDataSourceIOSImpl* source);

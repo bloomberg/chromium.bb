@@ -456,9 +456,11 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
 
   net::URLRequestJobFactoryImpl* job_factory =
       new net::URLRequestJobFactoryImpl;
-  job_factory->SetProtocolHandler("data", new net::DataProtocolHandler);
   job_factory->SetProtocolHandler(
-      "file", new net::FileProtocolHandler(file_thread_->task_runner()));
+      "data", make_scoped_ptr(new net::DataProtocolHandler));
+  job_factory->SetProtocolHandler(
+      "file", make_scoped_ptr(
+                  new net::FileProtocolHandler(file_thread_->task_runner())));
   main_context_->set_job_factory(job_factory);
 
   main_context_->set_net_log(net_log_.get());

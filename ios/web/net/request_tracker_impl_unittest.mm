@@ -224,7 +224,7 @@ class RequestTrackerTest : public PlatformTest {
   net::TestJobInterceptor* AddInterceptorToRequest(size_t i) {
     // |interceptor| will be deleted from |job_factory_|'s destructor.
     net::TestJobInterceptor* protocol_handler = new net::TestJobInterceptor();
-    job_factory_.SetProtocolHandler("http", protocol_handler);
+    job_factory_.SetProtocolHandler("http", make_scoped_ptr(protocol_handler));
     contexts_[i]->set_job_factory(&job_factory_);
     return protocol_handler;
   }

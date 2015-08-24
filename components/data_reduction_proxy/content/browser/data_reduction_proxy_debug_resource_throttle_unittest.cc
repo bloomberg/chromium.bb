@@ -59,10 +59,8 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
   DataReductionProxyDebugResourceThrottleTest() : context_(true) {
     context_.Init();
 
-    // The |test_job_factory_| takes ownership of the interceptor.
-    test_job_interceptor_ = new net::TestJobInterceptor();
-    EXPECT_TRUE(test_job_factory_.SetProtocolHandler(url::kHttpScheme,
-                                                     test_job_interceptor_));
+    EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
+        url::kHttpScheme, make_scoped_ptr(new net::TestJobInterceptor())));
 
     context_.set_job_factory(&test_job_factory_);
 
@@ -108,8 +106,6 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
   base::MessageLoop message_loop_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
-  // |test_job_interceptor_| is owned by |test_job_factory_|.
-  net::TestJobInterceptor* test_job_interceptor_;
   net::URLRequestJobFactoryImpl test_job_factory_;
 
   net::ProxyConfig proxy_config_;

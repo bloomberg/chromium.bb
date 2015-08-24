@@ -110,8 +110,10 @@ class ProtocolHandlerUtilTest : public testing::Test,
  public:
   ProtocolHandlerUtilTest() : request_context_(new TestURLRequestContext) {
     // Ownership of the protocol handlers is transferred to the factory.
-    job_factory_.SetProtocolHandler("http", new NetProtocolHandler);
-    job_factory_.SetProtocolHandler("data", new DataProtocolHandler);
+    job_factory_.SetProtocolHandler("http",
+                                    make_scoped_ptr(new NetProtocolHandler));
+    job_factory_.SetProtocolHandler("data",
+                                    make_scoped_ptr(new DataProtocolHandler));
     request_context_->set_job_factory(&job_factory_);
   }
 

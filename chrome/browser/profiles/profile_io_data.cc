@@ -741,7 +741,7 @@ void ProfileIOData::InstallProtocolHandlers(
        it != protocol_handlers->end();
        ++it) {
     bool set_protocol = job_factory->SetProtocolHandler(
-        it->first, it->second.release());
+        it->first, make_scoped_ptr(it->second.release()));
     DCHECK(set_protocol);
   }
   protocol_handlers->clear();
@@ -1160,10 +1160,10 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   // ProfileIOData::IsHandledProtocol().
   bool set_protocol = job_factory->SetProtocolHandler(
       url::kFileScheme,
-      new net::FileProtocolHandler(
-          content::BrowserThread::GetBlockingPool()->
-              GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+      make_scoped_ptr(new net::FileProtocolHandler(
+          content::BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
   DCHECK(set_protocol);
 
 #if defined(ENABLE_EXTENSIONS)
@@ -1181,13 +1181,14 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   DCHECK(set_protocol);
 #endif
   set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, new net::DataProtocolHandler());
+      url::kDataScheme, make_scoped_ptr(new net::DataProtocolHandler()));
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS)
   if (profile_params_) {
     set_protocol = job_factory->SetProtocolHandler(
         content::kExternalFileScheme,
-        new chromeos::ExternalFileProtocolHandler(profile_params_->profile));
+        make_scoped_ptr(new chromeos::ExternalFileProtocolHandler(
+            profile_params_->profile)));
     DCHECK(set_protocol);
   }
 #endif  // defined(OS_CHROMEOS)
@@ -1195,18 +1196,19 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   set_protocol = job_factory->SetProtocolHandler(
       url::kContentScheme,
       content::ContentProtocolHandler::Create(
-          content::BrowserThread::GetBlockingPool()->
-              GetTaskRunnerWithShutdownBehavior(
+          content::BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
 #endif
 
-  job_factory->SetProtocolHandler(url::kAboutScheme,
-                                  new about_handler::AboutProtocolHandler());
+  job_factory->SetProtocolHandler(
+      url::kAboutScheme,
+      make_scoped_ptr(new about_handler::AboutProtocolHandler()));
 #if !defined(DISABLE_FTP_SUPPORT)
   DCHECK(ftp_transaction_factory);
   job_factory->SetProtocolHandler(
       url::kFtpScheme,
-      new net::FtpProtocolHandler(ftp_transaction_factory));
+      make_scoped_ptr(new net::FtpProtocolHandler(ftp_transaction_factory)));
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
 #if defined(DEBUG_DEVTOOLS)

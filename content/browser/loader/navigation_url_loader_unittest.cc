@@ -165,8 +165,9 @@ class NavigationURLLoaderTest : public testing::Test {
     job_factory_.SetProtocolHandler(
         "test", net::URLRequestTestJob::CreateProtocolHandler());
     job_factory_.SetProtocolHandler(
-        "blob", new StreamProtocolHandler(
-            StreamContext::GetFor(browser_context_.get())->registry()));
+        "blob",
+        make_scoped_ptr(new StreamProtocolHandler(
+            StreamContext::GetFor(browser_context_.get())->registry())));
     request_context->set_job_factory(&job_factory_);
 
     // NavigationURLLoader is only used for browser-side navigations.

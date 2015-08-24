@@ -163,9 +163,8 @@ class IOThread : public base::Thread {
     scoped_ptr<net::URLRequestJobFactoryImpl> factory(
         new net::URLRequestJobFactoryImpl());
     factory->SetProtocolHandler(
-        "http",
-        new MockHttpServerJobFactory(
-            make_scoped_ptr(new AppCacheInterceptor())));
+        "http", make_scoped_ptr(new MockHttpServerJobFactory(
+                    make_scoped_ptr(new AppCacheInterceptor()))));
     job_factory_ = factory.Pass();
     request_context_.reset(new net::TestURLRequestContext());
     request_context_->set_job_factory(job_factory_.get());

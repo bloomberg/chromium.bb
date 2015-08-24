@@ -540,15 +540,15 @@ URLDataManagerBackend::~URLDataManagerBackend() {
 }
 
 // static
-net::URLRequestJobFactory::ProtocolHandler*
+scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
 URLDataManagerBackend::CreateProtocolHandler(
     content::ResourceContext* resource_context,
     bool is_incognito,
     AppCacheServiceImpl* appcache_service,
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK(resource_context);
-  return new ChromeProtocolHandler(
-      resource_context, is_incognito, appcache_service, blob_storage_context);
+  return make_scoped_ptr(new ChromeProtocolHandler(
+      resource_context, is_incognito, appcache_service, blob_storage_context));
 }
 
 void URLDataManagerBackend::AddDataSource(

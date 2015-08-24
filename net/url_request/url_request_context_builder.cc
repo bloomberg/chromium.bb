@@ -409,12 +409,14 @@ URLRequestContext* URLRequestContextBuilder::Build() {
 
   URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
   if (data_enabled_)
-    job_factory->SetProtocolHandler("data", new DataProtocolHandler);
+    job_factory->SetProtocolHandler("data",
+                                    make_scoped_ptr(new DataProtocolHandler));
 
 #if !defined(DISABLE_FILE_SUPPORT)
   if (file_enabled_) {
     job_factory->SetProtocolHandler(
-        "file", new FileProtocolHandler(context->GetFileTaskRunner()));
+        "file",
+        make_scoped_ptr(new FileProtocolHandler(context->GetFileTaskRunner())));
   }
 #endif  // !defined(DISABLE_FILE_SUPPORT)
 
@@ -422,8 +424,9 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   if (ftp_enabled_) {
     ftp_transaction_factory_.reset(
         new FtpNetworkLayer(context->host_resolver()));
-    job_factory->SetProtocolHandler("ftp",
-        new FtpProtocolHandler(ftp_transaction_factory_.get()));
+    job_factory->SetProtocolHandler(
+        "ftp", make_scoped_ptr(
+                   new FtpProtocolHandler(ftp_transaction_factory_.get())));
   }
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 

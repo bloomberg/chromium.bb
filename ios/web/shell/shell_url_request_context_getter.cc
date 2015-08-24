@@ -141,8 +141,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
-    bool set_protocol =
-        job_factory->SetProtocolHandler("data", new net::DataProtocolHandler);
+    bool set_protocol = job_factory->SetProtocolHandler(
+        "data", make_scoped_ptr(new net::DataProtocolHandler));
     DCHECK(set_protocol);
 
     storage_->set_job_factory(job_factory.release());

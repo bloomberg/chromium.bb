@@ -26,7 +26,7 @@ class AwURLRequestJobFactory : public net::URLRequestJobFactory {
   ~AwURLRequestJobFactory() override;
 
   bool SetProtocolHandler(const std::string& scheme,
-                          ProtocolHandler* protocol_handler);
+                          scoped_ptr<ProtocolHandler> protocol_handler);
 
   // net::URLRequestJobFactory implementation.
   net::URLRequestJob* MaybeCreateJobWithProtocolHandler(

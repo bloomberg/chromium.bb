@@ -43,9 +43,8 @@ class UrlDataManagerBackendTest : public testing::Test {
   UrlDataManagerBackendTest() {
     // URLRequestJobFactory takes ownership of the passed in ProtocolHandler.
     url_request_job_factory_.SetProtocolHandler(
-        "chrome",
-        URLDataManagerBackend::CreateProtocolHandler(
-            &resource_context_, false, nullptr, nullptr));
+        "chrome", URLDataManagerBackend::CreateProtocolHandler(
+                      &resource_context_, false, nullptr, nullptr));
     url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 

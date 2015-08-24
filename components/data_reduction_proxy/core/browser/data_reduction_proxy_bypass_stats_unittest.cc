@@ -64,8 +64,8 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
 
     // The |test_job_factory_| takes ownership of the interceptor.
     test_job_interceptor_ = new net::TestJobInterceptor();
-    EXPECT_TRUE(test_job_factory_.SetProtocolHandler(url::kHttpScheme,
-                                                     test_job_interceptor_));
+    EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
+        url::kHttpScheme, make_scoped_ptr(test_job_interceptor_)));
 
     context_.set_job_factory(&test_job_factory_);
 

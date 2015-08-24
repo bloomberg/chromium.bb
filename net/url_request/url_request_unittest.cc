@@ -666,10 +666,12 @@ class URLRequestTest : public PlatformTest {
   }
 
   virtual void SetUpFactory() {
-    job_factory_impl_->SetProtocolHandler("data", new DataProtocolHandler);
+    job_factory_impl_->SetProtocolHandler(
+        "data", make_scoped_ptr(new DataProtocolHandler));
 #if !defined(DISABLE_FILE_SUPPORT)
     job_factory_impl_->SetProtocolHandler(
-        "file", new FileProtocolHandler(base::ThreadTaskRunnerHandle::Get()));
+        "file", make_scoped_ptr(new FileProtocolHandler(
+                    base::ThreadTaskRunnerHandle::Get())));
 #endif
   }
 
@@ -685,8 +687,9 @@ class URLRequestTest : public PlatformTest {
   // Adds the TestJobInterceptor to the default context.
   TestJobInterceptor* AddTestInterceptor() {
     TestJobInterceptor* protocol_handler_ = new TestJobInterceptor();
-    job_factory_impl_->SetProtocolHandler("http", NULL);
-    job_factory_impl_->SetProtocolHandler("http", protocol_handler_);
+    job_factory_impl_->SetProtocolHandler("http", nullptr);
+    job_factory_impl_->SetProtocolHandler("http",
+                                          make_scoped_ptr(protocol_handler_));
     return protocol_handler_;
   }
 
@@ -9090,7 +9093,8 @@ class URLRequestTestFTP : public URLRequestTest {
   void SetUpFactory() override {
     // Add FTP support to the default URLRequestContext.
     job_factory_impl_->SetProtocolHandler(
-        "ftp", new FtpProtocolHandler(&ftp_transaction_factory_));
+        "ftp",
+        make_scoped_ptr(new FtpProtocolHandler(&ftp_transaction_factory_)));
   }
 
   std::string GetTestFileContents() {

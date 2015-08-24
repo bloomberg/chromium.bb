@@ -17,9 +17,9 @@ MockBlobURLRequestContext::MockBlobURLRequestContext(
     : blob_storage_context_(new storage::BlobStorageContext) {
   // Job factory owns the protocol handler.
   job_factory_.SetProtocolHandler(
-      "blob", new storage::BlobProtocolHandler(
+      "blob", make_scoped_ptr(new storage::BlobProtocolHandler(
                   blob_storage_context_.get(), file_system_context,
-                  base::ThreadTaskRunnerHandle::Get()));
+                  base::ThreadTaskRunnerHandle::Get())));
   set_job_factory(&job_factory_);
 }
 

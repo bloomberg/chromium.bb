@@ -52,7 +52,7 @@ void InstallProtocolHandlers(net::URLRequestJobFactoryImpl* job_factory,
        it != protocol_handlers->end();
        ++it) {
     bool set_protocol = job_factory->SetProtocolHandler(
-        it->first, it->second.release());
+        it->first, make_scoped_ptr(it->second.release()));
     DCHECK(set_protocol);
   }
   protocol_handlers->clear();
@@ -209,14 +209,14 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     // ShellContentBrowserClient::IsHandledURL().
     InstallProtocolHandlers(job_factory.get(), &protocol_handlers_);
     bool set_protocol = job_factory->SetProtocolHandler(
-        url::kDataScheme, new net::DataProtocolHandler);
+        url::kDataScheme, make_scoped_ptr(new net::DataProtocolHandler));
     DCHECK(set_protocol);
 #if !defined(DISABLE_FILE_SUPPORT)
     set_protocol = job_factory->SetProtocolHandler(
         url::kFileScheme,
-        new net::FileProtocolHandler(
+        make_scoped_ptr(new net::FileProtocolHandler(
             BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
     DCHECK(set_protocol);
 #endif
 

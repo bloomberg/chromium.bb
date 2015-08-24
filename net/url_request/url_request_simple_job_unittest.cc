@@ -105,10 +105,10 @@ class SimpleJobProtocolHandler :
                              kTestData);
   }
 
+  ~SimpleJobProtocolHandler() override {}
+
  private:
   scoped_refptr<base::TaskRunner> task_runner_;
-
-  ~SimpleJobProtocolHandler() override {}
 };
 
 class URLRequestSimpleJobTest : public ::testing::Test {
@@ -120,8 +120,8 @@ class URLRequestSimpleJobTest : public ::testing::Test {
             worker_pool_->GetSequenceToken(),
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
         context_(true) {
-    job_factory_.SetProtocolHandler("data",
-                                    new SimpleJobProtocolHandler(task_runner_));
+    job_factory_.SetProtocolHandler(
+        "data", make_scoped_ptr(new SimpleJobProtocolHandler(task_runner_)));
     context_.set_job_factory(&job_factory_);
     context_.Init();
 

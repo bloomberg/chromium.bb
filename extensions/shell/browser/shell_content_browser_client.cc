@@ -123,7 +123,8 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
   (*protocol_handlers)[kExtensionScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
           CreateExtensionProtocolHandler(false /* is_incognito */,
-                                         extension_info_map));
+                                         extension_info_map)
+              .release());
   return browser_main_parts_->browser_context()->CreateRequestContext(
       protocol_handlers, request_interceptors.Pass(), extension_info_map);
 }

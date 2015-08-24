@@ -100,12 +100,13 @@ class MockHttpProtocolHandler
 
 // Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
 // the memory.
-storage::BlobProtocolHandler* CreateMockBlobProtocolHandler(
+scoped_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
     storage::BlobStorageContext* blob_storage_context) {
   // The FileSystemContext and task runner are not actually used but a
   // task runner is needed to avoid a DCHECK in BlobURLRequestJob ctor.
-  return new storage::BlobProtocolHandler(
-      blob_storage_context, nullptr, base::ThreadTaskRunnerHandle::Get().get());
+  return make_scoped_ptr(new storage::BlobProtocolHandler(
+      blob_storage_context, nullptr,
+      base::ThreadTaskRunnerHandle::Get().get()));
 }
 
 }  // namespace
@@ -183,9 +184,9 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
     url_request_job_factory_->SetProtocolHandler(
         "http",
-        new MockHttpProtocolHandler(provider_host->AsWeakPtr(),
-                                    browser_context_->GetResourceContext(),
-                                    blob_storage_context->AsWeakPtr()));
+        make_scoped_ptr(new MockHttpProtocolHandler(
+            provider_host->AsWeakPtr(), browser_context_->GetResourceContext(),
+            blob_storage_context->AsWeakPtr())));
     url_request_job_factory_->SetProtocolHandler(
         "blob", CreateMockBlobProtocolHandler(blob_storage_context));
     url_request_context_.set_job_factory(url_request_job_factory_.get());

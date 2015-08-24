@@ -94,7 +94,7 @@ ExtensionResourceProtocolHandler::MaybeCreateJob(
 
 }  // namespace
 
-net::URLRequestJobFactory::ProtocolHandler*
+scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
 CreateExtensionResourceProtocolHandler() {
-  return new ExtensionResourceProtocolHandler();
+  return make_scoped_ptr(new ExtensionResourceProtocolHandler());
 }

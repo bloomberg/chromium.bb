@@ -238,8 +238,9 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
       ipc_sender_factory.GetWeakPtr());
 
   net::URLRequestJobFactoryImpl job_factory;
-  job_factory.SetProtocolHandler(url::kAboutScheme,
-                                 new about_handler::AboutProtocolHandler());
+  job_factory.SetProtocolHandler(
+      url::kAboutScheme,
+      make_scoped_ptr(new about_handler::AboutProtocolHandler()));
   context_->set_job_factory(&job_factory);
 
   GURL redirect_url("about:redirected");

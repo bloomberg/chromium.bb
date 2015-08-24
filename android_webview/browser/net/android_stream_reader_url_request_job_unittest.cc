@@ -218,12 +218,14 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
     // The Interceptor is owned by the |factory_|.
     TestJobInterceptor* protocol_handler = new TestJobInterceptor;
     protocol_handler->set_main_intercept_job(test_stream_reader_job);
-    bool set_protocol = factory_.SetProtocolHandler("http", protocol_handler);
+    bool set_protocol =
+        factory_.SetProtocolHandler("http", make_scoped_ptr(protocol_handler));
     DCHECK(set_protocol);
 
     protocol_handler = new TestJobInterceptor;
     protocol_handler->set_main_intercept_job(test_stream_reader_job);
-    set_protocol = factory_.SetProtocolHandler("content", protocol_handler);
+    set_protocol = factory_.SetProtocolHandler(
+        "content", make_scoped_ptr(protocol_handler));
     DCHECK(set_protocol);
   }
 

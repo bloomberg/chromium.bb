@@ -13,9 +13,9 @@
 namespace content {
 
 // static
-ContentProtocolHandler* ContentProtocolHandler::Create(
+scoped_ptr<ContentProtocolHandler> ContentProtocolHandler::Create(
     const scoped_refptr<base::TaskRunner>& content_task_runner) {
-  return new ContentProtocolHandlerImpl(content_task_runner);
+  return make_scoped_ptr(new ContentProtocolHandlerImpl(content_task_runner));
 }
 
 ContentProtocolHandlerImpl::ContentProtocolHandlerImpl(

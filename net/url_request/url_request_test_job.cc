@@ -110,9 +110,9 @@ std::string URLRequestTestJob::test_error_headers() {
 }
 
 // static
-URLRequestJobFactory::ProtocolHandler*
+scoped_ptr<URLRequestJobFactory::ProtocolHandler>
 URLRequestTestJob::CreateProtocolHandler() {
-  return new TestJobProtocolHandler();
+  return make_scoped_ptr(new TestJobProtocolHandler());
 }
 
 URLRequestTestJob::URLRequestTestJob(URLRequest* request,

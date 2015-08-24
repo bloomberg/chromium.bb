@@ -57,7 +57,8 @@ class FtpTestURLRequestContext : public TestURLRequestContext {
     context_storage_.set_proxy_service(proxy_service);
     set_network_delegate(network_delegate);
     URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
-    job_factory->SetProtocolHandler("ftp", ftp_protocol_handler_);
+    job_factory->SetProtocolHandler("ftp",
+                                    make_scoped_ptr(ftp_protocol_handler_));
     context_storage_.set_job_factory(job_factory);
     Init();
   }

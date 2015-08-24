@@ -73,8 +73,8 @@ net::URLRequestJob* AwURLRequestJobFactory::MaybeInterceptResponse(
 
 bool AwURLRequestJobFactory::SetProtocolHandler(
     const std::string& scheme,
-    ProtocolHandler* protocol_handler) {
-  return next_factory_->SetProtocolHandler(scheme, protocol_handler);
+    scoped_ptr<ProtocolHandler> protocol_handler) {
+  return next_factory_->SetProtocolHandler(scheme, protocol_handler.Pass());
 }
 
 bool AwURLRequestJobFactory::IsSafeRedirectTarget(const GURL& location) const {

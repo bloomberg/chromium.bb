@@ -93,7 +93,6 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
     return new TestURLRequestJob(request, network_delegate);
   }
 
- private:
   ~TestProtocolHandler() override {}
 };
 
@@ -112,7 +111,7 @@ class UrlLoaderImplTest : public test::ApplicationTestBase {
     scoped_ptr<net::TestURLRequestContext> url_request_context(
         new net::TestURLRequestContext(true));
     ASSERT_TRUE(url_request_job_factory_.SetProtocolHandler(
-        "http", new TestProtocolHandler()));
+        "http", make_scoped_ptr(new TestProtocolHandler())));
     url_request_context->set_job_factory(&url_request_job_factory_);
     url_request_context->Init();
     network_context_.reset(new NetworkContext(url_request_context.Pass()));

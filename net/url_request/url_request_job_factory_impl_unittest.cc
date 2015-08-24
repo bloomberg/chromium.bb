@@ -79,7 +79,8 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
   URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
-  job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
+  job_factory.SetProtocolHandler("foo",
+                                 make_scoped_ptr(new DummyProtocolHandler));
   scoped_ptr<URLRequest> request(request_context.CreateRequest(
       GURL("foo://bar"), DEFAULT_PRIORITY, &delegate));
   request->Start();
@@ -93,8 +94,9 @@ TEST(URLRequestJobFactoryTest, DeleteProtocolHandler) {
   URLRequestJobFactoryImpl job_factory;
   TestURLRequestContext request_context;
   request_context.set_job_factory(&job_factory);
-  job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
-  job_factory.SetProtocolHandler("foo", NULL);
+  job_factory.SetProtocolHandler("foo",
+                                 make_scoped_ptr(new DummyProtocolHandler));
+  job_factory.SetProtocolHandler("foo", nullptr);
 }
 
 }  // namespace

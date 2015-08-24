@@ -849,21 +849,21 @@ void IOThread::Init() {
   tracked_objects::ScopedTracker tracking_profile16(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466432 IOThread::InitAsync::SetProtocolHandler"));
-  job_factory->SetProtocolHandler(url::kDataScheme,
-                                  new net::DataProtocolHandler());
+  job_factory->SetProtocolHandler(
+      url::kDataScheme, make_scoped_ptr(new net::DataProtocolHandler()));
   job_factory->SetProtocolHandler(
       url::kFileScheme,
-      new net::FileProtocolHandler(
-          content::BrowserThread::GetBlockingPool()->
-              GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+      make_scoped_ptr(new net::FileProtocolHandler(
+          content::BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
 #if !defined(DISABLE_FTP_SUPPORT)
   globals_->proxy_script_fetcher_ftp_transaction_factory.reset(
       new net::FtpNetworkLayer(globals_->host_resolver.get()));
   job_factory->SetProtocolHandler(
       url::kFtpScheme,
-      new net::FtpProtocolHandler(
-          globals_->proxy_script_fetcher_ftp_transaction_factory.get()));
+      make_scoped_ptr(new net::FtpProtocolHandler(
+          globals_->proxy_script_fetcher_ftp_transaction_factory.get())));
 #endif
   globals_->proxy_script_fetcher_url_request_job_factory = job_factory.Pass();
 
