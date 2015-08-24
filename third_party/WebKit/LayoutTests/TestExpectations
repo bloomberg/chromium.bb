@@ -710,6 +710,9 @@ crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-t
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
 
+crbug.com/524160 [ Debug ] http/tests/media/media-source/mediasource-appendbuffer-quota-exceeded.html [ Timeout ]
+crbug.com/524160 [ Debug ] http/tests/media/media-source/mediasource-appendstream-quota-exceeded.html [ Timeout ]
+
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
