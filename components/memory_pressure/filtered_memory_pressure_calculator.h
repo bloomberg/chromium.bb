@@ -28,7 +28,7 @@ class FilteredMemoryPressureCalculator : public MemoryPressureCalculator {
 
   explicit FilteredMemoryPressureCalculator(
       scoped_ptr<MemoryPressureCalculator> pressure_calculator);
-  ~FilteredMemoryPressureCalculator() {}
+  ~FilteredMemoryPressureCalculator() override;
 
   // Calculates the current pressure level.
   MemoryPressureLevel CalculateCurrentPressureLevel() override;

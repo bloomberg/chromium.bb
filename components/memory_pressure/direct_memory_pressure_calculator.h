@@ -38,7 +38,7 @@ class DirectMemoryPressureCalculator : public MemoryPressureCalculator {
   DirectMemoryPressureCalculator(int moderate_threshold_mb,
                                  int critical_threshold_mb);
 
-  virtual ~DirectMemoryPressureCalculator() {}
+  virtual ~DirectMemoryPressureCalculator() override {}
 
   // Calculates the current pressure level.
   MemoryPressureLevel CalculateCurrentPressureLevel() override;

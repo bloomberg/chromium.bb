@@ -32,6 +32,9 @@ FilteredMemoryPressureCalculator::FilteredMemoryPressureCalculator(
       samples_taken_(false),
       cooldown_in_progress_(false) {}
 
+FilteredMemoryPressureCalculator::~FilteredMemoryPressureCalculator() {
+}
+
 FilteredMemoryPressureCalculator::MemoryPressureLevel
 FilteredMemoryPressureCalculator::CalculateCurrentPressureLevel() {
   base::TimeTicks now = tick_clock_->NowTicks();
