@@ -32,13 +32,14 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/TreeScope.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
 
 namespace blink {
 
-StyleSheetInvalidationAnalysis::StyleSheetInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>& sheets)
-    : m_dirtiesAllStyle(false)
+StyleSheetInvalidationAnalysis::StyleSheetInvalidationAnalysis(const TreeScope& treeScope, const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>& sheets)
+    : m_treeScope(treeScope)
 {
     for (unsigned i = 0; i < sheets.size() && !m_dirtiesAllStyle; ++i)
         analyzeStyleSheet(sheets[i]);
@@ -92,21 +93,6 @@ static bool hasDistributedRule(StyleSheetContents* styleSheetContents)
     return false;
 }
 
-static Node* determineScopingNodeForStyleInShadow(HTMLStyleElement* ownerElement, StyleSheetContents* styleSheetContents)
-{
-    ASSERT(ownerElement && ownerElement->isInShadowTree());
-
-    if (hasDistributedRule(styleSheetContents)) {
-        ContainerNode* scope = ownerElement;
-        do {
-            scope = scope->containingShadowRoot()->shadowHost();
-        } while (scope->isInShadowTree());
-        return scope;
-    }
-
-    return ownerElement->containingShadowRoot()->shadowHost();
-}
-
 static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
 {
     // This funciton is conservative. We only return false when we know that
@@ -152,12 +138,11 @@ void StyleSheetInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* style
         if (m_dirtiesAllStyle)
             return;
     }
-    if (styleSheetContents->hasSingleOwnerNode()) {
-        Node* ownerNode = styleSheetContents->singleOwnerNode();
-        if (isHTMLStyleElement(ownerNode) && toHTMLStyleElement(*ownerNode).isInShadowTree()) {
-            m_scopingNodes.append(determineScopingNodeForStyleInShadow(toHTMLStyleElement(ownerNode), styleSheetContents));
-            return;
-        }
+
+    if (m_treeScope.rootNode().isShadowRoot()) {
+        if (hasDistributedRule(styleSheetContents))
+            m_hasDistributedRules = true;
+        return;
     }
 
     const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& rules = styleSheetContents->childRules();
@@ -192,18 +177,29 @@ static bool elementMatchesSelectorScopes(const Element* element, const HashSet<S
     return false;
 }
 
-void StyleSheetInvalidationAnalysis::invalidateStyle(Document& document)
+static ContainerNode* outermostShadowHost(const ShadowRoot& root)
+{
+    ContainerNode* host = root.host();
+    while (host->isInShadowTree())
+        host = host->containingShadowRoot()->host();
+    return host;
+}
+
+void StyleSheetInvalidationAnalysis::invalidateStyle()
 {
     ASSERT(!m_dirtiesAllStyle);
 
-    if (!m_scopingNodes.isEmpty()) {
-        for (unsigned i = 0; i < m_scopingNodes.size(); ++i)
-            m_scopingNodes.at(i)->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
+    if (m_treeScope.rootNode().isShadowRoot()) {
+        ContainerNode* invalidationRoot = &m_treeScope.rootNode();
+        if (m_hasDistributedRules)
+            invalidationRoot = outermostShadowHost(*toShadowRoot(invalidationRoot));
+        invalidationRoot->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
+        return;
     }
 
     if (m_idScopes.isEmpty() && m_classScopes.isEmpty())
         return;
-    Element* element = ElementTraversal::firstWithin(document);
+    Element* element = ElementTraversal::firstWithin(m_treeScope.document());
     while (element) {
         if (elementMatchesSelectorScopes(element, m_idScopes, m_classScopes)) {
             element->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));

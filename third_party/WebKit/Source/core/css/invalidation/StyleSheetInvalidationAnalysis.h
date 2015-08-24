@@ -36,23 +36,26 @@ namespace blink {
 class Document;
 class Node;
 class StyleSheetContents;
+class TreeScope;
 
 class StyleSheetInvalidationAnalysis {
     STACK_ALLOCATED();
 public:
-    StyleSheetInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>&);
+    StyleSheetInvalidationAnalysis(const TreeScope&, const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>&);
 
     bool dirtiesAllStyle() const { return m_dirtiesAllStyle; }
-    void invalidateStyle(Document&);
+    void invalidateStyle();
 
 private:
 
     void analyzeStyleSheet(StyleSheetContents*);
 
-    bool m_dirtiesAllStyle;
+    const TreeScope& m_treeScope;
     HashSet<StringImpl*> m_idScopes;
     HashSet<StringImpl*> m_classScopes;
-    WillBeHeapVector<RawPtrWillBeMember<Node>, 8> m_scopingNodes;
+
+    bool m_dirtiesAllStyle = false;
+    bool m_hasDistributedRules = false;
 };
 
 }

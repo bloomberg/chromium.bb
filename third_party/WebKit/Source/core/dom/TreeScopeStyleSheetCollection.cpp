@@ -158,10 +158,10 @@ void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateM
     // If we are already parsing the body and so may have significant amount of elements, put some effort into trying to avoid style recalcs.
     if (!document().body() || document().hasNodesWithPlaceholderStyle())
         return;
-    StyleSheetInvalidationAnalysis invalidationAnalysis(addedSheets);
+    StyleSheetInvalidationAnalysis invalidationAnalysis(*m_treeScope, addedSheets);
     if (invalidationAnalysis.dirtiesAllStyle())
         return;
-    invalidationAnalysis.invalidateStyle(document());
+    invalidationAnalysis.invalidateStyle();
     change.requiresFullStyleRecalc = false;
     return;
 }
