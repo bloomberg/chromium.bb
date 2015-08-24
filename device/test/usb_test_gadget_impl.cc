@@ -399,7 +399,7 @@ class DeviceAddListener : public UsbService::Observer {
         weak_factory_(this) {
     observer_.Add(usb_service_);
   }
-  virtual ~DeviceAddListener() {}
+  ~DeviceAddListener() override {}
 
   scoped_refptr<UsbDevice> WaitForAdd() {
     usb_service_->GetDevices(base::Bind(&DeviceAddListener::OnDevicesEnumerated,
@@ -465,7 +465,7 @@ class DeviceRemoveListener : public UsbService::Observer {
         weak_factory_(this) {
     observer_.Add(usb_service_);
   }
-  virtual ~DeviceRemoveListener() {}
+  ~DeviceRemoveListener() override {}
 
   void WaitForRemove() {
     usb_service_->GetDevices(

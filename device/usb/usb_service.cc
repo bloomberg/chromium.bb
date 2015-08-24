@@ -18,6 +18,8 @@ UsbService* g_service;
 
 }  // namespace
 
+UsbService::Observer::~Observer() {}
+
 void UsbService::Observer::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
 }
 

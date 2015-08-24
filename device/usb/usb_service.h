@@ -33,6 +33,8 @@ class UsbService : public base::NonThreadSafe {
 
   class Observer {
    public:
+    virtual ~Observer();
+
     // These events are delivered from the thread on which the UsbService object
     // was created.
     virtual void OnDeviceAdded(scoped_refptr<UsbDevice> device);
