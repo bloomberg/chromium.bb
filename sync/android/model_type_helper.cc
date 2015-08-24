@@ -11,14 +11,16 @@
 
 namespace syncer {
 
-static ScopedJavaLocalRef<jstring>
-ModelTypeToNotificationType(JNIEnv* env, jclass clazz, jint model_type_int) {
+static jstring ModelTypeToNotificationType(JNIEnv* env,
+                                           jclass clazz,
+                                           jint model_type_int) {
   std::string model_type_string;
   ModelType model_type = static_cast<ModelType>(model_type_int);
   if (!RealModelTypeToNotificationType(model_type, &model_type_string)) {
     NOTREACHED() << "No string representation of model type " << model_type;
   }
-  return base::android::ConvertUTF8ToJavaString(env, model_type_string);
+  return base::android::ConvertUTF8ToJavaString(env, model_type_string)
+      .Release();
 }
 
 bool RegisterModelTypeHelperJni(JNIEnv* env) {

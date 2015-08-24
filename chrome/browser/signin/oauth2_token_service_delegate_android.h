@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/android/jni_weak_ref.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
@@ -36,8 +35,9 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
   static OAuth2TokenServiceDelegateAndroid* Create();
 
   // Returns a reference to the Java instance of this service.
-  static base::android::ScopedJavaLocalRef<jobject>
-  GetForProfile(JNIEnv* env, jclass clazz, jobject j_profile_android);
+  static jobject GetForProfile(JNIEnv* env,
+                               jclass clazz,
+                               jobject j_profile_android);
 
   // Called by the TestingProfile class to disable account validation in
   // tests.  This prevents the token service from trying to look up system

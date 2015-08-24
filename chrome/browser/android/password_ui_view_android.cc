@@ -110,9 +110,9 @@ void PasswordUIViewAndroid::HandleRemoveSavedPasswordException(
   password_manager_presenter_.RemovePasswordException(index);
 }
 
-ScopedJavaLocalRef<jstring> GetAccountDashboardURL(JNIEnv* env, jclass) {
-  return ConvertUTF8ToJavaString(env,
-                                 chrome::kPasswordManagerAccountDashboardURL);
+jstring GetAccountDashboardURL(JNIEnv* env, jclass) {
+  return ConvertUTF8ToJavaString(
+      env, chrome::kPasswordManagerAccountDashboardURL).Release();
 }
 
 static jboolean ShouldDisplayManageAccountLink(

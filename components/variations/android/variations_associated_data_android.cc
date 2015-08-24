@@ -17,15 +17,15 @@ namespace variations {
 
 namespace android {
 
-ScopedJavaLocalRef<jstring> GetVariationParamValue(JNIEnv* env,
-                                                   jclass clazz,
-                                                   jstring jtrial_name,
-                                                   jstring jparam_name) {
+jstring GetVariationParamValue(JNIEnv* env,
+                               jclass clazz,
+                               jstring jtrial_name,
+                               jstring jparam_name) {
   std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
   std::string param_name(ConvertJavaStringToUTF8(env, jparam_name));
   std::string param_value =
       variations::GetVariationParamValue(trial_name, param_name);
-  return ConvertUTF8ToJavaString(env, param_value);
+  return ConvertUTF8ToJavaString(env, param_value).Release();
 }
 
 bool RegisterVariationsAssociatedData(JNIEnv* env) {

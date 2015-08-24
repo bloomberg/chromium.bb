@@ -102,11 +102,12 @@ void TracingControllerAndroid::OnKnownCategoriesReceived(
   LOG(WARNING) << "{\"traceCategoriesList\": " << received_category_list << "}";
 }
 
-static ScopedJavaLocalRef<jstring> GetDefaultCategories(JNIEnv* env,
-                                                        jobject obj) {
+static jstring GetDefaultCategories(JNIEnv* env, jobject obj) {
   base::trace_event::TraceConfig trace_config;
   return base::android::ConvertUTF8ToJavaString(
-      env, trace_config.ToCategoryFilterString());
+             env,
+             trace_config.ToCategoryFilterString())
+      .Release();
 }
 
 bool RegisterTracingControllerAndroid(JNIEnv* env) {

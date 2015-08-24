@@ -281,14 +281,16 @@ static void SetResourceContextForTesting(JNIEnv* env, jclass /*clazz*/,
   }
 }
 
-static ScopedJavaLocalRef<jstring> GetAndroidAssetPath(JNIEnv* env,
-                                                       jclass /*clazz*/) {
-  return ConvertUTF8ToJavaString(env, android_webview::kAndroidAssetPath);
+static jstring GetAndroidAssetPath(JNIEnv* env, jclass /*clazz*/) {
+  // OK to release, JNI binding.
+  return ConvertUTF8ToJavaString(
+      env, android_webview::kAndroidAssetPath).Release();
 }
 
-static ScopedJavaLocalRef<jstring> GetAndroidResourcePath(JNIEnv* env,
-                                                          jclass /*clazz*/) {
-  return ConvertUTF8ToJavaString(env, android_webview::kAndroidResourcePath);
+static jstring GetAndroidResourcePath(JNIEnv* env, jclass /*clazz*/) {
+  // OK to release, JNI binding.
+  return ConvertUTF8ToJavaString(
+      env, android_webview::kAndroidResourcePath).Release();
 }
 
 }  // namespace android_webview

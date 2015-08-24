@@ -24,12 +24,11 @@ static void EnsureInitialized(JNIEnv* env, jobject jcaller) {
   base::StatisticsRecorder::Initialize();
 }
 
-static ScopedJavaLocalRef<jbyteArray> GetHistogramDeltas(JNIEnv* env,
-                                                         jobject jcaller) {
+static jbyteArray GetHistogramDeltas(JNIEnv* env, jobject jcaller) {
   std::vector<uint8> data;
   if (!HistogramManager::GetInstance()->GetDeltas(&data))
-    return ScopedJavaLocalRef<jbyteArray>();
-  return base::android::ToJavaByteArray(env, &data[0], data.size());
+    return NULL;
+  return base::android::ToJavaByteArray(env, &data[0], data.size()).Release();
 }
 
 }  // namespace cronet

@@ -9,13 +9,11 @@
 #include "jni/OmniboxViewUtil_jni.h"
 
 // static
-ScopedJavaLocalRef<jstring> SanitizeTextForPaste(JNIEnv* env,
-                                                 jclass clazz,
-                                                 jstring jtext) {
+jstring SanitizeTextForPaste(JNIEnv* env, jclass clazz, jstring jtext) {
   base::string16 pasted_text(
       base::android::ConvertJavaStringToUTF16(env, jtext));
   pasted_text = OmniboxView::SanitizeTextForPaste(pasted_text);
-  return base::android::ConvertUTF16ToJavaString(env, pasted_text);
+  return base::android::ConvertUTF16ToJavaString(env, pasted_text).Release();
 }
 
 // static

@@ -80,8 +80,8 @@ void NavigationPopup::OnFaviconDataAvailable(
       gfx::ConvertToJavaBitmap(image.ToSkBitmap()).obj());
 }
 
-static ScopedJavaLocalRef<jstring> GetHistoryUrl(JNIEnv* env, jclass clazz) {
-  return ConvertUTF8ToJavaString(env, chrome::kChromeUIHistoryURL);
+static jstring GetHistoryUrl(JNIEnv* env, jclass clazz) {
+  return ConvertUTF8ToJavaString(env, chrome::kChromeUIHistoryURL).Release();
 }
 
 static jlong Init(JNIEnv* env, jobject obj) {

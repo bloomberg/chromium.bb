@@ -136,15 +136,15 @@ const ScopedJavaGlobalRef<jobject>&
 }
 
 // static
-ScopedJavaLocalRef<jobject> GetCurrentModalDialog(JNIEnv* env, jclass clazz) {
+jobject GetCurrentModalDialog(JNIEnv* env, jclass clazz) {
   app_modal::AppModalDialog* dialog =
       app_modal::AppModalDialogQueue::GetInstance()->active_dialog();
   if (!dialog || !dialog->native_dialog())
-    return ScopedJavaLocalRef<jobject>();
+    return NULL;
 
   JavascriptAppModalDialogAndroid* js_dialog =
       static_cast<JavascriptAppModalDialogAndroid*>(dialog->native_dialog());
-  return ScopedJavaLocalRef<jobject>(js_dialog->GetDialogObject());
+  return js_dialog->GetDialogObject().obj();
 }
 
 // static

@@ -12,18 +12,15 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/WebContentsFactory_jni.h"
 
-static ScopedJavaLocalRef<jobject> CreateWebContents(
-    JNIEnv* env,
-    jclass clazz,
-    jboolean incognito,
-    jboolean initially_hidden) {
+static jobject CreateWebContents(
+    JNIEnv* env, jclass clazz, jboolean incognito, jboolean initially_hidden) {
   Profile* profile = g_browser_process->profile_manager()->GetLastUsedProfile();
   if (incognito)
     profile = profile->GetOffTheRecordProfile();
 
   content::WebContents::CreateParams params(profile);
   params.initially_hidden = static_cast<bool>(initially_hidden);
-  return content::WebContents::Create(params)->GetJavaWebContents();
+  return content::WebContents::Create(params)->GetJavaWebContents().Release();
 }
 
 bool RegisterWebContentsFactory(JNIEnv* env) {

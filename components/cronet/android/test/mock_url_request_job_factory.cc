@@ -20,30 +20,29 @@ void AddUrlInterceptors(JNIEnv* env, jclass jcaller) {
   net::SSLCertificateErrorJob::AddUrlHandler();
 }
 
-ScopedJavaLocalRef<jstring> GetMockUrlWithFailure(JNIEnv* jenv,
-                                                  jclass jcaller,
-                                                  jint jphase,
-                                                  jint jnet_error) {
+jstring GetMockUrlWithFailure(JNIEnv* jenv,
+                              jclass jcaller,
+                              jint jphase,
+                              jint jnet_error) {
   GURL url(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
       static_cast<net::URLRequestFailedJob::FailurePhase>(jphase),
       static_cast<int>(jnet_error)));
-  return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
+  return base::android::ConvertUTF8ToJavaString(jenv, url.spec()).Release();
 }
 
-ScopedJavaLocalRef<jstring> GetMockUrlForData(JNIEnv* jenv,
-                                              jclass jcaller,
-                                              jstring jdata,
-                                              jint jdata_repeat_count) {
+jstring GetMockUrlForData(JNIEnv* jenv,
+                          jclass jcaller,
+                          jstring jdata,
+                          jint jdata_repeat_count) {
   std::string data(base::android::ConvertJavaStringToUTF8(jenv, jdata));
   GURL url(net::URLRequestMockDataJob::GetMockHttpUrl(data,
                                                       jdata_repeat_count));
-  return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
+  return base::android::ConvertUTF8ToJavaString(jenv, url.spec()).Release();
 }
 
-ScopedJavaLocalRef<jstring> GetMockUrlForSSLCertificateError(JNIEnv* jenv,
-                                                             jclass jcaller) {
+jstring GetMockUrlForSSLCertificateError(JNIEnv* jenv, jclass jcaller) {
   GURL url(net::SSLCertificateErrorJob::GetMockUrl());
-  return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
+  return base::android::ConvertUTF8ToJavaString(jenv, url.spec()).Release();
 }
 
 bool RegisterMockUrlRequestJobFactory(JNIEnv* env) {

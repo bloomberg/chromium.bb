@@ -571,10 +571,10 @@ static void SetDoNotTrackEnabled(JNIEnv* env, jobject obj, jboolean allow) {
   GetPrefService()->SetBoolean(prefs::kEnableDoNotTrack, allow);
 }
 
-static ScopedJavaLocalRef<jstring> GetSyncLastAccountName(JNIEnv* env,
-                                                          jobject obj) {
+static jstring GetSyncLastAccountName(JNIEnv* env, jobject obj) {
   return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kGoogleServicesLastUsername));
+      env, GetPrefService()->GetString(prefs::kGoogleServicesLastUsername))
+      .Release();
 }
 
 static void SetTranslateEnabled(JNIEnv* env, jobject obj, jboolean enabled) {
@@ -702,10 +702,10 @@ static void SetSearchSuggestEnabled(JNIEnv* env, jobject obj,
   GetPrefService()->SetBoolean(prefs::kSearchSuggestEnabled, enabled);
 }
 
-static ScopedJavaLocalRef<jstring> GetContextualSearchPreference(JNIEnv* env,
-                                                                 jobject obj) {
+static jstring GetContextualSearchPreference(JNIEnv* env, jobject obj) {
   return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kContextualSearchEnabled));
+      env, GetPrefService()->GetString(prefs::kContextualSearchEnabled)).
+          Release();
 }
 
 static jboolean GetContextualSearchPreferenceIsManaged(JNIEnv* env,
@@ -771,8 +771,7 @@ static void ResetAcceptLanguages(JNIEnv* env,
 
 // Sends all information about the different versions to Java.
 // From browser_about_handler.cc
-static ScopedJavaLocalRef<jobject> GetAboutVersionStrings(JNIEnv* env,
-                                                          jobject obj) {
+static jobject GetAboutVersionStrings(JNIEnv* env, jobject obj) {
   std::string os_version = version_info::GetOSType();
   os_version += " " + AndroidAboutAppInfo::GetOsInfo();
 
@@ -782,53 +781,53 @@ static ScopedJavaLocalRef<jobject> GetAboutVersionStrings(JNIEnv* env,
   application.append(" ");
   application.append(version_info::GetVersionNumber());
 
+  // OK to release, returning to Java.
   return Java_PrefServiceBridge_createAboutVersionStrings(
-      env, ConvertUTF8ToJavaString(env, application).obj(),
-      ConvertUTF8ToJavaString(env, os_version).obj());
+      env,
+      ConvertUTF8ToJavaString(env, application).obj(),
+      ConvertUTF8ToJavaString(env, os_version).obj()).Release();
 }
 
-static ScopedJavaLocalRef<jstring> GetSupervisedUserCustodianName(JNIEnv* env,
-                                                                  jobject obj) {
+static jstring GetSupervisedUserCustodianName(JNIEnv* env, jobject obj) {
   return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kSupervisedUserCustodianName));
+      env, GetPrefService()->GetString(prefs::kSupervisedUserCustodianName))
+      .Release();
 }
 
-static ScopedJavaLocalRef<jstring> GetSupervisedUserCustodianEmail(
-    JNIEnv* env,
-    jobject obj) {
+static jstring GetSupervisedUserCustodianEmail(JNIEnv* env, jobject obj) {
   return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(prefs::kSupervisedUserCustodianEmail));
+      env, GetPrefService()->GetString(prefs::kSupervisedUserCustodianEmail))
+      .Release();
 }
 
-static ScopedJavaLocalRef<jstring> GetSupervisedUserCustodianProfileImageURL(
-    JNIEnv* env,
-    jobject obj) {
-  return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(
-               prefs::kSupervisedUserCustodianProfileImageURL));
-}
-
-static ScopedJavaLocalRef<jstring> GetSupervisedUserSecondCustodianName(
-    JNIEnv* env,
-    jobject obj) {
+static jstring GetSupervisedUserCustodianProfileImageURL(JNIEnv* env,
+                                                         jobject obj) {
   return ConvertUTF8ToJavaString(
       env,
-      GetPrefService()->GetString(prefs::kSupervisedUserSecondCustodianName));
+      GetPrefService()->GetString(
+          prefs::kSupervisedUserCustodianProfileImageURL)).Release();
 }
 
-static ScopedJavaLocalRef<jstring> GetSupervisedUserSecondCustodianEmail(
-    JNIEnv* env,
-    jobject obj) {
+static jstring GetSupervisedUserSecondCustodianName(JNIEnv* env, jobject obj) {
   return ConvertUTF8ToJavaString(
       env,
-      GetPrefService()->GetString(prefs::kSupervisedUserSecondCustodianEmail));
+      GetPrefService()->GetString(prefs::kSupervisedUserSecondCustodianName))
+      .Release();
 }
 
-static ScopedJavaLocalRef<jstring>
-GetSupervisedUserSecondCustodianProfileImageURL(JNIEnv* env, jobject obj) {
+static jstring GetSupervisedUserSecondCustodianEmail(JNIEnv* env, jobject obj) {
   return ConvertUTF8ToJavaString(
-      env, GetPrefService()->GetString(
-               prefs::kSupervisedUserSecondCustodianProfileImageURL));
+      env,
+      GetPrefService()->GetString(prefs::kSupervisedUserSecondCustodianEmail))
+      .Release();
+}
+
+static jstring GetSupervisedUserSecondCustodianProfileImageURL(JNIEnv* env,
+                                                               jobject obj) {
+  return ConvertUTF8ToJavaString(
+      env,
+      GetPrefService()->GetString(
+          prefs::kSupervisedUserSecondCustodianProfileImageURL)).Release();
 }
 
 // static

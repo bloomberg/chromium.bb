@@ -92,16 +92,14 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
   return ConvertJavaStringToUTF16(java_result);
 }
 
-ScopedJavaLocalRef<jstring> GetDurationString(JNIEnv* env,
-                                              jclass clazz,
-                                              jlong timeInMillis) {
+jstring GetDurationString(JNIEnv* env, jclass clazz, jlong timeInMillis) {
   ScopedJavaLocalRef<jstring> jtime_remaining =
       base::android::ConvertUTF16ToJavaString(
           env,
           ui::TimeFormat::Simple(
               ui::TimeFormat::FORMAT_REMAINING, ui::TimeFormat::LENGTH_SHORT,
               base::TimeDelta::FromMilliseconds(timeInMillis)));
-  return jtime_remaining;
+  return jtime_remaining.Release();
 }
 
 bool RegisterLocalizationUtil(JNIEnv* env) {

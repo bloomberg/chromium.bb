@@ -16,39 +16,34 @@ using base::android::ScopedJavaLocalRef;
 
 namespace invalidation {
 
-ScopedJavaLocalRef<jobject> InvalidationServiceFactoryAndroid::GetForProfile(
-    JNIEnv* env,
-    jclass clazz,
-    jobject j_profile) {
+jobject InvalidationServiceFactoryAndroid::GetForProfile(JNIEnv* env,
+                                                         jclass clazz,
+                                                         jobject j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   invalidation::ProfileInvalidationProvider* provider =
       ProfileInvalidationProviderFactory::GetForProfile(profile);
   InvalidationServiceAndroid* service_android =
       static_cast<InvalidationServiceAndroid*>(
           provider->GetInvalidationService());
-  return ScopedJavaLocalRef<jobject>(service_android->java_ref_);
+  return service_android->java_ref_.obj();
 }
 
-ScopedJavaLocalRef<jobject> InvalidationServiceFactoryAndroid::GetForTest(
-    JNIEnv* env,
-    jclass clazz,
-    jobject j_context) {
+jobject InvalidationServiceFactoryAndroid::GetForTest(JNIEnv* env,
+                                                      jclass clazz,
+                                                      jobject j_context) {
   InvalidationServiceAndroid* service_android =
       new InvalidationServiceAndroid(j_context);
-  return ScopedJavaLocalRef<jobject>(service_android->java_ref_);
+  return service_android->java_ref_.obj();
 }
 
-ScopedJavaLocalRef<jobject> GetForProfile(JNIEnv* env,
-                                          jclass clazz,
-                                          jobject j_profile) {
-  return InvalidationServiceFactoryAndroid::GetForProfile(env, clazz,
-                                                          j_profile);
+jobject GetForProfile(JNIEnv* env, jclass clazz, jobject j_profile) {
+  return InvalidationServiceFactoryAndroid::GetForProfile(
+      env, clazz, j_profile);
 }
 
-ScopedJavaLocalRef<jobject> GetForTest(JNIEnv* env,
-                                       jclass clazz,
-                                       jobject j_context) {
-  return InvalidationServiceFactoryAndroid::GetForTest(env, clazz, j_context);
+jobject GetForTest(JNIEnv* env, jclass clazz, jobject j_context) {
+  return InvalidationServiceFactoryAndroid::GetForTest(
+      env, clazz, j_context);
 }
 
 bool InvalidationServiceFactoryAndroid::Register(JNIEnv* env) {

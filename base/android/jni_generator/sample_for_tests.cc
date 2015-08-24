@@ -81,8 +81,8 @@ static jfloat GetFloatFunction(JNIEnv*, jclass) {
 static void SetNonPODDatatype(JNIEnv*, jobject, jobject) {
 }
 
-static ScopedJavaLocalRef<jobject> GetNonPODDatatype(JNIEnv*, jobject) {
-  return ScopedJavaLocalRef<jobject>();
+static jobject GetNonPODDatatype(JNIEnv*, jobject) {
+  return NULL;
 }
 
 static jint InnerFunction(JNIEnv*, jclass) {

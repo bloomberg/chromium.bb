@@ -81,9 +81,8 @@ void ChangeAppStatusOnIOThread(SafeBrowsingService* sb_service,
 
 }  // namespace
 
-static ScopedJavaLocalRef<jstring> GetBrowserUserAgent(JNIEnv* env,
-                                                       jclass clazz) {
-  return ConvertUTF8ToJavaString(env, GetUserAgent());
+static jstring GetBrowserUserAgent(JNIEnv* env, jclass clazz) {
+  return ConvertUTF8ToJavaString(env, GetUserAgent()).Release();
 }
 
 static void FlushPersistentData(JNIEnv* env, jclass obj) {

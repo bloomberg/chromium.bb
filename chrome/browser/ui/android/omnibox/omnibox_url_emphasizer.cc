@@ -12,10 +12,10 @@
 #include "jni/OmniboxUrlEmphasizer_jni.h"
 
 // static
-ScopedJavaLocalRef<jintArray> ParseForEmphasizeComponents(JNIEnv* env,
-                                                          jclass clazz,
-                                                          jobject jprofile,
-                                                          jstring jtext) {
+jintArray ParseForEmphasizeComponents(JNIEnv* env,
+                                      jclass clazz,
+                                      jobject jprofile,
+                                      jstring jtext) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
 
@@ -26,7 +26,7 @@ ScopedJavaLocalRef<jintArray> ParseForEmphasizeComponents(JNIEnv* env,
       text, ChromeAutocompleteSchemeClassifier(profile), &scheme, &host);
 
   int emphasize_values[] = {scheme.begin, scheme.len, host.begin, host.len};
-  return base::android::ToJavaIntArray(env, emphasize_values, 4);
+  return base::android::ToJavaIntArray(env, emphasize_values, 4).Release();
 }
 
 // static

@@ -117,12 +117,12 @@ static void InitializeStatistics(JNIEnv* env, jobject jcaller) {
 
 // Gets current statistics with |jfilter| as a substring as JSON text (an empty
 // |jfilter| will include all registered histograms).
-static ScopedJavaLocalRef<jstring> GetStatisticsJSON(JNIEnv* env,
-                                                     jobject jcaller,
-                                                     jstring jfilter) {
+static jstring GetStatisticsJSON(JNIEnv* env,
+                                 jobject jcaller,
+                                 jstring jfilter) {
   std::string query = ConvertJavaStringToUTF8(env, jfilter);
   std::string json = base::StatisticsRecorder::ToJSON(query);
-  return ConvertUTF8ToJavaString(env, json);
+  return ConvertUTF8ToJavaString(env, json).Release();
 }
 
 // Starts recording NetLog into file with |jfilename|.

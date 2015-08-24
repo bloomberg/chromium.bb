@@ -88,9 +88,9 @@ static jint WaitMany(JNIEnv* env,
                       result_index, states_start);
 }
 
-static ScopedJavaLocalRef<jobject> CreateMessagePipe(JNIEnv* env,
-                                                     jobject jcaller,
-                                                     jobject options_buffer) {
+static jobject CreateMessagePipe(JNIEnv* env,
+                                 jobject jcaller,
+                                 jobject options_buffer) {
   const MojoCreateMessagePipeOptions* options = NULL;
   if (options_buffer) {
     const void* buffer_start = env->GetDirectBufferAddress(options_buffer);
@@ -104,12 +104,13 @@ static ScopedJavaLocalRef<jobject> CreateMessagePipe(JNIEnv* env,
   MojoHandle handle1;
   MojoHandle handle2;
   MojoResult result = MojoCreateMessagePipe(options, &handle1, &handle2);
-  return Java_CoreImpl_newNativeCreationResult(env, result, handle1, handle2);
+  return Java_CoreImpl_newNativeCreationResult(env, result, handle1, handle2)
+      .Release();
 }
 
-static ScopedJavaLocalRef<jobject> CreateDataPipe(JNIEnv* env,
-                                                  jobject jcaller,
-                                                  jobject options_buffer) {
+static jobject CreateDataPipe(JNIEnv* env,
+                              jobject jcaller,
+                              jobject options_buffer) {
   const MojoCreateDataPipeOptions* options = NULL;
   if (options_buffer) {
     const void* buffer_start = env->GetDirectBufferAddress(options_buffer);
@@ -123,13 +124,14 @@ static ScopedJavaLocalRef<jobject> CreateDataPipe(JNIEnv* env,
   MojoHandle handle1;
   MojoHandle handle2;
   MojoResult result = MojoCreateDataPipe(options, &handle1, &handle2);
-  return Java_CoreImpl_newNativeCreationResult(env, result, handle1, handle2);
+  return Java_CoreImpl_newNativeCreationResult(env, result, handle1, handle2)
+      .Release();
 }
 
-static ScopedJavaLocalRef<jobject> CreateSharedBuffer(JNIEnv* env,
-                                                      jobject jcaller,
-                                                      jobject options_buffer,
-                                                      jlong num_bytes) {
+static jobject CreateSharedBuffer(JNIEnv* env,
+                                  jobject jcaller,
+                                  jobject options_buffer,
+                                  jlong num_bytes) {
   const MojoCreateSharedBufferOptions* options = 0;
   if (options_buffer) {
     const void* buffer_start = env->GetDirectBufferAddress(options_buffer);
@@ -142,7 +144,7 @@ static ScopedJavaLocalRef<jobject> CreateSharedBuffer(JNIEnv* env,
   }
   MojoHandle handle;
   MojoResult result = MojoCreateSharedBuffer(options, num_bytes, &handle);
-  return Java_CoreImpl_newResultAndInteger(env, result, handle);
+  return Java_CoreImpl_newResultAndInteger(env, result, handle).Release();
 }
 
 static jint Close(JNIEnv* env, jobject jcaller, jint mojo_handle) {
@@ -193,12 +195,12 @@ static jint WriteMessage(JNIEnv* env,
       mojo_handle, buffer_start, buffer_size, handles, num_handles, flags);
 }
 
-static ScopedJavaLocalRef<jobject> ReadMessage(JNIEnv* env,
-                                               jobject jcaller,
-                                               jint mojo_handle,
-                                               jobject bytes,
-                                               jobject handles_buffer,
-                                               jint flags) {
+static jobject ReadMessage(JNIEnv* env,
+                           jobject jcaller,
+                           jint mojo_handle,
+                           jobject bytes,
+                           jobject handles_buffer,
+                           jint flags) {
   void* buffer_start = 0;
   uint32_t buffer_size = 0;
   if (bytes) {
@@ -216,16 +218,16 @@ static ScopedJavaLocalRef<jobject> ReadMessage(JNIEnv* env,
   MojoResult result = MojoReadMessage(
       mojo_handle, buffer_start, &buffer_size, handles, &num_handles, flags);
   // Jave code will handle taking ownership of any received handle.
-  return Java_CoreImpl_newReadMessageResult(env, result, buffer_size,
-                                            num_handles);
+  return Java_CoreImpl_newReadMessageResult(
+             env, result, buffer_size, num_handles).Release();
 }
 
-static ScopedJavaLocalRef<jobject> ReadData(JNIEnv* env,
-                                            jobject jcaller,
-                                            jint mojo_handle,
-                                            jobject elements,
-                                            jint elements_capacity,
-                                            jint flags) {
+static jobject ReadData(JNIEnv* env,
+                        jobject jcaller,
+                        jint mojo_handle,
+                        jobject elements,
+                        jint elements_capacity,
+                        jint flags) {
   void* buffer_start = 0;
   uint32_t buffer_size = elements_capacity;
   if (elements) {
@@ -236,14 +238,15 @@ static ScopedJavaLocalRef<jobject> ReadData(JNIEnv* env,
   MojoResult result =
       MojoReadData(mojo_handle, buffer_start, &buffer_size, flags);
   return Java_CoreImpl_newResultAndInteger(
-      env, result, (result == MOJO_RESULT_OK) ? buffer_size : 0);
+             env, result, (result == MOJO_RESULT_OK) ? buffer_size : 0)
+      .Release();
 }
 
-static ScopedJavaLocalRef<jobject> BeginReadData(JNIEnv* env,
-                                                 jobject jcaller,
-                                                 jint mojo_handle,
-                                                 jint num_bytes,
-                                                 jint flags) {
+static jobject BeginReadData(JNIEnv* env,
+                             jobject jcaller,
+                             jint mojo_handle,
+                             jint num_bytes,
+                             jint flags) {
   void const* buffer = 0;
   uint32_t buffer_size = num_bytes;
   MojoResult result =
@@ -253,7 +256,7 @@ static ScopedJavaLocalRef<jobject> BeginReadData(JNIEnv* env,
     byte_buffer =
         env->NewDirectByteBuffer(const_cast<void*>(buffer), buffer_size);
   }
-  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer);
+  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer).Release();
 }
 
 static jint EndReadData(JNIEnv* env,
@@ -263,12 +266,12 @@ static jint EndReadData(JNIEnv* env,
   return MojoEndReadData(mojo_handle, num_bytes_read);
 }
 
-static ScopedJavaLocalRef<jobject> WriteData(JNIEnv* env,
-                                             jobject jcaller,
-                                             jint mojo_handle,
-                                             jobject elements,
-                                             jint limit,
-                                             jint flags) {
+static jobject WriteData(JNIEnv* env,
+                         jobject jcaller,
+                         jint mojo_handle,
+                         jobject elements,
+                         jint limit,
+                         jint flags) {
   void* buffer_start = env->GetDirectBufferAddress(elements);
   DCHECK(buffer_start);
   DCHECK(limit <= env->GetDirectBufferCapacity(elements));
@@ -276,14 +279,15 @@ static ScopedJavaLocalRef<jobject> WriteData(JNIEnv* env,
   MojoResult result =
       MojoWriteData(mojo_handle, buffer_start, &buffer_size, flags);
   return Java_CoreImpl_newResultAndInteger(
-      env, result, (result == MOJO_RESULT_OK) ? buffer_size : 0);
+             env, result, (result == MOJO_RESULT_OK) ? buffer_size : 0)
+      .Release();
 }
 
-static ScopedJavaLocalRef<jobject> BeginWriteData(JNIEnv* env,
-                                                  jobject jcaller,
-                                                  jint mojo_handle,
-                                                  jint num_bytes,
-                                                  jint flags) {
+static jobject BeginWriteData(JNIEnv* env,
+                              jobject jcaller,
+                              jint mojo_handle,
+                              jint num_bytes,
+                              jint flags) {
   void* buffer = 0;
   uint32_t buffer_size = num_bytes;
   MojoResult result =
@@ -292,7 +296,7 @@ static ScopedJavaLocalRef<jobject> BeginWriteData(JNIEnv* env,
   if (result == MOJO_RESULT_OK) {
     byte_buffer = env->NewDirectByteBuffer(buffer, buffer_size);
   }
-  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer);
+  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer).Release();
 }
 
 static jint EndWriteData(JNIEnv* env,
@@ -302,10 +306,10 @@ static jint EndWriteData(JNIEnv* env,
   return MojoEndWriteData(mojo_handle, num_bytes_written);
 }
 
-static ScopedJavaLocalRef<jobject> Duplicate(JNIEnv* env,
-                                             jobject jcaller,
-                                             jint mojo_handle,
-                                             jobject options_buffer) {
+static jobject Duplicate(JNIEnv* env,
+                         jobject jcaller,
+                         jint mojo_handle,
+                         jobject options_buffer) {
   const MojoDuplicateBufferHandleOptions* options = 0;
   if (options_buffer) {
     const void* buffer_start = env->GetDirectBufferAddress(options_buffer);
@@ -318,15 +322,15 @@ static ScopedJavaLocalRef<jobject> Duplicate(JNIEnv* env,
   }
   MojoHandle handle;
   MojoResult result = MojoDuplicateBufferHandle(mojo_handle, options, &handle);
-  return Java_CoreImpl_newResultAndInteger(env, result, handle);
+  return Java_CoreImpl_newResultAndInteger(env, result, handle).Release();
 }
 
-static ScopedJavaLocalRef<jobject> Map(JNIEnv* env,
-                                       jobject jcaller,
-                                       jint mojo_handle,
-                                       jlong offset,
-                                       jlong num_bytes,
-                                       jint flags) {
+static jobject Map(JNIEnv* env,
+                   jobject jcaller,
+                   jint mojo_handle,
+                   jlong offset,
+                   jlong num_bytes,
+                   jint flags) {
   void* buffer = 0;
   MojoResult result =
       MojoMapBuffer(mojo_handle, offset, num_bytes, &buffer, flags);
@@ -334,7 +338,7 @@ static ScopedJavaLocalRef<jobject> Map(JNIEnv* env,
   if (result == MOJO_RESULT_OK) {
     byte_buffer = env->NewDirectByteBuffer(buffer, num_bytes);
   }
-  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer);
+  return Java_CoreImpl_newResultAndBuffer(env, result, byte_buffer).Release();
 }
 
 static int Unmap(JNIEnv* env, jobject jcaller, jobject buffer) {
@@ -343,12 +347,12 @@ static int Unmap(JNIEnv* env, jobject jcaller, jobject buffer) {
   return MojoUnmapBuffer(buffer_start);
 }
 
-static ScopedJavaLocalRef<jobject> AsyncWait(JNIEnv* env,
-                                             jobject jcaller,
-                                             jint mojo_handle,
-                                             jint signals,
-                                             jlong deadline,
-                                             jobject callback) {
+static jobject AsyncWait(JNIEnv* env,
+                         jobject jcaller,
+                         jint mojo_handle,
+                         jint signals,
+                         jlong deadline,
+                         jobject callback) {
   AsyncWaitCallbackData* callback_data =
       new AsyncWaitCallbackData(env, jcaller, callback);
   MojoAsyncWaitID cancel_id;
@@ -366,7 +370,7 @@ static ScopedJavaLocalRef<jobject> AsyncWait(JNIEnv* env,
       Java_CoreImpl_newAsyncWaiterCancellableImpl(
           env, jcaller, cancel_id, reinterpret_cast<intptr_t>(callback_data));
   callback_data->cancellable.Reset(env, cancellable.obj());
-  return cancellable;
+  return cancellable.Release();
 }
 
 static void CancelAsyncWait(JNIEnv* env,

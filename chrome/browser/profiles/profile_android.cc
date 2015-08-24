@@ -48,21 +48,20 @@ bool ProfileAndroid::RegisterProfileAndroid(JNIEnv* env) {
 }
 
 // static
-ScopedJavaLocalRef<jobject> ProfileAndroid::GetLastUsedProfile(JNIEnv* env,
-                                                               jclass clazz) {
+jobject ProfileAndroid::GetLastUsedProfile(JNIEnv* env, jclass clazz) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
   if (profile == NULL) {
     NOTREACHED() << "Profile not found.";
-    return ScopedJavaLocalRef<jobject>();
+    return NULL;
   }
 
   ProfileAndroid* profile_android = ProfileAndroid::FromProfile(profile);
   if (profile_android == NULL) {
     NOTREACHED() << "ProfileAndroid not found.";
-    return ScopedJavaLocalRef<jobject>();
+    return NULL;
   }
 
-  return ScopedJavaLocalRef<jobject>(profile_android->obj_);
+  return profile_android->obj_.obj();
 }
 
 void ProfileAndroid::DestroyWhenAppropriate(JNIEnv* env, jobject obj) {
@@ -96,7 +95,7 @@ jboolean ProfileAndroid::IsOffTheRecord(JNIEnv* env, jobject obj) {
 }
 
 // static
-ScopedJavaLocalRef<jobject> GetLastUsedProfile(JNIEnv* env, jclass clazz) {
+jobject GetLastUsedProfile(JNIEnv* env, jclass clazz) {
   return ProfileAndroid::GetLastUsedProfile(env, clazz);
 }
 

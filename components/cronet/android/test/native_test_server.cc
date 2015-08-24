@@ -254,63 +254,59 @@ void ShutdownNativeTestServer(JNIEnv* env, jclass jcaller) {
   g_test_server = NULL;
 }
 
-ScopedJavaLocalRef<jstring> GetEchoBodyURL(JNIEnv* env, jclass jcaller) {
+jstring GetEchoBodyURL(JNIEnv* env, jclass jcaller) {
   DCHECK(g_test_server);
   GURL url = g_test_server->GetURL(kEchoBodyPath);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
 }
 
-ScopedJavaLocalRef<jstring> GetEchoHeaderURL(JNIEnv* env,
-                                             jclass jcaller,
-                                             jstring jheader) {
+jstring GetEchoHeaderURL(JNIEnv* env, jclass jcaller, jstring jheader) {
   DCHECK(g_test_server);
   GURL url = g_test_server->GetURL(kEchoHeaderPath);
   GURL::Replacements replacements;
   std::string header = base::android::ConvertJavaStringToUTF8(env, jheader);
   replacements.SetQueryStr(header.c_str());
   url = url.ReplaceComponents(replacements);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
 }
 
-ScopedJavaLocalRef<jstring> GetEchoAllHeadersURL(JNIEnv* env, jclass jcaller) {
+jstring GetEchoAllHeadersURL(JNIEnv* env, jclass jcaller) {
   DCHECK(g_test_server);
   GURL url = g_test_server->GetURL(kEchoAllHeadersPath);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
 }
 
-ScopedJavaLocalRef<jstring> GetEchoMethodURL(JNIEnv* env, jclass jcaller) {
+jstring GetEchoMethodURL(JNIEnv* env, jclass jcaller) {
   DCHECK(g_test_server);
   GURL url = g_test_server->GetURL(kEchoMethodPath);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
 }
 
-ScopedJavaLocalRef<jstring> GetRedirectToEchoBody(JNIEnv* env, jclass jcaller) {
+jstring GetRedirectToEchoBody(JNIEnv* env, jclass jcaller) {
   DCHECK(g_test_server);
   GURL url = g_test_server->GetURL(kRedirectToEchoBodyPath);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
 }
 
-ScopedJavaLocalRef<jstring> GetFileURL(JNIEnv* env,
-                                       jclass jcaller,
-                                       jstring jfile_path) {
+jstring GetFileURL(JNIEnv* env, jclass jcaller, jstring jfile_path) {
   DCHECK(g_test_server);
   std::string file = base::android::ConvertJavaStringToUTF8(env, jfile_path);
   GURL url = g_test_server->GetURL(file);
-  return base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
 }
 
-ScopedJavaLocalRef<jstring> GetSdchURL(JNIEnv* env, jclass jcaller) {
+jstring GetSdchURL(JNIEnv* env, jclass jcaller) {
   DCHECK(g_test_server);
   std::string url(base::StringPrintf("http://%s:%d", kFakeSdchDomain,
                                      g_test_server->port()));
-  return base::android::ConvertUTF8ToJavaString(env, url);
+  return base::android::ConvertUTF8ToJavaString(env, url).Release();
 }
 
-ScopedJavaLocalRef<jstring> GetHostPort(JNIEnv* env, jclass jcaller) {
+jstring GetHostPort(JNIEnv* env, jclass jcaller) {
   DCHECK(g_test_server);
   std::string host_port =
       net::HostPortPair::FromURL(g_test_server->base_url()).ToString();
-  return base::android::ConvertUTF8ToJavaString(env, host_port);
+  return base::android::ConvertUTF8ToJavaString(env, host_port).Release();
 }
 
 jboolean IsDataReductionProxySupported(JNIEnv* env, jclass jcaller) {

@@ -120,10 +120,9 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 }  // namespace
 
 // static
-ScopedJavaLocalRef<jstring> GetCachedFullNameForPrimaryAccount(
-    JNIEnv* env,
-    jclass clazz,
-    jobject jprofile) {
+jstring GetCachedFullNameForPrimaryAccount(JNIEnv* env,
+                                           jclass clazz,
+                                           jobject jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   ProfileInfoInterface& info =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -133,14 +132,13 @@ ScopedJavaLocalRef<jstring> GetCachedFullNameForPrimaryAccount(
   if (index != std::string::npos)
     name = info.GetGAIANameOfProfileAtIndex(index);
 
-  return base::android::ConvertUTF16ToJavaString(env, name);
+  return base::android::ConvertUTF16ToJavaString(env, name).Release();
 }
 
 // static
-ScopedJavaLocalRef<jstring> GetCachedGivenNameForPrimaryAccount(
-    JNIEnv* env,
-    jclass clazz,
-    jobject jprofile) {
+jstring GetCachedGivenNameForPrimaryAccount(JNIEnv* env,
+                                            jclass clazz,
+                                            jobject jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   ProfileInfoInterface& info =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -150,13 +148,13 @@ ScopedJavaLocalRef<jstring> GetCachedGivenNameForPrimaryAccount(
   if (index != std::string::npos)
     name = info.GetGAIAGivenNameOfProfileAtIndex(index);
 
-  return base::android::ConvertUTF16ToJavaString(env, name);
+  return base::android::ConvertUTF16ToJavaString(env, name).Release();
 }
 
 // static
-ScopedJavaLocalRef<jobject> GetCachedAvatarForPrimaryAccount(JNIEnv* env,
-                                                             jclass clazz,
-                                                             jobject jprofile) {
+jobject GetCachedAvatarForPrimaryAccount(JNIEnv* env,
+                                         jclass clazz,
+                                         jobject jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   ProfileInfoInterface& info =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -173,7 +171,7 @@ ScopedJavaLocalRef<jobject> GetCachedAvatarForPrimaryAccount(JNIEnv* env,
     }
   }
 
-  return jbitmap;
+  return jbitmap.Release();
 }
 
 // static

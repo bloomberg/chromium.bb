@@ -171,22 +171,22 @@ static void DestroyWebContents(JNIEnv* env,
 }
 
 // static
-ScopedJavaLocalRef<jobject> FromNativePtr(JNIEnv* env,
-                                          jclass clazz,
-                                          jlong web_contents_ptr) {
+jobject FromNativePtr(JNIEnv* env,
+                      jclass clazz,
+                      jlong web_contents_ptr) {
   WebContentsAndroid* web_contents_android =
       reinterpret_cast<WebContentsAndroid*>(web_contents_ptr);
 
   if (!web_contents_android)
-    return ScopedJavaLocalRef<jobject>();
+    return 0;
 
   // Check to make sure this object hasn't been destroyed.
   if (g_allocated_web_contents_androids.Get().find(web_contents_android) ==
       g_allocated_web_contents_androids.Get().end()) {
-    return ScopedJavaLocalRef<jobject>();
+    return 0;
   }
 
-  return web_contents_android->GetJavaObject();
+  return web_contents_android->GetJavaObject().Release();
 }
 
 // static

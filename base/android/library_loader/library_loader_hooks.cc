@@ -152,8 +152,8 @@ void SetVersionNumber(const char* version_number) {
   g_library_version_number = strdup(version_number);
 }
 
-ScopedJavaLocalRef<jstring> GetVersionNumber(JNIEnv* env, jobject jcaller) {
-  return ConvertUTF8ToJavaString(env, g_library_version_number);
+jstring GetVersionNumber(JNIEnv* env, jobject jcaller) {
+  return ConvertUTF8ToJavaString(env, g_library_version_number).Release();
 }
 
 LibraryProcessType GetLibraryProcessType(JNIEnv* env) {

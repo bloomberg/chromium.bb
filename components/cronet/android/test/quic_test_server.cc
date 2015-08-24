@@ -77,8 +77,8 @@ void ShutdownQuicTestServer(JNIEnv* env, jclass /*jcaller*/) {
   delete g_quic_server_thread;
 }
 
-ScopedJavaLocalRef<jstring> GetServerHost(JNIEnv* env, jclass /*jcaller*/) {
-  return base::android::ConvertUTF8ToJavaString(env, kServerHost);
+jstring GetServerHost(JNIEnv* env, jclass /*jcaller*/) {
+  return base::android::ConvertUTF8ToJavaString(env, kServerHost).Release();
 }
 
 int GetServerPort(JNIEnv* env, jclass /*jcaller*/) {

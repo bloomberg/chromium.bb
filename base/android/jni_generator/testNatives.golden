@@ -55,14 +55,13 @@ static jlong Java_org_chromium_TestJni_nativeAddBookmark(JNIEnv* env,
   return native->AddBookmark(env, jcaller, url, title, isFolder, parentId);
 }
 
-static ScopedJavaLocalRef<jstring> GetDomainAndRegistry(JNIEnv* env, jclass
-    jcaller,
+static jstring GetDomainAndRegistry(JNIEnv* env, jclass jcaller,
     jstring url);
 
 static jstring Java_org_chromium_TestJni_nativeGetDomainAndRegistry(JNIEnv* env,
     jclass jcaller,
     jstring url) {
-  return GetDomainAndRegistry(env, jcaller, url).Release();
+  return GetDomainAndRegistry(env, jcaller, url);
 }
 
 static void CreateHistoricalTabFromState(JNIEnv* env, jclass jcaller,
@@ -76,23 +75,21 @@ static void Java_org_chromium_TestJni_nativeCreateHistoricalTabFromState(JNIEnv*
   return CreateHistoricalTabFromState(env, jcaller, state, tab_index);
 }
 
-static ScopedJavaLocalRef<jbyteArray> GetStateAsByteArray(JNIEnv* env, jobject
-    jcaller,
+static jbyteArray GetStateAsByteArray(JNIEnv* env, jobject jcaller,
     jobject view);
 
 static jbyteArray Java_org_chromium_TestJni_nativeGetStateAsByteArray(JNIEnv*
     env, jobject jcaller,
     jobject view) {
-  return GetStateAsByteArray(env, jcaller, view).Release();
+  return GetStateAsByteArray(env, jcaller, view);
 }
 
-static ScopedJavaLocalRef<jobjectArray> GetAutofillProfileGUIDs(JNIEnv* env,
-    jclass jcaller);
+static jobjectArray GetAutofillProfileGUIDs(JNIEnv* env, jclass jcaller);
 
 static jobjectArray
     Java_org_chromium_TestJni_nativeGetAutofillProfileGUIDs(JNIEnv* env, jclass
     jcaller) {
-  return GetAutofillProfileGUIDs(env, jcaller).Release();
+  return GetAutofillProfileGUIDs(env, jcaller);
 }
 
 static void SetRecognitionResults(JNIEnv* env, jobject jcaller,
@@ -132,11 +129,11 @@ static jint Java_org_chromium_TestJni_nativeFindAll(JNIEnv* env, jobject
   return FindAll(env, jcaller, find);
 }
 
-static ScopedJavaLocalRef<jobject> GetInnerClass(JNIEnv* env, jclass jcaller);
+static jobject GetInnerClass(JNIEnv* env, jclass jcaller);
 
 static jobject Java_org_chromium_TestJni_nativeGetInnerClass(JNIEnv* env, jclass
     jcaller) {
-  return GetInnerClass(env, jcaller).Release();
+  return GetInnerClass(env, jcaller);
 }
 
 static jobject Java_org_chromium_TestJni_nativeQueryBitmap(JNIEnv* env,
