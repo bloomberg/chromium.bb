@@ -156,7 +156,7 @@ void TracingHandler::OnCategoriesReceived(
 }
 
 Response TracingHandler::RequestMemoryDump(DevToolsCommandId command_id) {
-  if (!did_initiate_recording_)
+  if (!IsRecording())
     return Response::InternalError("Tracing is not started");
 
   base::trace_event::MemoryDumpArgs dump_args = {
