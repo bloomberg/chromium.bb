@@ -123,7 +123,7 @@ class DictionaryPreferenceIterator {
   void Advance();
 
   const std::string& server_hash() const { return server_hash_; }
-  const GURL url() const { return url_; }
+  const GURL& url() const { return url_; }
   base::Time last_used() const { return last_used_; }
   int use_count() const { return use_count_; }
   int size() const { return size_; }
