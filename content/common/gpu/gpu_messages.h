@@ -77,6 +77,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(gpu::VideoCodecProfile,
 
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(int32, share_group_id)
+  IPC_STRUCT_MEMBER(int32, stream_id)
   IPC_STRUCT_MEMBER(std::vector<int>, attribs)
   IPC_STRUCT_MEMBER(GURL, active_url)
   IPC_STRUCT_MEMBER(gfx::GpuPreference, gpu_preference)

@@ -79,6 +79,7 @@ class GpuCommandBufferStub
       const std::vector<int32>& attribs,
       gfx::GpuPreference gpu_preference,
       bool use_virtualized_gl_context,
+      int32 stream_id,
       int32 route_id,
       int32 surface_id,
       GpuWatchdog* watchdog,
@@ -121,6 +122,9 @@ class GpuCommandBufferStub
   // Identifies the various GpuCommandBufferStubs in the GPU process belonging
   // to the same renderer process.
   int32 route_id() const { return route_id_; }
+
+  // Identifies the stream for this command buffer.
+  int32 stream_id() const { return stream_id_; }
 
   gfx::GpuPreference gpu_preference() { return gpu_preference_; }
 
@@ -255,6 +259,7 @@ class GpuCommandBufferStub
   std::vector<int32> requested_attribs_;
   gfx::GpuPreference gpu_preference_;
   bool use_virtualized_gl_context_;
+  const int32 stream_id_;
   const int32 route_id_;
   const int32 surface_id_;
   bool software_;

@@ -161,6 +161,7 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
+  DCHECK(!share_group || (stream_id == share_group->stream_id()));
   TRACE_EVENT1("gpu",
                "GpuChannelHost::CreateViewCommandBuffer",
                "surface_id",
@@ -169,10 +170,13 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id =
       share_group ? share_group->route_id() : MSG_ROUTING_NONE;
+  init_params.stream_id = stream_id;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
+
   int32 route_id = GenerateRouteID();
+
   CreateCommandBufferResult result = factory_->CreateViewCommandBuffer(
       surface_id, init_params, route_id);
   if (result != CREATE_COMMAND_BUFFER_SUCCEEDED) {
@@ -207,15 +211,19 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateOffscreenCommandBuffer(
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
+  DCHECK(!share_group || (stream_id == share_group->stream_id()));
   TRACE_EVENT0("gpu", "GpuChannelHost::CreateOffscreenCommandBuffer");
 
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id =
       share_group ? share_group->route_id() : MSG_ROUTING_NONE;
+  init_params.stream_id = stream_id;
   init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
+
   int32 route_id = GenerateRouteID();
+
   bool succeeded = false;
   if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(
           size, init_params, route_id, &succeeded))) {

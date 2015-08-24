@@ -593,6 +593,12 @@ CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
 
   GpuCommandBufferStub* share_group = stubs_.get(init_params.share_group_id);
 
+  if (!share_group && init_params.share_group_id != MSG_ROUTING_NONE)
+    return CREATE_COMMAND_BUFFER_FAILED;
+
+  if (share_group && init_params.stream_id != share_group->stream_id())
+    return CREATE_COMMAND_BUFFER_FAILED;
+
   // Virtualize compositor contexts on OS X to prevent performance regressions
   // when enabling FCM.
   // http://crbug.com/180463
@@ -605,15 +611,19 @@ CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
       this, task_runner_.get(), share_group, window, mailbox_manager_.get(),
       subscription_ref_set_.get(), pending_valuebuffer_state_.get(),
       gfx::Size(), disallowed_features_, init_params.attribs,
-      init_params.gpu_preference, use_virtualized_gl_context, route_id,
-      surface_id, watchdog_, software_, init_params.active_url));
+      init_params.gpu_preference, use_virtualized_gl_context,
+      init_params.stream_id, route_id, surface_id, watchdog_, software_,
+      init_params.active_url));
+
   if (preempted_flag_.get())
     stub->SetPreemptByFlag(preempted_flag_);
+
   if (!router_.AddRoute(route_id, stub.get())) {
     DLOG(ERROR) << "GpuChannel::CreateViewCommandBuffer(): "
                    "failed to add route";
     return CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST;
   }
+
   stubs_.set(route_id, stub.Pass());
   return CREATE_COMMAND_BUFFER_SUCCEEDED;
 }
@@ -742,27 +752,40 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
     const GPUCreateCommandBufferConfig& init_params,
     int32 route_id,
     bool* succeeded) {
-  TRACE_EVENT0("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer");
+  TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer", "route_id",
+               route_id);
 
   GpuCommandBufferStub* share_group = stubs_.get(init_params.share_group_id);
+
+  if (!share_group && init_params.share_group_id != MSG_ROUTING_NONE) {
+    *succeeded = false;
+    return;
+  }
+
+  if (share_group && init_params.stream_id != share_group->stream_id()) {
+    *succeeded = false;
+    return;
+  }
 
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this, task_runner_.get(), share_group, gfx::GLSurfaceHandle(),
       mailbox_manager_.get(), subscription_ref_set_.get(),
       pending_valuebuffer_state_.get(), size, disallowed_features_,
-      init_params.attribs, init_params.gpu_preference, false, route_id, 0,
-      watchdog_, software_, init_params.active_url));
+      init_params.attribs, init_params.gpu_preference, false,
+      init_params.stream_id, route_id, 0, watchdog_, software_,
+      init_params.active_url));
+
   if (preempted_flag_.get())
     stub->SetPreemptByFlag(preempted_flag_);
+
   if (!router_.AddRoute(route_id, stub.get())) {
     DLOG(ERROR) << "GpuChannel::OnCreateOffscreenCommandBuffer(): "
                    "failed to add route";
     *succeeded = false;
     return;
   }
+
   stubs_.set(route_id, stub.Pass());
-  TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer",
-               "route_id", route_id);
   *succeeded = true;
 }
 
