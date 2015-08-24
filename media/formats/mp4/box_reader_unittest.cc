@@ -7,9 +7,14 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/mock_media_log.h"
 #include "media/formats/mp4/box_reader.h"
 #include "media/formats/mp4/rcheck.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::HasSubstr;
+using ::testing::StrictMock;
 
 namespace media {
 namespace mp4 {
@@ -76,17 +81,35 @@ SkipBox::SkipBox() {}
 SkipBox::~SkipBox() {}
 
 class BoxReaderTest : public testing::Test {
+ public:
+  BoxReaderTest() : media_log_(new StrictMock<MockMediaLog>()) {}
+
  protected:
   std::vector<uint8> GetBuf() {
     return std::vector<uint8>(kSkipBox, kSkipBox + sizeof(kSkipBox));
   }
+
+  void TestTopLevelBox(const uint8* data, int size, uint32 fourCC) {
+    std::vector<uint8> buf(data, data + size);
+
+    bool err;
+    scoped_ptr<BoxReader> reader(
+        BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
+
+    EXPECT_FALSE(err);
+    EXPECT_TRUE(reader);
+    EXPECT_EQ(fourCC, reader->type());
+    EXPECT_EQ(reader->size(), size);
+  }
+
+  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
 };
 
 TEST_F(BoxReaderTest, ExpectedOperationTest) {
   std::vector<uint8> buf = GetBuf();
   bool err;
   scoped_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), new MediaLog(), &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
   EXPECT_FALSE(err);
   EXPECT_TRUE(reader.get());
 
@@ -113,8 +136,8 @@ TEST_F(BoxReaderTest, OuterTooShortTest) {
   bool err;
 
   // Create a soft failure by truncating the outer box.
-  scoped_ptr<BoxReader> r(BoxReader::ReadTopLevelBox(&buf[0], buf.size() - 2,
-                                                     new MediaLog(), &err));
+  scoped_ptr<BoxReader> r(
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size() - 2, media_log_, &err));
 
   EXPECT_FALSE(err);
   EXPECT_FALSE(r.get());
@@ -127,7 +150,7 @@ TEST_F(BoxReaderTest, InnerTooLongTest) {
   // Make an inner box too big for its outer box.
   buf[25] = 1;
   scoped_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), new MediaLog(), &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
 
   SkipBox box;
   EXPECT_FALSE(box.Parse(reader.get()));
@@ -139,8 +162,11 @@ TEST_F(BoxReaderTest, WrongFourCCTest) {
 
   // Set an unrecognized top-level FourCC.
   buf[5] = 1;
+
+  EXPECT_MEDIA_LOG(HasSubstr("Unrecognized top-level box type s\\u0001ip"));
+
   scoped_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), new MediaLog(), &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
   EXPECT_FALSE(reader.get());
   EXPECT_TRUE(err);
 }
@@ -149,7 +175,7 @@ TEST_F(BoxReaderTest, ScanChildrenTest) {
   std::vector<uint8> buf = GetBuf();
   bool err;
   scoped_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), new MediaLog(), &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
 
   EXPECT_TRUE(reader->SkipBytes(16) && reader->ScanChildren());
 
@@ -173,26 +199,12 @@ TEST_F(BoxReaderTest, ReadAllChildrenTest) {
   buf[3] = 0x38;
   bool err;
   scoped_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), new MediaLog(), &err));
+      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), media_log_, &err));
 
   std::vector<PsshBox> kids;
   EXPECT_TRUE(reader->SkipBytes(16) && reader->ReadAllChildren(&kids));
   EXPECT_EQ(2u, kids.size());
   EXPECT_EQ(kids[0].val, 0xdeadbeef);   // Ensure order is preserved
-}
-
-static void TestTopLevelBox(const uint8* data, int size, uint32 fourCC) {
-
-  std::vector<uint8> buf(data, data + size);
-
-  bool err;
-  scoped_ptr<BoxReader> reader(
-      BoxReader::ReadTopLevelBox(&buf[0], buf.size(), new MediaLog(), &err));
-
-  EXPECT_FALSE(err);
-  EXPECT_TRUE(reader);
-  EXPECT_EQ(fourCC, reader->type());
-  EXPECT_EQ(reader->size(), size);
 }
 
 TEST_F(BoxReaderTest, SkippingBloc) {

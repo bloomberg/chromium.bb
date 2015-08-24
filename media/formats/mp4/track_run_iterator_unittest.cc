@@ -6,10 +6,14 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
+#include "media/base/mock_media_log.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/track_run_iterator.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::StrictMock;
 
 // The sum of the elements in a vector initialized with SumAscending,
 // less the value of the last element.
@@ -49,13 +53,19 @@ static const uint8 kFragmentCencSampleGroupKeyId[] = {
 namespace media {
 namespace mp4 {
 
+MATCHER(ReservedValueInSampleDependencyInfo, "") {
+  return CONTAINS_STRING(arg, "Reserved value used in sample dependency info.");
+}
+
 class TrackRunIteratorTest : public testing::Test {
  public:
-  TrackRunIteratorTest() : media_log_(new MediaLog()) { CreateMovie(); }
+  TrackRunIteratorTest() : media_log_(new StrictMock<MockMediaLog>()) {
+    CreateMovie();
+  }
 
  protected:
   Movie moov_;
-  scoped_refptr<MediaLog> media_log_;
+  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
   scoped_ptr<TrackRunIterator> iter_;
 
   void CreateMovie() {
@@ -389,6 +399,7 @@ TEST_F(TrackRunIteratorTest, FirstSampleFlagTest) {
 
 // Verify that parsing fails if a reserved value is in the sample flags.
 TEST_F(TrackRunIteratorTest, SampleInfoTest_ReservedInSampleFlags) {
+  EXPECT_MEDIA_LOG(ReservedValueInSampleDependencyInfo());
   iter_.reset(new TrackRunIterator(&moov_, media_log_));
   MovieFragment moof = CreateFragment();
   // Change the "depends on" field on one of the samples to a
@@ -399,6 +410,7 @@ TEST_F(TrackRunIteratorTest, SampleInfoTest_ReservedInSampleFlags) {
 
 // Verify that parsing fails if a reserved value is in the default sample flags.
 TEST_F(TrackRunIteratorTest, SampleInfoTest_ReservedInDefaultSampleFlags) {
+  EXPECT_MEDIA_LOG(ReservedValueInSampleDependencyInfo());
   iter_.reset(new TrackRunIterator(&moov_, media_log_));
   MovieFragment moof = CreateFragment();
   // Set the default flag to contain a reserved "depends on" value.
