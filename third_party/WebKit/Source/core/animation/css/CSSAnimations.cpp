@@ -297,10 +297,9 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
 
 void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 {
-    if (m_pendingUpdate.isEmpty()) {
-        m_previousActiveInterpolationsForAnimations.clear();
+    m_previousActiveInterpolationsForAnimations.clear();
+    if (m_pendingUpdate.isEmpty())
         return;
-    }
 
     m_previousActiveInterpolationsForAnimations.swap(m_pendingUpdate.activeInterpolationsForAnimations());
 
