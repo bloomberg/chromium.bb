@@ -58,6 +58,9 @@ class VirtualKeyboardDelegate {
 
   // Sets virtual keyboard window mode.
   virtual bool SetVirtualKeyboardMode(int mode_enum) = 0;
+
+  // Sets requested virtual keyboard state.
+  virtual bool SetRequestedKeyboardState(int state_enum) = 0;
 };
 
 }  // namespace extensions

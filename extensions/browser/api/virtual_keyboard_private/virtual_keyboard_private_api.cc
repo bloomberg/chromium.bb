@@ -13,6 +13,8 @@
 #include "ui/events/event.h"
 
 namespace SetMode = extensions::api::virtual_keyboard_private::SetMode;
+namespace SetRequestedKeyboardState =
+    extensions::api::virtual_keyboard_private::SetKeyboardState;
 
 namespace extensions {
 
@@ -125,6 +127,23 @@ bool VirtualKeyboardPrivateSetModeFunction::RunSync() {
     scoped_ptr<SetMode::Params> params = SetMode::Params::Create(*args_);
     EXTENSION_FUNCTION_VALIDATE(params);
     if (!delegate->SetVirtualKeyboardMode(params->mode)) {
+      error_ = kVirtualKeyboardNotEnabled;
+      return false;
+    } else {
+      return true;
+    }
+  }
+  error_ = kNotYetImplementedError;
+  return false;
+}
+
+bool VirtualKeyboardPrivateSetKeyboardStateFunction::RunSync() {
+  VirtualKeyboardDelegate* delegate = GetDelegate(this);
+  if (delegate) {
+    scoped_ptr<SetRequestedKeyboardState::Params> params =
+        SetRequestedKeyboardState::Params::Create(*args_);
+    EXTENSION_FUNCTION_VALIDATE(params);
+    if (!delegate->SetRequestedKeyboardState(params->state)) {
       error_ = kVirtualKeyboardNotEnabled;
       return false;
     } else {

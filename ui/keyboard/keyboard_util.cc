@@ -52,6 +52,9 @@ base::LazyInstance<GURL> g_override_content_url = LAZY_INSTANCE_INITIALIZER;
 
 bool g_touch_keyboard_enabled = false;
 
+keyboard::KeyboardState g_requested_keyboard_state =
+    keyboard::KEYBOARD_STATE_AUTO;
+
 keyboard::KeyboardOverscrolOverride g_keyboard_overscroll_override =
     keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE;
 
@@ -87,6 +90,14 @@ bool GetTouchKeyboardEnabled() {
   return g_touch_keyboard_enabled;
 }
 
+void SetRequestedKeyboardState(KeyboardState state) {
+  g_requested_keyboard_state = state;
+}
+
+KeyboardState GetKeyboardRequestedState() {
+  return g_requested_keyboard_state;
+}
+
 std::string GetKeyboardLayout() {
   // TODO(bshe): layout string is currently hard coded. We should use more
   // standard keyboard layouts.
@@ -100,11 +111,19 @@ bool IsKeyboardEnabled() {
   // Policy strictly disables showing a virtual keyboard.
   if (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED)
     return false;
-  // Check if any of the flags are enabled.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableVirtualKeyboard) ||
-         g_touch_keyboard_enabled ||
-         (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED);
+  // Policy strictly enables the keyboard.
+  if (g_keyboard_show_override == keyboard::KEYBOARD_SHOW_OVERRIDE_ENABLED)
+    return true;
+  // Run-time flag to enable keyboard has been included.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVirtualKeyboard))
+    return true;
+  // Requested state from the application layer.
+  if (g_requested_keyboard_state == keyboard::KEYBOARD_STATE_DISABLED)
+    return false;
+  // Check if any of the other flags are enabled.
+  return g_touch_keyboard_enabled ||
+         g_requested_keyboard_state == keyboard::KEYBOARD_STATE_ENABLED;
 }
 
 bool IsKeyboardOverscrollEnabled() {

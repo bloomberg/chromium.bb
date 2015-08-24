@@ -117,6 +117,19 @@ class VirtualKeyboardPrivateSetModeFunction : public SyncExtensionFunction {
   bool RunSync() override;
 };
 
+class VirtualKeyboardPrivateSetKeyboardStateFunction
+    : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setKeyboardState",
+                             VIRTUALKEYBOARDPRIVATE_SETKEYBOARDSTATE);
+
+ protected:
+  ~VirtualKeyboardPrivateSetKeyboardStateFunction() override {}
+
+  // ExtensionFunction:
+  bool RunSync() override;
+};
+
 class VirtualKeyboardDelegate;
 
 class VirtualKeyboardAPI : public BrowserContextKeyedAPI {

@@ -52,7 +52,17 @@ enum KeyboardShowOverride {
   KEYBOARD_SHOW_OVERRIDE_NONE,
 };
 
-// Gets the caculated keyboard bounds from |root_bounds|. The keyboard height
+// An enumeration of keyboard states.
+enum KeyboardState {
+  // Default state. System decides whether to show the keyboard or not.
+  KEYBOARD_STATE_AUTO = 0,
+  // Request virtual keyboard be deployed.
+  KEYBOARD_STATE_ENABLED,
+  // Request virtual keyboard be suppressed.
+  KEYBOARD_STATE_DISABLED,
+};
+
+// Gets the calculated keyboard bounds from |root_bounds|. The keyboard height
 // is specified by |keyboard_height|. This should be only called when keyboard
 // is in FULL_WDITH mode.
 KEYBOARD_EXPORT gfx::Rect FullWidthKeyboardBoundsFromRootBounds(
@@ -69,6 +79,12 @@ KEYBOARD_EXPORT void SetTouchKeyboardEnabled(bool enabled);
 
 // Gets the state of the touch onscreen keyboard.
 KEYBOARD_EXPORT bool GetTouchKeyboardEnabled();
+
+// Sets the requested state of the keyboard.
+KEYBOARD_EXPORT void SetRequestedKeyboardState(KeyboardState state);
+
+// Gets the requested state of the keyboard.
+KEYBOARD_EXPORT int GetRequestedKeyboardState();
 
 // Gets the default keyboard layout.
 KEYBOARD_EXPORT std::string GetKeyboardLayout();

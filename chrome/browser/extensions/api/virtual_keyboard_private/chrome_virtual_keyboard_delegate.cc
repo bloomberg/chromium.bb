@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
@@ -47,6 +48,20 @@ keyboard::KeyboardMode getKeyboardModeEnum(keyboard_api::KeyboardMode mode) {
       return keyboard::FLOATING;
   }
   return keyboard::NONE;
+}
+
+keyboard::KeyboardState getKeyboardStateEnum(
+    keyboard_api::KeyboardState state) {
+  switch (state) {
+    case keyboard_api::KEYBOARD_STATE_ENABLED:
+      return keyboard::KEYBOARD_STATE_ENABLED;
+    case keyboard_api::KEYBOARD_STATE_DISABLED:
+      return keyboard::KEYBOARD_STATE_DISABLED;
+    case keyboard_api::KEYBOARD_STATE_AUTO:
+    case keyboard_api::KEYBOARD_STATE_NONE:
+      return keyboard::KEYBOARD_STATE_AUTO;
+  }
+  return keyboard::KEYBOARD_STATE_AUTO;
 }
 
 }  // namespace
@@ -145,6 +160,22 @@ bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(int mode_enum) {
     return false;
 
   controller->SetKeyboardMode(keyboard_mode);
+  return true;
+}
+
+bool ChromeVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
+  keyboard::KeyboardState keyboard_state = getKeyboardStateEnum(
+      static_cast<keyboard_api::KeyboardState>(state_enum));
+  bool was_enabled = keyboard::IsKeyboardEnabled();
+  keyboard::SetRequestedKeyboardState(keyboard_state);
+  bool is_enabled = keyboard::IsKeyboardEnabled();
+  if (was_enabled == is_enabled)
+    return true;
+  if (is_enabled) {
+    ash::Shell::GetInstance()->CreateKeyboard();
+  } else {
+    ash::Shell::GetInstance()->DeactivateKeyboard();
+  }
   return true;
 }
 

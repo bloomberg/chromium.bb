@@ -35,6 +35,12 @@
         "description": "The value of the virtual keyboard mode to set to."
       },
       {
+        "id": "KeyboardState",
+        "type": "string",
+        "enum": [ "ENABLED", "DISABLED", "AUTO"],
+        "description": "The value of the virtual keyboard state to change to."
+      },
+      {
         "id": "OnTextInputBoxFocusedType",
         "type": "string",
         "description": "The value of type attribute of the focused text input box.",
@@ -174,6 +180,18 @@
             "$ref": "KeyboardMode",
             "name": "mode",
             "description": "The value of the virtual keyboard mode to set to."
+          }
+        ]
+      },
+      {
+        "name": "setKeyboardState",
+        "type": "function",
+        "description": "Requests the virtual keyboard to change state.",
+        "parameters": [
+          {
+            "$ref": "KeyboardState",
+            "name": "state",
+            "description": "The value of the virtual keyboard state to change to."
           }
         ]
       }

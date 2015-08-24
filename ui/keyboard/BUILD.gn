@@ -101,6 +101,7 @@ build_closure("inputview") {
 test("keyboard_unittests") {
   sources = [
     "keyboard_controller_unittest.cc",
+    "keyboard_util_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 
