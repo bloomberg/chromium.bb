@@ -68,6 +68,7 @@ group("both_gn_and_gyp") {
     "//base:base_unittests",
     "//sql:sql_unittests",
     "//net:net_unittests",
+    "//skia:skia_unittests",
     "//ui/base:ui_base_unittests",
     "//url:url_unittests",
   ]
@@ -139,7 +140,6 @@ group("both_gn_and_gyp") {
       "//ppapi/examples/video_effects",
       "//ppapi/examples/video_encode",
       "//printing:printing_unittests",
-      "//skia:skia_unittests",
       "//sync:sync_unit_tests",
       "//third_party/WebKit/Source/platform:heap_unittests",
       "//third_party/WebKit/Source/platform:platform_unittests",
