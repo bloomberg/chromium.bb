@@ -15,9 +15,9 @@ namespace blink {
 
 TEST(BlinkGCDumpProviderTest, MemoryDump)
 {
-    WebProcessMemoryDump* dump  = Platform::current()->createProcessMemoryDump();
+    OwnPtr<WebProcessMemoryDump> dump = adoptPtr(Platform::current()->createProcessMemoryDump());
     ASSERT(dump);
-    BlinkGCMemoryDumpProvider::instance()->onMemoryDump(WebMemoryDumpLevelOfDetail::High, dump);
+    BlinkGCMemoryDumpProvider::instance()->onMemoryDump(WebMemoryDumpLevelOfDetail::High, dump.get());
     ASSERT(dump->getMemoryAllocatorDump(String::format("blink_gc")));
     ASSERT(dump->getMemoryAllocatorDump(String::format("blink_gc/allocated_objects")));
 }
