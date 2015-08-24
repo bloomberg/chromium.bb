@@ -1055,7 +1055,7 @@ TEST_F(FFmpegDemuxerTest, NaturalSizeWithoutPASP) {
   ASSERT_TRUE(stream);
 
   const VideoDecoderConfig& video_config = stream->video_decoder_config();
-  EXPECT_EQ(gfx::Size(638, 360), video_config.natural_size());
+  EXPECT_EQ(gfx::Size(639, 360), video_config.natural_size());
 }
 
 TEST_F(FFmpegDemuxerTest, NaturalSizeWithPASP) {
@@ -1066,7 +1066,7 @@ TEST_F(FFmpegDemuxerTest, NaturalSizeWithPASP) {
   ASSERT_TRUE(stream);
 
   const VideoDecoderConfig& video_config = stream->video_decoder_config();
-  EXPECT_EQ(gfx::Size(638, 360), video_config.natural_size());
+  EXPECT_EQ(gfx::Size(639, 360), video_config.natural_size());
 }
 
 #endif

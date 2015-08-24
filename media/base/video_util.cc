@@ -25,12 +25,8 @@ gfx::Size GetNaturalSize(const gfx::Size& visible_size,
   double aspect_ratio = aspect_ratio_numerator /
       static_cast<double>(aspect_ratio_denominator);
 
-  int width = floor(visible_size.width() * aspect_ratio + 0.5);
-  int height = visible_size.height();
-
-  // An even width makes things easier for YV12 and appears to be the behavior
-  // expected by WebKit layout tests.
-  return gfx::Size(width & ~1, height);
+  return gfx::Size(round(visible_size.width() * aspect_ratio),
+                   visible_size.height());
 }
 
 void CopyPlane(size_t plane, const uint8* source, int stride, int rows,

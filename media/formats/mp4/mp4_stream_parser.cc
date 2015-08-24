@@ -298,10 +298,8 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
             GetNaturalSize(visible_rect.size(), entry.pixel_aspect.h_spacing,
                            entry.pixel_aspect.v_spacing);
       } else if (track->header.width && track->header.height) {
-        // An even width makes things easier for YV12 and appears to be the
-        // behavior expected by WebKit layout tests. See GetNaturalSize().
         natural_size =
-            gfx::Size(track->header.width & ~1, track->header.height);
+            gfx::Size(track->header.width, track->header.height);
       }
 
       is_video_track_encrypted_ = entry.sinf.info.track_encryption.is_encrypted;

@@ -265,8 +265,17 @@ bool TrackHeader::Parse(BoxReader* reader) {
          reader->SkipBytes(36) &&  // matrix
          reader->Read4(&width) &&
          reader->Read4(&height));
-  width >>= 16;
-  height >>= 16;
+
+  // Round width and height to the nearest number.
+  // Note: width and height are fixed-point 16.16 values. The following code
+  // rounds a.1x to a + 1, and a.0x to a.
+  width >>= 15;
+  width += 1;
+  width >>= 1;
+  height >>= 15;
+  height += 1;
+  height >>= 1;
+
   return true;
 }
 

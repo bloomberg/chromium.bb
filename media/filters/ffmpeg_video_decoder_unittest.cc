@@ -316,8 +316,10 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorTooLarge) {
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorTooLarge) {
-  int den = kVisibleRect.size().width() + 1;
+  // Denominator is large enough that the natural size height will be zero.
+  int den = 2 * kVisibleRect.size().width() + 1;
   gfx::Size natural_size = GetNaturalSize(kVisibleRect.size(), 1, den);
+  EXPECT_EQ(0, natural_size.width());
   VideoDecoderConfig config(kCodecVP8,
                             VP8PROFILE_ANY,
                             kVideoFormat,

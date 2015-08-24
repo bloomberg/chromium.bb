@@ -272,7 +272,7 @@ TEST_F(MP4StreamParserTest, NaturalSizeWithoutPASP) {
       ReadTestDataFile("bear-640x360-non_square_pixel-without_pasp.mp4");
 
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
-  EXPECT_EQ(gfx::Size(638, 360), video_decoder_config_.natural_size());
+  EXPECT_EQ(gfx::Size(639, 360), video_decoder_config_.natural_size());
 }
 
 TEST_F(MP4StreamParserTest, NaturalSizeWithPASP) {
@@ -282,7 +282,7 @@ TEST_F(MP4StreamParserTest, NaturalSizeWithPASP) {
       ReadTestDataFile("bear-640x360-non_square_pixel-with_pasp.mp4");
 
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
-  EXPECT_EQ(gfx::Size(638, 360), video_decoder_config_.natural_size());
+  EXPECT_EQ(gfx::Size(639, 360), video_decoder_config_.natural_size());
 }
 
 }  // namespace mp4

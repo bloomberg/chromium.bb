@@ -65,6 +65,35 @@ class VideoUtilTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VideoUtilTest);
 };
 
+TEST_F(VideoUtilTest, GetNaturalSize) {
+  gfx::Size visible_size(320, 240);
+
+  // Test 0 sizes.
+  EXPECT_EQ(gfx::Size(0, 0), GetNaturalSize(gfx::Size(0, 0), 1, 1));
+  EXPECT_EQ(gfx::Size(0, 1), GetNaturalSize(gfx::Size(0, 1), 1, 1));
+  EXPECT_EQ(gfx::Size(1, 0), GetNaturalSize(gfx::Size(1, 0), 1, 1));
+
+  // Test abnormal ratios.
+  EXPECT_EQ(gfx::Size(0, 0), GetNaturalSize(visible_size, 0, 0));
+  EXPECT_EQ(gfx::Size(0, 0), GetNaturalSize(visible_size, 1, 0));
+  EXPECT_EQ(gfx::Size(0, 0), GetNaturalSize(visible_size, 1, -1));
+  EXPECT_EQ(gfx::Size(0, 0), GetNaturalSize(visible_size, -1, 1));
+
+  // Test normal sizes and ratios.
+  EXPECT_EQ(gfx::Size(0, 240), GetNaturalSize(visible_size, 0, 1));
+  EXPECT_EQ(gfx::Size(320, 240), GetNaturalSize(visible_size, 1, 1));
+  EXPECT_EQ(gfx::Size(640, 240), GetNaturalSize(visible_size, 2, 1));
+  EXPECT_EQ(gfx::Size(160, 240), GetNaturalSize(visible_size, 1, 2));
+  EXPECT_EQ(gfx::Size(427, 240), GetNaturalSize(visible_size, 4, 3));
+  EXPECT_EQ(gfx::Size(240, 240), GetNaturalSize(visible_size, 3, 4));
+  EXPECT_EQ(gfx::Size(569, 240), GetNaturalSize(visible_size, 16, 9));
+  EXPECT_EQ(gfx::Size(180, 240), GetNaturalSize(visible_size, 9, 16));
+
+  // Test some random ratios.
+  EXPECT_EQ(gfx::Size(495, 240), GetNaturalSize(visible_size, 17, 11));
+  EXPECT_EQ(gfx::Size(207, 240), GetNaturalSize(visible_size, 11, 17));
+}
+
 TEST_F(VideoUtilTest, CopyPlane_Exact) {
   CreateSourceFrame(16, 16, 16, 8, 8);
   CreateDestinationFrame(16, 16);
