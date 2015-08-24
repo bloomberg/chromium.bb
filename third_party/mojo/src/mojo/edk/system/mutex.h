@@ -23,7 +23,7 @@ namespace system {
 
 // Mutex -----------------------------------------------------------------------
 
-class MOJO_SYSTEM_IMPL_EXPORT MOJO_LOCKABLE Mutex {
+class MOJO_LOCKABLE MOJO_SYSTEM_IMPL_EXPORT Mutex {
  public:
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   Mutex() : lock_() {}
@@ -73,7 +73,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MOJO_LOCKABLE Mutex {
 
 // MutexLocker -----------------------------------------------------------------
 
-class MOJO_SYSTEM_IMPL_EXPORT MOJO_SCOPED_LOCKABLE MutexLocker {
+class MOJO_SCOPED_LOCKABLE MOJO_SYSTEM_IMPL_EXPORT MutexLocker {
  public:
   explicit MutexLocker(Mutex* mutex) MOJO_EXCLUSIVE_LOCK_FUNCTION(mutex)
       : mutex_(mutex) {
