@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.tabmodel.document;
 
 import android.content.Context;
-import android.os.StrictMode;
+import android.os.AsyncTask;
 import android.util.SparseArray;
 
 import com.google.protobuf.nano.MessageNano;
@@ -129,45 +129,13 @@ public class StorageDelegate extends TabPersister {
     }
 
     /**
-     * Constructs the DocumentTabModel's entries by combining the tasks currently listed in Android
-     * with information stored out in a metadata file.
-     * @param isIncognito               Whether to build an Incognito tab list.
-     * @param activityDelegate          Interacts with the Activitymanager.
-     * @param entryMap                  Map to fill with {@link DocumentTabModel.Entry}s about Tabs.
-     * @param tabIdList                 List to fill with live Tab IDs.
-     * @param recentlyClosedTabIdList   List to fill with IDs of recently closed tabs.
+     * Update tab entries based on metadata.
+     * @param metadataBytes Metadata from last time Chrome was alive.
+     * @param entryMap Map to fill with {@link DocumentTabModel.Entry}s about Tabs.
+     * @param recentlyClosedTabIdList List to fill with IDs of recently closed tabs.
      */
-    public void restoreTabEntries(boolean isIncognito, ActivityDelegate activityDelegate,
-            SparseArray<Entry> entryMap, List<Integer> tabIdList,
+    private void updateTabEntriesFromMetadata(byte[] metadataBytes, SparseArray<Entry> entryMap,
             List<Integer> recentlyClosedTabIdList) {
-        assert entryMap.size() == 0;
-        assert tabIdList.isEmpty();
-        assert recentlyClosedTabIdList.isEmpty();
-
-        // Run through Android's Overview to see what Chrome tabs are still listed.
-        List<Entry> entries = activityDelegate.getTasksFromRecents(isIncognito);
-        for (Entry entry : entries) {
-            int tabId = entry.tabId;
-            if (tabId != Tab.INVALID_TAB_ID) {
-                if (!tabIdList.contains(tabId)) tabIdList.add(tabId);
-                entryMap.put(tabId, entry);
-            }
-
-            // Prevent these tabs from being retargeted until we have had the opportunity to load
-            // more information about them.
-            entry.canGoBack = true;
-        }
-
-        // Read the metadata file, which saved out the list of Tabs from when Chrome was last alive.
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/496348
-        byte[] metadataBytes = null;
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            metadataBytes = readMetadataFileBytes(isIncognito);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-
         if (metadataBytes != null) {
             DocumentList list = null;
             try {
@@ -191,5 +159,49 @@ public class StorageDelegate extends TabPersister {
                 entryMap.get(tabId).canGoBack = savedEntry.canGoBack;
             }
         }
+    }
+
+    /**
+     * Constructs the DocumentTabModel's entries by combining the tasks currently listed in Android
+     * with information stored out in a metadata file.
+     * @param isIncognito               Whether to build an Incognito tab list.
+     * @param activityDelegate          Interacts with the Activitymanager.
+     * @param entryMap                  Map to fill with {@link DocumentTabModel.Entry}s about Tabs.
+     * @param tabIdList                 List to fill with live Tab IDs.
+     * @param recentlyClosedTabIdList   List to fill with IDs of recently closed tabs.
+     */
+    public void restoreTabEntries(final boolean isIncognito, ActivityDelegate activityDelegate,
+            final SparseArray<Entry> entryMap, List<Integer> tabIdList,
+            final List<Integer> recentlyClosedTabIdList) {
+        assert entryMap.size() == 0;
+        assert tabIdList.isEmpty();
+        assert recentlyClosedTabIdList.isEmpty();
+
+        // Run through Android's Overview to see what Chrome tabs are still listed.
+        List<Entry> entries = activityDelegate.getTasksFromRecents(isIncognito);
+        for (Entry entry : entries) {
+            int tabId = entry.tabId;
+            if (tabId != Tab.INVALID_TAB_ID) {
+                if (!tabIdList.contains(tabId)) tabIdList.add(tabId);
+                entryMap.put(tabId, entry);
+            }
+
+            // Prevent these tabs from being retargeted until we have had the opportunity to load
+            // more information about them.
+            entry.canGoBack = true;
+        }
+
+        new AsyncTask<Void, Void, byte[]>() {
+            @Override
+            protected byte[] doInBackground(Void... params) {
+                return readMetadataFileBytes(isIncognito);
+            }
+
+            @Override
+            protected void onPostExecute(byte[] metadataBytes) {
+                updateTabEntriesFromMetadata(metadataBytes, entryMap, recentlyClosedTabIdList);
+            }
+        // Run on serial executor to ensure that this is done before other start-up tasks.
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 }

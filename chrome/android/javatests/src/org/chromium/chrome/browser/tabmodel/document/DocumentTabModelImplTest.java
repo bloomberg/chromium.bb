@@ -144,7 +144,9 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         assertEquals(1011, mTabModel.getTabAt(1).getId());
         assertEquals("http://erfworld.com", mTabModel.getInitialUrlForDocument(1010));
         assertEquals("http://reddit.com/r/android", mTabModel.getInitialUrlForDocument(1011));
-        assertEquals(true, mTabModel.isRetargetable(1010));
+        // Due to using AsyncTask to fetch metadata, at this point both should be non-retargetable
+        // by default until that AsyncTask completes.
+        assertEquals(false, mTabModel.isRetargetable(1010));
         assertEquals(false, mTabModel.isRetargetable(1011));
 
         // State of the tabs.
@@ -157,6 +159,9 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         TestInitializationObserver.waitUntilState(
                 mTabModel, DocumentTabModelImpl.STATE_LOAD_TAB_STATE_BG_END);
         assertNotNull(mTabModel.getTabStateForDocument(1011));
+        // Startup AsyncTasks must be complete by now since they are both on serial executor.
+        assertEquals(true, mTabModel.isRetargetable(1010));
+        assertEquals(false, mTabModel.isRetargetable(1011));
 
         // Load the native library, wait until the states are deserialized, then check their values.
         initializeNativeTabModel();
@@ -183,7 +188,8 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         assertEquals(1011, mTabModel.getTabAt(1).getId());
         assertEquals("http://erfworld.com", mTabModel.getInitialUrlForDocument(1010));
         assertEquals("http://reddit.com/r/android", mTabModel.getInitialUrlForDocument(1011));
-        assertEquals(true, mTabModel.isRetargetable(1010));
+        // Same as in testBasic.
+        assertEquals(false, mTabModel.isRetargetable(1010));
         assertEquals(false, mTabModel.isRetargetable(1011));
 
         // State of the tabs.
@@ -196,6 +202,9 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         TestInitializationObserver.waitUntilState(
                 mTabModel, DocumentTabModelImpl.STATE_LOAD_TAB_STATE_BG_END);
         assertNotNull(mTabModel.getTabStateForDocument(1011));
+        // Same as in testBasic.
+        assertEquals(true, mTabModel.isRetargetable(1010));
+        assertEquals(false, mTabModel.isRetargetable(1011));
 
         // Load the native library, wait until the states are deserialized, then check their values.
         initializeNativeTabModel();
@@ -227,6 +236,9 @@ public class DocumentTabModelImplTest extends NativeLibraryTestBase {
         assertEquals("http://reddit.com/r/android", mTabModel.getInitialUrlForDocument(1011));
         assertEquals("http://digg.com", mTabModel.getInitialUrlForDocument(1012));
 
+        // Wait until the tab states are loaded, by then the AsyncTask to load metadata is done.
+        TestInitializationObserver.waitUntilState(
+                mTabModel, DocumentTabModelImpl.STATE_LOAD_TAB_STATE_BG_END);
         assertEquals(true, mTabModel.isRetargetable(1010));
         assertEquals(false, mTabModel.isRetargetable(1011));
         assertEquals(false, mTabModel.isRetargetable(1012));
