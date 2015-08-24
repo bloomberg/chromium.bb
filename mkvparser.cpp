@@ -1838,21 +1838,26 @@ bool Cues::Init() const {
       return false;
     }
 
-    if (id == 0x3B)  // CuePoint ID
-      PreloadCuePoint(cue_points_size, idpos);
+    if (id == 0x3B) {  // CuePoint ID
+      if (!PreloadCuePoint(cue_points_size, idpos))
+        return false;
+    }
 
     pos += size;  // skip payload
   }
   return true;
 }
 
-void Cues::PreloadCuePoint(long& cue_points_size, long long pos) const {
+bool Cues::PreloadCuePoint(long& cue_points_size, long long pos) const {
   assert(m_count == 0);
 
   if (m_preload_count >= cue_points_size) {
     const long n = (cue_points_size <= 0) ? 2048 : 2 * cue_points_size;
 
-    CuePoint** const qq = new CuePoint*[n];
+    CuePoint** const qq = new (std::nothrow) CuePoint*[n];
+    if (qq == NULL)
+      return false;
+
     CuePoint** q = qq;  // beginning of target
 
     CuePoint** p = m_cue_points;  // beginning of source
@@ -1867,8 +1872,12 @@ void Cues::PreloadCuePoint(long& cue_points_size, long long pos) const {
     cue_points_size = n;
   }
 
-  CuePoint* const pCP = new CuePoint(m_preload_count, pos);
+  CuePoint* const pCP = new (std::nothrow) CuePoint(m_preload_count, pos);
+  if (pCP == NULL)
+    return false;
+
   m_cue_points[m_preload_count++] = pCP;
+  return true;
 }
 
 bool Cues::LoadCuePoint() const {
