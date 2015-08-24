@@ -4,11 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
 
-#include <drm.h>
 #include <drm/drm_fourcc.h>
-#include <errno.h>
 #include <gbm.h>
-#include <xf86drm.h>
 
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 

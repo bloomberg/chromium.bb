@@ -4,11 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 
-#include <drm.h>
-#include <xf86drm.h>
-
 #include "base/logging.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 
 namespace ui {

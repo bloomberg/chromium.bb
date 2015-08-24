@@ -93,10 +93,6 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
                       bool is_sync,
                       bool test_only) = 0;
 
-  // Set all planes in |plane_list| owned by |crtc_id| to free.
-  static void ResetPlanes(HardwareDisplayPlaneList* plane_list,
-                          uint32_t crtc_id);
-
   const ScopedVector<HardwareDisplayPlane>& planes() { return planes_; }
 
  protected:
