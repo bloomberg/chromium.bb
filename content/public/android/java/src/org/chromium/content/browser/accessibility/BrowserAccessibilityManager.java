@@ -374,6 +374,8 @@ public class BrowserAccessibilityManager {
         if (id == 0) return false;
 
         moveAccessibilityFocusToId(id);
+        nativeScrollToMakeNodeVisible(
+                mNativeObj, mAccessibilityFocusId);
         return true;
     }
 
