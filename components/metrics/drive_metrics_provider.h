@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_METRICS_DRIVE_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_DRIVE_METRICS_PROVIDER_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -37,7 +37,7 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
       metrics::SystemProfileProto* system_profile_proto) override;
 
   // Called to start gathering metrics.
-  void GetDriveMetrics(const base::Closure& done);
+  void GetDriveMetrics(const base::Closure& done_callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DriveMetricsProviderTest, HasSeekPenalty);
@@ -69,7 +69,10 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
                                SeekPenaltyResponse* response);
 
   // Called when metrics are done being gathered from the FILE thread.
-  void GotDriveMetrics(const DriveMetrics& metrics);
+  // |done_callback| is the callback that should be called once all metrics are
+  // gathered.
+  void GotDriveMetrics(const base::Closure& done_callback,
+                       const DriveMetrics& metrics);
 
   // Fills |drive| with information from successful |response|s.
   void FillDriveMetrics(const SeekPenaltyResponse& response,
@@ -85,9 +88,6 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
 
   // Information gathered about various important drives.
   DriveMetrics metrics_;
-
-  // Called when metrics are done being collected.
-  base::Closure got_metrics_callback_;
 
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<DriveMetricsProvider> weak_ptr_factory_;

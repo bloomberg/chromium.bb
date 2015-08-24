@@ -6,6 +6,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -33,15 +34,13 @@ void DriveMetricsProvider::ProvideSystemProfileMetrics(
                    hardware->mutable_user_data_drive());
 }
 
-void DriveMetricsProvider::GetDriveMetrics(const base::Closure& done) {
-  got_metrics_callback_ = done;
-
+void DriveMetricsProvider::GetDriveMetrics(const base::Closure& done_callback) {
   base::PostTaskAndReplyWithResult(
       file_thread_.get(), FROM_HERE,
       base::Bind(&DriveMetricsProvider::GetDriveMetricsOnFileThread,
                  local_state_path_key_),
       base::Bind(&DriveMetricsProvider::GotDriveMetrics,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), done_callback));
 }
 
 DriveMetricsProvider::SeekPenaltyResponse::SeekPenaltyResponse()
@@ -81,10 +80,11 @@ void DriveMetricsProvider::QuerySeekPenalty(
 }
 
 void DriveMetricsProvider::GotDriveMetrics(
+    const base::Closure& done_callback,
     const DriveMetricsProvider::DriveMetrics& metrics) {
   DCHECK(thread_checker_.CalledOnValidThread());
   metrics_ = metrics;
-  got_metrics_callback_.Run();
+  done_callback.Run();
 }
 
 void DriveMetricsProvider::FillDriveMetrics(
