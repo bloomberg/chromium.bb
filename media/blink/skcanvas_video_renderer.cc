@@ -439,17 +439,26 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
       if (CheckColorSpace(video_frame, COLOR_SPACE_JPEG)) {
-        ConvertYUVToRGB32(
-          video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          static_cast<uint8*>(rgb_pixels),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
-          video_frame->stride(VideoFrame::kYPlane),
-          video_frame->stride(VideoFrame::kUPlane),
-          row_bytes,
-          YV12J);
+        libyuv::J420ToARGB(
+            video_frame->data(VideoFrame::kYPlane) + y_offset,
+            video_frame->stride(VideoFrame::kYPlane),
+            video_frame->data(VideoFrame::kUPlane) + uv_offset,
+            video_frame->stride(VideoFrame::kUPlane),
+            video_frame->data(VideoFrame::kVPlane) + uv_offset,
+            video_frame->stride(VideoFrame::kVPlane),
+            static_cast<uint8*>(rgb_pixels),
+            row_bytes,
+            video_frame->visible_rect().width(),
+            video_frame->visible_rect().height());
+#if SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
+    SK_A32_SHIFT == 24
+        libyuv::ARGBToABGR(static_cast<uint8*>(rgb_pixels),
+                           row_bytes,
+                           static_cast<uint8*>(rgb_pixels),
+                           row_bytes,
+                           video_frame->visible_rect().width(),
+                           video_frame->visible_rect().height());
+#endif
       } else if (CheckColorSpace(video_frame, COLOR_SPACE_HD_REC709)) {
         ConvertYUVToRGB32(video_frame->data(VideoFrame::kYPlane) + y_offset,
                           video_frame->data(VideoFrame::kUPlane) + uv_offset,
