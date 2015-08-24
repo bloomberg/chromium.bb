@@ -7,7 +7,8 @@
 <dom-module id="viewer-zoom-button">
   <link rel="import" type="css" href="viewer-zoom-button.css">
   <template>
-    <paper-fab id="button" mini icon="[[icon]]"></paper-fab>
+    <paper-fab id="button" mini icon="[[visibleIcon_]]" on-click="fireClick">
+    </paper-fab>
   </template>
 </dom-module>
 <script src="viewer-zoom-button.js"></script>

@@ -636,8 +636,6 @@ PDFViewer.prototype = {
   afterZoom_: function() {
     var position = this.viewport_.position;
     var zoom = this.viewport_.zoom;
-    if (this.isMaterial_)
-      this.zoomToolbar_.zoomValue = 100 * zoom;
     this.plugin_.postMessage({
       type: 'viewport',
       zoom: zoom,

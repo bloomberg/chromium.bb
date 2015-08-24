@@ -9,14 +9,13 @@
     <div id="zoom-buttons">
       <div id="buttons">
         <!-- TODO(alexandrec): Replace with custom icons. -->
-        <viewer-zoom-button id="fit-to-width-button" icon="fullscreen"
-            on-click="fitToWidth" delay="0"></viewer-zoom-button>
-        <viewer-zoom-button id="fit-to-page-button" icon="fullscreen-exit"
-            on-click="fitToPage" delay="50"></viewer-zoom-button>
-        <viewer-zoom-button id="zoom-in-button" icon="add"
-            on-click="zoomIn" delay="100"></viewer-zoom-button>
-        <viewer-zoom-button id="zoom-out-button" icon="remove"
-            on-click="zoomOut" delay="150"></viewer-zoom-button>
+        <viewer-zoom-button id="fit-button" icons="fullscreen-exit fullscreen"
+            on-fabclick="fitToggle" delay="0">
+        </viewer-zoom-button>
+        <viewer-zoom-button id="zoom-in-button" icons="add"
+            on-fabclick="zoomIn" delay="50"></viewer-zoom-button>
+        <viewer-zoom-button id="zoom-out-button" icons="remove"
+            on-fabclick="zoomOut" delay="100"></viewer-zoom-button>
       </div>
     </div>
   </template>

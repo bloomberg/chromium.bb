@@ -136,6 +136,49 @@ var tests = [
     chrome.test.assertEq('hidden', subBookmarks[1].$.expand.style.visibility);
 
     chrome.test.succeed();
+  },
+
+  /**
+   * Test that the zoom toolbar toggles between showing the fit-to-page and
+   * fit-to-width buttons.
+   */
+  function testZoomToolbarToggle() {
+    var zoomToolbar = Polymer.Base.create('viewer-zoom-toolbar', {});
+    var fitButton = zoomToolbar.$['fit-button'];
+    var fab = fitButton.$['button'];
+
+    var fitWidthIcon = 'fullscreen';
+    var fitPageIcon = 'fullscreen-exit';
+
+    var lastEvent = null;
+    var logEvent = function(e) {
+      lastEvent = e.type;
+    }
+    var assertEvent = function(type) {
+      chrome.test.assertEq(type, lastEvent);
+      lastEvent = null;
+    }
+    zoomToolbar.addEventListener('fit-to-width', logEvent);
+    zoomToolbar.addEventListener('fit-to-page', logEvent);
+
+    // Initial: Show fit-to-page.
+    chrome.test.assertEq(fitPageIcon, fab.icon);
+
+    // Tap 1: Fire fit-to-page, show fit-to-width.
+    MockInteractions.tap(fab);
+    assertEvent('fit-to-page');
+    chrome.test.assertEq(fitWidthIcon, fab.icon);
+
+    // Tap 2: Fire fit-to-width, show fit-to-page.
+    MockInteractions.tap(fab);
+    assertEvent('fit-to-width');
+    chrome.test.assertEq(fitPageIcon, fab.icon);
+
+    // Tap 3: Fire fit-to-page again.
+    MockInteractions.tap(fab);
+    assertEvent('fit-to-page');
+
+    chrome.test.succeed();
   }
 ];
 

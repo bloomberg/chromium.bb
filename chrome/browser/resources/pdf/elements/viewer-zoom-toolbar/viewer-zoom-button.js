@@ -10,7 +10,23 @@ Polymer({
   ],
 
   properties: {
-    icon: String,
+    /**
+     * Icons to be displayed on the FAB. Multiple icons should be separated with
+     * spaces, and will be cycled through every time the FAB is clicked.
+     */
+    icons: String,
+
+    /**
+     * Array version of the list of icons. Polymer does not allow array
+     * properties to be set from HTML, so we must use a string property and
+     * perform the conversion manually.
+     * @private
+     */
+    icons_: {
+      type: Array,
+      value: [''],
+      computed: 'computeIconsArray_(icons)'
+    },
 
     opened: {
       type: Boolean,
@@ -21,11 +37,28 @@ Polymer({
 
     animationConfig: {
       type: Object,
-      computed: 'computeAnimationConfig(delay)'
+      computed: 'computeAnimationConfig_(delay)'
+    },
+
+    /**
+     * Index of the icon currently being displayed.
+     */
+    activeIndex: {
+      type: Number,
+      value: 0
+    },
+
+    /**
+     * Icon currently being displayed on the FAB.
+     * @private
+     */
+    visibleIcon_: {
+      type: String,
+      computed: 'computeVisibleIcon_(icons_, activeIndex)'
     }
   },
 
-  computeAnimationConfig: function(delay) {
+  computeAnimationConfig_: function(delay) {
     return {
       'entry': {
         name: 'transform-animation',
@@ -48,6 +81,14 @@ Polymer({
         transformTo: 'translateX(100%)'
       }
     };
+  },
+
+  computeIconsArray_: function(icons) {
+    return icons.split(' ');
+  },
+
+  computeVisibleIcon_: function(icons, activeIndex) {
+    return icons[activeIndex];
   },
 
   listeners: {
@@ -74,4 +115,13 @@ Polymer({
     this.cancelAnimation();
     this.playAnimation(this.opened ? 'entry' : 'exit');
   },
+
+  fireClick: function() {
+    // We cannot attach an on-click to the entire viewer-zoom-button, as this
+    // will include clicks on the margins. Instead, proxy clicks on the FAB
+    // through.
+    this.fire('fabclick');
+
+    this.activeIndex = (this.activeIndex + 1) % this.icons_.length;
+  }
 });
