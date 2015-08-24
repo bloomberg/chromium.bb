@@ -1362,7 +1362,6 @@ test("net_unittests") {
     "//crypto",
     "//crypto:platform",
     "//crypto:test_support",
-    "//gin",
     "//net/base/registry_controlled_domains",
     "//sql",
     "//testing/gmock",
@@ -1371,6 +1370,9 @@ test("net_unittests") {
     "//url",
   ]
 
+  if (!is_ios) {
+    deps += [ "//gin" ]
+  }
   data = [
     "data/",
   ]

@@ -68,6 +68,7 @@ group("both_gn_and_gyp") {
     "//base:base_unittests",
     "//sql:sql_unittests",
     "//ui/base:ui_base_unittests",
+    "//net:net_unittests",
   ]
 
   if (!is_ios) {
@@ -107,7 +108,6 @@ group("both_gn_and_gyp") {
       "//net:hpack_fuzz_mutator",
       "//net:hpack_fuzz_wrapper",
       "//net:net_perftests",
-      "//net:net_unittests",
       "//ppapi:ppapi_unittests",
       "//ppapi/examples/2d",
       "//ppapi/examples/audio",
