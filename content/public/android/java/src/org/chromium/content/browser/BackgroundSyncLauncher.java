@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 
 import org.chromium.base.VisibleForTesting;
@@ -26,8 +27,6 @@ public class BackgroundSyncLauncher {
     // The instance of BackgroundSyncLauncher currently owned by a C++
     // BackgroundSyncLauncherAndroid, if any. If it is non-null then the browser is running.
     private static BackgroundSyncLauncher sInstance;
-
-    private final SharedPreferences mSharedPreferences;
 
     /**
      * Create a BackgroundSyncLauncher object, which is owned by C++.
@@ -55,26 +54,53 @@ public class BackgroundSyncLauncher {
     }
 
     /**
-     * Set interest (or disinterest) in launching the browser the next time the device goes online
-     * after the browser closes. On creation of the {@link BackgroundSyncLauncher} class (on browser
-     * start) this value is reset to false.
+     * Callback for {@link #shouldLaunchWhenNextOnline}. The run method is invoked on the UI thread.
      */
-    @VisibleForTesting
-    @CalledByNative
-    protected void setLaunchWhenNextOnline(boolean shouldLaunch) {
-        mSharedPreferences.edit()
-                .putBoolean(PREF_BACKGROUND_SYNC_LAUNCH_NEXT_ONLINE, shouldLaunch)
-                .apply();
-    }
+    public static interface ShouldLaunchCallback { public void run(Boolean shouldLaunch); }
 
     /**
      * Returns whether the browser should be launched when the device next goes online.
      * This is set by C++ and reset to false each time {@link BackgroundSyncLauncher}'s singleton is
-     * created (the native browser is started).
+     * created (the native browser is started). This call is asynchronous and will run the callback
+     * on the UI thread when complete.
+     * @param context The application context.
      * @param sharedPreferences The shared preferences.
      */
-    protected static boolean shouldLaunchWhenNextOnline(SharedPreferences sharedPreferences) {
-        return sharedPreferences.getBoolean(PREF_BACKGROUND_SYNC_LAUNCH_NEXT_ONLINE, false);
+    protected static void shouldLaunchWhenNextOnline(
+            final Context context, final ShouldLaunchCallback callback) {
+        new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                return prefs.getBoolean(PREF_BACKGROUND_SYNC_LAUNCH_NEXT_ONLINE, false);
+            }
+            @Override
+            protected void onPostExecute(Boolean shouldLaunch) {
+                callback.run(shouldLaunch);
+            }
+        }.execute();
+    }
+
+    /**
+     * Set interest (or disinterest) in launching the browser the next time the device goes online
+     * after the browser closes. On creation of the {@link BackgroundSyncLauncher} class (on browser
+     * start) this value is reset to false. This is set by C++ and reset to false each time
+     * {@link BackgroundSyncLauncher}'s singleton is created (the native browser is started). This
+     * call is asynchronous.
+     */
+    @VisibleForTesting
+    @CalledByNative
+    protected void setLaunchWhenNextOnline(final Context context, final boolean shouldLaunch) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                prefs.edit()
+                        .putBoolean(PREF_BACKGROUND_SYNC_LAUNCH_NEXT_ONLINE, shouldLaunch)
+                        .apply();
+                return null;
+            }
+        }.execute();
     }
 
     /**
@@ -86,7 +112,6 @@ public class BackgroundSyncLauncher {
     }
 
     private BackgroundSyncLauncher(Context context) {
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        setLaunchWhenNextOnline(false);
+        setLaunchWhenNextOnline(context, false);
     }
 }

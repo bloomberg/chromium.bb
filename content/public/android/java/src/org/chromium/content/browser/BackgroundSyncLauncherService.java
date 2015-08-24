@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.preference.PreferenceManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
 import org.chromium.base.Log;
@@ -28,8 +27,9 @@ public class BackgroundSyncLauncherService extends IntentService {
     private static final String TAG = "cr.BgSyncLauncher";
 
     /**
-     * Receiver for network connection change broadcasts. If the device is online and the browser
-     * should be launched, it starts the BackgroundSyncLauncherService.
+     * Receiver for network connection change broadcasts. If the device is online
+     * and the browser isn't running it starts the BackgroundSyncLauncherService.
+     * The service will then launch the browser if necessary.
      *
      * This class is public so that it can be instantiated by the Android runtime.
      */
@@ -39,9 +39,7 @@ public class BackgroundSyncLauncherService extends IntentService {
             // If online, the browser isn't running, and the browser has requested
             // it be launched the next time the device is online, start the browser.
             if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())
-                    && isOnline(context) && !BackgroundSyncLauncher.hasInstance()
-                    && BackgroundSyncLauncher.shouldLaunchWhenNextOnline(
-                               PreferenceManager.getDefaultSharedPreferences(context))) {
+                    && isOnline(context) && !BackgroundSyncLauncher.hasInstance()) {
                 startService(context);
             }
         }
@@ -79,14 +77,24 @@ public class BackgroundSyncLauncherService extends IntentService {
         }
     }
 
-    private void onOnline(Context context) {
+    private void onOnline(final Context context) {
         ThreadUtils.assertOnUiThread();
 
-        // Start the browser. The browser's BackgroundSyncManager (for the active profile) will
-        // start, check the network, and run any necessary sync events. It runs without a wake lock.
-        // TODO(jkarlin): Protect the browser sync event with a wake lock. See crbug.com/486020.
-        Log.v(TAG, "Starting Browser after coming online");
-        launchBrowser(context);
+        BackgroundSyncLauncher.ShouldLaunchCallback callback =
+                new BackgroundSyncLauncher.ShouldLaunchCallback() {
+                    @Override
+                    public void run(Boolean shouldLaunch) {
+                        if (!shouldLaunch) return;
+                        // Start the browser. The browser's BackgroundSyncManager (for the active
+                        // profile) will start, check the network, and run any necessary sync
+                        // events. It runs without a wake lock.
+                        // TODO(jkarlin): Protect the browser sync event with a wake lock. See
+                        // crbug.com/486020.
+                        Log.v(TAG, "Starting Browser after coming online");
+                        launchBrowser(context);
+                    }
+                };
+        BackgroundSyncLauncher.shouldLaunchWhenNextOnline(context, callback);
     }
 
     @SuppressFBWarnings("DM_EXIT")

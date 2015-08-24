@@ -46,7 +46,8 @@ void BackgroundSyncLauncherAndroid::LaunchBrowserWhenNextOnlineImpl(
   if (was_launching != now_launching) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_BackgroundSyncLauncher_setLaunchWhenNextOnline(
-        env, java_launcher_.obj(), now_launching);
+        env, java_launcher_.obj(), base::android::GetApplicationContext(),
+        now_launching);
   }
 }
 
