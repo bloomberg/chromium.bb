@@ -45,12 +45,13 @@ class BASE_EXPORT Win32StackFrameUnwinder {
    public:
     Win32UnwindFunctions();
 
-    virtual PRUNTIME_FUNCTION LookupFunctionEntry(DWORD64 program_counter,
-                                                  PDWORD64 image_base) override;
+    PRUNTIME_FUNCTION LookupFunctionEntry(DWORD64 program_counter,
+                                          PDWORD64 image_base) override;
 
-    virtual void VirtualUnwind(DWORD64 image_base, DWORD64 program_counter,
-                               PRUNTIME_FUNCTION runtime_function,
-                               CONTEXT* context) override;
+    void VirtualUnwind(DWORD64 image_base,
+                       DWORD64 program_counter,
+                       PRUNTIME_FUNCTION runtime_function,
+                       CONTEXT* context) override;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Win32UnwindFunctions);
