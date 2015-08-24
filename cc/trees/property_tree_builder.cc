@@ -276,6 +276,21 @@ bool AddTransformNodeIfNeeded(
       data_for_children->render_target->transform_tree_index();
   DCHECK_NE(node->data.target_id, kInvalidPropertyTreeNodeId);
   node->data.is_animated = has_potentially_animated_transform;
+  if (has_potentially_animated_transform) {
+    float maximum_animation_target_scale = 0.f;
+    if (layer->MaximumTargetScale(&maximum_animation_target_scale)) {
+      node->data.local_maximum_animation_target_scale =
+          maximum_animation_target_scale;
+    }
+
+    float starting_animation_scale = 0.f;
+    if (layer->AnimationStartScale(&starting_animation_scale)) {
+      node->data.local_starting_animation_scale = starting_animation_scale;
+    }
+
+    node->data.has_only_translation_animations =
+        layer->HasOnlyTranslationTransforms();
+  }
 
   float post_local_scale_factor = 1.0f;
   if (is_root) {

@@ -1204,6 +1204,29 @@ bool LayerTreeHost::HasPotentiallyRunningTransformAnimation(
              : false;
 }
 
+bool LayerTreeHost::HasOnlyTranslationTransforms(const Layer* layer) const {
+  return animation_host_
+             ? animation_host_->HasOnlyTranslationTransforms(
+                   layer->id(), LayerTreeType::ACTIVE)
+             : false;
+}
+
+bool LayerTreeHost::MaximumTargetScale(const Layer* layer,
+                                       float* max_scale) const {
+  return animation_host_
+             ? animation_host_->MaximumTargetScale(
+                   layer->id(), LayerTreeType::ACTIVE, max_scale)
+             : false;
+}
+
+bool LayerTreeHost::AnimationStartScale(const Layer* layer,
+                                        float* start_scale) const {
+  return animation_host_
+             ? animation_host_->AnimationStartScale(
+                   layer->id(), LayerTreeType::ACTIVE, start_scale)
+             : false;
+}
+
 bool LayerTreeHost::HasAnyAnimationTargetingProperty(
     const Layer* layer,
     Animation::TargetProperty property) const {

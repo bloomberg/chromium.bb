@@ -23,8 +23,7 @@ template <typename T>
 PropertyTree<T>::~PropertyTree() {
 }
 
-TransformTree::TransformTree() : source_to_parent_updates_allowed_(true) {
-}
+TransformTree::TransformTree() : source_to_parent_updates_allowed_(true) {}
 
 TransformTree::~TransformTree() {
 }
@@ -60,6 +59,8 @@ TransformNodeData::TransformNodeData()
       ancestors_are_invertible(true),
       is_animated(false),
       to_screen_is_animated(false),
+      has_only_translation_animations(true),
+      to_screen_has_scale_animation(false),
       flattens_inherited_transform(false),
       node_and_ancestors_are_flat(true),
       node_and_ancestors_have_only_integer_translation(true),
@@ -70,8 +71,11 @@ TransformNodeData::TransformNodeData()
       affected_by_outer_viewport_bounds_delta_x(false),
       affected_by_outer_viewport_bounds_delta_y(false),
       layer_scale_factor(1.0f),
-      post_local_scale_factor(1.0f) {
-}
+      post_local_scale_factor(1.0f),
+      local_maximum_animation_target_scale(0.f),
+      local_starting_animation_scale(0.f),
+      combined_maximum_animation_target_scale(0.f),
+      combined_starting_animation_scale(0.f) {}
 
 TransformNodeData::~TransformNodeData() {
 }
@@ -180,7 +184,7 @@ void TransformTree::UpdateTransforms(int id) {
   UpdateScreenSpaceTransform(node, parent_node, target_node);
   UpdateSublayerScale(node);
   UpdateTargetSpaceTransform(node, target_node);
-  UpdateIsAnimated(node, parent_node);
+  UpdateAnimationProperties(node, parent_node);
   UpdateSnapping(node);
   UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
 }
@@ -399,12 +403,93 @@ void TransformTree::UpdateTargetSpaceTransform(TransformNode* node,
     node->data.ancestors_are_invertible = false;
 }
 
-void TransformTree::UpdateIsAnimated(TransformNode* node,
-                                     TransformNode* parent_node) {
+void TransformTree::UpdateAnimationProperties(TransformNode* node,
+                                              TransformNode* parent_node) {
+  bool ancestor_is_animating = false;
+  bool ancestor_is_animating_scale = false;
+  float ancestor_maximum_target_scale = 0.f;
+  float ancestor_starting_animation_scale = 0.f;
   if (parent_node) {
-    node->data.to_screen_is_animated =
-        node->data.is_animated || parent_node->data.to_screen_is_animated;
+    ancestor_is_animating = parent_node->data.to_screen_is_animated;
+    ancestor_is_animating_scale =
+        parent_node->data.to_screen_has_scale_animation;
+    ancestor_maximum_target_scale =
+        parent_node->data.combined_maximum_animation_target_scale;
+    ancestor_starting_animation_scale =
+        parent_node->data.combined_starting_animation_scale;
   }
+  node->data.to_screen_is_animated =
+      node->data.is_animated || ancestor_is_animating;
+  node->data.to_screen_has_scale_animation =
+      !node->data.has_only_translation_animations ||
+      ancestor_is_animating_scale;
+
+  // Once we've failed to compute a maximum animated scale at an ancestor, we
+  // continue to fail.
+  bool failed_at_ancestor =
+      ancestor_is_animating_scale && ancestor_maximum_target_scale == 0.f;
+
+  // Computing maximum animated scale in the presence of non-scale/translation
+  // transforms isn't supported.
+  bool failed_for_non_scale_or_translation =
+      !node->data.to_target.IsScaleOrTranslation();
+
+  // We don't attempt to accumulate animation scale from multiple nodes with
+  // scale animations, because of the risk of significant overestimation. For
+  // example, one node might be increasing scale from 1 to 10 at the same time
+  // as another node is decreasing scale from 10 to 1. Naively combining these
+  // scales would produce a scale of 100.
+  bool failed_for_multiple_scale_animations =
+      ancestor_is_animating_scale &&
+      !node->data.has_only_translation_animations;
+
+  if (failed_at_ancestor || failed_for_non_scale_or_translation ||
+      failed_for_multiple_scale_animations) {
+    node->data.combined_maximum_animation_target_scale = 0.f;
+    node->data.combined_starting_animation_scale = 0.f;
+
+    // This ensures that descendants know we've failed to compute a maximum
+    // animated scale.
+    node->data.to_screen_has_scale_animation = true;
+    return;
+  }
+
+  if (!node->data.to_screen_has_scale_animation) {
+    node->data.combined_maximum_animation_target_scale = 0.f;
+    node->data.combined_starting_animation_scale = 0.f;
+    return;
+  }
+
+  // At this point, we know exactly one of this node or an ancestor is animating
+  // scale.
+  if (node->data.has_only_translation_animations) {
+    // An ancestor is animating scale.
+    gfx::Vector2dF local_scales =
+        MathUtil::ComputeTransform2dScaleComponents(node->data.local, 0.f);
+    float max_local_scale = std::max(local_scales.x(), local_scales.y());
+    node->data.combined_maximum_animation_target_scale =
+        max_local_scale * ancestor_maximum_target_scale;
+    node->data.combined_starting_animation_scale =
+        max_local_scale * ancestor_starting_animation_scale;
+    return;
+  }
+
+  if (node->data.local_starting_animation_scale == 0.f ||
+      node->data.local_maximum_animation_target_scale == 0.f) {
+    node->data.combined_maximum_animation_target_scale = 0.f;
+    node->data.combined_starting_animation_scale = 0.f;
+    return;
+  }
+
+  gfx::Vector2dF ancestor_scales =
+      parent_node ? MathUtil::ComputeTransform2dScaleComponents(
+                        parent_node->data.to_target, 0.f)
+                  : gfx::Vector2dF(1.f, 1.f);
+  float max_ancestor_scale = std::max(ancestor_scales.x(), ancestor_scales.y());
+  node->data.combined_maximum_animation_target_scale =
+      max_ancestor_scale * node->data.local_maximum_animation_target_scale;
+  node->data.combined_starting_animation_scale =
+      max_ancestor_scale * node->data.local_starting_animation_scale;
 }
 
 void TransformTree::UpdateSnapping(TransformNode* node) {

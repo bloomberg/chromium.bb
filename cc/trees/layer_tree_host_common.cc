@@ -2410,6 +2410,13 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
                           << ClipRectFromPropertyTrees(
                                  current_layer, property_trees->transform_tree)
                                  .ToString();
+
+  CHECK_EQ(current_layer->draw_properties().maximum_animation_contents_scale,
+           MaximumAnimationTargetScaleFromPropertyTrees(
+               current_layer, property_trees->transform_tree));
+  CHECK_EQ(current_layer->draw_properties().starting_animation_contents_scale,
+           StartingAnimationScaleFromPropertyTrees(
+               current_layer, property_trees->transform_tree));
 }
 
 void VerifyPropertyTreeValues(

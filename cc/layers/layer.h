@@ -199,8 +199,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
   bool HasPotentiallyRunningTransformAnimation() const;
+  bool HasOnlyTranslationTransforms() const;
   bool AnimationsPreserveAxisAlignment() const;
   bool transform_is_invertible() const { return transform_is_invertible_; }
+
+  bool MaximumTargetScale(float* max_scale) const;
+  bool AnimationStartScale(float* start_scale) const;
 
   void SetTransformOrigin(const gfx::Point3F&);
   gfx::Point3F transform_origin() const { return transform_origin_; }

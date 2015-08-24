@@ -113,6 +113,14 @@ bool CC_EXPORT
 ScreenSpaceTransformIsAnimatingFromPropertyTrees(const LayerImpl* layer,
                                                  const TransformTree& tree);
 
+float CC_EXPORT
+MaximumAnimationTargetScaleFromPropertyTrees(const LayerImpl* layer,
+                                             const TransformTree& tree);
+
+float CC_EXPORT
+StartingAnimationScaleFromPropertyTrees(const LayerImpl* layer,
+                                        const TransformTree& tree);
+
 float CC_EXPORT DrawOpacityFromPropertyTrees(const Layer* layer,
                                              const EffectTree& tree);
 

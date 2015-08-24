@@ -761,6 +761,30 @@ bool Layer::HasPotentiallyRunningTransformAnimation() const {
   return layer_tree_host_->HasPotentiallyRunningTransformAnimation(this);
 }
 
+bool Layer::HasOnlyTranslationTransforms() const {
+  if (layer_animation_controller_) {
+    return layer_animation_controller_->HasOnlyTranslationTransforms(
+        LayerAnimationController::ObserverType::ACTIVE);
+  }
+  return layer_tree_host_->HasOnlyTranslationTransforms(this);
+}
+
+bool Layer::MaximumTargetScale(float* max_scale) const {
+  if (layer_animation_controller_) {
+    return layer_animation_controller_->MaximumTargetScale(
+        LayerAnimationController::ObserverType::ACTIVE, max_scale);
+  }
+  return layer_tree_host_->MaximumTargetScale(this, max_scale);
+}
+
+bool Layer::AnimationStartScale(float* start_scale) const {
+  if (layer_animation_controller_) {
+    return layer_animation_controller_->AnimationStartScale(
+        LayerAnimationController::ObserverType::ACTIVE, start_scale);
+  }
+  return layer_tree_host_->AnimationStartScale(this, start_scale);
+}
+
 bool Layer::HasAnyAnimationTargetingProperty(
     Animation::TargetProperty property) const {
   if (layer_animation_controller_)
@@ -1481,6 +1505,25 @@ void Layer::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
 
   if (node->owner_id == id()) {
     node->data.is_animated = is_animating;
+    if (is_animating) {
+      float maximum_target_scale = 0.f;
+      node->data.local_maximum_animation_target_scale =
+          MaximumTargetScale(&maximum_target_scale) ? maximum_target_scale
+                                                    : 0.f;
+
+      float animation_start_scale = 0.f;
+      node->data.local_starting_animation_scale =
+          AnimationStartScale(&animation_start_scale) ? animation_start_scale
+                                                      : 0.f;
+
+      node->data.has_only_translation_animations =
+          HasOnlyTranslationTransforms();
+
+    } else {
+      node->data.local_maximum_animation_target_scale = 0.f;
+      node->data.local_starting_animation_scale = 0.f;
+      node->data.has_only_translation_animations = true;
+    }
     transform_tree.set_needs_update(true);
   }
 }

@@ -761,6 +761,28 @@ bool ScreenSpaceTransformIsAnimatingFromPropertyTrees(
   return ScreenSpaceTransformIsAnimatingFromPropertyTreesInternal(layer, tree);
 }
 
+float MaximumAnimationTargetScaleFromPropertyTrees(const LayerImpl* layer,
+                                                   const TransformTree& tree) {
+  if (!layer->layer_tree_impl()
+           ->settings()
+           .layer_transforms_should_scale_layer_contents)
+    return 0.f;
+
+  return tree.Node(layer->transform_tree_index())
+      ->data.combined_maximum_animation_target_scale;
+}
+
+float StartingAnimationScaleFromPropertyTrees(const LayerImpl* layer,
+                                              const TransformTree& tree) {
+  if (!layer->layer_tree_impl()
+           ->settings()
+           .layer_transforms_should_scale_layer_contents)
+    return 0.f;
+
+  return tree.Node(layer->transform_tree_index())
+      ->data.combined_starting_animation_scale;
+}
+
 template <typename LayerType>
 float DrawOpacityFromPropertyTreesInternal(LayerType layer,
                                            const EffectTree& tree) {
