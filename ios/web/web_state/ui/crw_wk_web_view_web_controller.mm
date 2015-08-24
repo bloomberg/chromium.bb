@@ -147,6 +147,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // changed.
 @property(nonatomic, readonly) NSDictionary* wkWebViewObservers;
 
+// Returns the string to use as the request group ID in the user agent. Returns
+// nil unless the network stack is enabled.
+@property(nonatomic, readonly) NSString* requestGroupIDForUserAgent;
+
 // Activity indicator group ID for this web controller.
 @property(nonatomic, readonly) NSString* activityIndicatorGroupID;
 
@@ -369,11 +373,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return _documentURL;
 }
 
+// TODO(stuartmorgan): Remove this method and use the API for WKWebView,
+// making the reset-on-each-load behavior specific to the UIWebView subclass.
 - (void)registerUserAgent {
-  // TODO(stuartmorgan): Rename this method, since it works for both.
-  web::BuildAndRegisterUserAgentForUIWebView(
-      self.webStateImpl->GetRequestGroupID(),
-      [self useDesktopUserAgent]);
+  web::BuildAndRegisterUserAgentForUIWebView([self requestGroupIDForUserAgent],
+                                             [self useDesktopUserAgent]);
 }
 
 // The core.js cannot pass messages back to obj-c  if it is injected
@@ -566,6 +570,14 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   };
 }
 
+- (NSString*)requestGroupIDForUserAgent {
+#if defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
+  return self.webStateImpl->GetRequestGroupID();
+#else
+  return nil;
+#endif
+}
+
 - (NSString*)activityIndicatorGroupID {
   return [NSString stringWithFormat:
       @"WKWebViewWebController.NetworkActivityIndicatorKey.%@",
@@ -602,12 +614,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config {
-  return [web::CreateWKWebView(
-              CGRectZero,
-              config,
-              self.webStateImpl->GetBrowserState(),
-              self.webStateImpl->GetRequestGroupID(),
-              [self useDesktopUserAgent]) autorelease];
+  return [web::CreateWKWebView(CGRectZero, config,
+                               self.webStateImpl->GetBrowserState(),
+                               [self requestGroupIDForUserAgent],
+                               [self useDesktopUserAgent]) autorelease];
 }
 
 - (void)setWebView:(WKWebView*)webView {

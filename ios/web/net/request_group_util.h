@@ -30,6 +30,7 @@ NSString* ExtractRequestGroupIDFromUserAgent(NSString* user_agent);
 // Returns a new user agent, which is the result of the encoding of
 // |request_group_id| in |base_user_agent|. The request group ID can be later
 // extracted with ExtractRequestGroupIDFromUserAgent().
+// If request_group_id is nil, returns base_user_agent.
 NSString* AddRequestGroupIDToUserAgent(NSString* base_user_agent,
                                        NSString* request_group_id);
 

@@ -65,6 +65,8 @@ NSString* ExtractRequestGroupIDFromUserAgent(NSString* user_agent) {
 
 NSString* AddRequestGroupIDToUserAgent(NSString* base_user_agent,
                                        NSString* request_group_id) {
+  if (!request_group_id)
+    return base_user_agent;
   // TODO(blundell): Develop a long-term solution to this problem.
   // crbug.com/329243
   DCHECK([request_group_id length] >= kMinimumIDLength);
