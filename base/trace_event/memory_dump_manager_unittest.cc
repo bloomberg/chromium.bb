@@ -8,6 +8,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/test_io_thread.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -16,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::AtMost;
 using testing::Between;
 using testing::Invoke;
 using testing::Return;
@@ -282,6 +284,55 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   DisableTracing();
 }
 
+// Verify that whether OnMemoryDump is called depends only on the current
+// registration state and not on previous registrations and dumps.
+TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
+  MockDumpProvider mdp;
+
+  mdm_->RegisterDumpProvider(&mdp);
+
+  {
+    EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(1);
+    EnableTracing(kTraceCategory);
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                            high_detail_args);
+    DisableTracing();
+  }
+
+  mdm_->UnregisterDumpProvider(&mdp);
+
+  {
+    EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
+    EnableTracing(kTraceCategory);
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                            high_detail_args);
+    DisableTracing();
+  }
+
+  mdm_->RegisterDumpProvider(&mdp);
+  mdm_->UnregisterDumpProvider(&mdp);
+
+  {
+    EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
+    EnableTracing(kTraceCategory);
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                            high_detail_args);
+    DisableTracing();
+  }
+
+  mdm_->RegisterDumpProvider(&mdp);
+  mdm_->UnregisterDumpProvider(&mdp);
+  mdm_->RegisterDumpProvider(&mdp);
+
+  {
+    EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(1);
+    EnableTracing(kTraceCategory);
+    mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                            high_detail_args);
+    DisableTracing();
+  }
+}
+
 // Checks that the MemoryDumpManager respects the thread affinity when a
 // MemoryDumpProvider specifies a task_runner(). The test starts creating 8
 // threads and registering a MemoryDumpProvider on each of them. At each
@@ -429,6 +480,61 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperWhileDumping) {
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
                             high_detail_args);
   }
+
+  DisableTracing();
+}
+
+// Verify that the dump does not abort when unregistering a provider while
+// dumping from a different thread than the dumping thread.
+TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
+  ScopedVector<TestIOThread> threads;
+  ScopedVector<MockDumpProvider> mdps;
+
+  for (int i = 0; i < 2; i++) {
+    threads.push_back(new TestIOThread(TestIOThread::kAutoStart));
+    mdps.push_back(new MockDumpProvider(threads.back()->task_runner()));
+    mdm_->RegisterDumpProvider(mdps.back(), threads.back()->task_runner());
+  }
+
+  int on_memory_dump_call_count = 0;
+  RunLoop run_loop;
+
+  // When OnMemoryDump is called on either of the dump providers, it will
+  // unregister the other one.
+  for (MockDumpProvider* mdp : mdps) {
+    int other_idx = (mdps.front() == mdp);
+    TestIOThread* other_thread = threads[other_idx];
+    MockDumpProvider* other_mdp = mdps[other_idx];
+    auto on_dump = [this, other_thread, other_mdp, &on_memory_dump_call_count](
+        const MemoryDumpArgs& args, ProcessMemoryDump* pmd) {
+      other_thread->PostTaskAndWait(
+          FROM_HERE, base::Bind(&MemoryDumpManager::UnregisterDumpProvider,
+                                base::Unretained(&*mdm_), other_mdp));
+      on_memory_dump_call_count++;
+      return true;
+    };
+
+    // OnMemoryDump is called once for the provider that dumps first, and zero
+    // times for the other provider.
+    EXPECT_CALL(*mdp, OnMemoryDump(_, _))
+        .Times(AtMost(1))
+        .WillOnce(Invoke(on_dump));
+  }
+
+  last_callback_success_ = false;
+  MemoryDumpCallback callback =
+      Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
+           MessageLoop::current()->task_runner(), run_loop.QuitClosure());
+
+  EnableTracing(kTraceCategory);
+  MemoryDumpRequestArgs request_args = {0, MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                        high_detail_args};
+  mdm_->CreateProcessDump(request_args, callback);
+
+  run_loop.Run();
+
+  ASSERT_EQ(1, on_memory_dump_call_count);
+  ASSERT_EQ(true, last_callback_success_);
 
   DisableTracing();
 }

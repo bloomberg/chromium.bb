@@ -93,8 +93,7 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 }
 
 MemoryDumpManager::MemoryDumpManager()
-    : did_unregister_dump_provider_(false),
-      delegate_(nullptr),
+    : delegate_(nullptr),
       memory_tracing_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
       system_allocator_pool_name_(nullptr),
@@ -152,7 +151,16 @@ void MemoryDumpManager::RegisterDumpProvider(
     const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
   MemoryDumpProviderInfo mdp_info(mdp, task_runner);
   AutoLock lock(lock_);
-  dump_providers_.insert(mdp_info);
+  auto iter_new = dump_providers_.insert(mdp_info);
+
+  // If there was a previous entry, replace it with the new one. This is to deal
+  // with the case where a dump provider unregisters itself and then re-
+  // registers before a memory dump happens, so its entry was still in the
+  // collection but flagged |unregistered|.
+  if (!iter_new.second) {
+    dump_providers_.erase(iter_new.first);
+    dump_providers_.insert(mdp_info);
+  }
 }
 
 void MemoryDumpManager::RegisterDumpProvider(MemoryDumpProvider* mdp) {
@@ -183,8 +191,7 @@ void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
       << "The MemoryDumpProvider attempted to unregister itself in a racy way. "
       << "Please file a crbug.";
 
-  dump_providers_.erase(mdp_iter);
-  did_unregister_dump_provider_ = true;
+  mdp_iter->unregistered = true;
 }
 
 void MemoryDumpManager::RequestGlobalDump(MemoryDumpType dump_type,
@@ -228,7 +235,6 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
   scoped_ptr<ProcessMemoryDumpAsyncState> pmd_async_state;
   {
     AutoLock lock(lock_);
-    did_unregister_dump_provider_ = false;
     pmd_async_state.reset(new ProcessMemoryDumpAsyncState(
         args, dump_providers_.begin(), session_state_, callback));
   }
@@ -268,18 +274,10 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
   bool skip_dump = false;
   {
     AutoLock lock(lock_);
-    // In the unlikely event that a dump provider was unregistered while
-    // dumping, abort the dump, as that would make |next_dump_provider| invalid.
-    // Registration, on the other hand, is safe as per std::set<> contract.
-    if (did_unregister_dump_provider_) {
-      return AbortDumpLocked(pmd_async_state->callback,
-                             pmd_async_state->task_runner,
-                             pmd_async_state->req_args.dump_guid);
-    }
 
-    auto* mdp_info = &*pmd_async_state->next_dump_provider;
+    auto mdp_info = pmd_async_state->next_dump_provider;
     mdp = mdp_info->dump_provider;
-    if (mdp_info->disabled) {
+    if (mdp_info->disabled || mdp_info->unregistered) {
       skip_dump = true;
     } else if (mdp_info->task_runner &&
                !mdp_info->task_runner->BelongsToCurrentThread()) {
@@ -318,12 +316,7 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
 
   {
     AutoLock lock(lock_);
-    if (did_unregister_dump_provider_) {
-      return AbortDumpLocked(pmd_async_state->callback,
-                             pmd_async_state->task_runner,
-                             pmd_async_state->req_args.dump_guid);
-    }
-    auto* mdp_info = &*pmd_async_state->next_dump_provider;
+    auto mdp_info = pmd_async_state->next_dump_provider;
     if (dump_successful) {
       mdp_info->consecutive_failures = 0;
     } else if (!skip_dump) {
@@ -334,6 +327,9 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
     }
     ++pmd_async_state->next_dump_provider;
     finalize = pmd_async_state->next_dump_provider == dump_providers_.end();
+
+    if (mdp_info->unregistered)
+      dump_providers_.erase(mdp_info);
   }
 
   if (!skip_dump && !dump_successful) {
@@ -454,8 +450,8 @@ MemoryDumpManager::MemoryDumpProviderInfo::MemoryDumpProviderInfo(
     : dump_provider(dump_provider),
       task_runner(task_runner),
       consecutive_failures(0),
-      disabled(false) {
-}
+      disabled(false),
+      unregistered(false) {}
 
 MemoryDumpManager::MemoryDumpProviderInfo::~MemoryDumpProviderInfo() {
 }

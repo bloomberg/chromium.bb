@@ -103,6 +103,8 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   friend class MemoryDumpManagerDelegate;
   friend class MemoryDumpManagerTest;
   FRIEND_TEST_ALL_PREFIXES(MemoryDumpManagerTest, DisableFailingDumpers);
+  FRIEND_TEST_ALL_PREFIXES(MemoryDumpManagerTest,
+                           UnregisterDumperFromThreadWhileDumping);
 
   // Descriptor struct used to hold information about registered MDPs. It is
   // deliberately copyable, in order to allow it to be used as std::set value.
@@ -123,6 +125,11 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     // as can be safely changed without impacting the order within the set.
     mutable int consecutive_failures;
     mutable bool disabled;
+
+    // When a dump provider unregisters, it is flagged as |unregistered| and it
+    // is removed only upon the next memory dump. This is to avoid altering the
+    // |dump_providers_| collection while a dump is in progress.
+    mutable bool unregistered;
   };
 
   using MemoryDumpProviderInfoSet = std::set<MemoryDumpProviderInfo>;
@@ -188,10 +195,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // An ordererd set of registered MemoryDumpProviderInfo(s), sorted by thread
   // affinity (MDPs belonging to the same thread are adjacent).
   MemoryDumpProviderInfoSet dump_providers_;
-
-  // Flag used to signal that some provider was removed from |dump_providers_|
-  // and therefore the current memory dump (if any) should be aborted.
-  bool did_unregister_dump_provider_;
 
   // Shared among all the PMDs to keep state scoped to the tracing session.
   scoped_refptr<MemoryDumpSessionState> session_state_;
