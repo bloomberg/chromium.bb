@@ -93,10 +93,10 @@ QuicSentPacketManager::QuicSentPacketManager(
       consecutive_crypto_retransmission_count_(0),
       pending_timer_transmission_count_(0),
       max_tail_loss_probes_(kDefaultMaxTailLossProbes),
+      enable_half_rtt_tail_loss_probe_(false),
       using_pacing_(false),
       use_new_rto_(false),
-      handshake_confirmed_(false) {
-}
+      handshake_confirmed_(false) {}
 
 QuicSentPacketManager::~QuicSentPacketManager() {
 }
@@ -154,6 +154,9 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
   if (config.HasClientSentConnectionOption(kNTLP, perspective_)) {
     max_tail_loss_probes_ = 0;
+  }
+  if (config.HasClientSentConnectionOption(kTLPR, perspective_)) {
+    enable_half_rtt_tail_loss_probe_ = true;
   }
   if (config.HasClientSentConnectionOption(kNRTO, perspective_)) {
     use_new_rto_ = true;
@@ -858,6 +861,11 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   QuicTime::Delta srtt = rtt_stats_.smoothed_rtt();
   if (srtt.IsZero()) {
     srtt = QuicTime::Delta::FromMicroseconds(rtt_stats_.initial_rtt_us());
+  }
+  if (enable_half_rtt_tail_loss_probe_ && consecutive_tlp_count_ == 0u) {
+    return QuicTime::Delta::FromMilliseconds(
+        max(kMinTailLossProbeTimeoutMs,
+            static_cast<int64>(0.5 * srtt.ToMilliseconds())));
   }
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
     return QuicTime::Delta::Max(

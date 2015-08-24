@@ -386,6 +386,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   size_t pending_timer_transmission_count_;
   // Maximum number of tail loss probes to send before firing an RTO.
   size_t max_tail_loss_probes_;
+  // If true, send the TLP at 0.5 RTT.
+  bool enable_half_rtt_tail_loss_probe_;
   bool using_pacing_;
   // If true, use the new RTO with loss based CWND reduction instead of the send
   // algorithms's OnRetransmissionTimeout to reduce the congestion window.
