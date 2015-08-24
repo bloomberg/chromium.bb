@@ -5,7 +5,9 @@
 #include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
 
 #include "android_webview/common/aw_version_info_values.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/scoped_native_library.h"
 #include "build/build_config.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/app/crash_reporter_client.h"
@@ -42,20 +44,69 @@ base::LazyInstance<AwCrashReporterClient>::Leaky g_crash_reporter_client =
 
 bool g_enabled = false;
 
+#if defined(ARCH_CPU_X86_FAMILY)
+bool SafeToUseSignalHandler() {
+  // On X86/64 there are binary translators that handle SIGSEGV in userspace and
+  // may get chained after our handler - see http://crbug.com/477444
+  // We attempt to detect this to work out when it's safe to install breakpad.
+  // If anything doesn't seem right we assume it's not safe.
+
+  // type and mangled name of android::NativeBridgeInitialized
+  typedef bool (*InitializedFunc)();
+  const char kInitializedSymbol[] = "_ZN7android23NativeBridgeInitializedEv";
+  // type and mangled name of android::NativeBridgeGetVersion
+  typedef uint32_t (*VersionFunc)();
+  const char kVersionSymbol[] = "_ZN7android22NativeBridgeGetVersionEv";
+
+  base::ScopedNativeLibrary lib_native_bridge(
+      base::FilePath("libnativebridge.so"));
+  if (!lib_native_bridge.is_valid()) {
+    DLOG(WARNING) << "Couldn't load libnativebridge";
+    return false;
+  }
+
+  InitializedFunc NativeBridgeInitialized = reinterpret_cast<InitializedFunc>(
+      lib_native_bridge.GetFunctionPointer(kInitializedSymbol));
+  if (NativeBridgeInitialized == nullptr) {
+    DLOG(WARNING) << "Couldn't tell if native bridge initialized";
+    return false;
+  }
+  if (!NativeBridgeInitialized()) {
+    // Native process, safe to use breakpad.
+    return true;
+  }
+
+  VersionFunc NativeBridgeGetVersion = reinterpret_cast<VersionFunc>(
+      lib_native_bridge.GetFunctionPointer(kVersionSymbol));
+  if (NativeBridgeGetVersion == nullptr) {
+    DLOG(WARNING) << "Couldn't get native bridge version";
+    return false;
+  }
+  uint32_t version = NativeBridgeGetVersion();
+  if (version >= 2) {
+    // Native bridge at least version 2, safe to use breakpad.
+    return true;
+  } else {
+    DLOG(WARNING) << "Native bridge ver=" << version << "; too low";
+    return false;
+  }
+}
+#endif
+
 }  // namespace
 
 void EnableMicrodumpCrashReporter() {
-#if defined(ARCH_CPU_X86_FAMILY)
-  // Don't install signal handler on X86/64 because this breaks binary
-  // translators that handle SIGSEGV in userspace and get chained after our
-  // handler. See crbug.com/477444
-  return;
-#endif
-
   if (g_enabled) {
     NOTREACHED() << "EnableMicrodumpCrashReporter called more than once";
     return;
   }
+
+#if defined(ARCH_CPU_X86_FAMILY)
+  if (!SafeToUseSignalHandler()) {
+    LOG(WARNING) << "Can't use breakpad to handle WebView crashes";
+    return;
+  }
+#endif
 
   ::crash_reporter::SetCrashReporterClient(g_crash_reporter_client.Pointer());
 
