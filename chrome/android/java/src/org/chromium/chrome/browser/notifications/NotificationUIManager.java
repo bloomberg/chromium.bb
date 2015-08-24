@@ -71,6 +71,8 @@ public class NotificationUIManager {
 
     private RoundedIconGenerator mIconGenerator;
 
+    private long mLastNotificationClickMs = 0L;
+
     /**
      * Creates a new instance of the NotificationUIManager.
      *
@@ -465,6 +467,16 @@ public class NotificationUIManager {
     }
 
     /**
+     * Returns whether a notification has been clicked in the last 5 seconds.
+     * Used for Startup.BringToForegroundReason UMA histogram.
+     */
+    public static boolean wasNotificationRecentlyClicked() {
+        if (sInstance == null) return false;
+        long now = System.currentTimeMillis();
+        return now - sInstance.mLastNotificationClickMs < 5 * 1000;
+    }
+
+    /**
      * Closes the notification associated with the given parameters.
      *
      * @param persistentNotificationId The persistent id of the notification.
@@ -488,6 +500,7 @@ public class NotificationUIManager {
      */
     private boolean onNotificationClicked(long persistentNotificationId, String origin,
                                           String tag) {
+        mLastNotificationClickMs = System.currentTimeMillis();
         return nativeOnNotificationClicked(mNativeNotificationManager, persistentNotificationId,
                                            origin, tag);
     }

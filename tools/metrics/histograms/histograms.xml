@@ -43929,6 +43929,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Startup.BringToForegroundReason"
+    enum="BooleanBringToForegroundReason">
+  <owner>johnme@chromium.org</owner>
+  <summary>
+    Records the cause, each time Chrome is brought to the foreground. Currently
+    only checks if a NotificationUIManager notification was shown in the last 5
+    seconds (includes Web Notifications, but not media or Cast).
+  </summary>
+</histogram>
+
 <histogram name="Startup.BrowserLaunchURLCount" units="urls">
   <owner>rkaplow@chromium.org</owner>
   <summary>
@@ -53023,6 +53033,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanBlocked" type="int">
   <int value="0" label="Not Blocked"/>
   <int value="1" label="Blocked"/>
+</enum>
+
+<enum name="BooleanBringToForegroundReason" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="Notification click (within last 5 seconds)"/>
 </enum>
 
 <enum name="BooleanCanCheckUrl" type="int">

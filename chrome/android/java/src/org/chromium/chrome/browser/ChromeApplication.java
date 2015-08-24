@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.qualityprovider.ExternalEstimateProviderAndroid;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.notifications.NotificationUIManager;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.omaha.UpdateInfoBarHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -265,6 +266,12 @@ public class ChromeApplication extends ContentApplication {
 
         mPowerBroadcastReceiver.registerReceiver(this);
         mPowerBroadcastReceiver.runActions(this, true);
+
+        // Track the ratio of Chrome startups that are caused by notification clicks.
+        // TODO(johnme): Add other reasons (and switch to recordEnumeratedHistogram).
+        RecordHistogram.recordBooleanHistogram(
+                "Startup.BringToForegroundReason",
+                NotificationUIManager.wasNotificationRecentlyClicked());
     }
 
     /**
