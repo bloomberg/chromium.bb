@@ -669,11 +669,14 @@ TEST(EventTest, PointerEventDetailsMouse) {
 TEST(EventTest, PointerEventDetailsStylus) {
   ui::MouseEvent stylus_event(ET_MOUSE_PRESSED, gfx::PointF(0, 0),
                               gfx::PointF(0, 0), ui::EventTimeForNow(), 0, 0);
-  stylus_event.set_pointer_type(EventPointerType::POINTER_TYPE_PEN);
-  stylus_event.set_force(21.0f);
-  stylus_event.set_tilt_x(45.0f);
-  stylus_event.set_tilt_y(-45.0f);
+  ui::PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
+      /* radius_x */ 0.0f,
+      /* radius_y */ 0.0f,
+      /* force */ 21.0f,
+      /* tilt_x */ 45.0f,
+      /* tilt_y */ -45.0f);
 
+  stylus_event.set_pointer_details(pointer_details);
   EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
             stylus_event.pointer_details().pointer_type());
   EXPECT_EQ(21.0f, stylus_event.pointer_details().force());

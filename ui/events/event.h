@@ -462,22 +462,11 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   // Updates the button that changed.
   void set_changed_button_flags(int flags) { changed_button_flags_ = flags; }
 
-  // Replace the pointer type (e.g. to EventPointerType::POINTER_TYPE_PEN) for
-  // stylus devices.
-  void set_pointer_type(EventPointerType type) {
-    pointer_details_.pointer_type_ = type;
-  }
-
-  // Update properties for stylus devices exposed through the Pointer Events
-  // spec.
-  void set_force(const float f) { pointer_details_.force_ = f; }
-  void set_tilt_x(const float t) { pointer_details_.tilt_x_ = t; }
-  void set_tilt_y(const float t) { pointer_details_.tilt_y_ = t; }
-  void set_radius_x(const float r) { pointer_details_.radius_x_ = r; }
-  void set_radius_y(const float r) { pointer_details_.radius_y_ = r; }
-
   // Event details common to MouseEvent and TouchEvent.
   const PointerDetails& pointer_details() { return pointer_details_; }
+  void set_pointer_details(const PointerDetails& details) {
+    pointer_details_ = details;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EventTest, DoubleClickRequiresRelease);

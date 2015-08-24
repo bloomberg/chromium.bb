@@ -11,6 +11,7 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/touchscreen_device.h"
+#include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -38,12 +39,14 @@ struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
 struct EVENTS_OZONE_EVDEV_EXPORT MouseMoveEventParams {
   MouseMoveEventParams(int device_id,
                        const gfx::PointF& location,
+                       const PointerDetails& details,
                        base::TimeDelta timestamp);
   MouseMoveEventParams(const MouseMoveEventParams& other);
   ~MouseMoveEventParams();
 
   int device_id;
   gfx::PointF location;
+  PointerDetails pointer_details;
   base::TimeDelta timestamp;
 };
 
@@ -53,6 +56,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT MouseButtonEventParams {
                          unsigned int button,
                          bool down,
                          bool allow_remap,
+                         const PointerDetails& details,
                          base::TimeDelta timestamp);
   MouseButtonEventParams(const MouseButtonEventParams& other);
   ~MouseButtonEventParams();
@@ -62,6 +66,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT MouseButtonEventParams {
   unsigned int button;
   bool down;
   bool allow_remap;
+  PointerDetails pointer_details;
   base::TimeDelta timestamp;
 };
 

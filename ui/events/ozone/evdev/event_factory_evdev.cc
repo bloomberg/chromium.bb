@@ -167,6 +167,7 @@ void EventFactoryEvdev::DispatchMouseMoveEvent(
                    params.timestamp, modifiers_.GetModifierFlags(),
                    /* changed_button_flags */ 0);
   event.set_source_device_id(params.device_id);
+  event.set_pointer_details(params.pointer_details);
   DispatchUiEvent(&event);
 }
 
@@ -216,6 +217,7 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
                    modifiers_.GetModifierFlags() | flag,
                    /* changed_button_flags */ flag);
   event.set_source_device_id(params.device_id);
+  event.set_pointer_details(params.pointer_details);
   DispatchUiEvent(&event);
 }
 
@@ -353,11 +355,13 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
   cursor_->MoveCursorTo(widget, location);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchMouseMoveEvent,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            MouseMoveEventParams(-1 /* device_id */,
-                                                 cursor_->GetLocation(),
-                                                 EventTimeForNow())));
+      FROM_HERE,
+      base::Bind(&EventFactoryEvdev::DispatchMouseMoveEvent,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 MouseMoveEventParams(
+                     -1 /* device_id */, cursor_->GetLocation(),
+                     PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
+                     EventTimeForNow())));
 }
 
 int EventFactoryEvdev::NextDeviceId() {
