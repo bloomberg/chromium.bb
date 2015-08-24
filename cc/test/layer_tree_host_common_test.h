@@ -28,7 +28,6 @@ namespace cc {
 class FakeLayerTreeHost;
 class Layer;
 class LayerImpl;
-class RenderSurfaceLayerList;
 
 class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
  protected:
@@ -111,10 +110,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   void ExecuteCalculateDrawPropertiesWithPropertyTrees(Layer* layer);
   void ExecuteCalculateDrawPropertiesWithPropertyTrees(LayerImpl* layer);
 
-  RenderSurfaceLayerList* render_surface_layer_list() const {
-    return render_surface_layer_list_.get();
-  }
-
   LayerImplList* render_surface_layer_list_impl() const {
     return render_surface_layer_list_impl_.get();
   }
@@ -129,7 +124,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   const LayerSettings& layer_settings() { return layer_settings_; }
 
  private:
-  scoped_ptr<RenderSurfaceLayerList> render_surface_layer_list_;
   scoped_ptr<std::vector<LayerImpl*>> render_surface_layer_list_impl_;
   LayerList update_layer_list_;
   LayerSettings layer_settings_;

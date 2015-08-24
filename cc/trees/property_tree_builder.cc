@@ -72,9 +72,9 @@ static bool RequiresClipNode(LayerType* layer,
                              int parent_transform_id,
                              bool is_clipped) {
   const bool render_surface_applies_clip =
-      layer->render_surface() && is_clipped;
+      layer->has_render_surface() && is_clipped;
   const bool render_surface_may_grow_due_to_clip_children =
-      layer->render_surface() && layer->num_unclipped_descendants() > 0;
+      layer->has_render_surface() && layer->num_unclipped_descendants() > 0;
 
   if (layer->masks_to_bounds() || layer->mask_layer() ||
       render_surface_may_grow_due_to_clip_children)
@@ -144,9 +144,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
                                                  ancestor_clips_subtree;
     node.data.requires_tight_clip_rect =
         ancestor_clips_subtree &&
-        (!layer->render_surface() ||
-         (layer->has_render_surface() && !layer_clips_subtree &&
-          layer->num_unclipped_descendants()));
+        (!layer->has_render_surface() ||
+         (!layer_clips_subtree && layer->num_unclipped_descendants()));
 
     node.data.render_surface_is_clipped = layer->has_render_surface() &&
                                           ancestor_clips_subtree &&
@@ -190,7 +189,7 @@ bool AddTransformNodeIfNeeded(
   const bool has_any_transform_animation =
       layer->HasAnyAnimationTargetingProperty(Animation::TRANSFORM);
 
-  const bool has_surface = !!layer->render_surface();
+  const bool has_surface = layer->has_render_surface();
 
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
@@ -413,7 +412,7 @@ void BuildPropertyTreesInternal(
     const DataForRecursion<LayerType>& data_from_parent) {
   layer->set_property_tree_sequence_number(data_from_parent.sequence_number);
   DataForRecursion<LayerType> data_for_children(data_from_parent);
-  if (layer->render_surface()) {
+  if (layer->has_render_surface()) {
     data_for_children.render_target = layer;
     layer->set_draw_blend_mode(SkXfermode::kSrcOver_Mode);
   } else {

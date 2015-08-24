@@ -24,7 +24,6 @@
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/paint_properties.h"
-#include "cc/layers/render_surface.h"
 #include "cc/layers/scroll_blocks_on.h"
 #include "cc/output/filter_operations.h"
 #include "cc/trees/property_tree.h"
@@ -75,9 +74,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
                         public LayerAnimationValueObserver,
                         public LayerAnimationValueProvider {
  public:
-  typedef RenderSurfaceLayerList RenderSurfaceListType;
   typedef LayerList LayerListType;
-  typedef RenderSurface RenderSurfaceType;
 
   enum LayerIdLabels {
     INVALID_ID = -1,
@@ -268,19 +265,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
   Layer* render_target() {
     DCHECK(!draw_properties_.render_target ||
-           draw_properties_.render_target->render_surface());
+           draw_properties_.render_target->has_render_surface());
     return draw_properties_.render_target;
   }
   const Layer* render_target() const {
     DCHECK(!draw_properties_.render_target ||
-           draw_properties_.render_target->render_surface());
+           draw_properties_.render_target->has_render_surface());
     return draw_properties_.render_target;
   }
   size_t num_unclipped_descendants() const {
     return draw_properties_.num_unclipped_descendants;
   }
 
-  RenderSurface* render_surface() const { return render_surface_.get(); }
   void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);
   void SetScrollCompensationAdjustment(
       const gfx::Vector2dF& scroll_compensation_adjustment);
@@ -389,11 +385,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetLayerClient(LayerClient* client) { client_ = client; }
 
   virtual void PushPropertiesTo(LayerImpl* layer);
-
-  void CreateRenderSurface();
-  void ClearRenderSurface();
-
-  void ClearRenderSurfaceLayerList();
 
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
@@ -514,13 +505,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
   bool is_clipped() const { return is_clipped_; }
 
-  // TODO(vollick): These values are temporary and will be removed as soon as
-  // render surface determinations are moved out of CDP. They only exist because
-  // certain logic depends on whether or not a layer would render to a separate
-  // surface, but CDP destroys surfaces and targets it doesn't need, so without
-  // this boolean, this is impossible to determine after the fact without
-  // wastefully recomputing it. This is public for the time being so that it can
-  // be accessed from CDP.
   bool has_render_surface() const {
     return has_render_surface_;
   }
@@ -762,9 +746,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   DrawProperties<Layer> draw_properties_;
 
   PaintProperties paint_properties_;
-  // TODO(awoloszyn): This is redundant with has_render_surface_,
-  // and should get removed once it is no longer needed on main thread.
-  scoped_ptr<RenderSurface> render_surface_;
 
   gfx::Rect visible_rect_from_property_trees_;
   gfx::Rect clip_rect_in_target_space_from_property_trees_;

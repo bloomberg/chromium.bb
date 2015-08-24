@@ -298,7 +298,7 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer,
   if (!layer_is_drawn)
     return true;
 
-  if (layer->render_surface() && !layer->double_sided() &&
+  if (layer->has_render_surface() && !layer->double_sided() &&
       !layer->HasPotentiallyRunningTransformAnimation() &&
       IsSurfaceBackFaceVisible(layer, tree))
     return true;
@@ -631,7 +631,8 @@ gfx::Transform DrawTransformFromPropertyTreesInternal(
   const TransformNode* node = tree.Node(layer->transform_tree_index());
 
   gfx::Transform xform;
-  const bool owns_non_root_surface = layer->parent() && layer->render_surface();
+  const bool owns_non_root_surface =
+      layer->parent() && layer->has_render_surface();
   if (!owns_non_root_surface) {
     // If you're not the root, or you don't own a surface, you need to apply
     // your local offset.

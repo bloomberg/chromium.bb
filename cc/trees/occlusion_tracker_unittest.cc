@@ -195,7 +195,6 @@ class OcclusionTrackerTest : public testing::Test {
 
   void DestroyLayers() {
     root_ = nullptr;
-    render_surface_layer_list_ = nullptr;
     render_surface_layer_list_impl_.clear();
     replica_layers_.clear();
     mask_layers_.clear();
@@ -310,7 +309,6 @@ class OcclusionTrackerTest : public testing::Test {
   scoped_ptr<FakeLayerTreeHost> host_;
   // These hold ownership of the layers for the duration of the test.
   scoped_ptr<LayerImpl> root_;
-  scoped_ptr<RenderSurfaceLayerList> render_surface_layer_list_;
   LayerImplList render_surface_layer_list_impl_;
   LayerIterator layer_iterator_begin_;
   LayerIterator layer_iterator_;

@@ -2232,15 +2232,10 @@ void LayerTreeHostCommon::UpdateRenderSurface(
     // will now be relative to this RenderSurface.
     transform->MakeIdentity();
     *draw_transform_is_axis_aligned = true;
-    if (!layer->render_surface()) {
-      layer->CreateRenderSurface();
-    }
     layer->SetHasRenderSurface(true);
     return;
   }
   layer->SetHasRenderSurface(false);
-  if (layer->render_surface())
-    layer->ClearRenderSurface();
 }
 
 void LayerTreeHostCommon::UpdateRenderSurfaces(

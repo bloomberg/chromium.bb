@@ -16,7 +16,6 @@
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_iterator.h"
-#include "cc/layers/render_surface.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -951,45 +950,27 @@ TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
   // implicitly inherited by the rest of the subtree, which then is positioned
   // incorrectly as a result.
 
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  grand_child->SetDrawsContent(true);
 
   // The child height is zero, but has non-zero width that should be accounted
   // for while computing draw transforms.
   const gfx::Transform identity_matrix;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 0),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 0), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
 
-  root->AddChild(child);
-  child->AddChild(grand_child);
-  child->SetForceRenderSurface(true);
+  ExecuteCalculateDrawProperties(root);
 
-  host()->SetRootLayer(root);
-
-  ExecuteCalculateDrawProperties(root.get());
-
-  ASSERT_TRUE(child->render_surface());
+  ASSERT_TRUE(child->has_render_surface());
   // This is the real test, the rest are sanity checks.
   EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
                                   child->render_surface()->draw_transform());
@@ -1290,8 +1271,8 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
   render_surface1->AddChild(child);
 
   // Sanity check before the actual test
-  EXPECT_FALSE(parent->render_surface());
-  EXPECT_FALSE(render_surface1->render_surface());
+  EXPECT_FALSE(parent->has_render_surface());
+  EXPECT_FALSE(render_surface1->has_render_surface());
 
   {
     LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(parent.get(),
@@ -1299,8 +1280,8 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     // The root layer always creates a render surface
-    EXPECT_TRUE(parent->render_surface());
-    EXPECT_TRUE(render_surface1->render_surface());
+    EXPECT_TRUE(parent->has_render_surface());
+    EXPECT_TRUE(render_surface1->has_render_surface());
   }
 
   {
@@ -1308,8 +1289,8 @@ TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
     LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(parent.get(),
                                                         parent->bounds());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-    EXPECT_TRUE(parent->render_surface());
-    EXPECT_FALSE(render_surface1->render_surface());
+    EXPECT_TRUE(parent->has_render_surface());
+    EXPECT_FALSE(render_surface1->has_render_surface());
   }
 }
 
@@ -1578,8 +1559,8 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                                         parent->bounds());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-    ASSERT_TRUE(root->render_surface());
-    ASSERT_TRUE(child2->render_surface());
+    ASSERT_TRUE(root->has_render_surface());
+    ASSERT_TRUE(child2->has_render_surface());
 
     EXPECT_FALSE(root->is_clipped());
     EXPECT_FALSE(parent->is_clipped());
@@ -1600,8 +1581,8 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                                         parent->bounds());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-    ASSERT_TRUE(root->render_surface());
-    ASSERT_TRUE(child2->render_surface());
+    ASSERT_TRUE(root->has_render_surface());
+    ASSERT_TRUE(child2->has_render_surface());
 
     EXPECT_FALSE(root->is_clipped());
     EXPECT_TRUE(parent->is_clipped());
@@ -1621,8 +1602,8 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
                                                         parent->bounds());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-    ASSERT_TRUE(root->render_surface());
-    ASSERT_TRUE(child2->render_surface());
+    ASSERT_TRUE(root->has_render_surface());
+    ASSERT_TRUE(child2->has_render_surface());
 
     EXPECT_FALSE(root->is_clipped());
     EXPECT_FALSE(parent->is_clipped());
@@ -3258,14 +3239,15 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
 
   // Verify which render surfaces were created.
-  EXPECT_FALSE(front_facing_child->render_surface());
-  EXPECT_FALSE(back_facing_child->render_surface());
-  EXPECT_TRUE(front_facing_surface->render_surface());
-  EXPECT_TRUE(back_facing_surface->render_surface());
-  EXPECT_FALSE(front_facing_child_of_front_facing_surface->render_surface());
-  EXPECT_FALSE(back_facing_child_of_front_facing_surface->render_surface());
-  EXPECT_FALSE(front_facing_child_of_back_facing_surface->render_surface());
-  EXPECT_FALSE(back_facing_child_of_back_facing_surface->render_surface());
+  EXPECT_FALSE(front_facing_child->has_render_surface());
+  EXPECT_FALSE(back_facing_child->has_render_surface());
+  EXPECT_TRUE(front_facing_surface->has_render_surface());
+  EXPECT_TRUE(back_facing_surface->has_render_surface());
+  EXPECT_FALSE(
+      front_facing_child_of_front_facing_surface->has_render_surface());
+  EXPECT_FALSE(back_facing_child_of_front_facing_surface->has_render_surface());
+  EXPECT_FALSE(front_facing_child_of_back_facing_surface->has_render_surface());
+  EXPECT_FALSE(back_facing_child_of_back_facing_surface->has_render_surface());
 
   EXPECT_EQ(4u, update_layer_list().size());
   EXPECT_TRUE(UpdateLayerListContains(front_facing_child->id()));
@@ -3413,16 +3395,17 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
 
   // Verify which render surfaces were created and used.
-  EXPECT_FALSE(front_facing_child->render_surface());
-  EXPECT_FALSE(back_facing_child->render_surface());
-  EXPECT_TRUE(front_facing_surface->render_surface());
+  EXPECT_FALSE(front_facing_child->has_render_surface());
+  EXPECT_FALSE(back_facing_child->has_render_surface());
+  EXPECT_TRUE(front_facing_surface->has_render_surface());
   EXPECT_NE(back_facing_surface->render_target(), back_facing_surface);
-  // We expect that a render_surface was created but not used.
-  EXPECT_TRUE(back_facing_surface->render_surface());
-  EXPECT_FALSE(front_facing_child_of_front_facing_surface->render_surface());
-  EXPECT_FALSE(back_facing_child_of_front_facing_surface->render_surface());
-  EXPECT_FALSE(front_facing_child_of_back_facing_surface->render_surface());
-  EXPECT_FALSE(back_facing_child_of_back_facing_surface->render_surface());
+  // We expect that a has_render_surface was created but not used.
+  EXPECT_TRUE(back_facing_surface->has_render_surface());
+  EXPECT_FALSE(
+      front_facing_child_of_front_facing_surface->has_render_surface());
+  EXPECT_FALSE(back_facing_child_of_front_facing_surface->has_render_surface());
+  EXPECT_FALSE(front_facing_child_of_back_facing_surface->has_render_surface());
+  EXPECT_FALSE(back_facing_child_of_back_facing_surface->has_render_surface());
 
   EXPECT_EQ(3u, update_layer_list().size());
 
@@ -3529,11 +3512,11 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
                                                       parent->bounds());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-  EXPECT_FALSE(child->render_surface());
-  EXPECT_TRUE(animating_surface->render_surface());
-  EXPECT_FALSE(child_of_animating_surface->render_surface());
-  EXPECT_FALSE(animating_child->render_surface());
-  EXPECT_FALSE(child2->render_surface());
+  EXPECT_FALSE(child->has_render_surface());
+  EXPECT_TRUE(animating_surface->has_render_surface());
+  EXPECT_FALSE(child_of_animating_surface->has_render_surface());
+  EXPECT_FALSE(animating_child->has_render_surface());
+  EXPECT_FALSE(child2->has_render_surface());
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
 
@@ -3634,14 +3617,14 @@ TEST_F(LayerTreeHostCommonTest,
   ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
 
   // Verify which render surfaces were created and used.
-  EXPECT_TRUE(front_facing_surface->render_surface());
+  EXPECT_TRUE(front_facing_surface->has_render_surface());
 
   // We expect the render surface to have been created, but remain unused.
-  EXPECT_TRUE(back_facing_surface->render_surface());
+  EXPECT_TRUE(back_facing_surface->has_render_surface());
   EXPECT_NE(back_facing_surface->render_target(),
             back_facing_surface);  // because it should be culled
-  EXPECT_FALSE(child1->render_surface());
-  EXPECT_FALSE(child2->render_surface());
+  EXPECT_FALSE(child1->has_render_surface());
+  EXPECT_FALSE(child2->has_render_surface());
 
   EXPECT_EQ(2u, update_layer_list().size());
   EXPECT_TRUE(UpdateLayerListContains(front_facing_surface->id()));
@@ -4133,7 +4116,7 @@ TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
 
   ExecuteCalculateDrawProperties(root.get());
 
-  EXPECT_FALSE(child->render_surface());
+  EXPECT_FALSE(child->has_render_surface());
 }
 
 TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
@@ -7035,9 +7018,9 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
 
   ExecuteCalculateDrawProperties(root.get());
 
-  EXPECT_TRUE(root->render_surface());
-  EXPECT_TRUE(child->render_surface());
-  EXPECT_FALSE(grandchild->render_surface());
+  EXPECT_TRUE(root->has_render_surface());
+  EXPECT_TRUE(child->has_render_surface());
+  EXPECT_FALSE(grandchild->has_render_surface());
 
   EXPECT_TRUE(root->filters().IsEmpty());
   EXPECT_TRUE(child->filters().IsEmpty());
@@ -7085,9 +7068,9 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
 
   ExecuteCalculateDrawProperties(root.get());
 
-  EXPECT_TRUE(root->render_surface());
-  EXPECT_TRUE(child->render_surface());
-  EXPECT_FALSE(grandchild->render_surface());
+  EXPECT_TRUE(root->has_render_surface());
+  EXPECT_TRUE(child->has_render_surface());
+  EXPECT_FALSE(grandchild->has_render_surface());
 
   EXPECT_TRUE(root->filters().IsEmpty());
   EXPECT_TRUE(child->filters().IsEmpty());

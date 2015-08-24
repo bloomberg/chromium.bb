@@ -715,7 +715,6 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
     content_layer->SetBounds(gfx::Size(100, 200));
     scrollbar_layer->draw_properties().visible_layer_rect =
         gfx::Rect(0, 0, 100, 200);
-    scrollbar_layer->CreateRenderSurface();
     scrollbar_layer->draw_properties().render_target = scrollbar_layer.get();
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
@@ -731,8 +730,6 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
     EXPECT_EQ(expected_deleted, layer_tree_host_->TotalUIResourceDeleted());
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-
-    scrollbar_layer->ClearRenderSurface();
   }
 };
 
@@ -779,7 +776,6 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   scrollbar_layer->draw_properties().visible_layer_rect =
       gfx::Rect(0, 0, 100, 200);
 
-  scrollbar_layer->CreateRenderSurface();
   scrollbar_layer->draw_properties().render_target = scrollbar_layer.get();
 
   testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
@@ -886,7 +882,6 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   EXPECT_EQ(expected_deleted, layer_tree_host_->TotalUIResourceDeleted());
 
   testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-  scrollbar_layer->ClearRenderSurface();
 }
 
 class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
@@ -911,7 +906,6 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
     content_layer->SetBounds(gfx::Size(100, 200));
     scrollbar_layer->draw_properties().visible_layer_rect =
         gfx::Rect(scrollbar_location, scrollbar_layer->bounds());
-    scrollbar_layer->CreateRenderSurface();
     scrollbar_layer->draw_properties().render_target = scrollbar_layer.get();
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
@@ -940,8 +934,6 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
               scrollbar_layer->internal_content_bounds().height());
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-
-    scrollbar_layer->ClearRenderSurface();
   }
 };
 

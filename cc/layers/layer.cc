@@ -1424,20 +1424,6 @@ void Layer::SetHasRenderSurface(bool has_render_surface) {
   layer_tree_host_->property_trees()->needs_rebuild = true;
 }
 
-void Layer::CreateRenderSurface() {
-  DCHECK(!render_surface_);
-  render_surface_ = make_scoped_ptr(new RenderSurface(this));
-}
-
-void Layer::ClearRenderSurface() {
-  render_surface_ = nullptr;
-}
-
-void Layer::ClearRenderSurfaceLayerList() {
-  if (render_surface_)
-    render_surface_->ClearLayerLists();
-}
-
 gfx::ScrollOffset Layer::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
 }

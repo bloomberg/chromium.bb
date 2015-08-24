@@ -5,7 +5,6 @@
 #ifndef CC_TEST_TEST_OCCLUSION_TRACKER_H_
 #define CC_TEST_TEST_OCCLUSION_TRACKER_H_
 
-#include "cc/layers/render_surface.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/trees/occlusion_tracker.h"
 
