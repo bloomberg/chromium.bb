@@ -32,7 +32,7 @@
 #define RenderedPosition_h
 
 #include "core/CoreExport.h"
-#include "core/editing/Position.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/layout/line/InlineBox.h"
 #include "wtf/Allocator.h"
 
@@ -40,7 +40,6 @@ namespace blink {
 
 class LayoutUnit;
 class LayoutObject;
-class VisiblePosition;
 struct CompositedSelectionBound;
 
 class RenderedPosition {

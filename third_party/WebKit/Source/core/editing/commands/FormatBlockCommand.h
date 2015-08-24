@@ -28,6 +28,7 @@
 
 #include "core/dom/QualifiedName.h"
 #include "core/editing/Position.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/editing/commands/ApplyBlockElementCommand.h"
 #include "core/editing/commands/EditAction.h"
 
@@ -36,7 +37,6 @@ namespace blink {
 class Document;
 class Element;
 class Range;
-class VisiblePosition;
 
 class FormatBlockCommand final : public ApplyBlockElementCommand {
 public:

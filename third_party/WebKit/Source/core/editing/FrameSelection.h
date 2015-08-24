@@ -31,6 +31,7 @@
 #include "core/editing/Caret.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/layout/ScrollAlignment.h"
 #include "platform/Timer.h"
@@ -47,7 +48,6 @@ class GranularityStrategy;
 class GraphicsContext;
 class HTMLFormElement;
 class Text;
-class VisiblePosition;
 
 enum EUserTriggered { NotUserTriggered = 0, UserTriggered = 1 };
 

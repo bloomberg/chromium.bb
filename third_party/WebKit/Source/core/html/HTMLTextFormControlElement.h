@@ -26,14 +26,13 @@
 #define HTMLTextFormControlElement_h
 
 #include "core/CoreExport.h"
-#include "core/editing/Position.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 
 namespace blink {
 
 class ExceptionState;
 class Range;
-class VisiblePosition;
 
 enum TextFieldSelectionDirection { SelectionHasNoDirection, SelectionHasForwardDirection, SelectionHasBackwardDirection };
 enum TextFieldEventBehavior { DispatchNoEvent, DispatchChangeEvent, DispatchInputAndChangeEvent };

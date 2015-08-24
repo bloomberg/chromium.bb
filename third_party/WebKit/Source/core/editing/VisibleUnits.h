@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/PositionWithAffinity.h"
+#include "core/editing/VisiblePosition.h"
 #include "platform/text/TextDirection.h"
 
 namespace blink {
@@ -37,7 +38,6 @@ class LayoutRect;
 class LayoutUnit;
 class LayoutObject;
 class Node;
-class VisiblePosition;
 class IntPoint;
 class InlineBox;
 class LocalFrame;
