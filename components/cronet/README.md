@@ -71,7 +71,7 @@ Make a request like this:
     UrlRequestContextConfig myConfig = new UrlRequestContextConfig();
     CronetUrlRequestContext myRequestContext =
             new CronetUrlRequestContext(getContext(), myConfig);
-    Executor executor = ExecutorService.newSingleThreadExecutor();
+    Executor executor = Executors.newSingleThreadExecutor();
     MyListener listener = new MyListener();
     UrlRequest request = myRequestContext.createRequest(
             "https://www.example.com", listener, executor);
