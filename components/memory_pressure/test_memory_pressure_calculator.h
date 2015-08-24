@@ -15,7 +15,7 @@ namespace memory_pressure {
 class TestMemoryPressureCalculator : public MemoryPressureCalculator {
  public:
   TestMemoryPressureCalculator();
-  virtual ~TestMemoryPressureCalculator() {}
+  ~TestMemoryPressureCalculator() override {}
 
   // MemoryPressureCalculator implementation.
   MemoryPressureLevel CalculateCurrentPressureLevel() override;
