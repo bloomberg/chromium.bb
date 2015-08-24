@@ -1159,6 +1159,11 @@ __gCrWeb.autofill.inferLabelFromTableColumn = function(element) {
  * surrounding table structure,
  * e.g. <tr><td>Some Text</td></tr><tr><td><input ...></td></tr>
  *
+ * If there are multiple cells and the row with the input matches up with the
+ * previous row, then look for a specific cell within the previous row.
+ * e.g. <tr><td>Input 1 label</td><td>Input 2 label</td></tr>
+ *  <tr><td><input name="input 1"></td><td><input name="input2"></td></tr>
+ *
  * It is based on the logic in
  *     string16 InferLabelFromTableRow(const WebFormControlElement& element)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
@@ -1171,6 +1176,50 @@ __gCrWeb.autofill.inferLabelFromTableRow = function(element) {
     return '';
   }
 
+  var cell = element.parentNode;
+  while (cell) {
+    if (cell.nodeType === Node.ELEMENT_NODE &&
+        __gCrWeb.autofill.hasTagName(cell, 'td')) {
+      break;
+    }
+    cell = cell.parentNode;
+  }
+
+  // Not in a cell - bail out.
+  if (!cell) {
+    return '';
+  }
+
+  // Count the cell holding |element|.
+  var cellCount = cell.colSpan;
+  var cellPosition = 0;
+  var cellPositionEnd = cellCount - 1;
+
+  // Count cells to the left to figure out |element|'s cell's position.
+  var cellIterator = cell.previousSibling;
+  while (cellIterator) {
+    if (cellIterator.nodeType === Node.ELEMENT_NODE &&
+        __gCrWeb.autofill.hasTagName(cellIterator, 'td')) {
+      cellPosition += cellIterator.colSpan;
+    }
+    cellIterator = cellIterator.previousSibling;
+  }
+
+  // Count cells to the right.
+  cellIterator = cell.nextSibling;
+  while (cellIterator) {
+    if (cellIterator.nodeType === Node.ELEMENT_NODE &&
+        __gCrWeb.autofill.hasTagName(cellIterator, 'td')) {
+      cellCount += cellIterator.colSpan;
+    }
+    cellIterator = cellIterator.nextSibling;
+  }
+
+  // Combine left + right.
+  cellCount += cellPosition;
+  cellPositionEnd += cellPosition
+
+  // Find the current row.
   var parentNode = element.parentNode;
   while (parentNode &&
          parentNode.nodeType === Node.ELEMENT_NODE &&
@@ -1182,9 +1231,49 @@ __gCrWeb.autofill.inferLabelFromTableRow = function(element) {
     return '';
   }
 
+  // Now find the previous row.
+  var rowIt = parentNode.previousSibling;
+  while (rowIt) {
+    if (rowIt.nodeType === Node.ELEMENT_NODE &&
+        __gCrWeb.autofill.hasTagName(parentNode, 'tr')) {
+      break;
+    }
+    rowIt = rowIt.previousSibling;
+  }
+
+  // If there exists a previous row, check its cells and size. If they align
+  // with the current row, infer the label from the cell above.
+  if (rowIt) {
+    var matchingCell = null;
+    var prevRowCount = 0;
+    var prevRowIt = rowIt.firstChild;
+    while (prevRowIt) {
+      if (prevRowIt.nodeType === Node.ELEMENT_NODE) {
+        if (__gCrWeb.autofill.hasTagName(prevRowIt, 'td') ||
+            __gCrWeb.autofill.hasTagName(prevRowIt, 'th')) {
+          var span = prevRowIt.colSpan;
+          var prevRowCountEnd = prevRowCount + span - 1;
+          if (prevRowCount === cellPosition &&
+              prevRowCountEnd === cellPositionEnd) {
+            matchingCell = prevRowIt;
+          }
+          prevRowCount += span;
+        }
+      }
+      prevRowIt = prevRowIt.nextSibling;
+    }
+    if (cellCount === prevRowCount && matchingCell) {
+      var inferredLabel = __gCrWeb.autofill.findChildText(matchingCell);
+      if (inferredLabel.length > 0) {
+        return inferredLabel;
+      }
+    }
+  }
+
+  // If there is no previous row, or if the previous row and current row do not
+  // align, check all previous siblings, skipping non-element nodes, until we
+  // find a non-empty text block.
   var inferredLabel = '';
-  // Check all previous siblings, skipping non-element nodes, until we find a
-  // non-empty text block.
   var previous = parentNode.previousSibling;
   while (inferredLabel.length === 0 && previous) {
     if (__gCrWeb.autofill.hasTagName(previous, 'tr')) {
