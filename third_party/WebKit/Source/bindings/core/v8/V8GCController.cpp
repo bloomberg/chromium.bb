@@ -335,10 +335,14 @@ void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
 {
     // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (type == v8::kGCTypeScavenge)
+    if (type == v8::kGCTypeScavenge) {
+        // Finish Oilpan's complete sweeping before running a V8 minor GC.
+        // This will let the minor GC collect more V8 objects.
+        ThreadState::current()->completeSweep();
         minorGCPrologue(isolate);
-    else if (type == v8::kGCTypeMarkSweepCompact)
+    } else if (type == v8::kGCTypeMarkSweepCompact) {
         majorGCPrologue(isolate, flags & v8::kGCCallbackFlagConstructRetainedObjectInfos);
+    }
 }
 
 void V8GCController::minorGCPrologue(v8::Isolate* isolate)
@@ -386,8 +390,11 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (type == v8::kGCTypeScavenge) {
         minorGCEpilogue(isolate);
+        ThreadState::current()->scheduleV8FollowupGCIfNeeded();
     } else if (type == v8::kGCTypeMarkSweepCompact) {
         majorGCEpilogue(isolate);
+    } else if (type == v8::kGCTypeProcessWeakCallbacks) {
+        ThreadState::current()->scheduleV8FollowupGCIfNeeded();
     }
 
     // v8::kGCCallbackFlagForced forces a Blink heap garbage collection
@@ -429,22 +436,6 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
     if (isMainThread()) {
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
         ScriptForbiddenScope::exit();
-
-        // Schedule an Oilpan GC to avoid the following scenario:
-        // (1) A DOM object X holds a v8::Persistent to a V8 object.
-        //     Assume that X is small but the V8 object is huge.
-        //     The v8::Persistent is released when X is destructed.
-        // (2) X's DOM wrapper is created.
-        // (3) The DOM wrapper becomes unreachable.
-        // (4) V8 triggers a GC. The V8's GC collects the DOM wrapper.
-        //     However, X is not collected until a next Oilpan's GC is
-        //     triggered.
-        // (5) If a lot of such DOM objects are created, we end up with
-        //     a situation where V8's GC collects the DOM wrappers but
-        //     the DOM objects are not collected forever. (Note that
-        //     Oilpan's GC is not triggered unless Oilpan's heap gets full.)
-        // (6) V8 hits OOM.
-        ThreadState::current()->scheduleGCIfNeeded();
     }
 }
 

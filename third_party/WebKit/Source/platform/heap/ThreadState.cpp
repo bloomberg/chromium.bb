@@ -657,6 +657,11 @@ bool ThreadState::shouldSchedulePreciseGC()
 #endif
 }
 
+bool ThreadState::shouldScheduleV8FollowupGC()
+{
+    return judgeGCThreshold(32 * 1024 * 1024, 1.5);
+}
+
 bool ThreadState::shouldSchedulePageNavigationGC(float estimatedRemovalRatio)
 {
     return judgeGCThreshold(1024 * 1024, 1.5 * (1 - estimatedRemovalRatio));
@@ -666,6 +671,21 @@ bool ThreadState::shouldForceConservativeGC()
 {
     // TODO(haraken): 400% is too large. Lower the heap growing factor.
     return judgeGCThreshold(32 * 1024 * 1024, 5.0);
+}
+
+void ThreadState::scheduleV8FollowupGCIfNeeded()
+{
+    ASSERT(checkThread());
+    if (isGCForbidden())
+        return;
+
+    if (isSweepingInProgress())
+        return;
+    ASSERT(!sweepForbidden());
+
+    Heap::reportMemoryUsageForTracing();
+    if (shouldScheduleV8FollowupGC())
+        schedulePreciseGC();
 }
 
 void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)

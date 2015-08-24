@@ -328,6 +328,7 @@ public:
     void scheduleIdleGC();
     void scheduleIdleLazySweep();
     void schedulePreciseGC();
+    void scheduleV8FollowupGCIfNeeded();
     void schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio);
     void schedulePageNavigationGC();
     void scheduleGCIfNeeded();
@@ -689,6 +690,11 @@ private:
     bool shouldScheduleIdleGC();
     bool shouldSchedulePreciseGC();
     bool shouldForceConservativeGC();
+    // V8 minor or major GC is likely to drop a lot of references to objects
+    // on Oilpan's heap. We give a chance to schedule a GC.
+    bool shouldScheduleV8FollowupGC();
+    // Page navigation is likely to drop a lot of references to objects
+    // on Oilpan's heap. We give a chance to schedule a GC.
     // estimatedRemovalRatio is the estimated ratio of objects that will be no
     // longer necessary due to the navigation.
     bool shouldSchedulePageNavigationGC(float estimatedRemovalRatio);
