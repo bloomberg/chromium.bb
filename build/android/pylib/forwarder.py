@@ -215,6 +215,7 @@ class Forwarder(object):
     redirection_command = ['--adb=' + constants.GetAdbPath(),
                            '--serial-id=' + serial,
                            '--unmap', str(device_port)]
+    logging.info('Undo forwarding using command: %s', redirection_command)
     (exit_code, output) = cmd_helper.GetCmdStatusAndOutput(
         [instance._host_forwarder_path] + redirection_command)
     if exit_code != 0:
