@@ -878,7 +878,9 @@ void DeprecatedPaintLayerCompositor::resetTrackedPaintInvalidationRects()
 
 void DeprecatedPaintLayerCompositor::setTracksPaintInvalidations(bool tracksPaintInvalidations)
 {
-    ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
+    ASSERT(lifecycle().state() ==
+        (RuntimeEnabledFeatures::slimmingPaintV2Enabled()
+            ? DocumentLifecycle::CompositingForSlimmingPaintV2Clean : DocumentLifecycle::PaintInvalidationClean));
     m_isTrackingPaintInvalidations = tracksPaintInvalidations;
 }
 
