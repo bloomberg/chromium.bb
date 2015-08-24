@@ -1287,8 +1287,8 @@ move_workspace_grab_end(struct move_grab *move, struct wl_resource* resource,
 					duration);
 	ivi_controller_interface->layer_set_destination_rectangle(layer,
 				end_pos, pos_y,
-				hmi_ctrl->workspace_background_layer.width,
-				hmi_ctrl->workspace_background_layer.height);
+				hmi_ctrl->workspace_layer.width,
+				hmi_ctrl->workspace_layer.height);
 	ivi_controller_interface->commit_changes();
 }
 
