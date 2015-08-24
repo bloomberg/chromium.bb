@@ -218,10 +218,9 @@ class MAYBE_WebRtcGetUserMediaBrowserTest: public WebRtcContentBrowserTest {
 
     int error_code;
     std::string error_message;
-    scoped_ptr<base::Value> value(
-        base::JSONReader::DeprecatedReadAndReturnError(
-            devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
-            &error_message));
+    scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+        devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
+        &error_message);
 
     ASSERT_TRUE(value.get() != NULL) << error_message;
     EXPECT_EQ(value->GetType(), base::Value::TYPE_LIST);

@@ -233,8 +233,8 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
         "window.domAutomationController.send("
             "JSON.stringify(userMediaRequests));",
         &json_requests));
-    scoped_ptr<base::Value> value_requests;
-    value_requests.reset(base::JSONReader::DeprecatedRead(json_requests));
+    scoped_ptr<base::Value> value_requests =
+        base::JSONReader::Read(json_requests);
 
     EXPECT_EQ(base::Value::TYPE_LIST, value_requests->GetType());
 
@@ -783,8 +783,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, CreatePageDump) {
       "window.domAutomationController.send("
       "JSON.stringify(peerConnectionDataStore));",
       &dump_json));
-  scoped_ptr<base::Value> dump;
-  dump.reset(base::JSONReader::DeprecatedRead(dump_json));
+  scoped_ptr<base::Value> dump = base::JSONReader::Read(dump_json);
   VerifyPageDumpStructure(dump.get(),
                           2 /*peer_connection_number*/,
                           2 /*update_number*/,
@@ -803,7 +802,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, CreatePageDump) {
       "window.domAutomationController.send("
       "JSON.stringify(peerConnectionDataStore));",
       &dump_json));
-  dump.reset(base::JSONReader::DeprecatedRead(dump_json));
+  dump = base::JSONReader::Read(dump_json);
   VerifyStatsDump(dump.get(), pc_0, type, id, stats);
 }
 
