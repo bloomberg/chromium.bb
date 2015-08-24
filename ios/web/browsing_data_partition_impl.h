@@ -8,22 +8,21 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "ios/web/active_state_manager_impl.h"
+#include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/browsing_data_partition.h"
 
 @class CRWBrowsingDataStore;
 
 namespace web {
 
-class ActiveStateManagerImpl;
 class BrowserState;
 
 // Concrete subclass of web::BrowsingDataPartition. Observes
-// ActiveStateManagerImpl::Observer methods to trigger stash/restore operations
+// ActiveStateManager::Observer methods to trigger stash/restore operations
 // on the underlying CRWBrowsingDataStore.
 class BrowsingDataPartitionImpl : public BrowsingDataPartition,
                                   public base::SupportsUserData::Data,
-                                  public web::ActiveStateManagerImpl::Observer {
+                                  public web::ActiveStateManager::Observer {
  public:
   explicit BrowsingDataPartitionImpl(BrowserState* browser_state);
   ~BrowsingDataPartitionImpl() override;
@@ -31,7 +30,7 @@ class BrowsingDataPartitionImpl : public BrowsingDataPartition,
   // BrowsingDataPartition implementation.
   CRWBrowsingDataStore* GetBrowsingDataStore() override;
 
-  // ActiveStateManagerImpl::Observer implementation.
+  // ActiveStateManager::Observer implementation.
   void OnActive() override;
   void OnInactive() override;
   void WillBeDestroyed() override;
@@ -41,7 +40,7 @@ class BrowsingDataPartitionImpl : public BrowsingDataPartition,
   // The browsing data store backing this object.
   base::scoped_nsobject<CRWBrowsingDataStore> browsing_data_store_;
   // Weak pointer to the associated active state manager.
-  ActiveStateManagerImpl* active_state_manager_;
+  ActiveStateManager* active_state_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataPartitionImpl);
 };

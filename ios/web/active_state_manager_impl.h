@@ -25,23 +25,8 @@ class ActiveStateManagerImpl : public ActiveStateManager,
   // ActiveStateManager methods.
   void SetActive(bool active) override;
   bool IsActive() override;
-
-  // Observer that is notified when a ActiveStateManager becomes active,
-  // inactive or destroyed.
-  class Observer {
-   public:
-    // Called when the ActiveStateManager becomes active.
-    virtual void OnActive() = 0;
-    // Called when the ActiveStateManager becomes inactive.
-    virtual void OnInactive() = 0;
-    // Called just before the ActiveStateManager is destroyed.
-    virtual void WillBeDestroyed() = 0;
-  };
-  // Adds an observer for this class. An observer should not be added more
-  // than once. The caller retains the ownership of the observer object.
-  void AddObserver(Observer* obs);
-  // Removes an observer.
-  void RemoveObserver(Observer* obs);
+  void AddObserver(ActiveStateManager::Observer* observer) override;
+  void RemoveObserver(ActiveStateManager::Observer* observer) override;
 
  private:
   BrowserState* browser_state_;  // weak, owns this object.

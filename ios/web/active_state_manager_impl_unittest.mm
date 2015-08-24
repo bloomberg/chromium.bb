@@ -20,13 +20,13 @@ namespace {
 // A test fixture to test ActiveStateManagerImpl.
 typedef WebTest ActiveStateManagerImplTest;
 
-// An ActiveStateManagerImpl::Observer used for testing purposes.
-class ActiveStateManagerImplObserver : public ActiveStateManagerImpl::Observer {
+// An ActiveStateManager::Observer used for testing purposes.
+class ActiveStateManagerObserver : public ActiveStateManager::Observer {
  public:
-  ActiveStateManagerImplObserver() {}
-  virtual ~ActiveStateManagerImplObserver() {}
+  ActiveStateManagerObserver() {}
+  virtual ~ActiveStateManagerObserver() {}
 
-  // ActiveStateManagerImpl::Observer implementation.
+  // ActiveStateManager::Observer implementation.
   MOCK_METHOD0(OnActive, void());
   MOCK_METHOD0(OnInactive, void());
   MOCK_METHOD0(WillBeDestroyed, void());
@@ -55,17 +55,15 @@ TEST_F(ActiveStateManagerImplTest, ActiveState) {
   EXPECT_FALSE(active_state_manager->IsActive());
 }
 
-// Tests that ActiveStateManagerImpl::Observer are notified correctly.
+// Tests that ActiveStateManager::Observer are notified correctly.
 TEST_F(ActiveStateManagerImplTest, ObserverMethod) {
   // |GetBrowserState()| already has its ActiveStateManager be active.
   BrowserState::GetActiveStateManager(GetBrowserState())->SetActive(false);
 
-  ActiveStateManagerImplObserver observer;
+  ActiveStateManagerObserver observer;
   TestBrowserState browser_state;
-  ActiveStateManagerImpl* active_state_manager =
-      static_cast<ActiveStateManagerImpl*>(
-          BrowserState::GetActiveStateManager(&browser_state));
-
+  ActiveStateManager* active_state_manager =
+      BrowserState::GetActiveStateManager(&browser_state);
 
   active_state_manager->AddObserver(&observer);
 

@@ -53,12 +53,12 @@ bool ActiveStateManagerImpl::IsActive() {
   return active_;
 }
 
-void ActiveStateManagerImpl::AddObserver(Observer* obs) {
+void ActiveStateManagerImpl::AddObserver(ActiveStateManager::Observer* obs) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
   observer_list_.AddObserver(obs);
 }
 
-void ActiveStateManagerImpl::RemoveObserver(Observer* obs) {
+void ActiveStateManagerImpl::RemoveObserver(ActiveStateManager::Observer* obs) {
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
   observer_list_.RemoveObserver(obs);
 }

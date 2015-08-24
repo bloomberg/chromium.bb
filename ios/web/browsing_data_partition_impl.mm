@@ -109,8 +109,7 @@ BrowsingDataPartitionImpl::BrowsingDataPartitionImpl(
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
   DCHECK(browser_state);
 
-  active_state_manager_ = static_cast<ActiveStateManagerImpl*>(
-      BrowserState::GetActiveStateManager(browser_state));
+  active_state_manager_ = BrowserState::GetActiveStateManager(browser_state);
   DCHECK(active_state_manager_);
   active_state_manager_->AddObserver(this);
 }

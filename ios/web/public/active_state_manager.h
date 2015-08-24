@@ -23,6 +23,23 @@ class ActiveStateManager {
   // Returns true if the BrowserState is active.
   virtual bool IsActive() = 0;
 
+  // Observer that is notified when a ActiveStateManager becomes active,
+  // inactive or destroyed.
+  class Observer {
+   public:
+    // Called when the ActiveStateManager becomes active.
+    virtual void OnActive() {}
+    // Called when the ActiveStateManager becomes inactive.
+    virtual void OnInactive() {}
+    // Called just before the ActiveStateManager is destroyed.
+    virtual void WillBeDestroyed() {}
+  };
+  // Adds an observer for this class. An observer should not be added more
+  // than once. The caller retains the ownership of the observer object.
+  virtual void AddObserver(Observer* observer) = 0;
+  // Removes an observer.
+  virtual void RemoveObserver(Observer* observer) = 0;
+
  protected:
   virtual ~ActiveStateManager(){};
 };
