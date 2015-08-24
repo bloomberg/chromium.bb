@@ -67,14 +67,17 @@ Polymer({
     },
 
     /**
-     * If true, the element is part of a list of networks and only displays
-     * the network icon and name. Otherwise the element is assumed to be a
-     * stand-alone item (e.g. as part of a summary) and displays the name
-     * of the network type plus the network name and connection state.
+     * Determines how the list item will be displayed:
+     *  'visible' - displays the network icon (with strength) and name
+     *  'known' - displays the visible info along with a toggle icon for the
+     *      preferred status and a remove button.
+     *  'none' - The element is a stand-alone item (e.g. part of a summary)
+     *      and displays the name of the network type plus the network name
+     *      and connection state.
      */
-    isListItem: {
-      type: Boolean,
-      value: false,
+    listItemType: {
+      type: String,
+      value: 'none',
       observer: 'networkStateChanged_'
     },
   },
@@ -90,7 +93,7 @@ Polymer({
     var network = this.networkState;
     var isDisconnected =
         network.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
-    if (this.isListItem) {
+    if (this.isListItem_(this.listItemType)) {
       var name = network.Name || getText('OncType' + network.Type);
       this.$.networkName.textContent = name;
       this.$.networkName.classList.toggle('connected', !isDisconnected);
@@ -116,12 +119,76 @@ Polymer({
   },
 
   /**
-   * @param {string} isListItem The value of this.isListItem.
-   * @return {string} The class name based on isListItem.
+   * @param {?CrOnc.NetworkStateProperties} networkState
+   * @return {string} The icon to use for the shared button indicator.
    * @private
    */
-  isListItemClass_: function(isListItem) {
-    return isListItem ? 'list-item' : '';
-  }
+  sharedIcon_: function(networkState) {
+    var source = (networkState && networkState.Source) || '';
+    var isShared = (source == CrOnc.Source.DEVICE ||
+                    source == CrOnc.Source.DEVICE_POLICY);
+    return isShared ? 'check' : '';
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} networkState
+   * @return {string} The icon to use for the preferred button.
+   * @private
+   */
+  preferredIcon_: function(networkState) {
+    var isPreferred = networkState && networkState.Priority > 0;
+    return isPreferred ? 'star' : 'star-border';
+  },
+
+  /**
+   * Fires the 'toggle-preferred' event with |this.networkState| as the details.
+   * @param {Event} event
+   * @private
+   */
+  fireTogglePreferred_: function(event) {
+    this.fire('toggle-preferred', this.networkState);
+    event.stopPropagation();
+  },
+
+  /**
+   * Fires the 'remove' event with |this.networkState| as the details.
+   * @param {Event} event
+   * @private
+   */
+  fireRemove_: function(event) {
+    this.fire('remove', this.networkState);
+    event.stopPropagation();
+  },
+
+  /**
+   * @param {?CrOnc.NetworkStateProperties} networkState
+   * @return {boolean} True if the network is managed by a policy.
+   * @private
+   */
+  isPolicyManaged_: function(networkState) {
+    var source = (networkState && networkState.Source) || '';
+    var isPolicyManaged = source == CrOnc.Source.USER_POLICY ||
+                          source == CrOnc.Source.DEVICE_POLICY;
+    return isPolicyManaged;
+  },
+
+  /**
+   * @param {string} listItemType The list item type.
+   * @return {boolean} True if the the list item type is not 'none'.
+   * @private
+   */
+  isListItem_: function(listItemType) {
+    return listItemType != 'none';
+  },
+
+  /**
+   * @param {string} listItemType The list item type.
+   * @param {string} type The type to match against.
+   * @return {boolean} True if the the list item type matches |type|.
+   * @private
+   */
+  isListItemType_: function(listItemType, type) {
+    return listItemType == type;
+  },
 });
 })();

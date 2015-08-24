@@ -7,6 +7,7 @@
 
 <if expr="chromeos">
 <link rel="import" href="chrome://md-settings/internet_page/internet_detail_page.html">
+<link rel="import" href="chrome://md-settings/internet_page/internet_known_networks_page.html">
 </if>
 
 <dom-module id="cr-settings-main">
@@ -27,6 +28,11 @@
               subpage="true" guid="[[params.guid]]"
               selected-page="[[selectedPage]]">
           </cr-settings-internet-detail-page>
+          <cr-settings-internet-known-networks-page
+              route="internet-known-networks"
+              subpage="true" network-type="[[params.type]]"
+              selected-page="[[selectedPage]]">
+          </cr-settings-internet-known-networks-page>
 </if>
         </iron-pages>
       </more-route-selector>

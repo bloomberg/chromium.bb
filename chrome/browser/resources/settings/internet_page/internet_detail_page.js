@@ -258,7 +258,7 @@ Polymer({
     if (!state) {
       // If state becomes null (i.e. the network is no longer visible), close
       // the page.
-      MoreRouting.navigateTo('internet');
+      this.navigateBack_();
     }
   },
 
@@ -286,15 +286,6 @@ Polymer({
    */
   getStateName_: function(state) {
     return (state && state.Name) || '';
-  },
-
-  /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
-   * @return {string} The text to display for the network name.
-   * @private
-   */
-  getStateClass_: function(state) {
-    return this.isConnectedState_(state) ? 'connected' : '';
   },
 
   /**
@@ -538,7 +529,8 @@ Polymer({
    * @private
    */
   showAutoConnect_: function(state) {
-    return state && state.Type != CrOnc.Type.ETHERNET;
+    return !!state && state.Type != CrOnc.Type.ETHERNET &&
+           state.Source != CrOnc.Source.NONE;
   },
 
   /**
@@ -547,7 +539,18 @@ Polymer({
    * @private
    */
   showPreferNetwork_: function(state) {
-    return state && state.Type != CrOnc.Type.ETHERNET;
+    // TODO(stevenjb): Resolve whether or not we want to allow "preferred" for
+    // state.Type == CrOnc.Type.ETHERNET.
+    return !!state && state.Source != CrOnc.Source.NONE;
+  },
+
+  /**
+   * @param {boolean} preferNetwork
+   * @return {string} The icon to use for the preferred button.
+   * @private
+   */
+  getPreferredIcon_: function(preferNetwork) {
+    return preferNetwork ? 'star' : 'star-border';
   },
 
   /**
@@ -683,8 +686,17 @@ Polymer({
    * @private
    */
   showCellularSim_: function(state) {
-    return state && state.Type == 'Cellular' && state.Cellular &&
-        state.Cellular.Family == 'GSM';
+    if (!state || state.Type != 'Cellular')
+      return false;
+    return CrOnc.getActiveValue(state, 'Cellular.Family') == 'GSM';
+  },
+
+  /**
+   * Navigate to the previous page.
+   * @private
+   */
+  navigateBack_: function() {
+    MoreRouting.navigateTo('internet');
   }
 });
 })();

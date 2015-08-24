@@ -57,8 +57,7 @@ Polymer({
     },
 
     /**
-     * Name of the 'core-icon' to show. TODO(stevenjb): Update this with the
-     * icon for the active internet connection.
+     * Name of the 'core-icon' to show.
      */
     icon: {
       type: String,

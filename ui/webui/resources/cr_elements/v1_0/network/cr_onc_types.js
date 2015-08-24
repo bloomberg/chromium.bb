@@ -132,6 +132,15 @@ CrOnc.Security = {
   WPA_PSK: 'WPA-PSK',
 };
 
+/** @enum {string} */
+CrOnc.Source = {
+  NONE: 'None',
+  DEVICE: 'Device',
+  DEVICE_POLICY: 'DevicePolicy',
+  USER: 'User',
+  USER_POLICY: 'UserPolicy',
+};
+
 /**
  * Helper function to retrieve the active ONC property value.
  * @param {!CrOnc.ManagedNetworkStateProperty} property The property, which may

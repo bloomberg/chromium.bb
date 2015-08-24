@@ -1,5 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/more-routing/more-routing.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_toggle_button/cr_toggle_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_list.html">
@@ -14,7 +16,8 @@
         <cr-network-list-item id="detailsItem"
             network-state="[[networkState]]">
         </cr-network-list-item>
-        <paper-spinner active="[[showScanning_(deviceState)]]"></paper-spinner>
+        <paper-spinner active="[[showScanning_(deviceState, expanded)]]">
+        </paper-spinner>
         <span class="flex"></span>
         <div id="buttons" class="layout horizontal">
           <cr-expand-button id="expandListButton"
@@ -28,12 +31,20 @@
           </cr-toggle-button>
         </div>
       </div>
-      <cr-network-list id="networkList" class="layout vertical"
-          max-height="[[maxHeight]]"
-          networks="[[networkStateList]]"
-          on-selected="onListItemSelected_"
-          opened="{{expanded}}">
-      </cr-network-list>
+      <div id="listDiv" class="layout vertical">
+        <cr-network-list id="networkList"
+            max-height="[[maxHeight]]"
+            networks="[[networkStateList]]"
+            on-selected="onListItemSelected_"
+            opened="{{expanded}}">
+        </cr-network-list>
+        <div class="layout horizontal">
+          <cr-button hidden$="[[!showKnownNetworks_(networkState, expanded)]]"
+              on-click="onKnownNetworksClicked_">
+            Known networks
+          </cr-button>
+        </div>
+      </div>
     </div>
   </template>
   <script src="network_summary_item.js"></script>

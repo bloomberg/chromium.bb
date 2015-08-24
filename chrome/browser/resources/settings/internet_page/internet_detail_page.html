@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/more-routing/more-routing.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
@@ -18,18 +20,19 @@
   <link rel="import" type="css" href="internet_detail_page.css">
   <template>
     <paper-material class="layout vertical">
-      <div id="outerDiv" class="layout vertical">
-        <!-- Title section: Icon + name + connection state. -->
-        <div id="titleDiv" class="layout horizontal">
-          <div class="layout center horizontal flex">
-            <cr-network-icon id="networkIcon" network-state="[[networkState]]">
-            </cr-network-icon>
-            <span id="networkName">[[getStateName_(networkState)]]</span>
-            <span id="networkState" class="[[getStateClass_(networkState)]]"
-                >[[getStateText_(networkState)]]</span>
-          </div>
-        </div>
+      <!-- Title section: Back + Icon + name + connection state. -->
+      <div id="titleDiv" class="layout horizontal center">
+        <paper-icon-button icon="arrow-back" on-click="navigateBack_">
+        </paper-icon-button>
+        <cr-network-icon id="networkIcon" network-state="[[networkState]]">
+        </cr-network-icon>
+        <span id="networkName">[[getStateName_(networkState)]]</span>
+        <span id="networkState"
+            connected$="[[isConnectedState_(networkState)]]"
+            >[[getStateText_(networkState)]]</span>
+      </div>
 
+      <div id="outerDiv" class="layout vertical">
         <!-- For Cellular, show SIM info first. -->
         <div id="simInfoDiv" class="layout vertical">
           <network-siminfo editable
@@ -41,23 +44,27 @@
 
         <!-- Info and properties common to all networks. -->
         <div id="infoDiv" class="layout vertical">
+          <div class="layout horizontal" hidden$="[[!IPAddress]]">
+            <span>IP Address:</span>
+            <span>[[IPAddress]]</span>
+          </div>
           <span hidden$="[[!showShared_(networkState)]]">
             This network is shared with other users.
           </span>
-          <cr-checkbox checked="{{preferNetwork}}"
+          <div class="layout horizontal center"
               hidden$="[[!showPreferNetwork_(networkState)]]">
-            Prefer this network
-          </cr-checkbox>
+            <paper-icon-button id="preferButton"
+                toggles active="{{preferNetwork}}"
+                icon="[[getPreferredIcon_(preferNetwork)]]">
+            </paper-icon-button>
+            <span>Prefer this network</span>
+          </div>
           <cr-checkbox checked="{{autoConnect}}"
               hidden$="[[!showAutoConnect_(networkState)]]">
             Automatically connect to this network
           </cr-checkbox>
 
           <!-- Properties to always show if present. -->
-          <div class="layout horizontal" hidden$="[[!IPAddress]]">
-            <span>IP Address:</span>
-            <span>[[IPAddress]]</span>
-          </div>
           <network-property-list
               fields="[[getInfoFields_(networkState)]]"
               network-state="[[networkState]]">

@@ -18,7 +18,7 @@ span {
   padding: 4px;
 }
 
-#divOuter.list-item:hover {
+#divOuter[is-list-item]:hover {
   background-color: lightgrey;
 }
 
@@ -56,6 +56,11 @@ span {
   -webkit-margin-start: 8px;
   color: grey;
   font-size: 14px;
+}
+
+#divButtons paper-icon-button {
+  text-align: center;
+  width: 60px;
 }
 
 .connected {

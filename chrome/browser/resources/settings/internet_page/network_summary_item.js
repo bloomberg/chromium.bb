@@ -108,11 +108,12 @@ Polymer({
 
   /**
    * @param {?DeviceStateProperties} deviceState The state of a device.
+   * @param {boolean} expanded The expanded state.
    * @return {boolean} Whether or not the scanning spinner should be shown.
    * @private
    */
-  showScanning_: function(deviceState) {
-    return this.expanded && deviceState.Scanning;
+  showScanning_: function(deviceState, expanded) {
+    return !!expanded && !!deviceState.Scanning;
   },
 
   /**
@@ -161,8 +162,18 @@ Polymer({
   },
 
   /**
-   * Event triggered when the details div is clicked on.
-   * @param {!Object} event The enable button event.
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {boolean} expanded The expanded state.
+   * @return {boolean} True if the 'Known networks' button should be shown.
+   * @private
+   */
+  showKnownNetworks_: function(state, expanded) {
+    return !!expanded && !!state && state.Type == CrOnc.Type.WI_FI;
+  },
+
+  /**
+   * Event triggered when the details div is clicked.
+   * @param {Event} event The enable button event.
    * @private
    */
   onDetailsClicked_: function(event) {
@@ -178,6 +189,14 @@ Polymer({
     }
     // Not expandable, fire 'selected' with |networkState|.
     this.fire('selected', this.networkState);
+  },
+
+  /**
+   * Event triggered when the known networks button is clicked.
+   * @private
+   */
+  onKnownNetworksClicked_: function() {
+    MoreRouting.navigateTo('internet-known-networks', {type: CrOnc.Type.WI_FI});
   },
 
   /**

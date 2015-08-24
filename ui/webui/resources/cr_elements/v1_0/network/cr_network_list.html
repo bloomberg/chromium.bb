@@ -10,8 +10,8 @@
     <cr-collapse opened="{{opened}}">
       <div id="container" class="layout vertical flex">
         <template is="dom-repeat" items="[[networks]]">
-          <cr-network-list-item network-state="[[item]]" is-list-item
-              on-click="onSelected_">
+          <cr-network-list-item network-state="[[item]]"
+              list-item-type="[[listType]]" on-click="onSelected_">
           </cr-network-list-item>
         </template>
       </div>

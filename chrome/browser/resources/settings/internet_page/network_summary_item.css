@@ -22,7 +22,12 @@ paper-spinner {
   margin-left: 10px;
 }
 
+#listDiv {
+  -webkit-margin-end: 10px;
+  -webkit-margin-start: 40px;
+}
+
 #networkList {
-  margin: 5px 10px 10px 40px;
+  margin: 5px 0 10px 0;
   max-height: 400px;
 }

@@ -2,12 +2,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#outerDiv {
-  -webkit-margin-end: 40px;
-}
-
 #titleDiv {
   margin-bottom: 10px;
+}
+
+#outerDiv {
+  margin: 0 40px;
 }
 
 #networkIcon {
@@ -26,7 +26,7 @@
   font-size: 20px;
 }
 
-#networkState.connected {
+#networkState[connected] {
   color: green;
 }
 
@@ -40,6 +40,11 @@
 
 #infoDiv span {
   margin-bottom: 8px;
+}
+
+#preferButton {
+  margin: 0 7px 8px -2px;
+  padding: 0
 }
 
 #advancedDiv cr-button {

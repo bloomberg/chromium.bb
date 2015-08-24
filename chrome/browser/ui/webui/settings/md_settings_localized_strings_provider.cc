@@ -157,6 +157,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       "internetPageTitle", IDS_SETTINGS_INTERNET);
   html_source->AddLocalizedString(
       "internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL);
+  html_source->AddLocalizedString("internetKnownNetworksPageTitle",
+                                  IDS_SETTINGS_INTERNET_KNOWN_NETWORKS);
 
   // Required by cr_network_list_item.js. TODO(stevenjb): Add to
   // settings_strings.grdp or provide an alternative translation method.

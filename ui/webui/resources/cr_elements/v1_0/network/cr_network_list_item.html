@@ -1,19 +1,36 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
 
 <dom-module id="cr-network-list-item">
   <link rel="import" type="css" href="cr_network_list_item.css">
   <template>
-    <div id="divOuter" class$="[[isListItemClass_(isListItem)]]">
+    <div id="divOuter" is-list-item$="[[isListItem_(listItemType)]]">
       <div id="divIcon">
-        <cr-network-icon id="icon" is-list-item="[[isListItem]]"
+        <cr-network-icon id="icon" is-list-item="[[isListItem_(listItemType)]]"
             network-state="[[networkState]]">
         </cr-network-icon>
       </div>
-      <div id="divText">
+      <div id="divText" class="layout horizontal flex">
         <span id="networkName"></span>
-        <span id="networkStateText" hidden$="[[isListItem]]"></span>
+        <span id="networkStateText" hidden$="[[isListItem_(listItemType)]]">
+        </span>
+      </div>
+      <div id="divButtons" class="layout horizontal center"
+          hidden$="[[!isListItemType_(listItemType, 'known')]]">
+        <paper-icon-button icon="[[sharedIcon_(networkState)]]" disabled>
+        </paper-icon-button>
+        <paper-icon-button icon="[[preferredIcon_(networkState)]]"
+            disabled$="[[isPolicyManaged_(networkState)]]"
+            on-click="fireTogglePreferred_">
+        </paper-icon-button>
+        <paper-icon-button icon="clear"
+            disabled$="[[isPolicyManaged_(networkState)]]"
+            on-click="fireRemove_">
+        </paper-icon-button>
       </div>
     </div>
   </template>
