@@ -689,6 +689,23 @@ bool GuestViewBase::ShouldResumeRequestsForCreatedWindow() {
   return false;
 }
 
+void GuestViewBase::FindReply(WebContents* source,
+                              int request_id,
+                              int number_of_matches,
+                              const gfx::Rect& selection_rect,
+                              int active_match_ordinal,
+                              bool final_update) {
+  if (ShouldHandleFindRequestsForEmbedder() &&
+      attached() && embedder_web_contents()->GetDelegate()) {
+    embedder_web_contents()->GetDelegate()->FindReply(embedder_web_contents(),
+                                                      request_id,
+                                                      number_of_matches,
+                                                      selection_rect,
+                                                      active_match_ordinal,
+                                                      final_update);
+  }
+}
+
 GuestViewBase::~GuestViewBase() {
 }
 

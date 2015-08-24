@@ -190,23 +190,6 @@ MimeHandlerViewGuest::GetJavaScriptDialogManager(
       web_contents());
 }
 
-void MimeHandlerViewGuest::FindReply(content::WebContents* web_contents,
-                                     int request_id,
-                                     int number_of_matches,
-                                     const gfx::Rect& selection_rect,
-                                     int active_match_ordinal,
-                                     bool final_update) {
-  if (!attached() || !embedder_web_contents()->GetDelegate())
-    return;
-
-  embedder_web_contents()->GetDelegate()->FindReply(embedder_web_contents(),
-                                                    request_id,
-                                                    number_of_matches,
-                                                    selection_rect,
-                                                    active_match_ordinal,
-                                                    final_update);
-}
-
 bool MimeHandlerViewGuest::SaveFrame(const GURL& url,
                                      const content::Referrer& referrer) {
   if (!attached())

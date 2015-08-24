@@ -115,6 +115,12 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   void DidAttachToEmbedder() override;
   void DidDropLink(const GURL& url) override;
   void DidInitialize(const base::DictionaryValue& create_params) override;
+  void FindReply(content::WebContents* source,
+                 int request_id,
+                 int number_of_matches,
+                 const gfx::Rect& selection_rect,
+                 int active_match_ordinal,
+                 bool final_update) override;
   void GuestViewDidStopLoading() override;
   void EmbedderFullscreenToggled(bool entered_fullscreen) override;
   const char* GetAPINamespace() const override;
@@ -139,12 +145,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
   void CloseContents(content::WebContents* source) override;
-  void FindReply(content::WebContents* source,
-                 int request_id,
-                 int number_of_matches,
-                 const gfx::Rect& selection_rect,
-                 int active_match_ordinal,
-                 bool final_update) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void HandleKeyboardEvent(
       content::WebContents* source,

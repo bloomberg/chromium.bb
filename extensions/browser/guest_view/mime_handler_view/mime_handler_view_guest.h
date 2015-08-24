@@ -76,12 +76,6 @@ class MimeHandlerViewGuest :
                              const blink::WebGestureEvent& event) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
-  void FindReply(content::WebContents* web_contents,
-                 int request_id,
-                 int number_of_matches,
-                 const gfx::Rect& selection_rect,
-                 int active_match_ordinal,
-                 bool final_update) override;
   bool SaveFrame(const GURL& url, const content::Referrer& referrer) override;
 
   // content::WebContentsObserver implementation.

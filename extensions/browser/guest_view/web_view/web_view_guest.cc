@@ -507,11 +507,10 @@ void WebViewGuest::FindReply(WebContents* source,
                              const gfx::Rect& selection_rect,
                              int active_match_ordinal,
                              bool final_update) {
-  find_helper_.FindReply(request_id,
-                         number_of_matches,
-                         selection_rect,
-                         active_match_ordinal,
-                         final_update);
+  GuestViewBase::FindReply(source, request_id, number_of_matches,
+                           selection_rect, active_match_ordinal, final_update);
+  find_helper_.FindReply(request_id, number_of_matches, selection_rect,
+                         active_match_ordinal, final_update);
 }
 
 double WebViewGuest::GetZoom() const {
@@ -959,7 +958,9 @@ void WebViewGuest::SignalWhenReady(const base::Closure& callback) {
 }
 
 bool WebViewGuest::ShouldHandleFindRequestsForEmbedder() const {
-  return web_view_guest_delegate_->ShouldHandleFindRequestsForEmbedder();
+  if (web_view_guest_delegate_)
+    return web_view_guest_delegate_->ShouldHandleFindRequestsForEmbedder();
+  return false;
 }
 
 void WebViewGuest::WillAttachToEmbedder() {

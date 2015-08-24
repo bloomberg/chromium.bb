@@ -350,6 +350,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                            const gfx::Size& pref_size) final;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
   bool ShouldResumeRequestsForCreatedWindow() override;
+  void FindReply(content::WebContents* source,
+                 int request_id,
+                 int number_of_matches,
+                 const gfx::Rect& selection_rect,
+                 int active_match_ordinal,
+                 bool final_update) override;
 
   void SetGuestZoomLevelToMatchEmbedder();
 
