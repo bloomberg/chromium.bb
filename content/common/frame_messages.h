@@ -440,8 +440,10 @@ IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
                     content::CustomContextMenuContext /* custom_context */,
                     unsigned /* action */)
 
-// Requests that the RenderFrame or RenderFrameProxy sets its opener to null.
-IPC_MESSAGE_ROUTED0(FrameMsg_DisownOpener)
+// Requests that the RenderFrame or RenderFrameProxy updates its opener to the
+// specified frame.  The routing ID may be MSG_ROUTING_NONE if the opener was
+// disowned.
+IPC_MESSAGE_ROUTED1(FrameMsg_UpdateOpener, int /* opener_routing_id */)
 
 // Requests that the RenderFrame send back a response after waiting for the
 // commit, activation and frame swap of the current DOM tree in blink.
@@ -744,9 +746,11 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DocumentOnLoadCompleted,
 // making a URL spoof possible.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidAccessInitialDocument)
 
-// Sent when the frame sets its opener to null, disowning it for the lifetime of
-// the window. Sent for top-level frames.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDisownOpener)
+// Sent when the RenderFrame or RenderFrameProxy either updates its opener to
+// another frame identified by |opener_routing_id|, or, if |opener_routing_id|
+// is MSG_ROUTING_NONE, the frame disowns its opener for the lifetime of the
+// window.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeOpener, int /* opener_routing_id */)
 
 // Notifies the browser that a page id was assigned.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAssignPageId,

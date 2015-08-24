@@ -544,9 +544,18 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DisownSubframeOpener) {
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                             "window.open('about:blank','foo');"));
 
+  // Check that the browser process updates the subframe's opener.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(root, root->child_at(0)->opener());
+
   // Now disown the frame's opener.  Shouldn't crash.
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                             "window.frames[0].opener = null;"));
+
+  // Check that the subframe's opener in the browser process is disowned.
+  EXPECT_EQ(nullptr, root->child_at(0)->opener());
 }
 
 // Check that window.name is preserved for top frames when they navigate
@@ -1934,6 +1943,89 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(NavigateToURL(new_shell, cross_site_url));
   EXPECT_TRUE(opener_rvh->IsRenderViewLive());
   EXPECT_TRUE(opener_rfph->is_render_frame_proxy_live());
+}
+
+// Test that when a frame's opener is updated via window.open, the browser
+// process and the frame's proxies in other processes find out about the new
+// opener.  Open two popups in different processes, set one popup's opener to
+// the other popup, and ensure that the opener is updated in all processes.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
+  StartEmbeddedServer();
+
+  GURL main_url = embedded_test_server()->GetURL("/post_message.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance);
+
+  // Open a cross-site popup named "foo" and a same-site popup named "bar".
+  Shell* foo_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  EXPECT_TRUE(foo_shell);
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/post_message.html"));
+  NavigateToURL(foo_shell, foo_url);
+
+  GURL bar_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_post_message_frames.html"));
+  Shell* bar_shell = OpenPopup(shell()->web_contents(), bar_url, "bar");
+  EXPECT_TRUE(bar_shell);
+
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            foo_shell->web_contents()->GetSiteInstance());
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            bar_shell->web_contents()->GetSiteInstance());
+
+  // Initially, both popups' openers should point to main window.
+  FrameTreeNode* foo_root =
+      static_cast<WebContentsImpl*>(foo_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  FrameTreeNode* bar_root =
+      static_cast<WebContentsImpl*>(bar_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_EQ(root, foo_root->opener());
+  EXPECT_EQ(root, bar_root->opener());
+
+  // From the bar process, use window.open to update foo's opener to point to
+  // bar. This is allowed since bar is same-origin with foo's opener.  Use
+  // window.open with an empty URL, which should return a reference to the
+  // target frame without navigating it.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      bar_shell->web_contents(),
+      "window.domAutomationController.send(!!window.open('','foo'));",
+      &success));
+  EXPECT_TRUE(success);
+  EXPECT_FALSE(foo_shell->web_contents()->IsLoading());
+  EXPECT_EQ(foo_url, foo_root->current_url());
+
+  // Check that updated opener propagated to the browser process.
+  EXPECT_EQ(bar_root, foo_root->opener());
+
+  // Check that foo's opener was updated in foo's process. Send a postMessage
+  // to the opener and check that the right window (bar_shell) receives it.
+  base::string16 expected_title = ASCIIToUTF16("opener-msg");
+  TitleWatcher title_watcher(bar_shell->web_contents(), expected_title);
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      foo_shell->web_contents(),
+      "window.domAutomationController.send(postToOpener('opener-msg', '*'));",
+      &success));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Check that a non-null assignment to the opener doesn't change the opener
+  // in the browser process.
+  EXPECT_TRUE(
+      ExecuteScript(foo_shell->web_contents(), "window.opener = window;"));
+  EXPECT_EQ(bar_root, foo_root->opener());
 }
 
 }  // namespace content

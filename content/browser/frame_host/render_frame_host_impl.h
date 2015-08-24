@@ -374,9 +374,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // frame is the main frame.
   bool ShouldDispatchBeforeUnload();
 
-  // Set the frame's opener to null in the renderer process in response to an
-  // action in another renderer process.
-  void DisownOpener();
+  // Update the frame's opener in the renderer process in response to the
+  // opener being modified (e.g., with window.open or being set to null) in
+  // another renderer process.
+  void UpdateOpener();
 
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret.
@@ -537,7 +538,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                           size_t start_offset,
                                           size_t end_offset);
   void OnDidAccessInitialDocument();
-  void OnDidDisownOpener();
+  void OnDidChangeOpener(int32 opener_routing_id);
   void OnDidChangeName(const std::string& name);
   void OnDidAssignPageId(int32 page_id);
   void OnDidChangeSandboxFlags(int32 frame_routing_id,

@@ -649,6 +649,44 @@ void RenderFrameImpl::InstallCreateHook(
   g_create_render_frame_impl = create_render_frame_impl;
 }
 
+// static
+blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id,
+                                                int* opener_view_routing_id) {
+  if (opener_view_routing_id)
+    *opener_view_routing_id = MSG_ROUTING_NONE;
+
+  if (opener_frame_routing_id == MSG_ROUTING_NONE)
+    return nullptr;
+
+  // Opener routing ID could refer to either a RenderFrameProxy or a
+  // RenderFrame, so need to check both.
+  RenderFrameProxy* opener_proxy =
+      RenderFrameProxy::FromRoutingID(opener_frame_routing_id);
+  if (opener_proxy) {
+    if (opener_view_routing_id)
+      *opener_view_routing_id = opener_proxy->render_view()->GetRoutingID();
+
+    // TODO(nasko,alexmos): This check won't be needed once swappedout:// is
+    // gone.
+    if (opener_proxy->IsMainFrameDetachedFromTree()) {
+      DCHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
+      return opener_proxy->render_view()->webview()->mainFrame();
+    } else {
+      return opener_proxy->web_frame();
+    }
+  }
+
+  RenderFrameImpl* opener_frame =
+      RenderFrameImpl::FromRoutingID(opener_frame_routing_id);
+  if (opener_frame) {
+    if (opener_view_routing_id)
+      *opener_view_routing_id = opener_frame->render_view()->GetRoutingID();
+    return opener_frame->GetWebFrame();
+  }
+
+  return nullptr;
+}
+
 // RenderFrameImpl ----------------------------------------------------------
 RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
     : frame_(NULL),
@@ -1068,7 +1106,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
                         OnSnapshotAccessibilityTree)
-    IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
+    IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
@@ -1609,14 +1647,9 @@ void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id) {
       routing_id_, callback_id, response));
 }
 
-void RenderFrameImpl::OnDisownOpener() {
-  // TODO(creis): We should only see this for main frames for now.  To support
-  // disowning the opener on subframes, we will need to move WebContentsImpl's
-  // opener_ to FrameTreeNode.
-  CHECK(!frame_->parent());
-
-  if (frame_->opener())
-    frame_->setOpener(NULL);
+void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
+  WebFrame* opener = ResolveOpener(opener_routing_id, nullptr);
+  frame_->setOpener(opener);
 }
 
 void RenderFrameImpl::OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags) {
@@ -2189,17 +2222,18 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   return web_frame;
 }
 
-void RenderFrameImpl::didDisownOpener(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
-  // We only need to notify the browser if the active, top-level frame clears
-  // its opener.  We can ignore cases where a swapped out frame clears its
-  // opener after hearing about it from the browser, and the browser does not
-  // (yet) care about subframe openers.
-  if (is_swapped_out_ || frame->parent())
+void RenderFrameImpl::didChangeOpener(blink::WebFrame* opener) {
+  // Only active frames are able to disown their opener.
+  if (!opener && is_swapped_out_)
     return;
 
-  // Notify WebContents and all its swapped out RenderViews.
-  Send(new FrameHostMsg_DidDisownOpener(routing_id_));
+  // Only a local frame should be able to update another frame's opener.
+  DCHECK(!opener || opener->isWebLocalFrame());
+
+  int opener_routing_id = opener ?
+      RenderFrameImpl::FromWebFrame(opener->toWebLocalFrame())->GetRoutingID() :
+      MSG_ROUTING_NONE;
+  Send(new FrameHostMsg_DidChangeOpener(routing_id_, opener_routing_id));
 }
 
 void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {

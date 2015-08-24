@@ -98,7 +98,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SendRendererInitiatedNavigationRequest(const GURL& url,
                                               bool has_user_gesture);
 
-  void DidDisownOpener();
+  void DidChangeOpener(int opener_routing_id);
 
   // If set, navigations will appear to have cleared the history list in the
   // RenderFrame

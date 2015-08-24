@@ -326,8 +326,14 @@ class CONTENT_EXPORT RenderFrameHostManager {
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host,
                         bool was_caused_by_user_gesture);
 
-  // Called when a renderer sets its opener to null.
-  void DidDisownOpener(RenderFrameHost* render_frame_host);
+  // Called when this frame's opener is changed to the frame specified by
+  // |opener_routing_id| in |source_site_instance|'s process.  This change
+  // could come from either the current RenderFrameHost or one of the
+  // proxies (e.g., window.open that targets a RemoteFrame by name).  The
+  // updated opener will be forwarded to any other RenderFrameProxies and
+  // RenderFrames for this FrameTreeNode.
+  void DidChangeOpener(int opener_routing_id,
+                       SiteInstance* source_site_instance);
 
   // Sets the pending Web UI for the pending navigation, ensuring that the
   // bindings are appropriate compared to |bindings|.

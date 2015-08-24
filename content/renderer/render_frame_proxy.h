@@ -131,6 +131,7 @@ class CONTENT_EXPORT RenderFrameProxy
                         bool should_replace_current_entry);
   virtual void forwardInputEvent(const blink::WebInputEvent* event);
   virtual void frameRectsChanged(const blink::WebRect& frame_rect);
+  virtual void didChangeOpener(blink::WebFrame* opener);
 
   // IPC handlers
   void OnDidStartLoading();
@@ -151,6 +152,7 @@ class CONTENT_EXPORT RenderFrameProxy
                               const gfx::Size& frame_size,
                               float scale_factor,
                               const cc::SurfaceSequence& sequence);
+  void OnUpdateOpener(int opener_routing_id);
   void OnDisownOpener();
   void OnDidStopLoading();
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);

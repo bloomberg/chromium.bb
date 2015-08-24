@@ -339,8 +339,8 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   }
 }
 
-void TestRenderFrameHost::DidDisownOpener() {
-  OnDidDisownOpener();
+void TestRenderFrameHost::DidChangeOpener(int opener_routing_id) {
+  OnDidChangeOpener(opener_routing_id);
 }
 
 void TestRenderFrameHost::PrepareForCommit() {

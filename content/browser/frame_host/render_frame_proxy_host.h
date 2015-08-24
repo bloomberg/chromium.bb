@@ -106,9 +106,10 @@ class RenderFrameProxyHost
     return cross_process_frame_connector_.get();
   }
 
-  // Set the frame's opener to null in the renderer process in response to an
-  // action in another renderer process.
-  void DisownOpener();
+  // Update the frame's opener in the renderer process in response to the
+  // opener being modified (e.g., with window.open or being set to null) in
+  // another renderer process.
+  void UpdateOpener();
 
   void set_render_frame_proxy_created(bool created) {
     render_frame_proxy_created_ = created;
@@ -122,6 +123,7 @@ class RenderFrameProxyHost
   void OnDetach();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnRouteMessageEvent(const FrameMsg_PostMessage_Params& params);
+  void OnDidChangeOpener(int32 opener_routing_id);
 
   // This RenderFrameProxyHost's routing id.
   int routing_id_;

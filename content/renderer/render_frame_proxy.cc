@@ -207,7 +207,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(msg))
     IPC_MESSAGE_HANDLER(FrameMsg_SetChildFrameSurface, OnSetChildFrameSurface)
-    IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
+    IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
@@ -284,27 +284,22 @@ void RenderFrameProxy::OnSetChildFrameSurface(
                                     sequence);
 }
 
-void RenderFrameProxy::OnDisownOpener() {
-  // TODO(creis): We should only see this for main frames for now.  To support
-  // disowning the opener on subframes, we will need to move WebContentsImpl's
-  // opener_ to FrameTreeNode.
-  CHECK(!web_frame_->parent());
+void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {
+  blink::WebFrame* opener =
+      RenderFrameImpl::ResolveOpener(opener_routing_id, nullptr);
 
-  // When there is a RenderFrame for this proxy, tell it to disown its opener.
-  // TODO(creis): Remove this when we only have WebRemoteFrames and make sure
-  // they know they have an opener.
+  // When there is a RenderFrame for this proxy, tell it to update its opener.
+  // TODO(alexmos, nasko): Remove this when we only have WebRemoteFrames.
   if (!SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
     RenderFrameImpl* render_frame =
         RenderFrameImpl::FromRoutingID(frame_routing_id_);
     if (render_frame) {
-      if (render_frame->GetWebFrame()->opener())
-        render_frame->GetWebFrame()->setOpener(NULL);
+      render_frame->GetWebFrame()->setOpener(opener);
       return;
     }
   }
 
-  if (web_frame_->opener())
-    web_frame_->setOpener(NULL);
+  web_frame_->setOpener(opener);
 }
 
 void RenderFrameProxy::OnDidStartLoading() {
@@ -415,6 +410,22 @@ void RenderFrameProxy::forwardInputEvent(const blink::WebInputEvent* event) {
 
 void RenderFrameProxy::frameRectsChanged(const blink::WebRect& frame_rect) {
   Send(new FrameHostMsg_FrameRectChanged(routing_id_, frame_rect));
+}
+
+void RenderFrameProxy::didChangeOpener(blink::WebFrame* opener) {
+  // A proxy shouldn't normally be disowning its opener.  It is possible to get
+  // here when a proxy that is being detached clears its opener, in which case
+  // there is no need to notify the browser process.
+  if (!opener)
+    return;
+
+  // Only a LocalFrame (i.e., the caller of window.open) should be able to
+  // update another frame's opener.
+  DCHECK(opener->isWebLocalFrame());
+
+  int opener_routing_id =
+      RenderFrameImpl::FromWebFrame(opener->toWebLocalFrame())->GetRoutingID();
+  Send(new FrameHostMsg_DidChangeOpener(routing_id_, opener_routing_id));
 }
 
 }  // namespace

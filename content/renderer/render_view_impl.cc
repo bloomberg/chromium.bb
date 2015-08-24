@@ -614,42 +614,6 @@ void ApplyBlinkSettings(const base::CommandLine& command_line,
   }
 }
 
-// Looks up and returns the WebFrame corresponding to a given opener frame
-// routing ID.  Also stores the opener's RenderView routing ID into
-// |opener_view_routing_id|.
-WebFrame* ResolveOpener(int opener_frame_routing_id,
-                        int* opener_view_routing_id) {
-  *opener_view_routing_id = MSG_ROUTING_NONE;
-  if (opener_frame_routing_id == MSG_ROUTING_NONE)
-    return nullptr;
-
-  // Opener routing ID could refer to either a RenderFrameProxy or a
-  // RenderFrame, so need to check both.
-  RenderFrameProxy* opener_proxy =
-      RenderFrameProxy::FromRoutingID(opener_frame_routing_id);
-  if (opener_proxy) {
-    *opener_view_routing_id = opener_proxy->render_view()->GetRoutingID();
-
-    // TODO(nasko,alexmos): This check won't be needed once swapped-out:// is
-    // gone.
-    if (opener_proxy->IsMainFrameDetachedFromTree()) {
-      DCHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
-      return opener_proxy->render_view()->webview()->mainFrame();
-    } else {
-      return opener_proxy->web_frame();
-    }
-  }
-
-  RenderFrameImpl* opener_frame =
-      RenderFrameImpl::FromRoutingID(opener_frame_routing_id);
-  if (opener_frame) {
-    *opener_view_routing_id = opener_frame->render_view()->GetRoutingID();
-    return opener_frame->GetWebFrame();
-  }
-
-  return nullptr;
-}
-
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
@@ -704,8 +668,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   surface_id_ = params.surface_id;
 
   int opener_view_routing_id;
-  WebFrame* opener_frame =
-      ResolveOpener(params.opener_frame_route_id, &opener_view_routing_id);
+  WebFrame* opener_frame = RenderFrameImpl::ResolveOpener(
+      params.opener_frame_route_id, &opener_view_routing_id);
   if (opener_view_routing_id != MSG_ROUTING_NONE && was_created_by_renderer)
     opener_id_ = opener_view_routing_id;
 

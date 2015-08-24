@@ -145,6 +145,7 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RouteMessageEvent, OnRouteMessageEvent)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -196,8 +197,18 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   return true;
 }
 
-void RenderFrameProxyHost::DisownOpener() {
-  Send(new FrameMsg_DisownOpener(GetRoutingID()));
+void RenderFrameProxyHost::UpdateOpener() {
+  // Another frame in this proxy's SiteInstance may reach the new opener by
+  // first reaching this proxy and then referencing its window.opener.  Ensure
+  // the new opener's proxy exists in this case.
+  if (frame_tree_node_->opener()) {
+    frame_tree_node_->opener()->render_manager()->CreateOpenerProxies(
+        GetSiteInstance());
+  }
+
+  int opener_routing_id =
+      frame_tree_node_->render_manager()->GetOpenerRoutingID(GetSiteInstance());
+  Send(new FrameMsg_UpdateOpener(GetRoutingID(), opener_routing_id));
 }
 
 void RenderFrameProxyHost::OnDetach() {
@@ -296,6 +307,11 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
     target_rfh->Send(
         new FrameMsg_PostMessageEvent(target_rfh->GetRoutingID(), new_params));
   }
+}
+
+void RenderFrameProxyHost::OnDidChangeOpener(int32 opener_routing_id) {
+  frame_tree_node_->render_manager()->DidChangeOpener(opener_routing_id,
+                                                      GetSiteInstance());
 }
 
 }  // namespace content

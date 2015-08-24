@@ -1494,7 +1494,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpener) {
   EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
 
   // Disown the opener from rfh2.
-  rfh2->DidDisownOpener();
+  rfh2->DidChangeOpener(MSG_ROUTING_NONE);
 
   // Ensure the opener is cleared.
   EXPECT_FALSE(contents()->HasOpener());
@@ -1515,7 +1515,7 @@ TEST_F(RenderFrameHostManagerTest, DisownSameSiteOpener) {
   EXPECT_TRUE(contents()->HasOpener());
 
   // Disown the opener from rfh1.
-  rfh1->DidDisownOpener();
+  rfh1->DidChangeOpener(MSG_ROUTING_NONE);
 
   // Ensure the opener is cleared even if it is in the same process.
   EXPECT_FALSE(contents()->HasOpener());
@@ -1549,7 +1549,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
   contents()->GetMainFrame()->PrepareForCommit();
 
   // Disown the opener from rfh2.
-  rfh2->DidDisownOpener();
+  rfh2->DidChangeOpener(MSG_ROUTING_NONE);
 
   // Ensure the opener is cleared.
   EXPECT_FALSE(contents()->HasOpener());
@@ -1586,7 +1586,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
   TestRenderFrameHost* rfh2 = main_test_rfh();
   EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
 
-  // Commit a back navigation before the DidDisownOpener message arrives.
+  // Commit a back navigation before the DidChangeOpener message arrives.
   contents()->GetController().GoBack();
   contents()->GetMainFrame()->PrepareForCommit();
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
@@ -1594,7 +1594,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
       entry1->GetPageID(), entry1->GetUniqueID(), false, entry1->GetURL());
 
   // Disown the opener from rfh2.
-  rfh2->DidDisownOpener();
+  rfh2->DidChangeOpener(MSG_ROUTING_NONE);
   EXPECT_FALSE(contents()->HasOpener());
 }
 

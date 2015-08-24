@@ -47,6 +47,8 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     // The browser should always have an accurate mirror of the renderer's
     // notion of the current page id.
     case FrameHostMsg_DidAssignPageId::ID:
+    // A swapped-out frame's opener might be updated with window.open.
+    case FrameHostMsg_DidChangeOpener::ID:
     // Used in layout tests; handled in BlinkTestController.
     case ShellViewHostMsg_PrintMessage::ID:
       return true;

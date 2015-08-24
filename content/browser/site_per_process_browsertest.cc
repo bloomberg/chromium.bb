@@ -2911,4 +2911,87 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(named_frame_url, foo_root->current_url());
 }
 
+// Check that frame opener updates work with subframes.  Set up a window with a
+// popup and update openers for the popup's main frame and subframe to
+// subframes on first window, as follows:
+//
+//    foo      +---- bar
+//    / \      |     / \      .
+// bar   foo <-+  bar   foo
+//  ^                    |
+//  +--------------------+
+//
+// The sites are carefully set up so that both opener updates are cross-process
+// but still allowed by Blink's navigation checks.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UpdateSubframeOpener) {
+  GURL main_url = embedded_test_server()->GetURL(
+      "foo.com", "/frame_tree/page_with_two_frames.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(2U, root->child_count());
+
+  // From the top frame, open a popup and navigate it to a cross-site page with
+  // two subframes.
+  Shell* popup_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "popup");
+  EXPECT_TRUE(popup_shell);
+  GURL popup_url(embedded_test_server()->GetURL(
+      "bar.com", "/frame_tree/page_with_post_message_frames.html"));
+  NavigateToURL(popup_shell, popup_url);
+
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(popup_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_EQ(2U, popup_root->child_count());
+
+  // Popup's opener should point to main frame to start with.
+  EXPECT_EQ(root, popup_root->opener());
+
+  // Update the popup's opener to the second subframe on the main page (which
+  // is same-origin with the top frame, i.e., foo.com).
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(1)->current_frame_host(),
+      "window.domAutomationController.send(!!window.open('','popup'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Check that updated opener propagated to the browser process and the
+  // popup's bar.com process.
+  EXPECT_EQ(root->child_at(1), popup_root->opener());
+
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      popup_shell->web_contents(),
+      "window.domAutomationController.send("
+      "    window.opener === window.opener.parent.frames['frame2']);",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Now update opener on the popup's second subframe (foo.com) to the main
+  // page's first subframe (bar.com).
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(!!window.open('','subframe2'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Check that updated opener propagated to the browser process and the
+  // foo.com process.
+  EXPECT_EQ(root->child_at(0), popup_root->child_at(1)->opener());
+
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      popup_root->child_at(1)->current_frame_host(),
+      "window.domAutomationController.send("
+      "    window.opener === window.opener.parent.frames['frame1']);",
+      &success));
+  EXPECT_TRUE(success);
+}
+
 }  // namespace content

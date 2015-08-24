@@ -176,6 +176,15 @@ class CONTENT_EXPORT RenderFrameImpl
   static void InstallCreateHook(
       CreateRenderFrameImplFunction create_render_frame_impl);
 
+  // Looks up and returns the WebFrame corresponding to a given opener frame
+  // routing ID.  Also stores the opener's RenderView routing ID into
+  // |opener_view_routing_id|.
+  //
+  // TODO(alexmos): remove RenderViewImpl's dependency on
+  // opener_view_routing_id.
+  static blink::WebFrame* ResolveOpener(int opener_frame_routing_id,
+                                        int* opener_view_routing_id);
+
   virtual ~RenderFrameImpl();
 
   bool is_swapped_out() const {
@@ -384,7 +393,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
       blink::WebSandboxFlags sandboxFlags);
-  virtual void didDisownOpener(blink::WebLocalFrame* frame);
+  virtual void didChangeOpener(blink::WebFrame* frame);
   virtual void frameDetached(blink::WebFrame* frame, DetachType type);
   virtual void frameFocused();
   virtual void willClose(blink::WebFrame* frame);
@@ -679,7 +688,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnTextSurroundingSelectionRequest(size_t max_length);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSnapshotAccessibilityTree(int callback_id);
-  void OnDisownOpener();
+  void OnUpdateOpener(int opener_routing_id);
   void OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags);
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
