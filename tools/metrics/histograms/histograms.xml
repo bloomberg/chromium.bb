@@ -14669,6 +14669,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>How long the virtual keyboard was visible.</summary>
 </histogram>
 
+<histogram name="InputMethod.VirtualKeyboard.GestureTypingEvent"
+    enum="IMEGestureTypingEvent">
+  <owner>stevet@chromium.org</owner>
+  <summary>Text input events related to gesture typing.</summary>
+</histogram>
+
 <histogram name="InputMethod.VirtualKeyboard.InitLatency" units="milliseconds">
   <owner>shuchen@chromium.org</owner>
   <summary>
@@ -61479,6 +61485,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Off"/>
   <int value="1" label="Modest"/>
   <int value="2" label="Aggressive"/>
+</enum>
+
+<enum name="IMEGestureTypingEvent" type="int">
+  <int value="0" label="Typed">A word was typed with a gesture.</int>
+  <int value="1" label="Deleted">
+    A gesture-typed word was deleted after being typed.
+  </int>
+  <int value="2" label="Replaced 0">
+    A gesture-typed word was replaced by the first suggestion.
+  </int>
+  <int value="3" label="Replaced 1">
+    A gesture-typed word was replaced by the second suggestion.
+  </int>
+  <int value="4" label="Replaced 2">
+    A gesture-typed word was replaced by the third suggestion.
+  </int>
 </enum>
 
 <enum name="IMESwitchType" type="int">
