@@ -108,13 +108,14 @@ bool Reader::ReadMessages() {
   for (size_t i = 0; i < header_->message_count; ++i) {
     const char* begin = file_data_.begin();
     const char* end = file_data_.end();
-    const char* message_tail = IPC::Message::FindNext(begin, end);
-    if (!message_tail) {
+    IPC::Message::NextMessageInfo info = IPC::Message::FindNext(begin, end);
+    if (!info.message_found) {
       LOG(ERROR) << "Failed to parse message.";
       return false;
     }
 
-    size_t msglen = message_tail - begin;
+    CHECK_EQ(info.message_end, info.pickle_end);
+    size_t msglen = info.message_end - begin;
     if (msglen > INT_MAX) {
       LOG(ERROR) << "Message too large.";
       return false;
