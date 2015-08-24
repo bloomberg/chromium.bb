@@ -354,10 +354,7 @@ EphemeralRange InputMethodController::compositionEphemeralRange() const
 
 PassRefPtrWillBeRawPtr<Range> InputMethodController::compositionRange() const
 {
-    const EphemeralRange range = compositionEphemeralRange();
-    if (range.isNull())
-        return nullptr;
-    return Range::create(range.document(), range.startPosition(), range.endPosition());
+    return createRange(compositionEphemeralRange());
 }
 
 PlainTextRange InputMethodController::getSelectionOffsets() const

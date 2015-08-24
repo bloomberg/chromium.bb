@@ -144,6 +144,13 @@ bool EphemeralRangeTemplate<Strategy>::isValid() const
 }
 #endif
 
+PassRefPtrWillBeRawPtr<Range> createRange(const EphemeralRange& range)
+{
+    if (range.isNull())
+        return nullptr;
+    return Range::create(range.document(), range.startPosition(), range.endPosition());
+}
+
 template class CORE_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingInComposedTreeStrategy>;
 

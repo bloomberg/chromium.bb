@@ -1026,10 +1026,7 @@ PassRefPtrWillBeRawPtr<Range> Internals::rangeFromLocationAndLength(Element* sco
     // TextIterator depends on Layout information, make sure layout it up to date.
     scope->document().updateLayoutIgnorePendingStylesheets();
 
-    const EphemeralRange range = PlainTextRange(rangeLocation, rangeLocation + rangeLength).createRange(*scope);
-    if (range.isNull())
-        return nullptr;
-    return Range::create(range.document(), range.startPosition(), range.endPosition());
+    return createRange(PlainTextRange(rangeLocation, rangeLocation + rangeLength).createRange(*scope));
 }
 
 unsigned Internals::locationFromRange(Element* scope, const Range* range)

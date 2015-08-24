@@ -165,10 +165,7 @@ PassRefPtrWillBeRawPtr<Range> TextCheckingParagraph::paragraphRange() const
 PassRefPtrWillBeRawPtr<Range> TextCheckingParagraph::subrange(int characterOffset, int characterCount) const
 {
     ASSERT(m_checkingRange);
-    EphemeralRange range = calculateCharacterSubrange(EphemeralRange(paragraphRange().get()), characterOffset, characterCount);
-    if (range.isNull())
-        return nullptr;
-    return Range::create(range.document(), range.startPosition(), range.endPosition());
+    return createRange(calculateCharacterSubrange(EphemeralRange(paragraphRange().get()), characterOffset, characterCount));
 }
 
 int TextCheckingParagraph::offsetTo(const Position& position, ExceptionState& exceptionState) const

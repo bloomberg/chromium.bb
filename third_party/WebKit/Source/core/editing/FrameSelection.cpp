@@ -1488,7 +1488,7 @@ bool FrameSelection::setSelectedRange(const EphemeralRange& range, TextAffinity 
     // Since |FrameSeleciton::setSelection()| dispatches events and DOM tree
     // can be modified by event handlers, we should create |Range| object before
     // calling it.
-    m_logicalRange = Range::create(range.document(), range.startPosition(), range.endPosition());
+    m_logicalRange = createRange(range);
 
     VisibleSelection newSelection(range.startPosition(), range.endPosition(), affinity, directional == Directional);
     setSelection(newSelection, options);

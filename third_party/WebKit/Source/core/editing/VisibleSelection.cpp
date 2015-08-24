@@ -242,10 +242,7 @@ bool VisibleSelection::intersectsNode(Node* node) const
 
 PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
 {
-    const EphemeralRange range = toNormalizedEphemeralRange();
-    if (range.isNull())
-        return nullptr;
-    return Range::create(range.document(), range.startPosition(), range.endPosition());
+    return createRange(toNormalizedEphemeralRange());
 }
 
 template <typename Strategy>

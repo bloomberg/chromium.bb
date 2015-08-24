@@ -87,6 +87,10 @@ using EphemeralRange = EphemeralRangeTemplate<EditingStrategy>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingInComposedTreeStrategy>;
 using EphemeralRangeInComposedTree = EphemeralRangeTemplate<EditingInComposedTreeStrategy>;
 
+// Returns a newly created |Range| object from |range| or |nullptr| if
+// |range.isNull()| returns true.
+CORE_EXPORT PassRefPtrWillBeRawPtr<Range> createRange(const EphemeralRange& /* range */);
+
 } // namespace blink
 
 #endif
