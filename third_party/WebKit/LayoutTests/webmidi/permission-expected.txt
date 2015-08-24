@@ -5,6 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS testRunner.setPermission is defined.
 PASS navigator.requestMIDIAccess is defined.
+PASS PermissionsHelper.setPermission is defined.
 PASS promise is defined.
 PASS promise.then is defined.
 PASS sysex permission request is successfully rejected.

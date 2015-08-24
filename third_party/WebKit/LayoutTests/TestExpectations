@@ -123,7 +123,6 @@ crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-termi
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 crbug.com/519003 [ Mac ] svg/batik/text/xmlSpace.svg [ Failure Pass ]
 crbug.com/519005 webaudio/stereopannernode-no-glitch.html [ Pass Timeout ]
-crbug.com/519007 webmidi/permission.html [ Failure Pass ]
 crbug.com/519008 webmidi/send-messages.html [ Pass Timeout ]
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Failure Pass ]
 crbug.com/463358 [ Linux Mac Debug ] transforms/2d/hindi-rotated.html [ ImageOnlyFailure ]
