@@ -35,7 +35,6 @@ class ShellNetworkDelegate : public net::NetworkDelegateImpl {
   void OnBeforeRedirect(net::URLRequest* request,
                         const GURL& new_location) override;
   void OnResponseStarted(net::URLRequest* request) override;
-  void OnRawBytesRead(const net::URLRequest& request, int bytes_read) override;
   void OnCompleted(net::URLRequest* request, bool started) override;
   void OnURLRequestDestroyed(net::URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;

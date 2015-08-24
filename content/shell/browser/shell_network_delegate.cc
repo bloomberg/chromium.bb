@@ -61,10 +61,6 @@ void ShellNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
 void ShellNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
 }
 
-void ShellNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
-                                          int bytes_read) {
-}
-
 void ShellNetworkDelegate::OnCompleted(net::URLRequest* request, bool started) {
 }
 

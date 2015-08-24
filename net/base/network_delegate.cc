@@ -89,10 +89,11 @@ void NetworkDelegate::NotifyResponseStarted(URLRequest* request) {
   OnResponseStarted(request);
 }
 
-void NetworkDelegate::NotifyRawBytesRead(const URLRequest& request,
-                                         int bytes_read) {
+void NetworkDelegate::NotifyNetworkBytesReceived(const URLRequest& request,
+                                                 int64_t bytes_received) {
   DCHECK(CalledOnValidThread());
-  OnRawBytesRead(request, bytes_read);
+  DCHECK_GT(bytes_received, 0);
+  OnNetworkBytesReceived(request, bytes_received);
 }
 
 void NetworkDelegate::NotifyBeforeRedirect(URLRequest* request,

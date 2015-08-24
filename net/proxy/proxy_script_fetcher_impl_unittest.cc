@@ -146,8 +146,6 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
 
   void OnResponseStarted(URLRequest* request) override {}
 
-  void OnRawBytesRead(const URLRequest& request, int bytes_read) override {}
-
   void OnCompleted(URLRequest* request, bool started) override {}
 
   void OnURLRequestDestroyed(URLRequest* request) override {}

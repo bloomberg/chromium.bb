@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_SAMPLING_TASK_MANAGER_IO_THREAD_HELPER_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_SAMPLING_TASK_MANAGER_IO_THREAD_HELPER_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/macros.h"
@@ -31,12 +33,12 @@ struct BytesReadParam {
   int route_id;
 
   // The number of bytes read.
-  int byte_count;
+  int64_t byte_count;
 
   BytesReadParam(int origin_pid,
                  int child_id,
                  int route_id,
-                 int byte_count)
+                 int64_t byte_count)
       : origin_pid(origin_pid),
         child_id(child_id),
         route_id(route_id),
@@ -67,7 +69,8 @@ class TaskManagerIoThreadHelper {
 
   // This is used to forward the call to update the network bytes from the
   // TaskManagerInterface if the new task manager is enabled.
-  static void OnRawBytesRead(const net::URLRequest& request, int bytes_read);
+  static void OnRawBytesRead(const net::URLRequest& request,
+                             int64_t bytes_read);
 
  private:
   TaskManagerIoThreadHelper();
@@ -78,7 +81,7 @@ class TaskManagerIoThreadHelper {
   static void OnMultipleBytesReadIO();
 
   // This will update the task manager with the network bytes read.
-  void OnNetworkBytesRead(const net::URLRequest& request, int bytes_read);
+  void OnNetworkBytesRead(const net::URLRequest& request, int64_t bytes_read);
 
   // This buffer will be filled on IO thread with information about the number
   // of bytes read from URLRequests.

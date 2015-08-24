@@ -72,6 +72,7 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       has_handled_response_(false),
       expected_content_size_(-1),
       network_delegate_(network_delegate),
+      last_notified_total_received_bytes_(0),
       weak_factory_(this) {
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   if (power_monitor)
@@ -395,6 +396,8 @@ void URLRequestJob::NotifyHeadersComplete() {
   // survival until we can get out of this method.
   scoped_refptr<URLRequestJob> self_preservation(this);
 
+  MaybeNotifyNetworkBytes();
+
   if (request_)
     request_->OnHeadersComplete();
 
@@ -566,6 +569,8 @@ void URLRequestJob::NotifyDone(const URLRequestStatus &status) {
       }
     }
   }
+
+  MaybeNotifyNetworkBytes();
 
   // Complete this notification later.  This prevents us from re-entering the
   // delegate if we're done because of a synchronous call.
@@ -864,8 +869,13 @@ void URLRequestJob::RecordBytesRead(int bytes_read) {
            << " pre total = " << prefilter_bytes_read_
            << " post total = " << postfilter_bytes_read_;
   UpdatePacketReadTimes();  // Facilitate stats recording if it is active.
-  if (network_delegate_)
-    network_delegate_->NotifyRawBytesRead(*request_, bytes_read);
+
+  // Notify observers if any additional network usage has occurred. Note that
+  // the number of received bytes over the network sent by this notification
+  // could be vastly different from |bytes_read|, such as when a large chunk of
+  // network bytes is received before multiple smaller raw reads are performed
+  // on it.
+  MaybeNotifyNetworkBytes();
 }
 
 bool URLRequestJob::FilterHasData() {
@@ -917,6 +927,19 @@ RedirectInfo URLRequestJob::ComputeRedirectInfo(const GURL& location,
                                  redirect_info.new_url).spec();
 
   return redirect_info;
+}
+
+void URLRequestJob::MaybeNotifyNetworkBytes() {
+  if (!request_ || !network_delegate_)
+    return;
+
+  int64_t total_received_bytes = GetTotalReceivedBytes();
+  DCHECK_GE(total_received_bytes, last_notified_total_received_bytes_);
+  if (total_received_bytes > last_notified_total_received_bytes_) {
+    network_delegate_->NotifyNetworkBytesReceived(
+        *request_, total_received_bytes - last_notified_total_received_bytes_);
+  }
+  last_notified_total_received_bytes_ = total_received_bytes;
 }
 
 }  // namespace net

@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_HTTP_JOB_H_
 #define NET_URL_REQUEST_URL_REQUEST_HTTP_JOB_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -273,6 +275,10 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   const HttpUserAgentSettings* http_user_agent_settings_;
 
   URLRequestBackoffManager* backoff_manager_;
+
+  // Keeps track of total received bytes over the network from transactions used
+  // by this job that have already been destroyed.
+  int64_t total_received_bytes_from_previous_transactions_;
 
   base::WeakPtrFactory<URLRequestHttpJob> weak_factory_;
 

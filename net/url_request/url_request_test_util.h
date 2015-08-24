@@ -5,6 +5,7 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_TEST_UTIL_H_
 #define NET_URL_REQUEST_URL_REQUEST_TEST_UTIL_H_
 
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <map>
@@ -285,6 +286,9 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   }
   int before_send_headers_count() const { return before_send_headers_count_; }
   int headers_received_count() const { return headers_received_count_; }
+  int64_t total_network_bytes_received() const {
+    return total_network_bytes_received_;
+  }
 
   // Last observed proxy in proxy header sent callback.
   HostPortPair last_observed_proxy() {
@@ -316,7 +320,8 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
       GURL* allowed_unsafe_redirect_url) override;
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;
   void OnResponseStarted(URLRequest* request) override;
-  void OnRawBytesRead(const URLRequest& request, int bytes_read) override;
+  void OnNetworkBytesReceived(const URLRequest& request,
+                              int64_t bytes_received) override;
   void OnCompleted(URLRequest* request, bool started) override;
   void OnURLRequestDestroyed(URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;
@@ -357,6 +362,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int observed_before_proxy_headers_sent_callbacks_;
   int before_send_headers_count_;
   int headers_received_count_;
+  int64_t total_network_bytes_received_;
   // Last observed proxy in before proxy header sent callback.
   HostPortPair last_observed_proxy_;
 

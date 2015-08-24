@@ -21,7 +21,7 @@ TaskManagerInterface* TaskManagerInterface::GetTaskManager() {
 
 // static
 void TaskManagerInterface::OnRawBytesRead(const net::URLRequest& request,
-                                          int bytes_read) {
+                                          int64_t bytes_read) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (switches::NewTaskManagerEnabled())

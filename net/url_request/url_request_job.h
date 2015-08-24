@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_JOB_H_
 #define NET_URL_REQUEST_URL_REQUEST_JOB_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -109,7 +111,8 @@ class NET_EXPORT URLRequestJob
 
   virtual bool GetFullRequestHeaders(HttpRequestHeaders* headers) const;
 
-  // Get the number of bytes received from network.
+  // Get the number of bytes received from network. The values returned by this
+  // will never decrease over the lifetime of the URLRequestJob.
   virtual int64 GetTotalReceivedBytes() const;
 
   // Called to fetch the current load state for the job.
@@ -395,6 +398,12 @@ class NET_EXPORT URLRequestJob
   // |location| and |http_status_code|.
   RedirectInfo ComputeRedirectInfo(const GURL& location, int http_status_code);
 
+  // Notify the network delegate that more bytes have been received over the
+  // network, if bytes have been received since the previous notification.
+  // TODO(sclittle): Have this method also notify about sent bytes once
+  // URLRequestJob::GetTotalSentBytes has been implemented (crbug.com/518897).
+  void MaybeNotifyNetworkBytes();
+
   // Indicates that the job is done producing data, either it has completed
   // all the data or an error has been encountered. Set exclusively by
   // NotifyDone so that it is kept in sync with the request.
@@ -433,6 +442,11 @@ class NET_EXPORT URLRequestJob
 
   // The network delegate to use with this request, if any.
   NetworkDelegate* network_delegate_;
+
+  // The value from GetTotalReceivedBytes() the last time
+  // MaybeNotifyNetworkBytes() was called. Used to calculate how bytes have been
+  // newly received since the last notification.
+  int64_t last_notified_total_received_bytes_;
 
   base::WeakPtrFactory<URLRequestJob> weak_factory_;
 

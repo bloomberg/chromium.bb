@@ -478,14 +478,14 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
   extensions_delegate_->OnResponseStarted(request);
 }
 
-void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
-                                           int bytes_read) {
+void ChromeNetworkDelegate::OnNetworkBytesReceived(
+    const net::URLRequest& request,
+    int64_t bytes_received) {
 #if defined(ENABLE_TASK_MANAGER)
-  // This is not completely accurate, but as a first approximation ignore
-  // requests that are served from the cache. See bug 330931 for more info.
-  if (!request.was_cached()) {
-    task_management::TaskManagerInterface::OnRawBytesRead(request, bytes_read);
-  }
+  // Note: Currently, OnNetworkBytesReceived is only implemented for HTTP jobs,
+  // not FTP or other types, so those kinds of bytes will not be reported here.
+  task_management::TaskManagerInterface::OnRawBytesRead(request,
+                                                        bytes_received);
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 

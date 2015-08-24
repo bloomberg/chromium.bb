@@ -5,6 +5,8 @@
 #ifndef NET_BASE_LAYERED_NETWORK_DELEGATE_H_
 #define NET_BASE_LAYERED_NETWORK_DELEGATE_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "net/base/completion_callback.h"
@@ -62,7 +64,8 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
       GURL* allowed_unsafe_redirect_url) final;
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) final;
   void OnResponseStarted(URLRequest* request) final;
-  void OnRawBytesRead(const URLRequest& request, int bytes_read) final;
+  void OnNetworkBytesReceived(const URLRequest& request,
+                              int64_t bytes_received) final;
   void OnCompleted(URLRequest* request, bool started) final;
   void OnURLRequestDestroyed(URLRequest* request) final;
   void OnPACScriptError(int line_number, const base::string16& error) final;
@@ -121,8 +124,8 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
 
   virtual void OnResponseStartedInternal(URLRequest* request);
 
-  virtual void OnRawBytesReadInternal(const URLRequest& request,
-                                      int bytes_read);
+  virtual void OnNetworkBytesReceivedInternal(const URLRequest& request,
+                                              int64_t bytes_received);
 
   virtual void OnCompletedInternal(URLRequest* request, bool started);
 

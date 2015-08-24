@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NET_CHROME_NETWORK_DELEGATE_H_
 #define CHROME_BROWSER_NET_CHROME_NETWORK_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/basictypes.h"
@@ -147,7 +149,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   void OnBeforeRedirect(net::URLRequest* request,
                         const GURL& new_location) override;
   void OnResponseStarted(net::URLRequest* request) override;
-  void OnRawBytesRead(const net::URLRequest& request, int bytes_read) override;
+  void OnNetworkBytesReceived(const net::URLRequest& request,
+                              int64_t bytes_received) override;
   void OnCompleted(net::URLRequest* request, bool started) override;
   void OnURLRequestDestroyed(net::URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;

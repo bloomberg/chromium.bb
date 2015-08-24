@@ -50,7 +50,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   void OnBeforeRedirect(URLRequest* request,
                         const GURL& new_location) override {}
   void OnResponseStarted(URLRequest* request) override {}
-  void OnRawBytesRead(const URLRequest& request, int bytes_read) override {}
   void OnCompleted(URLRequest* request, bool started) override {}
   void OnURLRequestDestroyed(URLRequest* request) override {}
 

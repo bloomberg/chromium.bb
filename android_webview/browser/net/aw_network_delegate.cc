@@ -76,10 +76,6 @@ void AwNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
 void AwNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
 }
 
-void AwNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
-                                       int bytes_read) {
-}
-
 void AwNetworkDelegate::OnCompleted(net::URLRequest* request, bool started) {
 }
 

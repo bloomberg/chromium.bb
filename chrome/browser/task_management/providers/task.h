@@ -55,7 +55,7 @@ class Task {
                        int64 refresh_flags);
 
   // Will receive this notification through the task manager from
-  // |ChromeNetworkDelegate::OnRawBytesRead()|. The task will add to the
+  // |ChromeNetworkDelegate::OnNetworkBytesReceived()|. The task will add to the
   // |current_byte_count_| in this refresh cycle.
   void OnNetworkBytesRead(int64 bytes_read);
 

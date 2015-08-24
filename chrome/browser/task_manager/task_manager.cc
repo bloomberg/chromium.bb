@@ -1249,7 +1249,7 @@ void TaskManagerModel::NotifyVideoMemoryUsageStats(
 }
 
 void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
-                                       int byte_count) {
+                                       int64_t byte_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!is_updating_byte_count_)
     return;

@@ -138,15 +138,15 @@ void LayeredNetworkDelegate::OnResponseStarted(URLRequest* request) {
 void LayeredNetworkDelegate::OnResponseStartedInternal(URLRequest* request) {
 }
 
-void LayeredNetworkDelegate::OnRawBytesRead(const URLRequest& request,
-                                            int bytes_read) {
-  OnRawBytesReadInternal(request, bytes_read);
-  nested_network_delegate_->NotifyRawBytesRead(request, bytes_read);
+void LayeredNetworkDelegate::OnNetworkBytesReceived(const URLRequest& request,
+                                                    int64_t bytes_received) {
+  OnNetworkBytesReceivedInternal(request, bytes_received);
+  nested_network_delegate_->NotifyNetworkBytesReceived(request, bytes_received);
 }
 
-void LayeredNetworkDelegate::OnRawBytesReadInternal(const URLRequest& request,
-                                                    int bytes_read) {
-}
+void LayeredNetworkDelegate::OnNetworkBytesReceivedInternal(
+    const URLRequest& request,
+    int64_t bytes_received) {}
 
 void LayeredNetworkDelegate::OnCompleted(URLRequest* request, bool started) {
   OnCompletedInternal(request, started);

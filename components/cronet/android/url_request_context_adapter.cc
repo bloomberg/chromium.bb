@@ -69,9 +69,6 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
 
   void OnResponseStarted(net::URLRequest* request) override {}
 
-  void OnRawBytesRead(const net::URLRequest& request,
-                      int bytes_read) override {}
-
   void OnCompleted(net::URLRequest* request, bool started) override {}
 
   void OnURLRequestDestroyed(net::URLRequest* request) override {}

@@ -133,6 +133,30 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
 
   EXPECT_TRUE(request->status().is_success());
   EXPECT_EQ(12, request->received_response_content_length());
+  EXPECT_EQ(51, network_delegate_.total_network_bytes_received());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestContentLengthSuccessfulHttp09Request) {
+  MockRead reads[] = {MockRead("Test Content"),
+                      MockRead(net::SYNCHRONOUS, net::OK)};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate)
+          .Pass();
+
+  request->Start();
+  ASSERT_TRUE(request->is_pending());
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(request->status().is_success());
+  EXPECT_EQ(12, request->received_response_content_length());
+  EXPECT_EQ(12, network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthAbortedRequest) {
@@ -156,6 +180,7 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthAbortedRequest) {
 
   EXPECT_EQ(URLRequestStatus::FAILED, request->status().status());
   EXPECT_EQ(12, request->received_response_content_length());
+  EXPECT_EQ(51, network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest,
@@ -174,13 +199,82 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
                               &delegate)
           .Pass();
 
+  delegate.set_cancel_in_received_data(true);
   request->Start();
   base::RunLoop().RunUntilIdle();
-  request->Cancel();
-  base::RunLoop().Run();
 
   EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
   EXPECT_EQ(12, request->received_response_content_length());
+  EXPECT_EQ(51, network_delegate_.total_network_bytes_received());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestNetworkBytesRedirectedRequest) {
+  MockRead redirect_read(
+      "HTTP/1.1 302 Found\r\n"
+      "Location: http://www.example.com\r\n\r\n");
+  StaticSocketDataProvider redirect_socket_data(&redirect_read, 1, nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&redirect_socket_data);
+
+  MockRead response_reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                                        "Content-Length: 12\r\n\r\n"),
+                               MockRead("Test Content")};
+  StaticSocketDataProvider response_socket_data(
+      response_reads, arraysize(response_reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&response_socket_data);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.redirect.com"), DEFAULT_PRIORITY,
+                              &delegate)
+          .Pass();
+
+  request->Start();
+  ASSERT_TRUE(request->is_pending());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(request->status().is_success());
+  EXPECT_EQ(12, request->received_response_content_length());
+  EXPECT_EQ(107, network_delegate_.total_network_bytes_received());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestNetworkBytesCancelledAfterHeaders) {
+  MockRead read("HTTP/1.1 200 OK\r\n\r\n");
+  StaticSocketDataProvider socket_data(&read, 1, nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate)
+          .Pass();
+
+  delegate.set_cancel_in_response_started(true);
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_EQ(19, network_delegate_.total_network_bytes_received());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest,
+       TestNetworkBytesCancelledImmediately) {
+  StaticSocketDataProvider socket_data(nullptr, 0, nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  scoped_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate)
+          .Pass();
+
+  request->Start();
+  request->Cancel();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_EQ(0, network_delegate_.total_network_bytes_received());
 }
 
 TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {

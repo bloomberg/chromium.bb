@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGER_INTERFACE_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGER_INTERFACE_H_
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
@@ -32,7 +34,8 @@ class TaskManagerInterface {
 
   // This notification will be received on the IO thread from
   // ChromeNetworkDelegate to update the task manager with network usage.
-  static void OnRawBytesRead(const net::URLRequest& request, int bytes_read);
+  static void OnRawBytesRead(const net::URLRequest& request,
+                             int64_t bytes_read);
 
   void AddObserver(TaskManagerObserver* observer);
   void RemoveObserver(TaskManagerObserver* observer);

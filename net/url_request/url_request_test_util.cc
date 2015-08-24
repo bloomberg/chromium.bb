@@ -327,13 +327,13 @@ TestNetworkDelegate::TestNetworkDelegate()
       observed_before_proxy_headers_sent_callbacks_(0),
       before_send_headers_count_(0),
       headers_received_count_(0),
+      total_network_bytes_received_(0),
       has_load_timing_info_before_redirect_(false),
       has_load_timing_info_before_auth_(false),
       can_access_files_(true),
       first_party_only_cookies_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
-      will_be_intercepted_on_next_error_(false) {
-}
+      will_be_intercepted_on_next_error_(false) {}
 
 TestNetworkDelegate::~TestNetworkDelegate() {
   for (std::map<int, int>::iterator i = next_states_.begin();
@@ -504,8 +504,10 @@ void TestNetworkDelegate::OnResponseStarted(URLRequest* request) {
   }
 }
 
-void TestNetworkDelegate::OnRawBytesRead(const URLRequest& request,
-                                         int bytes_read) {
+void TestNetworkDelegate::OnNetworkBytesReceived(const URLRequest& request,
+                                                 int64_t bytes_received) {
+  event_order_[request.identifier()] += "OnNetworkBytesReceived\n";
+  total_network_bytes_received_ += bytes_received;
 }
 
 void TestNetworkDelegate::OnCompleted(URLRequest* request, bool started) {

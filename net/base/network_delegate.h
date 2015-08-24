@@ -5,6 +5,8 @@
 #ifndef NET_BASE_NETWORK_DELEGATE_H_
 #define NET_BASE_NETWORK_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -85,7 +87,8 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   void NotifyBeforeRedirect(URLRequest* request,
                             const GURL& new_location);
   void NotifyResponseStarted(URLRequest* request);
-  void NotifyRawBytesRead(const URLRequest& request, int bytes_read);
+  void NotifyNetworkBytesReceived(const URLRequest& request,
+                                  int64_t bytes_received);
   void NotifyCompleted(URLRequest* request, bool started);
   void NotifyURLRequestDestroyed(URLRequest* request);
   void NotifyPACScriptError(int line_number, const base::string16& error);
@@ -198,8 +201,16 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // This corresponds to URLRequestDelegate::OnResponseStarted.
   virtual void OnResponseStarted(URLRequest* request) = 0;
 
-  // Called every time we read raw bytes.
-  virtual void OnRawBytesRead(const URLRequest& request, int bytes_read) = 0;
+  // Called when bytes are received from the network, such as after receiving
+  // headers or reading raw response bytes. This includes localhost requests.
+  // |bytes_received| is the number of bytes measured at the application layer
+  // that have been received over the network for this request since the last
+  // time OnNetworkBytesReceived was called. |bytes_received| will always be
+  // greater than 0.
+  // Currently, this is only implemented for HTTP transactions, and
+  // |bytes_received| does not include TLS overhead or TCP retransmits.
+  virtual void OnNetworkBytesReceived(const URLRequest& request,
+                                      int64_t bytes_received) = 0;
 
   // Indicates that the URL request has been completed or failed.
   // |started| indicates whether the request has been started. If false,

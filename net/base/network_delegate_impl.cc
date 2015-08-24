@@ -56,9 +56,8 @@ void NetworkDelegateImpl::OnBeforeRedirect(URLRequest* request,
 void NetworkDelegateImpl::OnResponseStarted(URLRequest* request) {
 }
 
-void NetworkDelegateImpl::OnRawBytesRead(const URLRequest& request,
-                                         int bytes_read) {
-}
+void NetworkDelegateImpl::OnNetworkBytesReceived(const URLRequest& request,
+                                                 int64_t bytes_received) {}
 
 void NetworkDelegateImpl::OnCompleted(URLRequest* request, bool started) {
 }

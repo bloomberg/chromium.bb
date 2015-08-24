@@ -52,7 +52,7 @@ void TaskManagerIoThreadHelper::DeleteInstance() {
 
 // static
 void TaskManagerIoThreadHelper::OnRawBytesRead(const net::URLRequest& request,
-                                               int bytes_read) {
+                                               int64_t bytes_read) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (g_io_thread_helper)
@@ -89,7 +89,7 @@ void TaskManagerIoThreadHelper::OnMultipleBytesReadIO() {
 }
 
 void TaskManagerIoThreadHelper::OnNetworkBytesRead(
-    const net::URLRequest& request, int bytes_read) {
+    const net::URLRequest& request, int64_t bytes_read) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
