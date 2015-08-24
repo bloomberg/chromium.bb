@@ -1005,19 +1005,23 @@ class DeviceUtils(object):
 
     all_changed_files = []
     all_stale_files = []
+    missing_dirs = []
     for h, d in host_device_tuples:
-      if os.path.isdir(h):
-        self.RunShellCommand(['mkdir', '-p', d], check_return=True)
-      changed_files, stale_files = (
+      changed_files, up_to_date_files, stale_files = (
           self._GetChangedAndStaleFiles(h, d, delete_device_stale))
       all_changed_files += changed_files
       all_stale_files += stale_files
+      if (os.path.isdir(h) and changed_files and not up_to_date_files
+          and not stale_files):
+        missing_dirs.append(d)
 
     if delete_device_stale and all_stale_files:
       self.RunShellCommand(['rm', '-f'] + all_stale_files,
                              check_return=True)
 
     if all_changed_files:
+      if missing_dirs:
+        self.RunShellCommand(['mkdir', '-p'] + missing_dirs, check_return=True)
       self._PushFilesImpl(host_device_tuples, all_changed_files)
 
   def _GetChangedAndStaleFiles(self, host_path, device_path, track_stale=False):
@@ -1029,9 +1033,10 @@ class DeviceUtils(object):
       track_stale: whether to bother looking for stale files (slower)
 
     Returns:
-      a two-element tuple
+      a three-element tuple
       1st element: a list of (host_files_path, device_files_path) tuples to push
-      2nd element: a list of stale files under device_path, or [] when
+      2nd element: a list of host_files_path that are up-to-date
+      3rd element: a list of stale files under device_path, or [] when
         track_stale == False
     """
     try:
@@ -1045,25 +1050,29 @@ class DeviceUtils(object):
           interesting_device_paths, self)
     except EnvironmentError as e:
       logging.warning('Error calculating md5: %s', e)
-      return ([(host_path, device_path)], [])
+      return ([(host_path, device_path)], [], [])
 
+    to_push = []
+    up_to_date = []
+    to_delete = []
     if os.path.isfile(host_path):
       host_checksum = host_checksums.get(host_path)
       device_checksum = device_checksums.get(device_path)
-      if host_checksum != device_checksum:
-        return ([(host_path, device_path)], [])
+      if host_checksum == device_checksum:
+        up_to_date.append(host_path)
       else:
-        return ([], [])
+        to_push.append((host_path, device_path))
     else:
-      to_push = []
       for host_abs_path, host_checksum in host_checksums.iteritems():
         device_abs_path = posixpath.join(
             device_path, os.path.relpath(host_abs_path, host_path))
         device_checksum = device_checksums.pop(device_abs_path, None)
-        if device_checksum != host_checksum:
+        if device_checksum == host_checksum:
+          up_to_date.append(host_abs_path)
+        else:
           to_push.append((host_abs_path, device_abs_path))
       to_delete = device_checksums.keys()
-      return (to_push, to_delete)
+    return (to_push, up_to_date, to_delete)
 
   def _ComputeDeviceChecksumsForApks(self, package_name):
     ret = self._cache['package_apk_checksums'].get(package_name)
