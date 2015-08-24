@@ -35,8 +35,7 @@ struct ChildProcessData;
 // Note: If your class keeps a ptr to an object of this type, grab a weak ptr to
 // avoid a use after free since this object is deleted synchronously but the
 // client notification is asynchronous.  See http://crbug.com/108871.
-class UtilityProcessHost : public IPC::Sender,
-                           public base::SupportsWeakPtr<UtilityProcessHost> {
+class UtilityProcessHost : public IPC::Sender {
  public:
   // Used to create a utility process. |client| is optional. If supplied it will
   // be notified of incoming messages from the utility process.
@@ -47,6 +46,8 @@ class UtilityProcessHost : public IPC::Sender,
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner);
 
   ~UtilityProcessHost() override {}
+
+  virtual base::WeakPtr<UtilityProcessHost> AsWeakPtr() = 0;
 
   // Starts utility process in batch mode. Caller must call EndBatchMode()
   // to finish the utility process.

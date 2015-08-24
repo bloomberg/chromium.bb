@@ -43,6 +43,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   ~UtilityProcessHostImpl() override;
 
   // UtilityProcessHost implementation:
+  base::WeakPtr<UtilityProcessHost> AsWeakPtr() override;
   bool Send(IPC::Message* message) override;
   bool StartBatchMode() override;
   void EndBatchMode() override;
@@ -111,6 +112,9 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   // Browser-side Mojo endpoint which sets up a Mojo channel with the child
   // process and contains the browser's ServiceRegistry.
   scoped_ptr<MojoApplicationHost> mojo_application_host_;
+
+  // Used to vend weak pointers, and should always be declared last.
+  base::WeakPtrFactory<UtilityProcessHostImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHostImpl);
 };
