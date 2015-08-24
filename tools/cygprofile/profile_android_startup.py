@@ -289,7 +289,7 @@ class AndroidProfileTool(object):
       # SELinux need to be in permissive mode, otherwise the process cannot
       # write the log files.
       print 'Putting SELinux in permissive mode...'
-      self._device.RunShellCommand(['setenforce' '0'], check_return=True)
+      self._device.RunShellCommand(['setenforce', '0'], check_return=True)
     except device_errors.CommandFailedError as e:
       # TODO(jbudorick) Handle this exception appropriately once interface
       #                 conversions are finished.
