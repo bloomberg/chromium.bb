@@ -323,7 +323,7 @@ function test()
         "pid": 17851,
         "tid": 23,
         "ts": 251000,
-        "dur": 8000
+        "dur": 1000
     },
     {
         "args": {
@@ -410,6 +410,131 @@ function test()
         "pid": 17851,
         "tid": 23,
         "ts": 251400,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "recursive_b", "scriptId": 1 },
+                    { "functionName": "recursive_a", "scriptId": 1 },
+                    { "functionName": "recursive_b", "scriptId": 1 },
+                    { "functionName": "recursive_a", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253000,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "recursive_a", "scriptId": 1 },
+                    { "functionName": "recursive_b", "scriptId": 1 },
+                    { "functionName": "recursive_a", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253008,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "recursive_b", "scriptId": 1 },
+                    { "functionName": "recursive_a", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253012,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "recursive_a", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253014,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253015,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "recursive_b", "scriptId": 1 },
+                    { "functionName": "recursive_a", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253100,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "recursive_a", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253200,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 253300,
     },
     {
         "args": {},
