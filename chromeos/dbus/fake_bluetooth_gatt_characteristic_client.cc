@@ -149,7 +149,7 @@ void FakeBluetoothGattCharacteristicClient::ReadValue(
   }
 
   if (object_path.value() == heart_rate_control_point_path_) {
-    error_callback.Run("org.bluez.Error.ReadNotPermitted",
+    error_callback.Run("org.bluez.Error.NotPermitted",
                        "Reads of this value are not allowed");
     return;
   }
@@ -226,7 +226,7 @@ void FakeBluetoothGattCharacteristicClient::WriteValue(
   }
 
   if (object_path.value() != heart_rate_control_point_path_) {
-    error_callback.Run("org.bluez.Error.WriteNotPermitted",
+    error_callback.Run("org.bluez.Error.NotPermitted",
                        "Writes of this value are not allowed");
     return;
   }

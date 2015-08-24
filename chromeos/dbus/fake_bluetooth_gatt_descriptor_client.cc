@@ -136,7 +136,7 @@ void FakeBluetoothGattDescriptorClient::WriteValue(
 
   // Since the only fake descriptor is "Client Characteristic Configuration"
   // and BlueZ doesn't allow writing to it, return failure.
-  error_callback.Run("org.bluez.Error.WriteNotPermitted",
+  error_callback.Run("org.bluez.Error.NotPermitted",
                      "Writing to the Client Characteristic Configuration "
                      "descriptor not allowed");
 }

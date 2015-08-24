@@ -24,8 +24,7 @@ const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
 const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
 const char kErrorNotPaired[] = "org.bluez.Error.NotPaired";
 const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
-const char kErrorReadNotPermitted[] = "org.bluez.Error.ReadNotPermitted";
-const char kErrorWriteNotPermitted[] = "org.bluez.Error.WriteNotPermitted";
+const char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
 
 }  // namespace
 
@@ -166,8 +165,7 @@ BluetoothRemoteGattServiceChromeOS::DBusErrorToServiceError(
     code = GATT_ERROR_IN_PROGRESS;
   } else if (error_name == kErrorInvalidValueLength) {
     code = GATT_ERROR_INVALID_LENGTH;
-  } else if (error_name == kErrorReadNotPermitted ||
-             error_name == kErrorWriteNotPermitted) {
+  } else if (error_name == kErrorNotPermitted) {
     code = GATT_ERROR_NOT_PERMITTED;
   } else if (error_name == kErrorNotAuthorized) {
     code = GATT_ERROR_NOT_AUTHORIZED;
