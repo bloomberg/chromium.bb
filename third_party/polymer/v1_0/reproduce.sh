@@ -9,9 +9,6 @@
 # Chromium specific modifications. To launch the script you need 'bower',
 # 'crisper', and 'vulcanize' installed on your system.
 
-# IMPORTANT NOTE: The new vulcanize must be installed from
-# https://github.com/Polymer/vulcanize/releases since it isn't on npm yet.
-
 set -e
 
 cd "$(dirname "$0")"
