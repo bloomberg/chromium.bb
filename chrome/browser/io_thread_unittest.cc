@@ -150,14 +150,6 @@ TEST_F(IOThreadTest, SpdyCommandLineUseSpdyOff) {
   EXPECT_EQ(0u, globals_.next_protos.size());
 }
 
-TEST_F(IOThreadTest, SpdyCommandLineUseSpdyDisableAltProtocols) {
-  command_line_.AppendSwitchASCII("use-spdy", "no-alt-protocols");
-  ConfigureSpdyGlobals();
-  bool use_alternative_services = true;
-  globals_.use_alternative_services.CopyToIfSet(&use_alternative_services);
-  EXPECT_FALSE(use_alternative_services);
-}
-
 TEST_F(IOThreadTest, DisableQuicByDefault) {
   ConfigureQuicGlobals();
   net::HttpNetworkSession::Params params;

@@ -306,7 +306,6 @@ const std::string& GetVariationParam(
 //   "no-ping"                  : Disables SPDY ping connection testing.
 //   "exclude=<host>"           : Disables SPDY support for the host <host>.
 //   "no-compress"              : Disables SPDY header compression.
-//   "no-alt-protocols          : Disables alternate protocol support.
 //   "init-max-streams=<limit>" : Specifies the maximum number of concurrent
 //                                streams for a SPDY session, unless the
 //                                specifies a different value via SETTINGS.
@@ -316,7 +315,6 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
   static const char kDisablePing[] = "no-ping";
   static const char kExclude[] = "exclude";  // Hosts to exclude
   static const char kDisableCompression[] = "no-compress";
-  static const char kDisableAltProtocols[] = "no-alt-protocols";
   static const char kInitialMaxConcurrentStreams[] = "init-max-streams";
 
   for (const base::StringPiece& element : base::SplitStringPiece(
@@ -343,10 +341,6 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
     }
     if (option == kDisableCompression) {
       globals->enable_spdy_compression.set(false);
-      continue;
-    }
-    if (option == kDisableAltProtocols) {
-      globals->use_alternative_services.set(false);
       continue;
     }
     if (option == kInitialMaxConcurrentStreams) {
