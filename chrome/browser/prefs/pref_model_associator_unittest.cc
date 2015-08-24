@@ -317,6 +317,21 @@ TEST_F(DictionaryPreferenceMergeTest, MergeConflicts) {
   EXPECT_TRUE(merged_value->Equals(&expected));
 }
 
+TEST_F(DictionaryPreferenceMergeTest, MergeValueToDictionary) {
+  base::DictionaryValue local_dict_value;
+  local_dict_value.SetInteger("key", 0);
+
+  base::DictionaryValue server_dict_value;
+  server_dict_value.SetInteger("key.subkey", 0);
+
+  scoped_ptr<base::Value> merged_value(PrefModelAssociator::MergePreference(
+      kContentSettingsPrefName,
+      local_dict_value,
+      server_dict_value));
+
+  EXPECT_TRUE(merged_value->Equals(&server_dict_value));
+}
+
 TEST_F(DictionaryPreferenceMergeTest, Equal) {
   {
     DictionaryPrefUpdate update(pref_service_, kContentSettingsPrefName);
