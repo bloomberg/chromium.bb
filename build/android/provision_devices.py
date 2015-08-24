@@ -11,6 +11,7 @@ Usage:
 """
 
 import argparse
+import datetime
 import json
 import logging
 import os
@@ -243,9 +244,29 @@ def FinishProvisioning(device, options):
     except device_errors.CommandFailedError:
       logging.exception('Unable to let battery cool to specified temperature.')
 
-  device.RunShellCommand(
-      ['date', '-s', time.strftime('%Y%m%d.%H%M%S', time.gmtime())],
-      as_root=True, check_return=True)
+  def _set_and_verify_date():
+    strgmtime = time.strftime('%Y%m%d.%H%M%S', time.gmtime())
+    device.RunShellCommand(['date', '-s', strgmtime], as_root=True,
+                            check_return=True)
+
+    device_time = device.RunShellCommand(
+      ['date', '+"%Y%m%d.%H%M%S"'], as_root=True,
+      single_line=True).replace('"', '')
+    correct_time = datetime.datetime.strptime(strgmtime,"%Y%m%d.%H%M%S")
+    tdelta = (correct_time - datetime.datetime.strptime(device_time,
+                                                       "%Y%m%d.%H%M%S")).seconds
+    if tdelta <= 1:
+      logging.info('Date/time successfully set on %s' % device)
+      return True
+    else:
+      return False
+
+  # Sometimes the date is not set correctly on the devices. Retry on failure.
+  if not timeout_retry.WaitFor(_set_and_verify_date, wait_period=1,
+                               max_tries=2):
+    logging.warning('Error setting time on device %s.', device)
+    device_blacklist.ExtendBlacklist([str(device)])
+
   props = device.RunShellCommand('getprop', check_return=True)
   for prop in props:
     logging.info('  %s' % prop)
