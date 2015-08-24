@@ -59,6 +59,7 @@
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
+#include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/page/Page.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
@@ -1690,7 +1691,13 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
             break;
         }
         case ClipPathOperation::REFERENCE:
-            // FIXME: handle REFERENCE
+            ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style()->clipPath());
+            Element* element = document().getElementById(referenceClipPathOperation->fragment());
+            if (isSVGClipPathElement(element) && element->layoutObject()) {
+                LayoutSVGResourceClipper* clipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
+                if (!clipper->hitTestClipContent(borderBoxRect(), FloatPoint(locationInContainer.point() - localOffset)))
+                    return false;
+            }
             break;
         }
     }

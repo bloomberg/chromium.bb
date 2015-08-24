@@ -444,6 +444,10 @@ crbug.com/510492 fast/repaint/table-cell-collapsed-border.html [ NeedsRebaseline
 crbug.com/510492 fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
 crbug.com/510492 fast/table/border-collapsing/cached-change-cell-sl-border-color.html [ NeedsRebaseline ]
 
+crbug.com/518816 fast/events/hit-test-clip-path-reference.html [ NeedsRebaseline ]
+crbug.com/518816 virtual/trustedeventsdefaultaction/fast/events/hit-test-clip-path-reference.html [ NeedsRebaseline ]
+crbug.com/518816 virtual/pointerevent/fast/events/hit-test-clip-path-reference.html [ NeedsRebaseline ]
+
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 
