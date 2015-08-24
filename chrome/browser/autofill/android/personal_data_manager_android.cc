@@ -336,12 +336,13 @@ static void SetWalletImportEnabled(JNIEnv* env, jclass clazz, jboolean enable) {
 
 // Returns an ISO 3166-1-alpha-2 country code for a |jcountry_name| using
 // the application locale, or an empty string.
-static jstring ToCountryCode(JNIEnv* env, jclass clazz, jstring jcountry_name) {
+static ScopedJavaLocalRef<jstring> ToCountryCode(JNIEnv* env,
+                                                 jclass clazz,
+                                                 jstring jcountry_name) {
   return ConvertUTF8ToJavaString(
-      env,
-      AutofillCountry::GetCountryCode(
-          base::android::ConvertJavaStringToUTF16(env, jcountry_name),
-          g_browser_process->GetApplicationLocale())).Release();
+      env, AutofillCountry::GetCountryCode(
+               base::android::ConvertJavaStringToUTF16(env, jcountry_name),
+               g_browser_process->GetApplicationLocale()));
 }
 
 static jlong Init(JNIEnv* env, jobject obj) {

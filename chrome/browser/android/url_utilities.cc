@@ -43,22 +43,22 @@ static jboolean SameDomainOrHost(JNIEnv* env,
                                                             filter);
 }
 
-static jstring GetDomainAndRegistry(JNIEnv* env,
-                                    jclass clazz,
-                                    jstring url,
-                                    jboolean include_private) {
+static ScopedJavaLocalRef<jstring> GetDomainAndRegistry(
+    JNIEnv* env,
+    jclass clazz,
+    jstring url,
+    jboolean include_private) {
   DCHECK(url);
   GURL gurl = ConvertJavaStringToGURL(env, url);
   if (gurl.is_empty())
-    return nullptr;
+    return ScopedJavaLocalRef<jstring>();
 
   net::registry_controlled_domains::PrivateRegistryFilter filter =
       GetRegistryFilter(include_private);
 
-  // OK to release, JNI binding.
   return base::android::ConvertUTF8ToJavaString(
-      env, net::registry_controlled_domains::GetDomainAndRegistry(
-          gurl, filter)).Release();
+      env,
+      net::registry_controlled_domains::GetDomainAndRegistry(gurl, filter));
 }
 
 static jboolean IsGoogleSearchUrl(JNIEnv* env, jclass clazz, jstring url) {
@@ -75,10 +75,10 @@ static jboolean IsGoogleHomePageUrl(JNIEnv* env, jclass clazz, jstring url) {
   return google_util::IsGoogleHomePageUrl(gurl);
 }
 
-static jstring FixupUrl(JNIEnv* env,
-                        jclass clazz,
-                        jstring url,
-                        jstring optional_desired_tld) {
+static ScopedJavaLocalRef<jstring> FixupUrl(JNIEnv* env,
+                                            jclass clazz,
+                                            jstring url,
+                                            jstring optional_desired_tld) {
   DCHECK(url);
   GURL fixed_url = url_formatter::FixupURL(
       base::android::ConvertJavaStringToUTF8(env, url),
@@ -86,9 +86,9 @@ static jstring FixupUrl(JNIEnv* env,
           ? base::android::ConvertJavaStringToUTF8(env, optional_desired_tld)
           : std::string());
 
-  return fixed_url.is_valid() ?
-      base::android::ConvertUTF8ToJavaString(env, fixed_url.spec()).Release() :
-      nullptr;
+  return fixed_url.is_valid()
+             ? base::android::ConvertUTF8ToJavaString(env, fixed_url.spec())
+             : ScopedJavaLocalRef<jstring>();
 }
 
 // Register native methods

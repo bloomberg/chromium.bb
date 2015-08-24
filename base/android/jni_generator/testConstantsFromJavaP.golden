@@ -135,7 +135,7 @@ static void Java_MotionEvent_finalize(JNIEnv* env, jobject obj) {
 
 static base::subtle::AtomicWord
     g_MotionEvent_obtainAVME_J_J_I_I_LAVMEPP_LAVMEPC_I_I_F_F_I_I_I_I = 0;
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_LAVMEPP_LAVMEPC_I_I_F_F_I_I_I_I(JNIEnv*
     env, jlong p0,
     jlong p1,
@@ -151,7 +151,7 @@ static base::android::ScopedJavaLocalRef<jobject>
     JniIntWrapper p11,
     JniIntWrapper p12,
     JniIntWrapper p13) __attribute__ ((unused));
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_LAVMEPP_LAVMEPC_I_I_F_F_I_I_I_I(JNIEnv*
     env, jlong p0,
     jlong p1,
@@ -184,12 +184,12 @@ static base::android::ScopedJavaLocalRef<jobject>
               as_jint(p7), p8, p9, as_jint(p10), as_jint(p11), as_jint(p12),
               as_jint(p13));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord
     g_MotionEvent_obtainAVME_J_J_I_I_AI_LAVMEPC_I_F_F_I_I_I_I = 0;
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_AI_LAVMEPC_I_F_F_I_I_I_I(JNIEnv* env,
     jlong p0,
     jlong p1,
@@ -204,7 +204,7 @@ static base::android::ScopedJavaLocalRef<jobject>
     JniIntWrapper p10,
     JniIntWrapper p11,
     JniIntWrapper p12) __attribute__ ((unused));
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_AI_LAVMEPC_I_F_F_I_I_I_I(JNIEnv* env,
     jlong p0,
     jlong p1,
@@ -235,12 +235,12 @@ static base::android::ScopedJavaLocalRef<jobject>
           method_id, p0, p1, as_jint(p2), as_jint(p3), p4, p5, as_jint(p6), p7,
               p8, as_jint(p9), as_jint(p10), as_jint(p11), as_jint(p12));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_MotionEvent_obtainAVME_J_J_I_F_F_F_F_I_F_F_I_I
     = 0;
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_F_F_F_F_I_F_F_I_I(JNIEnv* env, jlong p0,
     jlong p1,
     JniIntWrapper p2,
@@ -253,7 +253,7 @@ static base::android::ScopedJavaLocalRef<jobject>
     jfloat p9,
     JniIntWrapper p10,
     JniIntWrapper p11) __attribute__ ((unused));
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_F_F_F_F_I_F_F_I_I(JNIEnv* env, jlong p0,
     jlong p1,
     JniIntWrapper p2,
@@ -282,12 +282,12 @@ static base::android::ScopedJavaLocalRef<jobject>
           method_id, p0, p1, as_jint(p2), p3, p4, p5, p6, as_jint(p7), p8, p9,
               as_jint(p10), as_jint(p11));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord
     g_MotionEvent_obtainAVME_J_J_I_I_F_F_F_F_I_F_F_I_I = 0;
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_F_F_F_F_I_F_F_I_I(JNIEnv* env, jlong p0,
     jlong p1,
     JniIntWrapper p2,
@@ -301,7 +301,7 @@ static base::android::ScopedJavaLocalRef<jobject>
     jfloat p10,
     JniIntWrapper p11,
     JniIntWrapper p12) __attribute__ ((unused));
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_I_F_F_F_F_I_F_F_I_I(JNIEnv* env, jlong p0,
     jlong p1,
     JniIntWrapper p2,
@@ -331,18 +331,18 @@ static base::android::ScopedJavaLocalRef<jobject>
           method_id, p0, p1, as_jint(p2), as_jint(p3), p4, p5, p6, p7,
               as_jint(p8), p9, p10, as_jint(p11), as_jint(p12));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_MotionEvent_obtainAVME_J_J_I_F_F_I = 0;
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_F_F_I(JNIEnv* env, jlong p0,
     jlong p1,
     JniIntWrapper p2,
     jfloat p3,
     jfloat p4,
     JniIntWrapper p5) __attribute__ ((unused));
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
     Java_MotionEvent_obtainAVME_J_J_I_F_F_I(JNIEnv* env, jlong p0,
     jlong p1,
     JniIntWrapper p2,
@@ -364,15 +364,14 @@ static base::android::ScopedJavaLocalRef<jobject>
       env->CallStaticObjectMethod(MotionEvent_clazz(env),
           method_id, p0, p1, as_jint(p2), p3, p4, as_jint(p5));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_MotionEvent_obtainAVME_AVME = 0;
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_MotionEvent_obtainAVME_AVME(JNIEnv* env, jobject p0) __attribute__
-    ((unused));
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_MotionEvent_obtainAVME_AVME(JNIEnv* env, jobject p0) {
+static ScopedJavaLocalRef<jobject> Java_MotionEvent_obtainAVME_AVME(JNIEnv* env,
+    jobject p0) __attribute__ ((unused));
+static ScopedJavaLocalRef<jobject> Java_MotionEvent_obtainAVME_AVME(JNIEnv* env,
+    jobject p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, MotionEvent_clazz(env),
       MotionEvent_clazz(env), NULL);
@@ -388,15 +387,14 @@ static base::android::ScopedJavaLocalRef<jobject>
       env->CallStaticObjectMethod(MotionEvent_clazz(env),
           method_id, p0);
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_MotionEvent_obtainNoHistory = 0;
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_MotionEvent_obtainNoHistory(JNIEnv* env, jobject p0) __attribute__
-    ((unused));
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_MotionEvent_obtainNoHistory(JNIEnv* env, jobject p0) {
+static ScopedJavaLocalRef<jobject> Java_MotionEvent_obtainNoHistory(JNIEnv* env,
+    jobject p0) __attribute__ ((unused));
+static ScopedJavaLocalRef<jobject> Java_MotionEvent_obtainNoHistory(JNIEnv* env,
+    jobject p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, MotionEvent_clazz(env),
       MotionEvent_clazz(env), NULL);
@@ -412,7 +410,7 @@ static base::android::ScopedJavaLocalRef<jobject>
       env->CallStaticObjectMethod(MotionEvent_clazz(env),
           method_id, p0);
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_MotionEvent_recycle = 0;
@@ -2103,11 +2101,10 @@ static void Java_MotionEvent_addBatchV_J_LAVMEPC_I(JNIEnv* env, jobject obj,
 }
 
 static base::subtle::AtomicWord g_MotionEvent_toString = 0;
-static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_toString(JNIEnv* env, jobject obj) __attribute__
-    ((unused));
-static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_toString(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jstring> Java_MotionEvent_toString(JNIEnv* env,
+    jobject obj) __attribute__ ((unused));
+static ScopedJavaLocalRef<jstring> Java_MotionEvent_toString(JNIEnv* env,
+    jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       MotionEvent_clazz(env), NULL);
@@ -2123,15 +2120,14 @@ static base::android::ScopedJavaLocalRef<jstring>
       static_cast<jstring>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jstring>(env, ret);
+  return ScopedJavaLocalRef<jstring>(env, ret);
 }
 
 static base::subtle::AtomicWord g_MotionEvent_actionToString = 0;
-static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_actionToString(JNIEnv* env, JniIntWrapper p0) __attribute__
-    ((unused));
-static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_actionToString(JNIEnv* env, JniIntWrapper p0) {
+static ScopedJavaLocalRef<jstring> Java_MotionEvent_actionToString(JNIEnv* env,
+    JniIntWrapper p0) __attribute__ ((unused));
+static ScopedJavaLocalRef<jstring> Java_MotionEvent_actionToString(JNIEnv* env,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, MotionEvent_clazz(env),
       MotionEvent_clazz(env), NULL);
@@ -2147,15 +2143,14 @@ static base::android::ScopedJavaLocalRef<jstring>
       static_cast<jstring>(env->CallStaticObjectMethod(MotionEvent_clazz(env),
           method_id, as_jint(p0)));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jstring>(env, ret);
+  return ScopedJavaLocalRef<jstring>(env, ret);
 }
 
 static base::subtle::AtomicWord g_MotionEvent_axisToString = 0;
-static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_axisToString(JNIEnv* env, JniIntWrapper p0) __attribute__
-    ((unused));
-static base::android::ScopedJavaLocalRef<jstring>
-    Java_MotionEvent_axisToString(JNIEnv* env, JniIntWrapper p0) {
+static ScopedJavaLocalRef<jstring> Java_MotionEvent_axisToString(JNIEnv* env,
+    JniIntWrapper p0) __attribute__ ((unused));
+static ScopedJavaLocalRef<jstring> Java_MotionEvent_axisToString(JNIEnv* env,
+    JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, MotionEvent_clazz(env),
       MotionEvent_clazz(env), NULL);
@@ -2171,7 +2166,7 @@ static base::android::ScopedJavaLocalRef<jstring>
       static_cast<jstring>(env->CallStaticObjectMethod(MotionEvent_clazz(env),
           method_id, as_jint(p0)));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jstring>(env, ret);
+  return ScopedJavaLocalRef<jstring>(env, ret);
 }
 
 static base::subtle::AtomicWord g_MotionEvent_axisFromString = 0;

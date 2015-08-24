@@ -16,24 +16,27 @@ using base::android::ScopedJavaLocalRef;
 namespace dom_distiller {
 namespace android {
 
-jobject DomDistillerServiceFactoryAndroid::GetForProfile(JNIEnv* env,
-                                                         jclass clazz,
-                                                         jobject j_profile) {
+ScopedJavaLocalRef<jobject> DomDistillerServiceFactoryAndroid::GetForProfile(
+    JNIEnv* env,
+    jclass clazz,
+    jobject j_profile) {
   dom_distiller::DomDistillerService* service =
       dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
           ProfileAndroid::FromProfileAndroid(j_profile));
   DomDistillerServiceAndroid* service_android =
       new DomDistillerServiceAndroid(service);
-  return service_android->java_ref_.obj();
+  return ScopedJavaLocalRef<jobject>(service_android->java_ref_);
 }
 
 bool DomDistillerServiceFactoryAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-jobject GetForProfile(JNIEnv* env, jclass clazz, jobject j_profile) {
-  return DomDistillerServiceFactoryAndroid::GetForProfile(
-      env, clazz, j_profile);
+ScopedJavaLocalRef<jobject> GetForProfile(JNIEnv* env,
+                                          jclass clazz,
+                                          jobject j_profile) {
+  return DomDistillerServiceFactoryAndroid::GetForProfile(env, clazz,
+                                                          j_profile);
 }
 
 }  // namespace android

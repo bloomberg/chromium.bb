@@ -27,8 +27,9 @@ void RecordCertVerifyCapabilitiesHistogram(JNIEnv* env,
   }
 }
 
-jobject GetApplicationContext(JNIEnv* env, jclass clazz) {
-  return base::android::GetApplicationContext();
+ScopedJavaLocalRef<jobject> GetApplicationContext(JNIEnv* env, jclass clazz) {
+  return ScopedJavaLocalRef<jobject>(env,
+                                     base::android::GetApplicationContext());
 }
 
 bool RegisterX509Util(JNIEnv* env) {

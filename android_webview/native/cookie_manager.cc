@@ -542,12 +542,13 @@ static void SetCookieSync(JNIEnv* env,
   CookieManager::GetInstance()->SetCookieSync(host, cookie_value);
 }
 
-static jstring GetCookie(JNIEnv* env, jobject obj, jstring url) {
+static ScopedJavaLocalRef<jstring> GetCookie(JNIEnv* env,
+                                             jobject obj,
+                                             jstring url) {
   GURL host(ConvertJavaStringToUTF16(env, url));
 
   return base::android::ConvertUTF8ToJavaString(
-      env,
-      CookieManager::GetInstance()->GetCookie(host)).Release();
+      env, CookieManager::GetInstance()->GetCookie(host));
 }
 
 static void RemoveSessionCookies(JNIEnv* env,

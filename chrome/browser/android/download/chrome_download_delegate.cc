@@ -23,12 +23,13 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // Gets the download warning text for the given file name.
-static jstring GetDownloadWarningText(
-    JNIEnv* env, jclass clazz, jstring filename) {
+static ScopedJavaLocalRef<jstring> GetDownloadWarningText(JNIEnv* env,
+                                                          jclass clazz,
+                                                          jstring filename) {
   return base::android::ConvertUTF8ToJavaString(
       env, l10n_util::GetStringFUTF8(
-          IDS_PROMPT_DANGEROUS_DOWNLOAD,
-          base::android::ConvertJavaStringToUTF16(env, filename))).Release();
+               IDS_PROMPT_DANGEROUS_DOWNLOAD,
+               base::android::ConvertJavaStringToUTF16(env, filename)));
 }
 
 // Returns true if a file name is dangerous, or false otherwise.

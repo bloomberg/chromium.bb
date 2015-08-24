@@ -31,11 +31,12 @@ ContentVideoView* g_content_video_view = NULL;
 
 }  // namespace
 
-static jobject GetSingletonJavaContentVideoView(JNIEnv*env, jclass) {
+static ScopedJavaLocalRef<jobject> GetSingletonJavaContentVideoView(JNIEnv* env,
+                                                                    jclass) {
   if (g_content_video_view)
-    return g_content_video_view->GetJavaObject(env).Release();
+    return g_content_video_view->GetJavaObject(env);
   else
-    return NULL;
+    return ScopedJavaLocalRef<jobject>();
 }
 
 bool ContentVideoView::RegisterContentVideoView(JNIEnv* env) {

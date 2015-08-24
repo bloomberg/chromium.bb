@@ -32,9 +32,8 @@ jclass g_InfoBar_clazz = NULL;
 // Step 2: method stubs.
 
 static base::subtle::AtomicWord g_TestJni_showConfirmInfoBar = 0;
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_showConfirmInfoBar(JNIEnv* env, jobject obj, JniIntWrapper
-    nativeInfoBar,
+static ScopedJavaLocalRef<jobject> Java_TestJni_showConfirmInfoBar(JNIEnv* env,
+    jobject obj, JniIntWrapper nativeInfoBar,
     jstring buttonOk,
     jstring buttonCancel,
     jstring title,
@@ -63,13 +62,12 @@ static base::android::ScopedJavaLocalRef<jobject>
           method_id, as_jint(nativeInfoBar), buttonOk, buttonCancel, title,
               icon);
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_showAutoLoginInfoBar = 0;
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_showAutoLoginInfoBar(JNIEnv* env, jobject obj, JniIntWrapper
-    nativeInfoBar,
+static ScopedJavaLocalRef<jobject> Java_TestJni_showAutoLoginInfoBar(JNIEnv*
+    env, jobject obj, JniIntWrapper nativeInfoBar,
     jstring realm,
     jstring account,
     jstring args) {
@@ -95,7 +93,7 @@ static base::android::ScopedJavaLocalRef<jobject>
       env->CallObjectMethod(obj,
           method_id, as_jint(nativeInfoBar), realm, account, args);
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_InfoBar_dismiss = 0;
@@ -151,8 +149,8 @@ static jboolean Java_TestJni_shouldShowAutoLogin(JNIEnv* env, jobject view,
 }
 
 static base::subtle::AtomicWord g_TestJni_openUrl = 0;
-static base::android::ScopedJavaLocalRef<jobject> Java_TestJni_openUrl(JNIEnv*
-    env, jstring url) {
+static ScopedJavaLocalRef<jobject> Java_TestJni_openUrl(JNIEnv* env, jstring
+    url) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, TestJni_clazz(env),
       TestJni_clazz(env), NULL);
@@ -172,7 +170,7 @@ static base::android::ScopedJavaLocalRef<jobject> Java_TestJni_openUrl(JNIEnv*
       env->CallStaticObjectMethod(TestJni_clazz(env),
           method_id, url);
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_activateHardwareAcceleration = 0;
@@ -232,8 +230,8 @@ static void Java_TestJni_uncheckedCall(JNIEnv* env, jobject obj, JniIntWrapper
 }
 
 static base::subtle::AtomicWord g_TestJni_returnByteArray = 0;
-static base::android::ScopedJavaLocalRef<jbyteArray>
-    Java_TestJni_returnByteArray(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jbyteArray> Java_TestJni_returnByteArray(JNIEnv* env,
+    jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -252,12 +250,12 @@ static base::android::ScopedJavaLocalRef<jbyteArray>
       static_cast<jbyteArray>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jbyteArray>(env, ret);
+  return ScopedJavaLocalRef<jbyteArray>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_returnBooleanArray = 0;
-static base::android::ScopedJavaLocalRef<jbooleanArray>
-    Java_TestJni_returnBooleanArray(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jbooleanArray> Java_TestJni_returnBooleanArray(JNIEnv*
+    env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -276,12 +274,12 @@ static base::android::ScopedJavaLocalRef<jbooleanArray>
       static_cast<jbooleanArray>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jbooleanArray>(env, ret);
+  return ScopedJavaLocalRef<jbooleanArray>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_returnCharArray = 0;
-static base::android::ScopedJavaLocalRef<jcharArray>
-    Java_TestJni_returnCharArray(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jcharArray> Java_TestJni_returnCharArray(JNIEnv* env,
+    jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -300,12 +298,12 @@ static base::android::ScopedJavaLocalRef<jcharArray>
       static_cast<jcharArray>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jcharArray>(env, ret);
+  return ScopedJavaLocalRef<jcharArray>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_returnShortArray = 0;
-static base::android::ScopedJavaLocalRef<jshortArray>
-    Java_TestJni_returnShortArray(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jshortArray> Java_TestJni_returnShortArray(JNIEnv*
+    env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -324,12 +322,12 @@ static base::android::ScopedJavaLocalRef<jshortArray>
       static_cast<jshortArray>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jshortArray>(env, ret);
+  return ScopedJavaLocalRef<jshortArray>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_returnIntArray = 0;
-static base::android::ScopedJavaLocalRef<jintArray>
-    Java_TestJni_returnIntArray(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jintArray> Java_TestJni_returnIntArray(JNIEnv* env,
+    jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -348,12 +346,12 @@ static base::android::ScopedJavaLocalRef<jintArray>
       static_cast<jintArray>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jintArray>(env, ret);
+  return ScopedJavaLocalRef<jintArray>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_returnLongArray = 0;
-static base::android::ScopedJavaLocalRef<jlongArray>
-    Java_TestJni_returnLongArray(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jlongArray> Java_TestJni_returnLongArray(JNIEnv* env,
+    jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -372,12 +370,12 @@ static base::android::ScopedJavaLocalRef<jlongArray>
       static_cast<jlongArray>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jlongArray>(env, ret);
+  return ScopedJavaLocalRef<jlongArray>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_returnDoubleArray = 0;
-static base::android::ScopedJavaLocalRef<jdoubleArray>
-    Java_TestJni_returnDoubleArray(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jdoubleArray> Java_TestJni_returnDoubleArray(JNIEnv*
+    env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -396,12 +394,12 @@ static base::android::ScopedJavaLocalRef<jdoubleArray>
       static_cast<jdoubleArray>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jdoubleArray>(env, ret);
+  return ScopedJavaLocalRef<jdoubleArray>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_returnObjectArray = 0;
-static base::android::ScopedJavaLocalRef<jobjectArray>
-    Java_TestJni_returnObjectArray(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jobjectArray> Java_TestJni_returnObjectArray(JNIEnv*
+    env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -420,11 +418,11 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
       static_cast<jobjectArray>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobjectArray>(env, ret);
+  return ScopedJavaLocalRef<jobjectArray>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_returnArrayOfByteArray = 0;
-static base::android::ScopedJavaLocalRef<jobjectArray>
+static ScopedJavaLocalRef<jobjectArray>
     Java_TestJni_returnArrayOfByteArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
@@ -444,12 +442,12 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
       static_cast<jobjectArray>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobjectArray>(env, ret);
+  return ScopedJavaLocalRef<jobjectArray>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_getCompressFormat = 0;
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_getCompressFormat(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jobject> Java_TestJni_getCompressFormat(JNIEnv* env,
+    jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -468,12 +466,12 @@ static base::android::ScopedJavaLocalRef<jobject>
       env->CallObjectMethod(obj,
           method_id);
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_TestJni_getCompressFormatList = 0;
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_TestJni_getCompressFormatList(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jobject> Java_TestJni_getCompressFormatList(JNIEnv*
+    env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       TestJni_clazz(env), NULL);
@@ -492,7 +490,7 @@ static base::android::ScopedJavaLocalRef<jobject>
       env->CallObjectMethod(obj,
           method_id);
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 // Step 3: RegisterNatives.

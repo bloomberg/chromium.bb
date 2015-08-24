@@ -429,8 +429,9 @@ static jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(settings);
 }
 
-static jstring GetDefaultUserAgent(JNIEnv* env, jclass clazz) {
-  return base::android::ConvertUTF8ToJavaString(env, GetUserAgent()).Release();
+static ScopedJavaLocalRef<jstring> GetDefaultUserAgent(JNIEnv* env,
+                                                       jclass clazz) {
+  return base::android::ConvertUTF8ToJavaString(env, GetUserAgent());
 }
 
 bool RegisterAwSettings(JNIEnv* env) {

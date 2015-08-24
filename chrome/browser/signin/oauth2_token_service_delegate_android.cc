@@ -150,7 +150,7 @@ OAuth2TokenServiceDelegateAndroid::~OAuth2TokenServiceDelegateAndroid() {
 }
 
 // static
-jobject OAuth2TokenServiceDelegateAndroid::GetForProfile(
+ScopedJavaLocalRef<jobject> OAuth2TokenServiceDelegateAndroid::GetForProfile(
     JNIEnv* env,
     jclass clazz,
     jobject j_profile_android) {
@@ -158,13 +158,13 @@ jobject OAuth2TokenServiceDelegateAndroid::GetForProfile(
   ProfileOAuth2TokenService* service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   OAuth2TokenServiceDelegate* delegate = service->GetDelegate();
-  return static_cast<OAuth2TokenServiceDelegateAndroid*>(delegate)
-      ->java_ref_.obj();
+  return ScopedJavaLocalRef<jobject>(
+      static_cast<OAuth2TokenServiceDelegateAndroid*>(delegate)->java_ref_);
 }
 
-static jobject GetForProfile(JNIEnv* env,
-                             jclass clazz,
-                             jobject j_profile_android) {
+static ScopedJavaLocalRef<jobject> GetForProfile(JNIEnv* env,
+                                                 jclass clazz,
+                                                 jobject j_profile_android) {
   return OAuth2TokenServiceDelegateAndroid::GetForProfile(env, clazz,
                                                           j_profile_android);
 }
