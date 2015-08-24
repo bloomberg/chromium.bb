@@ -607,6 +607,7 @@ html[dir='rtl'] #newer-button::after {
 
 #action-menu[data-devicename]::before {
   background-color: rgb(245, 245, 245);
+  background-position: 18px center;
   background-repeat: no-repeat;
   background-size: 24px;
   border-bottom: 1px solid rgb(232, 232, 232);
@@ -624,18 +625,15 @@ html[dir='rtl'] #newer-button::after {
 }
 
 #action-menu[data-devicetype='laptop']::before {
-  background-image: url(../../../../ui/webui/resources/images/laptop_small.png);
-  background-position: 18px center;
+  background-image: url(../../../../ui/webui/resources/images/laptop.svg);
 }
 
 #action-menu[data-devicetype='phone']::before {
-  background-image: url(../../../../ui/webui/resources/images/phone_small.png);
+  background-image: url(../../../../ui/webui/resources/images/smartphone.svg);
   background-position: 14px center;
   padding-left: 43px;
 }
 
 #action-menu[data-devicetype='tablet']::before {
-  background-image: url(../../../../ui/webui/resources/images/tablet_small.png);
-  background-position: 17px center;
-  padding-left: 49px;
+  background-image: url(../../../../ui/webui/resources/images/tablet.svg);
 }
