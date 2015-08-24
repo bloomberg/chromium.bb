@@ -275,6 +275,11 @@ class UserManagerScreenHandler::ProfileUpdateObserver
     user_manager_handler_->SendUserList();
   }
 
+  void OnProfileIsOmittedChanged(
+      const base::FilePath& profile_path) override {
+    user_manager_handler_->SendUserList();
+  }
+
   ProfileManager* profile_manager_;
 
   UserManagerScreenHandler* user_manager_handler_;  // Weak; owns us.
@@ -731,6 +736,11 @@ void UserManagerScreenHandler::SendUserList() {
 #endif
 
   for (size_t i = 0; i < info_cache->GetNumberOfProfiles(); ++i) {
+    // Don't show profiles still in the middle of being set up as new legacy
+    // supervised users.
+    if (info_cache->IsOmittedProfileAtIndex(i))
+      continue;
+
     base::DictionaryValue* profile_value = new base::DictionaryValue();
     base::FilePath profile_path = info_cache->GetPathOfProfileAtIndex(i);
 
