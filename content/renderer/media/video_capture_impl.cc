@@ -263,6 +263,8 @@ void VideoCaptureImpl::OnBufferReceived(
         coded_size,
         timestamp - first_frame_timestamp_);
   }
+  frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
+                                  timestamp);
   frame->AddDestructionObserver(
       base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame, frame->metadata(),
                  release_sync_point_storage,
