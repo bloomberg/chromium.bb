@@ -175,11 +175,10 @@
 #remove {
   --iron-icon-height: 16px;
   --iron-icon-width: 16px;
-  --paper-icon-button: {
-    height: 16px;
-    padding: 8px;
-    width: 16px;
-  };
+  color: #969696;
+  height: 16px;
+  padding: 8px;
+  width: 16px;
 }
 
 #incognito {
