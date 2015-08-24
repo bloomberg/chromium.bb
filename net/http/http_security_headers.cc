@@ -150,17 +150,6 @@ bool ParseHPKPHeaderImpl(const std::string& value,
     } else if (base::LowerCaseEqualsASCII(
                    base::StringPiece(name_value_pairs.name_begin(),
                                      name_value_pairs.name_end()),
-                   "pin-sha1")) {
-      // Pins are always quoted.
-      if (!name_value_pairs.value_is_quoted() ||
-          !ParseAndAppendPin(name_value_pairs.value_begin(),
-                             name_value_pairs.value_end(), HASH_VALUE_SHA1,
-                             &pins)) {
-        return false;
-      }
-    } else if (base::LowerCaseEqualsASCII(
-                   base::StringPiece(name_value_pairs.name_begin(),
-                                     name_value_pairs.name_end()),
                    "pin-sha256")) {
       // Pins are always quoted.
       if (!name_value_pairs.value_is_quoted() ||

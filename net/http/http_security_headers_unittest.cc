@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #include "base/base64.h"
-#include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "crypto/sha2.h"
 #include "net/base/host_port_pair.h"
@@ -36,9 +35,6 @@ std::string GetTestPinImpl(uint8 label, HashValueTag tag, bool quoted) {
 
   std::string ret;
   switch (hash_value.tag) {
-    case HASH_VALUE_SHA1:
-      ret = "pin-sha1=";
-      break;
     case HASH_VALUE_SHA256:
       ret = "pin-sha256=";
       break;
@@ -645,16 +641,8 @@ static void TestValidPKPHeaders(HashValueTag tag) {
   EXPECT_EQ(expect_report_uri, report_uri);
 }
 
-TEST_F(HttpSecurityHeadersTest, BogusPinsHeadersSHA1) {
-  TestBogusPinsHeaders(HASH_VALUE_SHA1);
-}
-
 TEST_F(HttpSecurityHeadersTest, BogusPinsHeadersSHA256) {
   TestBogusPinsHeaders(HASH_VALUE_SHA256);
-}
-
-TEST_F(HttpSecurityHeadersTest, ValidPKPHeadersSHA1) {
-  TestValidPKPHeaders(HASH_VALUE_SHA1);
 }
 
 TEST_F(HttpSecurityHeadersTest, ValidPKPHeadersSHA256) {
@@ -675,10 +663,10 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   HashValueVector saved_hashes = static_pkp_state.spki_hashes;
 
   // Add a header, which should only update the dynamic state.
-  HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA1);
-  HashValue backup_hash = GetTestHashValue(2, HASH_VALUE_SHA1);
-  std::string good_pin = GetTestPin(1, HASH_VALUE_SHA1);
-  std::string backup_pin = GetTestPin(2, HASH_VALUE_SHA1);
+  HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA256);
+  HashValue backup_hash = GetTestHashValue(2, HASH_VALUE_SHA256);
+  std::string good_pin = GetTestPin(1, HASH_VALUE_SHA256);
+  std::string backup_pin = GetTestPin(2, HASH_VALUE_SHA256);
   GURL report_uri("http://google.com");
   std::string header = "max-age = 10000; " + good_pin + "; " + backup_pin +
                        ";report-uri=\"" + report_uri.spec() + "\"";
@@ -756,9 +744,9 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
   HashValueVector saved_hashes = static_pkp_state.spki_hashes;
 
   // Add a header, which should only update the dynamic state.
-  HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA1);
-  std::string good_pin = GetTestPin(1, HASH_VALUE_SHA1);
-  std::string backup_pin = GetTestPin(2, HASH_VALUE_SHA1);
+  HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA256);
+  std::string good_pin = GetTestPin(1, HASH_VALUE_SHA256);
+  std::string backup_pin = GetTestPin(2, HASH_VALUE_SHA256);
   std::string header = "max-age = 10000; " + good_pin + "; " + backup_pin;
 
   // Construct a fake SSLInfo that will pass AddHPKPHeader's checks.
@@ -858,9 +846,9 @@ TEST_F(HttpSecurityHeadersTest, NoClobberPins) {
       TransportSecurityState::DISABLE_PIN_REPORTS, &failure_log));
 
   // Add an HPKP header, which should only update the dynamic state.
-  HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA1);
-  std::string good_pin = GetTestPin(1, HASH_VALUE_SHA1);
-  std::string backup_pin = GetTestPin(2, HASH_VALUE_SHA1);
+  HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA256);
+  std::string good_pin = GetTestPin(1, HASH_VALUE_SHA256);
+  std::string backup_pin = GetTestPin(2, HASH_VALUE_SHA256);
   std::string header = "max-age = 10000; " + good_pin + "; " + backup_pin;
 
   // Construct a fake SSLInfo that will pass AddHPKPHeader's checks.

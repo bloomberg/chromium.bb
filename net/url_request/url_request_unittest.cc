@@ -5462,8 +5462,10 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPAndSendReport) {
   HashValue hash2;
   // The values here don't matter, as long as they are different from
   // the mocked CertVerifyResult below.
-  ASSERT_TRUE(hash1.FromString("sha1/111111111111111111111111111="));
-  ASSERT_TRUE(hash2.FromString("sha1/222222222222222222222222222="));
+  ASSERT_TRUE(
+      hash1.FromString("sha256/1111111111111111111111111111111111111111111="));
+  ASSERT_TRUE(
+      hash2.FromString("sha256/2222222222222222222222222222222222222222222="));
   hashes.push_back(hash1);
   hashes.push_back(hash2);
   security_state.AddHPKP(test_server_hostname, expiry,
@@ -5483,7 +5485,8 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPAndSendReport) {
   verify_result.verified_cert = cert;
   verify_result.is_issued_by_known_root = true;
   HashValue hash3;
-  ASSERT_TRUE(hash3.FromString("sha1/333333333333333333333333333="));
+  ASSERT_TRUE(
+      hash3.FromString("sha256/3333333333333333333333333333333333333333333="));
   verify_result.public_key_hashes.push_back(hash3);
   cert_verifier.AddResultForCert(cert.get(), verify_result, OK);
 
@@ -5545,7 +5548,8 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPReportOnly) {
   HashValue hash;
   // This value doesn't matter, as long as it is different from the pins
   // for the request to hpkp-headers-report-only.html.
-  ASSERT_TRUE(hash.FromString("sha1/111111111111111111111111111="));
+  ASSERT_TRUE(
+      hash.FromString("sha256/1111111111111111111111111111111111111111111="));
   verify_result.public_key_hashes.push_back(hash);
   cert_verifier.AddResultForCert(cert.get(), verify_result, OK);
 

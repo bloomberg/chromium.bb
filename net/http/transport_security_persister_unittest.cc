@@ -90,9 +90,9 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
 TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   const GURL report_uri(kReportUri);
   // Add an entry.
-  HashValue fp1(HASH_VALUE_SHA1);
+  HashValue fp1(HASH_VALUE_SHA256);
   memset(fp1.data(), 0, fp1.size());
-  HashValue fp2(HASH_VALUE_SHA1);
+  HashValue fp2(HASH_VALUE_SHA256);
   memset(fp2.data(), 1, fp2.size());
   base::Time expiry =
       base::Time::Now() + base::TimeDelta::FromSeconds(1000);
@@ -193,13 +193,13 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyPins) {
   std::string failure_log;
   EXPECT_FALSE(pkp_state.CheckPublicKeyPins(hashes, &failure_log));
 
-  HashValue sha1(HASH_VALUE_SHA1);
-  memset(sha1.data(), '1', sha1.size());
-  pkp_state.spki_hashes.push_back(sha1);
+  HashValue sha256(HASH_VALUE_SHA256);
+  memset(sha256.data(), '1', sha256.size());
+  pkp_state.spki_hashes.push_back(sha256);
 
   EXPECT_FALSE(pkp_state.CheckPublicKeyPins(hashes, &failure_log));
 
-  hashes.push_back(sha1);
+  hashes.push_back(sha256);
   EXPECT_TRUE(pkp_state.CheckPublicKeyPins(hashes, &failure_log));
 
   hashes[0].data()[0] = '2';
@@ -219,9 +219,9 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyPins) {
   TransportSecurityState::PKPState new_pkp_state;
   EXPECT_TRUE(state_.GetDynamicPKPState(kTestDomain, &new_pkp_state));
   EXPECT_EQ(1u, new_pkp_state.spki_hashes.size());
-  EXPECT_EQ(sha1.tag, new_pkp_state.spki_hashes[0].tag);
-  EXPECT_EQ(
-      0, memcmp(new_pkp_state.spki_hashes[0].data(), sha1.data(), sha1.size()));
+  EXPECT_EQ(sha256.tag, new_pkp_state.spki_hashes[0].tag);
+  EXPECT_EQ(0, memcmp(new_pkp_state.spki_hashes[0].data(), sha256.data(),
+                      sha256.size()));
   EXPECT_EQ(report_uri, new_pkp_state.report_uri);
 }
 

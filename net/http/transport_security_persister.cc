@@ -189,6 +189,11 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
     serialized->SetDouble(kDynamicSPKIHashesExpiry,
                           pkp_state.expiry.ToDoubleT());
 
+    // TODO(svaldez): Historically, both SHA-1 and SHA-256 hashes were
+    // accepted in pins. Per spec, only SHA-256 is accepted now, however
+    // existing serialized pins are still processed. Migrate historical pins
+    // with SHA-1 hashes properly, either by dropping just the bad hashes or
+    // the entire pin. See https://crbug.com/448501.
     if (now < pkp_state.expiry) {
       serialized->Set(kDynamicSPKIHashes,
                       SPKIHashesToListValue(pkp_state.spki_hashes));
