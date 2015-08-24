@@ -344,9 +344,12 @@ void RenderWidgetHostViewAura::ApplyEventFilterForPopupExit(
     // If we enter this code path it means that we did not receive any focus
     // lost notifications for the popup window. Ensure that blink is aware
     // of the fact that focus was lost for the host window by sending a Blur
-    // notification.
-    if (popup_parent_host_view_ && popup_parent_host_view_->host_)
+    // notification. We also set a flag in the view indicating that we need
+    // to force a Focus notification on the next mouse down.
+    if (popup_parent_host_view_ && popup_parent_host_view_->host_) {
+      popup_parent_host_view_->set_focus_on_mouse_down_ = true;
       popup_parent_host_view_->host_->Blur();
+    }
     // Note: popup_parent_host_view_ may be NULL when there are multiple
     // popup children per view. See: RenderWidgetHostViewAura::InitAsPopup().
     Shutdown();
@@ -468,6 +471,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       has_snapped_to_boundary_(false),
       is_guest_view_hack_(is_guest_view_hack),
       begin_frame_observer_proxy_(this),
+      set_focus_on_mouse_down_(false),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
     host_->SetView(this);
@@ -744,6 +748,10 @@ void RenderWidgetHostViewAura::SetKeyboardFocus() {
       ::SetFocus(host->GetAcceleratedWidget());
   }
 #endif
+  if (host_ && set_focus_on_mouse_down_) {
+    set_focus_on_mouse_down_ = false;
+    host_->Focus();
+  }
 }
 
 RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() {

@@ -659,7 +659,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   BeginFrameObserverProxy begin_frame_observer_proxy_;
 
+  // This flag when set ensures that we send over a notification to blink that
+  // the current view has focus. Defaults to false.
+  bool set_focus_on_mouse_down_;
+
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
 
