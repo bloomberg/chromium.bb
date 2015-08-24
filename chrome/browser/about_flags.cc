@@ -1973,7 +1973,9 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_AUTOFILL_ACCESSORY_VIEW_NAME,
      IDS_FLAGS_AUTOFILL_ACCESSORY_VIEW_DESCRIPTION,
      kOsAndroid,
-     SINGLE_VALUE_TYPE(autofill::switches::kEnableAccessorySuggestionView)},
+     ENABLE_DISABLE_VALUE_TYPE(
+         autofill::switches::kEnableAccessorySuggestionView,
+         autofill::switches::kDisableAccessorySuggestionView)},
 #endif  // defined(OS_ANDROID)
     {"disable-new-video-renderer",
      IDS_FLAGS_DISABLE_NEW_VIDEO_RENDERER_NAME,

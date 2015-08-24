@@ -13,6 +13,9 @@ namespace autofill {
 // is on.
 bool IsFeatureSubstringMatchEnabled();
 
+// Returns true when keyboard accessory is enabled.
+bool IsKeyboardAccessoryEnabled();
+
 // A token is a sequences of contiguous characters separated by any of the
 // characters that are part of delimiter set {' ', '.', ',', '-', '_', '@'}.
 

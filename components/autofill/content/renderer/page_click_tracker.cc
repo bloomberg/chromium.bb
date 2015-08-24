@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/page_click_listener.h"
-#include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -82,18 +82,15 @@ void PageClickTracker::OnMouseDown(const WebNode& mouse_down_node) {
 void PageClickTracker::FocusedNodeChanged(const WebNode& node) {
   was_focused_before_now_ = false;
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAccessorySuggestionView)) {
+  if (IsKeyboardAccessoryEnabled()) {
     focused_node_was_last_clicked_ = true;
     DoFocusChangeComplete();
   }
 }
 
 void PageClickTracker::FocusChangeComplete() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAccessorySuggestionView)) {
+  if (IsKeyboardAccessoryEnabled())
     return;
-  }
 
   DoFocusChangeComplete();
 }

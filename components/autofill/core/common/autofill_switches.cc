@@ -31,9 +31,6 @@ const char kDisablePasswordGeneration[]     = "disable-password-generation";
 // The "disable" flag for kEnableSingleClickAutofill.
 const char kDisableSingleClickAutofill[]    = "disable-single-click-autofill";
 
-const char kEnableAccessorySuggestionView[] =
-    "enable-autofill-keyboard-accessory-view";
-
 // Enables using device's camera to scan a new credit card when filling out a
 // credit card form.
 const char kEnableCreditCardScan[]          = "enable-credit-card-scan";
@@ -93,6 +90,16 @@ const char kWalletServiceUrl[]              = "wallet-service-url";
 
 // Use the sandbox Online Wallet service URL (for developer testing).
 const char kWalletServiceUseSandbox[]       = "wallet-service-use-sandbox";
+
+#if defined(OS_ANDROID)
+// Disables showing suggestions in a keyboard accessory view.
+const char kDisableAccessorySuggestionView[] =
+    "disable-autofill-keyboard-accessory-view";
+
+// Enables showing suggestions in a keyboard accessory view.
+const char kEnableAccessorySuggestionView[] =
+    "enable-autofill-keyboard-accessory-view";
+#endif  // defined(OS_ANDROID)
 
 }  // namespace switches
 }  // namespace autofill

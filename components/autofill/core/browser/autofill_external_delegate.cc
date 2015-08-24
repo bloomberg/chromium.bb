@@ -17,7 +17,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
-#include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -364,10 +364,8 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM);
     // TODO(rouslan): Remove manual upper-casing when keyboard accessory becomes
     // default on Android.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableAccessorySuggestionView)) {
+    if (IsKeyboardAccessoryEnabled())
       value = base::i18n::ToUpper(value);
-    }
 
     suggestions->push_back(Suggestion(value));
     suggestions->back().frontend_id = POPUP_ITEM_ID_CLEAR_FORM;
@@ -377,10 +375,8 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   suggestions->push_back(Suggestion(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP)));
   suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAccessorySuggestionView)) {
+  if (IsKeyboardAccessoryEnabled())
     suggestions->back().icon = base::ASCIIToUTF16("settings");
-  }
 }
 
 void AutofillExternalDelegate::InsertDataListValues(

@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -39,6 +40,19 @@ struct Compare : base::CaseInsensitiveCompareASCII<Char> {
 bool IsFeatureSubstringMatchEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSuggestionsWithSubstringMatch);
+}
+
+bool IsKeyboardAccessoryEnabled() {
+#if defined(OS_ANDROID)
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             autofill::switches::kEnableAccessorySuggestionView) ||
+         (base::FieldTrialList::FindFullName("AutofillKeyboardAccessory") ==
+              "Enabled" &&
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              autofill::switches::kDisableAccessorySuggestionView));
+#else  // !defined(OS_ANDROID)
+  return false;
+#endif
 }
 
 bool FieldIsSuggestionSubstringStartingOnTokenBoundary(

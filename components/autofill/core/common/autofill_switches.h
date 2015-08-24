@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_SWITCHES_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_SWITCHES_H_
 
+#include "build/build_config.h"
+
 namespace autofill {
 namespace switches {
 
@@ -16,7 +18,6 @@ extern const char kDisableFullFormAutofillIOS[];
 extern const char kDisableOfferStoreUnmaskedWalletCards[];
 extern const char kDisablePasswordGeneration[];
 extern const char kDisableSingleClickAutofill[];
-extern const char kEnableAccessorySuggestionView[];
 extern const char kEnableCreditCardScan[];
 extern const char kEnableFillOnAccountSelect[];
 extern const char kEnableFillOnAccountSelectNoHighlighting[];
@@ -32,6 +33,11 @@ extern const char kShowAutofillTypePredictions[];
 extern const char kWalletSecureServiceUrl[];
 extern const char kWalletServiceUrl[];
 extern const char kWalletServiceUseSandbox[];
+
+#if defined(OS_ANDROID)
+extern const char kDisableAccessorySuggestionView[];
+extern const char kEnableAccessorySuggestionView[];
+#endif  // defined(OS_ANDROID)
 
 }  // namespace switches
 }  // namespace autofill
