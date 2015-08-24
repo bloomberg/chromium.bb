@@ -940,37 +940,38 @@ __gCrWeb.autofill.findChildText = function(node) {
 };
 
 /**
- * Helper for |InferLabelForElement()| that infers a label, if possible, from
- * a previous sibling of |element|,
- * e.g. Some Text <input ...>
- * or   Some <span>Text</span> <input ...>
- * or   <p>Some Text</p><input ...>
- * or   <label>Some Text</label> <input ...>
- * or   Some Text <img><input ...>
- * or   <b>Some Text</b><br/> <input ...>.
+ * Shared function for InferLabelFromPrevious() and InferLabelFromNext().
  *
  * It is based on the logic in
- *     string16 InferLabelFromPrevious(const WebFormControlElement& element)
+ *     string16 InferLabelFromSibling(const WebFormControlElement& element,
+ *                                    bool forward)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
- * @param {Element} element An element to examine.
- * @return {string} The label of element.
+ * @param {FormControlElement} element An element to examine.
+ * @param {boolean} forward whether to search for the next or previous element.
+ * @return {string} The label of element or an empty string if there is no
+ *                  sibling or no label.
  */
-__gCrWeb.autofill.inferLabelFromPrevious = function(element) {
+__gCrWeb.autofill.inferLabelFromSibling = function(element, forward) {
   var inferredLabel = '';
-  var previous = element;
-  if (!previous) {
+  var sibling = element;
+  if (!sibling) {
     return '';
   }
 
   while (true) {
-    previous = previous.previousSibling;
-    if (!previous) {
+    if (forward) {
+      sibling = sibling.nextSibling;
+    } else {
+      sibling = sibling.previousSibling;
+    }
+
+    if (!sibling) {
       break;
     }
 
     // Skip over comments.
-    var nodeType = previous.nodeType;
+    var nodeType = sibling.nodeType;
     if (nodeType === Node.COMMENT_NODE) {
       continue;
     }
@@ -985,11 +986,11 @@ __gCrWeb.autofill.inferLabelFromPrevious = function(element) {
     //  (a) plain text nodes or
     //  (b) inline HTML elements that are essentially equivalent to text nodes.
     if (nodeType === Node.TEXT_NODE ||
-        __gCrWeb.autofill.hasTagName(previous, 'b') ||
-        __gCrWeb.autofill.hasTagName(previous, 'strong') ||
-        __gCrWeb.autofill.hasTagName(previous, 'span') ||
-        __gCrWeb.autofill.hasTagName(previous, 'font')) {
-      var value = __gCrWeb.autofill.findChildText(previous);
+        __gCrWeb.autofill.hasTagName(sibling, 'b') ||
+        __gCrWeb.autofill.hasTagName(sibling, 'strong') ||
+        __gCrWeb.autofill.hasTagName(sibling, 'span') ||
+        __gCrWeb.autofill.hasTagName(sibling, 'font')) {
+      var value = __gCrWeb.autofill.findChildText(sibling);
       // A text node's value will be empty if it is for a line break.
       var addSpace = nodeType === Node.TEXT_NODE && value.length === 0;
       inferredLabel =
@@ -1007,19 +1008,55 @@ __gCrWeb.autofill.inferLabelFromPrevious = function(element) {
 
     // <img> and <br> tags often appear between the input element and its
     // label text, so skip over them.
-    if (__gCrWeb.autofill.hasTagName(previous, 'img') ||
-        __gCrWeb.autofill.hasTagName(previous, 'br')) {
+    if (__gCrWeb.autofill.hasTagName(sibling, 'img') ||
+        __gCrWeb.autofill.hasTagName(sibling, 'br')) {
       continue;
     }
 
     // We only expect <p> and <label> tags to contain the full label text.
-    if (__gCrWeb.autofill.hasTagName(previous, 'p') ||
-        __gCrWeb.autofill.hasTagName(previous, 'label')) {
-      inferredLabel = __gCrWeb.autofill.findChildText(previous);
+    if (__gCrWeb.autofill.hasTagName(sibling, 'p') ||
+        __gCrWeb.autofill.hasTagName(sibling, 'label')) {
+      inferredLabel = __gCrWeb.autofill.findChildText(sibling);
     }
     break;
   }
   return inferredLabel.trim();
+};
+
+/**
+ * Helper for |InferLabelForElement()| that infers a label, if possible, from
+ * a previous sibling of |element|,
+ * e.g. Some Text <input ...>
+ * or   Some <span>Text</span> <input ...>
+ * or   <p>Some Text</p><input ...>
+ * or   <label>Some Text</label> <input ...>
+ * or   Some Text <img><input ...>
+ * or   <b>Some Text</b><br/> <input ...>.
+ *
+ * It is based on the logic in
+ *     string16 InferLabelFromPrevious(const WebFormControlElement& element)
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
+ *
+ * @param {FormControlElement} element An element to examine.
+ * @return {string} The label of element.
+ */
+__gCrWeb.autofill.inferLabelFromPrevious = function(element) {
+  return __gCrWeb.autofill.inferLabelFromSibling(element, false);
+};
+
+/**
+ * Same as InferLabelFromPrevious(), but in the other direction.
+ * Useful for cases like: <span><input type="checkbox">Label For Checkbox</span>
+ *
+ * It is based on the logic in
+ *     string16 InferLabelFromNext(const WebFormControlElement& element)
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
+ *
+ * @param {FormControlElement} element An element to examine.
+ * @return {string} The label of element.
+ */
+__gCrWeb.autofill.inferLabelFromNext = function(element) {
+  return __gCrWeb.autofill.inferLabelFromSibling(element, true);
 };
 
 /**
@@ -1030,7 +1067,7 @@ __gCrWeb.autofill.inferLabelFromPrevious = function(element) {
  *     string16 InferLabelFromPlaceholder(const WebFormControlElement& element)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
- * @param {Element} element An element to examine.
+ * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
 __gCrWeb.autofill.inferLabelFromPlaceholder = function(element) {
@@ -1050,7 +1087,7 @@ __gCrWeb.autofill.inferLabelFromPlaceholder = function(element) {
  *     string16 InferLabelFromListItem(const WebFormControlElement& element)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
- * @param {Element} element An element to examine.
+ * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
 __gCrWeb.autofill.inferLabelFromListItem = function(element) {
@@ -1083,7 +1120,7 @@ __gCrWeb.autofill.inferLabelFromListItem = function(element) {
  *    string16 InferLabelFromTableColumn(const WebFormControlElement& element)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
- * @param {Element} element An element to examine.
+ * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
 __gCrWeb.autofill.inferLabelFromTableColumn = function(element) {
@@ -1126,7 +1163,7 @@ __gCrWeb.autofill.inferLabelFromTableColumn = function(element) {
  *     string16 InferLabelFromTableRow(const WebFormControlElement& element)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
- * @param {Element} element An element to examine.
+ * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
 __gCrWeb.autofill.inferLabelFromTableRow = function(element) {
@@ -1168,7 +1205,7 @@ __gCrWeb.autofill.inferLabelFromTableRow = function(element) {
  *    string16 InferLabelFromDivTable(const WebFormControlElement& element)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
- * @param {Element} element An element to examine.
+ * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
 __gCrWeb.autofill.inferLabelFromDivTable = function(element) {
@@ -1218,7 +1255,7 @@ __gCrWeb.autofill.inferLabelFromDivTable = function(element) {
  *        const WebFormControlElement& element)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
- * @param {Element} element An element to examine.
+ * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
 __gCrWeb.autofill.inferLabelFromDefinitionList = function(element) {
@@ -1285,11 +1322,19 @@ __gCrWeb.autofill.closestAncestorIsDivAndNotTD = function(element) {
  *    string16 InferLabelForElement(const WebFormControlElement& element)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
- * @param {Element} element An element to examine.
+ * @param {FormControlElement} element An element to examine.
  * @return {string} The label of element.
  */
 __gCrWeb.autofill.inferLabelForElement = function(element) {
-  var inferredLabel = __gCrWeb.autofill.inferLabelFromPrevious(element);
+  var inferredLabel;
+  if (__gCrWeb.autofill.isCheckableElement(element)) {
+    inferredLabel = __gCrWeb.autofill.inferLabelFromNext(element);
+    if (inferredLabel.length > 0) {
+      return inferredLabel;
+    }
+  }
+
+  inferredLabel = __gCrWeb.autofill.inferLabelFromPrevious(element);
   if (inferredLabel.length > 0) {
     return inferredLabel;
   }
