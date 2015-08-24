@@ -99,6 +99,10 @@ source_set("test_support") {
     "//content/public/browser",
     "//extensions/common/api/cast_channel:cast_channel_proto",
   ]
+
+  if (cld_version == 2) {
+    deps += [ "//third_party/cld_2:cld2_static" ]
+  }
 }
 
 # GYP version: //extensions/extensions.gyp:extensions_shell_and_test_pak

@@ -9,6 +9,7 @@ var binding = require('binding').Binding.create('i18n');
 var i18nNatives = requireNative('i18n');
 var GetL10nMessage = i18nNatives.GetL10nMessage;
 var GetL10nUILanguage = i18nNatives.GetL10nUILanguage;
+var DetectTextLanguage = i18nNatives.DetectTextLanguage;
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -35,6 +36,13 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
 
   apiFunctions.setHandleRequest('getUILanguage', function() {
     return GetL10nUILanguage();
+  });
+
+  apiFunctions.setHandleRequest('detectLanguage', function(text, callback) {
+    window.setTimeout(function() {
+      var response = DetectTextLanguage(text);
+      callback(response);
+    }, 0);
   });
 });
 

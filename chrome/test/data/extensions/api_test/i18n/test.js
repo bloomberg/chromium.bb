@@ -58,6 +58,27 @@ chrome.test.getConfig(function(config) {
     function getUILanguage() {
       chrome.test.assertEq('en-US', chrome.i18n.getUILanguage());
       chrome.test.succeed();
+    },
+    function detectLanguage() {
+      var text = "undef";
+      chrome.i18n.detectLanguage(text, function (result) {
+        chrome.test.assertEq([], result.languages);
+      });
+
+      text = "This text is obviously in English";
+      chrome.i18n.detectLanguage(text, function (result) {
+        chrome.test.assertEq([{ "language": "en", "percentage": 97 }],
+            result.languages);
+      });
+
+      text = "Данный текст явно не на английском языке. \
+      But this one definitely is. Welcome to Google!";
+      chrome.i18n.detectLanguage(text, function (result) {
+        chrome.test.assertEq([{ "language": "ru", "percentage": 61 },
+            { "language": "en", "percentage": 37 }], result.languages);
+      });
+
+      chrome.test.succeed();
     }
   ]);
 });

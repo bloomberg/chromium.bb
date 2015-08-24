@@ -13,11 +13,12 @@ class ScriptContext;
 // Implements custom bindings for the i18n API.
 class I18NCustomBindings : public ObjectBackedNativeHandler {
  public:
-  I18NCustomBindings(ScriptContext* context);
+  explicit I18NCustomBindings(ScriptContext* context);
 
  private:
   void GetL10nMessage(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetL10nUILanguage(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void DetectTextLanguage(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }  // namespace extensions

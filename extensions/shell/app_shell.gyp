@@ -65,6 +65,10 @@
         '<@(app_shell_lib_sources)',
       ],
       'conditions': [
+        [ 'cld_version==2', {
+              'dependencies': [
+                '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
+        }],
         ['use_aura==1', {
           'dependencies': [
             '<(DEPTH)/ui/wm/wm.gyp:wm',

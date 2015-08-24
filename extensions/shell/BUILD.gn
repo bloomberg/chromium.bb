@@ -130,6 +130,10 @@ source_set("app_shell_lib") {
       deps += [ "//components/nacl:nacl_helper" ]
     }
   }
+
+  if (cld_version == 2) {
+    deps += [ "//third_party/cld_2:cld2_platform_impl" ]
+  }
 }
 
 if (!(is_chromeos && !use_ozone)) {
