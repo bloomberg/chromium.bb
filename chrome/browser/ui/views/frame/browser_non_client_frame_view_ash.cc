@@ -510,11 +510,13 @@ int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
       caption_button_container_->GetPreferredSize().width();
 
 #if defined(FRAME_AVATAR_BUTTON)
-  return kNewAvatarButtonOffset +
-         new_avatar_button()->GetPreferredSize().width() + tabstrip_width;
-#else
-  return tabstrip_width;
+  if (new_avatar_button()) {
+    tabstrip_width += kNewAvatarButtonOffset +
+         new_avatar_button()->GetPreferredSize().width();
+  }
 #endif
+
+  return tabstrip_width;
 }
 
 bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
