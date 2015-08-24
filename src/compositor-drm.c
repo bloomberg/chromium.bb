@@ -1760,8 +1760,10 @@ static const char * const connector_type_names[] = {
 	[DRM_MODE_CONNECTOR_HDMIB]       = "HDMI-B",
 	[DRM_MODE_CONNECTOR_TV]          = "TV",
 	[DRM_MODE_CONNECTOR_eDP]         = "eDP",
+#ifdef DRM_MODE_CONNECTOR_DSI
 	[DRM_MODE_CONNECTOR_VIRTUAL]     = "Virtual",
 	[DRM_MODE_CONNECTOR_DSI]         = "DSI",
+#endif
 };
 
 static char *
