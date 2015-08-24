@@ -67,17 +67,14 @@ base::WeakPtr<StreamContainer> StreamContainer::GetWeakPtr() {
 const char MimeHandlerViewGuest::Type[] = "mimehandler";
 
 // static
-GuestViewBase* MimeHandlerViewGuest::Create(
-    content::WebContents* owner_web_contents) {
+GuestViewBase* MimeHandlerViewGuest::Create(WebContents* owner_web_contents) {
   return new MimeHandlerViewGuest(owner_web_contents);
 }
 
-MimeHandlerViewGuest::MimeHandlerViewGuest(
-    content::WebContents* owner_web_contents)
+MimeHandlerViewGuest::MimeHandlerViewGuest(WebContents* owner_web_contents)
     : GuestView<MimeHandlerViewGuest>(owner_web_contents),
       delegate_(ExtensionsAPIClient::Get()->CreateMimeHandlerViewGuestDelegate(
-          this)) {
-}
+          this)) {}
 
 MimeHandlerViewGuest::~MimeHandlerViewGuest() {
 }
@@ -158,8 +155,8 @@ bool MimeHandlerViewGuest::ZoomPropagatesFromEmbedderToGuest() const {
   return false;
 }
 
-content::WebContents* MimeHandlerViewGuest::OpenURLFromTab(
-    content::WebContents* source,
+WebContents* MimeHandlerViewGuest::OpenURLFromTab(
+    WebContents* source,
     const content::OpenURLParams& params) {
   return embedder_web_contents()->GetDelegate()->OpenURLFromTab(
       embedder_web_contents(), params);
@@ -174,7 +171,7 @@ bool MimeHandlerViewGuest::HandleContextMenu(
 }
 
 bool MimeHandlerViewGuest::PreHandleGestureEvent(
-    content::WebContents* source,
+    WebContents* source,
     const blink::WebGestureEvent& event) {
   if (event.type == blink::WebGestureEvent::GesturePinchBegin ||
       event.type == blink::WebGestureEvent::GesturePinchUpdate ||
