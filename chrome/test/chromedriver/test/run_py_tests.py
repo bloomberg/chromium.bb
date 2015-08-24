@@ -66,6 +66,10 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
 ]
+_VERSION_SPECIFIC_FILTER['44'] = [
+    # https://code.google.com/p/chromedriver/issues/detail?id=1202
+    'ChromeDownloadDirTest.testFileDownloadWithGet',
+]
 _VERSION_SPECIFIC_FILTER['37'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=954
     'MobileEmulationCapabilityTest.testClickElement',
@@ -1151,11 +1155,11 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html#x'))
 
-  def setCookie(self, request):
+  def SetCookie(self, request):
     return {'Set-Cookie': 'x=y; HttpOnly'}, "<!DOCTYPE html><html></html>"
 
   def testGetHttpOnlyCookie(self):
-    self._http_server.SetCallbackForPath('/setCookie', self.setCookie)
+    self._http_server.SetCallbackForPath('/setCookie', self.SetCookie)
     self._driver.Load(self.GetHttpUrlForFile('/setCookie'))
     self._driver.AddCookie({'name': 'a', 'value': 'b'})
     cookies = self._driver.GetCookies()
@@ -1215,6 +1219,17 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
     self._temp_dirs.append(temp_dir)
     return temp_dir
 
+  def RespondWithCsvFile(self, request):
+    return {'Content-Type': 'text/csv'}, 'a,b,c\n1,2,3\n'
+
+  def WaitForFileToDownload(self, path):
+    deadline = time.time() + 60
+    while True:
+      time.sleep(0.1)
+      if os.path.isfile(path) or time.time() > deadline:
+        break
+    self.assertTrue(os.path.isfile(path), "Failed to download file!")
+
   def tearDown(self):
     # Call the superclass tearDown() method before deleting temp dirs, so that
     # Chrome has a chance to exit before its user data dir is blown away from
@@ -1223,19 +1238,28 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
     for temp_dir in self._temp_dirs:
       shutil.rmtree(temp_dir)
 
-  def testFileDownload(self):
+  def testFileDownloadWithClick(self):
     download_dir = self.CreateTempDir()
     download_name = os.path.join(download_dir, 'a_red_dot.png')
     driver = self.CreateDriver(download_dir=download_dir)
     driver.Load(ChromeDriverTest.GetHttpUrlForFile(
         '/chromedriver/download.html'))
     driver.FindElement('id', 'red-dot').Click()
-    deadline = time.time() + 60
-    while True:
-      time.sleep(0.1)
-      if os.path.isfile(download_name) or time.time() > deadline:
-        break
-    self.assertTrue(os.path.isfile(download_name), "Failed to download file!")
+    self.WaitForFileToDownload(download_name)
+    self.assertEqual(
+        ChromeDriverTest.GetHttpUrlForFile('/chromedriver/download.html'),
+        driver.GetCurrentUrl())
+
+  def testFileDownloadWithGet(self):
+    ChromeDriverTest._http_server.SetCallbackForPath(
+        '/abc.csv', self.RespondWithCsvFile)
+    download_dir = self.CreateTempDir()
+    download_name = os.path.join(download_dir, 'abc.csv')
+    driver = self.CreateDriver(download_dir=download_dir)
+    original_url = driver.GetCurrentUrl()
+    driver.Load(ChromeDriverTest.GetHttpUrlForFile('/abc.csv'))
+    self.WaitForFileToDownload(os.path.join(download_dir, 'abc.csv'))
+    self.assertEqual(original_url, driver.GetCurrentUrl())
 
   def testDownloadDirectoryOverridesExistingPreferences(self):
     user_data_dir = self.CreateTempDir()

@@ -49,6 +49,14 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
         result_dict.SetString("root.baseURL", "http://test");
       result->reset(result_dict.DeepCopy());
       return Status(kOk);
+    } else if (method == "Runtime.evaluate") {
+      std::string expression;
+      if (params.GetString("expression", &expression) && expression == "1") {
+        base::DictionaryValue result_dict;
+        result_dict.SetInteger("result.value", 1);
+        result->reset(result_dict.DeepCopy());
+        return Status(kOk);
+      }
     }
 
     if (send_event_first_.length()) {
