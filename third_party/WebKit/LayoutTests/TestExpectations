@@ -48,7 +48,6 @@ crbug.com/522645 [ Linux ] virtual/android/fullscreen/video-fixed-background.htm
 crbug.com/522646 http/tests/media/encrypted-media/encrypted-media-encrypted-event-different-origin.html [ Pass Slow ]
 crbug.com/522647 http/tests/notifications/close-dispatch-asynchronous.html [ Failure Pass ]
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
-crbug.com/522649 svg/custom/js-late-pattern-and-object-creation.svg [ Failure Pass ]
 crbug.com/522651 [ XP ] http/tests/inspector/extensions-useragent.html [ Crash Pass Timeout ]
 crbug.com/521862 [ Linux Win ] storage/websql/read-transactions-running-concurrently.html [ Failure Pass ]
 crbug.com/521859 http/tests/navigatorconnect/postmessage-from-worker.html [ Pass Timeout ]
