@@ -39,7 +39,7 @@
 namespace blink {
 
 StyleSheetInvalidationAnalysis::StyleSheetInvalidationAnalysis(const TreeScope& treeScope, const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>& sheets)
-    : m_treeScope(treeScope)
+    : m_treeScope(&treeScope)
 {
     for (unsigned i = 0; i < sheets.size() && !m_dirtiesAllStyle; ++i)
         analyzeStyleSheet(sheets[i]);
@@ -139,7 +139,7 @@ void StyleSheetInvalidationAnalysis::analyzeStyleSheet(StyleSheetContents* style
             return;
     }
 
-    if (m_treeScope.rootNode().isShadowRoot()) {
+    if (m_treeScope->rootNode().isShadowRoot()) {
         if (hasDistributedRule(styleSheetContents))
             m_hasDistributedRules = true;
         return;
@@ -189,8 +189,8 @@ void StyleSheetInvalidationAnalysis::invalidateStyle()
 {
     ASSERT(!m_dirtiesAllStyle);
 
-    if (m_treeScope.rootNode().isShadowRoot()) {
-        ContainerNode* invalidationRoot = &m_treeScope.rootNode();
+    if (m_treeScope->rootNode().isShadowRoot()) {
+        ContainerNode* invalidationRoot = &m_treeScope->rootNode();
         if (m_hasDistributedRules)
             invalidationRoot = outermostShadowHost(*toShadowRoot(invalidationRoot));
         invalidationRoot->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
@@ -199,7 +199,7 @@ void StyleSheetInvalidationAnalysis::invalidateStyle()
 
     if (m_idScopes.isEmpty() && m_classScopes.isEmpty())
         return;
-    Element* element = ElementTraversal::firstWithin(m_treeScope.document());
+    Element* element = ElementTraversal::firstWithin(m_treeScope->document());
     while (element) {
         if (elementMatchesSelectorScopes(element, m_idScopes, m_classScopes)) {
             element->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));

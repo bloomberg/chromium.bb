@@ -50,7 +50,7 @@ private:
 
     void analyzeStyleSheet(StyleSheetContents*);
 
-    const TreeScope& m_treeScope;
+    RawPtrWillBeMember<const TreeScope> m_treeScope;
     HashSet<StringImpl*> m_idScopes;
     HashSet<StringImpl*> m_classScopes;
 
