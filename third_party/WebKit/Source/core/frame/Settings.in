@@ -164,7 +164,7 @@ spatialNavigationEnabled initial=false
 # crbug.com/304894 tracks removal once it's been enabled on all platforms.
 touchDragDropEnabled initial=false
 
-unifiedTextCheckerEnabled initial=defaultUnifiedTextCheckerEnabled
+unifiedTextCheckerEnabled initial=false
 
 # Some apps could have a default video poster if it is not set.
 defaultVideoPosterURL type=String

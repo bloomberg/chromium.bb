@@ -52,7 +52,6 @@ static EditingBehaviorType editingBehaviorTypeForPlatform()
     ;
 }
 
-static const bool defaultUnifiedTextCheckerEnabled = false;
 #if OS(WIN)
 static const bool defaultSelectTrailingWhitespaceEnabled = true;
 #else
