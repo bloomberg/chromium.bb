@@ -9,6 +9,7 @@ mojom("test_interfaces") {
   sources = [
     "math_calculator.mojom",
     "no_module.mojom",
+    "ping_service.mojom",
     "rect.mojom",
     "regression_tests.mojom",
     "sample_factory.mojom",

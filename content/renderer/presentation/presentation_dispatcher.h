@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 #define CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 
+#include <queue>
+
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_map.h"
 #include "base/id_map.h"
@@ -14,6 +16,7 @@
 #include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationClient.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace blink {
 class WebPresentationAvailabilityObserver;

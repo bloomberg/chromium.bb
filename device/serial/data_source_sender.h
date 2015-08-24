@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "device/serial/buffer.h"
 #include "device/serial/data_stream.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
 namespace device {

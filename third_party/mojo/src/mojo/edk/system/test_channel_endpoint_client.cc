@@ -17,7 +17,7 @@ TestChannelEndpointClient::TestChannelEndpointClient()
 }
 
 void TestChannelEndpointClient::Init(unsigned port, ChannelEndpoint* endpoint) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   ASSERT_EQ(0u, port_);
   ASSERT_FALSE(endpoint_);
   port_ = port;
@@ -25,30 +25,30 @@ void TestChannelEndpointClient::Init(unsigned port, ChannelEndpoint* endpoint) {
 }
 
 bool TestChannelEndpointClient::IsDetached() const {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   return !endpoint_;
 }
 
 size_t TestChannelEndpointClient::NumMessages() const {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   return messages_.Size();
 }
 
 scoped_ptr<MessageInTransit> TestChannelEndpointClient::PopMessage() {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (messages_.IsEmpty())
     return nullptr;
   return messages_.GetMessage();
 }
 
 void TestChannelEndpointClient::SetReadEvent(base::WaitableEvent* read_event) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   read_event_ = read_event;
 }
 
 bool TestChannelEndpointClient::OnReadMessage(unsigned port,
                                               MessageInTransit* message) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
 
   EXPECT_EQ(port_, port);
   EXPECT_TRUE(endpoint_);
@@ -61,9 +61,9 @@ bool TestChannelEndpointClient::OnReadMessage(unsigned port,
 }
 
 void TestChannelEndpointClient::OnDetachFromChannel(unsigned port) {
-  EXPECT_EQ(port_, port);
+  MutexLocker locker(&mutex_);
 
-  base::AutoLock locker(lock_);
+  EXPECT_EQ(port_, port);
   ASSERT_TRUE(endpoint_);
   endpoint_->DetachFromClient();
   endpoint_ = nullptr;

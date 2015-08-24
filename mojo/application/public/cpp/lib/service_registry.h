@@ -11,6 +11,7 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/lib/service_connector_registry.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 namespace internal {

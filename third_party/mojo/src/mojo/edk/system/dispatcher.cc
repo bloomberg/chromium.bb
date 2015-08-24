@@ -26,16 +26,18 @@ DispatcherTransport DispatcherTryStartTransport(Dispatcher* dispatcher) {
 
 // Dispatcher ------------------------------------------------------------------
 
+// TODO(vtl): The thread-safety analyzer isn't smart enough to deal with the
+// fact that we give up if |TryLock()| fails.
 // static
 DispatcherTransport Dispatcher::HandleTableAccess::TryStartTransport(
-    Dispatcher* dispatcher) {
+    Dispatcher* dispatcher) MOJO_NO_THREAD_SAFETY_ANALYSIS {
   DCHECK(dispatcher);
 
-  if (!dispatcher->lock_.Try())
+  if (!dispatcher->mutex_.TryLock())
     return DispatcherTransport();
 
   // We shouldn't race with things that close dispatchers, since closing can
-  // only take place either under |handle_table_lock_| or when the handle is
+  // only take place either under |handle_table_mutex_| or when the handle is
   // marked as busy.
   DCHECK(!dispatcher->is_closed_);
 
@@ -96,7 +98,7 @@ scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
 }
 
 MojoResult Dispatcher::Close() {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -113,7 +115,7 @@ MojoResult Dispatcher::WriteMessage(
          (transports->size() > 0 &&
           transports->size() < GetConfiguration().max_message_num_handles));
 
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -128,7 +130,7 @@ MojoResult Dispatcher::ReadMessage(UserPointer<void> bytes,
   DCHECK(!num_dispatchers || *num_dispatchers == 0 ||
          (dispatchers && dispatchers->empty()));
 
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -139,7 +141,7 @@ MojoResult Dispatcher::ReadMessage(UserPointer<void> bytes,
 MojoResult Dispatcher::WriteData(UserPointer<const void> elements,
                                  UserPointer<uint32_t> num_bytes,
                                  MojoWriteDataFlags flags) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -149,7 +151,7 @@ MojoResult Dispatcher::WriteData(UserPointer<const void> elements,
 MojoResult Dispatcher::BeginWriteData(UserPointer<void*> buffer,
                                       UserPointer<uint32_t> buffer_num_bytes,
                                       MojoWriteDataFlags flags) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -157,7 +159,7 @@ MojoResult Dispatcher::BeginWriteData(UserPointer<void*> buffer,
 }
 
 MojoResult Dispatcher::EndWriteData(uint32_t num_bytes_written) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -167,7 +169,7 @@ MojoResult Dispatcher::EndWriteData(uint32_t num_bytes_written) {
 MojoResult Dispatcher::ReadData(UserPointer<void> elements,
                                 UserPointer<uint32_t> num_bytes,
                                 MojoReadDataFlags flags) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -177,7 +179,7 @@ MojoResult Dispatcher::ReadData(UserPointer<void> elements,
 MojoResult Dispatcher::BeginReadData(UserPointer<const void*> buffer,
                                      UserPointer<uint32_t> buffer_num_bytes,
                                      MojoReadDataFlags flags) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -185,7 +187,7 @@ MojoResult Dispatcher::BeginReadData(UserPointer<const void*> buffer,
 }
 
 MojoResult Dispatcher::EndReadData(uint32_t num_bytes_read) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -195,7 +197,7 @@ MojoResult Dispatcher::EndReadData(uint32_t num_bytes_read) {
 MojoResult Dispatcher::DuplicateBufferHandle(
     UserPointer<const MojoDuplicateBufferHandleOptions> options,
     scoped_refptr<Dispatcher>* new_dispatcher) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -207,7 +209,7 @@ MojoResult Dispatcher::MapBuffer(
     uint64_t num_bytes,
     MojoMapBufferFlags flags,
     scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -215,7 +217,7 @@ MojoResult Dispatcher::MapBuffer(
 }
 
 HandleSignalsState Dispatcher::GetHandleSignalsState() const {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_)
     return HandleSignalsState();
 
@@ -226,7 +228,7 @@ MojoResult Dispatcher::AddAwakable(Awakable* awakable,
                                    MojoHandleSignals signals,
                                    uint32_t context,
                                    HandleSignalsState* signals_state) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_) {
     if (signals_state)
       *signals_state = HandleSignalsState();
@@ -238,7 +240,7 @@ MojoResult Dispatcher::AddAwakable(Awakable* awakable,
 
 void Dispatcher::RemoveAwakable(Awakable* awakable,
                                 HandleSignalsState* handle_signals_state) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (is_closed_) {
     if (handle_signals_state)
       *handle_signals_state = HandleSignalsState();
@@ -257,14 +259,14 @@ Dispatcher::~Dispatcher() {
 }
 
 void Dispatcher::CancelAllAwakablesNoLock() {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(is_closed_);
   // By default, waiting isn't supported. Only dispatchers that can be waited on
   // will do something nontrivial.
 }
 
 void Dispatcher::CloseImplNoLock() {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(is_closed_);
   // This may not need to do anything. Dispatchers should override this to do
   // any actual close-time cleanup necessary.
@@ -275,7 +277,7 @@ MojoResult Dispatcher::WriteMessageImplNoLock(
     uint32_t /*num_bytes*/,
     std::vector<DispatcherTransport>* /*transports*/,
     MojoWriteMessageFlags /*flags*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for message pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
@@ -287,7 +289,7 @@ MojoResult Dispatcher::ReadMessageImplNoLock(
     DispatcherVector* /*dispatchers*/,
     uint32_t* /*num_dispatchers*/,
     MojoReadMessageFlags /*flags*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for message pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
@@ -296,7 +298,7 @@ MojoResult Dispatcher::ReadMessageImplNoLock(
 MojoResult Dispatcher::WriteDataImplNoLock(UserPointer<const void> /*elements*/,
                                            UserPointer<uint32_t> /*num_bytes*/,
                                            MojoWriteDataFlags /*flags*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
@@ -306,14 +308,14 @@ MojoResult Dispatcher::BeginWriteDataImplNoLock(
     UserPointer<void*> /*buffer*/,
     UserPointer<uint32_t> /*buffer_num_bytes*/,
     MojoWriteDataFlags /*flags*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
 MojoResult Dispatcher::EndWriteDataImplNoLock(uint32_t /*num_bytes_written*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
@@ -322,7 +324,7 @@ MojoResult Dispatcher::EndWriteDataImplNoLock(uint32_t /*num_bytes_written*/) {
 MojoResult Dispatcher::ReadDataImplNoLock(UserPointer<void> /*elements*/,
                                           UserPointer<uint32_t> /*num_bytes*/,
                                           MojoReadDataFlags /*flags*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
@@ -332,14 +334,14 @@ MojoResult Dispatcher::BeginReadDataImplNoLock(
     UserPointer<const void*> /*buffer*/,
     UserPointer<uint32_t> /*buffer_num_bytes*/,
     MojoReadDataFlags /*flags*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
 MojoResult Dispatcher::EndReadDataImplNoLock(uint32_t /*num_bytes_read*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for data pipe dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
@@ -348,7 +350,7 @@ MojoResult Dispatcher::EndReadDataImplNoLock(uint32_t /*num_bytes_read*/) {
 MojoResult Dispatcher::DuplicateBufferHandleImplNoLock(
     UserPointer<const MojoDuplicateBufferHandleOptions> /*options*/,
     scoped_refptr<Dispatcher>* /*new_dispatcher*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for buffer dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
@@ -359,14 +361,14 @@ MojoResult Dispatcher::MapBufferImplNoLock(
     uint64_t /*num_bytes*/,
     MojoMapBufferFlags /*flags*/,
     scoped_ptr<embedder::PlatformSharedBufferMapping>* /*mapping*/) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for buffer dispatchers.
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
 HandleSignalsState Dispatcher::GetHandleSignalsStateImplNoLock() const {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, waiting isn't supported. Only dispatchers that can be waited on
   // will do something nontrivial.
@@ -378,7 +380,7 @@ MojoResult Dispatcher::AddAwakableImplNoLock(
     MojoHandleSignals /*signals*/,
     uint32_t /*context*/,
     HandleSignalsState* signals_state) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, waiting isn't supported. Only dispatchers that can be waited on
   // will do something nontrivial.
@@ -389,7 +391,7 @@ MojoResult Dispatcher::AddAwakableImplNoLock(
 
 void Dispatcher::RemoveAwakableImplNoLock(Awakable* /*awakable*/,
                                           HandleSignalsState* signals_state) {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // By default, waiting isn't supported. Only dispatchers that can be waited on
   // will do something nontrivial.
@@ -419,7 +421,7 @@ bool Dispatcher::EndSerializeAndCloseImplNoLock(
 }
 
 bool Dispatcher::IsBusyNoLock() const {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
   // Most dispatchers support only "atomic" operations, so they are never busy
   // (in this sense).
@@ -427,7 +429,7 @@ bool Dispatcher::IsBusyNoLock() const {
 }
 
 void Dispatcher::CloseNoLock() {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
 
   is_closed_ = true;
@@ -437,7 +439,7 @@ void Dispatcher::CloseNoLock() {
 
 scoped_refptr<Dispatcher>
 Dispatcher::CreateEquivalentDispatcherAndCloseNoLock() {
-  lock_.AssertAcquired();
+  mutex_.AssertHeld();
   DCHECK(!is_closed_);
 
   is_closed_ = true;
@@ -475,7 +477,7 @@ bool Dispatcher::EndSerializeAndClose(
   // See the comment above |EndSerializeAndCloseImplNoLock()|. In brief: Locking
   // isn't actually needed, but we need to satisfy assertions (which we don't
   // want to remove or weaken).
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
 #endif
 
   return EndSerializeAndCloseImplNoLock(channel, destination, actual_size,
@@ -486,7 +488,7 @@ bool Dispatcher::EndSerializeAndClose(
 
 void DispatcherTransport::End() {
   DCHECK(dispatcher_);
-  dispatcher_->lock_.Release();
+  dispatcher_->mutex_.Unlock();
   dispatcher_ = nullptr;
 }
 

@@ -4,7 +4,6 @@
 
 #include "mojo/public/cpp/bindings/lib/connector.h"
 
-#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {

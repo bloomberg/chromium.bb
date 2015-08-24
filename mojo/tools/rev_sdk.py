@@ -33,6 +33,7 @@ sdk_dirs_to_not_clone = [
 preserved_chromium_files = [
   'mojo/edk/DEPS',
   'mojo/public/DEPS',
+  'mojo/public/c/gpu/DEPS',
   'mojo/public/platform/nacl/DEPS',
   'nacl_bindings/DEPS',
 ]

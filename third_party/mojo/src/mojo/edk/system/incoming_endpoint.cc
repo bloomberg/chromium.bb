@@ -23,7 +23,7 @@ scoped_refptr<ChannelEndpoint> IncomingEndpoint::Init() {
 }
 
 scoped_refptr<MessagePipe> IncomingEndpoint::ConvertToMessagePipe() {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   scoped_refptr<MessagePipe> message_pipe(
       MessagePipe::CreateLocalProxyFromExisting(&message_queue_,
                                                 endpoint_.get()));
@@ -35,7 +35,7 @@ scoped_refptr<MessagePipe> IncomingEndpoint::ConvertToMessagePipe() {
 scoped_refptr<DataPipe> IncomingEndpoint::ConvertToDataPipeProducer(
     const MojoCreateDataPipeOptions& validated_options,
     size_t consumer_num_bytes) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   scoped_refptr<DataPipe> data_pipe(DataPipe::CreateRemoteConsumerFromExisting(
       validated_options, consumer_num_bytes, &message_queue_, endpoint_.get()));
   DCHECK(message_queue_.IsEmpty());
@@ -45,7 +45,7 @@ scoped_refptr<DataPipe> IncomingEndpoint::ConvertToDataPipeProducer(
 
 scoped_refptr<DataPipe> IncomingEndpoint::ConvertToDataPipeConsumer(
     const MojoCreateDataPipeOptions& validated_options) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   scoped_refptr<DataPipe> data_pipe(DataPipe::CreateRemoteProducerFromExisting(
       validated_options, &message_queue_, endpoint_.get()));
   DCHECK(message_queue_.IsEmpty());
@@ -54,7 +54,7 @@ scoped_refptr<DataPipe> IncomingEndpoint::ConvertToDataPipeConsumer(
 }
 
 void IncomingEndpoint::Close() {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (endpoint_) {
     endpoint_->DetachFromClient();
     endpoint_ = nullptr;
@@ -63,7 +63,7 @@ void IncomingEndpoint::Close() {
 
 bool IncomingEndpoint::OnReadMessage(unsigned /*port*/,
                                      MessageInTransit* message) {
-  base::AutoLock locker(lock_);
+  MutexLocker locker(&mutex_);
   if (!endpoint_)
     return false;
 

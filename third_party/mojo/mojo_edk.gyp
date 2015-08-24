@@ -24,7 +24,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../../crypto/crypto.gyp:crypto',
       ],
       'includes': [
         'mojo_edk_system_impl.gypi',
@@ -141,7 +140,6 @@
           'dependencies': [
             '../../base/base.gyp:base_win64',
             '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
-            '../../crypto/crypto.gyp:crypto_nacl_win64',
           ],
           'includes': [
             'mojo_edk_system_impl.gypi',

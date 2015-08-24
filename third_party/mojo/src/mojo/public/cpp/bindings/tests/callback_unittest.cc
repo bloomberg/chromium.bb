@@ -44,6 +44,24 @@ struct RunnableMoveOnlyParam {
   int* calls;
 };
 
+int* g_calls = nullptr;
+
+void FunctionNoArgs() {
+  (*g_calls)++;
+}
+
+void FunctionOneArg(int increment) {
+  (*g_calls) += increment;
+}
+
+void FunctionStringArgByConstRef(const String& s) {
+  (*g_calls)++;
+}
+
+void FunctionMoveOnlyType(ExampleMoveOnlyType m) {
+  (*g_calls)++;
+}
+
 static_assert(!internal::HasCompatibleCallOperator<RunnableNoArgs>::value,
               "HasCompatibleCallOperator<Runnable>");
 static_assert(!internal::HasCompatibleCallOperator<RunnableOneArg, int>::value,
@@ -76,8 +94,9 @@ static_assert(internal::HasCompatibleCallOperator<decltype(lambda_four),
               "ExampleMoveOnlyType>");
 
 // Tests constructing and invoking a mojo::Callback from objects with a
-// compatible Run() method (called 'runnables') and from lambdas.
-TEST(CallbackFromLambda, Create) {
+// compatible Run() method (called 'runnables'), from lambdas, and from function
+// pointers.
+TEST(Callback, Create) {
   int calls = 0;
 
   RunnableNoArgs f(&calls);
@@ -121,6 +140,55 @@ TEST(CallbackFromLambda, Create) {
   cb_with_move_only_param = [&calls](ExampleMoveOnlyType m) { calls++; };
   cb_with_move_only_param.Run(m.Clone());
   EXPECT_EQ(8, calls);
+
+  // Construct from a function pointer.
+  g_calls = &calls;
+
+  cb = &FunctionNoArgs;
+  cb.Run();
+  EXPECT_EQ(9, calls);
+
+  cb_with_param = &FunctionOneArg;
+  cb_with_param.Run(1);
+  EXPECT_EQ(10, calls);
+
+  cb_with_string_param = &FunctionStringArgByConstRef;
+  cb_with_string_param.Run(String("hello"));
+  EXPECT_EQ(11, calls);
+
+  cb_with_move_only_param = &FunctionMoveOnlyType;
+  cb_with_move_only_param.Run(m.Clone());
+  EXPECT_EQ(12, calls);
+
+  g_calls = nullptr;
+}
+
+bool g_overloaded_function_with_int_param_called = false;
+
+void OverloadedFunction(int param) {
+  g_overloaded_function_with_int_param_called = true;
+}
+
+bool g_overloaded_function_with_double_param_called = false;
+
+void OverloadedFunction(double param) {
+  g_overloaded_function_with_double_param_called = true;
+}
+
+// Tests constructing and invoking a mojo::Callback from pointers to overloaded
+// functions.
+TEST(Callback, CreateFromOverloadedFunctionPtr) {
+  g_overloaded_function_with_int_param_called = false;
+  mojo::Callback<void(int)> cb_with_int_param = &OverloadedFunction;
+  cb_with_int_param.Run(123);
+  EXPECT_TRUE(g_overloaded_function_with_int_param_called);
+  g_overloaded_function_with_int_param_called = false;
+
+  g_overloaded_function_with_double_param_called = false;
+  mojo::Callback<void(double)> cb_with_double_param = &OverloadedFunction;
+  cb_with_double_param.Run(123);
+  EXPECT_TRUE(g_overloaded_function_with_double_param_called);
+  g_overloaded_function_with_double_param_called = false;
 }
 
 }  // namespace

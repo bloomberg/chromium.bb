@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 class View;

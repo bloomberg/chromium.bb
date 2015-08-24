@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/renderer.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace base {
 class SingleThreadTaskRunner;

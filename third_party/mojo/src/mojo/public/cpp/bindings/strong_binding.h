@@ -10,7 +10,6 @@
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
@@ -104,19 +103,9 @@ class StrongBinding {
     return binding_.WaitForIncomingMethodCall();
   }
 
+  // Note: The error handler must not delete the interface implementation.
   void set_connection_error_handler(const Closure& error_handler) {
     connection_error_handler_ = error_handler;
-  }
-
-  // NOTE: Deprecated. Please use the method above.
-  // TODO(yzshen): Remove this method once all callsites are converted.
-  void set_error_handler(ErrorHandler* error_handler) {
-    if (error_handler) {
-      set_connection_error_handler(
-          [error_handler]() { error_handler->OnConnectionError(); });
-    } else {
-      set_connection_error_handler(Closure());
-    }
   }
 
   Interface* impl() { return binding_.impl(); }

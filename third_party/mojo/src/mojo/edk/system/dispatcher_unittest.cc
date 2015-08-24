@@ -31,7 +31,7 @@ class TrivialDispatcher final : public Dispatcher {
 
   scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
       override {
-    lock().AssertAcquired();
+    mutex().AssertHeld();
     return scoped_refptr<Dispatcher>(new TrivialDispatcher());
   }
 
