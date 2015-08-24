@@ -65,9 +65,9 @@ WebFrameWidget* WebFrameWidget::create(WebWidgetClient* client, WebLocalFrame* l
     return WebFrameWidgetImpl::create(client, localRoot);
 }
 
-WebFrameWidget* WebFrameWidget::create(WebView* webView)
+WebFrameWidget* WebFrameWidget::create(WebWidgetClient* client, WebView* webView, WebLocalFrame* mainFrame)
 {
-    return new WebViewFrameWidget(*toWebViewImpl(webView));
+    return new WebViewFrameWidget(client, toWebViewImpl(*webView), toWebLocalFrameImpl(*mainFrame));
 }
 
 WebFrameWidgetImpl* WebFrameWidgetImpl::create(WebWidgetClient* client, WebLocalFrame* localRoot)

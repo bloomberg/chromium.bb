@@ -5,12 +5,16 @@
 #ifndef WebViewFrameWidget_h
 #define WebViewFrameWidget_h
 
+#include "platform/heap/Handle.h"
 #include "public/web/WebFrameWidget.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
+class WebLocalFrameImpl;
 class WebViewImpl;
+class WebWidgetClient;
 
 // Shim class to help normalize the widget interfaces in the Blink public API.
 // For OOPI, subframes have WebFrameWidgets for input and rendering.
@@ -30,7 +34,7 @@ class WebViewImpl;
 class WebViewFrameWidget : public WebFrameWidget {
     WTF_MAKE_NONCOPYABLE(WebViewFrameWidget);
 public:
-    explicit WebViewFrameWidget(WebViewImpl&);
+    explicit WebViewFrameWidget(WebWidgetClient*, WebViewImpl&, WebLocalFrameImpl&);
     virtual ~WebViewFrameWidget();
 
     // WebFrameWidget overrides:
@@ -92,7 +96,9 @@ public:
     bool forSubframe() const { return false; }
 
 private:
-    WebViewImpl* m_webView;
+    WebWidgetClient* m_client;
+    RefPtr<WebViewImpl> m_webView;
+    RefPtrWillBePersistent<WebLocalFrameImpl> m_mainFrame;
 };
 
 } // namespace blink

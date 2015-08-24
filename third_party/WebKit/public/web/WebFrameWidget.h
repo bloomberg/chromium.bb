@@ -46,7 +46,8 @@ public:
     BLINK_EXPORT static WebFrameWidget* create(WebWidgetClient*, WebLocalFrame*);
     // Creates a frame widget for a WebView. Temporary helper to help transition
     // away from WebView inheriting WebWidget.
-    BLINK_EXPORT static WebFrameWidget* create(WebView*);
+    // TODO(dcheng): Remove once transition is complete.
+    BLINK_EXPORT static WebFrameWidget* create(WebWidgetClient*, WebView*, WebLocalFrame* mainFrame);
 
     // Sets the visibility of the WebFrameWidget.
     // We still track page-level visibility, but additionally we need to notify a WebFrameWidget

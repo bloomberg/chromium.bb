@@ -10,9 +10,10 @@
 
 namespace blink {
 
-WebViewFrameWidget::WebViewFrameWidget(WebViewImpl& webView) : m_webView(&webView)
+WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient* client, WebViewImpl& webView, WebLocalFrameImpl& mainFrame)
+    : m_client(client), m_webView(&webView), m_mainFrame(&mainFrame)
 {
-    m_webView->mainFrameImpl()->setFrameWidget(this);
+    m_mainFrame->setFrameWidget(this);
 }
 
 WebViewFrameWidget::~WebViewFrameWidget()
@@ -21,8 +22,14 @@ WebViewFrameWidget::~WebViewFrameWidget()
 
 void WebViewFrameWidget::close()
 {
-    m_webView->mainFrameImpl()->setFrameWidget(nullptr);
+    // Note: it's important to use the captured main frame pointer here. During
+    // a frame swap, the swapped frame is detached *after* the frame tree is
+    // updated. If the main frame is being swapped, then
+    // m_webView()->mainFrameImpl() will no longer point to the original frame.
+    m_mainFrame->setFrameWidget(nullptr);
+    m_mainFrame = nullptr;
     m_webView = nullptr;
+    m_client = nullptr;
 
     // Note: this intentionally does not forward to WebView::close(), to make it
     // easier to untangle the cleanup logic later.
