@@ -7,6 +7,7 @@ package org.chromium.chrome.test.util.parameters;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.parameter.Parameter;
@@ -50,9 +51,13 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
                 mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
     }
 
+    /*
     @SmallTest
     @ParameterizedTest(parameters = {
             @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG)})
+    crbug.com/524189
+    */
+    @DisabledTest
     public void testIsSignedInOnApp() {
         assertTrue("Should not be signed into app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
@@ -96,10 +101,14 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
                 mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
     }
 
+    /*
     @SmallTest
     @ParameterizedTest(parameters = {
             @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG),
             @Parameter(tag = AddFakeAccountToOsParameter.PARAMETER_TAG)})
+    crbug.com/524189
+    */
+    @DisabledTest
     public void testIsSignedInOnFakeOSandApp() {
         assertTrue("Should be signed in on app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
