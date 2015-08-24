@@ -61,7 +61,6 @@
 
 namespace blink {
 
-using ::testing::CloneToPassOwnPtr;
 using ::testing::ExpectationSet;
 using ::testing::Ref;
 using ::testing::Return;

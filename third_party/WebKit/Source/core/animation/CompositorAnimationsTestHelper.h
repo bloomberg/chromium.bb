@@ -35,18 +35,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-
-namespace testing {
-
-template<typename T>
-PassOwnPtr<T> CloneToPassOwnPtr(T& o)
-{
-    return adoptPtr(new T(o));
-}
-
-} // namespace testing
-
-
 // Test helpers and mocks for Web* types
 // -----------------------------------------------------------------------
 namespace blink {
