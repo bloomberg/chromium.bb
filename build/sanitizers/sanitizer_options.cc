@@ -129,7 +129,7 @@ SANITIZER_HOOK_ATTRIBUTE const char *__asan_default_suppressions() {
 const char kTsanDefaultOptions[] =
     "detect_deadlocks=1 second_deadlock_stack=1 report_signal_unsafe=0 "
     "report_thread_leaks=0 print_suppressions=1 history_size=7 "
-    "strip_path_prefix=Release/../../ ";
+    "intercept_memcmp=0 strip_path_prefix=Release/../../ ";
 
 SANITIZER_HOOK_ATTRIBUTE const char *__tsan_default_options() {
   return kTsanDefaultOptions;
