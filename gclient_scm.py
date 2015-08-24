@@ -461,8 +461,12 @@ class GitWrapper(SCMWrapper):
             self.checkout_path, '.git', 'objects', 'info', 'alternates'),
             'w') as fh:
           fh.write(os.path.join(url, 'objects'))
+      self._EnsureValidHeadObjectOrCheckout(revision, options, url)
       self._FetchAndReset(revision, file_list, options)
+
       return_early = True
+    else:
+      self._EnsureValidHeadObjectOrCheckout(revision, options, url)
 
     if return_early:
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
@@ -1038,6 +1042,29 @@ class GitWrapper(SCMWrapper):
     if not ok:
       raise gclient_utils.Error('git version %s < minimum required %s' %
                                 (current_version, min_version))
+
+  def _EnsureValidHeadObjectOrCheckout(self, revision, options, url):
+    # Special case handling if all 3 conditions are met:
+    #   * the mirros have recently changed, but deps destination remains same,
+    #   * the git histories of mirrors are conflicting.
+    #   * git cache is used
+    # This manifests itself in current checkout having invalid HEAD commit on
+    # most git operations. Since git cache is used, just deleted the .git
+    # folder, and re-create it by cloning.
+    try:
+      self._Capture(['rev-list', '-n', '1', 'HEAD'])
+    except subprocess2.CalledProcessError as e:
+      if ('fatal: bad object HEAD' in e.stderr
+          and self.cache_dir and self.cache_dir in url):
+        self.Print((
+          'Likely due to DEPS change with git cache_dir, '
+          'the current commit points to no longer existing object.\n'
+          '%s' % e)
+        )
+        self._DeleteOrMove(options.force)
+        self._Clone(revision, url, options)
+      else:
+        raise
 
   def _IsRebasing(self):
     # Check for any of REBASE-i/REBASE-m/REBASE/AM. Unfortunately git doesn't
