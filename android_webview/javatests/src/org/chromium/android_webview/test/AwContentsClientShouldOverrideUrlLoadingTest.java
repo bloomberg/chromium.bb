@@ -138,6 +138,24 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         assertEquals(0, shouldOverrideUrlLoadingHelper.getCallCount());
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Navigation"})
+    public void testNotCalledOnReload() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+                contentsClient.getShouldOverrideUrlLoadingHelper();
+
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+
+        int callCountBeforeReload = shouldOverrideUrlLoadingHelper.getCallCount();
+        reloadSync(awContents, contentsClient.getOnPageFinishedHelper());
+        assertEquals(callCountBeforeReload, shouldOverrideUrlLoadingHelper.getCallCount());
+    }
+
     private void waitForNavigationRunnableAndAssertTitleChanged(AwContents awContents,
             CallbackHelper onPageFinishedHelper,
             Runnable navigationRunnable) throws Exception {
