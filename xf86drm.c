@@ -2803,11 +2803,12 @@ static char *drmGetMinorNameForFD(int fd, int type)
 
 	while (readdir_r(sysdir, pent, &ent) == 0 && ent != NULL) {
 		if (strncmp(ent->d_name, name, len) == 0) {
+			snprintf(dev_name, sizeof(dev_name), DRM_DIR_NAME "/%s",
+				 ent->d_name);
+
 			free(pent);
 			closedir(sysdir);
 
-			snprintf(dev_name, sizeof(dev_name), DRM_DIR_NAME "/%s",
-				 ent->d_name);
 			return strdup(dev_name);
 		}
 	}
