@@ -50,9 +50,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests the Contextual Search Manager using instrumentation tests.
  */
-@CommandLineFlags.Add({
-        ChromeSwitches.ENABLE_CONTEXTUAL_SEARCH_FOR_TESTING
-        })
+@CommandLineFlags.Add(ChromeSwitches.ENABLE_CONTEXTUAL_SEARCH_FOR_TESTING)
 public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEST_PAGE =
@@ -609,7 +607,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testHidesWhenOmniboxFocused() throws InterruptedException, TimeoutException {
         clickWordNode("intelligence");
 
@@ -628,7 +626,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testDoesContainAWord() {
         assertTrue(mSelectionController.doesContainAWord("word"));
         assertTrue(mSelectionController.doesContainAWord("word "));
@@ -647,7 +645,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testIsValidSelection() {
         StubbedContentViewCore stubbedCvc = new StubbedContentViewCore(
                 getActivity().getBaseContext());
@@ -671,7 +669,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTap() throws InterruptedException, TimeoutException {
         clickWordNode("intelligence");
 
@@ -687,7 +685,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testLongPress() throws InterruptedException, TimeoutException {
         longPressNode("states");
 
@@ -702,7 +700,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testSwipeExpand() throws InterruptedException, TimeoutException {
         assertNoSearchesLoaded();
         clickWordNode("intelligence");
@@ -728,7 +726,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testLongPressSwipeExpand() throws InterruptedException, TimeoutException {
         longPressNode("intelligence");
         assertNoContentViewCore();
@@ -772,7 +770,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @SmallTest
      * @Feature({"ContextualSearch"})
      */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @FlakyTest
     public void testTapExpand() throws InterruptedException, TimeoutException {
         assertNoSearchesLoaded();
@@ -801,7 +799,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapCausesOneLowPriorityRequest() throws InterruptedException, TimeoutException {
         mFakeServer.reset();
         clickWordNode("states");
@@ -859,7 +857,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapDisablePreload() throws InterruptedException, TimeoutException {
         clickWordNode("intelligence");
 
@@ -875,7 +873,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testLongPressGestureSelects() throws InterruptedException, TimeoutException {
         longPressNode("intelligence");
         assertEquals("Intelligence", getSelectedText());
@@ -895,7 +893,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapGestureSelects() throws InterruptedException, TimeoutException {
         clickWordNode("intelligence");
         assertEquals("Intelligence", getSelectedText());
@@ -913,7 +911,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapGestureOnSpecialCharacterDoesntSelect()
             throws InterruptedException, TimeoutException {
         clickNode("question-mark");
@@ -928,7 +926,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapGestureFollowedByScrollClearsSelection()
             throws InterruptedException, TimeoutException {
         clickWordNode("intelligence");
@@ -946,7 +944,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapGestureFollowedByInvalidTextTapCloses()
             throws InterruptedException, TimeoutException {
         clickWordNode("states-far");
@@ -962,7 +960,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapGestureFollowedByNonTextTap()
             throws InterruptedException, TimeoutException {
         clickWordNode("states-far");
@@ -978,7 +976,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapGestureFarAwayTogglesSelecting()
             throws InterruptedException, TimeoutException {
         clickWordNode("states");
@@ -999,7 +997,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapGesturesNearbyKeepSelecting()
             throws InterruptedException, TimeoutException {
         clickWordNode("states");
@@ -1019,7 +1017,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testLongPressGestureFollowedByScrollMaintainsSelection()
             throws InterruptedException, TimeoutException {
         longPressNode("intelligence");
@@ -1035,7 +1033,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testLongPressGestureFollowedByTapDoesntSelect()
             throws InterruptedException, TimeoutException {
         longPressNode("intelligence");
@@ -1050,7 +1048,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testContextualSearchDismissedOnForegroundTabCrash()
             throws InterruptedException, TimeoutException {
         clickWordNode("states");
@@ -1082,7 +1080,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testContextualSearchNotDismissedOnBackgroundTabCrash()
             throws InterruptedException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(getInstrumentation(),
@@ -1127,7 +1125,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @SmallTest
      * @Feature({"ContextualSearch"})
      */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     @FlakyTest
     public void testTapSearchBarPromotesToTab() throws InterruptedException, TimeoutException {
@@ -1184,7 +1182,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapOnRoleIgnored() throws InterruptedException, TimeoutException {
         clickNode("role");
         assertPanelNeverOpened();
@@ -1195,7 +1193,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapOnARIAIgnored() throws InterruptedException, TimeoutException {
         clickNode("aria");
         assertPanelNeverOpened();
@@ -1206,7 +1204,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapOnFocusableIgnored() throws InterruptedException, TimeoutException {
         clickNode("focusable");
         assertPanelNeverOpened();
@@ -1217,9 +1215,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add(
-            ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_DECIDED + "=2")
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_DECIDED + "=2")
     public void testTapResolveLimitForDecided() throws InterruptedException, TimeoutException {
         clickToTriggerSearchTermResolution();
         assertSearchTermRequested();
@@ -1243,8 +1240,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add({
-            ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=2"})
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=2")
     public void testTapResolveLimitForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
 
@@ -1269,9 +1265,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add(
-            ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
     public void testTapPrefetchLimitForDecided() throws InterruptedException, TimeoutException {
         clickToTriggerPrefetch();
         assertLoadedLowPriorityUrl();
@@ -1295,8 +1290,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add(
-            ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_UNDECIDED + "=2")
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_UNDECIDED + "=2")
     public void testTapPrefetchLimitForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
 
@@ -1321,7 +1315,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @SmallTest
      * @Feature({"ContextualSearch"})
      */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add({
             ContextualSearchFieldTrial.PROMO_ON_LIMITED_TAPS + "=true",
             ContextualSearchFieldTrial.TAP_TRIGGERED_PROMO_LIMIT + "=2"})
@@ -1370,9 +1364,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @SmallTest
      * @Feature({"ContextualSearch"})
      */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add(
-            ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
     @FlakyTest
     public void testDisembodiedBar() throws InterruptedException, TimeoutException {
         clickToTriggerPrefetch();
@@ -1422,7 +1415,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testSearchTermResolutionError() throws InterruptedException, TimeoutException {
         clickWordNode("states");
         assertSearchTermRequested();
@@ -1441,7 +1434,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testHttpsBeforeAcceptForOptOut() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
         mFakeServer.setShouldUseHttps(true);
@@ -1456,7 +1449,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testHttpsAfterAcceptForOptOut() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(true);
         mFakeServer.setShouldUseHttps(true);
@@ -1469,7 +1462,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testHttpBeforeAcceptForOptOut() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
 
@@ -1481,7 +1474,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testHttpAfterAcceptForOptOut() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(true);
 
@@ -1518,7 +1511,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testAppMenuSuppressedWhenExpanded() throws InterruptedException, TimeoutException {
         clickWordNode("states");
         tapPeekingBarToExpandAndAssert();
@@ -1537,7 +1530,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testAppMenuSuppressedWhenMaximized() throws InterruptedException, TimeoutException {
         clickWordNode("states");
         swipePanelUpToTop();
@@ -1568,7 +1561,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @SmallTest
      * @Feature({"ContextualSearch"})
      */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add({
             ContextualSearchFieldTrial.PROMO_ON_LIMITED_TAPS + "=true",
             ContextualSearchFieldTrial.TAP_TRIGGERED_PROMO_LIMIT + "=2"})
@@ -1618,7 +1611,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testPromoOpenCountForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
 
@@ -1662,7 +1655,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @SmallTest
      * @Feature({"ContextualSearch"})
      */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @FlakyTest
     public void testTapCount() throws InterruptedException, TimeoutException {
         assertEquals(0, mPolicy.getTapCount());
@@ -1747,7 +1740,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testNotifyObserverHideOnClearSelectionAfterTap()
             throws InterruptedException, TimeoutException {
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
@@ -1777,7 +1770,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testPreventHandlingCurrentSelectionModification()
             throws InterruptedException, TimeoutException {
         longPressNode("intelligence");
@@ -1803,7 +1796,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * We've had reliability problems with a sequence of simple taps, due to async dissolving
      * of selection bounds, so this helps prevent a regression with that.
      */
-    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @CommandLineFlags.Add({ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_DECIDED + "=200",
             ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=200",
             ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=200",
