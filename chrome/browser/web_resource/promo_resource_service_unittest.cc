@@ -18,14 +18,16 @@
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/version_info/version_info.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 
 namespace {
+
+version_info::Channel kChannel = version_info::Channel::UNKNOWN;
 
 const char kDateFormat[] = "dd MMM yyyy HH:mm:ss zzzz";
 
@@ -58,7 +60,9 @@ class PromoResourceServiceTest : public testing::Test {
   // |promo_resource_service_| must be created after |local_state_|.
   PromoResourceServiceTest()
       : local_state_(TestingBrowserProcess::GetGlobal()),
-        promo_resource_service_(new PromoResourceService) {}
+        promo_resource_service_(
+            new PromoResourceService(g_browser_process->local_state(),
+                                     kChannel)) {}
 
  protected:
   ScopedTestingLocalState local_state_;
@@ -68,8 +72,10 @@ class PromoResourceServiceTest : public testing::Test {
 
 class NotificationPromoTest {
  public:
-  NotificationPromoTest()
-      : received_notification_(false),
+  explicit NotificationPromoTest(PrefService* local_state)
+      : local_state_(local_state),
+        notification_promo_(local_state_),
+        received_notification_(false),
         start_(0.0),
         end_(0.0),
         num_groups_(0),
@@ -156,11 +162,11 @@ class NotificationPromoTest {
   // Create a new NotificationPromo from prefs and compare to current
   // notification.
   void TestInitFromPrefs() {
-    NotificationPromo prefs_notification_promo;
+    NotificationPromo prefs_notification_promo(local_state_);
     prefs_notification_promo.InitFromPrefs(promo_type_);
 
-    EXPECT_EQ(notification_promo_.prefs_,
-              prefs_notification_promo.prefs_);
+    EXPECT_EQ(notification_promo_.local_state_,
+              prefs_notification_promo.local_state_);
     EXPECT_EQ(notification_promo_.promo_text_,
               prefs_notification_promo.promo_text_);
     EXPECT_EQ(notification_promo_.start_,
@@ -214,12 +220,12 @@ class NotificationPromoTest {
     notification_promo_.views_ = notification_promo_.max_views_ - 2;
     notification_promo_.WritePrefs();
 
-    NotificationPromo::HandleViewed(promo_type_);
-    NotificationPromo new_promo;
+    NotificationPromo::HandleViewed(promo_type_, local_state_);
+    NotificationPromo new_promo(local_state_);
     new_promo.InitFromPrefs(promo_type_);
     EXPECT_EQ(new_promo.max_views_ - 1, new_promo.views_);
     EXPECT_TRUE(new_promo.CanShow());
-    NotificationPromo::HandleViewed(promo_type_);
+    NotificationPromo::HandleViewed(promo_type_, local_state_);
     new_promo.InitFromPrefs(promo_type_);
     EXPECT_EQ(new_promo.max_views_, new_promo.views_);
     EXPECT_FALSE(new_promo.CanShow());
@@ -239,12 +245,12 @@ class NotificationPromoTest {
   }
 
   void TestClosed() {
-    NotificationPromo new_promo;
+    NotificationPromo new_promo(local_state_);
     new_promo.InitFromPrefs(promo_type_);
     EXPECT_FALSE(new_promo.closed_);
     EXPECT_TRUE(new_promo.CanShow());
 
-    NotificationPromo::HandleClosed(promo_type_);
+    NotificationPromo::HandleClosed(promo_type_, local_state_);
     new_promo.InitFromPrefs(promo_type_);
     EXPECT_TRUE(new_promo.closed_);
     EXPECT_FALSE(new_promo.CanShow());
@@ -334,6 +340,7 @@ class NotificationPromoTest {
   const NotificationPromo& promo() const { return notification_promo_; }
 
  private:
+  PrefService* local_state_;
   NotificationPromo notification_promo_;
   bool received_notification_;
   scoped_ptr<base::DictionaryValue> test_json_;
@@ -361,7 +368,7 @@ class NotificationPromoTest {
 // no payload.promo_short_message is specified in the JSON response.
 TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   // Check that prefs are set correctly.
-  NotificationPromoTest promo_test;
+  NotificationPromoTest promo_test(g_browser_process->local_state());
 
   // Set up start date and promo line in a Dictionary as if parsed from the
   // service. date[0].end is replaced with a date 1 year in the future.
@@ -423,7 +430,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
 // Test that payload.promo_message_short is used if present.
 TEST_F(PromoResourceServiceTest, NotificationPromoCompatNoStringsTest) {
   // Check that prefs are set correctly.
-  NotificationPromoTest promo_test;
+  NotificationPromoTest promo_test(g_browser_process->local_state());
 
   // Set up start date and promo line in a Dictionary as if parsed from the
   // service. date[0].end is replaced with a date 1 year in the future.
@@ -471,7 +478,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoCompatNoStringsTest) {
 // Test that strings.|payload.promo_message_short| is used if present.
 TEST_F(PromoResourceServiceTest, NotificationPromoCompatPayloadStringsTest) {
   // Check that prefs are set correctly.
-  NotificationPromoTest promo_test;
+  NotificationPromoTest promo_test(g_browser_process->local_state());
 
   // Set up start date and promo line in a Dictionary as if parsed from the
   // service. date[0].end is replaced with a date 1 year in the future.
@@ -523,7 +530,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoCompatPayloadStringsTest) {
 }
 
 TEST_F(PromoResourceServiceTest, PromoServerURLTest) {
-  GURL promo_server_url = NotificationPromo::PromoServerURL();
+  GURL promo_server_url = NotificationPromo::PromoServerURL(kChannel);
   EXPECT_FALSE(promo_server_url.is_empty());
   EXPECT_TRUE(promo_server_url.is_valid());
   EXPECT_TRUE(promo_server_url.SchemeIs(url::kHttpsScheme));
@@ -533,7 +540,7 @@ TEST_F(PromoResourceServiceTest, PromoServerURLTest) {
 #if defined(ENABLE_APP_LIST)
 TEST_F(PromoResourceServiceTest, AppLauncherPromoTest) {
   // Check that prefs are set correctly.
-  NotificationPromoTest promo_test;
+  NotificationPromoTest promo_test(g_browser_process->local_state());
 
   // Set up start date and promo line in a Dictionary as if parsed from the
   // service. date[0].end is replaced with a date 1 year in the future.

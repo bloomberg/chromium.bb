@@ -9,10 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/web_resource/notification_promo.h"
+#include "chrome/browser/web_resource/notification_promo_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/notification_service.h"
@@ -74,7 +75,8 @@ void NewTabPageHandler::HandleNotificationPromoClosed(
     const base::ListValue* args) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Notification",
                             PROMO_CLOSED, PROMO_ACTION_MAX);
-  NotificationPromo::HandleClosed(NotificationPromo::NTP_NOTIFICATION_PROMO);
+  web_resource::HandleNotificationPromoClosed(
+      NotificationPromo::NTP_NOTIFICATION_PROMO);
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
@@ -82,7 +84,7 @@ void NewTabPageHandler::HandleNotificationPromoViewed(
     const base::ListValue* args) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Notification",
                             PROMO_VIEWED, PROMO_ACTION_MAX);
-  if (NotificationPromo::HandleViewed(
+  if (web_resource::HandleNotificationPromoViewed(
           NotificationPromo::NTP_NOTIFICATION_PROMO)) {
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
   }
@@ -98,14 +100,16 @@ void NewTabPageHandler::HandleNotificationPromoLinkClicked(
 void NewTabPageHandler::HandleBubblePromoClosed(const base::ListValue* args) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Bubble",
                             PROMO_CLOSED, PROMO_ACTION_MAX);
-  NotificationPromo::HandleClosed(NotificationPromo::NTP_BUBBLE_PROMO);
+  web_resource::HandleNotificationPromoClosed(
+      NotificationPromo::NTP_BUBBLE_PROMO);
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
 void NewTabPageHandler::HandleBubblePromoViewed(const base::ListValue* args) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Bubble",
                             PROMO_VIEWED, PROMO_ACTION_MAX);
-  if (NotificationPromo::HandleViewed(NotificationPromo::NTP_BUBBLE_PROMO))
+  if (web_resource::HandleNotificationPromoViewed(
+          NotificationPromo::NTP_BUBBLE_PROMO))
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 

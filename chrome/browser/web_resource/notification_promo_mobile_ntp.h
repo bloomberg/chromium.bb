@@ -15,10 +15,12 @@ class DictionaryValue;
 class ListValue;
 }
 
+class PrefService;
+
 // Helper class for NotificationPromo that deals with mobile_ntp promos.
 class NotificationPromoMobileNtp {
  public:
-  NotificationPromoMobileNtp();
+  explicit NotificationPromoMobileNtp(PrefService* local_state);
   ~NotificationPromoMobileNtp();
 
   // Initialize from prefs/JSON.
