@@ -42,6 +42,7 @@
     'language_usage_metrics.gypi',
     'leveldb_proto.gypi',
     'login.gypi',
+    'memory_pressure.gypi',
     'metrics.gypi',
     'navigation_metrics.gypi',
     'network_hints.gypi',

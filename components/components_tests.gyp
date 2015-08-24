@@ -298,6 +298,12 @@
     'login_unittest_sources': [
       'login/screens/screen_context_unittest.cc',
     ],
+    'memory_pressure_unittest_sources': [
+      'memory_pressure/direct_memory_pressure_calculator_win_unittest.cc',
+      'memory_pressure/filtered_memory_pressure_calculator_unittest.cc',
+      'memory_pressure/test_memory_pressure_calculator.cc',
+      'memory_pressure/test_memory_pressure_calculator.h',
+    ],
     'metrics_unittest_sources': [
       'metrics/call_stack_profile_metrics_provider_unittest.cc',
       'metrics/compression_utils_unittest.cc',
@@ -763,6 +769,7 @@
         '<@(language_usage_metrics_unittest_sources)',
         '<@(leveldb_proto_unittest_sources)',
         '<@(login_unittest_sources)',
+        '<@(memory_pressure_unittest_sources)',
         '<@(metrics_unittest_sources)',
         '<@(mime_util_unittest_sources)',
         '<@(network_time_unittest_sources)',
@@ -868,6 +875,7 @@
         'components.gyp:leveldb_proto',
         'components.gyp:leveldb_proto_test_support',
         'components.gyp:login',
+        'components.gyp:memory_pressure',
         'components.gyp:metrics',
         'components.gyp:metrics_gpu',
         'components.gyp:metrics_net',
