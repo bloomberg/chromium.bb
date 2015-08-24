@@ -15,7 +15,8 @@ var windowCreateOptions = {
   },
   frame: {
     color: '#1E2023'
-  }
+  },
+  hidden: true
 };
 
 /**
@@ -62,7 +63,7 @@ function openGalleryWindow(urls) {
       });
     });
   }).then(function(gallery) {
-    gallery.rawAppWindow.focus();
+    gallery.rawAppWindow.show();
     return gallery.rawAppWindow.contentWindow.appID;
   }).catch(function(error) {
     console.error('Launch failed' + error.stack || error);
