@@ -539,8 +539,8 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     const auto& client_buffer_id = buffer_entry.first;
     const auto& buffer = buffer_entry.second;
 
-    std::string dump_name = base::StringPrintf("gl/client_%d/buffers/buffer_%d",
-                                               client_id, client_buffer_id);
+    std::string dump_name = base::StringPrintf(
+        "gpu/gl/buffers/client_%d/buffer_%d", client_id, client_buffer_id);
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

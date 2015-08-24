@@ -58,8 +58,7 @@ class GpuWatchdog;
 class CONTENT_EXPORT GpuChannel
     : public IPC::Listener,
       public IPC::Sender,
-      public gpu::gles2::SubscriptionRefSet::Observer,
-      public base::trace_event::MemoryDumpProvider {
+      public gpu::gles2::SubscriptionRefSet::Observer {
  public:
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -175,10 +174,6 @@ class CONTENT_EXPORT GpuChannel
   const gpu::ValueStateMap* pending_valuebuffer_state() const {
     return pending_valuebuffer_state_.get();
   }
-
-  // base::trace_event::MemoryDumpProvider implementation.
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
   // The message filter on the io thread.

@@ -252,7 +252,7 @@ bool RenderbufferManager::OnMemoryDump(
     const auto& renderbuffer = renderbuffer_entry.second;
 
     std::string dump_name =
-        base::StringPrintf("gl/client_%d/renderbuffers/renderbuffer_%d",
+        base::StringPrintf("gpu/gl/renderbuffers/client_%d/renderbuffer_%d",
                            client_id, client_renderbuffer_id);
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);

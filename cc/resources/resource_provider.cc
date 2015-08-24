@@ -1848,9 +1848,9 @@ bool ResourceProvider::OnMemoryDump(
 
     // Resource IDs are not process-unique, so log with the ResourceProvider's
     // unique id.
-    std::string dump_name = base::StringPrintf(
-        "cc/resource_memory/resource_provider_%d/resource_%d", tracing_id_,
-        resource_entry.first);
+    std::string dump_name =
+        base::StringPrintf("cc/resource_memory/provider_%d/resource_%d",
+                           tracing_id_, resource_entry.first);
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);
 

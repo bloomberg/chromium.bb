@@ -451,9 +451,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       task_runner_, allow_future_sync_points_);
 
   subscription_ref_set_->AddObserver(this);
-
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, task_runner_);
 }
 
 GpuChannel::~GpuChannel() {
@@ -464,9 +461,6 @@ GpuChannel::~GpuChannel() {
   subscription_ref_set_->RemoveObserver(this);
   if (preempting_flag_.get())
     preempting_flag_->Reset();
-
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      this);
 }
 
 IPC::ChannelHandle GpuChannel::Init(base::WaitableEvent* shutdown_event,
@@ -868,18 +862,6 @@ scoped_refptr<gfx::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
 void GpuChannel::HandleUpdateValueState(
     unsigned int target, const gpu::ValueState& state) {
   pending_valuebuffer_state_->UpdateState(target, state);
-}
-
-bool GpuChannel::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                              base::trace_event::ProcessMemoryDump* pmd) {
-  base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(base::StringPrintf("gl/client_%d", client_id_));
-
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  GetMemoryUsage());
-
-  return true;
 }
 
 }  // namespace content
