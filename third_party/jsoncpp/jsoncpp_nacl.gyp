@@ -18,7 +18,7 @@
             'nlib_target': 'libjsoncpp_nacl.a',
             'build_newlib': 1,
           },
-          'gcc_compile_flags': [
+          'compile_flags': [
             # Turn off optimizations based on strict aliasing
             # because of the workaround at
             # overrides/src/lib_json/json_value.cpp:38.

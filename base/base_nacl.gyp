@@ -35,7 +35,7 @@
               'sync_socket_nacl.cc',
               'time/time_posix.cc',
             ],
-            'gcc_compile_flags': [
+            'compile_flags': [
               '-fno-strict-aliasing',
             ],
           },
