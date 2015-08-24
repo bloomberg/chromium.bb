@@ -8,8 +8,10 @@
 #include "base/android/jni_string.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
+#include "chrome/browser/media/router/presentation_session_messages_observer.h"
 #include "jni/ChromeMediaRouter_jni.h"
 
 using base::android::ConvertUTF8ToJavaString;
@@ -110,7 +112,19 @@ void MediaRouterAndroid::SendRouteMessage(
     const MediaRoute::Id& route_id,
     const std::string& message,
     const SendRouteMessageCallback& callback) {
-  NOTIMPLEMENTED();
+  int callback_id = message_callbacks_.Add(
+      new SendRouteMessageCallback(callback));
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jroute_id =
+          base::android::ConvertUTF8ToJavaString(env, route_id);
+  ScopedJavaLocalRef<jstring> jmessage =
+          base::android::ConvertUTF8ToJavaString(env, message);
+  Java_ChromeMediaRouter_sendStringMessage(
+      env,
+      java_media_router_.obj(),
+      jroute_id.obj(),
+      jmessage.obj(),
+      callback_id);
 }
 
 void MediaRouterAndroid::SendRouteBinaryMessage(
@@ -194,12 +208,27 @@ void MediaRouterAndroid::UnregisterIssuesObserver(IssuesObserver* observer) {
 
 void MediaRouterAndroid::RegisterPresentationSessionMessagesObserver(
     PresentationSessionMessagesObserver* observer) {
-  NOTIMPLEMENTED();
+  const MediaRoute::Id& route_id = observer->route_id();
+  auto* observer_list = messages_observers_.get(route_id);
+  if (!observer_list) {
+    observer_list = new base::ObserverList<PresentationSessionMessagesObserver>;
+    messages_observers_.add(route_id, make_scoped_ptr(observer_list));
+  } else {
+    DCHECK(!observer_list->HasObserver(observer));
+  }
+
+  observer_list->AddObserver(observer);
 }
 
 void MediaRouterAndroid::UnregisterPresentationSessionMessagesObserver(
     PresentationSessionMessagesObserver* observer) {
-  NOTIMPLEMENTED();
+  const MediaRoute::Id& route_id = observer->route_id();
+  auto* observer_list = messages_observers_.get(route_id);
+  DCHECK(observer_list->HasObserver(observer));
+
+  observer_list->RemoveObserver(observer);
+  if (!observer_list->might_have_observers())
+    messages_observers_.erase(route_id);
 }
 
 void MediaRouterAndroid::OnSinksReceived(
@@ -288,6 +317,31 @@ void MediaRouterAndroid::OnRouteClosed(JNIEnv* env,
 
   FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
                     OnRoutesUpdated(active_routes_));
+}
+
+void MediaRouterAndroid::OnMessageSentResult(
+    JNIEnv* env, jobject obj, jboolean jsuccess, jint jcallback_id) {
+  SendRouteMessageCallback* callback = message_callbacks_.Lookup(jcallback_id);
+  callback->Run(jsuccess);
+  message_callbacks_.Remove(jcallback_id);
+}
+
+// Notifies the media router about a message received from the media route.
+void MediaRouterAndroid::OnMessage(
+    JNIEnv* env, jobject obj, jstring jmedia_route_id, jstring jmessage) {
+  MediaRoute::Id route_id = ConvertJavaStringToUTF8(env, jmedia_route_id);
+  auto* observer_list = messages_observers_.get(route_id);
+  if (!observer_list)
+    return;
+
+  ScopedVector<content::PresentationSessionMessage> session_messages;
+  scoped_ptr<content::PresentationSessionMessage> message(
+      new content::PresentationSessionMessage(content::TEXT));
+  message->message = ConvertJavaStringToUTF8(env, jmessage);
+  session_messages.push_back(message.Pass());
+
+  FOR_EACH_OBSERVER(PresentationSessionMessagesObserver, *observer_list,
+                    OnMessagesReceived(session_messages, true));
 }
 
 }  // namespace media_router

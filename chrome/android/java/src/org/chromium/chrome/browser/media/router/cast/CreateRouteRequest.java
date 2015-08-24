@@ -27,8 +27,6 @@ import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         ResultCallback<Cast.ApplicationConnectionResult> {
-    private static final String TAG = "cr.MediaRouter";
-
     private static final int STATE_IDLE = 0;
     private static final int STATE_CONNECTING_TO_API = 1;
     private static final int STATE_API_CONNECTION_SUSPENDED = 2;
@@ -209,7 +207,10 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         String mediaRouteId = ChromeMediaRouter.createMediaRouteId(
                 mPresentationId, mSinkId, mSourceUrn);
         mMediaRouter.onRouteCreated(
-                mediaRouteId, mRequestId, new SessionWrapper(mApiClient, sessionId), wasLaunched);
+                mediaRouteId,
+                mRequestId,
+                new SessionWrapper(mApiClient, sessionId, mediaRouteId, mMediaRouter),
+                wasLaunched);
 
         terminate();
     }

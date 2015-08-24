@@ -51,21 +51,38 @@ class MediaRouterAndroid : public MediaRouter {
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnPresentationSessionDetached(const MediaRoute::Id& route_id) override;
 
-  // JNI functions.
+  // The methods called by the Java counterpart.
+
+  // Notifies the media router that information about sinks is received for
+  // a specific source URN.
   void OnSinksReceived(
       JNIEnv* env, jobject obj, jstring jsource_urn, jint jcount);
+
+  // Notifies the media router about a successful route creation.
   void OnRouteCreated(
       JNIEnv* env,
       jobject obj,
       jstring jmedia_route_id,
       jint jcreate_route_request_id,
       jboolean jis_local);
+
+  // Notifies the media router that route creation failed.
   void OnRouteCreationError(
       JNIEnv* env,
       jobject obj,
       jstring jerror_text,
       jint jcreate_route_request_id);
+
+  // Notifies the media router when the route was closed.
   void OnRouteClosed(JNIEnv* env, jobject obj, jstring jmedia_route_id);
+
+  // Notifies the media router about the result of sending a message.
+  void OnMessageSentResult(
+      JNIEnv* env, jobject obj, jboolean jsuccess, jint jcallback_id);
+
+  // Notifies the media router about a message received from the media route.
+  void OnMessage(
+      JNIEnv* env, jobject obj, jstring jmedia_route_id, jstring jmessage);
 
  private:
   friend class MediaRouterFactory;
@@ -113,6 +130,14 @@ class MediaRouterAndroid : public MediaRouter {
 
   using MediaRoutes = std::vector<MediaRoute>;
   MediaRoutes active_routes_;
+
+  using SendMessageCallbacks = IDMap<SendRouteMessageCallback, IDMapOwnPointer>;
+  SendMessageCallbacks message_callbacks_;
+
+  using MessagesObservers = base::ScopedPtrHashMap<
+      MediaRoute::Id,
+      scoped_ptr<base::ObserverList<PresentationSessionMessagesObserver>>>;
+  MessagesObservers messages_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAndroid);
 };

@@ -85,6 +85,24 @@ public class ChromeMediaRouter {
     }
 
     /**
+     * Updates the native part about the result of sending the message to the route.
+     * @param success Indicates if the message was sent successfully.
+     * @param callbackId The identifier of the callback to pass the result to.
+     */
+    public void onMessageSentResult(boolean success, int callbackId) {
+        nativeOnMessageSentResult(mNativeMediaRouterAndroid, success, callbackId);
+    }
+
+    /**
+     * Called when a specified media route receives a message.
+     * @param mediaRouteId The identifier of the media route.
+     * @param message The message contents.
+     */
+    public void onMessage(String mediaRouteId, String message) {
+        nativeOnMessage(mNativeMediaRouterAndroid, mediaRouteId, message);
+    }
+
+    /**
      * Initializes the media router and its providers.
      * @param nativeMediaRouterAndroid the handler for the native counterpart of this instance
      * @param applicationContext the application context to use to obtain system APIs
@@ -226,6 +244,17 @@ public class ChromeMediaRouter {
         nativeOnRouteClosed(mNativeMediaRouterAndroid, routeId);
     }
 
+    @CalledByNative
+    void sendStringMessage(String routeId, String message, int callbackId) {
+        SessionWrapper session = mSessions.get(routeId);
+        if (session == null) {
+            nativeOnMessageSentResult(mNativeMediaRouterAndroid, false, callbackId);
+            return;
+        }
+
+        session.sendStringMessage(message, callbackId);
+    }
+
     @VisibleForTesting
     ChromeMediaRouter(long nativeMediaRouter, Context applicationContext) {
         assert applicationContext != null;
@@ -261,4 +290,7 @@ public class ChromeMediaRouter {
     native void nativeOnRouteCreationError(
             long nativeMediaRouterAndroid, String errorText, int createRouteRequestId);
     native void nativeOnRouteClosed(long nativeMediaRouterAndroid, String mediaRouteId);
+    native void nativeOnMessageSentResult(
+            long nativeMediaRouterAndroid, boolean success, int callbackId);
+    native void nativeOnMessage(long nativeMediaRouterAndroid, String mediaRouteId, String message);
 }
