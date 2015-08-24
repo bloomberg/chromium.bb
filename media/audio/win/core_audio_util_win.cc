@@ -711,31 +711,6 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
   return hr;
 }
 
-HRESULT CoreAudioUtil::GetPreferredAudioParameters(
-    EDataFlow data_flow, ERole role, AudioParameters* params) {
-  DCHECK(IsSupported());
-  ScopedComPtr<IAudioClient> client(CreateDefaultClient(data_flow, role));
-  if (!client.get()) {
-    // Map NULL-pointer to new error code which can be different from the
-    // actual error code. The exact value is not important here.
-    return AUDCLNT_E_ENDPOINT_CREATE_FAILED;
-  }
-
-  HRESULT hr = GetPreferredAudioParameters(client.get(), params);
-  if (FAILED(hr))
-    return hr;
-
-  if (role == eCommunications) {
-    // Raise the 'DUCKING' flag for default communication devices.
-    *params = AudioParameters(params->format(), params->channel_layout(),
-        params->channels(), params->sample_rate(), params->bits_per_sample(),
-        params->frames_per_buffer(),
-        params->effects() | AudioParameters::DUCKING);
-  }
-
-  return hr;
-}
-
 HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
                                                    bool is_output_device,
                                                    AudioParameters* params) {

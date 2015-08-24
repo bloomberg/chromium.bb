@@ -8,6 +8,7 @@
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/win/core_audio_util_win.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -255,8 +256,8 @@ TEST_F(CoreAudioUtilWinTest, IsChannelLayoutSupported) {
   // means that it is possible to initialize a shared mode stream with the
   // particular channel layout.
   AudioParameters mix_params;
-  HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(eRender, eConsole,
-                                                          &mix_params);
+  HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(
+      AudioManagerBase::kDefaultDeviceId, true, &mix_params);
   EXPECT_TRUE(SUCCEEDED(hr));
   EXPECT_TRUE(mix_params.IsValid());
   EXPECT_TRUE(CoreAudioUtil::IsChannelLayoutSupported(

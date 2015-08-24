@@ -16,6 +16,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/win/audio_low_latency_output_win.h"
@@ -164,7 +165,7 @@ class AudioOutputStreamWrapper {
         bits_per_sample_(kBitsPerSample) {
     AudioParameters preferred_params;
     EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
-        eRender, eConsole, &preferred_params)));
+        AudioManagerBase::kDefaultDeviceId, true, &preferred_params)));
     channel_layout_ = preferred_params.channel_layout();
     sample_rate_ = preferred_params.sample_rate();
     samples_per_packet_ = preferred_params.frames_per_buffer();

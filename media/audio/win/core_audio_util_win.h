@@ -174,9 +174,6 @@ class MEDIA_EXPORT CoreAudioUtil {
   // there are no preferred settings for an exclusive mode stream.
   static HRESULT GetPreferredAudioParameters(IAudioClient* client,
                                              AudioParameters* params);
-  static HRESULT GetPreferredAudioParameters(EDataFlow data_flow,
-                                             ERole role,
-                                             AudioParameters* params);
   static HRESULT GetPreferredAudioParameters(const std::string& device_id,
                                              bool is_output_device,
                                              AudioParameters* params);
