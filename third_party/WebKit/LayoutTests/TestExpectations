@@ -277,6 +277,8 @@ crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailur
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
+crbug.com/522826 [ Linux SnowLeopard Lion MountainLion Mavericks Retina ] fast/writing-mode/Kusa-Makura-background-canvas.html [ NeedsRebaseline ]
+
 # In root-layer-scrolls, the scrollbars make the scroll offsets difficult to compute.
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/keyboard-scroll-page-scale.html [ Failure ]
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]

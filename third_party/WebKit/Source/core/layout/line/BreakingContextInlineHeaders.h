@@ -457,8 +457,10 @@ inline void BreakingContext::handleReplaced()
     if (m_atStart)
         m_width.updateAvailableWidth(replacedBox.logicalHeight());
 
-    // Break on replaced elements if either has normal white-space.
-    if ((m_autoWrap || ComputedStyle::autoWrap(m_lastWS)) && (!m_current.object().isImage() || m_allowImagesToBreak)) {
+    // Break on replaced elements if either has normal white-space,
+    // or if the replaced element is ruby that can break before.
+    if ((m_autoWrap || ComputedStyle::autoWrap(m_lastWS)) && (!m_current.object().isImage() || m_allowImagesToBreak)
+        && (!m_current.object().isRubyRun() || toLayoutRubyRun(m_current.object())->canBreakBefore(m_layoutTextInfo.m_lineBreakIterator))) {
         m_width.commit();
         m_lineBreak.moveToStartOf(m_current.object());
     }
@@ -892,7 +894,8 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
 
     if (!m_current.object().isFloatingOrOutOfFlowPositioned()) {
         m_lastObject = m_current.object();
-        if (m_lastObject.isReplaced() && m_autoWrap && (!m_lastObject.isImage() || m_allowImagesToBreak) && (!m_lastObject.isListMarker() || LineLayoutListMarker(m_lastObject).isInside())) {
+        if (m_lastObject.isReplaced() && m_autoWrap && (!m_lastObject.isImage() || m_allowImagesToBreak) && (!m_lastObject.isListMarker() || LineLayoutListMarker(m_lastObject).isInside())
+            && !m_lastObject.isRubyRun()) {
             m_width.commit();
             m_lineBreak.moveToStartOf(m_nextObject);
         }

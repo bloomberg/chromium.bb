@@ -62,6 +62,8 @@ public:
 
     static LayoutRubyRun* staticCreateRubyRun(const LayoutObject* parentRuby);
 
+    bool canBreakBefore(const LazyLineBreakIterator&) const;
+
     const char* name() const override { return "LayoutRubyRun"; }
 
 protected:
