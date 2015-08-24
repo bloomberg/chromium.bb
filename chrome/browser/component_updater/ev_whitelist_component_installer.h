@@ -24,7 +24,7 @@ class ComponentUpdateService;
 
 class EVWhitelistComponentInstallerTraits : public ComponentInstallerTraits {
  public:
-  explicit EVWhitelistComponentInstallerTraits(const base::FilePath& base_path);
+  EVWhitelistComponentInstallerTraits() {}
   ~EVWhitelistComponentInstallerTraits() override {}
 
  private:
@@ -35,7 +35,7 @@ class EVWhitelistComponentInstallerTraits : public ComponentInstallerTraits {
   bool VerifyInstallation(const base::DictionaryValue& manifest,
                           const base::FilePath& install_dir) const override;
   void ComponentReady(const base::Version& version,
-                      const base::FilePath& path,
+                      const base::FilePath& install_dir,
                       scoped_ptr<base::DictionaryValue> manifest) override;
   base::FilePath GetBaseDirectory() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
@@ -43,15 +43,13 @@ class EVWhitelistComponentInstallerTraits : public ComponentInstallerTraits {
 
   static base::FilePath GetInstalledPath(const base::FilePath& base);
 
-  const base::FilePath ev_whitelist_path_;
-
   DISALLOW_COPY_AND_ASSIGN(EVWhitelistComponentInstallerTraits);
 };
 
 // Call once during startup to make the component update service aware of
 // the EV whitelist.
 void RegisterEVWhitelistComponent(ComponentUpdateService* cus,
-                                  const base::FilePath& path);
+                                  const base::FilePath& user_data_dir);
 
 }  // namespace component_updater
 
