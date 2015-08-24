@@ -5805,7 +5805,8 @@
 
                   # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
                   '-Qunused-arguments',  # http://crbug.com/504658
-                  '-Wno-microsoft',  # http://crbug.com/505296
+                  '-Wno-microsoft-unqualified-friend',  # http://crbug.com/505296
+                  '-Wno-microsoft-enum-value',  # http://crbug.com/505296
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314
                   '-Wno-unused-value',  # http://crbug.com/505318
                 ],
