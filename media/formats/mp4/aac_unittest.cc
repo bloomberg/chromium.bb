@@ -2,33 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
-#include "media/base/mock_media_log.h"
 #include "media/formats/mp4/aac.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::InSequence;
-using ::testing::StrictMock;
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
 namespace mp4 {
 
-MATCHER_P(AudioCodecLog, codec_string, "") {
-  return CONTAINS_STRING(arg, "Audio codec: " + std::string(codec_string));
-}
-
 class AACTest : public testing::Test {
  public:
-  AACTest() : media_log_(new StrictMock<MockMediaLog>()) {}
-
   bool Parse(const std::vector<uint8>& data) {
-    return aac_.Parse(data, media_log_);
+    return aac_.Parse(data, new MediaLog());
   }
 
-  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
   AAC aac_;
 };
 
@@ -37,8 +24,6 @@ TEST_F(AACTest, BasicProfileTest) {
   std::vector<uint8> data;
 
   data.assign(buffer, buffer + sizeof(buffer));
-
-  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
 
   EXPECT_TRUE(Parse(data));
   EXPECT_EQ(aac_.GetOutputSamplesPerSecond(false), 44100);
@@ -50,8 +35,6 @@ TEST_F(AACTest, ExtensionTest) {
   std::vector<uint8> data;
 
   data.assign(buffer, buffer + sizeof(buffer));
-
-  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
 
   EXPECT_TRUE(Parse(data));
   EXPECT_EQ(aac_.GetOutputSamplesPerSecond(false), 48000);
@@ -68,8 +51,6 @@ TEST_F(AACTest, ImplicitSBR_ChannelConfig0) {
   std::vector<uint8> data;
 
   data.assign(buffer, buffer + sizeof(buffer));
-
-  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
 
   EXPECT_TRUE(Parse(data));
 
@@ -89,8 +70,6 @@ TEST_F(AACTest, ImplicitSBR_ChannelConfig1) {
 
   data.assign(buffer, buffer + sizeof(buffer));
 
-  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
-
   EXPECT_TRUE(Parse(data));
 
   // Test w/o implict SBR.
@@ -108,8 +87,6 @@ TEST_F(AACTest, SixChannelTest) {
 
   data.assign(buffer, buffer + sizeof(buffer));
 
-  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
-
   EXPECT_TRUE(Parse(data));
   EXPECT_EQ(aac_.GetOutputSamplesPerSecond(false), 48000);
   EXPECT_EQ(aac_.GetChannelLayout(false), CHANNEL_LAYOUT_5_1_BACK);
@@ -125,22 +102,17 @@ TEST_F(AACTest, DataTooShortTest) {
 }
 
 TEST_F(AACTest, IncorrectProfileTest) {
-  InSequence s;
   uint8 buffer[] = {0x0, 0x08};
   std::vector<uint8> data;
 
   data.assign(buffer, buffer + sizeof(buffer));
 
-  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.0"));
   EXPECT_FALSE(Parse(data));
 
   data[0] = 0x08;
-  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.1"));
   EXPECT_TRUE(Parse(data));
 
   data[0] = 0x28;
-  // No media log for this profile 5, since not enough bits are in |data| to
-  // first parse profile 5's extension frequency index.
   EXPECT_FALSE(Parse(data));
 }
 
@@ -154,7 +126,6 @@ TEST_F(AACTest, IncorrectFrequencyTest) {
 
   data[0] = 0x0e;
   data[1] = 0x08;
-  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.1"));
   EXPECT_TRUE(Parse(data));
 }
 
@@ -163,8 +134,6 @@ TEST_F(AACTest, IncorrectChannelTest) {
   std::vector<uint8> data;
 
   data.assign(buffer, buffer + sizeof(buffer));
-
-  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.1")).Times(2);
 
   EXPECT_FALSE(Parse(data));
 
