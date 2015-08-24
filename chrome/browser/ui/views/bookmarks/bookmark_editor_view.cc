@@ -14,6 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -49,17 +50,6 @@ namespace {
 const SkColor kErrorColor = SkColorSetRGB(0xFF, 0xBC, 0xBC);
 
 }  // namespace
-
-// static
-void BookmarkEditor::Show(gfx::NativeWindow parent_window,
-                          Profile* profile,
-                          const EditDetails& details,
-                          Configuration configuration) {
-  DCHECK(profile);
-  BookmarkEditorView* editor = new BookmarkEditorView(profile,
-      details.parent_node, details, configuration);
-  editor->Show(parent_window);
-}
 
 BookmarkEditorView::BookmarkEditorView(
     Profile* profile,
@@ -654,3 +644,17 @@ void BookmarkEditorView::EditorTreeModel::SetTitle(
   if (!title.empty())
     ui::TreeNodeModel<EditorNode>::SetTitle(node, title);
 }
+
+namespace chrome {
+
+void ShowBookmarkEditorViews(gfx::NativeWindow parent_window,
+                             Profile* profile,
+                             const BookmarkEditor::EditDetails& details,
+                             BookmarkEditor::Configuration configuration) {
+  DCHECK(profile);
+  BookmarkEditorView* editor = new BookmarkEditorView(
+      profile, details.parent_node, details, configuration);
+  editor->Show(parent_window);
+}
+
+}  // namespace chrome

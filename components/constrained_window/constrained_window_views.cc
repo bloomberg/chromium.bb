@@ -166,8 +166,18 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
              : nullptr;
   views::Widget* widget =
       views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent_view);
-  if (!dialog->UseNewStyleForThisDialog())
+
+  bool requires_positioning = dialog->UseNewStyleForThisDialog();
+
+#if defined(OS_MACOSX)
+  // On Mac, window modal dialogs are displayed as sheets, so their position is
+  // managed by the parent window.
+  requires_positioning = false;
+#endif
+
+  if (!requires_positioning)
     return widget;
+
   ModalDialogHost* host = constrained_window_views_client->
       GetModalDialogHost(parent);
   if (host) {

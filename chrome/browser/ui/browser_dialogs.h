@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
 #include "base/callback.h"
+#include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -101,6 +102,12 @@ void ShowWebsiteSettingsBubbleViewsAtPoint(const gfx::Point& anchor_point,
 // Creates a toolkit-views based LoginHandler (e.g. HTTP-Auth dialog).
 LoginHandler* CreateLoginHandlerViews(net::AuthChallengeInfo* auth_info,
                                       net::URLRequest* request);
+
+// Shows the toolkit-views based BookmarkEditor.
+void ShowBookmarkEditorViews(gfx::NativeWindow parent_window,
+                             Profile* profile,
+                             const BookmarkEditor::EditDetails& details,
+                             BookmarkEditor::Configuration configuration);
 
 #endif  // TOOLKIT_VIEWS
 

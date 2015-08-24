@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
@@ -72,6 +73,12 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
                           Profile* profile,
                           const EditDetails& details,
                           Configuration configuration) {
+  if (chrome::ToolkitViewsDialogsEnabled()) {
+    chrome::ShowBookmarkEditorViews(parent_window, profile, details,
+                                    configuration);
+    return;
+  }
+
   if (details.type == EditDetails::EXISTING_NODE &&
       details.existing_node->is_folder()) {
     BookmarkNameFolderController* controller =
