@@ -14,7 +14,6 @@
 #include "components/nacl/common/nacl_process_type.h"
 
 namespace metrics {
-
 namespace {
 
 ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
@@ -137,8 +136,11 @@ void ProfilerMetricsProvider::RecordProfilerData(
     base::TimeDelta phase_start,
     base::TimeDelta phase_finish,
     const ProfilerEvents& past_events) {
+  // Omit profiler data on connections where it's likely to cost the user money
+  // for us to upload it.
   if (IsCellularLogicEnabled())
     return;
+
   if (tracked_objects::GetTimeSourceType() !=
       tracked_objects::TIME_SOURCE_TYPE_WALL_TIME) {
     // We currently only support the default time source, wall clock time.
@@ -164,12 +166,10 @@ void ProfilerMetricsProvider::RecordProfilerData(
 }
 
 bool ProfilerMetricsProvider::IsCellularLogicEnabled() {
-// For android get current connection type if the callback exists.
-#if defined(OS_ANDROID)
-  if (!cellular_callback_.is_null())
-    return cellular_callback_.Run();
-#endif
-  return false;
+  if (cellular_callback_.is_null())
+    return false;
+
+  return cellular_callback_.Run();
 }
 
 }  // namespace metrics
