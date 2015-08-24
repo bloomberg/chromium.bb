@@ -2498,12 +2498,27 @@ void RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
         ->CreateOpenerProxiesForFrameTree(instance);
   }
 
-  // TODO(alexmos): Set openers for nodes in |nodes_with_back_links| in a
-  // second pass. The proxies created at these FrameTreeNodes in
+  // Set openers for nodes in |nodes_with_back_links| in a second pass.
+  // The proxies created at these FrameTreeNodes in
   // CreateOpenerProxiesForFrameTree won't have their opener routing ID
   // available when created due to cycles or back links in the opener chain.
   // They must have their openers updated as a separate step after proxy
   // creation.
+  for (const auto& node : nodes_with_back_links) {
+    RenderFrameProxyHost* proxy =
+        node->render_manager()->GetRenderFrameProxyHost(instance);
+    // If there is no proxy, the cycle may involve nodes in the same process,
+    // or, if this is a subframe, --site-per-process may be off.  Either way,
+    // there's nothing more to do.
+    if (!proxy)
+      continue;
+
+    int opener_routing_id =
+        node->render_manager()->GetOpenerRoutingID(instance);
+    DCHECK_NE(opener_routing_id, MSG_ROUTING_NONE);
+    proxy->Send(new FrameMsg_UpdateOpener(proxy->GetRoutingID(),
+                                          opener_routing_id));
+  }
 }
 
 void RenderFrameHostManager::CreateOpenerProxiesForFrameTree(
