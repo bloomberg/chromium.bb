@@ -67,6 +67,8 @@
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
 
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
 struct link_layer {
 	struct ivi_layout_layer *ivilayer;
 	struct wl_list link;
@@ -567,18 +569,127 @@ calc_transformation_matrix(struct ivi_rectangle *source_rect,
 	weston_matrix_translate(m, translate_x, translate_y, 0.0f);
 }
 
-/**
- * This computes the whole transformation matrix from surface-local
- * coordinates to global coordinates. It is assumed that
- * weston_view::geometry.{x,y} are zero.
+/*
+ * This computes intersected rect_output from two ivi_rectangles
  */
 static void
-calc_surface_to_global_matrix(struct ivi_layout_layer *ivilayer,
-			      struct ivi_layout_surface *ivisurf,
-			      struct weston_matrix *m)
+ivi_rectangle_intersect(const struct ivi_rectangle *rect1,
+		        const struct ivi_rectangle *rect2,
+		        struct ivi_rectangle *rect_output)
+{
+	int32_t rect1_right = rect1->x + rect1->width;
+	int32_t rect1_bottom = rect1->y + rect1->height;
+	int32_t rect2_right = rect2->x + rect2->width;
+	int32_t rect2_bottom = rect2->y + rect2->height;
+
+	rect_output->x = max(rect1->x, rect2->x);
+	rect_output->y = max(rect1->y, rect2->y);
+	rect_output->width = rect1_right < rect2_right ?
+			     rect1_right - rect_output->x :
+			     rect2_right - rect_output->x;
+	rect_output->height = rect1_bottom < rect2_bottom ?
+			      rect1_bottom - rect_output->y :
+			      rect2_bottom - rect_output->y;
+
+	if (rect_output->width < 0 || rect_output->height < 0) {
+		rect_output->width = 0;
+		rect_output->height = 0;
+	}
+}
+
+/*
+ * Transform rect_input by the inverse of matrix, intersect with boundingbox,
+ * and store the result in rect_output.
+ * The boundingbox must be given in the same coordinate space as rect_output.
+ * Additionally, there are the following restrictions on the matrix:
+ * - no projective transformations
+ * - no skew
+ * - only multiples of 90-degree rotations supported
+ *
+ * In failure case of weston_matrix_invert, rect_output is set to boundingbox
+ * as a fail-safe with log.
+ */
+static void
+calc_inverse_matrix_transform(const struct weston_matrix *matrix,
+			      const struct ivi_rectangle *rect_input,
+			      const struct ivi_rectangle *boundingbox,
+			      struct ivi_rectangle *rect_output)
+{
+	struct weston_matrix m;
+	struct weston_vector top_left;
+	struct weston_vector bottom_right;
+
+	assert(boundingbox != rect_output);
+
+	if (weston_matrix_invert(&m, matrix) < 0) {
+		weston_log("ivi-shell: calc_inverse_matrix_transform fails to invert a matrix.\n");
+		weston_log("ivi-shell: boundingbox is set to the rect_output.\n");
+		rect_output->x = boundingbox->x;
+		rect_output->y = boundingbox->y;
+		rect_output->width = boundingbox->width;
+		rect_output->height = boundingbox->height;
+	}
+
+	/* The vectors and matrices involved will always produce f[3] == 1.0. */
+	top_left.f[0] = rect_input->x;
+	top_left.f[1] = rect_input->y;
+	top_left.f[2] = 0.0f;
+	top_left.f[3] = 1.0f;
+
+	bottom_right.f[0] = rect_input->x + rect_input->width;
+	bottom_right.f[1] = rect_input->y + rect_input->height;
+	bottom_right.f[2] = 0.0f;
+	bottom_right.f[3] = 1.0f;
+
+	weston_matrix_transform(&m, &top_left);
+	weston_matrix_transform(&m, &bottom_right);
+
+	if (top_left.f[0] < bottom_right.f[0]) {
+		rect_output->x = top_left.f[0];
+		rect_output->width = bottom_right.f[0] - rect_output->x;
+	} else {
+		rect_output->x = bottom_right.f[0];
+		rect_output->width = top_left.f[0] - rect_output->x;
+	}
+
+	if (top_left.f[1] < bottom_right.f[1]) {
+		rect_output->y = top_left.f[1];
+		rect_output->height = bottom_right.f[1] - rect_output->y;
+	} else {
+		rect_output->y = bottom_right.f[1];
+		rect_output->height = top_left.f[1] - rect_output->y;
+	}
+
+	ivi_rectangle_intersect(rect_output, boundingbox, rect_output);
+}
+
+/**
+ * This computes the whole transformation matrix:m from surface-local
+ * coordinates to global coordinates. It is assumed that
+ * weston_view::geometry.{x,y} are zero.
+ *
+ * Additionally, this computes the mask on surface-local coordinates as a
+ * ivi_rectangle. This can be set to weston_view_set_mask.
+ *
+ * The mask is computed by following steps
+ * - destination rectangle of layer is inversed to surface-local cooodinates
+ *   by inversed matrix:m.
+ * - the area is intersected by intersected area between weston_surface and
+ *   source rectangle of ivi_surface.
+ */
+static void
+calc_surface_to_global_matrix_and_mask_to_weston_surface(
+	struct ivi_layout_layer *ivilayer,
+	struct ivi_layout_surface *ivisurf,
+	struct weston_matrix *m,
+	struct ivi_rectangle *result)
 {
 	const struct ivi_layout_surface_properties *sp = &ivisurf->prop;
 	const struct ivi_layout_layer_properties *lp = &ivilayer->prop;
+	struct ivi_rectangle weston_surface_rect = { 0,
+						     0,
+						     ivisurf->surface->width,
+						     ivisurf->surface->height };
 	struct ivi_rectangle surface_source_rect = { sp->source_x,
 						     sp->source_y,
 						     sp->source_width,
@@ -595,7 +706,15 @@ calc_surface_to_global_matrix(struct ivi_layout_layer *ivilayer,
 						     lp->dest_y,
 						     lp->dest_width,
 						     lp->dest_height };
+	struct ivi_rectangle surface_result;
 
+	/*
+	 * the whole transformation matrix:m from surface-local
+	 * coordinates to global coordinates, which is computed by
+	 * two steps,
+	 * - surface-local coordinates to layer-local coordinates
+	 * - layer-local coordinates to global coordinates
+	 */
 	calc_transformation_matrix(&surface_source_rect,
 				   &surface_dest_rect,
 				   sp->orientation, m);
@@ -603,6 +722,18 @@ calc_surface_to_global_matrix(struct ivi_layout_layer *ivilayer,
 	calc_transformation_matrix(&layer_source_rect,
 				   &layer_dest_rect,
 				   lp->orientation, m);
+
+	/* this intersected ivi_rectangle would be used for masking
+	 * weston_surface
+	 */
+	ivi_rectangle_intersect(&surface_source_rect, &weston_surface_rect,
+				&surface_result);
+
+	/* calc masking area of weston_surface from m */
+	calc_inverse_matrix_transform(m,
+				      &layer_dest_rect,
+				      &surface_result,
+				      result);
 }
 
 static void
@@ -610,6 +741,7 @@ update_prop(struct ivi_layout_layer *ivilayer,
 	    struct ivi_layout_surface *ivisurf)
 {
 	struct weston_view *tmpview;
+	struct ivi_rectangle r;
 	bool can_calc = true;
 
 	if (!ivilayer->event_mask && !ivisurf->event_mask) {
@@ -638,10 +770,13 @@ update_prop(struct ivi_layout_layer *ivilayer,
 		wl_list_remove(&ivisurf->transform.link);
 		weston_matrix_init(&ivisurf->transform.matrix);
 
-		calc_surface_to_global_matrix(ivilayer, ivisurf, &ivisurf->transform.matrix);
+		calc_surface_to_global_matrix_and_mask_to_weston_surface(
+			ivilayer, ivisurf, &ivisurf->transform.matrix, &r);
 
 		if (tmpview != NULL) {
-			wl_list_insert(&tmpview->geometry.transformation_list, &ivisurf->transform.link);
+			weston_view_set_mask(tmpview, r.x, r.y, r.width, r.height);
+			wl_list_insert(&tmpview->geometry.transformation_list,
+				       &ivisurf->transform.link);
 
 			weston_view_set_transform_parent(tmpview, NULL);
 		}
