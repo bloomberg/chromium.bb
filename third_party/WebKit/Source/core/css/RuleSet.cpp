@@ -116,8 +116,6 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
     , m_hasDocumentSecurityOrigin(addRuleFlags & RuleHasDocumentSecurityOrigin)
     , m_propertyWhitelistType(determinePropertyWhitelistType(addRuleFlags, selector()))
 {
-    ASSERT(m_position == position);
-    ASSERT(m_selectorIndex == selectorIndex);
     SelectorFilter::collectIdentifierHashes(selector(), m_descendantSelectorIdentifierHashes, maximumIdentifierCount);
 }
 
