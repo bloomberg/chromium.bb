@@ -132,7 +132,7 @@ class ApiParameterExtractor {
     if (params_->get_info.get() && params_->get_info->window_types.get())
       return WindowController::GetFilterFromWindowTypes(
           *params_->get_info->window_types.get());
-    return WindowController::GetDefaultWindowFilter();
+    return WindowController::kNoWindowFilter;
   }
 
  private:
@@ -813,10 +813,11 @@ bool WindowsRemoveFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   WindowController* controller;
-  if (!windows_util::GetWindowFromWindowID(
-          this, params->window_id, WindowController::GetDefaultWindowFilter(),
-          &controller))
+  if (!windows_util::GetWindowFromWindowID(this, params->window_id,
+                                           WindowController::kNoWindowFilter,
+                                           &controller)) {
     return false;
+  }
 
   WindowController::Reason reason;
   if (!controller->CanClose(&reason)) {

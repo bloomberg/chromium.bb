@@ -103,6 +103,15 @@ EventFilteringInfo ParseFromObject(v8::Local<v8::Object> object,
     v8::Local<v8::Value> window_types_value(object->Get(window_types));
     info.SetWindowType(*v8::String::Utf8Value(window_types_value));
   }
+
+  v8::Local<v8::String> window_exposed(
+      v8::String::NewFromUtf8(isolate, "windowExposedByDefault"));
+  if (object->Has(window_exposed)) {
+    v8::Local<v8::Value> window_exposed_value(object->Get(window_exposed));
+    info.SetWindowExposedByDefault(
+        window_exposed_value.As<v8::Boolean>()->Value());
+  }
+
   return info;
 }
 

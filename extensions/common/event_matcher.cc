@@ -11,8 +11,6 @@
 namespace {
 const char kUrlFiltersKey[] = "url";
 const char kWindowTypesKey[] = "windowTypes";
-
-const char* const kDefaultWindowTypes[] = {"normal", "panel", "popup"};
 }
 
 namespace extensions {
@@ -44,6 +42,14 @@ bool EventMatcher::MatchNonURLCriteria(
     return false;
   }
 
+  if (event_info.has_window_exposed_by_default()) {
+    // An event with a |window_exposed_by_default| set is only
+    // relevant to the listener if no window type filter is set.
+    if (HasWindowTypes())
+      return false;
+    return event_info.window_exposed_by_default();
+  }
+
   const std::string& service_type_filter = GetServiceTypeFilter();
   return service_type_filter.empty() ||
          service_type_filter == event_info.service_type();
@@ -64,7 +70,7 @@ bool EventMatcher::GetURLFilter(int i, base::DictionaryValue** url_filter_out) {
   return false;
 }
 
-int EventMatcher::HasURLFilters() const {
+bool EventMatcher::HasURLFilters() const {
   return GetURLFilterCount() != 0;
 }
 
@@ -84,7 +90,7 @@ int EventMatcher::GetWindowTypeCount() const {
   base::ListValue* window_type_filters = nullptr;
   if (filter_->GetList(kWindowTypesKey, &window_type_filters))
     return window_type_filters->GetSize();
-  return arraysize(kDefaultWindowTypes);
+  return 0;
 }
 
 bool EventMatcher::GetWindowType(int i, std::string* window_type_out) const {
@@ -92,11 +98,11 @@ bool EventMatcher::GetWindowType(int i, std::string* window_type_out) const {
   if (filter_->GetList(kWindowTypesKey, &window_types)) {
     return window_types->GetString(i, window_type_out);
   }
-  if (i >= 0 && i < static_cast<int>(arraysize(kDefaultWindowTypes))) {
-    *window_type_out = kDefaultWindowTypes[i];
-    return true;
-  }
   return false;
+}
+
+bool EventMatcher::HasWindowTypes() const {
+  return GetWindowTypeCount() != 0;
 }
 
 int EventMatcher::GetRoutingID() const {

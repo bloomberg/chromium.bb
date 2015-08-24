@@ -150,6 +150,7 @@ void PanelExtensionWindowController::SetFullscreenMode(
 
 bool PanelExtensionWindowController::IsVisibleToExtension(
     const extensions::Extension* extension) const {
+  DCHECK(extension);
   return extension->id() == panel_->extension_id();
 }
 

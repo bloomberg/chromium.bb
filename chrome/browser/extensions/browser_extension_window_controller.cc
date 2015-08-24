@@ -90,6 +90,7 @@ Browser* BrowserExtensionWindowController::GetBrowser() const {
 
 bool BrowserExtensionWindowController::IsVisibleToExtension(
     const extensions::Extension* extension) const {
+  DCHECK(extension);
   // Platform apps can only see their own windows.
   return !browser_->is_devtools() && !extension->is_platform_app();
 }

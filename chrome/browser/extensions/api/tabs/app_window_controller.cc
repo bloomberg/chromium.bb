@@ -120,6 +120,7 @@ Browser* AppWindowController::GetBrowser() const {
 
 bool AppWindowController::IsVisibleToExtension(
     const Extension* extension) const {
+  DCHECK(extension);
   return extension->id() == app_window_->extension_id();
 }
 

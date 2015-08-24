@@ -31,17 +31,25 @@ WindowController::TypeFilter WindowController::GetAllWindowFilter() {
 }
 
 // static
-WindowController::TypeFilter WindowController::GetDefaultWindowFilter() {
-  return ((1 << api::windows::WINDOW_TYPE_NORMAL) |
-          (1 << api::windows::WINDOW_TYPE_PANEL) |
-          (1 << api::windows::WINDOW_TYPE_POPUP));
-}
-
 WindowController::TypeFilter WindowController::GetFilterFromWindowTypes(
     const std::vector<api::windows::WindowType>& types) {
-  WindowController::TypeFilter filter = 0;
+  WindowController::TypeFilter filter = kNoWindowFilter;
   for (auto& window_type : types)
     filter |= 1 << window_type;
+  return filter;
+}
+
+// static
+WindowController::TypeFilter WindowController::GetFilterFromWindowTypesValues(
+    const base::ListValue* types) {
+  WindowController::TypeFilter filter = WindowController::kNoWindowFilter;
+  if (!types)
+    return filter;
+  for (size_t i = 0; i < types->GetSize(); i++) {
+    std::string window_type;
+    if (types->GetString(i, &window_type))
+      filter |= 1 << api::windows::ParseWindowType(window_type);
+  }
   return filter;
 }
 

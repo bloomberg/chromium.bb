@@ -29,6 +29,101 @@ namespace extensions {
 namespace keys = extensions::tabs_constants;
 namespace windows = extensions::api::windows;
 
+namespace {
+
+bool ControllerVisibleToListener(WindowController* window_controller,
+                                 const Extension* extension,
+                                 const base::DictionaryValue* listener_filter) {
+  if (!window_controller)
+    return false;
+
+  // If there is no filter the visibility is based on the extension.
+  const base::ListValue* filter_value = nullptr;
+  if (!listener_filter ||
+      !listener_filter->GetList(keys::kWindowTypesKey, &filter_value))
+    return window_controller->IsVisibleToExtension(extension);
+
+  // Otherwise it's based on the type filter.
+  WindowController::TypeFilter filter =
+      WindowController::GetFilterFromWindowTypesValues(filter_value);
+  return window_controller->MatchesFilter(filter);
+}
+
+bool WillDispatchWindowEvent(WindowController* window_controller,
+                             BrowserContext* context,
+                             const Extension* extension,
+                             Event* event,
+                             const base::DictionaryValue* listener_filter) {
+  bool has_filter =
+      listener_filter && listener_filter->HasKey(keys::kWindowTypesKey);
+  // Cleanup previous values.
+  event->filter_info = EventFilteringInfo();
+  // Only set the window type if the listener has set a filter.
+  // Otherwise we set the window visibility relative to the extension.
+  if (has_filter)
+    event->filter_info.SetWindowType(window_controller->GetWindowTypeText());
+  else
+    event->filter_info.SetWindowExposedByDefault(
+        window_controller->IsVisibleToExtension(extension));
+  return true;
+}
+
+bool WillDispatchWindowFocusedEvent(
+    WindowController* window_controller,
+    BrowserContext* context,
+    const Extension* extension,
+    Event* event,
+    const base::DictionaryValue* listener_filter) {
+  int window_id = extension_misc::kUnknownWindowId;
+  Profile* new_active_context = nullptr;
+  bool has_filter =
+      listener_filter && listener_filter->HasKey(keys::kWindowTypesKey);
+
+  // We might not have a window controller if the focus moves away
+  // from chromium's windows.
+  if (window_controller) {
+    window_id = window_controller->GetWindowId();
+    new_active_context = window_controller->profile();
+  }
+
+  // Cleanup previous values.
+  event->filter_info = EventFilteringInfo();
+  // Only set the window type if the listener has set a filter,
+  // otherwise set the visibility to true (if the window is not
+  // supposed to be visible by the extension, we will clear out the
+  // window id later).
+  if (has_filter)
+    event->filter_info.SetWindowType(
+        window_controller ? window_controller->GetWindowTypeText()
+                          : keys::kWindowTypeValueNormal);
+  else
+    event->filter_info.SetWindowExposedByDefault(true);
+
+  // When switching between windows in the default and incognito profiles,
+  // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
+  // can't see the new focused window across the incognito boundary.
+  // See crbug.com/46610.
+  bool cant_cross_incognito = new_active_context &&
+                              new_active_context != context &&
+                              !util::CanCrossIncognito(extension, context);
+  // If the window is not visible by the listener, we also need to
+  // clear out the window id from the event.
+  bool visible_to_listener = ControllerVisibleToListener(
+      window_controller, extension, listener_filter);
+
+  if (cant_cross_incognito || !visible_to_listener) {
+    event->event_args->Clear();
+    event->event_args->Append(
+        new base::FundamentalValue(extension_misc::kUnknownWindowId));
+  } else {
+    event->event_args->Clear();
+    event->event_args->Append(new base::FundamentalValue(window_id));
+  }
+  return true;
+}
+
+}  // namespace
+
 WindowsEventRouter::WindowsEventRouter(Profile* profile)
     : profile_(profile),
       focused_profile_(nullptr),
@@ -137,33 +232,6 @@ void WindowsEventRouter::Observe(
 #endif
 }
 
-static bool WillDispatchWindowFocusedEvent(
-    WindowController* window_controller,
-    BrowserContext* context,
-    const Extension* extension,
-    Event* event,
-    const base::DictionaryValue* listener_filter) {
-  int window_id = window_controller ? window_controller->GetWindowId()
-                                    : extension_misc::kUnknownWindowId;
-  Profile* new_active_context =
-      window_controller ? window_controller->profile() : nullptr;
-
-  // When switching between windows in the default and incognito profiles,
-  // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
-  // can't see the new focused window across the incognito boundary.
-  // See crbug.com/46610.
-  if (new_active_context && new_active_context != context &&
-      !util::CanCrossIncognito(extension, context)) {
-    event->event_args->Clear();
-    event->event_args->Append(
-        new base::FundamentalValue(extension_misc::kUnknownWindowId));
-  } else {
-    event->event_args->Clear();
-    event->event_args->Append(new base::FundamentalValue(window_id));
-  }
-  return true;
-}
-
 void WindowsEventRouter::OnActiveWindowChanged(
     WindowController* window_controller) {
   Profile* window_profile = nullptr;
@@ -190,11 +258,6 @@ void WindowsEventRouter::OnActiveWindowChanged(
                                     make_scoped_ptr(new base::ListValue())));
   event->will_dispatch_callback =
       base::Bind(&WillDispatchWindowFocusedEvent, window_controller);
-  // Set the window type to 'normal' if we don't have a window
-  // controller, so the event is not filtered.
-  event->filter_info.SetWindowType(window_controller
-                                       ? window_controller->GetWindowTypeText()
-                                       : keys::kWindowTypeValueNormal);
   EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 
@@ -204,7 +267,8 @@ void WindowsEventRouter::DispatchEvent(events::HistogramValue histogram_value,
                                        scoped_ptr<base::ListValue> args) {
   scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
   event->restrict_to_browser_context = window_controller->profile();
-  event->filter_info.SetWindowType(window_controller->GetWindowTypeText());
+  event->will_dispatch_callback =
+      base::Bind(&WillDispatchWindowEvent, window_controller);
   EventRouter::Get(profile_)->BroadcastEvent(event.Pass());
 }
 

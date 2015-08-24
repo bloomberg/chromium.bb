@@ -26,6 +26,7 @@ class EventFilteringInfo {
  public:
   EventFilteringInfo();
   ~EventFilteringInfo();
+  void SetWindowExposedByDefault(bool exposed);
   void SetWindowType(const std::string& window_type);
   void SetURL(const GURL& url);
   void SetInstanceID(int instance_id);
@@ -33,12 +34,20 @@ class EventFilteringInfo {
     service_type_ = service_type;
   }
 
-  // Note: window type is a Chrome concept, so arguably doesn't belong
-  // in the extensions module. If the number of Chrome concept grows,
-  // consider a delegation model with a ChromeEventFilteringInfo
-  // class.
+  // Note: window type & visible are Chrome concepts, so arguably
+  // doesn't belong in the extensions module. If the number of Chrome
+  // concept grows, consider a delegation model with a
+  // ChromeEventFilteringInfo class.
   bool has_window_type() const { return has_window_type_; }
   const std::string& window_type() const { return window_type_; }
+
+  // By default events related to windows are filtered based on the
+  // listener's extension. This parameter will be set if the listener
+  // didn't set any filter on window types.
+  bool has_window_exposed_by_default() const {
+    return has_window_exposed_by_default_;
+  }
+  bool window_exposed_by_default() const { return window_exposed_by_default_; }
 
   bool has_url() const { return has_url_; }
   const GURL& url() const { return url_; }
@@ -62,6 +71,9 @@ class EventFilteringInfo {
 
   bool has_window_type_;
   std::string window_type_;
+
+  bool has_window_exposed_by_default_;
+  bool window_exposed_by_default_;
 
   // Allow implicit copy and assignment.
 };

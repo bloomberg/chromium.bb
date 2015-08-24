@@ -13,7 +13,6 @@ namespace tabs_constants {
 // Keys used in serializing tab data & events.
 extern const char kActiveKey[];
 extern const char kAllFramesKey[];
-extern const char kAllWindowTypesKey[];
 extern const char kAlwaysOnTopKey[];
 extern const char kBypassCache[];
 extern const char kCodeKey[];
@@ -56,6 +55,7 @@ extern const char kWindowClosing[];
 extern const char kWindowIdKey[];
 extern const char kWindowTypeKey[];
 extern const char kWindowTypeLongKey[];
+extern const char kWindowTypesKey[];
 extern const char kZoomSettingsMode[];
 extern const char kZoomSettingsScope[];
 

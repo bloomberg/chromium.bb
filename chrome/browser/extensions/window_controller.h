@@ -45,17 +45,20 @@ class WindowController {
   // A bitmaks used as filter on window types.
   using TypeFilter = uint32_t;
 
+  // Represents the lack of any window filter, implying
+  // IsVisibleToExtension will be used as non-filtered behavior.
+  static const TypeFilter kNoWindowFilter = 0;
+
   // Returns a filter allowing all window types to be manipulated
   // through the chrome.windows APIs.
   static TypeFilter GetAllWindowFilter();
 
-  // Returns the default filter to be used when operating on the windows
-  // from WindowControllerList when using the chrome.windows APIs.
-  static TypeFilter GetDefaultWindowFilter();
-
   // Builds a filter out of a vector of window types.
   static TypeFilter GetFilterFromWindowTypes(
       const std::vector<api::windows::WindowType>& types);
+
+  static TypeFilter GetFilterFromWindowTypesValues(
+      const base::ListValue* types);
 
   WindowController(ui::BaseWindow* window, Profile* profile);
   virtual ~WindowController();

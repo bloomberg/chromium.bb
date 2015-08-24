@@ -36,7 +36,9 @@ class EventMatcher {
 
   std::string GetServiceTypeFilter() const;
 
-  int HasURLFilters() const;
+  bool HasURLFilters() const;
+
+  bool HasWindowTypes() const;
 
   int GetInstanceID() const;
 

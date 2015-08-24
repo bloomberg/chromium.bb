@@ -41,11 +41,6 @@ class WindowControllerList {
       int id,
       WindowController::TypeFilter filter) const;
 
-  // Returns a window matching the context the function was invoked in.
-  WindowController* FindWindowForFunctionById(
-      const UIThreadExtensionFunction* function,
-      int id) const;
-
   // Returns a window matching the context the function was invoked in
   // using |filter|.
   WindowController* FindWindowForFunctionByIdWithFilter(

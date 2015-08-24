@@ -36,7 +36,7 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
     } else {
       // Otherwise get the focused or most recently added window.
       *controller = extensions::WindowControllerList::GetInstance()
-                        ->CurrentWindowForFunction(function);
+                        ->CurrentWindowForFunctionWithFilter(function, filter);
     }
     if (!(*controller)) {
       function->SetError(extensions::tabs_constants::kNoCurrentWindowError);
@@ -59,7 +59,11 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
 bool CanOperateOnWindow(const UIThreadExtensionFunction* function,
                         const extensions::WindowController* controller,
                         extensions::WindowController::TypeFilter filter) {
-  if (!controller->MatchesFilter(filter))
+  if (filter && !controller->MatchesFilter(filter))
+    return false;
+
+  if (!filter && function->extension() &&
+      !controller->IsVisibleToExtension(function->extension()))
     return false;
 
   if (function->browser_context() == controller->profile())

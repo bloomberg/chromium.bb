@@ -13,7 +13,8 @@ EventFilteringInfo::EventFilteringInfo()
     : has_url_(false),
       has_instance_id_(false),
       instance_id_(0),
-      has_window_type_(false) {}
+      has_window_type_(false),
+      has_window_exposed_by_default_(false) {}
 
 EventFilteringInfo::~EventFilteringInfo() {
 }
@@ -21,6 +22,11 @@ EventFilteringInfo::~EventFilteringInfo() {
 void EventFilteringInfo::SetWindowType(const std::string& window_type) {
   window_type_ = window_type;
   has_window_type_ = true;
+}
+
+void EventFilteringInfo::SetWindowExposedByDefault(const bool exposed) {
+  window_exposed_by_default_ = exposed;
+  has_window_exposed_by_default_ = true;
 }
 
 void EventFilteringInfo::SetURL(const GURL& url) {
@@ -50,12 +56,15 @@ scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
   if (has_window_type_)
     result->SetString("windowType", window_type_);
 
+  if (has_window_exposed_by_default_)
+    result->SetBoolean("windowExposedByDefault", window_exposed_by_default_);
+
   return result.Pass();
 }
 
 bool EventFilteringInfo::IsEmpty() const {
   return !has_window_type_ && !has_url_ && service_type_.empty() &&
-         !has_instance_id_;
+         !has_instance_id_ && !has_window_exposed_by_default_;
 }
 
 }  // namespace extensions

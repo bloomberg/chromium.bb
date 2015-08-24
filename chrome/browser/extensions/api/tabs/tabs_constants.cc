@@ -9,7 +9,6 @@ namespace tabs_constants {
 
 const char kActiveKey[] = "active";
 const char kAllFramesKey[] = "allFrames";
-const char kAllWindowTypesKey[] = "allWindowTypes";
 const char kAlwaysOnTopKey[] = "alwaysOnTop";
 const char kBypassCache[] = "bypassCache";
 const char kCodeKey[] = "code";
@@ -52,6 +51,7 @@ const char kWidthKey[] = "width";
 const char kWindowIdKey[] = "windowId";
 const char kWindowTypeKey[] = "type";
 const char kWindowTypeLongKey[] = "windowType";
+const char kWindowTypesKey[] = "windowTypes";
 const char kZoomSettingsMode[] = "mode";
 const char kZoomSettingsScope[] = "scope";
 
