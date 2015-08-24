@@ -304,6 +304,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
         ('debug.tgz',                    'debug-%s' % boardpath, 'tgz', ''),
         (hwqual_tarball,                 '', '', ''),
         ('au-generator.zip',             '', '', ''),
+        ('stateful.tgz',                 '', '', ''),
     )
     files_to_sign = []
     for src, dst, sfx, image_type in files_to_copy:
