@@ -2869,8 +2869,6 @@
       'browser/sync/glue/chrome_report_unrecoverable_error.h',
       'browser/sync/glue/extensions_activity_monitor.cc',
       'browser/sync/glue/extensions_activity_monitor.h',
-      'browser/sync/glue/favicon_cache.cc',
-      'browser/sync/glue/favicon_cache.h',
       'browser/sync/glue/frontend_data_type_controller.cc',
       'browser/sync/glue/frontend_data_type_controller.h',
       'browser/sync/glue/history_delete_directives_data_type_controller.cc',

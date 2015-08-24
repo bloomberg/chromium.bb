@@ -1,5 +1,6 @@
 include_rules = [
-  "+components/history",
+  "+components/favicon/core",
+  "+components/history/core/browser",
   "+components/invalidation",
   "+components/os_crypt",
   "+components/policy",
@@ -11,4 +12,5 @@ include_rules = [
   "+net",
   "+policy",
   "+sync",
+  "+ui/gfx",
 ]

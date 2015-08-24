@@ -31,6 +31,8 @@ source_set("sync_driver") {
     "device_info_sync_service.cc",
     "device_info_sync_service.h",
     "device_info_tracker.h",
+    "favicon_cache.cc",
+    "favicon_cache.h",
     "generic_change_processor.cc",
     "generic_change_processor.h",
     "generic_change_processor_factory.cc",
@@ -95,6 +97,7 @@ source_set("sync_driver") {
 
   deps = [
     "//base",
+    "//components/favicon/core",
     "//components/history/core/browser",
     "//components/invalidation/public",
     "//components/os_crypt",
@@ -103,6 +106,7 @@ source_set("sync_driver") {
     "//net",
     "//sync",
     "//third_party/cacheinvalidation",
+    "//ui/gfx",
   ]
 
   if (enable_configuration_policy) {
@@ -160,6 +164,7 @@ source_set("unit_tests") {
     "data_type_manager_impl_unittest.cc",
     "device_info_data_type_controller_unittest.cc",
     "device_info_sync_service_unittest.cc",
+    "favicon_cache_unittest.cc",
     "generic_change_processor_unittest.cc",
     "model_association_manager_unittest.cc",
     "non_blocking_data_type_controller_unittest.cc",

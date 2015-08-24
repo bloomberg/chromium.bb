@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_FAVICON_CACHE_H_
-#define CHROME_BROWSER_SYNC_GLUE_FAVICON_CACHE_H_
+#ifndef COMPONENTS_SYNC_DRIVER_FAVICON_CACHE_H_
+#define COMPONENTS_SYNC_DRIVER_FAVICON_CACHE_H_
 
 #include <map>
 #include <string>
@@ -25,10 +25,16 @@
 #include "sync/api/syncable_service.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace chrome {
 struct FaviconRawBitmapResult;
+}
+
+namespace favicon {
+class FaviconService;
+}
+
+namespace history {
+class HistoryService;
 }
 
 namespace browser_sync {
@@ -48,7 +54,9 @@ struct SyncedFaviconInfo;
 class FaviconCache : public syncer::SyncableService,
                      public history::HistoryServiceObserver {
  public:
-  FaviconCache(Profile* profile, int max_sync_favicon_limit);
+  FaviconCache(favicon::FaviconService* favicon_service,
+               history::HistoryService* history_service,
+               int max_sync_favicon_limit);
   ~FaviconCache() override;
 
   // SyncableService implementation.
@@ -200,6 +208,8 @@ class FaviconCache : public syncer::SyncableService,
                      const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
 
+  favicon::FaviconService* favicon_service_;
+
   // Trask tracker for loading favicons.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
@@ -215,8 +225,6 @@ class FaviconCache : public syncer::SyncableService,
 
   // Map of page and associated favicon urls.
   PageFaviconMap page_favicon_map_;
-
-  Profile* profile_;
 
   // TODO(zea): consider creating a favicon handler here for fetching unsynced
   // favicons from the web.
@@ -238,4 +246,4 @@ class FaviconCache : public syncer::SyncableService,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_FAVICON_CACHE_H_
+#endif  // COMPONENTS_SYNC_DRIVER_FAVICON_CACHE_H_

@@ -6,6 +6,8 @@
 
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
@@ -74,7 +76,13 @@ SessionsSyncManager::SessionsSyncManager(
     Profile* profile,
     LocalDeviceInfoProvider* local_device,
     scoped_ptr<LocalSessionEventRouter> router)
-    : favicon_cache_(profile, kMaxSyncFavicons),
+    : favicon_cache_(FaviconServiceFactory::GetForProfile(
+                         profile,
+                         ServiceAccessType::EXPLICIT_ACCESS),
+                     HistoryServiceFactory::GetForProfile(
+                         profile,
+                         ServiceAccessType::EXPLICIT_ACCESS),
+                     kMaxSyncFavicons),
       local_tab_pool_out_of_sync_(true),
       sync_prefs_(profile->GetPrefs()),
       profile_(profile),
@@ -82,8 +90,7 @@ SessionsSyncManager::SessionsSyncManager(
       local_session_header_node_id_(TabNodePool::kInvalidTabNodeID),
       stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router.Pass()),
-      synced_window_getter_(new SyncedWindowDelegatesGetter()) {
-}
+      synced_window_getter_(new SyncedWindowDelegatesGetter()) {}
 
 LocalSessionEventRouter::~LocalSessionEventRouter() {}
 

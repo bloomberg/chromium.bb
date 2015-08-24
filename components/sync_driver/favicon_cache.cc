@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/favicon_cache.h"
+#include "components/sync_driver/favicon_cache.h"
 
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
@@ -223,18 +221,15 @@ bool FaviconInfoHasValidTypeData(const SyncedFaviconInfo& favicon_info,
 
 }  // namespace
 
-FaviconCache::FaviconCache(Profile* profile, int max_sync_favicon_limit)
-    : profile_(profile),
+FaviconCache::FaviconCache(favicon::FaviconService* favicon_service,
+                           history::HistoryService* history_service,
+                           int max_sync_favicon_limit)
+    : favicon_service_(favicon_service),
       max_sync_favicon_limit_(max_sync_favicon_limit),
       history_service_observer_(this),
       weak_ptr_factory_(this) {
-  history::HistoryService* hs = NULL;
-  if (profile_) {
-    hs = HistoryServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  }
-  if (hs)
-    history_service_observer_.Add(hs);
+  if (history_service)
+    history_service_observer_.Add(history_service);
   DVLOG(1) << "Setting favicon limit to " << max_sync_favicon_limit;
 }
 
@@ -435,26 +430,19 @@ void FaviconCache::OnPageFaviconUpdated(const GURL& page_url) {
 
   DVLOG(1) << "Triggering favicon load for url " << page_url.spec();
 
-  if (!profile_) {
+  if (!favicon_service_) {
     page_task_map_[page_url] = 0;  // For testing only.
     return;
   }
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  if (!favicon_service)
-    return;
+
   // TODO(zea): This appears to only fetch one favicon (best match based on
   // desired_size_in_dip). Figure out a way to fetch all favicons we support.
   // See crbug.com/181068.
   base::CancelableTaskTracker::TaskId id =
-      favicon_service->GetFaviconForPageURL(
-          page_url,
-          SupportedFaviconTypes(),
-          kMaxFaviconResolution,
+      favicon_service_->GetFaviconForPageURL(
+          page_url, SupportedFaviconTypes(), kMaxFaviconResolution,
           base::Bind(&FaviconCache::OnFaviconDataAvailable,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     page_url),
+                     weak_ptr_factory_.GetWeakPtr(), page_url),
           &cancelable_task_tracker_);
   page_task_map_[page_url] = id;
 }

@@ -603,6 +603,7 @@
       'sync_driver/data_type_manager_impl_unittest.cc',
       'sync_driver/device_info_data_type_controller_unittest.cc',
       'sync_driver/device_info_sync_service_unittest.cc',
+      'sync_driver/favicon_cache_unittest.cc',
       'sync_driver/generic_change_processor_unittest.cc',
       'sync_driver/model_association_manager_unittest.cc',
       'sync_driver/non_blocking_data_type_controller_unittest.cc',

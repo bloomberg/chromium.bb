@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/favicon_cache.h"
+#include "components/sync_driver/favicon_cache.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "content/public/browser/notification_service.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -299,7 +298,7 @@ class SyncFaviconCacheTest : public testing::Test {
 };
 
 SyncFaviconCacheTest::SyncFaviconCacheTest()
-    : cache_(NULL, kMaxSyncFavicons),
+    : cache_(nullptr, nullptr, kMaxSyncFavicons),
       sync_processor_(new TestChangeProcessor),
       sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(
           sync_processor_.get())) {}
