@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This file contains definitions of strings that are specific to
 Google Chrome. These strings will be translated for each locale that Google
-Chrome supports. -->
+Chrome supports. If you update this file, be sure also to update
+chromium_strings.grd. -->
 
 <grit base_dir="." latest_public_release="0" current_release="1"
       source_lang_id="en" enc_check="möl">

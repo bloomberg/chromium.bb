@@ -405,10 +405,6 @@
       # Set to select the Title Case versions of strings in GRD files.
       'use_titlecase_in_grd%': 0,
 
-      # Use translations provided by volunteers at launchpad.net.  This
-      # currently only works on Linux.
-      'use_third_party_translations%': 0,
-
       # Remoting compilation is enabled by default. Set to 0 to disable.
       'remoting%': 1,
 
@@ -1161,7 +1157,6 @@
     'win_fastlink%': '<(win_fastlink)',
     'enable_resource_whitelist_generation%': '<(enable_resource_whitelist_generation)',
     'use_titlecase_in_grd%': '<(use_titlecase_in_grd)',
-    'use_third_party_translations%': '<(use_third_party_translations)',
     'remoting%': '<(remoting)',
     'enable_one_click_signin%': '<(enable_one_click_signin)',
     'enable_pre_sync_backup%': '<(enable_pre_sync_backup)',
@@ -2104,13 +2099,6 @@
       }],
       ['use_titlecase_in_grd==1', {
         'grit_defines': ['-D', 'use_titlecase'],
-      }],
-      ['use_third_party_translations==1', {
-        'grit_defines': ['-D', 'use_third_party_translations'],
-        'locales': [
-          'ast', 'bs', 'ca@valencia', 'en-AU', 'eo', 'eu', 'gl', 'hy', 'ia',
-          'ka', 'ku', 'kw', 'ms', 'ug'
-        ],
       }],
       ['OS=="android"', {
         'grit_defines': [

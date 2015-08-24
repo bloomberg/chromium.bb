@@ -15,30 +15,15 @@ are declared in build/common.gypi.
     </output>
     <output filename="generated_resources_am.pak" type="data_package" lang="am" />
     <output filename="generated_resources_ar.pak" type="data_package" lang="ar" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_ast.pak" type="data_package" lang="ast" />
-    </if>
     <output filename="generated_resources_bg.pak" type="data_package" lang="bg" />
     <output filename="generated_resources_bn.pak" type="data_package" lang="bn" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_bs.pak" type="data_package" lang="bs" />
-    </if>
     <output filename="generated_resources_ca.pak" type="data_package" lang="ca" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_ca@valencia.pak" type="data_package" lang="ca@valencia" />
-    </if>
     <output filename="generated_resources_cs.pak" type="data_package" lang="cs" />
     <output filename="generated_resources_da.pak" type="data_package" lang="da" />
     <output filename="generated_resources_de.pak" type="data_package" lang="de" />
     <output filename="generated_resources_el.pak" type="data_package" lang="el" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_en-AU.pak" type="data_package" lang="en-AU" />
-    </if>
     <output filename="generated_resources_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="generated_resources_en-US.pak" type="data_package" lang="en" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_eo.pak" type="data_package" lang="eo" />
-    </if>
     <output filename="generated_resources_es.pak" type="data_package" lang="es" />
     <if expr="is_ios">
       <!-- iOS uses es-MX for es-419 -->
@@ -48,38 +33,21 @@ are declared in build/common.gypi.
       <output filename="generated_resources_es-419.pak" type="data_package" lang="es-419" />
     </if>
     <output filename="generated_resources_et.pak" type="data_package" lang="et" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_eu.pak" type="data_package" lang="eu" />
-    </if>
     <output filename="generated_resources_fa.pak" type="data_package" lang="fa" />
     <output filename="generated_resources_fake-bidi.pak" type="data_package" lang="fake-bidi" />
     <output filename="generated_resources_fi.pak" type="data_package" lang="fi" />
     <output filename="generated_resources_fil.pak" type="data_package" lang="fil" />
     <output filename="generated_resources_fr.pak" type="data_package" lang="fr" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_gl.pak" type="data_package" lang="gl" />
-    </if>
     <output filename="generated_resources_gu.pak" type="data_package" lang="gu" />
     <output filename="generated_resources_he.pak" type="data_package" lang="he" />
     <output filename="generated_resources_hi.pak" type="data_package" lang="hi" />
     <output filename="generated_resources_hr.pak" type="data_package" lang="hr" />
     <output filename="generated_resources_hu.pak" type="data_package" lang="hu" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_hy.pak" type="data_package" lang="hy" />
-      <output filename="generated_resources_ia.pak" type="data_package" lang="ia" />
-    </if>
     <output filename="generated_resources_id.pak" type="data_package" lang="id" />
     <output filename="generated_resources_it.pak" type="data_package" lang="it" />
     <output filename="generated_resources_ja.pak" type="data_package" lang="ja" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_ka.pak" type="data_package" lang="ka" />
-    </if>
     <output filename="generated_resources_kn.pak" type="data_package" lang="kn" />
     <output filename="generated_resources_ko.pak" type="data_package" lang="ko" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_ku.pak" type="data_package" lang="ku" />
-      <output filename="generated_resources_kw.pak" type="data_package" lang="kw" />
-    </if>
     <output filename="generated_resources_lt.pak" type="data_package" lang="lt" />
     <output filename="generated_resources_lv.pak" type="data_package" lang="lv" />
     <output filename="generated_resources_ml.pak" type="data_package" lang="ml" />
@@ -109,9 +77,6 @@ are declared in build/common.gypi.
     <output filename="generated_resources_te.pak" type="data_package" lang="te" />
     <output filename="generated_resources_th.pak" type="data_package" lang="th" />
     <output filename="generated_resources_tr.pak" type="data_package" lang="tr" />
-    <if expr="use_third_party_translations">
-      <output filename="generated_resources_ug.pak" type="data_package" lang="ug" />
-    </if>
     <output filename="generated_resources_uk.pak" type="data_package" lang="uk" />
     <output filename="generated_resources_vi.pak" type="data_package" lang="vi" />
     <output filename="generated_resources_zh-CN.pak" type="data_package" lang="zh-CN" />
@@ -169,64 +134,32 @@ are declared in build/common.gypi.
   <translations>
     <file path="resources/generated_resources_am.xtb" lang="am" />
     <file path="resources/generated_resources_ar.xtb" lang="ar" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_ast.xtb" lang="ast" />
-    </if>
     <file path="resources/generated_resources_bg.xtb" lang="bg" />
     <file path="resources/generated_resources_bn.xtb" lang="bn" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_bs.xtb" lang="bs" />
-    </if>
     <file path="resources/generated_resources_ca.xtb" lang="ca" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_ca-valencia.xtb" lang="ca@valencia" />
-    </if>
     <file path="resources/generated_resources_cs.xtb" lang="cs" />
     <file path="resources/generated_resources_da.xtb" lang="da" />
     <file path="resources/generated_resources_de.xtb" lang="de" />
     <file path="resources/generated_resources_el.xtb" lang="el" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_en-AU.xtb" lang="en-AU" />
-    </if>
     <file path="resources/generated_resources_en-GB.xtb" lang="en-GB" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_eo.xtb" lang="eo" />
-    </if>
     <file path="resources/generated_resources_es.xtb" lang="es" />
     <file path="resources/generated_resources_es-419.xtb" lang="es-419" />
     <file path="resources/generated_resources_et.xtb" lang="et" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_eu.xtb" lang="eu" />
-    </if>
     <file path="resources/generated_resources_fa.xtb" lang="fa" />
     <file path="resources/generated_resources_fi.xtb" lang="fi" />
     <file path="resources/generated_resources_fil.xtb" lang="fil" />
     <file path="resources/generated_resources_fr.xtb" lang="fr" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_gl.xtb" lang="gl" />
-    </if>
     <file path="resources/generated_resources_gu.xtb" lang="gu" />
     <file path="resources/generated_resources_hi.xtb" lang="hi" />
     <file path="resources/generated_resources_hr.xtb" lang="hr" />
     <file path="resources/generated_resources_hu.xtb" lang="hu" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_hy.xtb" lang="hy" />
-      <file path="../../third_party/launchpad_translations/generated_resources_ia.xtb" lang="ia" />
-    </if>
     <file path="resources/generated_resources_id.xtb" lang="id" />
     <file path="resources/generated_resources_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="resources/generated_resources_iw.xtb" lang="he" />
     <file path="resources/generated_resources_ja.xtb" lang="ja" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_ka.xtb" lang="ka" />
-    </if>
     <file path="resources/generated_resources_kn.xtb" lang="kn" />
     <file path="resources/generated_resources_ko.xtb" lang="ko" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_ku.xtb" lang="ku" />
-      <file path="../../third_party/launchpad_translations/generated_resources_kw.xtb" lang="kw" />
-    </if>
     <file path="resources/generated_resources_lt.xtb" lang="lt" />
     <file path="resources/generated_resources_lv.xtb" lang="lv" />
     <file path="resources/generated_resources_ml.xtb" lang="ml" />
@@ -248,9 +181,6 @@ are declared in build/common.gypi.
     <file path="resources/generated_resources_te.xtb" lang="te" />
     <file path="resources/generated_resources_th.xtb" lang="th" />
     <file path="resources/generated_resources_tr.xtb" lang="tr" />
-    <if expr="use_third_party_translations">
-      <file path="../../third_party/launchpad_translations/generated_resources_ug.xtb" lang="ug" />
-    </if>
     <file path="resources/generated_resources_uk.xtb" lang="uk" />
     <file path="resources/generated_resources_vi.xtb" lang="vi" />
     <file path="resources/generated_resources_zh-CN.xtb" lang="zh-CN" />
