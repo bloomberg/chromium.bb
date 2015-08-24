@@ -203,6 +203,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // with the current navigation item.
 - (void)updateCurrentBackForwardListItemHolder;
 
+// Returns YES if the given WKBackForwardListItem is valid to use for
+// navigation.
+- (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
+
 // Returns a new CRWWKWebViewCrashDetector created with the given |webView| or
 // nil if |webView| is nil. Callers are responsible for releasing the object.
 - (CRWWKWebViewCrashDetector*)newCrashDetectorWithWebView:(WKWebView*)webView;
@@ -454,6 +458,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     return;
   }
 
+  // The current back-forward list item MUST be in the WKWebView's back-forward
+  // list to be valid.
+  DCHECK([self isBackForwardListItemValid:holder->back_forward_list_item()]);
+
   ProceduralBlock webViewNavigationBlock = ^{
     // If the current navigation URL is the same as the URL of the visible
     // page, that means the user requested a reload. |goToBackForwardListItem|
@@ -704,10 +712,19 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // overwrite the holder with the newest data. See crbug.com/520279.
   if (_pendingNavigationTypeForMainFrame) {
     holder->set_back_forward_list_item(
-        [[_wkWebView backForwardList] currentItem]);
+        [_wkWebView backForwardList].currentItem);
     holder->set_navigation_type(*_pendingNavigationTypeForMainFrame);
     _pendingNavigationTypeForMainFrame.reset();
   }
+}
+
+- (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
+  // The current back-forward list item MUST be in the WKWebView's back-forward
+  // list to be valid.
+  WKBackForwardList* list = [_wkWebView backForwardList];
+  return list.currentItem == item ||
+         [list.forwardList indexOfObject:item] != NSNotFound ||
+         [list.backList indexOfObject:item] != NSNotFound;
 }
 
 - (CRWWKWebViewCrashDetector*)newCrashDetectorWithWebView:(WKWebView*)webView {
