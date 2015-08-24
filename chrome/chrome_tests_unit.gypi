@@ -436,7 +436,6 @@
       'browser/ui/cocoa/passwords/manage_passwords_bubble_cocoa_unittest.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_confirmation_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_controller_unittest.mm',
-      'browser/ui/cocoa/passwords/manage_passwords_bubble_manage_credentials_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/manage_passwords_controller_test.h',

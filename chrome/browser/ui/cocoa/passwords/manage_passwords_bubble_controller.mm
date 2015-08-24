@@ -12,7 +12,6 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_account_chooser_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_auto_signin_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_confirmation_view_controller.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_credentials_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
@@ -68,17 +67,10 @@
             initWithModel:model_
                  delegate:self]);
   } else if (model_->state() == password_manager::ui::MANAGE_STATE) {
-    if (model_->IsNewUIActive()) {
-      currentController_.reset(
-          [[ManagePasswordsBubbleManageCredentialsViewController alloc]
-              initWithModel:model_
-                   delegate:self]);
-    } else {
-      currentController_.reset(
-          [[ManagePasswordsBubbleManageViewController alloc]
-              initWithModel:model_
-                   delegate:self]);
-    }
+    currentController_.reset(
+        [[ManagePasswordsBubbleManageViewController alloc]
+            initWithModel:model_
+                 delegate:self]);
   } else if (model_->state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     currentController_.reset(
         [[ManagePasswordsBubbleAutoSigninViewController alloc]

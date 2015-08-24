@@ -561,102 +561,6 @@ void ManagePasswordsBubbleView::ManageView::LinkClicked(views::Link* source,
   parent_->Close();
 }
 
-// ManagePasswordsBubbleView::ManageAccountsView ------------------------------
-
-// A view offering the user a list of his currently saved through the Credential
-// Manager API accounts for the current page.
-class ManagePasswordsBubbleView::ManageAccountsView
-    : public views::View,
-      public views::ButtonListener,
-      public views::LinkListener {
- public:
-  explicit ManageAccountsView(ManagePasswordsBubbleView* parent);
-
- private:
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
-  ManagePasswordsBubbleView* parent_;
-
-  views::Link* manage_link_;
-  views::LabelButton* done_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManageAccountsView);
-};
-
-ManagePasswordsBubbleView::ManageAccountsView::ManageAccountsView(
-    ManagePasswordsBubbleView* parent)
-    : parent_(parent) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-  SetLayoutManager(layout);
-
-  // Add the title.
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRow(layout, parent_->model());
-
-  if (!parent_->model()->local_credentials().empty()) {
-    for (const autofill::PasswordForm* form :
-         parent_->model()->local_credentials()) {
-      layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-      layout->AddView(new ManageCredentialItemView(parent_->model(), form));
-    }
-  } else {
-    views::Label* empty_label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS),
-        ui::ResourceBundle::GetSharedInstance().GetFontList(
-            ui::ResourceBundle::SmallFont));
-    empty_label->SetMultiLine(true);
-    empty_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-    layout->AddView(empty_label);
-    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-  }
-
-  // Then add the "manage passwords" link and "Done" button.
-  manage_link_ = new views::Link(parent_->model()->manage_link());
-  manage_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  manage_link_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::SmallFont));
-  manage_link_->SetUnderline(false);
-  manage_link_->set_listener(this);
-
-  done_button_ =
-      new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
-  done_button_->SetStyle(views::Button::STYLE_BUTTON);
-  done_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::SmallFont));
-
-  BuildColumnSet(layout, LINK_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, LINK_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(manage_link_);
-  layout->AddView(done_button_);
-
-  // Extra padding for visual awesomeness.
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  parent_->set_initially_focused_view(done_button_);
-}
-
-void ManagePasswordsBubbleView::ManageAccountsView::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
-  DCHECK(sender == done_button_);
-  parent_->model()->OnDoneClicked();
-  parent_->Close();
-}
-
-void ManagePasswordsBubbleView::ManageAccountsView::LinkClicked(
-    views::Link* source, int event_flags) {
-  DCHECK_EQ(source, manage_link_);
-  parent_->model()->OnManageLinkClicked();
-  parent_->Close();
-}
-
 // ManagePasswordsBubbleView::SaveConfirmationView ----------------------------
 
 // A view confirming to the user that a password was saved and offering a link
@@ -1026,10 +930,7 @@ void ManagePasswordsBubbleView::Refresh() {
   } else if (model()->state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     AddChildView(new AutoSigninView(this));
   } else {
-    if (model()->IsNewUIActive())
-      AddChildView(new ManageAccountsView(this));
-    else
-      AddChildView(new ManageView(this));
+    AddChildView(new ManageView(this));
   }
   GetLayoutManager()->Layout(this);
 }

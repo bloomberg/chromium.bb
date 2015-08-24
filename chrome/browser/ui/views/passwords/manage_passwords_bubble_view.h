@@ -57,7 +57,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   class AutoSigninView;
   class BlacklistedView;
   class ManageView;
-  class ManageAccountsView;
   class PendingView;
   class SaveConfirmationView;
   class UpdatePendingView;

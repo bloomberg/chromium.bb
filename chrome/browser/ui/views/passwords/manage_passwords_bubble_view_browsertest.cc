@@ -366,19 +366,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
 
   SetupAutoSignin(local_credentials.Pass());
   EXPECT_TRUE(IsBubbleShowing());
-  ::testing::Mock::VerifyAndClearExpectations(&url_callback);
 
   ManagePasswordsBubbleView::CloseBubble();
   EXPECT_FALSE(IsBubbleShowing());
   content::RunAllPendingInMessageLoop();
-
-  // Open the bubble to manage accounts.
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, GetController()->state());
-  EXPECT_CALL(url_callback, OnRequestDone(icon_url));
-  ManagePasswordsBubbleView::ShowBubble(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        ManagePasswordsBubble::USER_ACTION);
-  EXPECT_TRUE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {

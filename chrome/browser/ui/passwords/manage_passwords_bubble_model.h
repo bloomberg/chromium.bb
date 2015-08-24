@@ -123,10 +123,6 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
 
   Profile* GetProfile() const;
 
-  // Returns true iff the new UI should be presented to user for managing and
-  // saving the passwords.
-  bool IsNewUIActive() const;
-
   // Returns true iff the multiple account selection prompt for account update
   // should be presented.
   bool ShouldShowMultipleAccountUpdateUI() const;

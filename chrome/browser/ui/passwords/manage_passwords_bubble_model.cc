@@ -120,10 +120,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
     // There is no title.
   } else {
-    title_ = IsNewUIActive() ?
-        l10n_util::GetStringFUTF16(IDS_MANAGE_ACCOUNTS_TITLE,
-                                   base::UTF8ToUTF16(origin_.spec())) :
-        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
+    title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
   }
 
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
@@ -336,11 +333,6 @@ void ManagePasswordsBubbleModel::OnChooseCredentials(
 
 Profile* ManagePasswordsBubbleModel::GetProfile() const {
   return GetProfileFromWebContents(web_contents());
-}
-
-bool ManagePasswordsBubbleModel::IsNewUIActive() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCredentialManagerAPI);
 }
 
 bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
