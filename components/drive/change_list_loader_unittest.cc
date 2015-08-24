@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/change_list_loader.h"
+#include "components/drive/change_list_loader.h"
 
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
+#include "components/drive/change_list_loader_observer.h"
 #include "components/drive/drive_test_util.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_cache.h"

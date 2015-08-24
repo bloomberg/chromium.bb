@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/change_list_loader.h"
+#include "components/drive/change_list_loader.h"
 
 #include <set>
 
@@ -13,8 +13,8 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
-#include "chrome/browser/chromeos/drive/change_list_processor.h"
+#include "components/drive/change_list_loader_observer.h"
+#include "components/drive/change_list_processor.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"

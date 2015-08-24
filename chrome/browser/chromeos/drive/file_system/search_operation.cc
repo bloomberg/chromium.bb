@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/drive/change_list_loader.h"
+#include "components/drive/change_list_loader.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"

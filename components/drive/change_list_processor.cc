@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/change_list_processor.h"
+#include "components/drive/change_list_processor.h"
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"

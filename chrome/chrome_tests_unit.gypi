@@ -1118,6 +1118,8 @@
     ],
     'chrome_unit_tests_chromeos_sources': [
       # TODO(lukasza): Move Drive tests outside of CrOS (crbug.com/498951).
+      '../components/drive/change_list_loader_unittest.cc',
+      '../components/drive/change_list_processor_unittest.cc',
       '../components/drive/file_cache_unittest.cc',
       '../components/drive/file_change_unittest.cc',
       '../components/drive/file_system_core_util_unittest.cc',
@@ -1136,8 +1138,6 @@
       'browser/chromeos/attestation/platform_verification_flow_unittest.cc',
       'browser/chromeos/customization/customization_document_unittest.cc',
       'browser/chromeos/display/display_preferences_unittest.cc',
-      'browser/chromeos/drive/change_list_loader_unittest.cc',
-      'browser/chromeos/drive/change_list_processor_unittest.cc',
       'browser/chromeos/drive/directory_loader_unittest.cc',
       'browser/chromeos/drive/download_handler_unittest.cc',
       'browser/chromeos/drive/drive_file_stream_reader_unittest.cc',
@@ -1546,8 +1546,8 @@
       'browser/ui/tabs/pinned_tab_service_unittest.cc',
       'browser/ui/tabs/pinned_tab_test_utils.cc',
       'browser/ui/tabs/tab_menu_model_unittest.cc',
-      'browser/ui/tabs/tab_strip_model_unittest.cc',
       'browser/ui/tabs/tab_strip_model_stats_recorder_unittest.cc',
+      'browser/ui/tabs/tab_strip_model_unittest.cc',
       'browser/ui/tabs/test_tab_strip_model_delegate.cc',
       'browser/ui/tabs/test_tab_strip_model_delegate.h',
       'browser/ui/toolbar/back_forward_menu_model_unittest.cc',
@@ -2645,8 +2645,8 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
           'sources!': [
-            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
             'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
+            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
             'renderer/spellchecker/spellcheck_unittest.cc',
           ],
           'ldflags': [

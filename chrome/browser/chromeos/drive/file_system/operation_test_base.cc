@@ -6,8 +6,8 @@
 
 #include "base/prefs/testing_pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
+#include "components/drive/change_list_loader.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/fake_free_disk_space_getter.h"
 #include "components/drive/file_cache.h"

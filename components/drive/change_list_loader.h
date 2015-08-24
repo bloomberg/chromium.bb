@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
+#ifndef COMPONENTS_DRIVE_CHANGE_LIST_LOADER_H_
+#define COMPONENTS_DRIVE_CHANGE_LIST_LOADER_H_
 
 #include <string>
 #include <vector>
@@ -246,4 +246,4 @@ class ChangeListLoader {
 }  // namespace internal
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_H_
+#endif  // COMPONENTS_DRIVE_CHANGE_LIST_LOADER_H_

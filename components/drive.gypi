@@ -27,6 +27,11 @@
         '../third_party/re2/re2.gyp:re2',
       ],
       'sources': [
+        'drive/change_list_loader.cc',
+        'drive/change_list_loader.h',
+        'drive/change_list_loader_observer.h',
+        'drive/change_list_processor.cc',
+        'drive/change_list_processor.h',
         'drive/drive_api_util.cc',
         'drive/drive_api_util.h',
         'drive/drive_app_registry.cc',

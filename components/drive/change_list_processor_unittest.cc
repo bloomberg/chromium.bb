@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/change_list_processor.h"
+#include "components/drive/change_list_processor.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/single_thread_task_runner.h"

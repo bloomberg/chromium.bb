@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_OBSERVER_H_
+#ifndef COMPONENTS_DRIVE_CHANGE_LIST_LOADER_OBSERVER_H_
+#define COMPONENTS_DRIVE_CHANGE_LIST_LOADER_OBSERVER_H_
 
 namespace base {
 class FilePath;
@@ -41,4 +41,4 @@ class ChangeListLoaderObserver {
 }  // namespace internal
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_CHANGE_LIST_LOADER_OBSERVER_H_
+#endif  // COMPONENTS_DRIVE_CHANGE_LIST_LOADER_OBSERVER_H_

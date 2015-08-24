@@ -6,6 +6,11 @@ import("//third_party/protobuf/proto_library.gni")
 
 source_set("drive") {
   sources = [
+    "change_list_loader.cc",
+    "change_list_loader.h",
+    "change_list_loader_observer.h",
+    "change_list_processor.cc",
+    "change_list_processor.h",
     "drive_api_util.cc",
     "drive_api_util.h",
     "drive_app_registry.cc",
