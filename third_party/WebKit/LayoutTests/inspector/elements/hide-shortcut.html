@@ -62,14 +62,14 @@ function test()
             function callback2(style)
             {
                 InspectorTest.addResult("=== Parent node is hidden ===");
-                InspectorTest.addResult(style.getLiveProperty("visibility").propertyText);
+                InspectorTest.addResult(getPropertyText(style, "visibility"));
                 InspectorTest.cssModel.computedStylePromise(childNode.id).then(callback3);
             }
 
             function callback3(style)
             {
                 InspectorTest.addResult("=== Child node is hidden ===");
-                InspectorTest.addResult(style.getLiveProperty("visibility").propertyText);
+                InspectorTest.addResult(getPropertyText(style, "visibility"));
                 next();
             }
         },
@@ -87,14 +87,14 @@ function test()
             function callback2(style)
             {
                 InspectorTest.addResult("=== Parent node is visible ===");
-                InspectorTest.addResult(style.getLiveProperty("visibility").propertyText);
+                InspectorTest.addResult(getPropertyText(style, "visibility"));
                 InspectorTest.cssModel.computedStylePromise(childNode.id).then(callback3);
             }
 
             function callback3(style)
             {
                 InspectorTest.addResult("=== Child node is visible ===");
-                InspectorTest.addResult(style.getLiveProperty("visibility").propertyText);
+                InspectorTest.addResult(getPropertyText(style, "visibility"));
                 next();
             }
         },
@@ -134,6 +134,11 @@ function test()
             }
         }
     ]);
+
+    function getPropertyText(computedStyle, propertyName)
+    {
+        return String.sprintf("%s: %s;", propertyName, computedStyle.get(propertyName));
+    }
 
     function testPseudoToggle(pseudoNode, next)
     {
