@@ -290,6 +290,10 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 	int dma_fd;
 	uint64_t dma_buf_size = 0;
 
+	/* We must maintain a list of pairs <handle, bo>, so that we always
+	 * return the same amdgpu_bo instance for the same handle. */
+	pthread_mutex_lock(&dev->bo_table_mutex);
+
 	/* Convert a DMA buf handle to a KMS handle now. */
 	if (type == amdgpu_bo_handle_type_dma_buf_fd) {
 		uint32_t handle;
@@ -304,6 +308,7 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 		/* Query the buffer size. */
 		size = lseek(shared_handle, 0, SEEK_END);
 		if (size == (off_t)-1) {
+			pthread_mutex_unlock(&dev->bo_table_mutex);
 			amdgpu_close_kms_handle(dev, handle);
 			return -errno;
 		}
@@ -312,10 +317,6 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 		dma_buf_size = size;
 		shared_handle = handle;
 	}
-
-	/* We must maintain a list of pairs <handle, bo>, so that we always
-	 * return the same amdgpu_bo instance for the same handle. */
-	pthread_mutex_lock(&dev->bo_table_mutex);
 
 	/* If we have already created a buffer with this handle, find it. */
 	switch (type) {
