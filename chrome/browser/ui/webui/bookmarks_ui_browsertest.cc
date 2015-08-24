@@ -63,8 +63,8 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, CommandOpensBookmarksTab) {
   AssertIsBookmarksPage(browser()->tab_strip_model()->GetActiveWebContents());
 }
 
-// Flaky on Mac: http://crbug.com/87200
-#if defined(OS_MACOSX)
+// Flaky on Mac: https://crbug.com/524216
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_CommandAgainGoesBackToBookmarksTab \
   DISABLED_CommandAgainGoesBackToBookmarksTab
 #else
