@@ -661,8 +661,17 @@ ApplicationCache* LocalDOMWindow::applicationCache() const
 
 Navigator* LocalDOMWindow::navigator() const
 {
+    if (!isCurrentlyDisplayedInFrame() && (!m_navigator || m_navigator->frame())) {
+        // We return a navigator with null frame instead of returning null
+        // pointer as other functions do, in order to allow users to access
+        // functions such as navigator.product.
+        m_navigator = Navigator::create(nullptr);
+    }
     if (!m_navigator)
         m_navigator = Navigator::create(frame());
+    // As described above, when not dispayed in the frame, the returning
+    // navigator should not be associated with the frame.
+    ASSERT(isCurrentlyDisplayedInFrame() || !m_navigator->frame());
     return m_navigator.get();
 }
 
