@@ -4,10 +4,12 @@
 
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 
+#include "base/cpu.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "components/tracing/tracing_messages.h"
 #include "content/browser/tracing/trace_message_filter.h"
@@ -15,8 +17,10 @@
 #include "content/public/browser/background_tracing_reactive_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/content_client.h"
+#include "gpu/config/gpu_info.h"
 #include "net/base/network_change_notifier.h"
 
 namespace content {
@@ -25,10 +29,6 @@ namespace {
 
 base::LazyInstance<BackgroundTracingManagerImpl>::Leaky g_controller =
     LAZY_INSTANCE_INITIALIZER;
-
-const char kMetaDataConfigKey[] = "config";
-const char kMetaDataNetworkType[] = "network_type";
-const char kMetaDataVersionKey[] = "product_version";
 
 // These values are used for a histogram. Do not reorder.
 enum BackgroundTracingMetrics {
@@ -555,9 +555,52 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() const {
   BackgroundTracingConfig::IntoDict(config_.get(), config_dict.get());
 
   scoped_ptr<base::DictionaryValue> metadata_dict(new base::DictionaryValue());
-  metadata_dict->Set(kMetaDataConfigKey, config_dict.Pass());
-  metadata_dict->SetString(kMetaDataNetworkType, network_type);
-  metadata_dict->SetString(kMetaDataVersionKey, product_version);
+  metadata_dict->Set("config", config_dict.Pass());
+  metadata_dict->SetString("network-type", network_type);
+  metadata_dict->SetString("product-version", product_version);
+
+  // OS
+  metadata_dict->SetString("os-name", base::SysInfo::OperatingSystemName());
+  metadata_dict->SetString("os-version",
+                           base::SysInfo::OperatingSystemVersion());
+  metadata_dict->SetString("os-arch",
+                           base::SysInfo::OperatingSystemArchitecture());
+
+  // CPU
+  base::CPU cpu;
+  metadata_dict->SetInteger("cpu-family", cpu.family());
+  metadata_dict->SetInteger("cpu-model", cpu.model());
+  metadata_dict->SetInteger("cpu-stepping", cpu.stepping());
+  metadata_dict->SetInteger("num-cpus", base::SysInfo::NumberOfProcessors());
+  metadata_dict->SetInteger("physical-memory",
+                            base::SysInfo::AmountOfPhysicalMemoryMB());
+
+  std::string cpu_brand = cpu.cpu_brand();
+  // Workaround for crbug.com/249713.
+  // TODO(oysteine): Remove workaround when bug is fixed.
+  size_t null_pos = cpu_brand.find('\0');
+  if (null_pos != std::string::npos)
+    cpu_brand.erase(null_pos);
+  metadata_dict->SetString("cpu-brand", cpu_brand);
+
+  // GPU
+  gpu::GPUInfo gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
+
+#if !defined(OS_ANDROID)
+  metadata_dict->SetInteger("gpu-venid", gpu_info.gpu.vendor_id);
+  metadata_dict->SetInteger("gpu-devid", gpu_info.gpu.device_id);
+#endif
+
+  metadata_dict->SetString("gpu-driver", gpu_info.driver_version);
+  metadata_dict->SetString("gpu-psver", gpu_info.pixel_shader_version);
+  metadata_dict->SetString("gpu-vsver", gpu_info.vertex_shader_version);
+
+#if defined(OS_MACOSX)
+  metadata_dict->SetString("gpu-glver", gpu_info.gl_version);
+#elif defined(OS_POSIX)
+  metadata_dict->SetString("gpu-gl-vendor", gpu_info.gl_vendor);
+  metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
+#endif
 
   return metadata_dict.Pass();
 }
