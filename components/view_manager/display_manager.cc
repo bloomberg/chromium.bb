@@ -214,7 +214,7 @@ void DefaultDisplayManager::Draw() {
   frame->delegated_frame_data = frame_data.Pass();
   frame_pending_ = true;
   if (top_level_display_client_) {
-    top_level_display_client_->SubmitFrame(
+    top_level_display_client_->SubmitCompositorFrame(
         frame.Pass(),
         base::Bind(&DefaultDisplayManager::DidDraw, base::Unretained(this)));
   }

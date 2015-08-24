@@ -421,7 +421,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn,
                                   AsWeakPtr(), output_surface_id);
       }
-      surface_factory_->SubmitFrame(
+      surface_factory_->SubmitCompositorFrame(
           surface_id_, compositor_frame.Pass(), ack_callback);
     } else {
       if (!resource_collection_.get()) {

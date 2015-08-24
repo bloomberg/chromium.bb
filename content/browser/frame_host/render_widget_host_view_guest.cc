@@ -273,7 +273,8 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
   DCHECK(ack_pending_count_ < 1000);
-  surface_factory_->SubmitFrame(surface_id_, frame.Pass(), ack_callback);
+  surface_factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+                                          ack_callback);
 }
 
 bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {

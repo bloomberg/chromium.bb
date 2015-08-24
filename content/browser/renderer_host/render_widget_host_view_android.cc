@@ -1017,7 +1017,7 @@ void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
   last_output_surface_id_ = output_surface_id;
 }
 
-void RenderWidgetHostViewAndroid::SubmitFrame(
+void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
   cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
   if (manager) {
@@ -1042,7 +1042,8 @@ void RenderWidgetHostViewAndroid::SubmitFrame(
     cc::SurfaceFactory::DrawCallback ack_callback =
         base::Bind(&RenderWidgetHostViewAndroid::RunAckCallbacks,
                    weak_ptr_factory_.GetWeakPtr());
-    surface_factory_->SubmitFrame(surface_id_, frame.Pass(), ack_callback);
+    surface_factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
+                                            ack_callback);
   } else {
     if (!resource_collection_.get()) {
       resource_collection_ = new cc::DelegatedFrameResourceCollection;
@@ -1086,7 +1087,7 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
   if (!has_content) {
     DestroyDelegatedContent();
   } else {
-    SubmitFrame(frame.Pass());
+    SubmitCompositorFrame(frame.Pass());
   }
 
   if (layer_.get()) {

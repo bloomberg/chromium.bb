@@ -90,8 +90,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       frame_data->render_pass_list.push_back(pass.Pass());
       scoped_ptr<CompositorFrame> frame(new CompositorFrame);
       frame->delegated_frame_data = frame_data.Pass();
-      factory_.SubmitFrame(SurfaceId(i), frame.Pass(),
-                           SurfaceFactory::DrawCallback());
+      factory_.SubmitCompositorFrame(SurfaceId(i), frame.Pass(),
+                                     SurfaceFactory::DrawCallback());
     }
 
     factory_.Create(SurfaceId(num_surfaces + 1));
@@ -114,8 +114,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       frame_data->render_pass_list.push_back(pass.Pass());
       scoped_ptr<CompositorFrame> frame(new CompositorFrame);
       frame->delegated_frame_data = frame_data.Pass();
-      factory_.SubmitFrame(SurfaceId(num_surfaces + 1), frame.Pass(),
-                           SurfaceFactory::DrawCallback());
+      factory_.SubmitCompositorFrame(SurfaceId(num_surfaces + 1), frame.Pass(),
+                                     SurfaceFactory::DrawCallback());
 
       scoped_ptr<CompositorFrame> aggregated =
           aggregator_->Aggregate(SurfaceId(num_surfaces + 1));

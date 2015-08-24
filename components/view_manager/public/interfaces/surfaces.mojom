@@ -33,8 +33,8 @@ interface Surface {
   CreateSurface(uint32 id_local);
 
   // After the submitted frame is drawn for the first time, the surface will
-  // respond to the SubmitFrame message. Clients should use this acknowledgement
-  // to ratelimit frame submissions.
-  SubmitFrame(uint32 id_local, CompositorFrame frame) => ();
+  // respond to the SubmitCompositorFrame message. Clients should use this
+  // acknowledgement to ratelimit frame submissions.
+  SubmitCompositorFrame(uint32 id_local, CompositorFrame frame) => ();
   DestroySurface(uint32 id_local);
 };

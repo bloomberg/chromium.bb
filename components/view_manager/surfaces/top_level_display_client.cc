@@ -59,8 +59,9 @@ TopLevelDisplayClient::~TopLevelDisplayClient() {
   }
 }
 
-void TopLevelDisplayClient::SubmitFrame(scoped_ptr<cc::CompositorFrame> frame,
-                                        const base::Closure& callback) {
+void TopLevelDisplayClient::SubmitCompositorFrame(
+    scoped_ptr<cc::CompositorFrame> frame,
+    const base::Closure& callback) {
   DCHECK(pending_callback_.is_null());
   pending_frame_ = frame.Pass();
   pending_callback_ = callback;
@@ -74,9 +75,8 @@ void TopLevelDisplayClient::Draw() {
           output_rect.size();
   last_submitted_frame_size_ = frame_size;
   display_->Resize(frame_size);
-  factory_.SubmitFrame(cc_id_,
-                       pending_frame_.Pass(),
-                       base::Bind(&CallCallback, pending_callback_));
+  factory_.SubmitCompositorFrame(cc_id_, pending_frame_.Pass(),
+                                 base::Bind(&CallCallback, pending_callback_));
   surfaces_state_->scheduler()->SetNeedsDraw();
   pending_callback_.Reset();
 }

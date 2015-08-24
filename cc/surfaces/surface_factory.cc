@@ -48,10 +48,10 @@ void SurfaceFactory::Destroy(SurfaceId surface_id) {
   manager_->Destroy(surface_map_.take_and_erase(it));
 }
 
-void SurfaceFactory::SubmitFrame(SurfaceId surface_id,
-                                 scoped_ptr<CompositorFrame> frame,
-                                 const DrawCallback& callback) {
-  TRACE_EVENT0("cc", "SurfaceFactory::SubmitFrame");
+void SurfaceFactory::SubmitCompositorFrame(SurfaceId surface_id,
+                                           scoped_ptr<CompositorFrame> frame,
+                                           const DrawCallback& callback) {
+  TRACE_EVENT0("cc", "SurfaceFactory::SubmitCompositorFrame");
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
   DCHECK(it->second->factory().get() == this);

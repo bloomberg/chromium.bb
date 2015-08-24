@@ -42,8 +42,8 @@ TEST(SurfaceHittestTest, Hittest_SingleSurface) {
   delegated_frame_data->render_pass_list.push_back(pass.Pass());
   scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
   root_frame->delegated_frame_data = delegated_frame_data.Pass();
-  factory.SubmitFrame(root_surface_id, root_frame.Pass(),
-                      SurfaceFactory::DrawCallback());
+  factory.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
+                                SurfaceFactory::DrawCallback());
 
   {
     SurfaceHittest hittest(&manager);
@@ -99,8 +99,8 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
   root_delegated_frame_data->render_pass_list.push_back(root_pass.Pass());
   scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
   root_frame->delegated_frame_data = root_delegated_frame_data.Pass();
-  factory.SubmitFrame(root_surface_id, root_frame.Pass(),
-                      SurfaceFactory::DrawCallback());
+  factory.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
+                                SurfaceFactory::DrawCallback());
 
   // Creates a child surface.
   factory.Create(child_surface_id);
@@ -129,8 +129,8 @@ TEST(SurfaceHittestTest, Hittest_ChildSurface) {
   child_delegated_frame_data->render_pass_list.push_back(child_pass.Pass());
   scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
   child_frame->delegated_frame_data = child_delegated_frame_data.Pass();
-  factory.SubmitFrame(child_surface_id, child_frame.Pass(),
-                      SurfaceFactory::DrawCallback());
+  factory.SubmitCompositorFrame(child_surface_id, child_frame.Pass(),
+                                SurfaceFactory::DrawCallback());
 
   {
     SurfaceHittest hittest(&manager);

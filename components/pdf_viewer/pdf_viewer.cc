@@ -266,7 +266,7 @@ class BitmapUploader : public mojo::ResourceReturner {
 
     frame->passes.push_back(pass.Pass());
 
-    surface_->SubmitFrame(local_id_, frame.Pass(), mojo::Closure());
+    surface_->SubmitCompositorFrame(local_id_, frame.Pass(), mojo::Closure());
   }
 
   uint32_t BindTextureForSize(const mojo::Size size) {

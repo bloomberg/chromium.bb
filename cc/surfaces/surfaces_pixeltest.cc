@@ -80,8 +80,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
 
   SurfaceId root_surface_id = allocator_.GenerateId();
   factory_.Create(root_surface_id);
-  factory_.SubmitFrame(root_surface_id, root_frame.Pass(),
-                       SurfaceFactory::DrawCallback());
+  factory_.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
+                                 SurfaceFactory::DrawCallback());
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
   scoped_ptr<CompositorFrame> aggregated_frame =
@@ -135,8 +135,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
     scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
     root_frame->delegated_frame_data = delegated_frame_data.Pass();
 
-    factory_.SubmitFrame(root_surface_id, root_frame.Pass(),
-                         SurfaceFactory::DrawCallback());
+    factory_.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
+                                   SurfaceFactory::DrawCallback());
   }
 
   {
@@ -163,8 +163,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
     scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
     child_frame->delegated_frame_data = delegated_frame_data.Pass();
 
-    factory_.SubmitFrame(child_surface_id, child_frame.Pass(),
-                         SurfaceFactory::DrawCallback());
+    factory_.SubmitCompositorFrame(child_surface_id, child_frame.Pass(),
+                                   SurfaceFactory::DrawCallback());
   }
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);
@@ -234,8 +234,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
     root_frame->delegated_frame_data = delegated_frame_data.Pass();
 
-    factory_.SubmitFrame(root_surface_id, root_frame.Pass(),
-                         SurfaceFactory::DrawCallback());
+    factory_.SubmitCompositorFrame(root_surface_id, root_frame.Pass(),
+                                   SurfaceFactory::DrawCallback());
   }
 
   {
@@ -270,8 +270,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
     child_frame->delegated_frame_data = delegated_frame_data.Pass();
 
-    factory_.SubmitFrame(left_child_id, child_frame.Pass(),
-                         SurfaceFactory::DrawCallback());
+    factory_.SubmitCompositorFrame(left_child_id, child_frame.Pass(),
+                                   SurfaceFactory::DrawCallback());
   }
 
   {
@@ -306,8 +306,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
     child_frame->delegated_frame_data = delegated_frame_data.Pass();
 
-    factory_.SubmitFrame(right_child_id, child_frame.Pass(),
-                         SurfaceFactory::DrawCallback());
+    factory_.SubmitCompositorFrame(right_child_id, child_frame.Pass(),
+                                   SurfaceFactory::DrawCallback());
   }
 
   SurfaceAggregator aggregator(&manager_, resource_provider_.get(), true);

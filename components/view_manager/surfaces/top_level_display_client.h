@@ -44,8 +44,8 @@ class TopLevelDisplayClient
                         const scoped_refptr<SurfacesState>& surfaces_state);
   ~TopLevelDisplayClient() override;
 
-  void SubmitFrame(scoped_ptr<cc::CompositorFrame> frame,
-                   const base::Closure& callback);
+  void SubmitCompositorFrame(scoped_ptr<cc::CompositorFrame> frame,
+                             const base::Closure& callback);
 
  private:
   // DisplayClient implementation.

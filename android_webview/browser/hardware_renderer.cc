@@ -101,8 +101,8 @@ void HardwareRenderer::CommitFrame() {
     surface_factory_->Create(child_id_);
   }
 
-  surface_factory_->SubmitFrame(child_id_, frame.Pass(),
-                                cc::SurfaceFactory::DrawCallback());
+  surface_factory_->SubmitCompositorFrame(child_id_, frame.Pass(),
+                                          cc::SurfaceFactory::DrawCallback());
 }
 
 void HardwareRenderer::DrawGL(bool stencil_enabled,
@@ -170,8 +170,8 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
     surface_factory_->Create(root_id_);
     display_->SetSurfaceId(root_id_, 1.f);
   }
-  surface_factory_->SubmitFrame(root_id_, frame.Pass(),
-                                cc::SurfaceFactory::DrawCallback());
+  surface_factory_->SubmitCompositorFrame(root_id_, frame.Pass(),
+                                          cc::SurfaceFactory::DrawCallback());
 
   display_->Resize(viewport);
 
