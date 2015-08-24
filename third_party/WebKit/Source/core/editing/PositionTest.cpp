@@ -6,26 +6,11 @@
 #include "core/editing/Position.h"
 
 #include "core/editing/EditingTestBase.h"
-#include "core/editing/EditingUtilities.h"
 
 namespace blink {
 
 class PositionTest : public EditingTestBase {
 };
-
-// TODO(yoisn) We should move |NextNodeIndex| to "EditingUtilitiesTest.cpp".
-TEST_F(PositionTest, NextNodeIndex)
-{
-    const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
-    const char* shadowContent = "<content select=#two></content><content select=#one></content>";
-    setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
-    Node* host = document().getElementById("host");
-    Node* two = document().getElementById("two");
-
-    EXPECT_EQ(Position(host, 3), nextPositionOf(Position(two, 2), PositionMoveType::CodePoint));
-    EXPECT_EQ(PositionInComposedTree(host, 1), nextPositionOf(PositionInComposedTree(two, 2), PositionMoveType::CodePoint));
-}
 
 TEST_F(PositionTest, NodeAsRangeLastNodeNull)
 {

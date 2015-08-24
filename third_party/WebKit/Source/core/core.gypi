@@ -3771,6 +3771,7 @@
             'editing/EditingStrategyTest.cpp',
             'editing/EditingTestBase.cpp',
             'editing/EditingTestBase.h',
+            'editing/EditingUtilitiesTest.cpp',
             'editing/FrameSelectionTest.cpp',
             'editing/GranularityStrategyTest.cpp',
             'editing/InputMethodControllerTest.cpp',
