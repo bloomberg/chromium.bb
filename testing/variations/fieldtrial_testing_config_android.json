@@ -245,5 +245,10 @@
                 "fetch_period_min": "30"
             }
         }
+    ],
+    "Precache": [
+        {
+            "group_name": "Enabled"
+        }
     ]
 }
