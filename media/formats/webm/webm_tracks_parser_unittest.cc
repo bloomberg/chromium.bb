@@ -5,14 +5,17 @@
 #include "base/logging.h"
 #include "media/base/buffers.h"
 #include "media/base/channel_layout.h"
+#include "media/base/mock_media_log.h"
 #include "media/formats/webm/tracks_builder.h"
 #include "media/formats/webm/webm_constants.h"
 #include "media/formats/webm/webm_tracks_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::HasSubstr;
 using ::testing::InSequence;
 using ::testing::Return;
+using ::testing::StrictMock;
 using ::testing::_;
 
 namespace media {
@@ -21,32 +24,36 @@ static const double kDefaultTimecodeScaleInUs = 1000.0;  // 1 ms resolution
 
 class WebMTracksParserTest : public testing::Test {
  public:
-  WebMTracksParserTest() {}
+  WebMTracksParserTest() : media_log_(new StrictMock<MockMediaLog>()) {}
+
+ protected:
+  void VerifyTextTrackInfo(const uint8* buffer,
+                           int buffer_size,
+                           TextKind text_kind,
+                           const std::string& name,
+                           const std::string& language) {
+    scoped_ptr<WebMTracksParser> parser(
+        new WebMTracksParser(media_log_, false));
+
+    int result = parser->Parse(buffer, buffer_size);
+    EXPECT_GT(result, 0);
+    EXPECT_EQ(result, buffer_size);
+
+    const WebMTracksParser::TextTracks& text_tracks = parser->text_tracks();
+    EXPECT_EQ(text_tracks.size(), WebMTracksParser::TextTracks::size_type(1));
+
+    const WebMTracksParser::TextTracks::const_iterator itr =
+        text_tracks.begin();
+    EXPECT_EQ(itr->first, 1);  // track num
+
+    const TextTrackConfig& config = itr->second;
+    EXPECT_EQ(config.kind(), text_kind);
+    EXPECT_TRUE(config.label() == name);
+    EXPECT_TRUE(config.language() == language);
+  }
+
+  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
 };
-
-static void VerifyTextTrackInfo(const uint8* buffer,
-                                int buffer_size,
-                                TextKind text_kind,
-                                const std::string& name,
-                                const std::string& language) {
-  scoped_ptr<WebMTracksParser> parser(
-      new WebMTracksParser(new MediaLog(), false));
-
-  int result = parser->Parse(buffer, buffer_size);
-  EXPECT_GT(result, 0);
-  EXPECT_EQ(result, buffer_size);
-
-  const WebMTracksParser::TextTracks& text_tracks = parser->text_tracks();
-  EXPECT_EQ(text_tracks.size(), WebMTracksParser::TextTracks::size_type(1));
-
-  const WebMTracksParser::TextTracks::const_iterator itr = text_tracks.begin();
-  EXPECT_EQ(itr->first, 1);  // track num
-
-  const TextTrackConfig& config = itr->second;
-  EXPECT_EQ(config.kind(), text_kind);
-  EXPECT_TRUE(config.label() == name);
-  EXPECT_TRUE(config.language() == language);
-}
 
 TEST_F(WebMTracksParserTest, SubtitleNoNameNoLang) {
   InSequence s;
@@ -96,8 +103,10 @@ TEST_F(WebMTracksParserTest, IgnoringTextTracks) {
   tb.AddTextTrack(2, 2, kWebMCodecSubtitles, "Commentary", "fre");
 
   const std::vector<uint8> buf = tb.Finish();
-  scoped_ptr<WebMTracksParser> parser(
-      new WebMTracksParser(new MediaLog(), true));
+  scoped_ptr<WebMTracksParser> parser(new WebMTracksParser(media_log_, true));
+
+  EXPECT_MEDIA_LOG(HasSubstr("Ignoring text track 1"));
+  EXPECT_MEDIA_LOG(HasSubstr("Ignoring text track 2"));
 
   int result = parser->Parse(&buf[0], buf.size());
   EXPECT_GT(result, 0);
@@ -110,7 +119,7 @@ TEST_F(WebMTracksParserTest, IgnoringTextTracks) {
   EXPECT_TRUE(ignored_tracks.find(2) != ignored_tracks.end());
 
   // Test again w/o ignoring the test tracks.
-  parser.reset(new WebMTracksParser(new MediaLog(), false));
+  parser.reset(new WebMTracksParser(media_log_, false));
 
   result = parser->Parse(&buf[0], buf.size());
   EXPECT_GT(result, 0);
@@ -130,8 +139,7 @@ TEST_F(WebMTracksParserTest, AudioVideoDefaultDurationUnset) {
   tb.AddVideoTrack(2, 2, "V_VP8", "video", "", -1, 320, 240);
   const std::vector<uint8> buf = tb.Finish();
 
-  scoped_ptr<WebMTracksParser> parser(
-      new WebMTracksParser(new MediaLog(), true));
+  scoped_ptr<WebMTracksParser> parser(new WebMTracksParser(media_log_, true));
   int result = parser->Parse(&buf[0], buf.size());
   EXPECT_LE(0, result);
   EXPECT_EQ(static_cast<int>(buf.size()), result);
@@ -160,8 +168,7 @@ TEST_F(WebMTracksParserTest, AudioVideoDefaultDurationSet) {
   tb.AddVideoTrack(2, 2, "V_VP8", "video", "", 987654321, 320, 240);
   const std::vector<uint8> buf = tb.Finish();
 
-  scoped_ptr<WebMTracksParser> parser(
-      new WebMTracksParser(new MediaLog(), true));
+  scoped_ptr<WebMTracksParser> parser(new WebMTracksParser(media_log_, true));
   int result = parser->Parse(&buf[0], buf.size());
   EXPECT_LE(0, result);
   EXPECT_EQ(static_cast<int>(buf.size()), result);
@@ -183,8 +190,10 @@ TEST_F(WebMTracksParserTest, InvalidZeroDefaultDurationSet) {
   tb.AddAudioTrack(1, 1, "A_VORBIS", "audio", "", 0, 2, 8000);
   const std::vector<uint8> buf = tb.Finish();
 
-  scoped_ptr<WebMTracksParser> parser(
-      new WebMTracksParser(new MediaLog(), true));
+  scoped_ptr<WebMTracksParser> parser(new WebMTracksParser(media_log_, true));
+
+  EXPECT_MEDIA_LOG(HasSubstr("Illegal 0ns audio TrackEntry DefaultDuration"));
+
   EXPECT_EQ(-1, parser->Parse(&buf[0], buf.size()));
 }
 
@@ -195,8 +204,7 @@ TEST_F(WebMTracksParserTest, HighTrackUID) {
   tb.AddAudioTrack(1, 1ULL << 31, "A_VORBIS", "audio", "", 40, 2, 8000);
   const std::vector<uint8> buf = tb.Finish();
 
-  scoped_ptr<WebMTracksParser> parser(
-      new WebMTracksParser(new MediaLog(), true));
+  scoped_ptr<WebMTracksParser> parser(new WebMTracksParser(media_log_, true));
   EXPECT_GT(parser->Parse(&buf[0], buf.size()),0);
 }
 
