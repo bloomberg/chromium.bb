@@ -111,9 +111,6 @@ struct amdgpu_bo_list {
 
 struct amdgpu_context {
 	struct amdgpu_device *dev;
-	/** Mutex for accessing fences and to maintain command submissions
-	    in good sequence. */
-	pthread_mutex_t sequence_mutex;
 	/* context id*/
 	uint32_t id;
 };
