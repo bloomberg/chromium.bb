@@ -65,8 +65,10 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     private LargeIconBridge mLargeIconBridge;
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
+
         @Override
-        public void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node) {
+        public void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node,
+                boolean isDoingExtensiveChanges) {
             // If the folder is removed in folder mode, show the parent folder or falls back to all
             // bookmarks mode.
             if (getCurrentState() == UIState.STATE_FOLDER
