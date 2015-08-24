@@ -113,10 +113,11 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
 
 TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler) {
   // Cannot initialize a handler for non-secure origins.
-  EXPECT_FALSE(InitializeHandlerCheck("http://host/scope/doc", "GET", false,
-                                      RESOURCE_TYPE_MAIN_FRAME));
   EXPECT_FALSE(InitializeHandlerCheck(
       "ftp://host/scope/doc", "GET", false, RESOURCE_TYPE_MAIN_FRAME));
+  // HTTP is ok because it might redirect to HTTPS.
+  EXPECT_TRUE(InitializeHandlerCheck("http://host/scope/doc", "GET", false,
+                                     RESOURCE_TYPE_MAIN_FRAME));
   EXPECT_TRUE(InitializeHandlerCheck("https://host/scope/doc", "GET", false,
                                      RESOURCE_TYPE_MAIN_FRAME));
 
@@ -124,26 +125,30 @@ TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler) {
   EXPECT_TRUE(InitializeHandlerCheck(
       "https://host/scope/doc", "OPTIONS", false, RESOURCE_TYPE_MAIN_FRAME));
 
+  // Check provider host's URL after initializing a handler for main
+  // frame.
   provider_host_->SetDocumentUrl(GURL(""));
   EXPECT_FALSE(InitializeHandlerCheck(
       "http://host/scope/doc", "GET", true, RESOURCE_TYPE_MAIN_FRAME));
-  // Cannot initialize a handler for non-secure origins.
-  EXPECT_STREQ("", provider_host_->document_url().spec().c_str());
+  EXPECT_STREQ("http://host/scope/doc",
+               provider_host_->document_url().spec().c_str());
   EXPECT_FALSE(InitializeHandlerCheck(
       "https://host/scope/doc", "GET", true, RESOURCE_TYPE_MAIN_FRAME));
   EXPECT_STREQ("https://host/scope/doc",
                provider_host_->document_url().spec().c_str());
 
+  // Check provider host's URL after initializing a handler for a subframe.
   provider_host_->SetDocumentUrl(GURL(""));
   EXPECT_FALSE(InitializeHandlerCheck(
       "http://host/scope/doc", "GET", true, RESOURCE_TYPE_SUB_FRAME));
-  // Cannot initialize a handler for non-secure origins.
-  EXPECT_STREQ("", provider_host_->document_url().spec().c_str());
+  EXPECT_STREQ("http://host/scope/doc",
+               provider_host_->document_url().spec().c_str());
   EXPECT_FALSE(InitializeHandlerCheck(
       "https://host/scope/doc", "GET", true, RESOURCE_TYPE_SUB_FRAME));
   EXPECT_STREQ("https://host/scope/doc",
                provider_host_->document_url().spec().c_str());
 
+  // Check provider host's URL after initializing a handler for an image.
   provider_host_->SetDocumentUrl(GURL(""));
   EXPECT_FALSE(InitializeHandlerCheck(
       "http://host/scope/doc", "GET", true, RESOURCE_TYPE_IMAGE));

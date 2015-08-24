@@ -65,8 +65,12 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body) {
-  if (!OriginCanAccessServiceWorkers(request->url()))
+  // Create the handler even for insecure HTTP since it's used in the
+  // case of redirect to HTTPS.
+  if (!request->url().SchemeIsHTTPOrHTTPS() &&
+      !OriginCanAccessServiceWorkers(request->url())) {
     return;
+  }
 
   if (!context_wrapper || !context_wrapper->context() ||
       provider_id == kInvalidServiceWorkerProviderId) {
