@@ -147,6 +147,7 @@ public class FullscreenHtmlApiHandler {
                     }
                     systemUiVisibility |= SYSTEM_UI_FLAG_FULLSCREEN;
                     systemUiVisibility |= SYSTEM_UI_FLAG_LOW_PROFILE;
+                    systemUiVisibility |= getExtraFullscreenUIFlags();
                     contentView.setSystemUiVisibility(systemUiVisibility);
 
                     // Trigger a update to clear the SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN flag
@@ -297,10 +298,10 @@ public class FullscreenHtmlApiHandler {
             if ((systemUiVisibility & SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
                     == SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) {
                 systemUiVisibility |= SYSTEM_UI_FLAG_FULLSCREEN;
+                systemUiVisibility |= getExtraFullscreenUIFlags();
             } else {
                 systemUiVisibility |= SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
             }
-            systemUiVisibility |= getExtraFullscreenUIFlags();
         } else {
             mWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             mWindow.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -428,7 +429,7 @@ public class FullscreenHtmlApiHandler {
      * Helper method to return extra fullscreen UI flags for Kitkat devices.
      * @return fullscreen flags to be applied to system UI visibility.
      */
-    private int getExtraFullscreenUIFlags() {
+    private static int getExtraFullscreenUIFlags() {
         int flags = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             flags |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;

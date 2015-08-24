@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -75,11 +76,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
             + "</body>"
             + "</html>");
 
-    /**
-     * @MediumTest
-     * Fails consistently on M: http://crbug.com/512222
-     */
-    @FlakyTest
+    @MediumTest
     @Feature({"Fullscreen"})
     public void testTogglePersistentFullscreen() throws InterruptedException {
         startMainActivityWithURL(LONG_HTML_TEST_PAGE);
@@ -100,11 +97,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         assertTrue(waitForPersistentFullscreen(delegate, false));
     }
 
-    /**
-     * @LargeTest
-     * Fails consistently on M: http://crbug.com/512222
-     */
-    @FlakyTest
+    @LargeTest
     @Feature({"Fullscreen"})
     public void testPersistentFullscreenChangingUiFlags() throws InterruptedException {
         // Exiting fullscreen via UI Flags is not supported in versions prior to MR2.
