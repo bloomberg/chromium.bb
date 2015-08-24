@@ -28,16 +28,15 @@ ScopedJavaLocalFrame::ScopedJavaLocalFrame(JNIEnv* env, int capacity)
 
 ScopedJavaLocalFrame::~ScopedJavaLocalFrame() { env_->PopLocalFrame(NULL); }
 
-JavaRef<jobject>::JavaRef() : obj_(NULL) {}
-
+#if DCHECK_IS_ON()
+// This constructor is inlined when DCHECKs are disabled; don't add anything
+// else here.
 JavaRef<jobject>::JavaRef(JNIEnv* env, jobject obj) : obj_(obj) {
   if (obj) {
     DCHECK(env && env->GetObjectRefType(obj) == JNILocalRefType);
   }
 }
-
-JavaRef<jobject>::~JavaRef() {
-}
+#endif
 
 JNIEnv* JavaRef<jobject>::SetNewLocalRef(JNIEnv* env, jobject obj) {
   if (!env) {

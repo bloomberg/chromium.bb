@@ -10,6 +10,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/logging.h"
 
 namespace base {
 namespace android {
@@ -45,14 +46,21 @@ class BASE_EXPORT JavaRef<jobject> {
   bool is_null() const { return obj_ == NULL; }
 
  protected:
-  // Initializes a NULL reference.
-  JavaRef();
+  // Initializes a NULL reference. Don't add anything else here; it's inlined.
+  JavaRef() : obj_(NULL) {}
 
   // Takes ownership of the |obj| reference passed; requires it to be a local
   // reference type.
+#if DCHECK_IS_ON()
+  // Implementation contains a DCHECK; implement out-of-line when DCHECK_IS_ON.
   JavaRef(JNIEnv* env, jobject obj);
+#else
+  // Don't add anything else here; it's inlined.
+  JavaRef(JNIEnv* env, jobject obj) : obj_(obj) {}
+#endif
 
-  ~JavaRef();
+  // Don't add anything else here; it's inlined.
+  ~JavaRef() {}
 
   // The following are implementation detail convenience methods, for
   // use by the sub-classes.
