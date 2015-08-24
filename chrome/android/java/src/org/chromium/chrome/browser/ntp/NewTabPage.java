@@ -16,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -264,9 +263,6 @@ public class NewTabPage
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     recordOpenedMostVisitedItem(item);
-                    if (FeatureUtilities.isDocumentMode(mActivity)) {
-                        ApiCompatibilityUtils.finishAndRemoveTask(mActivity);
-                    }
                     mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl()),
                             TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
                     return true;
