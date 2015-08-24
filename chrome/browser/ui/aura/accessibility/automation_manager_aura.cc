@@ -19,6 +19,10 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/wm/window_util.h"
+#endif
+
 using content::BrowserContext;
 using extensions::AutomationEventRouter;
 
@@ -34,11 +38,15 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
   ResetSerializer();
 
   SendEvent(context, current_tree_->GetRoot(), ui::AX_EVENT_LOAD_COMPLETE);
-  if (focused_window_) {
+
+#if defined(OS_CHROMEOS)
+  aura::Window* active_window = ash::wm::GetActiveWindow();
+  if (active_window) {
     views::AXAuraObjWrapper* focus =
-        views::AXAuraObjCache::GetInstance()->GetOrCreate(focused_window_);
+        views::AXAuraObjCache::GetInstance()->GetOrCreate(active_window);
     SendEvent(context, focus, ui::AX_EVENT_CHILDREN_CHANGED);
   }
+#endif
 }
 
 void AutomationManagerAura::Disable() {
@@ -51,8 +59,6 @@ void AutomationManagerAura::Disable() {
 void AutomationManagerAura::HandleEvent(BrowserContext* context,
                                         views::View* view,
                                         ui::AXEvent event_type) {
-  if (view->GetWidget())
-    focused_window_ = view->GetWidget()->GetNativeView();
   if (!enabled_)
     return;
 
@@ -106,9 +112,7 @@ void AutomationManagerAura::ShowContextMenu(int32 id) {
 }
 
 AutomationManagerAura::AutomationManagerAura()
-    : enabled_(false), processing_events_(false), focused_window_(nullptr) {
-  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
-}
+    : enabled_(false), processing_events_(false) {}
 
 AutomationManagerAura::~AutomationManagerAura() {
 }
@@ -143,8 +147,4 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
               pending_events_copy[i].first,
               pending_events_copy[i].second);
   }
-}
-
-void AutomationManagerAura::OnNativeFocusChanged(aura::Window* focused_now) {
-  focused_window_ = focused_now;
 }
