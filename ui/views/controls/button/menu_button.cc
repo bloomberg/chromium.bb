@@ -173,7 +173,8 @@ const char* MenuButton::GetClassName() const {
 }
 
 bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
-  RequestFocus();
+  if (request_focus_on_press())
+    RequestFocus();
   if (state() != STATE_DISABLED && ShouldEnterPushedState(event) &&
       HitTestPoint(event.location())) {
     TimeDelta delta = TimeTicks::Now() - menu_closed_time_;
