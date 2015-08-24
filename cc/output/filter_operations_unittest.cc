@@ -6,6 +6,7 @@
 #include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace cc {
@@ -21,6 +22,26 @@ TEST(FilterOperationsTest, GetOutsetsBlur) {
   EXPECT_EQ(57, right);
   EXPECT_EQ(57, bottom);
   EXPECT_EQ(57, left);
+}
+
+TEST(FilterOperationsTest, GetOutsetsDropShadowReferenceFilter) {
+  // TODO(hendrikw): We need to make outsets for reference filters be in line
+  // with non-reference filters. See crbug.com/523534
+  skia::RefPtr<SkImageFilter> filter =
+      skia::AdoptRef(SkDropShadowImageFilter::Create(
+          SkIntToScalar(3), SkIntToScalar(8), SkIntToScalar(4),
+          SkIntToScalar(9), SK_ColorBLACK,
+          SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode));
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateReferenceFilter(filter));
+
+  int top, right, bottom, left;
+  top = right = bottom = left = 0;
+  ops.GetOutsets(&top, &right, &bottom, &left);
+  EXPECT_EQ(35, top);
+  EXPECT_EQ(9, right);
+  EXPECT_EQ(19, bottom);
+  EXPECT_EQ(15, left);
 }
 
 TEST(FilterOperationsTest, GetOutsetsDropShadow) {

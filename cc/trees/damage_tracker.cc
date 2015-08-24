@@ -142,13 +142,7 @@ void DamageTracker::UpdateDamageTrackingState(
     damage_rect_for_this_update.Union(damage_from_surface_mask);
     damage_rect_for_this_update.Union(damage_from_leftover_rects);
 
-    if (filters.HasReferenceFilter()) {
-      // TODO(senorblanco):  Once SkImageFilter reports its outsets, use
-      // those here to limit damage.
-      damage_rect_for_this_update = target_surface_content_rect;
-    } else if (filters.HasFilterThatMovesPixels()) {
-      ExpandRectWithFilters(&damage_rect_for_this_update, filters);
-    }
+    ExpandRectWithFilters(&damage_rect_for_this_update, filters);
   }
 
   // Damage accumulates until we are notified that we actually did draw on that

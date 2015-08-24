@@ -61,22 +61,31 @@ void FilterOperations::GetOutsets(int* top,
   *top = *right = *bottom = *left = 0;
   for (size_t i = 0; i < operations_.size(); ++i) {
     const FilterOperation& op = operations_[i];
-    // TODO(ajuma): Add support for reference filters once SkImageFilter
-    // reports its outsets.
-    DCHECK(op.type() != FilterOperation::REFERENCE);
-    if (op.type() == FilterOperation::BLUR ||
-        op.type() == FilterOperation::DROP_SHADOW) {
-      int spread = SpreadForStdDeviation(op.amount());
-      if (op.type() == FilterOperation::BLUR) {
-        *top += spread;
-        *right += spread;
-        *bottom += spread;
-        *left += spread;
-      } else {
-        *top += spread - op.drop_shadow_offset().y();
-        *right += spread + op.drop_shadow_offset().x();
-        *bottom += spread + op.drop_shadow_offset().y();
-        *left += spread - op.drop_shadow_offset().x();
+    // TODO(hendrikw): We should refactor some of this. See crbug.com/523534.
+    if (op.type() == FilterOperation::REFERENCE) {
+      SkIRect src = SkIRect::MakeWH(0, 0);
+      SkIRect dst;
+      bool result = op.image_filter()->filterBounds(src, SkMatrix::I(), &dst);
+      DCHECK(result);
+      *top += std::max(0, -dst.top());
+      *right += std::max(0, dst.right());
+      *bottom += std::max(0, dst.bottom());
+      *left += std::max(0, -dst.left());
+    } else {
+      if (op.type() == FilterOperation::BLUR ||
+          op.type() == FilterOperation::DROP_SHADOW) {
+        int spread = SpreadForStdDeviation(op.amount());
+        if (op.type() == FilterOperation::BLUR) {
+          *top += spread;
+          *right += spread;
+          *bottom += spread;
+          *left += spread;
+        } else {
+          *top += spread - op.drop_shadow_offset().y();
+          *right += spread + op.drop_shadow_offset().x();
+          *bottom += spread + op.drop_shadow_offset().y();
+          *left += spread - op.drop_shadow_offset().x();
+        }
       }
     }
   }
@@ -85,13 +94,14 @@ void FilterOperations::GetOutsets(int* top,
 bool FilterOperations::HasFilterThatMovesPixels() const {
   for (size_t i = 0; i < operations_.size(); ++i) {
     const FilterOperation& op = operations_[i];
-    // TODO(ajuma): Once SkImageFilter reports its outsets, use those here to
-    // determine whether a reference filter really moves pixels.
     switch (op.type()) {
       case FilterOperation::BLUR:
       case FilterOperation::DROP_SHADOW:
       case FilterOperation::ZOOM:
+        return true;
       case FilterOperation::REFERENCE:
+        // TODO(hendrikw): SkImageFilter needs a function that tells us if the
+        // filter can move pixels. See crbug.com/523538.
         return true;
       case FilterOperation::OPACITY:
       case FilterOperation::COLOR_MATRIX:

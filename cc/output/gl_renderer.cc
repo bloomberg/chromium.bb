@@ -770,10 +770,6 @@ bool GLRenderer::ShouldApplyBackgroundFilters(DrawingFrame* frame,
   if (frame->current_render_pass->has_transparent_background)
     return false;
 
-  // TODO(ajuma): Add support for reference filters once
-  // FilterOperations::GetOutsets supports reference filters.
-  if (quad->background_filters.HasReferenceFilter())
-    return false;
   return true;
 }
 

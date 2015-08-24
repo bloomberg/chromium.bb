@@ -535,6 +535,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
       SkBlurImageFilter::Create(SkIntToScalar(2), SkIntToScalar(2)));
   FilterOperations filters;
   filters.Append(FilterOperation::CreateReferenceFilter(filter));
+  int outset_top, outset_right, outset_bottom, outset_left;
+  filters.GetOutsets(&outset_top, &outset_right, &outset_bottom, &outset_left);
 
   // Setting the filter will damage the whole surface.
   ClearDamageForAllSurfaces(root.get());
@@ -547,7 +549,11 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
           child->render_surface()->damage_tracker()->current_damage_rect();
   EXPECT_EQ(gfx::Rect(100, 100, 30, 30).ToString(),
             root_damage_rect.ToString());
-  EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
+  EXPECT_EQ(
+      gfx::Rect(-outset_left, -outset_top, 30 + (outset_left + outset_right),
+                30 + (outset_top + outset_bottom))
+          .ToString(),
+      child_damage_rect.ToString());
 
   // CASE 1: Setting the update rect should damage the whole surface (for now)
   ClearDamageForAllSurfaces(root.get());
@@ -558,9 +564,16 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
           root->render_surface()->damage_tracker()->current_damage_rect();
   child_damage_rect =
           child->render_surface()->damage_tracker()->current_damage_rect();
-  EXPECT_EQ(gfx::Rect(100, 100, 30, 30).ToString(),
+
+  int expect_width = 1 + outset_left + outset_right;
+  int expect_height = 1 + outset_top + outset_bottom;
+  EXPECT_EQ(gfx::Rect(100 - outset_left, 100 - outset_top, expect_width,
+                      expect_height)
+                .ToString(),
             root_damage_rect.ToString());
-  EXPECT_EQ(gfx::Rect(30.f, 30.f).ToString(), child_damage_rect.ToString());
+  EXPECT_EQ(gfx::Rect(-outset_left, -outset_top, expect_width, expect_height)
+                .ToString(),
+            child_damage_rect.ToString());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
