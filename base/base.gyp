@@ -754,6 +754,11 @@
             }],
           ]},
         ],
+        [ 'OS == "win" and target_arch == "x64"', {
+          'sources': [
+            'profiler/win32_stack_frame_unwinder_unittest.cc',
+          ],
+        }],
         ['OS == "win"', {
           'sources!': [
             'file_descriptor_shuffle_unittest.cc',

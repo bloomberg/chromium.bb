@@ -939,6 +939,10 @@
             'include_dirs': [
               '<(DEPTH)/third_party/wtl/include',
             ],
+            'sources': [
+              'profiler/win32_stack_frame_unwinder.cc',
+              'profiler/win32_stack_frame_unwinder.h',
+            ],
             'sources!': [
               'files/file_path_watcher_fsevents.cc',
               'files/file_path_watcher_fsevents.h',

@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/profiler/native_stack_sampler.h"
+#include "base/profiler/win32_stack_frame_unwinder.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +20,8 @@
 
 namespace base {
 
+// Stack recording functions --------------------------------------------------
+
 namespace {
 
 // Walks the stack represented by |context| from the current frame downwards,
@@ -26,41 +29,13 @@ namespace {
 int RecordStack(CONTEXT* context,
                 int max_stack_size,
                 const void* instruction_pointers[],
-                bool* last_frame_is_unknown_function) {
+                Win32StackFrameUnwinder* frame_unwinder) {
 #ifdef _WIN64
-  *last_frame_is_unknown_function = false;
-
   int i = 0;
   for (; (i < max_stack_size) && context->Rip; ++i) {
-    // Try to look up unwind metadata for the current function.
-    ULONG64 image_base;
-    PRUNTIME_FUNCTION runtime_function =
-        RtlLookupFunctionEntry(context->Rip, &image_base, nullptr);
-
     instruction_pointers[i] = reinterpret_cast<const void*>(context->Rip);
-
-    if (runtime_function) {
-      KNONVOLATILE_CONTEXT_POINTERS nvcontext = {};
-      void* handler_data;
-      ULONG64 establisher_frame;
-      RtlVirtualUnwind(0, image_base, context->Rip, runtime_function, context,
-                       &handler_data, &establisher_frame, &nvcontext);
-    } else {
-      // If we don't have a RUNTIME_FUNCTION, then in theory this should be a
-      // leaf function whose frame contains only a return address, at
-      // RSP. However, crash data also indicates that some third party libraries
-      // do not provide RUNTIME_FUNCTION information for non-leaf functions. We
-      // could manually unwind the stack in the former case, but attempting to
-      // do so in the latter case would produce wrong results and likely crash,
-      // so just bail out.
-      //
-      // Ad hoc runs with instrumentation show that ~5% of stack traces end with
-      // a valid leaf function. To avoid selectively omitting these traces it
-      // makes sense to ultimately try to distinguish these two cases and
-      // selectively unwind the stack for legitimate leaf functions. For the
-      // purposes of avoiding crashes though, just ignore them all for now.
-      return i;
-    }
+    if (!frame_unwinder->TryUnwind(context))
+      return i + 1;
   }
   return i;
 #else
@@ -74,11 +49,8 @@ int RecordStack(CONTEXT* context,
 // SuspendThreadAndRecordStack for why |addresses| and |module_handles| are
 // arrays.
 void FindModuleHandlesForAddresses(const void* const addresses[],
-                             HMODULE module_handles[], int stack_depth,
-                             bool last_frame_is_unknown_function) {
-  const int module_frames =
-      last_frame_is_unknown_function ? stack_depth - 1 : stack_depth;
-  for (int i = 0; i < module_frames; ++i) {
+                                   HMODULE module_handles[], int stack_depth) {
+  for (int i = 0; i < stack_depth; ++i) {
     HMODULE module_handle = NULL;
     if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
                           reinterpret_cast<LPCTSTR>(addresses[i]),
@@ -128,6 +100,8 @@ std::string GetBuildIDForModule(HMODULE module_handle) {
   return WideToUTF8(build_id);
 }
 
+// ScopedDisablePriorityBoost -------------------------------------------------
+
 // Disables priority boost on a thread for the lifetime of the object.
 class ScopedDisablePriorityBoost {
  public:
@@ -169,8 +143,9 @@ ScopedDisablePriorityBoost::~ScopedDisablePriorityBoost() {
 // pointers and module handles as preallocated arrays rather than vectors, since
 // vectors make it too easy to subtly allocate memory.
 int SuspendThreadAndRecordStack(HANDLE thread_handle, int max_stack_size,
-                                const void* instruction_pointers[],
-                                bool* last_frame_is_unknown_function) {
+                                const void* instruction_pointers[]) {
+  Win32StackFrameUnwinder frame_unwinder;
+
   if (::SuspendThread(thread_handle) == -1)
     return 0;
 
@@ -179,8 +154,7 @@ int SuspendThreadAndRecordStack(HANDLE thread_handle, int max_stack_size,
   thread_context.ContextFlags = CONTEXT_FULL;
   if (::GetThreadContext(thread_handle, &thread_context)) {
     stack_depth = RecordStack(&thread_context, max_stack_size,
-                              instruction_pointers,
-                              last_frame_is_unknown_function);
+                              instruction_pointers, &frame_unwinder);
   }
 
   // Disable the priority boost that the thread would otherwise receive on
@@ -199,6 +173,8 @@ int SuspendThreadAndRecordStack(HANDLE thread_handle, int max_stack_size,
 
   return stack_depth;
 }
+
+// NativeStackSamplerWin ------------------------------------------------------
 
 class NativeStackSamplerWin : public NativeStackSampler {
  public:
@@ -264,12 +240,11 @@ void NativeStackSamplerWin::RecordStackSample(
   const void* instruction_pointers[max_stack_size] = {0};
   HMODULE module_handles[max_stack_size] = {0};
 
-  bool last_frame_is_unknown_function = false;
-  int stack_depth = SuspendThreadAndRecordStack(
-      thread_handle_.Get(), max_stack_size, instruction_pointers,
-      &last_frame_is_unknown_function);
+  int stack_depth = SuspendThreadAndRecordStack(thread_handle_.Get(),
+                                                max_stack_size,
+                                                instruction_pointers);
   FindModuleHandlesForAddresses(instruction_pointers, module_handles,
-                                stack_depth, last_frame_is_unknown_function);
+                                stack_depth);
   CopyToSample(instruction_pointers, module_handles, stack_depth, sample,
                current_modules_);
   FreeModuleHandles(stack_depth, module_handles);

@@ -758,6 +758,11 @@ component("base") {
 
   # Windows.
   if (is_win) {
+    sources += [
+      "profiler/win32_stack_frame_unwinder.cc",
+      "profiler/win32_stack_frame_unwinder.h",
+    ]
+
     sources -= [
       "message_loop/message_pump_libevent.cc",
       "strings/string16.cc",
