@@ -8,12 +8,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -30,10 +30,10 @@ import org.chromium.ui.base.ActivityWindowAndroid;
  * Test activity used for verifying the different configuration options for the ContentLinker.
  */
 public class ChromiumLinkerTestActivity extends Activity {
+    private static final String TAG = "cr.linker_test";
+
     public static final String COMMAND_LINE_FILE =
             "/data/local/tmp/chromium-linker-test-command-line";
-
-    private static final String TAG = "ChromiumLinkerTestActivity";
 
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
@@ -41,6 +41,12 @@ public class ChromiumLinkerTestActivity extends Activity {
     // a regular device is simulated by this test, independently from what the
     // target device running the test really is.
     private static final String LOW_MEMORY_DEVICE = "--low-memory-device";
+
+    // Use one of these on the command-line to force a specific Linker
+    // implementation. Passed from the main process to sub-processes so that
+    // everything that participates in a test uses a consistent implementation.
+    private static final String USE_MODERN_LINKER = "--use-linker=modern";
+    private static final String USE_LEGACY_LINKER = "--use-linker=legacy";
 
     private ShellManager mShellManager;
     private ActivityWindowAndroid mWindowAndroid;
@@ -63,15 +69,39 @@ public class ChromiumLinkerTestActivity extends Activity {
         // CommandLine.getInstance().hasSwitch() doesn't work here for some funky
         // reason, so parse the command-line differently here:
         boolean hasLowMemoryDeviceSwitch = false;
-        String[] cmdline = CommandLine.getJavaSwitchesOrNull();
-        if (cmdline == null) {
+        boolean hasModernLinkerSwitch = false;
+        boolean hasLegacyLinkerSwitch = false;
+        String[] commandLine = CommandLine.getJavaSwitchesOrNull();
+        if (commandLine == null) {
             Log.i(TAG, "Command line is null");
         } else {
             Log.i(TAG, "Command line is:");
-            for (int n = 0; n < cmdline.length; ++n) {
-                Log.i(TAG, "  '" + cmdline[n] + "'");
-                if (cmdline[n].equals(LOW_MEMORY_DEVICE)) hasLowMemoryDeviceSwitch = true;
+            for (int n = 0; n < commandLine.length; ++n) {
+                String option = commandLine[n];
+                Log.i(TAG, "  '" + option + "'");
+                if (option.equals(LOW_MEMORY_DEVICE)) {
+                    hasLowMemoryDeviceSwitch = true;
+                } else if (option.equals(USE_MODERN_LINKER)) {
+                    hasModernLinkerSwitch = true;
+                } else if (option.equals(USE_LEGACY_LINKER)) {
+                    hasLegacyLinkerSwitch = true;
+                }
             }
+        }
+
+        if (!(hasModernLinkerSwitch || hasLegacyLinkerSwitch)) {
+            Log.e(TAG, "Missing --use-linker command line argument.");
+            finish();
+        } else if (hasModernLinkerSwitch && hasLegacyLinkerSwitch) {
+            Log.e(TAG, "Conflicting --use-linker command line arguments.");
+            finish();
+        }
+
+        // Set the requested Linker implementation from the command-line.
+        if (hasModernLinkerSwitch) {
+            Linker.setLinkerImplementationForTesting(Linker.LINKER_IMPLEMENTATION_MODERN);
+        } else {
+            Linker.setLinkerImplementationForTesting(Linker.LINKER_IMPLEMENTATION_LEGACY);
         }
 
         // Determine which kind of device to simulate from the command-line.
@@ -80,10 +110,10 @@ public class ChromiumLinkerTestActivity extends Activity {
             memoryDeviceConfig = Linker.MEMORY_DEVICE_CONFIG_LOW;
         }
         Linker linker = Linker.getInstance();
-        linker.setMemoryDeviceConfig(memoryDeviceConfig);
+        linker.setMemoryDeviceConfigForTesting(memoryDeviceConfig);
 
         // Register the test runner class by name.
-        linker.setTestRunnerClassName(LinkerTests.class.getName());
+        linker.setTestRunnerClassNameForTesting(LinkerTests.class.getName());
 
         // Load the library in the browser process, this will also run the test
         // runner in this process.

@@ -186,7 +186,33 @@ public class LibraryLoader {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    // Invoke System.loadLibrary(...), triggering JNI_OnLoad in native code
+    // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
+    // Sets UMA flags depending on the results of loading.
+    private void loadLibrary(Linker linker, @Nullable String zipFilePath, String libFilePath) {
+        if (linker.isUsingBrowserSharedRelros()) {
+            // If the browser is set to attempt shared RELROs then we try first with shared
+            // RELROs enabled, and if that fails then retry without.
+            mIsUsingBrowserSharedRelros = true;
+            try {
+                linker.loadLibrary(zipFilePath, libFilePath);
+            } catch (UnsatisfiedLinkError e) {
+                Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
+                mLoadAtFixedAddressFailed = true;
+                linker.loadLibraryNoFixedAddress(zipFilePath, libFilePath);
+            }
+        } else {
+            // No attempt to use shared RELROs in the browser, so load as normal.
+            linker.loadLibrary(zipFilePath, libFilePath);
+        }
+
+        // Loaded successfully, so record if we loaded directly from an APK.
+        if (zipFilePath != null) {
+            mLibraryWasLoadedFromApk = true;
+        }
+    }
+
+    // Invoke either Linker.loadLibrary(...) or System.loadLibrary(...), triggering
+    // JNI_OnLoad in native code
     private void loadAlreadyLocked(Context context) throws ProcessInitException {
         try {
             if (!mLoaded) {
@@ -217,30 +243,14 @@ public class LibraryLoader {
                         if (linker.isInZipFile()) {
                             // Load directly from the APK.
                             zipFilePath = apkFilePath;
-                            Log.i(TAG,
-                                    "Loading " + library + " directly from within " + apkFilePath);
+                            Log.i(TAG, "Loading " + library + " from within " + apkFilePath);
                         } else {
                             // The library is in its own file.
                             Log.i(TAG, "Loading " + library);
                         }
 
-                        // Load the library.
-                        boolean isLoaded = false;
-                        if (linker.isUsingBrowserSharedRelros()) {
-                            mIsUsingBrowserSharedRelros = true;
-                            try {
-                                loadLibrary(zipFilePath, libFilePath);
-                                isLoaded = true;
-                            } catch (UnsatisfiedLinkError e) {
-                                Log.w(TAG, "Failed to load native library with shared RELRO, "
-                                        + "retrying without");
-                                linker.disableSharedRelros();
-                                mLoadAtFixedAddressFailed = true;
-                            }
-                        }
-                        if (!isLoaded) {
-                            loadLibrary(zipFilePath, libFilePath);
-                        }
+                        // Load the library using this Linker. May throw UnsatisfiedLinkError.
+                        loadLibrary(linker, zipFilePath, libFilePath);
                     }
 
                     linker.finishLibraryLoad();
@@ -297,15 +307,6 @@ public class LibraryLoader {
             }
         }
         return appInfo.sourceDir;
-    }
-
-    // Load a native shared library with the Chromium linker. If the zip file
-    // path is not null, the library is loaded directly from the zip file.
-    private void loadLibrary(@Nullable String zipFilePath, String libFilePath) {
-        Linker.getInstance().loadLibrary(zipFilePath, libFilePath);
-        if (zipFilePath != null) {
-            mLibraryWasLoadedFromApk = true;
-        }
     }
 
     // The WebView requires the Command Line to be switched over before

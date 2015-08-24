@@ -6,6 +6,8 @@ package org.chromium.content.app;
 
 import android.content.Intent;
 
+import java.util.Locale;
+
 /**
  * A class to hold information passed from the browser process to each
  * service one when using the chromium linker. For more information, read the
@@ -20,7 +22,11 @@ public class ChromiumLinkerParams {
 
     // If not empty, name of Linker.TestRunner implementation that needs to be
     // registered in the service process.
-    public final String mTestRunnerClassName;
+    public final String mTestRunnerClassNameForTesting;
+
+    // If mTestRunnerClassNameForTesting is not empty, the Linker implementation
+    // to force for testing.
+    public final int mLinkerImplementationForTesting;
 
     private static final String EXTRA_LINKER_PARAMS_BASE_LOAD_ADDRESS =
             "org.chromium.content.common.linker_params.base_load_address";
@@ -31,46 +37,69 @@ public class ChromiumLinkerParams {
     private static final String EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME =
             "org.chromium.content.common.linker_params.test_runner_class_name";
 
+    private static final String EXTRA_LINKER_PARAMS_LINKER_IMPLEMENTATION =
+            "org.chromium.content.common.linker_params.linker_implementation";
+
     public ChromiumLinkerParams(long baseLoadAddress,
-                        boolean waitForSharedRelro,
-                        String testRunnerClassName) {
+                                boolean waitForSharedRelro) {
         mBaseLoadAddress = baseLoadAddress;
         mWaitForSharedRelro = waitForSharedRelro;
-        mTestRunnerClassName = testRunnerClassName;
+        mTestRunnerClassNameForTesting = null;
+        mLinkerImplementationForTesting = 0;
+    }
+
+    /**
+     * Use this constructor to create a LinkerParams instance for testing.
+     */
+    public ChromiumLinkerParams(long baseLoadAddress,
+                                boolean waitForSharedRelro,
+                                String testRunnerClassName,
+                                int linkerImplementation) {
+        mBaseLoadAddress = baseLoadAddress;
+        mWaitForSharedRelro = waitForSharedRelro;
+        mTestRunnerClassNameForTesting = testRunnerClassName;
+        mLinkerImplementationForTesting = linkerImplementation;
     }
 
     /**
      * Use this constructor to recreate a LinkerParams instance from an Intent.
+     *
      * @param intent An Intent, its content must have been populated by a previous
      * call to addIntentExtras().
      */
     public ChromiumLinkerParams(Intent intent) {
-        mBaseLoadAddress = intent.getLongExtra(EXTRA_LINKER_PARAMS_BASE_LOAD_ADDRESS, 0);
-        mWaitForSharedRelro = intent.getBooleanExtra(
-                EXTRA_LINKER_PARAMS_WAIT_FOR_SHARED_RELRO, false);
-        mTestRunnerClassName = intent.getStringExtra(
-                EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME);
+        mBaseLoadAddress =
+                intent.getLongExtra(EXTRA_LINKER_PARAMS_BASE_LOAD_ADDRESS, 0);
+        mWaitForSharedRelro =
+                intent.getBooleanExtra(EXTRA_LINKER_PARAMS_WAIT_FOR_SHARED_RELRO, false);
+        mTestRunnerClassNameForTesting =
+                intent.getStringExtra(EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME);
+        mLinkerImplementationForTesting =
+                intent.getIntExtra(EXTRA_LINKER_PARAMS_LINKER_IMPLEMENTATION, 0);
     }
 
     /**
      * Ensure this LinkerParams instance is sent to a service process by adding
      * it to an intent's extras.
+     *
      * @param intent An Intent use to start or connect to the child service process.
      */
     public void addIntentExtras(Intent intent) {
         intent.putExtra(EXTRA_LINKER_PARAMS_BASE_LOAD_ADDRESS, mBaseLoadAddress);
         intent.putExtra(EXTRA_LINKER_PARAMS_WAIT_FOR_SHARED_RELRO, mWaitForSharedRelro);
-        intent.putExtra(EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME, mTestRunnerClassName);
+        intent.putExtra(EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME, mTestRunnerClassNameForTesting);
+        intent.putExtra(EXTRA_LINKER_PARAMS_LINKER_IMPLEMENTATION, mLinkerImplementationForTesting);
     }
 
     // For debugging traces only.
     @Override
     public String toString() {
-        return String.format(
+        return String.format(Locale.US,
                 "LinkerParams(baseLoadAddress:0x%x, waitForSharedRelro:%s, "
-                        + "testRunnerClassName:%s",
+                        + "testRunnerClassName:%s, linkerImplementation:%d",
                 mBaseLoadAddress,
                 mWaitForSharedRelro ? "true" : "false",
-                mTestRunnerClassName);
+                mTestRunnerClassNameForTesting,
+                mLinkerImplementationForTesting);
     }
 }

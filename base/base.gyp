@@ -1541,7 +1541,13 @@
           'target_name': 'chromium_android_linker',
           'type': 'shared_library',
           'sources': [
+            'android/linker/android_dlext.h',
             'android/linker/legacy_linker_jni.cc',
+            'android/linker/legacy_linker_jni.h',
+            'android/linker/linker_jni.cc',
+            'android/linker/linker_jni.h',
+            'android/linker/modern_linker_jni.cc',
+            'android/linker/modern_linker_jni.h',
           ],
           # The crazy linker is never instrumented.
           'cflags!': [

@@ -311,9 +311,15 @@ public class ChildProcessLauncher {
 
         // Always wait for the shared RELROs in service processes.
         final boolean waitForSharedRelros = true;
-        return new ChromiumLinkerParams(sLinkerLoadAddress,
-                                waitForSharedRelros,
-                                linker.getTestRunnerClassName());
+        if (Linker.areLinkerTestsEnabled()) {
+            return new ChromiumLinkerParams(sLinkerLoadAddress,
+                                            waitForSharedRelros,
+                                            linker.getTestRunnerClassNameForTesting(),
+                                            linker.getLinkerImplementationForTesting());
+        } else {
+            return new ChromiumLinkerParams(sLinkerLoadAddress,
+                                            waitForSharedRelros);
+        }
     }
 
     private static ChildProcessConnection allocateBoundConnection(Context context,

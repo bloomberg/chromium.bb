@@ -115,6 +115,23 @@ public class ChildProcessService extends Service {
         return sContext.get();
     }
 
+    // Return a new Linker instance. If testing, the Linker needs special setup.
+    private Linker getLinker() {
+        if (Linker.areLinkerTestsEnabled()) {
+            // If testing, set the Linker implementation and the test runner
+            // class name to match the one used by the parent.
+            assert mLinkerParams != null;
+            Linker.setLinkerImplementationForTesting(
+                    mLinkerParams.mLinkerImplementationForTesting);
+            Linker linker = Linker.getInstance();
+            linker.setTestRunnerClassNameForTesting(
+                    mLinkerParams.mTestRunnerClassNameForTesting);
+            return linker;
+        }
+        // Not testing, so return a normal the Linker instantiation.
+        return Linker.getInstance();
+    }
+
     @Override
     public void onCreate() {
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
@@ -137,7 +154,7 @@ public class ChildProcessService extends Service {
                         }
                     }
                     CommandLine.init(mCommandLineParams);
-                    Linker linker = Linker.getInstance();
+                    Linker linker = getLinker();
                     boolean useLinker = linker.isUsed();
                     boolean requestedSharedRelro = false;
                     if (useLinker) {
@@ -146,14 +163,12 @@ public class ChildProcessService extends Service {
                                 mMainThread.wait();
                             }
                         }
-                        assert mLinkerParams != null;
                         if (mLinkerParams.mWaitForSharedRelro) {
                             requestedSharedRelro = true;
                             linker.initServiceProcess(mLinkerParams.mBaseLoadAddress);
                         } else {
                             linker.disableSharedRelros();
                         }
-                        linker.setTestRunnerClassName(mLinkerParams.mTestRunnerClassName);
                     }
                     boolean isLoaded = false;
                     if (CommandLine.getInstance().hasSwitch(

@@ -2001,6 +2001,7 @@
             # Required to include "content/public/browser/android/compositor.h"
             # in chromium_linker_test_android.cc :-(
             '../skia/skia.gyp:skia',
+            '../third_party/re2/re2.gyp:re2',
           ],
           'sources': [
             'shell/android/linker_test_apk/chromium_linker_test_android.cc',
