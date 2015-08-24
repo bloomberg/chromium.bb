@@ -3333,6 +3333,7 @@ interface Request
     getter bodyUsed
     getter credentials
     getter headers
+    getter integrity
     getter method
     getter mode
     getter redirect
