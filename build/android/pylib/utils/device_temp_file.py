@@ -6,19 +6,12 @@
 
 # pylint: disable=W0622
 
+import random
+import time
+
 from pylib import cmd_helper
 from pylib.device import device_errors
 
-_COMMAND_TEMPLATE = (
-    # Make sure that the temp dir is writable
-    'test -d {dir} && '
-    # If 10 random attempts fail, something is up.
-    'for i in $(seq 10); do '
-    'fn={dir}/{prefix}-$(date +%s)-"$RANDOM"{suffix};'
-    'test -e "$fn" || break;'
-    'done && '
-    # Touch the file, so other temp files can't get the same name.
-    'touch "$fn" && echo -n "$fn"')
 
 class DeviceTempFile(object):
   def __init__(self, adb, suffix='', prefix='temp_file', dir='/data/local/tmp'):
@@ -33,12 +26,20 @@ class DeviceTempFile(object):
       dir: The directory on the device where to place the temp file.
     """
     self._adb = adb
-    command = _COMMAND_TEMPLATE.format(
-        dir=cmd_helper.SingleQuote(dir),
-        suffix=cmd_helper.SingleQuote(suffix),
-        prefix=cmd_helper.SingleQuote(prefix))
-    self.name = self._adb.Shell(command)
-    self.name_quoted = cmd_helper.SingleQuote(self.name)
+    # make sure that the temp dir is writable
+    self._adb.Shell('test -d %s' % cmd_helper.SingleQuote(dir))
+    while True:
+      self.name = '{dir}/{prefix}-{time:d}-{nonce:d}{suffix}'.format(
+        dir=dir, prefix=prefix, time=int(time.time()),
+        nonce=random.randint(0, 1000000), suffix=suffix)
+      self.name_quoted = cmd_helper.SingleQuote(self.name)
+      try:
+        self._adb.Shell('test -e %s' % self.name_quoted)
+      except device_errors.AdbCommandFailedError:
+        break # file does not exist
+
+    # Immediately touch the file, so other temp files can't get the same name.
+    self._adb.Shell('touch %s' % self.name_quoted)
 
   def close(self):
     """Deletes the temporary file from the device."""
