@@ -73,16 +73,19 @@ class GpuTestExpectationsTest(unittest.TestCase):
   def setUp(self):
     self.expectations = SampleTestExpectations()
 
-  def assertExpectationEquals(self, expected, page, platform='', gpu=0,
-                              device=0, vendor_string='', device_string='',
-                              browser_type=None, gl_renderer=None):
+  def assertExpectationEquals(self, expected, page, platform=StubPlatform(''),
+                              gpu=0, device=0, vendor_string='',
+                              device_string='', browser_type=None,
+                              gl_renderer=None):
+    self.expectations.ClearExpectationsCacheForTesting()
     result = self.expectations.GetExpectationForPage(StubBrowser(
       platform, gpu, device, vendor_string, device_string,
       browser_type=browser_type, gl_renderer=gl_renderer), page)
     self.assertEquals(expected, result)
 
-  def getRetriesForPage(self, page, platform='', gpu=0,
+  def getRetriesForPage(self, page, platform=StubPlatform(''), gpu=0,
       device=0, vendor_string='', device_string=''):
+    self.expectations.ClearExpectationsCacheForTesting()
     return self.expectations.GetFlakyRetriesForPage(page, StubBrowser(
       platform, gpu, device, vendor_string, device_string))
 

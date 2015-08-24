@@ -70,6 +70,10 @@ class SampleTestExpectations(test_expectations.TestExpectations):
     # Test user defined conditions.
     self.Fail('page11.html', ['win', 'valid_condition_matched'])
     self.Fail('page12.html', ['win', 'valid_condition_unmatched'])
+    # Test file:// scheme.
+    self.Fail('conformance/attribs/page13.html')
+    # Test file:// scheme on Windows.
+    self.Fail('conformance/attribs/page14.html', ['win'])
 
   def ExpectationAppliesToPage(self, expectation, browser, page):
     if not super(SampleTestExpectations,
@@ -86,8 +90,9 @@ class TestExpectationsTest(unittest.TestCase):
   def setUp(self):
     self.expectations = SampleTestExpectations()
 
-  def assertExpectationEquals(self, expected, page, platform='',
+  def assertExpectationEquals(self, expected, page, platform=StubPlatform(''),
                               browser_type=None):
+    self.expectations.ClearExpectationsCacheForTesting()
     result = self.expectations.GetExpectationForPage(
       StubBrowser(platform, browser_type=browser_type), page)
     self.assertEquals(expected, result)
@@ -192,3 +197,18 @@ class TestExpectationsTest(unittest.TestCase):
     self.assertExpectationEquals('fail', page, StubPlatform('win'))
     page = page_module.Page('http://test.com/page12.html', ps)
     self.assertExpectationEquals('pass', page, StubPlatform('win'))
+
+  # The file:// scheme is treated specially by Telemetry; it's
+  # translated into an HTTP request against localhost. Expectations
+  # against it must continue to work.
+  def testFileScheme(self):
+    ps = story_set.StorySet()
+    page = page_module.Page('file://conformance/attribs/page13.html', ps)
+    self.assertExpectationEquals('fail', page)
+
+  # Telemetry uses backslashes in its file:// URLs on Windows.
+  def testFileSchemeOnWindows(self):
+    ps = story_set.StorySet()
+    page = page_module.Page('file://conformance\\attribs\\page14.html', ps)
+    self.assertExpectationEquals('pass', page)
+    self.assertExpectationEquals('fail', page, StubPlatform('win'))

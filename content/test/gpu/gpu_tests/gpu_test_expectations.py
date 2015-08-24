@@ -55,13 +55,13 @@ class GpuExpectation(test_expectations.Expectation):
 
 
 class GpuTestExpectations(test_expectations.TestExpectations):
-  def CreateExpectation(self, expectation, url_pattern, conditions=None,
+  def CreateExpectation(self, expectation, pattern, conditions=None,
                         bug=None):
-    return GpuExpectation(expectation, url_pattern, conditions, bug)
+    return GpuExpectation(expectation, pattern, conditions, bug)
 
-  def Flaky(self, url_pattern, conditions=None, bug=None, max_num_retries=2):
-    self.expectations.append(GpuExpectation(
-      'pass', url_pattern, conditions=conditions, bug=bug,
+  def Flaky(self, pattern, conditions=None, bug=None, max_num_retries=2):
+    self._AddExpectation(GpuExpectation(
+      'pass', pattern, conditions=conditions, bug=bug,
       max_num_retries=max_num_retries))
 
   def GetFlakyRetriesForPage(self, page, browser):
