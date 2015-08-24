@@ -9,10 +9,12 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
 #include "jni/ChromeMediaRouter_jni.h"
+#include "url/gurl.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
@@ -97,7 +99,46 @@ void MediaRouterAndroid::JoinRoute(
     const GURL& origin,
     int tab_id,
     const std::vector<MediaRouteResponseCallback>& callbacks) {
-  NOTIMPLEMENTED();
+  GURL source_url(source);
+  DCHECK(source_url.is_valid());
+
+  const MediaRoute* matching_route = nullptr;
+  for (const auto& route : active_routes_) {
+    GURL route_source_url(route.media_source().id());
+    DCHECK(route_source_url.is_valid());
+
+    if (route_source_url.scheme() != source_url.scheme() ||
+        route_source_url.username() != source_url.username() ||
+        route_source_url.password() != source_url.password() ||
+        route_source_url.host() != source_url.host() ||
+        route_source_url.port() != source_url.port() ||
+        route_source_url.path() != source_url.path() ||
+        route_source_url.query() != source_url.query()) {
+      // Allow the ref() to be different.
+      continue;
+    }
+
+    // Since ref() could be different, use the existing route's source id.
+    const std::string& sink_id = route.media_sink().id();
+    const std::string& potential_route_id = base::StringPrintf(
+        "route:%s/%s/%s",
+        presentation_id.c_str(),
+        sink_id.c_str(),
+        route.media_source().id().c_str());
+    if (potential_route_id == route.media_route_id()) {
+      matching_route = &route;
+      break;
+    }
+  }
+
+  if (!matching_route) {
+    for (const auto& callback : callbacks)
+      callback.Run(nullptr, std::string(), "No routes found");
+    return;
+  }
+
+  for (const auto& callback : callbacks)
+    callback.Run(matching_route, presentation_id, std::string());
 }
 
 void MediaRouterAndroid::CloseRoute(const MediaRoute::Id& route_id) {
