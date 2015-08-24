@@ -46,10 +46,11 @@ scoped_ptr<blink::WebPluginPlaceholder> CreateShadowDOMPlaceholderForPluginInfo(
   // TODO(jbroman): Investigate whether browser plugin needs special handling.
   ChromeViewHostMsg_GetPluginInfo_Output output;
 #if defined(ENABLE_PLUGINS)
+  blink::WebString top_origin = frame->top()->securityOrigin().toString();
   render_frame->Send(
       new ChromeViewHostMsg_GetPluginInfo(render_frame->GetRoutingID(),
                                           GURL(orig_params.url),
-                                          frame->top()->document().url(),
+                                          GURL(top_origin),
                                           orig_mime_type,
                                           &output));
 #else

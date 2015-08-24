@@ -654,9 +654,10 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   GURL url(params.url);
 #if defined(ENABLE_PLUGINS)
   ChromeViewHostMsg_GetPluginInfo_Output output;
+  WebString top_origin = frame->top()->securityOrigin().toString();
   render_frame->Send(new ChromeViewHostMsg_GetPluginInfo(
-      render_frame->GetRoutingID(), url, frame->top()->document().url(),
-      orig_mime_type, &output));
+      render_frame->GetRoutingID(), url, GURL(top_origin), orig_mime_type,
+      &output));
   *plugin = CreatePlugin(render_frame, frame, params, output);
 #else  // !defined(ENABLE_PLUGINS)
 

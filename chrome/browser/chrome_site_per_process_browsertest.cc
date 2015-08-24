@@ -97,3 +97,26 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
                             "window.webkitRequestFileSystem("
                             "window.TEMPORARY, 1024, function() {});"));
 }
+
+// Ensure that creating a plugin in a cross-site subframe doesn't crash.  This
+// involves querying content settings from the renderer process and using the
+// top frame's origin as one of the parameters.  See https://crbug.com/426658.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PluginWithRemoteTopFrame) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Navigate subframe to a page with a Flash object.
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL frame_url =
+      embedded_test_server()->GetURL("b.com", "/flash_object.html");
+  content::DOMMessageQueue msg_queue;
+  EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", frame_url));
+
+  // Ensure the page finishes loading without crashing.
+  std::string status;
+  while (msg_queue.WaitForMessage(&status)) {
+    if (status == "\"DONE\"")
+      break;
+  }
+}

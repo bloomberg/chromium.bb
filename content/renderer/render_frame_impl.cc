@@ -2032,9 +2032,10 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
   WebPluginInfo info;
   std::string mime_type;
   bool found = false;
-  Send(new FrameHostMsg_GetPluginInfo(
-      routing_id_, params.url, frame->top()->document().url(),
-      params.mimeType.utf8(), &found, &info, &mime_type));
+  WebString top_origin = frame->top()->securityOrigin().toString();
+  Send(new FrameHostMsg_GetPluginInfo(routing_id_, params.url, GURL(top_origin),
+                                      params.mimeType.utf8(), &found, &info,
+                                      &mime_type));
   if (!found)
     return NULL;
 
