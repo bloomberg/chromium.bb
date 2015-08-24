@@ -26071,6 +26071,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.ConnectionDiagnosticsIssue"
+    enum="ConnectionDiagnosticsIssue">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the connectivity issue diagnosed by the
+    ConnectionDiagnostics class in Shill. This metric is logged each time a
+    ConnectionDiagnostics object completes its diagnostics actions and reports
+    the results to its caller.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.CorruptedProfile" enum="NetworkCorruptedProfile">
   <owner>quiche@chromium.org</owner>
   <summary>
@@ -54078,6 +54089,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="User signed in when the signin status is unknown."/>
   <int value="4" label="User signed out when the signin status is unknown."/>
   <int value="5" label="Try to override the status when its valus is error."/>
+</enum>
+
+<enum name="ConnectionDiagnosticsIssue" type="int">
+  <int value="0" label="IP collision detected."/>
+  <int value="1" label="Routing problem detected."/>
+  <int value="2" label="HTTP issues or broken portal."/>
+  <int value="3"
+      label="DNS servers sending invalid responses -- might be misconfigured."/>
+  <int value="4" label="DNS servers pingable but not responding to requests."/>
+  <int value="5" label="No DNS servers configured for this connection."/>
+  <int value="6" label="All configured DNS server addresses are invalid."/>
+  <int value="7" label="No connection issue detected."/>
+  <int value="8" label="Trapped in captive portal."/>
+  <int value="9" label="Gateway issue or upstream connectivity problem."/>
+  <int value="10"
+      label="Gateway appears to be on network, but is not pingable."/>
+  <int value="11"
+      label="Web server appears to be on network, but is not pingable."/>
+  <int value="12" label="No ARP entry for the gateway."/>
+  <int value="13" label="No ARP entry for the webserver."/>
+  <int value="14" label="Internal failure in connection diagnostics."/>
+  <int value="15" label="No neighbor table entry for the gateway."/>
+  <int value="16" label="No neighbor table entry for the web server."/>
+  <int value="17"
+      label="Neighbor table entry for the gateway not in a connected state."/>
+  <int value="18"
+      label="Neighbor table entry for the web server not in a connected
+             state."/>
+  <int value="19" label="Placeholder 1."/>
+  <int value="20" label="Placeholder 2."/>
+  <int value="21" label="Placeholder 3."/>
+  <int value="22" label="Placeholder 4."/>
 </enum>
 
 <enum name="ConnectionFailureReason" type="int">
