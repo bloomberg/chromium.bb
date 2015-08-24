@@ -16,10 +16,6 @@
 template <typename Type>
 struct StaticMemorySingletonTraits;
 
-namespace {
-class ETWKeywordUpdateThread;
-}
-
 namespace base {
 namespace trace_event {
 
@@ -72,7 +68,7 @@ class BASE_EXPORT TraceEventETWExport {
   // Ensure only the provider can construct us.
   friend struct StaticMemorySingletonTraits<TraceEventETWExport>;
   // To have access to UpdateKeyword().
-  friend class ETWKeywordUpdateThread;
+  class ETWKeywordUpdateThread;
   TraceEventETWExport();
 
   // Updates the list of enabled categories by consulting the ETW keyword.
