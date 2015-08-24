@@ -54,7 +54,7 @@ struct SaveFileCreateInfo {
   int save_id;
   // IDs for looking up the contents we are associated with.
   int render_process_id;
-  int render_view_id;
+  int render_frame_id;
   // Handle for informing the ResourceDispatcherHost of a UI based cancel.
   int request_id;
   // Disposition info from HTTP response.

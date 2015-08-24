@@ -54,6 +54,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
       const GURL& url,
       int render_process_host_id,
       int render_view_host_routing_id,
+      int render_frame_host_routing_id,
       content::ResourceContext* resource_context);
 
   ~DownloadUrlParameters();
@@ -119,6 +120,9 @@ class CONTENT_EXPORT DownloadUrlParameters {
   int render_view_host_routing_id() const {
     return render_view_host_routing_id_;
   }
+  int render_frame_host_routing_id() const {
+    return render_frame_host_routing_id_;
+  }
   RequestHeadersType::const_iterator request_headers_begin() const {
     return request_headers_.begin();
   }
@@ -156,6 +160,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   std::string referrer_encoding_;
   int render_process_host_id_;
   int render_view_host_routing_id_;
+  int render_frame_host_routing_id_;
   ResourceContext* resource_context_;
   DownloadSaveInfo save_info_;
   GURL url_;

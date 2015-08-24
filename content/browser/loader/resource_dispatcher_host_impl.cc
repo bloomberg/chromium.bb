@@ -602,7 +602,8 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
     bool is_content_initiated,
     ResourceContext* context,
     int child_id,
-    int route_id,
+    int render_view_route_id,
+    int render_frame_route_id,
     bool prefer_cache,
     bool do_not_prompt_for_login,
     scoped_ptr<DownloadSaveInfo> save_info,
@@ -666,7 +667,8 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
   }
 
   ResourceRequestInfoImpl* extra_info =
-      CreateRequestInfo(child_id, route_id, true, context);
+      CreateRequestInfo(child_id, render_view_route_id,
+                        render_frame_route_id, true, context);
   extra_info->set_do_not_prompt_for_login(do_not_prompt_for_login);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
 
@@ -824,6 +826,12 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
   if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_host))
     return;
 
+  // Don't notify WebContents observers for requests known to be
+  // downloads; they aren't really associated with the Webcontents.
+  // Note that not all downloads are known before content sniffing.
+  if (info->IsDownload())
+    return;
+
   // Notify the observers on the UI thread.
   scoped_ptr<ResourceRedirectDetails> detail(new ResourceRedirectDetails(
       loader->request(),
@@ -848,6 +856,12 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
 
   int render_process_id, render_frame_host;
   if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_host))
+    return;
+
+  // Don't notify WebContents observers for requests known to be
+  // downloads; they aren't really associated with the Webcontents.
+  // Note that not all downloads are known before content sniffing.
+  if (info->IsDownload())
     return;
 
   // Notify the observers on the UI thread.
@@ -1555,17 +1569,18 @@ void ResourceDispatcherHostImpl::OnCancelRequest(int request_id) {
 
 ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
     int child_id,
-    int route_id,
+    int render_view_route_id,
+    int render_frame_route_id,
     bool download,
     ResourceContext* context) {
   return new ResourceRequestInfoImpl(
       PROCESS_TYPE_RENDERER,
       child_id,
-      route_id,
+      render_view_route_id,
       -1,  // frame_tree_node_id
       0,
       request_id_,
-      MSG_ROUTING_NONE,  // render_frame_id
+      render_frame_route_id,
       false,             // is_main_frame
       false,             // parent_is_main_frame
       -1,                // parent_render_frame_id
@@ -1634,7 +1649,8 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
     const GURL& url,
     const Referrer& referrer,
     int child_id,
-    int route_id,
+    int render_view_route_id,
+    int render_frame_route_id,
     ResourceContext* context) {
   if (is_shutdown_)
     return;
@@ -1669,13 +1685,14 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
 
   // Since we're just saving some resources we need, disallow downloading.
   ResourceRequestInfoImpl* extra_info =
-      CreateRequestInfo(child_id, route_id, false, context);
+      CreateRequestInfo(child_id, render_view_route_id,
+                        render_frame_route_id, false, context);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
 
   scoped_ptr<ResourceHandler> handler(
       new SaveFileResourceHandler(request.get(),
                                   child_id,
-                                  route_id,
+                                  render_frame_route_id,
                                   url,
                                   save_file_manager_.get()));
 

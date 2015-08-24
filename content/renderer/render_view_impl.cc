@@ -1699,7 +1699,8 @@ void RenderViewImpl::saveImageFromDataURL(const blink::WebString& data_url) {
   // Note: We should basically send GURL but we use size-limited string instead
   // in order to send a larger data url to save a image for <canvas> or <img>.
   if (data_url.length() < kMaxLengthOfDataURLString)
-    Send(new ViewHostMsg_SaveImageFromDataURL(routing_id_, data_url.utf8()));
+    Send(new ViewHostMsg_SaveImageFromDataURL(
+        routing_id_, GetMainRenderFrame()->GetRoutingID(), data_url.utf8()));
 }
 
 bool RenderViewImpl::enumerateChosenDirectory(

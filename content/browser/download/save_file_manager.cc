@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "url/gurl.h"
@@ -117,6 +118,7 @@ void SaveFileManager::SaveURL(
     const Referrer& referrer,
     int render_process_host_id,
     int render_view_id,
+    int render_frame_id,
     SaveFileCreateInfo::SaveFileSource save_source,
     const base::FilePath& file_full_path,
     ResourceContext* context,
@@ -131,7 +133,8 @@ void SaveFileManager::SaveURL(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SaveFileManager::OnSaveURL, this, url, referrer,
-            render_process_host_id, render_view_id, context));
+                   render_process_host_id, render_view_id, render_frame_id,
+                   context));
   } else {
     // We manually start the save job.
     SaveFileCreateInfo* info = new SaveFileCreateInfo(file_full_path,
@@ -139,7 +142,7 @@ void SaveFileManager::SaveURL(
          save_source,
          -1);
     info->render_process_id = render_process_host_id;
-    info->render_view_id = render_view_id;
+    info->render_frame_id = render_frame_id;
 
     // Since the data will come from render process, so we need to start
     // this kind of save job by ourself.
@@ -175,18 +178,16 @@ void SaveFileManager::RemoveSaveFile(int save_id, const GURL& save_url,
 
 // Static
 SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
-    int render_process_id, int render_view_id) {
-  RenderViewHostImpl* render_view_host =
-      RenderViewHostImpl::FromID(render_process_id, render_view_id);
-  if (!render_view_host)
-    return NULL;
+    int render_process_id, int render_frame_id) {
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(
+          render_frame_host));
+  if (!web_contents)
+    return nullptr;
 
-  WebContentsImpl* contents = static_cast<WebContentsImpl*>(
-      render_view_host->GetDelegate()->GetAsWebContents());
-  if (!contents)
-    return NULL;
-
-  return contents->save_package();
+  return web_contents->save_package();
 }
 
 void SaveFileManager::DeleteDirectoryOrFile(const base::FilePath& full_path,
@@ -303,7 +304,7 @@ void SaveFileManager::OnStartSave(const SaveFileCreateInfo* info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SavePackage* save_package =
       GetSavePackageFromRenderIds(info->render_process_id,
-                                  info->render_view_id);
+                                  info->render_frame_id);
   if (!save_package) {
     // Cancel this request.
     SendCancelRequest(info->save_id);
@@ -365,12 +366,14 @@ void SaveFileManager::OnSaveURL(
     const Referrer& referrer,
     int render_process_host_id,
     int render_view_id,
+    int render_frame_id,
     ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ResourceDispatcherHostImpl::Get()->BeginSaveFile(url,
                                                    referrer,
                                                    render_process_host_id,
                                                    render_view_id,
+                                                   render_frame_id,
                                                    context);
 }
 
@@ -476,7 +479,7 @@ void SaveFileManager::RenameAllFiles(
     const FinalNameList& final_names,
     const base::FilePath& resource_dir,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     int save_package_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
@@ -498,16 +501,16 @@ void SaveFileManager::RenameAllFiles(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&SaveFileManager::OnFinishSavePageJob, this,
-          render_process_id, render_view_id, save_package_id));
+                 render_process_id, render_frame_id, save_package_id));
 }
 
 void SaveFileManager::OnFinishSavePageJob(int render_process_id,
-                                          int render_view_id,
+                                          int render_frame_id,
                                           int save_package_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SavePackage* save_package =
-      GetSavePackageFromRenderIds(render_process_id, render_view_id);
+      GetSavePackageFromRenderIds(render_process_id, render_frame_id);
 
   if (save_package && save_package->id() == save_package_id)
     save_package->Finish();

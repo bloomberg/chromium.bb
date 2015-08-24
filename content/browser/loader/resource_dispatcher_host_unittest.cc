@@ -951,6 +951,9 @@ class ResourceDispatcherHostTest : public testing::Test,
                                    int request_id,
                                    net::RequestPriority priority);
 
+  void MakeWebContentsAssociatedDownloadRequest(int request_id,
+                                                const GURL& url);
+
   void CancelRequest(int request_id);
   void RendererCancelRequest(int request_id) {
     ResourceMessageFilter* old_filter = SetFilter(filter_.get());
@@ -1086,6 +1089,30 @@ void ResourceDispatcherHostTest::MakeTestRequestWithPriority(
   request.priority = priority;
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
   host_.OnMessageReceived(msg, filter_.get());
+}
+
+void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
+    int request_id,
+    const GURL& url) {
+  scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
+  save_info->prompt_for_save_location = false;
+  net::URLRequestContext* request_context =
+      browser_context_->GetResourceContext()->GetRequestContext();
+  scoped_ptr<net::URLRequest> request(
+      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
+  host_.BeginDownload(
+      request.Pass(),
+      Referrer(),
+      false,  // is_content_initiated
+      browser_context_->GetResourceContext(),
+      web_contents_->GetRenderProcessHost()->GetID(),
+      web_contents_->GetRoutingID(),
+      web_contents_->GetMainFrame()->GetRoutingID(),
+      false,
+      false,
+      save_info.Pass(),
+      DownloadItem::kInvalidId,
+      ResourceDispatcherHostImpl::DownloadStartedCallback());
 }
 
 void ResourceDispatcherHostTest::CancelRequest(int request_id) {
@@ -3381,6 +3408,30 @@ TEST_F(ResourceDispatcherHostTest, DidChangePriority) {
   // Cleanup.
   host_.OnRenderViewHostDeleted(filter_->child_id(),  // child_id
                                 0);                   // route_id
+}
+
+// Confirm that resource response started notifications for downloads are not
+// transmitted to the WebContents.
+TEST_F(ResourceDispatcherHostTest, TransferResponseStartedDownload) {
+  int initial_count(web_contents_observer_->resource_response_start_count());
+
+  MakeWebContentsAssociatedDownloadRequest(
+      1, net::URLRequestTestJob::test_url_1());
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(initial_count,
+            web_contents_observer_->resource_response_start_count());
+}
+
+// Confirm that request redirected notifications for downloads are not
+// transmitted to the WebContents.
+TEST_F(ResourceDispatcherHostTest, TransferRequestRedirectedDownload) {
+  int initial_count(web_contents_observer_->resource_request_redirect_count());
+
+  MakeWebContentsAssociatedDownloadRequest(
+      1, net::URLRequestTestJob::test_url_redirect_to_url_2());
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(initial_count,
+            web_contents_observer_->resource_request_redirect_count());
 }
 
 net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(

@@ -93,7 +93,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       bool is_content_initiated,
       ResourceContext* context,
       int child_id,
-      int route_id,
+      int render_view_route_id,
+      int render_frame_route_id,
       bool prefer_cache,
       bool do_not_prompt_for_login,
       scoped_ptr<DownloadSaveInfo> save_info,
@@ -127,7 +128,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void BeginSaveFile(const GURL& url,
                      const Referrer& referrer,
                      int child_id,
-                     int route_id,
+                     int render_view_route_id,
+                     int render_frame_route_id,
                      ResourceContext* context);
 
   // Cancels the given request if it still exists.
@@ -470,7 +472,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // |download| should be true if the request is a file download.
   ResourceRequestInfoImpl* CreateRequestInfo(
       int child_id,
-      int route_id,
+      int render_view_route_id,
+      int render_frame_route_id,
       bool download,
       ResourceContext* context);
 

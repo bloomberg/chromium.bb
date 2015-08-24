@@ -37,6 +37,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
@@ -753,7 +754,7 @@ void SavePackage::CheckFinish() {
                  final_names,
                  dir,
                  web_contents()->GetRenderProcessHost()->GetID(),
-                 web_contents()->GetRenderViewHost()->GetRoutingID(),
+                 web_contents()->GetMainFrame()->GetRoutingID(),
                  id()));
 }
 
@@ -933,6 +934,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
                            save_item->referrer(),
                            web_contents()->GetRenderProcessHost()->GetID(),
                            routing_id(),
+                           web_contents()->GetMainFrame()->GetRoutingID(),
                            save_item->save_source(),
                            save_item->full_path(),
                            web_contents()->

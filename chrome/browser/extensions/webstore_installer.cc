@@ -45,6 +45,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -662,7 +663,8 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   scoped_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
       download_url_,
       render_process_host_id,
-      render_view_host_routing_id ,
+      render_view_host_routing_id,
+      contents->GetMainFrame()->GetRoutingID(),
       resource_context));
   params->set_file_path(file);
   if (controller.GetVisibleEntry())

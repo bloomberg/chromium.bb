@@ -381,8 +381,8 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
 
   ViewHostMsg_SaveImageFromDataURL::Param param1;
   ViewHostMsg_SaveImageFromDataURL::Read(msg2, &param1);
-  EXPECT_EQ(base::get<1>(param1).length(), image_data_url.length());
-  EXPECT_EQ(base::get<1>(param1), image_data_url);
+  EXPECT_EQ(base::get<2>(param1).length(), image_data_url.length());
+  EXPECT_EQ(base::get<2>(param1), image_data_url);
 
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
@@ -397,8 +397,8 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
 
   ViewHostMsg_SaveImageFromDataURL::Param param2;
   ViewHostMsg_SaveImageFromDataURL::Read(msg3, &param2);
-  EXPECT_EQ(base::get<1>(param2).length(), large_data_url.length());
-  EXPECT_EQ(base::get<1>(param2), large_data_url);
+  EXPECT_EQ(base::get<2>(param2).length(), large_data_url.length());
+  EXPECT_EQ(base::get<2>(param2), large_data_url);
 
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();

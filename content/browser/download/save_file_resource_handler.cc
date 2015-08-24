@@ -18,13 +18,13 @@ namespace content {
 
 SaveFileResourceHandler::SaveFileResourceHandler(net::URLRequest* request,
                                                  int render_process_host_id,
-                                                 int render_view_id,
+                                                 int render_frame_id,
                                                  const GURL& url,
                                                  SaveFileManager* manager)
     : ResourceHandler(request),
       save_id_(-1),
       render_process_id_(render_process_host_id),
-      render_view_id_(render_view_id),
+      render_frame_id_(render_frame_id),
       url_(url),
       content_length_(0),
       save_manager_(manager) {
@@ -55,7 +55,7 @@ bool SaveFileResourceHandler::OnResponseStarted(ResourceResponse* response,
   info->total_bytes = content_length_;
   info->save_id = save_id_;
   info->render_process_id = render_process_id_;
-  info->render_view_id = render_view_id_;
+  info->render_frame_id = render_frame_id_;
   info->request_id = GetRequestID();
   info->content_disposition = content_disposition_;
   info->save_source = SaveFileCreateInfo::SAVE_FILE_FROM_NET;

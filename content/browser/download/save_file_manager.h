@@ -100,6 +100,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
                const Referrer& referrer,
                int render_process_host_id,
                int render_view_id,
+               int render_frame_id,
                SaveFileCreateInfo::SaveFileSource save_source,
                const base::FilePath& file_full_path,
                ResourceContext* context,
@@ -138,7 +139,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
       const FinalNameList& final_names,
       const base::FilePath& resource_dir,
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       int save_package_id);
 
   // When the user cancels the saving, we need to remove all remaining saved
@@ -156,7 +157,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   // Called only on UI thread to get the SavePackage for a contents's browser
   // context.
   static SavePackage* GetSavePackageFromRenderIds(int render_process_id,
-                                                  int review_view_id);
+                                                  int render_Frame_id);
 
   // Register a starting request. Associate the save URL with a
   // SavePackage for further matching.
@@ -195,7 +196,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   void OnErrorFinished(const GURL& save_url, int contents_id);
   // Notifies SavePackage that the whole page saving job is finished.
   void OnFinishSavePageJob(int render_process_id,
-                           int render_view_id,
+                           int render_frame_id,
                            int save_package_id);
 
   // Notifications sent from the UI thread and run on the file thread.
@@ -210,6 +211,7 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
                  const Referrer& referrer,
                  int render_process_host_id,
                  int render_view_id,
+                 int render_frame_id,
                  ResourceContext* context);
   // Handler for a notification sent to the IO thread for generating save id.
   void OnRequireSaveJobFromOtherSource(SaveFileCreateInfo* info);

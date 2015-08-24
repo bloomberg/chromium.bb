@@ -23,7 +23,7 @@ class SaveFileResourceHandler : public ResourceHandler {
  public:
   SaveFileResourceHandler(net::URLRequest* request,
                           int render_process_host_id,
-                          int render_view_id,
+                          int render_frame_id,
                           const GURL& url,
                           SaveFileManager* manager);
   ~SaveFileResourceHandler() override;
@@ -74,7 +74,7 @@ class SaveFileResourceHandler : public ResourceHandler {
  private:
   int save_id_;
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   std::string content_disposition_;
   GURL url_;

@@ -1206,8 +1206,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_AppCacheAccessed,
                     bool /* blocked by policy */)
 
 // Initiates a download based on user actions like 'ALT+click'.
-IPC_MESSAGE_CONTROL4(ViewHostMsg_DownloadUrl,
+IPC_MESSAGE_CONTROL5(ViewHostMsg_DownloadUrl,
                      int /* render_view_id */,
+                     int /* render_frame_id */,
                      GURL /* url */,
                      content::Referrer /* referrer */,
                      base::string16 /* suggested_name */)
@@ -1352,8 +1353,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_EnumerateDirectory,
 // Asks the browser to save a image (for <canvas> or <img>) from a data URL.
 // Note: |data_url| is the contents of a data:URL, and that it's represented as
 // a string only to work around size limitations for GURLs in IPC messages.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_SaveImageFromDataURL,
+IPC_MESSAGE_CONTROL3(ViewHostMsg_SaveImageFromDataURL,
                      int /* render_view_id */,
+                     int /* render_frame_id */,
                      std::string /* data_url */)
 
 // Tells the browser to move the focus to the next (previous if reverse is

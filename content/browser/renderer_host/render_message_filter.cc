@@ -815,6 +815,7 @@ void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
 #endif
 
 void RenderMessageFilter::DownloadUrl(int render_view_id,
+                                      int render_frame_id,
                                       const GURL& url,
                                       const Referrer& referrer,
                                       const base::string16& suggested_name,
@@ -833,6 +834,7 @@ void RenderMessageFilter::DownloadUrl(int render_view_id,
       resource_context_,
       render_process_id_,
       render_view_id,
+      render_frame_id,
       false,
       false,
       save_info.Pass(),
@@ -841,13 +843,16 @@ void RenderMessageFilter::DownloadUrl(int render_view_id,
 }
 
 void RenderMessageFilter::OnDownloadUrl(int render_view_id,
+                                        int render_frame_id,
                                         const GURL& url,
                                         const Referrer& referrer,
                                         const base::string16& suggested_name) {
-  DownloadUrl(render_view_id, url, referrer, suggested_name, false);
+  DownloadUrl(render_view_id, render_frame_id, url, referrer, suggested_name,
+              false);
 }
 
 void RenderMessageFilter::OnSaveImageFromDataURL(int render_view_id,
+                                                 int render_frame_id,
                                                  const std::string& url_str) {
   // Please refer to RenderViewImpl::saveImageFromDataURL().
   if (url_str.length() >= kMaxLengthOfDataURLString)
@@ -857,7 +862,8 @@ void RenderMessageFilter::OnSaveImageFromDataURL(int render_view_id,
   if (!data_url.SchemeIs(url::kDataScheme))
     return;
 
-  DownloadUrl(render_view_id, data_url, Referrer(), base::string16(), true);
+  DownloadUrl(render_view_id, render_frame_id, data_url, Referrer(),
+              base::string16(), true);
 }
 
 void RenderMessageFilter::AllocateSharedMemoryOnFileThread(

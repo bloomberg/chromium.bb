@@ -2402,6 +2402,7 @@ void RenderFrameImpl::loadURLExternally(
   Referrer referrer(RenderViewImpl::GetReferrerFromRequest(frame, request));
   if (policy == blink::WebNavigationPolicyDownload) {
     render_view_->Send(new ViewHostMsg_DownloadUrl(render_view_->GetRoutingID(),
+                                                   GetRoutingID(),
                                                    request.url(), referrer,
                                                    suggested_name));
   } else {

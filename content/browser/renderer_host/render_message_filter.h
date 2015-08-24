@@ -126,6 +126,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 
   // This method will be overridden by TestSaveImageFromDataURL class for test.
   virtual void DownloadUrl(int render_view_id,
+                           int render_frame_id,
                            const GURL& url,
                            const Referrer& referrer,
                            const base::string16& suggested_name,
@@ -208,10 +209,13 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 #endif  // defined(ENABLE_PLUGINS)
   void OnGenerateRoutingID(int* route_id);
   void OnDownloadUrl(int render_view_id,
+                     int render_frame_id,
                      const GURL& url,
                      const Referrer& referrer,
                      const base::string16& suggested_name);
-  void OnSaveImageFromDataURL(int render_view_id, const std::string& url_str);
+  void OnSaveImageFromDataURL(int render_view_id,
+                              int render_frame_id,
+                              const std::string& url_str);
 
   void OnGetAudioHardwareConfig(media::AudioParameters* input_params,
                                 media::AudioParameters* output_params);

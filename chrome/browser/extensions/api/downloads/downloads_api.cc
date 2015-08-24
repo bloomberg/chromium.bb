@@ -958,6 +958,7 @@ bool DownloadsDownloadFunction::RunAsync() {
       new content::DownloadUrlParameters(
           download_url, render_frame_host()->GetProcess()->GetID(),
           render_view_host_do_not_use()->GetRoutingID(),
+          render_frame_host()->GetRoutingID(),
           current_profile->GetResourceContext()));
 
   base::FilePath creator_suggested_filename;

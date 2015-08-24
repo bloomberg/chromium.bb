@@ -268,12 +268,13 @@ class TestSaveImageFromDataURL : public RenderMessageFilter {
   }
 
   void Test(const std::string& url) {
-    OnMessageReceived(ViewHostMsg_SaveImageFromDataURL(0, url));
+    OnMessageReceived(ViewHostMsg_SaveImageFromDataURL(0, 0, url));
   }
 
  protected:
   ~TestSaveImageFromDataURL() override {}
   void DownloadUrl(int render_view_id,
+                   int render_frame_id,
                    const GURL& url,
                    const Referrer& referrer,
                    const base::string16& suggested_name,
