@@ -2010,7 +2010,7 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'master-release',
       boards=[],
-      master=(not IS_RELEASE_BRANCH),
+      master=True,
       sync_chrome=False,
       chrome_sdk=False,
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
@@ -2884,13 +2884,6 @@ def GetConfig():
       builder_class_name='test_builders.ManifestVersionedSyncBuilder',
       chroot_replace=True,
   )
-
-  # On release branches, x86-mario is the release master.
-  #
-  # TODO(dnj): This should go away once the boardless release master is complete
-  # (crbug.com/458675)
-  if IS_RELEASE_BRANCH:
-    site_config['x86-mario-release']['master'] = True
 
   def _SetupWaterfalls():
     for name, c in site_config.iteritems():
