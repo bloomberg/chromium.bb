@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
+#include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/crash_reporter/aw_microdump_crash_reporter.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
@@ -36,6 +37,7 @@
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media_switches.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace android_webview {
@@ -138,13 +140,29 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void AwMainDelegate::PreSandboxStartup() {
-  // TODO(torne): When we have a separate renderer process, we need to handle
-  // being passed open FDs for the resource paks here.
 #if defined(ARCH_CPU_ARM_FAMILY)
   // Create an instance of the CPU class to parse /proc/cpuinfo and cache
   // cpu_brand info.
   base::CPU cpu_info;
 #endif
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  if (process_type == switches::kRendererProcess) {
+    auto global_descriptors = base::GlobalDescriptors::GetInstance();
+    int pak_fd = global_descriptors->Get(kAndroidWebViewLocalePakDescriptor);
+    base::MemoryMappedFile::Region pak_region =
+        global_descriptors->GetRegion(kAndroidWebViewLocalePakDescriptor);
+    ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
+                                                        pak_region);
+    pak_fd = global_descriptors->Get(kAndroidWebViewMainPakDescriptor);
+    pak_region =
+        global_descriptors->GetRegion(kAndroidWebViewMainPakDescriptor);
+    ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+        base::File(pak_fd), pak_region, ui::SCALE_FACTOR_NONE);
+  }
 
   crash_reporter::EnableMicrodumpCrashReporter();
 }

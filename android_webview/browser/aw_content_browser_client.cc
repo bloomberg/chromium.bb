@@ -17,6 +17,7 @@
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
+#include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "base/android/locale_utils.h"
@@ -37,6 +38,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_bundle_android.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using content::ResourceType;
@@ -451,6 +453,19 @@ bool AwContentBrowserClient::AllowPepperSocketAPI(
     const content::SocketPermissionRequest* params) {
   NOTREACHED() << "Android WebView does not support plugins";
   return false;
+}
+
+void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
+      const base::CommandLine& command_line,
+      int child_process_id,
+      content::FileDescriptorInfo* mappings,
+      std::map<int, base::MemoryMappedFile::Region>* regions) {
+  int fd = ui::GetMainAndroidPackFd(
+      &(*regions)[kAndroidWebViewMainPakDescriptor]);
+  mappings->Share(kAndroidWebViewMainPakDescriptor, fd);
+
+  fd = ui::GetLocalePackFd(&(*regions)[kAndroidWebViewLocalePakDescriptor]);
+  mappings->Share(kAndroidWebViewLocalePakDescriptor, fd);
 }
 
 void AwContentBrowserClient::OverrideWebkitPrefs(
