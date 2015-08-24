@@ -43,18 +43,54 @@ int64 GetEndTime(const ClientIncidentReport_DownloadDetails& details) {
   return details.download_time_msec();
 }
 
-// Returns true if a download represented by a DownloadRow is binary file.
+bool IsBinaryDownloadForCurrentOS(
+    ClientDownloadRequest::DownloadType download_type) {
+  static_assert(ClientDownloadRequest::DownloadType_MAX ==
+                    ClientDownloadRequest::ARCHIVE,
+                "Update logic below");
+
+// Platform-specific types are relevant only for their own platforms.
+#if defined(OS_MACOSX)
+  if (download_type == ClientDownloadRequest::MAC_EXECUTABLE)
+    return true;
+#elif defined(OS_ANDROID)
+  if (download_type == ClientDownloadRequest::ANDROID_APK)
+    return true;
+#endif
+
+// Extensions are supported where enabled.
+#if defined(ENABLE_EXTENSIONS)
+  if (download_type == ClientDownloadRequest::CHROME_EXTENSION)
+    return true;
+#endif
+
+  if (download_type == ClientDownloadRequest::ZIPPED_EXECUTABLE ||
+      download_type == ClientDownloadRequest::ZIPPED_ARCHIVE ||
+      download_type == ClientDownloadRequest::ARCHIVE) {
+    return true;
+  }
+
+  // The default return value of download_protection_util::GetDownloadType is
+  // ClientDownloadRequest::WIN_EXECUTABLE.
+  return download_type == ClientDownloadRequest::WIN_EXECUTABLE;
+}
+
+// Returns true if a download represented by a DownloadRow is binary file for
+// the current OS.
 bool IsBinaryDownload(const history::DownloadRow& row) {
   // TODO(grt): Peek into archives to see if they contain binaries;
   // http://crbug.com/386915.
   return (download_protection_util::IsSupportedBinaryFile(row.target_path) &&
-          !download_protection_util::IsArchiveFile(row.target_path));
+          !download_protection_util::IsArchiveFile(row.target_path) &&
+          IsBinaryDownloadForCurrentOS(
+              download_protection_util::GetDownloadType(row.target_path)));
 }
 
-// Returns true if a download represented by a DownloadDetails is binary file.
+// Returns true if a download represented by a DownloadDetails is binary file
+// for the current OS.
 bool IsBinaryDownload(const ClientIncidentReport_DownloadDetails& details) {
   // DownloadDetails are only generated for binary downloads.
-  return true;
+  return IsBinaryDownloadForCurrentOS(details.download().download_type());
 }
 
 // Returns true if a download represented by a DownloadRow has been opened.

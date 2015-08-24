@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -74,6 +75,26 @@ scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
   return nullptr;
 }
 
+#if defined(OS_WIN)
+static const base::FilePath::CharType kBinaryFileName[] =
+    FILE_PATH_LITERAL("spam.exe");
+static const base::FilePath::CharType kBinaryFileNameForOtherOS[] =
+    FILE_PATH_LITERAL("spam.dmg");
+#elif defined(OS_MACOSX)
+static const base::FilePath::CharType kBinaryFileName[] =
+    FILE_PATH_LITERAL("spam.dmg");
+static const base::FilePath::CharType kBinaryFileNameForOtherOS[] =
+    FILE_PATH_LITERAL("spam.apk");
+#elif defined(OS_ANDROID)
+static const base::FilePath::CharType kBinaryFileName[] =
+    FILE_PATH_LITERAL("spam.apk");
+static const base::FilePath::CharType kBinaryFileNameForOtherOS[] =
+    FILE_PATH_LITERAL("spam.dmg");
+#else
+static const base::FilePath::CharType kBinaryFileName[] =
+    FILE_PATH_LITERAL("spam.exe");
+#endif
+
 }  // namespace
 
 namespace safe_browsing {
@@ -92,7 +113,7 @@ class LastDownloadFinderTest : public testing::Test {
         HistoryServiceFactory::GetForProfile(
             profile, ServiceAccessType::EXPLICIT_ACCESS);
     history_service->CreateDownload(
-        CreateTestDownloadRow(),
+        CreateTestDownloadRow(kBinaryFileName),
         base::Bind(&LastDownloadFinderTest::OnDownloadCreated,
                    base::Unretained(this)));
   }
@@ -227,11 +248,11 @@ class LastDownloadFinderTest : public testing::Test {
     return last_download.Pass();
   }
 
-  history::DownloadRow CreateTestDownloadRow() {
+  history::DownloadRow CreateTestDownloadRow(
+      const base::FilePath::CharType* file_path) {
     base::Time now(base::Time::Now());
     return history::DownloadRow(
-        base::FilePath(FILE_PATH_LITERAL("spam.exe")),
-        base::FilePath(FILE_PATH_LITERAL("spam.exe")),
+        base::FilePath(file_path), base::FilePath(file_path),
         std::vector<GURL>(1, GURL("http://www.google.com")),  // url_chain
         GURL(),                                               // referrer
         "application/octet-stream",                           // mime_type
@@ -298,7 +319,7 @@ TEST_F(LastDownloadFinderTest, NoParticipatingProfiles) {
   TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_OUT);
 
   // Add a download.
-  AddDownload(profile, CreateTestDownloadRow());
+  AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
 
   ExpectNoDownloadFound(RunLastDownloadFinder());
 }
@@ -309,10 +330,23 @@ TEST_F(LastDownloadFinderTest, SimpleEndToEnd) {
   TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_IN);
 
   // Add a download.
-  AddDownload(profile, CreateTestDownloadRow());
+  AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
 
   ExpectFoundTestDownload(RunLastDownloadFinder());
 }
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+// Tests that nothing happens if the binary is an executable for a different OS.
+TEST_F(LastDownloadFinderTest, DownloadForDifferentOs) {
+  // Create a profile with a history service that is opted-in.
+  TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_IN);
+
+  // Add a download.
+  AddDownload(profile, CreateTestDownloadRow(kBinaryFileNameForOtherOS));
+
+  ExpectNoDownloadFound(RunLastDownloadFinder());
+}
+#endif
 
 // Tests that there is no crash if the finder is deleted before results arrive.
 TEST_F(LastDownloadFinderTest, DeleteBeforeResults) {
@@ -320,7 +354,7 @@ TEST_F(LastDownloadFinderTest, DeleteBeforeResults) {
   TestingProfile* profile = CreateProfile(SAFE_BROWSING_OPT_IN);
 
   // Add a download.
-  AddDownload(profile, CreateTestDownloadRow());
+  AddDownload(profile, CreateTestDownloadRow(kBinaryFileName));
 
   // Start a finder and kill it before the search completes.
   LastDownloadFinder::Create(GetDownloadDetailsGetter(),
