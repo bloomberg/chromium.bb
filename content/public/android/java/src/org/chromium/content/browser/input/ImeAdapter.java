@@ -309,13 +309,6 @@ public class ImeAdapter {
         return isTextInputType(mTextInputType);
     }
 
-    /**
-     * @return true if the selected text is of password.
-     */
-    public boolean isSelectionPassword() {
-        return mTextInputType == TextInputType.PASSWORD;
-    }
-
     public boolean dispatchKeyEvent(KeyEvent event) {
         Log.d(TAG, "dispatchKeyEvent: action [%d], keycode [%d]", event.getAction(),
                 event.getKeyCode());

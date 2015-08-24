@@ -930,11 +930,10 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyStatesAndCalls(0, "", 0, 0, -1, -1);
 
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
-        final PastePopupMenu pastePopup = mContentViewCore.getPastePopupForTest();
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return pastePopup.isShowing();
+                return mContentViewCore.isPastePopupShowing();
             }
         }));
 
@@ -945,7 +944,7 @@ public class ImeTest extends ContentShellTestBase {
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !pastePopup.isShowing();
+                return !mContentViewCore.isPastePopupShowing();
             }
         }));
         assertFalse(mContentViewCore.hasInsertion());

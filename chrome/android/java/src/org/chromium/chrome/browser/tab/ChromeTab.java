@@ -15,7 +15,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Pair;
-import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.View;
@@ -72,7 +71,7 @@ import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.WebActionMode;
+import org.chromium.content.browser.WebActionModeCallback;
 import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -761,18 +760,9 @@ public class ChromeTab extends Tab {
             }
 
             @Override
-            public WebActionMode startActionMode(
-                    View view, ActionHandler actionHandler, boolean floating) {
-                if (floating) return null;
-                ChromeWebActionModeCallback callback =
-                        new ChromeWebActionModeCallback(view.getContext(), actionHandler);
-                ActionMode actionMode = view.startActionMode(callback);
-                return actionMode != null ? new WebActionMode(actionMode) : null;
-            }
-
-            @Override
-            public boolean supportsFloatingActionMode() {
-                return false;
+            public WebActionModeCallback getWebActionModeCallback(
+                    Context context, ActionHandler actionHandler) {
+                return new ChromeWebActionModeCallback(context, actionHandler);
             }
 
             @Override

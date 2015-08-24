@@ -7,9 +7,7 @@ package org.chromium.content.browser;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.view.ActionMode;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.View.MeasureSpec;
 
 import org.chromium.base.Log;
@@ -86,27 +84,13 @@ public class ContentViewClient {
     }
 
     /**
-     * Starts an ActionMode for in-page selection.
-     * @param view The associated View.
-     * @param actionHandler The associated ActionHandler.
-     * @param floating Whether to try creating a floating ActionMode. If this
-     *                 feature is unsupported, the return value will be null.
-     * @return the SelectActionMode if creation is successful, otherwise null.
+     * Returns a WebActionModeCallback for in-page text selection.
+     * @param context the associated context.
+     * @param actionHandler the associated selection action handler.
      */
-    public WebActionMode startActionMode(
-            View view, ActionHandler actionHandler, boolean floating) {
-        if (floating) return null;
-        ActionMode.Callback callback =
-                new WebActionModeCallback(view.getContext(), actionHandler);
-        ActionMode actionMode = view.startActionMode(callback);
-        return actionMode != null ? new WebActionMode(actionMode) : null;
-    }
-
-    /**
-     * @return whether the client supports the creation of floating ActionMode instances.
-     */
-    public boolean supportsFloatingActionMode() {
-        return false;
+    public WebActionModeCallback getWebActionModeCallback(
+            Context context, ActionHandler actionHandler) {
+        return new WebActionModeCallback(context, actionHandler);
     }
 
     /**

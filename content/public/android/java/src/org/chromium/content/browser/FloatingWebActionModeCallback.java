@@ -2,27 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package com.android.webview.chromium;
+package org.chromium.content.browser;
 
-import android.content.Context;
 import android.graphics.Rect;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import org.chromium.content.browser.WebActionModeCallback;
-import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
-
 /**
- * A wrapper for WebActionModeCallback that extends ActionMode.Callback2 to
+ * A wrapper for SelectActionModeCallback that extends ActionMode.Callback2 to
  * support floating ActionModes.
  */
 public class FloatingWebActionModeCallback extends ActionMode.Callback2 {
     private final WebActionModeCallback mWrappedCallback;
 
-    public FloatingWebActionModeCallback(Context context, ActionHandler actionHandler) {
-        mWrappedCallback = new WebActionModeCallback(context, actionHandler);
+    public FloatingWebActionModeCallback(WebActionModeCallback wrappedCallback) {
+        mWrappedCallback = wrappedCallback;
     }
 
     @Override

@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -43,9 +42,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.content.app.ContentApplication;
-import org.chromium.content.browser.WebActionMode;
-import org.chromium.content.browser.WebActionModeCallback;
-import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
@@ -164,16 +160,6 @@ public class AwShellActivity extends Activity {
                     return true;
                 }
                 return false;
-            }
-
-            @Override
-            public WebActionMode startActionMode(
-                    View view, ActionHandler actionHandler, boolean floating) {
-                if (floating) return null;
-                ActionMode.Callback callback =
-                        new WebActionModeCallback(view.getContext(), actionHandler);
-                ActionMode actionMode = view.startActionMode(callback);
-                return actionMode != null ? new WebActionMode(actionMode) : null;
             }
         };
 

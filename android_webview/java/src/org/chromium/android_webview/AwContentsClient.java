@@ -373,10 +373,19 @@ public abstract class AwContentsClient {
      */
     public abstract void onNewPicture(Picture picture);
 
-    public abstract WebActionMode startActionMode(
-            View view, ActionHandler actionHandler, boolean floating);
+    /**
+     * TODO(jdduke): Remove when all embedders have been updated.
+     */
+    public WebActionMode startActionMode(View view, ActionHandler actionHandler, boolean floating) {
+        return null;
+    }
 
-    public abstract boolean supportsFloatingActionMode();
+    /**
+     * TODO(jdduke): Remove when all embedders have been updated.
+     */
+    public boolean supportsFloatingActionMode() {
+        return false;
+    }
 
     public void updateTitle(String title, boolean forceNotification) {
         if (!forceNotification && TextUtils.equals(mTitle, title)) return;

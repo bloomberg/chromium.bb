@@ -644,7 +644,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return show == mContentViewCore.getPastePopupForTest().isShowing();
+                return show == mContentViewCore.isPastePopupShowing();
             }
         }));
     }

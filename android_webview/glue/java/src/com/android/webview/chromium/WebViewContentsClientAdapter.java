@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ClientCertRequest;
@@ -52,9 +51,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.WebActionMode;
-import org.chromium.content.browser.WebActionModeCallback;
-import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 
 import java.lang.ref.WeakReference;
 import java.security.Principal;
@@ -398,47 +394,6 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onNewPicture");
         }
-    }
-
-    /**
-     * @See AwContentsClient#startActionMode(View,ActionHandler,boolean)
-     */
-    @Override
-    public WebActionMode startActionMode(
-            View view, ActionHandler actionHandler, boolean floating) {
-        try {
-            TraceEvent.begin("WebViewContentsClientAdapter.startActionMode");
-            if (TRACE) Log.d(TAG, "startActionMode");
-            if (floating && !supportsFloatingActionMode()) return null;
-            if (floating) {
-                return startFloatingActionMode(view, actionHandler);
-            } else {
-                return startDefaultActionMode(view, actionHandler);
-            }
-        } finally {
-            TraceEvent.end("WebViewContentsClientAdapter.startActionMode");
-        }
-    }
-
-    private WebActionMode startDefaultActionMode(View view, ActionHandler actionHandler) {
-        ActionMode.Callback callback =
-                new WebActionModeCallback(view.getContext(), actionHandler);
-        return new WebActionMode(view.startActionMode(callback));
-    }
-
-    private WebActionMode startFloatingActionMode(View view, ActionHandler actionHandler) {
-        ActionMode.Callback2 callback =
-                new FloatingWebActionModeCallback(view.getContext(), actionHandler);
-        ActionMode actionMode = view.startActionMode(callback, ActionMode.TYPE_FLOATING);
-        return actionMode != null ? new FloatingWebActionMode(actionMode) : null;
-    }
-
-    /**
-     * @See AwContentsClient#supportsFloatingActionMode()
-     */
-    @Override
-    public boolean supportsFloatingActionMode() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
     @Override
