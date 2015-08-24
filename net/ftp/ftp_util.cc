@@ -357,7 +357,6 @@ base::string16 FtpUtil::GetStringPartAfterColumns(const base::string16& text,
                                                   int columns) {
   base::i18n::UTF16CharIterator iter(&text);
 
-  // TODO(jshin): Is u_isspace the right function to use here?
   for (int i = 0; i < columns; i++) {
     // Skip the leading whitespace.
     while (!iter.end() && u_isspace(iter.get()))
