@@ -106,8 +106,8 @@ HttpResponseInfo::HttpResponseInfo()
       was_fetched_via_proxy(false),
       did_use_http_auth(false),
       unused_since_prefetch(false),
-      connection_info(CONNECTION_INFO_UNKNOWN) {
-}
+      async_revalidation_required(false),
+      connection_info(CONNECTION_INFO_UNKNOWN) {}
 
 HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
     : was_cached(rhs.was_cached),
@@ -119,6 +119,7 @@ HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
       proxy_server(rhs.proxy_server),
       did_use_http_auth(rhs.did_use_http_auth),
       unused_since_prefetch(rhs.unused_since_prefetch),
+      async_revalidation_required(rhs.async_revalidation_required),
       socket_address(rhs.socket_address),
       npn_negotiated_protocol(rhs.npn_negotiated_protocol),
       connection_info(rhs.connection_info),
@@ -129,8 +130,7 @@ HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
       ssl_info(rhs.ssl_info),
       headers(rhs.headers),
       vary_data(rhs.vary_data),
-      metadata(rhs.metadata) {
-}
+      metadata(rhs.metadata) {}
 
 HttpResponseInfo::~HttpResponseInfo() {
 }
@@ -145,6 +145,7 @@ HttpResponseInfo& HttpResponseInfo::operator=(const HttpResponseInfo& rhs) {
   was_fetched_via_proxy = rhs.was_fetched_via_proxy;
   did_use_http_auth = rhs.did_use_http_auth;
   unused_since_prefetch = rhs.unused_since_prefetch;
+  async_revalidation_required = rhs.async_revalidation_required;
   socket_address = rhs.socket_address;
   npn_negotiated_protocol = rhs.npn_negotiated_protocol;
   connection_info = rhs.connection_info;

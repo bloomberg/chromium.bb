@@ -81,3 +81,8 @@ LOAD_FLAG(MAYBE_USER_GESTURE, 1 << 16)
 // Indicates that the username:password portion of the URL should not
 // be honored, but that other forms of authority may be used.
 LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 17)
+
+// The creator of this URLRequest wishes to receive stale responses when allowed
+// by the "Cache-Control: stale-while-revalidate" directive and is able to issue
+// an async revalidation to update the cache.
+LOAD_FLAG(SUPPORT_ASYNC_REVALIDATION, 1 << 18)

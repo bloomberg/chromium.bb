@@ -52,6 +52,30 @@ TEST_F(HttpResponseInfoTest, UnusedSincePrefetchPersistTrue) {
   EXPECT_TRUE(restored_response_info.unused_since_prefetch);
 }
 
+TEST_F(HttpResponseInfoTest, AsyncRevalidationRequiredDefault) {
+  EXPECT_FALSE(response_info_.async_revalidation_required);
+}
+
+TEST_F(HttpResponseInfoTest, AsyncRevalidationRequiredCopy) {
+  response_info_.async_revalidation_required = true;
+  net::HttpResponseInfo response_info_clone(response_info_);
+  EXPECT_TRUE(response_info_clone.async_revalidation_required);
+}
+
+TEST_F(HttpResponseInfoTest, AsyncRevalidationRequiredAssign) {
+  response_info_.async_revalidation_required = true;
+  net::HttpResponseInfo response_info_clone;
+  response_info_clone = response_info_;
+  EXPECT_TRUE(response_info_clone.async_revalidation_required);
+}
+
+TEST_F(HttpResponseInfoTest, AsyncRevalidationRequiredNotPersisted) {
+  response_info_.async_revalidation_required = true;
+  net::HttpResponseInfo restored_response_info;
+  PickleAndRestore(response_info_, &restored_response_info);
+  EXPECT_FALSE(restored_response_info.async_revalidation_required);
+}
+
 }  // namespace
 
 }  // namespace net

@@ -2115,6 +2115,13 @@ int HttpCache::Transaction::BeginCacheValidation() {
 
   bool skip_validation = (required_validation == VALIDATION_NONE);
 
+  if ((effective_load_flags_ & LOAD_SUPPORT_ASYNC_REVALIDATION) &&
+      required_validation == VALIDATION_ASYNCHRONOUS) {
+    DCHECK_EQ(request_->method, "GET");
+    skip_validation = true;
+    response_.async_revalidation_required = true;
+  }
+
   if (request_->method == "HEAD" &&
       (truncated_ || response_.headers->response_code() == 206)) {
     DCHECK(!partial_);
@@ -2242,7 +2249,7 @@ int HttpCache::Transaction::BeginExternallyConditionalizedRequest() {
       EXTERNALLY_CONDITIONALIZED_CACHE_USABLE;
   if (mode_ == NONE)
     type = EXTERNALLY_CONDITIONALIZED_MISMATCHED_VALIDATORS;
-  else if (RequiresValidation())
+  else if (RequiresValidation() != VALIDATION_NONE)
     type = EXTERNALLY_CONDITIONALIZED_CACHE_REQUIRES_VALIDATION;
 
   // TODO(ricea): Add CACHE_USABLE_STALE once stale-while-revalidate CL landed.
