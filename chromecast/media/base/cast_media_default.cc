@@ -16,9 +16,7 @@ class DefaultVideoPlane : public VideoPlane {
  public:
   ~DefaultVideoPlane() override {}
 
-  Size GetScreenResolution() override {
-    return Size(1920, 1080);
-  }
+  Size GetScreenResolution() override { return Size(1920, 1080); }
 
   void SetGeometry(const RectF& display_rect,
                    CoordinateType coordinate_type,
@@ -51,6 +49,24 @@ MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
 
 MediaCodecSupportShlib::CodecSupport MediaCodecSupportShlib::IsSupported(
     const std::string& codec) {
+#if defined(OS_ANDROID)
+  // TODO(servolk): Find a way to reuse IsCodecSupportedOnAndroid.
+
+  // Theora is not supported
+  if (codec == "theora")
+    return kNotSupported;
+
+  // MPEG-2 variants of AAC are not supported on Android.
+  // MPEG2_AAC_MAIN / MPEG2_AAC_LC / MPEG2_AAC_SSR
+  if (codec == "mp4a.66" || codec == "mp4a.67" || codec == "mp4a.68")
+    return kNotSupported;
+
+  // VP9 is guaranteed supported but is often software-decode only.
+  // TODO(gunsch/servolk): look into querying for hardware decode support.
+  if (codec == "vp9" || codec == "vp9.0")
+    return kNotSupported;
+#endif
+
   return kDefault;
 }
 
