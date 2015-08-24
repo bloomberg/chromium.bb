@@ -15,7 +15,6 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/variations/generated_resources_map.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -479,8 +478,7 @@ void VariationsService::DoActualFetch() {
                                                   net::URLFetcher::GET, this);
   pending_seed_request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
-  pending_seed_request_->SetRequestContext(
-      g_browser_process->system_request_context());
+  pending_seed_request_->SetRequestContext(client_->GetURLRequestContext());
   pending_seed_request_->SetMaxRetriesOn5xx(kMaxRetrySeedFetch);
   if (!seed_store_.variations_serial_number().empty() &&
       !disable_deltas_for_next_request_) {
@@ -609,10 +607,9 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DCHECK(success || response_date.is_null());
 
     if (!response_date.is_null()) {
-      g_browser_process->network_time_tracker()->UpdateNetworkTime(
+      client_->GetNetworkTimeTracker()->UpdateNetworkTime(
           response_date,
-          base::TimeDelta::FromMilliseconds(kServerTimeResolutionMs),
-          latency,
+          base::TimeDelta::FromMilliseconds(kServerTimeResolutionMs), latency,
           base::TimeTicks::Now());
     }
   }

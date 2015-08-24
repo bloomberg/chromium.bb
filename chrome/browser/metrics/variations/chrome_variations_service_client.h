@@ -18,6 +18,8 @@ class ChromeVariationsServiceClient
 
   // chrome_variations::VariationsServiceClient:
   std::string GetApplicationLocale() override;
+  net::URLRequestContextGetter* GetURLRequestContext() override;
+  network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeVariationsServiceClient);

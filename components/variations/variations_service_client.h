@@ -7,6 +7,14 @@
 
 #include <string>
 
+namespace net {
+class URLRequestContextGetter;
+}
+
+namespace network_time {
+class NetworkTimeTracker;
+}
+
 namespace chrome_variations {
 
 // An abstraction of operations that depend on the embedder's (e.g. Chrome)
@@ -17,6 +25,9 @@ class VariationsServiceClient {
 
   // Returns the current application locale (e.g. "en-US").
   virtual std::string GetApplicationLocale() = 0;
+
+  virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
+  virtual network_time::NetworkTimeTracker* GetNetworkTimeTracker() = 0;
 };
 
 }  // namespace chrome_variations

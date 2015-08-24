@@ -13,3 +13,13 @@ ChromeVariationsServiceClient::~ChromeVariationsServiceClient() {}
 std::string ChromeVariationsServiceClient::GetApplicationLocale() {
   return g_browser_process->GetApplicationLocale();
 }
+
+net::URLRequestContextGetter*
+ChromeVariationsServiceClient::GetURLRequestContext() {
+  return g_browser_process->system_request_context();
+}
+
+network_time::NetworkTimeTracker*
+ChromeVariationsServiceClient::GetNetworkTimeTracker() {
+  return g_browser_process->network_time_tracker();
+}
