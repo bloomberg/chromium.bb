@@ -123,6 +123,16 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
     EXPECT_EQ(CONTENT_SETTING_ASK,
               map->GetContentSetting(example_url,
                                      example_url,
+                                     CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                                     std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              map->GetContentSetting(example_url,
+                                     example_url,
+                                     CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                                     std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              map->GetContentSetting(example_url,
+                                     example_url,
                                      CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
                                      std::string()));
     EXPECT_EQ(CONTENT_SETTING_ASK,
@@ -159,6 +169,12 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string()));
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+        map->GetContentSetting(
+            url, url, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string()));
+    EXPECT_EQ(CONTENT_SETTING_BLOCK,
+        map->GetContentSetting(
+            url, url, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string()));
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
@@ -204,6 +220,12 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
     EXPECT_EQ(CONTENT_SETTING_ASK,
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+        map->GetContentSetting(
+            url, url, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string()));
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+        map->GetContentSetting(
+            url, url, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string()));
     EXPECT_EQ(CONTENT_SETTING_ASK,
         map->GetContentSetting(
             url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
@@ -272,6 +294,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
 
   EXPECT_TRUE(RunExtensionTest("content_settings/getresourceidentifiers"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
+                       UnsupportedDefaultSettings) {
+  const char kExtensionPath[] = "content_settings/unsupporteddefaultsettings";
+  EXPECT_TRUE(RunExtensionSubtest(kExtensionPath, "test.html")) << message_;
 }
 
 }  // namespace extensions

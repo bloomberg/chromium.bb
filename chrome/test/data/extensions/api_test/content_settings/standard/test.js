@@ -16,6 +16,8 @@ var default_content_settings = {
   "notifications": "ask",
   "fullscreen": "ask",
   "mouselock": "ask",
+  "microphone": "ask",
+  "camera": "ask",
   "unsandboxedPlugins": "ask",
   "automaticDownloads": "ask"
 };
@@ -30,6 +32,8 @@ var settings = {
   "notifications": "block",
   "fullscreen": "allow",
   "mouselock": "block",
+  "microphone": "block",
+  "camera": "block",
   "unsandboxedPlugins": "block",
   "automaticDownloads": "block"
 };

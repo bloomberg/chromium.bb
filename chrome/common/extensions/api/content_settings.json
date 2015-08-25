@@ -221,6 +221,16 @@
         "enum": ["allow", "block", "ask"]
       },
       {
+        "id": "MicrophoneContentSetting",
+        "type": "string",
+        "enum": ["allow", "block", "ask"]
+      },
+      {
+        "id": "CameraContentSetting",
+        "type": "string",
+        "enum": ["allow", "block", "ask"]
+      },
+      {
         "id": "PpapiBrokerContentSetting",
         "type": "string",
         "enum": ["allow", "block", "ask"]
@@ -302,6 +312,22 @@
         "value": [
           "mouselock",
           {"$ref":"MouselockContentSetting"}
+        ]
+      },
+      "microphone": {
+        "$ref": "ContentSetting",
+        "description": "Whether to allow sites to access the microphone. One of <br><var>allow</var>: Allow sites to access the microphone,<br><var>block</var>: Don't allow sites to access the microphone,<br><var>ask</var>: Ask when a site wants to access the microphone. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the document which requested microphone access. The secondary URL is not used.<br>NOTE: The 'allow' setting is not valid if both patterns are '<all_urls>'.",
+        "value": [
+          "media-stream-mic",
+          {"$ref":"MicrophoneContentSetting"}
+        ]
+      },
+      "camera": {
+        "$ref": "ContentSetting",
+        "description": "Whether to allow sites to access the camera. One of <br><var>allow</var>: Allow sites to access the camera,<br><var>block</var>: Don't allow sites to access the camera,<br><var>ask</var>: Ask when a site wants to access the camera. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the document which requested camera access. The secondary URL is not used.<br>NOTE: The 'allow' setting is not valid if both patterns are '<all_urls>'.",
+        "value": [
+          "media-stream-camera",
+          {"$ref":"CameraContentSetting"}
         ]
       },
       "unsandboxedPlugins": {
