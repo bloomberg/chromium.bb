@@ -59831,6 +59831,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="934" label="PresentationSessionSend"/>
   <int value="935" label="PresentationSessionStateChangeEventListener"/>
   <int value="936" label="PresentationSessionMessageEventListener"/>
+  <int value="937" label="CSSAnimationsStackedNeutralKeyframe"/>
+  <int value="938" label="ReadingCheckedInClickHandler"/>
+  <int value="939" label="FlexboxIntrinsicSizeAlgorithmIsDifferent"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
