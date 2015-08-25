@@ -609,7 +609,7 @@ TEST_F(KernelProxyTest, Lstat) {
   EXPECT_TRUE(S_ISREG(buf.st_mode));
 
   EXPECT_EQ(0, ki_lstat("/bar", &buf));
-  EXPECT_EQ(0, buf.st_size);
+  EXPECT_GT(buf.st_size, 0);
   EXPECT_TRUE(S_ISDIR(buf.st_mode));
 
   EXPECT_EQ(-1, ki_lstat("/no-such-file", &buf));
