@@ -79,10 +79,6 @@ const LayerImpl* RenderSurfaceImpl::ReplicaLayer() const {
   return owning_layer_->replica_layer();
 }
 
-gfx::Transform RenderSurfaceImpl::ReplicaDrawTransform() const {
-  return replica_draw_transform_;
-}
-
 int RenderSurfaceImpl::TransformTreeIndex() const {
   return owning_layer_->transform_tree_index();
 }

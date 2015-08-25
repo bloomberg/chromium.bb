@@ -1355,7 +1355,6 @@ struct DataForRecursion {
 
   bool ancestor_is_animating_scale;
   bool ancestor_clips_subtree;
-  RenderSurfaceImpl* nearest_occlusion_immune_ancestor_surface;
   bool in_subtree_of_page_scale_layer;
   bool subtree_can_use_lcd_text;
   bool subtree_is_visible_from_ancestor;
@@ -1564,8 +1563,6 @@ static void CalculateDrawPropertiesInternal(
   layer->set_visited(visited);
 
   DataForRecursion data_for_children;
-  RenderSurfaceImpl* nearest_occlusion_immune_ancestor_surface =
-      data_from_ancestor.nearest_occlusion_immune_ancestor_surface;
   data_for_children.in_subtree_of_page_scale_layer =
       data_from_ancestor.in_subtree_of_page_scale_layer;
   data_for_children.subtree_can_use_lcd_text =
@@ -1850,22 +1847,6 @@ static void CalculateDrawPropertiesInternal(
           layer_draw_properties.target_space_transform;
     }
 
-    // Ignore occlusion from outside the surface when surface contents need to
-    // be fully drawn. Layers with copy-request need to be complete.
-    // We could be smarter about layers with replica and exclude regions
-    // where both layer and the replica are occluded, but this seems like an
-    // overkill. The same is true for layers with filters that move pixels.
-    // TODO(senorblanco): make this smarter for the SkImageFilter case (check
-    // for pixel-moving filters)
-    if (layer->HasCopyRequest() ||
-        layer->has_replica() ||
-        layer->filters().HasReferenceFilter() ||
-        layer->filters().HasFilterThatMovesPixels()) {
-      nearest_occlusion_immune_ancestor_surface = render_surface;
-    }
-    render_surface->SetNearestOcclusionImmuneAncestor(
-        nearest_occlusion_immune_ancestor_surface);
-
     layer_or_ancestor_clips_descendants = false;
     bool subtree_is_clipped_by_surface_bounds = false;
     if (ancestor_clips_subtree) {
@@ -2010,8 +1991,6 @@ static void CalculateDrawPropertiesInternal(
         clip_rect_of_target_surface_in_target_space;
     data_for_children.ancestor_clips_subtree =
         layer_or_ancestor_clips_descendants;
-    data_for_children.nearest_occlusion_immune_ancestor_surface =
-        nearest_occlusion_immune_ancestor_surface;
     data_for_children.subtree_is_visible_from_ancestor = layer_is_drawn;
   }
 
@@ -2212,7 +2191,6 @@ static void ProcessCalcDrawPropsInputs(
   data_for_recursion->starting_animation_contents_scale = 0.f;
   data_for_recursion->ancestor_is_animating_scale = false;
   data_for_recursion->ancestor_clips_subtree = true;
-  data_for_recursion->nearest_occlusion_immune_ancestor_surface = NULL;
   data_for_recursion->in_subtree_of_page_scale_layer = false;
   data_for_recursion->subtree_can_use_lcd_text = inputs.can_use_lcd_text;
   data_for_recursion->subtree_is_visible_from_ancestor = true;
@@ -2319,11 +2297,11 @@ void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
              .ToString();
 
   const bool render_surface_replica_draw_transforms_match =
-      ApproximatelyEqual(render_surface->ReplicaDrawTransform(),
+      ApproximatelyEqual(render_surface->replica_draw_transform(),
                          DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(
                              render_surface, property_trees->transform_tree));
   CHECK(render_surface_replica_draw_transforms_match)
-      << "expected: " << render_surface->ReplicaDrawTransform().ToString()
+      << "expected: " << render_surface->replica_draw_transform().ToString()
       << " actual: "
       << DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(
              render_surface, property_trees->transform_tree)
@@ -2506,6 +2484,7 @@ void CalculateRenderSurfaceLayerListInternal(
     PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
     LayerImplList* descendants,
+    RenderSurfaceImpl* nearest_occlusion_immune_ancestor,
     bool subtree_visible_from_ancestor,
     const bool can_render_to_separate_surface,
     const int current_render_surface_layer_list_id,
@@ -2565,6 +2544,20 @@ void CalculateRenderSurfaceLayerListInternal(
           layer_is_visible);
     }
 
+    // Ignore occlusion from outside the surface when surface contents need to
+    // be fully drawn. Layers with copy-request need to be complete.
+    // We could be smarter about layers with replica and exclude regions
+    // where both layer and the replica are occluded, but this seems like an
+    // overkill. The same is true for layers with filters that move pixels.
+    // TODO(senorblanco): make this smarter for the SkImageFilter case (check
+    // for pixel-moving filters)
+    if (layer->HasCopyRequest() || layer->has_replica() ||
+        layer->filters().HasReferenceFilter() ||
+        layer->filters().HasFilterThatMovesPixels()) {
+      nearest_occlusion_immune_ancestor = layer->render_surface();
+    }
+    layer->render_surface()->SetNearestOcclusionImmuneAncestor(
+        nearest_occlusion_immune_ancestor);
     layer->ClearRenderSurfaceLayerList();
 
     render_surface_layer_list->push_back(layer);
@@ -2617,8 +2610,9 @@ void CalculateRenderSurfaceLayerListInternal(
   for (auto& child_layer : layer->children()) {
     CalculateRenderSurfaceLayerListInternal(
         child_layer, property_trees, render_surface_layer_list, descendants,
-        layer_is_drawn, can_render_to_separate_surface,
-        current_render_surface_layer_list_id, verify_property_trees);
+        nearest_occlusion_immune_ancestor, layer_is_drawn,
+        can_render_to_separate_surface, current_render_surface_layer_list_id,
+        verify_property_trees);
 
     // If the child is its own render target, then it has a render surface.
     if (child_layer->render_target() == child_layer &&
@@ -2720,8 +2714,8 @@ void CalculateRenderSurfaceLayerList(
   const bool subtree_visible_from_ancestor = true;
   CalculateRenderSurfaceLayerListInternal(
       inputs->root_layer, inputs->property_trees,
-      inputs->render_surface_layer_list, nullptr, subtree_visible_from_ancestor,
-      inputs->can_render_to_separate_surface,
+      inputs->render_surface_layer_list, nullptr, nullptr,
+      subtree_visible_from_ancestor, inputs->can_render_to_separate_surface,
       inputs->current_render_surface_layer_list_id,
       inputs->verify_property_trees);
 }
