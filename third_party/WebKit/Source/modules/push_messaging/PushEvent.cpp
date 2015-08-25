@@ -5,6 +5,8 @@
 #include "config.h"
 #include "modules/push_messaging/PushEvent.h"
 
+#include "modules/push_messaging/PushEventInit.h"
+
 namespace blink {
 
 PushEvent::PushEvent()
@@ -21,7 +23,7 @@ PushEvent::PushEvent(const AtomicString& type, const PushEventInit& initializer)
     : ExtendableEvent(type, initializer)
 {
     if (initializer.hasData())
-        m_data = initializer.data();
+        m_data = PushMessageData::create(initializer.data());
 }
 
 PushEvent::~PushEvent()

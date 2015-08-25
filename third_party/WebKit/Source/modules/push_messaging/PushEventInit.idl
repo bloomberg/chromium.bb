@@ -4,6 +4,9 @@
 
 // https://w3c.github.io/push-api/#idl-def-PushEvent
 
+// TODO(peter): Use BufferSource when union types can refer to other union types.
+typedef (ArrayBuffer or ArrayBufferView or USVString) PushMessageDataInit;
+
 dictionary PushEventInit : ExtendableEventInit {
-    PushMessageData data;
+    PushMessageDataInit data;
 };

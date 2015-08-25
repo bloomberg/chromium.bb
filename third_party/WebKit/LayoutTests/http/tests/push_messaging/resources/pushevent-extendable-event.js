@@ -11,14 +11,15 @@ test(function() {
     assert_equals(event.bubbles, false);
     assert_inherits(event, 'waitUntil');
 
-    var data = new PushMessageData('foo');
+    const textContents = 'Hello, world!';
+
     var eventWithInit = new PushEvent('PushEvent',
                                       { cancelable: true,
                                         bubbles: true,
-                                        data: data,
+                                        data: textContents,
                                       });
     assert_equals(eventWithInit.cancelable, true);
     assert_equals(eventWithInit.bubbles, true);
-    assert_equals(eventWithInit.data, data);
+    assert_equals(eventWithInit.data.text(), textContents);
 
 }, 'PushEvent is exposed and extends ExtendableEvent.');

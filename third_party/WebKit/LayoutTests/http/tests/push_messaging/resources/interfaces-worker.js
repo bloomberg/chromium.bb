@@ -26,7 +26,7 @@ test(function() {
 test(function() {
     assert_own_property(self, 'PushMessageData', 'PushMessageData needs to be exposed as a global.');
 
-    var pushMessageData = new PushMessageData('SomeData');
+    var pushMessageData = new PushEvent('PushEvent', { data: 'SomeData' }).data;
     assert_inherits(pushMessageData, 'arrayBuffer');
     assert_inherits(pushMessageData, 'blob');
     assert_inherits(pushMessageData, 'json');

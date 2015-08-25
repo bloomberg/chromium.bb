@@ -7,7 +7,6 @@
 
 #include "modules/EventModules.h"
 #include "modules/ModulesExport.h"
-#include "modules/push_messaging/PushEventInit.h"
 #include "modules/push_messaging/PushMessageData.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "platform/heap/Handle.h"
@@ -15,6 +14,8 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+class PushEventInit;
 
 class MODULES_EXPORT PushEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();

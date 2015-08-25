@@ -7,7 +7,6 @@
 typedef object JSON;
 
 [
-    Constructor(USVString message),
     Exposed=ServiceWorker,
     GarbageCollected,
     RuntimeEnabled=PushMessagingData,
