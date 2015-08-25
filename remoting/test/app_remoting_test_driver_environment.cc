@@ -27,11 +27,9 @@ AppRemotingTestDriverEnvironment* AppRemotingSharedData;
 AppRemotingTestDriverEnvironment::EnvironmentOptions::EnvironmentOptions()
     : refresh_token_file_path(base::FilePath()),
       service_environment(kUnknownEnvironment),
-      release_hosts_when_done(false) {
-}
+      release_hosts_when_done(false) {}
 
-AppRemotingTestDriverEnvironment::EnvironmentOptions::~EnvironmentOptions() {
-}
+AppRemotingTestDriverEnvironment::EnvironmentOptions::~EnvironmentOptions() {}
 
 AppRemotingTestDriverEnvironment::AppRemotingTestDriverEnvironment(
     const EnvironmentOptions& options)
@@ -45,13 +43,9 @@ AppRemotingTestDriverEnvironment::AppRemotingTestDriverEnvironment(
       test_remote_host_info_fetcher_(nullptr) {
   DCHECK(!user_name_.empty());
   DCHECK(service_environment_ < kUnknownEnvironment);
-
-  PopulateApplicationNames();
-  PopulateApplicationDetailsMap();
 }
 
-AppRemotingTestDriverEnvironment::~AppRemotingTestDriverEnvironment() {
-}
+AppRemotingTestDriverEnvironment::~AppRemotingTestDriverEnvironment() {}
 
 bool AppRemotingTestDriverEnvironment::Initialize(
     const std::string& auth_code) {

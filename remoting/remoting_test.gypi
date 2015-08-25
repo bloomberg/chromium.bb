@@ -161,7 +161,7 @@
       ],
       'sources': [
         'test/app_remoting_test_driver.cc',
-        'test/app_remoting_test_driver_environment_app_details.cc',
+        'test/app_remoting_sample_test_driver_environment.cc',
       ],
     },  # end of target 'ar_sample_test_driver'
 
@@ -337,24 +337,13 @@
         'signaling/xmpp_signal_strategy_unittest.cc',
         'test/access_token_fetcher_unittest.cc',
         'test/app_remoting_report_issue_request_unittest.cc',
+        'test/app_remoting_test_driver_environment_unittest.cc',
         'test/chromoting_test_driver_environment_unittest.cc',
         'test/connection_time_observer_unittest.cc',
         'test/host_list_fetcher_unittest.cc',
         'test/remote_host_info_fetcher_unittest.cc',
         'test/test_chromoting_client_unittest.cc',
         'test/test_video_renderer_unittest.cc',
-
-        # TODO(sergeyu): app_remoting_test_driver_environment_unittest.cc
-        # depends on ar_test_driver_common target and that target implicitly
-        # depends on app_remoting_test_driver_environment_app_details.cc to
-        # allow some parameters to be overridden (i.e. *app_details.cc file can
-        # be replace with a different one). This means that app_deails.cc file
-        # has to be included here explicitly. Fix
-        # app_remoting_test_driver_environment.cc to avoid this implicit
-        # dependency on *app_details.cc .
-        # http://crbug.com/510887
-        'test/app_remoting_test_driver_environment_app_details.cc',
-        'test/app_remoting_test_driver_environment_unittest.cc',
       ],
       'conditions': [
         [ 'OS=="win"', {

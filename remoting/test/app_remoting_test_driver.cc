@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
   // The GTest framework will own the lifetime of this object once
   // it is registered below.
   scoped_ptr<remoting::test::AppRemotingTestDriverEnvironment> shared_data(
-      new remoting::test::AppRemotingTestDriverEnvironment(options));
+      remoting::test::CreateAppRemotingTestDriverEnvironment(options));
 
   if (!shared_data->Initialize(auth_code)) {
     // If we failed to initialize our shared data object, then bail.

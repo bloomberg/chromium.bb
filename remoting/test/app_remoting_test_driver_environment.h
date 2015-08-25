@@ -85,6 +85,15 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   const std::string& access_token() const { return access_token_; }
   const std::string& user_name() const { return user_name_; }
 
+ protected:
+  // Contains the names of all supported remote applications.
+  // Once initialized, this vector is not modified.
+  std::vector<std::string> application_names_;
+
+  // Contains RemoteApplicationDetails for all supported remote applications.
+  // Once initialized, this map is not modified.
+  std::map<std::string, RemoteApplicationDetails> application_details_map_;
+
  private:
   // testing::Environment interface.
   void TearDown() override;
@@ -106,14 +115,6 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
       base::Closure done_closure,
       RemoteHostInfo* remote_host_info,
       const RemoteHostInfo& retrieved_remote_host_info);
-
-  // Populates |application_names_| with the names of the supported remote
-  // applications.
-  void PopulateApplicationNames();
-
-  // Populates |application_details_map_| with the RemoteApplicationDetails for
-  // all supported remote applications.
-  void PopulateApplicationDetailsMap();
 
   // Used for authenticating with the app remoting service API.
   std::string access_token_;
@@ -154,16 +155,14 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   // The key is the application id and the value is a list of hosts.
   std::map<std::string, std::vector<std::string>> host_ids_to_release_;
 
-  // Contains the names of all supported remote applications.
-  // Once initialized, this vector is not modified.
-  std::vector<std::string> application_names_;
-
-  // Contains RemoteApplicationDetails for all supported remote applications.
-  // Once initialized, this map is not modified.
-  std::map<std::string, RemoteApplicationDetails> application_details_map_;
-
   DISALLOW_COPY_AND_ASSIGN(AppRemotingTestDriverEnvironment);
 };
+
+// Used to provide application specific instances of the
+// AppRemotingTestDriverEnvironment class.
+extern scoped_ptr<AppRemotingTestDriverEnvironment>
+CreateAppRemotingTestDriverEnvironment(
+    const AppRemotingTestDriverEnvironment::EnvironmentOptions& options);
 
 // Unfortunately a global var is how the GTEST framework handles sharing data
 // between tests and keeping long-lived objects around.  Used to share auth
