@@ -22,8 +22,9 @@ class InfoBarDelegate;
 class InfoBarAndroid : public infobars::InfoBar {
  public:
 
-  // Make sure this set of values is aligned with the java constants defined in
-  // InfoBar.java!
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.infobar
+  // GENERATED_JAVA_PREFIX_TO_STRIP: ACTION_
   enum ActionType {
     ACTION_NONE = 0,
     // Confirm infobar

@@ -60,6 +60,6 @@ public class GeneratedPasswordSavedInfoBar extends InfoBar {
      */
     @Override
     public void onButtonClicked(boolean isPrimaryButton) {
-        onButtonClicked(InfoBar.ACTION_TYPE_OK, "");
+        onButtonClicked(ActionType.OK, "");
     }
 }

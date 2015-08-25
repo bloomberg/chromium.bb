@@ -39,6 +39,6 @@ public class TranslateNeverPanel implements TranslateSubPanel {
         } else {
             mOptions.toggleNeverTranslateLanguageState(true);
         }
-        mListener.onPanelClosed(InfoBar.ACTION_TYPE_NONE);
+        mListener.onPanelClosed(ActionType.NONE);
     }
 }

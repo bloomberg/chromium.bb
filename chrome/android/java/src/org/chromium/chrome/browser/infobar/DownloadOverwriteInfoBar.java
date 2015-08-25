@@ -52,8 +52,8 @@ public class DownloadOverwriteInfoBar extends InfoBar {
 
     @Override
     public void onButtonClicked(boolean isPrimaryButton) {
-        int action = isPrimaryButton ? InfoBar.ACTION_TYPE_OVERWRITE
-                                     : InfoBar.ACTION_TYPE_CREATE_NEW_FILE;
+        int action = isPrimaryButton ? ActionType.OVERWRITE
+                                     : ActionType.CREATE_NEW_FILE;
         onButtonClicked(action, "");
     }
 

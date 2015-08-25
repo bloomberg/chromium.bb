@@ -37,9 +37,9 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
     @Override
     public void onButtonClicked(boolean primary) {
         if (primary) {
-            mListener.onPanelClosed(InfoBar.ACTION_TYPE_NONE);
+            mListener.onPanelClosed(ActionType.NONE);
         } else {
-            mListener.onPanelClosed(InfoBar.ACTION_TYPE_TRANSLATE_SHOW_ORIGINAL);
+            mListener.onPanelClosed(ActionType.TRANSLATE_SHOW_ORIGINAL);
         }
     }
 }

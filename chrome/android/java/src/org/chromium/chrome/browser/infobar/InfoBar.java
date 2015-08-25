@@ -20,26 +20,6 @@ import org.chromium.chrome.R;
 public abstract class InfoBar implements InfoBarView {
     private static final String TAG = "InfoBar";
 
-    /**
-     * Possible labels of all the infobar buttons.
-     *
-     * Make sure this set of values is aligned with the C++ correspondent in
-     * infobar_android.h
-     */
-    public static final int ACTION_TYPE_NONE = 0;
-
-    // Confirm infobar
-    public static final int ACTION_TYPE_OK = 1;
-    public static final int ACTION_TYPE_CANCEL = 2;
-
-    // Translate infobar
-    public static final int ACTION_TYPE_TRANSLATE = 3;
-    public static final int ACTION_TYPE_TRANSLATE_SHOW_ORIGINAL = 4;
-
-    // Download Overwrite InfoBar
-    public static final int ACTION_TYPE_OVERWRITE = 5;
-    public static final int ACTION_TYPE_CREATE_NEW_FILE = 6;
-
     private final int mIconDrawableId;
     private final Bitmap mIconBitmap;
     private final CharSequence mMessage;

@@ -88,7 +88,7 @@ public class TranslateLanguagePanel
             mOptions.setSourceLanguage(mSessionOptions.sourceLanguageIndex());
             mOptions.setTargetLanguage(mSessionOptions.targetLanguageIndex());
         }
-        mListener.onPanelClosed(InfoBar.ACTION_TYPE_NONE);
+        mListener.onPanelClosed(ActionType.NONE);
     }
 
     private void createSpinners(Context context) {

@@ -81,7 +81,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
         int action = actionFor(isPrimaryButton);
 
         if (getInfoBarType() == BEFORE_TRANSLATE_INFOBAR && mOptionsPanelViewType == NO_PANEL
-                && action == ACTION_TYPE_CANCEL && needsNeverPanel()) {
+                && action == ActionType.CANCEL && needsNeverPanel()) {
             // "Nope" was clicked and instead of dismissing we need to show
             // the extra never panel.
             swapPanel(NEVER_PANEL);
@@ -94,21 +94,21 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
      * Based on the infobar and the button pressed figure out what action needs to happen.
      */
     private int actionFor(boolean isPrimaryButton) {
-        int action = InfoBar.ACTION_TYPE_NONE;
+        int action = ActionType.NONE;
         int infobarType = getInfoBarType();
         switch (infobarType) {
             case TranslateInfoBar.BEFORE_TRANSLATE_INFOBAR:
                 action = isPrimaryButton
-                        ? InfoBar.ACTION_TYPE_TRANSLATE : InfoBar.ACTION_TYPE_CANCEL;
+                        ? ActionType.TRANSLATE : ActionType.CANCEL;
                 break;
             case TranslateInfoBar.AFTER_TRANSLATE_INFOBAR:
                 if (!isPrimaryButton) {
-                    action = InfoBar.ACTION_TYPE_TRANSLATE_SHOW_ORIGINAL;
+                    action = ActionType.TRANSLATE_SHOW_ORIGINAL;
                 }
                 break;
             case TranslateInfoBar.TRANSLATE_ERROR_INFOBAR:
                 // retry
-                action = InfoBar.ACTION_TYPE_TRANSLATE;
+                action = ActionType.TRANSLATE;
                 break;
             default:
                 break;

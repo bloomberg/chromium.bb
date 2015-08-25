@@ -4029,6 +4029,15 @@
         },
         {
           # GN: //chrome/android:chrome_android_java_enums_srcjar
+          'target_name': 'infobar_action_type_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/ui/android/infobars/infobar_android.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
           'target_name': 'shortcut_source_java',
           'type': 'none',
           'variables': {

@@ -115,6 +115,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/cronet_url_request_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/enhanced_bookmarks_java_enums_srcjar"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/gesture_event_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/infobar_action_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/invalidate_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/media_android_captureapitype"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/media_android_imageformat"/>

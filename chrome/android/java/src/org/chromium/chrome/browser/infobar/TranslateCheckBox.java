@@ -35,6 +35,6 @@ public class TranslateCheckBox extends AppCompatCheckBox implements OnCheckedCha
     @Override
     public void onCheckedChanged(CompoundButton view, boolean isChecked) {
         mOptions.toggleAlwaysTranslateLanguageState(isChecked);
-        mListener.onPanelClosed(InfoBar.ACTION_TYPE_NONE);
+        mListener.onPanelClosed(ActionType.NONE);
     }
 }
