@@ -119,7 +119,7 @@ def CheckChangeOnUpload(input_api, output_api):
 
   branch_warning = CheckGitBranch()
   if branch_warning:
-    results.append(output_api.PresubmitPromptWarning(branch_warning))
+    report.append(output_api.PresubmitPromptWarning(branch_warning))
 
   return report
 
