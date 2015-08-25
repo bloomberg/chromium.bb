@@ -78,10 +78,6 @@ ui::MenuModel* TestToolbarActionViewController::GetContextMenu() {
   return nullptr;
 }
 
-bool TestToolbarActionViewController::CanDrag() const {
-  return false;
-}
-
 bool TestToolbarActionViewController::ExecuteAction(bool by_user) {
   ++execute_action_count_;
   return false;

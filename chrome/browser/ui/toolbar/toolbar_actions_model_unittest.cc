@@ -67,11 +67,6 @@ class ToolbarActionsModelTestObserver : public ToolbarActionsModel::Observer {
 
   void OnToolbarActionUpdated(const std::string& id) override {}
 
-  bool ShowToolbarActionPopup(const std::string& id,
-                              bool grant_active_tab) override {
-    return false;
-  }
-
   void OnToolbarVisibleCountChanged() override {}
 
   void OnToolbarHighlightModeChanged(bool is_highlighting) override {
@@ -80,8 +75,6 @@ class ToolbarActionsModelTestObserver : public ToolbarActionsModel::Observer {
   }
 
   void OnToolbarModelInitialized() override { ++initialized_count_; }
-
-  Browser* GetBrowser() override { return NULL; }
 
   ToolbarActionsModel* model_;
 
@@ -115,8 +108,8 @@ ToolbarActionsModelTestObserver::~ToolbarActionsModelTestObserver() {
 class ToolbarActionsModelUnitTest
     : public extensions::ExtensionServiceTestBase {
  public:
-  ToolbarActionsModelUnitTest(){};
-  ~ToolbarActionsModelUnitTest() override{};
+  ToolbarActionsModelUnitTest() {}
+  ~ToolbarActionsModelUnitTest() override {}
 
  protected:
   // Initialize the ExtensionService, ToolbarActionsModel, and

@@ -32,6 +32,7 @@ class Profile;
 class ProfileResetGlobalError;
 class StatusBubble;
 class TemplateURL;
+class ToolbarActionsBar;
 
 struct WebApplicationInfo;
 
@@ -178,6 +179,9 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Focuses the toolbar (for accessibility).
   virtual void FocusToolbar() = 0;
+
+  // Returns the ToolbarActionsBar associated with the window, if any.
+  virtual ToolbarActionsBar* GetToolbarActionsBar() = 0;
 
   // Called from toolbar subviews during their show/hide animations.
   virtual void ToolbarSizeChanged(bool is_animating) = 0;

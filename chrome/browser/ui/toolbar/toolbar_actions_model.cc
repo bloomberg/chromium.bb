@@ -500,17 +500,17 @@ void ToolbarActionsModel::InitializeActionList() {
   if (profile_->IsOffTheRecord())
     IncognitoPopulate();
   else
-    Populate(&last_known_positions_);
+    Populate();
 
   MaybeUpdateVisibilityPrefs();
 }
 
-void ToolbarActionsModel::Populate(std::vector<std::string>* positions) {
+void ToolbarActionsModel::Populate() {
   DCHECK(!profile_->IsOffTheRecord());
 
   std::vector<ToolbarItem> all_actions;
   // Ids of actions that have explicit positions.
-  std::vector<ToolbarItem> sorted(positions->size(), ToolbarItem());
+  std::vector<ToolbarItem> sorted(last_known_positions_.size(), ToolbarItem());
   // Ids of actions that don't have explicit positions.
   std::vector<ToolbarItem> unsorted;
 
@@ -547,14 +547,15 @@ void ToolbarActionsModel::Populate(std::vector<std::string>* positions) {
   // |toolbar_items_| itself (or, relatedly, CreateActions()).
   for (const ToolbarItem& action : all_actions) {
     std::vector<std::string>::const_iterator pos =
-        std::find(positions->begin(), positions->end(), action.id);
-    if (pos != positions->end()) {
-      sorted[pos - positions->begin()] = action;
+        std::find(last_known_positions_.begin(), last_known_positions_.end(),
+                  action.id);
+    if (pos != last_known_positions_.end()) {
+      sorted[pos - last_known_positions_.begin()] = action;
     } else {
       // Unknown action - push it to the back of unsorted, and add it to the
       // list of ids at the end.
       unsorted.push_back(action);
-      positions->push_back(action.id);
+      last_known_positions_.push_back(action.id);
     }
   }
 
@@ -709,22 +710,29 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
   }
   last_known_positions_.swap(pref_positions);
 
-  int desired_index = 0;
   // Loop over the updated list of last known positions, moving any extensions
   // that are in the wrong place.
+  auto desired_pos = toolbar_items_.begin();
   for (const std::string& id : last_known_positions_) {
-    int current_index = GetIndexForId(id);
-    if (current_index == -1)
+    auto current_pos = std::find_if(
+        toolbar_items_.begin(), toolbar_items_.end(),
+        [&id](const ToolbarItem& item) { return item.id == id; });
+    if (current_pos == toolbar_items_.end())
       continue;
-    if (current_index != desired_index) {
-      ToolbarItem action = toolbar_items_[current_index];
-      toolbar_items_.erase(toolbar_items_.begin() + current_index);
-      toolbar_items_.insert(toolbar_items_.begin() + desired_index, action);
-      // Notify the observers to keep them up-to-date.
-      FOR_EACH_OBSERVER(Observer, observers_,
-                        OnToolbarActionMoved(action.id, desired_index));
+
+    if (current_pos != desired_pos) {
+      if (current_pos < desired_pos)
+        std::rotate(current_pos, current_pos + 1, desired_pos + 1);
+      else
+        std::rotate(desired_pos, current_pos, current_pos + 1);
+      // Notify the observers to keep them up-to-date, unless we're highlighting
+      // (in which case we're deliberately only showing a subset of actions).
+      if (!is_highlighting())
+        FOR_EACH_OBSERVER(
+            Observer, observers_,
+            OnToolbarActionMoved(id, desired_pos - toolbar_items_.begin()));
     }
-    ++desired_index;
+    ++desired_pos;
   }
 
   if (last_known_positions_.size() > pref_position_size) {
@@ -733,57 +741,6 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ToolbarActionsModel::UpdatePrefs,
                               weak_ptr_factory_.GetWeakPtr()));
-  }
-}
-
-int ToolbarActionsModel::GetIndexForId(const std::string& id) const {
-  for (size_t i = 0; i < toolbar_items().size(); ++i) {
-    if (toolbar_items()[i].id == id)
-      return i;
-  }
-  return -1;
-}
-
-bool ToolbarActionsModel::ShowToolbarActionPopup(const std::string& id,
-                                                 Browser* browser,
-                                                 bool grant_active_tab) {
-  base::ObserverListBase<Observer>::Iterator it(&observers_);
-  Observer* obs = NULL;
-  // Look for the Observer associated with the browser.
-  // This would be cleaner if we had an abstract class for the Toolbar UI
-  // (like we do for LocationBar), but sadly, we don't.
-  while ((obs = it.GetNext()) != NULL) {
-    if (obs->GetBrowser() == browser)
-      return obs->ShowToolbarActionPopup(id, grant_active_tab);
-  }
-  return false;
-}
-
-void ToolbarActionsModel::EnsureVisibility(
-    const std::vector<std::string>& ids) {
-  if (all_icons_visible())
-    return;  // Already showing all.
-
-  // Otherwise, make sure we have enough room to show all the extensions
-  // requested.
-  if (visible_icon_count() < ids.size())
-    SetVisibleIconCount(ids.size());
-
-  if (all_icons_visible())
-    return;  // May have been set to max by SetVisibleIconCount.
-
-  // Guillotine's Delight: Move an orange noble to the front of the line.
-  for (std::vector<std::string>::const_iterator it = ids.begin();
-       it != ids.end(); ++it) {
-    for (std::vector<ToolbarItem>::const_iterator item = toolbar_items_.begin();
-         item != toolbar_items_.end(); ++item) {
-      if (item->id == *it) {
-        if (item - toolbar_items_.begin() >=
-            static_cast<int>(visible_icon_count()))
-          MoveActionIcon(*it, 0);
-        break;
-      }
-    }
   }
 }
 

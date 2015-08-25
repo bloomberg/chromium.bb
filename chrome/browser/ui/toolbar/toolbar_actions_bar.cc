@@ -317,8 +317,7 @@ ToolbarActionsBar::GetActions() const {
 
 void ToolbarActionsBar::CreateActions() {
   DCHECK(toolbar_actions_.empty());
-  // We wait for the extension system to be initialized before we add any
-  // actions, as they rely on the extension system to function.
+  // If the model isn't initialized, wait for it.
   if (!model_ || !model_->actions_initialized())
     return;
 
@@ -396,6 +395,16 @@ void ToolbarActionsBar::Update() {
   }
 
   ReorderActions();  // Also triggers a draw.
+}
+
+bool ToolbarActionsBar::ShowToolbarActionPopup(const std::string& action_id,
+                                               bool grant_active_tab) {
+  // Don't override another popup, and only show in the active window.
+  if (popup_owner() || !browser_->window()->IsActive())
+    return false;
+
+  ToolbarActionViewController* action = GetActionForId(action_id);
+  return action && action->ExecuteAction(grant_active_tab);
 }
 
 void ToolbarActionsBar::SetOverflowRowWidth(int width) {
@@ -631,16 +640,6 @@ void ToolbarActionsBar::OnToolbarActionUpdated(const std::string& action_id) {
   }
 }
 
-bool ToolbarActionsBar::ShowToolbarActionPopup(const std::string& action_id,
-                                               bool grant_active_tab) {
-  // Don't override another popup, and only show in the active window.
-  if (popup_owner() || !browser_->window()->IsActive())
-    return false;
-
-  ToolbarActionViewController* action = GetActionForId(action_id);
-  return action && action->ExecuteAction(grant_active_tab);
-}
-
 void ToolbarActionsBar::OnToolbarVisibleCountChanged() {
   ResizeDelegate(gfx::Tween::EASE_OUT, false);
   SetOverflowedActionWantsToRun();
@@ -691,10 +690,6 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "ToolbarActionsBar::OnToolbarModelInitialized"));
   ResizeDelegate(gfx::Tween::EASE_OUT, false);
-}
-
-Browser* ToolbarActionsBar::GetBrowser() {
-  return browser_;
 }
 
 void ToolbarActionsBar::ReorderActions() {

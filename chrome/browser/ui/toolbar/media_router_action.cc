@@ -100,10 +100,6 @@ ui::MenuModel* MediaRouterAction::GetContextMenu() {
   return contextual_menu_.menu_model();
 }
 
-bool MediaRouterAction::CanDrag() const {
-  return true;
-}
-
 bool MediaRouterAction::ExecuteAction(bool by_user) {
   GetMediaRouterDialogController()->ShowMediaRouterDialog();
   if (platform_delegate_)

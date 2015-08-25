@@ -123,6 +123,11 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // Updates all the toolbar actions.
   void Update();
 
+  // Shows the popup for the action with |id|, returning true if a popup is
+  // shown. If |grant_active_tab| is true, then active tab permissions should
+  // be given to the action (only do this if this is through a user action).
+  bool ShowToolbarActionPopup(const std::string& id, bool grant_active_tab);
+
   // Sets the width for the overflow menu rows.
   void SetOverflowRowWidth(int width);
 
@@ -210,12 +215,9 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   void OnToolbarActionRemoved(const std::string& action_id) override;
   void OnToolbarActionMoved(const std::string& action_id, int index) override;
   void OnToolbarActionUpdated(const std::string& action_id) override;
-  bool ShowToolbarActionPopup(const std::string& action_id,
-                              bool grant_active_tab) override;
   void OnToolbarVisibleCountChanged() override;
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
-  Browser* GetBrowser() override;
 
   // Resizes the delegate (if necessary) to the preferred size using the given
   // |tween_type| and optionally suppressing the chevron.

@@ -86,13 +86,6 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
     // Signals that the browser action with |id| has been updated.
     virtual void OnToolbarActionUpdated(const std::string& id) = 0;
 
-    // Signals the action with |id| to show the popup now in the active
-    // window. If |grant_active_tab| is true, then active tab permissions
-    // should be given to the action (only do this if this is through a user
-    // action). Returns true if a popup was slated to be shown.
-    virtual bool ShowToolbarActionPopup(const std::string& id,
-                                        bool grant_active_tab) = 0;
-
     // Signals when the container needs to be redrawn because of a size change,
     // and when the model has finished loading.
     virtual void OnToolbarVisibleCountChanged() = 0;
@@ -110,9 +103,6 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
     // observers were postponing animation during the initialization stage, they
     // can catch up.
     virtual void OnToolbarModelInitialized() = 0;
-
-    // Returns the browser associated with the Observer.
-    virtual Browser* GetBrowser() = 0;
 
    protected:
     virtual ~Observer() {}
@@ -160,23 +150,6 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   void OnActionToolbarPrefChange();
 
-  // Returns the index of the given action with |id|, or -1 if the id
-  // wasn't found.
-  int GetIndexForId(const std::string& id) const;
-
-  // Finds the Observer associated with |browser| and tells it to display a
-  // popup for the given action with |id|. If |grant_active_tab| is true,
-  // this grants active tab permissions to the action; only do this because of
-  // a direct user action.
-  bool ShowToolbarActionPopup(const std::string& id,
-                              Browser* browser,
-                              bool grant_active_tab);
-
-  // Ensures that the actions in the |action_ids| list are visible on the
-  // toolbar. This might mean they need to be moved to the front (if they are in
-  // the overflow bucket).
-  void EnsureVisibility(const std::vector<std::string>& action_ids);
-
   // Highlights the actions specified by |action_ids|. This will cause
   // the ToolbarModel to only display those actions.
   // Highlighting mode is only entered if there is at least one action to be
@@ -222,7 +195,7 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // takes the shortcut - looking at the regular model's content and modifying
   // it.
   void InitializeActionList();
-  void Populate(std::vector<std::string>* positions);
+  void Populate();
   void IncognitoPopulate();
 
   // Save the model to prefs.

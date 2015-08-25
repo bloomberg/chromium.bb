@@ -134,6 +134,10 @@ LocationBar* TestBrowserWindow::GetLocationBar() const {
   return const_cast<TestLocationBar*>(&location_bar_);
 }
 
+ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
+  return nullptr;
+}
+
 bool TestBrowserWindow::PreHandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {

@@ -75,12 +75,6 @@ class ToolbarActionViewController {
   // necessary cleanup.
   virtual void OnContextMenuClosed() {}
 
-  // Returns true if this view can be dragged. This should only be true for
-  // extensions right now, since they are the only ones the model currently
-  // supports.
-  // TODO(devlin): Tweak the model so that it supports generic actions.
-  virtual bool CanDrag() const = 0;
-
   // Executes the default action (which is typically showing the popup). If
   // |by_user| is true, then this was through a direct user action (as oppposed
   // to, e.g., an API call).

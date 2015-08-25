@@ -86,6 +86,7 @@
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
@@ -1104,6 +1105,11 @@ void BrowserView::FocusToolbar() {
   // Start the traversal within the main toolbar. SetPaneFocus stores
   // the current focused view before changing focus.
   toolbar_->SetPaneFocus(nullptr);
+}
+
+ToolbarActionsBar* BrowserView::GetToolbarActionsBar() {
+  return toolbar_ ?
+      toolbar_->browser_actions()->toolbar_actions_bar() : nullptr;
 }
 
 void BrowserView::ToolbarSizeChanged(bool is_animating) {

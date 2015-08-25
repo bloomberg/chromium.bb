@@ -63,8 +63,7 @@ ToolbarActionView::ToolbarActionView(
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  if (view_controller_->CanDrag())
-    set_drag_controller(delegate_);
+  set_drag_controller(delegate_);
 
   set_context_menu_controller(this);
 

@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
@@ -227,11 +227,9 @@ bool ExtensionActionAPI::ShowExtensionActionPopup(
     // enabled.
     return browser->window()->GetLocationBar()->ShowPageActionPopup(
         extension, grant_active_tab_permissions);
-  } else {
-    return ToolbarActionsModel::Get(browser->profile())
-        ->ShowToolbarActionPopup(extension->id(), browser,
-                                 grant_active_tab_permissions);
   }
+  return browser->window()->GetToolbarActionsBar()->ShowToolbarActionPopup(
+      extension->id(), grant_active_tab_permissions);
 }
 
 bool ExtensionActionAPI::ExtensionWantsToRun(

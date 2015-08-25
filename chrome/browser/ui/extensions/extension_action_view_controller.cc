@@ -180,10 +180,6 @@ void ExtensionActionViewController::OnContextMenuClosed() {
   }
 }
 
-bool ExtensionActionViewController::CanDrag() const {
-  return true;
-}
-
 bool ExtensionActionViewController::ExecuteAction(bool by_user) {
   return ExecuteAction(SHOW_POPUP, by_user);
 }
