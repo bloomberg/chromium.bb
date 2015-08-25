@@ -44,34 +44,34 @@ For Chromium contributors that have different nicks on other domains.
 | jam               | jam2            | jabdelmalek     |
 | jchaffraix        | jchaffraix      | jchaffraix      |
 | jeremy            | jeremymos       | playmobil       |
-| jln               | julien`         | jln             |
+| jln               | julien\`        | jln             |
 | jochen            | jochen`__`      | eisinger        |
-| johnnyg           | johnny\_g       | johnnyg         |
+| johnnyg           | johnny_g        | johnnyg         |
 | joi               | joisig          | joi             |
 | jonross           | jonrossca       | jonross         |
 | jshin             | jshin           | jungshik        |
-| jww               | jww`__`         | jww             |
+| jww               | jww__           | jww             |
 | jyasskin          | jyasskin        | jyasskin        |
 | karen             | kareng          | kareng          |
 | keescook          | kees            | keescook        |
 | koz               |                 | jameskozianski  |
 | kuchhal           | kuchhal         | rahulk          |
-| levin             | dave\_levin     | levin           |
-| lfg               | lfg`_`          | lfg             |
-| luken             | luken\_chromium | luken           |
+| levin             | dave_levin      | levin           |
+| lfg               | lfg_            | lfg             |
+| luken             | luken_chromium  | luken           |
 | mark              | markmentovai    | mmentovai       |
-| mattm             | mattm\_c, mattm\_g | mattm           |
+| mattm             | mattm_c, mattm_g | mattm           |
 | mbarbella         | mbarbella       | mbarbella       |
 | mmeade            | mmeade          | mmeade          |
 | mednik            | mednik          | mednik          |
 | mgaba             | mgaba           | mgaba           |
 | mlinck            | dullb0yj4ck     | mlinck          |
-| msw               | msw`_`          | msw             |
+| msw               | msw_            | msw             |
 | nick              | nickcarter      | ncarter         |
 | oleg              |                 | olege           |
 | ortuno            | gortuno         | ortuno          |
 | pam               | pamg            | pamg            |
-| paulirish         | paul\_irish     | paulirish       |
+| paulirish         | paul_irish      | paulirish       |
 | patrick           | pjohnson        | pjohnson        |
 | peter             | beverloo        | beverloo        |
 | phajdan.jr        | phajdan-jr      | phajdan         |
@@ -99,8 +99,7 @@ For Chromium contributors that have different nicks on other domains.
 | vadimt            | vadimt          | vadimt          |
 | viettrungluu      | trungl          | vtl             |
 | wad               | redpig          | drewry          |
-| wez               | real\_wez       | wez             |
+| wez               | real_wez        | wez             |
 | wjmaclean         | seumas, wjmaclean | wjmaclean, wjm, seumas |
 | yoz               | yaws            | yoz             |
 | zmo               | zhenyao         | zmo             |
-| zty               | zty             | zty             |

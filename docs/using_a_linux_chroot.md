@@ -1,29 +1,44 @@
 # Using a chroot
 
-If you want to run layout tests and you're not running Lucid, you'll get errors due to version differences in libfreetype. To work around this, you can use a chroot.
+If you want to run layout tests and you're not running Lucid, you'll get errors
+due to version differences in libfreetype. To work around this, you can use a
+chroot.
 
-# Basic Instructions
+## Basic Instructions
 
-  * Run `build/install-chroot.sh`.  On the prompts, choose to install a 64-bit Lucid chroot and activate all your secondary mount points.
-  * sudo edit `/etc/schroot/mount-lucid64bit` and uncomment `/run` and `/run/shm`.  Verify that your mount points are correct and uncommented: for example, if you have a second hard drive at `/src`, you should have an entry like `/src /src none rw,bind 0 0`.
-  * Enter your chroot as root with `sudo schroot -c lucid64`.  Run `build/install-build-deps.sh`, then exit the rooted chroot.
-  * Delete your out/ directory if you had a previous non-chrooted build.
-  * To enter your chroot as normal user, run `schroot -c lucid64`.
-  * Now run `build/gyp_chromium`, compile and run DumpRenderTree within chroot.
+*   Run `build/install-chroot.sh`. On the prompts, choose to install a 64-bit
+    Lucid chroot and activate all your secondary mount points.
+*   sudo edit `/etc/schroot/mount-lucid64bit` and uncomment `/run` and
+    `/run/shm`.  Verify that your mount points are correct and uncommented: for
+    example, if you have a second hard drive at `/src`, you should have an entry
+    like `/src /src none rw,bind 0 0`.
+*   Enter your chroot as root with `sudo schroot -c lucid64`.
+    Run `build /install-build-deps.sh`, then exit the rooted chroot.
+*   Delete your out/ directory if you had a previous non-chrooted build.
+*   To enter your chroot as normal user, run `schroot -c lucid64`.
+*   Now run `build/gyp_chromium`, compile and run DumpRenderTree within chroot.
 
+## Tips and Tricks
 
-# Tips and Tricks
+### NFS home directories
 
-## NFS home directories
-The chroot install will be installed by default in /home/$USER/chroot.  If your home directory is inaccessible by root (typically because it is mounted on NFS), then move this directory onto your local disk and change the corresponding entry in `/etc/schroot/mount-lucid64bit`.
+The chroot install will be installed by default in /home/$USER/chroot. If your
+home directory is inaccessible by root (typically because it is mounted on NFS),
+then move this directory onto your local disk and change the corresponding entry
+in `/etc/schroot/mount-lucid64bit`.
 
-## Goma builds
-If you get mysterious compile errors (glibconfig.h or dbus header error), make sure that goma is running in the chroot, or don't use goma for builds inside the chroot.
+### Goma builds
 
-## Different color prompt
+If you get mysterious compile errors (glibconfig.h or dbus header error), make
+sure that goma is running in the chroot, or don't use goma for builds inside the
+chroot.
 
-I use the following code in my .zshrc file to change the color of my prompt in the chroot.
-```
+### Different color prompt
+
+I use the following code in my .zshrc file to change the color of my prompt in
+the chroot.
+
+```shell
 # load colors
 autoload colors zsh/terminfo
 if [[ "$terminfo[colors]" -ge 8 ]]; then
@@ -47,16 +62,25 @@ else
 fi
 ```
 
-## Running X apps
+### Running X apps
 
-I also have `DISPLAY=:0` in my `$debian_chroot` section so I can run test\_shell or layout tests without manually setting my display every time.  Your display number may vary (`echo $DISPLAY` outside the chroot to see what your display number is).
+I also have `DISPLAY=:0` in my `$debian_chroot` section so I can run test_shell
+or layout tests without manually setting my display every time.  Your display
+number may vary (`echo $DISPLAY` outside the chroot to see what your display
+number is).
 
-You can also use `Xvfb` if you only want to [run tests headless](http://code.google.com/p/chromium/wiki/LayoutTestsLinux#Using_an_embedded_X_server).
+You can also use `Xvfb` if you only want to
+[run tests headless](layout_tests_linux.md#Using-an-embedded-X-server).
 
-## Having layout test results open in a browser
+### Having layout test results open in a browser
 
-After running layout tests, you should get a new browser tab or window that opens results.html.  If you get an error "Failed to open [file:///path/to/results.html](file:///path/to/results.html)", check the following conditions.
+After running layout tests, you should get a new browser tab or window that
+opens results.html.  If you get an error "Failed to open
+file:///path/to/results.html, check the
+following conditions.
 
-  1. Make sure `DISPLAY` is set. See the [Running X apps](https://code.google.com/p/chromium/wiki/UsingALinuxChroot#Running_X_apps) section above.
-  1. Install `xdg-utils`, which includes `xdg-open`, a utility for finding the right application to open a file or URL with.
-  1. Install [Chrome](https://www.google.com/intl/en/chrome/browser/).
+1.  Make sure `DISPLAY` is set. See the
+    [Running X apps](#Running_X_apps) section above.
+1.  Install `xdg-utils`, which includes `xdg-open`, a utility for finding the
+    right application to open a file or URL with.
+1.  Install [Chrome](https://www.google.com/intl/en/chrome/browser/).
