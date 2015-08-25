@@ -153,6 +153,15 @@
       <structure name="IDR_SETTINGS_PREF_TRACKER_JS"
                  file="pref_tracker/pref_tracker.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_LOCATION_PAGE_CSS"
+                 file="location_page/location_page.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_LOCATION_PAGE_HTML"
+                 file="location_page/location_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_LOCATION_PAGE_JS"
+                 file="location_page/location_page.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_CSS"
                  file="privacy_page/privacy_page.css"
                  type="chrome_html" />

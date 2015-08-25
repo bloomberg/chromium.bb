@@ -215,6 +215,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SITE_SETTINGS);
   html_source->AddLocalizedString("clearBrowsingData",
                                   IDS_SETTINGS_CLEAR_DATA);
+  html_source->AddLocalizedString("titleAndCount",
+                                  IDS_SETTINGS_TITLE_AND_COUNT);
 }
 
 void AddSearchStrings(content::WebUIDataSource* html_source) {
