@@ -36,28 +36,20 @@
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 // jr ra
-const char ret[CODE_SIZE + 1] =
-    "\x08\x00\xe0\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+const uint8_t ret[] = { 0x08, 0x00, 0xe0, 0x03 };
 #else  // x86
 // ret
-const char ret[CODE_SIZE + 1] =
-    "\xc3\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
-    "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90";
+const uint8_t ret[] = { 0xc3 };
 #endif
 
 // Example of an instruction which may get "stubbed out" (replaced with
 // HLTs) if the CPU does not support it.
-const char sse41[CODE_SIZE + 1] =
-    "\x66\x0f\x3a\x0e\xd0\xc0"  // pblendw $0xc0,%xmm0,%xmm2
-    "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
-    "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90";
+const uint8_t sse41[] =
+    { 0x66, 0x0f, 0x3a, 0x0e, 0xd0, 0xc0 };  // pblendw $0xc0,%xmm0,%xmm2
 
-const char sse41_plus_nontemporal[CODE_SIZE + 1] =
-    "\x66\x0f\x3a\x0e\xd0\xc0"  // pblendw $0xc0,%xmm0,%xmm2
-    "\x0f\x18\x04\x24"  // prefetchnta (%rsp)
-    "\x90\x90\x90\x90\x90\x90"
-    "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90";
+const uint8_t sse41_plus_nontemporal[] =
+    { 0x66, 0x0f, 0x3a, 0x0e, 0xd0, 0xc0,  // pblendw $0xc0,%xmm0,%xmm2
+      0x0f, 0x18, 0x04, 0x24 };  // prefetchnta (%rsp)
 
 struct MockContext {
   int marker; /* Sanity check that we're getting the right object. */
@@ -228,7 +220,7 @@ TEST_F(ValidationCachingInterfaceTests, CacheMiss) {
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 TEST_F(ValidationCachingInterfaceTests, SSE4Allowed) {
-  memcpy(code_buffer, sse41, CODE_SIZE);
+  memcpy(code_buffer, sse41, sizeof(sse41));
   context.query_result = 0;
   context.set_validates_expected = true;
   NaClValidationStatus status = Validate();
@@ -239,7 +231,7 @@ TEST_F(ValidationCachingInterfaceTests, SSE4Allowed) {
 TEST_F(ValidationCachingInterfaceTests, SSE4Stubout) {
   // Check that the validation is not cached if the validator modifies the
   // the code (by stubbing out instructions).
-  memcpy(code_buffer, sse41, CODE_SIZE);
+  memcpy(code_buffer, sse41, sizeof(sse41));
   context.query_result = 0;
   /* TODO(jfb) Use a safe cast here, this test should only run for x86. */
   NaClSetCPUFeatureX86((NaClCPUFeaturesX86 *) cpu_features,
@@ -247,13 +239,22 @@ TEST_F(ValidationCachingInterfaceTests, SSE4Stubout) {
   NaClValidationStatus status = Validate();
   EXPECT_EQ(NaClValidationSucceeded, status);
   EXPECT_EQ(true, context.query_destroyed);
+
+  // Check that the SSE4.1 instruction gets overwritten with HLTs.
+  for (size_t index = 0; index < CODE_SIZE; ++index) {
+    if (index < sizeof(sse41)) {
+      EXPECT_EQ(0xf4 /* HLT */, code_buffer[index]);
+    } else {
+      EXPECT_EQ(NOP, code_buffer[index]);
+    }
+  }
 }
 
 TEST_F(ValidationCachingInterfaceTests, NonTemporalStubout) {
   // The validation should not be cached if the validator modifies the
   // code.  This test checks for a regression where that property was
   // broken if the code contained a non-temporal instruction.
-  memcpy(code_buffer, sse41_plus_nontemporal, CODE_SIZE);
+  memcpy(code_buffer, sse41_plus_nontemporal, sizeof(sse41_plus_nontemporal));
   context.query_result = 0;
   /* TODO(jfb) Use a safe cast here, this test should only run for x86. */
   NaClSetCPUFeatureX86((NaClCPUFeaturesX86 *) cpu_features,
@@ -265,7 +266,7 @@ TEST_F(ValidationCachingInterfaceTests, NonTemporalStubout) {
 #endif
 
 TEST_F(ValidationCachingInterfaceTests, IllegalInst) {
-  memcpy(code_buffer, ret, CODE_SIZE);
+  memcpy(code_buffer, ret, sizeof(ret));
   context.query_result = 0;
   NaClValidationStatus status = Validate();
   EXPECT_EQ(NaClValidationFailed, status);
@@ -273,7 +274,7 @@ TEST_F(ValidationCachingInterfaceTests, IllegalInst) {
 }
 
 TEST_F(ValidationCachingInterfaceTests, IllegalCacheHit) {
-  memcpy(code_buffer, ret, CODE_SIZE);
+  memcpy(code_buffer, ret, sizeof(ret));
   NaClValidationStatus status = Validate();
   // Success proves the cache shortcircuted validation.
   EXPECT_EQ(NaClValidationSucceeded, status);
