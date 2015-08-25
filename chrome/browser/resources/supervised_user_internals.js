@@ -48,6 +48,13 @@ cr.define('chrome.supervised_user_internals', function() {
   }
 
   function receiveUserSettings(settings) {
+    if (settings === null) {
+      $('user-settings').classList.add('hidden');
+      return;
+    }
+
+    $('user-settings').classList.remove('hidden');
+
     // The user settings are returned as an object, flatten them into a
     // list of key/value pairs for easier consumption by the HTML template.
     // This is not done recursively, values are passed as their JSON

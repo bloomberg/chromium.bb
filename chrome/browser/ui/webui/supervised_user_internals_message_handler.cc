@@ -279,10 +279,10 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
 }
 
 void SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings(
-    const base::DictionaryValue* settings){
+    const base::DictionaryValue* settings) {
   web_ui()->CallJavascriptFunction(
       "chrome.supervised_user_internals.receiveUserSettings",
-      *settings);
+      *(settings ? settings : base::Value::CreateNullValue().get()));
 }
 
 void SupervisedUserInternalsMessageHandler::OnTryURLResult(

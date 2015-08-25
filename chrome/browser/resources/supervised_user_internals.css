@@ -27,6 +27,10 @@
   margin-right: auto;
 }
 
+#info .section.hidden {
+  display: none;
+}
+
 .section-details {
   width: 100%;
 }
