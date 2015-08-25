@@ -1713,7 +1713,8 @@ InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree& positio
     return computeInlineBoxPositionAlgorithm<EditingInComposedTreeStrategy>(position, affinity, primaryDirection);
 }
 
-LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, LayoutObject*& layoutObject)
+template <typename Strategy>
+LayoutRect localCaretRectOfPositionAlgorithm(const PositionWithAffinityTemplate<Strategy>& position, LayoutObject*& layoutObject)
 {
     if (position.position().isNull()) {
         layoutObject = nullptr;
@@ -1731,6 +1732,16 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, Layout
         layoutObject = &boxPosition.inlineBox->layoutObject();
 
     return layoutObject->localCaretRect(boxPosition.inlineBox, boxPosition.offsetInBox);
+}
+
+LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, LayoutObject*& layoutObject)
+{
+    return localCaretRectOfPositionAlgorithm<EditingStrategy>(position, layoutObject);
+}
+
+LayoutRect localCaretRectOfPosition(const PositionInComposedTreeWithAffinity& position, LayoutObject*& layoutObject)
+{
+    return localCaretRectOfPositionAlgorithm<EditingInComposedTreeStrategy>(position, layoutObject);
 }
 
 static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)

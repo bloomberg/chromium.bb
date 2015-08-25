@@ -52,6 +52,26 @@ TEST_F(VisibleUnitsTest, inSameLine)
     EXPECT_TRUE(inSameLine(positionWithAffinityInComposedTree(*two->firstChild(), 0), positionWithAffinityInComposedTree(*four->firstChild(), 0)));
 }
 
+TEST_F(VisibleUnitsTest, localCaretRectOfPosition)
+{
+    const char* bodyContent = "<p id='host'><b id='one'>1</b></p><b id='two'>22</b>";
+    const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent);
+    updateLayoutAndStyleForPainting();
+
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+
+    LayoutObject* layoutObjectFromDOMTree;
+    LayoutRect layoutRectFromDOMTree = localCaretRectOfPosition(Position(one, 0), layoutObjectFromDOMTree);
+
+    LayoutObject* layoutObjectFromComposedTree;
+    LayoutRect layoutRectFromComposedTree = localCaretRectOfPosition(PositionInComposedTree(one, 0), layoutObjectFromComposedTree);
+
+    EXPECT_EQ(layoutObjectFromDOMTree, layoutObjectFromComposedTree);
+    EXPECT_EQ(layoutRectFromDOMTree, layoutRectFromComposedTree);
+}
+
 TEST_F(VisibleUnitsTest, mostBackwardCaretPositionAfterAnchor)
 {
     const char* bodyContent = "<p id='host'><b id='one'>1</b></p><b id='two'>22</b>";

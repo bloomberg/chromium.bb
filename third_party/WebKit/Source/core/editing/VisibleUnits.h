@@ -152,7 +152,8 @@ CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const PositionInComposedT
 CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const VisiblePosition&);
 
 // Rect is local to the returned layoutObject
-LayoutRect localCaretRectOfPosition(const PositionWithAffinity&, LayoutObject*&);
+CORE_EXPORT LayoutRect localCaretRectOfPosition(const PositionWithAffinity&, LayoutObject*&);
+CORE_EXPORT LayoutRect localCaretRectOfPosition(const PositionInComposedTreeWithAffinity&, LayoutObject*&);
 bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
 
 // Returns a hit-tested VisiblePosition for the given point in contents-space
