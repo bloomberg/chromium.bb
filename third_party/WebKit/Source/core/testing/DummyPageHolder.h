@@ -63,7 +63,7 @@ public:
     static PassOwnPtr<DummyPageHolder> create(
         const IntSize& initialViewSize = IntSize(),
         Page::PageClients* = 0,
-        PassOwnPtr<FrameLoaderClient> = PassOwnPtr<FrameLoaderClient>());
+        PassOwnPtrWillBeRawPtr<FrameLoaderClient> = nullptr);
     ~DummyPageHolder();
 
     Page& page() const;
@@ -72,12 +72,12 @@ public:
     Document& document() const;
 
 private:
-    DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*, PassOwnPtr<FrameLoaderClient>);
+    DummyPageHolder(const IntSize& initialViewSize, Page::PageClients*, PassOwnPtrWillBeRawPtr<FrameLoaderClient>);
 
     OwnPtrWillBePersistent<Page> m_page;
     RefPtrWillBePersistent<LocalFrame> m_frame;
 
-    OwnPtr<FrameLoaderClient> m_frameLoaderClient;
+    OwnPtrWillBePersistent<FrameLoaderClient> m_frameLoaderClient;
 };
 
 } // namespace blink

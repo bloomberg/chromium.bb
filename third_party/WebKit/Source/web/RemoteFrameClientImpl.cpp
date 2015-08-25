@@ -26,6 +26,17 @@ RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* webFrame)
 {
 }
 
+PassOwnPtrWillBeRawPtr<RemoteFrameClientImpl> RemoteFrameClientImpl::create(WebRemoteFrameImpl* webFrame)
+{
+    return adoptPtrWillBeNoop(new RemoteFrameClientImpl(webFrame));
+}
+
+DEFINE_TRACE(RemoteFrameClientImpl)
+{
+    visitor->trace(m_webFrame);
+    RemoteFrameClient::trace(visitor);
+}
+
 bool RemoteFrameClientImpl::inShadowTree() const
 {
     return m_webFrame->inShadowTree();
@@ -38,7 +49,7 @@ void RemoteFrameClientImpl::willBeDetached()
 void RemoteFrameClientImpl::detached(FrameDetachType type)
 {
     // Alert the client that the frame is being detached.
-    RefPtrWillBeRawPtr<WebRemoteFrameImpl> protector(m_webFrame);
+    RefPtrWillBeRawPtr<WebRemoteFrameImpl> protector(m_webFrame.get());
 
     WebRemoteFrameClient* client = m_webFrame->client();
     if (!client)

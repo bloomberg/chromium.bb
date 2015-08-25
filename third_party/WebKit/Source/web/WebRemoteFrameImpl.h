@@ -195,7 +195,7 @@ public:
 private:
     WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
 
-    RemoteFrameClientImpl m_frameClient;
+    OwnPtrWillBeMember<RemoteFrameClientImpl> m_frameClient;
     RefPtrWillBeMember<RemoteFrame> m_frame;
     WebRemoteFrameClient* m_client;
 

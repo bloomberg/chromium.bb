@@ -78,7 +78,7 @@ private:
 
 class PrintContextTest : public testing::Test {
 protected:
-    PrintContextTest(PassOwnPtr<FrameLoaderClient> frameLoaderClient = PassOwnPtr<FrameLoaderClient>())
+    explicit PrintContextTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = nullptr)
         : m_pageHolder(DummyPageHolder::create(IntSize(kPageWidth, kPageHeight), nullptr, frameLoaderClient))
         , m_printContext(adoptPtrWillBeNoop(new MockPrintContext(document().frame()))) { }
 
@@ -134,9 +134,15 @@ private:
     OwnPtrWillBePersistent<MockPrintContext> m_printContext;
 };
 
-class SingleChildFrameLoaderClient : public EmptyFrameLoaderClient {
+class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
 public:
-    SingleChildFrameLoaderClient() : m_child(nullptr) { }
+    static PassOwnPtrWillBeRawPtr<SingleChildFrameLoaderClient> create() { return adoptPtrWillBeNoop(new SingleChildFrameLoaderClient); }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_child);
+        EmptyFrameLoaderClient::trace(visitor);
+    }
 
     Frame* firstChild() const override { return m_child.get(); }
     Frame* lastChild() const override { return m_child.get(); }
@@ -144,22 +150,35 @@ public:
     void setChild(Frame* child) { m_child = child; }
 
 private:
-    RefPtrWillBePersistent<Frame> m_child;
+    SingleChildFrameLoaderClient() : m_child(nullptr) { }
+
+    RefPtrWillBeMember<Frame> m_child;
 };
 
-class FrameLoaderClientWithParent : public EmptyFrameLoaderClient {
+class FrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
 public:
-    FrameLoaderClientWithParent(Frame* parent) : m_parent(parent) { }
+    static PassOwnPtrWillBeRawPtr<FrameLoaderClientWithParent> create(Frame* parent)
+    {
+        return adoptPtrWillBeNoop(new FrameLoaderClientWithParent(parent));
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_parent);
+        EmptyFrameLoaderClient::trace(visitor);
+    }
 
     Frame* parent() const override { return m_parent.get(); }
 
 private:
-    RefPtrWillBePersistent<Frame> m_parent;
+    explicit FrameLoaderClientWithParent(Frame* parent) : m_parent(parent) { }
+
+    RefPtrWillBeMember<Frame> m_parent;
 };
 
 class PrintContextFrameTest : public PrintContextTest {
 public:
-    PrintContextFrameTest() : PrintContextTest(adoptPtr(new SingleChildFrameLoaderClient())) { }
+    PrintContextFrameTest() : PrintContextTest(SingleChildFrameLoaderClient::create()) { }
 };
 
 #define EXPECT_SKRECT_EQ(expectedX, expectedY, expectedWidth, expectedHeight, actualRect) \
@@ -305,7 +324,7 @@ TEST_F(PrintContextFrameTest, WithSubframe)
         " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; left: 90px'></iframe>");
 
     HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById("frame"));
-    OwnPtr<FrameLoaderClient> frameLoaderClient = adoptPtr(new FrameLoaderClientWithParent(document().frame()));
+    OwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
     RefPtrWillBePersistent<LocalFrame> subframe = LocalFrame::create(frameLoaderClient.get(), document().frame()->host(), &iframe);
     subframe->setView(FrameView::create(subframe.get(), IntSize(500, 500)));
     subframe->init();
@@ -342,7 +361,7 @@ TEST_F(PrintContextFrameTest, WithScrolledSubframe)
         " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; left: 90px'></iframe>");
 
     HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById("frame"));
-    OwnPtr<FrameLoaderClient> frameLoaderClient = adoptPtr(new FrameLoaderClientWithParent(document().frame()));
+    OwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
     RefPtrWillBePersistent<LocalFrame> subframe = LocalFrame::create(frameLoaderClient.get(), document().frame()->host(), &iframe);
     subframe->setView(FrameView::create(subframe.get(), IntSize(500, 500)));
     subframe->init();

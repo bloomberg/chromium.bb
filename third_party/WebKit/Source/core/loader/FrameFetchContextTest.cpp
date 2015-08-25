@@ -323,17 +323,28 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints)
     expectHeader("http://www.example.com/1.gif", "Viewport-Width", true, "500");
 }
 
-class StubFrameLoaderClientWithParent : public EmptyFrameLoaderClient {
+class StubFrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
 public:
+    static PassOwnPtrWillBeRawPtr<StubFrameLoaderClientWithParent> create(Frame* parent)
+    {
+        return adoptPtrWillBeNoop(new StubFrameLoaderClientWithParent(parent));
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_parent);
+        EmptyFrameLoaderClient::trace(visitor);
+    }
+
+    Frame* parent() const override { return m_parent.get(); }
+
+private:
     explicit StubFrameLoaderClientWithParent(Frame* parent)
         : m_parent(parent)
     {
     }
 
-    Frame* parent() const override { return m_parent; }
-
-private:
-    Frame* m_parent;
+    RawPtrWillBeMember<Frame> m_parent;
 };
 
 class StubFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<StubFrameOwner>, public FrameOwner {
@@ -408,9 +419,9 @@ TEST_F(FrameFetchContextCachePolicyTest, MainResource)
     EXPECT_EQ(ReloadIgnoringCacheData, fetchContext->resourceRequestCachePolicy(conditional, Resource::MainResource));
 
     // Set up a child frame
-    StubFrameLoaderClientWithParent client(document->frame());
+    OwnPtrWillBeRawPtr<StubFrameLoaderClientWithParent> client = StubFrameLoaderClientWithParent::create(document->frame());
     StubFrameOwner owner;
-    RefPtrWillBeRawPtr<LocalFrame> childFrame = LocalFrame::create(&client, document->frame()->host(), &owner);
+    RefPtrWillBeRawPtr<LocalFrame> childFrame = LocalFrame::create(client.get(), document->frame()->host(), &owner);
     childFrame->setView(FrameView::create(childFrame.get(), IntSize(500, 500)));
     childFrame->init();
     RefPtrWillBePersistent<DocumentLoader> childDocumentLoader =

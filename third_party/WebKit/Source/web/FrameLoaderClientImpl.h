@@ -45,10 +45,13 @@ class WebPluginLoadObserver;
 
 class FrameLoaderClientImpl final : public FrameLoaderClient {
 public:
-    explicit FrameLoaderClientImpl(WebLocalFrameImpl* webFrame);
+    static PassOwnPtrWillBeRawPtr<FrameLoaderClientImpl> create(WebLocalFrameImpl*);
+
     ~FrameLoaderClientImpl() override;
 
-    WebLocalFrameImpl* webFrame() const { return m_webFrame; }
+    DECLARE_VIRTUAL_TRACE();
+
+    WebLocalFrameImpl* webFrame() const { return m_webFrame.get(); }
 
     // FrameLoaderClient ----------------------------------------------
 
@@ -180,14 +183,17 @@ public:
     unsigned backForwardLength() override;
 
     void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) override;
+
 private:
+    explicit FrameLoaderClientImpl(WebLocalFrameImpl*);
+
     bool isFrameLoaderClientImpl() const override { return true; }
 
     PassOwnPtr<WebPluginLoadObserver> pluginLoadObserver(DocumentLoader*);
 
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.
-    WebLocalFrameImpl* m_webFrame;
+    RawPtrWillBeMember<WebLocalFrameImpl> m_webFrame;
 };
 
 DEFINE_TYPE_CASTS(FrameLoaderClientImpl, FrameLoaderClient, client, client->isFrameLoaderClientImpl(), client.isFrameLoaderClientImpl());

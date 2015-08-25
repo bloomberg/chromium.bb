@@ -1660,7 +1660,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameCli
 
 WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* client)
     : WebLocalFrame(scope)
-    , m_frameLoaderClientImpl(this)
+    , m_frameLoaderClientImpl(FrameLoaderClientImpl::create(this))
     , m_frameWidget(0)
     , m_client(client)
     , m_autofillClient(0)
@@ -1692,6 +1692,7 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
 #if ENABLE(OILPAN)
 DEFINE_TRACE(WebLocalFrameImpl)
 {
+    visitor->trace(m_frameLoaderClientImpl);
     visitor->trace(m_frame);
     visitor->trace(m_devToolsAgent);
     visitor->trace(m_inspectorOverlay);
@@ -1739,7 +1740,7 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
 
 PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& fallbackName)
 {
-    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(&m_frameLoaderClientImpl, host, owner);
+    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(m_frameLoaderClientImpl.get(), host, owner);
     setCoreFrame(frame);
     frame->tree().setName(name, fallbackName);
     // We must call init() after m_frame is assigned because it is referenced
@@ -2010,7 +2011,7 @@ void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFra
     // the main frame of the Page. However, this is a provisional frame, and may
     // disappear, so Page::m_mainFrame can't be updated just yet.
     OwnPtrWillBeRawPtr<FrameOwner> tempOwner = RemoteBridgeFrameOwner::create(nullptr, SandboxNone);
-    m_frame = LocalFrame::create(&m_frameLoaderClientImpl, oldFrame->host(), tempOwner.get());
+    m_frame = LocalFrame::create(m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
     m_frame->setOwner(oldFrame->owner());
     if (m_frame->owner() && !m_frame->owner()->isLocal())
         toRemoteBridgeFrameOwner(m_frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));

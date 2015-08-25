@@ -12,7 +12,9 @@ class WebRemoteFrameImpl;
 
 class RemoteFrameClientImpl final : public RemoteFrameClient {
 public:
-    explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
+    static PassOwnPtrWillBeRawPtr<RemoteFrameClientImpl> create(WebRemoteFrameImpl*);
+
+    DECLARE_VIRTUAL_TRACE();
 
     // FrameClient overrides:
     bool inShadowTree() const override;
@@ -38,7 +40,9 @@ public:
     WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 
 private:
-    WebRemoteFrameImpl* m_webFrame;
+    explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
+
+    RawPtrWillBeMember<WebRemoteFrameImpl> m_webFrame;
 };
 
 } // namespace blink

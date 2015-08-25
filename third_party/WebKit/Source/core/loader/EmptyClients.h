@@ -164,9 +164,10 @@ public:
 };
 
 class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
-    WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient); WTF_MAKE_FAST_ALLOCATED(EmptyFrameLoaderClient);
+    WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(EmptyFrameLoaderClient);
 public:
-    EmptyFrameLoaderClient() {}
+    static PassOwnPtrWillBeRawPtr<EmptyFrameLoaderClient> create() { return adoptPtrWillBeNoop(new EmptyFrameLoaderClient); }
     ~EmptyFrameLoaderClient() override {}
 
     bool hasWebView() const override { return true; } // mainly for assertions
@@ -256,6 +257,9 @@ public:
     bool isControlledByServiceWorker(DocumentLoader&) override { return false; }
     int64_t serviceWorkerID(DocumentLoader&) override { return -1; }
     PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) override;
+
+protected:
+    EmptyFrameLoaderClient() {}
 };
 
 class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {

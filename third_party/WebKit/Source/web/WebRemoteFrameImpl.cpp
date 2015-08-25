@@ -44,6 +44,7 @@ WebRemoteFrameImpl::~WebRemoteFrameImpl()
 #if ENABLE(OILPAN)
 DEFINE_TRACE(WebRemoteFrameImpl)
 {
+    visitor->trace(m_frameClient);
     visitor->trace(m_frame);
     visitor->trace(m_ownersForChildren);
     visitor->template registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
@@ -722,7 +723,7 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, cons
 
 void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name)
 {
-    setCoreFrame(RemoteFrame::create(&m_frameClient, host, owner));
+    setCoreFrame(RemoteFrame::create(m_frameClient.get(), host, owner));
     frame()->createView();
     m_frame->tree().setName(name, nullAtom);
 }
@@ -803,7 +804,7 @@ void WebRemoteFrameImpl::didStopLoading()
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope, WebRemoteFrameClient* client)
     : WebRemoteFrame(scope)
-    , m_frameClient(this)
+    , m_frameClient(RemoteFrameClientImpl::create(this))
     , m_client(client)
 #if ENABLE(OILPAN)
     , m_selfKeepAlive(this)
