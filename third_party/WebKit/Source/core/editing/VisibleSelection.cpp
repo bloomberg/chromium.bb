@@ -85,11 +85,6 @@ VisibleSelection::VisibleSelection(const EphemeralRange& range, TextAffinity aff
 {
 }
 
-VisibleSelection::VisibleSelection(const Range* range, TextAffinity affinity, bool isDirectional)
-    : VisibleSelection(range->startPosition(), range->endPosition(), affinity, isDirectional)
-{
-}
-
 VisibleSelection::VisibleSelection(const VisibleSelection& other)
     : m_base(other.m_base)
     , m_extent(other.m_extent)

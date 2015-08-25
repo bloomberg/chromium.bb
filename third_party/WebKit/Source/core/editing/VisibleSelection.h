@@ -98,7 +98,6 @@ public:
     VisibleSelection(const PositionInComposedTree& base, const PositionInComposedTree& extent, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
 
     explicit VisibleSelection(const EphemeralRange&, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
-    explicit VisibleSelection(const Range*, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
 
     explicit VisibleSelection(const VisiblePosition&, bool isDirectional = false);
     VisibleSelection(const VisiblePosition&, const VisiblePosition&, bool isDirectional = false);

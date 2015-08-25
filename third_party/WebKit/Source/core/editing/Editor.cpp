@@ -119,7 +119,7 @@ VisibleSelection Editor::selectionForCommand(Event* event)
     HTMLTextFormControlElement* textFromControlOfTarget = isHTMLTextFormControlElement(*event->target()->toNode()) ? toHTMLTextFormControlElement(event->target()->toNode()) : 0;
     if (textFromControlOfTarget && (selection.start().isNull() || textFromControlOfTarget != textFormControlOfSelectionStart)) {
         if (RefPtrWillBeRawPtr<Range> range = textFromControlOfTarget->selection())
-            return VisibleSelection(range.get(), TextAffinity::Downstream, selection.isDirectional());
+            return VisibleSelection(EphemeralRange(range.get()), TextAffinity::Downstream, selection.isDirectional());
     }
     return selection;
 }
@@ -1154,7 +1154,7 @@ bool Editor::findString(const String& target, FindOptions options)
     if (!resultRange)
         return false;
 
-    frame().selection().setSelection(VisibleSelection(resultRange.get()));
+    frame().selection().setSelection(VisibleSelection(EphemeralRange(resultRange.get())));
     frame().selection().revealSelection();
     return true;
 }
