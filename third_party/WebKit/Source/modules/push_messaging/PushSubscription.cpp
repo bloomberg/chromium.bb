@@ -51,6 +51,14 @@ PassRefPtr<DOMArrayBuffer> PushSubscription::curve25519dh() const
     return m_curve25519dh;
 }
 
+PassRefPtr<DOMArrayBuffer> PushSubscription::getKey(const AtomicString& name) const
+{
+    if (name == "curve25519dh")
+        return m_curve25519dh;
+
+    return nullptr;
+}
+
 ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);

@@ -38,17 +38,25 @@
                         return swRegistration.pushManager.subscribe();
                     })
                     .then(function(pushSubscription) {
+                        // TODO(peter): Remove support for the attribute when the embedder has been updated.
                         assert_idl_attribute(pushSubscription, 'curve25519dh');
-                        assert_equals(pushSubscription.curve25519dh, pushSubscription.curve25519dh);
-                        assert_readonly(pushSubscription, 'curve25519dh');
-                        assert_equals(pushSubscription.curve25519dh.byteLength, EXPECTED_KEY_LENGTH);
 
-                        encryptionKey = SerializeArrayBuffer(pushSubscription.curve25519dh);
+                        assert_own_property(PushSubscription.prototype, 'getKey');
+                        assert_not_equals(pushSubscription.getKey('curve25519dh'), null);
+                        assert_equals(pushSubscription.getKey('curve25519dh').byteLength, EXPECTED_KEY_LENGTH);
+
+                        // The returned ArrayBuffers are expected to be the same.
+                        assert_equals(pushSubscription.getKey('curve25519dh'), pushSubscription.getKey('curve25519dh'));
+
+                        // Getting a key with an unsupported algorithm should throw an exception.
+                        assert_throws(TypeError(), () => pushSubscription.getKey('petercurve9001'));
+
+                        encryptionKey = SerializeArrayBuffer(pushSubscription.getKey('curve25519dh'));
 
                         return swRegistration.pushManager.getSubscription();
                     })
                     .then(function(pushSubscription) {
-                        assert_equals(SerializeArrayBuffer(pushSubscription.curve25519dh), encryptionKey);
+                        assert_equals(SerializeArrayBuffer(pushSubscription.getKey('curve25519dh')), encryptionKey);
 
                         return service_worker_unregister_and_done(test, workerScope);
                     })

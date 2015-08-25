@@ -3777,6 +3777,7 @@ interface PushSubscription
     getter curve25519dh
     getter endpoint
     method constructor
+    method getKey
     method toJSON
     method unsubscribe
 interface RTCIceCandidate
