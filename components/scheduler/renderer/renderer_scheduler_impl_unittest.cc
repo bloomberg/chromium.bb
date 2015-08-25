@@ -718,8 +718,10 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_Compositor) {
               testing::ElementsAre(std::string("C1"), std::string("C2"),
                                    std::string("D1"), std::string("D2")));
 
-  // Meta events like TapDown/FlingCancel shouldn't affect the priority.
+  // Animation or meta events like TapDown/FlingCancel shouldn't affect the
+  // priority.
   run_order.clear();
+  scheduler_->DidAnimateForInputOnCompositorThread();
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::GestureFlingCancel),
       RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);

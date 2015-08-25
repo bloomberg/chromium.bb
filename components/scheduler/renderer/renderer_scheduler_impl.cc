@@ -306,6 +306,7 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
         }
         break;
 
+      case blink::WebInputEvent::Undefined:
       case blink::WebInputEvent::GestureTapDown:
       case blink::WebInputEvent::GestureShowPress:
       case blink::WebInputEvent::GestureFlingCancel:
