@@ -113,6 +113,8 @@ function PDFViewer(browserApi) {
   this.passwordScreen_.addEventListener('password-submitted',
                                         this.onPasswordSubmitted_.bind(this));
   this.errorScreen_ = $('error-screen');
+  if (chrome.tabs)
+    this.errorScreen_.reloadFn = chrome.tabs.reload;
 
   // Create the viewport.
   var topToolbarHeight =
@@ -486,7 +488,7 @@ PDFViewer.prototype = {
 
     if (progress == -1) {
       // Document load failed.
-      this.errorScreen_.style.visibility = 'visible';
+      this.errorScreen_.show();
       this.sizer_.style.display = 'none';
       if (!this.isMaterial_)
         this.toolbar_.style.visibility = 'hidden';

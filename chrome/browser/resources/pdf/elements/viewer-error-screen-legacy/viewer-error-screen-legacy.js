@@ -6,5 +6,9 @@ Polymer({
   is: 'viewer-error-screen-legacy',
   properties: {
     text: String
+  },
+
+  show: function() {
+    this.style.visibility = 'visible';
   }
 });

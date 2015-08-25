@@ -5,6 +5,20 @@
 Polymer({
   is: 'viewer-error-screen',
   properties: {
-    text: String
+    text: String,
+
+    reloadFn: {
+      type: Object,
+      value: null,
+    }
+  },
+
+  show: function() {
+    this.$.dialog.open();
+  },
+
+  reload: function() {
+    if (this.reloadFn)
+      this.reloadFn();
   }
 });

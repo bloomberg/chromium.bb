@@ -18,8 +18,6 @@ Polymer({
     }
   },
 
-  timerId: undefined,
-
   ready: function() {
     this.activeChanged();
   },
@@ -31,13 +29,17 @@ Polymer({
   deny: function() {
     this.$.password.disabled = false;
     this.$.submit.disabled = false;
+    this.$['password-container'].invalid = true;
     this.$.password.focus();
     this.$.password.select();
   },
 
-  submit: function(e) {
-    // Prevent the default form submission behavior.
-    e.preventDefault();
+  handleKey: function(e) {
+    if (e.keyCode == 13)
+      this.submit();
+  },
+
+  submit: function() {
     if (this.$.password.value.length == 0)
       return;
     this.$.password.disabled = true;
@@ -46,17 +48,11 @@ Polymer({
   },
 
   activeChanged: function() {
-    clearTimeout(this.timerId);
-    this.timerId = undefined;
     if (this.active) {
-      this.style.visibility = 'visible';
-      this.style.opacity = 1;
+      this.$.dialog.open();
       this.$.password.focus();
     } else {
-      this.style.opacity = 0;
-      this.timerId = setTimeout(function() {
-        this.style.visibility = 'hidden';
-      }.bind(this), 400);
+      this.$.dialog.close();
     }
   }
 });
