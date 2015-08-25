@@ -26,6 +26,8 @@ group("trusted_targets") {
     "//native_client/src/shared/platform:platform",
     "//native_client/src/trusted/platform_qualify:platform_qual_lib",
     "//native_client/src/trusted/service_runtime:sel_ldr",
+    "//native_client/src/nonsfi/irt:irt_interfaces",
+    "//native_client/src/nonsfi/loader:elf_loader",
   ]
 }
 
