@@ -39,7 +39,7 @@ class ValidationDisableNonTemporalsTests : public ::testing::Test {
     return validator->Validate(0, code_buffer, 32,
                                FALSE,  /* stubout_mode */
                                flags,
-                               FALSE,  /* readonly_test */
+                               FALSE,  /* readonly_text */
                                cpu_features,
                                metadata_ptr,
                                NULL);

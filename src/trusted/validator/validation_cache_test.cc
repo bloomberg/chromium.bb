@@ -178,7 +178,7 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
     return validator->Validate(0, code_buffer, 32,
                                FALSE,  /* stubout_mode */
                                0,      /* flags */
-                               FALSE,  /* readonly_test */
+                               FALSE,  /* readonly_text */
                                cpu_features,
                                metadata_ptr,
                                &cache);
@@ -205,7 +205,7 @@ TEST_F(ValidationCachingInterfaceTests, NoCache) {
       0, code_buffer, CODE_SIZE,
       FALSE, /* stubout_mode */
       0,     /* flags */
-      FALSE, /* readonly_test */
+      FALSE, /* readonly_text */
       cpu_features,
       NULL, /* metadata */
       NULL);
