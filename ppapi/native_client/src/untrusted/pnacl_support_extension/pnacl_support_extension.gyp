@@ -15,6 +15,7 @@
     'variables': {
       'pnacl_translator_dir%': "<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_translator",
       'pnacl_translator_stamp%': "pnacl_translator.json",
+      'pnacl_output_prefix': '<(PRODUCT_DIR)/pnacl/pnacl_public_',
     },
     'conditions': [
       ['disable_nacl==0 and disable_pnacl==0 and disable_nacl_untrusted==0', {
@@ -31,38 +32,44 @@
             'action_name': 'generate_pnacl_support_extension',
             'inputs': [
               'pnacl_component_crx_gen.py',
+              '<(DEPTH)/native_client/build/package_version/package_version.py',
               # A stamp file representing the contents of pnacl_translator.
               '<(pnacl_translator_dir)/<(pnacl_translator_stamp)',
               '<(DEPTH)/native_client/pnacl/driver/pnacl_info_template.json',
-              '<(DEPTH)/native_client/toolchain_revisions/pnacl_newlib.json',
+              '<(DEPTH)/native_client/toolchain_revisions/pnacl_translator.json',
+            ],
+            'outputs': [
+              '<(pnacl_output_prefix)pnacl_json',
             ],
             'conditions': [
-                # On windows we need both ia32 and x64.
+              # On Windows, for offline testing (i.e., without component updater
+              # selecting the platform-specific files with multi-CRXes), we need
+              # to stage both x86-32 and x86-64 (because 32-bit chrome on 64-bit
+              # windows will need 64-bit nexes).
                 ['OS=="win"', {
                     'outputs': [
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_crtbegin_o',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_ld_nexe',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libcrt_platform_a',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libgcc_a',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libpnacl_irt_shim_a',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_pnacl_llc_nexe',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_crtbegin_o',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_ld_nexe',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libcrt_platform_a',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libgcc_a',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libpnacl_irt_shim_a',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_pnacl_llc_nexe',
+                      '<(pnacl_output_prefix)x86_32_crtbegin_o',
+                      '<(pnacl_output_prefix)x86_32_ld_nexe',
+                      '<(pnacl_output_prefix)x86_32_libcrt_platform_a',
+                      '<(pnacl_output_prefix)x86_32_libgcc_a',
+                      '<(pnacl_output_prefix)x86_32_libpnacl_irt_shim_a',
+                      '<(pnacl_output_prefix)x86_32_pnacl_llc_nexe',
+                      '<(pnacl_output_prefix)x86_64_crtbegin_o',
+                      '<(pnacl_output_prefix)x86_64_ld_nexe',
+                      '<(pnacl_output_prefix)x86_64_libcrt_platform_a',
+                      '<(pnacl_output_prefix)x86_64_libgcc_a',
+                      '<(pnacl_output_prefix)x86_64_libpnacl_irt_shim_a',
+                      '<(pnacl_output_prefix)x86_64_pnacl_llc_nexe',
                     ],
                     'inputs': [
-                      '>(tc_lib_dir_pnacl_translate)/lib-x86-32/browser/libpnacl_irt_shim.a',
-                      '>(tc_lib_dir_pnacl_translate)/lib-x86-64/browser/libpnacl_irt_shim.a',
+                      '>(tc_lib_dir_pnacl_translate)/lib-x86-32/libpnacl_irt_shim_browser.a',
+                      '>(tc_lib_dir_pnacl_translate)/lib-x86-64/libpnacl_irt_shim_browser.a',
                     ],
                     'variables': {
                       'lib_overrides': [
                         # Use the two freshly generated shims.
-                        '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/browser/libpnacl_irt_shim.a',
-                        '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/browser/libpnacl_irt_shim.a',
+                        '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/libpnacl_irt_shim_browser.a,libpnacl_irt_shim.a',
+                        '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/libpnacl_irt_shim_browser.a,libpnacl_irt_shim.a',
                       ],
                     },
                 }],
@@ -71,81 +78,77 @@
                    'conditions': [
                       ['target_arch=="arm"', {
                         'outputs': [
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_crtbegin_o',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_ld_nexe',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_libcrt_platform_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_libgcc_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_libpnacl_irt_shim_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_pnacl_llc_nexe',
+                          '<(pnacl_output_prefix)arm_crtbegin_o',
+                          '<(pnacl_output_prefix)arm_ld_nexe',
+                          '<(pnacl_output_prefix)arm_libcrt_platform_a',
+                          '<(pnacl_output_prefix)arm_libgcc_a',
+                          '<(pnacl_output_prefix)arm_libpnacl_irt_shim_a',
+                          '<(pnacl_output_prefix)arm_pnacl_llc_nexe',
                         ],
-                        'inputs': [
-                          '>(tc_lib_dir_pnacl_translate)/lib-arm/browser/libpnacl_irt_shim.a',
+                       'inputs': [
+                          '>(tc_lib_dir_pnacl_translate)/lib-arm/libpnacl_irt_shim_browser.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=arm,>(tc_lib_dir_pnacl_translate)/lib-arm/browser/libpnacl_irt_shim.a',
+                            '--lib_override=arm,>(tc_lib_dir_pnacl_translate)/lib-arm/libpnacl_irt_shim_browser.a,libpnacl_irt_shim.a',
                           ],
                         },
                       }],
                       ['target_arch=="mipsel"', {
                         'outputs': [
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_crtbegin_o',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_ld_nexe',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_libcrt_platform_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_libgcc_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_libpnacl_irt_shim_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_llc_nexe',
+                          '<(pnacl_output_prefix)mips32_crtbegin_o',
+                          '<(pnacl_output_prefix)mips32_ld_nexe',
+                          '<(pnacl_output_prefix)mips32_libcrt_platform_a',
+                          '<(pnacl_output_prefix)mips32_libgcc_a',
+                          '<(pnacl_output_prefix)mips32_libpnacl_irt_shim_a',
+                          '<(pnacl_output_prefix)mips32_pnacl_llc_nexe',
                         ],
                         'inputs': [
-                          '>(tc_lib_dir_pnacl_translate)/lib-mips32/browser/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-mips32/libpnacl_irt_shim_browser.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=mipsel,>(tc_lib_dir_pnacl_translate)/lib-mips32/browser/libpnacl_irt_shim.a',
+                            '--lib_override=mipsel,>(tc_lib_dir_pnacl_translate)/lib-mips32/libpnacl_irt_shim_browser.a,libpnacl_irt_shim.a',
                           ],
                         },
                       }],
                       ['target_arch=="ia32"', {
                         'outputs': [
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_crtbegin_o',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_ld_nexe',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libcrt_platform_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libgcc_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libpnacl_irt_shim_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_pnacl_llc_nexe',
+                          '<(pnacl_output_prefix)x86_32_crtbegin_o',
+                          '<(pnacl_output_prefix)x86_32_ld_nexe',
+                          '<(pnacl_output_prefix)x86_32_libcrt_platform_a',
+                          '<(pnacl_output_prefix)x86_32_libgcc_a',
+                          '<(pnacl_output_prefix)x86_32_libpnacl_irt_shim_a',
+                          '<(pnacl_output_prefix)x86_32_pnacl_llc_nexe',
                         ],
                         'inputs': [
-                          '>(tc_lib_dir_pnacl_translate)/lib-x86-32/browser/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-x86-32/libpnacl_irt_shim_browser.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/browser/libpnacl_irt_shim.a',
+                            '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/libpnacl_irt_shim_browser.a,libpnacl_irt_shim.a',
                           ],
                         },
                       }],
                       ['target_arch=="x64"', {
                         'outputs': [
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_pnacl_json',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_crtbegin_o',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_ld_nexe',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libcrt_platform_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libgcc_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libpnacl_irt_shim_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_pnacl_llc_nexe',
+                          '<(pnacl_output_prefix)x86_64_crtbegin_o',
+                          '<(pnacl_output_prefix)x86_64_ld_nexe',
+                          '<(pnacl_output_prefix)x86_64_libcrt_platform_a',
+                          '<(pnacl_output_prefix)x86_64_libgcc_a',
+                          '<(pnacl_output_prefix)x86_64_libpnacl_irt_shim_a',
+                          '<(pnacl_output_prefix)x86_64_pnacl_llc_nexe',
                         ],
                         'inputs': [
-                          '>(tc_lib_dir_pnacl_translate)/lib-x86-64/browser/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-x86-64/libpnacl_irt_shim_browser.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/browser/libpnacl_irt_shim.a',
+                            '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/libpnacl_irt_shim_browser.a,libpnacl_irt_shim.a',
                           ],
                         },
                       }],
@@ -160,7 +163,7 @@
               '--info_template_path=<(DEPTH)/native_client/pnacl/driver/pnacl_info_template.json',
               '--pnacl_translator_path=<(pnacl_translator_dir)',
               '--package_version_path=<(DEPTH)/native_client/build/package_version/package_version.py',
-              '--pnacl_package_name=pnacl_newlib',
+              '--pnacl_package_name=pnacl_translator',
               # ABI Version Number.
               '1',
             ],

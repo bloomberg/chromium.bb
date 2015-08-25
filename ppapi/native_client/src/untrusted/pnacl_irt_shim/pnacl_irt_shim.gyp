@@ -46,7 +46,8 @@
         'extra_args': [
           '--strip-debug',
         ],
-        # Indicate that shim should not depend on unstable IRT hook interface.
+        # Indicate that this variant of the shim library should not depend on
+        # the unstable/private IRT hook interface.
         'compile_flags': [
           '-DPNACL_SHIM_AOT',
         ],
@@ -60,14 +61,14 @@
       'target_name': 'browser',
       'type': 'none',
       'variables': {
-        # Same output file name as shim_aot, so that we don't need to change
-        # the linker commandlines, but output to the "for_browser" directory,
-        # and have the pnacl_support_extension copy from that directory.
-        'nlib_target': 'libpnacl_irt_shim.a',
-        'out_pnacl_newlib_arm': '>(tc_lib_dir_pnacl_translate)/lib-arm/browser/>(nlib_target)',
-        'out_pnacl_newlib_x86_32': '>(tc_lib_dir_pnacl_translate)/lib-x86-32/browser/>(nlib_target)',
-        'out_pnacl_newlib_x86_64': '>(tc_lib_dir_pnacl_translate)/lib-x86-64/browser/>(nlib_target)',
-        'out_pnacl_newlib_mips': '>(tc_lib_dir_pnacl_translate)/lib-mips32/browser/>(nlib_target)',
+        # Use a different name from the AOT variant. Have the
+        # pnacl_support_extension rename this to the canonical name when
+        # copying to the final target directory.
+        'nlib_target': 'libpnacl_irt_shim_browser.a',
+        'out_pnacl_newlib_arm': '>(tc_lib_dir_pnacl_translate)/lib-arm/>(nlib_target)',
+        'out_pnacl_newlib_x86_32': '>(tc_lib_dir_pnacl_translate)/lib-x86-32/>(nlib_target)',
+        'out_pnacl_newlib_x86_64': '>(tc_lib_dir_pnacl_translate)/lib-x86-64/>(nlib_target)',
+        'out_pnacl_newlib_mips': '>(tc_lib_dir_pnacl_translate)/lib-mips32/>(nlib_target)',
         'build_glibc': 0,
         'build_newlib': 0,
         'build_pnacl_newlib': 1,

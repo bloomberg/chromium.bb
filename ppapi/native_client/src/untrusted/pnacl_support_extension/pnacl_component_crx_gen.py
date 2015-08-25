@@ -251,10 +251,9 @@ def BuildArchForInstaller(version_quad, arch, lib_overrides):
   # Also copy files from the list of overrides.
   # This needs the arch tagged onto the name too, like the other files.
   if arch in lib_overrides:
-    for override in lib_overrides[arch]:
-      override_base = os.path.basename(override)
-      target_name = UseWhitelistedChars(override_base, arch)
-      shutil.copy(override, J(target_dir, target_name))
+    for (override_lib, desired_name) in lib_overrides[arch]:
+      target_name = UseWhitelistedChars(desired_name, arch)
+      shutil.copy(override_lib, J(target_dir, target_name))
 
 
 def BuildInstallerStyle(version_quad, lib_overrides, arches):
@@ -289,7 +288,7 @@ def Main():
                     dest='lib_overrides', action='append', default=[],
                     help='Specify path to a fresher native library ' +
                     'that overrides the tarball library with ' +
-                    '(arch:libfile) tuple.')
+                    '(arch,libfile,librenamed) tuple.')
   parser.add_option('-t', '--target_arch',
                     dest='target_arch', default=None,
                     help='Only generate the chrome installer version for arch')
@@ -339,7 +338,7 @@ def Main():
 
   lib_overrides = {}
   for o in options.lib_overrides:
-    arch, override_lib = o.split(',')
+    arch, override_lib, desired_name = o.split(',')
     arch = CanonicalArch(arch)
     if not IsValidArch(arch):
       raise Exception('Unknown arch for -L: %s (from %s)' % (arch, o))
@@ -347,7 +346,7 @@ def Main():
       raise Exception('Override native lib not a file for -L: %s (from %s)' %
                       (override_lib, o))
     override_list = lib_overrides.get(arch, [])
-    override_list.append(override_lib)
+    override_list.append((override_lib, desired_name))
     lib_overrides[arch] = override_list
 
   if len(args) != 1:
