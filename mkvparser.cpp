@@ -20,6 +20,25 @@
 
 mkvparser::IMkvReader::~IMkvReader() {}
 
+template<typename Type> Type* mkvparser::SafeArrayAlloc(
+    unsigned long long num_elements,
+    unsigned long long element_size) {
+#if defined _MSC_VER
+#if !defined INT32_MAX
+#define INT32_MAX (1 << 31) - 1
+#endif
+#endif
+  if (num_elements == 0 || element_size == 0)
+    return NULL;
+
+  const size_t kMaxAllocSize = INT32_MAX;
+  const unsigned long long num_bytes = num_elements * element_size;
+  if (element_size > (kMaxAllocSize / num_elements))
+    return NULL;
+
+  return new (std::nothrow) Type[num_bytes];
+}
+
 void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision) {
   major = 1;
   minor = 0;
@@ -256,7 +275,7 @@ long mkvparser::UnserializeString(IMkvReader* pReader, long long pos,
   // +1 for '\0' terminator
   const long required_size = static_cast<long>(size) + 1;
 
-  str = new (std::nothrow) char[required_size];
+  str = SafeArrayAlloc<char>(1, required_size);
   if (str == NULL)
     return E_FILE_FORMAT_INVALID;
 
@@ -403,7 +422,7 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
 
   const long buflen_ = static_cast<long>(size);
 
-  buf = new (std::nothrow) unsigned char[buflen_];
+  buf = SafeArrayAlloc<unsigned char>(1, buflen_);
   if (!buf)
     return false;
 
@@ -4286,7 +4305,7 @@ long ContentEncoding::ParseCompressionEntry(long long start, long long size,
         return E_FILE_FORMAT_INVALID;
 
       const size_t buflen = static_cast<size_t>(size);
-      unsigned char* buf = new (std::nothrow) unsigned char[buflen];
+      unsigned char* buf = SafeArrayAlloc<unsigned char>(1, buflen);
       if (buf == NULL)
         return -1;
 
@@ -4343,7 +4362,7 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
         return E_FILE_FORMAT_INVALID;
 
       const size_t buflen = static_cast<size_t>(size);
-      unsigned char* buf = new (std::nothrow) unsigned char[buflen];
+      unsigned char* buf = SafeArrayAlloc<unsigned char>(1, buflen);
       if (buf == NULL)
         return -1;
 
@@ -4366,7 +4385,7 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
         return E_FILE_FORMAT_INVALID;
 
       const size_t buflen = static_cast<size_t>(size);
-      unsigned char* buf = new (std::nothrow) unsigned char[buflen];
+      unsigned char* buf = SafeArrayAlloc<unsigned char>(1, buflen);
       if (buf == NULL)
         return -1;
 
@@ -4389,7 +4408,7 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
         return E_FILE_FORMAT_INVALID;
 
       const size_t buflen = static_cast<size_t>(size);
-      unsigned char* buf = new (std::nothrow) unsigned char[buflen];
+      unsigned char* buf = SafeArrayAlloc<unsigned char>(1, buflen);
       if (buf == NULL)
         return -1;
 
@@ -4517,7 +4536,7 @@ int Track::Info::CopyStr(char* Info::*str, Info& dst_) const {
 
   const size_t len = strlen(src);
 
-  dst = new (std::nothrow) char[len + 1];
+  dst = SafeArrayAlloc<char>(1, len + 1);
 
   if (dst == NULL)
     return -1;
@@ -4568,7 +4587,7 @@ int Track::Info::Copy(Info& dst) const {
     if (dst.codecPrivateSize != 0)
       return -1;
 
-    dst.codecPrivate = new (std::nothrow) unsigned char[codecPrivateSize];
+    dst.codecPrivate = SafeArrayAlloc<unsigned char>(1, codecPrivateSize);
 
     if (dst.codecPrivate == NULL)
       return -1;
@@ -5500,7 +5519,7 @@ long Tracks::ParseTrackEntry(long long track_start, long long track_size,
       const size_t buflen = static_cast<size_t>(size);
 
       if (buflen) {
-        unsigned char* buf = new (std::nothrow) unsigned char[buflen];
+        unsigned char* buf = SafeArrayAlloc<unsigned char>(1, buflen);
 
         if (buf == NULL)
           return -1;
