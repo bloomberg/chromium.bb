@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.media.remote;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -31,15 +30,14 @@ import javax.annotation.Nullable;
  * A class for notifications that provide information and optional transport controls for a given
  * remote control. Internally implements a Service for transforming notification Intents into
  * {@link TransportControl.Listener} calls for all registered listeners.
- *
  */
 public class NotificationTransportControl
         extends TransportControl implements MediaRouteController.UiListener {
     /**
-     * Service used to transform intent requests triggered from the notification into
-     * {@code Listener} callbacks. Ideally this class should be protected, but public is required to
-     * create as a service.
-     */
+      * Service used to transform intent requests triggered from the notification into
+      * {@code Listener} callbacks. Ideally this class should be protected, but public is required
+      * to create as a service.
+      */
     public static class ListenerService extends Service {
         private static final String ACTION_PREFIX = ListenerService.class.getName() + ".";
 
@@ -54,9 +52,11 @@ public class NotificationTransportControl
         public static final String SEEK_POSITION = "SEEK_POSITION";
 
         // Must be kept in sync with the ACTION_ID_XXX constants above
-        private static final String[] ACTION_VERBS = {"PLAY", "PAUSE", "SEEK", "STOP", "SELECT" };
+        private static final String[] ACTION_VERBS = {"PLAY", "PAUSE", "SEEK", "STOP", "SELECT"};
 
         private PendingIntent[] mPendingIntents;
+
+        private Notification mNotification;
 
         @VisibleForTesting
         PendingIntent getPendingIntent(int id) {
@@ -70,7 +70,11 @@ public class NotificationTransportControl
 
         @Override
         public void onCreate() {
+            checkState(sInstance != null);
+            checkState(sInstance.mService == null);
             super.onCreate();
+
+            sInstance.mService = this;
 
             // Create all the PendingIntents
             int actionCount = ACTION_VERBS.length;
@@ -81,45 +85,24 @@ public class NotificationTransportControl
                 mPendingIntents[i] = PendingIntent.getService(this, 0, intent,
                         PendingIntent.FLAG_CANCEL_CURRENT);
             }
-            if (sInstance == null) {
-                // This can only happen if we have been recreated by the OS after Chrome has died.
-                // In this case we need to create a MediaRouteController so that we can reconnect
-                // to the Chromecast.
-                RemoteMediaPlayerController playerController =
-                        RemoteMediaPlayerController.instance();
-                playerController.createMediaRouteControllers(this);
-                for (MediaRouteController routeController :
-                        playerController.getMediaRouteControllers()) {
-                    routeController.initialize();
-                    if (routeController.reconnectAnyExistingRoute()) {
-                        playerController.setCurrentMediaRouteController(routeController);
-                        routeController.prepareMediaRoute();
-                        NotificationTransportControl.getOrCreate(this, routeController);
-                        sInstance.addListener(routeController);
-                        break;
-                    }
-                }
-                if (sInstance == null) {
-                    // No controller wants to reconnect, so we haven't created a notification.
-                    return;
-                }
-            }
-            onServiceStarted(this);
         }
 
         @Override
         public void onDestroy() {
-            onServiceDestroyed();
+            checkState(sInstance != null);
+            checkState(sInstance.mService != null);
+            stop();
+            sInstance.mService = null;
+        }
+
+        @Override
+        public void onTaskRemoved(Intent rootIntent) {
+            stop();
         }
 
         @Override
         public int onStartCommand(Intent intent, int flags, int startId) {
-            if (sInstance == null) {
-                // This can only happen after a restart where none of the controllers
-                // wanted to reconnect.
-                stopSelf();
-                return START_NOT_STICKY;
-            }
+            checkState(sInstance != null);
             if (intent != null) {
                 String action = intent.getAction();
                 if (action != null && action.startsWith(ACTION_PREFIX)) {
@@ -141,27 +124,186 @@ public class NotificationTransportControl
                             listener.onSeek(seekPosition);
                         }
                     } else if (ACTION_VERBS[ACTION_ID_STOP].equals(action)) {
-                        for (Listener listener : listeners) {
-                            listener.onStop();
-                            stopSelf();
-                        }
+                        stop();
                     } else if (ACTION_VERBS[ACTION_ID_SELECT].equals(action)) {
-                        for (Listener listener : listeners) {
-                            ExpandedControllerActivity.startActivity(this);
-                        }
+                        ExpandedControllerActivity.startActivity(this);
                     }
                 }
             }
 
-            return START_STICKY;
+            updateNotification();
+            return START_NOT_STICKY;
+        }
+
+        private void stop() {
+            for (Listener listener : sInstance.getListeners()) listener.onStop();
+            stopSelf();
+        }
+
+        private void createNotification() {
+            NotificationCompat.Builder notificationBuilder =
+                    new NotificationCompat.Builder(this)
+                            .setDefaults(0)
+                            .setSmallIcon(R.drawable.ic_notification_media_route)
+                            .setLocalOnly(true)
+                            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                            .setOnlyAlertOnce(true)
+                            .setOngoing(true)
+                            .setContent(createContentView())
+                            .setContentIntent(getPendingIntent(ListenerService.ACTION_ID_SELECT))
+                            .setDeleteIntent(getPendingIntent(ListenerService.ACTION_ID_STOP));
+            mNotification = notificationBuilder.build();
+        }
+
+        private void updateNotification() {
+            RemoteVideoInfo videoInfo = sInstance.getVideoInfo();
+            if (!sInstance.isShowing() || videoInfo == null
+                    || videoInfo.state == PlayerState.STOPPED
+                    || videoInfo.state == PlayerState.FINISHED
+                    || videoInfo.state == PlayerState.INVALIDATED) {
+                stopForeground(true);
+                mNotification = null;
+            } else {
+                if (mNotification == null) createNotification();
+                RemoteViews contentView = createContentView();
+                contentView.setTextViewText(R.id.title, sInstance.getScreenName());
+                contentView.setTextViewText(R.id.status, getStatus());
+                if (sInstance.mIcon != null) {
+                    contentView.setImageViewBitmap(R.id.icon, sInstance.mIcon);
+                } else {
+                    contentView.setImageViewResource(
+                            R.id.icon, R.drawable.ic_notification_media_route);
+                }
+
+                boolean showPlayPause = false;
+                boolean showProgress = false;
+                switch (videoInfo.state) {
+                    case PLAYING:
+                        showProgress = true;
+                        showPlayPause = true;
+                        contentView.setProgressBar(R.id.progress, videoInfo.durationMillis,
+                                videoInfo.currentTimeMillis, false);
+                        contentView.setImageViewResource(
+                                R.id.playpause, R.drawable.ic_vidcontrol_pause);
+                        contentView.setContentDescription(
+                                R.id.playpause, sInstance.mPauseDescription);
+                        contentView.setOnClickPendingIntent(
+                                R.id.playpause, getPendingIntent(ListenerService.ACTION_ID_PAUSE));
+                        scheduleProgressUpdate();
+                        break;
+                    case PAUSED:
+                        showProgress = true;
+                        showPlayPause = true;
+                        contentView.setProgressBar(R.id.progress, videoInfo.durationMillis,
+                                videoInfo.currentTimeMillis, false);
+                        contentView.setImageViewResource(
+                                R.id.playpause, R.drawable.ic_vidcontrol_play);
+                        contentView.setContentDescription(
+                                R.id.playpause, sInstance.mPlayDescription);
+                        contentView.setOnClickPendingIntent(
+                                R.id.playpause, getPendingIntent(ListenerService.ACTION_ID_PLAY));
+                        break;
+                    case LOADING:
+                        showProgress = true;
+                        contentView.setProgressBar(R.id.progress, 0, 0, true);
+                        break;
+                    case ERROR:
+                        showProgress = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                contentView.setViewVisibility(
+                        R.id.playpause, showPlayPause ? View.VISIBLE : View.INVISIBLE);
+                // We use GONE instead of INVISIBLE for this because the notification looks funny
+                // with a large gap in the middle if we have no duration. Setting it to GONE forces
+                // the layout to squeeze tighter to the middle.
+                contentView.setViewVisibility(R.id.progress,
+                        (showProgress && videoInfo.durationMillis > 0) ? View.VISIBLE : View.GONE);
+                contentView.setViewVisibility(
+                        R.id.stop, showPlayPause ? View.VISIBLE : View.INVISIBLE);
+
+                mNotification.contentView = contentView;
+
+                startForeground(R.id.remote_notification, mNotification);
+            }
+        }
+
+        private RemoteViews createContentView() {
+            RemoteViews contentView =
+                    new RemoteViews(getPackageName(), R.layout.remote_notification_bar);
+            contentView.setOnClickPendingIntent(
+                    R.id.stop, getPendingIntent(ListenerService.ACTION_ID_STOP));
+
+            return contentView;
+        }
+
+        private String getStatus() {
+            if (sInstance.hasError()) return sInstance.getError();
+            RemoteVideoInfo videoInfo = sInstance.getVideoInfo();
+            // TODO(bclayton): Is there something better to display here?
+            if (videoInfo == null) return "";
+            String videoTitle = videoInfo.title;
+            switch (videoInfo.state) {
+                case PLAYING:
+                    return videoTitle != null
+                            ? getString(R.string.cast_notification_playing_for_video, videoTitle)
+                            : getString(R.string.cast_notification_playing);
+                case LOADING:
+                    return videoTitle != null
+                            ? getString(R.string.cast_notification_loading_for_video, videoTitle)
+                            : getString(R.string.cast_notification_loading);
+                case PAUSED:
+                    return videoTitle != null
+                            ? getString(R.string.cast_notification_paused_for_video, videoTitle)
+                            : getString(R.string.cast_notification_paused);
+                case STOPPED:
+                    return getString(R.string.cast_notification_stopped);
+                case FINISHED:
+                case INVALIDATED:
+                    return videoTitle != null
+                            ? getString(R.string.cast_notification_finished_for_video, videoTitle)
+                            : getString(R.string.cast_notification_finished);
+                case ERROR:
+                default:
+                    return videoInfo.errorMessage;
+            }
+        }
+
+        private void scheduleProgressUpdate() {
+            sInstance.mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    sInstance.onPositionChanged(sInstance.mMediaRouteController.getPosition());
+                }
+            }, sInstance.mProgressUpdateInterval);
         }
     }
 
     private static NotificationTransportControl sInstance = null;
     private static final Object LOCK = new Object();
-    private static final int MSG_UPDATE_NOTIFICATION = 100;
 
     private static final int MINIMUM_PROGRESS_UPDATE_INTERVAL_MS = 1000;
+
+    private boolean mShowing = false;
+
+    private final String mPlayDescription;
+
+    private final String mPauseDescription;
+
+    private final Context mContext;
+
+    private MediaRouteController mMediaRouteController;
+
+    // ListenerService running for the notification.
+    private ListenerService mService;
+
+    private Bitmap mIcon;
+
+    private Handler mHandler;
+
+    private int mProgressUpdateInterval = MINIMUM_PROGRESS_UPDATE_INTERVAL_MS;
 
     /**
      * Returns the singleton NotificationTransportControl object.
@@ -203,24 +345,10 @@ public class NotificationTransportControl
         }
     }
 
-    private static void onServiceDestroyed() {
-        if (sInstance == null) return;
-        checkState(sInstance.mService != null);
-        sInstance.destroyNotification();
-        sInstance.mService = null;
-    }
-
-    private static void onServiceStarted(ListenerService service) {
-        checkState(sInstance != null);
-        checkState(sInstance.mService == null);
-        sInstance.mService = service;
-        sInstance.createNotification();
-    }
-
     /**
      * Scale the specified bitmap to the desired with and height while preserving aspect ratio.
      */
-    private static Bitmap scaleBitmap(Bitmap bitmap, int maxWidth, int maxHeight) {
+    private Bitmap scaleBitmap(Bitmap bitmap, int maxWidth, int maxHeight) {
         if (bitmap == null) {
             return null;
         }
@@ -239,58 +367,30 @@ public class NotificationTransportControl
         return Bitmap.createScaledBitmap(bitmap, width, height, false);
     }
 
-    private final Context mContext;
-    private MediaRouteController mMediaRouteController;
-
-    // ListenerService running for the notification. Only non-null when showing.
-    private ListenerService mService;
-
-    private final String mPlayDescription;
-
-    private final String mPauseDescription;
-
-    private Notification mNotification;
-
-    private Bitmap mIcon;
-
-    private Handler mHandler;
-
-    private int mProgressUpdateInterval = MINIMUM_PROGRESS_UPDATE_INTERVAL_MS;
 
     private NotificationTransportControl(Context context) {
         this.mContext = context;
-        mHandler = new Handler(context.getMainLooper()) {
-            @Override
-            public void handleMessage(android.os.Message msg) {
-                if (msg.what == MSG_UPDATE_NOTIFICATION) {
-                    mHandler.removeMessages(MSG_UPDATE_NOTIFICATION); // Only one update is needed.
-                    updateNotificationInternal();
-                }
-            }
-        };
-
+        mHandler = new Handler(context.getMainLooper());
         mPlayDescription = context.getResources().getString(R.string.accessibility_play);
         mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
     }
 
     @Override
     public void hide() {
+        mShowing = false;
         mContext.stopService(new Intent(mContext, ListenerService.class));
     }
 
     /**
      * @return true if the notification is currently visible to the user.
      */
-    public boolean isShowing() {
-        return mService != null;
+    @VisibleForTesting
+    boolean isShowing() {
+        return mShowing;
     }
 
     @Override
     public void onDurationUpdated(int durationMillis) {
-        RemoteVideoInfo videoInfo = new RemoteVideoInfo(getVideoInfo());
-        videoInfo.durationMillis = durationMillis;
-        setVideoInfo(videoInfo);
-
         // Set the progress update interval based on the screen height/width, since there's no point
         // in updating the progress bar more frequently than what the user can see.
         // getDisplayMetrics() is dependent on the current orientation, so we need to get the max
@@ -304,6 +404,10 @@ public class NotificationTransportControl
 
         mProgressUpdateInterval = Math.max(MINIMUM_PROGRESS_UPDATE_INTERVAL_MS,
                 Math.round(durationMillis / maxDimen));
+
+        RemoteVideoInfo videoInfo = new RemoteVideoInfo(getVideoInfo());
+        videoInfo.durationMillis = durationMillis;
+        setVideoInfo(videoInfo);
     }
 
     @Override
@@ -317,21 +421,6 @@ public class NotificationTransportControl
         RemoteVideoInfo videoInfo = new RemoteVideoInfo(getVideoInfo());
         videoInfo.state = newState;
         setVideoInfo(videoInfo);
-
-        if (newState == oldState) return;
-
-        if (newState == PlayerState.PLAYING || newState == PlayerState.LOADING
-                || newState == PlayerState.PAUSED) {
-            show(newState);
-            if (newState == PlayerState.PLAYING) {
-                // If we transitioned from not playing to playing, start monitoring the playback.
-                monitorProgress();
-            }
-        } else if (isShowing()
-                && (newState == PlayerState.FINISHED || newState == PlayerState.INVALIDATED)) {
-            // If we are switching to a finished state, stop the notifications.
-            hide();
-        }
     }
 
     @Override
@@ -343,7 +432,6 @@ public class NotificationTransportControl
 
     @Override
     public void onPrepared(MediaRouteController mediaRouteController) {
-        show(PlayerState.PLAYING);
     }
 
     @Override
@@ -370,40 +458,31 @@ public class NotificationTransportControl
 
     @Override
     public void show(PlayerState initialState) {
-        mMediaRouteController.addUiListener(this);
+        mShowing = true;
         RemoteVideoInfo newVideoInfo = new RemoteVideoInfo(mVideoInfo);
         newVideoInfo.state = initialState;
         setVideoInfo(newVideoInfo);
-        mContext.startService(new Intent(mContext, ListenerService.class));
-
-        if (initialState == PlayerState.PLAYING) {
-            monitorProgress();
-        }
-    }
-
-    private void updateNotification() {
-        checkState(mNotification != null);
-
-        // Defer the call to updateNotificationInternal() so it can be cancelled in
-        // destroyNotification(). This is done to avoid the OS bug b/8798662.
-        mHandler.sendEmptyMessage(MSG_UPDATE_NOTIFICATION);
     }
 
     @VisibleForTesting
     Notification getNotification() {
-        return mNotification;
+        // TODO(aberent). This is only used by the tests, which should actually simply be using
+        // isShowing(); but the tests are still downstream, so this needs to be changed in stages.
+        if (getService() == null) return null;
+        return getService().mNotification;
     }
 
     @VisibleForTesting
     final ListenerService getService() {
+        // TODO(aberent). This is only used by the tests, which should actually simply be using
+        // isShowing(); but the tests are still downstream, so this needs to be changed in stages.
+        if (!isShowing()) return null;
         return mService;
     }
 
     @Override
     protected void onErrorChanged() {
-        if (isShowing()) {
-            updateNotification();
-        }
+        mContext.startService(new Intent(mContext, ListenerService.class));
     }
 
     @Override
@@ -415,112 +494,12 @@ public class NotificationTransportControl
 
     @Override
     protected void onScreenNameChanged() {
-        if (isShowing()) {
-            updateNotification();
-        }
+        mContext.startService(new Intent(mContext, ListenerService.class));
     }
 
     @Override
     protected void onVideoInfoChanged() {
-        if (isShowing()) {
-            updateNotification();
-        }
-    }
-
-    private RemoteViews createContentView() {
-        RemoteViews contentView =
-                new RemoteViews(getContext().getPackageName(), R.layout.remote_notification_bar);
-        contentView.setOnClickPendingIntent(R.id.stop,
-                getService().getPendingIntent(ListenerService.ACTION_ID_STOP));
-
-        return contentView;
-    }
-
-    private void createNotification() {
-        checkState(mNotification == null);
-
-        NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(getContext())
-                .setDefaults(0)
-                .setSmallIcon(R.drawable.ic_notification_media_route)
-                .setLocalOnly(true)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setOnlyAlertOnce(true)
-                .setOngoing(true)
-                .setContent(createContentView())
-                .setContentIntent(getService().getPendingIntent(ListenerService.ACTION_ID_SELECT))
-                .setDeleteIntent(getService().getPendingIntent(ListenerService.ACTION_ID_STOP));
-        mNotification = notificationBuilder.build();
-        updateNotification();
-    }
-
-    private void destroyNotification() {
-        checkState(mNotification != null);
-
-        // Cancel any pending updates - we're about to tear down the notification.
-        mHandler.removeMessages(MSG_UPDATE_NOTIFICATION);
-
-        NotificationManager manager =
-                (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(R.id.remote_notification);
-        mNotification = null;
-    }
-
-    private final Context getContext() {
-        return mContext;
-    }
-
-    private String getStatus() {
-        Context context = getContext();
-        RemoteVideoInfo videoInfo = getVideoInfo();
-        String videoTitle = videoInfo != null ? videoInfo.title : null;
-        if (hasError()) {
-            return getError();
-        } else if (videoInfo != null) {
-            switch (videoInfo.state) {
-                case PLAYING:
-                    return videoTitle != null ? context.getString(
-                            R.string.cast_notification_playing_for_video, videoTitle)
-                            : context.getString(R.string.cast_notification_playing);
-                case LOADING:
-                    return videoTitle != null ? context.getString(
-                            R.string.cast_notification_loading_for_video, videoTitle)
-                            : context.getString(R.string.cast_notification_loading);
-                case PAUSED:
-                    return videoTitle != null ? context.getString(
-                            R.string.cast_notification_paused_for_video, videoTitle)
-                            : context.getString(R.string.cast_notification_paused);
-                case STOPPED:
-                    return context.getString(R.string.cast_notification_stopped);
-                case FINISHED:
-                case INVALIDATED:
-                    return videoTitle != null ? context.getString(
-                            R.string.cast_notification_finished_for_video, videoTitle)
-                            : context.getString(R.string.cast_notification_finished);
-                case ERROR:
-                default:
-                    return videoInfo.errorMessage;
-            }
-        } else {
-            return ""; // TODO(bclayton): Is there something better to display here?
-        }
-    }
-
-    private String getTitle() {
-        return getScreenName();
-    }
-
-    private void monitorProgress() {
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                onPositionChanged(mMediaRouteController.getPosition());
-                if (mMediaRouteController.isPlaying()) {
-                    mHandler.postDelayed(this, mProgressUpdateInterval);
-                }
-            }
-        }, mProgressUpdateInterval);
-
+        mContext.startService(new Intent(mContext, ListenerService.class));
     }
 
     /**
@@ -528,7 +507,7 @@ public class NotificationTransportControl
      * the function returns null.
      */
     private Bitmap scaleBitmapForIcon(Bitmap bitmap) {
-        Resources res = getContext().getResources();
+        Resources res = mContext.getResources();
         float maxWidth = res.getDimension(R.dimen.remote_notification_logo_max_width);
         float maxHeight = res.getDimension(R.dimen.remote_notification_logo_max_height);
         return scaleBitmap(bitmap, (int) maxWidth, (int) maxHeight);
@@ -538,7 +517,7 @@ public class NotificationTransportControl
      * Sets the MediaRouteController the notification should be using to get the data from.
      *
      * @param mrc the MediaRouteController object to use. If null, the previous MediaRouteController
-     *        object will not be overwritten.
+     *            object will not be overwritten.
      */
     private void setMediaRouteController(@Nullable MediaRouteController mrc) {
         if (mrc == null || mMediaRouteController == mrc) return;
@@ -551,76 +530,4 @@ public class NotificationTransportControl
         mMediaRouteController.addUiListener(this);
     }
 
-    private void updateNotificationInternal() {
-        checkState(mNotification != null);
-
-        RemoteViews contentView = createContentView();
-
-        contentView.setTextViewText(R.id.title, getTitle());
-        contentView.setTextViewText(R.id.status, getStatus());
-        if (mIcon != null) {
-            contentView.setImageViewBitmap(R.id.icon, mIcon);
-        } else {
-            contentView.setImageViewResource(R.id.icon, R.drawable.ic_notification_media_route);
-        }
-
-        RemoteVideoInfo videoInfo = getVideoInfo();
-        if (videoInfo != null) {
-            boolean showPlayPause = false;
-            boolean showProgress = false;
-            switch (videoInfo.state) {
-                case PLAYING:
-                    showProgress = true;
-                    showPlayPause = true;
-                    contentView.setProgressBar(R.id.progress, videoInfo.durationMillis,
-                            videoInfo.currentTimeMillis, false);
-                    contentView.setImageViewResource(R.id.playpause,
-                            R.drawable.ic_vidcontrol_pause);
-                    contentView.setContentDescription(R.id.playpause, mPauseDescription);
-                    contentView.setOnClickPendingIntent(R.id.playpause,
-                            getService().getPendingIntent(ListenerService.ACTION_ID_PAUSE));
-                    break;
-                case PAUSED:
-                    showProgress = true;
-                    showPlayPause = true;
-                    contentView.setProgressBar(R.id.progress, videoInfo.durationMillis,
-                            videoInfo.currentTimeMillis, false);
-                    contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_play);
-                    contentView.setContentDescription(R.id.playpause, mPlayDescription);
-                    contentView.setOnClickPendingIntent(R.id.playpause,
-                            getService().getPendingIntent(ListenerService.ACTION_ID_PLAY));
-                    break;
-                case LOADING:
-                    showProgress = true;
-                    contentView.setProgressBar(R.id.progress, 0, 0, true);
-                    break;
-                case ERROR:
-                    showProgress = true;
-                    break;
-                default:
-                    break;
-            }
-
-            contentView.setViewVisibility(R.id.playpause,
-                    showPlayPause ? View.VISIBLE : View.INVISIBLE);
-            // We use GONE instead of INVISIBLE for this because the notification looks funny with
-            // a large gap in the middle if we have no duration. Setting it to GONE forces the
-            // layout to squeeze tighter to the middle.
-            contentView.setViewVisibility(R.id.progress,
-                    (showProgress && videoInfo.durationMillis > 0) ? View.VISIBLE : View.GONE);
-            contentView.setViewVisibility(R.id.stop, showPlayPause ? View.VISIBLE : View.INVISIBLE);
-
-            mNotification.contentView = contentView;
-
-            NotificationManager manager = (NotificationManager) getContext().getSystemService(
-                    Context.NOTIFICATION_SERVICE);
-            manager.notify(R.id.remote_notification, mNotification);
-
-            if (videoInfo.state == PlayerState.STOPPED || videoInfo.state == PlayerState.FINISHED) {
-                getService().stopSelf();
-            } else {
-                getService().startForeground(R.id.remote_notification, mNotification);
-            }
-        }
-    }
 }
