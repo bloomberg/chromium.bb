@@ -833,7 +833,7 @@ class Cues {
 
  private:
   bool Init() const;
-  void PreloadCuePoint(long&, long long) const;
+  bool PreloadCuePoint(long&, long long) const;
 
   mutable CuePoint** m_cue_points;
   mutable long m_count;
