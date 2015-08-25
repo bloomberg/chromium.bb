@@ -333,6 +333,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
   void CommitComplete() override {
+    test_hooks_->WillCommitCompleteOnThread(this);
     LayerTreeHostImpl::CommitComplete();
     test_hooks_->CommitCompleteOnThread(this);
   }

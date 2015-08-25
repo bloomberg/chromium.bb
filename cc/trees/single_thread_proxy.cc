@@ -256,6 +256,11 @@ void SingleThreadProxy::DoCommit() {
     DCHECK_EQ(1.f, scroll_info->page_scale_delta);
 #endif
 
+    if (scheduler_on_impl_thread_)
+      scheduler_on_impl_thread_->DidCommit();
+
+    layer_tree_host_impl_->CommitComplete();
+
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile8(
@@ -271,16 +276,11 @@ void SingleThreadProxy::DoCommit() {
 }
 
 void SingleThreadProxy::CommitComplete() {
+  // Commit complete happens on the main side after activate to satisfy any
+  // SetNextCommitWaitsForActivation calls.
   DCHECK(!layer_tree_host_impl_->pending_tree())
       << "Activation is expected to have synchronously occurred by now.";
   DCHECK(commit_blocking_task_runner_);
-
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->DidCommit();
-
-  // Notify commit complete on the impl side after activate to satisfy any
-  // SetNextCommitWaitsForActivation calls.
-  layer_tree_host_impl_->CommitComplete();
 
   DebugScopedSetMainThread main(this);
   commit_blocking_task_runner_.reset();

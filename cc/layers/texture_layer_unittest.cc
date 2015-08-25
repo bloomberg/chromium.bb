@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -823,10 +824,19 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
   }
 
   void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    base::AutoLock lock(activate_count_lock_);
     ++activate_count_;
   }
 
   void DidCommit() override {
+    // The first frame doesn't cause anything to be returned so it does not
+    // need to wait for activation.
+    if (layer_tree_host()->source_frame_number() > 1) {
+      base::AutoLock lock(activate_count_lock_);
+      // The activate happened before commit is done on the main side.
+      EXPECT_EQ(activate_count_, layer_tree_host()->source_frame_number());
+    }
+
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // The first mailbox has been activated. Set a new mailbox, and
@@ -846,31 +856,14 @@ class TextureLayerMailboxIsActivatedDuringCommit : public LayerTreeTest {
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case 0: {
-        // The activate for the 1st mailbox should have happened before now.
-        EXPECT_EQ(1, activate_count_);
-        break;
-      }
-      case 1: {
-        // The activate for the 2nd mailbox should have happened before now.
-        EXPECT_EQ(2, activate_count_);
-        break;
-      }
-      case 2: {
-        // The activate to remove the layer should have happened before now.
-        EXPECT_EQ(3, activate_count_);
-        break;
-      }
-      case 3: {
-        NOTREACHED();
-        break;
-      }
-    }
+    // The activate didn't happen before commit is done on the impl side (but it
+    // should happen before the main thread is done).
+    EXPECT_EQ(activate_count_, host_impl->sync_tree()->source_frame_number());
   }
 
   void AfterTest() override {}
 
+  base::Lock activate_count_lock_;
   int activate_count_;
   scoped_refptr<Layer> root_;
   scoped_refptr<TextureLayer> layer_;

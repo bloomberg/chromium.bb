@@ -341,6 +341,13 @@ void LayerTreeHostImpl::BeginCommit() {
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
+  if (proxy_->CommitToActiveTree()) {
+    // We have to activate animations here or "IsActive()" is true on the layers
+    // but the animations aren't activated yet so they get ignored by
+    // UpdateDrawProperties.
+    ActivateAnimations();
+  }
+
   // LayerTreeHost may have changed the GPU rasterization flags state, which
   // may require an update of the tree resources.
   UpdateTreeResourcesForGpuRasterizationIfNeeded();
@@ -1908,6 +1915,10 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
     active_tree_->SetRootLayerScrollOffsetDelegate(
         root_layer_scroll_offset_delegate_);
+
+    // If we commit to the active tree directly, this is already done during
+    // commit.
+    ActivateAnimations();
   } else {
     active_tree_->ProcessUIResourceRequestQueue();
   }
@@ -1916,7 +1927,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   // won't already account for current bounds_delta values.
   active_tree_->UpdatePropertyTreesForBoundsDelta();
   active_tree_->DidBecomeActive();
-  ActivateAnimations();
   client_->RenewTreePriority();
   // If we have any picture layers, then by activating we also modified tile
   // priorities.
@@ -3141,12 +3151,22 @@ void LayerTreeHostImpl::ActivateAnimations() {
   if (!settings_.accelerated_animation_enabled)
     return;
 
+  bool activated = false;
   if (animation_host_) {
     if (animation_host_->ActivateAnimations())
-      SetNeedsAnimate();
+      activated = true;
   } else {
     if (animation_registrar_->ActivateAnimations())
-      SetNeedsAnimate();
+      activated = true;
+  }
+
+  if (activated) {
+    SetNeedsAnimate();
+    // Activating an animation changes layer draw properties, such as
+    // screen_space_transform_is_animating, or changes transforms etc. So when
+    // we see a new animation get activated, we need to update the draw
+    // properties on the active tree.
+    active_tree()->set_needs_update_draw_properties();
   }
 }
 

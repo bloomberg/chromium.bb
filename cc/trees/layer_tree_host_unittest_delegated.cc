@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -1748,14 +1749,23 @@ class DelegatedFrameIsActivatedDuringCommit
   }
 
   void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    base::AutoLock lock(activate_count_lock_);
     ++activate_count_;
   }
 
   void DidCommit() override {
+    // The first frame doesn't cause anything to be returned so it does not
+    // need to wait for activation.
+    if (layer_tree_host()->source_frame_number() > 1) {
+      base::AutoLock lock(activate_count_lock_);
+      // The activate happened before commit is done on the main side.
+      EXPECT_EQ(activate_count_, layer_tree_host()->source_frame_number());
+    }
+
     switch (layer_tree_host()->source_frame_number()) {
       case 1: {
-        // The first frame has been activated. Set a new frame, and
-        // expect the next commit to finish *after* it is activated.
+        // The first frame has been committed and will activate. Set a new
+        // frame, and expect the next commit to finish *after* it is activated.
         scoped_ptr<DelegatedFrameData> frame =
             CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 555);
@@ -1779,27 +1789,9 @@ class DelegatedFrameIsActivatedDuringCommit
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case 0: {
-        // The activate for the 1st frame should have happened before now.
-        EXPECT_EQ(1, activate_count_);
-        break;
-      }
-      case 1: {
-        // The activate for the 2nd frame should have happened before now.
-        EXPECT_EQ(2, activate_count_);
-        break;
-      }
-      case 2: {
-        // The activate to remove the layer should have happened before now.
-        EXPECT_EQ(3, activate_count_);
-        break;
-      }
-      case 3: {
-        NOTREACHED();
-        break;
-      }
-    }
+    // The activate didn't happen before commit is done on the impl side (but it
+    // should happen before the main thread is done).
+    EXPECT_EQ(activate_count_, host_impl->sync_tree()->source_frame_number());
   }
 
   void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
@@ -1817,6 +1809,7 @@ class DelegatedFrameIsActivatedDuringCommit
       EndTest();
   }
 
+  base::Lock activate_count_lock_;
   int activate_count_;
   size_t returned_resource_count_;
 };

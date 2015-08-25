@@ -41,7 +41,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   ~LayerTreePixelTest() override;
 
   scoped_ptr<OutputSurface> CreateOutputSurface() override;
-  void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override;
+  void WillCommitCompleteOnThread(LayerTreeHostImpl* impl) override;
 
   virtual scoped_ptr<CopyOutputRequest> CreateCopyOutputRequest();
 

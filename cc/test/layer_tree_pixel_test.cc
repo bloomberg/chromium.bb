@@ -62,7 +62,7 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
   return output_surface.Pass();
 }
 
-void LayerTreePixelTest::WillActivateTreeOnThread(LayerTreeHostImpl* impl) {
+void LayerTreePixelTest::WillCommitCompleteOnThread(LayerTreeHostImpl* impl) {
   if (impl->sync_tree()->source_frame_number() != 0)
     return;
 
