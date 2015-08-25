@@ -9,12 +9,17 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.text.format.Formatter;
 import android.util.AttributeSet;
+import android.view.View;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
+import org.chromium.chrome.browser.offline_pages.OfflinePageItem;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -77,7 +82,23 @@ public class EnhancedBookmarkBookmarkRow extends EnhancedBookmarkRow implements 
         mIconImageView.setImageDrawable(null);
         mTitleView.setText(item.getTitle());
         mDelegate.getLargeIconBridge().getLargeIconForUrl(mUrl, mMinIconSize, this);
+        updateOfflinePageSize(bookmarkId);
         return item;
+    }
+
+    private void updateOfflinePageSize(BookmarkId bookmarkId) {
+        OfflinePageItem offlinePage = null;
+        OfflinePageBridge bridge = mDelegate.getModel().getOfflinePageBridge();
+        if (mDelegate.getCurrentState() == UIState.STATE_FILTER && bridge != null) {
+            offlinePage = bridge.getPageByBookmarkId(bookmarkId);
+        }
+        TextView textView = (TextView) findViewById(R.id.offline_page_size);
+        if (offlinePage != null) {
+            textView.setText(Formatter.formatFileSize(getContext(), offlinePage.getFileSize()));
+            textView.setVisibility(View.VISIBLE);
+        } else {
+            textView.setVisibility(View.GONE);
+        }
     }
 
     // LargeIconCallback implementation.
