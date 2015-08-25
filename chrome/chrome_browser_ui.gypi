@@ -1248,6 +1248,8 @@
       'browser/ui/cocoa/themed_window.mm',
       'browser/ui/cocoa/toolbar/back_forward_menu_controller.h',
       'browser/ui/cocoa/toolbar/back_forward_menu_controller.mm',
+      'browser/ui/cocoa/toolbar/media_router_action_platform_delegate_cocoa.h',
+      'browser/ui/cocoa/toolbar/media_router_action_platform_delegate_cocoa.mm',
       'browser/ui/cocoa/toolbar/reload_button_cocoa.h',
       'browser/ui/cocoa/toolbar/reload_button_cocoa.mm',
       'browser/ui/cocoa/toolbar/toolbar_button_cocoa.h',
@@ -1455,7 +1457,6 @@
     'chrome_browser_ui_media_router_sources': [
       'browser/ui/toolbar/media_router_action.cc',
       'browser/ui/toolbar/media_router_action.h',
-      'browser/ui/toolbar/media_router_action_platform_delegate.cc',
       'browser/ui/toolbar/media_router_action_platform_delegate.h',
       'browser/ui/toolbar/media_router_contextual_menu.cc',
       'browser/ui/toolbar/media_router_contextual_menu.h',

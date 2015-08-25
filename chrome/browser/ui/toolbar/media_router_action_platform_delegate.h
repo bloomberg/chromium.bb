@@ -11,10 +11,7 @@ class Browser;
 
 class MediaRouterActionPlatformDelegate {
  public:
-#if defined(OS_MACOSX)
-  explicit MediaRouterActionPlatformDelegate(Browser* browser);
-#endif
-  MediaRouterActionPlatformDelegate();
+  MediaRouterActionPlatformDelegate() {}
   virtual ~MediaRouterActionPlatformDelegate() {}
 
   // Returns a created MediaRouterActionPlatformDelegate. This is defined in the
