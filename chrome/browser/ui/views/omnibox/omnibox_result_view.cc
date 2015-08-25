@@ -624,26 +624,25 @@ void OmniboxResultView::Layout() {
   const int trailing_padding = theme_provider->GetDisplayProperty(
       ThemeProperties::PROPERTY_ICON_LABEL_VIEW_TRAILING_PADDING);
 
-  icon_bounds_.SetRect(
-      horizontal_padding +
-          ((icon.width() == default_icon_size_) ? 0 : trailing_padding),
-      (GetContentLineHeight() - icon.height()) / 2, icon.width(),
-      icon.height());
+  const int start_x = StartMargin() + horizontal_padding;
+  const int end_x = width() - EndMargin() - horizontal_padding;
 
-  int text_x = (2 * horizontal_padding) + default_icon_size_;
-  int text_width = width() - text_x - horizontal_padding;
+  icon_bounds_.SetRect(
+      start_x + ((icon.width() == default_icon_size_) ? 0 : trailing_padding),
+      (GetContentLineHeight() - icon.height()) / 2,
+      icon.width(), icon.height());
+
+  const int text_x = start_x + default_icon_size_ + horizontal_padding;
+  int text_width = end_x - text_x;
 
   if (match_.associated_keyword.get()) {
-    const int kw_collapsed_size = keyword_icon_->width() + horizontal_padding;
-    const int max_kw_x = width() - kw_collapsed_size;
-    const int kw_x =
-        animation_->CurrentValueBetween(max_kw_x, horizontal_padding);
+    const int max_kw_x = end_x - keyword_icon_->width();
+    const int kw_x = animation_->CurrentValueBetween(max_kw_x, start_x);
     const int kw_text_x = kw_x + keyword_icon_->width() + horizontal_padding;
 
     text_width = kw_x - text_x - horizontal_padding;
     keyword_text_bounds_.SetRect(
-        kw_text_x, 0, std::max(width() - kw_text_x - horizontal_padding, 0),
-        height());
+        kw_text_x, 0, std::max(end_x - kw_text_x, 0), height());
     keyword_icon_->SetPosition(
         gfx::Point(kw_x, (height() - keyword_icon_->height()) / 2));
   }
@@ -652,7 +651,7 @@ void OmniboxResultView::Layout() {
 }
 
 void OmniboxResultView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  animation_->SetSlideDuration(width() / 4);
+  animation_->SetSlideDuration((width() - StartMargin() - EndMargin()) / 4);
 }
 
 void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
@@ -798,4 +797,14 @@ void OmniboxResultView::AppendAnswerTextHelper(gfx::RenderText* destination,
   destination->ApplyColor(
       GetNativeTheme()->GetSystemColor(text_style.colors[GetState()]), range);
   destination->ApplyBaselineStyle(text_style.baseline, range);
+}
+
+int OmniboxResultView::StartMargin() const {
+  return ui::MaterialDesignController::IsModeMaterial() ?
+      model_->start_margin() : 0;
+}
+
+int OmniboxResultView::EndMargin() const {
+  return ui::MaterialDesignController::IsModeMaterial() ?
+      model_->end_margin() : 0;
 }

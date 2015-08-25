@@ -172,6 +172,13 @@ class OmniboxResultView : public views::View,
                               int text_type,
                               bool is_bold);
 
+  // Returns the necessary margin, if any, at the start and end of the view.
+  // This allows us to keep the icon and text in the view aligned with the
+  // location bar contents. For a left-to-right language, StartMargin()
+  // and EndMargin() correspond to the left and right margins, respectively.
+  int StartMargin() const;
+  int EndMargin() const;
+
   static int default_icon_size_;
 
   // This row's model and model index.

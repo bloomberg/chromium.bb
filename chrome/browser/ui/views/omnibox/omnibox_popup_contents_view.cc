@@ -63,8 +63,8 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
       font_list_(font_list),
       ignore_mouse_drag_(false),
       size_animation_(this),
-      left_margin_(0),
-      right_margin_(0) {
+      start_margin_(0),
+      end_margin_(0) {
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
@@ -116,12 +116,17 @@ void OmniboxPopupContentsView::LayoutChildren() {
       ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_MIN_TEXT_VERTICAL_PADDING);
 
   gfx::Rect contents_rect = GetContentsBounds();
-
   contents_rect.Inset(
-      left_margin_,
-      views::NonClientFrameView::kClientEdgeThickness + min_vertical_padding,
-      right_margin_,
-      min_vertical_padding);
+      0, views::NonClientFrameView::kClientEdgeThickness + min_vertical_padding,
+      0, min_vertical_padding);
+
+  // In the non-material dropdown, the colored/clickable regions within the
+  // dropdown are only as wide as the location bar. In the material version,
+  // these are full width, and OmniboxResultView instead insets the icons/text
+  // inside to be aligned with the location bar.
+  if (!ui::MaterialDesignController::IsModeMaterial())
+    contents_rect.Inset(start_margin_, 0, end_margin_, 0);
+
   int top = contents_rect.y();
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
     View* v = child_at(i);
@@ -192,7 +197,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   gfx::Point top_left_screen_coord;
   int width;
   location_bar_view_->GetOmniboxPopupPositioningInfo(
-      &top_left_screen_coord, &width, &left_margin_, &right_margin_);
+      &top_left_screen_coord, &width, &start_margin_, &end_margin_);
   gfx::Rect new_target_bounds(top_left_screen_coord,
                               gfx::Size(width, CalculatePopupHeight()));
 
