@@ -17,7 +17,7 @@ MockBrowsingDataFileSystemHelper::~MockBrowsingDataFileSystemHelper() {
 }
 
 void MockBrowsingDataFileSystemHelper::StartFetching(
-    const base::Callback<void(const std::list<FileSystemInfo>&)>& callback) {
+    const FetchCallback& callback) {
   ASSERT_FALSE(callback.is_null());
   ASSERT_TRUE(callback_.is_null());
   callback_ = callback;

@@ -21,9 +21,7 @@ class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
   explicit MockBrowsingDataFileSystemHelper(Profile* profile);
 
   // BrowsingDataFileSystemHelper implementation.
-  void StartFetching(
-      const base::Callback<void(const std::list<FileSystemInfo>&)>& callback)
-      override;
+  void StartFetching(const FetchCallback& callback) override;
   void DeleteFileSystemOrigin(const GURL& origin) override;
 
   // Adds a specific filesystem.
@@ -50,7 +48,7 @@ class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
  private:
   ~MockBrowsingDataFileSystemHelper() override;
 
-  base::Callback<void(const std::list<FileSystemInfo>&)> callback_;
+  FetchCallback callback_;
 
   // Stores which filesystems exist.
   std::map<const std::string, bool> file_systems_;

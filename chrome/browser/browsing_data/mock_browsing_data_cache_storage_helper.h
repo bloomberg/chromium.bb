@@ -44,8 +44,7 @@ class MockBrowsingDataCacheStorageHelper
  private:
   ~MockBrowsingDataCacheStorageHelper() override;
 
-  base::Callback<void(const std::list<content::CacheStorageUsageInfo>&)>
-      callback_;
+  FetchCallback callback_;
   std::map<GURL, bool> origins_;
   std::list<content::CacheStorageUsageInfo> response_;
 

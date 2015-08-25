@@ -16,7 +16,7 @@ MockBrowsingDataAppCacheHelper::~MockBrowsingDataAppCacheHelper() {
 }
 
 void MockBrowsingDataAppCacheHelper::StartFetching(
-    const base::Closure& completion_callback) {
+    const FetchCallback& completion_callback) {
   ASSERT_FALSE(completion_callback.is_null());
   ASSERT_TRUE(completion_callback_.is_null());
   completion_callback_ = completion_callback;

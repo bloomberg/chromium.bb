@@ -26,6 +26,7 @@ BrowsingDataCacheStorageHelper::~BrowsingDataCacheStorageHelper() {}
 void BrowsingDataCacheStorageHelper::StartFetching(
     const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!callback.is_null());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -44,6 +45,7 @@ void BrowsingDataCacheStorageHelper::DeleteCacheStorage(const GURL& origin) {
 void BrowsingDataCacheStorageHelper::FetchCacheStorageUsageInfoOnIOThread(
     const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!callback.is_null());
   cache_storage_context_->GetAllOriginsInfo(
       base::Bind(&BrowsingDataCacheStorageHelper::GetAllOriginsInfoCallback,
                  this, callback));
@@ -120,8 +122,7 @@ CannedBrowsingDataCacheStorageHelper::GetCacheStorageUsageInfo() const {
 }
 
 void CannedBrowsingDataCacheStorageHelper::StartFetching(
-    const base::Callback<void(const std::list<CacheStorageUsageInfo>&)>&
-        callback) {
+    const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 

@@ -33,13 +33,10 @@ class BrowsingDataChannelIDHelperImpl
   ~BrowsingDataChannelIDHelperImpl() override;
 
   // Fetch the certs. This must be called in the IO thread.
-  void FetchOnIOThread();
+  void FetchOnIOThread(const FetchResultCallback& callback);
 
   void OnFetchComplete(
-      const net::ChannelIDStore::ChannelIDList& channel_id_list);
-
-  // Notifies the completion callback. This must be called in the UI thread.
-  void NotifyInUIThread(
+      const FetchResultCallback& callback,
       const net::ChannelIDStore::ChannelIDList& channel_id_list);
 
   // Delete a single cert. This must be called in IO thread.
@@ -48,16 +45,7 @@ class BrowsingDataChannelIDHelperImpl
   // Called when deletion is done.
   void DeleteCallback();
 
-  // Indicates whether or not we're currently fetching information:
-  // it's true when StartFetching() is called in the UI thread, and it's reset
-  // after we notify the callback in the UI thread.
-  // This member is only mutated on the UI thread.
-  bool is_fetching_ = false;
-
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-
-  // This member is only mutated on the UI thread.
-  FetchResultCallback completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataChannelIDHelperImpl);
 };
@@ -75,15 +63,11 @@ BrowsingDataChannelIDHelperImpl::
 void BrowsingDataChannelIDHelperImpl::StartFetching(
     const FetchResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!is_fetching_);
   DCHECK(!callback.is_null());
-  DCHECK(completion_callback_.is_null());
-  is_fetching_ = true;
-  completion_callback_ = callback;
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&BrowsingDataChannelIDHelperImpl::FetchOnIOThread, this));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BrowsingDataChannelIDHelperImpl::FetchOnIOThread, this,
+                 callback));
 }
 
 void BrowsingDataChannelIDHelperImpl::DeleteChannelID(
@@ -96,37 +80,29 @@ void BrowsingDataChannelIDHelperImpl::DeleteChannelID(
           &BrowsingDataChannelIDHelperImpl::DeleteOnIOThread, this, server_id));
 }
 
-void BrowsingDataChannelIDHelperImpl::FetchOnIOThread() {
+void BrowsingDataChannelIDHelperImpl::FetchOnIOThread(
+    const FetchResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!callback.is_null());
+
   net::ChannelIDStore* cert_store =
       request_context_getter_->GetURLRequestContext()->
       channel_id_service()->GetChannelIDStore();
   if (cert_store) {
     cert_store->GetAllChannelIDs(base::Bind(
-        &BrowsingDataChannelIDHelperImpl::OnFetchComplete, this));
+        &BrowsingDataChannelIDHelperImpl::OnFetchComplete, this, callback));
   } else {
-    OnFetchComplete(net::ChannelIDStore::ChannelIDList());
+    OnFetchComplete(callback, net::ChannelIDStore::ChannelIDList());
   }
 }
 
 void BrowsingDataChannelIDHelperImpl::OnFetchComplete(
+    const FetchResultCallback& callback,
     const net::ChannelIDStore::ChannelIDList& channel_id_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&BrowsingDataChannelIDHelperImpl::NotifyInUIThread,
-                 this,
-                 channel_id_list));
-}
-
-void BrowsingDataChannelIDHelperImpl::NotifyInUIThread(
-    const net::ChannelIDStore::ChannelIDList& channel_id_list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(is_fetching_);
-  is_fetching_ = false;
-  completion_callback_.Run(channel_id_list);
-  completion_callback_.Reset();
+  DCHECK(!callback.is_null());
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, channel_id_list));
 }
 
 void BrowsingDataChannelIDHelperImpl::DeleteOnIOThread(
@@ -193,18 +169,19 @@ void CannedBrowsingDataChannelIDHelper::StartFetching(
   if (callback.is_null())
     return;
   // We post a task to emulate async fetching behavior.
-  completion_callback_ = callback;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&CannedBrowsingDataChannelIDHelper::FinishFetching, this));
+      FROM_HERE, base::Bind(&CannedBrowsingDataChannelIDHelper::FinishFetching,
+                            this, callback));
 }
 
-void CannedBrowsingDataChannelIDHelper::FinishFetching() {
+void CannedBrowsingDataChannelIDHelper::FinishFetching(
+    const FetchResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!callback.is_null());
   net::ChannelIDStore::ChannelIDList channel_id_list;
   for (const auto& pair : channel_id_map_)
     channel_id_list.push_back(pair.second);
-  completion_callback_.Run(channel_id_list);
+  callback.Run(channel_id_list);
 }
 
 void CannedBrowsingDataChannelIDHelper::DeleteChannelID(

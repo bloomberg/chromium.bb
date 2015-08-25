@@ -23,21 +23,19 @@ class BrowsingDataAppCacheHelper
  public:
   typedef std::map<GURL, content::AppCacheInfoVector> OriginAppCacheInfoMap;
 
+  using FetchCallback =
+      base::Callback<void(scoped_refptr<content::AppCacheInfoCollection>)>;
+
   explicit BrowsingDataAppCacheHelper(content::BrowserContext* browser_context);
 
-  virtual void StartFetching(const base::Closure& completion_callback);
+  virtual void StartFetching(const FetchCallback& completion_callback);
   virtual void DeleteAppCacheGroup(const GURL& manifest_url);
-
-  content::AppCacheInfoCollection* info_collection() const {
-    DCHECK(!is_fetching_);
-    return info_collection_.get();
-  }
 
  protected:
   friend class base::RefCountedThreadSafe<BrowsingDataAppCacheHelper>;
   virtual ~BrowsingDataAppCacheHelper();
 
-  base::Closure completion_callback_;
+  FetchCallback completion_callback_;
   scoped_refptr<content::AppCacheInfoCollection> info_collection_;
 
  private:
@@ -74,7 +72,7 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
   const OriginAppCacheInfoMap& GetOriginAppCacheInfoMap() const;
 
   // BrowsingDataAppCacheHelper methods.
-  void StartFetching(const base::Closure& completion_callback) override;
+  void StartFetching(const FetchCallback& completion_callback) override;
   void DeleteAppCacheGroup(const GURL& manifest_url) override;
 
  private:

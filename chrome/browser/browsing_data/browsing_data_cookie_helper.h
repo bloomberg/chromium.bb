@@ -29,14 +29,14 @@ class URLRequestContextGetter;
 class BrowsingDataCookieHelper
     : public base::RefCountedThreadSafe<BrowsingDataCookieHelper> {
  public:
+  using FetchCallback = base::Callback<void(const net::CookieList&)>;
   explicit BrowsingDataCookieHelper(
       net::URLRequestContextGetter* request_context_getter);
 
   // Starts the fetching process, which will notify its completion via
   // callback.
   // This must be called only in the UI thread.
-  virtual void StartFetching(
-      const base::Callback<void(const net::CookieList& cookies)>& callback);
+  virtual void StartFetching(const FetchCallback& callback);
 
   // Requests a single cookie to be deleted in the IO thread. This must be
   // called in the UI thread.
@@ -52,27 +52,16 @@ class BrowsingDataCookieHelper
 
  private:
   // Fetch the cookies. This must be called in the IO thread.
-  void FetchCookiesOnIOThread();
+  void FetchCookiesOnIOThread(const FetchCallback& callback);
 
   // Callback function for get cookie. This must be called in the IO thread.
-  void OnFetchComplete(const net::CookieList& cookies);
-
-  // Notifies the completion callback. This must be called in the UI thread.
-  void NotifyInUIThread(const net::CookieList& cookies);
+  void OnFetchComplete(const FetchCallback& callback,
+                       const net::CookieList& cookies);
 
   // Delete a single cookie. This must be called in IO thread.
   void DeleteCookieOnIOThread(const net::CanonicalCookie& cookie);
 
-  // Indicates whether or not we're currently fetching information:
-  // it's true when StartFetching() is called in the UI thread, and it's reset
-  // after we notify the callback in the UI thread.
-  // This member is only mutated on the UI thread.
-  bool is_fetching_ = false;
-
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-
-  // This member is only mutated on the UI thread.
-  base::Callback<void(const net::CookieList& cookies)> completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataCookieHelper);
 };

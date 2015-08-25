@@ -275,8 +275,7 @@ class CookiesTreeModelTest : public testing::Test {
         return node->GetDetailedInfo().appcache_info->manifest_url.spec() +
             ",";
       case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
-        return node->GetDetailedInfo().indexed_db_info->origin_.spec() +
-            ",";
+        return node->GetDetailedInfo().indexed_db_info->origin.spec() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
         return node->GetDetailedInfo().file_system_info->origin.spec() +
             ",";

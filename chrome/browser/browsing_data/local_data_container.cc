@@ -135,13 +135,12 @@ void LocalDataContainer::Init(CookiesTreeModel* model) {
   model_->SetBatchExpectation(batches_started_, true);
 }
 
-void LocalDataContainer::OnAppCacheModelInfoLoaded() {
+void LocalDataContainer::OnAppCacheModelInfoLoaded(
+    scoped_refptr<content::AppCacheInfoCollection> appcache_info) {
   using content::AppCacheInfo;
   using content::AppCacheInfoCollection;
   using content::AppCacheInfoVector;
 
-  scoped_refptr<AppCacheInfoCollection> appcache_info =
-      appcache_helper_->info_collection();
   if (!appcache_info.get() || appcache_info->infos_by_origin.empty()) {
     // This batch has been canceled, so let the model know it won't be arriving.
     model_->SetBatchExpectation(--batches_started_, false);

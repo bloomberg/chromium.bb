@@ -240,7 +240,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitIndexedDB(
     const content::IndexedDBInfo* indexed_db_info) {
   Init(TYPE_INDEXED_DB);
   this->indexed_db_info = indexed_db_info;
-  this->origin = indexed_db_info->origin_;
+  this->origin = indexed_db_info->origin;
   return *this;
 }
 
@@ -444,12 +444,9 @@ CookieTreeSessionStorageNode::GetDetailedInfo() const {
 // CookieTreeIndexedDBNode, public:
 
 CookieTreeIndexedDBNode::CookieTreeIndexedDBNode(
-    std::list<content::IndexedDBInfo>::iterator
-        indexed_db_info)
-    : CookieTreeNode(base::UTF8ToUTF16(
-          indexed_db_info->origin_.spec())),
-      indexed_db_info_(indexed_db_info) {
-}
+    std::list<content::IndexedDBInfo>::iterator indexed_db_info)
+    : CookieTreeNode(base::UTF8ToUTF16(indexed_db_info->origin.spec())),
+      indexed_db_info_(indexed_db_info) {}
 
 CookieTreeIndexedDBNode::~CookieTreeIndexedDBNode() {}
 
@@ -457,8 +454,7 @@ void CookieTreeIndexedDBNode::DeleteStoredObjects() {
   LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
   if (container) {
-    container->indexed_db_helper_->DeleteIndexedDB(
-        indexed_db_info_->origin_);
+    container->indexed_db_helper_->DeleteIndexedDB(indexed_db_info_->origin);
     container->indexed_db_info_list_.erase(indexed_db_info_);
   }
 }
@@ -1355,7 +1351,7 @@ void CookiesTreeModel::PopulateIndexedDBInfoWithFilter(
            container->indexed_db_info_list_.begin();
        indexed_db_info != container->indexed_db_info_list_.end();
        ++indexed_db_info) {
-    const GURL& origin = indexed_db_info->origin_;
+    const GURL& origin = indexed_db_info->origin;
 
     if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
                                .find(filter) != base::string16::npos)) {

@@ -17,7 +17,7 @@ MockBrowsingDataDatabaseHelper::~MockBrowsingDataDatabaseHelper() {
 }
 
 void MockBrowsingDataDatabaseHelper::StartFetching(
-    const base::Callback<void(const std::list<DatabaseInfo>&)>& callback) {
+    const FetchCallback& callback) {
   ASSERT_FALSE(callback.is_null());
   ASSERT_TRUE(callback_.is_null());
   callback_ = callback;

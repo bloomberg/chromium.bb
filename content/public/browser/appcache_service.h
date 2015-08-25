@@ -43,7 +43,7 @@ class CONTENT_EXPORT AppCacheService {
 
   // Populates 'collection' with info about all of the appcaches stored
   // within the service, 'callback' is invoked upon completion. The service
-  // acquires a reference to the 'collection' until until completion.
+  // acquires a reference to the 'collection' until completion.
   // This method always completes asynchronously.
   virtual void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
                                   const net::CompletionCallback& callback) = 0;

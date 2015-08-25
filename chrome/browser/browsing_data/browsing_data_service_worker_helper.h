@@ -31,6 +31,9 @@ class Profile;
 class BrowsingDataServiceWorkerHelper
     : public base::RefCountedThreadSafe<BrowsingDataServiceWorkerHelper> {
  public:
+  using FetchCallback =
+      base::Callback<void(const std::list<content::ServiceWorkerUsageInfo>&)>;
+
   // Create a BrowsingDataServiceWorkerHelper instance for the Service Workers
   // stored in |context|'s associated profile's user data directory.
   explicit BrowsingDataServiceWorkerHelper(
@@ -38,8 +41,7 @@ class BrowsingDataServiceWorkerHelper
 
   // Starts the fetching process, which will notify its completion via
   // |callback|. This must be called only in the UI thread.
-  virtual void StartFetching(const base::Callback<
-      void(const std::list<content::ServiceWorkerUsageInfo>&)>& callback);
+  virtual void StartFetching(const FetchCallback& callback);
   // Requests the Service Worker data for an origin be deleted.
   virtual void DeleteServiceWorkers(const GURL& origin);
 
@@ -49,38 +51,18 @@ class BrowsingDataServiceWorkerHelper
   // Owned by the profile.
   content::ServiceWorkerContext* service_worker_context_;
 
-  // Access to |service_worker_info_| is triggered indirectly via the UI
-  // thread and guarded by |is_fetching_|. This means |service_worker_info_|
-  // is only accessed while |is_fetching_| is true. The flag |is_fetching_| is
-  // only accessed on the UI thread.
-  // In the context of this class |service_worker_info_| is only accessed on the
-  // context's ServiceWorker thread.
-  std::list<content::ServiceWorkerUsageInfo> service_worker_info_;
-
-  // This member is only mutated on the UI thread.
-  base::Callback<void(const std::list<content::ServiceWorkerUsageInfo>&)>
-      completion_callback_;
-
-  // Indicates whether or not we're currently fetching information:
-  // it's true when StartFetching() is called in the UI thread, and it's reset
-  // after we notified the callback in the UI thread.
-  // This member is only mutated on the UI thread.
-  bool is_fetching_ = false;
-
  private:
   friend class base::RefCountedThreadSafe<BrowsingDataServiceWorkerHelper>;
 
   // Enumerates all Service Worker instances on the IO thread.
-  void FetchServiceWorkerUsageInfoOnIOThread();
-
-  // Notifies the completion callback in the UI thread.
-  void NotifyOnUIThread();
+  void FetchServiceWorkerUsageInfoOnIOThread(const FetchCallback& callback);
 
   // Deletes Service Workers for an origin the IO thread.
   void DeleteServiceWorkersOnIOThread(const GURL& origin);
 
   // Callback from ServiceWorkerContext::GetAllOriginsInfo()
   void GetAllOriginsInfoCallback(
+      const FetchCallback& callback,
       const std::vector<content::ServiceWorkerUsageInfo>& origins);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataServiceWorkerHelper);
@@ -126,8 +108,7 @@ class CannedBrowsingDataServiceWorkerHelper
       GetServiceWorkerUsageInfo() const;
 
   // BrowsingDataServiceWorkerHelper methods.
-  void StartFetching(const base::Callback<void(
-      const std::list<content::ServiceWorkerUsageInfo>&)>& callback) override;
+  void StartFetching(const FetchCallback& callback) override;
   void DeleteServiceWorkers(const GURL& origin) override;
 
  private:

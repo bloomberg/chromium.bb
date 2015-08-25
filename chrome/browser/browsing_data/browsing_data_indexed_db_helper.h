@@ -28,15 +28,16 @@ class Profile;
 class BrowsingDataIndexedDBHelper
     : public base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper> {
  public:
+  using FetchCallback =
+      base::Callback<void(const std::list<content::IndexedDBInfo>&)>;
+
   // Create a BrowsingDataIndexedDBHelper instance for the indexed databases
   // stored in |context|'s associated profile's user data directory.
   explicit BrowsingDataIndexedDBHelper(content::IndexedDBContext* context);
 
   // Starts the fetching process, which will notify its completion via
   // |callback|. This must be called only on the UI thread.
-  virtual void StartFetching(
-      const base::Callback<void(const std::list<content::IndexedDBInfo>&)>&
-          callback);
+  virtual void StartFetching(const FetchCallback& callback);
   // Requests a single indexed database to be deleted in the IndexedDB thread.
   virtual void DeleteIndexedDB(const GURL& origin);
 
@@ -45,31 +46,11 @@ class BrowsingDataIndexedDBHelper
 
   scoped_refptr<content::IndexedDBContext> indexed_db_context_;
 
-  // Access to |indexed_db_info_| is triggered indirectly via the UI thread and
-  // guarded by |is_fetching_|. This means |indexed_db_info_| is only accessed
-  // while |is_fetching_| is true. The flag |is_fetching_| is only accessed on
-  // the UI thread.
-  // In the context of this class |indexed_db_info_| is only accessed on the
-  // context's IndexedDB thread.
-  std::list<content::IndexedDBInfo> indexed_db_info_;
-
-  // This member is only mutated on the UI thread.
-  base::Callback<void(const std::list<content::IndexedDBInfo>&)>
-      completion_callback_;
-
-  // Indicates whether or not we're currently fetching information:
-  // it's true when StartFetching() is called in the UI thread, and it's reset
-  // after we notified the callback in the UI thread.
-  // This member is only mutated on the UI thread.
-  bool is_fetching_ = false;
-
  private:
   friend class base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper>;
 
   // Enumerates all indexed database files in the IndexedDB thread.
-  void FetchIndexedDBInfoInIndexedDBThread();
-  // Notifies the completion callback in the UI thread.
-  void NotifyInUIThread();
+  void FetchIndexedDBInfoInIndexedDBThread(const FetchCallback& callback);
   // Delete a single indexed database in the IndexedDB thread.
   void DeleteIndexedDBInIndexedDBThread(const GURL& origin);
 
@@ -115,8 +96,7 @@ class CannedBrowsingDataIndexedDBHelper
       GetIndexedDBInfo() const;
 
   // BrowsingDataIndexedDBHelper methods.
-  void StartFetching(const base::Callback<
-      void(const std::list<content::IndexedDBInfo>&)>& callback) override;
+  void StartFetching(const FetchCallback& callback) override;
   void DeleteIndexedDB(const GURL& origin) override;
 
  private:

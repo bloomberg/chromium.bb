@@ -12,20 +12,20 @@
 
 namespace content {
 
-class CONTENT_EXPORT IndexedDBInfo {
- public:
+struct CONTENT_EXPORT IndexedDBInfo {
   IndexedDBInfo(const GURL& origin,
                 int64 size,
                 const base::Time& last_modified,
-                size_t connection_count);
-  IndexedDBInfo(const IndexedDBInfo& other);
-  ~IndexedDBInfo();
-  IndexedDBInfo& operator=(const IndexedDBInfo& other);
+                size_t connection_count)
+      : origin(origin),
+        size(size),
+        last_modified(last_modified),
+        connection_count(connection_count) {}
 
-  GURL origin_;
-  int64 size_;
-  base::Time last_modified_;
-  size_t connection_count_;
+  GURL origin;
+  int64 size;
+  base::Time last_modified;
+  size_t connection_count;
 };
 
 }  // namespace content

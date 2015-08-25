@@ -13,12 +13,11 @@ namespace content {
 
 // Used to report Local Storage usage info by DOMStorageContext.
 struct CONTENT_EXPORT LocalStorageUsageInfo {
-  GURL origin;
-  size_t data_size;
-  base::Time last_modified;
+  LocalStorageUsageInfo() {}
 
-  LocalStorageUsageInfo();
-  ~LocalStorageUsageInfo();
+  GURL origin;
+  size_t data_size = 0;
+  base::Time last_modified;
 };
 
 }  // namespace content

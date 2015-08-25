@@ -31,16 +31,11 @@ BrowsingDataLocalStorageHelper::~BrowsingDataLocalStorageHelper() {
 }
 
 void BrowsingDataLocalStorageHelper::StartFetching(
-    const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback) {
+    const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!is_fetching_);
   DCHECK(!callback.is_null());
-
-  is_fetching_ = true;
-  completion_callback_ = callback;
-  dom_storage_context_->GetLocalStorageUsage(
-      base::Bind(
-          &BrowsingDataLocalStorageHelper::GetUsageInfoCallback, this));
+  dom_storage_context_->GetLocalStorageUsage(base::Bind(
+      &BrowsingDataLocalStorageHelper::GetUsageInfoCallback, this, callback));
 }
 
 void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin) {
@@ -49,29 +44,21 @@ void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin) {
 }
 
 void BrowsingDataLocalStorageHelper::GetUsageInfoCallback(
+    const FetchCallback& callback,
     const std::vector<content::LocalStorageUsageInfo>& infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!callback.is_null());
 
-  for (size_t i = 0; i < infos.size(); ++i) {
-    // Non-websafe state is not considered browsing data.
-    const content::LocalStorageUsageInfo& info = infos[i];
-    if (BrowsingDataHelper::HasWebScheme(info.origin)) {
-      local_storage_info_.push_back(
-          LocalStorageInfo(info.origin, info.data_size, info.last_modified));
-    }
+  std::list<LocalStorageInfo> result;
+  for (const content::LocalStorageUsageInfo& info : infos) {
+    if (!BrowsingDataHelper::HasWebScheme(info.origin))
+      continue;  // Non-websafe state is not considered browsing data.
+    result.push_back(
+        LocalStorageInfo(info.origin, info.data_size, info.last_modified));
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataLocalStorageHelper::CallCompletionCallback,
-                 this));
-}
-
-void BrowsingDataLocalStorageHelper::CallCompletionCallback() {
-  DCHECK(is_fetching_);
-  completion_callback_.Run(local_storage_info_);
-  completion_callback_.Reset();
-  is_fetching_ = false;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, result));
 }
 
 //---------------------------------------------------------
@@ -83,8 +70,9 @@ CannedBrowsingDataLocalStorageHelper::CannedBrowsingDataLocalStorageHelper(
 
 void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
     const GURL& origin) {
-  if (BrowsingDataHelper::HasWebScheme(origin))
-    pending_local_storage_info_.insert(origin);
+  if (!BrowsingDataHelper::HasWebScheme(origin))
+    return;  // Non-websafe state is not considered browsing data.
+  pending_local_storage_info_.insert(origin);
 }
 
 void CannedBrowsingDataLocalStorageHelper::Reset() {
@@ -105,7 +93,7 @@ CannedBrowsingDataLocalStorageHelper::GetLocalStorageInfo() const {
 }
 
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
-    const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback) {
+    const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 

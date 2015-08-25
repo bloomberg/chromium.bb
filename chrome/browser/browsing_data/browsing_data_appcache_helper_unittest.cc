@@ -18,14 +18,21 @@ class TestCompletionCallback {
  public:
   TestCompletionCallback() {}
 
-  bool have_result() const { return have_result_; }
+  bool have_result() const { return info_collection_.get(); }
 
-  void callback() {
-    have_result_ = true;
+  content::AppCacheInfoCollection* info_collection() const {
+    return info_collection_.get();
+  }
+
+  void set_info_collection(
+      scoped_refptr<content::AppCacheInfoCollection> info_collection) {
+    info_collection_ = info_collection;
   }
 
  private:
-  bool have_result_ = false;
+  scoped_refptr<content::AppCacheInfoCollection> info_collection_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCompletionCallback);
 };
 
 }  // namespace
@@ -52,12 +59,12 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
   helper->AddAppCache(manifest3);
 
   TestCompletionCallback callback;
-  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
+  helper->StartFetching(base::Bind(&TestCompletionCallback::set_info_collection,
                                    base::Unretained(&callback)));
   ASSERT_TRUE(callback.have_result());
 
   std::map<GURL, content::AppCacheInfoVector>& collection =
-      helper->info_collection()->infos_by_origin;
+      callback.info_collection()->infos_by_origin;
 
   ASSERT_EQ(2u, collection.size());
   EXPECT_TRUE(ContainsKey(collection, manifest1.GetOrigin()));
@@ -84,12 +91,12 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Unique) {
   helper->AddAppCache(manifest);
 
   TestCompletionCallback callback;
-  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
+  helper->StartFetching(base::Bind(&TestCompletionCallback::set_info_collection,
                                    base::Unretained(&callback)));
   ASSERT_TRUE(callback.have_result());
 
   std::map<GURL, content::AppCacheInfoVector>& collection =
-      helper->info_collection()->infos_by_origin;
+      callback.info_collection()->infos_by_origin;
 
   ASSERT_EQ(1u, collection.size());
   EXPECT_TRUE(ContainsKey(collection, manifest.GetOrigin()));

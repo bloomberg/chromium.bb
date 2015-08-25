@@ -29,23 +29,17 @@ BrowsingDataIndexedDBHelper::BrowsingDataIndexedDBHelper(
 BrowsingDataIndexedDBHelper::~BrowsingDataIndexedDBHelper() {
 }
 
-void BrowsingDataIndexedDBHelper::StartFetching(
-    const base::Callback<void(const std::list<IndexedDBInfo>&)>& callback) {
+void BrowsingDataIndexedDBHelper::StartFetching(const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!is_fetching_);
   DCHECK(!callback.is_null());
-
-  is_fetching_ = true;
-  completion_callback_ = callback;
   indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(
           &BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread,
-          this));
+          this, callback));
 }
 
-void BrowsingDataIndexedDBHelper::DeleteIndexedDB(
-    const GURL& origin) {
+void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE,
@@ -55,27 +49,19 @@ void BrowsingDataIndexedDBHelper::DeleteIndexedDB(
           origin));
 }
 
-void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread() {
+void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
+    const FetchCallback& callback) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(!callback.is_null());
   std::vector<IndexedDBInfo> origins = indexed_db_context_->GetAllOriginsInfo();
+  std::list<content::IndexedDBInfo> result;
   for (const IndexedDBInfo& origin : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(origin.origin_))
+    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
       continue;  // Non-websafe state is not considered browsing data.
-
-    indexed_db_info_.push_back(origin);
+    result.push_back(origin);
   }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataIndexedDBHelper::NotifyInUIThread, this));
-}
-
-void BrowsingDataIndexedDBHelper::NotifyInUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(is_fetching_);
-  completion_callback_.Run(indexed_db_info_);
-  completion_callback_.Reset();
-  is_fetching_ = false;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, result));
 }
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread(
@@ -118,12 +104,11 @@ void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
 }
 
 void CannedBrowsingDataIndexedDBHelper::Reset() {
-  indexed_db_info_.clear();
   pending_indexed_db_info_.clear();
 }
 
 bool CannedBrowsingDataIndexedDBHelper::empty() const {
-  return indexed_db_info_.empty() && pending_indexed_db_info_.empty();
+  return pending_indexed_db_info_.empty();
 }
 
 size_t CannedBrowsingDataIndexedDBHelper::GetIndexedDBCount() const {
@@ -136,7 +121,7 @@ CannedBrowsingDataIndexedDBHelper::GetIndexedDBInfo() const  {
 }
 
 void CannedBrowsingDataIndexedDBHelper::StartFetching(
-    const base::Callback<void(const std::list<IndexedDBInfo>&)>& callback) {
+    const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 

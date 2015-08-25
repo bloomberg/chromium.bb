@@ -34,9 +34,7 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   // BrowsingDataFileSystemHelper implementation
   explicit BrowsingDataFileSystemHelperImpl(
       storage::FileSystemContext* filesystem_context);
-  void StartFetching(
-      const base::Callback<void(const std::list<FileSystemInfo>&)>& callback)
-      override;
+  void StartFetching(const FetchCallback& callback) override;
   void DeleteFileSystemOrigin(const GURL& origin) override;
 
  private:
@@ -45,11 +43,7 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   // Enumerates all filesystem files, storing the resulting list into
   // file_system_file_ for later use. This must be called on the file
   // task runner.
-  void FetchFileSystemInfoInFileThread();
-
-  // Triggers the success callback as the end of a StartFetching workflow. This
-  // must be called on the UI thread.
-  void NotifyOnUIThread();
+  void FetchFileSystemInfoInFileThread(const FetchCallback& callback);
 
   // Deletes all file systems associated with |origin|. This must be called on
   // the file task runner.
@@ -64,25 +58,6 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   // for use on the file task runner.
   scoped_refptr<storage::FileSystemContext> filesystem_context_;
 
-  // Holds the current list of file systems returned to the client after
-  // StartFetching is called. Access to |file_system_info_| is triggered
-  // indirectly via the UI thread and guarded by |is_fetching_|. This means
-  // |file_system_info_| is only accessed while |is_fetching_| is true. The
-  // flag |is_fetching_| is only accessed on the UI thread. In the context of
-  // this class |file_system_info_| only mutates on the file task runner.
-  std::list<FileSystemInfo> file_system_info_;
-
-  // Holds the callback passed in at the beginning of the StartFetching workflow
-  // so that it can be triggered via NotifyOnUIThread. This only mutates on the
-  // UI thread.
-  base::Callback<void(const std::list<FileSystemInfo>&)> completion_callback_;
-
-  // Indicates whether or not we're currently fetching information: set to true
-  // when StartFetching is called on the UI thread, and reset to false when
-  // NotifyOnUIThread triggers the success callback.
-  // This property only mutates on the UI thread.
-  bool is_fetching_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataFileSystemHelperImpl);
 };
 
@@ -96,17 +71,14 @@ BrowsingDataFileSystemHelperImpl::~BrowsingDataFileSystemHelperImpl() {
 }
 
 void BrowsingDataFileSystemHelperImpl::StartFetching(
-    const base::Callback<void(const std::list<FileSystemInfo>&)>& callback) {
+    const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!is_fetching_);
   DCHECK(!callback.is_null());
-  is_fetching_ = true;
-  completion_callback_ = callback;
   file_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(
           &BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread,
-          this));
+          this, callback));
 }
 
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
@@ -119,8 +91,10 @@ void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
           this, origin));
 }
 
-void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
+void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread(
+    const FetchCallback& callback) {
   DCHECK(file_task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(!callback.is_null());
 
   // We check usage for these filesystem types.
   const storage::FileSystemType types[] = {
@@ -131,6 +105,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
 #endif
   };
 
+  std::list<FileSystemInfo> result;
   typedef std::map<GURL, FileSystemInfo> OriginInfoMap;
   OriginInfoMap file_system_info_map;
   for (size_t i = 0; i < arraysize(types); ++i) {
@@ -152,21 +127,11 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
     }
   }
 
-  for (const auto& iter : file_system_info_map) {
-    file_system_info_.push_back(iter.second);
-  }
+  for (const auto& iter : file_system_info_map)
+    result.push_back(iter.second);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataFileSystemHelperImpl::NotifyOnUIThread, this));
-}
-
-void BrowsingDataFileSystemHelperImpl::NotifyOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(is_fetching_);
-  completion_callback_.Run(file_system_info_);
-  completion_callback_.Reset();
-  is_fetching_ = false;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, result));
 }
 
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread(
@@ -236,7 +201,7 @@ size_t CannedBrowsingDataFileSystemHelper::GetFileSystemCount() const {
 }
 
 void CannedBrowsingDataFileSystemHelper::StartFetching(
-    const base::Callback<void(const std::list<FileSystemInfo>&)>& callback) {
+    const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 

@@ -24,8 +24,8 @@ MockBrowsingDataServiceWorkerHelper::MockBrowsingDataServiceWorkerHelper(
 MockBrowsingDataServiceWorkerHelper::~MockBrowsingDataServiceWorkerHelper() {
 }
 
-void MockBrowsingDataServiceWorkerHelper::StartFetching(const base::Callback<
-    void(const std::list<content::ServiceWorkerUsageInfo>&)>& callback) {
+void MockBrowsingDataServiceWorkerHelper::StartFetching(
+    const FetchCallback& callback) {
   ASSERT_FALSE(callback.is_null());
   ASSERT_TRUE(callback_.is_null());
   callback_ = callback;

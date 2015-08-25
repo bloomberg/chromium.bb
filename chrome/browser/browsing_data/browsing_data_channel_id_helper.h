@@ -74,13 +74,11 @@ class CannedBrowsingDataChannelIDHelper
  private:
   ~CannedBrowsingDataChannelIDHelper() override;
 
-  void FinishFetching();
+  void FinishFetching(const FetchResultCallback& callback);
 
   typedef std::map<std::string, net::ChannelIDStore::ChannelID>
       ChannelIDMap;
   ChannelIDMap channel_id_map_;
-
-  FetchResultCallback completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataChannelIDHelper);
 };

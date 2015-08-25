@@ -39,12 +39,14 @@ class BrowsingDataLocalStorageHelper
     base::Time last_modified;
   };
 
+  using FetchCallback =
+      base::Callback<void(const std::list<LocalStorageInfo>&)>;
+
   explicit BrowsingDataLocalStorageHelper(Profile* profile);
 
   // Starts the fetching process, which will notify its completion via
   // callback. This must be called only in the UI thread.
-  virtual void StartFetching(
-      const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback);
+  virtual void StartFetching(const FetchCallback& callback);
 
   // Deletes the local storage for the |origin|.
   virtual void DeleteOrigin(const GURL& origin);
@@ -53,15 +55,11 @@ class BrowsingDataLocalStorageHelper
   friend class base::RefCounted<BrowsingDataLocalStorageHelper>;
   virtual ~BrowsingDataLocalStorageHelper();
 
-  void CallCompletionCallback();
-
   content::DOMStorageContext* dom_storage_context_;  // Owned by the profile
-  base::Callback<void(const std::list<LocalStorageInfo>&)> completion_callback_;
-  bool is_fetching_ = false;
-  std::list<LocalStorageInfo> local_storage_info_;
 
  private:
   void GetUsageInfoCallback(
+      const FetchCallback& callback,
       const std::vector<content::LocalStorageUsageInfo>& infos);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataLocalStorageHelper);
@@ -92,9 +90,7 @@ class CannedBrowsingDataLocalStorageHelper
   const std::set<GURL>& GetLocalStorageInfo() const;
 
   // BrowsingDataLocalStorageHelper implementation.
-  void StartFetching(
-      const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback)
-      override;
+  void StartFetching(const FetchCallback& callback) override;
   void DeleteOrigin(const GURL& origin) override;
 
  private:

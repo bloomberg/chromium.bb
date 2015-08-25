@@ -21,7 +21,7 @@ BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(
           BrowserContext::GetDefaultStoragePartition(browser_context)
               ->GetAppCacheService()) {}
 
-void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
+void BrowsingDataAppCacheHelper::StartFetching(const FetchCallback& callback) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK(!is_fetching_);
     DCHECK(!callback.is_null());
@@ -79,7 +79,7 @@ void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(is_fetching_);
   is_fetching_ = false;
-  completion_callback_.Run();
+  completion_callback_.Run(info_collection_);
   completion_callback_.Reset();
 }
 
@@ -129,8 +129,8 @@ CannedBrowsingDataAppCacheHelper::GetOriginAppCacheInfoMap() const {
 }
 
 void CannedBrowsingDataAppCacheHelper::StartFetching(
-    const base::Closure& completion_callback) {
-  completion_callback.Run();
+    const FetchCallback& completion_callback) {
+  completion_callback.Run(info_collection_);
 }
 
 void CannedBrowsingDataAppCacheHelper::DeleteAppCacheGroup(

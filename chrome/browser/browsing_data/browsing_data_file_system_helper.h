@@ -30,8 +30,6 @@ class Profile;
 // created via the static Create method. Each instance will lazily fetch file
 // system data when a client calls StartFetching from the UI thread, and will
 // notify the client via a supplied callback when the data is available.
-// Only one StartFetching task can run at a time: executing StartFetching while
-// another StartFetching task is running will DCHECK.
 //
 // The client's callback is passed a list of FileSystemInfo objects containing
 // usage information for each origin's temporary and persistent file systems.
@@ -55,6 +53,8 @@ class BrowsingDataFileSystemHelper
     std::map<storage::FileSystemType, int64> usage_map;
   };
 
+  using FetchCallback = base::Callback<void(const std::list<FileSystemInfo>&)>;
+
   // Creates a BrowsingDataFileSystemHelper instance for the file systems
   // stored in |profile|'s user data directory. The BrowsingDataFileSystemHelper
   // object will hold a reference to the Profile that's passed in, but is not
@@ -72,8 +72,7 @@ class BrowsingDataFileSystemHelper
   //
   // BrowsingDataFileSystemHelper takes ownership of the Callback1, and is
   // responsible for deleting it once it's no longer needed.
-  virtual void StartFetching(const base::Callback<
-      void(const std::list<FileSystemInfo>&)>& callback) = 0;
+  virtual void StartFetching(const FetchCallback& callback) = 0;
 
   // Deletes any temporary or persistent file systems associated with |origin|
   // from the disk. Deletion will occur asynchronously on the FILE thread, but
@@ -120,9 +119,7 @@ class CannedBrowsingDataFileSystemHelper
   }
 
   // BrowsingDataFileSystemHelper implementation.
-  void StartFetching(
-      const base::Callback<void(const std::list<FileSystemInfo>&)>& callback)
-      override;
+  void StartFetching(const FetchCallback& callback) override;
 
   // Note that this doesn't actually have an implementation for this canned
   // class. It hasn't been necessary for anything that uses the canned
@@ -135,10 +132,6 @@ class CannedBrowsingDataFileSystemHelper
 
   // Holds the current list of filesystems returned to the client.
   std::list<FileSystemInfo> file_system_info_;
-
-  // The callback passed in at the beginning of the StartFetching workflow so
-  // that it can be triggered via NotifyOnUIThread.
-  base::Callback<void(const std::list<FileSystemInfo>&)> completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataFileSystemHelper);
 };

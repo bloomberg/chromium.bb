@@ -44,13 +44,14 @@ class BrowsingDataDatabaseHelper
     base::Time last_modified;
   };
 
+  using FetchCallback = base::Callback<void(const std::list<DatabaseInfo>&)>;
+
   explicit BrowsingDataDatabaseHelper(Profile* profile);
 
   // Starts the fetching process, which will notify its completion via
   // callback.
   // This must be called only in the UI thread.
-  virtual void StartFetching(
-      const base::Callback<void(const std::list<DatabaseInfo>&)>& callback);
+  virtual void StartFetching(const FetchCallback& callback);
 
   // Requests a single database to be deleted in the FILE thread. This must be
   // called in the UI thread.
@@ -61,29 +62,9 @@ class BrowsingDataDatabaseHelper
   friend class base::RefCountedThreadSafe<BrowsingDataDatabaseHelper>;
   virtual ~BrowsingDataDatabaseHelper();
 
-  // Notifies the completion callback. This must be called in the UI thread.
-  void NotifyInUIThread();
-
-  // Access to |database_info_| is triggered indirectly via the UI thread and
-  // guarded by |is_fetching_|. This means |database_info_| is only accessed
-  // while |is_fetching_| is true. The flag |is_fetching_| is only accessed on
-  // the UI thread.
-  // In the context of this class |database_info_| is only accessed on the FILE
-  // thread.
-  std::list<DatabaseInfo> database_info_;
-
-  // This member is only mutated on the UI thread.
-  base::Callback<void(const std::list<DatabaseInfo>&)> completion_callback_;
-
-  // Indicates whether or not we're currently fetching information:
-  // it's true when StartFetching() is called in the UI thread, and it's reset
-  // after we notify the callback in the UI thread.
-  // This member is only mutated on the UI thread.
-  bool is_fetching_ = false;
-
  private:
   // Enumerates all databases. This must be called in the FILE thread.
-  void FetchDatabaseInfoOnFileThread();
+  void FetchDatabaseInfoOnFileThread(const FetchCallback& callback);
 
   // Delete a single database file. This must be called in the FILE thread.
   void DeleteDatabaseOnFileThread(const std::string& origin,
@@ -134,8 +115,7 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   const std::set<PendingDatabaseInfo>& GetPendingDatabaseInfo();
 
   // BrowsingDataDatabaseHelper implementation.
-  void StartFetching(const base::Callback<void(const std::list<DatabaseInfo>&)>&
-                         callback) override;
+  void StartFetching(const FetchCallback& callback) override;
   void DeleteDatabase(const std::string& origin_identifier,
                       const std::string& name) override;
 
