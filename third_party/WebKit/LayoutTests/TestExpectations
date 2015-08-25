@@ -277,8 +277,6 @@ crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailur
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
-crbug.com/522826 [ Linux SnowLeopard Lion MountainLion Mavericks Retina ] fast/writing-mode/Kusa-Makura-background-canvas.html [ NeedsRebaseline ]
-
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
