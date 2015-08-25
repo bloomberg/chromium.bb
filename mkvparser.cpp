@@ -11,6 +11,7 @@
 #include <cstring>
 #include <new>
 #include <climits>
+#include <cmath>
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
@@ -205,6 +206,9 @@ long mkvparser::UnserializeFloat(IMkvReader* pReader, long long pos,
 
     result = d;
   }
+
+  if (std::isinf(result) || std::isnan(result))
+    return E_FILE_FORMAT_INVALID;
 
   return 0;
 }
@@ -7373,7 +7377,7 @@ long Block::Parse(const Cluster* pCluster) {
     Frame* pf = m_frames;
     Frame* const pf_end = pf + m_frame_count;
 
-    long size = 0;
+    long long size = 0;
     int frame_count = m_frame_count;
 
     while (frame_count > 1) {
@@ -7496,7 +7500,7 @@ long Block::Parse(const Cluster* pCluster) {
     if (pos >= stop)
       return E_FILE_FORMAT_INVALID;
 
-    long size = 0;
+    long long size = 0;
     int frame_count = m_frame_count;
 
     long long frame_size = ReadUInt(pReader, pos, len);
