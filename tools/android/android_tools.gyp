@@ -48,5 +48,12 @@
         'ps_ext/ps_ext.gyp:ps_ext',
       ],
     },
+    {
+      'target_name': 'customtabs_benchmark',
+      'type': 'none',
+      'dependencies': [
+        'customtabs_benchmark/customtabs_benchmark.gyp:customtabs_benchmark_apk',
+      ],
+    },
   ],
 }
