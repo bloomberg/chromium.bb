@@ -86,6 +86,7 @@ static const char extraRequestHeaders[] = "extraRequestHeaders";
 static const char cacheDisabled[] = "cacheDisabled";
 static const char userAgentOverride[] = "userAgentOverride";
 static const char monitoringXHR[] = "monitoringXHR";
+static const char blockedURLs[] = "blockedURLs";
 }
 
 namespace {
@@ -363,6 +364,17 @@ DEFINE_TRACE(InspectorResourceAgent)
     visitor->trace(m_replayXHRsToBeDeleted);
     visitor->trace(m_pendingXHRReplayData);
     InspectorBaseAgent::trace(visitor);
+}
+
+bool InspectorResourceAgent::shouldBlockRequest(const ResourceRequest& request)
+{
+    String url = request.url().string();
+    RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
+    for (const auto& blocked : *blockedURLs) {
+        if (url.contains(blocked.key))
+            return true;
+    }
+    return false;
 }
 
 void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
@@ -880,6 +892,20 @@ void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const Str
         return;
 
     callback->sendFailure("No data found for resource with given identifier");
+}
+
+void InspectorResourceAgent::addBlockedURL(ErrorString*, const String& url)
+{
+    RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
+    blockedURLs->setBoolean(url, true);
+    m_state->setObject(ResourceAgentState::blockedURLs, blockedURLs.release());
+}
+
+void InspectorResourceAgent::removeBlockedURL(ErrorString*, const String& url)
+{
+    RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
+    blockedURLs->remove(url);
+    m_state->setObject(ResourceAgentState::blockedURLs, blockedURLs.release());
 }
 
 void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)

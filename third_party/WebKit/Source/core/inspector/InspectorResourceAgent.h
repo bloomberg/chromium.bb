@@ -135,6 +135,8 @@ public:
     void setUserAgentOverride(ErrorString*, const String& userAgent) override;
     void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&) override;
     void getResponseBody(ErrorString*, const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>) override;
+    void addBlockedURL(ErrorString*, const String& url) override;
+    void removeBlockedURL(ErrorString*, const String& url) override;
 
     void replayXHR(ErrorString*, const String& requestId) override;
     void setMonitoringXHREnabled(ErrorString*, bool) override;
@@ -149,6 +151,7 @@ public:
     // Called from other agents.
     void setHostId(const String&);
     bool fetchResourceContent(Document*, const KURL&, String* content, bool* base64Encoded);
+    bool shouldBlockRequest(const ResourceRequest&);
 
 private:
     explicit InspectorResourceAgent(InspectorPageAgent*);
