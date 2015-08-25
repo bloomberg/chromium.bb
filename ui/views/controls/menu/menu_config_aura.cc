@@ -48,12 +48,8 @@ void MenuConfig::InitAura(const ui::NativeTheme* theme) {
   offset_context_menus = true;
   corner_radius = kMenuCornerRadiusForAura;
 
-// Desktop Linux always has a border. In Ash, it's provided by the shadow.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  use_outer_border = true;
-#else
-  use_outer_border = theme != ui::NativeThemeAura::instance();
-#endif
+  // In Ash, the border is provided by the shadow.
+  use_outer_border = false;
 }
 
 #if !defined(OS_WIN)

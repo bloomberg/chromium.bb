@@ -28,6 +28,7 @@ void MenuConfig::Init(const ui::NativeTheme* theme) {
   align_arrow_and_shortcut = true;
   icons_in_label = true;
   corner_radius = 5;
+  use_outer_border = false;
 }
 
 // static

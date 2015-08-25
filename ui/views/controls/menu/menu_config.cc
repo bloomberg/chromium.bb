@@ -37,7 +37,7 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       always_use_icon_to_label_padding(false),
       align_arrow_and_shortcut(false),
       offset_context_menus(false),
-      use_outer_border(false),
+      use_outer_border(true),
       icons_in_label(false),
       native_theme(theme),
       show_delay(400),
