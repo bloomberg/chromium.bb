@@ -12,6 +12,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/user_manager/user_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -63,6 +64,9 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate,
   void RequestAccessToken(const std::string& account_id);
   void FillForAccessToken(const std::string& access_token);
 
+  // This is called before profile is detroyed.
+  void OnProfileDestroyed();
+
   TokenHandleUtil* token_handle_util_;
   user_manager::UserID user_id_;
   OAuth2TokenService* token_service_;
@@ -74,6 +78,8 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate,
   TokenFetchingCallback callback_;
   scoped_ptr<gaia::GaiaOAuthClient> gaia_client_;
   scoped_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
+  scoped_ptr<KeyedServiceShutdownNotifier::Subscription>
+      profile_shutdown_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(TokenHandleFetcher);
 };

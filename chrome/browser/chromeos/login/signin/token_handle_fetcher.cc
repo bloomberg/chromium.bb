@@ -11,12 +11,34 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 namespace {
 const int kMaxRetries = 3;
+
+class ShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ShutdownNotifierFactory* GetInstance() {
+    return Singleton<ShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<ShutdownNotifierFactory>;
+
+  ShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "TokenHandleFetcher") {
+    DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  }
+  ~ShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+};
+
 }  // namespace
 
 TokenHandleFetcher::TokenHandleFetcher(TokenHandleUtil* util,
@@ -46,6 +68,11 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
   std::string account_id = signin_manager->GetAuthenticatedAccountId();
   if (!token_service_->RefreshTokenIsAvailable(account_id)) {
     account_without_token_ = account_id;
+    profile_shutdown_notification_ =
+        ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
+            base::Bind(&TokenHandleFetcher::OnProfileDestroyed,
+                       base::Unretained(this)));
+
     token_service_->AddObserver(this);
     waiting_for_refresh_token_ = true;
     return;
@@ -123,4 +150,8 @@ void TokenHandleFetcher::OnGetTokenInfoResponse(
       base::TimeTicks::Now() - tokeninfo_response_start_time_;
   UMA_HISTOGRAM_TIMES("Login.TokenObtainResponseTime", duration);
   callback_.Run(user_id_, success);
+}
+
+void TokenHandleFetcher::OnProfileDestroyed() {
+  callback_.Run(user_id_, false);
 }
