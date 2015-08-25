@@ -1654,7 +1654,9 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
     // mouseup will set a selection inside it, which will call
     // FrameSelection::setFocusedNodeIfNeeded.
     if (element && m_frame->selection().isRange()) {
-        if (m_frame->selection().toNormalizedRange()->isNodeFullyContained(*element)
+        // TODO(yosin) We should not create |Range| object for calling
+        // |isNodeFullyContained()|.
+        if (createRange(m_frame->selection().selection().toNormalizedEphemeralRange())->isNodeFullyContained(*element)
             && element->isDescendantOf(m_frame->document()->focusedElement()))
             return false;
     }

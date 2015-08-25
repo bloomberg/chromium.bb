@@ -92,7 +92,7 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll)
 
     FrameSelection& selection = document().frame()->selection();
     ASSERT_TRUE(selection.isRange());
-    RefPtrWillBeRawPtr<Range> range = selection.toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> range = createRange(selection.selection().toNormalizedEphemeralRange());
     ASSERT_TRUE(range.get());
     EXPECT_EQ("Line 1\nLine 2", range->text());
 }
