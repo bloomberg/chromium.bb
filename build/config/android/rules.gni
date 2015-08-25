@@ -1227,7 +1227,9 @@ template("android_apk") {
             _first_ext_removed,
             "$root_shlib_dir/{{source_name_part}}$shlib_extension")
 
-    _native_libs_dir = base_path + "/libs"
+    # Add in target_cpu so that other architectures are not accidentally
+    # included when switching target_cpu without doing a clean build.
+    _native_libs_dir = gen_dir + "/lib-$target_cpu"
 
     if (_use_chromium_linker) {
       _native_libs +=
