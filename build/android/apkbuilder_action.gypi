@@ -56,6 +56,11 @@
         '-DDEX_FILE_PATH=<(dex_path)',
       ]
     }],
+    ['enable_multidex == 1', {
+      'action': [
+        '-DMULTIDEX_ENABLED=1',
+      ]
+    }]
   ],
   'action': [
     'python', '<(DEPTH)/build/android/gyp/ant.py',
