@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/video_frame.h"
 #include "media/capture/webm_muxer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,10 +49,6 @@ class WebmMuxerTest : public testing::Test, public EventHandlerInterface {
     return webm_muxer_.Position();
   }
 
-  const mkvmuxer::Segment& GetWebmMuxerSegment() const {
-    return webm_muxer_.segment_;
-  }
-
   mkvmuxer::int32 WebmMuxerWrite(const void* buf, mkvmuxer::uint32 len) {
     return webm_muxer_.Write(buf, len);
   }
@@ -64,13 +61,6 @@ class WebmMuxerTest : public testing::Test, public EventHandlerInterface {
  private:
   DISALLOW_COPY_AND_ASSIGN(WebmMuxerTest);
 };
-
-// Checks that AddVideoTrack adds a Track.
-TEST_F(WebmMuxerTest, AddVideoTrack) {
-  const uint64_t track_number = webm_muxer_.AddVideoTrack(gfx::Size(320, 240),
-                                                          30.0f);
-  EXPECT_TRUE(GetWebmMuxerSegment().GetTrackByNumber(track_number));
-}
 
 // Checks that the WriteCallback is called with appropriate params when
 // WebmMuxer::Write() method is called.
@@ -85,18 +75,19 @@ TEST_F(WebmMuxerTest, Write) {
 
 // This test sends two frames and checks that the WriteCallback is called with
 // appropriate params in both cases.
-TEST_F(WebmMuxerTest, OnEncodedVideoNormalFrames) {
+TEST_F(WebmMuxerTest, OnEncodedVideoTwoFrames) {
+  const gfx::Size frame_size(160, 80);
+  const scoped_refptr<VideoFrame> video_frame =
+      VideoFrame::CreateBlackFrame(frame_size);
   const base::StringPiece encoded_data("abcdefghijklmnopqrstuvwxyz");
-  const uint64_t track_number = webm_muxer_.AddVideoTrack(gfx::Size(320, 240),
-                                                          30.0f);
 
   EXPECT_CALL(*this, WriteCallback(_))
       .Times(AtLeast(1))
       .WillRepeatedly(WithArgs<0>(
           Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
-  webm_muxer_.OnEncodedVideo(track_number,
+  webm_muxer_.OnEncodedVideo(video_frame,
                              encoded_data,
-                             base::TimeDelta::FromMicroseconds(0),
+                             base::TimeTicks::Now(),
                              false  /* keyframe */);
 
   // First time around WriteCallback() is pinged a number of times to write the
@@ -110,9 +101,9 @@ TEST_F(WebmMuxerTest, OnEncodedVideoNormalFrames) {
       .Times(AtLeast(1))
       .WillRepeatedly(WithArgs<0>(
           Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
-  webm_muxer_.OnEncodedVideo(track_number,
+  webm_muxer_.OnEncodedVideo(video_frame,
                              encoded_data,
-                             base::TimeDelta::FromMicroseconds(1),
+                             base::TimeTicks::Now(),
                              false  /* keyframe */);
 
   // The second time around the callbacks should include a SimpleBlock header,

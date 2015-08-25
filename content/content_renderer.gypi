@@ -650,6 +650,8 @@
       'renderer/media/video_source_handler.h',
       'renderer/media/video_track_adapter.cc',
       'renderer/media/video_track_adapter.h',
+      'renderer/media/video_track_recorder.cc',
+      'renderer/media/video_track_recorder.h',
       'renderer/media/webaudio_capturer_source.cc',
       'renderer/media/webaudio_capturer_source.h',
       'renderer/media/webrtc/media_stream_remote_video_source.cc',
