@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/net/file_downloader.h"
@@ -19,14 +20,22 @@ using content::BrowserThread;
 
 namespace {
 
-const char kPopularSitesFilename[] = "ntp-popular-sites.json";
-const char kPopularSitesURL[] =
-    "https://www.gstatic.com/chrome/ntp/suggested_sites_IN_1.json";
+const char kPopularSitesURLFormat[] = "https://www.gstatic.com/chrome/ntp/%s";
+const char kPopularSitesDefaultFilename[] = "suggested_sites_IN_1.json";
 
-base::FilePath GetPopularSitesPath() {
+std::string GetPopularSitesFilename(const std::string& filename) {
+  return filename.empty() ? kPopularSitesDefaultFilename : filename.c_str();
+}
+
+base::FilePath GetPopularSitesPath(const std::string& filename) {
   base::FilePath dir;
   PathService::Get(chrome::DIR_USER_DATA, &dir);
-  return dir.AppendASCII(kPopularSitesFilename);
+  return dir.AppendASCII(GetPopularSitesFilename(filename));
+}
+
+GURL GetPopularSitesURL(const std::string& filename) {
+  return GURL(base::StringPrintf(kPopularSitesURLFormat,
+                                 GetPopularSitesFilename(filename).c_str()));
 }
 
 scoped_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
@@ -70,12 +79,13 @@ PopularSites::Site::Site(const base::string16& title,
                          const GURL& favicon_url)
     : title(title), url(url), favicon_url(favicon_url) {}
 
-PopularSites::PopularSites(net::URLRequestContextGetter* request_context,
+PopularSites::PopularSites(const std::string& filename,
+                           net::URLRequestContextGetter* request_context,
                            const FinishedCallback& callback)
     : callback_(callback), weak_ptr_factory_(this) {
-  base::FilePath path = GetPopularSitesPath();
+  base::FilePath path = GetPopularSitesPath(filename);
   downloader_.reset(new FileDownloader(
-      GURL(kPopularSitesURL), path, request_context,
+      GetPopularSitesURL(filename), path, request_context,
       base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this), path)));
 }
 

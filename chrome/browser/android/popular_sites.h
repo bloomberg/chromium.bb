@@ -39,7 +39,8 @@ class PopularSites {
 
   using FinishedCallback = base::Callback<void(bool /* success */)>;
 
-  PopularSites(net::URLRequestContextGetter* request_context,
+  PopularSites(const std::string& filename,
+               net::URLRequestContextGetter* request_context,
                const FinishedCallback& callback);
   ~PopularSites();
 

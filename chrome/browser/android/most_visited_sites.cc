@@ -76,6 +76,8 @@ const char kImpressionServerHistogramName[] =
 const char kImpressionServerHistogramFormat[] =
     "NewTabPage.SuggestionsImpression.server%d";
 
+const char kPopularSitesFieldTrialName[] = "NTPPopularSites";
+
 scoped_ptr<SkBitmap> MaybeFetchLocalThumbnail(
     const GURL& url,
     const scoped_refptr<TopSites>& top_sites) {
@@ -118,13 +120,18 @@ bool ShouldShowPopularSites() {
   // Note: It's important to query the field trial state first, to ensure that
   // UMA reports the correct group.
   const std::string group_name =
-      base::FieldTrialList::FindFullName("NTPPopularSites");
+      base::FieldTrialList::FindFullName(kPopularSitesFieldTrialName);
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableNTPPopularSites))
     return false;
   if (cmd_line->HasSwitch(switches::kEnableNTPPopularSites))
     return true;
   return group_name == "Enabled";
+}
+
+std::string GetPopularSitesFilename() {
+  return variations::GetVariationParamValue(kPopularSitesFieldTrialName,
+                                            "filename");
 }
 
 }  // namespace
@@ -149,6 +156,7 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
 
   if (ShouldShowPopularSites()) {
     popular_sites_.reset(new PopularSites(
+        GetPopularSitesFilename(),
         profile_->GetRequestContext(),
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                    base::Unretained(this))));
