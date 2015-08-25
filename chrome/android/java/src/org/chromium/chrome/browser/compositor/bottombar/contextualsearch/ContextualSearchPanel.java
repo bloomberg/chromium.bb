@@ -7,7 +7,12 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import android.content.Context;
 import android.os.Handler;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
+import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
+import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Controls the Contextual Search Panel.
@@ -51,6 +56,16 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     /**
+     * The ContentViewCore that this panel will display.
+     */
+    private ContentViewCore mContentViewCore;
+
+    /**
+     * The pointer to the native version of this class.
+     */
+    private long mNativeContextualSearchPanelPtr;
+
+    /**
      * The delay after which the hide progress will be hidden.
      */
     private static final long HIDE_PROGRESS_BAR_DELAY = 1000 / 60 * 4;
@@ -90,6 +105,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     public ContextualSearchPanel(Context context, LayoutUpdateHost updateHost) {
         super(context, updateHost);
+        nativeInit();
     }
 
     // ============================================================================================
@@ -508,4 +524,75 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     public boolean shouldAnimatePanelCloseOnPromoteToTab() {
         return mSearchPanelFeatures.shouldAnimatePanelCloseOnPromoteToTab();
     }
+
+    // ============================================================================================
+    // Methods for managing this panel's ContentViewCore.
+    // ============================================================================================
+
+    @CalledByNative
+    public void clearNativePanelContentPtr() {
+        assert mNativeContextualSearchPanelPtr != 0;
+        mNativeContextualSearchPanelPtr = 0;
+    }
+
+    @CalledByNative
+    public void setNativePanelContentPtr(long nativePtr) {
+        assert mNativeContextualSearchPanelPtr == 0;
+        mNativeContextualSearchPanelPtr = nativePtr;
+    }
+
+    @Override
+    public ContentViewCore getContentViewCore() {
+        return mContentViewCore;
+    }
+
+    public void resetContentViewCore() {
+        // TODO(mdjones): Merge all code related to deleting/resetting the ContentViewCore.
+        mContentViewCore = null;
+    }
+
+    @Override
+    public void destroy() {
+        nativeDestroy(mNativeContextualSearchPanelPtr);
+    }
+
+    @Override
+    public void removeLastHistoryEntry(String historyUrl, long urlTimeMs) {
+        nativeRemoveLastHistoryEntry(mNativeContextualSearchPanelPtr, historyUrl, urlTimeMs);
+    }
+
+    @Override
+    public void setWebContents(ContentViewCore contentView, WebContentsDelegateAndroid delegate) {
+        mContentViewCore = contentView;
+        nativeSetWebContents(mNativeContextualSearchPanelPtr, contentView, delegate);
+    }
+
+    @Override
+    public void destroyWebContents() {
+        nativeDestroyWebContents(mNativeContextualSearchPanelPtr);
+    }
+
+    @Override
+    public void releaseWebContents() {
+        nativeReleaseWebContents(mNativeContextualSearchPanelPtr);
+    }
+
+    @Override
+    public void setInterceptNavigationDelegate(
+            InterceptNavigationDelegate delegate, WebContents webContents) {
+        nativeSetInterceptNavigationDelegate(mNativeContextualSearchPanelPtr,
+                delegate, webContents);
+    }
+
+    // Native calls.
+    protected native long nativeInit();
+    private native void nativeDestroy(long nativeContextualSearchPanel);
+    private native void nativeRemoveLastHistoryEntry(
+            long nativeContextualSearchPanel, String historyUrl, long urlTimeMs);
+    private native void nativeSetWebContents(long nativeContextualSearchPanel,
+            ContentViewCore contentViewCore, WebContentsDelegateAndroid delegate);
+    private native void nativeDestroyWebContents(long nativeContextualSearchPanel);
+    private native void nativeReleaseWebContents(long nativeContextualSearchPanel);
+    private native void nativeSetInterceptNavigationDelegate(long nativeContextualSearchPanel,
+            InterceptNavigationDelegate delegate, WebContents webContents);
 }

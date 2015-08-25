@@ -51,7 +51,6 @@ import org.chromium.content.browser.ContextualSearchClient;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.ConsoleMessageLevel;
 import org.chromium.content_public.common.TopControlsState;
@@ -94,7 +93,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private final ViewTreeObserver.OnGlobalFocusChangeListener mOnFocusChangeListener;
 
     private final WindowAndroid mWindowAndroid;
-    private ContentViewCore mSearchContentViewCore;
     private WebContentsObserver mSearchWebContentsObserver;
     private final WebContentsDelegateAndroid mWebContentsDelegate;
     private ContextualSearchContentViewDelegate mSearchContentViewDelegate;
@@ -226,7 +224,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             public void didAddTab(Tab tab, TabLaunchType type) {
                 // If we're in the process of promoting this tab, just return and don't mess with
                 // this state.
-                if (tab.getContentViewCore() == mSearchContentViewCore) return;
+                if (tab.getContentViewCore() == mSearchPanelDelegate.getContentViewCore()) return;
                 hideContextualSearch(StateChangeReason.UNKNOWN);
             }
         };
@@ -745,8 +743,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // to coordinate with Chrome-Android folks to come up with a proper fix for this.
         // For now, we force the ContentView to be displayed by calling onShow() again
         // when a URL is being loaded. See: crbug.com/398206
-        if (mIsSearchContentViewShowing && mSearchContentViewCore != null) {
-            mSearchContentViewCore.onShow();
+        if (mIsSearchContentViewShowing && mSearchPanelDelegate.getContentViewCore() != null) {
+            mSearchPanelDelegate.getContentViewCore().onShow();
         }
     }
 
@@ -770,7 +768,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
      */
     @Override
     public ContentViewCore getSearchContentViewCore() {
-        return mSearchContentViewCore;
+        return mSearchPanelDelegate.getContentViewCore();
     }
 
     /**
@@ -786,8 +784,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
      */
     private void removeLastSearchVisit() {
         if (mSearchRequest != null) {
-            nativeRemoveLastSearchVisit(mNativeContextualSearchManagerPtr,
-                    mSearchRequest.getSearchUrl(), mLoadedSearchUrlTimeMs);
+            mSearchPanelDelegate.removeLastHistoryEntry(mSearchRequest.getSearchUrl(),
+                    mLoadedSearchUrlTimeMs);
         }
     }
 
@@ -812,9 +810,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
         if (isFailure && mSearchRequest.isUsingLowPriority()) {
             // We're navigating to an error page, so we want to stop and retry.
             // Stop loading the page that displays the error to the user.
-            if (mSearchContentViewCore != null) {
+            if (mSearchPanelDelegate.getContentViewCore() != null) {
                 // When running tests the Content View might not exist.
-                mSearchContentViewCore.getWebContents().stop();
+                mSearchPanelDelegate.getContentViewCore().getWebContents().stop();
             }
             mSearchRequest.setHasFailed();
             mSearchRequest.setNormalPriority();
@@ -847,7 +845,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * Creates a new Content View Core to display search results, if needed.
      */
     private void createNewSearchContentViewCoreIfNeeded() {
-        if (mSearchContentViewCore == null) {
+        if (mSearchPanelDelegate.getContentViewCore() == null) {
             mNetworkCommunicator.createNewSearchContentView();
         }
     }
@@ -855,24 +853,25 @@ public class ContextualSearchManager extends ContextualSearchObservable
     @Override
     public void loadUrl(String url) {
         createNewSearchContentViewCoreIfNeeded();
-        if (mSearchContentViewCore != null && mSearchContentViewCore.getWebContents() != null) {
+        if (mSearchPanelDelegate.getContentViewCore() != null
+                && mSearchPanelDelegate.getContentViewCore().getWebContents() != null) {
             mDidLoadAnyUrl = true;
-            mSearchContentViewCore.getWebContents().getNavigationController().loadUrl(
-                    new LoadUrlParams(url));
+            mSearchPanelDelegate.getContentViewCore().getWebContents()
+                    .getNavigationController().loadUrl(new LoadUrlParams(url));
         }
     }
 
     @Override
     public void createNewSearchContentView() {
-        if (mSearchContentViewCore != null) {
+        if (mSearchPanelDelegate.getContentViewCore() != null) {
             mNetworkCommunicator.destroySearchContentView();
         }
 
-        mSearchContentViewCore = new ContentViewCore(mActivity);
+        final ContentViewCore cvc = new ContentViewCore(mActivity);
 
         // Adds a ContentViewClient to override the default fullscreen size.
         if (!mSearchPanelDelegate.isFullscreenSizePanel()) {
-            mSearchContentViewCore.setContentViewClient(new ContentViewClient() {
+            cvc.setContentViewClient(new ContentViewClient() {
                 @Override
                 public int getDesiredWidthMeasureSpec() {
                     return MeasureSpec.makeMeasureSpec(
@@ -889,17 +888,16 @@ public class ContextualSearchManager extends ContextualSearchObservable
             });
         }
 
-        ContentView cv = new ContentView(mActivity, mSearchContentViewCore);
+        ContentView cv = new ContentView(mActivity, cvc);
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
-        mSearchContentViewCore.initialize(cv, cv,
+        cvc.initialize(cv, cv,
                 WebContentsFactory.createWebContents(false, true), mWindowAndroid);
 
-        // Transfers the ownership of the WebContents to the native ContextualSearchManager.
-        nativeSetWebContents(mNativeContextualSearchManagerPtr, mSearchContentViewCore,
-                mWebContentsDelegate);
+        // Transfers the ownership of the WebContents to the native ContextualSearchPanel.
+        mSearchPanelDelegate.setWebContents(cvc, mWebContentsDelegate);
 
         mSearchWebContentsObserver =
-                new WebContentsObserver(mSearchContentViewCore.getWebContents()) {
+                new WebContentsObserver(cvc.getWebContents()) {
                     @Override
                     public void didStartLoading(String url) {
                         mDidPromoteSearchNavigation = false;
@@ -933,17 +931,17 @@ public class ContextualSearchManager extends ContextualSearchObservable
                         // is completed.
                         boolean shouldClearHistory =
                                 mSearchRequest != null && mSearchRequest.getHasFailed();
-                        if (shouldClearHistory && mSearchContentViewCore != null) {
-                            mSearchContentViewCore.getWebContents().getNavigationController()
+                        if (shouldClearHistory && cvc != null) {
+                            cvc.getWebContents().getNavigationController()
                                     .clearHistory();
                         }
                     }
                 };
 
-        mSearchContentViewDelegate.setContextualSearchContentViewCore(mSearchContentViewCore);
+        mSearchContentViewDelegate.setContextualSearchContentViewCore(cvc);
         mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
-        nativeSetInterceptNavigationDelegate(mNativeContextualSearchManagerPtr,
-                mInterceptNavigationDelegate, mSearchContentViewCore.getWebContents());
+        mSearchPanelDelegate.setInterceptNavigationDelegate(mInterceptNavigationDelegate,
+                cvc.getWebContents());
     }
 
     @Override
@@ -989,9 +987,11 @@ public class ContextualSearchManager extends ContextualSearchObservable
             // minus the Toolbar height.
             //
             // This is necessary to fix the bugs: crbug.com/510205 and crbug.com/510206
-            mSearchContentViewCore.getWebContents().updateTopControlsState(false, true, false);
+            mSearchPanelDelegate.getContentViewCore().getWebContents()
+                    .updateTopControlsState(false, true, false);
         } else {
-            mSearchContentViewCore.getWebContents().updateTopControlsState(true, false, false);
+            mSearchPanelDelegate.getContentViewCore().getWebContents()
+                    .updateTopControlsState(true, false, false);
         }
 
         if (!mDidPromoteSearchNavigation
@@ -1010,12 +1010,13 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void destroySearchContentView() {
-        if (mSearchContentViewCore != null && mSearchContentViewDelegate != null) {
-            nativeDestroyWebContents(mNativeContextualSearchManagerPtr);
+        if (mSearchPanelDelegate.getContentViewCore() != null
+                && mSearchContentViewDelegate != null) {
+            mSearchPanelDelegate.destroyWebContents();
             mSearchContentViewDelegate.releaseContextualSearchContentViewCore();
-            mSearchContentViewCore.getWebContents().destroy();
-            mSearchContentViewCore.destroy();
-            mSearchContentViewCore = null;
+            mSearchPanelDelegate.getContentViewCore().getWebContents().destroy();
+            mSearchPanelDelegate.getContentViewCore().destroy();
+            mSearchPanelDelegate.resetContentViewCore();
             if (mSearchWebContentsObserver != null) {
                 mSearchWebContentsObserver.destroy();
                 mSearchWebContentsObserver = null;
@@ -1067,9 +1068,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // this problem, we are ignoring tap gestures in the Search Bar if we don't know what
         // to search for.
         if (mSearchRequest != null
-                && mSearchContentViewCore != null
-                && mSearchContentViewCore.getWebContents() != null) {
-            String url = getContentViewUrl(mSearchContentViewCore);
+                && mSearchPanelDelegate.getContentViewCore() != null
+                && mSearchPanelDelegate.getContentViewCore().getWebContents() != null) {
+            String url = getContentViewUrl(mSearchPanelDelegate.getContentViewCore());
 
             // If it's a search URL, formats it so the SearchBox becomes visible.
             if (mSearchRequest.isContextualSearchUrl(url)) {
@@ -1102,15 +1103,15 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     @Override
     public void resetSearchContentViewScroll() {
-        if (mSearchContentViewCore != null) {
-            mSearchContentViewCore.scrollTo(0, 0);
+        if (mSearchPanelDelegate.getContentViewCore() != null) {
+            mSearchPanelDelegate.getContentViewCore().scrollTo(0, 0);
         }
     }
 
     @Override
     public float getSearchContentViewVerticalScroll() {
-        return mSearchContentViewCore != null
-                ? mSearchContentViewCore.computeVerticalScrollOffset() : -1.f;
+        return mSearchPanelDelegate.getContentViewCore() != null
+                ? mSearchPanelDelegate.getContentViewCore().computeVerticalScrollOffset() : -1.f;
     }
 
     @Override
@@ -1136,11 +1137,15 @@ public class ContextualSearchManager extends ContextualSearchObservable
             // The CVC is created with the search request, but if none was made we'll need
             // one in order to display an empty panel.
             createNewSearchContentViewCoreIfNeeded();
-            if (mSearchContentViewCore != null) mSearchContentViewCore.onShow();
+            if (mSearchPanelDelegate.getContentViewCore() != null) {
+                mSearchPanelDelegate.getContentViewCore().onShow();
+            }
             mSearchPanelDelegate.setWasSearchContentViewSeen();
             mPolicy.updateCountersForOpen();
         } else {
-            if (mSearchContentViewCore != null) mSearchContentViewCore.onHide();
+            if (mSearchPanelDelegate.getContentViewCore() != null) {
+                mSearchPanelDelegate.getContentViewCore().onHide();
+            }
         }
     }
 
@@ -1313,14 +1318,4 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private native void nativeGatherSurroundingText(long nativeContextualSearchManager,
             String selection, boolean useResolvedSearchTerm, ContentViewCore baseContentViewCore,
             boolean maySendBasePageUrl);
-    private native void nativeRemoveLastSearchVisit(
-            long nativeContextualSearchManager, String searchUrl, long searchUrlTimeMs);
-    private native void nativeSetWebContents(long nativeContextualSearchManager,
-            ContentViewCore searchContentViewCore, WebContentsDelegateAndroid delegate);
-    private native void nativeDestroyWebContents(long nativeContextualSearchManager);
-    private native void nativeReleaseWebContents(long nativeContextualSearchManager);
-    private native void nativeDestroyWebContentsFromContentViewCore(
-            long nativeContextualSearchManager, ContentViewCore contentViewCore);
-    private native void nativeSetInterceptNavigationDelegate(long nativeContextualSearchManager,
-            InterceptNavigationDelegate delegate, WebContents webContents);
 }

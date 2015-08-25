@@ -16,6 +16,7 @@
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 #include "chrome/browser/android/bookmarks/edit_bookmark_helper.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
+#include "chrome/browser/android/bottombar/contextualsearch/contextual_search_panel.h"
 #include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/compositor/compositor_view.h"
@@ -220,6 +221,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ConnectivityChecker", RegisterConnectivityChecker},
     {"ContextMenuHelper", RegisterContextMenuHelper},
     {"ContextualSearchManager", RegisterContextualSearchManager},
+    {"ContextualSearchPanel", RegisterContextualSearchPanel},
     {"ContextualSearchSceneLayer", RegisterContextualSearchSceneLayer},
     {"ContextualSearchTabHelper", RegisterContextualSearchTabHelper},
     {"CookiesFetcher", RegisterCookiesFetcher},

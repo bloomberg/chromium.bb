@@ -6,6 +6,10 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
+import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
+import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
+import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * The delegate that that interfaces with the {@link ContextualSearchPanel}.
@@ -137,4 +141,48 @@ public interface ContextualSearchPanelDelegate {
      *                      due the panel being promoted to a tab.
      */
     boolean shouldAnimatePanelCloseOnPromoteToTab();
+
+    /**
+     * @return The ContentViewCore associated with the panel.
+     */
+    ContentViewCore getContentViewCore();
+
+    /**
+     * Set this panel's ContentViewCore to null.
+     */
+    void resetContentViewCore();
+
+    /**
+     * Destroy the native components of this class.
+     */
+    void destroy();
+
+    /**
+     * Remove the last entry from history provided it is in a given time frame.
+     * @param historyUrl The URL to remove.
+     * @param urlTimeMs The time that the URL was visited.
+     */
+    void removeLastHistoryEntry(String historyUrl, long urlTimeMs);
+
+    /**
+     * Set the WebContents
+     */
+    void setWebContents(ContentViewCore contentView, WebContentsDelegateAndroid delegate);
+
+    /**
+     * Destroy the web contents associated with this object.
+     */
+    void destroyWebContents();
+
+    /**
+     * Reset the native handle to the WebContents.
+     */
+    void releaseWebContents();
+
+    /**
+     * @param delegate InterceptNavigationDelegate to use.
+     * @param webContents The WebContents to associate with the delegate.
+     */
+    void setInterceptNavigationDelegate(
+            InterceptNavigationDelegate delegate, WebContents webContents);
 }

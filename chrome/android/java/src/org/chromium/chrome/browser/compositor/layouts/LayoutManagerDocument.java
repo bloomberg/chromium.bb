@@ -187,6 +187,7 @@ public class LayoutManagerDocument extends LayoutManager
 
         if (mStaticLayout != null) mStaticLayout.destroy();
         if (mContextualSearchLayout != null) mContextualSearchLayout.destroy();
+        if (mContextualSearchPanel != null) mContextualSearchPanel.destroy();
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
     }
 

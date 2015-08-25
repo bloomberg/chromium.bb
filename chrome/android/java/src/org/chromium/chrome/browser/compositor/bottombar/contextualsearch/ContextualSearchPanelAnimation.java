@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.util.MathUtils;
 /**
  * Base abstract class for animating the Contextual Search Panel.
  */
-abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
+public abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
         implements Animatable<ContextualSearchPanelAnimation.Property> {
 
     /**

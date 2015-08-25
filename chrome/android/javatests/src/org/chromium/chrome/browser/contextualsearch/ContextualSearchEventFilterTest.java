@@ -15,9 +15,14 @@ import android.view.ViewConfiguration;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.eventfilter.MockEventFilterHost;
+import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ContextualSearchEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
+import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
+import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
+import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Class responsible for testing the ContextualSearchEventFilter.
@@ -120,6 +125,46 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
     }
 
     // --------------------------------------------------------------------------------------------
+    // MockContextualSearchPanel
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * MockContextualSearchPanel overrides all of the methods that depend on native code as they
+     * are not supported in these tests.
+     */
+    public static class MockContextualSearchPanel extends ContextualSearchPanel {
+        public MockContextualSearchPanel(Context context, LayoutUpdateHost updateHost) {
+            super(context, updateHost);
+        }
+
+        @Override
+        protected long nativeInit() {
+            return 0;
+        }
+
+        // TODO(mdjones): Most of these should be removed in when refactor is complete.
+        @Override
+        public void destroy() {}
+
+        @Override
+        public void removeLastHistoryEntry(String historyUrl, long urlTimeMs) {}
+
+        @Override
+        public void setWebContents(ContentViewCore contentViewCore,
+                WebContentsDelegateAndroid delegate) {}
+
+        @Override
+        public void destroyWebContents() {}
+
+        @Override
+        public void releaseWebContents() {}
+
+        @Override
+        public void setInterceptNavigationDelegate(InterceptNavigationDelegate delegate,
+                WebContents webContents) {}
+    }
+
+    // --------------------------------------------------------------------------------------------
     // Test Suite
     // --------------------------------------------------------------------------------------------
 
@@ -133,7 +178,7 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
         mTouchSlopDp = ViewConfiguration.get(context).getScaledTouchSlop() / mDpToPx;
 
         EventFilterHost eventFilterHost = new MockEventFilterHostWrapper(context);
-        mContextualSearchPanel = new ContextualSearchPanel(context, null);
+        mContextualSearchPanel = new MockContextualSearchPanel(context, null);
         mEventFilter = new ContextualSearchEventFilterWrapper(context, eventFilterHost, this,
                 mContextualSearchPanel);
 
