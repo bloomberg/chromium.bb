@@ -6,7 +6,6 @@ package org.chromium.chromoting;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.opengl.GLES20;
@@ -17,7 +16,6 @@ import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
-import org.chromium.base.Log;
 import org.chromium.chromoting.jni.JniInterface;
 
 import java.nio.ByteBuffer;
@@ -51,81 +49,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     // Distance to move camera each time.
     private static final float CAMERA_MOTION_STEP = 0.5f;
 
-    private static final FloatBuffer SKYBOX_POSITION_COORDINATES = makeFloatBuffer(new float[] {
-            -HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE,  // (0) Top-left near
-            HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE,  // (1) Top-right near
-            -HALF_SKYBOX_SIZE, -HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE,  // (2) Bottom-left near
-            HALF_SKYBOX_SIZE, -HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE,  // (3) Bottom-right near
-            -HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE, -HALF_SKYBOX_SIZE,  // (4) Top-left far
-            HALF_SKYBOX_SIZE,  HALF_SKYBOX_SIZE, -HALF_SKYBOX_SIZE,  // (5) Top-right far
-            -HALF_SKYBOX_SIZE, -HALF_SKYBOX_SIZE, -HALF_SKYBOX_SIZE,  // (6) Bottom-left far
-            HALF_SKYBOX_SIZE, -HALF_SKYBOX_SIZE, -HALF_SKYBOX_SIZE  // (7) Bottom-right far
-    });
-
-    private static final ByteBuffer SKYBOX_INDICES_BYTE_BUFFER = ByteBuffer.wrap(new byte[] {
-            // Front
-            1, 3, 0,
-            0, 3, 2,
-
-            // Back
-            4, 6, 5,
-            5, 6, 7,
-
-            // Left
-            0, 2, 4,
-            4, 2, 6,
-
-            // Right
-            5, 7, 1,
-            1, 7, 3,
-
-            // Top
-            5, 1, 4,
-            4, 1, 0,
-
-            // Bottom
-            6, 2, 7,
-            7, 2, 3
-    });
-
-    private static final String SKYBOX_VERTEX_SHADER =
-            "uniform mat4 u_CombinedMatrix;"
-            + "attribute vec3 a_Position;"
-            + "varying vec3 v_Position;"
-            + "void main() {"
-            + "  v_Position = a_Position;"
-            // Make sure to convert from the right-handed coordinate system of the
-            // world to the left-handed coordinate system of the cube map, otherwise,
-            // our cube map will still work but everything will be flipped.
-            + "  v_Position.z = -v_Position.z;"
-            + "  gl_Position = u_CombinedMatrix * vec4(a_Position, 1.0);"
-            + "  gl_Position = gl_Position.xyww;"
-            + "}";
-
-    private static final String SKYBOX_FRAGMENT_SHADER =
-            "precision mediump float;"
-            + "uniform samplerCube u_TextureUnit;"
-            + "varying vec3 v_Position;"
-            + "void main() {"
-            + "  gl_FragColor = textureCube(u_TextureUnit, v_Position);"
-            + "}";
-
-    private static final String ASSETS_URI_PREFIX =
-            "https://dl.google.com/chrome-remote-desktop/android-assets/";;
-
-    private static final String[] SKYBOX_IMAGE_URIS = new String[] {
-        "https://dl.google.com/chrome-remote-desktop/android-assets/room_left.png",
-        "https://dl.google.com/chrome-remote-desktop/android-assets/room_right.png",
-        "https://dl.google.com/chrome-remote-desktop/android-assets/room_bottom.png",
-        "https://dl.google.com/chrome-remote-desktop/android-assets/room_top.png",
-        "https://dl.google.com/chrome-remote-desktop/android-assets/room_back.png",
-        "https://dl.google.com/chrome-remote-desktop/android-assets/room_front.png"
-    };
-
-    private static final String[] SKYBOX_IMAGE_NAMES = new String[] {
-        "skybox_left", "skybox_right", "skybox_bottom", "skybox_top", "skybox_back", "skybox_front"
-    };
-
     private final Activity mActivity;
 
     private float mCameraPosition;
@@ -142,7 +65,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private float[] mDesktopCombinedMatrix;
     private float[] mEyePointModelMatrix;
     private float[] mEyePointCombinedMatrix;
-    private float[] mSkyboxModelMatrix;
     private float[] mSkyboxCombinedMatrix;
 
     // Direction that user is looking towards.
@@ -151,15 +73,9 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     // Eye position in desktop.
     private float[] mEyePositionVector;
 
-    private int mSkyboxVertexShaderHandle;
-    private int mSkyboxFragmentShaderHandle;
-    private int mSkyboxProgramHandle;
-    private int mSkyboxPositionHandle;
-    private int mSkyboxCombinedMatrixHandle;
-    private int mSkyboxTextureUnitHandle;
-    private int mSkyboxTextureDataHandle;
     private CardboardActivityDesktop mDesktop;
     private CardboardActivityEyePoint mEyePoint;
+    private CardboardActivitySkybox mSkybox;
 
     // Flag to indicate whether reload the desktop texture or not.
     private boolean mReloadTexture;
@@ -170,15 +86,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     // Lock for eye position related operations.
     // This protects access to mEyePositionVector.
     private final Object mEyePositionLock = new Object();
-
-    // Flag to signal that the skybox images are fully decoded and should be loaded
-    // into the OpenGL textures.
-    private boolean mLoadSkyboxImagesTexture;
-
-    // Lock to allow multithreaded access to mLoadSkyboxImagesTexture.
-    private final Object mLoadSkyboxImagesTextureLock = new Object();
-
-    private ChromotingDownloadManager mDownloadManager;
 
     public CardboardDesktopRenderer(Activity activity) {
         mActivity = activity;
@@ -192,24 +99,12 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mDesktopCombinedMatrix = new float[16];
         mEyePointModelMatrix = new float[16];
         mEyePointCombinedMatrix = new float[16];
-        mSkyboxModelMatrix = new float[16];
         mSkyboxCombinedMatrix = new float[16];
 
         mForwardVector = new float[3];
         mEyePositionVector = new float[3];
 
         attachRedrawCallback();
-
-        mDownloadManager = new ChromotingDownloadManager(mActivity, SKYBOX_IMAGE_NAMES,
-                SKYBOX_IMAGE_URIS, new ChromotingDownloadManager.Callback() {
-                    @Override
-                    public void onBatchDownloadComplete() {
-                        synchronized (mLoadSkyboxImagesTextureLock) {
-                            mLoadSkyboxImagesTexture = true;
-                        }
-                    }
-                });
-        mDownloadManager.download();
     }
 
     // This can be called on any thread.
@@ -235,25 +130,9 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         // Enable depth testing.
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-        // Set handlers for skybox drawing.
-        GLES20.glEnable(GLES20.GL_TEXTURE_CUBE_MAP);
-        mSkyboxVertexShaderHandle =
-                ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, SKYBOX_VERTEX_SHADER);
-        mSkyboxFragmentShaderHandle =
-                ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, SKYBOX_FRAGMENT_SHADER);
-        mSkyboxProgramHandle = ShaderHelper.createAndLinkProgram(mSkyboxVertexShaderHandle,
-                mSkyboxFragmentShaderHandle,
-                new String[] {"a_Position", "u_CombinedMatrix", "u_TextureUnit"});
-        mSkyboxPositionHandle =
-                GLES20.glGetAttribLocation(mSkyboxProgramHandle, "a_Position");
-        mSkyboxCombinedMatrixHandle =
-                GLES20.glGetUniformLocation(mSkyboxProgramHandle, "u_CombinedMatrix");
-        mSkyboxTextureUnitHandle =
-                GLES20.glGetUniformLocation(mSkyboxProgramHandle, "u_TextureUnit");
-        mSkyboxTextureDataHandle = TextureHelper.createTextureHandle();
-
         mDesktop = new CardboardActivityDesktop();
         mEyePoint = new CardboardActivityEyePoint();
+        mSkybox = new CardboardActivitySkybox(mActivity);
     }
 
     @Override
@@ -285,7 +164,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         headTransform.getForwardVector(mForwardVector, 0);
         getLookingPosition();
         maybeLoadDesktopTexture();
-        maybeLoadCubeMapAndCleanImages(mSkyboxTextureDataHandle);
+        mSkybox.maybeLoadTextureAndCleanImages();
     }
 
     @Override
@@ -306,14 +185,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     public void onRendererShutdown() {
         mDesktop.cleanup();
         mEyePoint.cleanup();
-        GLES20.glDeleteShader(mSkyboxVertexShaderHandle);
-        GLES20.glDeleteShader(mSkyboxFragmentShaderHandle);
-        GLES20.glDeleteTextures(1, new int[] {mSkyboxTextureDataHandle}, 0);
-        mActivity.runOnUiThread(new Runnable() {
-            public void run() {
-                mDownloadManager.close();
-            }
-        });
+        mSkybox.cleanup();
     }
 
     @Override
@@ -326,7 +198,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
             // video frame has not yet been decoded.
             return;
         }
-
 
         Matrix.setIdentityM(mDesktopModelMatrix, 0);
         Matrix.translateM(mDesktopModelMatrix, 0, DESKTOP_POSITION_X,
@@ -362,25 +233,11 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     }
 
     private void drawSkybox() {
-        GLES20.glUseProgram(mSkyboxProgramHandle);
-
-        Matrix.setIdentityM(mSkyboxModelMatrix, 0);
-        Matrix.multiplyMM(mSkyboxCombinedMatrix, 0, mViewMatrix, 0, mSkyboxModelMatrix, 0);
+        // Since we will always put the skybox center in the origin, so skybox
+        // model matrix will always be identity matrix which we could ignore.
         Matrix.multiplyMM(mSkyboxCombinedMatrix, 0, mProjectionMatrix,
-                0, mSkyboxCombinedMatrix, 0);
-
-        GLES20.glUniformMatrix4fv(mSkyboxCombinedMatrixHandle, 1, false,
-                mSkyboxCombinedMatrix, 0);
-        GLES20.glVertexAttribPointer(mSkyboxPositionHandle, POSITION_DATA_SIZE, GLES20.GL_FLOAT,
-                false, 0, SKYBOX_POSITION_COORDINATES);
-        GLES20.glEnableVertexAttribArray(mSkyboxPositionHandle);
-
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_CUBE_MAP, mSkyboxTextureDataHandle);
-        GLES20.glUniform1i(mSkyboxTextureUnitHandle, 0);
-
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, 36, GLES20.GL_UNSIGNED_BYTE,
-                SKYBOX_INDICES_BYTE_BUFFER);
+                0, mViewMatrix, 0);
+        mSkybox.draw(mSkyboxCombinedMatrix);
     }
 
     /**
@@ -555,54 +412,5 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         result.put(data).position(0);
         return result;
-    }
-
-    /**
-     * Decode all skybox images to Bitmap files and return them.
-     * Only call this method when we have complete skybox images.
-     * @throws DecodeFileException if BitmapFactory fails to decode file.
-     */
-    private Bitmap[] decodeSkyboxImages() throws DecodeFileException {
-        Bitmap[] result = new Bitmap[SKYBOX_IMAGE_NAMES.length];
-        String fileDirectory = mDownloadManager.getDownloadDirectory();
-        for (int i = 0; i < SKYBOX_IMAGE_NAMES.length; i++) {
-            result[i] = BitmapFactory.decodeFile(fileDirectory + "/" + SKYBOX_IMAGE_NAMES[i]);
-            if (result[i] == null) {
-                throw new DecodeFileException();
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Link the skybox images with given texture handle and clean images at the end.
-     * Only call this method when we have complete skybox images.
-     */
-    private void maybeLoadCubeMapAndCleanImages(int textureHandle) {
-        synchronized (mLoadSkyboxImagesTextureLock) {
-            if (!mLoadSkyboxImagesTexture) {
-                return;
-            }
-            mLoadSkyboxImagesTexture = false;
-        }
-
-        Bitmap[] images;
-        try {
-            images = decodeSkyboxImages();
-        } catch (DecodeFileException e) {
-            Log.i(TAG, "Failed to decode image files.");
-            return;
-        }
-
-        TextureHelper.linkCubeMap(textureHandle, images);
-        for (Bitmap image : images) {
-            image.recycle();
-        }
-    }
-
-    /**
-     * Exception when BitmapFactory fails to decode file.
-     */
-    private static class DecodeFileException extends Exception {
     }
 }
