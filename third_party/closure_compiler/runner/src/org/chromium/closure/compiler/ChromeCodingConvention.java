@@ -46,9 +46,9 @@ public class ChromeCodingConvention extends CodingConventions.Proxy {
   }
 
   @Override
-  public void applySingletonGetter(FunctionType functionType,
+  public void applySingletonGetterOld(FunctionType functionType,
       FunctionType getterType, ObjectType objectType) {
-    super.applySingletonGetter(functionType, getterType, objectType);
+    super.applySingletonGetterOld(functionType, getterType, objectType);
     functionType.defineDeclaredProperty("getInstance", getterType,
         functionType.getSource());
     functionType.defineDeclaredProperty("instance_", objectType,
