@@ -87,7 +87,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
       bool future_sync_points)
       : preemption_state_(IDLE),
         gpu_channel_(gpu_channel),
-        sender_(NULL),
+        sender_(nullptr),
         sync_point_manager_(sync_point_manager),
         task_runner_(task_runner),
         messages_forwarded_to_channel_(0),
@@ -97,11 +97,13 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   void OnFilterAdded(IPC::Sender* sender) override {
     DCHECK(!sender_);
     sender_ = sender;
+    timer_ = make_scoped_ptr(new base::OneShotTimer<GpuChannelMessageFilter>);
   }
 
   void OnFilterRemoved() override {
     DCHECK(sender_);
-    sender_ = NULL;
+    sender_ = nullptr;
+    timer_ = nullptr;
   }
 
   bool OnMessageReceived(const IPC::Message& message) override {
@@ -228,7 +230,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
         break;
       case WAITING:
         // A timer will transition us to CHECKING.
-        DCHECK(timer_.IsRunning());
+        DCHECK(timer_->IsRunning());
         break;
       case CHECKING:
         if (!pending_messages_.empty()) {
@@ -236,7 +238,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
               base::TimeTicks::Now() - pending_messages_.front().time_received;
           if (time_elapsed.InMilliseconds() < kPreemptWaitTimeMs) {
             // Schedule another check for when the IPC may go long.
-            timer_.Start(
+            timer_->Start(
                 FROM_HERE,
                 base::TimeDelta::FromMilliseconds(kPreemptWaitTimeMs) -
                     time_elapsed,
@@ -251,7 +253,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
         break;
       case PREEMPTING:
         // A TransitionToIdle() timer should always be running in this state.
-        DCHECK(timer_.IsRunning());
+        DCHECK(timer_->IsRunning());
         if (a_stub_is_descheduled_)
           TransitionToWouldPreemptDescheduled();
         else
@@ -259,7 +261,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
         break;
       case WOULD_PREEMPT_DESCHEDULED:
         // A TransitionToIdle() timer should never be running in this state.
-        DCHECK(!timer_.IsRunning());
+        DCHECK(!timer_->IsRunning());
         if (!a_stub_is_descheduled_)
           TransitionToPreempting();
         else
@@ -287,7 +289,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
     DCHECK(preemption_state_ == PREEMPTING ||
            preemption_state_ == WOULD_PREEMPT_DESCHEDULED);
     // Stop any outstanding timer set to force us from PREEMPTING to IDLE.
-    timer_.Stop();
+    timer_->Stop();
 
     preemption_state_ = IDLE;
     preempting_flag_->Reset();
@@ -298,18 +300,17 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
 
   void TransitionToWaiting() {
     DCHECK_EQ(preemption_state_, IDLE);
-    DCHECK(!timer_.IsRunning());
+    DCHECK(!timer_->IsRunning());
 
     preemption_state_ = WAITING;
-    timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kPreemptWaitTimeMs),
-        this, &GpuChannelMessageFilter::TransitionToChecking);
+    timer_->Start(FROM_HERE,
+                  base::TimeDelta::FromMilliseconds(kPreemptWaitTimeMs), this,
+                  &GpuChannelMessageFilter::TransitionToChecking);
   }
 
   void TransitionToChecking() {
     DCHECK_EQ(preemption_state_, WAITING);
-    DCHECK(!timer_.IsRunning());
+    DCHECK(!timer_->IsRunning());
 
     preemption_state_ = CHECKING;
     max_preemption_time_ = base::TimeDelta::FromMilliseconds(kMaxPreemptTimeMs);
@@ -324,16 +325,14 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
     // Stop any pending state update checks that we may have queued
     // while CHECKING.
     if (preemption_state_ == CHECKING)
-      timer_.Stop();
+      timer_->Stop();
 
     preemption_state_ = PREEMPTING;
     preempting_flag_->Set();
     TRACE_COUNTER_ID1("gpu", "GpuChannel::Preempting", this, 1);
 
-    timer_.Start(
-       FROM_HERE,
-       max_preemption_time_,
-       this, &GpuChannelMessageFilter::TransitionToIdle);
+    timer_->Start(FROM_HERE, max_preemption_time_, this,
+                  &GpuChannelMessageFilter::TransitionToIdle);
 
     UpdatePreemptionState();
   }
@@ -346,12 +345,13 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
     if (preemption_state_ == CHECKING) {
       // Stop any pending state update checks that we may have queued
       // while CHECKING.
-      timer_.Stop();
+      timer_->Stop();
     } else {
       // Stop any TransitionToIdle() timers that we may have queued
       // while PREEMPTING.
-      timer_.Stop();
-      max_preemption_time_ = timer_.desired_run_time() - base::TimeTicks::Now();
+      timer_->Stop();
+      max_preemption_time_ =
+          timer_->desired_run_time() - base::TimeTicks::Now();
       if (max_preemption_time_ < base::TimeDelta()) {
         TransitionToIdle();
         return;
@@ -405,7 +405,8 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   // Count of the number of IPCs forwarded to the GpuChannel.
   uint64 messages_forwarded_to_channel_;
 
-  base::OneShotTimer<GpuChannelMessageFilter> timer_;
+  // This timer is created and destroyed on the IO thread.
+  scoped_ptr<base::OneShotTimer<GpuChannelMessageFilter>> timer_;
 
   bool a_stub_is_descheduled_;
 
