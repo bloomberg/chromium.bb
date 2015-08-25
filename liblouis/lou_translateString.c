@@ -2262,6 +2262,28 @@ resolveEmphasisPassages(
 }
 
 static void
+resolveEmphasisSymbols(
+	int *buffer,
+	const TranslationTableOffset *offset,
+	const unsigned int bit_begin,
+	const unsigned int bit_end,
+	const unsigned int bit_symbol)
+{
+	int i;
+
+	for(i = 0; i < srcmax; i++)
+	{
+		if(buffer[i] & bit_begin)
+		if(buffer[i + 1] & bit_end)
+		{
+			buffer[i] &= ~bit_begin;
+			buffer[i + 1] &= ~bit_end;
+			buffer[i] |= bit_symbol;
+		}
+	}
+}
+
+static void
 resolveEmphasisResets(
 	int *buffer,
 	const unsigned int bit_begin,
@@ -2608,35 +2630,55 @@ markEmphases()
 	if(!haveEmphasis)
 		return;
 		
-	resolveEmphasisWords(emphasisBuffer, &table->firstWordUnder,
-	                     UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
+	if(table->underWord)
+		resolveEmphasisWords(emphasisBuffer, &table->firstWordUnder,
+		                     UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
+	else if(table->singleLetterUnder)
+		resolveEmphasisSymbols(emphasisBuffer, &table->firstWordUnder,
+		                       UNDER_BEGIN, UNDER_END, UNDER_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, &table->firstWordUnder,
 	                        UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
+	/* from davy
 	if(table->usesEmphMode)
 		resolveEmphasisResets(emphasisBuffer,
 							UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
-					
-	resolveEmphasisWords(emphasisBuffer, &table->firstWordBold,
-	                     BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
+	*/
+	if(table->boldWord)
+		resolveEmphasisWords(emphasisBuffer, &table->firstWordBold,
+		                     BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
+	else if(table->singleLetterBold)
+		resolveEmphasisSymbols(emphasisBuffer, &table->firstWordBold,
+		                       BOLD_BEGIN, BOLD_END, BOLD_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, &table->firstWordBold,
 	                        BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
+	/* from davy
 	if(table->usesEmphMode)
 		resolveEmphasisResets(emphasisBuffer,
 							BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
-					
-	resolveEmphasisWords(emphasisBuffer, &table->firstWordItal,
-	                     ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
+	*/
+	if(table->italWord)
+		resolveEmphasisWords(emphasisBuffer, &table->firstWordItal,
+		                     ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
+	else if(table->singleLetterItal)
+		resolveEmphasisSymbols(emphasisBuffer, &table->firstWordItal,
+		                       ITALIC_BEGIN, ITALIC_END, ITALIC_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, &table->firstWordItal,
 	                        ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
+	/* from davy
 	if(table->usesEmphMode)
 		resolveEmphasisResets(emphasisBuffer,
 							ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
-					
-	resolveEmphasisWords(emphasisBuffer, &table->firstWordScript,
-	                     SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
+	*/
+	if(table->scriptWord)
+		resolveEmphasisWords(emphasisBuffer, &table->firstWordScript,
+		                     SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
+	else if(table->singleLetterScript)
+		resolveEmphasisSymbols(emphasisBuffer, &table->firstWordScript,
+		                       SCRIPT_BEGIN, SCRIPT_END, SCRIPT_SYMBOL);
 	resolveEmphasisPassages(emphasisBuffer, &table->firstWordScript,
 	                        SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
-					
+
+
 //	resolveEmphasisWords(emphasisBuffer, &table->firstWordTransNote,
 //	                     TNOTE_BEGIN, TNOTE_END, TNOTE_WORD, TNOTE_SYMBOL);
 //	resolveEmphasisPassages(emphasisBuffer, &table->firstWordTransNote,

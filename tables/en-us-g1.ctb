@@ -43,11 +43,9 @@ capsword 6-6
 capswordstop 6-3
 
 
-firstwordital 46-46
-lastworditalbefore 46
-lenitalphrase 3
-italword 46
-italwordstop 6-3
+firstletterital 46-3
+lastletterital 46-36
+singleletterital 46-25
 
 firstwordbold 456-46-46
 lastwordboldbefore 456-46
