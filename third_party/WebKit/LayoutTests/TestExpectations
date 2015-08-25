@@ -301,9 +301,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
 crbug.com/310679 [ Mac ] virtual/pointerevent/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
 
-# Tests failing since applyPageScaleFactorInCompositor enabled
-crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
-
 crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
 
 # Rebaseline didn't fix this. It's flaking between two different failures due to rounding error.

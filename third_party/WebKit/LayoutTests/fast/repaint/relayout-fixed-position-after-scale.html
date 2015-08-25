@@ -26,16 +26,17 @@
 <div class="percentage_size" style="right:30%;top:25%"></div>
 <div class="percentage_size" style="left:20%;bottom:15%"></div>
 <div class="percentage_size" style="right:10%;bottom:5%"></div>
+<div id="spacer" style="width: 1700px; height: 1300px"></div>
 <script>
 function runTest() {
     if (window.internals && window.eventSender) {
-        window.internals.settings.setFixedElementsLayoutRelativeToFrame(true);
+        window.internals.setPageScaleFactorLimits(0.5, 4);
+        window.internals.setPageScaleFactor(0.5);
 
         // Force scrollbar to hide and re-layout immediately.
-        window.internals.setPageScaleFactor(0.1);
+        var spacer = document.getElementById('spacer');
+        spacer.style.display = "none";
         document.body.offsetTop;
-
-        window.internals.setPageScaleFactor(0.5);
     }
 }
 </script>
