@@ -142,17 +142,16 @@ std::string ProxyList::ToPacString() const {
   return proxy_list.empty() ? std::string() : proxy_list;
 }
 
-base::ListValue* ProxyList::ToValue() const {
+scoped_ptr<base::ListValue> ProxyList::ToValue() const {
   scoped_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < proxies_.size(); ++i)
     list->AppendString(proxies_[i].ToURI());
-  return list.release();
+  return list.Pass();
 }
 
 bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
                          int net_error,
                          const BoundNetLog& net_log) {
-
   // TODO(eroman): It would be good if instead of removing failed proxies
   // from the list, we simply annotated them with the error code they failed
   // with. Of course, ProxyService::ReconsiderProxyAfterError() would need to
