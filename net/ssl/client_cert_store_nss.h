@@ -5,12 +5,11 @@
 #ifndef NET_SSL_CLIENT_CERT_STORE_NSS_H_
 #define NET_SSL_CLIENT_CERT_STORE_NSS_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/ssl/client_cert_store.h"
-#include "net/ssl/ssl_cert_request_info.h"
 
 typedef struct CERTCertListStr CERTCertList;
 
@@ -19,6 +18,8 @@ class CryptoModuleBlockingPasswordDelegate;
 }
 
 namespace net {
+class HostPortPair;
+class SSLCertRequestInfo;
 
 class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
  public:
@@ -34,37 +35,35 @@ class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
                       CertificateList* selected_certs,
                       const base::Closure& callback) override;
 
- protected:
-  // Examines the certificates in |cert_list| to find all certificates that
-  // match the client certificate request in |request|, storing the matching
-  // certificates in |selected_certs|.
+  // Examines the certificates in |certs| to find all certificates that match
+  // the client certificate request in |request|, storing the matching
+  // certificates in |filtered_certs|. Any previous content of |filtered_certs|
+  // will be removed.
   // If |query_nssdb| is true, NSS will be queried to construct full certificate
   // chains. If it is false, only the certificate will be considered.
-  virtual void GetClientCertsImpl(CERTCertList* cert_list,
-                                  const SSLCertRequestInfo& request,
-                                  bool query_nssdb,
-                                  CertificateList* selected_certs);
+  // Must be called from a worker thread.
+  static void FilterCertsOnWorkerThread(const CertificateList& certs,
+                                        const SSLCertRequestInfo& request,
+                                        bool query_nssdb,
+                                        CertificateList* filtered_certs);
+
+  // Retrieves all client certificates that are stored by NSS and adds them to
+  // |certs|. |password_delegate| is used to unlock slots if required.
+  // Must be called from a worker thread.
+  static void GetPlatformCertsOnWorkerThread(
+      scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+          password_delegate,
+      net::CertificateList* certs);
 
  private:
-  friend class ClientCertStoreNSSTestDelegate;
-
-  void GetClientCertsOnWorkerThread(
+  void GetAndFilterCertsOnWorkerThread(
       scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
           password_delegate,
       const SSLCertRequestInfo* request,
       CertificateList* selected_certs);
 
-  // A hook for testing. Filters |input_certs| using the logic being used to
-  // filter the system store when GetClientCerts() is called.
-  // Implemented by creating a list of certificates that otherwise would be
-  // extracted from the system store and filtering it using the common logic
-  // (less adequate than the approach used on Windows).
-  bool SelectClientCertsForTesting(const CertificateList& input_certs,
-                                   const SSLCertRequestInfo& cert_request_info,
-                                   CertificateList* selected_certs);
-
   // The factory for creating the delegate for requesting a password to a
-  // PKCS #11 token. May be null.
+  // PKCS#11 token. May be null.
   PasswordDelegateFactory password_delegate_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCertStoreNSS);

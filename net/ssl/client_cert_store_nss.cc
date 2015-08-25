@@ -8,6 +8,7 @@
 #include <ssl.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,6 +16,7 @@
 #include "base/threading/worker_pool.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "net/cert/x509_util.h"
+#include "net/ssl/ssl_cert_request_info.h"
 
 namespace net {
 
@@ -34,28 +36,29 @@ void ClientCertStoreNSS::GetClientCerts(const SSLCertRequestInfo& request,
   }
   if (base::WorkerPool::PostTaskAndReply(
           FROM_HERE,
-          base::Bind(&ClientCertStoreNSS::GetClientCertsOnWorkerThread,
+          base::Bind(&ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread,
                      // Caller is responsible for keeping the ClientCertStore
                      // alive until the callback is run.
-                     base::Unretained(this),
-                     base::Passed(&password_delegate),
-                     &request,
-                     selected_certs),
-          callback,
-          true))
+                     base::Unretained(this), base::Passed(&password_delegate),
+                     &request, selected_certs),
+          callback, true)) {
     return;
+  }
+  // If the task could not be posted, behave as if there were no certificates
+  // which requires to clear |selected_certs|.
   selected_certs->clear();
   callback.Run();
 }
 
-void ClientCertStoreNSS::GetClientCertsImpl(CERTCertList* cert_list,
-                                            const SSLCertRequestInfo& request,
-                                            bool query_nssdb,
-                                            CertificateList* selected_certs) {
-  DCHECK(cert_list);
-  DCHECK(selected_certs);
+// static
+void ClientCertStoreNSS::FilterCertsOnWorkerThread(
+    const CertificateList& certs,
+    const SSLCertRequestInfo& request,
+    bool query_nssdb,
+    CertificateList* filtered_certs) {
+  DCHECK(filtered_certs);
 
-  selected_certs->clear();
+  filtered_certs->clear();
 
   // Create a "fake" CERTDistNames structure. No public API exists to create
   // one from a list of issuers.
@@ -78,77 +81,63 @@ void ClientCertStoreNSS::GetClientCertsImpl(CERTCertList* cert_list,
     ca_names.names = &ca_names_items[0];
 
   size_t num_raw = 0;
-  for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
-       !CERT_LIST_END(node, cert_list);
-       node = CERT_LIST_NEXT(node)) {
+  for (const auto& cert : certs) {
     ++num_raw;
+    X509Certificate::OSCertHandle handle = cert->os_cert_handle();
+
     // Only offer unexpired certificates.
-    if (CERT_CheckCertValidTimes(node->cert, PR_Now(), PR_TRUE) !=
+    if (CERT_CheckCertValidTimes(handle, PR_Now(), PR_TRUE) !=
         secCertTimeValid) {
       DVLOG(2) << "skipped expired cert: "
-               << base::StringPiece(node->cert->nickname);
+               << base::StringPiece(handle->nickname);
       continue;
     }
 
-    scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromHandle(
-        node->cert, X509Certificate::OSCertHandles());
-
     // Check if the certificate issuer is allowed by the server.
     if (request.cert_authorities.empty() ||
-        (!query_nssdb &&
-         cert->IsIssuedByEncoded(request.cert_authorities)) ||
+        (!query_nssdb && cert->IsIssuedByEncoded(request.cert_authorities)) ||
         (query_nssdb &&
-         NSS_CmpCertChainWCANames(node->cert, &ca_names) == SECSuccess)) {
-      DVLOG(2) << "matched cert: " << base::StringPiece(node->cert->nickname);
-      selected_certs->push_back(cert);
-    }
-    else
+         NSS_CmpCertChainWCANames(handle, &ca_names) == SECSuccess)) {
+      DVLOG(2) << "matched cert: " << base::StringPiece(handle->nickname);
+      filtered_certs->push_back(cert);
+    } else {
       DVLOG(2) << "skipped non-matching cert: "
-               << base::StringPiece(node->cert->nickname);
+               << base::StringPiece(handle->nickname);
+    }
   }
   DVLOG(2) << "num_raw:" << num_raw
-           << " num_selected:" << selected_certs->size();
+           << " num_filtered:" << filtered_certs->size();
 
-  std::sort(selected_certs->begin(), selected_certs->end(),
+  std::sort(filtered_certs->begin(), filtered_certs->end(),
             x509_util::ClientCertSorter());
 }
 
-void ClientCertStoreNSS::GetClientCertsOnWorkerThread(
+void ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread(
     scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate,
     const SSLCertRequestInfo* request,
     CertificateList* selected_certs) {
-  CERTCertList* client_certs = CERT_FindUserCertsByUsage(
-      CERT_GetDefaultCertDB(),
-      certUsageSSLClient,
-      PR_FALSE,
-      PR_FALSE,
-      password_delegate.get());
-  // It is ok for a user not to have any client certs.
-  if (!client_certs) {
-    DVLOG(2) << "No client certs found.";
-    selected_certs->clear();
-    return;
-  }
-
-  GetClientCertsImpl(client_certs, *request, true, selected_certs);
-  CERT_DestroyCertList(client_certs);
+  CertificateList platform_certs;
+  GetPlatformCertsOnWorkerThread(password_delegate.Pass(), &platform_certs);
+  FilterCertsOnWorkerThread(platform_certs, *request, true, selected_certs);
 }
 
-bool ClientCertStoreNSS::SelectClientCertsForTesting(
-    const CertificateList& input_certs,
-    const SSLCertRequestInfo& request,
-    CertificateList* selected_certs) {
-  CERTCertList* cert_list = CERT_NewCertList();
-  if (!cert_list)
-    return false;
-  for (size_t i = 0; i < input_certs.size(); ++i) {
-    CERT_AddCertToListTail(
-        cert_list, CERT_DupCertificate(input_certs[i]->os_cert_handle()));
+// static
+void ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
+    scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate,
+    net::CertificateList* certs) {
+  CERTCertList* found_certs =
+      CERT_FindUserCertsByUsage(CERT_GetDefaultCertDB(), certUsageSSLClient,
+                                PR_FALSE, PR_FALSE, password_delegate.get());
+  if (!found_certs) {
+    DVLOG(2) << "No client certs found.";
+    return;
   }
-
-  GetClientCertsImpl(cert_list, request, false, selected_certs);
-  CERT_DestroyCertList(cert_list);
-  return true;
+  for (CERTCertListNode* node = CERT_LIST_HEAD(found_certs);
+       !CERT_LIST_END(node, found_certs); node = CERT_LIST_NEXT(node)) {
+    certs->push_back(X509Certificate::CreateFromHandle(
+        node->cert, X509Certificate::OSCertHandles()));
+  }
+  CERT_DestroyCertList(found_certs);
 }
 
 }  // namespace net

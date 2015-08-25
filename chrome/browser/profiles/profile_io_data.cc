@@ -114,6 +114,7 @@
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "chrome/browser/chromeos/fileapi/external_file_protocol_handler.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
@@ -937,6 +938,7 @@ ProfileIOData::ResourceContext::CreateClientCertStore() {
     return io_data_->client_cert_store_factory_.Run();
 #if defined(OS_CHROMEOS)
   return scoped_ptr<net::ClientCertStore>(new chromeos::ClientCertStoreChromeOS(
+      nullptr,  // no additional provider
       make_scoped_ptr(new chromeos::ClientCertFilterChromeOS(
           io_data_->use_system_key_slot(), io_data_->username_hash())),
       base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,

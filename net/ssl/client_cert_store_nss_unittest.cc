@@ -10,18 +10,17 @@ namespace net {
 
 class ClientCertStoreNSSTestDelegate {
  public:
-  ClientCertStoreNSSTestDelegate()
-      : store_(ClientCertStoreNSS::PasswordDelegateFactory()) {}
+  ClientCertStoreNSSTestDelegate() {}
 
   bool SelectClientCerts(const CertificateList& input_certs,
                          const SSLCertRequestInfo& cert_request_info,
                          CertificateList* selected_certs) {
-    return store_.SelectClientCertsForTesting(
-        input_certs, cert_request_info, selected_certs);
+    // Filters |input_certs| using the logic being used to filter the system
+    // store when GetClientCerts() is called.
+    ClientCertStoreNSS::FilterCertsOnWorkerThread(
+        input_certs, cert_request_info, false, selected_certs);
+    return true;
   }
-
- private:
-  ClientCertStoreNSS store_;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(NSS,

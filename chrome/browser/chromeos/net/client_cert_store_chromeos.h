@@ -6,18 +6,23 @@
 #define CHROME_BROWSER_CHROMEOS_NET_CLIENT_CERT_STORE_CHROMEOS_H_
 
 #include <string>
+#include <vector>
 
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store_nss.h"
-
-namespace net {
-class X509Certificate;
-}
 
 namespace chromeos {
 
-class ClientCertStoreChromeOS : public net::ClientCertStoreNSS {
+class CertificateProvider;
+
+class ClientCertStoreChromeOS : public net::ClientCertStore {
  public:
+  using PasswordDelegateFactory =
+      net::ClientCertStoreNSS::PasswordDelegateFactory;
+
   class CertFilter {
    public:
     virtual ~CertFilter() {}
@@ -35,31 +40,39 @@ class ClientCertStoreChromeOS : public net::ClientCertStoreNSS {
         const scoped_refptr<net::X509Certificate>& cert) const = 0;
   };
 
-  // This ClientCertStore will return only client certs that pass the filter
-  // |cert_filter|.
+  // This ClientCertStore will return client certs from NSS certificate
+  // databases that pass the filter |cert_filter| and additionally return
+  // certificates provided by |cert_provider|.
   ClientCertStoreChromeOS(
+      scoped_ptr<CertificateProvider> cert_provider,
       scoped_ptr<CertFilter> cert_filter,
       const PasswordDelegateFactory& password_delegate_factory);
   ~ClientCertStoreChromeOS() override;
 
-  // net::ClientCertStoreNSS:
+  // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
                       net::CertificateList* selected_certs,
                       const base::Closure& callback) override;
 
- protected:
-  // net::ClientCertStoreNSS:
-  void GetClientCertsImpl(CERTCertList* cert_list,
-                          const net::SSLCertRequestInfo& request,
-                          bool query_nssdb,
-                          net::CertificateList* selected_certs) override;
-
  private:
-  void CertFilterInitialized(const net::SSLCertRequestInfo* request,
-                             net::CertificateList* selected_certs,
-                             const base::Closure& callback);
+  void GotAdditionalCerts(const net::SSLCertRequestInfo* request,
+                          net::CertificateList* selected_certs,
+                          const base::Closure& callback,
+                          const net::CertificateList& additional_certs);
 
+  void GetAndFilterCertsOnWorkerThread(
+      scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate>
+          password_delegate,
+      const net::SSLCertRequestInfo* request,
+      const net::CertificateList& additional_certs,
+      net::CertificateList* selected_certs);
+
+  scoped_ptr<CertificateProvider> cert_provider_;
   scoped_ptr<CertFilter> cert_filter_;
+
+  // The factory for creating the delegate for requesting a password to a
+  // PKCS#11 token. May be null.
+  PasswordDelegateFactory password_delegate_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCertStoreChromeOS);
 };
