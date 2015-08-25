@@ -154,25 +154,23 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
     RendererMediaPlayerManager* player_manager,
     media::CdmFactory* cdm_factory,
-    media::MediaPermission* media_permission,
-    blink::WebContentDecryptionModule* initial_cdm,
     scoped_refptr<StreamTextureFactory> factory,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    media::MediaLog* media_log)
+    const media::WebMediaPlayerParams& params)
     : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
       frame_(frame),
       client_(client),
       encrypted_client_(encrypted_client),
       delegate_(delegate),
+      defer_load_cb_(params.defer_load_cb()),
       buffered_(static_cast<size_t>(1)),
-      media_task_runner_(task_runner),
+      media_task_runner_(params.media_task_runner()),
       ignore_metadata_duration_change_(false),
       pending_seek_(false),
       seeking_(false),
       did_loading_progress_(false),
       player_manager_(player_manager),
       cdm_factory_(cdm_factory),
-      media_permission_(media_permission),
+      media_permission_(params.media_permission()),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       texture_id_(0),
@@ -181,10 +179,10 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       is_playing_(false),
       needs_establish_peer_(true),
       has_size_info_(false),
-      // Compositor thread does not exist in layout tests.
-      compositor_loop_(
-          RenderThreadImpl::current()->compositor_task_runner().get()
-              ? RenderThreadImpl::current()->compositor_task_runner()
+      // Threaded compositing isn't enabled universally yet.
+      compositor_task_runner_(
+          params.compositor_task_runner()
+              ? params.compositor_task_runner()
               : base::ThreadTaskRunnerHandle::Get()),
       stream_texture_factory_(factory),
       needs_external_surface_(false),
@@ -192,7 +190,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       video_frame_provider_client_(NULL),
       player_type_(MEDIA_PLAYER_TYPE_URL),
       is_remote_(false),
-      media_log_(media_log),
+      media_log_(params.media_log()),
       init_data_type_(media::EmeInitDataType::UNKNOWN),
       cdm_context_(NULL),
       allow_stored_credentials_(false),
@@ -223,9 +221,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   TryCreateStreamTextureProxyIfNeeded();
   interpolator_.SetUpperBound(base::TimeDelta());
 
-  if (initial_cdm) {
-    cdm_context_ =
-        media::ToWebContentDecryptionModuleImpl(initial_cdm)->GetCdmContext();
+  if (params.initial_cdm()) {
+    cdm_context_ = media::ToWebContentDecryptionModuleImpl(params.initial_cdm())
+                       ->GetCdmContext();
   }
 }
 
@@ -273,6 +271,18 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 void WebMediaPlayerAndroid::load(LoadType load_type,
                                  const blink::WebURL& url,
                                  CORSMode cors_mode) {
+  if (!defer_load_cb_.is_null()) {
+    defer_load_cb_.Run(base::Bind(&WebMediaPlayerAndroid::DoLoad,
+                                  weak_factory_.GetWeakPtr(), load_type, url,
+                                  cors_mode));
+    return;
+  }
+  DoLoad(load_type, url, cors_mode);
+}
+
+void WebMediaPlayerAndroid::DoLoad(LoadType load_type,
+                                   const blink::WebURL& url,
+                                   CORSMode cors_mode) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   media::ReportMetrics(load_type, GURL(url),
@@ -1258,8 +1268,10 @@ void WebMediaPlayerAndroid::SetVideoFrameProviderClient(
 
   // Set the callback target when a frame is produced. Need to do this before
   // StopUsingProvider to ensure we really stop using the client.
-  if (stream_texture_proxy_)
-    stream_texture_proxy_->BindToLoop(stream_id_, client, compositor_loop_);
+  if (stream_texture_proxy_) {
+    stream_texture_proxy_->BindToLoop(stream_id_, client,
+                                      compositor_task_runner_);
+  }
 
   if (video_frame_provider_client_ && video_frame_provider_client_ != client)
     video_frame_provider_client_->StopUsingProvider();
@@ -1345,7 +1357,7 @@ void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
     ReallocateVideoFrame();
     if (video_frame_provider_client_) {
       stream_texture_proxy_->BindToLoop(
-          stream_id_, video_frame_provider_client_, compositor_loop_);
+          stream_id_, video_frame_provider_client_, compositor_task_runner_);
     }
   }
 }
