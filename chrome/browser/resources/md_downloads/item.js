@@ -25,6 +25,15 @@ cr.define('downloads', function() {
         value: false,
       },
 
+      readyPromise: {
+        type: Object,
+        value: function() {
+          return new Promise(function(resolve, reject) {
+            this.resolveReadyPromise_ = resolve;
+          }.bind(this));
+        },
+      },
+
       scrollbarWidth: {
         type: Number,
         value: 0,
@@ -43,6 +52,11 @@ cr.define('downloads', function() {
 
       /** Only set when |isDangerous| is true. */
       isMalware_: Boolean,
+    },
+
+    ready: function() {
+      this.content = this.$.content;
+      this.resolveReadyPromise_();
     },
 
     /** @param {!downloads.Data} data */
@@ -130,7 +144,6 @@ cr.define('downloads', function() {
         if (controlledByExtension) {
           var link = this.$['controlled-by'].querySelector('a');
           link.href = 'chrome://extensions#' + data.by_ext_id;
-          link.setAttribute('focus-type', 'controlled-by');
           link.textContent = data.by_ext_name;
         }
 

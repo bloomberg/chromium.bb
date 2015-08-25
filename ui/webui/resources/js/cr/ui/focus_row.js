@@ -33,8 +33,6 @@ cr.define('cr.ui', function() {
 
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker;
-    this.eventTracker_.add(cr.doc, 'focusin', this.onFocusin_.bind(this));
-    this.eventTracker_.add(cr.doc, 'keydown', this.onKeydown_.bind(this));
   }
 
   /** @interface */
@@ -42,20 +40,19 @@ cr.define('cr.ui', function() {
 
   FocusRow.Delegate.prototype = {
     /**
-     * Called when a key is pressed while on a typed element. If |e|'s default
-     * is prevented, further processing is skipped.
-     * @param {cr.ui.FocusRow} row The row that detected a keydown.
-     * @param {Event} e
+     * Called when a key is pressed while on a FocusRow's item. If true is
+     * returned, further processing is skipped.
+     * @param {!cr.ui.FocusRow} row The row that detected a keydown.
+     * @param {!Event} e
      * @return {boolean} Whether the event was handled.
      */
     onKeydown: assertNotReached,
 
     /**
-     * @param {cr.ui.FocusRow} row The row that detected the mouse going down.
-     * @param {Event} e
-     * @return {boolean} Whether the event was handled.
+     * @param {!cr.ui.FocusRow} row
+     * @param {!Event} e
      */
-    onMousedown: assertNotReached,
+    onFocus: assertNotReached,
   };
 
   /** @const {string} */
@@ -74,14 +71,20 @@ cr.define('cr.ui', function() {
     // a tabIndex of -1.
 
     function isVisible(element) {
+      assertInstanceof(element, Element);
+
       var style = window.getComputedStyle(element);
       if (style.visibility == 'hidden' || style.display == 'none')
         return false;
 
-      if (element.parentNode == element.ownerDocument)
+      var parent = element.parentNode;
+      if (!parent)
+        return false;
+
+      if (parent == element.ownerDocument || parent instanceof DocumentFragment)
         return true;
 
-      return isVisible(element.parentElement);
+      return isVisible(parent);
     }
 
     return isVisible(element);
@@ -114,6 +117,9 @@ cr.define('cr.ui', function() {
       element.setAttribute('focus-type', type);
       element.tabIndex = this.isActive() ? 0 : -1;
 
+      this.eventTracker_.add(element, 'blur', this.onBlur_.bind(this));
+      this.eventTracker_.add(element, 'focus', this.onFocus_.bind(this));
+      this.eventTracker_.add(element, 'keydown', this.onKeydown_.bind(this));
       this.eventTracker_.add(element, 'mousedown',
                              this.onMousedown_.bind(this));
       return true;
@@ -211,38 +217,48 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Called when focus changes to activate/deactivate the row. Focus is
-     * removed from the row when |element| is not in the FocusRow.
-     * @param {Element} element The element that has focus. null if focus should
-     *     be removed.
-     * @private
-    */
-    onFocusChange_: function(element) {
-      this.makeActive(this.root.contains(element));
-    },
-
-    /**
-     * @param {Event} e The focusin event.
+     * @param {!Event} e
      * @private
      */
-    onFocusin_: function(e) {
-      var target = assertInstanceof(e.target, Element);
-      if (this.boundary_.contains(target))
-        this.onFocusChange_(target);
+    onBlur_: function(e) {
+      if (!this.boundary_.contains(/** @type {Node} */(e.relatedTarget)))
+        return;
+
+      if (this.getFocusableElements().indexOf(e.currentTarget) >= 0)
+        this.makeActive(false);
     },
 
     /**
-     * Handles a keypress for an element in this FocusRow.
+     * @param {!Event} e
+     * @private
+     */
+    onFocus_: function(e) {
+      if (this.delegate)
+        this.delegate.onFocus(this, e);
+    },
+
+    /**
+     * @param {!Event} e A mousedown event.
+     * @private
+     */
+    onMousedown_: function(e) {
+      // Only accept left mouse clicks.
+      if (e.button)
+        return;
+
+      // Allow the element under the mouse cursor to be focusable.
+      if (!e.currentTarget.disabled)
+        e.currentTarget.tabIndex = 0;
+    },
+
+    /**
      * @param {Event} e The keydown event.
      * @private
      */
     onKeydown_: function(e) {
-      var element = assertInstanceof(e.target, Element);
-
       var elements = this.getFocusableElements();
-      var elementIndex = elements.indexOf(element);
-      if (elementIndex < 0)
-        return;
+      var elementIndex = elements.indexOf(e.currentTarget);
+      assert(elementIndex >= 0);
 
       if (this.delegate && this.delegate.onKeydown(this, e))
         return;
@@ -265,21 +281,6 @@ cr.define('cr.ui', function() {
       if (elementToFocus) {
         this.getEquivalentElement(elementToFocus).focus();
         e.preventDefault();
-      }
-    },
-
-    /**
-     * @param {Event} e A click event.
-     * @private
-     */
-    onMousedown_: function(e) {
-      if (this.delegate && this.delegate.onMousedown(this, e))
-        return;
-
-      // Only accept the left mouse click.
-      if (!e.button) {
-        // Focus this row if the target is one of the elements in this row.
-        this.onFocusChange_(assertInstanceof(e.target, Element));
       }
     },
   };

@@ -131,6 +131,8 @@
         <include name="IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS" file="resources\downloads\throttled_icon_loader.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML" file="resources\md_downloads\action_service.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ACTION_SERVICE_JS" file="resources\md_downloads\action_service.js" type="BINDATA" />
+        <include name="IDR_MD_DOWNLOADS_FOCUS_ROW_HTML" file="resources\md_downloads\focus_row.html" type="BINDATA" />
+        <include name="IDR_MD_DOWNLOADS_FOCUS_ROW_JS" file="resources\md_downloads\focus_row.js" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ITEM_CSS" file="resources\md_downloads\item.css" type="BINDATA" flattenhtml="true" />
         <include name="IDR_MD_DOWNLOADS_ITEM_HTML" file="resources\md_downloads\item.html" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_ITEM_JS" file="resources\md_downloads\item.js" type="BINDATA" />

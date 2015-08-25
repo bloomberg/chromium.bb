@@ -82,6 +82,33 @@ cr.define('downloads', function() {
       });
     },
 
+    /** @private */
+    rebuildFocusGrid_: function() {
+      var activeElement = this.shadowRoot.activeElement;
+
+      var activeItem;
+      if (activeElement && activeElement.tagName == 'download-item')
+        activeItem = activeElement;
+
+      var activeControl = activeItem && activeItem.shadowRoot.activeElement;
+
+      /** @private {!cr.ui.FocusGrid} */
+      this.focusGrid_ = this.focusGrid_ || new cr.ui.FocusGrid;
+      this.focusGrid_.destroy();
+
+      var boundary = this.$['downloads-list'];
+
+      this.items_.forEach(function(item) {
+        var focusRow = new downloads.FocusRow(item.content, boundary);
+        this.focusGrid_.addRow(focusRow);
+
+        if (item == activeItem && !cr.ui.FocusRow.isFocusable(activeControl))
+          focusRow.getEquivalentElement(activeControl).focus();
+      }, this);
+
+      this.focusGrid_.ensureRowActive();
+    },
+
     /**
      * @return {number} The number of downloads shown on the page.
      * @private
@@ -161,6 +188,9 @@ cr.define('downloads', function() {
 
       this.onResize_();
       this.$.panel.classList.remove('loading');
+
+      var allReady = this.items_.map(function(i) { return i.readyPromise; });
+      Promise.all(allReady).then(this.rebuildFocusGrid_.bind(this));
     },
 
     /**
@@ -168,7 +198,18 @@ cr.define('downloads', function() {
      * @private
      */
     updateItem_: function(data) {
-      this.idMap_[data.id].update(data);
+      var item = this.idMap_[data.id];
+
+      var activeControl = this.shadowRoot.activeElement == item ?
+          item.shadowRoot.activeElement : null;
+
+      item.update(data);
+
+      if (activeControl && !cr.ui.FocusRow.isFocusable(activeControl)) {
+        var focusRow = this.focusGrid_.getRowForRoot(item.content);
+        focusRow.getEquivalentElement(activeControl).focus();
+      }
+
       this.onResize_();
     },
   });

@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://downloads/action_service.html">
 <link rel="import" href="chrome://downloads/constants.html">
 <link rel="import" href="chrome://downloads/throttled_icon_loader.html">
@@ -24,58 +23,54 @@
 
       <div id="details">
         <div id="title-area"><!-- Can't have any line breaks.
-          --><a is="action-link" id="file-link" focus-type="name"
+          --><a is="action-link" id="file-link"
               on-click="onFileLinkClick_"></a><!-- Before #name.
           --><span id="name"></span>
           <span id="tag"></span>
         </div>
 
-        <a id="url" target="_blank" focus-type="url"></a>
+        <a id="url" target="_blank"></a>
 
         <div id="description"></div>
 
         <paper-progress id="progress"></paper-progress>
 
         <div id="safe" class="controls" hidden$="[[isDangerous_]]">
-          <cr-button id="show" focus-type="show"
-              on-click="onShowClick_" i18n-content="controlShowInFolder"
-              noink lowercase></cr-button>
-          <cr-button id="retry" focus-type="retry" on-click="onRetryClick_"
-              i18n-content="controlRetry"></cr-button>
-          <cr-button id="pause" focus-type="pause" on-click="onPauseClick_"
-              i18n-content="controlPause"></cr-button>
-          <cr-button id="resume" focus-type="resume"
-              on-click="onResumeClick_"
-              i18n-content="controlResume"></cr-button>
-          <cr-button id="cancel" focus-type="cancel"
-              on-click="onCancelClick_"
-              i18n-content="controlCancel"></cr-button>
+          <paper-button id="show" on-click="onShowClick_"
+              i18n-content="controlShowInFolder" lowercase noink></paper-button>
+          <paper-button id="retry" on-click="onRetryClick_"
+              i18n-content="controlRetry"></paper-button>
+          <paper-button id="pause" on-click="onPauseClick_"
+              i18n-content="controlPause"></paper-button>
+          <paper-button id="resume" on-click="onResumeClick_"
+              i18n-content="controlResume"></paper-button>
+          <paper-button id="cancel" on-click="onCancelClick_"
+              i18n-content="controlCancel"></paper-button>
           <span id="controlled-by"
               i18n-values=".innerHTML:controlByExtension"></span>
         </div>
 
         <div id="dangerous" class="controls" hidden$="[[!isDangerous_]]">
           <!-- Dangerous file types (e.g. .exe, .jar). -->
-          <cr-button focus-type="discard" i18n-content="dangerDiscard"
+          <paper-button id="discard" i18n-content="dangerDiscard"
               on-click="onDiscardDangerous_" class="discard"
-              hidden$="[[isMalware_]]"></cr-button>
-          <cr-button focus-type="save" i18n-content="dangerSave"
+              hidden$="[[isMalware_]]"></paper-button>
+          <paper-button id="save" i18n-content="dangerSave"
               on-click="onSaveDangerous_" class="keep"
-              hidden$="[[isMalware_]]"></cr-button>
+              hidden$="[[isMalware_]]"></paper-button>
 
           <!-- Things that safe browsing has determined to be dangerous. -->
-          <cr-button focus-type="discard"
-              i18n-content="controlRemoveFromList"
+          <paper-button id="danger-remove" i18n-content="controlRemoveFromList"
               on-click="onDiscardDangerous_" class="discard"
-              hidden$="[[!isMalware_]]"></cr-button>
-          <cr-button focus-type="save" i18n-content="dangerRestore"
+              hidden$="[[!isMalware_]]"></paper-button>
+          <paper-button id="restore" i18n-content="dangerRestore"
               on-click="onSaveDangerous_" class="keep"
-              hidden$="[[!isMalware_]]"></cr-button>
+              hidden$="[[!isMalware_]]"></paper-button>
         </div>
       </div>
 
       <div id="remove-wrapper" class="icon-wrapper">
-        <paper-icon-button id="remove" focus-type="remove" icon="clear"
+        <paper-icon-button id="remove" icon="clear"
             on-click="onRemoveClick_"></paper-icon-button>
       </div>
 

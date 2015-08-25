@@ -36,7 +36,7 @@
   justify-content: center;
 }
 
-#actions cr-button {
+#actions paper-button {
   -webkit-margin-end: 8px;
 }
 
