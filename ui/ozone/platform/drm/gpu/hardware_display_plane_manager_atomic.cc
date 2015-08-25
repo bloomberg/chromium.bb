@@ -64,8 +64,16 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     plane_list->plane_list.swap(plane_list->old_plane_list);
   }
   plane_list->plane_list.clear();
-  if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), 0, is_sync,
-                              test_only,
+
+  uint32_t flags = 0;
+  if (test_only) {
+    flags = DRM_MODE_ATOMIC_TEST_ONLY;
+  } else {
+    flags = DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_NONBLOCK;
+  }
+
+  if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), flags,
+                              is_sync,
                               base::Bind(&AtomicPageFlipCallback, crtcs))) {
     PLOG(ERROR) << "Failed to commit properties";
     return false;
