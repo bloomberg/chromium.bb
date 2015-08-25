@@ -125,8 +125,17 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
                       "Config %s doesn't have a list of boards." % build_name)
       self.assertEqual(len(set(config['boards'])), len(config['boards']),
                        'Config %s has duplicate boards.' % build_name)
-      self.assertTrue(config['boards'] is not None,
-                      'Config %s defines a list of boards.' % build_name)
+      if config['builder_class_name'] in (
+          'sdk_builders.ChrootSdkBuilder',
+          'misc_builders.RefreshPackagesBuilder'):
+        self.assertTrue(len(config['boards']) >= 1,
+                        'Config %s requires 1 or more boards.' % build_name)
+      else:
+        # TODO: Switch to assert after wificell-pre-cq is fixed.
+        if not len(config['boards']) <= 1:
+          print('Config %s should have <= 1 board.' % build_name)
+        # self.assertTrue(len(config['boards']) <= 1,
+        #                 'Config %s should have <= 1 board.' % build_name)
 
   def testOverlaySettings(self):
     """Verify overlays and push_overlays have legal values."""
