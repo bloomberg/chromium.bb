@@ -12,15 +12,15 @@ function test()
     {
         for (var i = 0; i < listeners.length; ++i) {
             delete listeners[i]._location.scriptId;
-            var sourceName = listeners[i]._sourceName;
-            sourceName = sourceName.substr(sourceName.lastIndexOf('/') + 1);
-            listeners[i]._sourceName = sourceName;
+            var sourceURL = listeners[i]._sourceURL;
+            sourceURL = sourceURL.substr(sourceURL.lastIndexOf('/') + 1);
+            listeners[i]._sourceURL = sourceURL;
 
             InspectorTest.addResult("type: " + listeners[i].type());
             InspectorTest.addResult("useCapture: " + listeners[i].useCapture());
             InspectorTest.addResult("location: " + listeners[i].location().columnNumber + ", " + listeners[i].location().lineNumber);
             InspectorTest.addResult("handler: " + listeners[i].handler().description);
-            InspectorTest.addResult("sourceName: " + listeners[i].sourceName());
+            InspectorTest.addResult("sourceURL: " + listeners[i].sourceURL());
             InspectorTest.addResult("");
         }
         next();

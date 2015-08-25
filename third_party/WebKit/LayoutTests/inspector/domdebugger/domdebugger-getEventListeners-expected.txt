@@ -8,7 +8,7 @@ type: scroll
 useCapture: true
 location: 16, 78
 handler: function foo() {}
-sourceName: domdebugger-getEventListeners.html
+sourceURL: domdebugger-getEventListeners.html
 
 
 Running: testDivEventListeners
@@ -16,13 +16,13 @@ type: click
 useCapture: true
 location: 16, 79
 handler: function boo() {}
-sourceName: domdebugger-getEventListeners.html
+sourceURL: domdebugger-getEventListeners.html
 
 type: mouseout
 useCapture: false
 location: 16, 78
 handler: function foo() {}
-sourceName: domdebugger-getEventListeners.html
+sourceURL: domdebugger-getEventListeners.html
 
 type: click
 useCapture: false
@@ -30,7 +30,7 @@ location: 37, 75
 handler: function onclick(event) {
   return 42;
 }
-sourceName: domdebugger-getEventListeners.html
+sourceURL: domdebugger-getEventListeners.html
 
 
 Running: testDivWithoutEventListeners
