@@ -97,7 +97,11 @@ struct DescriptorToken {
             isValid = false;
             return 0;
         }
-        return charactersToFloat(attribute + start, lengthExcludingDescriptor, &isValid);
+        Decimal result = parseToDecimalForNumberType(String(attribute + start, lengthExcludingDescriptor));
+        isValid = result.isFinite();
+        if (!isValid)
+            return 0;
+        return static_cast<float>(result.toDouble());
     }
 };
 
