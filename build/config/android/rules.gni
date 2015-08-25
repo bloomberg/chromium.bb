@@ -406,8 +406,8 @@ template("java_cpp_enum") {
 #     processing environment, e.g. ["name=foo", "color=red"].
 #
 # Example
-#   jinja_template("chrome_shell_manifest") {
-#     input = "shell/java/AndroidManifest.xml"
+#   jinja_template("chrome_public_manifest") {
+#     input = "java/AndroidManifest.xml"
 #     output = "$target_gen_dir/AndroidManifest.xml"
 #   }
 template("jinja_template") {
@@ -462,9 +462,9 @@ template("jinja_template") {
 #     processing environment, e.g. ["name=foo", "color=red"].
 #
 # Example
-#   jinja_template_resources("chrome_shell_template_resources") {
-#     res_dir = "shell/res_template"
-#     resources = ["shell/res_template/xml/syncable.xml"]
+#   jinja_template_resources("chrome_public_template_resources") {
+#     res_dir = "res_template"
+#     resources = ["res_template/xml/syncable.xml"]
 #     variables = ["color=red"]
 #   }
 template("jinja_template_resources") {

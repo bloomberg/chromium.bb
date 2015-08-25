@@ -2013,7 +2013,7 @@ class BisectPerformanceMetrics(object):
             'It is impossible to bisect Android regressions '
             'prior to r265549, which allows the bisect bot to '
             'rely on Telemetry to do apk installation of the most recently '
-            'built local ChromeShell(refer to crbug.com/385324).\n'
+            'built local ChromePublic (refer to crbug.com/385324).\n'
             'Please try bisecting revisions greater than or equal to r265549.')}
 
     if bisect_utils.IsWindowsHost():

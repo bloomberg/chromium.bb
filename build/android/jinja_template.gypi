@@ -8,12 +8,12 @@
 # To process a single template file, create a gyp target with the following
 # form:
 #  {
-#    'target_name': 'chrome_shell_manifest',
+#    'target_name': 'chrome_public_manifest',
 #    'type': 'none',
 #    'variables': {
-#      'jinja_inputs': ['android/shell/java/AndroidManifest.xml'],
-#      'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/chrome_shell_manifest/AndroidManifest.xml',
-#      'jinja_variables': ['app_name=ChromeShell'],
+#      'jinja_inputs': ['android/java/AndroidManifest.xml'],
+#      'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/chrome_public_manifest/AndroidManifest.xml',
+#      'jinja_variables': ['app_name=ChromePublic'],
 #    },
 #    'includes': [ '../build/android/jinja_template.gypi' ],
 #  },
@@ -24,13 +24,13 @@
 #    'target_name': 'chrome_template_resources',
 #    'type': 'none',
 #    'variables': {
-#       'jinja_inputs_base_dir': 'android/shell/java/res_template',
+#       'jinja_inputs_base_dir': 'android/java/res_template',
 #       'jinja_inputs': [
 #         '<(jinja_inputs_base_dir)/xml/searchable.xml',
 #         '<(jinja_inputs_base_dir)/xml/syncadapter.xml',
 #       ],
 #       'jinja_outputs_zip': '<(PRODUCT_DIR)/res.java/<(_target_name).zip',
-#       'jinja_variables': ['app_name=ChromeShell'],
+#       'jinja_variables': ['app_name=ChromePublic'],
 #     },
 #     'includes': [ '../build/android/jinja_template.gypi' ],
 #   },

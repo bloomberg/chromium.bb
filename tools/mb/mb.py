@@ -688,8 +688,8 @@ class MetaBuildWrapper(object):
                                   output_path)
       for label in out.splitlines():
         build_target = label[2:]
-        # We want to accept 'chrome/android:chrome_shell_apk' and
-        # just 'chrome_shell_apk'. This may result in too many targets
+        # We want to accept 'chrome/android:chrome_public_apk' and
+        # just 'chrome_public_apk'. This may result in too many targets
         # getting built, but we can adjust that later if need be.
         for input_target in inp['targets']:
           if (input_target == build_target or

@@ -69,8 +69,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     /**
-     * Verify PopUp InfoBar. Only basic triggering verified due to lack of tabs
-     * in ChromeShell
+     * Verify PopUp InfoBar.
      */
     @Smoke
     @MediumTest
