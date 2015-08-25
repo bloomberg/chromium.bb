@@ -15,8 +15,8 @@
 #include "components/view_manager/event_dispatcher.h"
 #include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/ids.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "components/view_manager/server_view_delegate.h"
 #include "components/view_manager/server_view_observer.h"
 #include "components/view_manager/view_manager_root_impl.h"
@@ -30,19 +30,19 @@ class ConnectionManagerDelegate;
 class FocusController;
 class ServerView;
 class ViewManagerRootConnection;
-class ViewManagerServiceImpl;
+class ViewTreeImpl;
 
 // ConnectionManager manages the set of connections to the ViewManager (all the
-// ViewManagerServiceImpls) as well as providing the root of the hierarchy.
+// ViewTreeImpl) as well as providing the root of the hierarchy.
 class ConnectionManager : public ServerViewDelegate,
                           public ServerViewObserver,
                           public FocusControllerDelegate {
  public:
-  // Create when a ViewManagerServiceImpl is about to make a change. Ensures
-  // clients are notified correctly.
+  // Create when a ViewTreeImpl is about to make a change. Ensures clients are
+  // notified correctly.
   class ScopedChange {
    public:
-    ScopedChange(ViewManagerServiceImpl* connection,
+    ScopedChange(ViewTreeImpl* connection,
                  ConnectionManager* connection_manager,
                  bool is_delete_view);
     ~ScopedChange();
@@ -81,35 +81,34 @@ class ConnectionManager : public ServerViewDelegate,
   // be destroyed before ConnectionManager.
   ServerView* CreateServerView(const ViewId& id);
 
-  // Returns the id for the next ViewManagerServiceImpl.
+  // Returns the id for the next ViewTreeImpl.
   mojo::ConnectionSpecificId GetAndAdvanceNextConnectionId();
 
   // Returns the id for the next ViewManagerRootImpl.
   uint16_t GetAndAdvanceNextRootId();
 
-  // Invoked when a ViewManagerServiceImpl's connection encounters an error.
+  // Invoked when a ViewTreeImpl's connection encounters an error.
   void OnConnectionError(ClientConnection* connection);
 
   // Invoked when a ViewManagerRootBindingOwnerBase's connection encounters an
   // error or the associated Display window is closed.
   void OnRootConnectionClosed(ViewManagerRootConnection* connection);
 
-  // See description of ViewManagerService::Embed() for details. This assumes
+  // See description of ViewTree::Embed() for details. This assumes
   // |transport_view_id| is valid.
   void EmbedAtView(mojo::ConnectionSpecificId creator_id,
                    const ViewId& view_id,
                    mojo::URLRequestPtr request);
-  ViewManagerServiceImpl* EmbedAtView(
-      mojo::ConnectionSpecificId creator_id,
-      const ViewId& view_id,
-      mojo::ViewManagerClientPtr client);
+  ViewTreeImpl* EmbedAtView(mojo::ConnectionSpecificId creator_id,
+                            const ViewId& view_id,
+                            mojo::ViewTreeClientPtr client);
 
   // Invoked when an accelerator has been triggered on a view tree with the
   // provided |root|.
   void OnAccelerator(ServerView* root, mojo::EventPtr event);
 
   // Returns the connection by id.
-  ViewManagerServiceImpl* GetConnection(
+  ViewTreeImpl* GetConnection(
       mojo::ConnectionSpecificId connection_id);
 
   // Returns the View identified by |id|.
@@ -144,15 +143,15 @@ class ConnectionManager : public ServerViewDelegate,
   // Returns the metrics of the viewport where the provided |view| is displayed.
   mojo::ViewportMetricsPtr GetViewportMetricsForView(const ServerView* view);
 
-  // Returns the ViewManagerServiceImpl that has |id| as a root.
-  ViewManagerServiceImpl* GetConnectionWithRoot(const ViewId& id) {
-    return const_cast<ViewManagerServiceImpl*>(
+  // Returns the ViewTreeImpl that has |id| as a root.
+  ViewTreeImpl* GetConnectionWithRoot(const ViewId& id) {
+    return const_cast<ViewTreeImpl*>(
         const_cast<const ConnectionManager*>(this)->GetConnectionWithRoot(id));
   }
-  const ViewManagerServiceImpl* GetConnectionWithRoot(const ViewId& id) const;
+  const ViewTreeImpl* GetConnectionWithRoot(const ViewId& id) const;
 
   // Returns the first ancestor of |service| that is marked as an embed root.
-  ViewManagerServiceImpl* GetEmbedRoot(ViewManagerServiceImpl* service);
+  ViewTreeImpl* GetEmbedRoot(ViewTreeImpl* service);
 
   // ViewManagerRoot implementation helper; see mojom for details.
   bool CloneAndAnimate(const ViewId& view_id);
@@ -174,7 +173,7 @@ class ConnectionManager : public ServerViewDelegate,
   // focused view, this function will do nothing.
   void SetImeVisibility(ServerView* view, bool visible);
 
-  // These functions trivially delegate to all ViewManagerServiceImpls, which in
+  // These functions trivially delegate to all ViewTreeImpls, which in
   // term notify their clients.
   void ProcessViewDestroyed(ServerView* view);
   void ProcessViewBoundsChanged(const ServerView* view,
@@ -262,7 +261,7 @@ class ConnectionManager : public ServerViewDelegate,
 
   ConnectionManagerDelegate* delegate_;
 
-  // ID to use for next ViewManagerServiceImpl.
+  // ID to use for next ViewTreeImpl.
   mojo::ConnectionSpecificId next_connection_id_;
 
   // ID to use for next ViewManagerRootImpl.
@@ -270,14 +269,14 @@ class ConnectionManager : public ServerViewDelegate,
 
   EventDispatcher event_dispatcher_;
 
-  // Set of ViewManagerServiceImpls.
+  // Set of ViewTreeImpls.
   ConnectionMap connection_map_;
 
   // Set of ViewManagerRootImpls.
   RootConnectionMap root_connection_map_;
 
   // If non-null we're processing a change. The ScopedChange is not owned by us
-  // (it's created on the stack by ViewManagerServiceImpl).
+  // (it's created on the stack by ViewTreeImpl).
   ScopedChange* current_change_;
 
   bool in_destructor_;

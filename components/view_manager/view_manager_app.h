@@ -12,8 +12,8 @@
 #include "components/view_manager/connection_manager_delegate.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "components/view_manager/surfaces/surfaces_delegate.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -63,16 +63,16 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
   void OnNoMoreRootConnections() override;
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
+      mojo::InterfaceRequest<mojo::ViewTree> tree_request,
       mojo::ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
       const ViewId& root_id) override;
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
+      mojo::InterfaceRequest<mojo::ViewTree> tree_request,
       mojo::ConnectionSpecificId creator_id,
       const ViewId& root_id,
-      mojo::ViewManagerClientPtr view_manager_client) override;
+      mojo::ViewTreeClientPtr client) override;
 
   // mojo::InterfaceFactory<mojo::ViewManagerRoot>:
   void Create(mojo::ApplicationConnection* connection,

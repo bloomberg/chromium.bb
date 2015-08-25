@@ -5,7 +5,6 @@
 #include "components/view_manager/public/cpp/view_manager.h"
 
 #include "base/logging.h"
-#include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
 #include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
@@ -180,14 +179,14 @@ class ViewManagerTest : public ViewManagerTestBase {
   }
 
   // Establishes a connection to this application and asks for a
-  // ViewManagerClient. The ViewManagerClient is then embedded in |view|.
-  // This does *not* wait for the connection to complete.
+  // ViewTreeClient. The ViewTreeClient is then embedded in |view|. This does
+  // *not* wait for the connection to complete.
   void ConnectToApplicationAndEmbed(View* view) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(application_impl()->url());
     scoped_ptr<ApplicationConnection> connection =
         application_impl()->ConnectToApplication(request.Pass());
-    mojo::ViewManagerClientPtr client;
+    mojo::ViewTreeClientPtr client;
     connection->ConnectToService(&client);
     view->Embed(client.Pass());
   }
@@ -195,7 +194,7 @@ class ViewManagerTest : public ViewManagerTestBase {
   // Overridden from ViewManagerDelegate:
   void OnEmbedForDescendant(View* view,
                             mojo::URLRequestPtr request,
-                            mojo::ViewManagerClientPtr* client) override {
+                            mojo::ViewTreeClientPtr* client) override {
     on_will_embed_count_++;
     if (on_will_embed_return_value_) {
       scoped_ptr<ApplicationConnection> connection =

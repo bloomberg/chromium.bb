@@ -4,21 +4,21 @@
 
 #include "components/view_manager/public/cpp/view_manager_init.h"
 
-#include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
+#include "components/view_manager/public/cpp/lib/view_tree_client_impl.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
 namespace mojo {
 
 class ViewManagerInit::ClientFactory
-    : public InterfaceFactory<ViewManagerClient> {
+    : public InterfaceFactory<ViewTreeClient> {
  public:
   ClientFactory(ViewManagerInit* init) : init_(init) {}
   ~ClientFactory() override {}
 
-  // InterfaceFactory<ViewManagerClient> implementation.
+  // InterfaceFactory<ViewTreeClient> implementation.
   void Create(ApplicationConnection* connection,
-              InterfaceRequest<ViewManagerClient> request) override {
+              InterfaceRequest<ViewTreeClient> request) override {
     init_->OnCreate(request.Pass());
   }
 
@@ -39,9 +39,9 @@ ViewManagerInit::ViewManagerInit(ApplicationImpl* app,
   request->url = mojo::String::From("mojo:view_manager");
   connection_ = app_->ConnectToApplication(request.Pass());
 
-  // The view_manager will request a ViewManagerClient service for each
+  // The view_manager will request a ViewTreeClient service for each
   // ViewManagerRoot created.
-  connection_->AddService<ViewManagerClient>(client_factory_.get());
+  connection_->AddService<ViewTreeClient>(client_factory_.get());
   connection_->ConnectToService(&view_manager_root_);
 
   if (root_client) {
@@ -54,7 +54,7 @@ ViewManagerInit::ViewManagerInit(ApplicationImpl* app,
 
 ViewManagerInit::~ViewManagerInit() {}
 
-void ViewManagerInit::OnCreate(InterfaceRequest<ViewManagerClient> request) {
+void ViewManagerInit::OnCreate(InterfaceRequest<ViewTreeClient> request) {
   // TODO(sky): straighten out lifetime.
   ViewManager::Create(delegate_, request.Pass());
 }

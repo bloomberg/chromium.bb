@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "mandoline/tab/frame_user_data.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
@@ -29,7 +29,7 @@ class FrameConnection : public FrameUserData {
 
   void Init(mojo::ApplicationImpl* app,
             mojo::URLRequestPtr request,
-            mojo::ViewManagerClientPtr* view_manage_client);
+            mojo::ViewTreeClientPtr* view_tree_client);
 
   FrameTreeClient* frame_tree_client() { return frame_tree_client_.get(); }
 

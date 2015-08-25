@@ -5,12 +5,12 @@
 #include "components/view_manager/client_connection.h"
 
 #include "components/view_manager/connection_manager.h"
-#include "components/view_manager/view_manager_service_impl.h"
+#include "components/view_manager/view_tree_impl.h"
 
 namespace view_manager {
 
-ClientConnection::ClientConnection(scoped_ptr<ViewManagerServiceImpl> service,
-                                   mojo::ViewManagerClient* client)
+ClientConnection::ClientConnection(scoped_ptr<ViewTreeImpl> service,
+                                   mojo::ViewTreeClient* client)
     : service_(service.Pass()), client_(client) {
 }
 
@@ -18,10 +18,10 @@ ClientConnection::~ClientConnection() {
 }
 
 DefaultClientConnection::DefaultClientConnection(
-    scoped_ptr<ViewManagerServiceImpl> service_impl,
+    scoped_ptr<ViewTreeImpl> service_impl,
     ConnectionManager* connection_manager,
-    mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
-    mojo::ViewManagerClientPtr client)
+    mojo::InterfaceRequest<mojo::ViewTree> service_request,
+    mojo::ViewTreeClientPtr client)
     : ClientConnection(service_impl.Pass(), client.get()),
       connection_manager_(connection_manager),
       binding_(service(), service_request.Pass()),

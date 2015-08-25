@@ -30,7 +30,7 @@ FrameConnection::~FrameConnection() {
 
 void FrameConnection::Init(mojo::ApplicationImpl* app,
                            mojo::URLRequestPtr request,
-                           mojo::ViewManagerClientPtr* view_manage_client) {
+                           mojo::ViewTreeClientPtr* view_tree_client) {
   DCHECK(!application_connection_);
 
   mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
@@ -69,7 +69,7 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
 
   application_connection_ = app->ConnectToApplicationWithCapabilityFilter(
       request.Pass(), filter.Pass());
-  application_connection_->ConnectToService(view_manage_client);
+  application_connection_->ConnectToService(view_tree_client);
   application_connection_->ConnectToService(&frame_tree_client_);
   frame_tree_client_.set_connection_error_handler([]() {
     // TODO(sky): implement this.

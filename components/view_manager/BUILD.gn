@@ -84,8 +84,8 @@ source_set("lib") {
     "view_manager_root_delegate.h",
     "view_manager_root_impl.cc",
     "view_manager_root_impl.h",
-    "view_manager_service_impl.cc",
-    "view_manager_service_impl.h",
+    "view_tree_impl.cc",
+    "view_tree_impl.h",
     "window_manager_access_policy.cc",
     "window_manager_access_policy.h",
   ]
@@ -161,7 +161,7 @@ test("view_manager_unittests") {
     "test_server_view_delegate.cc",
     "test_server_view_delegate.h",
     "view_coordinate_conversions_unittest.cc",
-    "view_manager_service_unittest.cc",
+    "view_tree_unittest.cc",
   ]
 
   deps = [
@@ -199,7 +199,7 @@ mojo_native_application("apptests") {
 
   sources = [
     "view_manager_client_apptest.cc",
-    "view_manager_service_apptest.cc",
+    "view_tree_apptest.cc",
   ]
 
   deps = [

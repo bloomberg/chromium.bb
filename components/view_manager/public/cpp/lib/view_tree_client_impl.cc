@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
+#include "components/view_manager/public/cpp/lib/view_tree_client_impl.h"
 
 #include "components/view_manager/public/cpp/lib/view_private.h"
 #include "components/view_manager/public/cpp/util.h"
@@ -21,7 +21,7 @@ Id MakeTransportId(ConnectionSpecificId connection_id,
 }
 
 // Helper called to construct a local view object from transport data.
-View* AddViewToViewManager(ViewManagerClientImpl* client,
+View* AddViewToViewManager(ViewTreeClientImpl* client,
                            View* parent,
                            const ViewDataPtr& view_data) {
   // We don't use the ctor that takes a ViewManager here, since it will call
@@ -43,7 +43,7 @@ View* AddViewToViewManager(ViewManagerClientImpl* client,
   return view;
 }
 
-View* BuildViewTree(ViewManagerClientImpl* client,
+View* BuildViewTree(ViewTreeClientImpl* client,
                     const Array<ViewDataPtr>& views,
                     View* initial_parent) {
   std::vector<View*> parents;
@@ -69,13 +69,13 @@ View* BuildViewTree(ViewManagerClientImpl* client,
 
 ViewManager* ViewManager::Create(
     ViewManagerDelegate* delegate,
-    InterfaceRequest<ViewManagerClient> request) {
-  return new ViewManagerClientImpl(delegate, request.Pass());
+    InterfaceRequest<ViewTreeClient> request) {
+  return new ViewTreeClientImpl(delegate, request.Pass());
 }
 
-ViewManagerClientImpl::ViewManagerClientImpl(
+ViewTreeClientImpl::ViewTreeClientImpl(
     ViewManagerDelegate* delegate,
-    InterfaceRequest<ViewManagerClient> request)
+    InterfaceRequest<ViewTreeClient> request)
     : connection_id_(0),
       next_id_(1),
       delegate_(delegate),
@@ -88,7 +88,7 @@ ViewManagerClientImpl::ViewManagerClientImpl(
       in_destructor_(false) {
 }
 
-ViewManagerClientImpl::~ViewManagerClientImpl() {
+ViewTreeClientImpl::~ViewTreeClientImpl() {
   in_destructor_ = true;
 
   std::vector<View*> non_owned;
@@ -112,101 +112,101 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
   delegate_->OnViewManagerDestroyed(this);
 }
 
-void ViewManagerClientImpl::DestroyView(Id view_id) {
-  DCHECK(service_);
-  service_->DeleteView(view_id, ActionCompletedCallback());
+void ViewTreeClientImpl::DestroyView(Id view_id) {
+  DCHECK(tree_);
+  tree_->DeleteView(view_id, ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::AddChild(Id child_id, Id parent_id) {
-  DCHECK(service_);
-  service_->AddView(parent_id, child_id, ActionCompletedCallback());
+void ViewTreeClientImpl::AddChild(Id child_id, Id parent_id) {
+  DCHECK(tree_);
+  tree_->AddView(parent_id, child_id, ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::RemoveChild(Id child_id, Id parent_id) {
-  DCHECK(service_);
-  service_->RemoveViewFromParent(child_id, ActionCompletedCallback());
+void ViewTreeClientImpl::RemoveChild(Id child_id, Id parent_id) {
+  DCHECK(tree_);
+  tree_->RemoveViewFromParent(child_id, ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::Reorder(
+void ViewTreeClientImpl::Reorder(
     Id view_id,
     Id relative_view_id,
     OrderDirection direction) {
-  DCHECK(service_);
-  service_->ReorderView(view_id, relative_view_id, direction,
-                        ActionCompletedCallback());
+  DCHECK(tree_);
+  tree_->ReorderView(view_id, relative_view_id, direction,
+                     ActionCompletedCallback());
 }
 
-bool ViewManagerClientImpl::OwnsView(Id id) const {
+bool ViewTreeClientImpl::OwnsView(Id id) const {
   return HiWord(id) == connection_id_;
 }
 
-void ViewManagerClientImpl::SetBounds(Id view_id, const Rect& bounds) {
-  DCHECK(service_);
-  service_->SetViewBounds(view_id, bounds.Clone(), ActionCompletedCallback());
+void ViewTreeClientImpl::SetBounds(Id view_id, const Rect& bounds) {
+  DCHECK(tree_);
+  tree_->SetViewBounds(view_id, bounds.Clone(), ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::SetSurfaceId(Id view_id, SurfaceIdPtr surface_id) {
-  DCHECK(service_);
+void ViewTreeClientImpl::SetSurfaceId(Id view_id, SurfaceIdPtr surface_id) {
+  DCHECK(tree_);
   if (surface_id.is_null())
     return;
-  service_->SetViewSurfaceId(
+  tree_->SetViewSurfaceId(
       view_id, surface_id.Pass(), ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::SetFocus(Id view_id) {
+void ViewTreeClientImpl::SetFocus(Id view_id) {
   // In order for us to get here we had to have exposed a view, which implies we
   // got a connection.
-  DCHECK(service_);
-  service_->SetFocus(view_id, ActionCompletedCallback());
+  DCHECK(tree_);
+  tree_->SetFocus(view_id, ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::SetVisible(Id view_id, bool visible) {
-  DCHECK(service_);
-  service_->SetViewVisibility(view_id, visible, ActionCompletedCallback());
+void ViewTreeClientImpl::SetVisible(Id view_id, bool visible) {
+  DCHECK(tree_);
+  tree_->SetViewVisibility(view_id, visible, ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::SetProperty(
+void ViewTreeClientImpl::SetProperty(
     Id view_id,
     const std::string& name,
     const std::vector<uint8_t>& data) {
-  DCHECK(service_);
-  service_->SetViewProperty(view_id,
-                            String(name),
-                            Array<uint8_t>::From(data),
-                            ActionCompletedCallback());
+  DCHECK(tree_);
+  tree_->SetViewProperty(view_id,
+                         String(name),
+                         Array<uint8_t>::From(data),
+                         ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::SetViewTextInputState(Id view_id,
-                                                  TextInputStatePtr state) {
-  DCHECK(service_);
-  service_->SetViewTextInputState(view_id, state.Pass());
+void ViewTreeClientImpl::SetViewTextInputState(Id view_id,
+                                               TextInputStatePtr state) {
+  DCHECK(tree_);
+  tree_->SetViewTextInputState(view_id, state.Pass());
 }
 
-void ViewManagerClientImpl::SetImeVisibility(Id view_id,
-                                             bool visible,
-                                             TextInputStatePtr state) {
-  DCHECK(service_);
-  service_->SetImeVisibility(view_id, visible, state.Pass());
+void ViewTreeClientImpl::SetImeVisibility(Id view_id,
+                                          bool visible,
+                                          TextInputStatePtr state) {
+  DCHECK(tree_);
+  tree_->SetImeVisibility(view_id, visible, state.Pass());
 }
 
-void ViewManagerClientImpl::Embed(Id view_id, ViewManagerClientPtr client) {
-  DCHECK(service_);
-  service_->Embed(view_id, client.Pass(), ActionCompletedCallback());
+void ViewTreeClientImpl::Embed(Id view_id, ViewTreeClientPtr client) {
+  DCHECK(tree_);
+  tree_->Embed(view_id, client.Pass(), ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::EmbedAllowingReembed(mojo::URLRequestPtr request,
-                                                 Id view_id) {
-  DCHECK(service_);
-  service_->EmbedAllowingReembed(view_id, request.Pass(),
-                                 ActionCompletedCallback());
+void ViewTreeClientImpl::EmbedAllowingReembed(mojo::URLRequestPtr request,
+                                              Id view_id) {
+  DCHECK(tree_);
+  tree_->EmbedAllowingReembed(view_id, request.Pass(),
+                              ActionCompletedCallback());
 }
 
-void ViewManagerClientImpl::AddView(View* view) {
+void ViewTreeClientImpl::AddView(View* view) {
   DCHECK(views_.find(view->id()) == views_.end());
   views_[view->id()] = view;
 }
 
-void ViewManagerClientImpl::RemoveView(Id view_id) {
+void ViewTreeClientImpl::RemoveView(Id view_id) {
   if (focused_view_ && focused_view_->id() == view_id)
     OnViewFocused(0);
 
@@ -215,7 +215,7 @@ void ViewManagerClientImpl::RemoveView(Id view_id) {
     views_.erase(it);
 }
 
-void ViewManagerClientImpl::OnRootDestroyed(View* root) {
+void ViewTreeClientImpl::OnRootDestroyed(View* root) {
   DCHECK_EQ(root, root_);
   root_ = nullptr;
 
@@ -225,53 +225,53 @@ void ViewManagerClientImpl::OnRootDestroyed(View* root) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewManagerClientImpl, ViewManager implementation:
+// ViewTreeClientImpl, ViewManager implementation:
 
-Id ViewManagerClientImpl::CreateViewOnServer() {
-  DCHECK(service_);
+Id ViewTreeClientImpl::CreateViewOnServer() {
+  DCHECK(tree_);
   const Id view_id = MakeTransportId(connection_id_, ++next_id_);
-  service_->CreateView(view_id, [this](ErrorCode code) {
+  tree_->CreateView(view_id, [this](ErrorCode code) {
     OnActionCompleted(code == ERROR_CODE_NONE);
   });
   return view_id;
 }
 
-View* ViewManagerClientImpl::GetRoot() {
+View* ViewTreeClientImpl::GetRoot() {
   return root_;
 }
 
-View* ViewManagerClientImpl::GetViewById(Id id) {
+View* ViewTreeClientImpl::GetViewById(Id id) {
   IdToViewMap::const_iterator it = views_.find(id);
   return it != views_.end() ? it->second : NULL;
 }
 
-View* ViewManagerClientImpl::GetFocusedView() {
+View* ViewTreeClientImpl::GetFocusedView() {
   return focused_view_;
 }
 
-View* ViewManagerClientImpl::CreateView() {
+View* ViewTreeClientImpl::CreateView() {
   View* view = new View(this, CreateViewOnServer());
   AddView(view);
   return view;
 }
 
-void ViewManagerClientImpl::SetEmbedRoot() {
+void ViewTreeClientImpl::SetEmbedRoot() {
   // TODO(sky): this isn't right. The server may ignore the call.
   is_embed_root_ = true;
-  service_->SetEmbedRoot();
+  tree_->SetEmbedRoot();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewManagerClientImpl, ViewManagerClient implementation:
+// ViewTreeClientImpl, ViewTreeClient implementation:
 
-void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
-                                    ViewDataPtr root_data,
-                                    ViewManagerServicePtr view_manager_service,
-                                    Id focused_view_id) {
-  if (view_manager_service) {
-    DCHECK(!service_);
-    service_ = view_manager_service.Pass();
-    service_.set_connection_error_handler([this]() { delete this; });
+void ViewTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
+                                 ViewDataPtr root_data,
+                                 ViewTreePtr tree,
+                                 Id focused_view_id) {
+  if (tree) {
+    DCHECK(!tree_);
+    tree_ = tree.Pass();
+    tree_.set_connection_error_handler([this]() { delete this; });
   }
   connection_id_ = connection_id;
 
@@ -283,18 +283,18 @@ void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   delegate_->OnEmbed(root_);
 }
 
-void ViewManagerClientImpl::OnEmbedForDescendant(
+void ViewTreeClientImpl::OnEmbedForDescendant(
     Id view_id,
     mojo::URLRequestPtr request,
     const OnEmbedForDescendantCallback& callback) {
   View* view = GetViewById(view_id);
-  ViewManagerClientPtr client;
+  ViewTreeClientPtr client;
   if (view)
     delegate_->OnEmbedForDescendant(view, request.Pass(), &client);
   callback.Run(client.Pass());
 }
 
-void ViewManagerClientImpl::OnEmbeddedAppDisconnected(Id view_id) {
+void ViewTreeClientImpl::OnEmbeddedAppDisconnected(Id view_id) {
   View* view = GetViewById(view_id);
   if (view) {
     FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(view).observers(),
@@ -302,15 +302,15 @@ void ViewManagerClientImpl::OnEmbeddedAppDisconnected(Id view_id) {
   }
 }
 
-void ViewManagerClientImpl::OnUnembed() {
+void ViewTreeClientImpl::OnUnembed() {
   delegate_->OnUnembed();
   // This will send out the various notifications.
   delete this;
 }
 
-void ViewManagerClientImpl::OnViewBoundsChanged(Id view_id,
-                                                RectPtr old_bounds,
-                                                RectPtr new_bounds) {
+void ViewTreeClientImpl::OnViewBoundsChanged(Id view_id,
+                                             RectPtr old_bounds,
+                                             RectPtr new_bounds) {
   View* view = GetViewById(view_id);
   ViewPrivate(view).LocalSetBounds(*old_bounds, *new_bounds);
 }
@@ -327,7 +327,7 @@ void SetViewportMetricsOnDecendants(View* root,
 }
 }
 
-void ViewManagerClientImpl::OnViewViewportMetricsChanged(
+void ViewTreeClientImpl::OnViewViewportMetricsChanged(
     ViewportMetricsPtr old_metrics,
     ViewportMetricsPtr new_metrics) {
   View* view = GetRoot();
@@ -335,7 +335,7 @@ void ViewManagerClientImpl::OnViewViewportMetricsChanged(
     SetViewportMetricsOnDecendants(view, *old_metrics, *new_metrics);
 }
 
-void ViewManagerClientImpl::OnViewHierarchyChanged(
+void ViewTreeClientImpl::OnViewHierarchyChanged(
     Id view_id,
     Id new_parent_id,
     Id old_parent_id,
@@ -361,22 +361,22 @@ void ViewManagerClientImpl::OnViewHierarchyChanged(
     ViewPrivate(old_parent).LocalRemoveChild(view);
 }
 
-void ViewManagerClientImpl::OnViewReordered(Id view_id,
-                                            Id relative_view_id,
-                                            OrderDirection direction) {
+void ViewTreeClientImpl::OnViewReordered(Id view_id,
+                                         Id relative_view_id,
+                                         OrderDirection direction) {
   View* view = GetViewById(view_id);
   View* relative_view = GetViewById(relative_view_id);
   if (view && relative_view)
     ViewPrivate(view).LocalReorder(relative_view, direction);
 }
 
-void ViewManagerClientImpl::OnViewDeleted(Id view_id) {
+void ViewTreeClientImpl::OnViewDeleted(Id view_id) {
   View* view = GetViewById(view_id);
   if (view)
     ViewPrivate(view).LocalDestroy();
 }
 
-void ViewManagerClientImpl::OnViewVisibilityChanged(Id view_id, bool visible) {
+void ViewTreeClientImpl::OnViewVisibilityChanged(Id view_id, bool visible) {
   // TODO(sky): there is a race condition here. If this client and another
   // client change the visibility at the same time the wrong value may be set.
   // Deal with this some how.
@@ -385,13 +385,13 @@ void ViewManagerClientImpl::OnViewVisibilityChanged(Id view_id, bool visible) {
     ViewPrivate(view).LocalSetVisible(visible);
 }
 
-void ViewManagerClientImpl::OnViewDrawnStateChanged(Id view_id, bool drawn) {
+void ViewTreeClientImpl::OnViewDrawnStateChanged(Id view_id, bool drawn) {
   View* view = GetViewById(view_id);
   if (view)
     ViewPrivate(view).LocalSetDrawn(drawn);
 }
 
-void ViewManagerClientImpl::OnViewSharedPropertyChanged(
+void ViewTreeClientImpl::OnViewSharedPropertyChanged(
     Id view_id,
     const String& name,
     Array<uint8_t> new_data) {
@@ -408,7 +408,7 @@ void ViewManagerClientImpl::OnViewSharedPropertyChanged(
   }
 }
 
-void ViewManagerClientImpl::OnViewInputEvent(
+void ViewTreeClientImpl::OnViewInputEvent(
     Id view_id,
     EventPtr event,
     const Callback<void()>& ack_callback) {
@@ -421,7 +421,7 @@ void ViewManagerClientImpl::OnViewInputEvent(
   ack_callback.Run();
 }
 
-void ViewManagerClientImpl::OnViewFocused(Id focused_view_id) {
+void ViewTreeClientImpl::OnViewFocused(Id focused_view_id) {
   View* focused = GetViewById(focused_view_id);
   View* blurred = focused_view_;
   if (blurred) {
@@ -436,14 +436,14 @@ void ViewManagerClientImpl::OnViewFocused(Id focused_view_id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewManagerClientImpl, private:
+// ViewTreeClientImpl, private:
 
-void ViewManagerClientImpl::OnActionCompleted(bool success) {
+void ViewTreeClientImpl::OnActionCompleted(bool success) {
   if (!change_acked_callback_.is_null())
     change_acked_callback_.Run();
 }
 
-Callback<void(bool)> ViewManagerClientImpl::ActionCompletedCallback() {
+Callback<void(bool)> ViewTreeClientImpl::ActionCompletedCallback() {
   return [this](bool success) { OnActionCompleted(success); };
 }
 

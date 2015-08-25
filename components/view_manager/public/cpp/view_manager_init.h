@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
@@ -38,7 +38,7 @@ class ViewManagerInit {
  private:
   class ClientFactory;
 
-  void OnCreate(InterfaceRequest<ViewManagerClient> request);
+  void OnCreate(InterfaceRequest<ViewTreeClient> request);
 
   ApplicationImpl* app_;
   scoped_ptr<ApplicationConnection> connection_;

@@ -14,7 +14,7 @@
 namespace view_manager {
 
 class ConnectionManager;
-class ViewManagerServiceImpl;
+class ViewTreeImpl;
 
 // ViewManagerRootConnection is a server-side object that encapsulates the
 // connection between a client of the ViewManagerRoot and its implementation.
@@ -29,8 +29,8 @@ class ViewManagerRootConnection : public ViewManagerRootDelegate {
       scoped_ptr<ViewManagerRootImpl> view_manager_root,
       ConnectionManager* connection_manager);
 
-  void set_view_manager_service(ViewManagerServiceImpl* service) {
-    service_ = service;
+  void set_view_tree(ViewTreeImpl* tree) {
+    tree_ = tree;
   }
 
   ViewManagerRootImpl* view_manager_root() { return root_.get();}
@@ -49,11 +49,11 @@ class ViewManagerRootConnection : public ViewManagerRootDelegate {
   // ViewManagerRootDelegate:
   void OnDisplayInitialized() override;
   void OnDisplayClosed() override;
-  ViewManagerServiceImpl* GetViewManagerService() override;
+  ViewTreeImpl* GetViewTree() override;
 
  private:
   scoped_ptr<ViewManagerRootImpl> root_;
-  ViewManagerServiceImpl* service_;
+  ViewTreeImpl* tree_;
   ConnectionManager* connection_manager_;
   bool connection_closed_;
 
@@ -66,7 +66,7 @@ class ViewManagerRootConnectionImpl : public ViewManagerRootConnection {
   ViewManagerRootConnectionImpl(
       mojo::InterfaceRequest<mojo::ViewManagerRoot> request,
       scoped_ptr<ViewManagerRootImpl> root,
-      mojo::ViewManagerClientPtr client,
+      mojo::ViewTreeClientPtr client,
       ConnectionManager* connection_manager);
 
  private:
@@ -76,7 +76,7 @@ class ViewManagerRootConnectionImpl : public ViewManagerRootConnection {
   void OnDisplayInitialized() override;
 
   mojo::Binding<mojo::ViewManagerRoot> binding_;
-  mojo::ViewManagerClientPtr client_;
+  mojo::ViewTreeClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerRootConnectionImpl);
 };

@@ -82,7 +82,7 @@ ApplicationDelegate* ViewManagerTestBase::GetApplicationDelegate() {
 
 bool ViewManagerTestBase::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  connection->AddService<ViewManagerClient>(this);
+  connection->AddService<ViewTreeClient>(this);
   return true;
 }
 
@@ -96,7 +96,7 @@ void ViewManagerTestBase::OnViewManagerDestroyed(ViewManager* view_manager) {
 }
 
 void ViewManagerTestBase::Create(ApplicationConnection* connection,
-                                 InterfaceRequest<ViewManagerClient> request) {
+                                 InterfaceRequest<ViewTreeClient> request) {
   ViewManager::Create(this, request.Pass());
 }
 

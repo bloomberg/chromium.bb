@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_CLIENT_IMPL_H_
-#define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_CLIENT_IMPL_H_
+#ifndef COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_TREE_CLIENT_IMPL_H_
+#define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_TREE_CLIENT_IMPL_H_
 
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
@@ -17,14 +17,13 @@ class ViewManagerDelegate;
 class ViewManagerTransaction;
 
 // Manages the connection with the View Manager service.
-class ViewManagerClientImpl : public ViewManager,
-                              public ViewManagerClient {
+class ViewTreeClientImpl : public ViewManager, public ViewTreeClient {
  public:
-  ViewManagerClientImpl(ViewManagerDelegate* delegate,
-                        InterfaceRequest<ViewManagerClient> request);
-  ~ViewManagerClientImpl() override;
+  ViewTreeClientImpl(ViewManagerDelegate* delegate,
+                     InterfaceRequest<ViewTreeClient> request);
+  ~ViewTreeClientImpl() override;
 
-  bool connected() const { return service_; }
+  bool connected() const { return tree_; }
   ConnectionSpecificId connection_id() const { return connection_id_; }
 
   // API exposed to the view implementations that pushes local changes to the
@@ -57,7 +56,7 @@ class ViewManagerClientImpl : public ViewManager,
              Id view_id,
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_services);
-  void Embed(Id view_id, ViewManagerClientPtr client);
+  void Embed(Id view_id, ViewTreeClientPtr client);
   void EmbedAllowingReembed(mojo::URLRequestPtr request, Id view_id);
 
   void set_change_acked_callback(const Callback<void(void)>& callback) {
@@ -89,10 +88,10 @@ class ViewManagerClientImpl : public ViewManager,
   View* CreateView() override;
   void SetEmbedRoot() override;
 
-  // Overridden from ViewManagerClient:
+  // Overridden from ViewTreeClient:
   void OnEmbed(ConnectionSpecificId connection_id,
                ViewDataPtr root,
-               ViewManagerServicePtr view_manager_service,
+               ViewTreePtr tree,
                Id focused_view_id) override;
   void OnEmbedForDescendant(
       Id view,
@@ -144,16 +143,16 @@ class ViewManagerClientImpl : public ViewManager,
   View* focused_view_;
   View* activated_view_;
 
-  Binding<ViewManagerClient> binding_;
-  ViewManagerServicePtr service_;
+  Binding<ViewTreeClient> binding_;
+  ViewTreePtr tree_;
 
   bool is_embed_root_;
 
   bool in_destructor_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ViewTreeClientImpl);
 };
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_MANAGER_CLIENT_IMPL_H_
+#endif  // COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_LIB_VIEW_TREE_CLIENT_IMPL_H_

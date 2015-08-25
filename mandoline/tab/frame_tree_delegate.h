@@ -6,7 +6,7 @@
 #define MANDOLINE_TAB_FRAME_TREE_DELEGATE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
@@ -42,7 +42,7 @@ class FrameTreeDelegate {
       mojo::URLRequestPtr request,
       FrameTreeClient** frame_tree_client,
       scoped_ptr<FrameUserData>* frame_user_data,
-      mojo::ViewManagerClientPtr* view_manager_client) = 0;
+      mojo::ViewTreeClientPtr* view_tree_client) = 0;
 
   // Invoked when a navigation in |frame| has been initiated.
   virtual void DidStartNavigation(Frame* frame) = 0;

@@ -7,7 +7,7 @@
 
 namespace view_manager {
 
-class ViewManagerServiceImpl;
+class ViewTreeImpl;
 
 // A ViewManagerRootDelegate interface is implemented by an object that
 // has the ViewManagerServiceImpl that is associated with the
@@ -24,8 +24,8 @@ class ViewManagerRootDelegate {
   // Called when the window associated with the root is closed.
   virtual void OnDisplayClosed() = 0;
 
-  // Returns the ViewManagerServiceImpl associated with the delegate.
-  virtual ViewManagerServiceImpl* GetViewManagerService() = 0;
+  // Returns the ViewTreeImpl associated with the delegate.
+  virtual ViewTreeImpl* GetViewTree() = 0;
 
  protected:
   virtual ~ViewManagerRootDelegate() {}

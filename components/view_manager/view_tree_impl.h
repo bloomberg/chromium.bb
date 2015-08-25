@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIEW_MANAGER_VIEW_MANAGER_SERVICE_IMPL_H_
-#define COMPONENTS_VIEW_MANAGER_VIEW_MANAGER_SERVICE_IMPL_H_
+#ifndef COMPONENTS_VIEW_MANAGER_VIEW_TREE_IMPL_H_
+#define COMPONENTS_VIEW_MANAGER_VIEW_TREE_IMPL_H_
 
 #include <set>
 #include <string>
@@ -16,7 +16,7 @@
 #include "components/view_manager/access_policy_delegate.h"
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/interfaces/surface_id.mojom.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 
 namespace gfx {
 class Rect;
@@ -28,32 +28,30 @@ class AccessPolicy;
 class ConnectionManager;
 class ServerView;
 
-// An instance of ViewManagerServiceImpl is created for every ViewManagerService
-// request. ViewManagerServiceImpl tracks all the state and views created by a
-// client. ViewManagerServiceImpl coordinates with ConnectionManager to update
-// the client (and internal state) as necessary.
-class ViewManagerServiceImpl : public mojo::ViewManagerService,
-                               public AccessPolicyDelegate {
+// An instance of ViewTreeImpl is created for every ViewTree request.
+// ViewTreeImpl tracks all the state and views created by a client. ViewTreeImpl
+// coordinates with ConnectionManager to update the client (and internal state)
+// as necessary.
+class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
  public:
-  ViewManagerServiceImpl(ConnectionManager* connection_manager,
-                         mojo::ConnectionSpecificId creator_id,
-                         const ViewId& root_id);
-  ~ViewManagerServiceImpl() override;
+   ViewTreeImpl(ConnectionManager* connection_manager,
+                mojo::ConnectionSpecificId creator_id,
+                const ViewId& root_id);
+   ~ViewTreeImpl() override;
 
   // |services| and |exposed_services| are the ServiceProviders to pass to the
   // client via OnEmbed().
-  void Init(mojo::ViewManagerClient* client,
-            mojo::ViewManagerServicePtr service_ptr);
+  void Init(mojo::ViewTreeClient* client, mojo::ViewTreePtr tree);
 
   mojo::ConnectionSpecificId id() const { return id_; }
   mojo::ConnectionSpecificId creator_id() const { return creator_id_; }
 
-  mojo::ViewManagerClient* client() { return client_; }
+  mojo::ViewTreeClient* client() { return client_; }
 
   // Returns the View with the specified id.
   ServerView* GetView(const ViewId& id) {
     return const_cast<ServerView*>(
-        const_cast<const ViewManagerServiceImpl*>(this)->GetView(id));
+        const_cast<const ViewTreeImpl*>(this)->GetView(id));
   }
   const ServerView* GetView(const ViewId& id) const;
 
@@ -67,11 +65,10 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   bool is_embed_root() const { return is_embed_root_; }
 
   // Invoked when a connection is about to be destroyed.
-  void OnWillDestroyViewManagerServiceImpl(ViewManagerServiceImpl* connection);
+  void OnWillDestroyViewTreeImpl(ViewTreeImpl* connection);
 
   // These functions are synchronous variants of those defined in the mojom. The
-  // ViewManagerService implementations all call into these. See the mojom for
-  // details.
+  // ViewTree implementations all call into these. See the mojom for details.
   mojo::ErrorCode CreateView(const ViewId& view_id);
   bool AddView(const ViewId& parent_id, const ViewId& child_id);
   std::vector<const ServerView*> GetViewTree(const ViewId& view_id) const;
@@ -79,7 +76,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   void EmbedAllowingReembed(const ViewId& view_id,
                             mojo::URLRequestPtr request,
                             const mojo::Callback<void(bool)>& callback);
-  bool Embed(const ViewId& view_id, mojo::ViewManagerClientPtr client);
+  bool Embed(const ViewId& view_id, mojo::ViewTreeClientPtr client);
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
@@ -129,7 +126,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
 
   // Deletes a view owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
-  bool DeleteViewImpl(ViewManagerServiceImpl* source, ServerView* view);
+  bool DeleteViewImpl(ViewTreeImpl* source, ServerView* view);
 
   // If |view| is known (in |known_views_|) does nothing. Otherwise adds |view|
   // to |views|, marks |view| as known and recurses.
@@ -168,10 +165,10 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   void PrepareForEmbed(const ViewId& view_id);
   void RemoveChildrenAsPartOfEmbed(const ViewId& view_id);
   void OnEmbedForDescendantDone(scoped_refptr<PendingEmbed> pending_embed,
-                                mojo::ViewManagerClientPtr client);
+                                mojo::ViewTreeClientPtr client);
 
   // Invalidates any PendingEmbeds with |connection| as the embed root.
-  void InvalidatePendingEmbedForConnection(ViewManagerServiceImpl* connection);
+  void InvalidatePendingEmbedForConnection(ViewTreeImpl* connection);
 
   // Invalidates any PendingEmbemds targetting |view_id|.
   void InvalidatePendingEmbedForView(const ViewId& view_id);
@@ -180,7 +177,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   void RemovePendingEmbedAndNotifyCallback(scoped_refptr<PendingEmbed> embed,
                                            bool success);
 
-  // ViewManagerService:
+  // ViewTree:
   void CreateView(
       mojo::Id transport_view_id,
       const mojo::Callback<void(mojo::ErrorCode)>& callback) override;
@@ -214,7 +211,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
                        const mojo::Callback<void(bool)>& callback) override;
   void SetEmbedRoot() override;
   void Embed(mojo::Id transport_view_id,
-             mojo::ViewManagerClientPtr client,
+             mojo::ViewTreeClientPtr client,
              const mojo::Callback<void(bool)>& callback) override;
   void EmbedAllowingReembed(
       mojo::Id transport_view_id,
@@ -244,7 +241,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   // created by the root, or the connection that created us has been destroyed.
   mojo::ConnectionSpecificId creator_id_;
 
-  mojo::ViewManagerClient* client_;
+  mojo::ViewTreeClient* client_;
 
   scoped_ptr<AccessPolicy> access_policy_;
 
@@ -267,9 +264,9 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   // view embed was called for is removed.
   std::set<scoped_refptr<PendingEmbed>> pending_embeds_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewManagerServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(ViewTreeImpl);
 };
 
 }  // namespace view_manager
 
-#endif  // COMPONENTS_VIEW_MANAGER_VIEW_MANAGER_SERVICE_IMPL_H_
+#endif  // COMPONENTS_VIEW_MANAGER_VIEW_TREE_IMPL_H_

@@ -6,30 +6,30 @@
 #define COMPONENTS_VIEW_MANAGER_CLIENT_CONNECTION_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace view_manager {
 
 class ConnectionManager;
-class ViewManagerServiceImpl;
+class ViewTreeImpl;
 
 // ClientConnection encapsulates the state needed for a single client connected
 // to the view manager.
 class ClientConnection {
  public:
-  ClientConnection(scoped_ptr<ViewManagerServiceImpl> service,
-                   mojo::ViewManagerClient* client);
+  ClientConnection(scoped_ptr<ViewTreeImpl> service,
+                   mojo::ViewTreeClient* client);
   virtual ~ClientConnection();
 
-  ViewManagerServiceImpl* service() { return service_.get(); }
-  const ViewManagerServiceImpl* service() const { return service_.get(); }
+  ViewTreeImpl* service() { return service_.get(); }
+  const ViewTreeImpl* service() const { return service_.get(); }
 
-  mojo::ViewManagerClient* client() { return client_; }
+  mojo::ViewTreeClient* client() { return client_; }
 
  private:
-  scoped_ptr<ViewManagerServiceImpl> service_;
-  mojo::ViewManagerClient* client_;
+  scoped_ptr<ViewTreeImpl> service_;
+  mojo::ViewTreeClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientConnection);
 };
@@ -38,16 +38,16 @@ class ClientConnection {
 class DefaultClientConnection : public ClientConnection {
  public:
   DefaultClientConnection(
-      scoped_ptr<ViewManagerServiceImpl> service_impl,
+      scoped_ptr<ViewTreeImpl> service_impl,
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
-      mojo::ViewManagerClientPtr client);
+      mojo::InterfaceRequest<mojo::ViewTree> service_request,
+      mojo::ViewTreeClientPtr client);
   ~DefaultClientConnection() override;
 
  private:
   ConnectionManager* connection_manager_;
-  mojo::Binding<mojo::ViewManagerService> binding_;
-  mojo::ViewManagerClientPtr client_;
+  mojo::Binding<mojo::ViewTree> binding_;
+  mojo::ViewTreeClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultClientConnection);
 };

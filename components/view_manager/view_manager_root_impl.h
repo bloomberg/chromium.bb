@@ -23,7 +23,7 @@ namespace view_manager {
 
 class ConnectionManager;
 class ViewManagerRootDelegate;
-class ViewManagerServiceImpl;
+class ViewTreeImpl;
 
 // ViewManagerRootImpl is an implementation of the ViewManagerRoot interface.
 // It serves as a top level root view for a window. Its lifetime is managed by
@@ -47,7 +47,7 @@ class ViewManagerRootImpl : public DisplayManagerDelegate,
   // Initializes state that depends on the existence of a ViewManagerRootImpl.
   void Init(ViewManagerRootDelegate* delegate);
 
-  ViewManagerServiceImpl* GetViewManagerService();
+  ViewTreeImpl* GetViewTree();
 
   mojo::ViewManagerRootClient* client() const { return client_.get(); }
 

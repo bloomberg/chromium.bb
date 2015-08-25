@@ -58,8 +58,8 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
     return;
   }
   scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-  mojo::ViewManagerClientPtr view_manager_client;
-  frame_connection->Init(app_, request.Pass(), &view_manager_client);
+  mojo::ViewTreeClientPtr view_tree_client;
+  frame_connection->Init(app_, request.Pass(), &view_tree_client);
 
   Frame::ClientPropertyMap client_properties;
   if (devtools_agent_) {
@@ -72,12 +72,12 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
   FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
   frame_tree_.reset(new FrameTree(content_, this, frame_tree_client,
                                   frame_connection.Pass(), client_properties));
-  content_->Embed(view_manager_client.Pass());
+  content_->Embed(view_tree_client.Pass());
 }
 
-void WebViewImpl::GetViewManagerClient(
-    mojo::InterfaceRequest<mojo::ViewManagerClient> view_manager_client) {
-  mojo::ViewManager::Create(nullptr, view_manager_client.Pass());
+void WebViewImpl::GetViewTreeClient(
+    mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client) {
+  mojo::ViewManager::Create(nullptr, view_tree_client.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -146,9 +146,9 @@ bool WebViewImpl::CanNavigateFrame(
     mojo::URLRequestPtr request,
     FrameTreeClient** frame_tree_client,
     scoped_ptr<FrameUserData>* frame_user_data,
-    mojo::ViewManagerClientPtr* view_manager_client) {
+    mojo::ViewTreeClientPtr* view_tree_client) {
   scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-  frame_connection->Init(app_, request.Pass(), view_manager_client);
+  frame_connection->Init(app_, request.Pass(), view_tree_client);
   *frame_tree_client = frame_connection->frame_tree_client();
   *frame_user_data = frame_connection.Pass();
   return true;

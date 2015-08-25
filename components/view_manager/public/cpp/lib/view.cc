@@ -7,8 +7,8 @@
 #include <set>
 #include <string>
 
-#include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
 #include "components/view_manager/public/cpp/lib/view_private.h"
+#include "components/view_manager/public/cpp/lib/view_tree_client_impl.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tracker.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
@@ -174,7 +174,7 @@ class ScopedSetBoundsNotifier {
 // Some operations are only permitted in the connection that created the view.
 bool OwnsView(ViewManager* manager, View* view) {
   return !manager ||
-      static_cast<ViewManagerClientImpl*>(manager)->OwnsView(view->id());
+      static_cast<ViewTreeClientImpl*>(manager)->OwnsView(view->id());
 }
 
 }  // namespace
@@ -187,7 +187,7 @@ void View::Destroy() {
     return;
 
   if (manager_)
-    static_cast<ViewManagerClientImpl*>(manager_)->DestroyView(id_);
+    static_cast<ViewTreeClientImpl*>(manager_)->DestroyView(id_);
   while (!children_.empty()) {
     View* child = children_.front();
     if (!OwnsView(manager_, child)) {
@@ -210,7 +210,7 @@ void View::SetBounds(const Rect& bounds) {
     return;
 
   if (manager_)
-    static_cast<ViewManagerClientImpl*>(manager_)->SetBounds(id_, bounds);
+    static_cast<ViewTreeClientImpl*>(manager_)->SetBounds(id_, bounds);
   LocalSetBounds(bounds_, bounds);
 }
 
@@ -219,7 +219,7 @@ void View::SetVisible(bool value) {
     return;
 
   if (manager_)
-    static_cast<ViewManagerClientImpl*>(manager_)->SetVisible(id_, value);
+    static_cast<ViewTreeClientImpl*>(manager_)->SetVisible(id_, value);
   LocalSetVisible(value);
 }
 
@@ -254,7 +254,7 @@ void View::SetSharedProperty(const std::string& name,
       if (value->size())
         memcpy(&transport_value.front(), &(value->front()), value->size());
     }
-    static_cast<ViewManagerClientImpl*>(manager_)->SetProperty(
+    static_cast<ViewTreeClientImpl*>(manager_)->SetProperty(
         id_, name, transport_value.Pass());
   }
 
@@ -291,7 +291,7 @@ void View::AddChild(View* child) {
     CHECK_EQ(child->view_manager(), manager_);
   LocalAddChild(child);
   if (manager_)
-    static_cast<ViewManagerClientImpl*>(manager_)->AddChild(child->id(), id_);
+    static_cast<ViewTreeClientImpl*>(manager_)->AddChild(child->id(), id_);
 }
 
 void View::RemoveChild(View* child) {
@@ -301,8 +301,7 @@ void View::RemoveChild(View* child) {
     CHECK_EQ(child->view_manager(), manager_);
   LocalRemoveChild(child);
   if (manager_) {
-    static_cast<ViewManagerClientImpl*>(manager_)->RemoveChild(child->id(),
-                                                               id_);
+    static_cast<ViewTreeClientImpl*>(manager_)->RemoveChild(child->id(), id_);
   }
 }
 
@@ -322,9 +321,8 @@ void View::Reorder(View* relative, OrderDirection direction) {
   if (!LocalReorder(relative, direction))
     return;
   if (manager_) {
-    static_cast<ViewManagerClientImpl*>(manager_)->Reorder(id_,
-                                                            relative->id(),
-                                                            direction);
+    static_cast<ViewTreeClientImpl*>(manager_)->Reorder(id_, relative->id(),
+                                                        direction);
   }
 }
 
@@ -357,13 +355,13 @@ View* View::GetChildById(Id id) {
 
 void View::SetSurfaceId(SurfaceIdPtr id) {
   if (manager_) {
-    static_cast<ViewManagerClientImpl*>(manager_)->SetSurfaceId(id_, id.Pass());
+    static_cast<ViewTreeClientImpl*>(manager_)->SetSurfaceId(id_, id.Pass());
   }
 }
 
 void View::SetTextInputState(TextInputStatePtr state) {
   if (manager_) {
-    static_cast<ViewManagerClientImpl*>(manager_)
+    static_cast<ViewTreeClientImpl*>(manager_)
         ->SetViewTextInputState(id_, state.Pass());
   }
 }
@@ -372,28 +370,28 @@ void View::SetImeVisibility(bool visible, TextInputStatePtr state) {
   // SetImeVisibility() shouldn't be used if the view is not editable.
   DCHECK(state.is_null() || state->type != TEXT_INPUT_TYPE_NONE);
   if (manager_) {
-    static_cast<ViewManagerClientImpl*>(manager_)
+    static_cast<ViewTreeClientImpl*>(manager_)
         ->SetImeVisibility(id_, visible, state.Pass());
   }
 }
 
 void View::SetFocus() {
   if (manager_)
-    static_cast<ViewManagerClientImpl*>(manager_)->SetFocus(id_);
+    static_cast<ViewTreeClientImpl*>(manager_)->SetFocus(id_);
 }
 
 bool View::HasFocus() const {
   return manager_ && manager_->GetFocusedView() == this;
 }
 
-void View::Embed(ViewManagerClientPtr client) {
+void View::Embed(ViewTreeClientPtr client) {
   if (PrepareForEmbed())
-    static_cast<ViewManagerClientImpl*>(manager_)->Embed(id_, client.Pass());
+    static_cast<ViewTreeClientImpl*>(manager_)->Embed(id_, client.Pass());
 }
 
 void View::EmbedAllowingReembed(mojo::URLRequestPtr request) {
   if (PrepareForEmbed()) {
-    static_cast<ViewManagerClientImpl*>(manager_)
+    static_cast<ViewTreeClientImpl*>(manager_)
         ->EmbedAllowingReembed(request.Pass(), id_);
   }
 }
@@ -436,9 +434,9 @@ View::~View() {
   }
 
   // TODO(beng): It'd be better to do this via a destruction observer in the
-  //             ViewManagerClientImpl.
+  //             ViewTreeClientImpl.
   if (manager_)
-    static_cast<ViewManagerClientImpl*>(manager_)->RemoveView(id_);
+    static_cast<ViewTreeClientImpl*>(manager_)->RemoveView(id_);
 
   // Clear properties.
   for (auto& pair : prop_map_) {
@@ -450,7 +448,7 @@ View::~View() {
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroyed(this));
 
   if (manager_ && manager_->GetRoot() == this)
-    static_cast<ViewManagerClientImpl*>(manager_)->OnRootDestroyed(this);
+    static_cast<ViewTreeClientImpl*>(manager_)->OnRootDestroyed(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -608,7 +606,7 @@ void View::NotifyViewVisibilityChangedUp(View* target) {
 
 bool View::PrepareForEmbed() {
   if (!OwnsView(manager_, this) &&
-      !static_cast<ViewManagerClientImpl*>(manager_)->is_embed_root()) {
+      !static_cast<ViewTreeClientImpl*>(manager_)->is_embed_root()) {
     return false;
   }
 

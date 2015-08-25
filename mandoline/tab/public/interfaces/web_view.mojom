@@ -5,7 +5,7 @@
 module web_view.mojom;
 
 import "network/public/interfaces/url_loader.mojom";
-import "components/view_manager/public/interfaces/view_manager.mojom";
+import "components/view_manager/public/interfaces/view_tree.mojom";
 
 interface WebViewClient {
   // Page-generated request for a top level frame navigation.
@@ -20,8 +20,8 @@ interface WebView {
   // Navigate the top level frame to |request|.
   LoadRequest(mojo.URLRequest request);
 
-  // Provide a ViewManagerClient for this specific WebView.
-  GetViewManagerClient(mojo.ViewManagerClient& view_manager_client);
+  // Provide a ViewTreeClient for this specific WebView.
+  GetViewTreeClient(mojo.ViewTreeClient& view_tree_client);
 };
 
 interface WebViewFactory {

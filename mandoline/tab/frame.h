@@ -100,7 +100,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
   // Called in response to FrameTreeClient::OnWillNavigate().
   void OnWillNavigateAck(FrameTreeClient* frame_tree_client,
                          scoped_ptr<FrameUserData> user_data,
-                         mojo::ViewManagerClientPtr view_manager_client);
+                         mojo::ViewTreeClientPtr view_tree_client);
 
   void SetView(mojo::View* view);
 

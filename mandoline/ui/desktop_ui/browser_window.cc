@@ -268,9 +268,9 @@ void BrowserWindow::ShowOmnibox() {
 }
 
 void BrowserWindow::EmbedOmnibox(mojo::ApplicationConnection* connection) {
-  mojo::ViewManagerClientPtr view_manager_client;
-  connection->ConnectToService(&view_manager_client);
-  omnibox_view_->Embed(view_manager_client.Pass());
+  mojo::ViewTreeClientPtr view_tree_client;
+  connection->ConnectToService(&view_tree_client);
+  omnibox_view_->Embed(view_tree_client.Pass());
 
   // TODO(beng): This should be handled sufficiently by
   //             OmniboxImpl::ShowWindow() but unfortunately view manager policy

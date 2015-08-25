@@ -29,7 +29,7 @@ bool TestFrameTreeDelegate::CanNavigateFrame(
     mojo::URLRequestPtr request,
     FrameTreeClient** frame_tree_client,
     scoped_ptr<FrameUserData>* frame_user_data,
-    mojo::ViewManagerClientPtr* view_manager_client) {
+    mojo::ViewTreeClientPtr* view_tree_client) {
   return false;
 }
 

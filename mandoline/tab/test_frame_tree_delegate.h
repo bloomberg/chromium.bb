@@ -27,7 +27,7 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
       mojo::URLRequestPtr request,
       FrameTreeClient** frame_tree_client,
       scoped_ptr<FrameUserData>* frame_user_data,
-      mojo::ViewManagerClientPtr* view_manager_client) override;
+      mojo::ViewTreeClientPtr* view_tree_client) override;
   void DidStartNavigation(Frame* frame) override;
 
  private:

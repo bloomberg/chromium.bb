@@ -14,12 +14,12 @@
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/cpp/util.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/surfaces/surfaces_state.h"
 #include "components/view_manager/test_change_tracker.h"
 #include "components/view_manager/view_manager_root_connection.h"
-#include "components/view_manager/view_manager_service_impl.h"
+#include "components/view_manager/view_tree_impl.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,20 +38,20 @@ namespace {
 
 // -----------------------------------------------------------------------------
 
-// ViewManagerClient implementation that logs all calls to a TestChangeTracker.
-// TODO(sky): refactor so both this and ViewManagerServiceAppTest share code.
-class TestViewManagerClient : public mojo::ViewManagerClient {
+// ViewTreeClient implementation that logs all calls to a TestChangeTracker.
+// TODO(sky): refactor so both this and ViewTreeAppTest share code.
+class TestViewTreeClient : public mojo::ViewTreeClient {
  public:
-  TestViewManagerClient() {}
-  ~TestViewManagerClient() override {}
+  TestViewTreeClient() {}
+  ~TestViewTreeClient() override {}
 
   TestChangeTracker* tracker() { return &tracker_; }
 
  private:
-  // ViewManagerClient:
+  // ViewTreeClient:
   void OnEmbed(uint16_t connection_id,
                ViewDataPtr root,
-               mojo::ViewManagerServicePtr view_manager_service,
+               mojo::ViewTreePtr tree,
                mojo::Id focused_view_id) override {
     // TODO(sky): add test coverage of |focused_view_id|.
     tracker_.OnEmbed(connection_id, root.Pass());
@@ -109,23 +109,23 @@ class TestViewManagerClient : public mojo::ViewManagerClient {
 
   TestChangeTracker tracker_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestViewManagerClient);
+  DISALLOW_COPY_AND_ASSIGN(TestViewTreeClient);
 };
 
 // -----------------------------------------------------------------------------
 
-// ClientConnection implementation that vends TestViewManagerClient.
+// ClientConnection implementation that vends TestViewTreeClient.
 class TestClientConnection : public ClientConnection {
  public:
-  explicit TestClientConnection(scoped_ptr<ViewManagerServiceImpl> service_impl)
+  explicit TestClientConnection(scoped_ptr<ViewTreeImpl> service_impl)
       : ClientConnection(service_impl.Pass(), &client_) {}
 
-  TestViewManagerClient* client() { return &client_; }
+  TestViewTreeClient* client() { return &client_; }
 
  private:
   ~TestClientConnection() override {}
 
-  TestViewManagerClient client_;
+  TestViewTreeClient client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientConnection);
 };
@@ -138,7 +138,7 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   TestConnectionManagerDelegate() : last_connection_(nullptr) {}
   ~TestConnectionManagerDelegate() override {}
 
-  TestViewManagerClient* last_client() {
+  TestViewTreeClient* last_client() {
     return last_connection_ ? last_connection_->client() : nullptr;
   }
 
@@ -150,24 +150,24 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
 
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
+      mojo::InterfaceRequest<mojo::ViewTree> service_request,
       mojo::ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
       const ViewId& root_id) override {
-    scoped_ptr<ViewManagerServiceImpl> service(
-        new ViewManagerServiceImpl(connection_manager, creator_id, root_id));
+    scoped_ptr<ViewTreeImpl> service(
+        new ViewTreeImpl(connection_manager, creator_id, root_id));
     last_connection_ = new TestClientConnection(service.Pass());
     return last_connection_;
   }
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
+      mojo::InterfaceRequest<mojo::ViewTree> service_request,
       mojo::ConnectionSpecificId creator_id,
       const ViewId& root_id,
-      mojo::ViewManagerClientPtr client) override {
+      mojo::ViewTreeClientPtr client) override {
     // Used by ConnectionManager::AddRoot.
-    scoped_ptr<ViewManagerServiceImpl> service(
-        new ViewManagerServiceImpl(connection_manager, creator_id, root_id));
+    scoped_ptr<ViewTreeImpl> service(
+        new ViewTreeImpl(connection_manager, creator_id, root_id));
     last_connection_ = new TestClientConnection(service.Pass());
     return last_connection_;
   }
@@ -190,10 +190,10 @@ class TestViewManagerRootConnection : public ViewManagerRootConnection {
   // ViewManagerRootDelegate:
   void OnDisplayInitialized() override {
     connection_manager()->AddRoot(this);
-    set_view_manager_service(connection_manager()->EmbedAtView(
+    set_view_tree(connection_manager()->EmbedAtView(
         kInvalidConnectionId,
         view_manager_root()->root_view()->id(),
-        mojo::ViewManagerClientPtr()));
+        mojo::ViewTreeClientPtr()));
   }
   DISALLOW_COPY_AND_ASSIGN(TestViewManagerRootConnection);
 };
@@ -271,17 +271,17 @@ mojo::EventPtr CreatePointerUpEvent(int x, int y) {
 
 // -----------------------------------------------------------------------------
 
-class ViewManagerServiceTest : public testing::Test {
+class ViewTreeTest : public testing::Test {
  public:
-  ViewManagerServiceTest() : wm_client_(nullptr) {}
-  ~ViewManagerServiceTest() override {}
+  ViewTreeTest() : wm_client_(nullptr) {}
+  ~ViewTreeTest() override {}
 
-  // ViewManagerServiceImpl for the window manager.
-  ViewManagerServiceImpl* wm_connection() {
+  // ViewTreeImpl for the window manager.
+  ViewTreeImpl* wm_connection() {
     return connection_manager_->GetConnection(1);
   }
 
-  TestViewManagerClient* last_view_manager_client() {
+  TestViewTreeClient* last_view_tree_client() {
     return delegate_.last_client();
   }
 
@@ -291,7 +291,7 @@ class ViewManagerServiceTest : public testing::Test {
 
   ConnectionManager* connection_manager() { return connection_manager_.get(); }
 
-  TestViewManagerClient* wm_client() { return wm_client_; }
+  TestViewTreeClient* wm_client() { return wm_client_; }
 
   TestViewManagerRootConnection* root_connection() { return root_connection_; }
 
@@ -314,15 +314,15 @@ class ViewManagerServiceTest : public testing::Test {
   }
 
  private:
-  // TestViewManagerClient that is used for the WM connection.
-  TestViewManagerClient* wm_client_;
+  // TestViewTreeClient that is used for the WM connection.
+  TestViewTreeClient* wm_client_;
   TestDisplayManagerFactory display_manager_factory_;
   TestConnectionManagerDelegate delegate_;
   TestViewManagerRootConnection* root_connection_;
   scoped_ptr<ConnectionManager> connection_manager_;
   base::MessageLoop message_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewManagerServiceTest);
+  DISALLOW_COPY_AND_ASSIGN(ViewTreeTest);
 };
 
 namespace {
@@ -342,7 +342,7 @@ const ServerView* GetFirstCloned(const ServerView* view) {
 //       2,2 bounds=2,3 6x7
 //         2,3 bounds=3,4 6x7
 // CloneAndAnimate() is invoked for 2,2.
-void SetUpAnimate1(ViewManagerServiceTest* test, ViewId* embed_view_id) {
+void SetUpAnimate1(ViewTreeTest* test, ViewId* embed_view_id) {
   *embed_view_id = ViewId(test->wm_connection()->id(), 1);
   EXPECT_EQ(ERROR_CODE_NONE, test->wm_connection()->CreateView(*embed_view_id));
   EXPECT_TRUE(test->wm_connection()->SetViewVisibility(*embed_view_id, true));
@@ -351,7 +351,7 @@ void SetUpAnimate1(ViewManagerServiceTest* test, ViewId* embed_view_id) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   test->wm_connection()->EmbedAllowingReembed(*embed_view_id, request.Pass(),
                                               mojo::Callback<void(bool)>());
-  ViewManagerServiceImpl* connection1 =
+  ViewTreeImpl* connection1 =
       test->connection_manager()->GetConnectionWithRoot(*embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
   ASSERT_NE(connection1, test->wm_connection());
@@ -377,7 +377,7 @@ void SetUpAnimate1(ViewManagerServiceTest* test, ViewId* embed_view_id) {
   EXPECT_TRUE(connection1->AddView(child1, child2));
   EXPECT_TRUE(connection1->AddView(child2, child3));
 
-  TestViewManagerClient* connection1_client = test->last_view_manager_client();
+  TestViewTreeClient* connection1_client = test->last_view_tree_client();
   connection1_client->tracker()->changes()->clear();
   test->wm_client()->tracker()->changes()->clear();
   EXPECT_TRUE(test->connection_manager()->CloneAndAnimate(child2));
@@ -397,19 +397,19 @@ void SetUpAnimate1(ViewManagerServiceTest* test, ViewId* embed_view_id) {
   EXPECT_EQ(v3->bounds(), cloned_view->GetChildren()[0]->bounds());
 
   // Cloned views are owned by the ConnectionManager and shouldn't be returned
-  // from ViewManagerServiceImpl::GetView.
+  // from ViewTreeImpl::GetView.
   EXPECT_TRUE(connection1->GetView(ClonedViewId()) == nullptr);
   EXPECT_TRUE(test->wm_connection()->GetView(ClonedViewId()) == nullptr);
 }
 
 }  // namespace
 
-// Verifies ViewManagerService::GetViewTree() doesn't return cloned views.
-TEST_F(ViewManagerServiceTest, ConnectionsCantSeeClonedViews) {
+// Verifies ViewTree::GetViewTree() doesn't return cloned views.
+TEST_F(ViewTreeTest, ConnectionsCantSeeClonedViews) {
   ViewId embed_view_id;
   EXPECT_NO_FATAL_FAILURE(SetUpAnimate1(this, &embed_view_id));
 
-  ViewManagerServiceImpl* connection1 =
+  ViewTreeImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
 
   const ViewId child1(connection1->id(), 1);
@@ -436,7 +436,7 @@ TEST_F(ViewManagerServiceTest, ConnectionsCantSeeClonedViews) {
   ASSERT_TRUE(v1_views[3]->id() == child3);
 }
 
-TEST_F(ViewManagerServiceTest, ClonedViewsPromotedOnConnectionClose) {
+TEST_F(ViewTreeTest, ClonedViewsPromotedOnConnectionClose) {
   ViewId embed_view_id;
   EXPECT_NO_FATAL_FAILURE(SetUpAnimate1(this, &embed_view_id));
 
@@ -457,11 +457,11 @@ TEST_F(ViewManagerServiceTest, ClonedViewsPromotedOnConnectionClose) {
   EXPECT_EQ(gfx::Rect(3, 4, 6, 7), cloned_view->GetChildren()[0]->bounds());
 }
 
-TEST_F(ViewManagerServiceTest, ClonedViewsPromotedOnHide) {
+TEST_F(ViewTreeTest, ClonedViewsPromotedOnHide) {
   ViewId embed_view_id;
   EXPECT_NO_FATAL_FAILURE(SetUpAnimate1(this, &embed_view_id));
 
-  ViewManagerServiceImpl* connection1 =
+  ViewTreeImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
 
   // Hide the parent of the cloned view, which should force the cloned view to
@@ -480,7 +480,7 @@ TEST_F(ViewManagerServiceTest, ClonedViewsPromotedOnHide) {
 
 // Clone and animate on a tree with more depth. Basically that of
 // SetUpAnimate1() but cloning 2,1.
-TEST_F(ViewManagerServiceTest, CloneAndAnimateLargerDepth) {
+TEST_F(ViewTreeTest, CloneAndAnimateLargerDepth) {
   const ViewId embed_view_id(wm_connection()->id(), 1);
   EXPECT_EQ(ERROR_CODE_NONE, wm_connection()->CreateView(embed_view_id));
   EXPECT_TRUE(wm_connection()->SetViewVisibility(embed_view_id, true));
@@ -489,7 +489,7 @@ TEST_F(ViewManagerServiceTest, CloneAndAnimateLargerDepth) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   wm_connection()->EmbedAllowingReembed(embed_view_id, request.Pass(),
                                         mojo::Callback<void(bool)>());
-  ViewManagerServiceImpl* connection1 =
+  ViewTreeImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
   ASSERT_NE(connection1, wm_connection());
@@ -510,7 +510,7 @@ TEST_F(ViewManagerServiceTest, CloneAndAnimateLargerDepth) {
   EXPECT_TRUE(connection1->AddView(child1, child2));
   EXPECT_TRUE(connection1->AddView(child2, child3));
 
-  TestViewManagerClient* connection1_client = last_view_manager_client();
+  TestViewTreeClient* connection1_client = last_view_tree_client();
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
   EXPECT_TRUE(connection_manager()->CloneAndAnimate(child1));
@@ -528,7 +528,7 @@ TEST_F(ViewManagerServiceTest, CloneAndAnimateLargerDepth) {
 }
 
 // Verifies focus correctly changes on pointer events.
-TEST_F(ViewManagerServiceTest, FocusOnPointer) {
+TEST_F(ViewTreeTest, FocusOnPointer) {
   const ViewId embed_view_id(wm_connection()->id(), 1);
   EXPECT_EQ(ERROR_CODE_NONE, wm_connection()->CreateView(embed_view_id));
   EXPECT_TRUE(wm_connection()->SetViewVisibility(embed_view_id, true));
@@ -539,7 +539,7 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   wm_connection()->EmbedAllowingReembed(embed_view_id, request.Pass(),
                                         mojo::Callback<void(bool)>());
-  ViewManagerServiceImpl* connection1 =
+  ViewTreeImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
   ASSERT_NE(connection1, wm_connection());
@@ -555,7 +555,7 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
   v1->SetVisible(true);
   v1->SetBounds(gfx::Rect(20, 20, 20, 20));
 
-  TestViewManagerClient* connection1_client = last_view_manager_client();
+  TestViewTreeClient* connection1_client = last_view_tree_client();
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 

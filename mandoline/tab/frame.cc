@@ -155,7 +155,7 @@ void Frame::InitClient() {
 
 void Frame::OnWillNavigateAck(FrameTreeClient* frame_tree_client,
                               scoped_ptr<FrameUserData> user_data,
-                              mojo::ViewManagerClientPtr view_manager_client) {
+                              mojo::ViewTreeClientPtr view_tree_client) {
   while (!children_.empty())
     delete children_[0];
 
@@ -165,7 +165,7 @@ void Frame::OnWillNavigateAck(FrameTreeClient* frame_tree_client,
   loading_ = false;
   progress_ = 0.f;
 
-  view_->Embed(view_manager_client.Pass());
+  view_->Embed(view_tree_client.Pass());
   InitClient();
 }
 
@@ -224,10 +224,10 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
 
   FrameTreeClient* frame_tree_client = nullptr;
   scoped_ptr<FrameUserData> user_data;
-  mojo::ViewManagerClientPtr view_manager_client;
+  mojo::ViewTreeClientPtr view_tree_client;
   if (!tree_->delegate_->CanNavigateFrame(this, request.Pass(),
                                           &frame_tree_client, &user_data,
-                                          &view_manager_client)) {
+                                          &view_tree_client)) {
     return;
   }
 
@@ -238,7 +238,7 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
   ancestor_with_frame_tree_client->frame_tree_client_->OnWillNavigate(
       id_, base::Bind(&Frame::OnWillNavigateAck, weak_factory_.GetWeakPtr(),
                       frame_tree_client, base::Passed(&user_data),
-                      base::Passed(&view_manager_client)));
+                      base::Passed(&view_tree_client)));
 }
 
 void Frame::LoadingStartedImpl() {

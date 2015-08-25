@@ -74,7 +74,7 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(
 
   connection->AddService<mandoline::FrameTreeClient>(this);
   connection->AddService<AxProvider>(this);
-  connection->AddService<mojo::ViewManagerClient>(this);
+  connection->AddService<mojo::ViewTreeClient>(this);
   connection->AddService<devtools_service::DevToolsAgent>(this);
   if (IsTestInterfaceEnabled())
     connection->AddService<TestHTMLViewer>(this);
@@ -263,7 +263,7 @@ void HTMLDocumentOOPIF::Create(
 
 void HTMLDocumentOOPIF::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::ViewManagerClient> request) {
+    mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
   mojo::ViewManager::Create(this, request.Pass());
 }
 

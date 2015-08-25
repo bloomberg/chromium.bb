@@ -47,8 +47,8 @@ class WebViewImpl : public mojom::WebView,
  private:
   // Overridden from WebView:
   void LoadRequest(mojo::URLRequestPtr request) override;
-  void GetViewManagerClient(
-      mojo::InterfaceRequest<mojo::ViewManagerClient> view_manager_client)
+  void GetViewTreeClient(
+      mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client)
           override;
 
   // Overridden from mojo::ViewManagerDelegate:
@@ -73,7 +73,7 @@ class WebViewImpl : public mojom::WebView,
       mojo::URLRequestPtr request,
       mandoline::FrameTreeClient** frame_tree_client,
       scoped_ptr<mandoline::FrameUserData>* frame_user_data,
-      mojo::ViewManagerClientPtr* view_manager_client) override;
+      mojo::ViewTreeClientPtr* view_tree_client) override;
   void DidStartNavigation(Frame* frame) override;
 
   // Overridden from FrameDevToolsAgent::Delegate:

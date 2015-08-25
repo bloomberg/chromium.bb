@@ -25,9 +25,9 @@ void WebView::Init(mojo::ApplicationImpl* app, mojo::View* view) {
   app->ConnectToService(request.Pass(), &factory);
   factory->CreateWebView(client.Pass(), GetProxy(&web_view_));
 
-  mojo::ViewManagerClientPtr view_manager_client;
-  web_view_->GetViewManagerClient(GetProxy(&view_manager_client));
-  view->Embed(view_manager_client.Pass());
+  mojo::ViewTreeClientPtr view_tree_client;
+  web_view_->GetViewTreeClient(GetProxy(&view_tree_client));
+  view->Embed(view_tree_client.Pass());
 }
 
 }  // namespace web_view

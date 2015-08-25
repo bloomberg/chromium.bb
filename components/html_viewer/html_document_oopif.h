@@ -55,7 +55,7 @@ class HTMLDocumentOOPIF
       public mojo::InterfaceFactory<mandoline::FrameTreeClient>,
       public mojo::InterfaceFactory<TestHTMLViewer>,
       public mojo::InterfaceFactory<devtools_service::DevToolsAgent>,
-      public mojo::InterfaceFactory<mojo::ViewManagerClient> {
+      public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
   using DeleteCallback = base::Callback<void(HTMLDocumentOOPIF*)>;
   using HTMLFrameCreationCallback =
@@ -130,9 +130,9 @@ class HTMLDocumentOOPIF
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) override;
 
-  // mojo::InterfaceFactory<mojo::ViewManagerClient>:
+  // mojo::InterfaceFactory<mojo::ViewTreeClient>:
   void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::ViewManagerClient> request) override;
+              mojo::InterfaceRequest<mojo::ViewTreeClient> request) override;
 
   scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::ApplicationImpl* html_document_app_;

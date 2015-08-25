@@ -37,8 +37,8 @@ void ViewManagerRootImpl::Init(ViewManagerRootDelegate* delegate) {
     delegate_->OnDisplayInitialized();
 }
 
-ViewManagerServiceImpl* ViewManagerRootImpl::GetViewManagerService() {
-  return delegate_ ? delegate_->GetViewManagerService() : nullptr;
+ViewTreeImpl* ViewManagerRootImpl::GetViewTree() {
+  return delegate_ ? delegate_->GetViewTree() : nullptr;
 }
 
 bool ViewManagerRootImpl::IsViewAttachedToRoot(const ServerView* view) const {

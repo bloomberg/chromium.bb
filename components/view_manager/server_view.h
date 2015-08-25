@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "cc/surfaces/surface_id.h"
 #include "components/view_manager/ids.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/platform_window/text_input_state.h"

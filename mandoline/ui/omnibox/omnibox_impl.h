@@ -15,7 +15,7 @@
 #include "ui/views/layout/layout_manager.h"
 
 namespace mojo {
-class ViewManagerClientFactory;
+class ViewTreeClientFactory;
 }
 
 namespace mandoline {
@@ -27,7 +27,7 @@ class OmniboxImpl : public mojo::ApplicationDelegate,
                     public views::LayoutManager,
                     public views::TextfieldController,
                     public mojo::InterfaceFactory<Omnibox>,
-                    public mojo::InterfaceFactory<mojo::ViewManagerClient>,
+                    public mojo::InterfaceFactory<mojo::ViewTreeClient>,
                     public Omnibox {
  public:
   OmniboxImpl();
@@ -57,10 +57,10 @@ class OmniboxImpl : public mojo::ApplicationDelegate,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<Omnibox> request) override;
 
-  // Overridden from mojo::InterfaceFactory<mojo::ViewManagerClient>:
+  // Overridden from mojo::InterfaceFactory<mojo::ViewTreeClient>:
   void Create(
       mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mojo::ViewManagerClient> request) override;
+      mojo::InterfaceRequest<mojo::ViewTreeClient> request) override;
 
   // Overridden from Omnibox:
   void ShowForURL(const mojo::String& url) override;

@@ -8,11 +8,11 @@
 #include <string>
 
 #include "components/view_manager/public/cpp/types.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace mojo {
-class ViewManagerService;
+class ViewTree;
 }
 
 namespace view_manager {
@@ -29,16 +29,16 @@ class ConnectionManagerDelegate {
   // ConnectionManager.
   virtual ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
+      mojo::InterfaceRequest<mojo::ViewTree> tree_request,
       mojo::ConnectionSpecificId creator_id,
       mojo::URLRequestPtr request,
       const ViewId& root_id) = 0;
   virtual ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
-      mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
+      mojo::InterfaceRequest<mojo::ViewTree> tree_request,
       mojo::ConnectionSpecificId creator_id,
       const ViewId& root_id,
-      mojo::ViewManagerClientPtr view_manager_client) = 0;
+      mojo::ViewTreeClientPtr client) = 0;
 
  protected:
   virtual ~ConnectionManagerDelegate() {}

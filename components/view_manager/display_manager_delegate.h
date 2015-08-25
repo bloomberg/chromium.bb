@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VIEW_MANAGER_DISPLAY_MANAGER_DELEGATE_H_
 #define COMPONENTS_VIEW_MANAGER_DISPLAY_MANAGER_DELEGATE_H_
 
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 
 namespace view_manager {
 

@@ -11,8 +11,8 @@
 #include "base/observer_list.h"
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/interfaces/surface_id.mojom.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_constants.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
@@ -132,8 +132,8 @@ class View {
   void SetFocus();
   bool HasFocus() const;
 
-  // Embedding. See view_manager.mojom for details.
-  void Embed(ViewManagerClientPtr client);
+  // Embedding. See view_tree.mojom for details.
+  void Embed(ViewTreeClientPtr client);
   void EmbedAllowingReembed(mojo::URLRequestPtr request);
 
  protected:
@@ -143,7 +143,7 @@ class View {
 
  private:
   friend class ViewPrivate;
-  friend class ViewManagerClientImpl;
+  friend class ViewTreeClientImpl;
 
   View(ViewManager* manager, Id id);
 

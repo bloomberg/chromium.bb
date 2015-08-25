@@ -106,9 +106,9 @@ class TestFrameTreeDelegateImpl : public mandoline::TestFrameTreeDelegate {
       mojo::URLRequestPtr request,
       mandoline::FrameTreeClient** frame_tree_client,
       scoped_ptr<mandoline::FrameUserData>* frame_user_data,
-      mojo::ViewManagerClientPtr* view_manager_client) override {
+      mojo::ViewTreeClientPtr* tree_client) override {
     scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-    frame_connection->Init(app_, request.Pass(), view_manager_client);
+    frame_connection->Init(app_, request.Pass(), tree_client);
     *frame_tree_client = frame_connection->frame_tree_client();
     *frame_user_data = frame_connection.Pass();
 
@@ -196,16 +196,16 @@ class HTMLFrameTest : public ViewManagerTestBase {
         new TestFrameTreeDelegateImpl(application_impl()));
     scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
     FrameConnection* result = frame_connection.get();
-    ViewManagerClientPtr view_manager_client;
+    ViewTreeClientPtr tree_client;
     frame_connection->Init(application_impl(), BuildRequestForURL(url_string),
-                           &view_manager_client);
+                           &tree_client);
     FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
     frame_tree_.reset(new FrameTree(view, frame_tree_delegate_.get(),
                                     frame_tree_client,
                                     frame_connection.Pass(),
                                     Frame::ClientPropertyMap()));
     frame_tree_delegate_->set_frame_tree(frame_tree_.get());
-    view->Embed(view_manager_client.Pass());
+    view->Embed(tree_client.Pass());
     return result;
   }
 

@@ -11,7 +11,7 @@ void ViewManagerDelegate::OnUnembed() {}
 void ViewManagerDelegate::OnEmbedForDescendant(
     View* view,
     mojo::URLRequestPtr request,
-    mojo::ViewManagerClientPtr* client) {
+    mojo::ViewTreeClientPtr* client) {
 }
 
 }  // namespace mojo

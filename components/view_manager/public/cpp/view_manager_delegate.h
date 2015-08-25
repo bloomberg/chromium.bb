@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
@@ -60,7 +60,7 @@ class ViewManagerDelegate {
   // See the mojom for more details.
   virtual void OnEmbedForDescendant(View* view,
                                     URLRequestPtr request,
-                                    ViewManagerClientPtr* client);
+                                    ViewTreeClientPtr* client);
 
   // Called from the destructor of ViewManager after all the Views have been
   // destroyed. |view_manager| is no longer valid after this call.

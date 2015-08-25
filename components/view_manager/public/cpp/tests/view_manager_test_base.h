@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
-#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/application/public/cpp/interface_factory.h"
@@ -23,7 +23,7 @@ class ViewManagerInit;
 class ViewManagerTestBase : public test::ApplicationTestBase,
                             public ApplicationDelegate,
                             public ViewManagerDelegate,
-                            public InterfaceFactory<ViewManagerClient> {
+                            public InterfaceFactory<ViewTreeClient> {
  public:
   ViewManagerTestBase();
   ~ViewManagerTestBase() override;
@@ -59,9 +59,9 @@ class ViewManagerTestBase : public test::ApplicationTestBase,
   void OnEmbed(View* root) override;
   void OnViewManagerDestroyed(ViewManager* view_manager) override;
 
-  // InterfaceFactory<ViewManagerClient>:
+  // InterfaceFactory<ViewTreeClient>:
   void Create(ApplicationConnection* connection,
-              InterfaceRequest<ViewManagerClient> request) override;
+              InterfaceRequest<ViewTreeClient> request) override;
 
   // Used to receive the most recent view manager loaded by an embed action.
   ViewManager* most_recent_view_manager_;

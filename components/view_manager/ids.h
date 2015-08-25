@@ -10,8 +10,8 @@
 
 namespace view_manager {
 
-// Connection id is used to indicate no connection. That is, no
-// ViewManagerServiceImpl ever gets this id.
+// Connection id is used to indicate no connection. That is, no ViewTreeImpl
+// ever gets this id.
 const mojo::ConnectionSpecificId kInvalidConnectionId = 0;
 
 // Adds a bit of type safety to view ids.

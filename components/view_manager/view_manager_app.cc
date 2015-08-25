@@ -14,7 +14,7 @@
 #include "components/view_manager/surfaces/surfaces_scheduler.h"
 #include "components/view_manager/view_manager_root_connection.h"
 #include "components/view_manager/view_manager_root_impl.h"
-#include "components/view_manager/view_manager_service_impl.h"
+#include "components/view_manager/view_tree_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
@@ -30,7 +30,6 @@ using mojo::ApplicationImpl;
 using mojo::Gpu;
 using mojo::InterfaceRequest;
 using mojo::ViewManagerRoot;
-using mojo::ViewManagerService;
 
 namespace view_manager {
 
@@ -88,30 +87,30 @@ void ViewManagerApp::OnNoMoreRootConnections() {
 
 ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
     ConnectionManager* connection_manager,
-    mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
+    mojo::InterfaceRequest<mojo::ViewTree> tree_request,
     mojo::ConnectionSpecificId creator_id,
     mojo::URLRequestPtr request,
     const ViewId& root_id) {
-  mojo::ViewManagerClientPtr client;
+  mojo::ViewTreeClientPtr client;
   app_impl_->ConnectToService(request.Pass(), &client);
 
-  scoped_ptr<ViewManagerServiceImpl> service(
-      new ViewManagerServiceImpl(connection_manager, creator_id, root_id));
+  scoped_ptr<ViewTreeImpl> service(
+      new ViewTreeImpl(connection_manager, creator_id, root_id));
   return new DefaultClientConnection(service.Pass(), connection_manager,
-                                     service_request.Pass(), client.Pass());
+                                     tree_request.Pass(), client.Pass());
 }
 
 ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
     ConnectionManager* connection_manager,
-    mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
+    mojo::InterfaceRequest<mojo::ViewTree> tree_request,
     mojo::ConnectionSpecificId creator_id,
     const ViewId& root_id,
-    mojo::ViewManagerClientPtr view_manager_client) {
-  scoped_ptr<ViewManagerServiceImpl> service(
-      new ViewManagerServiceImpl(connection_manager, creator_id, root_id));
+    mojo::ViewTreeClientPtr client) {
+  scoped_ptr<ViewTreeImpl> service(
+      new ViewTreeImpl(connection_manager, creator_id, root_id));
   return new DefaultClientConnection(service.Pass(), connection_manager,
-                                     service_request.Pass(),
-                                     view_manager_client.Pass());
+                                     tree_request.Pass(),
+                                     client.Pass());
 }
 
 void ViewManagerApp::Create(ApplicationConnection* connection,
@@ -123,7 +122,7 @@ void ViewManagerApp::Create(ApplicationConnection* connection,
       connection_manager_.get(), is_headless_, app_impl_, gpu_state_,
       surfaces_state_);
 
-  mojo::ViewManagerClientPtr client;
+  mojo::ViewTreeClientPtr client;
   connection->ConnectToService(&client);
 
   // ViewManagerRootConnection manages its own lifetime.

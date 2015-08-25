@@ -6,7 +6,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
@@ -351,7 +350,7 @@ class EmbedderData {
 class PDFView : public mojo::ApplicationDelegate,
                 public mojo::ViewManagerDelegate,
                 public mojo::ViewObserver,
-                public mojo::InterfaceFactory<mojo::ViewManagerClient> {
+                public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
   PDFView(mojo::InterfaceRequest<mojo::Application> request,
           mojo::URLResponsePtr response)
@@ -374,7 +373,7 @@ class PDFView : public mojo::ApplicationDelegate,
   // Overridden from ApplicationDelegate:
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
-    connection->AddService<mojo::ViewManagerClient>(this);
+    connection->AddService<mojo::ViewTreeClient>(this);
     return true;
   }
 
@@ -434,10 +433,10 @@ class PDFView : public mojo::ApplicationDelegate,
       app_.Quit();
   }
 
-  // Overridden from mojo::InterfaceFactory<mojo::ViewManagerClient>:
+  // Overridden from mojo::InterfaceFactory<mojo::ViewTreeClient>:
   void Create(
       mojo::ApplicationConnection* connection,
-      mojo::InterfaceRequest<mojo::ViewManagerClient> request) override {
+      mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
     mojo::ViewManager::Create(this, request.Pass());
   }
 

@@ -79,10 +79,10 @@ TEST_F(AXProviderTest, HelloWorld) {
       application_impl()->ConnectToApplication(request.Pass());
 
   // Embed the html_viewer in a View.
-  ViewManagerClientPtr view_manager_client;
-  connection->ConnectToService(&view_manager_client);
+  ViewTreeClientPtr tree_client;
+  connection->ConnectToService(&tree_client);
   View* embed_view = window_manager()->CreateView();
-  embed_view->Embed(view_manager_client.Pass());
+  embed_view->Embed(tree_client.Pass());
 
   TestFrameTreeServer frame_tree_server;
   mandoline::FrameTreeServerPtr frame_tree_server_ptr;

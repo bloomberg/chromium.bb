@@ -34,7 +34,7 @@ void OmniboxImpl::Initialize(mojo::ApplicationImpl* app) {
 bool OmniboxImpl::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<Omnibox>(this);
-  connection->AddService<mojo::ViewManagerClient>(this);
+  connection->AddService<mojo::ViewTreeClient>(this);
   connection->ConnectToService(&view_embedder_);
   return true;
 }
@@ -132,11 +132,11 @@ void OmniboxImpl::Create(mojo::ApplicationConnection* connection,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxImpl, mojo::InterfaceFactory<mojo::ViewManagerClient> implementation:
+// OmniboxImpl, mojo::InterfaceFactory<mojo::ViewTreeClient> implementation:
 
 void OmniboxImpl::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::ViewManagerClient> request) {
+    mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
   mojo::ViewManager::Create(this, request.Pass());
 }
 

@@ -12,7 +12,7 @@
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
 #include "components/view_manager/view_manager_root_connection.h"
-#include "components/view_manager/view_manager_service_impl.h"
+#include "components/view_manager/view_tree_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -97,7 +97,7 @@ bool DecrementAnimatingViewsOpacity(ServerView* view) {
 }  // namespace
 
 ConnectionManager::ScopedChange::ScopedChange(
-    ViewManagerServiceImpl* connection,
+    ViewTreeImpl* connection,
     ConnectionManager* connection_manager,
     bool is_delete_view)
     : connection_manager_(connection_manager),
@@ -171,7 +171,7 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
   const ViewId* view_id = connection->service()->root();
   ServerView* view =
       view_id ? GetView(*connection->service()->root()) : nullptr;
-  // If the ViewManagerService root is a viewport root, then we'll wait until
+  // If the ViewTree root is a viewport root, then we'll wait until
   // the root connection goes away to cleanup.
   if (view && (GetRootView(view) == view))
     return;
@@ -185,7 +185,7 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
 
   // Notify remaining connections so that they can cleanup.
   for (auto& pair : connection_map_) {
-    pair.second->service()->OnWillDestroyViewManagerServiceImpl(
+    pair.second->service()->OnWillDestroyViewTreeImpl(
         connection->service());
   }
 }
@@ -199,15 +199,15 @@ void ConnectionManager::OnRootConnectionClosed(
   if (GetRootView(GetFocusedView()) == it->first->root_view())
     SetFocusedView(nullptr);
 
-  // Get the ClientConnection by ViewManagerServiceImpl ID.
+  // Get the ClientConnection by ViewTreeImpl ID.
   ConnectionMap::iterator service_connection_it =
-      connection_map_.find(it->first->GetViewManagerService()->id());
+      connection_map_.find(it->first->GetViewTree()->id());
   DCHECK(service_connection_it != connection_map_.end());
 
-  //  Tear down the associated ViewManagerService connection.
+  // Tear down the associated ViewTree connection.
   // TODO(fsamuel): I don't think this is quite right, we should tear down all
   // connections within the root's viewport. We should probably employ an
-  // observer pattern to do this. Each ViewManagerServiceImpl should track its
+  // observer pattern to do this. Each ViewTreeImpl should track its
   // parent's lifetime.
   root_connection_map_.erase(it);
   OnConnectionError(service_connection_it->second);
@@ -220,7 +220,7 @@ void ConnectionManager::OnRootConnectionClosed(
 void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
                                     const ViewId& view_id,
                                     mojo::URLRequestPtr request) {
-  mojo::ViewManagerServicePtr service_ptr;
+  mojo::ViewTreePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
           this, GetProxy(&service_ptr), creator_id, request.Pass(), view_id);
@@ -230,11 +230,11 @@ void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
   OnConnectionMessagedClient(client_connection->service()->id());
 }
 
-ViewManagerServiceImpl* ConnectionManager::EmbedAtView(
+ViewTreeImpl* ConnectionManager::EmbedAtView(
     mojo::ConnectionSpecificId creator_id,
     const ViewId& view_id,
-    mojo::ViewManagerClientPtr client) {
-  mojo::ViewManagerServicePtr service_ptr;
+    mojo::ViewTreeClientPtr client) {
+  mojo::ViewTreePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
           this, GetProxy(&service_ptr), creator_id, view_id, client.Pass());
@@ -255,7 +255,7 @@ void ConnectionManager::OnAccelerator(ServerView* root, mojo::EventPtr event) {
   }
 }
 
-ViewManagerServiceImpl* ConnectionManager::GetConnection(
+ViewTreeImpl* ConnectionManager::GetConnection(
     ConnectionSpecificId connection_id) {
   ConnectionMap::iterator i = connection_map_.find(connection_id);
   return i == connection_map_.end() ? nullptr : i->second->service();
@@ -266,7 +266,7 @@ ServerView* ConnectionManager::GetView(const ViewId& id) {
     if (pair.first->root_view()->id() == id)
       return pair.first->root_view();
   }
-  ViewManagerServiceImpl* service = GetConnection(id.connection_id);
+  ViewTreeImpl* service = GetConnection(id.connection_id);
   return service ? service->GetView(id) : nullptr;
 }
 
@@ -326,7 +326,7 @@ mojo::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
   return metrics.Pass();
 }
 
-const ViewManagerServiceImpl* ConnectionManager::GetConnectionWithRoot(
+const ViewTreeImpl* ConnectionManager::GetConnectionWithRoot(
     const ViewId& id) const {
   for (auto& pair : connection_map_) {
     if (pair.second->service()->IsRoot(id))
@@ -335,15 +335,13 @@ const ViewManagerServiceImpl* ConnectionManager::GetConnectionWithRoot(
   return nullptr;
 }
 
-ViewManagerServiceImpl* ConnectionManager::GetEmbedRoot(
-    ViewManagerServiceImpl* service) {
+ViewTreeImpl* ConnectionManager::GetEmbedRoot(ViewTreeImpl* service) {
   while (service) {
     const ViewId* root_id = service->root();
     if (!root_id || root_id->connection_id == service->id())
       return nullptr;
 
-    ViewManagerServiceImpl* parent_service =
-        GetConnection(root_id->connection_id);
+    ViewTreeImpl* parent_service = GetConnection(root_id->connection_id);
     service = parent_service;
     if (service && service->is_embed_root())
       return service;
@@ -369,7 +367,7 @@ bool ConnectionManager::CloneAndAnimate(const ViewId& view_id) {
 void ConnectionManager::DispatchInputEventToView(const ServerView* view,
                                                  mojo::EventPtr event) {
   // If the view is an embed root, forward to the embedded view, not the owner.
-  ViewManagerServiceImpl* connection = GetConnectionWithRoot(view->id());
+  ViewTreeImpl* connection = GetConnectionWithRoot(view->id());
   if (!connection)
     connection = GetConnection(view->id().connection_id);
   CHECK(connection);
@@ -657,8 +655,8 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
   // . the connection with |new_focused_view| as its root.
   // Some of these connections may be the same. The following takes care to
   // notify each only once.
-  ViewManagerServiceImpl* owning_connection_old = nullptr;
-  ViewManagerServiceImpl* embedded_connection_old = nullptr;
+  ViewTreeImpl* owning_connection_old = nullptr;
+  ViewTreeImpl* embedded_connection_old = nullptr;
 
   if (old_focused_view) {
     owning_connection_old = GetConnection(old_focused_view->id().connection_id);
@@ -673,8 +671,8 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
                                                    new_focused_view);
     }
   }
-  ViewManagerServiceImpl* owning_connection_new = nullptr;
-  ViewManagerServiceImpl* embedded_connection_new = nullptr;
+  ViewTreeImpl* owning_connection_new = nullptr;
+  ViewTreeImpl* embedded_connection_new = nullptr;
   if (new_focused_view) {
     owning_connection_new = GetConnection(new_focused_view->id().connection_id);
     if (owning_connection_new &&
@@ -694,7 +692,7 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
   }
 
   for (auto& pair : root_connection_map_) {
-    ViewManagerServiceImpl* service = pair.first->GetViewManagerService();
+    ViewTreeImpl* service = pair.first->GetViewTree();
     if (service != owning_connection_old &&
         service != embedded_connection_old &&
         service != owning_connection_new &&

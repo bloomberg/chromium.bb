@@ -12,8 +12,8 @@ namespace view_manager {
 
 class ServerView;
 
-// AccessPolicy is used by ViewManagerServiceImpl to determine what a connection
-// is allowed to do.
+// AccessPolicy is used by ViewTreeImpl to determine what a connection is
+// allowed to do.
 class AccessPolicy {
  public:
   virtual ~AccessPolicy() {}

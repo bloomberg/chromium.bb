@@ -13,7 +13,7 @@ ViewManagerRootConnection::ViewManagerRootConnection(
     scoped_ptr<ViewManagerRootImpl> view_manager_root,
     ConnectionManager* manager)
     : root_(view_manager_root.Pass()),
-      service_(nullptr),
+      tree_(nullptr),
       connection_manager_(manager),
       connection_closed_(false) {
 }
@@ -35,8 +35,8 @@ void ViewManagerRootConnection::CloseConnection() {
   delete this;
 }
 
-ViewManagerServiceImpl* ViewManagerRootConnection::GetViewManagerService() {
-  return service_;
+ViewTreeImpl* ViewManagerRootConnection::GetViewTree() {
+  return tree_;
 }
 
 void ViewManagerRootConnection::OnDisplayInitialized() {
@@ -49,7 +49,7 @@ void ViewManagerRootConnection::OnDisplayClosed() {
 ViewManagerRootConnectionImpl::ViewManagerRootConnectionImpl(
     mojo::InterfaceRequest<mojo::ViewManagerRoot> request,
     scoped_ptr<ViewManagerRootImpl> root,
-    mojo::ViewManagerClientPtr client,
+    mojo::ViewTreeClientPtr client,
     ConnectionManager* manager)
     : ViewManagerRootConnection(root.Pass(), manager),
       binding_(view_manager_root(), request.Pass()),
@@ -61,7 +61,7 @@ ViewManagerRootConnectionImpl::~ViewManagerRootConnectionImpl() {
 
 void ViewManagerRootConnectionImpl::OnDisplayInitialized() {
   connection_manager()->AddRoot(this);
-  set_view_manager_service(connection_manager()->EmbedAtView(
+  set_view_tree(connection_manager()->EmbedAtView(
       kInvalidConnectionId, view_manager_root()->root_view()->id(),
       client_.Pass()));
 }
