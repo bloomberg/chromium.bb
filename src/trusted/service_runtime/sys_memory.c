@@ -827,18 +827,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
         map_result = (int32_t) usraddr;
       }
 
-#if NACL_WINDOWS
-      sys_ret = (*NACL_VTBL(NaClDesc, ndp)->
-                 UnmapUnsafe)(ndp, (void *) image_sys_addr, length);
-#else
-      sys_ret = munmap((void *) image_sys_addr, length);
-#endif
-      if (0 != sys_ret) {
-        NaClLog(LOG_FATAL,
-                "NaClSysMmap: could not unmap text at 0x%"NACL_PRIxPTR","
-                " length 0x%"NACL_PRIxS", NaCl errno %d\n",
-                image_sys_addr, length, -sys_ret);
-      }
+      NaClDescUnmapUnsafe(ndp, (void *) image_sys_addr, length);
       goto cleanup_no_locks;
     } else {
       /*

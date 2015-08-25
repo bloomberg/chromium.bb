@@ -31,8 +31,9 @@ void NaClDescUnmapUnsafe(struct NaClDesc *desc, void *addr, size_t length) {
   UNREFERENCED_PARAMETER(desc);
 
   if (munmap(addr, length) != 0) {
-    NaClLog(LOG_FATAL, "NaClDescUnmapUnsafe: munmap() failed, errno %d\n",
-            errno);
+    NaClLog(LOG_FATAL, "NaClDescUnmapUnsafe: munmap() failed: address 0x%p, "
+            "length 0x%" NACL_PRIxS ", errno %d\n",
+            addr, length, errno);
   }
 }
 
