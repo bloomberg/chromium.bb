@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <style>
-#container {
-    position: fixed;
+body {
+  margin: 0;
+}
+
+#indicator {
+    position: absolute;
     top: 200px;
-    left: 100px;
+    width: 100px;
+    height: 100px;
+    background-color: red;
 }
 
 #block {
     position: relative;
     width: 100px;
     height: 100px;
-    top: 50px;
+    top: 100px;
     background-color: green;
 }
 
@@ -21,16 +27,14 @@
     backface-visibility: hidden;
 }
 </style>
-<div id="container">
-    <div id="composited-non-stacking-context">
-        <div id="block"></div>
-    </div>
+<div id="indicator"></div>
+<div id="composited-non-stacking-context">
+    <div id="block"></div>
 </div>
-This test passes if the green block stays at the same place after repaint.
+This test passes if there is a green square without red.
 <script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 runAfterLayoutAndPaint(function() {
-    document.getElementById("container").style.top = "100px";
-    document.getElementById("block").style.top = "100px";
+    document.getElementById("block").style.top = "200px";
 }, true);
 </script>

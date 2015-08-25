@@ -815,6 +815,10 @@ crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-r
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 
+crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-change-color.html [ ImageOnlyFailure ]
+crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-move.html [ ImageOnlyFailure ]
+crbug.com/524596 paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ ImageOnlyFailure ]
+
 crbug.com/425113 svg/clip-path/clip-path-multiple-children.svg [ ImageOnlyFailure ]
 
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Slow Failure ]
