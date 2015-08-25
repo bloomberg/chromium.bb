@@ -137,7 +137,7 @@ bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow, const Stri
 
         // FIXME: The name canAccess seems to be a roundabout way to ask "can execute script".
         // Can we name the SecurityOrigin function better to make this more clear?
-        if (callingWindow.frame()->securityContext()->securityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->securityOrigin()))
+        if (callingWindow.document()->securityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->securityOrigin()))
             return false;
     }
 
