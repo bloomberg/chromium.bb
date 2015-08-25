@@ -857,7 +857,7 @@ public class NewTabPageView extends FrameLayout
 
         ThumbnailMostVisitedDesign(Context context) {
             Resources res = context.getResources();
-            mDesiredFaviconSize = res.getDimensionPixelSize(R.dimen.most_visited_favicon_size);
+            mDesiredFaviconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
             int desiredFaviconSizeDp = Math.round(
                     mDesiredFaviconSize / res.getDisplayMetrics().density);
             mFaviconGenerator = new RoundedIconGenerator(

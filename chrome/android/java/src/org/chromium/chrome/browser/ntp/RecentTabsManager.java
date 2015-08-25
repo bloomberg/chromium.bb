@@ -252,10 +252,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public boolean getLocalFaviconForUrl(String url, int size,
             FaviconImageCallback faviconCallback) {
-        return mFaviconHelper.getLocalFaviconImageForURL(mProfile, url,
-                FaviconHelper.FAVICON | FaviconHelper.TOUCH_ICON
-                        | FaviconHelper.TOUCH_PRECOMPOSED_ICON,
-                size, faviconCallback);
+        return mFaviconHelper.getLocalFaviconImageForURL(mProfile, url, size, faviconCallback);
     }
 
     /**

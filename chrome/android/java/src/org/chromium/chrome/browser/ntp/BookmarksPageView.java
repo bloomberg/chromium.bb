@@ -143,7 +143,7 @@ public class BookmarksPageView extends LinearLayout implements BookmarksCallback
         super(context, attrs);
 
         mDesiredFaviconSize = getResources().getDimensionPixelSize(
-                R.dimen.ntp_list_item_favicon_size);
+                R.dimen.default_favicon_size);
         mFaviconCache = new LruCache<String, Bitmap>(MAX_NUM_FAVICONS_TO_CACHE);
         mAdapter = new BookmarkListAdapter();
     }

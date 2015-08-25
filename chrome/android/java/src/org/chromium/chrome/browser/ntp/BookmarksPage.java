@@ -444,10 +444,7 @@ public class BookmarksPage implements NativePage, InvalidationAwareThumbnailProv
 
     private void getFaviconImageForUrl(String url, int size, FaviconImageCallback faviconCallback) {
         if (mFaviconHelper == null) return;
-        mFaviconHelper.getLocalFaviconImageForURL(mProfile, url,
-                FaviconHelper.FAVICON | FaviconHelper.TOUCH_ICON
-                        | FaviconHelper.TOUCH_PRECOMPOSED_ICON,
-                size, faviconCallback);
+        mFaviconHelper.getLocalFaviconImageForURL(mProfile, url, size, faviconCallback);
     }
 
     private void edit(BookmarkItemView item) {

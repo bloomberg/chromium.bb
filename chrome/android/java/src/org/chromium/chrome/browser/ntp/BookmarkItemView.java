@@ -62,7 +62,7 @@ class BookmarkItemView extends AppCompatTextView implements OnCreateContextMenuL
             Resources res = context.getResources();
             mPadding = res.getDimensionPixelOffset(R.dimen.ntp_list_item_padding);
             mMinHeight = res.getDimensionPixelSize(R.dimen.ntp_list_item_min_height);
-            mFaviconSize = res.getDimensionPixelSize(R.dimen.ntp_list_item_favicon_size);
+            mFaviconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
             mFaviconContainerSize = res.getDimensionPixelSize(
                     R.dimen.ntp_list_item_favicon_container_size);
             mTextSize = res.getDimensionPixelSize(R.dimen.ntp_list_item_text_size);

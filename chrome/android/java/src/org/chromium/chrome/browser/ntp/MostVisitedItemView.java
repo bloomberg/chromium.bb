@@ -54,7 +54,7 @@ public class MostVisitedItemView extends FrameLayout {
         // added as a compound drawable. This prevents the text from jumping around when the favicon
         // becomes available.
         mTitlePaddingStart = ApiCompatibilityUtils.getPaddingStart(mTitleView);
-        mFaviconSize = getResources().getDimensionPixelSize(R.dimen.most_visited_favicon_size);
+        mFaviconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
         int extraPaddingStart = mFaviconSize + mTitleView.getCompoundDrawablePadding();
         ApiCompatibilityUtils.setPaddingRelative(mTitleView, mTitlePaddingStart + extraPaddingStart,
                 0, 0, 0);

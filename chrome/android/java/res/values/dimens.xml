@@ -222,7 +222,6 @@
     <dimen name="most_visited_tile_width">156dp</dimen>
     <dimen name="most_visited_thumbnail_width">148dp</dimen>
     <dimen name="most_visited_thumbnail_height">94dp</dimen>
-    <dimen name="most_visited_favicon_size">16dp</dimen>
     <dimen name="most_visited_bg_corner_radius">2dp</dimen>
     <!-- 250dp was chosen because it's smaller than the smallest dimension on the smallest device,
          so we'll always have at least two columns of tiles (except in multiwindow with a narrow
@@ -245,7 +244,6 @@
     <dimen name="ntp_list_item_padding">16dp</dimen>
     <dimen name="ntp_list_item_min_height">48dp</dimen>
     <dimen name="ntp_list_item_text_size">16sp</dimen>
-    <dimen name="ntp_list_item_favicon_size">16dp</dimen>
     <dimen name="ntp_list_item_favicon_container_size">24dp</dimen>
     <dimen name="ntp_shadow_height">9dp</dimen>
 
@@ -290,4 +288,7 @@
     <dimen name="custom_tabs_url_text_size">12sp</dimen>
     <dimen name="custom_tabs_title_text_size">16sp</dimen>
     <dimen name="menu_footer_height">28dp</dimen>
+
+    <!-- Favicon dimensions -->
+    <dimen name="default_favicon_size">16dp</dimen>
 </resources>

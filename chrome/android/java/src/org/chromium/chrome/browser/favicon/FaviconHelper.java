@@ -76,7 +76,6 @@ public class FaviconHelper {
      * has visited on the current device.
      * @param profile               Profile used for the FaviconService construction.
      * @param pageUrl               The target Page URL to get the favicon.
-     * @param iconTypes             One of the IconType class values.
      * @param desiredSizeInPixel    The size of the favicon in pixel we want to get.
      * @param faviconImageCallback  A method to be called back when the result is available.
      *                              Note that this callback is not called if this method returns
@@ -84,11 +83,12 @@ public class FaviconHelper {
      * @return                      True if GetLocalFaviconImageForURL is successfully called.
      */
     public boolean getLocalFaviconImageForURL(
-            Profile profile, String pageUrl, int iconTypes,
-            int desiredSizeInPixel, FaviconImageCallback faviconImageCallback) {
+            Profile profile, String pageUrl, int desiredSizeInPixel,
+            FaviconImageCallback faviconImageCallback) {
         assert mNativeFaviconHelper != 0;
-        return nativeGetLocalFaviconImageForURL(mNativeFaviconHelper, profile, pageUrl, iconTypes,
-                desiredSizeInPixel, faviconImageCallback);
+        return nativeGetLocalFaviconImageForURL(mNativeFaviconHelper, profile, pageUrl,
+                FAVICON | TOUCH_ICON | TOUCH_PRECOMPOSED_ICON, desiredSizeInPixel,
+                faviconImageCallback);
     }
 
     /**

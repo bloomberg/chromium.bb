@@ -668,7 +668,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
         Resources resources = activity.getResources();
         mDefaultFavicon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.default_favicon);
-        mFaviconSize = mDefaultFavicon.getIntrinsicHeight();
+        mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
     }
 
     private static FaviconCache buildFaviconCache(int size) {
