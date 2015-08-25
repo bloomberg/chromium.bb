@@ -48,9 +48,6 @@ DEFINE_TRACE(MatchedProperties)
     visitor->trace(properties);
 }
 
-// TODO(thakis): Remove this once http://crbug.com/488634 is fixed.
-MatchResult::MatchResult() = default;
-
 void MatchResult::addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)
 {
     m_matchedProperties.grow(m_matchedProperties.size() + 1);
