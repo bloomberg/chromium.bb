@@ -1259,7 +1259,12 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
     original_url = driver.GetCurrentUrl()
     driver.Load(ChromeDriverTest.GetHttpUrlForFile('/abc.csv'))
     self.WaitForFileToDownload(os.path.join(download_dir, 'abc.csv'))
-    self.assertEqual(original_url, driver.GetCurrentUrl())
+    major_version = int(driver.capabilities['version'].split('.')[0])
+    if major_version > 43:
+      # For some reason, the URL in M43 changes from 'data:,' to '', so we
+      # need to avoid doing this assertion unless we're on M44+.
+      # TODO(samuong): Assert unconditionally once we stop supporting M43.
+      self.assertEqual(original_url, driver.GetCurrentUrl())
 
   def testDownloadDirectoryOverridesExistingPreferences(self):
     user_data_dir = self.CreateTempDir()
