@@ -636,6 +636,9 @@ Gallery.prototype.onSplice_ = function() {
       this.selectionModel_.selectedIndexes.filter(function(index) {
     return 0 <= index && index < this.dataModel_.length;
   }.bind(this));
+
+  // Disable mode switch button if there is no image.
+  this.modeSwitchButton_.disabled = this.dataModel_.length === 0;
 };
 
 /**
@@ -726,8 +729,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 
   // If it's selecting something, update the variable values.
   if (numSelectedItems) {
-    // Enable mode and slideshow button.
-    this.modeSwitchButton_.disabled = false;
+    // Enable slideshow button.
     this.slideshowButton_.disabled = false;
 
     // Delete button is available when all images are NOT readOnly.
@@ -778,7 +780,6 @@ Gallery.prototype.updateSelectionAndState_ = function() {
     this.resizeRenameField_();
 
     this.deleteButton_.disabled = true;
-    this.modeSwitchButton_.disabled = true;
     this.slideshowButton_.disabled = true;
     this.shareButton_.hidden = true;
   }

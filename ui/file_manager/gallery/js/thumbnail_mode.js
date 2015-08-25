@@ -564,7 +564,11 @@ ThumbnailView.prototype.onClick_ = function(event) {
       selectionMode = ThumbnailView.SelectionMode.RANGE;
 
     this.selectByThumbnail_(target.parentNode.getThumbnail(), selectionMode);
+    return;
   }
+
+  // If empty space is clicked, unselect current selection.
+  this.selectionModel_.unselectAll();
 };
 
 /**

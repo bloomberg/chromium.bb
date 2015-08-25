@@ -247,4 +247,31 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDownloads \
+  DISABLED_EmptySpaceClickUnselectsInThumbnailModeOnDownloads
+#else
+#define MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDownloads \
+  EmptySpaceClickUnselectsInThumbnailModeOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(
+    GalleryBrowserTest,
+    MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDownloads) {
+  set_test_case_name("emptySpaceClickUnselectsInThumbnailModeOnDownloads");
+  StartTest();
+}
+
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDrive \
+  DISABLED_EmptySpaceClickUnselectsInThumbnailModeOnDrive
+#else
+#define MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDrive \
+  EmptySpaceClickUnselectsInThumbnailModeOnDrive
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_EmptySpaceClickUnselectsInThumbnailModeOnDrive) {
+  set_test_case_name("emptySpaceClickUnselectsInThumbnailModeOnDrive");
+  StartTest();
+}
+
 }  // namespace file_manager
