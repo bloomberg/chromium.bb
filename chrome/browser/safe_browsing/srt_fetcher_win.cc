@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "chrome/browser/safe_browsing/srt_global_error_win.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/component_updater/pref_names.h"
+#include "components/variations/net/variations_http_header_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -90,8 +92,9 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
 // OnURLFetchComplete is called.
 class SRTFetcher : public net::URLFetcherDelegate {
  public:
-  SRTFetcher()
-      : url_fetcher_(net::URLFetcher::Create(0,
+  explicit SRTFetcher(Profile* profile)
+      : profile_(profile),
+        url_fetcher_(net::URLFetcher::Create(0,
                                              GURL(GetSRTDownloadURL()),
                                              net::URLFetcher::GET,
                                              this)) {
@@ -101,6 +104,16 @@ class SRTFetcher : public net::URLFetcherDelegate {
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
     url_fetcher_->SetRequestContext(
         g_browser_process->system_request_context());
+    // Adds the UMA bit to the download request if the user is enrolled in UMA.
+    ProfileIOData* io_data = ProfileIOData::FromResourceContext(
+        profile_->GetResourceContext());
+    net::HttpRequestHeaders headers;
+    variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
+        url_fetcher_->GetOriginalURL(),
+        io_data->IsOffTheRecord(),
+        io_data->GetMetricsEnabledStateOnIOThread(),
+        &headers);
+    url_fetcher_->SetExtraRequestHeaders(headers.ToString());
     url_fetcher_->Start();
   }
 
@@ -141,6 +154,9 @@ class SRTFetcher : public net::URLFetcherDelegate {
 
  private:
   ~SRTFetcher() override {}
+
+  // The user profile.
+  Profile* profile_;
 
   // The underlying URL fetcher. The instance is alive from construction through
   // OnURLFetchComplete.
@@ -267,7 +283,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     RecordReporterStepHistogram(SW_REPORTER_DOWNLOAD_START);
 
     // All the work happens in the self-deleting class above.
-    new SRTFetcher();
+    new SRTFetcher(profile);
   }
 
   // This method is called from a worker thread to launch the SwReporter and
