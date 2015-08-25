@@ -1665,13 +1665,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       // Request new variations seed information from server.
       chrome_variations::VariationsService* variations_service =
           browser_process_->variations_service();
-      if (variations_service) {
-        variations_service->StartRepeatedVariationsSeedFetch();
-
-#if defined(OS_WIN)
-        variations_service->StartGoogleUpdateRegistrySync();
-#endif  // defined(OS_WIN)
-      }
+      if (variations_service)
+        variations_service->PerformPreMainMessageLoopStartup();
 
       translate::TranslateDownloadManager::RequestLanguageList(
           profile_->GetPrefs());

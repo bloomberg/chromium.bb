@@ -23,10 +23,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/metrics/variations/variations_registry_syncer_win.h"
-#endif
-
 class PrefService;
 class PrefRegistrySimple;
 
@@ -80,6 +76,9 @@ class VariationsService
   // may not be created.
   bool CreateTrialsFromSeed();
 
+  // Should be called before startup of the main message loop.
+  void PerformPreMainMessageLoopStartup();
+
   // Calls FetchVariationsSeed once and repeats this periodically. See
   // implementation for details on the period. Must be called after
   // |CreateTrialsFromSeed|.
@@ -97,11 +96,6 @@ class VariationsService
   // observing an 'OnAppEnterForeground' event instead of requiring the frontend
   // code to notify each service individually.
   void OnAppEnterForeground();
-
-#if defined(OS_WIN)
-  // Starts syncing Google Update Variation IDs with the registry.
-  void StartGoogleUpdateRegistrySync();
-#endif
 
   // Sets the value of the "restrict" URL param to the variations service that
   // should be used for variation seed requests. This takes precedence over any
@@ -285,11 +279,6 @@ class VariationsService
 
   // List of observers of the VariationsService.
   base::ObserverList<Observer> observer_list_;
-
-#if defined(OS_WIN)
-  // Helper that handles synchronizing Variations with the Registry.
-  VariationsRegistrySyncer registry_syncer_;
-#endif
 
   base::ThreadChecker thread_checker_;
 

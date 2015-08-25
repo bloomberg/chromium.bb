@@ -28,6 +28,9 @@ class VariationsServiceClient {
 
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual network_time::NetworkTimeTracker* GetNetworkTimeTracker() = 0;
+
+  // Called from VariationsService::PerformPreMainMessageLoopStartup().
+  virtual void OnInitialStartup() {}
 };
 
 }  // namespace chrome_variations

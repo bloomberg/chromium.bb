@@ -23,3 +23,15 @@ network_time::NetworkTimeTracker*
 ChromeVariationsServiceClient::GetNetworkTimeTracker() {
   return g_browser_process->network_time_tracker();
 }
+
+void ChromeVariationsServiceClient::OnInitialStartup() {
+#if defined(OS_WIN)
+  StartGoogleUpdateRegistrySync();
+#endif
+}
+
+#if defined(OS_WIN)
+void ChromeVariationsServiceClient::StartGoogleUpdateRegistrySync() {
+  registry_syncer_.RequestRegistrySync();
+}
+#endif

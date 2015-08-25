@@ -333,6 +333,13 @@ bool VariationsService::CreateTrialsFromSeed() {
   return true;
 }
 
+void VariationsService::PerformPreMainMessageLoopStartup() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  StartRepeatedVariationsSeedFetch();
+  client_->OnInitialStartup();
+}
+
 void VariationsService::StartRepeatedVariationsSeedFetch() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -373,13 +380,6 @@ void VariationsService::OnAppEnterForeground() {
     StartRepeatedVariationsSeedFetch();
   request_scheduler_->OnAppEnterForeground();
 }
-
-#if defined(OS_WIN)
-void VariationsService::StartGoogleUpdateRegistrySync() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  registry_syncer_.RequestRegistrySync();
-}
-#endif
 
 void VariationsService::SetRestrictMode(const std::string& restrict_mode) {
   DCHECK(thread_checker_.CalledOnValidThread());
