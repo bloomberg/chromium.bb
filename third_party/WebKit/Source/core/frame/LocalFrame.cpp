@@ -672,19 +672,19 @@ String LocalFrame::selectedTextForClipboard() const
     return selection().selectedTextForClipboard();
 }
 
-VisiblePosition LocalFrame::visiblePositionForPoint(const IntPoint& framePoint)
+PositionWithAffinity LocalFrame::positionForPoint(const IntPoint& framePoint)
 {
     HitTestResult result = eventHandler().hitTestResultAtPoint(framePoint);
     Node* node = result.innerNodeOrImageMapImage();
     if (!node)
-        return VisiblePosition();
+        return PositionWithAffinity();
     LayoutObject* layoutObject = node->layoutObject();
     if (!layoutObject)
-        return VisiblePosition();
-    VisiblePosition visiblePos = VisiblePosition(layoutObject->positionForPoint(result.localPoint()));
-    if (visiblePos.isNull())
-        visiblePos = VisiblePosition(firstPositionInOrBeforeNode(node));
-    return visiblePos;
+        return PositionWithAffinity();
+    const PositionWithAffinity position = layoutObject->positionForPoint(result.localPoint());
+    if (position.isNull())
+        return PositionWithAffinity(firstPositionInOrBeforeNode(node));
+    return position;
 }
 
 Document* LocalFrame::documentAtPoint(const IntPoint& pointInRootFrame)
@@ -702,10 +702,11 @@ Document* LocalFrame::documentAtPoint(const IntPoint& pointInRootFrame)
 
 EphemeralRange LocalFrame::rangeForPoint(const IntPoint& framePoint)
 {
-    VisiblePosition position = visiblePositionForPoint(framePoint);
-    if (position.isNull())
+    const PositionWithAffinity positionWithAffinity = positionForPoint(framePoint);
+    if (positionWithAffinity.isNull())
         return EphemeralRange();
 
+    VisiblePosition position(positionWithAffinity);
     VisiblePosition previous = position.previous();
     if (previous.isNotNull()) {
         const EphemeralRange previousCharacterRange = makeRange(previous, position);

@@ -44,8 +44,8 @@ public:
 
     bool hasCaret() const { return m_position.isNotNull(); }
     const VisiblePosition& caretPosition() { return m_position; }
-    void setCaretPosition(const VisiblePosition&);
-    void clear() { setCaretPosition(VisiblePosition()); }
+    void setCaretPosition(const PositionWithAffinity&);
+    void clear() { setCaretPosition(PositionWithAffinity()); }
 
     void nodeWillBeRemoved(Node&);
 

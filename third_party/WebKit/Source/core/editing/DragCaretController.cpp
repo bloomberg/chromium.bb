@@ -47,7 +47,7 @@ bool DragCaretController::isContentRichlyEditable() const
     return isRichlyEditablePosition(m_position.deepEquivalent());
 }
 
-void DragCaretController::setCaretPosition(const VisiblePosition& position)
+void DragCaretController::setCaretPosition(const PositionWithAffinity& position)
 {
     // for querying Layer::compositingState()
     // This code is probably correct, since it doesn't occur in a stack that
@@ -56,7 +56,7 @@ void DragCaretController::setCaretPosition(const VisiblePosition& position)
 
     if (Node* node = m_position.deepEquivalent().anchorNode())
         invalidateCaretRect(node);
-    m_position = position;
+    m_position = VisiblePosition(position);
     Document* document = nullptr;
     if (Node* node = m_position.deepEquivalent().anchorNode()) {
         invalidateCaretRect(node);

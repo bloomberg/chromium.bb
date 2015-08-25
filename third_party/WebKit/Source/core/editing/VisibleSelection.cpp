@@ -70,6 +70,11 @@ VisibleSelection::VisibleSelection(const PositionInComposedTree& base, const Pos
 {
 }
 
+VisibleSelection::VisibleSelection(const PositionWithAffinity& pos, bool isDirectional)
+    : VisibleSelection(pos.position(), pos.affinity(), isDirectional)
+{
+}
+
 VisibleSelection::VisibleSelection(const VisiblePosition& pos, bool isDirectional)
     : VisibleSelection(pos, pos, isDirectional)
 {

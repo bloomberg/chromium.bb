@@ -72,7 +72,7 @@ class TreeScope;
 class ScriptController;
 class SpellChecker;
 class TreeScope;
-class VisiblePosition;
+template <typename Strategy> class PositionWithAffinityTemplate;
 
 class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public WillBeHeapSupplementable<LocalFrame> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
@@ -159,7 +159,7 @@ public:
     String selectedText() const;
     String selectedTextForClipboard() const;
 
-    VisiblePosition visiblePositionForPoint(const IntPoint& framePoint);
+    PositionWithAffinityTemplate<EditingAlgorithm<NodeTraversal>> positionForPoint(const IntPoint& framePoint);
     Document* documentAtPoint(const IntPoint& windowPoint);
     EphemeralRangeTemplate<EditingAlgorithm<NodeTraversal>> rangeForPoint(const IntPoint& framePoint);
 

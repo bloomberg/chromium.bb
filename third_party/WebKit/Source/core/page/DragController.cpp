@@ -374,7 +374,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
         }
 
         if (!m_fileInputElementUnderMouse)
-            m_page->dragCaretController().setCaretPosition(m_documentUnderMouse->frame()->visiblePositionForPoint(point));
+            m_page->dragCaretController().setCaretPosition(m_documentUnderMouse->frame()->positionForPoint(point));
 
         LocalFrame* innerFrame = element->document().frame();
         dragSession.operation = dragIsMove(innerFrame->selection(), dragData) ? DragOperationMove : DragOperationCopy;
@@ -428,7 +428,7 @@ static bool setSelectionToDragCaret(LocalFrame* frame, VisibleSelection& dragCar
 {
     frame->selection().setSelection(dragCaret);
     if (frame->selection().isNone()) {
-        dragCaret = VisibleSelection(frame->visiblePositionForPoint(point));
+        dragCaret = VisibleSelection(frame->positionForPoint(point));
         frame->selection().setSelection(dragCaret);
         range = dragCaret.toNormalizedRange();
     }

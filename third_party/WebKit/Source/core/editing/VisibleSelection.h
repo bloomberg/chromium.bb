@@ -99,6 +99,7 @@ public:
 
     explicit VisibleSelection(const EphemeralRange&, TextAffinity = SEL_DEFAULT_AFFINITY, bool isDirectional = false);
 
+    explicit VisibleSelection(const PositionWithAffinity&, bool isDirectional = false);
     explicit VisibleSelection(const VisiblePosition&, bool isDirectional = false);
     VisibleSelection(const VisiblePosition&, const VisiblePosition&, bool isDirectional = false);
 
