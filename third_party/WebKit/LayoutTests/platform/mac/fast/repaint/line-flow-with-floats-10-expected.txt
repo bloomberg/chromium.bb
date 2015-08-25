@@ -11,12 +11,9 @@
         [14, 404, 355, 36],
         [14, 364, 48, 64],
         [14, 353, 48, 64],
-        [8, 314, 418, 252]
+        [8, 332, 418, 234]
       ],
       "paintInvalidationClients": [
-        "InlineTextBox 'doubled-up\n'",
-        "InlineTextBox 'soldiers were always getting up and walking off to'",
-        "RootInlineBox",
         "InlineTextBox 'other parts of\n'",
         "InlineTextBox 'the ground, Alice soon came to the conclusion'",
         "RootInlineBox",
