@@ -46,6 +46,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGStyleElement.h"
+#include "platform/TraceEvent.h"
 
 namespace blink {
 
@@ -393,6 +394,7 @@ void StyleEngine::appendActiveAuthorStyleSheets()
 
 void StyleEngine::createResolver()
 {
+    TRACE_EVENT0("blink", "StyleEngine::createResolver");
     // It is a programming error to attempt to resolve style on a Document
     // which is not in a frame. Code which hits this should have checked
     // Document::isActive() before calling into code which could get here.
