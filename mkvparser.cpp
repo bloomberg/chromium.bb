@@ -3227,10 +3227,12 @@ long Chapters::Parse() {
     }
 
     pos += size;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -3341,10 +3343,12 @@ long Chapters::Edition::Parse(IMkvReader* pReader, long long pos,
     }
 
     pos += size;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -3499,10 +3503,12 @@ long Chapters::Atom::Parse(IMkvReader* pReader, long long pos, long long size) {
     }
 
     pos += size;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -3633,10 +3639,12 @@ long Chapters::Display::Parse(IMkvReader* pReader, long long pos,
     }
 
     pos += size;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -3684,14 +3692,12 @@ long Tags::Parse() {
     }
 
     pos += size;
-    assert(pos <= stop);
     if (pos > stop)
-      return -1;
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
   if (pos != stop)
-    return -1;
+    return E_FILE_FORMAT_INVALID;
 
   return 0;
 }
@@ -3802,14 +3808,12 @@ long Tags::Tag::Parse(IMkvReader* pReader, long long pos, long long size) {
     }
 
     pos += size;
-    assert(pos <= stop);
     if (pos > stop)
-      return -1;
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
   if (pos != stop)
-    return -1;
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -3900,14 +3904,12 @@ long Tags::SimpleTag::Parse(IMkvReader* pReader, long long pos,
     }
 
     pos += size;
-    assert(pos <= stop);
     if (pos > stop)
-      return -1;
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
   if (pos != stop)
-    return -1;
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -5359,10 +5361,12 @@ long Tracks::Parse() {
     }
 
     pos = payload_stop;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   return 0;  // success
 }
@@ -6378,10 +6382,12 @@ long Cluster::ParseBlockGroup(long long payload_size, long long& pos,
     }
 
     pos = block_stop;  // consume block-part of block group
-    assert(pos <= payload_stop);
+    if (pos > payload_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == payload_stop);
+  if (pos != payload_stop)
+    return E_FILE_FORMAT_INVALID;
 
   status = CreateBlock(0x20,  // BlockGroup ID
                        payload_start, payload_size, discard_padding);
@@ -7360,7 +7366,6 @@ long Block::Parse(const Cluster* pCluster) {
     return E_FILE_FORMAT_INVALID;
 
   ++pos;  // consume frame count
-  assert(pos <= stop);
   if (pos > stop)
     return E_FILE_FORMAT_INVALID;
 
@@ -7418,8 +7423,6 @@ long Block::Parse(const Cluster* pCluster) {
       --frame_count;
     }
 
-    assert(pf < pf_end);
-    assert(pos <= stop);
     if (pf >= pf_end || pos > stop)
       return E_FILE_FORMAT_INVALID;
 
@@ -7564,7 +7567,6 @@ long Block::Parse(const Cluster* pCluster) {
         return E_FILE_FORMAT_INVALID;
 
       pos += len;  // consume length of (delta) size
-      assert(pos <= stop);
       if (pos > stop)
         return E_FILE_FORMAT_INVALID;
 
@@ -7588,20 +7590,18 @@ long Block::Parse(const Cluster* pCluster) {
 
     // parse last frame
     if (frame_count > 0) {
-      assert(pos <= stop);
-      assert(pf < pf_end);
+      if (pos > stop || pf >= pf_end)
+        return E_FILE_FORMAT_INVALID;
 
       const Frame& prev = *pf++;
       assert(prev.len == frame_size);
       if (prev.len != frame_size)
         return E_FILE_FORMAT_INVALID;
 
-      assert(pf < pf_end);
       if (pf >= pf_end)
         return E_FILE_FORMAT_INVALID;
 
       Frame& curr = *pf++;
-      assert(pf == pf_end);
       if (pf != pf_end)
         return E_FILE_FORMAT_INVALID;
 
