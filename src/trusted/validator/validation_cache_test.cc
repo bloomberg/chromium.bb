@@ -8,6 +8,7 @@
 
 #include <fcntl.h>
 
+#include "native_client/src/include/build_config.h"
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -26,14 +27,14 @@
 
 #define CODE_SIZE 32
 
-#if defined(__mips__)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 # define NOP 0x00
 #else  // x86
 # define NOP 0x90
 #endif
 
 
-#if defined(__mips__)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 // jr ra
 const char ret[CODE_SIZE + 1] =
     "\x08\x00\xe0\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -217,7 +218,7 @@ TEST_F(ValidationCachingInterfaceTests, CacheMiss) {
   EXPECT_EQ(true, context.query_destroyed);
 }
 
-#if defined(__x86_64__) || defined(__i386__)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 TEST_F(ValidationCachingInterfaceTests, SSE4Allowed) {
   memcpy(code_buffer, sse41, CODE_SIZE);
   context.query_result = 0;
