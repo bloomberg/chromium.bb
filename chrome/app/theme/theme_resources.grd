@@ -415,7 +415,11 @@
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT_MENU" file="common/input_alert_menu.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_GOOD" file="common/input_good.png" />
       <structure type="chrome_scaled_image" name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="common/keyword_search_magnifier.png" />
-      <structure type="chrome_scaled_image" name="IDR_LAPTOP_FAVICON" file="common/favicon_laptop.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_LAPTOP_FAVICON" file="legacy/favicon_laptop.png" />
+        <structure type="chrome_scaled_image" name="IDR_PHONE_FAVICON" file="legacy/favicon_phone.png" />
+        <structure type="chrome_scaled_image" name="IDR_TABLET_FAVICON" file="legacy/favicon_tablet.png" />
+      </if>
       <if expr="enable_service_discovery">
         <structure type="chrome_scaled_image" name="IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON" file="common/cloudprint.png" />
       </if>
@@ -582,7 +586,6 @@
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE" file="panel_restore.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE_C" file="panel_restore_click.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE_H" file="panel_restore_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_PHONE_FAVICON" file="common/favicon_phone.png" />
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="common/prerender_succeed_icon.png" />
       <if expr="chromeos">
@@ -873,7 +876,6 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_RIGHT" file="mac/tab_inactive_right.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_TAB_RECORDING_INDICATOR" file="common/tab_recording_indicator.png" />
-      <structure type="chrome_scaled_image" name="IDR_TABLET_FAVICON" file="common/favicon_tablet.png" />
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_TECHNICAL_ERROR" file="cros/technical_error.png" />
       </if>

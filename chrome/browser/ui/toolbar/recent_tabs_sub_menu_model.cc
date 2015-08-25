@@ -35,6 +35,13 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 
+#if !defined(OS_MACOSX)
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public2.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
+#endif
+
 #if defined(USE_ASH)
 #include "ash/accelerators/accelerator_table.h"
 #endif  // defined(USE_ASH)
@@ -119,6 +126,15 @@ int CommandIdToWindowVectorIndex(int command_id) {
   DCHECK(IsWindowModelCommandId(command_id));
   return command_id - kFirstLocalWindowCommandId;
 }
+
+#if !defined(OS_MACOSX)
+gfx::Image CreateFavicon(gfx::VectorIconId id) {
+  SkColor grey;
+  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
+                                &grey);
+  return gfx::Image(gfx::CreateVectorIcon(id, 16, grey));
+}
+#endif
 
 }  // namespace
 
@@ -411,9 +427,13 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
     InsertItemWithStringIdAt(++last_local_model_index_,
                              kRecentlyClosedHeaderCommandId,
                              IDS_RECENTLY_CLOSED);
+#if defined(OS_MACOSX)
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     SetIcon(last_local_model_index_,
             rb.GetNativeImageNamed(IDR_RECENTLY_CLOSED_WINDOW));
+#else
+    SetIcon(last_local_model_index_, CreateFavicon(gfx::VectorIconId::TAB));
+#endif
 
     int added_count = 0;
     TabRestoreService::Entries entries = service->entries();
@@ -519,8 +539,12 @@ void RecentTabsSubMenuModel::BuildLocalWindowItem(
   // See comments in BuildLocalEntries() about usage of InsertItem*At().
   InsertItemAt(curr_model_index, command_id, l10n_util::GetPluralStringFUTF16(
       IDS_RECENTLY_CLOSED_WINDOW, num_tabs));
+#if defined(OS_MACOSX)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(curr_model_index, rb.GetNativeImageNamed(IDR_RECENTLY_CLOSED_WINDOW));
+#else
+  SetIcon(curr_model_index, CreateFavicon(gfx::VectorIconId::TAB));
+#endif
   local_window_items_.push_back(window_id);
 }
 
@@ -547,6 +571,7 @@ void RecentTabsSubMenuModel::BuildOtherDevicesTabItem(
 void RecentTabsSubMenuModel::AddDeviceFavicon(
     int index_in_menu,
     sync_driver::SyncedSession::DeviceType device_type) {
+#if defined(OS_MACOSX)
   int favicon_id = -1;
   switch (device_type) {
     case sync_driver::SyncedSession::TYPE_PHONE:
@@ -569,6 +594,29 @@ void RecentTabsSubMenuModel::AddDeviceFavicon(
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(index_in_menu, rb.GetNativeImageNamed(favicon_id));
+#else
+  gfx::VectorIconId favicon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+  switch (device_type) {
+    case sync_driver::SyncedSession::TYPE_PHONE:
+      favicon_id = gfx::VectorIconId::SMARTPHONE;
+      break;
+
+    case sync_driver::SyncedSession::TYPE_TABLET:
+      favicon_id = gfx::VectorIconId::TABLET;
+      break;
+
+    case sync_driver::SyncedSession::TYPE_CHROMEOS:
+    case sync_driver::SyncedSession::TYPE_WIN:
+    case sync_driver::SyncedSession::TYPE_MACOSX:
+    case sync_driver::SyncedSession::TYPE_LINUX:
+    case sync_driver::SyncedSession::TYPE_OTHER:
+    case sync_driver::SyncedSession::TYPE_UNSET:
+      favicon_id = gfx::VectorIconId::LAPTOP;
+      break;
+  }
+
+  SetIcon(index_in_menu, CreateFavicon(favicon_id));
+#endif
 }
 
 void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
