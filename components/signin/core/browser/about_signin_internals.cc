@@ -443,13 +443,17 @@ base::DictionaryValue* AboutSigninInternals::TokenInfo::ToValue() const {
   } else if (!receive_time.is_null()) {
     if (error == GoogleServiceAuthError::AuthErrorNone()) {
       bool token_expired = expiration_time < base::Time::Now();
+      std::string expiration_time_string = GetTimeStr(expiration_time);
+      if (expiration_time.is_null()) {
+        token_expired = false;
+        expiration_time_string = "Expiration time not available";
+      }
       std::string status_str = "";
       if (token_expired)
         status_str = "<p style=\"color: #ffffff; background-color: #ff0000\">";
-      base::StringAppendF(&status_str,
-                          "Received token at %s. Expire at %s",
+      base::StringAppendF(&status_str, "Received token at %s. Expire at %s",
                           GetTimeStr(receive_time).c_str(),
-                          GetTimeStr(expiration_time).c_str());
+                          expiration_time_string.c_str());
       if (token_expired)
         base::StringAppendF(&status_str, "</p>");
       token_info->SetString("status", status_str);
