@@ -57,6 +57,7 @@ conformance_harness_script = r"""
     testHarness.reportResults(null, false, message);
     testHarness.notifyFinished(null);
   };
+  window.quietMode = function() { return true; }
 """
 
 def _DidWebGLTestSucceed(tab):
