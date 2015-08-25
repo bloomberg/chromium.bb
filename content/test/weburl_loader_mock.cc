@@ -5,6 +5,7 @@
 #include "content/test/weburl_loader_mock.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/test/weburl_loader_mock_factory.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -33,29 +34,32 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
   if (!client_)
     return;
 
+  // If no delegate is provided then create an empty one. The default behavior
+  // will just proxy to the client.
+  scoped_ptr<blink::WebURLLoaderTestDelegate> defaultDelegate;
+  if (!delegate) {
+    defaultDelegate.reset(new blink::WebURLLoaderTestDelegate());
+    delegate = defaultDelegate.get();
+  }
+
   // didReceiveResponse() and didReceiveData() might end up getting ::cancel()
   // to be called which will make the ResourceLoader to delete |this|.
   base::WeakPtr<WebURLLoaderMock> self(weak_factory_.GetWeakPtr());
 
-  client_->didReceiveResponse(this, response);
+  delegate->didReceiveResponse(client_, this, response);
   if (!self)
     return;
 
   if (error.reason) {
-    client_->didFail(this, error);
+    delegate->didFail(client_, this, error);
     return;
   }
-  if (delegate) {
-    delegate->didReceiveData(client_, this, data.data(), data.size(),
+  delegate->didReceiveData(client_, this, data.data(), data.size(),
                              data.size());
-  } else {
-    client_->didReceiveData(this, data.data(), data.size(), data.size());
-  }
-
   if (!self)
     return;
 
-  client_->didFinishLoading(this, 0, data.size());
+  delegate->didFinishLoading(client_, this, 0, data.size());
 }
 
 blink::WebURLRequest WebURLLoaderMock::ServeRedirect(
