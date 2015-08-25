@@ -172,7 +172,6 @@ void BitmapImage::cacheFrame(size_t index)
     if (repetitionCount(false) != cAnimationNone)
         m_frames[index].m_duration = m_source.frameDurationAtIndex(index);
     m_frames[index].m_hasAlpha = m_source.frameHasAlphaAtIndex(index);
-    m_frames[index].m_isLazyDecoded = m_source.frameIsLazyDecodedAtIndex(index);
     m_frames[index].m_frameBytes = m_source.frameBytesAtIndex(index);
 
     const IntSize frameSize(index ? m_source.frameSizeAtIndex(index) : m_size);
@@ -448,7 +447,8 @@ bool BitmapImage::currentFrameIsComplete()
 
 bool BitmapImage::currentFrameIsLazyDecoded()
 {
-    return ensureFrameIsCached(currentFrame()) && frameIsLazyDecodedAtIndex(currentFrame());
+    RefPtr<SkImage> image = frameAtIndex(currentFrame());
+    return image && image->isLazyGenerated();
 }
 
 ImageOrientation BitmapImage::currentFrameOrientation()
@@ -465,17 +465,6 @@ ImageOrientation BitmapImage::frameOrientationAtIndex(size_t index)
         return m_frames[index].m_orientation;
 
     return m_source.orientationAtIndex(index);
-}
-
-bool BitmapImage::frameIsLazyDecodedAtIndex(size_t index) const
-{
-    if (m_frames.size() <= index)
-        return false;
-
-    if (m_frames[index].m_haveMetadata)
-        return m_frames[index].m_isLazyDecoded;
-
-    return m_source.frameIsLazyDecodedAtIndex(index);
 }
 
 int BitmapImage::repetitionCount(bool imageKnownToBeComplete)

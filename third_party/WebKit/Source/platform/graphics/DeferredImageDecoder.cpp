@@ -177,13 +177,6 @@ bool DeferredImageDecoder::frameIsCompleteAtIndex(size_t index) const
     return false;
 }
 
-bool DeferredImageDecoder::frameIsCachedAndLazyDecodedAtIndex(size_t index) const
-{
-    // All frames cached in m_frameData are lazy-decoded.
-    ASSERT(index >= m_frameData.size() || m_frameData[index].m_haveMetadata);
-    return index < m_frameData.size();
-}
-
 float DeferredImageDecoder::frameDurationAtIndex(size_t index) const
 {
     if (m_actualDecoder)

@@ -118,7 +118,6 @@ private:
     float frameDurationAtIndex(size_t);
     bool frameHasAlphaAtIndex(size_t);
     ImageOrientation frameOrientationAtIndex(size_t);
-    bool frameIsLazyDecodedAtIndex(size_t) const;
 
     // Decodes and caches a frame. Never accessed except internally.
     void cacheFrame(size_t index);

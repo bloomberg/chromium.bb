@@ -70,7 +70,6 @@ public:
     size_t clearCacheExceptFrame(size_t);
     bool frameHasAlphaAtIndex(size_t index) const;
     bool frameIsCompleteAtIndex(size_t) const;
-    bool frameIsCachedAndLazyDecodedAtIndex(size_t) const;
     float frameDurationAtIndex(size_t) const;
     size_t frameBytesAtIndex(size_t index) const;
     ImageOrientation orientationAtIndex(size_t index) const;
