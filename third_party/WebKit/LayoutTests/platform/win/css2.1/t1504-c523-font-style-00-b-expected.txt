@@ -11,8 +11,8 @@ layer at (0,0) size 800x118
             text run at (219,0) width 208: "This sentence should be normal."
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,34) size 784x18 [color=#000080]
-        LayoutText {#text} at (0,0) size 209x17
-          text run at (0,0) width 209: "This sentence should be oblique."
+        LayoutText {#text} at (0,0) size 210x17
+          text run at (0,0) width 210: "This sentence should be oblique."
       LayoutBlockFlow {P} at (0,68) size 784x18 [color=#000080]
         LayoutInline {I} at (0,0) size 207x17
           LayoutText {#text} at (0,0) size 207x17
