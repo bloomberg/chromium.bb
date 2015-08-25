@@ -508,7 +508,9 @@ BookmarkAppHelper::~BookmarkAppHelper() {}
 void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
   callback_ = callback;
 
-  if (contents_) {
+  // Do not fetch the manifest for extension URLs.
+  if (contents_ &&
+      !contents_->GetVisibleURL().SchemeIs(extensions::kExtensionScheme)) {
     contents_->GetManifest(base::Bind(&BookmarkAppHelper::OnDidGetManifest,
                                      base::Unretained(this)));
   } else {
@@ -756,7 +758,7 @@ void GetWebApplicationInfoFromApp(
 }
 
 bool IsValidBookmarkAppUrl(const GURL& url) {
-  URLPattern origin_only_pattern(Extension::kValidWebExtentSchemes);
+  URLPattern origin_only_pattern(Extension::kValidBookmarkAppSchemes);
   origin_only_pattern.SetMatchAllURLs(true);
   return url.is_valid() && origin_only_pattern.MatchesURL(url);
 }

@@ -159,7 +159,9 @@ bool AppLaunchInfo::LoadLaunchURL(Extension* extension, base::string16* error) {
     // Ensure the launch web URL is a valid absolute URL and web extent scheme.
     GURL url(launch_url);
     URLPattern pattern(Extension::kValidWebExtentSchemes);
-    if (!url.is_valid() || !pattern.SetScheme(url.scheme())) {
+    if (extension->from_bookmark())
+      pattern.SetValidSchemes(Extension::kValidBookmarkAppSchemes);
+    if ((!url.is_valid() || !pattern.SetScheme(url.scheme()))) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidLaunchValue,
           keys::kLaunchWebURL);
@@ -179,7 +181,10 @@ bool AppLaunchInfo::LoadLaunchURL(Extension* extension, base::string16* error) {
   }
 
   // If there is no extent, we default the extent based on the launch URL.
-  if (extension->web_extent().is_empty() && !launch_web_url_.is_empty()) {
+  // Skip this step if the extension is from a bookmark app, as they are
+  // permissionless.
+  if (extension->web_extent().is_empty() && !launch_web_url_.is_empty() &&
+      !extension->from_bookmark()) {
     URLPattern pattern(Extension::kValidWebExtentSchemes);
     if (!pattern.SetScheme("*")) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
