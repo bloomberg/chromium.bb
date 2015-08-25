@@ -21,6 +21,7 @@ from chromite.cbuildbot import failures_lib
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import parallel
 
 from chromite.lib.paygen import download_cache
@@ -1186,6 +1187,54 @@ fsi_images: 2913.331.0,2465.105.0
 
     paygen.CreatePayloads()
 
+  def setupCreatePayloadTests(self):
+    paygen = self._GetPaygenBuildInstance()
+
+    self.mox.StubOutWithMock(paygen, '_DiscoverAllFsiBuilds')
+    self.mox.StubOutWithMock(paygen, '_FindFullTestPayloads')
+
+    return paygen
+
+  def testCreatePayloadTestsEmpty(self):
+
+    payloads = []
+    paygen = self.setupCreatePayloadTests()
+
+    # Run the test verification.
+    self.mox.ReplayAll()
+
+    expected = paygen._CreatePayloadTests(payloads)
+    self.assertEqual(expected, [])
+
+  def testCreatePayloadTestsPopulated(self):
+
+    payloads = [
+        gspaths.Payload(tgt_image=self.test_image),
+        gspaths.Payload(tgt_image=self.prev_image, src_image=self.test_image)
+    ]
+    paygen = self.setupCreatePayloadTests()
+
+    # We search for FSIs once for each full payload.
+    paygen._DiscoverAllFsiBuilds().AndReturn(['0.9.9', '1.0.0'])
+    paygen._FindFullTestPayloads('stable-channel', '0.9.9').AndReturn(False)
+    paygen._FindFullTestPayloads('stable-channel', '1.0.0').AndReturn(True)
+
+    # Run the test verification.
+    self.mox.ReplayAll()
+
+    self.maxDiff = None
+
+    expected = paygen._CreatePayloadTests(payloads)
+    self.assertEqual(expected, [
+        paygen.PayloadTest(
+            payloads[0], src_channel='foo-channel', src_version='1.2.3'),
+        paygen.PayloadTest(
+            payloads[0], src_channel='stable-channel', src_version='1.0.0'),
+        paygen.PayloadTest(
+            payloads[1]),
+    ])
+
+
   def testFindControlFileDir(self):
     """Test that we find control files in the proper directory."""
     # Test default dir in /tmp.
@@ -1233,16 +1282,18 @@ DOC = "Faux doc"
 """)
 
     self.mox.StubOutWithMock(urilib, 'ListFiles')
+    self.mox.StubOutWithMock(urilib, 'Exists')
+
+    urilib.Exists(
+        'gs://chromeos-releases/foo-channel/foo-board/1.2.3/stateful.tgz'
+        ).AndReturn(True)
+
     urilib.ListFiles(
         gspaths.ChromeosReleases.PayloadUri(
             self.basic_image.channel, self.basic_image.board,
             self.basic_image.version,
             '*', bucket=self.basic_image.bucket)).AndReturn(
                 ['gs://foo/bar.tar.bz2'])
-    urilib.ListFiles(
-        gspaths.ChromeosImageArchive.BuildUri(
-            'foo_board', '*', self.basic_image.version)).AndReturn(
-                ['gs://foo-archive/src-build'])
 
     self.mox.StubOutWithMock(
         paygen_build_lib.test_control, 'get_control_file_name')
@@ -1252,7 +1303,29 @@ DOC = "Faux doc"
     self.mox.ReplayAll()
 
     payload_test = paygen_build_lib._PaygenBuild.PayloadTest(payload)
-    paygen._EmitControlFile(payload_test, suite_name, control_dir)
+    cf = paygen._EmitControlFile(payload_test, suite_name, control_dir)
+
+    control_contents = osutils.ReadFile(cf)
+
+    self.assertEqual(control_contents, '''name = 'paygen_foo'
+image_type = 'test'
+update_type = 'delta'
+source_release = '1.2.3'
+target_release = '1.2.3'
+source_image_uri = 'gs://foo/bar.tar.bz2'
+target_payload_uri = 'None'
+SUITE = 'paygen_foo'
+source_archive_uri = 'gs://chromeos-releases/foo-channel/foo-board/1.2.3'
+
+AUTHOR = "Chromium OS"
+NAME = "autoupdate_EndToEndTest_paygen_foo_delta_1.2.3"
+TIME = "MEDIUM"
+TEST_CATEGORY = "Functional"
+TEST_CLASS = "platform"
+TEST_TYPE = "server"
+DOC = "Faux doc"
+
+''')
 
     shutil.rmtree(control_dir)
     os.remove(control_file_name)
