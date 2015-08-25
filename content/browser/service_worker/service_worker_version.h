@@ -358,6 +358,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   typedef ServiceWorkerVersion self;
   using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
 
+  // Used for UMA; add new entries to the end, before NUM_REQUEST_TYPES.
   enum RequestType {
     REQUEST_ACTIVATE,
     REQUEST_INSTALL,
@@ -366,7 +367,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
     REQUEST_NOTIFICATION_CLICK,
     REQUEST_PUSH,
     REQUEST_GEOFENCING,
-    REQUEST_SERVICE_PORT_CONNECT
+    REQUEST_SERVICE_PORT_CONNECT,
+    NUM_REQUEST_TYPES
   };
 
   struct RequestInfo {

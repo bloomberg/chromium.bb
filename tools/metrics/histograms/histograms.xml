@@ -39403,6 +39403,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Execution time of ServiceWorkerGlobalScope.onpush.</summary>
 </histogram>
 
+<histogram name="ServiceWorker.RequestTimeouts.Count"
+    enum="ServiceWorkerVersion.RequestType">
+  <owner>jeremyarcher@google.com</owner>
+  <summary>
+    The number of Service Worker request timeouts, by request type.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.ScriptCachedMetadataSize" units="bytes">
   <owner>horo@chromium.org</owner>
   <summary>
@@ -69951,6 +69959,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="16" label="REQUEST_JOB_ERROR_DESTROYED"/>
   <int value="17" label="REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB"/>
   <int value="18" label="REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM"/>
+</enum>
+
+<enum name="ServiceWorkerVersion.RequestType" type="int">
+  <int value="0" label="REQUEST_ACTIVATE"/>
+  <int value="1" label="REQUEST_INSTALL"/>
+  <int value="2" label="REQUEST_FETCH"/>
+  <int value="3" label="REQUEST_SYNC"/>
+  <int value="4" label="REQUEST_NOTIFICATION_CLICK"/>
+  <int value="5" label="REQUEST_PUSH"/>
+  <int value="6" label="REQUEST_GEOFENCING"/>
+  <int value="7" label="REQUEST_SERVICE_PORT_CONNECT"/>
 </enum>
 
 <enum name="ServiceWorkerWriteResponseResult" type="int">

@@ -2159,6 +2159,8 @@ int ServiceWorkerVersion::AddRequest(
 }
 
 bool ServiceWorkerVersion::OnRequestTimeout(const RequestInfo& info) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.RequestTimeouts.Count", info.type,
+                            NUM_REQUEST_TYPES);
   switch (info.type) {
     case REQUEST_ACTIVATE:
       return RunIDMapCallback(&activate_requests_, info.id,
@@ -2188,6 +2190,8 @@ bool ServiceWorkerVersion::OnRequestTimeout(const RequestInfo& info) {
                               SERVICE_WORKER_ERROR_TIMEOUT,
                               false /* accept_connection */, base::string16(),
                               base::string16());
+    case NUM_REQUEST_TYPES:
+      break;
   }
   NOTREACHED() << "Got unexpected request type: " << info.type;
   return false;
