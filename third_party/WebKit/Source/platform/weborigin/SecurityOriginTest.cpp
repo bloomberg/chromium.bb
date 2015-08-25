@@ -32,6 +32,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/blob/BlobURL.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
@@ -383,6 +384,38 @@ TEST_F(SecurityOriginTest, CreateFromTuple)
         EXPECT_EQ(test.origin, origin->toString()) << test.origin;
     }
 
+}
+
+TEST_F(SecurityOriginTest, UniquenessPropagatesToBlobUrls)
+{
+    struct TestCase {
+        const char* url;
+        bool expectedUniqueness;
+        const char* expectedOriginString;
+    } cases[] {
+        { "", true, "null" },
+        { "null", true, "null" },
+        { "data:text/plain,hello_world", true, "null" },
+        { "file:///path", false, "file://" },
+        { "filesystem:http://host/filesystem-path", false, "http://host" },
+        { "filesystem:file:///filesystem-path", false, "file://" },
+        { "filesystem:null/filesystem-path", true, "null" },
+        { "blob:http://host/blob-id", false, "http://host" },
+        { "blob:file:///blob-id", false, "file://" },
+        { "blob:null/blob-id", true, "null" },
+    };
+
+    for (const TestCase& test : cases) {
+        RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString(test.url);
+        EXPECT_EQ(test.expectedUniqueness, origin->isUnique());
+        EXPECT_EQ(test.expectedOriginString, origin->toString());
+
+        KURL blobUrl = BlobURL::createPublicURL(origin.get());
+        RefPtr<SecurityOrigin> blobUrlOrigin = SecurityOrigin::create(blobUrl);
+        EXPECT_EQ(blobUrlOrigin->isUnique(), origin->isUnique());
+        EXPECT_EQ(blobUrlOrigin->toString(), origin->toString());
+        EXPECT_EQ(blobUrlOrigin->toRawString(), origin->toRawString());
+    }
 }
 
 } // namespace blink
