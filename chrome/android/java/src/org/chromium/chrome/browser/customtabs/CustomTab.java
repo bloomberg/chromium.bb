@@ -237,7 +237,7 @@ public class CustomTab extends ChromeTab {
                 String linkUrl = params.getLinkUrl();
                 if (linkUrl != null) linkUrl = linkUrl.trim();
                 if (!TextUtils.isEmpty(linkUrl)) {
-                    menu.add(Menu.NONE, org.chromium.chrome.R.id.contextmenu_copy_link_address_text,
+                    menu.add(Menu.NONE, org.chromium.chrome.R.id.contextmenu_copy_link_address,
                             Menu.NONE, org.chromium.chrome.R.string.contextmenu_copy_link_address);
                 }
 

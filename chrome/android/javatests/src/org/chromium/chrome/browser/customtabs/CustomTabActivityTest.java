@@ -186,7 +186,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(),
                 "aboutLink");
         assertEquals(expectedMenuSize, menu.size());
-        assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address_text));
+        assertNotNull(menu.findItem(R.id.contextmenu_copy_link_address));
         assertNotNull(menu.findItem(R.id.contextmenu_copy_link_text));
         assertNotNull(menu.findItem(R.id.contextmenu_save_link_as));
     }

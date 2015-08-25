@@ -12,7 +12,7 @@
             android:title="@string/contextmenu_open_in_new_tab"/>
         <item android:id="@+id/contextmenu_open_in_incognito_tab"
             android:title="@string/contextmenu_open_in_incognito_tab"/>
-        <item android:id="@+id/contextmenu_copy_link_address_text"
+        <item android:id="@+id/contextmenu_copy_link_address"
             android:title="@string/contextmenu_copy_link_address"/>
         <item android:id="@+id/contextmenu_copy_email_address"
             android:title="@string/contextmenu_copy_email_address"/>

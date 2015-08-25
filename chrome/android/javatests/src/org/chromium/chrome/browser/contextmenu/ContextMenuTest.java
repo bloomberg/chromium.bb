@@ -54,7 +54,7 @@ public class ContextMenuTest extends DownloadTestBase {
     public void testCopyLinkURL() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "testLink",
-                R.id.contextmenu_copy_link_address_text);
+                R.id.contextmenu_copy_link_address);
 
         assertStringContains("test_link.html", getClipboardText());
     }
@@ -64,7 +64,7 @@ public class ContextMenuTest extends DownloadTestBase {
     public void testCopyImageLinkCopiesLinkURL() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "testImageLink",
-                R.id.contextmenu_copy_link_address_text);
+                R.id.contextmenu_copy_link_address);
 
         assertStringContains("test_link.html", getClipboardText());
     }

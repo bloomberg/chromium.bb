@@ -226,7 +226,7 @@ public class FullScreenActivityTab extends ChromeTab {
             @Override
             public boolean onItemSelected(ContextMenuHelper helper, ContextMenuParams params,
                     int itemId) {
-                if (itemId == org.chromium.chrome.R.id.contextmenu_copy_link_address_text) {
+                if (itemId == org.chromium.chrome.R.id.contextmenu_copy_link_address) {
                     String url = params.getUnfilteredLinkUrl();
                     mClipboard.setText(url, url);
                     return true;
@@ -269,7 +269,7 @@ public class FullScreenActivityTab extends ChromeTab {
             @Override
             public void buildContextMenu(ContextMenu menu, Context context,
                     ContextMenuParams params) {
-                menu.add(Menu.NONE, org.chromium.chrome.R.id.contextmenu_copy_link_address_text,
+                menu.add(Menu.NONE, org.chromium.chrome.R.id.contextmenu_copy_link_address,
                         Menu.NONE, org.chromium.chrome.R.string.contextmenu_copy_link_address);
 
                 String linkText = params.getLinkText();

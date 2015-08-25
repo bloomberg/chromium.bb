@@ -106,7 +106,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         if (MailTo.isMailTo(params.getLinkUrl())) {
-            menu.findItem(R.id.contextmenu_copy_link_address_text).setVisible(false);
+            menu.findItem(R.id.contextmenu_copy_link_address).setVisible(false);
         } else {
             menu.findItem(R.id.contextmenu_copy_email_address).setVisible(false);
         }
@@ -205,7 +205,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 DataReductionProxySettings.getInstance().setLoFiLoadImageRequested();
             }
             mDelegate.onLoadOriginalImage();
-        } else if (itemId == R.id.contextmenu_copy_link_address_text) {
+        } else if (itemId == R.id.contextmenu_copy_link_address) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_LINK_ADDRESS);
             mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(),
                     ChromeContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
