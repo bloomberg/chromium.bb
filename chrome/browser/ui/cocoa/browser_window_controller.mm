@@ -603,7 +603,8 @@ using content::WebContents;
     [self saveWindowPositionIfNeeded];
   }
 
-  [[[self window] contentView] cr_recursivelyInvokeBlock:^(id view) {
+  NSView* rootView = [[[self window] contentView] superview];
+  [rootView cr_recursivelyInvokeBlock:^(id view) {
       if ([view conformsToProtocol:@protocol(ThemedWindowDrawing)])
         [view windowDidChangeActive];
   }];
@@ -613,7 +614,8 @@ using content::WebContents;
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
-  [[[self window] contentView] cr_recursivelyInvokeBlock:^(id view) {
+  NSView* rootView = [[[self window] contentView] superview];
+  [rootView cr_recursivelyInvokeBlock:^(id view) {
       if ([view conformsToProtocol:@protocol(ThemedWindowDrawing)])
         [view windowDidChangeActive];
   }];

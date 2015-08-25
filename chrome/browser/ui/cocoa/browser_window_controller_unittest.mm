@@ -25,6 +25,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 using ::testing::Return;
 
@@ -700,6 +701,25 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarHitTest) {
                                       toView:[contentView superview]];
 
   EXPECT_TRUE([[contentView hitTest:point] isDescendantOf:bookmarkView]);
+}
+
+// Check that when the window becomes/resigns main, the tab strip's background
+// view is redrawn.
+TEST_F(BrowserWindowControllerTest, TabStripBackgroundViewRedrawTest) {
+  NSView* view = controller_.tabStripBackgroundView;
+  id partial_mock = [OCMockObject partialMockForObject:view];
+
+  [[partial_mock expect] setNeedsDisplay:YES];
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:controller_.window];
+  [partial_mock verify];
+
+  [[partial_mock expect] setNeedsDisplay:YES];
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidResignMainNotification
+                    object:controller_.window];
+  [partial_mock verify];
 }
 
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {
