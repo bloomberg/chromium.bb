@@ -448,9 +448,6 @@ void HostDiscardableSharedMemoryManager::ReleaseMemory(
 
 void HostDiscardableSharedMemoryManager::BytesAllocatedChanged(
     size_t new_bytes_allocated) const {
-  TRACE_COUNTER1("renderer_host", "TotalDiscardableMemoryUsage",
-                 new_bytes_allocated);
-
   static const char kTotalDiscardableMemoryAllocatedKey[] =
       "total-discardable-memory-allocated";
   base::debug::SetCrashKeyValue(kTotalDiscardableMemoryAllocatedKey,

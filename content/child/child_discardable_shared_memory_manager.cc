@@ -299,9 +299,6 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
 void ChildDiscardableSharedMemoryManager::MemoryUsageChanged(
     size_t new_bytes_total,
     size_t new_bytes_free) const {
-  TRACE_COUNTER2("renderer", "DiscardableMemoryUsage", "allocated",
-                 new_bytes_total - new_bytes_free, "free", new_bytes_free);
-
   static const char kDiscardableMemoryAllocatedKey[] =
       "discardable-memory-allocated";
   base::debug::SetCrashKeyValue(kDiscardableMemoryAllocatedKey,
