@@ -29,6 +29,7 @@ class IMkvReader {
 
 long long GetUIntLength(IMkvReader*, long long, long&);
 long long ReadUInt(IMkvReader*, long long, long&);
+long long ReadID(IMkvReader* pReader, long long pos, long& len);
 long long UnserializeUInt(IMkvReader*, long long pos, long long size);
 
 long UnserializeFloat(IMkvReader*, long long pos, long long size, double&);
