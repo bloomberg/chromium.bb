@@ -4,7 +4,6 @@
 
 {
   'closure_args': [
-    'accept_const_keyword',
     'compilation_level=SIMPLE_OPTIMIZATIONS',
     'extra_annotation_name=attribute',
     'extra_annotation_name=demo',
@@ -15,7 +14,6 @@
     'extra_annotation_name=submodule',
     'jscomp_error=accessControls',
     'jscomp_error=ambiguousFunctionDecl',
-    'jscomp_error=checkStructDictInheritance',
     'jscomp_error=checkTypes',
     'jscomp_error=checkVars',
     'jscomp_error=constantProperty',

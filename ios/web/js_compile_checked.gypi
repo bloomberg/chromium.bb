@@ -34,7 +34,6 @@
             'SIMPLE_OPTIMIZATIONS',
             '--jscomp_error=accessControls',
             '--jscomp_error=ambiguousFunctionDecl',
-            '--jscomp_error=checkStructDictInheritance',
             # '--jscomp_error=checkTypes',
             # '--jscomp_error=checkVars',
             '--jscomp_error=constantProperty',
