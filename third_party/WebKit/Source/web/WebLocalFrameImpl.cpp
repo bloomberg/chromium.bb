@@ -1240,7 +1240,7 @@ bool WebLocalFrameImpl::hasSelection() const
 
 WebRange WebLocalFrameImpl::selectionRange() const
 {
-    return frame()->selection().toNormalizedRange();
+    return createRange(frame()->selection().selection().toNormalizedEphemeralRange());
 }
 
 WebString WebLocalFrameImpl::selectionAsText() const
