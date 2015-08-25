@@ -537,17 +537,8 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 	int r;
 	struct amdgpu_bo *bo;
 	struct drm_amdgpu_gem_userptr args;
-	uintptr_t cpu0;
-	uint32_t ps, off;
 
-	memset(&args, 0, sizeof(args));
-	ps = getpagesize();
-
-	cpu0 = ROUND_DOWN((uintptr_t)cpu, ps);
-	off = (uintptr_t)cpu - cpu0;
-	size = ROUND_UP(size + off, ps);
-
-	args.addr = cpu0;
+	args.addr = (uintptr_t)cpu;
 	args.flags = AMDGPU_GEM_USERPTR_ANONONLY | AMDGPU_GEM_USERPTR_REGISTER;
 	args.size = size;
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_USERPTR,
