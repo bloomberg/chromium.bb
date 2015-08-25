@@ -24,7 +24,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/transport_security_persister.h"
@@ -211,6 +210,22 @@ URLRequestContextBuilder::URLRequestContextBuilder()
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
 
+void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
+    const URLRequestContext* context,
+    HttpNetworkSession::Params* params) {
+  params->host_resolver = context->host_resolver();
+  params->cert_verifier = context->cert_verifier();
+  params->transport_security_state = context->transport_security_state();
+  params->cert_transparency_verifier = context->cert_transparency_verifier();
+  params->proxy_service = context->proxy_service();
+  params->ssl_config_service = context->ssl_config_service();
+  params->http_auth_handler_factory = context->http_auth_handler_factory();
+  params->network_delegate = context->network_delegate();
+  params->http_server_properties = context->http_server_properties();
+  params->net_log = context->net_log();
+  params->channel_id_service = context->channel_id_service();
+}
+
 void URLRequestContextBuilder::EnableHttpCache(const HttpCacheParams& params) {
   http_cache_enabled_ = true;
   http_cache_params_ = params;
@@ -350,19 +365,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     storage->set_backoff_manager(new URLRequestBackoffManager());
 
   HttpNetworkSession::Params network_session_params;
-  network_session_params.host_resolver = context->host_resolver();
-  network_session_params.cert_verifier = context->cert_verifier();
-  network_session_params.transport_security_state =
-      context->transport_security_state();
-  network_session_params.proxy_service = context->proxy_service();
-  network_session_params.ssl_config_service =
-      context->ssl_config_service();
-  network_session_params.http_auth_handler_factory =
-      context->http_auth_handler_factory();
-  network_session_params.network_delegate = network_delegate;
-  network_session_params.http_server_properties =
-      context->http_server_properties();
-  network_session_params.net_log = context->net_log();
+  SetHttpNetworkSessionComponents(context, &network_session_params);
 
   network_session_params.ignore_certificate_errors =
       http_network_session_params_.ignore_certificate_errors;
@@ -385,8 +388,6 @@ URLRequestContext* URLRequestContextBuilder::Build() {
 
   HttpTransactionFactory* http_transaction_factory = NULL;
   if (http_cache_enabled_) {
-    network_session_params.channel_id_service =
-        context->channel_id_service();
     HttpCache::BackendFactory* http_cache_backend = NULL;
     if (http_cache_params_.type == HttpCacheParams::DISK) {
       http_cache_backend = new HttpCache::DefaultBackend(

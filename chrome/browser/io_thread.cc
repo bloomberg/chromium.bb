@@ -88,6 +88,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_backoff_manager.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "url/url_constants.h"
@@ -214,68 +215,6 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
   remapped_resolver->SetRulesFromString(
       command_line.GetSwitchValueASCII(switches::kHostResolverRules));
   return remapped_resolver.Pass();
-}
-
-// TODO(willchan): Remove proxy script fetcher context since it's not necessary
-// now that I got rid of refcounting URLRequestContexts.
-// See IOThread::Globals for details.
-net::URLRequestContext*
-ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
-                                   net::NetLog* net_log) {
-  net::URLRequestContext* context = new net::URLRequestContext;
-  context->set_net_log(net_log);
-  context->set_host_resolver(globals->host_resolver.get());
-  context->set_cert_verifier(globals->cert_verifier.get());
-  context->set_transport_security_state(
-      globals->transport_security_state.get());
-  context->set_cert_transparency_verifier(
-      globals->cert_transparency_verifier.get());
-  context->set_http_auth_handler_factory(
-      globals->http_auth_handler_factory.get());
-  context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
-  context->set_http_transaction_factory(
-      globals->proxy_script_fetcher_http_transaction_factory.get());
-  context->set_job_factory(
-      globals->proxy_script_fetcher_url_request_job_factory.get());
-  context->set_cookie_store(globals->system_cookie_store.get());
-  context->set_channel_id_service(
-      globals->system_channel_id_service.get());
-  context->set_network_delegate(globals->system_network_delegate.get());
-  context->set_http_user_agent_settings(
-      globals->http_user_agent_settings.get());
-  // TODO(rtenneti): We should probably use HttpServerPropertiesManager for the
-  // system URLRequestContext too. There's no reason this should be tied to a
-  // profile.
-  return context;
-}
-
-net::URLRequestContext*
-ConstructSystemRequestContext(IOThread::Globals* globals,
-                              net::NetLog* net_log) {
-  net::URLRequestContext* context = new SystemURLRequestContext;
-  context->set_net_log(net_log);
-  context->set_host_resolver(globals->host_resolver.get());
-  context->set_cert_verifier(globals->cert_verifier.get());
-  context->set_transport_security_state(
-      globals->transport_security_state.get());
-  context->set_cert_transparency_verifier(
-      globals->cert_transparency_verifier.get());
-  context->set_http_auth_handler_factory(
-      globals->http_auth_handler_factory.get());
-  context->set_proxy_service(globals->system_proxy_service.get());
-  context->set_http_transaction_factory(
-      globals->system_http_transaction_factory.get());
-  context->set_job_factory(globals->system_url_request_job_factory.get());
-  context->set_cookie_store(globals->system_cookie_store.get());
-  context->set_channel_id_service(
-      globals->system_channel_id_service.get());
-  context->set_network_delegate(globals->system_network_delegate.get());
-  context->set_http_user_agent_settings(
-      globals->http_user_agent_settings.get());
-  context->set_network_quality_estimator(
-      globals->network_quality_estimator.get());
-  context->set_backoff_manager(globals->url_request_backoff_manager.get());
-  return context;
 }
 
 int GetSwitchValueAsInt(const base::CommandLine& command_line,
@@ -819,56 +758,12 @@ void IOThread::Init() {
           "466432 IOThread::InitAsync::InitializeNetworkOptions"));
   InitializeNetworkOptions(command_line);
 
-  net::HttpNetworkSession::Params session_params;
-  InitializeNetworkSessionParams(&session_params);
-  session_params.net_log = net_log_;
-  session_params.proxy_service =
-      globals_->proxy_script_fetcher_proxy_service.get();
-
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile14(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466432 IOThread::InitAsync::HttpNetorkSession::Start"));
-  TRACE_EVENT_BEGIN0("startup", "IOThread::InitAsync:HttpNetworkSession");
-  scoped_refptr<net::HttpNetworkSession> network_session(
-      new net::HttpNetworkSession(session_params));
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile15(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466432 IOThread::InitAsync::HttpNetorkSession::End"));
-  globals_->proxy_script_fetcher_http_transaction_factory
-      .reset(new net::HttpNetworkLayer(network_session.get()));
-  TRACE_EVENT_END0("startup", "IOThread::InitAsync:HttpNetworkSession");
-  scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
-      new net::URLRequestJobFactoryImpl());
-
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile16(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466432 IOThread::InitAsync::SetProtocolHandler"));
-  job_factory->SetProtocolHandler(
-      url::kDataScheme, make_scoped_ptr(new net::DataProtocolHandler()));
-  job_factory->SetProtocolHandler(
-      url::kFileScheme,
-      make_scoped_ptr(new net::FileProtocolHandler(
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
-#if !defined(DISABLE_FTP_SUPPORT)
-  globals_->proxy_script_fetcher_ftp_transaction_factory.reset(
-      new net::FtpNetworkLayer(globals_->host_resolver.get()));
-  job_factory->SetProtocolHandler(
-      url::kFtpScheme,
-      make_scoped_ptr(new net::FtpProtocolHandler(
-          globals_->proxy_script_fetcher_ftp_transaction_factory.get())));
-#endif
-  globals_->proxy_script_fetcher_url_request_job_factory = job_factory.Pass();
-
+  TRACE_EVENT_BEGIN0("startup",
+                     "IOThread::Init:ProxyScriptFetcherRequestContext");
   globals_->proxy_script_fetcher_context.reset(
       ConstructProxyScriptFetcherContext(globals_, net_log_));
+  TRACE_EVENT_END0("startup",
+                   "IOThread::Init:ProxyScriptFetcherRequestContext");
 
   const version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::UNKNOWN ||
@@ -964,7 +859,6 @@ void IOThread::ConfigureTCPFastOpen(const base::CommandLine& command_line) {
   net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_if_supported);
 }
 
-// static
 void IOThread::ConfigureSpdyGlobals(
     const base::CommandLine& command_line,
     base::StringPiece spdy_trial_group,
@@ -1040,7 +934,6 @@ void IOThread::ConfigureSpdyGlobals(
   globals->use_alternative_services.set(true);
 }
 
-// static
 void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kAuthSchemes,
                                "basic,digest,ntlm,negotiate");
@@ -1099,21 +992,14 @@ void IOThread::InitializeNetworkSessionParams(
   InitializeNetworkSessionParamsFromGlobals(*globals_, params);
 }
 
-// static
 void IOThread::InitializeNetworkSessionParamsFromGlobals(
     const IOThread::Globals& globals,
     net::HttpNetworkSession::Params* params) {
-  params->host_resolver = globals.host_resolver.get();
-  params->cert_verifier = globals.cert_verifier.get();
+  //  The next two properties of the params don't seem to be
+  // elements of URLRequestContext, so they must be set here.
   params->cert_policy_enforcer = globals.cert_policy_enforcer.get();
-  params->channel_id_service = globals.system_channel_id_service.get();
-  params->transport_security_state = globals.transport_security_state.get();
-  params->ssl_config_service = globals.ssl_config_service.get();
-  params->http_auth_handler_factory = globals.http_auth_handler_factory.get();
-  params->http_server_properties =
-      globals.http_server_properties->GetWeakPtr();
-  params->network_delegate = globals.system_network_delegate.get();
   params->host_mapping_rules = globals.host_mapping_rules.get();
+
   params->ignore_certificate_errors = globals.ignore_certificate_errors;
   params->testing_fixed_http_port = globals.testing_fixed_http_port;
   params->testing_fixed_https_port = globals.testing_fixed_https_port;
@@ -1224,22 +1110,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
           command_line,
           quick_check_enabled_.GetValue()));
 
-  net::HttpNetworkSession::Params system_params;
-  InitializeNetworkSessionParams(&system_params);
-  system_params.net_log = net_log_;
-  system_params.proxy_service = globals_->system_proxy_service.get();
-
-  globals_->system_http_transaction_factory.reset(
-      new net::HttpNetworkLayer(
-          new net::HttpNetworkSession(system_params)));
-  globals_->system_url_request_job_factory.reset(
-      new net::URLRequestJobFactoryImpl());
   globals_->system_request_context.reset(
       ConstructSystemRequestContext(globals_, net_log_));
-  globals_->system_request_context->set_ssl_config_service(
-      globals_->ssl_config_service.get());
-  globals_->system_request_context->set_http_server_properties(
-      globals_->http_server_properties->GetWeakPtr());
 }
 
 void IOThread::UpdateDnsClientEnabled() {
@@ -1261,7 +1133,6 @@ void IOThread::ConfigureQuic(const base::CommandLine& command_line) {
                        globals_);
 }
 
-// static
 void IOThread::ConfigureQuicGlobals(
     const base::CommandLine& command_line,
     base::StringPiece quic_trial_group,
@@ -1367,7 +1238,6 @@ bool IOThread::ShouldEnableQuic(const base::CommandLine& command_line,
       quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
 }
 
-// static
 bool IOThread::ShouldEnableQuicForProxies(const base::CommandLine& command_line,
                                           base::StringPiece quic_trial_group,
                                           bool quic_allowed_by_policy) {
@@ -1376,7 +1246,6 @@ bool IOThread::ShouldEnableQuicForProxies(const base::CommandLine& command_line,
       ShouldEnableQuicForDataReductionProxy();
 }
 
-// static
 bool IOThread::ShouldEnableQuicForDataReductionProxy() {
   const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
@@ -1387,7 +1256,6 @@ bool IOThread::ShouldEnableQuicForDataReductionProxy() {
   return data_reduction_proxy::params::IsIncludedInQuicFieldTrial();
 }
 
-// static
 bool IOThread::ShouldEnableInsecureQuic(
     const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
@@ -1427,7 +1295,6 @@ net::QuicTagVector IOThread::GetQuicConnectionOptions(
   return net::QuicUtils::ParseQuicConnectionOptions(it->second);
 }
 
-// static
 double IOThread::GetAlternativeProtocolProbabilityThreshold(
     const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
@@ -1461,7 +1328,6 @@ double IOThread::GetAlternativeProtocolProbabilityThreshold(
   return -1;
 }
 
-// static
 bool IOThread::ShouldQuicAlwaysRequireHandshakeConfirmation(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -1470,7 +1336,6 @@ bool IOThread::ShouldQuicAlwaysRequireHandshakeConfirmation(
       "true");
 }
 
-// static
 bool IOThread::ShouldQuicDisableConnectionPooling(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -1478,7 +1343,6 @@ bool IOThread::ShouldQuicDisableConnectionPooling(
       "true");
 }
 
-// static
 float IOThread::GetQuicLoadServerInfoTimeoutSrttMultiplier(
     const VariationParameters& quic_trial_params) {
   double value;
@@ -1490,7 +1354,6 @@ float IOThread::GetQuicLoadServerInfoTimeoutSrttMultiplier(
   return 0.0f;
 }
 
-// static
 bool IOThread::ShouldQuicEnableConnectionRacing(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -1498,7 +1361,6 @@ bool IOThread::ShouldQuicEnableConnectionRacing(
       "true");
 }
 
-// static
 bool IOThread::ShouldQuicEnableNonBlockingIO(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -1506,21 +1368,18 @@ bool IOThread::ShouldQuicEnableNonBlockingIO(
       "true");
 }
 
-// static
 bool IOThread::ShouldQuicDisableDiskCache(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "disable_disk_cache"), "true");
 }
 
-// static
 bool IOThread::ShouldQuicPreferAes(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "prefer_aes"), "true");
 }
 
-// static
 int IOThread::GetQuicMaxNumberOfLossyConnections(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -1532,7 +1391,6 @@ int IOThread::GetQuicMaxNumberOfLossyConnections(
   return 0;
 }
 
-// static
 float IOThread::GetQuicPacketLossThreshold(
     const VariationParameters& quic_trial_params) {
   double value;
@@ -1544,7 +1402,6 @@ float IOThread::GetQuicPacketLossThreshold(
   return 0.0f;
 }
 
-// static
 int IOThread::GetQuicSocketReceiveBufferSize(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -1556,7 +1413,6 @@ int IOThread::GetQuicSocketReceiveBufferSize(
   return 0;
 }
 
-// static
 size_t IOThread::GetQuicMaxPacketLength(
     const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
@@ -1579,7 +1435,6 @@ size_t IOThread::GetQuicMaxPacketLength(
   return 0;
 }
 
-// static
 net::QuicVersion IOThread::GetQuicVersion(
     const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
@@ -1591,7 +1446,6 @@ net::QuicVersion IOThread::GetQuicVersion(
   return ParseQuicVersion(GetVariationParam(quic_trial_params, "quic_version"));
 }
 
-// static
 net::QuicVersion IOThread::ParseQuicVersion(const std::string& quic_version) {
   net::QuicVersionVector supported_versions = net::QuicSupportedVersions();
   for (size_t i = 0; i < supported_versions.size(); ++i) {
@@ -1602,4 +1456,135 @@ net::QuicVersion IOThread::ParseQuicVersion(const std::string& quic_version) {
   }
 
   return net::QUIC_VERSION_UNSUPPORTED;
+}
+
+net::URLRequestContext* IOThread::ConstructSystemRequestContext(
+    IOThread::Globals* globals,
+    net::NetLog* net_log) {
+  net::URLRequestContext* context = new SystemURLRequestContext;
+  context->set_net_log(net_log);
+  context->set_host_resolver(globals->host_resolver.get());
+  context->set_cert_verifier(globals->cert_verifier.get());
+  context->set_transport_security_state(
+      globals->transport_security_state.get());
+  context->set_cert_transparency_verifier(
+      globals->cert_transparency_verifier.get());
+  context->set_ssl_config_service(globals->ssl_config_service.get());
+  context->set_http_auth_handler_factory(
+      globals->http_auth_handler_factory.get());
+  context->set_proxy_service(globals->system_proxy_service.get());
+
+  globals->system_url_request_job_factory.reset(
+      new net::URLRequestJobFactoryImpl());
+  context->set_job_factory(globals->system_url_request_job_factory.get());
+
+  context->set_cookie_store(globals->system_cookie_store.get());
+  context->set_channel_id_service(
+      globals->system_channel_id_service.get());
+  context->set_network_delegate(globals->system_network_delegate.get());
+  context->set_http_user_agent_settings(
+      globals->http_user_agent_settings.get());
+  context->set_network_quality_estimator(
+      globals->network_quality_estimator.get());
+  context->set_backoff_manager(globals->url_request_backoff_manager.get());
+
+  context->set_http_server_properties(
+      globals->http_server_properties->GetWeakPtr());
+
+  net::HttpNetworkSession::Params system_params;
+  InitializeNetworkSessionParamsFromGlobals(*globals, &system_params);
+  net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
+      context, &system_params);
+
+  globals->system_http_transaction_factory.reset(
+      new net::HttpNetworkLayer(new net::HttpNetworkSession(system_params)));
+  context->set_http_transaction_factory(
+      globals->system_http_transaction_factory.get());
+
+  return context;
+}
+
+net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
+    IOThread::Globals* globals,
+    net::NetLog* net_log) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::ConstructProxyScriptFetcherContext1"));
+  net::URLRequestContext* context = new net::URLRequestContext;
+  context->set_net_log(net_log);
+  context->set_host_resolver(globals->host_resolver.get());
+  context->set_cert_verifier(globals->cert_verifier.get());
+  context->set_transport_security_state(
+      globals->transport_security_state.get());
+  context->set_cert_transparency_verifier(
+      globals->cert_transparency_verifier.get());
+  context->set_ssl_config_service(globals->ssl_config_service.get());
+  context->set_http_auth_handler_factory(
+      globals->http_auth_handler_factory.get());
+  context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
+
+  context->set_job_factory(
+      globals->proxy_script_fetcher_url_request_job_factory.get());
+
+  context->set_cookie_store(globals->system_cookie_store.get());
+  context->set_channel_id_service(
+      globals->system_channel_id_service.get());
+  context->set_network_delegate(globals->system_network_delegate.get());
+  context->set_http_user_agent_settings(
+      globals->http_user_agent_settings.get());
+  context->set_http_server_properties(
+      globals->http_server_properties->GetWeakPtr());
+
+  net::HttpNetworkSession::Params session_params;
+  InitializeNetworkSessionParamsFromGlobals(*globals, &session_params);
+  net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
+      context, &session_params);
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::ConstructProxyScriptFetcherContext2"));
+  scoped_refptr<net::HttpNetworkSession> network_session(
+      new net::HttpNetworkSession(session_params));
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::ConstructProxyScriptFetcherContext3"));
+  globals->proxy_script_fetcher_http_transaction_factory
+      .reset(new net::HttpNetworkLayer(network_session.get()));
+  context->set_http_transaction_factory(
+      globals->proxy_script_fetcher_http_transaction_factory.get());
+
+  scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
+      new net::URLRequestJobFactoryImpl());
+
+  job_factory->SetProtocolHandler(
+      url::kDataScheme, make_scoped_ptr(new net::DataProtocolHandler()));
+  job_factory->SetProtocolHandler(
+      url::kFileScheme,
+      make_scoped_ptr(new net::FileProtocolHandler(
+          content::BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
+#if !defined(DISABLE_FTP_SUPPORT)
+  globals->proxy_script_fetcher_ftp_transaction_factory.reset(
+      new net::FtpNetworkLayer(globals->host_resolver.get()));
+  job_factory->SetProtocolHandler(
+      url::kFtpScheme,
+      make_scoped_ptr(new net::FtpProtocolHandler(
+          globals->proxy_script_fetcher_ftp_transaction_factory.get())));
+#endif
+  globals->proxy_script_fetcher_url_request_job_factory = job_factory.Pass();
+
+  context->set_job_factory(
+      globals->proxy_script_fetcher_url_request_job_factory.get());
+
+  // TODO(rtenneti): We should probably use HttpServerPropertiesManager for the
+  // system URLRequestContext too. There's no reason this should be tied to a
+  // profile.
+  return context;
 }

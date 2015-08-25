@@ -424,6 +424,17 @@ class IOThread : public content::BrowserThreadDelegate {
       const base::CommandLine& command_line,
       const VariationParameters& quic_trial_params);
 
+  static net::URLRequestContext* ConstructSystemRequestContext(
+      IOThread::Globals* globals,
+      net::NetLog* net_log);
+
+  // TODO(willchan): Remove proxy script fetcher context since it's not
+  // necessary now that I got rid of refcounting URLRequestContexts.
+  // See IOThread::Globals for details.
+  static net::URLRequestContext* ConstructProxyScriptFetcherContext(
+      IOThread::Globals* globals,
+      net::NetLog* net_log);
+
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.
   ChromeNetLog* net_log_;

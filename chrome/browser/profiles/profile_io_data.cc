@@ -79,6 +79,7 @@
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -1296,19 +1297,10 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
   IOThread* const io_thread = profile_params->io_thread;
 
   io_thread->InitializeNetworkSessionParams(&params);
+  net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(context,
+                                                                 &params);
 
-  params.host_resolver = context->host_resolver();
-  params.cert_verifier = context->cert_verifier();
-  params.channel_id_service = context->channel_id_service();
-  params.transport_security_state = context->transport_security_state();
-  params.cert_transparency_verifier = context->cert_transparency_verifier();
-  params.proxy_service = context->proxy_service();
   params.ssl_session_cache_shard = GetSSLSessionCacheShard();
-  params.ssl_config_service = context->ssl_config_service();
-  params.http_auth_handler_factory = context->http_auth_handler_factory();
-  params.network_delegate = context->network_delegate();
-  params.http_server_properties = context->http_server_properties();
-  params.net_log = context->net_log();
   if (data_reduction_proxy_io_data_.get())
     params.proxy_delegate = data_reduction_proxy_io_data_->proxy_delegate();
 
