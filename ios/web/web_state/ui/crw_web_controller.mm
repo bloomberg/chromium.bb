@@ -1436,6 +1436,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     DCHECK(!params.extra_headers);
     DCHECK(!params.post_data);
   } else {
+    // Clear transient view before making any changes to history and navigation
+    // manager. TODO(stuartmorgan): Drive Transient Item clearing from
+    // navigation system, rather than from WebController.
+    [self clearTransientContentView];
+
     // TODO(stuartmorgan): Why doesn't recordStateInHistory get called for
     // forward/back transitions?
     [self recordStateInHistory];
@@ -3002,6 +3007,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                         shouldContinue(proceed);
                       }
                     }];
+  DCHECK([self currentNavItem]);
+  [self currentNavItem]->SetUnsafe(true);
 }
 
 - (void)updatedProgress:(float)progress {

@@ -356,10 +356,11 @@ void WebStateImpl::ClearTransientContentView() {
     web::NavigationItem* currentItem =
         [sessionController.currentEntry navigationItem];
     if (currentItem->IsUnsafe()) {
-      // The unsafe page should be removed from history, and, in fact,
-      // SafeBrowsingBlockingPage will do just that *provided* that it
-      // isn't the current page. So to make this happen, before removing the
-      // interstitial, have the session controller go back one page.
+      // The unsafe page or page with bad SSL cert should be removed from the
+      // history, and, in fact, Safe Browsing and SSL interstitials will do
+      // just that *provided* that it isn't the current page.
+      // So to make this happen, before removing the interstitial, have the
+      // session controller go back one page.
       [sessionController goBack];
     }
     [sessionController discardNonCommittedEntries];
