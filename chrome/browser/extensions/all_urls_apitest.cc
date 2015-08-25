@@ -132,8 +132,10 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, RegularExtensions) {
   ASSERT_TRUE(listener1b.WaitUntilSatisfied());
 }
 
+// Disabled because sometimes bystander doesn't load.
+// TODO(devlin): Why?
 IN_PROC_BROWSER_TEST_F(AllUrlsApiTest,
-                       WhitelistedExtensionRunsOnExtensionPages) {
+                       DISABLED_WhitelistedExtensionRunsOnExtensionPages) {
   WhitelistExtensions();
   const Extension* bystander =
       LoadExtension(test_data_dir_.AppendASCII("all_urls")
