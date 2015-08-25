@@ -75,6 +75,8 @@ def print_landmines():
     print 'Clobber iOS to workaround Xcode deps bug (crbug.com/485435)'
   if platform() == 'win':
     print 'Clobber to delete stale generated files (crbug.com/510086)'
+  if platform() == 'android' and gyp_defines().get('target_arch') == 'arm64':
+    print 'Clobber to support new location/infra for chrome_sync_shell_apk'
 
 
 def main():

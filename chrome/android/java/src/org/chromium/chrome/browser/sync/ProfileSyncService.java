@@ -504,6 +504,7 @@ public class ProfileSyncService {
      *                         is assumed that the Java caller has ownership of this pointer;
      *                         ownership is transferred as part of this call.
      */
+    @VisibleForTesting
     public void overrideNetworkResourcesForTest(long networkResources) {
         nativeOverrideNetworkResourcesForTest(mNativeProfileSyncServiceAndroid, networkResources);
     }

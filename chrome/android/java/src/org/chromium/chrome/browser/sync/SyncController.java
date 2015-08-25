@@ -10,6 +10,7 @@ import android.content.Context;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
@@ -99,6 +100,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
      * @param activity the current activity.
      * @param accountName the full account name.
      */
+    @VisibleForTesting
     public void signIn(Activity activity, String accountName) {
         final Account account = AccountManagerHelper.createAccountFromName(accountName);
 

@@ -8,4 +8,5 @@ include_rules = [
   "+cc/layers/layer.h",
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",
   "+sync/android",
+  "+sync/test/fake_server/android",
 ]
