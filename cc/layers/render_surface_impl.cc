@@ -75,6 +75,10 @@ bool RenderSurfaceImpl::HasReplica() const {
   return owning_layer_->has_replica();
 }
 
+const LayerImpl* RenderSurfaceImpl::ReplicaLayer() const {
+  return owning_layer_->replica_layer();
+}
+
 gfx::Transform RenderSurfaceImpl::ReplicaDrawTransform() const {
   return replica_draw_transform_;
 }

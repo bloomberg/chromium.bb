@@ -2318,6 +2318,30 @@ void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
              render_surface, property_trees->transform_tree)
              .ToString();
 
+  const bool render_surface_replica_draw_transforms_match =
+      ApproximatelyEqual(render_surface->ReplicaDrawTransform(),
+                         DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(
+                             render_surface, property_trees->transform_tree));
+  CHECK(render_surface_replica_draw_transforms_match)
+      << "expected: " << render_surface->ReplicaDrawTransform().ToString()
+      << " actual: "
+      << DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(
+             render_surface, property_trees->transform_tree)
+             .ToString();
+
+  const bool render_surface_replica_screen_space_transforms_match =
+      ApproximatelyEqual(
+          render_surface->replica_screen_space_transform(),
+          ScreenSpaceTransformOfRenderSurfaceReplicaFromPropertyTrees(
+              render_surface, property_trees->transform_tree));
+  CHECK(render_surface_replica_screen_space_transforms_match)
+      << "expected: "
+      << render_surface->replica_screen_space_transform().ToString()
+      << " actual: "
+      << ScreenSpaceTransformOfRenderSurfaceReplicaFromPropertyTrees(
+             render_surface, property_trees->transform_tree)
+             .ToString();
+
   CHECK_EQ(render_surface->is_clipped(),
            RenderSurfaceIsClippedFromPropertyTrees(render_surface,
                                                    property_trees->clip_tree));

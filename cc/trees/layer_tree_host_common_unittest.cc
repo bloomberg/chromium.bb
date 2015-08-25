@@ -1,4 +1,4 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+//// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6470,6 +6470,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
       LayerImpl::Create(host_impl.active_tree(), 20);
   replica_layer->SetMaskLayer(LayerImpl::Create(host_impl.active_tree(), 21));
   child_raw->SetReplicaLayer(replica_layer.Pass());
+  child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
   member_id = render_surface_layer_list_count();

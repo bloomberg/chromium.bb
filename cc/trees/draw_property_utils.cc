@@ -700,7 +700,7 @@ gfx::Rect ClipRectOfRenderSurfaceFromPropertyTrees(
 }
 
 gfx::Transform ScreenSpaceTransformOfRenderSurfaceFromPropertyTrees(
-    RenderSurfaceImpl* render_surface,
+    const RenderSurfaceImpl* render_surface,
     const TransformTree& tree) {
   const TransformNode* node = tree.Node(render_surface->TransformTreeIndex());
   gfx::Transform screen_space_transform;
@@ -869,7 +869,8 @@ gfx::Rect DrawableContentRectOfSurfaceFromPropertyTrees(
           render_surface->content_rect_from_property_trees()));
   if (render_surface->HasReplica()) {
     drawable_content_rect.Union(gfx::ToEnclosingRect(MathUtil::MapClippedRect(
-        render_surface->ReplicaDrawTransform(),
+        DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(render_surface,
+                                                             transform_tree),
         render_surface->content_rect_from_property_trees())));
   }
   return drawable_content_rect;
@@ -899,6 +900,52 @@ gfx::Rect ClipRectFromPropertyTrees(const LayerImpl* layer,
 
 gfx::Rect ViewportRectFromPropertyTrees(const ClipTree& tree) {
   return gfx::ToEnclosingRect(tree.Node(1)->data.clip);
+}
+
+gfx::Transform ReplicaToSurfaceTransform(
+    const RenderSurfaceImpl* render_surface,
+    const TransformTree& tree) {
+  gfx::Transform replica_to_surface;
+  if (!render_surface->HasReplica())
+    return replica_to_surface;
+  const LayerImpl* replica_layer = render_surface->ReplicaLayer();
+  const TransformNode* surface_transform_node =
+      tree.Node(render_surface->TransformTreeIndex());
+  replica_to_surface.Scale(surface_transform_node->data.sublayer_scale.x(),
+                           surface_transform_node->data.sublayer_scale.y());
+  replica_to_surface.Translate(replica_layer->offset_to_transform_parent().x(),
+                               replica_layer->offset_to_transform_parent().y());
+  gfx::Transform replica_transform_node_to_surface;
+  tree.ComputeTransform(replica_layer->transform_tree_index(),
+                        render_surface->TransformTreeIndex(),
+                        &replica_transform_node_to_surface);
+  replica_to_surface.PreconcatTransform(replica_transform_node_to_surface);
+  if (surface_transform_node->data.sublayer_scale.x() != 0 &&
+      surface_transform_node->data.sublayer_scale.y() != 0) {
+    replica_to_surface.Scale(
+        1.0 / surface_transform_node->data.sublayer_scale.x(),
+        1.0 / surface_transform_node->data.sublayer_scale.y());
+  }
+  return replica_to_surface;
+}
+
+gfx::Transform DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(
+    const RenderSurfaceImpl* render_surface,
+    const TransformTree& tree) {
+  if (!render_surface->HasReplica())
+    return gfx::Transform();
+  return DrawTransformOfRenderSurfaceFromPropertyTrees(render_surface, tree) *
+         ReplicaToSurfaceTransform(render_surface, tree);
+}
+
+gfx::Transform ScreenSpaceTransformOfRenderSurfaceReplicaFromPropertyTrees(
+    const RenderSurfaceImpl* render_surface,
+    const TransformTree& tree) {
+  if (!render_surface->HasReplica())
+    return gfx::Transform();
+  return ScreenSpaceTransformOfRenderSurfaceFromPropertyTrees(render_surface,
+                                                              tree) *
+         ReplicaToSurfaceTransform(render_surface, tree);
 }
 
 }  // namespace cc
