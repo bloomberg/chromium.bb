@@ -5,7 +5,7 @@
 {
   'variables': {
     'use_system_libsrtp%': 0,
-    'use_openssl': 1,
+    'use_openssl%': 1,
   },
   'target_defaults': {
     'defines': [
