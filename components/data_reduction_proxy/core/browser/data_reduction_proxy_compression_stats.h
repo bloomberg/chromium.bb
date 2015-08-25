@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_member.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
@@ -123,6 +124,9 @@ class DataReductionProxyCompressionStats
   void OnDataUsageLoaded(scoped_ptr<DataUsageBucket> data_usage);
 
  private:
+  // Enum to track the state of loading data usage from storage.
+  enum DataUsageLoadStatus { NOT_LOADED = 0, LOADING = 1, LOADED = 2 };
+
   friend class DataReductionProxyCompressionStatsTest;
 
   typedef std::map<const char*, int64> DataReductionProxyPrefMap;
@@ -202,11 +206,15 @@ class DataReductionProxyCompressionStats
                        int64 original_request_size,
                        int64 data_used);
 
-  // Persist the in memory data usage information to storage.
+  // Persists the in memory data usage information to storage and clears all
+  // in-memory data usage. Do not call this method unless |data_usage_loaded_|
+  // is |LOADED|.
   void PersistDataUsage();
 
-  // Clear all in memory data usage.
-  void ClearInMemoryDataUsage();
+  // Called when |prefs::kDataUsageReportingEnabled| pref values changes.
+  // Initializes data usage statistics in memory when pref is enabled and
+  // persists data usage to memory when pref is disabled.
+  void OnDataUsageReportingPrefChanged();
 
   // Normalizes the hostname for data usage attribution. Returns a substring
   // without the protocol.
@@ -221,6 +229,7 @@ class DataReductionProxyCompressionStats
   DataReductionProxyPrefMap pref_map_;
   DataReductionProxyListPrefMap list_pref_map_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  BooleanPrefMember data_usage_reporting_enabled_;
   ConnectionType connection_type_;
 
   // Maintains detailed data usage for current interval.
@@ -231,8 +240,8 @@ class DataReductionProxyCompressionStats
   // persisted to storage.
   bool data_usage_map_is_dirty_;
 
-  // Tracks whether detailed data usage has been loaded from storage at startup.
-  bool data_usage_loaded_;
+  // Tracks state of loading data usage from storage.
+  DataUsageLoadStatus data_usage_loaded_;
 
   base::ThreadChecker thread_checker_;
 

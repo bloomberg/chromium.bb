@@ -34,6 +34,8 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
                                 false);
 
+  registry->RegisterBooleanPref(prefs::kDataUsageReportingEnabled, false);
+
   registry->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
   registry->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
 
@@ -112,6 +114,8 @@ void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
       prefs::kDataReductionProxyEnabled, false);
   registry->RegisterBooleanPref(
       prefs::kDataReductionProxyWasEnabledBefore, false);
+
+  registry->RegisterBooleanPref(prefs::kDataUsageReportingEnabled, false);
 
   registry->RegisterBooleanPref(
       prefs::kStatisticsPrefsMigrated, false);

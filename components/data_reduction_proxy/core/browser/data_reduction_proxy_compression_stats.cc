@@ -24,6 +24,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_usage_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/base/mime_util.h"
 
@@ -357,7 +358,7 @@ DataReductionProxyCompressionStats::DataReductionProxyCompressionStats(
       delayed_task_posted_(false),
       pref_change_registrar_(new PrefChangeRegistrar()),
       data_usage_map_is_dirty_(false),
-      data_usage_loaded_(false),
+      data_usage_loaded_(NOT_LOADED),
       weak_factory_(this) {
   DCHECK(service);
   DCHECK(prefs);
@@ -368,9 +369,9 @@ DataReductionProxyCompressionStats::DataReductionProxyCompressionStats(
 DataReductionProxyCompressionStats::~DataReductionProxyCompressionStats() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (data_usage_map_is_dirty_)
+  if (data_usage_loaded_ == LOADED)
     PersistDataUsage();
-  ClearInMemoryDataUsage();
+
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 
   WritePrefs();
@@ -380,9 +381,12 @@ DataReductionProxyCompressionStats::~DataReductionProxyCompressionStats() {
 void DataReductionProxyCompressionStats::Init() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  service_->LoadCurrentDataUsageBucket(
-      base::Bind(&DataReductionProxyCompressionStats::OnDataUsageLoaded,
-                 weak_factory_.GetWeakPtr()));
+  data_usage_reporting_enabled_.Init(
+      prefs::kDataUsageReportingEnabled, pref_service_,
+      base::Bind(
+          &DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged,
+          weak_factory_.GetWeakPtr()));
+  OnDataUsageReportingPrefChanged();
 
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   connection_type_ =
@@ -633,7 +637,15 @@ void DataReductionProxyCompressionStats::OnConnectionTypeChanged(
 
 void DataReductionProxyCompressionStats::OnDataUsageLoaded(
     scoped_ptr<DataUsageBucket> data_usage) {
-  DCHECK(!data_usage_loaded_);
+  DCHECK(data_usage_loaded_ == LOADING);
+
+  // Exit early if the pref was turned off before loading from storage
+  // completed.
+  if (!data_usage_reporting_enabled_.GetValue()) {
+    data_usage_loaded_ = NOT_LOADED;
+    return;
+  }
+
   DCHECK(data_usage_map_last_updated_.is_null());
   DCHECK(data_usage_map_.empty());
 
@@ -650,7 +662,7 @@ void DataReductionProxyCompressionStats::OnDataUsageLoaded(
 
   data_usage_map_last_updated_ =
       base::Time::FromInternalValue(data_usage->last_updated_timestamp());
-  data_usage_loaded_ = true;
+  data_usage_loaded_ = LOADED;
 }
 
 void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
@@ -1093,13 +1105,11 @@ void DataReductionProxyCompressionStats::RecordDataUsage(
     const std::string& data_usage_host,
     int64 data_used,
     int64 original_size) {
-  if (!data_usage_loaded_)
+  if (data_usage_loaded_ != LOADED)
     return;
 
   if (!DataUsageStore::IsInCurrentInterval(data_usage_map_last_updated_)) {
-    if (data_usage_map_is_dirty_)
-      PersistDataUsage();
-    ClearInMemoryDataUsage();
+    PersistDataUsage();
     DCHECK(data_usage_map_last_updated_.is_null());
     DCHECK(data_usage_map_.empty());
   }
@@ -1124,26 +1134,40 @@ void DataReductionProxyCompressionStats::RecordDataUsage(
 }
 
 void DataReductionProxyCompressionStats::PersistDataUsage() {
-  scoped_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
-  for (auto i = data_usage_map_.begin(); i != data_usage_map_.end(); ++i) {
-    SiteUsageMap* site_usage_map = i->second;
-    PerConnectionDataUsage* connection_usage =
-        data_usage_bucket->add_connection_usage();
-    connection_usage->set_connection_type(connection_type_);
-    for (auto j = site_usage_map->begin(); j != site_usage_map->end(); ++j) {
-      PerSiteDataUsage* per_site_usage = connection_usage->add_site_usage();
-      per_site_usage->CopyFrom(*(j->second));
+  DCHECK(data_usage_loaded_ == LOADED);
+
+  if (data_usage_map_is_dirty_) {
+    scoped_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
+    for (auto i = data_usage_map_.begin(); i != data_usage_map_.end(); ++i) {
+      SiteUsageMap* site_usage_map = i->second;
+      PerConnectionDataUsage* connection_usage =
+          data_usage_bucket->add_connection_usage();
+      connection_usage->set_connection_type(connection_type_);
+      for (auto j = site_usage_map->begin(); j != site_usage_map->end(); ++j) {
+        PerSiteDataUsage* per_site_usage = connection_usage->add_site_usage();
+        per_site_usage->CopyFrom(*(j->second));
+      }
     }
   }
   // TODO(kundaji): Persist |data_usage_bucket|.
 
   data_usage_map_is_dirty_ = false;
-}
-
-void DataReductionProxyCompressionStats::ClearInMemoryDataUsage() {
-  DCHECK(!data_usage_map_is_dirty_);
   data_usage_map_.clear();
   data_usage_map_last_updated_ = base::Time();
+}
+
+void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
+  if (data_usage_reporting_enabled_.GetValue()) {
+    if (data_usage_loaded_ == NOT_LOADED) {
+      data_usage_loaded_ = LOADING;
+      service_->LoadCurrentDataUsageBucket(
+          base::Bind(&DataReductionProxyCompressionStats::OnDataUsageLoaded,
+                     weak_factory_.GetWeakPtr()));
+    }
+  } else if (data_usage_loaded_ == LOADED) {
+    PersistDataUsage();
+    data_usage_loaded_ = NOT_LOADED;
+  }
 }
 
 // static

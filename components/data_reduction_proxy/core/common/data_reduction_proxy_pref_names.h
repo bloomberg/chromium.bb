@@ -46,6 +46,7 @@ extern const char
 extern const char kDataReductionProxy[];
 extern const char kDataReductionProxyConfig[];
 extern const char kDataReductionProxyEnabled[];
+extern const char kDataUsageReportingEnabled[];
 extern const char kDataReductionProxyWasEnabledBefore[];
 extern const char kHttpOriginalContentLength[];
 extern const char kHttpReceivedContentLength[];
