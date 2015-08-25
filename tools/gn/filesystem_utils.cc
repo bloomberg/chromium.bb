@@ -729,13 +729,27 @@ SourceDir GetToolchainGenDir(const BuildSettings* build_settings,
 
 SourceDir GetOutputDirForSourceDir(const Settings* settings,
                                    const SourceDir& source_dir) {
-  return GetOutputDirForSourceDirAsOutputFile(settings, source_dir).AsSourceDir(
-      settings->build_settings());
+  return GetOutputDirForSourceDir(
+      settings->build_settings(), source_dir,
+      settings->toolchain_label(), settings->is_default());
 }
 
-OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
-                                                const SourceDir& source_dir) {
-  OutputFile result = settings->toolchain_output_subdir();
+SourceDir GetOutputDirForSourceDir(
+    const BuildSettings* build_settings,
+    const SourceDir& source_dir,
+    const Label& toolchain_label,
+    bool is_default_toolchain) {
+  return GetOutputDirForSourceDirAsOutputFile(
+          build_settings, source_dir, toolchain_label, is_default_toolchain)
+      .AsSourceDir(build_settings);
+}
+
+OutputFile GetOutputDirForSourceDirAsOutputFile(
+    const BuildSettings* build_settings,
+    const SourceDir& source_dir,
+    const Label& toolchain_label,
+    bool is_default_toolchain) {
+  OutputFile result(GetOutputSubdirName(toolchain_label, is_default_toolchain));
   result.value().append("obj/");
 
   if (source_dir.is_source_absolute()) {
@@ -745,8 +759,7 @@ OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
                           source_dir.value().size() - 2);
   } else {
     // System-absolute.
-    const std::string& build_dir =
-        settings->build_settings()->build_dir().value();
+    const std::string& build_dir = build_settings->build_dir().value();
 
     if (base::StartsWith(source_dir.value(), build_dir,
                          base::CompareCase::SENSITIVE)) {
@@ -769,6 +782,13 @@ OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
     }
   }
   return result;
+}
+
+OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
+                                                const SourceDir& source_dir) {
+  return GetOutputDirForSourceDirAsOutputFile(
+      settings->build_settings(), source_dir,
+      settings->toolchain_label(), settings->is_default());
 }
 
 SourceDir GetGenDirForSourceDir(const Settings* settings,

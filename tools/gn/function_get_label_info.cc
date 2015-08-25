@@ -11,6 +11,14 @@
 
 namespace functions {
 
+namespace {
+
+bool ToolchainIsDefault(const Scope* scope, const Label& toolchain_label) {
+  return scope->settings()->default_toolchain_label() == toolchain_label;
+}
+
+}  // namespace
+
 const char kGetLabelInfo[] = "get_label_info";
 const char kGetLabelInfo_HelpShort[] =
     "get_label_info: Get an attribute from a target's label.";
@@ -114,23 +122,24 @@ Value RunGetLabelInfo(Scope* scope,
 
   } else if (what == "root_gen_dir") {
     Label toolchain_label = label.GetToolchainLabel();
-    bool is_default =
-        scope->settings()->default_toolchain_label() == toolchain_label;
     result.string_value() = DirectoryWithNoLastSlash(
         GetToolchainGenDir(scope->settings()->build_settings(),
-                           toolchain_label, is_default));
+                           toolchain_label,
+                           ToolchainIsDefault(scope, toolchain_label)));
 
   } else if (what == "target_out_dir") {
+    Label toolchain_label = label.GetToolchainLabel();
     result.string_value() = DirectoryWithNoLastSlash(
-        GetOutputDirForSourceDir(scope->settings(), label.dir()));
+        GetOutputDirForSourceDir(scope->settings()->build_settings(),
+                                 label.dir(), toolchain_label,
+                                 ToolchainIsDefault(scope, toolchain_label)));
 
   } else if (what == "root_out_dir") {
     Label toolchain_label = label.GetToolchainLabel();
-    bool is_default =
-        scope->settings()->default_toolchain_label() == toolchain_label;
     result.string_value() = DirectoryWithNoLastSlash(
         GetToolchainOutputDir(scope->settings()->build_settings(),
-                              toolchain_label, is_default));
+                              toolchain_label,
+                              ToolchainIsDefault(scope, toolchain_label)));
 
   } else if (what == "toolchain") {
     result.string_value() = label.GetToolchainLabel().GetUserVisibleName(false);

@@ -480,7 +480,10 @@ TEST(FilesystemUtils, GetOutDirForSourceDir) {
   build_settings.SetBuildDir(SourceDir("//out/Debug/"));
 
   // Test the default toolchain.
+  Label default_toolchain_label(SourceDir("//toolchain/"), "default");
   Settings default_settings(&build_settings, "");
+  default_settings.set_toolchain_label(default_toolchain_label);
+  default_settings.set_default_toolchain_label(default_toolchain_label);
   EXPECT_EQ("//out/Debug/obj/",
             GetOutputDirForSourceDir(
                 &default_settings, SourceDir("//")).value());
@@ -497,6 +500,8 @@ TEST(FilesystemUtils, GetOutDirForSourceDir) {
 
   // Secondary toolchain.
   Settings other_settings(&build_settings, "two/");
+  other_settings.set_toolchain_label(Label(SourceDir("//toolchain/"), "two"));
+  other_settings.set_default_toolchain_label(default_toolchain_label);
   EXPECT_EQ("//out/Debug/two/obj/",
             GetOutputDirForSourceDir(
                 &other_settings, SourceDir("//")).value());

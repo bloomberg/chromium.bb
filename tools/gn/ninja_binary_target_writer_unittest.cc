@@ -375,6 +375,8 @@ TEST(NinjaBinaryTargetWriter, WinPrecompiledHeaders) {
   Settings pch_settings(setup.build_settings(), "withpch/");
   Toolchain pch_toolchain(&pch_settings,
                           Label(SourceDir("//toolchain/"), "withpch"));
+  pch_settings.set_toolchain_label(pch_toolchain.label());
+  pch_settings.set_default_toolchain_label(setup.toolchain()->label());
 
   // Declare a C++ compiler that supports PCH.
   scoped_ptr<Tool> cxx_tool(new Tool);
@@ -410,10 +412,10 @@ TEST(NinjaBinaryTargetWriter, WinPrecompiledHeaders) {
         "target_output_name = no_pch_target\n"
         "\n"
         "build withpch/obj/foo/no_pch_target.input1.o: "
-               "cxx ../../foo/input1.cc\n"
+               "withpch_cxx ../../foo/input1.cc\n"
         "\n"
         "build withpch/obj/foo/no_pch_target.stamp: "
-               "stamp withpch/obj/foo/no_pch_target.input1.o\n";
+               "withpch_stamp withpch/obj/foo/no_pch_target.input1.o\n";
     EXPECT_EQ(no_pch_expected, out.str());
   }
 
@@ -445,16 +447,16 @@ TEST(NinjaBinaryTargetWriter, WinPrecompiledHeaders) {
         "\n"
         // Compile the precompiled source file with /Yc.
         "build withpch/obj/build/pch_target.precompile.cc.o: "
-               "cxx ../../build/precompile.cc\n"
+               "withpch_cxx ../../build/precompile.cc\n"
         "  cflags_cc = ${cflags_cc} /Ycbuild/precompile.h\n"
         "\n"
         "build withpch/obj/foo/pch_target.input1.o: "
-               "cxx ../../foo/input1.cc | "
+               "withpch_cxx ../../foo/input1.cc | "
                // Explicit dependency on the PCH build step.
                "withpch/obj/build/pch_target.precompile.cc.o\n"
         "\n"
         "build withpch/obj/foo/pch_target.stamp: "
-               "stamp withpch/obj/foo/pch_target.input1.o "
+               "withpch_stamp withpch/obj/foo/pch_target.input1.o "
                // The precompiled object file was added to the outputs.
                "withpch/obj/build/pch_target.precompile.cc.o\n";
     EXPECT_EQ(pch_win_expected, out.str());

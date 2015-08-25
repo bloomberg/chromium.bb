@@ -178,6 +178,15 @@ SourceDir GetToolchainGenDir(const BuildSettings* build_settings,
 
 SourceDir GetOutputDirForSourceDir(const Settings* settings,
                                    const SourceDir& source_dir);
+SourceDir GetOutputDirForSourceDir(const BuildSettings* build_settings,
+                                   const SourceDir& source_dir,
+                                   const Label& toolchain_label,
+                                   bool is_default_toolchain);
+OutputFile GetOutputDirForSourceDirAsOutputFile(
+    const BuildSettings* build_settings,
+    const SourceDir& source_dir,
+    const Label& toolchain_label,
+    bool is_default_toolchain);
 OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
                                                 const SourceDir& source_dir);
 
