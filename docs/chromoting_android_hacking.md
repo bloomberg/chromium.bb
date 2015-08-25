@@ -1,28 +1,45 @@
-# Introduction
+# Chromoting Android Hacking
 
-This guide, which is meant to accompany the compilation guide at ChromotingBuildInstructions, explains the process of viewing the logs and debugging the CRD Android client.  I'll assume you've already built the APK as described in the aforementioned guide, that you're in the `src/` directory, and that your binary is at `out/Release/apks/Chromoting.apk`.  Additionally, you should have installed the app on at least one (still) connected device.
+This guide, which is meant to accompany the
+[compilation guide](chromoting_build_instructions.md), explains the process of
+viewing the logs and debugging the CRD Android client. I'll assume you've
+already built the APK as described in the aforementioned guide, that you're in
+the `src/` directory, and that your binary is at
+`out/Release/apks/Chromoting.apk`. Additionally, you should have installed the
+app on at least one (still) connected device.
 
-# Viewing logging output
+[TOC]
 
-In order to access LogCat and view the app's logging output, we need to launch the Android Device Monitor.  Run `third_party/android_tools/sdk/tools/monitor` and select the desired device under `Devices`.  Using the app as normal will display log messages to the `LogCat` pane.
+## Viewing logging output
 
-# Attaching debuggers for Java code
+In order to access LogCat and view the app's logging output, we need to launch
+the Android Device Monitor. Run `third_party/android_tools/sdk/tools/monitor`
+and select the desired device under `Devices`. Using the app as normal will
+display log messages to the `LogCat` pane.
 
-## Eclipse
-  1. Go to http://developer.android.com/sdk/index.html and click "Download the SDK ADT Bundle for Linux"
-  1. Configure eclipse
-    1. Select General > Workspace from the tree on the left.
-      1. Uncheck Refresh workspace on startup (if present)
-      1. Uncheck Refresh using native hooks or polling (if present)
-      1. Disable build before launching
-    1. Select Run/Debug > Launching
-      1. Uncheck Build (if required) before launching
-  1. Create a project
-    1. Select File > New > Project... from the main menu.
-    1. Choose Java/Java Project
-    1. Eclipse should have generated .project and perhaps a .classpath file in your <project root>/src/ directory.
-    1. Replace/Add the .classpath file with the content from Below. Remember that the path field should be the location of the chromium source relative to the current directory of your project.
-```
+## Attaching debuggers for Java code
+
+### Eclipse
+
+1.  Go to http://developer.android.com/sdk/index.html and click "Download the
+    SDK ADT Bundle for Linux"
+1.  Configure eclipse
+    1.  Select General > Workspace from the tree on the left.
+        1.  Uncheck Refresh workspace on startup (if present)
+        1.  Uncheck Refresh using native hooks or polling (if present)
+        1.  Disable build before launching
+    1.  Select Run/Debug > Launching
+        1.  Uncheck Build (if required) before launching
+1. Create a project
+    1.  Select File > New > Project... from the main menu.
+    1.  Choose Java/Java Project
+    1.  Eclipse should have generated .project and perhaps a .classpath file in
+        your <project root>/src/ directory.
+    1.  Replace/Add the .classpath file with the content from Below. Remember
+        that the path field should be the location of the chromium source
+        relative to the current directory of your project.
+
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 <classpathentry kind="src" path="net/test/android/javatests/src"/>
@@ -94,31 +111,51 @@ In order to access LogCat and view the app's logging output, we need to launch t
 <classpathentry kind="src" path="content/shell/android/shell_apk/src"/>
 <classpathentry kind="src" path="content/shell/android/javatests/src"/>
 <classpathentry kind="src" path="content/shell/android/linker_test_apk/src"/>
-<classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-19/data/layoutlib.jar"/> 
-<classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-19/android.jar"/> 
-<classpathentry kind="output" path="out/bin"/> 
+<classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-19/data/layoutlib.jar"/>
+<classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-19/android.jar"/>
+<classpathentry kind="output" path="out/bin"/>
 </classpath>
 ```
-  1. Obtain the debug port
-    1. Go to Window > Open Perspective > DDMS
-    1. In order for the app org.chromium.chromoting to show up, you must build Debug instead of Retail
-    1. Note down the port number, should be 8600 or 8700
-  1. Setup a debug configuration
-    1. Go to Window > Open Perspective > Debug
-    1. Run > Debug > Configurations
-    1. Select "Remote Java Application" and click "New"
-    1. Put Host: localhost and Port: <the port from DDMS>
-    1. Hit Debug
-  1. Configure source path
-    1. Right click on the Chromoting [Application](Remoting.md) and select Edit source Lookup Path
-    1. Click "Add" and select File System Directory
-    1. Select the location of your chromium checkout, e.g. <project root>/src/remoting/android
-  1. Debugging
-    1. To add a breakpoint, simply open the source file and hit Ctrl+Shift+B to toggle the breakpoint.  Happy hacking.
-## Command line debugger
 
-With the Android Device Monitor open, look under `Devices`, expand the entry for the device on which you want to debug, and select the entry for `org.chromium.chromoting` (it must already be running).  This forwards the JVM debugging connection to your local port 8700.  In your shell, do `$ jdb -attach localhost:8700`.
+1.  Obtain the debug port
+    1.  Go to Window > Open Perspective > DDMS
+    1.  In order for the app org.chromium.chromoting to show up, you must build
+        Debug instead of Retail
+    1.  Note down the port number, should be 8600 or 8700
+1.  Setup a debug configuration
+    1.  Go to Window > Open Perspective > Debug
+    1.  Run > Debug > Configurations
+    1.  Select "Remote Java Application" and click "New"
+    1.  Put Host: localhost and Port: <the port from DDMS>
+    1.  Hit Debug
+1.  Configure source path
+    1.  Right click on the Chromoting [Application](Remoting.md) and select Edit
+        source Lookup Path
+    1.  Click "Add" and select File System Directory
+    1.  Select the location of your chromium checkout,
+        e.g. <project root>/src/remoting/android
+1.  Debugging
+    1.  To add a breakpoint, simply open the source file and hit Ctrl+Shift+B to
+        toggle the breakpoint. Happy hacking.
 
-# Attaching GDB to debug native code
+### Command line debugger
 
-The Chromium build system provides a convenience wrapper script that can be used to easily launch GDB.  Run `$ build/android/adb_gdb --package-name=org.chromium.chromoting --activity=.Chromoting --start`.  Note that if you have multiple devices connected, you must export `ANDROID_SERIAL` to select one; set it to the serial number of the desired device as output by `$ adb devices`.
+With the Android Device Monitor open, look under `Devices`, expand the entry for
+the device on which you want to debug, and select the entry for
+`org.chromium.chromoting` (it must already be running). This forwards the JVM
+debugging connection to your local port 8700.  In your shell, do `$ jdb -attach
+localhost:8700`.
+
+## Attaching GDB to debug native code
+
+The Chromium build system provides a convenience wrapper script that can be used
+to easily launch GDB. Run
+
+```shell
+$ build/android/adb_gdb --package-name=org.chromium.chromoting \
+--activity=.Chromoting --start
+```
+
+Note that if you have multiple devices connected, you must export
+`ANDROID_SERIAL` to select one; set it to the serial number of the desired
+device as output by `$ adb devices`.
