@@ -52,8 +52,7 @@ void DevToolsServiceDelegate::Quit() {
 void DevToolsServiceDelegate::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<DevToolsRegistry> request) {
-  if (service_->IsInitialized())
-    service_->registry()->BindToRegistryRequest(request.Pass());
+  service_->registry()->BindToRegistryRequest(request.Pass());
 }
 
 void DevToolsServiceDelegate::Create(
