@@ -5,6 +5,8 @@
 #close-route-button {
   background-color: white;
   color: rgb(33, 150, 243);
+  height: 32px;
+  line-height: 32px;
   margin: 0;
   text-align: end;
   width: 100%;
