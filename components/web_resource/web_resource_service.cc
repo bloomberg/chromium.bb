@@ -39,7 +39,8 @@ WebResourceService::WebResourceService(
     int start_fetch_delay_ms,
     int cache_update_delay_ms,
     net::URLRequestContextGetter* request_context,
-    const char* disable_network_switch)
+    const char* disable_network_switch,
+    const ParseJSONCallback& parse_json_callback)
     : prefs_(prefs),
       resource_request_allowed_notifier_(prefs, disable_network_switch),
       in_fetch_(false),
@@ -49,6 +50,7 @@ WebResourceService::WebResourceService(
       start_fetch_delay_ms_(start_fetch_delay_ms),
       cache_update_delay_ms_(cache_update_delay_ms),
       request_context_(request_context),
+      parse_json_callback_(parse_json_callback),
       weak_ptr_factory_(this) {
   resource_request_allowed_notifier_.Init(this);
   DCHECK(prefs);
@@ -78,15 +80,17 @@ void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
     if (data.empty() || data == "{}") {
       OnUnpackFinished(make_scoped_ptr(new base::DictionaryValue()).Pass());
     } else {
-      ParseJSON(data, base::Bind(&WebResourceService::OnUnpackFinished,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                base::Bind(&WebResourceService::OnUnpackError,
-                           weak_ptr_factory_.GetWeakPtr()));
+      parse_json_callback_.Run(data,
+                               base::Bind(&WebResourceService::OnUnpackFinished,
+                                          weak_ptr_factory_.GetWeakPtr()),
+                               base::Bind(&WebResourceService::OnUnpackError,
+                                          weak_ptr_factory_.GetWeakPtr()));
     }
   } else {
     // Don't parse data if attempt to download was unsuccessful.
     // Stop loading new web resource data, and silently exit.
-    // We do not call ParseJSON(), so we need to call EndFetch() ourselves.
+    // We do not call parse_json_callback_, so we need to call EndFetch()
+    // ourselves.
     EndFetch();
   }
 }

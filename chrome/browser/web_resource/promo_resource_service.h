@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_resource/chrome_web_resource_service.h"
+#include "components/web_resource/web_resource_service.h"
 
 class NotificationPromo;
 class PrefRegistrySimple;
@@ -32,7 +32,7 @@ enum class Channel;
 // dynamically change the appearance of the New Tab Page. For example, it has
 // been used to fetch "tips" to be displayed on the NTP, or to display
 // promotional messages to certain groups of Chrome users.
-class PromoResourceService : public ChromeWebResourceService {
+class PromoResourceService : public web_resource::WebResourceService {
  public:
   using StateChangedCallbackList = base::CallbackList<void()>;
   using StateChangedSubscription = StateChangedCallbackList::Subscription;
@@ -41,7 +41,12 @@ class PromoResourceService : public ChromeWebResourceService {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static void MigrateUserPrefs(PrefService* user_prefs);
 
-  PromoResourceService(PrefService* local_state, version_info::Channel channel);
+  PromoResourceService(PrefService* local_state,
+                       version_info::Channel channel,
+                       const std::string& application_locale,
+                       net::URLRequestContextGetter* request_context,
+                       const char* disable_network_switch,
+                       const ParseJSONCallback& parse_json_callback);
   ~PromoResourceService() override;
 
   // Registers a callback called when the state of a web resource has been

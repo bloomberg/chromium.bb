@@ -25,8 +25,9 @@ class PromoResourceServiceMobileNtpTest : public testing::Test {
  public:
   PromoResourceServiceMobileNtpTest() {
     NotificationPromo::RegisterPrefs(local_state_.registry());
-    promo_resource_service_.reset(
-        new PromoResourceService(&local_state_, kChannel));
+    promo_resource_service_.reset(new PromoResourceService(
+        &local_state_, kChannel, "en", nullptr, nullptr,
+        web_resource::WebResourceService::ParseJSONCallback()));
   }
 
  protected:

@@ -439,8 +439,6 @@
         'browser/web/web_view_type_util.mm',
         'browser/web_data_service_factory.cc',
         'browser/web_data_service_factory.h',
-        'browser/web_resource/ios_web_resource_service.cc',
-        'browser/web_resource/ios_web_resource_service.h',
         'browser/xcallback_parameters.h',
         'browser/xcallback_parameters.mm',
       ],

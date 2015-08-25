@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -34,6 +35,12 @@ class WebResourceService
     : public net::URLFetcherDelegate,
       public ResourceRequestAllowedNotifier::Observer {
  public:
+  // Callbacks for JSON parsing.
+  using SuccessCallback = base::Callback<void(scoped_ptr<base::Value>)>;
+  using ErrorCallback = base::Callback<void(const std::string&)>;
+  using ParseJSONCallback = base::Callback<
+      void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
+
   // Creates a new WebResourceService.
   // If |application_locale| is not empty, it will be appended as a locale
   // parameter to the resource URL.
@@ -44,7 +51,8 @@ class WebResourceService
                      int start_fetch_delay_ms,
                      int cache_update_delay_ms,
                      net::URLRequestContextGetter* request_context,
-                     const char* disable_network_switch);
+                     const char* disable_network_switch,
+                     const ParseJSONCallback& parse_json_callback);
 
   ~WebResourceService() override;
 
@@ -54,21 +62,11 @@ class WebResourceService
   void StartAfterDelay();
 
  protected:
-  // Callbacks for JSON parsing.
-  using SuccessCallback = base::Callback<void(scoped_ptr<base::Value>)>;
-  using ErrorCallback = base::Callback<void(const std::string&)>;
-
   PrefService* prefs_;
 
  private:
   // For the subclasses to process the result of a fetch.
   virtual void Unpack(const base::DictionaryValue& parsed_json) = 0;
-
-  // Parses a JSON string |data| and invokes |success_callback| or
-  // |error_callback|.
-  virtual void ParseJSON(const std::string& data,
-                         const SuccessCallback& success_callback,
-                         const ErrorCallback& error_callback) = 0;
 
   // net::URLFetcherDelegate implementation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -119,6 +117,9 @@ class WebResourceService
 
   // The request context for the resource fetch.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+
+  // Callback used to parse JSON.
+  ParseJSONCallback parse_json_callback_;
 
   // So that we can delay our start so as not to affect start-up time; also,
   // so that we can schedule future cache updates.

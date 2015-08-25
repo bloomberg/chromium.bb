@@ -82,14 +82,23 @@ void PromoResourceService::MigrateUserPrefs(PrefService* user_prefs) {
   NotificationPromo::MigrateUserPrefs(user_prefs);
 }
 
-PromoResourceService::PromoResourceService(PrefService* local_state,
-                                           version_info::Channel channel)
-    : ChromeWebResourceService(local_state,
-                               GetPromoResourceURL(channel),
-                               true,  // append locale to URL
-                               prefs::kNtpPromoResourceCacheUpdate,
-                               kStartResourceFetchDelay,
-                               GetCacheUpdateDelay()),
+PromoResourceService::PromoResourceService(
+    PrefService* local_state,
+    version_info::Channel channel,
+    const std::string& application_locale,
+    net::URLRequestContextGetter* request_context,
+    const char* disable_network_switch,
+    const ParseJSONCallback& parse_json_callback)
+    : web_resource::WebResourceService(
+          local_state,
+          GetPromoResourceURL(channel),
+          application_locale,  // append locale to URL
+          prefs::kNtpPromoResourceCacheUpdate,
+          kStartResourceFetchDelay,
+          GetCacheUpdateDelay(),
+          request_context,
+          disable_network_switch,
+          parse_json_callback),
       weak_ptr_factory_(this) {
   ScheduleNotificationOnInit();
 }

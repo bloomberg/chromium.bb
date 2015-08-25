@@ -4,12 +4,15 @@
 
 #include "chrome/browser/plugins/plugins_resource_service.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "url/gurl.h"
 
 namespace {
@@ -41,13 +44,16 @@ GURL GetPluginsServerURL() {
 }  // namespace
 
 PluginsResourceService::PluginsResourceService(PrefService* local_state)
-    : ChromeWebResourceService(local_state,
-                               GetPluginsServerURL(),
-                               false,
-                               prefs::kPluginsResourceCacheUpdate,
-                               kStartResourceFetchDelayMs,
-                               kCacheUpdateDelayMs) {
-}
+    : web_resource::WebResourceService(
+          local_state,
+          GetPluginsServerURL(),
+          std::string(),
+          prefs::kPluginsResourceCacheUpdate,
+          kStartResourceFetchDelayMs,
+          kCacheUpdateDelayMs,
+          g_browser_process->system_request_context(),
+          switches::kDisableBackgroundNetworking,
+          base::Bind(safe_json::SafeJsonParser::Parse)) {}
 
 void PluginsResourceService::Init() {
   const base::DictionaryValue* metadata =

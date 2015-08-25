@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_PLUGINS_PLUGINS_RESOURCE_SERVICE_H_
 #define CHROME_BROWSER_PLUGINS_PLUGINS_RESOURCE_SERVICE_H_
 
-#include "chrome/browser/web_resource/chrome_web_resource_service.h"
+#include "components/web_resource/web_resource_service.h"
 
 class PrefService;
 class PrefRegistrySimple;
 
 // This resource service periodically fetches plugin metadata
 // from a remote server and updates local state and PluginFinder.
-class PluginsResourceService : public ChromeWebResourceService {
+class PluginsResourceService : public web_resource::WebResourceService {
  public:
   explicit PluginsResourceService(PrefService* local_state);
   ~PluginsResourceService() override;

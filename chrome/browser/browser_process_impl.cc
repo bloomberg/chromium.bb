@@ -80,6 +80,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/update_client/update_query_params.h"
@@ -1068,8 +1069,10 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableWebResources)) {
     DCHECK(!promo_resource_service_.get());
-    promo_resource_service_.reset(
-        new PromoResourceService(local_state(), chrome::GetChannel()));
+    promo_resource_service_.reset(new PromoResourceService(
+        local_state(), chrome::GetChannel(), GetApplicationLocale(),
+        system_request_context(), switches::kDisableBackgroundNetworking,
+        base::Bind(safe_json::SafeJsonParser::Parse)));
     promo_resource_service_->StartAfterDelay();
   }
 

@@ -60,9 +60,13 @@ class PromoResourceServiceTest : public testing::Test {
   // |promo_resource_service_| must be created after |local_state_|.
   PromoResourceServiceTest()
       : local_state_(TestingBrowserProcess::GetGlobal()),
-        promo_resource_service_(
-            new PromoResourceService(g_browser_process->local_state(),
-                                     kChannel)) {}
+        promo_resource_service_(new PromoResourceService(
+            g_browser_process->local_state(),
+            kChannel,
+            "en",
+            nullptr,
+            nullptr,
+            web_resource::WebResourceService::ParseJSONCallback())) {}
 
  protected:
   ScopedTestingLocalState local_state_;
