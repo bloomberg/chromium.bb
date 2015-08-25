@@ -219,7 +219,8 @@ def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_sections_map,
   """
   success = True
   unknown_symbol_warnings = cygprofile_utils.WarningCollector(300)
-  symbol_not_found_warnings = cygprofile_utils.WarningCollector(300)
+  symbol_not_found_errors = cygprofile_utils.WarningCollector(
+      300, level=logging.ERROR)
   output_sections = set()
   for offset in offsets:
     try:
@@ -235,11 +236,11 @@ def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_sections_map,
           unknown_symbol_warnings.Write(
               'No known section for symbol ' + symbol_info.name)
     except SymbolNotFoundException:
-      symbol_not_found_warnings.Write(
+      symbol_not_found_errors.Write(
           'Did not find function in binary. offset: ' + hex(offset))
       success = False
   unknown_symbol_warnings.WriteEnd('no known section for symbol.')
-  symbol_not_found_warnings.WriteEnd('symbol not found in the binary.')
+  symbol_not_found_errors.WriteEnd('symbol not found in the binary.')
   return success
 
 
