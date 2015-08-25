@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/compression_utils.h"
+#include "components/compression/compression_utils.h"
 
 #include <string>
 
@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace metrics {
+namespace compression {
 
 namespace {
 
@@ -87,4 +87,4 @@ TEST(CompressionUtilsTest, InPlace) {
   EXPECT_EQ(original_data, data);
 }
 
-}  // namespace metrics
+}  // namespace compression

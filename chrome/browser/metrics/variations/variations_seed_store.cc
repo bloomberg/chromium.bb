@@ -11,7 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/metrics/compression_utils.h"
+#include "components/compression/compression_utils.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "crypto/signature_verifier.h"
@@ -331,7 +331,7 @@ bool VariationsSeedStore::ReadSeedData(std::string* seed_data) {
 
   if (!is_compressed) {
     seed_data->swap(decoded_data);
-  } else if (!metrics::GzipUncompress(decoded_data, seed_data)) {
+  } else if (!compression::GzipUncompress(decoded_data, seed_data)) {
     ClearPrefs();
     RecordVariationSeedEmptyHistogram(VARIATIONS_SEED_CORRUPT_GZIP);
     return false;
@@ -371,7 +371,7 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
 
   // Compress the seed before base64-encoding and storing.
   std::string compressed_seed_data;
-  if (!metrics::GzipCompress(seed_data, &compressed_seed_data)) {
+  if (!compression::GzipCompress(seed_data, &compressed_seed_data)) {
     RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_GZIP);
     return false;
   }

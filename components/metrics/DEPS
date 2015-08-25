@@ -2,8 +2,8 @@
 # dependencies to a minimal set.
 include_rules = [ 
   "-components",
+  "+components/compression",
   "+components/metrics",
   "+components/variations",
   "-net",
-  "+third_party/zlib",
 ]

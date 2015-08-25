@@ -15,8 +15,8 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_prefs',
-        '../third_party/zlib/zlib.gyp:zlib',
         'component_metrics_proto',
+        'compression',
         'variations',
       ],
       'export_dependent_settings': [
@@ -31,8 +31,6 @@
         'metrics/client_info.h',
         'metrics/cloned_install_detector.cc',
         'metrics/cloned_install_detector.h',
-        'metrics/compression_utils.cc',
-        'metrics/compression_utils.h',
         'metrics/daily_event.cc',
         'metrics/daily_event.h',
         'metrics/drive_metrics_provider.cc',

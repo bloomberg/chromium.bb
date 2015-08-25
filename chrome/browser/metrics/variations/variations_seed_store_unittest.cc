@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 #include "base/prefs/testing_pref_service.h"
-#include "components/metrics/compression_utils.h"
+#include "components/compression/compression_utils.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
@@ -64,7 +64,7 @@ std::string SerializeSeed(const variations::VariationsSeed& seed) {
 // Compresses |data| using Gzip compression and returns the result.
 std::string Compress(const std::string& data) {
   std::string compressed;
-  const bool result = metrics::GzipCompress(data, &compressed);
+  const bool result = compression::GzipCompress(data, &compressed);
   EXPECT_TRUE(result);
   return compressed;
 }

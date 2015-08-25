@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/compression_utils.h"
+#include "components/compression/compression_utils.h"
 
 #include <vector>
 
@@ -123,7 +123,7 @@ uint32 GetUncompressedSize(const std::string& compressed_data) {
 
 }  // namespace
 
-namespace metrics {
+namespace compression {
 
 bool GzipCompress(const std::string& input, std::string* output) {
   const uLongf input_size = static_cast<uLongf>(input.size());
@@ -158,4 +158,4 @@ bool GzipUncompress(const std::string& input, std::string* output) {
   return false;
 }
 
-}  // namespace metrics
+}  // namespace compression

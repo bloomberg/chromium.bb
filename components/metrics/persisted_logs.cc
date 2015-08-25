@@ -13,7 +13,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/sha1.h"
 #include "base/timer/elapsed_timer.h"
-#include "components/metrics/compression_utils.h"
+#include "components/compression/compression_utils.h"
 
 namespace metrics {
 
@@ -49,7 +49,7 @@ void AppendBase64String(const std::string& str, base::ListValue* list_value) {
 void PersistedLogs::LogHashPair::Init(const std::string& log_data) {
   DCHECK(!log_data.empty());
 
-  if (!GzipCompress(log_data, &compressed_log_data)) {
+  if (!compression::GzipCompress(log_data, &compressed_log_data)) {
     NOTREACHED();
     return;
   }

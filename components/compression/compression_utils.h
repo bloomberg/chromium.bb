@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_COMPRESSION_UTILS_H_
-#define COMPONENTS_METRICS_COMPRESSION_UTILS_H_
+#ifndef COMPONENTS_COMPRESSION_COMPRESSION_UTILS_H_
+#define COMPONENTS_COMPRESSION_COMPRESSION_UTILS_H_
 
 #include <string>
 
-namespace metrics {
+namespace compression {
 
 // Compresses the data in |input| using gzip, storing the result in |output|.
 // |input| and |output| are allowed to be the same string (in-place operation).
@@ -17,6 +17,6 @@ bool GzipCompress(const std::string& input, std::string* output);
 // |input| and |output| are allowed to be the same string (in-place operation).
 bool GzipUncompress(const std::string& input, std::string* output);
 
-}  // namespace metrics
+}  // namespace compression
 
-#endif  // COMPONENTS_METRICS_COMPRESSION_UTILS_H_
+#endif  // COMPONENTS_COMPRESSION_COMPRESSION_UTILS_H_

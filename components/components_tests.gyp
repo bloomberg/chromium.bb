@@ -11,7 +11,7 @@
 
     # Note: sources list duplicated in GN build. In the GN build,
     # each component has its own unit tests target defined in its
-    # directory that are then linked into the final content_unittests.
+    # directory that are then linked into the final components_unittests.
     'auto_login_parser_unittest_sources': [
       'auto_login_parser/auto_login_parser_unittest.cc',
     ],
@@ -91,6 +91,9 @@
     'component_updater_unittest_sources': [
       'component_updater/component_updater_service_unittest.cc',
       'component_updater/timer_unittest.cc',
+    ],
+    'compression_unittest_sources': [
+      'compression/compression_utils_unittest.cc',
     ],
     'content_settings_unittest_sources': [
       'content_settings/core/browser/content_settings_mock_provider.cc',
@@ -306,7 +309,6 @@
     ],
     'metrics_unittest_sources': [
       'metrics/call_stack_profile_metrics_provider_unittest.cc',
-      'metrics/compression_utils_unittest.cc',
       'metrics/daily_event_unittest.cc',
       'metrics/drive_metrics_provider_unittest.cc',
       'metrics/gpu/gpu_metrics_provider_unittest.cc',
@@ -750,6 +752,7 @@
         '<@(captive_portal_unittest_sources)',
         '<@(cloud_devices_unittest_sources)',
         '<@(component_updater_unittest_sources)',
+        '<@(compression_unittest_sources)',
         '<@(content_settings_unittest_sources)',
         '<@(crash_unittest_sources)',
         '<@(crx_file_unittest_sources)',
@@ -844,6 +847,7 @@
         'components.gyp:captive_portal_test_support',
         'components.gyp:cloud_devices_common',
         'components.gyp:component_updater',
+        'components.gyp:compression',
         'components.gyp:content_settings_core_browser',
         'components.gyp:content_settings_core_common',
         'components.gyp:content_settings_core_test_support',

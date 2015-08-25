@@ -30,6 +30,7 @@ group("all_components") {
     "//components/cloud_devices/common",
     "//components/chrome_apps",
     "//components/component_updater",
+    "//components/compression",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/crash/app",

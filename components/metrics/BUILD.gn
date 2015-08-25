@@ -13,8 +13,6 @@ source_set("metrics") {
     "client_info.h",
     "cloned_install_detector.cc",
     "cloned_install_detector.h",
-    "compression_utils.cc",
-    "compression_utils.h",
     "daily_event.cc",
     "daily_event.h",
     "drive_metrics_provider.cc",
@@ -66,8 +64,8 @@ source_set("metrics") {
     "//base",
     "//base:i18n",
     "//base:prefs",
+    "//components/compression",
     "//components/variations",
-    "//third_party/zlib",
   ]
 
   if (is_chromeos) {
@@ -178,7 +176,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "call_stack_profile_metrics_provider_unittest.cc",
-    "compression_utils_unittest.cc",
     "daily_event_unittest.cc",
     "drive_metrics_provider_unittest.cc",
     "gpu/gpu_metrics_provider_unittest.cc",

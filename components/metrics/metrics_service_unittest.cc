@@ -12,8 +12,8 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/threading/platform_thread.h"
+#include "components/compression/compression_utils.h"
 #include "components/metrics/client_info.h"
-#include "components/metrics/compression_utils.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -229,7 +229,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   EXPECT_TRUE(log_manager->has_staged_log());
 
   std::string uncompressed_log;
-  EXPECT_TRUE(GzipUncompress(log_manager->staged_log(), &uncompressed_log));
+  EXPECT_TRUE(compression::GzipUncompress(log_manager->staged_log(),
+                                          &uncompressed_log));
 
   ChromeUserMetricsExtension uma_log;
   EXPECT_TRUE(uma_log.ParseFromString(uncompressed_log));
@@ -291,7 +292,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_TRUE(log_manager->has_staged_log());
 
   std::string uncompressed_log;
-  EXPECT_TRUE(GzipUncompress(log_manager->staged_log(), &uncompressed_log));
+  EXPECT_TRUE(compression::GzipUncompress(log_manager->staged_log(),
+                                          &uncompressed_log));
 
   ChromeUserMetricsExtension uma_log;
   EXPECT_TRUE(uma_log.ParseFromString(uncompressed_log));

@@ -62,9 +62,9 @@ void RecordSyncResponseContentLengthHistograms(int64 compressed_content_length,
 
 // -----------------------------------------------------------------------------
 // The rest of the code in the anon namespace is copied from
-// components/metrics/compression_utils.cc
+// components/compression/compression_utils.cc
 // TODO(gangwu): crbug.com/515695. The following code is copied from
-// components/metrics/compression_utils.cc. We copied them because if we
+// components/compression/compression_utils.cc. We copied them because if we
 // reference them, we will get cycle dependency warning. Once the functions
 // have been moved from //component to //base, we can remove the following
 // functions.

@@ -3117,6 +3117,7 @@
         '../components/components.gyp:cloud_devices_common',
         '../components/components.gyp:component_metrics_proto',
         '../components/components.gyp:component_updater',
+        '../components/components.gyp:compression',
         '../components/components.gyp:content_settings_content_common',
         '../components/components.gyp:content_settings_core_browser',
         '../components/components.gyp:content_settings_core_common',

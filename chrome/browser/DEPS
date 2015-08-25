@@ -26,6 +26,7 @@ include_rules = [
   "+components/cdm/browser",
   "+components/cloud_devices/common",
   "+components/component_updater",
+  "+components/compression",
   "+components/content_settings",
   "+components/copresence",
   "+components/crash",

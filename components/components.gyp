@@ -17,6 +17,7 @@
     'captive_portal.gypi',
     'cloud_devices.gypi',
     'component_updater.gypi',
+    'compression.gypi',
     'content_settings.gypi',
     'crash.gypi',
     'crash_keys.gypi',

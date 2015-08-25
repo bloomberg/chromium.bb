@@ -11,7 +11,7 @@
 #include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/values.h"
-#include "components/metrics/compression_utils.h"
+#include "components/compression/compression_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -25,7 +25,7 @@ const size_t kLogByteLimit = 1000;
 // Compresses |log_data| and returns the result.
 std::string Compress(const std::string& log_data) {
   std::string compressed_log_data;
-  EXPECT_TRUE(GzipCompress(log_data, &compressed_log_data));
+  EXPECT_TRUE(compression::GzipCompress(log_data, &compressed_log_data));
   return compressed_log_data;
 }
 
