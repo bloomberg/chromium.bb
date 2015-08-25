@@ -394,11 +394,9 @@ static bool executeDeleteToEndOfParagraph(LocalFrame& frame, Event*, EditorComma
 
 static bool executeDeleteToMark(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    // TODO(yosin) We should use |EphemeralRange| version of
-    // |VisibleSelection::toNormalizedRange()|.
-    RefPtrWillBeRawPtr<Range> mark = frame.editor().mark().toNormalizedRange();
-    if (mark) {
-        bool selected = frame.selection().setSelectedRange(unionEphemeralRanges(EphemeralRange(mark.get()), frame.editor().selectedRange()), TextAffinity::Downstream, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
+    const EphemeralRange mark = frame.editor().mark().toNormalizedEphemeralRange();
+    if (mark.isNotNull()) {
+        bool selected = frame.selection().setSelectedRange(unionEphemeralRanges(mark, frame.editor().selectedRange()), TextAffinity::Downstream, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
         ASSERT(selected);
         if (!selected)
             return false;
@@ -1042,13 +1040,11 @@ static bool executeSelectSentence(LocalFrame& frame, Event*, EditorCommandSource
 
 static bool executeSelectToMark(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    // TODO(yosin) We should use |EphemeralRange| version of
-    // |VisibleSelection::toNormalizedRange()|.
-    RefPtrWillBeRawPtr<Range> mark = frame.editor().mark().toNormalizedRange();
+    const EphemeralRange mark = frame.editor().mark().toNormalizedEphemeralRange();
     EphemeralRange selection = frame.editor().selectedRange();
-    if (!mark || selection.isNull())
+    if (mark.isNull() || selection.isNull())
         return false;
-    frame.selection().setSelectedRange(unionEphemeralRanges(EphemeralRange(mark.get()), selection), TextAffinity::Downstream, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
+    frame.selection().setSelectedRange(unionEphemeralRanges(mark, selection), TextAffinity::Downstream, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
     return true;
 }
 
