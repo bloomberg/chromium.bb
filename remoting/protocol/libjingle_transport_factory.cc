@@ -192,7 +192,6 @@ void LibjingleTransport::DoStart() {
   channel_.reset(new cricket::P2PTransportChannel(
       std::string(), 0, nullptr, port_allocator_));
   std::string ice_password = rtc::CreateRandomString(cricket::ICE_PWD_LENGTH);
-  channel_->SetIceProtocolType(cricket::ICEPROTO_RFC5245);
   channel_->SetIceRole((role_ == TransportRole::CLIENT)
                            ? cricket::ICEROLE_CONTROLLING
                            : cricket::ICEROLE_CONTROLLED);
