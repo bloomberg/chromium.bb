@@ -175,6 +175,9 @@ class OzonePlatformGbm : public OzonePlatform {
 
   void InitializeGPU() override {
     bool use_atomic = false;
+#if defined(USE_DRM_ATOMIC)
+    use_atomic = true;
+#endif
     gl_api_loader_.reset(new GlApiLoader());
     drm_device_manager_.reset(new DrmDeviceManager(
         scoped_ptr<DrmDeviceGenerator>(new GbmDeviceGenerator(use_atomic))));
