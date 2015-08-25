@@ -134,7 +134,7 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
     VisibleSelection selection(ownerFrame().frame()->selection().selection());
     bool activeSelection = !selection.isNone();
     if (activeSelection) {
-        m_activeMatch = selection.firstRange().get();
+        m_activeMatch = firstRangeOf(selection).get();
         ownerFrame().frame()->selection().clear();
     }
 

@@ -2370,7 +2370,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     if (info.value.isEmpty())
         return info;
 
-    if (RefPtrWillBeRawPtr<Range> range = selection.selection().firstRange()) {
+    if (RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection.selection())) {
         PlainTextRange plainTextRange(PlainTextRange::create(*element, *range.get()));
         if (plainTextRange.isNotNull()) {
             info.selectionStart = plainTextRange.start();

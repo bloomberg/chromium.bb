@@ -153,9 +153,6 @@ public:
     bool expandUsingGranularity(TextGranularity);
     bool expandUsingGranularityInComposedTree(TextGranularity);
 
-    // We don't yet support multi-range selections, so we only ever have one range to return.
-    PassRefPtrWillBeRawPtr<Range> firstRange() const;
-
     bool intersectsNode(Node*) const;
 
     // FIXME: Most callers probably don't want these functions, but
@@ -257,6 +254,10 @@ private:
     bool m_baseIsFirst : 1; // True if base is before the extent
     bool m_isDirectional : 1; // Non-directional ignores m_baseIsFirst and selection always extends on shift + arrow key.
 };
+
+// We don't yet support multi-range selections, so we only ever have one range
+// to return.
+CORE_EXPORT PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection&);
 
 } // namespace blink
 

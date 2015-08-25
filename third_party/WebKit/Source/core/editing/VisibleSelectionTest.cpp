@@ -61,7 +61,7 @@ TEST_F(VisibleSelectionTest, Initialisation)
     EXPECT_FALSE(selection.isNone());
     EXPECT_TRUE(selection.isCaret());
 
-    RefPtrWillBeRawPtr<Range> range = selection.firstRange();
+    RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
     EXPECT_EQ(0, range->startOffset());
     EXPECT_EQ(0, range->endOffset());
     EXPECT_EQ("", range->text());
@@ -141,7 +141,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         setSelection(selection, 0);
         selection.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = selection.firstRange();
+        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(0, range->startOffset());
         EXPECT_EQ(5, range->endOffset());
         EXPECT_EQ("Lorem", range->text());
@@ -154,7 +154,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         setSelection(selection, 8);
         selection.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = selection.firstRange();
+        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(6, range->startOffset());
         EXPECT_EQ(11, range->endOffset());
         EXPECT_EQ("ipsum", range->text());
@@ -169,7 +169,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         setSelection(selection, 5);
         selection.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = selection.firstRange();
+        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(5, range->startOffset());
         EXPECT_EQ(6, range->endOffset());
         EXPECT_EQ(" ", range->text());
@@ -183,7 +183,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         setSelection(selection, 26);
         selection.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = selection.firstRange();
+        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(26, range->startOffset());
         EXPECT_EQ(27, range->endOffset());
         EXPECT_EQ(",", range->text());
@@ -195,7 +195,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         setSelection(selection, 27);
         selection.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = selection.firstRange();
+        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(27, range->startOffset());
         EXPECT_EQ(28, range->endOffset());
         EXPECT_EQ(" ", range->text());
@@ -207,7 +207,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         setSelection(selection, 0, 1);
         selection.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = selection.firstRange();
+        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(0, range->startOffset());
         EXPECT_EQ(5, range->endOffset());
         EXPECT_EQ("Lorem", range->text());
@@ -219,7 +219,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         setSelection(selection, 2, 8);
         selection.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = selection.firstRange();
+        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(0, range->startOffset());
         EXPECT_EQ(11, range->endOffset());
         EXPECT_EQ("Lorem ipsum", range->text());

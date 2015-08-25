@@ -1850,7 +1850,7 @@ AXObject::AXRange AXLayoutObject::selection() const
         return AXRange();
 
     VisibleSelection selection = layoutObject()->frame()->selection().selection();
-    RefPtrWillBeRawPtr<Range> selectionRange = selection.firstRange();
+    RefPtrWillBeRawPtr<Range> selectionRange = firstRangeOf(selection);
     if (!selectionRange)
         return AXRange();
 
@@ -1911,7 +1911,7 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const
         return AXRange();
 
     VisibleSelection selection = layoutObject()->frame()->selection().selection();
-    RefPtrWillBeRawPtr<Range> selectionRange = selection.firstRange();
+    RefPtrWillBeRawPtr<Range> selectionRange = firstRangeOf(selection);
     ContainerNode* parentNode = node()->parentNode();
     int nodeIndex = node()->nodeIndex();
     if (!selectionRange

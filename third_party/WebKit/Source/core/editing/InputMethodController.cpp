@@ -359,7 +359,7 @@ PassRefPtrWillBeRawPtr<Range> InputMethodController::compositionRange() const
 
 PlainTextRange InputMethodController::getSelectionOffsets() const
 {
-    RefPtrWillBeRawPtr<Range> range = frame().selection().selection().firstRange();
+    RefPtrWillBeRawPtr<Range> range = firstRangeOf(frame().selection().selection());
     if (!range)
         return PlainTextRange();
     ContainerNode* editable = frame().selection().rootEditableElementOrTreeScopeRootNode();

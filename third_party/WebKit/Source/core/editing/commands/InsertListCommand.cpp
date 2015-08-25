@@ -146,7 +146,7 @@ void InsertListCommand::doApply()
         VisiblePosition endOfSelection = selection.visibleEnd();
         VisiblePosition startOfLastParagraph = startOfParagraph(endOfSelection, CanSkipOverEditingBoundary);
 
-        RefPtrWillBeRawPtr<Range> currentSelection = endingSelection().firstRange();
+        RefPtrWillBeRawPtr<Range> currentSelection = firstRangeOf(endingSelection());
         RefPtrWillBeRawPtr<ContainerNode> scopeForStartOfSelection = nullptr;
         RefPtrWillBeRawPtr<ContainerNode> scopeForEndOfSelection = nullptr;
         // FIXME: This is an inefficient way to keep selection alive because
@@ -204,8 +204,8 @@ void InsertListCommand::doApply()
         return;
     }
 
-    ASSERT(endingSelection().firstRange());
-    doApplyForSingleParagraph(false, listTag, *endingSelection().firstRange());
+    ASSERT(firstRangeOf(endingSelection()));
+    doApplyForSingleParagraph(false, listTag, *firstRangeOf(endingSelection()));
 }
 
 bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName& listTag, Range& currentSelection)

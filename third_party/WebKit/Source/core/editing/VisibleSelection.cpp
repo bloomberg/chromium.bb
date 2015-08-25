@@ -221,12 +221,12 @@ PositionInComposedTree VisibleSelection::endInComposedTree() const
     return m_endInComposedTree;
 }
 
-PassRefPtrWillBeRawPtr<Range> VisibleSelection::firstRange() const
+PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection& selection)
 {
-    if (isNone())
+    if (selection.isNone())
         return nullptr;
-    Position start = m_start.parentAnchoredEquivalent();
-    Position end = m_end.parentAnchoredEquivalent();
+    Position start = selection.start().parentAnchoredEquivalent();
+    Position end = selection.end().parentAnchoredEquivalent();
     return Range::create(*start.document(), start, end);
 }
 

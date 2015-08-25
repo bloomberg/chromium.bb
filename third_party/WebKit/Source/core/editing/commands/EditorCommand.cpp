@@ -1436,7 +1436,7 @@ static String valueFormatBlock(LocalFrame& frame, Event*)
     const VisibleSelection& selection = frame.selection().selection();
     if (!selection.isNonOrphanedCaretOrRange() || !selection.isContentEditable())
         return "";
-    Element* formatBlockElement = FormatBlockCommand::elementForFormatBlockCommand(selection.firstRange().get());
+    Element* formatBlockElement = FormatBlockCommand::elementForFormatBlockCommand(firstRangeOf(selection).get());
     if (!formatBlockElement)
         return "";
     return formatBlockElement->localName();

@@ -1500,7 +1500,7 @@ PassRefPtrWillBeRawPtr<Range> FrameSelection::firstRange() const
 {
     if (m_logicalRange)
         return m_logicalRange->cloneRange();
-    return m_selection.firstRange();
+    return firstRangeOf(m_selection);
 }
 
 bool FrameSelection::isInPasswordField() const
