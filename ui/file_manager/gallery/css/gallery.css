@@ -559,6 +559,7 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
 
 .gallery > .toolbar paper-button,
 .gallery > .toolbar button {
+  border-radius: 2px;
   margin: 0 8px;
 }
 
@@ -687,6 +688,10 @@ button[disabled] {
 }
 
 /* Edit main toolbar. */
+.gallery > .toolbar .edit-main button {
+  border-radius: 1px;
+}
+
 .edit-main button.autofix .icon {
   background-image: -webkit-image-set(
       url(../images/100/auto_fix.png) 1x,
