@@ -22,7 +22,6 @@ import android.view.View;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.ui.UiUtils;
 
 import java.lang.ref.WeakReference;
@@ -181,14 +180,19 @@ public class ActivityWindowAndroid
 
     @Override
     public boolean canRequestPermission(String permission) {
-        if (!BuildInfo.isMncOrLater()) return false;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
 
         Activity activity = mActivityRef.get();
         if (activity == null) return false;
 
-        // TODO(tedchoc): Child classes are currently required to determine whether we have
-        //                previously requested the permission before but the user did not
-        //                select "Never ask again".  Merge with this class when possible.
+        if (activity.getPackageManager().isPermissionRevokedByPolicy(
+                permission, activity.getPackageName())) {
+            return false;
+        }
+
+        if (activity.shouldShowRequestPermissionRationale(permission)) {
+            return true;
+        }
 
         // Check whether we have ever asked for this permission by checking whether we saved
         // a preference associated with it before.
