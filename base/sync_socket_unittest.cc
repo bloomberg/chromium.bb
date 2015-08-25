@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+// TODO(ellyjones): Remove once http://crbug.com/523296 is fixed.
+#if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
+#include "base/ios/ios_util.h"
+#endif
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
@@ -114,6 +118,11 @@ TEST(CancelableSyncSocket, ClonedSendReceivePeek) {
 }
 
 TEST(CancelableSyncSocket, CancelReceiveShutdown) {
+// TODO(ellyjones): This test fails on iOS 7 devices. http://crbug.com/523296
+#if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
+  if (!base::ios::IsRunningOnIOS8OrLater())
+    return;
+#endif
   base::CancelableSyncSocket socket_a, socket_b;
   ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&socket_a, &socket_b));
 
