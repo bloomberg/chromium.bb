@@ -15,6 +15,9 @@
   }
 
   var body = document.body;
+  if (!body) {
+    return false;
+  }
   return JSON.stringify({
      'opengraph': hasOGArticle(),
      'url': document.location.href,
