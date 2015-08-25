@@ -32,8 +32,8 @@ def SetEnvironmentAndGetRuntimeDllDirs():
       bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
   # When running on a non-Windows host, only do this if the SDK has explicitly
   # been downloaded before (in which case json_data_file will exist).
-  if ((sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain) or
-      os.path.exists(json_data_file)):
+  if ((sys.platform in ('win32', 'cygwin') or os.path.exists(json_data_file))
+      and depot_tools_win_toolchain):
     if not os.path.exists(json_data_file):
       Update()
     with open(json_data_file, 'r') as tempf:
