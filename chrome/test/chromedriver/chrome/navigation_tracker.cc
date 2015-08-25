@@ -56,16 +56,17 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     scoped_ptr<base::DictionaryValue> result;
     Status status = client_->SendCommandAndGetResult(
         "Runtime.evaluate", params, &result);
-    if (status.IsError()) {
-      int value = 0;
-      if (status.code() == kDisconnected) {
-        // If we receive a kDisconnected status code from Runtime.evaluate, it
-        // might have been because the target window closed or has crashed.
-        *is_pending = false;
-        return Status(kOk);
-      } else if (!result->GetInteger("result.value", &value) || value != 1) {
-        return Status(kUnknownError, "cannot determine loading status", status);
-      }
+    int value = 0;
+    if (status.code() == kDisconnected) {
+      // If we receive a kDisconnected status code from Runtime.evaluate, don't
+      // wait for pending navigations to complete, since we won't see any more
+      // events from it until we reconnect.
+      *is_pending = false;
+      return Status(kOk);
+    } else if (status.IsError() ||
+               !result->GetInteger("result.value", &value) ||
+               value != 1) {
+      return Status(kUnknownError, "cannot determine loading status", status);
     }
   }
 
