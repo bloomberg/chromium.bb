@@ -101,8 +101,12 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
     for (uint32_t j = 0; j < formats_size; j++)
       supported_formats.push_back(drm_plane->formats[j]);
 
-    if (plane->Initialize(drm, supported_formats)) {
-      planes_.push_back(plane.Pass());
+    if (plane->Initialize(drm, supported_formats, false)) {
+      // CRTC controllers always assume they have a cursor plane and the cursor
+      // plane is updated via cursor specific DRM API. Hence, we dont keep
+      // track of Cursor plane here to avoid re-using it for any other purpose.
+      if (plane->type() != HardwareDisplayPlane::kCursor)
+        planes_.push_back(plane.Pass());
     }
   }
 
@@ -115,8 +119,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
       if (plane_ids.find(resources->crtcs[i] - 1) == plane_ids.end()) {
         scoped_ptr<HardwareDisplayPlane> dummy_plane(
             CreatePlane(resources->crtcs[i] - 1, (1 << i)));
-        dummy_plane->set_is_dummy(true);
-        if (dummy_plane->Initialize(drm, std::vector<uint32_t>())) {
+        if (dummy_plane->Initialize(drm, std::vector<uint32_t>(), true)) {
           planes_.push_back(dummy_plane.Pass());
         }
       }
@@ -187,7 +190,7 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     }
 
     gfx::Rect fixed_point_rect;
-    if (!hw_plane->is_dummy()) {
+    if (hw_plane->type() != HardwareDisplayPlane::kDummy) {
       const gfx::Size& size = plane.buffer->GetSize();
       gfx::RectF crop_rect = plane.crop_rect;
       crop_rect.Scale(size.width(), size.height());

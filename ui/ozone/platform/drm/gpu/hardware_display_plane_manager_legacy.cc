@@ -67,7 +67,7 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
   // For each element in |old_plane_list|, if it hasn't been reclaimed (by
   // this or any other HDPL), clear the overlay contents.
   for (HardwareDisplayPlane* plane : plane_list->old_plane_list) {
-    if (!plane->in_use() && !plane->is_dummy()) {
+    if (!plane->in_use() && (plane->type() != HardwareDisplayPlane::kDummy)) {
       // This plane is being released, so we need to zero it.
       if (!drm_->PageFlipOverlay(plane->owning_crtc(), 0, gfx::Rect(),
                                  gfx::Rect(), plane->plane_id())) {
@@ -91,7 +91,8 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
     uint32_t crtc_id,
     const gfx::Rect& src_rect,
     CrtcController* crtc) {
-  if (hw_plane->is_dummy() || plane_list->legacy_page_flips.empty() ||
+  if ((hw_plane->type() == HardwareDisplayPlane::kDummy) ||
+      plane_list->legacy_page_flips.empty() ||
       plane_list->legacy_page_flips.back().crtc_id != crtc_id) {
     plane_list->legacy_page_flips.push_back(
         HardwareDisplayPlaneList::PageFlipInfo(

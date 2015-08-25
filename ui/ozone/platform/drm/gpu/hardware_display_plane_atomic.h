@@ -26,14 +26,16 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
                     const gfx::Rect& src_rect);
 
   // HardwareDisplayPlane:
-  bool Initialize(DrmDevice* drm,
-                  const std::vector<uint32_t>& formats) override;
   bool IsSupportedFormat(uint32_t format) const override;
 
   void set_crtc(CrtcController* crtc) { crtc_ = crtc; }
   CrtcController* crtc() const { return crtc_; }
 
  private:
+  bool InitializeProperties(
+      DrmDevice* drm,
+      const ScopedDrmObjectPropertyPtr& plane_props) override;
+
   struct Property {
     Property();
     bool Initialize(DrmDevice* drm,
@@ -53,7 +55,6 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
   Property src_w_prop_;
   Property src_h_prop_;
   CrtcController* crtc_ = nullptr;
-  std::vector<uint32_t> supported_formats_;
 };
 
 }  // namespace ui

@@ -86,17 +86,9 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(drmModePropertySet* property_set,
   return true;
 }
 
-bool HardwareDisplayPlaneAtomic::Initialize(
+bool HardwareDisplayPlaneAtomic::InitializeProperties(
     DrmDevice* drm,
-    const std::vector<uint32_t>& formats) {
-  ScopedDrmObjectPropertyPtr plane_props(drmModeObjectGetProperties(
-      drm->get_fd(), plane_id_, DRM_MODE_OBJECT_PLANE));
-
-  if (!plane_props) {
-    PLOG(ERROR) << "Unable to get plane properties.";
-    return false;
-  }
-
+    const ScopedDrmObjectPropertyPtr& plane_props) {
   bool props_init = crtc_prop_.Initialize(drm, kCrtcPropName, plane_props) &&
                     fb_prop_.Initialize(drm, kFbPropName, plane_props) &&
                     crtc_x_prop_.Initialize(drm, kCrtcXPropName, plane_props) &&
@@ -112,10 +104,6 @@ bool HardwareDisplayPlaneAtomic::Initialize(
     LOG(ERROR) << "Unable to get plane properties.";
     return false;
   }
-
-  supported_formats_ = formats;
-  if (is_dummy())
-    supported_formats_.push_back(DRM_FORMAT_XRGB8888);
 
   return true;
 }
