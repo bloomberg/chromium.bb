@@ -7,12 +7,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_test_base.h"
+#include "mojo/application/public/cpp/interface_factory.h"
 
 namespace mojo {
 
-class ViewManagerClientFactory;
 class ViewManagerInit;
 
 // ViewManagerTestBase is a base class for use with app tests that use
@@ -21,7 +22,8 @@ class ViewManagerInit;
 // established as part of SetUp().
 class ViewManagerTestBase : public test::ApplicationTestBase,
                             public ApplicationDelegate,
-                            public ViewManagerDelegate {
+                            public ViewManagerDelegate,
+                            public InterfaceFactory<ViewManagerClient> {
  public:
   ViewManagerTestBase();
   ~ViewManagerTestBase() override;
@@ -51,19 +53,21 @@ class ViewManagerTestBase : public test::ApplicationTestBase,
   ApplicationDelegate* GetApplicationDelegate() override;
 
   // ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
 
   // ViewManagerDelegate:
   void OnEmbed(View* root) override;
   void OnViewManagerDestroyed(ViewManager* view_manager) override;
 
+  // InterfaceFactory<ViewManagerClient>:
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<ViewManagerClient> request) override;
+
   // Used to receive the most recent view manager loaded by an embed action.
   ViewManager* most_recent_view_manager_;
 
  private:
   scoped_ptr<ViewManagerInit> view_manager_init_;
-  scoped_ptr<ViewManagerClientFactory> view_manager_client_factory_;
 
   // The View Manager connection held by the window manager (app running at the
   // root view).

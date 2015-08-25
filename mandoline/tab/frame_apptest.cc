@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "components/view_manager/public/cpp/lib/view_manager_client_impl.h"
-#include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_observer.h"
@@ -66,22 +65,17 @@ void QuitRunLoop() {
 
 class FrameTest : public mojo::test::ApplicationTestBase,
                   public mojo::ApplicationDelegate,
-                  public mojo::ViewManagerDelegate {
+                  public mojo::ViewManagerDelegate,
+                  public mojo::InterfaceFactory<mojo::ViewManagerClient> {
  public:
   FrameTest() : most_recent_view_manager_(nullptr), window_manager_(nullptr) {}
 
   ViewManager* most_recent_view_manager() { return most_recent_view_manager_; }
 
-  // Overridden from ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {
-    view_manager_client_factory_.reset(
-        new mojo::ViewManagerClientFactory(app->shell(), this));
-  }
-
   // ApplicationDelegate implementation.
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
-    connection->AddService(view_manager_client_factory_.get());
+    connection->AddService<mojo::ViewManagerClient>(this);
     return true;
   }
 
@@ -114,9 +108,14 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     ApplicationTestBase::TearDown();
   }
 
-  scoped_ptr<mojo::ViewManagerInit> view_manager_init_;
+  // Overridden from mojo::InterfaceFactory<mojo::ViewManagerClient>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mojo::ViewManagerClient> request) override {
+    mojo::ViewManager::Create(this, request.Pass());
+  }
 
-  scoped_ptr<mojo::ViewManagerClientFactory> view_manager_client_factory_;
+  scoped_ptr<mojo::ViewManagerInit> view_manager_init_;
 
   // Used to receive the most recent view manager loaded by an embed action.
   ViewManager* most_recent_view_manager_;

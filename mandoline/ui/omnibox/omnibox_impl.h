@@ -27,6 +27,7 @@ class OmniboxImpl : public mojo::ApplicationDelegate,
                     public views::LayoutManager,
                     public views::TextfieldController,
                     public mojo::InterfaceFactory<Omnibox>,
+                    public mojo::InterfaceFactory<mojo::ViewManagerClient>,
                     public Omnibox {
  public:
   OmniboxImpl();
@@ -52,9 +53,14 @@ class OmniboxImpl : public mojo::ApplicationDelegate,
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
 
-  // InterfaceFactory<WindowManager>:
+  // Overridden from mojo::InterfaceFactory<Omnibox>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<Omnibox> request) override;
+
+  // Overridden from mojo::InterfaceFactory<mojo::ViewManagerClient>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mojo::ViewManagerClient> request) override;
 
   // Overridden from Omnibox:
   void ShowForURL(const mojo::String& url) override;
@@ -68,7 +74,6 @@ class OmniboxImpl : public mojo::ApplicationDelegate,
   mojo::String url_;
   views::Textfield* edit_;
   mojo::WeakBindingSet<Omnibox> bindings_;
-  scoped_ptr<mojo::ViewManagerClientFactory> view_manager_client_factory_;
   ViewEmbedderPtr view_embedder_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxImpl);

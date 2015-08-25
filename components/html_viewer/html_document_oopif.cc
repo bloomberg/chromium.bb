@@ -64,7 +64,6 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(
                         ->CreateAppRefCount()),
       html_document_app_(html_document_app),
       connection_(connection),
-      view_manager_client_factory_(html_document_app->shell(), this),
       global_state_(global_state),
       frame_(nullptr),
       delete_callback_(delete_callback),
@@ -73,17 +72,12 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(
   // TODO(sky): nuke headless. We're not going to care about it anymore.
   DCHECK(!global_state_->is_headless());
 
-  connection->AddService(
-      static_cast<mojo::InterfaceFactory<mandoline::FrameTreeClient>*>(this));
-  connection->AddService(static_cast<InterfaceFactory<AxProvider>*>(this));
-  connection->AddService(&view_manager_client_factory_);
-  connection->AddService(
-      static_cast<mojo::InterfaceFactory<devtools_service::DevToolsAgent>*>(
-          this));
-  if (IsTestInterfaceEnabled()) {
-    connection->AddService(
-        static_cast<mojo::InterfaceFactory<TestHTMLViewer>*>(this));
-  }
+  connection->AddService<mandoline::FrameTreeClient>(this);
+  connection->AddService<AxProvider>(this);
+  connection->AddService<mojo::ViewManagerClient>(this);
+  connection->AddService<devtools_service::DevToolsAgent>(this);
+  if (IsTestInterfaceEnabled())
+    connection->AddService<TestHTMLViewer>(this);
 
   resource_waiter_.reset(
       new DocumentResourceWaiter(global_state_, response.Pass(), this));
@@ -265,6 +259,12 @@ void HTMLDocumentOOPIF::Create(
   } else {
     devtools_agent_request_ = request.Pass();
   }
+}
+
+void HTMLDocumentOOPIF::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mojo::ViewManagerClient> request) {
+  mojo::ViewManager::Create(this, request.Pass());
 }
 
 }  // namespace html_viewer

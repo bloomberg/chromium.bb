@@ -15,7 +15,6 @@
 #include "components/html_viewer/ax_provider_impl.h"
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
-#include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
@@ -55,7 +54,8 @@ class HTMLDocumentOOPIF
       public mojo::InterfaceFactory<mojo::AxProvider>,
       public mojo::InterfaceFactory<mandoline::FrameTreeClient>,
       public mojo::InterfaceFactory<TestHTMLViewer>,
-      public mojo::InterfaceFactory<devtools_service::DevToolsAgent> {
+      public mojo::InterfaceFactory<devtools_service::DevToolsAgent>,
+      public mojo::InterfaceFactory<mojo::ViewManagerClient> {
  public:
   using DeleteCallback = base::Callback<void(HTMLDocumentOOPIF*)>;
   using HTMLFrameCreationCallback =
@@ -130,10 +130,13 @@ class HTMLDocumentOOPIF
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) override;
 
+  // mojo::InterfaceFactory<mojo::ViewManagerClient>:
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mojo::ViewManagerClient> request) override;
+
   scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::ApplicationImpl* html_document_app_;
   mojo::ApplicationConnection* connection_;
-  mojo::ViewManagerClientFactory view_manager_client_factory_;
 
   // HTMLDocument owns these pointers; binding requests after document load.
   std::set<AxProviderImpl*> ax_providers_;

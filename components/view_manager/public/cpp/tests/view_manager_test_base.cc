@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager_client_factory.h"
+#include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
@@ -80,14 +80,9 @@ ApplicationDelegate* ViewManagerTestBase::GetApplicationDelegate() {
   return this;
 }
 
-void ViewManagerTestBase::Initialize(ApplicationImpl* app) {
-  view_manager_client_factory_.reset(
-      new ViewManagerClientFactory(app->shell(), this));
-}
-
 bool ViewManagerTestBase::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-  connection->AddService(view_manager_client_factory_.get());
+  connection->AddService<ViewManagerClient>(this);
   return true;
 }
 
@@ -98,6 +93,11 @@ void ViewManagerTestBase::OnEmbed(View* root) {
 
 void ViewManagerTestBase::OnViewManagerDestroyed(ViewManager* view_manager) {
   view_manager_destroyed_ = true;
+}
+
+void ViewManagerTestBase::Create(ApplicationConnection* connection,
+                                 InterfaceRequest<ViewManagerClient> request) {
+  ViewManager::Create(this, request.Pass());
 }
 
 }  // namespace mojo

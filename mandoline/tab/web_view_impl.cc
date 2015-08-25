@@ -41,8 +41,7 @@ WebViewImpl::WebViewImpl(mojo::ApplicationImpl* app,
     : app_(app),
       client_(client.Pass()),
       binding_(this, request.Pass()),
-      content_(nullptr),
-      view_manager_client_factory_(app->shell(), this) {
+      content_(nullptr) {
   if (EnableRemoteDebugging())
     devtools_agent_.reset(new FrameDevToolsAgent(app_, this));
 }
@@ -78,7 +77,7 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
 
 void WebViewImpl::GetViewManagerClient(
     mojo::InterfaceRequest<mojo::ViewManagerClient> view_manager_client) {
-  view_manager_client_factory_.Create(nullptr, view_manager_client.Pass());
+  mojo::ViewManager::Create(nullptr, view_manager_client.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

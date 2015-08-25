@@ -5,7 +5,7 @@
 #include "mandoline/ui/omnibox/omnibox_impl.h"
 
 #include "base/strings/string16.h"
-#include "components/view_manager/public/cpp/view_manager_client_factory.h"
+#include "components/view_manager/public/cpp/view_manager.h"
 #include "mandoline/ui/aura/aura_init.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -29,14 +29,12 @@ OmniboxImpl::~OmniboxImpl() {}
 
 void OmniboxImpl::Initialize(mojo::ApplicationImpl* app) {
   app_impl_ = app;
-  view_manager_client_factory_.reset(
-      new mojo::ViewManagerClientFactory(app->shell(), this));
 }
 
 bool OmniboxImpl::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<Omnibox>(this);
-  connection->AddService(view_manager_client_factory_.get());
+  connection->AddService<mojo::ViewManagerClient>(this);
   connection->ConnectToService(&view_embedder_);
   return true;
 }
@@ -131,6 +129,15 @@ void OmniboxImpl::Create(mojo::ApplicationConnection* connection,
   // TODO(beng): methinks this doesn't work well across multiple browser
   //             windows...
   bindings_.AddBinding(this, request.Pass());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OmniboxImpl, mojo::InterfaceFactory<mojo::ViewManagerClient> implementation:
+
+void OmniboxImpl::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mojo::ViewManagerClient> request) {
+  mojo::ViewManager::Create(this, request.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

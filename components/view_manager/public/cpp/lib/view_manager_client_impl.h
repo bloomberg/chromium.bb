@@ -12,7 +12,6 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
-class Shell;
 class ViewManager;
 class ViewManagerDelegate;
 class ViewManagerTransaction;
@@ -22,7 +21,6 @@ class ViewManagerClientImpl : public ViewManager,
                               public ViewManagerClient {
  public:
   ViewManagerClientImpl(ViewManagerDelegate* delegate,
-                        Shell* shell,
                         InterfaceRequest<ViewManagerClient> request);
   ~ViewManagerClientImpl() override;
 

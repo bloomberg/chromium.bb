@@ -56,7 +56,7 @@ ViewManagerInit::~ViewManagerInit() {}
 
 void ViewManagerInit::OnCreate(InterfaceRequest<ViewManagerClient> request) {
   // TODO(sky): straighten out lifetime.
-  new ViewManagerClientImpl(delegate_, app_->shell(), request.Pass());
+  ViewManager::Create(delegate_, request.Pass());
 }
 
 }  // namespace mojo

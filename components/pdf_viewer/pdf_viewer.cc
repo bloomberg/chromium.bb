@@ -10,7 +10,6 @@
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
-#include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
@@ -351,14 +350,14 @@ class EmbedderData {
 
 class PDFView : public mojo::ApplicationDelegate,
                 public mojo::ViewManagerDelegate,
-                public mojo::ViewObserver {
+                public mojo::ViewObserver,
+                public mojo::InterfaceFactory<mojo::ViewManagerClient> {
  public:
   PDFView(mojo::InterfaceRequest<mojo::Application> request,
           mojo::URLResponsePtr response)
       : app_(this, request.Pass(), base::Bind(&PDFView::OnTerminate,
                                               base::Unretained(this))),
-        current_page_(0), page_count_(0), doc_(nullptr),
-        view_manager_client_factory_(app_.shell(), this) {
+        current_page_(0), page_count_(0), doc_(nullptr) {
     FetchPDF(response.Pass());
   }
 
@@ -375,7 +374,7 @@ class PDFView : public mojo::ApplicationDelegate,
   // Overridden from ApplicationDelegate:
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
-    connection->AddService(&view_manager_client_factory_);
+    connection->AddService<mojo::ViewManagerClient>(this);
     return true;
   }
 
@@ -435,6 +434,13 @@ class PDFView : public mojo::ApplicationDelegate,
       app_.Quit();
   }
 
+  // Overridden from mojo::InterfaceFactory<mojo::ViewManagerClient>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mojo::ViewManagerClient> request) override {
+    mojo::ViewManager::Create(this, request.Pass());
+  }
+
   void DrawBitmap(EmbedderData* embedder_data) {
     if (!doc_)
       return;
@@ -482,7 +488,6 @@ class PDFView : public mojo::ApplicationDelegate,
   int page_count_;
   FPDF_DOCUMENT doc_;
   std::map<mojo::View*, EmbedderData*> embedder_for_roots_;
-  mojo::ViewManagerClientFactory view_manager_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFView);
 };

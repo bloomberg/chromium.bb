@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/tab/frame_devtools_agent_delegate.h"
@@ -85,7 +84,6 @@ class WebViewImpl : public mojom::WebView,
   mojo::StrongBinding<WebView> binding_;
   mojo::View* content_;
   scoped_ptr<FrameTree> frame_tree_;
-  mojo::ViewManagerClientFactory view_manager_client_factory_;
 
   mojo::URLRequestPtr pending_request_;
 

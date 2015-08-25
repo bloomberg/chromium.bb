@@ -12,7 +12,6 @@
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 
 namespace mojo {
 
@@ -68,9 +67,14 @@ View* BuildViewTree(ViewManagerClientImpl* client,
   return root;
 }
 
+ViewManager* ViewManager::Create(
+    ViewManagerDelegate* delegate,
+    InterfaceRequest<ViewManagerClient> request) {
+  return new ViewManagerClientImpl(delegate, request.Pass());
+}
+
 ViewManagerClientImpl::ViewManagerClientImpl(
     ViewManagerDelegate* delegate,
-    Shell* shell,
     InterfaceRequest<ViewManagerClient> request)
     : connection_id_(0),
       next_id_(1),
