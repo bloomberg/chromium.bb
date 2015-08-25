@@ -109,7 +109,7 @@ SVGLengthContext::SVGLengthContext(const SVGElement* context)
 FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport, const SVGLength& x, const SVGLength& y, const SVGLength& width, const SVGLength& height)
 {
     ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
-    if (type != SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE && !viewport.isEmpty()) {
+    if (type != SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
         const FloatSize& viewportSize = viewport.size();
         return FloatRect(
             convertValueFromPercentageToUserUnits(x, viewportSize) + viewport.x(),
