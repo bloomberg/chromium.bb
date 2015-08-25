@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
                   text run at (420,1) width 141: "I agree with the program"
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (562,74) size 72x21 [r=1 c=1 rs=1 cs=1]
-              LayoutBlockFlow {INPUT} at (3.88,4) size 12x13
+              LayoutBlockFlow {INPUT} at (3.91,4) size 12x13
           LayoutTableRow {TR} at (0,95) size 784x21
             LayoutTableCell {TD} at (0,97) size 562x17 [r=2 c=0 rs=1 cs=1]
               LayoutInline {FONT} at (0,0) size 153x15
@@ -32,7 +32,7 @@ layer at (0,0) size 800x600
                   text run at (408,1) width 153: "I think vouchers are wrong"
               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (562,95) size 72x21 [r=2 c=1 rs=1 cs=1]
-              LayoutBlockFlow {INPUT} at (3.88,4) size 12x13
+              LayoutBlockFlow {INPUT} at (3.91,4) size 12x13
           LayoutTableRow {TR} at (0,116) size 784x20
             LayoutTableCell {TD} at (0,117) size 634x17 [r=3 c=0 rs=1 cs=2]
               LayoutInline {A} at (0,0) size 76x18 [color=#0000EE]
@@ -42,8 +42,8 @@ layer at (0,0) size 800x600
               LayoutInline {FONT} at (0,0) size 1x15
                 LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (634,116) size 150x20 [r=3 c=2 rs=1 cs=2]
-              LayoutButton {INPUT} at (55.63,1) size 38.75x18 [bgcolor=#C0C0C0]
-                LayoutBlockFlow (anonymous) at (8,2) size 22.75x13
+              LayoutButton {INPUT} at (55.64,1) size 38.70x18 [bgcolor=#C0C0C0]
+                LayoutBlockFlow (anonymous) at (8,2) size 22.70x13
                   LayoutText {#text} at (0,0) size 23x13
                     text run at (0,0) width 23: "vote"
               LayoutText {#text} at (0,0) size 0x0
