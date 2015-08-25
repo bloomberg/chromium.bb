@@ -6,6 +6,9 @@
 
 #include "base/memory/discardable_memory.h"
 #include "base/stl_util.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 
 namespace html_viewer {
 
@@ -51,6 +54,21 @@ class DiscardableMemoryAllocator::DiscardableMemoryChunkImpl
       return data_.get();
     }
     return nullptr;
+  }
+
+  base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+      const char* name,
+      base::trace_event::ProcessMemoryDump* pmd) const override {
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(name);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes, size_);
+
+    // Memory is allocated from system allocator (malloc).
+    pmd->AddSuballocation(dump->guid(),
+                          base::trace_event::MemoryDumpManager::GetInstance()
+                              ->system_allocator_pool_name());
+    return dump;
   }
 
   size_t size() const { return size_; }

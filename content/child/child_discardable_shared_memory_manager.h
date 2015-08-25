@@ -40,6 +40,11 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
   void UnlockSpan(DiscardableSharedMemoryHeap::Span* span);
   void ReleaseSpan(scoped_ptr<DiscardableSharedMemoryHeap::Span> span);
 
+  base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+      DiscardableSharedMemoryHeap::Span* span,
+      const char* name,
+      base::trace_event::ProcessMemoryDump* pmd) const;
+
  private:
   scoped_ptr<base::DiscardableSharedMemory>
   AllocateLockedDiscardableSharedMemory(size_t size,

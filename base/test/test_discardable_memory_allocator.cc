@@ -20,6 +20,12 @@ class DiscardableMemoryImpl : public DiscardableMemory {
   void Unlock() override {}
   void* data() const override { return data_.get(); }
 
+  trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+      const char* name,
+      trace_event::ProcessMemoryDump* pmd) const override {
+    return nullptr;
+  }
+
  private:
   scoped_ptr<uint8_t[]> data_;
 };

@@ -60,6 +60,27 @@ bool DiscardableSharedMemoryHeap::ScopedMemorySegment::IsResident() const {
   return heap_->IsMemoryResident(shared_memory_.get());
 }
 
+bool DiscardableSharedMemoryHeap::ScopedMemorySegment::ContainsSpan(
+    Span* span) const {
+  return shared_memory_ == span->shared_memory();
+}
+
+base::trace_event::MemoryAllocatorDump*
+DiscardableSharedMemoryHeap::ScopedMemorySegment::CreateMemoryAllocatorDump(
+    Span* span,
+    const char* name,
+    base::trace_event::ProcessMemoryDump* pmd) const {
+  DCHECK_EQ(shared_memory_, span->shared_memory());
+  base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(span->length()));
+
+  pmd->AddSuballocation(dump->guid(),
+                        base::StringPrintf("discardable/segment_%d", id_));
+  return dump;
+}
+
 void DiscardableSharedMemoryHeap::ScopedMemorySegment::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) const {
   heap_->OnMemoryDump(shared_memory_.get(), size_, id_, pmd);
@@ -396,6 +417,28 @@ DiscardableSharedMemoryHeap::GetSegmentGUIDForTracing(uint64 tracing_process_id,
                                                       int32 segment_id) {
   return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
       "discardable-x-process/%" PRIx64 "/%d", tracing_process_id, segment_id));
+}
+
+base::trace_event::MemoryAllocatorDump*
+DiscardableSharedMemoryHeap::CreateMemoryAllocatorDump(
+    Span* span,
+    const char* name,
+    base::trace_event::ProcessMemoryDump* pmd) const {
+  if (!span->shared_memory()) {
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(name);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes, 0u);
+    return dump;
+  }
+
+  ScopedVector<ScopedMemorySegment>::const_iterator it =
+      std::find_if(memory_segments_.begin(), memory_segments_.end(),
+                   [span](const ScopedMemorySegment* segment) {
+                     return segment->ContainsSpan(span);
+                   });
+  DCHECK(it != memory_segments_.end());
+  return (*it)->CreateMemoryAllocatorDump(span, name, pmd);
 }
 
 }  // namespace content

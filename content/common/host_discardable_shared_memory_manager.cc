@@ -64,6 +64,19 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
     return shared_memory_->memory();
   }
 
+  base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+      const char* name,
+      base::trace_event::ProcessMemoryDump* pmd) const override {
+    // The memory could have been purged, but we still create a dump with
+    // mapped_size. So, the size can be inaccurate.
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(name);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    shared_memory_->mapped_size());
+    return dump;
+  }
+
  private:
   scoped_ptr<base::DiscardableSharedMemory> shared_memory_;
   const base::Closure deleted_callback_;

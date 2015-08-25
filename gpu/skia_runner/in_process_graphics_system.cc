@@ -10,6 +10,9 @@
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
@@ -21,13 +24,30 @@ namespace {
 // TODO(hendrikw): Replace TestDiscardableMemoryAllocator and move to base?
 class NonDiscardableMemory : public base::DiscardableMemory {
  public:
-  explicit NonDiscardableMemory(size_t size) : data_(new uint8_t[size]) {}
+  explicit NonDiscardableMemory(size_t size)
+      : data_(new uint8_t[size]), size_(size) {}
   bool Lock() override { return false; }
   void Unlock() override {}
   void* data() const override { return data_.get(); }
 
+  base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+      const char* name,
+      base::trace_event::ProcessMemoryDump* pmd) const override {
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(name);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes, size_);
+
+    // Memory is allocated from system allocator (malloc).
+    pmd->AddSuballocation(dump->guid(),
+                          base::trace_event::MemoryDumpManager::GetInstance()
+                              ->system_allocator_pool_name());
+    return dump;
+  }
+
  private:
   scoped_ptr<uint8_t[]> data_;
+  size_t size_;
 };
 
 class NonDiscardableMemoryAllocator : public base::DiscardableMemoryAllocator {

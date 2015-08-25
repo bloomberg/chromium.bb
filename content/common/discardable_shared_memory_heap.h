@@ -94,6 +94,13 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
       uint64 tracing_process_id,
       int32 segment_id);
 
+  // Returns a MemoryAllocatorDump for a given span on |pmd| with the size of
+  // the span.
+  base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+      Span* span,
+      const char* name,
+      base::trace_event::ProcessMemoryDump* pmd) const;
+
  private:
   class ScopedMemorySegment {
    public:
@@ -106,6 +113,13 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
 
     bool IsUsed() const;
     bool IsResident() const;
+
+    bool ContainsSpan(Span* span) const;
+
+    base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+        Span* span,
+        const char* name,
+        base::trace_event::ProcessMemoryDump* pmd) const;
 
     // Used for dumping memory statistics from the segment to chrome://tracing.
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) const;

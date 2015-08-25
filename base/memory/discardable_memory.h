@@ -11,6 +11,11 @@
 
 namespace base {
 
+namespace trace_event {
+class MemoryAllocatorDump;
+class ProcessMemoryDump;
+}
+
 // Discardable memory is used to cache large objects without worrying about
 // blowing out memory, both on mobile devices where there is no swap, and
 // desktop devices where unused free memory should be used to help the user
@@ -59,6 +64,14 @@ class BASE_EXPORT DiscardableMemory {
   template<typename T> T* data_as() const {
     return reinterpret_cast<T*>(data());
   }
+
+  // Used for dumping the statistics of discardable memory allocated in tracing.
+  // Returns a new MemoryAllocatorDump in the |pmd| with the size of the
+  // discardable memory. The MemoryAllocatorDump created is owned by |pmd|. See
+  // ProcessMemoryDump::CreateAllocatorDump.
+  virtual trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+      const char* name,
+      trace_event::ProcessMemoryDump* pmd) const = 0;
 };
 
 }  // namespace base

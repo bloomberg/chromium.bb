@@ -61,6 +61,12 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
     return reinterpret_cast<void*>(span_->start() * base::GetPageSize());
   }
 
+  base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
+      const char* name,
+      base::trace_event::ProcessMemoryDump* pmd) const override {
+    return manager_->CreateMemoryAllocatorDump(span_.get(), name, pmd);
+  }
+
  private:
   ChildDiscardableSharedMemoryManager* const manager_;
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span_;
@@ -259,6 +265,15 @@ void ChildDiscardableSharedMemoryManager::ReleaseSpan(
 
   // Bytes of free memory changed.
   MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
+}
+
+base::trace_event::MemoryAllocatorDump*
+ChildDiscardableSharedMemoryManager::CreateMemoryAllocatorDump(
+    DiscardableSharedMemoryHeap::Span* span,
+    const char* name,
+    base::trace_event::ProcessMemoryDump* pmd) const {
+  base::AutoLock lock(lock_);
+  return heap_.CreateMemoryAllocatorDump(span, name, pmd);
 }
 
 scoped_ptr<base::DiscardableSharedMemory>

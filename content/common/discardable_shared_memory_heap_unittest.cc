@@ -302,5 +302,34 @@ TEST(DiscardableSharedMemoryHeapTest, DeletedCallback) {
   EXPECT_TRUE(deleted);
 }
 
+TEST(DiscardableSharedMemoryHeapTest, CreateMemoryAllocatorDumpTest) {
+  size_t block_size = base::GetPageSize();
+  DiscardableSharedMemoryHeap heap(block_size);
+  int next_discardable_shared_memory_id = 0;
+
+  scoped_ptr<base::DiscardableSharedMemory> memory(
+      new base::DiscardableSharedMemory);
+  ASSERT_TRUE(memory->CreateAndMap(block_size));
+  scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
+      heap.Grow(memory.Pass(), block_size, next_discardable_shared_memory_id++,
+                base::Bind(NullTask));
+
+  // Check if allocator dump is created when span exists.
+  scoped_ptr<base::trace_event::ProcessMemoryDump> pmd(
+      new base::trace_event::ProcessMemoryDump(nullptr));
+  EXPECT_TRUE(heap.CreateMemoryAllocatorDump(span.get(), "discardable/test1",
+                                             pmd.get()));
+
+  // Unlock, Purge and release shared memory.
+  span->shared_memory()->Unlock(0, 0);
+  bool rv = span->shared_memory()->Purge(base::Time::Now());
+  EXPECT_TRUE(rv);
+  heap.ReleasePurgedMemory();
+
+  // Check that allocator dump is created after memory is purged.
+  EXPECT_TRUE(heap.CreateMemoryAllocatorDump(span.get(), "discardable/test2",
+                                             pmd.get()));
+}
+
 }  // namespace
 }  // namespace content
