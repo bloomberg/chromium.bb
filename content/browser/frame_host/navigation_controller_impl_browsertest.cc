@@ -1692,6 +1692,54 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Ensure that we don't crash when navigating subframes after in-page
+// navigations.  See https://crbug.com/522193.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_SubframeAfterInPage) {
+  // 1. Start on a page with a subframe.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+  NavigateToURL(shell(), main_url);
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_NE(nullptr, root->child_at(0));
+
+  // Navigate to a real page in the subframe, so that the next navigation will
+  // be MANUAL_SUBFRAME.
+  GURL subframe_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  {
+    LoadCommittedCapturer capturer(root->child_at(0));
+    NavigateFrameToURL(root->child_at(0), subframe_url);
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // 2. In-page navigation in the main frame.
+  std::string push_script = "history.pushState({}, 'page 2', 'page_2.html')";
+  EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), push_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // TODO(creis): Verify subframe entries.  https://crbug.com/522193.
+
+  // 3. Add a nested subframe.
+  {
+    LoadCommittedCapturer capturer(shell()->web_contents());
+    std::string script = "var iframe = document.createElement('iframe');"
+                         "iframe.src = '" + subframe_url.spec() + "';"
+                         "document.body.appendChild(iframe);";
+    EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
+                                       script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_AUTO_SUBFRAME, capturer.transition_type());
+  }
+
+  // TODO(creis): Verify subframe entries.  https://crbug.com/522193.
+}
+
 // Verify the tree of FrameNavigationEntries after back/forward navigations in a
 // cross-site subframe.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,

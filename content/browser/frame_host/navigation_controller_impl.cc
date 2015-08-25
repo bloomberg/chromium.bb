@@ -901,7 +901,10 @@ bool NavigationControllerImpl::RendererDidNavigate(
     // Update the frame-specific PageState.
     FrameNavigationEntry* frame_entry =
         active_entry->GetFrameEntry(rfh->frame_tree_node());
-    frame_entry->set_page_state(params.page_state);
+    // We may not find a frame_entry in some cases; ignore the PageState if so.
+    // TODO(creis): Remove the "if" once https://crbug.com/522193 is fixed.
+    if (frame_entry)
+      frame_entry->set_page_state(params.page_state);
   } else {
     active_entry->SetPageState(params.page_state);
   }
@@ -1243,7 +1246,11 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
         rfh->GetSiteInstance(), params.url, params.referrer);
     new_entry = GetLastCommittedEntry()->CloneAndReplace(rfh->frame_tree_node(),
                                                          frame_entry);
-    CHECK(frame_entry->HasOneRef());
+
+    // TODO(creis): Make sure the last committed entry always has the subframe
+    // entry to replace, and CHECK(frame_entry->HasOneRef).  For now, we might
+    // not find the entry to replace, and new_entry will be deleted when it goes
+    // out of scope.  See https://crbug.com/522193.
   } else {
     new_entry = GetLastCommittedEntry()->Clone();
   }
