@@ -176,10 +176,10 @@ source_set("test_support") {
     "gaia/fake_gaia.h",
     "gaia/fake_identity_provider.cc",
     "gaia/fake_identity_provider.h",
-    "gaia/fake_oauth2_token_service_delegate.cc",
-    "gaia/fake_oauth2_token_service_delegate.h",
     "gaia/fake_oauth2_token_service.cc",
     "gaia/fake_oauth2_token_service.h",
+    "gaia/fake_oauth2_token_service_delegate.cc",
+    "gaia/fake_oauth2_token_service_delegate.h",
     "gaia/mock_url_fetcher_factory.h",
     "gaia/oauth2_token_service_test_util.cc",
     "gaia/oauth2_token_service_test_util.h",
@@ -205,6 +205,15 @@ source_set("test_support") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("google_apis_unittests_run") {
+  testonly = true
+  deps = [
+    ":google_apis_unittests",
+  ]
+}
+
 test("google_apis_unittests") {
   sources = [
     "gaia/gaia_auth_fetcher_unittest.cc",
@@ -218,6 +227,10 @@ test("google_apis_unittests") {
     "gaia/oauth_request_signer_unittest.cc",
     "gaia/ubertoken_fetcher_unittest.cc",
     "google_api_keys_unittest.cc",
+  ]
+
+  data = [
+    "test/",
   ]
 
   configs += [ ":key_defines" ]

@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+## Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -201,7 +201,7 @@
   },
   "google_apis_unittests": {
     "label": "//google_apis:google_apis_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "gpu_unittests": {
     "label": "//gpu:gpu_unittests",
@@ -240,8 +240,8 @@
     "type": "windowed_test_launcher",
   },
   "midi_unittests": {
-    "label": "//media:midi_unittests",
-    "type": "unknown",
+    "label": "//media/midi:midi_unittests",
+    "type": "windowed_test_launcher",
   },
   "mojo_common_unittests": {
     "label": "//mojo/common:mojo_common_unittests",
