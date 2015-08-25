@@ -560,12 +560,12 @@ protected:
 
     virtual void parserDidSetAttributes() { }
 
+private:
     void scrollLayoutBoxBy(const ScrollToOptions&);
     void scrollLayoutBoxTo(const ScrollToOptions&);
     void scrollFrameBy(const ScrollToOptions&);
     void scrollFrameTo(const ScrollToOptions&);
 
-private:
     bool hasElementFlag(ElementFlags mask) const { return hasRareData() && hasElementFlagInternal(mask); }
     void setElementFlag(ElementFlags, bool value = true);
     void clearElementFlag(ElementFlags);

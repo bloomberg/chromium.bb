@@ -653,12 +653,10 @@ int Element::clientWidth()
     bool inQuirksMode = document().inQuirksMode();
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
-        if (FrameView* view = document().view()) {
-            if (LayoutView* layoutView = document().layoutView()) {
-                if (document().page()->settings().forceZeroLayoutHeight())
-                    return adjustLayoutUnitForAbsoluteZoom(view->visibleContentSize().width(), *layoutView);
-                return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().width(), *layoutView);
-            }
+        if (LayoutView* layoutView = document().layoutView()) {
+            if (document().page()->settings().forceZeroLayoutHeight())
+                return adjustLayoutUnitForAbsoluteZoom(layoutView->overflowClipRect(LayoutPoint()).width(), *layoutView);
+            return adjustLayoutUnitForAbsoluteZoom(layoutView->layoutSize().width(), *layoutView);
         }
     }
 
@@ -677,12 +675,10 @@ int Element::clientHeight()
 
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
-        if (FrameView* view = document().view()) {
-            if (LayoutView* layoutView = document().layoutView()) {
-                if (document().page()->settings().forceZeroLayoutHeight())
-                    return adjustLayoutUnitForAbsoluteZoom(view->visibleContentSize().height(), *layoutView);
-                return adjustLayoutUnitForAbsoluteZoom(view->layoutSize().height(), *layoutView);
-            }
+        if (LayoutView* layoutView = document().layoutView()) {
+            if (document().page()->settings().forceZeroLayoutHeight())
+                return adjustLayoutUnitForAbsoluteZoom(layoutView->overflowClipRect(LayoutPoint()).height(), *layoutView);
+            return adjustLayoutUnitForAbsoluteZoom(layoutView->layoutSize().height(), *layoutView);
         }
     }
 
@@ -871,13 +867,13 @@ void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions)
     LocalFrame* frame = document().frame();
     if (!frame)
         return;
-    FrameView* view = frame->view();
-    if (!view)
+    ScrollableArea* layoutViewport = frame->view() ? frame->view()->layoutViewportScrollableArea() : 0;
+    if (!layoutViewport)
         return;
 
-    double newScaledLeft = left * frame->pageZoomFactor() + view->scrollPositionDouble().x();
-    double newScaledTop = top * frame->pageZoomFactor() + view->scrollPositionDouble().y();
-    view->setScrollPosition(DoublePoint(newScaledLeft, newScaledTop), ProgrammaticScroll, scrollBehavior);
+    double newScaledLeft = left * frame->pageZoomFactor() + layoutViewport->scrollPositionDouble().x();
+    double newScaledTop = top * frame->pageZoomFactor() + layoutViewport->scrollPositionDouble().y();
+    layoutViewport->setScrollPosition(DoublePoint(newScaledLeft, newScaledTop), ProgrammaticScroll, scrollBehavior);
 }
 
 void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
@@ -887,17 +883,17 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
     LocalFrame* frame = document().frame();
     if (!frame)
         return;
-    FrameView* view = frame->view();
-    if (!view)
+    ScrollableArea* layoutViewport = frame->view() ? frame->view()->layoutViewportScrollableArea() : 0;
+    if (!layoutViewport)
         return;
 
-    double scaledLeft = view->scrollPositionDouble().x();
-    double scaledTop = view->scrollPositionDouble().y();
+    double scaledLeft = layoutViewport->scrollPositionDouble().x();
+    double scaledTop = layoutViewport->scrollPositionDouble().y();
     if (scrollToOptions.hasLeft())
         scaledLeft = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) * frame->pageZoomFactor();
     if (scrollToOptions.hasTop())
         scaledTop = ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.top()) * frame->pageZoomFactor();
-    view->setScrollPosition(DoublePoint(scaledLeft, scaledTop), ProgrammaticScroll, scrollBehavior);
+    layoutViewport->setScrollPosition(DoublePoint(scaledLeft, scaledTop), ProgrammaticScroll, scrollBehavior);
 }
 
 void Element::incrementProxyCount()
