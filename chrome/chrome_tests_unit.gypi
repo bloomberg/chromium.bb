@@ -182,7 +182,7 @@
       'browser/prefs/command_line_pref_store_unittest.cc',
       'browser/prefs/incognito_mode_prefs_unittest.cc',
       'browser/prefs/pref_model_associator_unittest.cc',
-      'browser/prefs/prefs_syncable_service_unittest.cc',
+      'browser/prefs/pref_service_syncable_unittest.cc',
       'browser/prefs/profile_pref_store_manager_unittest.cc',
       'browser/prefs/session_startup_pref_unittest.cc',
       'browser/prerender/prerender_history_unittest.cc',

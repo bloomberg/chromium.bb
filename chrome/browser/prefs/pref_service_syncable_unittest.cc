@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/prefs/pref_service_syncable.h"
+
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
@@ -9,7 +11,6 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -67,12 +68,12 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
   bool fail_next_;
 };
 
-class PrefsSyncableServiceTest : public testing::Test {
+class PrefServiceSyncableTest : public testing::Test {
  public:
-  PrefsSyncableServiceTest() :
-      pref_sync_service_(NULL),
-      test_processor_(NULL),
-      next_pref_remote_sync_node_id_(0) {}
+  PrefServiceSyncableTest()
+      : pref_sync_service_(NULL),
+        test_processor_(NULL),
+        next_pref_remote_sync_node_id_(0) {}
 
   void SetUp() override {
     prefs_.registry()->RegisterStringPref(kUnsyncedPreferenceName,
@@ -203,7 +204,7 @@ class PrefsSyncableServiceTest : public testing::Test {
   int next_pref_remote_sync_node_id_;
 };
 
-TEST_F(PrefsSyncableServiceTest, CreatePrefSyncData) {
+TEST_F(PrefServiceSyncableTest, CreatePrefSyncData) {
   prefs_.SetString(prefs::kHomePage, kExampleUrl0);
 
   const PrefService::Preference* pref =
@@ -221,7 +222,7 @@ TEST_F(PrefsSyncableServiceTest, CreatePrefSyncData) {
   EXPECT_TRUE(pref->GetValue()->Equals(value.get()));
 }
 
-TEST_F(PrefsSyncableServiceTest, ModelAssociationDoNotSyncDefaults) {
+TEST_F(PrefServiceSyncableTest, ModelAssociationDoNotSyncDefaults) {
   const PrefService::Preference* pref =
       prefs_.FindPreference(prefs::kHomePage);
   EXPECT_TRUE(pref->IsDefaultValue());
@@ -233,7 +234,7 @@ TEST_F(PrefsSyncableServiceTest, ModelAssociationDoNotSyncDefaults) {
   EXPECT_FALSE(FindValue(prefs::kHomePage, out).get());
 }
 
-TEST_F(PrefsSyncableServiceTest, ModelAssociationEmptyCloud) {
+TEST_F(PrefServiceSyncableTest, ModelAssociationEmptyCloud) {
   prefs_.SetString(prefs::kHomePage, kExampleUrl0);
   {
     ListPrefUpdate update(GetPrefs(), prefs::kURLsToRestoreOnStartup);
@@ -253,7 +254,7 @@ TEST_F(PrefsSyncableServiceTest, ModelAssociationEmptyCloud) {
       GetPreferenceValue(prefs::kURLsToRestoreOnStartup).Equals(value.get()));
 }
 
-TEST_F(PrefsSyncableServiceTest, ModelAssociationCloudHasData) {
+TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasData) {
   prefs_.SetString(prefs::kHomePage, kExampleUrl0);
   {
     ListPrefUpdate update(GetPrefs(), prefs::kURLsToRestoreOnStartup);
@@ -293,7 +294,7 @@ TEST_F(PrefsSyncableServiceTest, ModelAssociationCloudHasData) {
             prefs_.GetString(prefs::kDefaultCharset));
 }
 
-TEST_F(PrefsSyncableServiceTest, ModelAssociationMigrateOldData) {
+TEST_F(PrefServiceSyncableTest, ModelAssociationMigrateOldData) {
   ASSERT_TRUE(IsMigratedPreference(prefs::kURLsToRestoreOnStartup));
   ASSERT_TRUE(IsOldMigratedPreference(prefs::kURLsToRestoreOnStartupOld));
 
@@ -326,8 +327,7 @@ TEST_F(PrefsSyncableServiceTest, ModelAssociationMigrateOldData) {
               Equals(expected_urls.get()));
 }
 
-TEST_F(PrefsSyncableServiceTest,
-       ModelAssociationCloudHasOldMigratedData) {
+TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasOldMigratedData) {
   ASSERT_TRUE(IsMigratedPreference(prefs::kURLsToRestoreOnStartup));
   ASSERT_TRUE(IsOldMigratedPreference(prefs::kURLsToRestoreOnStartupOld));
   prefs_.SetString(prefs::kHomePage, kExampleUrl0);
@@ -370,8 +370,7 @@ TEST_F(PrefsSyncableServiceTest,
               Equals(expected_urls.get()));
 }
 
-TEST_F(PrefsSyncableServiceTest,
-       ModelAssociationCloudHasNewMigratedData) {
+TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasNewMigratedData) {
   ASSERT_TRUE(IsMigratedPreference(prefs::kURLsToRestoreOnStartup));
   ASSERT_TRUE(IsOldMigratedPreference(prefs::kURLsToRestoreOnStartupOld));
   prefs_.SetString(prefs::kHomePage, kExampleUrl0);
@@ -417,7 +416,7 @@ TEST_F(PrefsSyncableServiceTest,
               Equals(expected_urls.get()));
 }
 
-TEST_F(PrefsSyncableServiceTest,
+TEST_F(PrefServiceSyncableTest,
        ModelAssociationCloudAddsOldAndNewMigratedData) {
   ASSERT_TRUE(IsMigratedPreference(prefs::kURLsToRestoreOnStartup));
   ASSERT_TRUE(IsOldMigratedPreference(prefs::kURLsToRestoreOnStartupOld));
@@ -460,7 +459,7 @@ TEST_F(PrefsSyncableServiceTest,
                Equals(expected_urls.get()));
 }
 
-TEST_F(PrefsSyncableServiceTest, FailModelAssociation) {
+TEST_F(PrefServiceSyncableTest, FailModelAssociation) {
   syncer::SyncChangeList output;
   TestSyncProcessorStub* stub = new TestSyncProcessorStub(&output);
   stub->FailNextProcessSyncChanges();
@@ -472,7 +471,7 @@ TEST_F(PrefsSyncableServiceTest, FailModelAssociation) {
   EXPECT_TRUE(r.error().IsSet());
 }
 
-TEST_F(PrefsSyncableServiceTest, UpdatedPreferenceWithDefaultValue) {
+TEST_F(PrefServiceSyncableTest, UpdatedPreferenceWithDefaultValue) {
   const PrefService::Preference* pref =
       prefs_.FindPreference(prefs::kHomePage);
   EXPECT_TRUE(pref->IsDefaultValue());
@@ -489,7 +488,7 @@ TEST_F(PrefsSyncableServiceTest, UpdatedPreferenceWithDefaultValue) {
   EXPECT_TRUE(expected.Equals(actual.get()));
 }
 
-TEST_F(PrefsSyncableServiceTest, UpdatedPreferenceWithValue) {
+TEST_F(PrefServiceSyncableTest, UpdatedPreferenceWithValue) {
   GetPrefs()->SetString(prefs::kHomePage, kExampleUrl0);
   syncer::SyncChangeList out;
   InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
@@ -503,7 +502,7 @@ TEST_F(PrefsSyncableServiceTest, UpdatedPreferenceWithValue) {
   EXPECT_TRUE(expected.Equals(actual.get()));
 }
 
-TEST_F(PrefsSyncableServiceTest, UpdatedSyncNodeActionUpdate) {
+TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionUpdate) {
   GetPrefs()->SetString(prefs::kHomePage, kExampleUrl0);
   InitWithNoSyncData();
 
@@ -517,7 +516,7 @@ TEST_F(PrefsSyncableServiceTest, UpdatedSyncNodeActionUpdate) {
   EXPECT_TRUE(expected.Equals(&actual));
 }
 
-TEST_F(PrefsSyncableServiceTest, UpdatedSyncNodeActionAdd) {
+TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionAdd) {
   InitWithNoSyncData();
 
   base::StringValue expected(kExampleUrl0);
@@ -532,7 +531,7 @@ TEST_F(PrefsSyncableServiceTest, UpdatedSyncNodeActionAdd) {
       pref_sync_service_->registered_preferences().count(prefs::kHomePage));
 }
 
-TEST_F(PrefsSyncableServiceTest, UpdatedSyncNodeUnknownPreference) {
+TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeUnknownPreference) {
   InitWithNoSyncData();
   syncer::SyncChangeList list;
   base::StringValue expected(kExampleUrl0);
@@ -543,7 +542,7 @@ TEST_F(PrefsSyncableServiceTest, UpdatedSyncNodeUnknownPreference) {
   // of an unknown preference.  We just should not crash.
 }
 
-TEST_F(PrefsSyncableServiceTest, ManagedPreferences) {
+TEST_F(PrefServiceSyncableTest, ManagedPreferences) {
   // Make the homepage preference managed.
   base::StringValue managed_value("http://example.com");
   prefs_.SetManagedPref(prefs::kHomePage, managed_value.DeepCopy());
@@ -572,7 +571,7 @@ TEST_F(PrefsSyncableServiceTest, ManagedPreferences) {
 // List preferences have special handling at association time due to our ability
 // to merge the local and sync value. Make sure the merge logic doesn't merge
 // managed preferences.
-TEST_F(PrefsSyncableServiceTest, ManagedListPreferences) {
+TEST_F(PrefServiceSyncableTest, ManagedListPreferences) {
   // Make the list of urls to restore on startup managed.
   base::ListValue managed_value;
   managed_value.Append(new base::StringValue(kExampleUrl0));
@@ -616,7 +615,7 @@ TEST_F(PrefsSyncableServiceTest, ManagedListPreferences) {
           prefs_.GetUserPref(prefs::kURLsToRestoreOnStartup)));
 }
 
-TEST_F(PrefsSyncableServiceTest, DynamicManagedPreferences) {
+TEST_F(PrefServiceSyncableTest, DynamicManagedPreferences) {
   syncer::SyncChangeList out;
   InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
   out.clear();
@@ -641,8 +640,7 @@ TEST_F(PrefsSyncableServiceTest, DynamicManagedPreferences) {
   EXPECT_TRUE(initial_value.Equals(&GetPreferenceValue(prefs::kHomePage)));
 }
 
-TEST_F(PrefsSyncableServiceTest,
-       DynamicManagedPreferencesWithSyncChange) {
+TEST_F(PrefServiceSyncableTest, DynamicManagedPreferencesWithSyncChange) {
   syncer::SyncChangeList out;
   InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
   out.clear();
@@ -674,7 +672,7 @@ TEST_F(PrefsSyncableServiceTest,
   EXPECT_TRUE(sync_value.Equals(&GetPreferenceValue(prefs::kHomePage)));
 }
 
-TEST_F(PrefsSyncableServiceTest, DynamicManagedDefaultPreferences) {
+TEST_F(PrefServiceSyncableTest, DynamicManagedDefaultPreferences) {
   const PrefService::Preference* pref =
       prefs_.FindPreference(prefs::kHomePage);
   EXPECT_TRUE(pref->IsDefaultValue());
@@ -703,7 +701,7 @@ TEST_F(PrefsSyncableServiceTest, DynamicManagedDefaultPreferences) {
   EXPECT_FALSE(FindValue(prefs::kHomePage, out).get());
 }
 
-TEST_F(PrefsSyncableServiceTest, DeletePreference) {
+TEST_F(PrefServiceSyncableTest, DeletePreference) {
   prefs_.SetString(prefs::kHomePage, kExampleUrl0);
   const PrefService::Preference* pref =
       prefs_.FindPreference(prefs::kHomePage);
