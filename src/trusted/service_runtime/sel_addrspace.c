@@ -289,6 +289,11 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   /*
    * It is necessary to unlock the NaClApp mutex here, as the NaClSysMmapIntern
    * function both claims and releases the lock itself.
+   *
+   * Additionally, the call to NaClSysMmapIntern requires the flag
+   * NACL_ABI_MAP_FIXED -- without it, NaClSysMmapIntern looks for free space
+   * between mappings. Since the stack is being initialized here, there is no
+   * mapping above (or at) start_addr.
    */
   NaClXMutexUnlock(&nap->mu);
   if ((int32_t) start_addr !=
