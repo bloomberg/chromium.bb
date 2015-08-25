@@ -1711,6 +1711,42 @@ bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
     return false;
 }
 
+namespace {
+
+ScrollResult scrollAreaWithWheelEvent(const PlatformWheelEvent& event, ScrollableArea& scrollableArea)
+{
+    float deltaX = event.railsMode() != PlatformEvent::RailsModeVertical ? event.deltaX() : 0;
+    float deltaY = event.railsMode() != PlatformEvent::RailsModeHorizontal ? event.deltaY() : 0;
+
+    ScrollGranularity granularity =
+        event.granularity() == ScrollByPixelWheelEvent ? ScrollByPixel : ScrollByPage;
+
+    if (event.hasPreciseScrollingDeltas() && granularity == ScrollByPixel)
+        granularity = ScrollByPrecisePixel;
+
+    // If the event is a "PageWheelEvent" we should disregard the delta and
+    // scroll by *one* page length per event.
+    if (event.granularity() == ScrollByPageWheelEvent) {
+        if (deltaX)
+            deltaX = deltaX > 0 ? 1 : -1;
+        if (deltaY)
+            deltaY = deltaY > 0 ? 1 : -1;
+    }
+
+    // Positive delta is up and left.
+    ScrollResultOneDimensional resultY = scrollableArea.userScroll(ScrollUp, granularity, deltaY);
+    ScrollResultOneDimensional resultX = scrollableArea.userScroll(ScrollLeft, granularity, deltaX);
+
+    ScrollResult result;
+    result.didScrollY = resultY.didScroll;
+    result.didScrollX = resultX.didScroll;
+    result.unusedScrollDeltaY = resultY.unusedScrollDelta;
+    result.unusedScrollDeltaX = resultX.unusedScrollDelta;
+    return result;
+}
+
+} // namespace
+
 bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 {
 #define RETURN_WHEEL_EVENT_HANDLED() \
@@ -1768,7 +1804,11 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     if (!view)
         return false;
 
-    ScrollResult scrollResult = view->scrollableArea()->handleWheel(event);
+    // Wheel events which do not scroll are used to trigger zooming.
+    if (!event.canScroll())
+        return false;
+
+    ScrollResult scrollResult = scrollAreaWithWheelEvent(event, *view->scrollableArea());
     if (m_frame->settings() && m_frame->settings()->reportWheelOverscroll())
         handleOverscroll(scrollResult);
     if (scrollResult.didScroll())

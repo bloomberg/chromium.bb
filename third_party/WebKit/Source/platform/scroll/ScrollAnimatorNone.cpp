@@ -424,13 +424,14 @@ ScrollResultOneDimensional ScrollAnimatorNone::userScroll(ScrollbarOrientation o
 
     PerAxisData& data = (orientation == VerticalScrollbar) ? m_verticalData : m_horizontalData;
     bool needToScroll = data.updateDataFromParameters(step, delta, scrollableSize, WTF::monotonicallyIncreasingTime(), &parameters);
+    float unusedDelta = needToScroll ? delta - (data.m_desiredPosition - *data.m_currentPosition) : delta;
     if (needToScroll && !animationTimerActive()) {
         m_startTime = data.m_startTime;
         animationWillStart();
         animationTimerFired();
         scrollableArea()->registerForAnimation();
     }
-    return ScrollResultOneDimensional(needToScroll);
+    return ScrollResultOneDimensional(needToScroll, unusedDelta);
 }
 
 void ScrollAnimatorNone::scrollToOffsetWithoutAnimation(const FloatPoint& offset)

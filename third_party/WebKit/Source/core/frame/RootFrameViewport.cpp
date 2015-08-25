@@ -93,47 +93,6 @@ ScrollBehavior RootFrameViewport::scrollBehaviorStyle() const
     return layoutViewport().scrollBehaviorStyle();
 }
 
-ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
-{
-    updateScrollAnimator();
-
-    ScrollableArea& primary = !m_invertScrollOrder ? layoutViewport() : visualViewport();
-    ScrollableArea& secondary = !m_invertScrollOrder ? visualViewport() : layoutViewport();
-
-    ScrollResult viewScrollResult = primary.handleWheel(event);
-
-    // The visual viewport will only accept pixel scrolls.
-    if (!event.canScroll() || event.granularity() == ScrollByPageWheelEvent)
-        return viewScrollResult;
-
-    // TODO(sataya.m) : The delta in PlatformWheelEvent is negative when scrolling the
-    // wheel towards the user, so negate it to get the scroll delta that should be applied
-    // to the page. unusedScrollDelta computed in the ScrollResult is also negative. Say
-    // there is WheelEvent({0, -10} and page scroll by 2px and unusedScrollDelta computed
-    // is {0, -8}. Due to which we have to negate the unusedScrollDelta to obtain the expected
-    // animation.Please address http://crbug.com/504389.
-    DoublePoint oldOffset = secondary.scrollPositionDouble();
-    DoublePoint locationDelta;
-    if (viewScrollResult.didScroll()) {
-        locationDelta = -DoublePoint(viewScrollResult.unusedScrollDeltaX, viewScrollResult.unusedScrollDeltaY);
-    } else {
-        if (event.railsMode() != PlatformEvent::RailsModeVertical)
-            locationDelta.setX(-event.deltaX());
-        if (event.railsMode() != PlatformEvent::RailsModeHorizontal)
-            locationDelta.setY(-event.deltaY());
-    }
-
-    DoublePoint targetPosition = secondary.clampScrollPosition(
-        secondary.scrollPositionDouble() + toDoubleSize(locationDelta));
-    secondary.setScrollPosition(targetPosition, UserScroll);
-
-    DoublePoint usedLocationDelta(secondary.scrollPositionDouble() - oldOffset);
-
-    bool didScrollX = viewScrollResult.didScrollX || usedLocationDelta.x();
-    bool didScrollY = viewScrollResult.didScrollY || usedLocationDelta.y();
-    return ScrollResult(didScrollX, didScrollY, -viewScrollResult.unusedScrollDeltaX - usedLocationDelta.x(), -viewScrollResult.unusedScrollDeltaY - usedLocationDelta.y());
-}
-
 LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
     // We want to move the rect into the viewport that excludes the scrollbars so we intersect

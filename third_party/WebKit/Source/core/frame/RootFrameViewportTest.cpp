@@ -298,7 +298,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     EXPECT_POINT_EQ(DoublePoint(150, 0), rootFrameViewport->scrollPositionDouble());
 }
 
-// Make sure scrolls using the scroll animator (scroll(), setScrollPosition(), wheelHandler)
+// Make sure scrolls using the scroll animator (scroll(), setScrollPosition())
 // work correctly when one of the subviewports is explicitly scrolled without using the
 // RootFrameViewport interface.
 TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
@@ -320,7 +320,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
     EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
 
-    // Try again for scroll()
+    // Try again for userScroll()
     visualViewport->setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
 
@@ -328,21 +328,8 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
     EXPECT_POINT_EQ(DoublePoint(0, 75), rootFrameViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport->scrollPositionDouble());
 
-    // Try again for handleWheel.
-    visualViewport->setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
-    EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
-
-    PlatformWheelEvent wheelEvent(
-        IntPoint(10, 10), IntPoint(10, 10),
-        50, 75,
-        0, 0,
-        ScrollByPixelWheelEvent,
-        false, false, false, false);
-    rootFrameViewport->handleWheel(wheelEvent);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
-
     // Make sure the layout viewport is also accounted for.
+    rootFrameViewport->setScrollPosition(DoublePoint(0, 0), ProgrammaticScroll);
     layoutViewport->setScrollPosition(DoublePoint(100, 150), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(100, 150), rootFrameViewport->scrollPositionDouble());
 
@@ -486,34 +473,6 @@ TEST_F(RootFrameViewportTest, VisibleContentRect)
     EXPECT_SIZE_EQ(DoubleSize(250, 200.5), rootFrameViewport->visibleContentRectDouble().size());
 }
 
-// Tests that wheel events are correctly handled in the non-root layer scrolls
-// path.
-TEST_F(RootFrameViewportTest, BasicWheelEvent)
-{
-    IntSize viewportSize(100, 100);
-    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
-    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
-
-    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
-
-    visualViewport->setScale(2);
-
-    PlatformWheelEvent wheelEvent(
-        IntPoint(10, 10), IntPoint(10, 10),
-        -500, -500,
-        0, 0,
-        ScrollByPixelWheelEvent,
-        false, false, false, false);
-
-    ScrollResult result = rootFrameViewport->handleWheel(wheelEvent);
-
-    EXPECT_TRUE(result.didScroll());
-    EXPECT_POINT_EQ(DoublePoint(50, 50), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(100, 200), layoutViewport->scrollPositionDouble());
-    EXPECT_EQ(350, result.unusedScrollDeltaX);
-    EXPECT_EQ(250, result.unusedScrollDeltaY);
-}
-
 // Tests that the invert scroll order experiment scrolls the visual viewport
 // before trying to scroll the layout viewport.
 TEST_F(RootFrameViewportTest, ViewportScrollOrder)
@@ -527,21 +486,6 @@ TEST_F(RootFrameViewportTest, ViewportScrollOrder)
         RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get(), invertScrollOrder);
 
     visualViewport->setScale(2);
-
-    PlatformWheelEvent wheelEvent(
-        IntPoint(10, 10), IntPoint(10, 10),
-        -25, -25,
-        0, 0,
-        ScrollByPixelWheelEvent,
-        false, false, false, false);
-
-    ScrollResult result = rootFrameViewport->handleWheel(wheelEvent);
-
-    EXPECT_TRUE(result.didScroll());
-    EXPECT_POINT_EQ(DoublePoint(25, 25), visualViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
-    EXPECT_EQ(0, result.unusedScrollDeltaX);
-    EXPECT_EQ(0, result.unusedScrollDeltaY);
 
     rootFrameViewport->setScrollPosition(DoublePoint(40, 40), UserScroll);
     EXPECT_POINT_EQ(DoublePoint(40, 40), visualViewport->scrollPositionDouble());

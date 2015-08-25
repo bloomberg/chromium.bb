@@ -72,66 +72,6 @@ void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
     notifyPositionChanged();
 }
 
-ScrollResult ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
-{
-    bool canScrollX = m_scrollableArea->userInputScrollable(HorizontalScrollbar)
-        && e.railsMode() != PlatformEvent::RailsModeVertical;
-    bool canScrollY = m_scrollableArea->userInputScrollable(VerticalScrollbar)
-        && e.railsMode() != PlatformEvent::RailsModeHorizontal;
-
-    // Accept the event if we are scrollable in that direction and can still
-    // scroll any further.
-    float deltaX = canScrollX ? e.deltaX() : 0;
-    float deltaY = canScrollY ? e.deltaY() : 0;
-
-    ScrollResult result;
-
-#if !OS(MACOSX)
-    ScrollGranularity granularity = e.hasPreciseScrollingDeltas() ? ScrollByPrecisePixel : ScrollByPixel;
-#else
-    ScrollGranularity granularity = ScrollByPixel;
-#endif
-
-    if (deltaY) {
-        if (e.granularity() == ScrollByPageWheelEvent) {
-            bool negative = deltaY < 0;
-            deltaY = m_scrollableArea->pageStep(VerticalScrollbar);
-            if (negative)
-                deltaY = -deltaY;
-        }
-
-        ScrollResultOneDimensional resultY = userScroll(
-            VerticalScrollbar, granularity, m_scrollableArea->pixelStep(VerticalScrollbar), -deltaY);
-        result.didScrollY = resultY.didScroll;
-        if (e.granularity() != ScrollByPageWheelEvent) {
-            if (resultY.didScroll)
-                result.unusedScrollDeltaY = -resultY.unusedScrollDelta;
-            else
-                result.unusedScrollDeltaY = deltaY;
-        }
-    }
-
-    if (deltaX) {
-        if (e.granularity() == ScrollByPageWheelEvent) {
-            bool negative = deltaX < 0;
-            deltaX = m_scrollableArea->pageStep(HorizontalScrollbar);
-            if (negative)
-                deltaX = -deltaX;
-        }
-
-        ScrollResultOneDimensional resultX = userScroll(
-            HorizontalScrollbar, granularity, m_scrollableArea->pixelStep(HorizontalScrollbar), -deltaX);
-        result.didScrollX = resultX.didScroll;
-        if (e.granularity() != ScrollByPageWheelEvent) {
-            if (resultX.didScroll)
-                result.unusedScrollDeltaX = -resultX.unusedScrollDelta;
-            else
-                result.unusedScrollDeltaX = deltaX;
-        }
-    }
-    return result;
-}
-
 void ScrollAnimator::setCurrentPosition(const FloatPoint& position)
 {
     m_currentPosX = position.x();

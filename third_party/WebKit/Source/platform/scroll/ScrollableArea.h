@@ -102,8 +102,6 @@ public:
 
     static bool scrollBehaviorFromString(const String&, ScrollBehavior&);
 
-    virtual ScrollResult handleWheel(const PlatformWheelEvent&);
-
     bool inLiveResize() const { return m_inLiveResize; }
     void willStartLiveResize();
     void willEndLiveResize();

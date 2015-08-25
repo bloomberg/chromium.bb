@@ -68,10 +68,6 @@ public:
     void serviceScrollAnimations(double) override;
     void updateCompositorScrollAnimations() override;
     ScrollBehavior scrollBehaviorStyle() const override;
-    // TODO(bokan): This method should be removed. It should be replaced by
-    // making EventHandler::handleWheelEvent unpack the WheelEvent and make a
-    // call to this class' scroll method.
-    ScrollResult handleWheel(const PlatformWheelEvent&) override;
 
 private:
     RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport, bool invertScrollOrder);

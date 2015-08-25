@@ -304,16 +304,6 @@ bool ScrollableArea::scrollBehaviorFromString(const String& behaviorString, Scro
     return true;
 }
 
-ScrollResult ScrollableArea::handleWheel(const PlatformWheelEvent& wheelEvent)
-{
-    // Wheel events which do not scroll are used to trigger zooming.
-    if (!wheelEvent.canScroll())
-        return ScrollResult();
-
-    cancelProgrammaticScrollAnimation();
-    return scrollAnimator()->handleWheelEvent(wheelEvent);
-}
-
 // NOTE: Only called from Internals for testing.
 void ScrollableArea::setScrollOffsetFromInternals(const IntPoint& offset)
 {
@@ -576,7 +566,6 @@ DoublePoint ScrollableArea::clampScrollPosition(const DoublePoint& scrollPositio
     return scrollPosition.shrunkTo(maximumScrollPositionDouble()).expandedTo(minimumScrollPositionDouble());
 }
 
-
 int ScrollableArea::lineStep(ScrollbarOrientation) const
 {
     return pixelsPerLineStep();
@@ -584,7 +573,8 @@ int ScrollableArea::lineStep(ScrollbarOrientation) const
 
 int ScrollableArea::pageStep(ScrollbarOrientation orientation) const
 {
-    int length = (orientation == HorizontalScrollbar) ? visibleWidth() : visibleHeight();
+    IntRect visibleRect = visibleContentRect(IncludeScrollbars);
+    int length = (orientation == HorizontalScrollbar) ? visibleRect.width() : visibleRect.height();
     int minPageStep = static_cast<float>(length) * minFractionToStepWhenPaging();
     int pageStep = std::max(minPageStep, length - maxOverlapBetweenPages());
 

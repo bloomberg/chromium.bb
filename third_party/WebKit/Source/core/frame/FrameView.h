@@ -308,11 +308,6 @@ public:
     void removeResizerArea(LayoutBox&);
     const ResizerAreaSet* resizerAreas() const { return m_resizerAreas.get(); }
 
-    // This function exists for ports that need to handle wheel events manually.
-    // On Mac WebKit1 the underlying NSScrollView just does the scrolling, but on most other platforms
-    // we need this function in order to do the scroll ourselves.
-    ScrollResult wheelEvent(const PlatformWheelEvent&);
-
     bool shouldUseIntegerScrollOffset() const override;
 
     bool isActive() const override;

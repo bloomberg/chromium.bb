@@ -62,8 +62,6 @@ public:
 
     virtual void setIsActive() { }
 
-    virtual ScrollResult handleWheelEvent(const PlatformWheelEvent&);
-
 #if OS(MACOSX)
     virtual void handleWheelEventPhase(PlatformWheelEventPhase) { }
 #endif

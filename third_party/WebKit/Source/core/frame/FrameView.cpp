@@ -2928,17 +2928,6 @@ void FrameView::removeChild(Widget* child)
     m_children.remove(child);
 }
 
-ScrollResult FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
-{
-    if (!isScrollable())
-        return ScrollResult();
-
-    if (m_frame->settings()->rootLayerScrolls())
-        return ScrollResult();
-
-    return ScrollableArea::handleWheel(wheelEvent);
-}
-
 bool FrameView::isVerticalDocument() const
 {
     LayoutView* layoutView = this->layoutView();
