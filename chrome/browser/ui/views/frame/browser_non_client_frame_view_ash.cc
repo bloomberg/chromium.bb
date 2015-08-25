@@ -36,6 +36,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/layer_animator.h"
@@ -656,29 +657,32 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
       x, bottom_y,
       w, theme_toolbar->height());
 
-  // The content area line has a shadow that extends a couple of pixels above
-  // the toolbar bounds.
-  const int kContentShadowHeight = 2;
-  gfx::ImageSkia* toolbar_top = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
-  canvas->TileImageInt(*toolbar_top,
-                       0, 0,
-                       x, y - kContentShadowHeight,
-                       w, split_point + kContentShadowHeight + 1);
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    // The pre-material design content area line has a shadow that extends a
+    // couple of pixels above the toolbar bounds.
+    const int kContentShadowHeight = 2;
+    gfx::ImageSkia* toolbar_top = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
+    canvas->TileImageInt(*toolbar_top,
+                         0, 0,
+                         x, y - kContentShadowHeight,
+                         w, split_point + kContentShadowHeight + 1);
 
-  // Draw the "lightening" shade line around the edges of the toolbar.
-  gfx::ImageSkia* toolbar_left = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
-  canvas->TileImageInt(*toolbar_left,
-                       0, 0,
-                       x + kClientEdgeThickness,
-                       y + kClientEdgeThickness + kContentShadowHeight,
-                       toolbar_left->width(), theme_toolbar->height());
-  gfx::ImageSkia* toolbar_right =
-      tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
-  canvas->TileImageInt(*toolbar_right,
-                       0, 0,
-                       w - toolbar_right->width() - 2 * kClientEdgeThickness,
-                       y + kClientEdgeThickness + kContentShadowHeight,
-                       toolbar_right->width(), theme_toolbar->height());
+    // Draw the "lightening" shade line around the edges of the toolbar.
+    gfx::ImageSkia* toolbar_left =
+        tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
+    canvas->TileImageInt(*toolbar_left,
+                         0, 0,
+                         x + kClientEdgeThickness,
+                         y + kClientEdgeThickness + kContentShadowHeight,
+                         toolbar_left->width(), theme_toolbar->height());
+    gfx::ImageSkia* toolbar_right =
+        tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_RIGHT);
+    canvas->TileImageInt(*toolbar_right,
+                         0, 0,
+                         w - toolbar_right->width() - 2 * kClientEdgeThickness,
+                         y + kClientEdgeThickness + kContentShadowHeight,
+                         toolbar_right->width(), theme_toolbar->height());
+  }
 
   // Draw the content/toolbar separator.
   canvas->FillRect(

@@ -123,6 +123,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/content_accelerators/accelerator_util.h"
@@ -246,8 +247,10 @@ void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
                        bounds.width(),
                        bounds.height());
 
-  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH) {
-    // Ash provides additional lightening at the edges of the toolbar.
+  if (host_desktop_type == chrome::HOST_DESKTOP_TYPE_ASH &&
+      !ui::MaterialDesignController::IsModeMaterial()) {
+    // The pre-material design version of Ash provides additional lightening
+    // at the edges of the toolbar.
     gfx::ImageSkia* toolbar_left =
         theme_provider->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_LEFT);
     canvas->TileImageInt(*toolbar_left,
