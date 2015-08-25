@@ -52,7 +52,6 @@ crbug.com/522651 [ XP ] http/tests/inspector/extensions-useragent.html [ Crash P
 crbug.com/521862 [ Linux Win ] storage/websql/read-transactions-running-concurrently.html [ Failure Pass ]
 crbug.com/521859 http/tests/navigatorconnect/postmessage-from-worker.html [ Pass Timeout ]
 crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
-crbug.com/521856 [ Mac Win ] svg/custom/resource-client-removal.svg [ Failure Pass ]
 crbug.com/521855 transitions/cancel-and-start-new.html [ Failure Pass ]
 crbug.com/521853 [ Win ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
 crbug.com/521084 animations/additive-transform-animations.html [ Pass Timeout ]
