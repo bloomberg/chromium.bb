@@ -21,11 +21,9 @@ import android.util.Log;
 import com.google.android.gms.cast.CastMediaControlIntent;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.ui.widget.Toast;
 
@@ -68,13 +66,6 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
     private RemoteMediaPlayerController() {
         mChromeVideoActivity = new WeakReference<Activity>(null);
         mMediaRouteControllers = new ArrayList<MediaRouteController>();
-    }
-
-    /**
-     * @return Whether the remote playback is enabled.
-     */
-    public static boolean isRemotePlaybackEnabled() {
-        return !CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_CAST);
     }
 
     /**

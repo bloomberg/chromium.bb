@@ -40,8 +40,6 @@ public class FullscreenMediaRouteButton extends MediaRouteButton {
 
     @Override
     public void setEnabled(boolean enabled) {
-        if (!RemoteMediaPlayerController.isRemotePlaybackEnabled()) return;
-
         // TODO(aberent) not sure if this is still used, and in particular if mVisibilityRequest
         // is still used.
 

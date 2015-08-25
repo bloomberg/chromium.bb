@@ -53,9 +53,6 @@ public abstract class ChromeSwitches {
     /** Whether or not to enable the experimental tablet tab stack. */
     public static final String ENABLE_TABLET_TAB_STACK = "enable-tablet-tab-stack";
 
-    /** Disables support for playing videos remotely via Android MediaRouter API. */
-    public static final String DISABLE_CAST = "disable-cast";
-
     /** Never forward URL requests to external intents. */
     public static final String DISABLE_EXTERNAL_INTENT_REQUESTS =
             "disable-external-intent-requests";

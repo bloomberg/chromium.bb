@@ -324,7 +324,6 @@ extern const char kWinJumplistAction[];
 
 #if defined(OS_ANDROID)
 extern const char kAuthAndroidNegotiateAccountType[];
-extern const char kDisableCast[];
 extern const char kDisableContextualSearch[];
 extern const char kDisableZeroSuggest[];
 extern const char kEnableAccessibilityTabSwitcher[];

@@ -1590,11 +1590,6 @@ const Experiment kExperiments[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kDisableCastStreamingHWEncoding)},
 #if defined(OS_ANDROID)
-    {"disable-cast",
-     IDS_FLAGS_DISABLE_CAST_NAME,
-     IDS_FLAGS_DISABLE_CAST_DESCRIPTION,
-     kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kDisableCast)},
     {"prefetch-search-results",
      IDS_FLAGS_PREFETCH_SEARCH_RESULTS_NAME,
      IDS_FLAGS_PREFETCH_SEARCH_RESULTS_DESCRIPTION,

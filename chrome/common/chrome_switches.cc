@@ -1169,9 +1169,6 @@ const char kWinJumplistAction[]             = "win-jumplist-action";
 // Android authentication account type for SPNEGO authentication
 const char kAuthAndroidNegotiateAccountType[] = "auth-spnego-account-type";
 
-// Disables support for playing videos on Chromecast devices.
-const char kDisableCast[]                    = "disable-cast";
-
 // Disables Contextual Search.
 const char kDisableContextualSearch[]        = "disable-contextual-search";
 
