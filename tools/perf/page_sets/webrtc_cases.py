@@ -7,7 +7,7 @@ from telemetry.page import page as page_module
 from telemetry import story
 
 
-WEBRTC_GITHUB_SAMPLES_URL = 'http://webrtc.github.io/samples/src/content/'
+WEBRTC_GITHUB_SAMPLES_URL = 'https://webrtc.github.io/samples/src/content/'
 
 
 class WebrtcCasesPage(page_module.Page):

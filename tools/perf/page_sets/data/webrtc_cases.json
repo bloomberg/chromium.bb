@@ -1,5 +1,5 @@
 {
-    "description": "Describes the Web Page Replay archives for a user story set. Don't edit by hand! Use record_wpr for updating.", 
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
         "webrtc_cases_007.wpr": [
             "http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-resolution/", 
@@ -8,9 +8,12 @@
         "webrtc_cases_011.wpr": [
             "20mb_datachannel_transfer"
         ], 
-        "webrtc_cases_000.wpr": [
-            "third_party/webrtc/samples/js/demos/html/pc1.html", 
-            "webrtc/local-video.html"
+        "webrtc_cases_013.wpr": [
+            "vga_local_stream_10s", 
+            "720p_call_45s", 
+            "30s_datachannel_transfer", 
+            "hd_local_stream_10s", 
+            "vga_call_10s"
         ], 
         "webrtc_cases_010.wpr": [
             "http://webrtc.github.io/samples/src/content/peerconnection/audio/?codec=PCMU", 
@@ -22,12 +25,9 @@
             "http://webrtc.github.io/samples/src/content/getusermedia/resolution/", 
             "http://webrtc.github.io/samples/src/content/peerconnection/audio/?codec=OPUS"
         ], 
-        "webrtc_cases_012.wpr": [
-            "720p_call_45s", 
-            "hd_local_stream_10s", 
-            "30s_datachannel_transfer", 
-            "vga_local_stream_10s", 
-            "vga_call_10s"
+        "webrtc_cases_000.wpr": [
+            "third_party/webrtc/samples/js/demos/html/pc1.html", 
+            "webrtc/local-video.html"
         ], 
         "webrtc_cases_009.wpr": [
             "http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/audio/?codec=PCMU", 
