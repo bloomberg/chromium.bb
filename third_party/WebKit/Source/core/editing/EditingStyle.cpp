@@ -1338,8 +1338,8 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const V
     // Also, if the selection is a range, ignore the background color at the start of selection,
     // and find the background color of the common ancestor.
     if (shouldUseBackgroundColorInEffect && (selection.isRange() || hasTransparentBackgroundColor(style->m_mutableStyle.get()))) {
-        RefPtrWillBeRawPtr<Range> range(selection.toNormalizedRange());
-        if (PassRefPtrWillBeRawPtr<CSSValue> value = backgroundColorInEffect(range->commonAncestorContainer()))
+        const EphemeralRange range(selection.toNormalizedEphemeralRange());
+        if (PassRefPtrWillBeRawPtr<CSSValue> value = backgroundColorInEffect(Range::commonAncestorContainer(range.startPosition().computeContainerNode(), range.endPosition().computeContainerNode())))
             style->setProperty(CSSPropertyBackgroundColor, value->cssText());
     }
 
