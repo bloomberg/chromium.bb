@@ -44,6 +44,36 @@ bool RunGLES2ConformTest(const char* path) {
     LOG(ERROR) << "Fail to load bot configuration";
     return false;
   }
+
+  // Set the bot config api based on the OS and command line
+  base::CommandLine* current_cmd_line = base::CommandLine::ForCurrentProcess();
+  int32 config_os = bot_config.os();
+  if ((config_os & gpu::GPUTestConfig::kOsWin) != 0) {
+    std::string angle_renderer =
+        current_cmd_line->HasSwitch("use-angle")
+            ? current_cmd_line->GetSwitchValueASCII("use-angle")
+            : "d3d11";
+    if (angle_renderer == "d3d11") {
+      bot_config.set_api(gpu::GPUTestConfig::kAPID3D11);
+    } else if (angle_renderer == "d3d9") {
+      bot_config.set_api(gpu::GPUTestConfig::kAPID3D9);
+    } else if (angle_renderer == "gl") {
+      bot_config.set_api(gpu::GPUTestConfig::kAPIGLDesktop);
+    } else if (angle_renderer == "gles") {
+      bot_config.set_api(gpu::GPUTestConfig::kAPIGLES);
+    } else {
+      bot_config.set_api(gpu::GPUTestConfig::kAPIUnknown);
+    }
+  } else if ((config_os & gpu::GPUTestConfig::kOsMac) != 0 ||
+             config_os == gpu::GPUTestConfig::kOsLinux) {
+    bot_config.set_api(gpu::GPUTestConfig::kAPIGLDesktop);
+  } else if (config_os == gpu::GPUTestConfig::kOsChromeOS ||
+             config_os == gpu::GPUTestConfig::kOsAndroid) {
+    bot_config.set_api(gpu::GPUTestConfig::kAPIGLES);
+  } else {
+    bot_config.set_api(gpu::GPUTestConfig::kAPIUnknown);
+  }
+
   if (!bot_config.IsValid()) {
     LOG(ERROR) << "Invalid bot configuration";
     return false;
@@ -63,7 +93,6 @@ bool RunGLES2ConformTest(const char* path) {
   base::FilePath program(test_path.Append(FILE_PATH_LITERAL(
       "gles2_conform_test_windowless")));
 
-  base::CommandLine* currentCmdLine = base::CommandLine::ForCurrentProcess();
   base::CommandLine cmdline(program);
   cmdline.AppendArguments(*currentCmdLine, false);
   cmdline.AppendSwitch(std::string("--"));
