@@ -137,7 +137,7 @@ class CheckThreadHelper {
 void CheckThreadVideoFrameReceiver(
     CheckThreadHelper* helper,
     const scoped_refptr<media::VideoFrame>& frame,
-    const base::TimeTicks& estimated_capture_time) {
+    base::TimeTicks estimated_capture_time) {
   // Do nothing.
 }
 

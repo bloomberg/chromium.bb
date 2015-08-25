@@ -371,7 +371,7 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
 
 void PepperMediaStreamVideoTrackHost::OnVideoFrame(
     const scoped_refptr<VideoFrame>& frame,
-    const base::TimeTicks& estimated_capture_time) {
+    base::TimeTicks estimated_capture_time) {
   DCHECK(frame.get());
   // TODO(penghuang): Check |frame->end_of_stream()| and close the track.
   PP_VideoFrame_Format ppformat = ToPpapiFormat(frame->format());
