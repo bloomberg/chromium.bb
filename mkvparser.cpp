@@ -7369,7 +7369,7 @@ long Block::Parse(const Cluster* pCluster) {
     Frame* pf = m_frames;
     Frame* const pf_end = pf + m_frame_count;
 
-    long size = 0;
+    long long size = 0;
     int frame_count = m_frame_count;
 
     while (frame_count > 1) {
@@ -7492,7 +7492,7 @@ long Block::Parse(const Cluster* pCluster) {
     if (pos >= stop)
       return E_FILE_FORMAT_INVALID;
 
-    long size = 0;
+    long long size = 0;
     int frame_count = m_frame_count;
 
     long long frame_size = ReadUInt(pReader, pos, len);
