@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.extension.onRequest.addListener(
+chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     // Let the extension know where the script ran.
     var url = sender.tab ? sender.tab.url : 'about:blank';
