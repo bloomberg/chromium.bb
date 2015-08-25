@@ -3455,6 +3455,8 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         // Set focus on the new node
         m_focusedElement = newFocusedElement;
 
+        m_focusedElement->setFocus(true);
+
         // Dispatch the focus event and let the node do any other focus related activities (important for text fields)
         // If page lost focus, event will be dispatched on page focus, don't duplicate
         if (page() && (page()->focusController().isFocused())) {
@@ -3484,8 +3486,6 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
                 goto SetFocusedElementDone;
             }
         }
-
-        m_focusedElement->setFocus(true);
 
         if (m_focusedElement->isRootEditableElement())
             frame()->spellChecker().didBeginEditing(m_focusedElement.get());
