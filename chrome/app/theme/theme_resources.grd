@@ -248,6 +248,10 @@
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED" file="common/downloads/download_warning_unwanted.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_PROGRESS_BACKGROUND_32" file="common/download_progress_background32.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_32" file="common/download_progress_foreground32.png" />
+      <if expr="chromeos">
+        <structure type="chrome_scaled_image" name="IDR_ENABLE_DEBUGGING_FAILURE" file="cros/enable_debugging_failure.png" />
+        <structure type="chrome_scaled_image" name="IDR_ENABLE_DEBUGGING_SUCCESS" file="cros/enable_debugging_success.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_ERROR_NETWORK_GENERIC" file="common/error_network_generic.png" />
       <structure type="chrome_scaled_image" name="IDR_ERROR_NETWORK_OFFLINE" file="common/error_network_offline.png" />
       <if expr="enable_extensions">
