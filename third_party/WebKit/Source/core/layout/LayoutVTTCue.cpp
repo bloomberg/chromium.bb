@@ -273,30 +273,6 @@ void LayoutVTTCue::repositionCueSnapToLinesNotSet()
     // boxes will unfortunately overlap.)
 }
 
-void LayoutVTTCue::adjustForTopAndBottomMarginBorderAndPadding()
-{
-    // Accommodate extra top and bottom padding, border or margin.
-    // Note: this is supported only for internal UA styling, not through the cue selector.
-    if (!hasInlineDirectionBordersPaddingOrMargin())
-        return;
-    IntRect containerRect = containingBlock()->absoluteBoundingBoxRect();
-    IntRect cueRect = absoluteBoundingBoxRect();
-
-    int topOverflow = cueRect.y() - containerRect.y();
-    int bottomOverflow = containerRect.y() + containerRect.height() - cueRect.y() - cueRect.height();
-
-    int adjustment = 0;
-    if (topOverflow < 0)
-        adjustment = -topOverflow;
-    else if (bottomOverflow < 0)
-        adjustment = bottomOverflow;
-
-    if (!adjustment)
-        return;
-
-    setY(location().y() + adjustment);
-}
-
 void LayoutVTTCue::layout()
 {
     LayoutBlockFlow::layout();
@@ -319,13 +295,10 @@ void LayoutVTTCue::layout()
     }
 
     // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings - step 13.
-    if (!std::isnan(m_snapToLinesPosition)) {
+    if (!std::isnan(m_snapToLinesPosition))
         SnapToLinesLayouter(*this, controlsRect).layout();
-
-        adjustForTopAndBottomMarginBorderAndPadding();
-    } else {
+    else
         repositionCueSnapToLinesNotSet();
-    }
 }
 
 } // namespace blink
