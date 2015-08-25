@@ -36,7 +36,7 @@ function test()
         for (var rule of rules) {
             var properties = rule.style.allProperties;
             for (var property of properties) {
-                if (property.styleBased)
+                if (!property.range)
                     continue;
                 var uiLocation = WebInspector.cssWorkspaceBinding.propertyUILocation(property, true);
                 InspectorTest.addResult(String.sprintf("%s -> %s:%d:%d", property.text, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));

@@ -64,7 +64,7 @@ function test()
 
                 function step1(style)
                 {
-                    var property = style.getLiveProperty("margin");
+                    var property = getLiveProperty(style, "margin");
                     property.setText("margin:25px;", false, true).then(dumpHistory(next));
                 }
             },
@@ -75,7 +75,7 @@ function test()
 
                 function step1(style)
                 {
-                    var property = style.getLiveProperty("margin");
+                    var property = getLiveProperty(style, "margin");
                     InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", dumpHistory(next));
                     property.setText("margin:30px;", true, true);
                 }
@@ -123,6 +123,17 @@ function test()
             next();
         }
         return result;
+    }
+
+    function getLiveProperty(style, name)
+    {
+        for (var property of style.allProperties) {
+            if (!property.activeInStyle())
+                continue;
+            if (property.name === name)
+                return property;
+        }
+        return null;
     }
 }
 

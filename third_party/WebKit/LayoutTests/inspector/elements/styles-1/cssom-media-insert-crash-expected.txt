@@ -6,8 +6,8 @@ element.style  { ()
 [expanded] 
 @media all (cssom-media-insert-crash.html)
 #box  { (<style>…</style>)
-    background: red;
     color: white;
+    background: red;
 
 [expanded] 
 div  { (cssom-media-ins…-crash.html:20 -> cssom-media-insert-crash.html:20:1)

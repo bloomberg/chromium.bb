@@ -71,7 +71,7 @@ element.style  { ()
 [expanded] 
 media="screen" (inject-stylesheet-iframe-data.html)
 body  { (inject-styleshe…me-data.html:4 -> inject-stylesheet-iframe-data.html:4:3)
-    background: green;
+/-- overloaded --/     background: green;
     /-- overloaded --/     background-image: initial;
     /-- overloaded --/     background-position-x: initial;
     /-- overloaded --/     background-position-y: initial;
