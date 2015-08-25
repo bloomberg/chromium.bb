@@ -560,6 +560,7 @@ DEFINE_TRACE(Page)
     visitor->trace(m_frameHost);
     HeapSupplementable<Page>::trace(visitor);
 #endif
+    visitor->trace(m_memoryPurgeController);
     PageLifecycleNotifier::trace(visitor);
 }
 
