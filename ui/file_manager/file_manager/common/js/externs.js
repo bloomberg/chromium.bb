@@ -59,7 +59,6 @@ EntriesChangedEvent.prototype.entries;
  * @constructor
  * @extends {Event}
  * @struct
- * @suppress {checkStructDictInheritance}
  */
 var DirectoryChangeEvent = function() {};
 

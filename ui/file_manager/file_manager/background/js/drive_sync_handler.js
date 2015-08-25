@@ -8,7 +8,6 @@
  *     progressing items.
  * @constructor
  * @extends {cr.EventTarget}
- * @suppress {checkStructDictInheritance}
  * @struct
  */
 function DriveSyncHandler(progressCenter) {

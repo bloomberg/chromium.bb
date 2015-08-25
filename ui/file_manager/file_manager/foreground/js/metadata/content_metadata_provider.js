@@ -241,7 +241,6 @@ ContentMetadataProvider.prototype.onLog_ = function(arglist) {
  * @constructor
  * @struct
  * @extends {Error}
- * @suppress {checkStructDictInheritance}
  */
 ContentMetadataProvider.Error = function(url, step, errorDescription) {
   /**

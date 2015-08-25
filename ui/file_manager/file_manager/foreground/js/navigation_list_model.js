@@ -16,7 +16,6 @@ var NavigationModelItemType = {
  * @param {string} label
  * @param {NavigationModelItemType} type
  * @constructor
- * @suppress {checkStructDictInheritance}
  * @struct
  */
 function NavigationModelItem(label, type) {
@@ -36,7 +35,6 @@ NavigationModelItem.prototype = /** @struct */ {
  * @param {!DirectoryEntry} entry Entry. Cannot be null.
  * @constructor
  * @extends {NavigationModelItem}
- * @suppress {checkStructDictInheritance}
  * @struct
  */
 function NavigationModelShortcutItem(label, entry) {
@@ -79,7 +77,6 @@ NavigationModelVolumeItem.prototype = /** @struct */ {
  * @param {string} icon Name of an icon on the menu button.
  * @constructor
  * @extends {NavigationModelItem}
- * @suppress {checkStructDictInheritance}
  * @struct
  */
 function NavigationModelMenuItem(label, menu, icon) {

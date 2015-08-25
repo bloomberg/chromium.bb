@@ -7,7 +7,6 @@
  * @constructor
  * @extends {cr.ui.ListSelectionModel}
  * @struct
- * @suppress {checkStructDictInheritance}
  */
 function FileListSelectionModel(opt_length) {
   cr.ui.ListSelectionModel.call(this, opt_length);
@@ -62,7 +61,6 @@ FileListSelectionModel.prototype.onChangeEvent_ = function(event) {
  * @constructor
  * @extends {cr.ui.ListSingleSelectionModel}
  * @struct
- * @suppress {checkStructDictInheritance}
  */
 function FileListSingleSelectionModel(opt_length) {
   cr.ui.ListSingleSelectionModel.call(this, opt_length);

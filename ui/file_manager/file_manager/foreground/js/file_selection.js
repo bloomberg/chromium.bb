@@ -143,7 +143,6 @@ FileSelection.prototype.completeInit = function() {
  * @extends {cr.EventTarget}
  * @constructor
  * @struct
- * @suppress {checkStructDictInheritance}
  */
 function FileSelectionHandler(fileManager) {
   cr.EventTarget.call(this);

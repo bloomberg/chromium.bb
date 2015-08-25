@@ -5,7 +5,6 @@
 /**
  * @constructor
  * @struct
- * @suppress {checkStructDictInheritance}
  * @extends {cr.EventTarget}
  */
 function FileOperationManager() {

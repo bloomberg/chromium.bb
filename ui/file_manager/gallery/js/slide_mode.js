@@ -24,7 +24,6 @@
  * @param {!DimmableUIController} dimmableUIController Dimmable UI controller.
  * @constructor
  * @struct
- * @suppress {checkStructDictInheritance}
  * @extends {cr.EventTarget}
  */
 function SlideMode(container, content, topToolbar, bottomToolbar, prompt,

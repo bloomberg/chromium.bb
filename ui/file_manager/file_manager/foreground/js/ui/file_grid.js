@@ -861,7 +861,6 @@ FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {
  * @constructor
  * @extends {cr.ui.GridSelectionController}
  * @struct
- * @suppress {checkStructDictInheritance}
  */
 function FileGridSelectionController(selectionModel, grid) {
   cr.ui.GridSelectionController.call(this, selectionModel, grid);

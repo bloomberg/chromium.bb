@@ -12,7 +12,6 @@
  * @param {!ThumbnailModel} thumbnailModel
  * @extends {HTMLDivElement}
  * @constructor
- * @suppress {checkStructDictInheritance}
  * @struct
  */
 function Ribbon(

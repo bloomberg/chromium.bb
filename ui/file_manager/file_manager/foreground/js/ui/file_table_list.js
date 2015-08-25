@@ -7,7 +7,6 @@
  * @constructor
  * @struct
  * @extends {cr.ui.table.TableList}
- * @suppress {checkStructDictInheritance}
  */
 function FileTableList() {}
 
@@ -52,7 +51,6 @@ FileTableList.prototype.createSelectionController = function(sm) {
  * @constructor
  * @extends {cr.ui.ListSelectionController}
  * @struct
- * @suppress {checkStructDictInheritance}
  */
 function FileListSelectionController(selectionModel) {
   cr.ui.ListSelectionController.call(this, selectionModel);

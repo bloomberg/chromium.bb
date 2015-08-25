@@ -18,7 +18,6 @@
  * @struct
  * @constructor
  * @extends {cr.EventTarget}
- * @suppress {checkStructDictInheritance}
  */
 function ListThumbnailLoader(
     directoryModel, thumbnailModel, volumeManager,
@@ -325,7 +324,6 @@ ListThumbnailLoader.prototype.dispatchThumbnailLoaded_ = function(
  * @param {number} index Index of an original image in the current data model.
  * @param {!ListThumbnailLoader.ThumbnailData} thumbnail Thumbnail.
  * @extends {Event}
- * @suppress {checkStructDictInheritance}
  * @constructor
  * @struct
  */
