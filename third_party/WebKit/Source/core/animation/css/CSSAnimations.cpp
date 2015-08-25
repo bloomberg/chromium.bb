@@ -551,10 +551,11 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const 
             // If not a shorthand we only execute one iteration of this loop, and refer to the property directly.
             for (unsigned j = 0; !j || j < propertyList.length(); ++j) {
                 CSSPropertyID id = propertyList.length() ? propertyList.properties()[j] : property;
+                ASSERT(id >= firstCSSProperty);
 
                 if (!animateAll) {
                     if (CSSPropertyMetadata::isInterpolableProperty(id))
-                        listedProperties.set(id);
+                        listedProperties.set(id - firstCSSProperty);
                     else
                         continue;
                 }
@@ -573,7 +574,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const 
     if (activeTransitions) {
         for (const auto& entry : *activeTransitions) {
             CSSPropertyID id = entry.key;
-            if (!anyTransitionHadTransitionAll && !animationStyleRecalc && !listedProperties.get(id)) {
+            if (!anyTransitionHadTransitionAll && !animationStyleRecalc && !listedProperties.get(id - firstCSSProperty)) {
                 // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
                 // ASSERT(animation.playStateInternal() == Animation::Finished || !(elementAnimations && elementAnimations->isAnimationStyleChange()));
                 update.cancelTransition(id);
