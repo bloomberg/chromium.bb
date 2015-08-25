@@ -28,6 +28,10 @@
       # appropriately.  Chromium doesn't configure SQLite for that, and would
       # prefer to control distribution to worker threads.
       'SQLITE_MAX_WORKER_THREADS=0',
+      # Use a read-only memory map when mmap'ed I/O is enabled to prevent memory
+      # stompers from directly corrupting the database.
+      # TODO(shess): Upstream the ability to use this define.
+      'SQLITE_MMAP_READ_ONLY=1',
       # NOTE(shess): Some defines can affect the amalgamation.  Those should be
       # added to google_generate_amalgamation.sh, and the amalgamation
       # re-generated.  Usually this involves disabling features which include

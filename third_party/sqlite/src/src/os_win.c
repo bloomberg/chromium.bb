@@ -2558,6 +2558,7 @@ static int winWrite(
   OSTRACE(("WRITE file=%p, buffer=%p, amount=%d, offset=%lld, lock=%d\n",
            pFile->h, pBuf, amt, offset, pFile->locktype));
 
+#if !SQLITE_MMAP_READ_ONLY
 #if SQLITE_MAX_MMAP_SIZE>0
   /* Deal with as much of this write request as possible by transfering
   ** data from the memory mapping using memcpy().  */
@@ -2574,6 +2575,7 @@ static int winWrite(
       offset += nCopy;
     }
   }
+#endif
 #endif
 
 #if SQLITE_OS_WINCE
@@ -4021,10 +4023,12 @@ static int winMapfile(winFile *pFd, sqlite3_int64 nByte){
     DWORD flags = FILE_MAP_READ;
 
     winUnmapfile(pFd);
+#if !SQLITE_MMAP_READ_ONLY
     if( (pFd->ctrlFlags & WINFILE_RDONLY)==0 ){
       protect = PAGE_READWRITE;
       flags |= FILE_MAP_WRITE;
     }
+#endif
 #if SQLITE_OS_WINRT
     pFd->hMap = osCreateFileMappingFromApp(pFd->h, NULL, protect, nMap, NULL);
 #elif defined(SQLITE_WIN32_HAS_WIDE)

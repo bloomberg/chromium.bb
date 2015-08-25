@@ -3341,6 +3341,7 @@ static int unixWrite(
   }
 #endif
 
+#if !SQLITE_MMAP_READ_ONLY
 #if SQLITE_MAX_MMAP_SIZE>0
   /* Deal with as much of this write request as possible by transfering
   ** data from the memory mapping using memcpy().  */
@@ -3356,6 +3357,7 @@ static int unixWrite(
       offset += nCopy;
     }
   }
+#endif
 #endif
 
   while( amt>0 && (wrote = seekAndWrite(pFile, offset, pBuf, amt))>0 ){
@@ -4743,7 +4745,9 @@ static void unixRemapfile(
   assert( pFd->mmapSizeActual>=pFd->mmapSize );
   assert( MAP_FAILED!=0 );
 
+#if !SQLITE_MMAP_READ_ONLY
   if( (pFd->ctrlFlags & UNIXFILE_RDONLY)==0 ) flags |= PROT_WRITE;
+#endif
 
   if( pOrig ){
 #if HAVE_MREMAP
