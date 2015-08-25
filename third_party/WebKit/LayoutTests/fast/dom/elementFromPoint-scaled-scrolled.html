@@ -8,9 +8,10 @@
 <div id="result"></div>
 <script>
 function runTest() {
+    // Scroll before scaling so we scroll the layout viewport rather than the visual.
+    window.scrollTo(100,100);
     if (window.internals)
         window.internals.setPageScaleFactor(2);
-    window.scrollTo(100,100);
 
     if (window.testRunner)
         testRunner.dumpAsText();
