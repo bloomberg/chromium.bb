@@ -59,7 +59,8 @@ base::string16 GetLocalizedTitle(const base::string16& title,
 
   switch (process_type) {
     case content::PROCESS_TYPE_UTILITY:
-      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
+      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX,
+                                        result_title);
     case content::PROCESS_TYPE_GPU:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_GPU_PREFIX);
     case content::PROCESS_TYPE_PLUGIN:
