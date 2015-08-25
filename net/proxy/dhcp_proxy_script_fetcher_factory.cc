@@ -18,18 +18,18 @@ DhcpProxyScriptFetcherFactory::DhcpProxyScriptFetcherFactory()
   set_enabled(true);
 }
 
-DhcpProxyScriptFetcher* DhcpProxyScriptFetcherFactory::Create(
+scoped_ptr<DhcpProxyScriptFetcher> DhcpProxyScriptFetcherFactory::Create(
     URLRequestContext* context) {
   if (!feature_enabled_) {
-    return new DoNothingDhcpProxyScriptFetcher();
+    return make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher());
   } else {
     DCHECK(IsSupported());
-    DhcpProxyScriptFetcher* ret = NULL;
+    scoped_ptr<DhcpProxyScriptFetcher> ret;
 #if defined(OS_WIN)
-    ret = new DhcpProxyScriptFetcherWin(context);
+    ret.reset(new DhcpProxyScriptFetcherWin(context));
 #endif
     DCHECK(ret);
-    return ret;
+    return ret.Pass();
   }
 }
 

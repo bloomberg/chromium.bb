@@ -943,8 +943,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsParsingJavaScriptMandatoryPac) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  DhcpProxyScriptFetcher* dhcp_fetcher = new DoNothingDhcpProxyScriptFetcher();
-  service.SetProxyScriptFetchers(fetcher, dhcp_fetcher);
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start resolve request.
   GURL url("http://www.google.com/");
@@ -1859,8 +1859,8 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 3 requests.
 
@@ -1966,8 +1966,8 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 2 requests.
 
@@ -1996,8 +1996,8 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
   // the initialization with the new fetcher.
 
   fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Nothing has been sent to the factory yet.
   EXPECT_TRUE(factory->pending_requests().empty());
@@ -2027,8 +2027,8 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 3 requests.
   ProxyInfo info1;
@@ -2122,8 +2122,8 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 2 requests.
 
@@ -2202,8 +2202,8 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac2) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 2 requests.
 
@@ -2277,8 +2277,8 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomToManual) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 2 requests.
 
@@ -2338,8 +2338,8 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 1 requests.
 
@@ -2407,8 +2407,8 @@ TEST_F(ProxyServiceTest, DeleteWhileInitProxyResolverHasOutstandingFetch) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 1 request.
 
@@ -2542,8 +2542,8 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
   ProxyService service(config_service, make_scoped_ptr(factory), &log);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Disable the "wait after IP address changes" hack, so this unit-test can
   // complete quickly.
@@ -2662,8 +2662,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 1 request.
 
@@ -2767,8 +2767,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 1 request.
 
@@ -2878,8 +2878,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 1 request.
 
@@ -2986,8 +2986,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 1 request.
 
@@ -3139,8 +3139,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   ProxyService service(config_service, make_scoped_ptr(factory), NULL);
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
-  service.SetProxyScriptFetchers(fetcher,
-                                 new DoNothingDhcpProxyScriptFetcher());
+  service.SetProxyScriptFetchers(
+      fetcher, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()));
 
   // Start 1 request.
 

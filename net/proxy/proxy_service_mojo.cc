@@ -23,7 +23,7 @@ ProxyService* CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
-    DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
+    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate) {
@@ -43,7 +43,7 @@ ProxyService* CreateProxyServiceUsingMojoFactory(
 
   // Configure fetchers to use for PAC script downloads and auto-detect.
   proxy_service->SetProxyScriptFetchers(proxy_script_fetcher,
-                                        dhcp_proxy_script_fetcher);
+                                        dhcp_proxy_script_fetcher.Pass());
 
   return proxy_service;
 }
@@ -51,14 +51,14 @@ ProxyService* CreateProxyServiceUsingMojoFactory(
 ProxyService* CreateProxyServiceUsingMojoInProcess(
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
-    DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
+    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate) {
   return CreateProxyServiceUsingMojoFactory(
       InProcessMojoProxyResolverFactory::GetInstance(), proxy_config_service,
-      proxy_script_fetcher, dhcp_proxy_script_fetcher, host_resolver, net_log,
-      network_delegate);
+      proxy_script_fetcher, dhcp_proxy_script_fetcher.Pass(), host_resolver,
+      net_log, network_delegate);
 }
 
 }  // namespace net

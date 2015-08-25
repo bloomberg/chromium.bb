@@ -6,11 +6,12 @@
 #define NET_PROXY_PROXY_SERVICE_V8_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
+#include "net/proxy/dhcp_proxy_script_fetcher.h"
 
 namespace net {
 
-class DhcpProxyScriptFetcher;
 class HostResolver;
 class NetLog;
 class NetworkDelegate;
@@ -25,8 +26,7 @@ class ProxyService;
 // any PAC scripts. The resulting ProxyService will take ownership of it.
 //
 // |dhcp_proxy_script_fetcher| specifies the dependency to use for attempting
-// to retrieve the most appropriate PAC script configured in DHCP. The
-// resulting ProxyService will take ownership of it.
+// to retrieve the most appropriate PAC script configured in DHCP.
 //
 // |host_resolver| points to the host resolving dependency the PAC script
 // should use for any DNS queries. It must remain valid throughout the
@@ -40,7 +40,7 @@ class ProxyService;
 NET_EXPORT ProxyService* CreateProxyServiceUsingV8ProxyResolver(
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
-    DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
+    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate);

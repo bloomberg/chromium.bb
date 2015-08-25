@@ -9,10 +9,10 @@
 #include "base/memory/singleton.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/proxy/dhcp_proxy_script_fetcher.h"
 
 namespace net {
 
-class DhcpProxyScriptFetcher;
 class URLRequestContext;
 
 // Factory object for creating the appropriate concrete base class of
@@ -34,14 +34,15 @@ class NET_EXPORT DhcpProxyScriptFetcherFactory {
   // Creates a new factory object with default settings.
   DhcpProxyScriptFetcherFactory();
 
-  // Ownership is transferred to the caller. url_request_context must be valid
-  // and its lifetime must exceed that of the returned DhcpProxyScriptFetcher.
+  // url_request_context must be valid and its lifetime must exceed that of the
+  // returned DhcpProxyScriptFetcher.
   //
   // Note that while a request is in progress, the fetcher may be holding a
   // reference to |url_request_context|. Be careful not to create cycles
   // between the fetcher and the context; you can break such cycles by calling
   // Cancel().
-  DhcpProxyScriptFetcher* Create(URLRequestContext* url_request_context);
+  scoped_ptr<DhcpProxyScriptFetcher> Create(
+      URLRequestContext* url_request_context);
 
   // Attempts to enable/disable the DHCP WPAD feature.  Does nothing
   // if |IsSupported()| returns false.

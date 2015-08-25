@@ -19,7 +19,7 @@ namespace net {
 ProxyService* CreateProxyServiceUsingV8ProxyResolver(
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
-    DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
+    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     HostResolver* host_resolver,
     NetLog* net_log,
     NetworkDelegate* network_delegate) {
@@ -38,7 +38,7 @@ ProxyService* CreateProxyServiceUsingV8ProxyResolver(
 
   // Configure fetchers to use for PAC script downloads and auto-detect.
   proxy_service->SetProxyScriptFetchers(proxy_script_fetcher,
-                                        dhcp_proxy_script_fetcher);
+                                        dhcp_proxy_script_fetcher.Pass());
 
   return proxy_service;
 }

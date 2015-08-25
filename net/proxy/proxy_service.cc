@@ -1442,11 +1442,11 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
 
 void ProxyService::SetProxyScriptFetchers(
     ProxyScriptFetcher* proxy_script_fetcher,
-    DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher) {
+    scoped_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher) {
   DCHECK(CalledOnValidThread());
   State previous_state = ResetProxyConfig(false);
   proxy_script_fetcher_.reset(proxy_script_fetcher);
-  dhcp_proxy_script_fetcher_.reset(dhcp_proxy_script_fetcher);
+  dhcp_proxy_script_fetcher_ = dhcp_proxy_script_fetcher.Pass();
   if (previous_state != STATE_NONE)
     ApplyProxyConfigIfAvailable();
 }

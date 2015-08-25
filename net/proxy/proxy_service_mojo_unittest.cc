@@ -129,8 +129,8 @@ class ProxyServiceMojoTest : public testing::Test,
     proxy_service_.reset(CreateProxyServiceUsingMojoFactory(
         this, new ProxyConfigServiceFixed(
                   ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
-        fetcher_, new DoNothingDhcpProxyScriptFetcher(), &mock_host_resolver_,
-        &net_log_, &network_delegate_));
+        fetcher_, make_scoped_ptr(new DoNothingDhcpProxyScriptFetcher()),
+        &mock_host_resolver_, &net_log_, &network_delegate_));
   }
 
   scoped_ptr<base::ScopedClosureRunner> CreateResolver(

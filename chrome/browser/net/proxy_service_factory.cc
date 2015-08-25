@@ -152,10 +152,10 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
 #if defined(OS_IOS)
     NOTREACHED();
 #else
-    net::DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher;
+    scoped_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher;
 #if defined(OS_CHROMEOS)
-    dhcp_proxy_script_fetcher =
-        new chromeos::DhcpProxyScriptFetcherChromeos(context);
+    dhcp_proxy_script_fetcher.reset(
+        new chromeos::DhcpProxyScriptFetcherChromeos(context));
 #else
     net::DhcpProxyScriptFetcherFactory dhcp_factory;
     dhcp_proxy_script_fetcher = dhcp_factory.Create(context);
@@ -167,13 +167,13 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     if (command_line.HasSwitch(switches::kV8PacMojoInProcess)) {
       proxy_service = net::CreateProxyServiceUsingMojoInProcess(
           proxy_config_service, new net::ProxyScriptFetcherImpl(context),
-          dhcp_proxy_script_fetcher, context->host_resolver(), net_log,
+          dhcp_proxy_script_fetcher.Pass(), context->host_resolver(), net_log,
           network_delegate);
     } else if (EnableOutOfProcessV8Pac(command_line)) {
       proxy_service = net::CreateProxyServiceUsingMojoFactory(
           UtilityProcessMojoProxyResolverFactory::GetInstance(),
           proxy_config_service, new net::ProxyScriptFetcherImpl(context),
-          dhcp_proxy_script_fetcher, context->host_resolver(), net_log,
+          dhcp_proxy_script_fetcher.Pass(), context->host_resolver(), net_log,
           network_delegate);
     }
 #endif  // !defined(OS_ANDROID)
@@ -181,7 +181,7 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     if (!proxy_service) {
       proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
           proxy_config_service, new net::ProxyScriptFetcherImpl(context),
-          dhcp_proxy_script_fetcher, context->host_resolver(), net_log,
+          dhcp_proxy_script_fetcher.Pass(), context->host_resolver(), net_log,
           network_delegate);
     }
 #endif  // defined(OS_IOS)
