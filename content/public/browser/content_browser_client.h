@@ -178,6 +178,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
                                        const GURL& effective_url);
 
+  // Returns whether the effective URL is part of a site that should live in a
+  // process dedicated to that site.  This is only called if
+  // SiteIsolationPolicy::DoesSiteRequireDedicatedProcess returns true for the
+  // site, and it defaults to true.
+  virtual bool ShouldLockToOrigin(const GURL& effective_url);
+
   // Returns a list additional WebUI schemes, if any.  These additional schemes
   // act as aliases to the chrome: scheme.  The additional schemes may or may
   // not serve specific WebUI pages depending on the particular URLDataSource

@@ -365,6 +365,13 @@ void SiteInstanceImpl::LockToOrigin() {
     if (site_.SchemeIs(content::kChromeUIScheme))
       return;
 
+    // TODO(creis, nick): Until we can handle sites with effective URLs at the
+    // call sites of ChildProcessSecurityPolicy::CanAccessDataForOrigin, we
+    // must give the embedder a chance to exempt some sites to avoid process
+    // kills.
+    if (!GetContentClient()->browser()->ShouldLockToOrigin(site_))
+      return;
+
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
     policy->LockToOrigin(process_->GetID(), site_);

@@ -935,6 +935,13 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
 #endif
 }
 
+bool ChromeContentBrowserClient::ShouldLockToOrigin(const GURL& effective_url) {
+  // Don't lock the NTP's process to a single origin for now, since we cannot
+  // map its actual URLs to the effective URL of the site on the IO thread.
+  // TODO(creis, nick): Remove this exception in https://crbug.com/160576.
+  return effective_url.scheme() != chrome::kChromeSearchScheme;
+}
+
 // These are treated as WebUI schemes but do not get WebUI bindings. Also,
 // view-source is allowed for these schemes.
 void ChromeContentBrowserClient::GetAdditionalWebUISchemes(

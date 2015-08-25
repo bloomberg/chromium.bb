@@ -39,6 +39,10 @@ bool ContentBrowserClient::ShouldUseProcessPerSite(
   return false;
 }
 
+bool ContentBrowserClient::ShouldLockToOrigin(const GURL& effective_url) {
+  return true;
+}
+
 net::URLRequestContextGetter* ContentBrowserClient::CreateRequestContext(
     BrowserContext* browser_context,
     ProtocolHandlerMap* protocol_handlers,
