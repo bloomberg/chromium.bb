@@ -25,4 +25,19 @@ TEST_F(EditingUtilitiesTest, NextNodeIndex)
     EXPECT_EQ(PositionInComposedTree(host, 1), nextPositionOf(PositionInComposedTree(two, 2), PositionMoveType::CodePoint));
 }
 
+TEST_F(EditingUtilitiesTest, NextVisuallyDistinctCandidate)
+{
+    const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b><b id='three'>33</b></p>";
+    const char* shadowContent = "<content select=#two></content><content select=#one></content><content select=#three></content>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent);
+    updateLayoutAndStyleForPainting();
+    Node* one = document().getElementById("one");
+    Node* two = document().getElementById("two");
+    Node* three = document().getElementById("three");
+
+    EXPECT_EQ(Position(two->firstChild(), 1), nextVisuallyDistinctCandidate(Position(one, 1)));
+    EXPECT_EQ(PositionInComposedTree(three->firstChild(), 1), nextVisuallyDistinctCandidate(PositionInComposedTree(one, 1)));
+}
+
 } // namespace blink

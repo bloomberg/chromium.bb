@@ -360,24 +360,35 @@ PositionInComposedTree nextCandidate(const PositionInComposedTree& position)
 // |nextVisuallyDistinctCandidate| is similar to |nextCandidate| except
 // for returning position which |downstream()| not equal to initial position's
 // |downstream()|.
-Position nextVisuallyDistinctCandidate(const Position& position)
+template <typename Strategy>
+static PositionAlgorithm<Strategy> nextVisuallyDistinctCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
     if (position.isNull())
-        return Position();
+        return PositionAlgorithm<Strategy>();
 
-    PositionIterator p(position);
-    Position downstreamStart = mostForwardCaretPosition(position);
+    PositionIteratorAlgorithm<Strategy> p(position);
+    const PositionAlgorithm<Strategy> downstreamStart = mostForwardCaretPosition(position);
 
     p.increment();
     while (!p.atEnd()) {
-        Position candidate = p.computePosition();
+        PositionAlgorithm<Strategy> candidate = p.computePosition();
         if (isVisuallyEquivalentCandidate(candidate) && mostForwardCaretPosition(candidate) != downstreamStart)
             return candidate;
 
         p.increment();
     }
 
-    return Position();
+    return PositionAlgorithm<Strategy>();
+}
+
+Position nextVisuallyDistinctCandidate(const Position& position)
+{
+    return nextVisuallyDistinctCandidateAlgorithm<EditingStrategy>(position);
+}
+
+PositionInComposedTree nextVisuallyDistinctCandidate(const PositionInComposedTree& position)
+{
+    return nextVisuallyDistinctCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
 template <typename Strategy>

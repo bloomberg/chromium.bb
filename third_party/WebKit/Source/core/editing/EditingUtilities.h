@@ -162,7 +162,8 @@ PositionInComposedTree nextCandidate(const PositionInComposedTree&);
 Position previousCandidate(const Position&);
 PositionInComposedTree previousCandidate(const PositionInComposedTree&);
 
-Position nextVisuallyDistinctCandidate(const Position&);
+CORE_EXPORT Position nextVisuallyDistinctCandidate(const Position&);
+CORE_EXPORT PositionInComposedTree nextVisuallyDistinctCandidate(const PositionInComposedTree&);
 Position previousVisuallyDistinctCandidate(const Position&);
 PositionInComposedTree previousVisuallyDistinctCandidate(const PositionInComposedTree&);
 
