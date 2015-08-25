@@ -118,6 +118,7 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
                 mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
     }
 
+    /*
     @FlakyTest
     @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
@@ -132,6 +133,9 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
                             @Parameter.Argument(
                                     name = AddGoogleAccountToOsParameter.ARGUMENT.PASSWORD,
                                     stringVar = GOOGLE_ACCOUNT_PASSWORD)})})
+    crbug.com/524189
+    */
+    @DisabledTest
     public void testIsSignedInOnAppAndGoogleOS() {
         assertTrue("Should be signed into app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
@@ -164,6 +168,7 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
                 mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
     }
 
+    /*
     @FlakyTest
     @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
@@ -179,6 +184,9 @@ public class SigninParametersTest extends ChromeActivityTestCaseBase<ChromeActiv
                             @Parameter.Argument(
                                     name = AddGoogleAccountToOsParameter.ARGUMENT.PASSWORD,
                                     stringVar = GOOGLE_ACCOUNT_PASSWORD)})})
+    crbug.com/524189
+    */
+    @DisabledTest
     public void testIsSignedInOnAppAndFakeOSandGoogleOS() {
         assertTrue("Should be signed into app.",
                 mAddFakeAccountToAppParameter.isSignedIn());
