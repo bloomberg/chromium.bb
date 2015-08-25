@@ -16,6 +16,11 @@
   -webkit-margin-start: auto;
 }
 
+#close-button::shadow #icon {
+  height: 15px;
+  width: 15px;
+}
+
 #custom-controller {
   display: inline-block;
   height: 160px;

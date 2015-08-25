@@ -6,6 +6,11 @@
   color: rgb(33, 150, 243);
 }
 
+#arrow-drop-icon::shadow #icon {
+  height: 20px;
+  width: 20px;
+}
+
 .cast-mode-icon,
 .sink-icon {
   -webkit-padding-end: 16px;
@@ -17,6 +22,11 @@
 #cast-mode-list {
   padding-bottom: 8px;
   padding-top: 8px;
+}
+
+#close-button::shadow #icon {
+  height: 15px;
+  width: 15px;
 }
 
 #container-header.cast-mode-list {
