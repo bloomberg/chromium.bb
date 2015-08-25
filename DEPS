@@ -84,6 +84,11 @@ vars = {
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
   'nacl_revision': '0cf13c015762a9fc573d2219a30100b8f4bf4cc2',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling dEQP
+  # and whatever else without interference from each other.
+  'deqp_revision': '194294e69d44eac48bc1fb063bd607189650aa5e',
+  'deqp_url': 'https://android.googlesource.com/platform/external/deqp',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -326,7 +331,7 @@ deps_os = {
 
     # ANGLE uses dEQP for GPU testing
     'src/third_party/deqp/src':
-     'https://android.googlesource.com/platform/external/deqp@194294e69d44eac48bc1fb063bd607189650aa5e',
+     Var('deqp_url') + '@' + Var('deqp_revision'),
   },
   'ios': {
     'src/ios/third_party/gcdwebserver/src':
@@ -407,6 +412,10 @@ deps_os = {
 
     'src/third_party/stp/src':
      Var('chromium_git') + '/external/github.com/stp/stp.git' + '@' + 'fc94a599207752ab4d64048204f0c88494811b62',
+
+    # ANGLE uses dEQP for GPU testing
+    'src/third_party/deqp/src':
+     Var('deqp_url') + '@' + Var('deqp_revision'),
   },
   'android': {
     'src/third_party/android_protobuf/src':

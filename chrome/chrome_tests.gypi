@@ -3343,7 +3343,7 @@
                 },
               ],
             }],
-            ['OS=="win"', {
+            ['OS=="win" or OS=="linux"', {
               'targets': [
                 {
                   'target_name': 'angle_deqp_gles2_tests_run',

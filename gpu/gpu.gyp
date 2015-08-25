@@ -774,7 +774,7 @@
         },
       ],
     }],
-    ['OS == "win" and archive_gpu_tests==1', {
+    ['(OS == "win" or OS == "linux") and archive_gpu_tests==1', {
       'targets': [
         {
           # Only build dEQP on test configs. Note that dEQP is test-only code,
