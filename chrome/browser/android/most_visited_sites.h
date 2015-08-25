@@ -79,18 +79,19 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
 
   // Adds the suggestions from |popular_sites_| into |titles| and |urls|. This
   // might reorder |titles| and |urls| to retain the absolute positions of the
-  // popular suggestions.
+  // popular suggestions. Also updates |tile_sources_| accordingly.
   void AddPopularSites(std::vector<base::string16>* titles,
-                       std::vector<std::string>* urls) const;
+                       std::vector<std::string>* urls);
 
   // Workhorse for AddPopularSites above. Implemented as a separate static
   // method for ease of testing.
   static void AddPopularSitesImpl(
       int num_sites,
+      const std::vector<base::string16>& popular_titles,
+      const std::vector<std::string>& popular_urls,
       std::vector<base::string16>* titles,
       std::vector<std::string>* urls,
-      const std::vector<base::string16>& popular_titles,
-      const std::vector<std::string>& popular_urls);
+      std::vector<std::string>* tile_sources);
 
   // Notify the Java side observer about the availability of Most Visited Urls.
   void NotifyMostVisitedURLsObserver(const std::vector<base::string16>& titles,
@@ -112,8 +113,11 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
       const GURL& url,
       const SkBitmap* bitmap);
 
-  // Records specific UMA histogram metrics.
-  void RecordUMAMetrics();
+  // Records thumbnail-related UMA histogram metrics.
+  void RecordThumbnailUMAMetrics();
+
+  // Records UMA histogram metrics related to the number of impressions.
+  void RecordImpressionUMAMetrics();
 
   // history::TopSitesObserver implementation.
   void TopSitesLoaded(history::TopSites* top_sites) override;
@@ -129,8 +133,17 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   // The maximum number of most visited sites to return.
   int num_sites_;
 
-  // Keeps track of whether the initial NTP load has been done.
-  bool initial_load_done_;
+  // Whether we have received an initial set of most visited sites (from either
+  // TopSites or the SuggestionsService).
+  bool received_most_visited_sites_;
+
+  // Whether we have received the set of popular sites. Immediately set to true
+  // if popular sites are disabled.
+  bool received_popular_sites_;
+
+  // Whether we have recorded one-shot UMA metrics such as impressions. They are
+  // recorded once both the previous flags are true.
+  bool recorded_uma_;
 
   // Counters for UMA metrics.
 
@@ -142,8 +155,9 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   // In this case a gray tile is used as the main tile.
   int num_empty_thumbs_;
 
-  // Copy of the server suggestions (if enabled). Used for logging.
-  suggestions::SuggestionsProfile server_suggestions_;
+  // Identifier for where each tile came from (client, server, popular). Used
+  // for logging.
+  std::vector<std::string> tile_sources_;
 
   ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 

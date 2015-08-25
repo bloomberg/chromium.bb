@@ -59,22 +59,16 @@ const char kNumLocalThumbnailTilesHistogramName[] =
     "NewTabPage.NumberOfThumbnailTiles";
 const char kNumEmptyTilesHistogramName[] = "NewTabPage.NumberOfGrayTiles";
 const char kNumServerTilesHistogramName[] = "NewTabPage.NumberOfExternalTiles";
-// Client suggestion opened.
-const char kOpenedItemClientHistogramName[] = "NewTabPage.MostVisited.client";
-// Server suggestion opened, no provider.
-const char kOpenedItemServerHistogramName[] = "NewTabPage.MostVisited.server";
-// Server suggestion opened with provider.
-const char kOpenedItemServerProviderHistogramFormat[] =
-    "NewTabPage.MostVisited.server%d";
-// Client impression.
-const char kImpressionClientHistogramName[] =
-    "NewTabPage.SuggestionsImpression.client";
-// Server suggestion impression, no provider.
-const char kImpressionServerHistogramName[] =
-    "NewTabPage.SuggestionsImpression.server";
-// Server suggestion impression with provider.
-const char kImpressionServerHistogramFormat[] =
-    "NewTabPage.SuggestionsImpression.server%d";
+
+// Format for tile clicks histogram.
+const char kOpenedItemHistogramFormat[] = "NewTabPage.MostVisited.%s";
+// Format for tile impressions histogram.
+const char kImpressionHistogramFormat[] = "NewTabPage.SuggestionsImpression.%s";
+// Identifiers for the various tile sources.
+const char kHistogramClientName[] = "client";
+const char kHistogramServerName[] = "server";
+const char kHistogramServerFormat[] = "server%d";
+const char kHistogramPopularName[] = "popular";
 
 const char kPopularSitesFieldTrialName[] = "NTPPopularSites";
 
@@ -92,7 +86,8 @@ scoped_ptr<SkBitmap> MaybeFetchLocalThumbnail(
 // Log an event for a given |histogram| at a given element |position|. This
 // routine exists because regular histogram macros are cached thus can't be used
 // if the name of the histogram will change at a given call site.
-void LogHistogramEvent(const std::string& histogram, int position,
+void LogHistogramEvent(const std::string& histogram,
+                       int position,
                        int num_sites) {
   base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
       histogram,
@@ -137,7 +132,8 @@ std::string GetPopularSitesFilename() {
 }  // namespace
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
-    : profile_(profile), num_sites_(0), initial_load_done_(false),
+    : profile_(profile), num_sites_(0), received_most_visited_sites_(false),
+      received_popular_sites_(false), recorded_uma_(false),
       num_local_thumbs_(0), num_server_thumbs_(0), num_empty_thumbs_(0),
       scoped_observer_(this), weak_ptr_factory_(this) {
   // Register the debugging page for the Suggestions Service and the thumbnails
@@ -160,6 +156,8 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
         profile_->GetRequestContext(),
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                    base::Unretained(this))));
+  } else {
+    received_popular_sites_ = true;
   }
 }
 
@@ -175,7 +173,7 @@ void MostVisitedSites::Destroy(JNIEnv* env, jobject obj) {
 }
 
 void MostVisitedSites::OnLoadingComplete(JNIEnv* env, jobject obj) {
-  RecordUMAMetrics();
+  RecordThumbnailUMAMetrics();
 }
 
 void MostVisitedSites::SetMostVisitedURLsObserver(JNIEnv* env,
@@ -292,25 +290,11 @@ void MostVisitedSites::BlacklistUrl(JNIEnv* env,
 void MostVisitedSites::RecordOpenedMostVisitedItem(JNIEnv* env,
                                                    jobject obj,
                                                    jint index) {
-  switch (mv_source_) {
-    case TOP_SITES: {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(kOpenedItemClientHistogramName, index);
-      break;
-    }
-    case SUGGESTIONS_SERVICE: {
-      if (server_suggestions_.suggestions_size() > index) {
-        if (server_suggestions_.suggestions(index).providers_size()) {
-          std::string histogram = base::StringPrintf(
-              kOpenedItemServerProviderHistogramFormat,
-              server_suggestions_.suggestions(index).providers(0));
-          LogHistogramEvent(histogram, index, num_sites_);
-        } else {
-          UMA_HISTOGRAM_SPARSE_SLOWLY(kOpenedItemServerHistogramName, index);
-        }
-      }
-      break;
-    }
-  }
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, static_cast<int>(tile_sources_.size()));
+  std::string histogram = base::StringPrintf(kOpenedItemHistogramFormat,
+                                             tile_sources_[index].c_str());
+  LogHistogramEvent(histogram, index, num_sites_);
 }
 
 void MostVisitedSites::OnStateChanged() {
@@ -354,6 +338,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
   std::vector<base::string16> titles;
   std::vector<std::string> urls;
+  tile_sources_.clear();
   int num_tiles = std::min(static_cast<int>(visited_list.size()), num_sites_);
   for (int i = 0; i < num_tiles; ++i) {
     const history::MostVisitedURL& visited = visited_list[i];
@@ -363,14 +348,10 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
     }
     titles.push_back(visited.title);
     urls.push_back(visited.url.spec());
+    tile_sources_.push_back(kHistogramClientName);
   }
 
-  // Only log impression metrics on the initial load of the NTP.
-  if (!initial_load_done_) {
-    for (int i = 0; i < num_tiles; ++i) {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(kImpressionClientHistogramName, i);
-    }
-  }
+  received_most_visited_sites_ = true;
   mv_source_ = TOP_SITES;
   AddPopularSites(&titles, &urls);
   NotifyMostVisitedURLsObserver(titles, urls);
@@ -389,84 +370,89 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
 
   std::vector<base::string16> titles;
   std::vector<std::string> urls;
+  tile_sources_.clear();
   for (int i = 0; i < num_tiles; ++i) {
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
     titles.push_back(base::UTF8ToUTF16(suggestion.title()));
     urls.push_back(suggestion.url());
-    // Only log impression metrics on the initial NTP load.
-    if (!initial_load_done_) {
-      if (suggestion.providers_size()) {
-        std::string histogram = base::StringPrintf(
-            kImpressionServerHistogramFormat, suggestion.providers(0));
-        LogHistogramEvent(histogram, i, num_sites_);
-      } else {
-        UMA_HISTOGRAM_SPARSE_SLOWLY(kImpressionServerHistogramName, i);
-      }
+    std::string tile_source;
+    if (suggestion.providers_size() > 0) {
+      tile_source =
+          base::StringPrintf(kHistogramServerFormat, suggestion.providers(0));
+    } else {
+      tile_source = kHistogramServerName;
     }
+    tile_sources_.push_back(tile_source);
   }
+
+  received_most_visited_sites_ = true;
   mv_source_ = SUGGESTIONS_SERVICE;
-  // Keep a copy of the suggestions for eventual logging.
-  server_suggestions_ = suggestions_profile;
   AddPopularSites(&titles, &urls);
   NotifyMostVisitedURLsObserver(titles, urls);
 }
 
 void MostVisitedSites::AddPopularSites(std::vector<base::string16>* titles,
-                                       std::vector<std::string>* urls) const {
+                                       std::vector<std::string>* urls) {
   if (!popular_sites_)
     return;
 
   DCHECK_EQ(titles->size(), urls->size());
+  DCHECK_EQ(titles->size(), tile_sources_.size());
   DCHECK_LE(static_cast<int>(titles->size()), num_sites_);
 
   // Collect all non-blacklisted popular suggestions.
-  std::vector<base::string16> new_titles;
-  std::vector<std::string> new_urls;
+  std::vector<base::string16> popular_titles;
+  std::vector<std::string> popular_urls;
   scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
   for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
     // Skip blacklisted sites.
     if (top_sites && top_sites->IsBlacklisted(popular_site.url))
       continue;
 
-    new_titles.push_back(popular_site.title);
-    new_urls.push_back(popular_site.url.spec());
-    if (static_cast<int>(new_titles.size()) >= num_sites_)
+    popular_titles.push_back(popular_site.title);
+    popular_urls.push_back(popular_site.url.spec());
+    if (static_cast<int>(popular_titles.size()) >= num_sites_)
       break;
   }
 
-  AddPopularSitesImpl(num_sites_, titles, urls, new_titles, new_urls);
+  AddPopularSitesImpl(
+      num_sites_, popular_titles, popular_urls, titles, urls, &tile_sources_);
 }
 
 // static
 void MostVisitedSites::AddPopularSitesImpl(
     int num_sites,
+    const std::vector<base::string16>& popular_titles,
+    const std::vector<std::string>& popular_urls,
     std::vector<base::string16>* titles,
     std::vector<std::string>* urls,
-    const std::vector<base::string16>& popular_titles,
-    const std::vector<std::string>& popular_urls) {
+    std::vector<std::string>* tile_sources) {
   // Start off with the popular suggestions.
   std::vector<base::string16> new_titles(popular_titles);
   std::vector<std::string> new_urls(popular_urls);
+  std::vector<std::string> new_tile_sources(new_titles.size(),
+                                            kHistogramPopularName);
 
   // Now, go over the personalized suggestions and replace matching popular
   // suggestions. This is so that when some of the popular suggestions become
   // personal, they retain their absolute positions.
-  std::vector<bool> new_is_personalized(new_titles.size(), false);
   std::vector<base::string16> titles_to_insert;
   std::vector<std::string> urls_to_insert;
+  std::vector<std::string> tile_sources_to_insert;
   for (size_t site_index = 0; site_index < titles->size(); site_index++) {
     const base::string16& title = (*titles)[site_index];
     const std::string& url = (*urls)[site_index];
+    const std::string& tile_source = (*tile_sources)[site_index];
     // See if we already have a matching popular site.
     bool found = false;
     for (size_t i = 0; i < new_urls.size(); i++) {
-      if (!new_is_personalized[i] &&
+      if (new_tile_sources[i] == kHistogramPopularName &&
           GURL(new_urls[i]).host() == GURL(url).host()) {
         // We have a matching popular sites suggestion. Replace it with the
         // actual URL and title.
         new_titles[i] = title;
         new_urls[i] = url;
-        new_is_personalized[i] = true;
+        new_tile_sources[i] = tile_source;
         found = true;
         break;
       }
@@ -474,6 +460,7 @@ void MostVisitedSites::AddPopularSitesImpl(
     if (!found) {
       titles_to_insert.push_back(title);
       urls_to_insert.push_back(url);
+      tile_sources_to_insert.push_back(tile_source);
     }
   }
 
@@ -487,7 +474,9 @@ void MostVisitedSites::AddPopularSitesImpl(
   new_urls.insert(new_urls.end(),
                   urls_to_insert.end() - num_to_append,
                   urls_to_insert.end());
-  new_is_personalized.insert(new_is_personalized.end(), num_to_append, true);
+  new_tile_sources.insert(new_tile_sources.end(),
+                          tile_sources_to_insert.end() - num_to_append,
+                          tile_sources_to_insert.end());
 
   // Finally, go over the remaining personalized suggestions and evict popular
   // suggestions to accommodate them. Do it in reverse order, so the least
@@ -495,12 +484,13 @@ void MostVisitedSites::AddPopularSitesImpl(
   for (size_t i = titles_to_insert.size() - num_to_append; i > 0; --i) {
     const base::string16& title = titles_to_insert[i - 1];
     const std::string& url = urls_to_insert[i - 1];
+    const std::string& tile_source = tile_sources_to_insert[i - 1];
     for (size_t insert_i = new_titles.size(); insert_i > 0; --insert_i) {
       size_t insert_index = insert_i - 1;
-      if (!new_is_personalized[insert_index]) {
+      if (new_tile_sources[insert_index] == kHistogramPopularName) {
         new_titles[insert_index] = title;
         new_urls[insert_index] = url;
-        new_is_personalized[insert_index] = true;
+        new_tile_sources[insert_index] = tile_source;
         break;
       }
     }
@@ -508,15 +498,19 @@ void MostVisitedSites::AddPopularSitesImpl(
 
   titles->swap(new_titles);
   urls->swap(new_urls);
+  tile_sources->swap(new_tile_sources);
 }
 
 void MostVisitedSites::NotifyMostVisitedURLsObserver(
     const std::vector<base::string16>& titles,
     const std::vector<std::string>& urls) {
   DCHECK_EQ(titles.size(), urls.size());
-  if (!initial_load_done_)
+  if (received_most_visited_sites_ && received_popular_sites_ &&
+      !recorded_uma_) {
+    RecordImpressionUMAMetrics();
     UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, titles.size());
-  initial_load_done_ = true;
+    recorded_uma_ = true;
+  }
   JNIEnv* env = AttachCurrentThread();
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
@@ -524,6 +518,8 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver(
 }
 
 void MostVisitedSites::OnPopularSitesAvailable(bool success) {
+  received_popular_sites_ = true;
+
   if (!success) {
     LOG(WARNING) << "Download of popular sites failed";
     return;
@@ -546,7 +542,7 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
   QueryMostVisitedURLs();
 }
 
-void MostVisitedSites::RecordUMAMetrics() {
+void MostVisitedSites::RecordThumbnailUMAMetrics() {
   UMA_HISTOGRAM_SPARSE_SLOWLY(kNumLocalThumbnailTilesHistogramName,
                               num_local_thumbs_);
   num_local_thumbs_ = 0;
@@ -554,6 +550,14 @@ void MostVisitedSites::RecordUMAMetrics() {
   num_empty_thumbs_ = 0;
   UMA_HISTOGRAM_SPARSE_SLOWLY(kNumServerTilesHistogramName, num_server_thumbs_);
   num_server_thumbs_ = 0;
+}
+
+void MostVisitedSites::RecordImpressionUMAMetrics() {
+  for (size_t i = 0; i < tile_sources_.size(); i++) {
+    std::string histogram = base::StringPrintf(kImpressionHistogramFormat,
+                                               tile_sources_[i].c_str());
+    LogHistogramEvent(histogram, static_cast<int>(i), num_sites_);
+  }
 }
 
 void MostVisitedSites::TopSitesLoaded(history::TopSites* top_sites) {

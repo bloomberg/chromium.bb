@@ -76569,6 +76569,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="client" label="Suggestions coming from the client."/>
   <suffix name="client0"
       label="deprecated - Suggestions coming from the client source 0."/>
+  <suffix name="popular" label="Non-personalized, popular suggestions."/>
 <!-- Server providers 1 through 8 have never been logged. -->
 
   <suffix name="server" label="Suggestions coming from the server."/>
