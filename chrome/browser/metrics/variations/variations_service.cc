@@ -27,7 +27,6 @@
 #include "components/variations/variations_seed_simulator.h"
 #include "components/variations/variations_url_constants.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -533,7 +532,7 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
     return true;
 
   base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
+      client_->GetBlockingPool(),
       FROM_HERE,
       base::Bind(&GetVersionForSimulation),
       base::Bind(&VariationsService::PerformSimulationWithVersion,

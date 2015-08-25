@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 
 #include "chrome/browser/browser_process.h"
+#include "content/public/browser/browser_thread.h"
 
 ChromeVariationsServiceClient::ChromeVariationsServiceClient() {}
 
@@ -12,6 +13,10 @@ ChromeVariationsServiceClient::~ChromeVariationsServiceClient() {}
 
 std::string ChromeVariationsServiceClient::GetApplicationLocale() {
   return g_browser_process->GetApplicationLocale();
+}
+
+base::SequencedWorkerPool* ChromeVariationsServiceClient::GetBlockingPool() {
+  return content::BrowserThread::GetBlockingPool();
 }
 
 net::URLRequestContextGetter*

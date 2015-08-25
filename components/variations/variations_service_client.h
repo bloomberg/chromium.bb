@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace base {
+class SequencedWorkerPool;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -25,6 +29,10 @@ class VariationsServiceClient {
 
   // Returns the current application locale (e.g. "en-US").
   virtual std::string GetApplicationLocale() = 0;
+
+  // Returns the SequencedWorkerPool on which the VariationsService should run
+  // tasks that may block.
+  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual network_time::NetworkTimeTracker* GetNetworkTimeTracker() = 0;
