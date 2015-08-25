@@ -357,6 +357,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   cc::SurfaceId surface_id_;
   gfx::Size current_surface_size_;
   cc::ReturnedResourceArray surface_returned_resources_;
+  gfx::Vector2dF location_bar_content_translation_;
+  cc::ViewportSelection current_viewport_selection_;
 
   // The most recent texture size that was pushed to the texture layer.
   gfx::Size texture_size_in_layer_;

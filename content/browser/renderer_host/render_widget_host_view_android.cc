@@ -1025,7 +1025,10 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
       surface_factory_ = make_scoped_ptr(new cc::SurfaceFactory(manager, this));
     }
     if (surface_id_.is_null() ||
-        texture_size_in_layer_ != current_surface_size_) {
+        texture_size_in_layer_ != current_surface_size_ ||
+        location_bar_content_translation_ !=
+            frame->metadata.location_bar_content_translation ||
+        current_viewport_selection_ != frame->metadata.selection) {
       RemoveLayers();
       if (!surface_id_.is_null())
         surface_factory_->Destroy(surface_id_);
@@ -1036,6 +1039,9 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
       DCHECK(layer_);
 
       current_surface_size_ = texture_size_in_layer_;
+      location_bar_content_translation_ =
+          frame->metadata.location_bar_content_translation;
+      current_viewport_selection_ = frame->metadata.selection;
       AttachLayers();
     }
 
