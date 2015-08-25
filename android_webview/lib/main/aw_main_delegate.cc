@@ -113,28 +113,28 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // https://crbug.com/521319
   cl->AppendSwitch(switches::kDisablePresentationAPI);
 
-  // This is needed to be able to mmap the V8 snapshot and ICU data file
-  // directly from the WebView .apk.
-  // This needs to be here so that it gets to run before the code in
-  // content_main_runner that reads these values tries to do so.
-  // In multi-process mode this code would live in
-  // AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess.
+  if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
+    // Browser process (no type specified).
+
+    // This code is needed to be able to mmap the V8 snapshot directly from
+    // the WebView .apk using architecture-specific names.
+    // This needs to be here so that it gets to run before the code in
+    // content_main_runner that reads these values tries to do so.
 #ifdef __LP64__
-  const char kNativesFileName[] = "assets/natives_blob_64.bin";
-  const char kSnapshotFileName[] = "assets/snapshot_blob_64.bin";
+    const char kNativesFileName[] = "assets/natives_blob_64.bin";
+    const char kSnapshotFileName[] = "assets/snapshot_blob_64.bin";
 #else
-  const char kNativesFileName[] = "assets/natives_blob_32.bin";
-  const char kSnapshotFileName[] = "assets/snapshot_blob_32.bin";
+    const char kNativesFileName[] = "assets/natives_blob_32.bin";
+    const char kSnapshotFileName[] = "assets/snapshot_blob_32.bin";
 #endif // __LP64__
-  // TODO(gsennton) we should use
-  // gin::IsolateHolder::kNativesFileName/kSnapshotFileName
-  // here when those files have arch specific names http://crbug.com/455699
-  CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
-      kV8NativesDataDescriptor, kNativesFileName));
-  CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
-      kV8SnapshotDataDescriptor, kSnapshotFileName));
-  CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
-      kAndroidICUDataDescriptor, "assets/icudtl.dat"));
+    // TODO(gsennton) we should use
+    // gin::IsolateHolder::kNativesFileName/kSnapshotFileName
+    // here when those files have arch specific names http://crbug.com/455699
+    CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
+        kV8NativesDataDescriptor, kNativesFileName));
+    CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
+        kV8SnapshotDataDescriptor, kSnapshotFileName));
+  }
 
   return false;
 }
