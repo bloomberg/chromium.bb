@@ -286,7 +286,7 @@ TEST(VectorTest, SwapWithInlineCapacity)
     vectorB.swap(vectorA);
 }
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ANNOTATE_CONTIGUOUS_CONTAINER)
 TEST(VectorTest, ContainerAnnotations)
 {
     Vector<int> vectorA;
@@ -325,52 +325,7 @@ TEST(VectorTest, ContainerAnnotations)
     volatile int* intPointerB3 = vectorB.data();
     EXPECT_DEATH((void)intPointerB3[2], "container-overflow");
 }
-
-TEST(VectorTest, ContainerAnnotationsInline)
-{
-    Vector<int> vectorA;
-    Vector<int, 4> vectorB;
-
-    vectorB.append(1);
-    vectorB.append(2);
-    volatile int* intPointerB = vectorB.data();
-    EXPECT_DEATH((void)intPointerB[2], "container-overflow");
-
-    vectorB.append(3);
-    vectorB.append(4);
-    vectorB.append(5);
-    vectorB.reserveCapacity(16);
-    intPointerB = vectorB.data();
-    EXPECT_DEATH((void)intPointerB[5], "container-overflow");
-
-    vectorB.clear();
-    vectorB.shrinkToFit();
-    vectorB.append(1);
-    intPointerB = vectorB.data();
-    EXPECT_DEATH((void)intPointerB[1], "container-overflow");
-
-    vectorB.shrinkToFit();
-    intPointerB = vectorB.data();
-    EXPECT_DEATH((void)intPointerB[1], "container-overflow");
-
-    vectorA = vectorB;
-    vectorA.reserveCapacity(8);
-    volatile int* intPointerA = vectorA.data();
-    EXPECT_DEATH((void)intPointerA[1], "container-overflow");
-
-    Vector<int, 4> vectorC;
-    vectorC.append(3);
-    vectorC.append(4);
-    vectorB.swap(vectorC);
-    intPointerB = vectorB.data();
-    vectorC.reserveCapacity(8);
-    volatile int* intPointerC = vectorC.data();
-    vectorC[0] = 2;
-    vectorB[1] = 1337;
-    EXPECT_DEATH((void)intPointerC[1], "container-overflow");
-    EXPECT_DEATH((void)intPointerB[2], "container-overflow");
-}
-#endif // defined(ADDRESS_SANITIZER)
+#endif // defined(ANNOTATE_CONTIGUOUS_CONTAINER)
 
 class Comparable {
 };
