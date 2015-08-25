@@ -382,10 +382,9 @@ using NowFunction = TimeDelta (*)(void);
 TimeDelta InitialNowFunction();
 TimeDelta InitialSystemTraceNowFunction();
 
-// See "threading notes" in InitializeNowFunctionPointers() for details on how
+// See "threading notes" in InitializeNowFunctionPointer() for details on how
 // concurrent reads/writes to these globals has been made safe.
 NowFunction g_now_function = &InitialNowFunction;
-NowFunction g_system_trace_now_function = &InitialSystemTraceNowFunction;
 int64 g_qpc_ticks_per_second = 0;
 
 // As of January 2015, use of <atomic> is forbidden in Chromium code. This is
@@ -395,7 +394,7 @@ int64 g_qpc_ticks_per_second = 0;
 
 TimeDelta QPCValueToTimeDelta(LONGLONG qpc_value) {
   // Ensure that the assignment to |g_qpc_ticks_per_second|, made in
-  // InitializeNowFunctionPointers(), has happened by this point.
+  // InitializeNowFunctionPointer(), has happened by this point.
   ATOMIC_THREAD_FENCE(memory_order_acquire);
 
   DCHECK_GT(g_qpc_ticks_per_second, 0);
@@ -427,37 +426,41 @@ bool IsBuggyAthlon(const base::CPU& cpu) {
   return cpu.vendor_name() == "AuthenticAMD" && cpu.family() == 15;
 }
 
-void InitializeNowFunctionPointers() {
+void InitializeNowFunctionPointer() {
   LARGE_INTEGER ticks_per_sec = {};
   if (!QueryPerformanceFrequency(&ticks_per_sec))
     ticks_per_sec.QuadPart = 0;
 
-  // If Windows cannot provide a QPC implementation, both TimeTicks::Now() and
-  // TraceTicks::Now() must use the low-resolution clock.
+  // If Windows cannot provide a QPC implementation, TimeTicks::Now() must use
+  // the low-resolution clock.
   //
   // If the QPC implementation is expensive and/or unreliable, TimeTicks::Now()
-  // will use the low-resolution clock, but TraceTicks::Now() will use the QPC
-  // (in the hope that it is still useful for tracing purposes). A CPU lacking a
-  // non-stop time counter will cause Windows to provide an alternate QPC
-  // implementation that works, but is expensive to use. Certain Athlon CPUs are
-  // known to make the QPC implementation unreliable.
+  // will still use the low-resolution clock. A CPU lacking a non-stop time
+  // counter will cause Windows to provide an alternate QPC implementation that
+  // works, but is expensive to use. Certain Athlon CPUs are known to make the
+  // QPC implementation unreliable.
   //
-  // Otherwise, both Now functions can use the high-resolution QPC clock. As of
-  // 4 January 2015, ~68% of users fall within this category.
+  // Otherwise, Now uses the high-resolution QPC clock. As of 21 August 2015,
+  // ~72% of users fall within this category.
+  //
+  // TraceTicks::Now() always uses the same clock as TimeTicks::Now(), even
+  // when the QPC exists but is expensive or unreliable. This is because we'd
+  // eventually like to merge TraceTicks and TimeTicks and have one type of
+  // timestamp that is reliable, monotonic, and comparable. Also, while we could
+  // use the high-resolution timer for TraceTicks even when it's unreliable or
+  // slow, it's easier to make tracing tools accommodate a coarse timer than
+  // one that's unreliable or slow.
   NowFunction now_function;
-  NowFunction system_trace_now_function;
   base::CPU cpu;
-  if (ticks_per_sec.QuadPart <= 0) {
-    now_function = system_trace_now_function = &RolloverProtectedNow;
-  } else if (!cpu.has_non_stop_time_stamp_counter() || IsBuggyAthlon(cpu)) {
+  if (ticks_per_sec.QuadPart <= 0 ||
+      !cpu.has_non_stop_time_stamp_counter() || IsBuggyAthlon(cpu)) {
     now_function = &RolloverProtectedNow;
-    system_trace_now_function = &QPCNow;
   } else {
-    now_function = system_trace_now_function = &QPCNow;
+    now_function = &QPCNow;
   }
 
   // Threading note 1: In an unlikely race condition, it's possible for two or
-  // more threads to enter InitializeNowFunctionPointers() in parallel. This is
+  // more threads to enter InitializeNowFunctionPointer() in parallel. This is
   // not a problem since all threads should end up writing out the same values
   // to the global variables.
   //
@@ -468,17 +471,11 @@ void InitializeNowFunctionPointers() {
   g_qpc_ticks_per_second = ticks_per_sec.QuadPart;
   ATOMIC_THREAD_FENCE(memory_order_release);
   g_now_function = now_function;
-  g_system_trace_now_function = system_trace_now_function;
 }
 
 TimeDelta InitialNowFunction() {
-  InitializeNowFunctionPointers();
+  InitializeNowFunctionPointer();
   return g_now_function();
-}
-
-TimeDelta InitialSystemTraceNowFunction() {
-  InitializeNowFunctionPointers();
-  return g_system_trace_now_function();
 }
 
 }  // namespace
@@ -502,7 +499,7 @@ TimeTicks TimeTicks::Now() {
 // static
 bool TimeTicks::IsHighResolution() {
   if (g_now_function == &InitialNowFunction)
-    InitializeNowFunctionPointers();
+    InitializeNowFunctionPointer();
   return g_now_function == &QPCNow;
 }
 
@@ -514,7 +511,7 @@ ThreadTicks ThreadTicks::Now() {
 
 // static
 TraceTicks TraceTicks::Now() {
-  return TraceTicks() + g_system_trace_now_function();
+  return TraceTicks() + g_now_function();
 }
 
 // static
