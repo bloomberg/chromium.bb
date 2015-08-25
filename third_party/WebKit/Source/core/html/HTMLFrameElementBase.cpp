@@ -32,6 +32,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/RemoteFrameView.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutPart.h"
 #include "core/loader/FrameLoader.h"
@@ -170,6 +171,8 @@ void HTMLFrameElementBase::attach(const AttachContext& context)
         if (Frame* frame = contentFrame()) {
             if (frame->isLocalFrame())
                 setWidget(toLocalFrame(frame)->view());
+            else if (frame->isRemoteFrame())
+                setWidget(toRemoteFrame(frame)->view());
         }
     }
 }
