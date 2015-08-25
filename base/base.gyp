@@ -1450,7 +1450,6 @@
             'base_java_library_process_type',
             'base_java_memory_pressure_level',
             'base_native_libraries_gen',
-            '../third_party/android_tools/android_tools.gyp:android_support_multidex_javalib',
             '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
           ],
           'includes': [ '../build/java.gypi' ],
@@ -1508,30 +1507,12 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          # TODO(jbudorick): Remove this once we roll to robolectric 3.0 and pull
-          # in the multidex shadow library. crbug.com/522043
-          # GN: //base:base_junit_test_support
-          'target_name': 'base_junit_test_support',
-          'type': 'none',
-          'dependencies': [
-            '../testing/android/junit/junit_test.gyp:junit_test_support',
-            '../third_party/android_tools/android_tools.gyp:android_support_multidex_javalib',
-          ],
-          'variables': {
-            'src_paths': [
-              '../base/test/android/junit/',
-            ],
-          },
-          'includes': [ '../build/host_jar.gypi' ]
-        },
-        {
           # GN: //base:base_junit_tests
           'target_name': 'base_junit_tests',
           'type': 'none',
           'dependencies': [
             'base_java',
             'base_java_test_support',
-            'base_junit_test_support',
             '../testing/android/junit/junit_test.gyp:junit_test_support',
           ],
           'variables': {

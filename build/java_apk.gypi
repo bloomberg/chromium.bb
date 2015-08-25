@@ -70,14 +70,11 @@
   'variables': {
     'tested_apk_obfuscated_jar_path%': '/',
     'tested_apk_dex_path%': '/',
-    'tested_apk_is_multidex%': 0,
     'additional_input_paths': [],
     'create_density_splits%': 0,
     'language_splits': [],
     'input_jars_paths': [],
     'library_dexed_jars_paths': [],
-    'main_dex_list_path': '<(intermediate_dir)/main_dex_list.txt',
-    'main_dex_list_paths': ['<(main_dex_list_path)'],
     'additional_src_dirs': [],
     'generated_src_dirs': [],
     'app_manifest_version_name%': '<(android_app_version_name)',
@@ -134,7 +131,7 @@
     'jar_path': '<(PRODUCT_DIR)/lib.java/<(jar_name)',
     'obfuscated_jar_path': '<(intermediate_dir)/obfuscated.jar',
     'test_jar_path': '<(PRODUCT_DIR)/test.lib.java/<(apk_name).jar',
-    'enable_multidex%': 0,
+    'dex_path': '<(intermediate_dir)/classes.dex',
     'emma_device_jar': '<(android_sdk_root)/tools/lib/emma_device.jar',
     'android_manifest_path%': '<(java_in_dir)/AndroidManifest.xml',
     'split_android_manifest_path': '<(intermediate_dir)/split-manifests/<(android_app_abi)/AndroidManifest.xml',
@@ -163,7 +160,6 @@
         'unsigned_apk_path': '<(intermediate_dir)/<(apk_name)-unsigned.apk',
         'unsigned_abi_split_apk_path': '<(intermediate_dir)/<(apk_name)-abi-<(android_app_abi)-unsigned.apk',
         'create_abi_split%': 0,
-        'enable_multidex%': 0,
       },
       'unsigned_apk_path': '<(unsigned_apk_path)',
       'unsigned_abi_split_apk_path': '<(unsigned_abi_split_apk_path)',
@@ -197,11 +193,6 @@
         }, {
           'managed_input_apk_path': '<(unsigned_apk_path)',
         }],
-        ['enable_multidex == 1', {
-          'dex_path': '<(intermediate_dir)/classes.dex.zip',
-        }, {
-          'dex_path': '<(intermediate_dir)/classes.dex',
-        }],
       ],
     },
     'native_lib_target%': '',
@@ -222,7 +213,6 @@
     'native_lib_placeholder_stamp': '<(apk_package_native_libs_dir)/<(android_app_abi)/native_lib_placeholder.stamp',
     'native_lib_placeholders': [],
     'main_apk_name': '<(apk_name)',
-    'dex_path': '<(dex_path)',
     'enable_errorprone%': '0',
     'errorprone_exe_path': '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
   },
@@ -241,7 +231,6 @@
       'apk_output_jar_path': '<(jar_path)',
       'tested_apk_obfuscated_jar_path': '<(obfuscated_jar_path)',
       'tested_apk_dex_path': '<(dex_path)',
-      'tested_apk_is_multidex': '<(enable_multidex)',
     },
   },
   'conditions': [
@@ -763,7 +752,8 @@
           ],
         },
       ],
-    }],
+    },
+    ]
   ],
   'dependencies': [
     '<(DEPTH)/tools/android/md5sum/md5sum.gyp:md5sum',
@@ -895,14 +885,6 @@
       ],
     },
     {
-      'action_name': 'main_dex_list_for_<(_target_name)',
-      'variables': {
-        'jar_path': '<(javac_jar_path)',
-        'output_path': '<(main_dex_list_path)',
-      },
-      'includes': [ 'android/main_dex_action.gypi' ],
-    },
-    {
       'action_name': 'instr_jar_<(_target_name)',
       'message': 'Instrumenting <(_target_name) jar',
       'variables': {
@@ -1023,40 +1005,14 @@
     {
       'action_name': 'dex_<(_target_name)',
       'variables': {
-        'dex_additional_options': [],
         'dex_input_paths': [
+          '>@(library_dexed_jars_paths)',
           '<(jar_path)',
         ],
         'output_path': '<(dex_path)',
         'proguard_enabled_input_path': '<(obfuscated_jar_path)',
       },
-      'conditions': [
-        ['enable_multidex == 1', {
-          'variables': {
-            'dex_additional_options': [
-              '--multi-dex',
-              '--main-dex-list-paths', '>@(main_dex_list_paths)',
-            ],
-          },
-          'inputs': [
-            '>@(main_dex_list_paths)',
-          ],
-        }]
-      ],
       'target_conditions': [
-        ['enable_multidex == 1 or tested_apk_is_multidex == 1', {
-          'variables': {
-            'dex_input_paths': [
-              '>@(input_jars_paths)',
-            ],
-          },
-        }, {
-          'variables': {
-            'dex_input_paths': [
-              '>@(library_dexed_jars_paths)',
-            ],
-          },
-        }],
         ['emma_instrument != 0', {
           'variables': {
             'dex_no_locals': 1,

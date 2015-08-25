@@ -13,7 +13,6 @@ import android.view.KeyEvent;
 import junit.framework.Assert;
 
 import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
-import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,12 +25,10 @@ import org.robolectric.util.ActivityController;
 
 /** Unit tests for {@link BaseChromiumApplication}. */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        application = BaseChromiumApplication.class,
-        shadows = {BaseChromiumApplicationTest.TrackingShadowActivity.class, ShadowMultiDex.class})
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {BaseChromiumApplicationTest.TrackingShadowActivity.class})
 public class BaseChromiumApplicationTest {
 
-    /** Shadow that tracks calls to onWindowFocusChanged and dispatchKeyEvent. */
     @Implements(Activity.class)
     public static class TrackingShadowActivity extends ShadowActivity {
         private int mWindowFocusCalls;
