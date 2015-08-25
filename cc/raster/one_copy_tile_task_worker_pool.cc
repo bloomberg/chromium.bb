@@ -376,7 +376,8 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
           resource_provider_->gpu_memory_buffer_manager()
               ->AllocateGpuMemoryBuffer(
                   staging_buffer->size,
-                  BufferFormat(resource_provider_->best_texture_format()),
+                  BufferFormat(
+                      resource_provider_->memory_efficient_texture_format()),
                   use_persistent_gpu_memory_buffers_
                       ? gfx::BufferUsage::PERSISTENT_MAP
                       : gfx::BufferUsage::MAP);
@@ -405,9 +406,9 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
       DCHECK(!playback_rect.IsEmpty())
           << "Why are we rastering a tile that's not dirty?";
       TileTaskWorkerPool::PlaybackToMemory(
-          data, resource_provider_->best_texture_format(), staging_buffer->size,
-          static_cast<size_t>(stride), raster_source, raster_full_rect,
-          playback_rect, scale, include_images);
+          data, resource_provider_->memory_efficient_texture_format(),
+          staging_buffer->size, static_cast<size_t>(stride), raster_source,
+          raster_full_rect, playback_rect, scale, include_images);
       staging_buffer->gpu_memory_buffer->Unmap();
       staging_buffer->content_id = new_content_id;
     }
@@ -424,7 +425,7 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
     DCHECK(gl);
 
     unsigned image_target = resource_provider_->GetImageTextureTarget(
-        resource_provider_->best_texture_format());
+        resource_provider_->memory_efficient_texture_format());
 
     // Create and bind staging texture.
     if (!staging_buffer->texture_id) {
@@ -444,7 +445,8 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
         staging_buffer->image_id = gl->CreateImageCHROMIUM(
             staging_buffer->gpu_memory_buffer->AsClientBuffer(),
             staging_buffer->size.width(), staging_buffer->size.height(),
-            GLInternalFormat(resource_provider_->best_texture_format()));
+            GLInternalFormat(
+                resource_provider_->memory_efficient_texture_format()));
         gl->BindTexImage2DCHROMIUM(image_target, staging_buffer->image_id);
       }
     } else {
@@ -471,7 +473,7 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
     }
 
     int bytes_per_row =
-        (BitsPerPixel(resource_provider_->best_texture_format()) *
+        (BitsPerPixel(resource_provider_->memory_efficient_texture_format()) *
          resource->size().width()) /
         8;
     int chunk_size_in_rows =
@@ -525,7 +527,8 @@ bool OneCopyTileTaskWorkerPool::OnMemoryDump(
   base::AutoLock lock(lock_);
 
   for (const auto& buffer : buffers_) {
-    buffer->OnMemoryDump(pmd, resource_provider_->best_texture_format(),
+    buffer->OnMemoryDump(pmd,
+                         resource_provider_->memory_efficient_texture_format(),
                          std::find(free_buffers_.begin(), free_buffers_.end(),
                                    buffer) != free_buffers_.end());
   }
