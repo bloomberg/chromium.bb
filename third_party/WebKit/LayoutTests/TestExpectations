@@ -1642,9 +1642,3 @@ crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Fail
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ ImageOnlyFailure Pass ]
 crbug.com/523500 http/tests/inspector-protocol/request-mixed-content-status.html [ Failure Pass ]
-
-# Temporary disabled for landing chromium-side patch.
-crbug.com/523904 http/tests/serviceworker/getregistration.html [ Skip ]
-crbug.com/523904 http/tests/serviceworker/getregistrations.html [ Skip ]
-crbug.com/523904 http/tests/serviceworker/multiple-register.html [ Skip ]
-crbug.com/523904 http/tests/serviceworker/unregister-then-register.html [ Skip ]
