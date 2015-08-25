@@ -92,7 +92,7 @@ inline static bool compareCSSValues(const CSSValue& first, const CSSValue& secon
 bool CSSValue::equals(const CSSValue& other) const
 {
     if (m_classType == other.m_classType) {
-        switch (m_classType) {
+        switch (classType()) {
         case BorderImageSliceClass:
             return compareCSSValues<CSSBorderImageSliceValue>(*this, other);
         case CanvasClass:
@@ -149,10 +149,9 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSSVGDocumentValue>(*this, other);
         case CSSContentDistributionClass:
             return compareCSSValues<CSSContentDistributionValue>(*this, other);
-        default:
-            ASSERT_NOT_REACHED();
-            return false;
         }
+        ASSERT_NOT_REACHED();
+        return false;
     }
     return false;
 }
