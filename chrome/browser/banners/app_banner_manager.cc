@@ -31,6 +31,7 @@ AppBannerManager::AppBannerManager(int icon_size)
     : ideal_icon_size_(icon_size),
       data_fetcher_(nullptr),
       weak_factory_(this) {
+  AppBannerSettingsHelper::UpdateMinutesBetweenVisits();
 }
 
 AppBannerManager::AppBannerManager(content::WebContents* web_contents,
@@ -39,6 +40,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents,
       ideal_icon_size_(icon_size),
       data_fetcher_(nullptr),
       weak_factory_(this) {
+  AppBannerSettingsHelper::UpdateMinutesBetweenVisits();
 }
 
 AppBannerManager::~AppBannerManager() {

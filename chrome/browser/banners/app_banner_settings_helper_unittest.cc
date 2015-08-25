@@ -42,8 +42,170 @@ class AppBannerSettingsHelperTest : public ChromeRenderViewHostTestHarness {};
 
 }  // namespace
 
+TEST_F(AppBannerSettingsHelperTest, BucketTimeToResolutionInvalid) {
+  base::Time reference_time = GetReferenceTime();
+
+  // Test null, 1 day, and greater than 1 day cases.
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 0),
+            reference_time.LocalMidnight());
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 1440),
+      reference_time.LocalMidnight());
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 2880),
+      reference_time.LocalMidnight());
+
+  // Test number of minutes in 1 day + 1.
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 1441),
+      reference_time.LocalMidnight());
+
+  // Test minutes which are not divisible by 1440 (minutes in a day).
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 7),
+            reference_time.LocalMidnight());
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 13),
+            reference_time.LocalMidnight());
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 21),
+            reference_time.LocalMidnight());
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 35),
+            reference_time.LocalMidnight());
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 42),
+            reference_time.LocalMidnight());
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 50),
+            reference_time.LocalMidnight());
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 59),
+            reference_time.LocalMidnight());
+}
+
+TEST_F(AppBannerSettingsHelperTest, BucketTimeToResolutionValid) {
+  // 11:00
+  base::Time reference_time = GetReferenceTime();
+  // 13:44
+  base::Time same_day_later =
+      reference_time + base::TimeDelta::FromMinutes(164);
+  // 10:18
+  base::Time same_day_earlier =
+      reference_time - base::TimeDelta::FromMinutes(42);
+  base::Time midnight = reference_time.LocalMidnight();
+  base::Time bucketed_hour = midnight + base::TimeDelta::FromHours(11);
+  base::Time bucketed_hour_later = midnight + base::TimeDelta::FromHours(13);
+  base::Time bucketed_hour_earlier = midnight + base::TimeDelta::FromHours(10);
+
+  // Resolution of 1 minute: 11:00, 13:44, 10:18.
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 1),
+            bucketed_hour);
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 1),
+            bucketed_hour_later + base::TimeDelta::FromMinutes(44));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 1),
+      bucketed_hour_earlier + base::TimeDelta::FromMinutes(18));
+
+  // Resolution of 3 minutes: 11:00, 13:43, 10:18.
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 3),
+            bucketed_hour);
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 3),
+            bucketed_hour_later + base::TimeDelta::FromMinutes(42));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 3),
+      bucketed_hour_earlier + base::TimeDelta::FromMinutes(18));
+
+  // Resolution of 10 minutes: 11:00, 13:40, 10:10.
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 10),
+            bucketed_hour);
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 10),
+            bucketed_hour_later + base::TimeDelta::FromMinutes(40));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 10),
+      bucketed_hour_earlier + base::TimeDelta::FromMinutes(10));
+
+  // Resolution of 20 minutes: 11:00, 13:40, 10:00.
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 20),
+            bucketed_hour);
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 20),
+            bucketed_hour_later + base::TimeDelta::FromMinutes(40));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 20),
+      bucketed_hour_earlier);
+
+  // Resolution of 60 minutes: 11:00, 13:00, 10:00.
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 60),
+            bucketed_hour);
+  EXPECT_EQ(AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 60),
+            bucketed_hour_later);
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 60),
+      bucketed_hour_earlier);
+
+  // Resolution of 120 minutes: 10:00, 12:00, 10:00.
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 120),
+      bucketed_hour_earlier);
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 120),
+      bucketed_hour_later - base::TimeDelta::FromHours(1));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 120),
+      bucketed_hour_earlier);
+
+  // Resolution of 180 minutes: 9:00, 12:00, 9:00.
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 180),
+      bucketed_hour_earlier - base::TimeDelta::FromHours(1));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 180),
+      bucketed_hour_later - base::TimeDelta::FromHours(1));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 180),
+      bucketed_hour_earlier - base::TimeDelta::FromHours(1));
+
+  // Resolution of 240 minutes: 8:00, 12:00, 8:00.
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 240),
+      midnight + base::TimeDelta::FromHours(8));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 240),
+      midnight + base::TimeDelta::FromHours(12));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 240),
+      midnight + base::TimeDelta::FromHours(8));
+
+  // Resolution of 360 minutes: 6:00, 12:00, 6:00
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 360),
+      midnight + base::TimeDelta::FromHours(6));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 360),
+      midnight + base::TimeDelta::FromHours(12));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 360),
+      midnight + base::TimeDelta::FromHours(6));
+
+  // Resolution of 720 minutes: 0:00, 12:00, 0:00
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 720),
+      midnight);
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 720),
+      midnight + base::TimeDelta::FromHours(12));
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 720),
+      midnight);
+
+  // Resolution of 1440 minutes: 0:00, 0:00, 0:00
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(reference_time, 1440),
+      midnight);
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_later, 1440),
+      midnight);
+  EXPECT_EQ(
+      AppBannerSettingsHelper::BucketTimeToResolution(same_day_earlier, 1440),
+      midnight);
+}
+
 TEST_F(AppBannerSettingsHelperTest, CouldShowEvents) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 1);
+  AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(1440);
   GURL url(kTestURL);
   NavigateAndCommit(url);
 
@@ -76,7 +238,7 @@ TEST_F(AppBannerSettingsHelperTest, CouldShowEvents) {
       web_contents(), url, kTestPackageName, three_days_prior,
       ui::PAGE_TRANSITION_GENERATED);
 
-  // Now there should be two days.
+  // Now there should be two events.
   events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
       web_contents(), url, kTestPackageName);
   EXPECT_EQ(2u, events.size());
@@ -90,7 +252,7 @@ TEST_F(AppBannerSettingsHelperTest, CouldShowEvents) {
       web_contents(), url, kTestPackageName, reference_time,
       ui::PAGE_TRANSITION_LINK);
 
-  // Now there should still be two days, but the first date should have been
+  // Now there should still be two events, but the first date should have been
   // removed.
   events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
       web_contents(), url, kTestPackageName);
@@ -100,12 +262,12 @@ TEST_F(AppBannerSettingsHelperTest, CouldShowEvents) {
   EXPECT_EQ(events[0].engagement, 1);
   EXPECT_EQ(events[1].engagement, 1);
 
-  // Now add the the other day on the reference date.
+  // Now add the the other date on the reference day.
   AppBannerSettingsHelper::RecordBannerCouldShowEvent(
       web_contents(), url, kTestPackageName, same_day,
       ui::PAGE_TRANSITION_RELOAD);
 
-  // Now there should still be the same two days.
+  // Now there should still be the same two dates.
   events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
       web_contents(), url, kTestPackageName);
   EXPECT_EQ(2u, events.size());
@@ -115,8 +277,102 @@ TEST_F(AppBannerSettingsHelperTest, CouldShowEvents) {
   EXPECT_EQ(events[1].engagement, 1);
 }
 
+TEST_F(AppBannerSettingsHelperTest, CouldShowEventsDifferentResolution) {
+  AppBannerSettingsHelper::SetEngagementWeights(1, 1);
+  AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(20);
+  GURL url(kTestURL);
+  NavigateAndCommit(url);
+
+  // Check that by default, there are no events recorded.
+  std::vector<AppBannerSettingsHelper::BannerEvent> events =
+      AppBannerSettingsHelper::GetCouldShowBannerEvents(web_contents(), url,
+                                                        kTestPackageName);
+  EXPECT_TRUE(events.empty());
+
+  base::Time reference_time = GetReferenceTime();
+  base::Time same_day_ignored_i =
+      reference_time + base::TimeDelta::FromMinutes(10);
+  base::Time same_day_counted_i =
+      reference_time + base::TimeDelta::FromMinutes(20);
+  base::Time same_day_counted_ii =
+      reference_time + base::TimeDelta::FromMinutes(45);
+  base::Time same_day_ignored_ii =
+      reference_time + base::TimeDelta::FromMinutes(59);
+
+  // Add the reference date.
+  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
+      web_contents(), url, kTestPackageName, reference_time,
+      ui::PAGE_TRANSITION_LINK);
+
+  // There should be one event recorded
+  events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
+      web_contents(), url, kTestPackageName);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_TRUE(IsWithinDay(events[0].time, reference_time));
+  EXPECT_EQ(events[0].engagement, 1);
+
+  // Now add the the ignored date on the reference day.
+  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
+      web_contents(), url, kTestPackageName, same_day_ignored_i,
+      ui::PAGE_TRANSITION_RELOAD);
+
+  // Now there should still one event.
+  events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
+      web_contents(), url, kTestPackageName);
+  EXPECT_EQ(1u, events.size());
+  EXPECT_TRUE(IsWithinDay(events[0].time, reference_time));
+  EXPECT_EQ(events[0].engagement, 1);
+
+  // Now add the the first counted date on the reference day.
+  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
+      web_contents(), url, kTestPackageName, same_day_counted_i,
+      ui::PAGE_TRANSITION_TYPED);
+
+  // Now there should be two events.
+  events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
+      web_contents(), url, kTestPackageName);
+  EXPECT_EQ(2u, events.size());
+  EXPECT_TRUE(IsWithinDay(events[0].time, reference_time));
+  EXPECT_TRUE(IsWithinDay(events[1].time, same_day_counted_i));
+  EXPECT_EQ(events[0].engagement, 1);
+  EXPECT_EQ(events[1].engagement, 1);
+
+  // Now add the the second counted date on the reference day.
+  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
+      web_contents(), url, kTestPackageName, same_day_counted_ii,
+      ui::PAGE_TRANSITION_GENERATED);
+
+  // Now there should be three events.
+  events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
+      web_contents(), url, kTestPackageName);
+  EXPECT_EQ(3u, events.size());
+  EXPECT_TRUE(IsWithinDay(events[0].time, reference_time));
+  EXPECT_TRUE(IsWithinDay(events[1].time, same_day_counted_i));
+  EXPECT_TRUE(IsWithinDay(events[2].time, same_day_counted_ii));
+  EXPECT_EQ(events[0].engagement, 1);
+  EXPECT_EQ(events[1].engagement, 1);
+  EXPECT_EQ(events[2].engagement, 1);
+
+  // Now add the the second ignored date on the reference day.
+  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
+      web_contents(), url, kTestPackageName, same_day_ignored_ii,
+      ui::PAGE_TRANSITION_LINK);
+
+  // Now there should still be three events.
+  events = AppBannerSettingsHelper::GetCouldShowBannerEvents(
+      web_contents(), url, kTestPackageName);
+  EXPECT_EQ(3u, events.size());
+  EXPECT_TRUE(IsWithinDay(events[0].time, reference_time));
+  EXPECT_TRUE(IsWithinDay(events[1].time, same_day_counted_i));
+  EXPECT_TRUE(IsWithinDay(events[2].time, same_day_counted_ii));
+  EXPECT_EQ(events[0].engagement, 1);
+  EXPECT_EQ(events[1].engagement, 1);
+  EXPECT_EQ(events[2].engagement, 1);
+}
+
 TEST_F(AppBannerSettingsHelperTest, SingleEvents) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 1);
+  AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(1440);
   GURL url(kTestURL);
   NavigateAndCommit(url);
 
@@ -239,6 +495,7 @@ TEST_F(AppBannerSettingsHelperTest, CouldShowEventReplacedWithHigherWeight) {
 
 TEST_F(AppBannerSettingsHelperTest, IndirectEngagementWithLowerWeight) {
   AppBannerSettingsHelper::SetEngagementWeights(2, 0.5);
+  AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(1440);
   GURL url(kTestURL);
   NavigateAndCommit(url);
 
@@ -300,6 +557,7 @@ TEST_F(AppBannerSettingsHelperTest, DirectEngagementWithHigherWeight) {
 
 TEST_F(AppBannerSettingsHelperTest, ShouldShowFromEngagement) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 1);
+  AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(1440);
   GURL url(kTestURL);
   NavigateAndCommit(url);
 
@@ -374,6 +632,7 @@ TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterBlocking) {
 
 TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterShowing) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 1);
+  AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(1440);
   GURL url(kTestURL);
   NavigateAndCommit(url);
 
@@ -413,6 +672,7 @@ TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterShowing) {
 
 TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterAdding) {
   AppBannerSettingsHelper::SetEngagementWeights(1, 1);
+  AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(1440);
   GURL url(kTestURL);
   NavigateAndCommit(url);
 
