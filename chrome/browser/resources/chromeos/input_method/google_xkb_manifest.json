@@ -860,6 +860,20 @@
       "options_page": "hmm_options.html?code=xkb:tr::tur"
     },
     {
+      "name": "__MSG_keyboard_turkish_f__",
+      "type": "ime",
+      "id": "xkb:tr:f:tur",
+      "description": "",
+      "language": [
+        "tr"
+      ],
+      "layouts": [
+        "tr(f)"
+      ],
+      "input_view": "inputview.html#id=tr-f&language=tr&passwordLayout=tr-f&name=keyboard_turkish_f",
+      "options_page": "hmm_options.html?code=xkb:tr:f:tur"
+    },
+    {
       "name": "__MSG_keyboard_ukrainian__",
       "type": "ime",
       "id": "xkb:ua::ukr",

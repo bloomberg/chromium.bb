@@ -4910,6 +4910,9 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_TURKEY" desc="In the language menu button, this shows the input mode [Turkish keyboard].">
     Turkish
   </message>
+  <message name="IDS_STATUSBAR_LAYOUT_TURKEY_F" desc="In the language menu button, this shows the input mode [Turkish-F keyboard].">
+    Turkish-F
+  </message>
   <message name="IDS_STATUSBAR_LAYOUT_PORTUGAL" desc="In the language menu button, this shows the input mode [Portuguese keyboard].">
     Portuguese
   </message>
@@ -5132,6 +5135,9 @@ Battery full
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_TURKISH" desc="The input method name shows in system tray menu, this shows [Turkish keyboard].">
     Turkish keyboard
+  </message>
+  <message name="IDS_IME_NAME_KEYBOARD_TURKISH_F" desc="The input method name shows in system tray menu, this shows [Turkish-F keyboard].">
+    Turkish-F keyboard
   </message>
   <message name="IDS_IME_NAME_KEYBOARD_UK_DVORAK" desc="The input method name shows in system tray menu, this shows [UK Dvorak keyboard].">
     UK Dvorak keyboard

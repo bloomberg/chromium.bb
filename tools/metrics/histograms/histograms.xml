@@ -61818,6 +61818,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </int>
   <int value="-994915284" label="xkb:ch:fr:fra">Swiss French keyboard</int>
   <int value="-955047705" label="xkb:sk::slo">Slovakian keyboard</int>
+  <int value="-942739805" label="xkb:tr:f:tur">Turkish-F keyboard</int>
   <int value="-923332388" label="xkb:ua::ukr">Ukrainian keyboard</int>
   <int value="-917118451" label="vkd_vi_tcvn">Vietnamese keyboard (TCVN)</int>
   <int value="-848378885" label="vkd_ethi">Ethiopic keyboard</int>
