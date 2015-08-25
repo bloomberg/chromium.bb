@@ -166,6 +166,9 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet) {}
 
+  // Called when the unauthenticated portion of the header has been parsed.
+  virtual void OnUnauthenticatedHeader(const QuicPacketHeader& header) {}
+
   // Called when a packet is received with a connection id that does not
   // match the ID of this connection.
   virtual void OnIncorrectConnectionId(

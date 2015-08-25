@@ -485,6 +485,13 @@ void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
                  packet.length()));
 }
 
+void QuicConnectionLogger::OnUnauthenticatedHeader(
+    const QuicPacketHeader& header) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED,
+      base::Bind(&NetLogQuicPacketHeaderCallback, &header));
+}
+
 void QuicConnectionLogger::OnIncorrectConnectionId(
     QuicConnectionId connection_id) {
   ++num_incorrect_connection_ids_;
@@ -508,9 +515,7 @@ void QuicConnectionLogger::OnProtocolVersionMismatch(
 }
 
 void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_PACKET_HEADER_RECEIVED,
-      base::Bind(&NetLogQuicPacketHeaderCallback, &header));
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PACKET_AUTHENTICATED);
   ++num_packets_received_;
   if (largest_received_packet_sequence_number_ <
       header.packet_sequence_number) {

@@ -597,6 +597,10 @@ bool QuicConnection::OnUnauthenticatedPublicHeader(
 }
 
 bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
+  if (debug_visitor_ != nullptr) {
+    debug_visitor_->OnUnauthenticatedHeader(header);
+  }
+
   // Check that any public reset packet with a different connection ID that was
   // routed to this QuicConnection has been redirected before control reaches
   // here.

@@ -443,9 +443,10 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
       NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
-  // ... and also a TYPE_QUIC_SESSION_PACKET_HEADER_RECEIVED.
+  // ... and also a TYPE_QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED.
   pos = ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_QUIC_SESSION_PACKET_HEADER_RECEIVED,
+      entries, 0,
+      NetLog::TYPE_QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED,
       NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
@@ -453,6 +454,12 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   ASSERT_TRUE(entries[pos].GetStringValue(
       "packet_sequence_number", &packet_sequence_number));
   EXPECT_EQ("1", packet_sequence_number);
+
+  // ... and also a TYPE_QUIC_SESSION_PACKET_AUTHENTICATED.
+  pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_QUIC_SESSION_PACKET_AUTHENTICATED,
+      NetLog::PHASE_NONE);
+  EXPECT_LT(0, pos);
 
   // ... and also a QUIC_SESSION_STREAM_FRAME_RECEIVED.
   pos = ExpectLogContainsSomewhere(

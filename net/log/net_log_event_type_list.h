@@ -1472,17 +1472,21 @@ EVENT_TYPE(QUIC_SESSION_PACKET_RETRANSMITTED)
 //   }
 EVENT_TYPE(QUIC_SESSION_DUPLICATE_PACKET_RECEIVED)
 
-// Session received a QUIC packet header for a valid packet.
+// Session received a QUIC packet header, which has not yet been authenticated.
 //   {
 //     "connection_id": <The 64-bit CONNECTION_ID for this connection, as a
 //                       base-10 string>,
-//     "public_flags": <The public flags set for this packet>,
+//     "reset_flag": <True if the reset flag is set for this packet>,
+//     "version_flag": <True if the version flag is set for this packet>,
 //     "packet_sequence_number": <The packet's full 64-bit sequence number,
 //                                as a base-10 string.>,
 //     "private_flags": <The private flags set for this packet>,
 //     "fec_group": <The FEC group of this packet>,
 //   }
-EVENT_TYPE(QUIC_SESSION_PACKET_HEADER_RECEIVED)
+EVENT_TYPE(QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED)
+
+// Session has authenticated a QUIC packet.
+EVENT_TYPE(QUIC_SESSION_PACKET_AUTHENTICATED)
 
 // Session received a STREAM frame.
 //   {

@@ -46,6 +46,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnPacketReceived(const IPEndPoint& self_address,
                         const IPEndPoint& peer_address,
                         const QuicEncryptedPacket& packet) override;
+  void OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   void OnIncorrectConnectionId(QuicConnectionId connection_id) override;
   void OnUndecryptablePacket() override;
   void OnDuplicatePacket(QuicPacketSequenceNumber sequence_number) override;
