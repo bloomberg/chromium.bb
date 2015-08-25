@@ -2122,7 +2122,9 @@ public class ContentViewCore implements
                         dismissTextHandles();
                         clearUserSelection();
                     }
-                    getContentViewClient().onContextualActionBarHidden();
+                    if (!supportsFloatingActionMode()) {
+                        getContentViewClient().onContextualActionBarHidden();
+                    }
                 }
 
                 @Override
@@ -2168,7 +2170,11 @@ public class ContentViewCore implements
             // There is no ActionMode, so remove the selection.
             clearSelection();
         } else {
-            getContentViewClient().onContextualActionBarShown();
+            // TODO(jdduke): Refactor ContentViewClient.onContextualActionBarShown to be aware of
+            // non-action-bar (i.e., floating) ActionMode instances, crbug.com/524666.
+            if (!supportsFloatingActionMode()) {
+                getContentViewClient().onContextualActionBarShown();
+            }
         }
     }
 
