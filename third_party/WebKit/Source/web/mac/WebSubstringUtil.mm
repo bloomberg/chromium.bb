@@ -59,14 +59,14 @@
 
 using namespace blink;
 
-static NSAttributedString* attributedSubstringFromRange(const Range* range)
+static NSAttributedString* attributedSubstringFromRange(const EphemeralRange& range)
 {
     NSMutableAttributedString* string = [[NSMutableAttributedString alloc] init];
     NSMutableDictionary* attrs = [NSMutableDictionary dictionary];
-    size_t length = range->endOffset() - range->startOffset();
+    size_t length = range.endPosition().computeOffsetInContainerNode() - range.startPosition().computeOffsetInContainerNode();
 
     unsigned position = 0;
-    for (TextIterator it(range->startPosition(), range->endPosition()); !it.atEnd() && [string length] < length; it.advance()) {
+    for (TextIterator it(range.startPosition(), range.endPosition()); !it.atEnd() && [string length] < length; it.advance()) {
         unsigned numCharacters = it.length();
         if (!numCharacters)
             continue;
@@ -127,13 +127,14 @@ NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPo
     // Expand to word under point.
     VisibleSelection selection(range);
     selection.expandUsingGranularity(WordGranularity);
-    RefPtrWillBeRawPtr<Range> wordRange = selection.toNormalizedRange();
+    const EphemeralRange wordRange = selection.toNormalizedEphemeralRange();
 
     // Convert to NSAttributedString.
-    NSAttributedString* string = attributedSubstringFromRange(wordRange.get());
+    NSAttributedString* string = attributedSubstringFromRange(wordRange);
 
     // Compute bottom left corner and convert to AppKit coordinates.
-    IntRect stringRect = enclosingIntRect(wordRange->boundingRect());
+    // TODO(yosin) We shold avoid to create |Range| object.
+    IntRect stringRect = enclosingIntRect(createRange(wordRange)->boundingRect());
     IntPoint stringPoint = stringRect.minXMaxYCorner();
     stringPoint.setY(frameView->height() - stringPoint.y());
 
@@ -162,8 +163,7 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebLocalFrame* 
     if (ephemeralRange.isNull())
         return nil;
 
-    RefPtrWillBeRawPtr<Range> range = Range::create(ephemeralRange.document(), ephemeralRange.startPosition(), ephemeralRange.endPosition());
-    return attributedSubstringFromRange(range.get());
+    return attributedSubstringFromRange(ephemeralRange);
 }
 
 } // namespace blink
