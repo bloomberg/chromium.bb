@@ -16,9 +16,11 @@
               "children": [
                 {
                   "bounds": [785, 1000],
+                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
+                      "shouldFlattenTransform": false,
                       "children": [
                         {
                           "position": [192, 0],

@@ -33,10 +33,11 @@ Lorem Ipsum
               "children": [
                 {
                   "bounds": [285, 665],
+                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -142,10 +143,10 @@ Lorem Ipsum
 *** iteration 2: ***
 
 {
-  "bounds": [785, 2526],
+  "bounds": [785, 2541],
   "children": [
     {
-      "bounds": [785, 2526],
+      "bounds": [785, 2541],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -161,10 +162,11 @@ Lorem Ipsum
               "children": [
                 {
                   "bounds": [285, 665],
+                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -270,10 +272,10 @@ Lorem Ipsum
 *** iteration 3: ***
 
 {
-  "bounds": [785, 4446],
+  "bounds": [785, 4476],
   "children": [
     {
-      "bounds": [785, 4446],
+      "bounds": [785, 4476],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -287,10 +289,12 @@ Lorem Ipsum
               "children": [
                 {
                   "bounds": [285, 665],
+                  "shouldFlattenTransform": false,
                   "children": [
                     {
                       "position": [0, 195],
                       "bounds": [285, 15],
+                      "shouldFlattenTransform": false,
                       "drawsContent": true
                     }
                   ]
@@ -397,10 +401,10 @@ Lorem Ipsum
 *** iteration 4: ***
 
 {
-  "bounds": [785, 6351],
+  "bounds": [785, 6411],
   "children": [
     {
-      "bounds": [785, 6351],
+      "bounds": [785, 6411],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
@@ -414,10 +418,12 @@ Lorem Ipsum
               "children": [
                 {
                   "bounds": [285, 665],
+                  "shouldFlattenTransform": false,
                   "children": [
                     {
                       "position": [0, 195],
-                      "bounds": [285, 15]
+                      "bounds": [285, 15],
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }

@@ -17,10 +17,11 @@
               "children": [
                 {
                   "bounds": [285, 530],
+                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }

@@ -31,10 +31,11 @@
                               "children": [
                                 {
                                   "bounds": [1200, 10000],
+                                  "shouldFlattenTransform": false,
                                   "drawsContent": true,
                                   "children": [
                                     {
-
+                                      "shouldFlattenTransform": false
                                     }
                                   ]
                                 }

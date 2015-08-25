@@ -19,11 +19,12 @@
               "bounds": [189, 124],
               "children": [
                 {
-                  "bounds": [189, 308],
+                  "bounds": [189, 270],
+                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -56,11 +57,12 @@
               "bounds": [189, 124],
               "children": [
                 {
-                  "bounds": [189, 308],
+                  "bounds": [189, 270],
+                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }

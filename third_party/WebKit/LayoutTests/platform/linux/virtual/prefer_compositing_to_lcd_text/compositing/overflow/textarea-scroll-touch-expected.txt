@@ -20,10 +20,11 @@
               "children": [
                 {
                   "bounds": [189, 328],
+                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -58,10 +59,11 @@
               "children": [
                 {
                   "bounds": [189, 328],
+                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
