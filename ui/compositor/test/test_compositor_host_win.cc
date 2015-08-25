@@ -18,9 +18,9 @@ class TestCompositorHostWin : public TestCompositorHost,
   TestCompositorHostWin(const gfx::Rect& bounds,
                         ui::ContextFactory* context_factory) {
     Init(NULL, bounds);
-    compositor_.reset(new ui::Compositor(hwnd(),
-                                         context_factory,
+    compositor_.reset(new ui::Compositor(context_factory,
                                          base::ThreadTaskRunnerHandle::Get()));
+    compositor_->SetAcceleratedWidgetAndStartCompositor(hwnd());
     compositor_->SetScaleAndSize(1.0f, GetSize());
   }
 

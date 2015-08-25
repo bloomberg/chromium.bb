@@ -177,7 +177,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void DestroyCompositor();
   void DestroyDispatcher();
 
-  void CreateCompositor(gfx::AcceleratedWidget accelerated_widget);
+  void CreateCompositor();
+  void OnAcceleratedWidgetAvailable();
 
   // Returns the location of the RootWindow on native screen.
   virtual gfx::Point GetLocationOnNativeScreen() const = 0;

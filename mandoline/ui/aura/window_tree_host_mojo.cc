@@ -31,7 +31,8 @@ WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mojo::View* view)
   ui::ContextFactory* default_context_factory =
       aura::Env::GetInstance()->context_factory();
   aura::Env::GetInstance()->set_context_factory(context_factory_.get());
-  CreateCompositor(GetAcceleratedWidget());
+  CreateCompositor();
+  OnAcceleratedWidgetAvailable();
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
   DCHECK_EQ(context_factory_.get(), compositor()->context_factory());
 

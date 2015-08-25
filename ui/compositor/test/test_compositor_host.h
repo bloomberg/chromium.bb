@@ -22,7 +22,7 @@ class TestCompositorHost {
   static TestCompositorHost* Create(const gfx::Rect& bounds,
                                     ui::ContextFactory* context_factory);
 
-  // Shows the TestCompositorHost.
+  // Shows the TestCompositorHost. Must only be called once.
   virtual void Show() = 0;
 
   virtual Compositor* GetCompositor() = 0;

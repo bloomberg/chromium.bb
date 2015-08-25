@@ -145,7 +145,8 @@ void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
               kForceSoftwareCompositor,
               reinterpret_cast<HANDLE>(true));
   }
-  CreateCompositor(GetAcceleratedWidget());
+  CreateCompositor();
+  OnAcceleratedWidgetAvailable();
 }
 
 void DesktopWindowTreeHostWin::OnNativeWidgetCreated(

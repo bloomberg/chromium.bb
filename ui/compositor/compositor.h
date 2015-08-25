@@ -158,8 +158,7 @@ class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
       NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient) {
  public:
-  Compositor(gfx::AcceleratedWidget widget,
-             ui::ContextFactory* context_factory,
+  Compositor(ui::ContextFactory* context_factory,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~Compositor() override;
 
@@ -230,7 +229,8 @@ class COMPOSITOR_EXPORT Compositor
   // context.
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 
-  // Returns the widget for this compositor.
+  // Sets the widget for the compositor to render into.
+  void SetAcceleratedWidgetAndStartCompositor(gfx::AcceleratedWidget widget);
   gfx::AcceleratedWidget widget() const { return widget_; }
 
   // Returns the vsync manager for this compositor.

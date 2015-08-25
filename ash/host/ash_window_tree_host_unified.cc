@@ -47,7 +47,8 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
 AshWindowTreeHostUnified::AshWindowTreeHostUnified(
     const gfx::Rect& initial_bounds)
     : bounds_(gfx::Rect(initial_bounds.size())), transformer_helper_(this) {
-  CreateCompositor(GetAcceleratedWidget());
+  CreateCompositor();
+  OnAcceleratedWidgetAvailable();
   transformer_helper_.Init();
 }
 

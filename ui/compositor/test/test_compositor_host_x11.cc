@@ -34,7 +34,7 @@ class TestCompositorHostX11 : public TestCompositorHost {
 
   ui::ContextFactory* context_factory_;
 
-  scoped_ptr<ui::Compositor> compositor_;
+  ui::Compositor compositor_;
 
   XID window_;
 
@@ -45,8 +45,8 @@ TestCompositorHostX11::TestCompositorHostX11(
     const gfx::Rect& bounds,
     ui::ContextFactory* context_factory)
     : bounds_(bounds),
-      context_factory_(context_factory) {
-}
+      context_factory_(context_factory),
+      compositor_(context_factory_, base::ThreadTaskRunnerHandle::Get()) {}
 
 TestCompositorHostX11::~TestCompositorHostX11() {
 }
@@ -73,14 +73,12 @@ void TestCompositorHostX11::Show() {
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
-  compositor_.reset(new ui::Compositor(window_,
-                                       context_factory_,
-                                       base::ThreadTaskRunnerHandle::Get()));
-  compositor_->SetScaleAndSize(1.0f, bounds_.size());
+  compositor_.SetAcceleratedWidgetAndStartCompositor(window_);
+  compositor_.SetScaleAndSize(1.0f, bounds_.size());
 }
 
 ui::Compositor* TestCompositorHostX11::GetCompositor() {
-  return compositor_.get();
+  return &compositor_;
 }
 
 // static

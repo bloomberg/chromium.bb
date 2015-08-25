@@ -31,7 +31,7 @@ class TestCompositorHostOzone : public TestCompositorHost {
 
   ui::ContextFactory* context_factory_;
 
-  scoped_ptr<ui::Compositor> compositor_;
+  ui::Compositor compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostOzone);
 };
@@ -40,7 +40,8 @@ TestCompositorHostOzone::TestCompositorHostOzone(
     const gfx::Rect& bounds,
     ui::ContextFactory* context_factory)
     : bounds_(bounds),
-      context_factory_(context_factory) {}
+      context_factory_(context_factory),
+      compositor_(context_factory, base::ThreadTaskRunnerHandle::Get()) {}
 
 TestCompositorHostOzone::~TestCompositorHostOzone() {}
 
@@ -52,14 +53,12 @@ void TestCompositorHostOzone::Show() {
   // with a non-0 widget.
   // TODO(rjkroege): Use a "real" ozone widget when it is
   // available: http://crbug.com/255128
-  compositor_.reset(new ui::Compositor(1,
-                                       context_factory_,
-                                       base::ThreadTaskRunnerHandle::Get()));
-  compositor_->SetScaleAndSize(1.0f, bounds_.size());
+  compositor_.SetAcceleratedWidgetAndStartCompositor(1);
+  compositor_.SetScaleAndSize(1.0f, bounds_.size());
 }
 
 ui::Compositor* TestCompositorHostOzone::GetCompositor() {
-  return compositor_.get();
+  return &compositor_;
 }
 
 // static

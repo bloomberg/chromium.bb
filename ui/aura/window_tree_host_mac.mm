@@ -16,7 +16,8 @@ WindowTreeHostMac::WindowTreeHostMac(const gfx::Rect& bounds) {
                     styleMask:NSBorderlessWindowMask
                       backing:NSBackingStoreBuffered
                         defer:NO]);
-  CreateCompositor(GetAcceleratedWidget());
+  CreateCompositor();
+  OnAcceleratedWidgetAvailable();
 }
 
 WindowTreeHostMac::~WindowTreeHostMac() {

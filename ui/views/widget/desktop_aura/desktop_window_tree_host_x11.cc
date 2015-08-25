@@ -1275,7 +1275,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (window_icon) {
     SetWindowIcons(gfx::ImageSkia(), *window_icon);
   }
-  CreateCompositor(GetAcceleratedWidget());
+  CreateCompositor();
+  OnAcceleratedWidgetAvailable();
 }
 
 gfx::Size DesktopWindowTreeHostX11::AdjustSize(

@@ -276,7 +276,8 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
 
   XRRSelectInput(xdisplay_, x_root_window_,
                  RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
-  CreateCompositor(GetAcceleratedWidget());
+  CreateCompositor();
+  OnAcceleratedWidgetAvailable();
 }
 
 WindowTreeHostX11::~WindowTreeHostX11() {

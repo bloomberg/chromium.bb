@@ -67,8 +67,9 @@ void LayerOwnerTestWithCompositor::SetUp() {
   ui::ContextFactory* context_factory =
       ui::InitializeContextFactoryForTests(false);
 
-  compositor_.reset(new ui::Compositor(gfx::kNullAcceleratedWidget,
-                                       context_factory, task_runner));
+  compositor_.reset(new ui::Compositor(context_factory, task_runner));
+  compositor_->SetAcceleratedWidgetAndStartCompositor(
+      gfx::kNullAcceleratedWidget);
 }
 
 void LayerOwnerTestWithCompositor::TearDown() {

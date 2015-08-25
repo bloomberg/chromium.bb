@@ -104,7 +104,8 @@ void WindowTreeHostOzone::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
   widget_ = widget;
-  CreateCompositor(widget_);
+  CreateCompositor();
+  WindowTreeHost::OnAcceleratedWidgetAvailable();
 }
 
 void WindowTreeHostOzone::OnActivationChanged(bool active) {

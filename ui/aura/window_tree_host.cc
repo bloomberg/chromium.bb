@@ -239,28 +239,26 @@ void WindowTreeHost::DestroyDispatcher() {
   //window()->RemoveOrDestroyChildren();
 }
 
-void WindowTreeHost::CreateCompositor(
-    gfx::AcceleratedWidget accelerated_widget) {
+void WindowTreeHost::CreateCompositor() {
   DCHECK(Env::GetInstance());
   ui::ContextFactory* context_factory = Env::GetInstance()->context_factory();
   DCHECK(context_factory);
   compositor_.reset(
-      new ui::Compositor(GetAcceleratedWidget(),
-                         context_factory,
-                         base::ThreadTaskRunnerHandle::Get()));
-  // TODO(beng): I think this setup should probably all move to a "accelerated
-  // widget available" function.
+      new ui::Compositor(context_factory, base::ThreadTaskRunnerHandle::Get()));
   if (!dispatcher()) {
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);
     window()->SetName("RootWindow");
     window()->SetEventTargeter(
         scoped_ptr<ui::EventTargeter>(new WindowTargeter()));
-    prop_.reset(new ui::ViewProp(GetAcceleratedWidget(),
-                                 kWindowTreeHostForAcceleratedWidget,
-                                 this));
     dispatcher_.reset(new WindowEventDispatcher(this));
   }
+}
+
+void WindowTreeHost::OnAcceleratedWidgetAvailable() {
+  compositor_->SetAcceleratedWidgetAndStartCompositor(GetAcceleratedWidget());
+  prop_.reset(new ui::ViewProp(GetAcceleratedWidget(),
+                               kWindowTreeHostForAcceleratedWidget, this));
 }
 
 void WindowTreeHost::OnHostMoved(const gfx::Point& new_location) {

@@ -63,12 +63,11 @@ void CompositorLock::CancelLock() {
   compositor_ = NULL;
 }
 
-Compositor::Compositor(gfx::AcceleratedWidget widget,
-                       ui::ContextFactory* context_factory,
+Compositor::Compositor(ui::ContextFactory* context_factory,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : context_factory_(context_factory),
       root_layer_(NULL),
-      widget_(widget),
+      widget_(gfx::kNullAcceleratedWidget),
       surface_id_allocator_(context_factory->CreateSurfaceIdAllocator()),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
@@ -177,7 +176,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
                       base::TimeTicks::Now() - before_create);
   host_->SetRootLayer(root_web_layer_);
   host_->set_surface_id_namespace(surface_id_allocator_->id_namespace());
-  host_->SetLayerTreeHostClientReady();
 }
 
 Compositor::~Compositor() {
@@ -297,6 +295,14 @@ void Compositor::SetAuthoritativeVSyncInterval(
   }
 
   vsync_manager_->SetAuthoritativeVSyncInterval(interval);
+}
+
+void Compositor::SetAcceleratedWidgetAndStartCompositor(
+    gfx::AcceleratedWidget widget) {
+  // This function should only get called once.
+  DCHECK_EQ(gfx::kNullAcceleratedWidget, widget_);
+  widget_ = widget;
+  host_->SetLayerTreeHostClientReady();
 }
 
 scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {

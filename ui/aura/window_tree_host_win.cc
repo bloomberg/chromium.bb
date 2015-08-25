@@ -149,7 +149,8 @@ void WindowTreeHostWin::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
   widget_ = widget;
-  CreateCompositor(widget);
+  CreateCompositor();
+  WindowTreeHost::OnAcceleratedWidgetAvailable();
 }
 
 void WindowTreeHostWin::OnActivationChanged(bool active) {
