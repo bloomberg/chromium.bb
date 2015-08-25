@@ -6378,10 +6378,12 @@ long Cluster::ParseBlockGroup(long long payload_size, long long& pos,
     }
 
     pos = block_stop;  // consume block-part of block group
-    assert(pos <= payload_stop);
+    if (pos > payload_stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == payload_stop);
+  if (pos != payload_stop)
+    return E_FILE_FORMAT_INVALID;
 
   status = CreateBlock(0x20,  // BlockGroup ID
                        payload_start, payload_size, discard_padding);
