@@ -138,12 +138,24 @@ void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::string16 message;
 
-  // html_error_message already mentions error_code so don't combine messages.
-  if (html_error_message.empty()) {
-    message = l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code);
-  } else {
-    message = l10n_util::GetStringFUTF16(
-        IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK, html_error_message);
+  switch (error_code) {
+    case GOOGLE_UPDATE_DISABLED_BY_POLICY:
+      message =
+          l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY);
+      break;
+    case GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY:
+      message =
+          l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL);
+      break;
+    default:
+      // html_error_message mentions error_code so don't combine messages.
+      if (html_error_message.empty()) {
+        message = l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code);
+      } else {
+        message = l10n_util::GetStringFUTF16(
+            IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK, html_error_message);
+      }
+      break;
   }
   callback_.Run(FAILED, 0, message);
 }

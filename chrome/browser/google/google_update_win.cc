@@ -731,13 +731,7 @@ void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
     html_error_msg += base::StringPrintf(L": %d", installer_exit_code_);
   if (system_level_install_)
     html_error_msg += L" -- system level";
-  if (error_code == GOOGLE_UPDATE_DISABLED_BY_POLICY) {
-    html_error_message_ = l10n_util::GetStringFUTF16(
-        IDS_UPGRADE_DISABLED_BY_POLICY, html_error_msg);
-  } else if (error_code == GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY) {
-    html_error_message_ = l10n_util::GetStringFUTF16(
-        IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL, html_error_msg);
-  } else if (error_string.empty()) {
+  if (error_string.empty()) {
     html_error_message_ = l10n_util::GetStringFUTF16(
         IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED, html_error_msg);
   } else {
