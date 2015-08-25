@@ -308,7 +308,7 @@ class AndroidCommands(object):
 
     @staticmethod
     def _determine_adb_version(adb_command_path, executive, debug_logging):
-        re_version = re.compile('^.*version ([\d\.]+)$')
+        re_version = re.compile('^.*version ([\d\.]+)')
         try:
             output = executive.run_command([adb_command_path, 'version'], error_handler=executive.ignore_error,
                                            debug_logging=debug_logging)
