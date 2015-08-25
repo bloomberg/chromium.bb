@@ -413,9 +413,12 @@ void AppCacheInternalsUI::GetFileDetails(const base::ListValue* args) {
 void AppCacheInternalsUI::OnAllAppCacheInfoReady(
     scoped_refptr<AppCacheInfoCollection> collection,
     const base::FilePath& partition_path) {
+  std::string incognito_path_prefix;
+  if (browser_context()->IsOffTheRecord())
+    incognito_path_prefix = "Incognito ";
   web_ui()->CallJavascriptFunction(
       kFunctionOnAllAppCacheInfoReady,
-      base::StringValue(partition_path.AsUTF8Unsafe()),
+      base::StringValue(incognito_path_prefix + partition_path.AsUTF8Unsafe()),
       *GetListValueFromAppCacheInfoCollection(collection.get()));
 }
 
