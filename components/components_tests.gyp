@@ -673,6 +673,7 @@
       'variations/variations_request_scheduler_unittest.cc',
       'variations/variations_seed_processor_unittest.cc',
       'variations/variations_seed_simulator_unittest.cc',
+      'variations/variations_seed_store_unittest.cc',
     ],
     'visitedlink_unittest_sources': [
       'visitedlink/test/visitedlink_unittest.cc',

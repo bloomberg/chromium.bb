@@ -1874,8 +1874,6 @@
       'browser/metrics/variations/generated_resources_map_lookup.cc',
       'browser/metrics/variations/variations_registry_syncer_win.cc',
       'browser/metrics/variations/variations_registry_syncer_win.h',
-      'browser/metrics/variations/variations_seed_store.cc',
-      'browser/metrics/variations/variations_seed_store.h',
       'browser/metrics/variations/variations_service.cc',
       'browser/metrics/variations/variations_service.h',
     ],

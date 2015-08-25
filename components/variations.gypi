@@ -16,7 +16,9 @@
         # adding extra dependencies without first checking with OWNERS.
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
+        '../crypto/crypto.gyp:crypto',
         '../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
@@ -56,6 +58,8 @@
         'variations/variations_seed_processor.h',
         'variations/variations_seed_simulator.cc',
         'variations/variations_seed_simulator.h',
+        'variations/variations_seed_store.cc',
+        'variations/variations_seed_store.h',
         'variations/variations_service_client.h',
         'variations/variations_url_constants.cc',
         'variations/variations_url_constants.h',

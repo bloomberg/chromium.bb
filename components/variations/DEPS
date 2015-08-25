@@ -2,7 +2,10 @@
 # dependencies to a minimal set.
 include_rules = [
   "-components",
+  "+components/compression",
   "+components/variations",
+  "+crypto",
   "-net",
   "+third_party/mt19937ar",
+  "+third_party/protobuf",
 ]
