@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -20,6 +21,8 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -67,6 +70,8 @@ static const int kSbMaxUpdateWaitSec = 30;
 
 // Maximum back off multiplier.
 static const size_t kSbMaxBackOff = 8;
+
+const char kUmaHashResponseMetric[] = "SB2.GetHashResponseOrErrorCode";
 
 // The default SBProtocolManagerFactory.
 class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
@@ -158,6 +163,13 @@ void SafeBrowsingProtocolManager::RecordGetHashResult(
   }
 }
 
+void SafeBrowsingProtocolManager::RecordGetHashResponseOrErrorCode(
+    net::URLRequestStatus status, int response_code) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      kUmaHashResponseMetric,
+      status.is_success() ? response_code : status.error());
+}
+
 bool SafeBrowsingProtocolManager::IsUpdateScheduled() const {
   return update_timer_.IsRunning();
 }
@@ -236,18 +248,21 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
   scoped_ptr<const net::URLFetcher> fetcher;
 
   HashRequests::iterator it = hash_requests_.find(source);
+  int response_code = source->GetResponseCode();
+  net::URLRequestStatus status = source->GetStatus();
+  RecordGetHashResponseOrErrorCode(status, response_code);
   if (it != hash_requests_.end()) {
     // GetHash response.
     fetcher.reset(it->first);
     const FullHashDetails& details = it->second;
     std::vector<SBFullHashResult> full_hashes;
     base::TimeDelta cache_lifetime;
-    if (source->GetStatus().is_success() &&
-        (source->GetResponseCode() == 200 ||
-         source->GetResponseCode() == 204)) {
-      // For tracking our GetHash false positive (204) rate, compared to real
-      // (200) responses.
-      if (source->GetResponseCode() == 200)
+    if (status.is_success() &&
+        (response_code == net::HTTP_OK ||
+         response_code == net::HTTP_NO_CONTENT)) {
+      // For tracking our GetHash false positive (net::HTTP_NO_CONTENT) rate,
+      // compared to real (net::HTTP_OK) responses.
+      if (response_code == net::HTTP_OK)
         RecordGetHashResult(details.is_download, GET_HASH_STATUS_200);
       else
         RecordGetHashResult(details.is_download, GET_HASH_STATUS_204);
@@ -265,14 +280,14 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       }
     } else {
       HandleGetHashError(Time::Now());
-      if (source->GetStatus().status() == net::URLRequestStatus::FAILED) {
+      if (status.status() == net::URLRequestStatus::FAILED) {
         RecordGetHashResult(details.is_download, GET_HASH_NETWORK_ERROR);
         DVLOG(1) << "SafeBrowsing GetHash request for: " << source->GetURL()
-                 << " failed with error: " << source->GetStatus().error();
+                 << " failed with error: " << status.error();
       } else {
         RecordGetHashResult(details.is_download, GET_HASH_HTTP_ERROR);
         DVLOG(1) << "SafeBrowsing GetHash request for: " << source->GetURL()
-                 << " failed with error: " << source->GetResponseCode();
+                 << " failed with error: " << response_code;
       }
     }
 
@@ -298,8 +313,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       timeout_timer_.Stop();
     }
 
-    net::URLRequestStatus status = source->GetStatus();
-    if (status.is_success() && source->GetResponseCode() == 200) {
+    if (status.is_success() && response_code == net::HTTP_OK) {
       // We have data from the SafeBrowsing service.
       std::string data;
       source->GetResponseAsString(&data);
@@ -345,10 +359,10 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     } else {
       if (status.status() == net::URLRequestStatus::FAILED) {
         DVLOG(1) << "SafeBrowsing request for: " << source->GetURL()
-                 << " failed with error: " << source->GetStatus().error();
+                 << " failed with error: " << status.error();
       } else {
         DVLOG(1) << "SafeBrowsing request for: " << source->GetURL()
-                 << " failed with error: " << source->GetResponseCode();
+                 << " failed with error: " << response_code;
       }
       if (request_type_ == CHUNK_REQUEST) {
         // The SafeBrowsing service error, or very bad response code: back off.

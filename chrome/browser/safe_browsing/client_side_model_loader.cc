@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -121,8 +122,11 @@ void ModelLoader::OnURLFetchComplete(const net::URLFetcher* source) {
 
   std::string data;
   source->GetResponseAsString(&data);
-  const bool is_success = source->GetStatus().is_success();
+  net::URLRequestStatus status = source->GetStatus();
+  const bool is_success = status.is_success();
   const int response_code = source->GetResponseCode();
+  SafeBrowsingProtocolManager::RecordGetHashResponseOrErrorCode(
+      status, response_code);
 
   // max_age is valid iff !0.
   base::TimeDelta max_age;

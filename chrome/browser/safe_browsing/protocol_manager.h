@@ -29,6 +29,7 @@
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -151,6 +152,13 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // hash is triggered by download related lookup.
   static void RecordGetHashResult(bool is_download,
                                   ResultType result_type);
+
+  // Record HTTP response code when there's no error in fetching hash results,
+  // and the error code, when there is.
+  // |status| represents the status of the HTTP request, and |response code|
+  // represents the HTTP response code received from the server.
+  static void RecordGetHashResponseOrErrorCode(net::URLRequestStatus status,
+                                               int response_code);
 
   // Returns whether another update is currently scheduled.
   bool IsUpdateScheduled() const;

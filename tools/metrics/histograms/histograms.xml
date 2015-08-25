@@ -37232,6 +37232,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SB2.GetHashErrorResponseOrErrorCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>vakh@google.com</owner>
+  <summary>
+    Response or error codes from the SafeBrowsing service. Logged after a
+    GetHash request finishes to capture the response code or error code for that
+    call.
+  </summary>
+</histogram>
+
 <histogram name="SB2.GetHashResult" enum="SB2GetHashResult">
   <owner>mattm@chromium.org</owner>
   <summary>
