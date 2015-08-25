@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/origin_util.h"
@@ -39,11 +40,40 @@ enum PermissionAction {
   DENIED = 1,
   DISMISSED = 2,
   IGNORED = 3,
+  REVOKED = 4,
+  REENABLED = 5,
+  REQUESTED = 6,
 
   // Always keep this at the end.
   PERMISSION_ACTION_NUM,
 };
 
+// The returned strings must match the RAPPOR metrics in rappor.xml,
+// e.g. Permissions.Action.Geolocation etc..
+const std::string GetPermissionString(ContentSettingsType permission) {
+  switch (permission) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      return "Geolocation";
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      return "Notifications";
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+      return "MidiSysEx";
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
+      return "PushMessaging";
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+      return "DurableStorage";
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+      return "ProtectedMediaIdentifier";
+#endif
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
+// Deprecated. This method is used for the single-dimensional RAPPOR metrics
+// that are being replaced by the multi-dimensional ones.
 const std::string GetRapporMetric(ContentSettingsType permission,
                                   PermissionAction action) {
   std::string action_str;
@@ -60,23 +90,12 @@ const std::string GetRapporMetric(ContentSettingsType permission,
     case IGNORED:
       action_str = "Ignored";
       break;
-    case PERMISSION_ACTION_NUM:
+    default:
       NOTREACHED();
       break;
   }
-  std::string permission_str;
-  switch (permission) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      permission_str = "Geolocation";
-      break;
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      permission_str = "Notifications";
-      break;
-    default:
-      permission_str = "";
-      break;
-  }
 
+  std::string permission_str = GetPermissionString(permission);
   if (permission_str.empty())
     return "";
   return base::StringPrintf("ContentSettings.PermissionActions_%s.%s.Url",
@@ -140,13 +159,34 @@ void RecordPermissionAction(ContentSettingsType permission,
         break;
       default:
         NOTREACHED() << "PERMISSION " << permission << " not accounted for";
-    }
+  }
 
-    const std::string& rappor_metric = GetRapporMetric(permission, action);
-    if (!rappor_metric.empty())
-      rappor::SampleDomainAndRegistryFromGURL(
-          g_browser_process->rappor_service(), rappor_metric,
-          requesting_origin);
+  // There are two sets of semi-redundant RAPPOR metrics being reported:
+  // The soon-to-be-deprecated single dimensional ones, and the new
+  // multi-dimensional ones.
+  rappor::RapporService* rappor_service = g_browser_process->rappor_service();
+  const std::string rappor_metric = GetRapporMetric(permission, action);
+  if (!rappor_metric.empty())
+    rappor::SampleDomainAndRegistryFromGURL(
+        rappor_service, rappor_metric, requesting_origin);
+
+  // Add multi-dimensional RAPPOR reporting for safe-browsing users.
+  std::string permission_str = GetPermissionString(permission);
+  if (!rappor_service || permission_str.empty())
+    return;
+
+  scoped_ptr<rappor::Sample> sample =
+      rappor_service->CreateSample(rappor::SAFEBROWSING_RAPPOR_TYPE);
+  sample->SetStringField("Scheme", requesting_origin.scheme());
+  sample->SetStringField("Host", requesting_origin.host());
+  sample->SetStringField("Port", requesting_origin.port());
+  sample->SetStringField("Domain",
+      rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
+  sample->SetFlagsField("Actions",
+                        1 << action,
+                        PermissionAction::PERMISSION_ACTION_NUM);
+  rappor_service->RecordSampleObj("Permissions.Action." +
+      permission_str, sample.Pass());
 }
 
 std::string PermissionTypeToString(PermissionType permission_type) {

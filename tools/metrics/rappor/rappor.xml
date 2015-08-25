@@ -175,7 +175,9 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    The domain for which a Geolocation permission prompt was Denied.
+    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
+    2015-08-05.** The domain for which a Geolocation permission prompt was
+    Denied.
   </summary>
 </rappor-metric>
 
@@ -184,7 +186,9 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    The domain for which a Geolocation permission prompt was Dismissed.
+    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
+    2015-08-05.** The domain for which a Geolocation permission prompt was
+    Dismissed.
   </summary>
 </rappor-metric>
 
@@ -192,7 +196,9 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    The domain for which a Geolocation permission prompt was accepted.
+    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
+    2015-08-05.** The domain for which a Geolocation permission prompt was
+    accepted.
   </summary>
 </rappor-metric>
 
@@ -200,7 +206,9 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    The domain for which a Geolocation permission prompt was Ignored.
+    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
+    2015-08-05.** The domain for which a Geolocation permission prompt was
+    Ignored.
   </summary>
 </rappor-metric>
 
@@ -225,7 +233,9 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    The domain for which a Notification permission prompt was Denied.
+    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
+    2015-08-05.** The domain for which a Notification permission prompt was
+    Denied.
   </summary>
 </rappor-metric>
 
@@ -234,7 +244,9 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    The domain for which a Notification permission prompt was Dismissed.
+    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
+    2015-08-05.** The domain for which a Notification permission prompt was
+    Dismissed.
   </summary>
 </rappor-metric>
 
@@ -243,7 +255,9 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    The domain for which a Notification permission prompt was accepted.
+    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
+    2015-08-05.** The domain for which a Notification permission prompt was
+    accepted.
   </summary>
 </rappor-metric>
 
@@ -252,7 +266,9 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    The domain for which a Notification permission prompt was Ignored.
+    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
+    2015-08-05.** The domain for which a Notification permission prompt was
+    Ignored.
   </summary>
 </rappor-metric>
 
@@ -435,6 +451,247 @@ components/rappor/rappor_service.cc.
     and users clicking links, but excludes navigations initiated by users typing
     |data:| URLs.
   </summary>
+</rappor-metric>
+
+<rappor-metric name="Permissions.Action.DurableStorage"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that requested the Durable Storage API.
+  </summary>
+  <string-field name="Scheme">
+    <summary>
+      The scheme of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Host">
+    <summary>
+      The host of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Port">
+    <summary>
+      The port of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <flags-field name="Actions">
+    <flag>Bit 0: GRANTED</flag>
+    <flag>Bit 1: DENIED</flag>
+    <flag>Bit 2: DISMISSED</flag>
+    <flag>Bit 3: IGNORED</flag>
+    <flag>Bit 4: REVOKED</flag>
+    <flag>Bit 5: REENABLED</flag>
+    <flag>Bit 6: REQUESTED</flag>
+    <summary>
+      Bitfield of the permission actions taken for this permission.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="Permissions.Action.Geolocation"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that requested the Geolocation API.
+  </summary>
+  <string-field name="Scheme">
+    <summary>
+      The scheme of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Host">
+    <summary>
+      The host of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Port">
+    <summary>
+      The port of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <flags-field name="Actions">
+    <flag>Bit 0: GRANTED</flag>
+    <flag>Bit 1: DENIED</flag>
+    <flag>Bit 2: DISMISSED</flag>
+    <flag>Bit 3: IGNORED</flag>
+    <flag>Bit 4: REVOKED</flag>
+    <flag>Bit 5: REENABLED</flag>
+    <flag>Bit 6: REQUESTED</flag>
+    <summary>
+      Bitfield of the permission actions taken for this permission.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="Permissions.Action.MidiSysEx"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that requested the MidiSysEx API.
+  </summary>
+  <string-field name="Scheme">
+    <summary>
+      The scheme of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Host">
+    <summary>
+      The host of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Port">
+    <summary>
+      The port of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <flags-field name="Actions">
+    <flag>Bit 0: GRANTED</flag>
+    <flag>Bit 1: DENIED</flag>
+    <flag>Bit 2: DISMISSED</flag>
+    <flag>Bit 3: IGNORED</flag>
+    <flag>Bit 4: REVOKED</flag>
+    <flag>Bit 5: REENABLED</flag>
+    <flag>Bit 6: REQUESTED</flag>
+    <summary>
+      Bitfield of the permission actions taken for this permission.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="Permissions.Action.Notifications"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that requested the Notifications API.
+  </summary>
+  <string-field name="Scheme">
+    <summary>
+      The scheme of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Host">
+    <summary>
+      The host of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Port">
+    <summary>
+      The port of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <flags-field name="Actions">
+    <flag>Bit 0: GRANTED</flag>
+    <flag>Bit 1: DENIED</flag>
+    <flag>Bit 2: DISMISSED</flag>
+    <flag>Bit 3: IGNORED</flag>
+    <flag>Bit 4: REVOKED</flag>
+    <flag>Bit 5: REENABLED</flag>
+    <flag>Bit 6: REQUESTED</flag>
+    <summary>
+      Bitfield of the permission actions taken for this permission.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="Permissions.Action.ProtectedMediaIdentifier"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that requested the ProtectedMediaIdentifier
+    API.
+  </summary>
+  <string-field name="Scheme">
+    <summary>
+      The scheme of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Host">
+    <summary>
+      The host of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Port">
+    <summary>
+      The port of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <flags-field name="Actions">
+    <flag>Bit 0: GRANTED</flag>
+    <flag>Bit 1: DENIED</flag>
+    <flag>Bit 2: DISMISSED</flag>
+    <flag>Bit 3: IGNORED</flag>
+    <flag>Bit 4: REVOKED</flag>
+    <flag>Bit 5: REENABLED</flag>
+    <flag>Bit 6: REQUESTED</flag>
+    <summary>
+      Bitfield of the permission actions taken for this permission.
+    </summary>
+  </flags-field>
+</rappor-metric>
+
+<rappor-metric name="Permissions.Action.PushMessaging"
+    type="SAFEBROWSING_RAPPOR_TYPE">
+  <owner>kcarattini@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that requested the PushMessaging API.
+  </summary>
+  <string-field name="Scheme">
+    <summary>
+      The scheme of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Host">
+    <summary>
+      The host of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Port">
+    <summary>
+      The port of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <string-field name="Domain">
+    <summary>
+      The domain+registry of a URL that requested a permission.
+    </summary>
+  </string-field>
+  <flags-field name="Actions">
+    <flag>Bit 0: GRANTED</flag>
+    <flag>Bit 1: DENIED</flag>
+    <flag>Bit 2: DISMISSED</flag>
+    <flag>Bit 3: IGNORED</flag>
+    <flag>Bit 4: REVOKED</flag>
+    <flag>Bit 5: REENABLED</flag>
+    <flag>Bit 6: REQUESTED</flag>
+    <summary>
+      Bitfield of the permission actions taken for this permission.
+    </summary>
+  </flags-field>
 </rappor-metric>
 
 <rappor-metric name="Plugins.FlashOriginUrl" type="ETLD_PLUS_ONE">
