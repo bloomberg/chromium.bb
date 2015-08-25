@@ -57,9 +57,9 @@ public:
     StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
 
     void appendCSSStyleSheet(CSSStyleSheet&, const MediaQueryEvaluator&);
-    void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, CascadeOrder = ignoreCascadeOrder);
-    void collectMatchingShadowHostRules(ElementRuleCollector&, bool includeEmptyRules, CascadeOrder = ignoreCascadeOrder);
-    void collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector&, bool includeEmptyRules, CascadeOrder = ignoreCascadeOrder);
+    void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
+    void collectMatchingShadowHostRules(ElementRuleCollector&, bool includeEmptyRules);
+    void collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector&, bool includeEmptyRules);
     void matchPageRules(PageRuleCollector&);
     void collectFeaturesTo(RuleFeatureSet&, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents) const;
     void resetAuthorStyle();

@@ -39,22 +39,17 @@ class RuleSet;
 class SelectorFilter;
 class StaticCSSRuleList;
 
-typedef unsigned CascadeOrder;
-
-const CascadeOrder ignoreCascadeOrder = 0;
-
 class MatchedRule {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    MatchedRule(const RuleData* ruleData, unsigned specificity, CascadeOrder cascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet)
+    MatchedRule(const RuleData* ruleData, unsigned specificity, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet)
         : m_ruleData(ruleData)
         , m_specificity(specificity)
         , m_parentStyleSheet(parentStyleSheet)
     {
         ASSERT(m_ruleData);
         static const unsigned BitsForPositionInRuleData = 18;
-        static const unsigned BitsForStyleSheetIndex = 32;
-        m_position = ((uint64_t)cascadeOrder << (BitsForStyleSheetIndex + BitsForPositionInRuleData)) + ((uint64_t)styleSheetIndex << BitsForPositionInRuleData)+ m_ruleData->position();
+        m_position = ((uint64_t)styleSheetIndex << BitsForPositionInRuleData) + m_ruleData->position();
     }
 
     const RuleData* ruleData() const { return m_ruleData; }
@@ -122,8 +117,8 @@ public:
     PassRefPtrWillBeRawPtr<StyleRuleList> matchedStyleRuleList();
     PassRefPtrWillBeRawPtr<CSSRuleList> matchedCSSRuleList();
 
-    void collectMatchingRules(const MatchRequest&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
-    void collectMatchingShadowHostRules(const MatchRequest&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
+    void collectMatchingRules(const MatchRequest&, bool matchingTreeBoundaryRules = false);
+    void collectMatchingShadowHostRules(const MatchRequest&, bool matchingTreeBoundaryRules = false);
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
@@ -132,9 +127,9 @@ public:
 
 private:
     template<typename RuleDataListType>
-    void collectMatchingRulesForList(const RuleDataListType*, CascadeOrder, const MatchRequest&);
+    void collectMatchingRulesForList(const RuleDataListType*, const MatchRequest&);
 
-    void didMatchRule(const RuleData&, const SelectorChecker::MatchResult&, CascadeOrder, const MatchRequest&);
+    void didMatchRule(const RuleData&, const SelectorChecker::MatchResult&, const MatchRequest&);
 
     template<class CSSRuleCollection>
     CSSRule* findStyleRule(CSSRuleCollection*, StyleRule*);
