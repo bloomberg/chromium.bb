@@ -1906,8 +1906,6 @@ void HTMLMediaElement::setPreload(const AtomicString& preload)
 
 WebMediaPlayer::Preload HTMLMediaElement::preloadType() const
 {
-    // TODO(philipj): The spec requires case-sensitive string matching:
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28951
     const AtomicString& preload = fastGetAttribute(preloadAttr);
     if (equalIgnoringCase(preload, "none")) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadNone);
