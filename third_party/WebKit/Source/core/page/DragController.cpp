@@ -430,7 +430,7 @@ static bool setSelectionToDragCaret(LocalFrame* frame, VisibleSelection& dragCar
     if (frame->selection().isNone()) {
         dragCaret = VisibleSelection(frame->positionForPoint(point));
         frame->selection().setSelection(dragCaret);
-        range = dragCaret.toNormalizedRange();
+        range = createRange(dragCaret.toNormalizedEphemeralRange());
     }
     return !frame->selection().isNone() && frame->selection().isContentEditable();
 }
@@ -483,7 +483,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
 
     VisibleSelection dragCaret(m_page->dragCaretController().caretPosition());
     m_page->dragCaretController().clear();
-    RefPtrWillBeRawPtr<Range> range = dragCaret.toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> range = createRange(dragCaret.toNormalizedEphemeralRange());
     RefPtrWillBeRawPtr<Element> rootEditableElement = innerFrame->selection().rootEditableElement();
 
     // For range to be null a WebKit client must have done something bad while
