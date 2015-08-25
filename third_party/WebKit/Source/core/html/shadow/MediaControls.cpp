@@ -261,7 +261,6 @@ void MediaControls::reset()
     m_fullScreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
 
     refreshCastButtonVisibilityWithoutUpdate();
-    makeOpaque();
 
     // Set the panel width here, and force a layout, before the controls update.
     // This would be harmless for the !useNewUi case too, but it causes

@@ -35,7 +35,7 @@ namespace blink {
 class Event;
 class TextTrackContainer;
 
-class MediaControls final : public HTMLDivElement {
+class CORE_EXPORT MediaControls final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<MediaControls> create(HTMLMediaElement&);
 
