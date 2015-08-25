@@ -235,6 +235,11 @@ def SetProperties(device, options):
     device_settings.ConfigureContentSettings(
         device, device_settings.NETWORK_DISABLED_SETTINGS)
 
+  if options.disable_system_chrome:
+    # The system chrome version on the device interferes with some tests.
+    device.RunShellCommand(['pm', 'disable', 'com.android.chrome'],
+                           check_return=True)
+
   if options.remove_system_webview:
     if device.HasRoot():
       # This is required, e.g., to replace the system webview on a device.
@@ -410,6 +415,8 @@ def main():
   parser.add_argument('--disable-java-debug', action='store_false',
                       dest='enable_java_debug', default=True,
                       help='disable Java property asserts and JNI checking')
+  parser.add_argument('--disable-system-chrome', action='store_true',
+                      help='Disable the system chrome from devices.')
   parser.add_argument('--remove-system-webview', action='store_true',
                       help='Remove the system webview from devices.')
   parser.add_argument('-t', '--target', default='Debug',
