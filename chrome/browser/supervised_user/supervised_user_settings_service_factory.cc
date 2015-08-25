@@ -33,7 +33,8 @@ SupervisedUserSettingsServiceFactory::
 
 KeyedService* SupervisedUserSettingsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new SupervisedUserSettingsService();
+  return new SupervisedUserSettingsService(
+      Profile::FromBrowserContext(profile));
 }
 
 content::BrowserContext*

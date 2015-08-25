@@ -72,6 +72,7 @@ void SupervisedUserPrefStoreFixture::OnInitializationCompleted(bool succeeded) {
 
 class SupervisedUserPrefStoreTest : public ::testing::Test {
  public:
+  SupervisedUserPrefStoreTest() : service_(nullptr) {}
   void SetUp() override;
   void TearDown() override;
 

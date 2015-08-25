@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SUPERVISED_USER_INTERNALS_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SUPERVISED_USER_INTERNALS_MESSAGE_HANDLER_H_
 
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
@@ -52,6 +53,9 @@ class SupervisedUserInternalsMessageHandler
                     SupervisedUserURLFilter::FilteringBehavior behavior,
                     SupervisedUserURLFilter::FilteringBehaviorReason reason,
                     bool uncertain);
+
+  scoped_ptr<base::CallbackList<void(
+      const base::DictionaryValue*)>::Subscription> user_settings_subscription_;
 
   scoped_refptr<IOThreadHelper> io_thread_helper_;
 

@@ -50,8 +50,9 @@ bool SettingShouldApplyToPrefs(const std::string& name) {
 
 }  // namespace
 
-SupervisedUserSettingsService::SupervisedUserSettingsService()
-    : active_(false),
+SupervisedUserSettingsService::SupervisedUserSettingsService(Profile* profile)
+    : profile_(profile),
+      active_(false),
       initialization_failed_(false),
       local_settings_(new base::DictionaryValue) {
 }
@@ -85,14 +86,19 @@ void SupervisedUserSettingsService::Init(
   store_->AddObserver(this);
 }
 
-void SupervisedUserSettingsService::Subscribe(
+scoped_ptr<SupervisedUserSettingsService::SettingsCallbackList::Subscription>
+    SupervisedUserSettingsService::Subscribe(
     const SettingsCallback& callback) {
   if (IsReady()) {
     scoped_ptr<base::DictionaryValue> settings = GetSettings();
     callback.Run(settings.get());
   }
 
-  subscribers_.push_back(callback);
+  return callback_list_.Add(callback);
+}
+
+Profile* SupervisedUserSettingsService::GetProfile(){
+  return profile_;
 }
 
 void SupervisedUserSettingsService::SetActive(bool active) {
@@ -406,6 +412,5 @@ void SupervisedUserSettingsService::InformSubscribers() {
     return;
 
   scoped_ptr<base::DictionaryValue> settings = GetSettings();
-  for (const auto& callback : subscribers_)
-    callback.Run(settings.get());
+  callback_list_.Notify(settings.get());
 }

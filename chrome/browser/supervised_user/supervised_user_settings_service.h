@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_store.h"
@@ -56,9 +57,11 @@ class SupervisedUserSettingsService : public KeyedService,
   // A callback whose first parameter is a dictionary containing all supervised
   // user settings. If the dictionary is NULL, it means that the service is
   // inactive, i.e. the user is not supervised.
-  typedef base::Callback<void(const base::DictionaryValue*)> SettingsCallback;
+  using SettingsCallbackType = void(const base::DictionaryValue*);
+  using SettingsCallback = base::Callback<SettingsCallbackType>;
+  using SettingsCallbackList = base::CallbackList<SettingsCallbackType>;
 
-  SupervisedUserSettingsService();
+  explicit SupervisedUserSettingsService(Profile *profile);
   ~SupervisedUserSettingsService() override;
 
   // Initializes the service by loading its settings from a file underneath the
@@ -76,7 +79,14 @@ class SupervisedUserSettingsService : public KeyedService,
 
   // Adds a callback to be called when supervised user settings are initially
   // available, or when they change.
-  void Subscribe(const SettingsCallback& callback);
+  scoped_ptr<SettingsCallbackList::Subscription> Subscribe(
+      const SettingsCallback& callback) WARN_UNUSED_RESULT;
+
+  // Gets the associated profile
+  // This is currently only used for subscribing to notifications, it will be
+  // nullptr in tests and will soon be removed.
+  // TODO(peconn): Remove this once HostContentSettingsMap is a KeyedService
+  Profile* GetProfile();
 
   // Activates/deactivates the service. This is called by the
   // SupervisedUserService when it is (de)activated.
@@ -150,6 +160,8 @@ class SupervisedUserSettingsService : public KeyedService,
   // directly hooked up to the PrefService.
   scoped_refptr<PersistentPrefStore> store_;
 
+  Profile* profile_;
+
   bool active_;
 
   bool initialization_failed_;
@@ -157,7 +169,7 @@ class SupervisedUserSettingsService : public KeyedService,
   // A set of local settings that are fixed and not configured remotely.
   scoped_ptr<base::DictionaryValue> local_settings_;
 
-  std::vector<SettingsCallback> subscribers_;
+  SettingsCallbackList callback_list_;
 
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> error_handler_;
