@@ -29,9 +29,11 @@
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using ::testing::_;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Mock;
 using ::testing::NiceMock;
+using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
 
@@ -431,9 +433,15 @@ TEST_F(PasswordFormManagerTest, TestBlacklist) {
             form_manager.pending_credentials().signon_realm);
 
   const PasswordForm pending_form = form_manager.pending_credentials();
+  PasswordForm actual_add_form;
   EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+  EXPECT_CALL(*mock_store(), AddLogin(_))
+      .WillOnce(SaveArg<0>(&actual_add_form));
   form_manager.PermanentlyBlacklist();
   EXPECT_EQ(pending_form, form_manager.pending_credentials());
+  EXPECT_TRUE(form_manager.IsBlacklisted());
+  EXPECT_THAT(form_manager.blacklisted_matches(),
+              ElementsAre(Pointee(actual_add_form)));
 }
 
 TEST_F(PasswordFormManagerTest, AutofillBlacklisted) {

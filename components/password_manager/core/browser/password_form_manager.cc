@@ -190,17 +190,18 @@ void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK(!client_->IsOffTheRecord());
 
   // Configure the form about to be saved for blacklist status.
-  autofill::PasswordForm blacklisted = pending_credentials_;
-  blacklisted.preferred = false;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.username_value.clear();
-  blacklisted.password_value.clear();
-  blacklisted.other_possible_usernames.clear();
-  blacklisted.date_created = Time::Now();
+  blacklisted_matches_.push_back(
+      new autofill::PasswordForm(pending_credentials_));
+  blacklisted_matches_.back()->preferred = false;
+  blacklisted_matches_.back()->blacklisted_by_user = true;
+  blacklisted_matches_.back()->username_value.clear();
+  blacklisted_matches_.back()->password_value.clear();
+  blacklisted_matches_.back()->other_possible_usernames.clear();
+  blacklisted_matches_.back()->date_created = Time::Now();
 
   PasswordStore* password_store = client_->GetPasswordStore();
   DCHECK(password_store);
-  password_store->AddLogin(blacklisted);
+  password_store->AddLogin(*blacklisted_matches_.back());
 }
 
 bool PasswordFormManager::IsNewLogin() const {
