@@ -5,10 +5,20 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** New features
 
 ** Bug fixes
+- Use a separate gnulib instance for the library and the tools. Use
+  the strndup module to avoid build problems on windows.
+- Fix a problem with the nocross opcode when used in combination with
+  the opcodes nocont and compbrl, thanks to Bue Vester-Andersen.
 
 ** Other changes
+- if found use texi2any to build the documentation, thanks to Martin
+  Michlmayr.
+- Fix permissions of Korean tables, thanks to Peter Lundblad.
+- Update the windows build instructions, thanks to Bue
+  Vester-Andersen.
 
 ** Braille table improvements
+- Improvements to Hungarian, thanks to Attila Hammer
 
 * Noteworthy changes in release 2.6.3 (2015-06-01)
 Given the release number you might think this is only a minor release.
