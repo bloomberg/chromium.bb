@@ -1354,7 +1354,11 @@ RenderThreadImpl::GetGpuFactories() {
     const bool enable_video_accelerator =
         !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
     const bool enable_gpu_memory_buffer_video_frames =
+#if defined(OS_MACOSX)
+        !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
+#else
         cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
+#endif
     std::string image_texture_target_string =
         cmd_line->GetSwitchValueASCII(switches::kVideoImageTextureTarget);
     unsigned image_texture_target = 0;

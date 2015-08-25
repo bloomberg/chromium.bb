@@ -126,6 +126,10 @@ const char kDisableGpuCompositing[]         = "disable-gpu-compositing";
 // Disable proactive early init of GPU process.
 const char kDisableGpuEarlyInit[]           = "disable-gpu-early-init";
 
+// Disable GpuMemoryBuffer backed VideoFrames.
+const char kDisableGpuMemoryBufferVideoFrames[] =
+    "disable-gpu-memory-buffer-video-frames";
+
 // Disable the limit on the number of times the GPU process may be restarted
 // This switch is intended only for tests.
 extern const char kDisableGpuProcessCrashLimit[] =
