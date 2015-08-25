@@ -51,6 +51,7 @@
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../content/content.gyp:content_browser',
         '../../ipc/ipc.gyp:ipc',
+        '../../media/media.gyp:media',
         '../../skia/skia.gyp:skia',
         '../../url/url.gyp:url_lib',
         '../aura/aura.gyp:aura',

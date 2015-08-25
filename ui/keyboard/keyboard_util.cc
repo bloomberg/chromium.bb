@@ -14,6 +14,8 @@
 #include "base/strings/string16.h"
 #include "grit/keyboard_resources.h"
 #include "grit/keyboard_resources_map.h"
+#include "media/audio/audio_manager.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
@@ -203,7 +205,8 @@ bool IsSmartDeployEnabled() {
 }
 
 bool IsVoiceInputEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+  return media::AudioManager::Get()->HasAudioInputDevices() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableVoiceInput);
 }
 
