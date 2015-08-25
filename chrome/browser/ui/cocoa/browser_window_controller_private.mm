@@ -463,19 +463,6 @@ willPositionSheet:(NSWindow*)sheet
                  object:bubbleWindow];
   }
 
-  if (showDropdown) {
-    // Turn on layered mode for the window's root view for the entry
-    // animation.  Without this, the OS fullscreen animation for entering
-    // fullscreen mode does not correctly draw the tab strip.
-    // It will be turned off (set back to NO) when the animation finishes,
-    // in -windowDidEnterFullScreen:.
-    // Leaving wantsLayer on for the duration of presentation mode causes
-    // performance issues when the dropdown is animated in/out.  It also does
-    // not seem to be required for the exit animation.
-    windowViewWantsLayer_ = [[[self window] contentView] wantsLayer];
-    [[[self window] contentView] setWantsLayer:YES];
-  }
-
   NSView* contentView = [[self window] contentView];
   [presentationModeController_
       enterPresentationModeForContentView:contentView
@@ -755,7 +742,6 @@ willPositionSheet:(NSWindow*)sheet
 
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
-  [[[self window] contentView] setWantsLayer:windowViewWantsLayer_];
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
