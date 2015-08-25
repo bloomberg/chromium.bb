@@ -74,7 +74,6 @@ protected:
         m_webView->settings()->setAcceleratedCompositingEnabled(false);
         m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient);
         m_webView->setMainFrame(m_mainFrame);
-        m_frameLoaderClientImpl = toFrameLoaderClientImpl(toWebLocalFrameImpl(m_webView->mainFrame())->frame()->loader().client());
     }
 
     void TearDown() override
@@ -87,18 +86,18 @@ protected:
     {
         // The test always returns the same user agent, regardless of the URL passed in.
         KURL dummyURL(ParsedURLString, "about:blank");
-        WTF::CString userAgent = m_frameLoaderClientImpl->userAgent(dummyURL).utf8();
+        WTF::CString userAgent = frameLoaderClientImpl().userAgent(dummyURL).utf8();
         return WebString::fromUTF8(userAgent.data(), userAgent.length());
     }
 
     WebLocalFrameImpl* mainFrame() { return toWebLocalFrameImpl(m_webView->mainFrame()); }
     Document& document() { return *toWebLocalFrameImpl(m_mainFrame)->frame()->document(); }
     MockWebFrameClient& webFrameClient() { return m_webFrameClient; }
-    FrameLoaderClient& frameLoaderClient() { return *m_frameLoaderClientImpl; }
+    FrameLoaderClient& frameLoaderClient() { return frameLoaderClientImpl(); }
+    FrameLoaderClientImpl& frameLoaderClientImpl() { return *toFrameLoaderClientImpl(toWebLocalFrameImpl(m_webView->mainFrame())->frame()->loader().client()); }
 
 private:
     MockWebFrameClient m_webFrameClient;
-    FrameLoaderClientImpl* m_frameLoaderClientImpl;
     WebView* m_webView;
     WebFrame* m_mainFrame;
 };
