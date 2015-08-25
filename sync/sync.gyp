@@ -437,6 +437,7 @@
         'syncable/write_transaction_info.h',
         'util/cryptographer.cc',
         'util/cryptographer.h',
+        'util/data_type_histogram.cc',
         'util/data_type_histogram.h',
         'util/encryptor.h',
         'util/extensions_activity.cc',

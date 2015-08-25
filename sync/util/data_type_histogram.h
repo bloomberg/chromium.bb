@@ -5,9 +5,17 @@
 #ifndef SYNC_UTIL_DATA_TYPE_HISTOGRAM_H_
 #define SYNC_UTIL_DATA_TYPE_HISTOGRAM_H_
 
-#include "base/metrics/histogram.h"
+#include <string>
+
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/model_type.h"
+
+// This function adds |value| to |sample| bucket of histogram |name|. |value|
+// should be greater or equal to 1 and |name| can be variable. DataTypes are
+// mapped to proper |sample| bucket by using ModelTypeToHistogramInt() function.
+// So different DataTypes play the role of different buckets in this histogram.
+void SyncRecordDatatypeBin(const std::string& name, int sample, int value);
 
 // For now, this just implements UMA_HISTOGRAM_LONG_TIMES. This can be adjusted
 // if we feel the min, max, or bucket count amount are not appropriate.

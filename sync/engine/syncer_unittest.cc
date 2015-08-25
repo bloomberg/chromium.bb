@@ -20,6 +20,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "sync/engine/backoff_delay_provider.h"
@@ -663,6 +664,115 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
     Entry entryA(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(entryA.good());
     EXPECT_FALSE(entryA.GetIsUnsynced());
+  }
+}
+
+// This test has three steps. In the first step, a BOOKMARK update is received.
+// In the next step, syncing BOOKMARKS is disabled, so no BOOKMARK is sent or
+// received. In the last step, a BOOKMARK update is committed.
+TEST_F(SyncerTest, DataUseHistogramsTest) {
+  base::HistogramTester histogram_tester;
+  sync_pb::EntitySpecifics bookmark_data;
+  AddDefaultFieldValue(BOOKMARKS, &bookmark_data);
+
+  mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10, foreign_cache_guid(),
+                                   "-1");
+  int download_bytes_bookmark = 0;
+  vector<unsigned int> progress_bookmark(3, 0);
+  vector<unsigned int> progress_all(3, 0);
+  vector<base::Bucket> samples;
+  EXPECT_TRUE(SyncShareNudge());
+  {
+    histogram_tester.ExpectTotalCount("DataUse.Sync.Upload.Count", 0);
+    histogram_tester.ExpectTotalCount("DataUse.Sync.Upload.Bytes", 0);
+    histogram_tester.ExpectTotalCount("DataUse.Sync.Download.Count", 1);
+    histogram_tester.ExpectUniqueSample("DataUse.Sync.Download.Count",
+                                        BOOKMARKS, 1);
+    samples = histogram_tester.GetAllSamples("DataUse.Sync.Download.Bytes");
+    EXPECT_EQ(samples.size(), 1u);
+    EXPECT_EQ(samples.at(0).min, BOOKMARKS);
+    EXPECT_GE(samples.at(0).count, 0);
+    download_bytes_bookmark = samples.at(0).count;
+
+    samples =
+        histogram_tester.GetAllSamples("DataUse.Sync.ProgressMarker.Bytes");
+
+    for (const base::Bucket& bucket : samples) {
+      if (bucket.min == BOOKMARKS)
+        progress_bookmark.at(0) += bucket.count;
+      progress_all.at(0) += bucket.count;
+    }
+    EXPECT_GT(progress_bookmark.at(0), 0u);
+    EXPECT_GT(progress_all.at(0), 0u);
+
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
+    MutableEntry A(&wtrans, GET_BY_ID, ids_.FromNumber(1));
+    A.PutIsUnsynced(true);
+    A.PutSpecifics(bookmark_data);
+    A.PutNonUniqueName("bookmark");
+  }
+
+  // Now sync without enabling bookmarks.
+  mock_server_->ExpectGetUpdatesRequestTypes(
+      Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)));
+  ResetSession();
+  syncer_->NormalSyncShare(
+      Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)),
+      &nudge_tracker_, session_.get());
+
+  {
+    // Nothing should have been committed as bookmarks is throttled.
+    histogram_tester.ExpectTotalCount("DataUse.Sync.Upload.Count", 0);
+    histogram_tester.ExpectTotalCount("DataUse.Sync.Upload.Bytes", 0);
+    histogram_tester.ExpectTotalCount("DataUse.Sync.Download.Count", 1);
+    histogram_tester.ExpectUniqueSample("DataUse.Sync.Download.Count",
+                                        BOOKMARKS, 1);
+
+    samples = histogram_tester.GetAllSamples("DataUse.Sync.Download.Bytes");
+    EXPECT_EQ(samples.size(), 1u);
+    EXPECT_EQ(samples.at(0).min, BOOKMARKS);
+    EXPECT_EQ(samples.at(0).count, download_bytes_bookmark);
+
+    samples =
+        histogram_tester.GetAllSamples("DataUse.Sync.ProgressMarker.Bytes");
+    for (const base::Bucket& bucket : samples) {
+      if (bucket.min == BOOKMARKS)
+        progress_bookmark.at(1) += bucket.count;
+      progress_all.at(1) += bucket.count;
+    }
+    EXPECT_EQ(progress_bookmark.at(1), progress_bookmark.at(0));
+    EXPECT_GT(progress_all.at(1), progress_all.at(0));
+  }
+
+  // Sync again with bookmarks enabled.
+  mock_server_->ExpectGetUpdatesRequestTypes(context_->GetEnabledTypes());
+  EXPECT_TRUE(SyncShareNudge());
+  {
+    // It should have been committed.
+    histogram_tester.ExpectTotalCount("DataUse.Sync.Upload.Count", 1);
+    histogram_tester.ExpectUniqueSample("DataUse.Sync.Upload.Count", BOOKMARKS,
+                                        1);
+    samples = histogram_tester.GetAllSamples("DataUse.Sync.Upload.Bytes");
+    EXPECT_EQ(samples.size(), 1u);
+    EXPECT_EQ(samples.at(0).min, BOOKMARKS);
+    EXPECT_GE(samples.at(0).count, 0);
+
+    samples = histogram_tester.GetAllSamples("DataUse.Sync.Download.Bytes");
+    EXPECT_EQ(samples.size(), 1u);
+    EXPECT_EQ(samples.at(0).min, BOOKMARKS);
+    EXPECT_EQ(samples.at(0).count, download_bytes_bookmark);
+
+    histogram_tester.ExpectTotalCount("DataUse.Sync.Download.Count", 1);
+
+    samples =
+        histogram_tester.GetAllSamples("DataUse.Sync.ProgressMarker.Bytes");
+    for (const base::Bucket& bucket : samples) {
+      if (bucket.min == BOOKMARKS)
+        progress_bookmark.at(2) += bucket.count;
+      progress_all.at(2) += bucket.count;
+    }
+    EXPECT_GT(progress_bookmark.at(2), progress_bookmark.at(1));
+    EXPECT_GT(progress_all.at(2), progress_all.at(1));
   }
 }
 

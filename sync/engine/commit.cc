@@ -4,6 +4,7 @@
 
 #include "sync/engine/commit.h"
 
+#include "base/metrics/sparse_histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "sync/engine/commit_contribution.h"
 #include "sync/engine/commit_processor.h"
@@ -13,6 +14,7 @@
 #include "sync/internal_api/public/events/commit_request_event.h"
 #include "sync/internal_api/public/events/commit_response_event.h"
 #include "sync/sessions/sync_session.h"
+#include "sync/util/data_type_histogram.h"
 
 namespace syncer {
 
@@ -70,11 +72,19 @@ Commit* Commit::Init(
       enabled_types,
       commit_message);
 
+  int previous_message_size = message.ByteSize();
   // Finally, serialize all our contributions.
-  for (std::map<ModelType, CommitContribution*>::const_iterator it =
-           contributions.begin();
-       it != contributions.end(); ++it) {
-    it->second->AddToCommitMessage(&message);
+  for (const auto& contribution : contributions) {
+    contribution.second->AddToCommitMessage(&message);
+    int current_entry_size = message.ByteSize() - previous_message_size;
+    previous_message_size = message.ByteSize();
+    int local_integer_model_type = ModelTypeToHistogramInt(contribution.first);
+    if (current_entry_size > 0) {
+      SyncRecordDatatypeBin("DataUse.Sync.Upload.Bytes",
+                            local_integer_model_type, current_entry_size);
+    }
+    UMA_HISTOGRAM_SPARSE_SLOWLY("DataUse.Sync.Upload.Count",
+                                local_integer_model_type);
   }
 
   // If we made it this far, then we've successfully prepared a commit message.

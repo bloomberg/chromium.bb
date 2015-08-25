@@ -5565,6 +5565,54 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataUse.Sync.Download.Bytes" enum="SyncModelTypes">
+  <owner>amohammadkhan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Number of downloaded bytes of different data types in Sync service for
+    received updates. It is updated when an update message is received from sync
+    server.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.Sync.Download.Count" enum="SyncModelTypes">
+  <owner>amohammadkhan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Number of downloaded entities of different data types in Sync service for
+    received updates. It is updated when an update message is received from sync
+    server.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.Sync.ProgressMarker.Bytes" enum="SyncModelTypes">
+  <owner>amohammadkhan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Number of downloaded bytes of ProgressMarker of different data types in Sync
+    service for received updates. It is updated when an update message is
+    received from sync server.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.Sync.Upload.Bytes" enum="SyncModelTypes">
+  <owner>amohammadkhan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Number of uploaded bytes of different data types in Sync service for sent
+    commits. Updated when a commit message is sent to sync server.
+  </summary>
+</histogram>
+
+<histogram name="DataUse.Sync.Upload.Count" enum="SyncModelTypes">
+  <owner>amohammadkhan@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Number of uploaded entities of different data types in Sync service for sent
+    commits. Updated when a commit message is sent to sync server.
+  </summary>
+</histogram>
+
 <histogram name="DefaultBrowser.InteractionResult"
     enum="MakeChromeDefaultResult">
   <owner>gab@chromium.org</owner>

@@ -5,6 +5,7 @@
 #include "sync/engine/process_updates_util.h"
 
 #include "base/location.h"
+#include "base/metrics/sparse_histogram.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/syncer_util.h"
@@ -15,6 +16,7 @@
 #include "sync/syncable/syncable_proto_util.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/util/cryptographer.h"
+#include "sync/util/data_type_histogram.h"
 
 namespace syncer {
 
@@ -303,6 +305,13 @@ void ProcessDownloadedUpdates(
     if (verify_result != VERIFY_SUCCESS && verify_result != VERIFY_UNDELETE)
       continue;
     ProcessUpdate(**update_it, dir->GetCryptographer(trans), trans);
+    if ((*update_it)->ByteSize() > 0) {
+      SyncRecordDatatypeBin("DataUse.Sync.Download.Bytes",
+                            ModelTypeToHistogramInt(type),
+                            (*update_it)->ByteSize());
+    }
+    UMA_HISTOGRAM_SPARSE_SLOWLY("DataUse.Sync.Download.Count",
+                                ModelTypeToHistogramInt(type));
   }
 }
 

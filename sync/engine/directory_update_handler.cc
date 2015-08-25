@@ -12,6 +12,7 @@
 #include "sync/syncable/model_neutral_mutable_entry.h"
 #include "sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "sync/syncable/syncable_write_transaction.h"
+#include "sync/util/data_type_histogram.h"
 
 namespace syncer {
 
@@ -46,6 +47,11 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
     const SyncEntityList& applicable_updates,
     sessions::StatusController* status) {
   syncable::ModelNeutralWriteTransaction trans(FROM_HERE, SYNCER, dir_);
+  if (progress_marker.ByteSize() > 0) {
+    SyncRecordDatatypeBin("DataUse.Sync.ProgressMarker.Bytes",
+                          ModelTypeToHistogramInt(type_),
+                          progress_marker.ByteSize());
+  }
   if (mutated_context.has_context()) {
     sync_pb::DataTypeContext local_context;
     dir_->GetDataTypeContext(&trans, type_, &local_context);
