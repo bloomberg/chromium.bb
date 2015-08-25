@@ -40,6 +40,12 @@ function test()
         {
             var mappingQueries = ["for", "person", "name", "}"];
             testJSFormatter("for(var i=0;i<names.length;++i){let name=names[i];let person=persons[i];}", mappingQueries, next);
+        },
+
+        function anonimousFunctionAsParameter(next)
+        {
+            var mappingQueries = ["setTimeout", "function", "alert", "2000"];
+            testJSFormatter("setTimeout(function(){alert(1);},2000);", mappingQueries, next);
         }
     ]);
 }

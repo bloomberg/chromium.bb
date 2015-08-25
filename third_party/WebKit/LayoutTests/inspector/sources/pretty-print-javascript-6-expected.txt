@@ -68,3 +68,15 @@ Correct mapping for <person>
 Correct mapping for <name>
 Correct mapping for <}>
 
+Running: anonimousFunctionAsParameter
+====== 8< ------
+setTimeout(function() {
+    alert(1);
+}, 2000);
+
+------ >8 ======
+Correct mapping for <setTimeout>
+Correct mapping for <function>
+Correct mapping for <alert>
+Correct mapping for <2000>
+
