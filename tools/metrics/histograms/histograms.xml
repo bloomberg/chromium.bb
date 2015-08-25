@@ -43648,6 +43648,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sqlite.MemoryKB.OneWeek" units="KB">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    SQLite memory footprint from sqlite3_memory_used() recorded 1 week after
+    first database is opened by sql::Connection.
+  </summary>
+</histogram>
+
 <histogram name="Sqlite.MemoryKB.TenMinutes" units="KB">
   <owner>shess@chromium.org</owner>
   <summary>

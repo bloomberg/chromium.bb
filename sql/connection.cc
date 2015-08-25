@@ -128,6 +128,11 @@ void RecordSqliteMemoryDay() {
   UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneDay", used / 1024);
 }
 
+void RecordSqliteMemoryWeek() {
+  const int64 used = sqlite3_memory_used();
+  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneWeek", used / 1024);
+}
+
 // SQLite automatically calls sqlite3_initialize() lazily, but
 // sqlite3_initialize() uses double-checked locking and thus can have
 // data races.
@@ -155,6 +160,9 @@ void InitializeSqlite() {
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE, base::Bind(&RecordSqliteMemoryDay),
           base::TimeDelta::FromDays(1));
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, base::Bind(&RecordSqliteMemoryWeek),
+          base::TimeDelta::FromDays(7));
     }
 
     first_call = false;
