@@ -503,7 +503,7 @@ if (!is_android) {
       }
     }  # enable_notifications
 
-    if (use_aura || is_chromeos) {
+    if (!use_aura || is_chromeos) {
       sources -=
           [ "../../ui/views/corewm/desktop_capture_controller_unittest.cc" ]
     }

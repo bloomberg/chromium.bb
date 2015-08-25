@@ -593,6 +593,7 @@ test("media_unittests") {
     "renderers/audio_renderer_impl_unittest.cc",
     "renderers/renderer_impl_unittest.cc",
     "renderers/video_renderer_impl_unittest.cc",
+    "video/gpu_memory_buffer_video_frame_pool_unittest.cc",
     "video/h264_poc_unittest.cc",
   ]
 
@@ -609,6 +610,8 @@ test("media_unittests") {
     ":test_support",
     "//base/allocator",
     "//base/test:test_support",
+    "//gpu/command_buffer/common",
+    "//gpu:test_support",
     "//media/audio:unittests",
     "//media/audio:test_support",
     "//media/base:unittests",
@@ -642,6 +645,11 @@ test("media_unittests") {
       "filters/ffmpeg_video_decoder_unittest.cc",
       "filters/in_memory_url_protocol_unittest.cc",
     ]
+  }
+
+  if (media_use_libwebm) {
+    sources += [ "capture/webm_muxer_unittest.cc" ]
+    deps += [ "//third_party/libwebm" ]
   }
 
   if (current_cpu != "arm" && is_chromeos) {
