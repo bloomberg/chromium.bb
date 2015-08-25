@@ -9,6 +9,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_id.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 
@@ -19,11 +20,15 @@ class OutputSurfaceMojoClient {
   virtual void DidCreateSurface(cc::SurfaceId id) = 0;
 };
 
-class OutputSurfaceMojo : public cc::OutputSurface {
+class OutputSurfaceMojo : public cc::OutputSurface,
+                          public mojo::ResourceReturner {
  public:
   OutputSurfaceMojo(OutputSurfaceMojoClient* client,
                     const scoped_refptr<cc::ContextProvider>& context_provider,
                     ScopedMessagePipeHandle surface_handle);
+
+  // mojo::ResourceReturner implementation.
+  void ReturnResources(mojo::Array<ReturnedResourcePtr>) override;
 
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
@@ -41,6 +46,7 @@ class OutputSurfaceMojo : public cc::OutputSurface {
   uint32_t id_namespace_;
   uint32_t local_id_;
   gfx::Size surface_size_;
+  mojo::Binding<mojo::ResourceReturner> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurfaceMojo);
 };

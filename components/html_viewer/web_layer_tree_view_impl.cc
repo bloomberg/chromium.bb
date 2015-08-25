@@ -47,6 +47,8 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
+  // TODO(rjkroege): Not having a shared tile transport breaks
+  // software compositing. Add bitmap transport support.
   cc::SharedBitmapManager* shared_bitmap_manager = nullptr;
 
   cc::LayerTreeHost::InitParams params;
@@ -137,6 +139,8 @@ void WebLayerTreeViewImpl::DidCommit() {
 void WebLayerTreeViewImpl::DidCommitAndDrawFrame() {
 }
 
+// TODO(rjkroege): Wire this up to the SubmitFrame callback to improve
+// synchronization.
 void WebLayerTreeViewImpl::DidCompleteSwapBuffers() {
 }
 

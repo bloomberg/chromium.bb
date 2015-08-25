@@ -140,6 +140,12 @@ TypeConverter<Array<ReturnedResourcePtr>, cc::ReturnedResourceArray> {
   static Array<ReturnedResourcePtr> Convert(
       const cc::ReturnedResourceArray& input);
 };
+template <>
+struct MOJO_SURFACES_EXPORT
+    TypeConverter<cc::ReturnedResourceArray, Array<ReturnedResourcePtr>> {
+  static cc::ReturnedResourceArray Convert(
+      const Array<ReturnedResourcePtr>& input);
+};
 
 template <>
 struct MOJO_SURFACES_EXPORT

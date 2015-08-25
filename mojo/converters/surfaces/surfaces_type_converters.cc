@@ -573,6 +573,17 @@ TypeConverter<Array<ReturnedResourcePtr>, cc::ReturnedResourceArray>::Convert(
 }
 
 // static
+cc::ReturnedResourceArray
+TypeConverter<cc::ReturnedResourceArray, Array<ReturnedResourcePtr>>::Convert(
+    const Array<ReturnedResourcePtr>& input) {
+  cc::ReturnedResourceArray resources(input.size());
+  for (size_t i = 0; i < input.size(); ++i) {
+    resources[i] = input[i].To<cc::ReturnedResource>();
+  }
+  return resources;
+}
+
+// static
 CompositorFramePtr
 TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
     const cc::CompositorFrame& input) {

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
@@ -20,7 +21,8 @@ OutputSurfaceMojo::OutputSurfaceMojo(
       output_surface_mojo_client_(client),
       surface_handle_(surface_handle.Pass()),
       id_namespace_(0u),
-      local_id_(0u) {
+      local_id_(0u),
+      binding_(this) {
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
 }
@@ -41,6 +43,12 @@ bool OutputSurfaceMojo::BindToClient(cc::OutputSurfaceClient* client) {
   surface_.Bind(InterfacePtrInfo<Surface>(surface_handle_.Pass(), 0u));
   surface_->GetIdNamespace(
       base::Bind(&OutputSurfaceMojo::SetIdNamespace, base::Unretained(this)));
+
+  // Wire up mojo binding.
+  mojo::ResourceReturnerPtr returner_ptr;
+  binding_.Bind(mojo::GetProxy(&returner_ptr).Pass());
+  surface_->SetResourceReturner(returner_ptr.Pass());
+
   return cc::OutputSurface::BindToClient(client);
 }
 
@@ -66,6 +74,13 @@ void OutputSurfaceMojo::SwapBuffers(cc::CompositorFrame* frame) {
 
   client_->DidSwapBuffers();
   client_->DidSwapBuffersComplete();
+}
+
+void OutputSurfaceMojo::ReturnResources(
+    mojo::Array<mojo::ReturnedResourcePtr> resources) {
+  cc::CompositorFrameAck cfa;
+  cfa.resources = resources.To<cc::ReturnedResourceArray>();
+  ReclaimResources(&cfa);
 }
 
 }  // namespace mojo
