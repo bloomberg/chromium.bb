@@ -380,7 +380,6 @@ TimeDelta RolloverProtectedNow() {
 using NowFunction = TimeDelta (*)(void);
 
 TimeDelta InitialNowFunction();
-TimeDelta InitialSystemTraceNowFunction();
 
 // See "threading notes" in InitializeNowFunctionPointer() for details on how
 // concurrent reads/writes to these globals has been made safe.
