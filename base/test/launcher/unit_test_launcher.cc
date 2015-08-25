@@ -4,6 +4,7 @@
 
 #include "base/test/launcher/unit_test_launcher.h"
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -180,6 +181,8 @@ int LaunchUnitTestsInternal(const RunTestSuiteCallback& run_test_suite,
   if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
       CommandLine::ForCurrentProcess()->HasSwitch(kGTestListTestsFlag) ||
       CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestChildProcess) ||
       force_single_process) {
     return run_test_suite.Run();
   }
