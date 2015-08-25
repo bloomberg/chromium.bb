@@ -677,14 +677,7 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
   // Register a registration and its version attributes with the dispatcher
   // living on the worker thread.
   scoped_ptr<WebServiceWorkerRegistrationImpl> registration(
-      dispatcher->CreateServiceWorkerRegistration(info, false));
-  registration->SetInstalling(
-      dispatcher->GetServiceWorker(attrs.installing, false));
-  registration->SetWaiting(
-      dispatcher->GetServiceWorker(attrs.waiting, false));
-  registration->SetActive(
-      dispatcher->GetServiceWorker(attrs.active, false));
-
+      dispatcher->CreateRegistration(info, attrs));
   proxy_->setRegistration(registration.release());
 }
 

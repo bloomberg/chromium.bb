@@ -37,6 +37,7 @@ namespace content {
 
 class ServiceWorkerMessageFilter;
 class ServiceWorkerProviderContext;
+class ServiceWorkerRegistrationHandleReference;
 class ThreadSafeSender;
 class WebServiceWorkerImpl;
 class WebServiceWorkerRegistrationImpl;
@@ -134,13 +135,13 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
       const ServiceWorkerObjectInfo& info,
       bool adopt_handle);
 
-  // Creates a WebServiceWorkerRegistrationImpl for the specified registration
-  // and transfers its ownership to the caller. If |adopt_handle| is true, a
-  // ServiceWorkerRegistrationHandleReference will be adopted for the
-  // registration.
-  WebServiceWorkerRegistrationImpl* CreateServiceWorkerRegistration(
+  // Returns a new registration filled in with version attributes.
+  scoped_ptr<WebServiceWorkerRegistrationImpl> CreateRegistration(
       const ServiceWorkerRegistrationObjectInfo& info,
-      bool adopt_handle);
+      const ServiceWorkerVersionAttributes& attrs);
+  scoped_ptr<WebServiceWorkerRegistrationImpl> AdoptRegistration(
+      const ServiceWorkerRegistrationObjectInfo& info,
+      const ServiceWorkerVersionAttributes& attrs);
 
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
       ThreadSafeSender* thread_safe_sender,
@@ -265,14 +266,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
   void RemoveServiceWorkerRegistration(
       int registration_handle_id);
 
-  // Returns an existing registration or new one filled in with version
-  // attributes. This function assumes given |info| and |attrs| retain handle
-  // references and always adopts them.
-  // TODO(nhiroki): This assumption seems to impair readability. We could
-  // explictly pass ServiceWorker(Registration)HandleReference instead.
-  WebServiceWorkerRegistrationImpl* FindOrCreateRegistration(
-      const ServiceWorkerRegistrationObjectInfo& info,
-      const ServiceWorkerVersionAttributes& attrs);
+  scoped_ptr<WebServiceWorkerRegistrationImpl> CreateRegistrationInternal(
+      scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref,
+      const ServiceWorkerVersionAttributes& attrs,
+      bool adopt_handle);
 
   RegistrationCallbackMap pending_registration_callbacks_;
   UpdateCallbackMap pending_update_callbacks_;

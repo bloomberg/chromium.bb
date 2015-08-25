@@ -623,7 +623,7 @@ void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
     return;
 
   ServiceWorkerRegistrationHandle* handle =
-      dispatcher_host_->GetOrCreateRegistrationHandle(
+      dispatcher_host_->CreateRegistrationHandle(
           AsWeakPtr(), associated_registration_.get());
 
   ServiceWorkerVersionAttributes attrs;
