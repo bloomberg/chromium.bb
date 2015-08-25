@@ -133,6 +133,11 @@ class ZoomLevelObserver {
   [self setModel:nullptr];
   wrenchMenuModel_.reset();
   buttonViewController_.reset();
+  // ZoomLevelObserver holds a subscription to ZoomEventManager, which is
+  // user-data on the BrowserContext. The BrowserContext may be destroyed soon
+  // if Chrome is quitting. In any case, |observer_| should not be needed at
+  // this point.
+  observer_.reset();
 
   [browserActionsController_ browserWillBeDestroyed];
 
