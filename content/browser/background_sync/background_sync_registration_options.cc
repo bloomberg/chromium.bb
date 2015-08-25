@@ -6,10 +6,6 @@
 
 namespace content {
 
-// TODO(thakis): Remove this once http://crbug.com/488634 is fixed.
-BackgroundSyncRegistrationOptions::BackgroundSyncRegistrationOptions() =
-    default;
-
 bool BackgroundSyncRegistrationOptions::Equals(
     const BackgroundSyncRegistrationOptions& other) const {
   return tag == other.tag && min_period == other.min_period &&

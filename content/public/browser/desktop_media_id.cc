@@ -93,8 +93,6 @@ aura::Window* DesktopMediaID::GetAuraWindowById(const DesktopMediaID& id) {
 
 #endif  // defined(USE_AURA)
 
-DesktopMediaID::DesktopMediaID() = default;
-
 // static
 DesktopMediaID DesktopMediaID::Parse(const std::string& str) {
   std::vector<std::string> parts = base::SplitString(
