@@ -363,8 +363,8 @@ void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSe
             endOfParagraph(wordSelection.visibleEnd()));
 
         markAllMisspellingsAndBadGrammarInRanges(
-            textCheckingOptions, wordSelection.toNormalizedRange().get(),
-            wholeParagraph.toNormalizedRange().get());
+            textCheckingOptions, wordSelection.toNormalizedEphemeralRange(),
+            wholeParagraph.toNormalizedEphemeralRange());
     } else {
         RefPtrWillBeRawPtr<Range> misspellingRange = nullptr;
         markMisspellings(wordSelection, misspellingRange);
@@ -390,9 +390,9 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
         VisibleSelection adjacentWords = VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary));
         if (textCheckingOptions & TextCheckingTypeGrammar) {
             VisibleSelection selectedSentence = VisibleSelection(startOfSentence(wordStart), endOfSentence(wordStart));
-            markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedRange().get(), selectedSentence.toNormalizedRange().get());
+            markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedEphemeralRange(), selectedSentence.toNormalizedEphemeralRange());
         } else {
-            markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedRange().get(), adjacentWords.toNormalizedRange().get());
+            markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, adjacentWords.toNormalizedEphemeralRange(), adjacentWords.toNormalizedEphemeralRange());
         }
         return;
     }
@@ -468,25 +468,25 @@ void SpellChecker::markBadGrammar(const VisibleSelection& selection)
     markMisspellingsOrBadGrammar(selection, false, firstMisspellingRange);
 }
 
-void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, Range* spellingRange, Range* grammarRange)
+void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, const EphemeralRange& spellingRange, const EphemeralRange& grammarRange)
 {
     ASSERT(unifiedTextCheckerEnabled());
 
     bool shouldMarkGrammar = textCheckingOptions & TextCheckingTypeGrammar;
 
     // This function is called with selections already expanded to word boundaries.
-    if (!spellingRange || (shouldMarkGrammar && !grammarRange))
+    if (spellingRange.isNull() || (shouldMarkGrammar && grammarRange.isNull()))
         return;
 
     // If we're not in an editable node, bail.
-    Node* editableNode = spellingRange->startContainer();
+    Node* editableNode = spellingRange.startPosition().computeContainerNode();
     if (!editableNode || !editableNode->hasEditableStyle())
         return;
 
     if (!isSpellCheckingEnabledFor(editableNode))
         return;
 
-    Range* rangeToCheck = shouldMarkGrammar ? grammarRange : spellingRange;
+    RefPtrWillBeRawPtr<Range> rangeToCheck = createRange(shouldMarkGrammar ? grammarRange : spellingRange);
     TextCheckingParagraph fullParagraphToCheck(rangeToCheck);
 
     bool asynchronous = frame().settings() && frame().settings()->asynchronousSpellCheckingEnabled();
@@ -643,7 +643,7 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellin
         TextCheckingTypeMask textCheckingOptions = TextCheckingTypeSpelling;
         if (markGrammar && isGrammarCheckingEnabled())
             textCheckingOptions |= TextCheckingTypeGrammar;
-        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, spellingSelection.toNormalizedRange().get(), grammarSelection.toNormalizedRange().get());
+        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, spellingSelection.toNormalizedEphemeralRange(), grammarSelection.toNormalizedEphemeralRange());
         return;
     }
 
