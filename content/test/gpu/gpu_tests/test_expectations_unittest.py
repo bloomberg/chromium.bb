@@ -74,6 +74,9 @@ class SampleTestExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/attribs/page13.html')
     # Test file:// scheme on Windows.
     self.Fail('conformance/attribs/page14.html', ['win'])
+    # Explicitly matched paths have precedence over wildcards.
+    self.Fail('conformance/glsl/*')
+    self.Skip('conformance/glsl/page15.html')
 
   def ExpectationAppliesToPage(self, expectation, browser, page):
     if not super(SampleTestExpectations,
@@ -212,3 +215,10 @@ class TestExpectationsTest(unittest.TestCase):
     page = page_module.Page('file://conformance\\attribs\\page14.html', ps)
     self.assertExpectationEquals('pass', page)
     self.assertExpectationEquals('fail', page, StubPlatform('win'))
+
+  def testExplicitPathsHavePrecedenceOverWildcards(self):
+    ps = story_set.StorySet()
+    page = page_module.Page('http://test.com/conformance/glsl/page00.html', ps)
+    self.assertExpectationEquals('fail', page)
+    page = page_module.Page('http://test.com/conformance/glsl/page15.html', ps)
+    self.assertExpectationEquals('skip', page)
