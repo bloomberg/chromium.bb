@@ -43,6 +43,8 @@
       'Heap.h',
       'HeapAllocator.cpp',
       'HeapAllocator.h',
+      'HeapPage.cpp',
+      'HeapPage.h',
       'InlinedGlobalMarkingVisitor.h',
       'MarkingVisitor.h',
       'MarkingVisitorImpl.h',
