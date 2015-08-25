@@ -70,7 +70,6 @@ class CC_EXPORT LayerTreeSettings {
   size_t tiling_interest_area_padding;
   float skewport_target_time_in_seconds;
   int skewport_extrapolation_limit_in_content_pixels;
-  size_t max_unused_resource_memory_percentage;
   size_t max_memory_for_prepaint_percentage;
   bool strict_layer_property_change_checking;
   bool use_one_copy;

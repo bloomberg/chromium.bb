@@ -55,7 +55,6 @@ LayerTreeSettings::LayerTreeSettings()
       tiling_interest_area_padding(3000),
       skewport_target_time_in_seconds(1.0f),
       skewport_extrapolation_limit_in_content_pixels(2000),
-      max_unused_resource_memory_percentage(100),
       max_memory_for_prepaint_percentage(100),
       strict_layer_property_change_checking(false),
       use_one_copy(true),

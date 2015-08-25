@@ -375,18 +375,6 @@ void RenderWidgetCompositor::Initialize() {
   settings.invert_viewport_scroll_order =
       cmd->HasSwitch(switches::kInvertViewportScrollOrder);
 
-  if (cmd->HasSwitch(cc::switches::kMaxUnusedResourceMemoryUsagePercentage)) {
-    int max_unused_resource_memory_percentage;
-    if (GetSwitchValueAsInt(
-            *cmd,
-            cc::switches::kMaxUnusedResourceMemoryUsagePercentage,
-            0, 100,
-            &max_unused_resource_memory_percentage)) {
-      settings.max_unused_resource_memory_percentage =
-          max_unused_resource_memory_percentage;
-    }
-  }
-
   settings.strict_layer_property_change_checking =
       cmd->HasSwitch(cc::switches::kStrictLayerPropertyChangeChecking);
 

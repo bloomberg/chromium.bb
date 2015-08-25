@@ -63,7 +63,6 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     global_state_ = state;
     host_impl_.resource_pool()->SetResourceUsageLimits(
         state.soft_memory_limit_in_bytes,
-        state.soft_memory_limit_in_bytes,
         state.num_resources_limit);
     host_impl_.tile_manager()->SetGlobalStateForTesting(state);
   }

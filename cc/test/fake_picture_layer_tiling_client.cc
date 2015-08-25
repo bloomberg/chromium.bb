@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/thread_task_runner_handle.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 
@@ -21,14 +22,16 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
     ResourceProvider* resource_provider)
-    : resource_pool_(ResourcePool::Create(resource_provider, GL_TEXTURE_2D)),
+    : resource_pool_(
+          ResourcePool::Create(resource_provider,
+                               base::ThreadTaskRunnerHandle::Get().get(),
+                               GL_TEXTURE_2D)),
       tile_manager_(
           new FakeTileManager(&tile_manager_client_, resource_pool_.get())),
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
-      has_valid_tile_priorities_(true) {
-}
+      has_valid_tile_priorities_(true) {}
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 }

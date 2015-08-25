@@ -300,9 +300,8 @@ void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
     case ALL: {
       has_scheduled_tile_tasks_ = false;
 
-      bool memory_usage_above_limit =
-          resource_pool_->total_memory_usage_bytes() >
-          global_state_.soft_memory_limit_in_bytes;
+      bool memory_usage_above_limit = resource_pool_->memory_usage_bytes() >
+                                      global_state_.soft_memory_limit_in_bytes;
 
       if (all_tiles_that_need_to_be_rasterized_are_scheduled_ &&
           !memory_usage_above_limit) {
@@ -376,10 +375,6 @@ bool TileManager::PrepareTiles(
 
   TRACE_EVENT_INSTANT1("cc", "DidPrepareTiles", TRACE_EVENT_SCOPE_THREAD,
                        "state", BasicStateAsValue());
-
-  TRACE_COUNTER_ID1("cc", "unused_memory_bytes", this,
-                    resource_pool_->total_memory_usage_bytes() -
-                        resource_pool_->acquired_memory_usage_bytes());
   return true;
 }
 
@@ -506,8 +501,8 @@ void TileManager::AssignGpuMemoryToTiles(
                                 global_state_.num_resources_limit);
   MemoryUsage soft_memory_limit(global_state_.soft_memory_limit_in_bytes,
                                 global_state_.num_resources_limit);
-  MemoryUsage memory_usage(resource_pool_->acquired_memory_usage_bytes(),
-                           resource_pool_->acquired_resource_count());
+  MemoryUsage memory_usage(resource_pool_->memory_usage_bytes(),
+                           resource_pool_->resource_count());
 
   scoped_ptr<EvictionTilePriorityQueue> eviction_priority_queue;
   for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {

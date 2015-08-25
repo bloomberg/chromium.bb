@@ -1221,22 +1221,12 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
         false /* aggressively_free_resources */);
   }
 
-  // TODO(reveman): We should avoid keeping around unused resources if
-  // possible. crbug.com/224475
-  // Unused limit is calculated from soft-limit, as hard-limit may
-  // be very high and shouldn't typically be exceeded.
-  size_t unused_memory_limit_in_bytes = static_cast<size_t>(
-      (static_cast<int64>(global_tile_state_.soft_memory_limit_in_bytes) *
-       settings_.max_unused_resource_memory_percentage) /
-      100);
-
   DCHECK(resource_pool_);
   resource_pool_->CheckBusyResources();
   // Soft limit is used for resource pool such that memory returns to soft
   // limit after going over.
   resource_pool_->SetResourceUsageLimits(
       global_tile_state_.soft_memory_limit_in_bytes,
-      unused_memory_limit_in_bytes,
       global_tile_state_.num_resources_limit);
 
   DidModifyTilePriorities();
@@ -2091,8 +2081,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
 
   ContextProvider* context_provider = output_surface_->context_provider();
   if (!context_provider) {
-    *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
+    *resource_pool = ResourcePool::Create(resource_provider_.get(),
+                                          GetTaskRunner(), GL_TEXTURE_2D);
 
     *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
         GetTaskRunner(), task_graph_runner, resource_provider_.get());
@@ -2102,8 +2092,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   if (use_gpu_rasterization_) {
     DCHECK(resource_provider_->output_surface()->worker_context_provider());
 
-    *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
+    *resource_pool = ResourcePool::Create(resource_provider_.get(),
+                                          GetTaskRunner(), GL_TEXTURE_2D);
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
@@ -2126,7 +2116,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   }
 
   if (use_zero_copy) {
-    *resource_pool = ResourcePool::Create(resource_provider_.get());
+    *resource_pool =
+        ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
 
     *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
         GetTaskRunner(), task_graph_runner, resource_provider_.get());
@@ -2134,8 +2125,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   }
 
   if (settings_.use_one_copy) {
-    *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
+    *resource_pool = ResourcePool::Create(resource_provider_.get(),
+                                          GetTaskRunner(), GL_TEXTURE_2D);
 
     int max_copy_texture_chromium_size =
         context_provider->ContextCapabilities()
@@ -2154,8 +2145,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
   // copy, software raster, or GPU raster (in the branches above).
   DCHECK(!is_synchronous_single_threaded_);
 
-  *resource_pool = ResourcePool::Create(
-      resource_provider_.get(), GL_TEXTURE_2D);
+  *resource_pool = ResourcePool::Create(resource_provider_.get(),
+                                        GetTaskRunner(), GL_TEXTURE_2D);
 
   *tile_task_worker_pool = PixelBufferTileTaskWorkerPool::Create(
       GetTaskRunner(), task_graph_runner_, context_provider,
