@@ -38,6 +38,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/downloads_util.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -146,7 +147,7 @@ base::DictionaryValue* CreateDownloadItemValue(
           download_item->GetStartTime(), NULL));
 
   base::Time start_time = download_item->GetStartTime();
-  base::string16 date_string = switches::MdDownloadsEnabled() ?
+  base::string16 date_string = MdDownloadsEnabled() ?
       TimeFormatLongDate(start_time) : base::TimeFormatShortDate(start_time);
   file_value->SetString("date_string", date_string);
 
@@ -216,7 +217,7 @@ base::DictionaryValue* CreateDownloadItemValue(
                             download_model.GetTabProgressStatusText());
 
       int percent = download_item->PercentComplete();
-      if (!switches::MdDownloadsEnabled())
+      if (!MdDownloadsEnabled())
         percent = std::max(0, percent);
       file_value->SetInteger("percent", percent);
 

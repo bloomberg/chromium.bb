@@ -269,6 +269,9 @@ const char kDisableExtensionsHttpThrottling[] =
 // Disable field trial tests configured in fieldtrial_testing_config.json.
 const char kDisableFieldTrialTestingConfig[] = "disable-field-trial-config";
 
+// Disables the Material Design version of chrome://downloads.
+const char kDisableMaterialDesignDownloads[] = "disable-md-downloads";
+
 // Disable the behavior that the second click on a launcher item (the click when
 // the item is already active) minimizes the item.
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
@@ -440,7 +443,7 @@ const char kEnableFastUnload[]         = "enable-fast-unload";
 // This is a temporary testing flag.
 const char kEnableInsecureQuic[] = "enable-insecure-quic";
 
-// Enables an experimental Material Design version of chrome://downloads.
+// Enables the Material Design version of chrome://downloads.
 const char kEnableMaterialDesignDownloads[] = "enable-md-downloads";
 
 // Enables the material design Settings feature.
@@ -1362,11 +1365,6 @@ bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              ::switches::kDisableAboutInSettings);
-}
-
-bool MdDownloadsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableMaterialDesignDownloads);
 }
 
 bool MdSettingsEnabled() {

@@ -81,6 +81,7 @@ extern const char kDisableExtensionsHttpThrottling[];
 extern const char kDisableExtensions[];
 extern const char kDisableFieldTrialTestingConfig[];
 extern const char kDisableJavaScriptHarmonyShipping[];
+extern const char kDisableMaterialDesignDownloads[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNewBookmarkApps[];
 extern const char kDisableNTPPopularSites[];
@@ -409,7 +410,6 @@ extern const char kDisableNewTaskManager[];
 #endif  // defined(ENABLE_TASK_MANAGER)
 
 bool AboutInSettingsEnabled();
-bool MdDownloadsEnabled();
 bool MdSettingsEnabled();
 bool MediaRouterEnabled();
 bool PdfMaterialUIEnabled();

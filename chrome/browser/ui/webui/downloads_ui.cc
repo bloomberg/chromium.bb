@@ -15,6 +15,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
+#include "chrome/browser/ui/webui/downloads_util.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -93,7 +94,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("throttled_icon_loader.js",
                           IDR_DOWNLOADS_THROTTLED_ICON_LOADER_JS);
 
-  if (switches::MdDownloadsEnabled()) {
+  if (MdDownloadsEnabled()) {
     source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
     source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
     source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);

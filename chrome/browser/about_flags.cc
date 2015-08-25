@@ -2055,7 +2055,8 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_NAME,
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_DESCRIPTION,
      kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignDownloads)},
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMaterialDesignDownloads,
+                               switches::kDisableMaterialDesignDownloads)},
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX)
     {"enable-tab-discarding",

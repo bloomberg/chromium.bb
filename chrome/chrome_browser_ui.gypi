@@ -1741,6 +1741,8 @@
       'browser/ui/webui/downloads_dom_handler.h',
       'browser/ui/webui/downloads_ui.cc',
       'browser/ui/webui/downloads_ui.h',
+      'browser/ui/webui/downloads_util.cc',
+      'browser/ui/webui/downloads_util.h',
       'browser/ui/webui/extensions/extension_loader_handler.cc',
       'browser/ui/webui/extensions/extension_loader_handler.h',
       'browser/ui/webui/extensions/extension_settings_handler.cc',
