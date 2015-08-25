@@ -85,6 +85,14 @@ void TransferBuffer::FreePendingToken(void* p, unsigned int token) {
   }
 }
 
+unsigned int TransferBuffer::GetSize() const {
+  return HaveBuffer() ? ring_buffer_->GetLargestFreeOrPendingSize() : 0;
+}
+
+unsigned int TransferBuffer::GetFreeSize() const {
+  return HaveBuffer() ? ring_buffer_->GetTotalFreeSizeNoWaiting() : 0;
+}
+
 void TransferBuffer::AllocateRingBuffer(unsigned int size) {
   for (;size >= min_buffer_size_; size /= 2) {
     int32 id = -1;

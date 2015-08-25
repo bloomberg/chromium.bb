@@ -20,7 +20,7 @@
 
 namespace gpu {
 
-class TransferBufferManagerInterface;
+class TransferBufferManager;
 class ValueStateMap;
 
 namespace gles2 {
@@ -177,7 +177,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return shader_manager_.get();
   }
 
-  TransferBufferManagerInterface* transfer_buffer_manager() const {
+  TransferBufferManager* transfer_buffer_manager() const {
     return transfer_buffer_manager_.get();
   }
 
@@ -265,7 +265,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_refptr<MemoryTracker> memory_tracker_;
   scoped_refptr<ShaderTranslatorCache> shader_translator_cache_;
   scoped_refptr<FramebufferCompletenessCache> framebuffer_completeness_cache_;
-  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  scoped_refptr<TransferBufferManager> transfer_buffer_manager_;
   scoped_refptr<SubscriptionRefSet> subscription_ref_set_;
   scoped_refptr<ValueStateMap> pending_valuebuffer_state_;
 

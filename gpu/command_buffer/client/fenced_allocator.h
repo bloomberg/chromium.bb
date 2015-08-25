@@ -83,6 +83,9 @@ class GPU_EXPORT FencedAllocator {
   // block.
   unsigned int GetLargestFreeOrPendingSize();
 
+  // Gets the total size of all free blocks that are available without waiting.
+  unsigned int GetFreeSize();
+
   // Checks for consistency inside the book-keeping structures. Used for
   // testing.
   bool CheckConsistency();
@@ -242,6 +245,9 @@ class FencedAllocatorWrapper {
   unsigned int GetLargestFreeOrPendingSize() {
     return allocator_.GetLargestFreeOrPendingSize();
   }
+
+  // Gets the total size of all free blocks.
+  unsigned int GetFreeSize() { return allocator_.GetFreeSize(); }
 
   // Checks for consistency inside the book-keeping structures. Used for
   // testing.

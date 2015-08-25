@@ -63,6 +63,9 @@ class GPU_EXPORT RingBuffer {
   // Gets the size of the largest free block that is available without waiting.
   unsigned int GetLargestFreeSizeNoWaiting();
 
+  // Gets the total size of all free blocks that are available without waiting.
+  unsigned int GetTotalFreeSizeNoWaiting();
+
   // Gets the size of the largest free block that can be allocated if the
   // caller can wait. Allocating a block of this size will succeed, but may
   // block.

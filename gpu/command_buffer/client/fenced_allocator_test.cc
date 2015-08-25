@@ -44,7 +44,7 @@ class BaseFencedAllocatorTest : public testing::Test {
                               Return(error::kNoError)));
 
     {
-      TransferBufferManager* manager = new TransferBufferManager();
+      TransferBufferManager* manager = new TransferBufferManager(nullptr);
       transfer_buffer_manager_ = manager;
       EXPECT_TRUE(manager->Initialize());
     }

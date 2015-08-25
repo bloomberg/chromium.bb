@@ -79,9 +79,7 @@ ContextGroup::ContextGroup(
       pending_valuebuffer_state_ = new ValueStateMap();
     if (!feature_info.get())
       feature_info_ = new FeatureInfo;
-    TransferBufferManager* manager = new TransferBufferManager();
-    transfer_buffer_manager_ = manager;
-    manager->Initialize();
+    transfer_buffer_manager_ = new TransferBufferManager(memory_tracker_.get());
   }
 }
 
@@ -134,6 +132,8 @@ bool ContextGroup::Initialize(
                << "initialization failed.";
     return false;
   }
+
+  transfer_buffer_manager_->Initialize();
 
   const GLint kMinRenderbufferSize = 512;  // GL says 1 pixel!
   GLint max_renderbuffer_size = 0;

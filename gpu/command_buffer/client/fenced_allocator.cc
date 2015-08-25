@@ -144,6 +144,18 @@ unsigned int FencedAllocator::GetLargestFreeOrPendingSize() {
   return std::max(max_size, current_size);
 }
 
+// Gets the total size of all blocks marked as free.
+unsigned int FencedAllocator::GetFreeSize() {
+  FreeUnused();
+  unsigned int size = 0;
+  for (unsigned int i = 0; i < blocks_.size(); ++i) {
+    Block& block = blocks_[i];
+    if (block.state == FREE)
+      size += block.size;
+  }
+  return size;
+}
+
 // Makes sure that:
 // - there is at least one block.
 // - there are no contiguous FREE blocks (they should have been collapsed).

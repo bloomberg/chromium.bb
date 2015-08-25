@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
 #include "gpu/command_buffer/client/client_context_state.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -122,7 +123,8 @@ class GLES2ImplementationErrorMessageCallback {
 // shared memory and synchronization issues.
 class GLES2_IMPL_EXPORT GLES2Implementation
     : NON_EXPORTED_BASE(public GLES2Interface),
-      NON_EXPORTED_BASE(public ContextSupport) {
+      NON_EXPORTED_BASE(public ContextSupport),
+      NON_EXPORTED_BASE(public base::trace_event::MemoryDumpProvider) {
  public:
   enum MappedMemoryLimit {
     kNoLimit = MappedMemoryManager::kNoLimit,
@@ -253,6 +255,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void SignalQuery(uint32 query, const base::Closure& callback) override;
   void SetSurfaceVisible(bool visible) override;
   void SetAggressivelyFreeResources(bool aggressively_free_resources) override;
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   void SetErrorMessageCallback(
       GLES2ImplementationErrorMessageCallback* callback) {

@@ -107,7 +107,8 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   }
 
   {
-    gpu::TransferBufferManager* manager = new gpu::TransferBufferManager();
+    gpu::TransferBufferManager* manager =
+        new gpu::TransferBufferManager(nullptr);
     transfer_buffer_manager_ = manager;
     manager->Initialize();
   }

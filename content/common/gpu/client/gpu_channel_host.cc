@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
@@ -26,6 +27,12 @@
 using base::AutoLock;
 
 namespace content {
+namespace {
+
+// Global atomic to generate unique transfer buffer IDs.
+base::StaticAtomicSequenceNumber g_next_transfer_buffer_id;
+
+}  // namespace
 
 GpuChannelHost::StreamFlushInfo::StreamFlushInfo()
     : flush_pending(false),
@@ -56,7 +63,6 @@ GpuChannelHost::GpuChannelHost(
     : factory_(factory),
       gpu_info_(gpu_info),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
-  next_transfer_buffer_id_.GetNext();
   next_image_id_.GetNext();
   next_route_id_.GetNext();
   next_stream_id_.GetNext();
@@ -337,7 +343,8 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
 }
 
 int32 GpuChannelHost::ReserveTransferBufferId() {
-  return next_transfer_buffer_id_.GetNext();
+  // 0 is a reserved value.
+  return g_next_transfer_buffer_id.GetNext() + 1;
 }
 
 gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(

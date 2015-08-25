@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
+#include "base/trace_event/memory_allocator_dump.h"
 #include "gpu/gpu_export.h"
 
 namespace base {
@@ -74,6 +75,11 @@ static inline scoped_refptr<Buffer> MakeBufferFromSharedMemory(
     size_t size) {
   return new Buffer(MakeBackingFromSharedMemory(shared_memory.Pass(), size));
 }
+
+// Generates GUID which can be used to trace buffer using an Id.
+GPU_EXPORT base::trace_event::MemoryAllocatorDumpGuid GetBufferGUIDForTracing(
+    uint64_t tracing_process_id,
+    int32_t buffer_id);
 
 }  // namespace gpu
 

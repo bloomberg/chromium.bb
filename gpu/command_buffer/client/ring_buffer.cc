@@ -167,4 +167,14 @@ unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
   }
 }
 
+unsigned int RingBuffer::GetTotalFreeSizeNoWaiting() {
+  unsigned int largest_free_size = GetLargestFreeSizeNoWaiting();
+  if (free_offset_ > in_use_offset_) {
+    // It's free from free_offset_ to size_ and from 0 to in_use_offset_.
+    return size_ - free_offset_ + in_use_offset_;
+  } else {
+    return largest_free_size;
+  }
+}
+
 }  // namespace gpu

@@ -9,9 +9,15 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 
 using ::base::SharedMemory;
 
@@ -20,9 +26,9 @@ namespace gpu {
 TransferBufferManagerInterface::~TransferBufferManagerInterface() {
 }
 
-TransferBufferManager::TransferBufferManager()
-    : shared_memory_bytes_allocated_(0) {
-}
+TransferBufferManager::TransferBufferManager(
+    gles2::MemoryTracker* memory_tracker)
+    : shared_memory_bytes_allocated_(0), memory_tracker_(memory_tracker) {}
 
 TransferBufferManager::~TransferBufferManager() {
   while (!registered_buffers_.empty()) {
@@ -32,9 +38,18 @@ TransferBufferManager::~TransferBufferManager() {
     registered_buffers_.erase(it);
   }
   DCHECK(!shared_memory_bytes_allocated_);
+
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 bool TransferBufferManager::Initialize() {
+  // When created from InProcessCommandBuffer, we won't have a |memory_tracker_|
+  // so don't register a dump provider.
+  if (memory_tracker_) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, base::ThreadTaskRunnerHandle::Get());
+  }
   return true;
 }
 
@@ -92,6 +107,29 @@ scoped_refptr<Buffer> TransferBufferManager::GetTransferBuffer(int32 id) {
     return NULL;
 
   return it->second;
+}
+
+bool TransferBufferManager::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  for (const auto& buffer_entry : registered_buffers_) {
+    int32 buffer_id = buffer_entry.first;
+    const Buffer* buffer = buffer_entry.second.get();
+    std::string dump_name =
+        base::StringPrintf("gpu/transfer_memory/client_%d/buffer_%d",
+                           memory_tracker_->ClientId(), buffer_id);
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    buffer->size());
+    auto guid =
+        GetBufferGUIDForTracing(memory_tracker_->ClientTracingId(), buffer_id);
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    pmd->AddOwnershipEdge(dump->guid(), guid);
+  }
+
+  return true;
 }
 
 }  // namespace gpu

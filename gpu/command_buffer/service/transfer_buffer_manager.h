@@ -13,9 +13,13 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 
 namespace gpu {
+namespace gles2 {
+class MemoryTracker;
+}
 
 class GPU_EXPORT TransferBufferManagerInterface :
     public base::RefCounted<TransferBufferManagerInterface> {
@@ -32,9 +36,14 @@ class GPU_EXPORT TransferBufferManagerInterface :
 };
 
 class GPU_EXPORT TransferBufferManager
-    : public TransferBufferManagerInterface {
+    : public TransferBufferManagerInterface,
+      public base::trace_event::MemoryDumpProvider {
  public:
-  TransferBufferManager();
+  explicit TransferBufferManager(gles2::MemoryTracker* memory_tracker);
+
+  // Overridden from base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   bool Initialize();
   bool RegisterTransferBuffer(
@@ -49,6 +58,7 @@ class GPU_EXPORT TransferBufferManager
   typedef base::hash_map<int32, scoped_refptr<Buffer> > BufferMap;
   BufferMap registered_buffers_;
   size_t shared_memory_bytes_allocated_;
+  gles2::MemoryTracker* memory_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TransferBufferManager);
 };

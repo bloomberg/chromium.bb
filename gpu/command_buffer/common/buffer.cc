@@ -4,9 +4,10 @@
 
 #include "gpu/command_buffer/common/buffer.h"
 
+#include "base/format_macros.h"
 #include "base/logging.h"
-
 #include "base/numerics/safe_math.h"
+#include "base/strings/stringprintf.h"
 
 namespace gpu {
 SharedMemoryBufferBacking::SharedMemoryBufferBacking(
@@ -37,6 +38,13 @@ void* Buffer::GetDataAddress(uint32 data_offset, uint32 data_size) const {
   if (!end.IsValid() || end.ValueOrDie() > static_cast<uint32>(size_))
     return NULL;
   return static_cast<uint8*>(memory_) + data_offset;
+}
+
+base::trace_event::MemoryAllocatorDumpGuid GetBufferGUIDForTracing(
+    uint64_t tracing_process_id,
+    int32_t buffer_id) {
+  return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
+      "gpu-buffer-x-process/%" PRIx64 "/%d", tracing_process_id, buffer_id));
 }
 
 } // namespace gpu

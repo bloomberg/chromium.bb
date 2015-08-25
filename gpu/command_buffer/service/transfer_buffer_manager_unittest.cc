@@ -17,7 +17,7 @@ const static size_t kBufferSize = 1024;
 class TransferBufferManagerTest : public testing::Test {
  protected:
   void SetUp() override {
-    TransferBufferManager* manager = new TransferBufferManager();
+    TransferBufferManager* manager = new TransferBufferManager(nullptr);
     transfer_buffer_manager_ = manager;
     ASSERT_TRUE(manager->Initialize());
   }

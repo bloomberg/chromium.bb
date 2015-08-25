@@ -8,7 +8,12 @@
 
 #include <algorithm>
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -33,6 +38,13 @@ CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
       context_lost_(false),
       flush_automatically_(true),
       flush_generation_(0) {
+  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
+  // Don't register a dump provider in these cases.
+  // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, base::ThreadTaskRunnerHandle::Get());
+  }
 }
 
 void CommandBufferHelper::SetAutomaticFlushes(bool enabled) {
@@ -140,6 +152,8 @@ bool CommandBufferHelper::Initialize(int32 ring_buffer_size) {
 }
 
 CommandBufferHelper::~CommandBufferHelper() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
   FreeResources();
 }
 
@@ -308,5 +322,41 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
   }
 }
 
+int32 CommandBufferHelper::GetTotalFreeEntriesNoWaiting() const {
+  int32 current_get_offset = get_offset();
+  if (current_get_offset > put_) {
+    return current_get_offset - put_ - 1;
+  } else {
+    return current_get_offset + total_entry_count_ - put_ -
+           (current_get_offset == 0 ? 1 : 0);
+  }
+}
+
+bool CommandBufferHelper::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  if (!HaveRingBuffer())
+    return true;
+
+  const uint64 tracing_process_id =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->GetTracingProcessId();
+
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(base::StringPrintf(
+          "gpu/command_buffer_memory/buffer_%d", ring_buffer_id_));
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  ring_buffer_size_);
+  dump->AddScalar("free_size",
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  GetTotalFreeEntriesNoWaiting() * sizeof(CommandBufferEntry));
+  auto guid = GetBufferGUIDForTracing(tracing_process_id, ring_buffer_id_);
+  const int kImportance = 2;
+  pmd->CreateSharedGlobalAllocatorDump(guid);
+  pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+
+  return true;
+}
 
 }  // namespace gpu

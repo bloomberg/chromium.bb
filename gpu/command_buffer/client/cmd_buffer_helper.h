@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -48,10 +49,11 @@ const int kAutoFlushBig = 2;     // 1/2 of the buffer
 //
 // helper.WaitForToken(token);  // this doesn't return until the first two
 //                              // commands have been executed.
-class GPU_EXPORT CommandBufferHelper {
+class GPU_EXPORT CommandBufferHelper
+    : public base::trace_event::MemoryDumpProvider {
  public:
   explicit CommandBufferHelper(CommandBuffer* command_buffer);
-  virtual ~CommandBufferHelper();
+  ~CommandBufferHelper() override;
 
   // Initializes the CommandBufferHelper.
   // Parameters:
@@ -304,6 +306,10 @@ class GPU_EXPORT CommandBufferHelper {
     CalcImmediateEntries(0);
   }
 
+  // Overridden from base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
   // Returns the number of available entries (they may not be contiguous).
   int32 AvailableEntries() {
@@ -322,6 +328,8 @@ class GPU_EXPORT CommandBufferHelper {
   // Calls Flush if automatic flush conditions are met.
   void PeriodicFlushCheck();
 #endif
+
+  int32 GetTotalFreeEntriesNoWaiting() const;
 
   CommandBuffer* command_buffer_;
   int32 ring_buffer_id_;

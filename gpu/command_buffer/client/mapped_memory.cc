@@ -7,11 +7,23 @@
 #include <algorithm>
 #include <functional>
 
+#include "base/atomic_sequence_num.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
+#include "gpu/command_buffer/common/buffer.h"
 
 namespace gpu {
+namespace {
+
+// Generates process-unique IDs to use for tracing a MappedMemoryManager's
+// chunks.
+base::StaticAtomicSequenceNumber g_next_mapped_memory_manager_tracing_id;
+
+}  // namespace
 
 MemoryChunk::MemoryChunk(int32 shm_id,
                          scoped_refptr<gpu::Buffer> shm,
@@ -31,10 +43,21 @@ MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper,
       poll_callback_(poll_callback),
       allocated_memory_(0),
       max_free_bytes_(unused_memory_reclaim_limit),
-      max_allocated_bytes_(kNoLimit) {
+      max_allocated_bytes_(kNoLimit),
+      tracing_id_(g_next_mapped_memory_manager_tracing_id.GetNext()) {
+  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
+  // Don't register a dump provider in these cases.
+  // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, base::ThreadTaskRunnerHandle::Get());
+  }
 }
 
 MappedMemoryManager::~MappedMemoryManager() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
+
   CommandBuffer* cmd_buf = helper_->command_buffer();
   for (MemoryChunkVector::iterator iter = chunks_.begin();
        iter != chunks_.end(); ++iter) {
@@ -144,6 +167,36 @@ void MappedMemoryManager::FreeUnused() {
       ++iter;
     }
   }
+}
+
+bool MappedMemoryManager::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  const uint64 tracing_process_id =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->GetTracingProcessId();
+
+  for (const auto& chunk : chunks_) {
+    std::string dump_name = base::StringPrintf(
+        "gpu/mapped_memory/manager_%d/chunk_%d", tracing_id_, chunk->shm_id());
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(dump_name);
+
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    chunk->GetSize());
+    dump->AddScalar("free_size",
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    chunk->GetFreeSize());
+
+    auto guid = GetBufferGUIDForTracing(tracing_process_id, chunk->shm_id());
+
+    const int kImportance = 2;
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+  }
+
+  return true;
 }
 
 void ScopedMappedMemoryPtr::Release() {

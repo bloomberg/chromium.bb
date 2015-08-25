@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/gpu_export.h"
@@ -91,6 +92,9 @@ class GPU_EXPORT MemoryChunk {
     allocator_.FreeUnused();
   }
 
+  // Gets the free size of the chunk.
+  unsigned int GetFreeSize() { return allocator_.GetFreeSize(); }
+
   // Returns true if pointer is in the range of this block.
   bool IsInChunk(void* pointer) const {
     return pointer >= shm_->memory() &&
@@ -116,7 +120,8 @@ class GPU_EXPORT MemoryChunk {
 };
 
 // Manages MemoryChunks.
-class GPU_EXPORT MappedMemoryManager {
+class GPU_EXPORT MappedMemoryManager
+    : public base::trace_event::MemoryDumpProvider {
  public:
   enum MemoryLimit {
     kNoLimit = 0,
@@ -128,7 +133,7 @@ class GPU_EXPORT MappedMemoryManager {
                       const base::Closure& poll_callback,
                       size_t unused_memory_reclaim_limit);
 
-  ~MappedMemoryManager();
+  ~MappedMemoryManager() override;
 
   unsigned int chunk_size_multiple() const {
     return chunk_size_multiple_;
@@ -174,6 +179,10 @@ class GPU_EXPORT MappedMemoryManager {
   // Free Any Shared memory that is not in use.
   void FreeUnused();
 
+  // Overridden from base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
   // Used for testing
   size_t num_chunks() const {
     return chunks_.size();
@@ -204,6 +213,9 @@ class GPU_EXPORT MappedMemoryManager {
   size_t allocated_memory_;
   size_t max_free_bytes_;
   size_t max_allocated_bytes_;
+  // A process-unique ID used for disambiguating memory dumps from different
+  // mapped memory manager.
+  int tracing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MappedMemoryManager);
 };

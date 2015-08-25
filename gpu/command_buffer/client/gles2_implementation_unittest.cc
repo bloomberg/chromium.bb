@@ -137,6 +137,8 @@ class MockTransferBuffer : public TransferBufferInterface {
   RingBuffer::Offset GetOffset(void* pointer) const override;
   void DiscardBlock(void* p) override;
   void FreePendingToken(void* p, unsigned int /* token */) override;
+  unsigned int GetSize() const override;
+  unsigned int GetFreeSize() const override;
 
   size_t MaxTransferBufferSize() {
     return size_ - result_size_;
@@ -307,6 +309,14 @@ void MockTransferBuffer::DiscardBlock(void* p) {
 void MockTransferBuffer::FreePendingToken(void* p, unsigned int /* token */) {
   EXPECT_EQ(last_alloc_, p);
   last_alloc_ = NULL;
+}
+
+unsigned int MockTransferBuffer::GetSize() const {
+  return 0;
+}
+
+unsigned int MockTransferBuffer::GetFreeSize() const {
+  return 0;
 }
 
 // API wrapper for Buffers.

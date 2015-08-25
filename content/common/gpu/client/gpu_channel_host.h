@@ -246,7 +246,6 @@ class GpuChannelHost : public IPC::Sender,
 
   // Threading notes: all fields are constant during the lifetime of |this|
   // except:
-  // - |next_transfer_buffer_id_|, atomic type
   // - |next_image_id_|, atomic type
   // - |next_route_id_|, atomic type
   // - |next_stream_id_|, atomic type
@@ -261,9 +260,6 @@ class GpuChannelHost : public IPC::Sender,
 
   // A filter for sending messages from thread other than the main thread.
   scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
-
-  // Transfer buffer IDs are allocated in sequence.
-  base::AtomicSequenceNumber next_transfer_buffer_id_;
 
   // Image IDs are allocated in sequence.
   base::AtomicSequenceNumber next_image_id_;

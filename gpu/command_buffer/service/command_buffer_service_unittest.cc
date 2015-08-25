@@ -24,7 +24,7 @@ class CommandBufferServiceTest : public testing::Test {
  protected:
   void SetUp() override {
     {
-      TransferBufferManager* manager = new TransferBufferManager();
+      TransferBufferManager* manager = new TransferBufferManager(nullptr);
       transfer_buffer_manager_ = manager;
       EXPECT_TRUE(manager->Initialize());
     }
