@@ -301,7 +301,7 @@
             setTimeout(function () {
               window.parent.reportTestSuccess();
             }, 0);
-          }, 
+          },
           window.parent.failedCallback);
     }
   }
@@ -318,7 +318,7 @@
           constraints,
           function (stream) {
             window.parent.failTest('GetUserMedia call succeeded unexpectedly.');
-          }, 
+          },
           function (error) {
             // Remove the iframe from the parent within the callback scope.
             window.parent.document.querySelector('iframe').remove();
@@ -392,8 +392,8 @@
     }, waitTimeInSeconds * 1000);
   }
 
-  // This test make sure multiple video renderers can be created for the same
-  // local video track and make sure a renderer can still render if other
+  // This test makes sure multiple video renderers can be created for the same
+  // local video track, and makes sure a renderer can still render if other
   // renderers are paused. See http://crbug/352619.
   function createMultipleVideoRenderersAndPause(stream) {
     function createDetectableRenderer(stream, id) {
@@ -401,12 +401,15 @@
       document.body.appendChild(video);
       var localStreamUrl = URL.createObjectURL(stream);
       video.id = id;
+      video.style.display = 'none'
       video.src = localStreamUrl;
       video.autoplay = true;
       video.play();
+
       // The detector needs a canvas.
       var canvas = document.createElement('canvas');
       canvas.id = video.id + "-canvas";
+      canvas.style.display = 'none'
       document.body.appendChild(canvas);
     };
 
