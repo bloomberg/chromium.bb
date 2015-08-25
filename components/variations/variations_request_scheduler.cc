@@ -9,24 +9,6 @@
 
 namespace chrome_variations {
 
-namespace {
-
-// Returns the time interval between variations seed fetches.
-base::TimeDelta GetFetchPeriod() {
-  // The fetch interval can be overridden by a variation param.
-  std::string period_min_str =
-      variations::GetVariationParamValue("VarationsServiceControl",
-                                         "fetch_period_min");
-  size_t period_min;
-  if (base::StringToSizeT(period_min_str, &period_min))
-    return base::TimeDelta::FromMinutes(period_min);
-
-  // The default fetch interval is every 5 hours.
-  return base::TimeDelta::FromHours(5);
-}
-
-}  // namespace
-
 VariationsRequestScheduler::VariationsRequestScheduler(
     const base::Closure& task) : task_(task) {
 }
@@ -57,6 +39,19 @@ void VariationsRequestScheduler::ScheduleFetchShortly() {
 
 void VariationsRequestScheduler::OnAppEnterForeground() {
   NOTREACHED() << "Attempted to OnAppEnterForeground on non-mobile device";
+}
+
+base::TimeDelta VariationsRequestScheduler::GetFetchPeriod() const {
+  // The fetch interval can be overridden by a variation param.
+  std::string period_min_str =
+      variations::GetVariationParamValue("VarationsServiceControl",
+                                         "fetch_period_min");
+  size_t period_min;
+  if (base::StringToSizeT(period_min_str, &period_min))
+    return base::TimeDelta::FromMinutes(period_min);
+
+  // The default fetch interval is every 5 hours.
+  return base::TimeDelta::FromHours(5);
 }
 
 base::Closure VariationsRequestScheduler::task() const {

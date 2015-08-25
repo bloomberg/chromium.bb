@@ -41,6 +41,9 @@ class VariationsRequestScheduler {
   // |task| is the closure to call when the scheduler deems ready.
   explicit VariationsRequestScheduler(const base::Closure& task);
 
+  // Returns the time interval between variations seed fetches.
+  base::TimeDelta GetFetchPeriod() const;
+
   // Getter for derived classes.
   base::Closure task() const;
 
