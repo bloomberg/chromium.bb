@@ -77,7 +77,7 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
 
 void WebViewImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client) {
-  mojo::ViewManager::Create(nullptr, view_tree_client.Pass());
+  mojo::ViewManager::Create(this, view_tree_client.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
