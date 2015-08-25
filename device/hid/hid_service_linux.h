@@ -32,11 +32,6 @@ class HidServiceLinux : public HidService {
 
   ~HidServiceLinux() override;
 
-  // Constructs this services helper object that lives on the FILE thread.
-  static void StartHelper(
-      base::WeakPtr<HidServiceLinux> weak_ptr,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
   // These functions implement the process of locating, requesting access to and
   // opening a device. Because this operation crosses multiple threads these
   // functions are static and the necessary parameters are passed as a single
@@ -57,7 +52,7 @@ class HidServiceLinux : public HidService {
 
   // The helper lives on the FILE thread and holds a weak reference back to the
   // service that owns it.
-  scoped_ptr<FileThreadHelper> helper_;
+  FileThreadHelper* helper_;
   base::WeakPtrFactory<HidServiceLinux> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceLinux);

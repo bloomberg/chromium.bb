@@ -31,7 +31,8 @@
 namespace device {
 
 class HidConnectionLinux::FileThreadHelper
-    : public base::MessagePumpLibevent::Watcher {
+    : public base::MessagePumpLibevent::Watcher,
+      public base::MessageLoop::DestructionObserver {
  public:
   FileThreadHelper(base::PlatformFile platform_file,
                    scoped_refptr<HidDeviceInfo> device_info,
@@ -47,19 +48,23 @@ class HidConnectionLinux::FileThreadHelper
 
   ~FileThreadHelper() override {
     DCHECK(thread_checker_.CalledOnValidThread());
+    base::MessageLoop::current()->RemoveDestructionObserver(this);
   }
 
   // Starts the FileDescriptorWatcher that reads input events from the device.
-  // Must be called on a thread that has a base::MessageLoopForIO. The helper
-  // object is owned by the thread where it was started.
-  void Start() {
+  // Must be called on a thread that has a base::MessageLoopForIO.
+  static void Start(scoped_ptr<FileThreadHelper> self) {
     base::ThreadRestrictions::AssertIOAllowed();
-    thread_checker_.DetachFromThread();
+    self->thread_checker_.DetachFromThread();
+
     if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-            platform_file_, true, base::MessageLoopForIO::WATCH_READ,
-            &file_watcher_, this)) {
+            self->platform_file_, true, base::MessageLoopForIO::WATCH_READ,
+            &self->file_watcher_, self.get())) {
       HID_LOG(ERROR) << "Failed to start watching device file.";
     }
+
+    // |self| is now owned by the current message loop.
+    base::MessageLoop::current()->AddDestructionObserver(self.release());
   }
 
  private:
@@ -105,6 +110,12 @@ class HidConnectionLinux::FileThreadHelper
     NOTREACHED();  // Only listening for reads.
   }
 
+  // base::MessageLoop::DestructionObserver:
+  void WillDestroyCurrentMessageLoop() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    delete this;
+  }
+
   base::ThreadChecker thread_checker_;
   base::PlatformFile platform_file_;
   size_t report_buffer_size_;
@@ -112,6 +123,8 @@ class HidConnectionLinux::FileThreadHelper
   base::WeakPtr<HidConnectionLinux> connection_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::MessagePumpLibevent::FileDescriptorWatcher file_watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileThreadHelper);
 };
 
 HidConnectionLinux::HidConnectionLinux(
@@ -126,10 +139,12 @@ HidConnectionLinux::HidConnectionLinux(
 
   // The helper is passed a weak pointer to this connection so that it can be
   // cleaned up after the connection is closed.
-  helper_ = new FileThreadHelper(device_file_.GetPlatformFile(), device_info,
-                                 weak_factory_.GetWeakPtr(), task_runner_);
-  file_task_runner_->PostTask(FROM_HERE, base::Bind(&FileThreadHelper::Start,
-                                                    base::Unretained(helper_)));
+  scoped_ptr<FileThreadHelper> helper(
+      new FileThreadHelper(device_file_.GetPlatformFile(), device_info,
+                           weak_factory_.GetWeakPtr(), task_runner_));
+  helper_ = helper.get();
+  file_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&FileThreadHelper::Start, base::Passed(&helper)));
 }
 
 HidConnectionLinux::~HidConnectionLinux() {

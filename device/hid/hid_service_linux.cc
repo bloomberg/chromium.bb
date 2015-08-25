@@ -67,18 +67,27 @@ class HidServiceLinux::FileThreadHelper
  public:
   FileThreadHelper(base::WeakPtr<HidServiceLinux> service,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : observer_(this), service_(service), task_runner_(task_runner) {
-    DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
-    observer_.Add(monitor);
-    monitor->Enumerate(
-        base::Bind(&FileThreadHelper::OnDeviceAdded, base::Unretained(this)));
-    task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&HidServiceLinux::FirstEnumerationComplete, service_));
-  }
+      : observer_(this), service_(service), task_runner_(task_runner) {}
 
   ~FileThreadHelper() override {
     DCHECK(thread_checker_.CalledOnValidThread());
+    base::MessageLoop::current()->RemoveDestructionObserver(this);
+  }
+
+  static void Start(scoped_ptr<FileThreadHelper> self) {
+    base::ThreadRestrictions::AssertIOAllowed();
+    self->thread_checker_.DetachFromThread();
+
+    DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
+    self->observer_.Add(monitor);
+    monitor->Enumerate(base::Bind(&FileThreadHelper::OnDeviceAdded,
+                                  base::Unretained(self.get())));
+    self->task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&HidServiceLinux::FirstEnumerationComplete, self->service_));
+
+    // |self| is now owned by the current message loop.
+    base::MessageLoop::current()->AddDestructionObserver(self.release());
   }
 
  private:
@@ -179,7 +188,6 @@ class HidServiceLinux::FileThreadHelper
   // base::MessageLoop::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
     delete this;
   }
 
@@ -189,27 +197,19 @@ class HidServiceLinux::FileThreadHelper
   // This weak pointer is only valid when checked on this task runner.
   base::WeakPtr<HidServiceLinux> service_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileThreadHelper);
 };
 
 HidServiceLinux::HidServiceLinux(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : file_task_runner_(file_task_runner), weak_factory_(this) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  // The device watcher is passed a weak pointer back to this service so that it
-  // can be cleaned up after the service is destroyed however this weak pointer
-  // must be constructed on the this thread where it will be checked.
+  scoped_ptr<FileThreadHelper> helper(
+      new FileThreadHelper(weak_factory_.GetWeakPtr(), task_runner_));
+  helper_ = helper.get();
   file_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&HidServiceLinux::StartHelper,
-                            weak_factory_.GetWeakPtr(), task_runner_));
-}
-
-// static
-void HidServiceLinux::StartHelper(
-    base::WeakPtr<HidServiceLinux> weak_ptr,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  // Helper is a message loop destruction observer and will delete itself when
-  // this thread's message loop is destroyed.
-  new FileThreadHelper(weak_ptr, task_runner);
+      FROM_HERE, base::Bind(&FileThreadHelper::Start, base::Passed(&helper)));
 }
 
 void HidServiceLinux::Connect(const HidDeviceId& device_id,
@@ -242,7 +242,7 @@ void HidServiceLinux::Connect(const HidDeviceId& device_id,
 }
 
 HidServiceLinux::~HidServiceLinux() {
-  file_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
+  file_task_runner_->DeleteSoon(FROM_HERE, helper_);
 }
 
 #if defined(OS_CHROMEOS)

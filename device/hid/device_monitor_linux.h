@@ -63,7 +63,7 @@ class DeviceMonitorLinux : public base::MessageLoop::DestructionObserver,
   int monitor_fd_;
   base::MessagePumpLibevent::FileDescriptorWatcher monitor_watcher_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   base::ThreadChecker thread_checker_;
 
