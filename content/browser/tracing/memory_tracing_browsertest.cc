@@ -127,6 +127,10 @@ class MemoryTracingTest : public ContentBrowserTest {
   bool last_callback_success_;
 };
 
+// Ignore SingleProcessMemoryTracingTests for Google Chrome builds because
+// single-process is not supported on those builds.
+#if !defined(GOOGLE_CHROME_BUILD)
+
 class SingleProcessMemoryTracingTest : public MemoryTracingTest {
  public:
   SingleProcessMemoryTracingTest() {}
@@ -196,6 +200,8 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, ManyInterleavedDumps) {
 
   DisableTracing();
 }
+
+#endif  // !defined(GOOGLE_CHROME_BUILD)
 
 // Checks that a memory dump initiated from a the main browser thread ends up in
 // a successful dump.
