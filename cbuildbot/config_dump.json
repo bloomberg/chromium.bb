@@ -985,6 +985,46 @@
                 "smoke_suite"
             ],
             "vm_tests_override": null
+        },
+        "wificell-pre-cq": {
+            "_template": "wificell-pre-cq",
+            "archive": true,
+            "build_packages_in_background": true,
+            "build_type": "binary",
+            "chrome_sdk": false,
+            "chrome_sdk_build_chrome": false,
+            "chroot_replace": true,
+            "cpe_export": false,
+            "debug_symbols": false,
+            "description": "WiFi tests acting as pre-cq for WiFi related changes",
+            "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+            "health_alert_recipients": [
+                "chromeos-infra-eng@grotations.appspotmail.com"
+            ],
+            "health_threshold": 3,
+            "hw_tests": [
+                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"wificell-pre-cq\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": false,\n    \"suite\": \"wificell-pre-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+            ],
+            "hw_tests_override": [
+                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"wificell-pre-cq\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": false,\n    \"suite\": \"wificell-pre-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+            ],
+            "image_test": true,
+            "images": [
+                "base",
+                "test"
+            ],
+            "important": true,
+            "manifest_version": true,
+            "overlays": "public",
+            "pre_cq": true,
+            "prebuilts": false,
+            "trybot_list": true,
+            "unittests": false,
+            "upload_standalone_images": false,
+            "vm_tests": [
+                "smoke_suite"
+            ],
+            "vm_tests_override": null
         }
     },
     "alex-chrome-pfq": {
@@ -5269,6 +5309,12 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "daisy-wificell-pre-cq": {
+        "_template": "wificell-pre-cq",
+        "boards": [
+            "daisy"
+        ]
     },
     "daisy_skate-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -11069,6 +11115,46 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
+        ]
+    },
+    "mixed-wificell-pre-cq": {
+        "_template": "wificell-pre-cq",
+        "boards": [
+            "winky"
+        ],
+        "child_configs": [
+            {
+                "_template": "wificell-pre-cq",
+                "boards": [
+                    "winky"
+                ],
+                "grouped": true,
+                "name": "winky-wificell-pre-cq"
+            },
+            {
+                "_template": "wificell-pre-cq",
+                "boards": [
+                    "veyron_speedy"
+                ],
+                "grouped": true,
+                "name": "veyron_speedy-wificell-pre-cq"
+            },
+            {
+                "_template": "wificell-pre-cq",
+                "boards": [
+                    "veyron_jerry"
+                ],
+                "grouped": true,
+                "name": "veyron_jerry-wificell-pre-cq"
+            },
+            {
+                "_template": "wificell-pre-cq",
+                "boards": [
+                    "daisy"
+                ],
+                "grouped": true,
+                "name": "daisy-wificell-pre-cq"
+            }
         ]
     },
     "monroe-chrome-pfq": {
@@ -20740,6 +20826,12 @@
         ],
         "vm_tests": []
     },
+    "veyron_jerry-wificell-pre-cq": {
+        "_template": "wificell-pre-cq",
+        "boards": [
+            "veyron_jerry"
+        ]
+    },
     "veyron_mickey-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -22072,6 +22164,12 @@
         ],
         "vm_tests": []
     },
+    "veyron_speedy-wificell-pre-cq": {
+        "_template": "wificell-pre-cq",
+        "boards": [
+            "veyron_speedy"
+        ]
+    },
     "veyron_thea-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -22380,21 +22478,6 @@
         ],
         "vm_tests": []
     },
-    "wificell-pre-cq": {
-        "_template": "pre-cq",
-        "boards": [
-            "winky",
-            "veyron_speedy",
-            "veyron_jerry",
-            "daisy"
-        ],
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"wificell-pre-cq\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": false,\n    \"suite\": \"wificell-pre-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
-        ],
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both"
-    },
     "winky-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -22581,6 +22664,12 @@
         ],
         "useflags": [
             "-chrome_internal"
+        ]
+    },
+    "winky-wificell-pre-cq": {
+        "_template": "wificell-pre-cq",
+        "boards": [
+            "winky"
         ]
     },
     "wizpig-chrome-pfq": {

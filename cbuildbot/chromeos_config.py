@@ -2373,11 +2373,35 @@ def GetConfig():
       important=True,
   )
 
-  site_config.AddConfig(
-      pre_cq, constants.WIFICELL_PRE_CQ,
-      internal,
-      boards=['winky', 'veyron_speedy', 'veyron_jerry', 'daisy'],
-      hw_tests=HWTestList.WiFiCellPoolPreCQ()
+  _wificell_pre_cq = site_config.AddTemplate(
+      'wificell-pre-cq',
+      pre_cq,
+      unittests=False,
+      hw_tests=HWTestList.WiFiCellPoolPreCQ(),
+      hw_tests_override=HWTestList.WiFiCellPoolPreCQ(),
+      images=['base', 'test'],
+      archive=True,
+      description='WiFi tests acting as pre-cq for WiFi related changes',
+  )
+
+  site_config.AddGroup(
+      'mixed-wificell-pre-cq',
+      site_config.AddConfig(
+          _wificell_pre_cq,
+          'winky-wificell-pre-cq',
+          boards=['winky']),
+      site_config.AddConfig(
+          _wificell_pre_cq,
+          'veyron_speedy-wificell-pre-cq',
+          boards=['veyron_speedy']),
+      site_config.AddConfig(
+          _wificell_pre_cq,
+          'veyron_jerry-wificell-pre-cq',
+          boards=['veyron_jerry']),
+      site_config.AddConfig(
+          _wificell_pre_cq,
+          'daisy-wificell-pre-cq',
+          boards=['daisy']),
   )
 
   ### Per-chipset release groups
