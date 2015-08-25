@@ -26,7 +26,6 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSToLengthConversionData.h"
-#include "core/css/Counter.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/css/StyleSheetContents.h"
@@ -342,13 +341,6 @@ void CSSPrimitiveValue::init(const LengthSize& lengthSize, const ComputedStyle& 
     m_value.pair = Pair::create(create(lengthSize.width(), style.effectiveZoom()), create(lengthSize.height(), style.effectiveZoom()), Pair::KeepIdenticalValues).leakRef();
 }
 
-void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Counter> c)
-{
-    init(UnitType::Counter);
-    m_hasCachedCSSText = false;
-    m_value.counter = c.leakRef();
-}
-
 void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Rect> r)
 {
     init(UnitType::Rect);
@@ -398,12 +390,6 @@ void CSSPrimitiveValue::cleanup()
     case UnitType::Attribute:
         if (m_value.string)
             m_value.string->deref();
-        break;
-    case UnitType::Counter:
-        // We must not call deref() when oilpan is enabled because m_value.counter is traced.
-#if !ENABLE(OILPAN)
-        m_value.counter->deref();
-#endif
         break;
     case UnitType::Rect:
         // We must not call deref() when oilpan is enabled because m_value.rect is traced.
@@ -918,7 +904,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::ValueID:
     case UnitType::PropertyID:
     case UnitType::Attribute:
-    case UnitType::Counter:
     case UnitType::Rect:
     case UnitType::Quad:
     case UnitType::RGBColor:
@@ -1005,30 +990,6 @@ String CSSPrimitiveValue::customCSSText() const
         text = result.toString();
         break;
     }
-    case UnitType::Counter: {
-        StringBuilder result;
-        String separator = m_value.counter->separator();
-        if (separator.isEmpty())
-            result.appendLiteral("counter(");
-        else
-            result.appendLiteral("counters(");
-
-        result.append(m_value.counter->identifier());
-        if (!separator.isEmpty()) {
-            result.appendLiteral(", ");
-            result.append(serializeString(separator));
-        }
-        String listStyle = m_value.counter->listStyle();
-        bool isDefaultListStyle = m_value.counter->listStyleIdent() == CSSValueDecimal;
-        if (!listStyle.isEmpty() && !isDefaultListStyle) {
-            result.appendLiteral(", ");
-            result.append(listStyle);
-        }
-        result.append(')');
-
-        text = result.toString();
-        break;
-    }
     case UnitType::Rect:
         text = getRectValue()->cssText();
         break;
@@ -1106,8 +1067,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case UnitType::URI:
     case UnitType::Attribute:
         return equal(m_value.string, other.m_value.string);
-    case UnitType::Counter:
-        return m_value.counter && other.m_value.counter && m_value.counter->equals(*other.m_value.counter);
     case UnitType::Rect:
         return m_value.rect && other.m_value.rect && m_value.rect->equals(*other.m_value.rect);
     case UnitType::Quad:
@@ -1134,9 +1093,6 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSPrimitiveValue)
 {
 #if ENABLE(OILPAN)
     switch (type()) {
-    case UnitType::Counter:
-        visitor->trace(m_value.counter);
-        break;
     case UnitType::Rect:
         visitor->trace(m_value.rect);
         break;

@@ -18,19 +18,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef Counter_h
-#define Counter_h
+#ifndef CSSCounterValue_h
+#define CSSCounterValue_h
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValue.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class Counter : public RefCountedWillBeGarbageCollected<Counter> {
+class CSSCounterValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<Counter> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
+    static PassRefPtrWillBeRawPtr<CSSCounterValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
     {
-        return adoptRefWillBeNoop(new Counter(identifier, listStyle, separator));
+        return adoptRefWillBeNoop(new CSSCounterValue(identifier, listStyle, separator));
     }
 
     String identifier() const { return m_identifier ? m_identifier->getStringValue() : String(); }
@@ -39,22 +40,21 @@ public:
 
     CSSValueID listStyleIdent() const { return m_listStyle ? m_listStyle->getValueID() : CSSValueInvalid; }
 
-    void setIdentifier(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier) { m_identifier = identifier; }
-    void setListStyle(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle) { m_listStyle = listStyle; }
-    void setSeparator(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator) { m_separator = separator; }
-
-    bool equals(const Counter& other) const
+    bool equals(const CSSCounterValue& other) const
     {
         return identifier() == other.identifier()
             && listStyle() == other.listStyle()
             && separator() == other.separator();
     }
 
-    DECLARE_TRACE();
+    String customCSSText() const;
+
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    Counter(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
-        : m_identifier(identifier)
+    CSSCounterValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
+        : CSSValue(CounterClass)
+        , m_identifier(identifier)
         , m_listStyle(listStyle)
         , m_separator(separator) { }
 
@@ -63,6 +63,8 @@ private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_separator; // string
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSCounterValue, isCounterValue());
+
 } // namespace blink
 
-#endif // Counter_h
+#endif // CSSCounterValue_h

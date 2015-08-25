@@ -38,7 +38,6 @@ namespace blink {
 class CSSBasicShape;
 class CSSCalcValue;
 class CSSToLengthConversionData;
-class Counter;
 class Length;
 class LengthSize;
 class Pair;
@@ -95,7 +94,6 @@ public:
         CustomIdentifier,
         URI,
         Attribute,
-        Counter,
         Rect,
         RGBColor,
         ViewportWidth,
@@ -168,7 +166,6 @@ public:
             || type() == UnitType::Turns;
     }
     bool isAttr() const { return type() == UnitType::Attribute; }
-    bool isCounter() const { return type() == UnitType::Counter; }
     bool isCustomIdent() const { return type() == UnitType::CustomIdentifier; }
     bool isFontRelativeLength() const
     {
@@ -272,7 +269,6 @@ public:
 
     String getStringValue() const;
 
-    Counter* getCounterValue() const { ASSERT(isCounter()); return m_value.counter; }
     Rect* getRectValue() const { ASSERT(isRect()); return m_value.rect; }
     Quad* getQuadValue() const { ASSERT(isQuad()); return m_value.quad; }
     RGBA32 getRGBA32Value() const { ASSERT(isRGBColor()); return m_value.rgbcolor; }
@@ -333,7 +329,6 @@ private:
     void init(UnitType);
     void init(const Length&);
     void init(const LengthSize&, const ComputedStyle&);
-    void init(PassRefPtrWillBeRawPtr<Counter>);
     void init(PassRefPtrWillBeRawPtr<Rect>);
     void init(PassRefPtrWillBeRawPtr<Pair>);
     void init(PassRefPtrWillBeRawPtr<Quad>);
@@ -353,7 +348,6 @@ private:
         // FIXME: oilpan: Should be members, but no support for members in unions. Just trace the raw ptr for now.
         CSSBasicShape* shape;
         CSSCalcValue* calc;
-        Counter* counter;
         Pair* pair;
         Rect* rect;
         Quad* quad;

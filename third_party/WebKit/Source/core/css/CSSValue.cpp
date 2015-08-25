@@ -30,6 +30,7 @@
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSContentDistributionValue.h"
+#include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
@@ -96,6 +97,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSBorderImageSliceValue>(*this, other);
         case CanvasClass:
             return compareCSSValues<CSSCanvasValue>(*this, other);
+        case CounterClass:
+            return compareCSSValues<CSSCounterValue>(*this, other);
         case CursorImageClass:
             return compareCSSValues<CSSCursorImageValue>(*this, other);
         case FontFaceSrcClass:
@@ -161,6 +164,8 @@ String CSSValue::cssText() const
         return toCSSBorderImageSliceValue(this)->customCSSText();
     case CanvasClass:
         return toCSSCanvasValue(this)->customCSSText();
+    case CounterClass:
+        return toCSSCounterValue(this)->customCSSText();
     case CursorImageClass:
         return toCSSCursorImageValue(this)->customCSSText();
     case FontFaceSrcClass:
@@ -224,6 +229,9 @@ void CSSValue::destroy()
         return;
     case CanvasClass:
         delete toCSSCanvasValue(this);
+        return;
+    case CounterClass:
+        delete toCSSCounterValue(this);
         return;
     case CursorImageClass:
         delete toCSSCursorImageValue(this);
@@ -313,6 +321,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case CanvasClass:
         toCSSCanvasValue(this)->~CSSCanvasValue();
         return;
+    case CounterClass:
+        toCSSCounterValue(this)->~CSSCounterValue();
+        return;
     case CursorImageClass:
         toCSSCursorImageValue(this)->~CSSCursorImageValue();
         return;
@@ -400,6 +411,9 @@ DEFINE_TRACE(CSSValue)
         return;
     case CanvasClass:
         toCSSCanvasValue(this)->traceAfterDispatch(visitor);
+        return;
+    case CounterClass:
+        toCSSCounterValue(this)->traceAfterDispatch(visitor);
         return;
     case CursorImageClass:
         toCSSCursorImageValue(this)->traceAfterDispatch(visitor);

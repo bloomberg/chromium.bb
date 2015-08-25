@@ -43,6 +43,7 @@
 #include "core/StyleBuilderFunctions.h"
 #include "core/StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
+#include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
@@ -52,7 +53,6 @@
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
-#include "core/css/Counter.h"
 #include "core/css/Pair.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
@@ -709,6 +709,17 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
             continue;
         }
 
+        if (item->isCounterValue()) {
+            CSSCounterValue* counterValue = toCSSCounterValue(item.get());
+            EListStyleType listStyleType = NoneListStyle;
+            CSSValueID listStyleIdent = counterValue->listStyleIdent();
+            if (listStyleIdent != CSSValueNone)
+                listStyleType = static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
+            OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));
+            state.style()->setContent(counter.release(), didSet);
+            didSet = true;
+        }
+
         if (!item->isPrimitiveValue())
             continue;
 
@@ -726,15 +737,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
             QualifiedName attr(nullAtom, AtomicString(contentValue->getStringValue()), nullAtom);
             const AtomicString& value = state.element()->getAttribute(attr);
             state.style()->setContent(value.isNull() ? emptyString() : value.string(), didSet);
-            didSet = true;
-        } else if (contentValue->isCounter()) {
-            Counter* counterValue = contentValue->getCounterValue();
-            EListStyleType listStyleType = NoneListStyle;
-            CSSValueID listStyleIdent = counterValue->listStyleIdent();
-            if (listStyleIdent != CSSValueNone)
-                listStyleType = static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
-            OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));
-            state.style()->setContent(counter.release(), didSet);
             didSet = true;
         } else {
             switch (contentValue->getValueID()) {

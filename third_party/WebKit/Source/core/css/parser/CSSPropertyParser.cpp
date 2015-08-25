@@ -32,6 +32,7 @@
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSContentDistributionValue.h"
+#include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
@@ -51,7 +52,6 @@
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/Counter.h"
 #include "core/css/HashTools.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
@@ -3982,7 +3982,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParse
         listStyle = cssValuePool().createIdentifierValue(listStyleID);
     }
 
-    return cssValuePool().createValue(Counter::create(identifier.release(), listStyle.release(), separator.release()));
+    return CSSCounterValue::create(identifier.release(), listStyle.release(), separator.release());
 }
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseClipShape()

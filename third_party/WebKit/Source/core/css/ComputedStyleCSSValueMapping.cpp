@@ -29,6 +29,7 @@
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSBorderImageSliceValue.h"
+#include "core/css/CSSCounterValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
@@ -40,7 +41,6 @@
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/Counter.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/layout/LayoutBlock.h"
@@ -1008,7 +1008,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForContentData(const ComputedStyle&
             if (counter->listStyle() != NoneListStyle)
                 listStyleIdent = static_cast<CSSValueID>(CSSValueDisc + counter->listStyle());
             RefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle = cssValuePool().createIdentifierValue(listStyleIdent);
-            list->append(cssValuePool().createValue(Counter::create(identifier.release(), listStyle.release(), separator.release())));
+            list->append(CSSCounterValue::create(identifier.release(), listStyle.release(), separator.release()));
         } else if (contentData->isImage()) {
             const StyleImage* image = toImageContentData(contentData)->image();
             ASSERT(image);

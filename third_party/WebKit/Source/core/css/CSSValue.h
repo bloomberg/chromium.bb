@@ -65,6 +65,7 @@ public:
 
     bool isBorderImageSliceValue() const { return m_classType == BorderImageSliceClass; }
     bool isCanvasValue() const { return m_classType == CanvasClass; }
+    bool isCounterValue() const { return m_classType == CounterClass; }
     bool isCursorImageValue() const { return m_classType == CursorImageClass; }
     bool isCrossfadeValue() const { return m_classType == CrossfadeClass; }
     bool isFontFeatureValue() const { return m_classType == FontFeatureClass; }
@@ -112,6 +113,7 @@ protected:
     static const size_t ClassTypeBits = 6;
     enum ClassType {
         PrimitiveClass,
+        CounterClass,
 
         // Image classes.
         ImageClass,
