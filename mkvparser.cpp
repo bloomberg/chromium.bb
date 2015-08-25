@@ -4286,8 +4286,7 @@ long ContentEncoding::ParseCompressionEntry(long long start, long long size,
         return E_FILE_FORMAT_INVALID;
 
       const size_t buflen = static_cast<size_t>(size);
-      typedef unsigned char* buf_t;
-      const buf_t buf = new (std::nothrow) unsigned char[buflen];
+      unsigned char* buf = new (std::nothrow) unsigned char[buflen];
       if (buf == NULL)
         return -1;
 
@@ -4344,8 +4343,7 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
         return E_FILE_FORMAT_INVALID;
 
       const size_t buflen = static_cast<size_t>(size);
-      typedef unsigned char* buf_t;
-      const buf_t buf = new (std::nothrow) unsigned char[buflen];
+      unsigned char* buf = new (std::nothrow) unsigned char[buflen];
       if (buf == NULL)
         return -1;
 
@@ -4368,8 +4366,7 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
         return E_FILE_FORMAT_INVALID;
 
       const size_t buflen = static_cast<size_t>(size);
-      typedef unsigned char* buf_t;
-      const buf_t buf = new (std::nothrow) unsigned char[buflen];
+      unsigned char* buf = new (std::nothrow) unsigned char[buflen];
       if (buf == NULL)
         return -1;
 
@@ -4392,8 +4389,7 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
         return E_FILE_FORMAT_INVALID;
 
       const size_t buflen = static_cast<size_t>(size);
-      typedef unsigned char* buf_t;
-      const buf_t buf = new (std::nothrow) unsigned char[buflen];
+      unsigned char* buf = new (std::nothrow) unsigned char[buflen];
       if (buf == NULL)
         return -1;
 
@@ -5504,9 +5500,7 @@ long Tracks::ParseTrackEntry(long long track_start, long long track_size,
       const size_t buflen = static_cast<size_t>(size);
 
       if (buflen) {
-        typedef unsigned char* buf_t;
-
-        const buf_t buf = new (std::nothrow) unsigned char[buflen];
+        unsigned char* buf = new (std::nothrow) unsigned char[buflen];
 
         if (buf == NULL)
           return -1;
