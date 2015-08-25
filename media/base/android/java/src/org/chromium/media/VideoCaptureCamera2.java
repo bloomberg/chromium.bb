@@ -46,10 +46,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         @Override
         public void onOpened(CameraDevice cameraDevice) {
             mCameraDevice = cameraDevice;
-            mOpeningCamera = false;
-            mConfiguringCamera = true;
+            changeCameraStateAndNotify(CameraState.CONFIGURING);
             if (!createCaptureObjects()) {
-                mConfiguringCamera = false;
+                changeCameraStateAndNotify(CameraState.STOPPED);
                 nativeOnError(mNativeVideoCaptureDeviceAndroid,
                               "Error configuring camera");
             }
@@ -59,14 +58,14 @@ public class VideoCaptureCamera2 extends VideoCapture {
         public void onDisconnected(CameraDevice cameraDevice) {
             cameraDevice.close();
             mCameraDevice = null;
-            mOpeningCamera = false;
+            changeCameraStateAndNotify(CameraState.STOPPED);
         }
 
         @Override
         public void onError(CameraDevice cameraDevice, int error) {
             cameraDevice.close();
             mCameraDevice = null;
-            mOpeningCamera = false;
+            changeCameraStateAndNotify(CameraState.STOPPED);
             nativeOnError(mNativeVideoCaptureDeviceAndroid,
                           "Camera device error " + Integer.toString(error));
         }
@@ -78,14 +77,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
         public void onConfigured(CameraCaptureSession cameraCaptureSession) {
             Log.d(TAG, "onConfigured");
             mCaptureSession = cameraCaptureSession;
-            mConfiguringCamera = false;
             createCaptureRequest();
+            changeCameraStateAndNotify(CameraState.STARTED);
         }
 
         @Override
         public void onConfigureFailed(CameraCaptureSession cameraCaptureSession) {
             // TODO(mcasas): When signalling error, C++ will tear us down. Is there need for
             // cleanup?
+            changeCameraStateAndNotify(CameraState.STOPPED);
             nativeOnError(mNativeVideoCaptureDeviceAndroid,
                           "Camera session configuration error");
         }
@@ -125,14 +125,6 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     private byte[] mCapturedData;
 
-    // |mOpeningCamera| is used to signal the transient between openCamera() and
-    // CrStateListener.onOpened().
-    private boolean mOpeningCamera = false;
-    // |mConfiguringCamera| marks the transient between CrStateListener.onOpened()
-    // and CrCaptureSessionListener.onConfigured(), including the time it takes
-    // to createCaptureObjects().
-    private boolean mConfiguringCamera = false;
-
     private CameraDevice mCameraDevice = null;
     private CaptureRequest.Builder mPreviewBuilder = null;
     private CameraCaptureSession mCaptureSession = null;
@@ -140,6 +132,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     private static final double kNanoSecondsToFps = 1.0E-9;
     private static final String TAG = "cr.media";
+
+    private static enum CameraState {OPENING, CONFIGURING, STARTED, STOPPED}
+    private CameraState mCameraState = CameraState.STOPPED;
+    private final Object mCameraStateLock = new Object();
 
     // Service function to grab CameraCharacteristics and handle exceptions.
     private static CameraCharacteristics getCameraCharacteristics(Context appContext, int id) {
@@ -283,6 +279,13 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     }
 
+    private void changeCameraStateAndNotify(CameraState state) {
+        synchronized (mCameraStateLock) {
+            mCameraState = state;
+            mCameraStateLock.notifyAll();
+        }
+    }
+
     static boolean isLegacyDevice(Context appContext, int id) {
         final CameraCharacteristics cameraCharacteristics =
                 getCameraCharacteristics(appContext, id);
@@ -387,9 +390,11 @@ public class VideoCaptureCamera2 extends VideoCapture {
     @Override
     public boolean allocate(int width, int height, int frameRate) {
         Log.d(TAG, "allocate: requested (%d x %d) @%dfps", width, height, frameRate);
-        if (mOpeningCamera || mConfiguringCamera) {
-            Log.e(TAG, "allocate() invoked while Camera is busy opening/configuring.");
-            return false;
+        synchronized (mCameraStateLock) {
+            if (mCameraState == CameraState.OPENING || mCameraState == CameraState.CONFIGURING) {
+                Log.e(TAG, "allocate() invoked while Camera is busy opening/configuring.");
+                return false;
+            }
         }
         // |mCaptureFormat| is also used to configure the ImageReader.
         mCaptureFormat = new VideoCaptureFormat(width, height, frameRate, ImageFormat.YUV_420_888);
@@ -411,8 +416,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     @Override
     public boolean startCapture() {
         Log.d(TAG, "startCapture");
-        mOpeningCamera = true;
-        mConfiguringCamera = false;
+        changeCameraStateAndNotify(CameraState.OPENING);
         final CameraManager manager =
                 (CameraManager) mContext.getSystemService(Context.CAMERA_SERVICE);
         final Handler mainHandler = new Handler(mContext.getMainLooper());
@@ -429,13 +433,28 @@ public class VideoCaptureCamera2 extends VideoCapture {
             Log.e(TAG, "allocate: manager.openCamera: " + ex);
             return false;
         }
+
         return true;
     }
 
     @Override
     public boolean stopCapture() {
         Log.d(TAG, "stopCapture");
-        if (mCaptureSession == null) return false;
+
+        // With Camera2 API, the capture is started asynchronously, which will cause problem if
+        // stopCapture comes too quickly. Without stopping the previous capture properly, the next
+        // startCapture will fail and make Chrome no-responding. So wait camera to be STARTED.
+        synchronized (mCameraStateLock) {
+            while (mCameraState != CameraState.STARTED && mCameraState != CameraState.STOPPED) {
+                try {
+                    mCameraStateLock.wait();
+                } catch (InterruptedException ex) {
+                    Log.e(TAG, "CaptureStartedEvent: " + ex);
+                }
+            }
+            if (mCameraState == CameraState.STOPPED) return true;
+        }
+
         try {
             mCaptureSession.abortCaptures();
         } catch (CameraAccessException ex) {
@@ -447,7 +466,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
         if (mCameraDevice == null) return false;
         mCameraDevice.close();
-
+        changeCameraStateAndNotify(CameraState.STOPPED);
         return true;
     }
 
