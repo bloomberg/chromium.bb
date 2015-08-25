@@ -4,11 +4,13 @@
 
 package org.chromium.content.browser;
 
+import android.Manifest.permission;
 import android.content.Context;
+import android.content.pm.PackageManager;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.ui.base.WindowAndroid.FileAccessCallback;
+import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
 /**
  * Java counterpart of android DownloadController.
@@ -174,7 +176,7 @@ public class DownloadController {
      */
     @CalledByNative
     private boolean hasFileAccess(ContentViewCore view) {
-        return view.getWindowAndroid().hasFileAccess();
+        return view.getWindowAndroid().hasPermission(permission.WRITE_EXTERNAL_STORAGE);
     }
 
     /**
@@ -185,13 +187,15 @@ public class DownloadController {
      */
     @CalledByNative
     private void requestFileAccess(ContentViewCore view, final long callbackId) {
-        FileAccessCallback callback = new FileAccessCallback() {
+        PermissionCallback permissionCallback = new PermissionCallback() {
             @Override
-            public void onFileAccessResult(boolean granted) {
-                nativeOnRequestFileAccessResult(callbackId, granted);
+            public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
+                nativeOnRequestFileAccessResult(
+                        callbackId, grantResults[0] == PackageManager.PERMISSION_GRANTED);
             }
         };
-        view.getWindowAndroid().requestFileAccess(callback);
+        view.getWindowAndroid().requestPermissions(
+                new String[] {permission.WRITE_EXTERNAL_STORAGE}, permissionCallback);
     }
 
     // native methods
