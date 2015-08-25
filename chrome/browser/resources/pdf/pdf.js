@@ -26,7 +26,9 @@ function getScrollbarWidth() {
  * @return {string} The filename component.
  */
 function getFilenameFromURL(url) {
-  var components = url.split(/\/|\\/);
+  // Ignore the query and fragment.
+  var mainUrl = url.split(/#|\?/)[0];
+  var components = mainUrl.split(/\/|\\/);
   return components[components.length - 1];
 }
 

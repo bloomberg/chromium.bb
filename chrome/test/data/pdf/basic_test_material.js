@@ -88,6 +88,30 @@ var tests = [
         "Second escape key closes toolbar");
 
     chrome.test.succeed();
+  },
+
+  /**
+   * Test that the PDF filename is correctly extracted from URLs with query
+   * parameters and fragments.
+   */
+  function testGetFilenameFromURL(url) {
+    chrome.test.assertEq(
+        'path.pdf',
+        getFilenameFromURL(
+            'http://example/com/path/with/multiple/sections/path.pdf'));
+
+    chrome.test.assertEq(
+        'fragment.pdf',
+        getFilenameFromURL('http://example.com/fragment.pdf#zoom=100/Title'));
+
+    chrome.test.assertEq(
+        'query.pdf', getFilenameFromURL('http://example.com/query.pdf?p=a/b'));
+
+    chrome.test.assertEq(
+        'both.pdf',
+        getFilenameFromURL('http://example.com/both.pdf?p=a/b#zoom=100/Title'));
+
+    chrome.test.succeed();
   }
 ];
 
