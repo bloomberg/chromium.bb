@@ -235,7 +235,7 @@ public class NewTabPage
         public void open(MostVisitedItem item) {
             if (mIsDestroyed) return;
             recordOpenedMostVisitedItem(item);
-            mTab.loadUrl(new LoadUrlParams(item.getUrl()));
+            mTab.loadUrl(new LoadUrlParams(item.getUrl(), PageTransition.AUTO_BOOKMARK));
         }
 
         @Override
@@ -258,13 +258,15 @@ public class NewTabPage
             switch (menuId) {
                 case ID_OPEN_IN_NEW_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl()),
-                            TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, false);
+                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl(),
+                            PageTransition.AUTO_BOOKMARK), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
+                            mTab, false);
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl()),
-                            TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, true);
+                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl(),
+                            PageTransition.AUTO_BOOKMARK), TabLaunchType.FROM_LONGPRESS_FOREGROUND,
+                            mTab, true);
                     return true;
                 case ID_REMOVE:
                     mMostVisitedSites.blacklistUrl(item.getUrl());
