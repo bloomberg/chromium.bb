@@ -40,14 +40,9 @@ class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
 public:
     ~AnimatableDouble() override { }
 
-    enum Constraint {
-        Unconstrained,
-        InterpolationIsNonContinuousWithZero,
-    };
-
-    static PassRefPtrWillBeRawPtr<AnimatableDouble> create(double number, Constraint constraint = Unconstrained)
+    static PassRefPtrWillBeRawPtr<AnimatableDouble> create(double number)
     {
-        return adoptRefWillBeNoop(new AnimatableDouble(number, constraint));
+        return adoptRefWillBeNoop(new AnimatableDouble(number));
     }
 
     double toDouble() const { return m_number; }
@@ -56,19 +51,16 @@ public:
 
 protected:
     PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
-    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
-    AnimatableDouble(double number, Constraint constraint)
+    AnimatableDouble(double number)
         : m_number(number)
-        , m_constraint(constraint)
     {
     }
     AnimatableType type() const override { return TypeDouble; }
     bool equalTo(const AnimatableValue*) const override;
 
     double m_number;
-    Constraint m_constraint;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableDouble, isDouble());

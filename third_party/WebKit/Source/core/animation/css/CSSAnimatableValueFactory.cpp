@@ -112,9 +112,9 @@ static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLineHeight(const Length
     return createFromLength(length, style);
 }
 
-inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromDouble(double value, AnimatableDouble::Constraint constraint = AnimatableDouble::Unconstrained)
+inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromDouble(double value)
 {
-    return AnimatableDouble::create(value, constraint);
+    return AnimatableDouble::create(value);
 }
 
 inline static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLengthBox(const LengthBox& lengthBox, const ComputedStyle& style)
@@ -379,9 +379,9 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
             style.svgStyle().fillPaintColor(), style.svgStyle().visitedLinkFillPaintColor(),
             style.svgStyle().fillPaintUri(), style.svgStyle().visitedLinkFillPaintUri());
     case CSSPropertyFlexGrow:
-        return createFromDouble(style.flexGrow(), AnimatableDouble::InterpolationIsNonContinuousWithZero);
+        return createFromDouble(style.flexGrow());
     case CSSPropertyFlexShrink:
-        return createFromDouble(style.flexShrink(), AnimatableDouble::InterpolationIsNonContinuousWithZero);
+        return createFromDouble(style.flexShrink());
     case CSSPropertyFlexBasis:
         return createFromLength(style.flexBasis(), style);
     case CSSPropertyFloodColor:
@@ -518,7 +518,9 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyWebkitMaskSize:
         return createFromFillLayers<CSSPropertyWebkitMaskSize>(style.maskLayers(), style);
     case CSSPropertyPerspective:
-        return createFromDouble(style.perspective(), AnimatableDouble::InterpolationIsNonContinuousWithZero);
+        if (style.perspective() == 0)
+            return AnimatableUnknown::create(CSSPrimitiveValue::createIdentifier(CSSValueNone));
+        return createFromDouble(style.perspective());
     case CSSPropertyPerspectiveOrigin:
         return createFromLengthPoint(style.perspectiveOrigin(), style);
     case CSSPropertyShapeOutside:
