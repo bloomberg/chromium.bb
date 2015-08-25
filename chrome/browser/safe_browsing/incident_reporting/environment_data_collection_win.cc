@@ -9,7 +9,6 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome_elf/chrome_elf_constants.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace safe_browsing {
 
@@ -282,7 +282,6 @@ void CollectRegistryData(
     google::protobuf::RepeatedPtrField<
         ClientIncidentReport_EnvironmentData_OS_RegistryKey>* key_data) {
   using RegistryKeyProto = ClientIncidentReport_EnvironmentData_OS_RegistryKey;
-  key_data->Clear();
   for (size_t i = 0; i < num_keys_to_collect; ++i) {
     const RegistryKeyInfo& key_info = keys_to_collect[i];
     base::win::RegKey reg_key(key_info.rootkey, key_info.subkey,
@@ -308,9 +307,9 @@ void CollectPlatformProcessData(
 }
 
 void CollectPlatformOSData(ClientIncidentReport_EnvironmentData_OS* os_data) {
-  const std::string group_name = base::FieldTrialList::FindFullName(
-      "SafeBrowsingIncidentReportingServiceRegistryData");
-  if (group_name == "Enabled") {
+  const std::string reg_data_param_value = variations::GetVariationParamValue(
+      "SafeBrowsingIncidentReportingService", "collect_reg_data");
+  if (reg_data_param_value == "true") {
     CollectRegistryData(kRegKeysToCollect, arraysize(kRegKeysToCollect),
                         os_data->mutable_registry_key());
   }

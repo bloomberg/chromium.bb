@@ -254,6 +254,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectRegistryData) {
 
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kStringValueName, kStringData));
 
+  registry_data_pb.Clear();
   CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
 
   // Expect 1 registry key, 1 value.
@@ -271,6 +272,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectRegistryData) {
   // Add another value.
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kDWORDValueName, kDWORDData));
 
+  registry_data_pb.Clear();
   CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
 
   // Expect 1 registry key, 2 values.
@@ -287,6 +289,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectRegistryData) {
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kTestValueName, kTestData));
   ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kRootKey, KEY_READ));
 
+  registry_data_pb.Clear();
   CollectRegistryData(kRegKeysToCollect, 1, &registry_data_pb);
 
   // Expect 1 subkey, 1 value.
