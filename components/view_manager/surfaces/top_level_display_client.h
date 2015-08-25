@@ -9,7 +9,6 @@
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "components/view_manager/surfaces/surfaces_context_provider.h"
 #include "components/view_manager/surfaces/surfaces_context_provider_delegate.h"
 #include "components/view_manager/surfaces/surfaces_state.h"

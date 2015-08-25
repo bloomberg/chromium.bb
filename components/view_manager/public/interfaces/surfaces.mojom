@@ -6,17 +6,6 @@ module mojo;
 
 import "components/view_manager/public/interfaces/compositor_frame.mojom";
 
-struct ReturnedResource {
-  uint32 id;
-  uint32 sync_point;
-  int32 count;
-  bool lost;
-};
-
-interface ResourceReturner {
-  ReturnResources(array<ReturnedResource> resources);
-};
-
 interface Surface {
   // Request the id namespace for this connection. Fully qualified surface ids
   // are the combination of the id_namespace for the connection that created the

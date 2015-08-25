@@ -14,7 +14,6 @@
 #include "components/view_manager/gles2/gpu_state.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/quads.mojom.h"
-#include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/surfaces/surfaces_state.h"
 #include "components/view_manager/view_coordinate_conversions.h"

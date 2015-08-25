@@ -17,6 +17,18 @@ enum ResourceFormat {
   ETC1,
 };
 
+// See src/cc/resources/returned_resource.h.
+struct ReturnedResource {
+  uint32 id;
+  uint32 sync_point;
+  int32 count;
+  bool lost;
+};
+
+interface ResourceReturner {
+  ReturnResources(array<ReturnedResource> resources);
+};
+
 // See src/gpu/command_buffer/common/mailbox.h.
 struct Mailbox {
   array<int8, 64> name;

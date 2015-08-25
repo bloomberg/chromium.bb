@@ -9,9 +9,9 @@
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
+#include "components/view_manager/public/interfaces/compositor_frame.mojom.h"
 #include "components/view_manager/public/interfaces/quads.mojom.h"
 #include "components/view_manager/public/interfaces/surface_id.mojom.h"
-#include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "mojo/converters/surfaces/mojo_surfaces_export.h"
@@ -78,7 +78,7 @@ struct MOJO_SURFACES_EXPORT TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr> {
   static scoped_ptr<cc::RenderPass> Convert(const PassPtr& input);
 };
 
-// Types from surfaces.mojom
+// Types from compositor_frame.mojom
 template <>
 struct MOJO_SURFACES_EXPORT TypeConverter<MailboxPtr, gpu::Mailbox> {
   static MailboxPtr Convert(const gpu::Mailbox& input);
