@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/permissions-helper.js"></script>
 </head>
 <body>
 <script>
@@ -13,9 +14,9 @@ shouldBeDefined("navigator.requestMIDIAccess");
 
 window.jsTestIsAsync = true;
 
-testRunner.setPermission('midi-sysex', 'granted', location.origin, location.origin);
-
-navigator.requestMIDIAccess({sysex: true}).then(function (a) {
+PermissionsHelper.setPermission('midi-sysex', 'granted').then(function() {
+    return navigator.requestMIDIAccess({sysex: true});
+}).then(function(a) {
     output = a.outputs.values().next().value;
 
     // Note on(off).
@@ -98,7 +99,7 @@ navigator.requestMIDIAccess({sysex: true}).then(function (a) {
     shouldThrow('output.send(new Uint8Array(), Infinity)');
 
     finishJSTest();
-}, function () {
+}).catch(function () {
     testFailed("requestMIDIAccess() return an error.");
 });
 
