@@ -297,7 +297,9 @@
       'webusb/USBConfiguration.idl',
       'webusb/USBConnectionEvent.idl',
       'webusb/USBDevice.idl',
+      'webusb/USBInTransferResult.idl',
       'webusb/USBInterface.idl',
+      'webusb/USBOutTransferResult.idl',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_dependency_idl_files': [
@@ -478,8 +480,9 @@
       'webmidi/MIDIOptions.idl',
       'websockets/CloseEventInit.idl',
       'webusb/USBConnectionEventInit.idl',
-      'webusb/USBDeviceRequestOptions.idl',
+      'webusb/USBControlTransferParameters.idl',
       'webusb/USBDeviceFilter.idl',
+      'webusb/USBDeviceRequestOptions.idl',
     ],
     'generated_modules_files': [
       # .cpp files from make_modules_generated actions.
@@ -621,6 +624,8 @@
       '<(blink_modules_output_dir)/websockets/CloseEventInit.h',
       '<(blink_modules_output_dir)/webusb/USBConnectionEventInit.cpp',
       '<(blink_modules_output_dir)/webusb/USBConnectionEventInit.h',
+      '<(blink_modules_output_dir)/webusb/USBControlTransferParameters.cpp',
+      '<(blink_modules_output_dir)/webusb/USBControlTransferParameters.h',
       '<(blink_modules_output_dir)/webusb/USBDeviceFilter.cpp',
       '<(blink_modules_output_dir)/webusb/USBDeviceFilter.h',
       '<(blink_modules_output_dir)/webusb/USBDeviceRequestOptions.cpp',
@@ -1731,8 +1736,10 @@
       'webusb/USBEndpoint.h',
       'webusb/USBError.cpp',
       'webusb/USBError.h',
+      'webusb/USBInTransferResult.h',
       'webusb/USBInterface.cpp',
       'webusb/USBInterface.h',
+      'webusb/USBOutTransferResult.h',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [

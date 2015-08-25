@@ -23,9 +23,13 @@ using WebUSBDeviceReleaseInterfaceCallbacks = WebCallbacks<void, const WebUSBErr
 using WebUSBDeviceResetCallbacks = WebCallbacks<void, const WebUSBError&>;
 using WebUSBDeviceSetInterfaceAlternateSettingCallbacks = WebCallbacks<void, const WebUSBError&>;
 using WebUSBDeviceClearHaltCallbacks = WebCallbacks<void, const WebUSBError&>;
-using WebUSBDeviceControlTransferCallbacks = WebCallbacks<WebPassOwnPtr<WebUSBTransferInfo>, const WebUSBError&>;
-using WebUSBDeviceBulkTransferCallbacks = WebCallbacks<WebPassOwnPtr<WebUSBTransferInfo>, const WebUSBError&>;
-using WebUSBDeviceInterruptTransferCallbacks = WebCallbacks<WebPassOwnPtr<WebUSBTransferInfo>, const WebUSBError&>;
+using WebUSBDeviceTransferCallbacks = WebCallbacks<WebPassOwnPtr<WebUSBTransferInfo>, const WebUSBError&>;
+
+// TODO(rockot): Eliminate these aliases once they're no longer used outside of
+// Blink code.
+using WebUSBDeviceControlTransferCallbacks = WebUSBDeviceTransferCallbacks;
+using WebUSBDeviceBulkTransferCallbacks = WebUSBDeviceTransferCallbacks;
+using WebUSBDeviceInterruptTransferCallbacks = WebUSBDeviceTransferCallbacks;
 
 class WebUSBDevice {
 public:
@@ -40,7 +44,7 @@ public:
         Vendor,
     };
 
-    enum RequestRecipient {
+    enum class RequestRecipient {
         Device,
         Interface,
         Endpoint,
