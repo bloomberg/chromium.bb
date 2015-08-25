@@ -109,6 +109,80 @@ class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommitInsideLayout);
 
+class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
+ protected:
+  enum MainOrder : int {
+    MAIN_START = 1,
+    MAIN_LAYOUT,
+    MAIN_COMMIT_COMPLETE,
+    MAIN_DID_BEGIN_FRAME,
+    MAIN_END,
+  };
+
+  enum ImplOrder : int {
+    IMPL_START = 1,
+    IMPL_COMMIT,
+    IMPL_COMMIT_COMPLETE,
+    IMPL_ACTIVATE,
+    IMPL_DRAW,
+    IMPL_SWAP,
+    IMPL_END,
+  };
+
+  template <typename T>
+  bool CheckStep(T next, T* var) {
+    int expected = next - 1;
+    EXPECT_EQ(expected, *var);
+    bool correct = expected == *var;
+    *var = next;
+    return correct;
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void Layout() override { EXPECT_TRUE(CheckStep(MAIN_LAYOUT, &main_)); }
+
+  void DidCommit() override {
+    EXPECT_TRUE(CheckStep(MAIN_COMMIT_COMPLETE, &main_));
+  }
+
+  void DidBeginMainFrame() override {
+    EXPECT_TRUE(CheckStep(MAIN_DID_BEGIN_FRAME, &main_));
+  }
+
+  void BeginCommitOnThread(LayerTreeHostImpl* impl) override {
+    EXPECT_TRUE(CheckStep(IMPL_COMMIT, &impl_));
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    EXPECT_TRUE(CheckStep(IMPL_COMMIT_COMPLETE, &impl_));
+  }
+
+  void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    EXPECT_TRUE(CheckStep(IMPL_ACTIVATE, &impl_));
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    EXPECT_TRUE(CheckStep(IMPL_DRAW, &impl_));
+  }
+
+  void SwapBuffersCompleteOnThread(LayerTreeHostImpl* impl) override {
+    EXPECT_TRUE(CheckStep(IMPL_SWAP, &impl_));
+
+    EndTest();
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(CheckStep(MAIN_END, &main_));
+    EXPECT_TRUE(CheckStep(IMPL_END, &impl_));
+  }
+
+  MainOrder main_ = MAIN_START;
+  ImplOrder impl_ = IMPL_START;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameOrdering);
+
 class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
