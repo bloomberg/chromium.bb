@@ -305,23 +305,24 @@ bool OutOfProcessInstance::Init(uint32_t argc,
                                 const char* argn[],
                                 const char* argv[]) {
   // Check if the PDF is being loaded in the PDF chrome extension. We only allow
-  // the plugin to be put into "full frame" mode when it is being loaded in the
-  // extension because this enables some features that we don't want pages
-  // abusing outside of the extension.
+  // the plugin to be loaded in the extension and print preview to avoid
+  // exposing sensitive APIs directly to external websites.
   pp::Var document_url_var = pp::URLUtil_Dev::Get()->GetDocumentURL(this);
-  std::string document_url = document_url_var.is_string() ?
-      document_url_var.AsString() : std::string();
+  if (!document_url_var.is_string())
+    return false;
+  std::string document_url = document_url_var.AsString();
   std::string extension_url = std::string(kChromeExtension);
-  bool in_extension =
-      !document_url.compare(0, extension_url.size(), extension_url);
+  std::string print_preview_url = std::string(kChromePrint);
+  if (!base::StringPiece(document_url).starts_with(kChromeExtension) &&
+      !base::StringPiece(document_url).starts_with(kChromePrint)) {
+    return false;
+  }
 
-  if (in_extension) {
-    // Check if the plugin is full frame. This is passed in from JS.
-    for (uint32_t i = 0; i < argc; ++i) {
-      if (strcmp(argn[i], "full-frame") == 0) {
-        full_ = true;
-        break;
-      }
+  // Check if the plugin is full frame. This is passed in from JS.
+  for (uint32_t i = 0; i < argc; ++i) {
+    if (strcmp(argn[i], "full-frame") == 0) {
+      full_ = true;
+      break;
     }
   }
 

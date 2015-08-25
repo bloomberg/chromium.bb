@@ -95,6 +95,7 @@ function PDFViewer(browserApi) {
   this.browserApi_ = browserApi;
   this.loadState_ = LoadState.LOADING;
   this.parentWindow_ = null;
+  this.parentOrigin_ = null;
 
   this.delayedScriptingMessages_ = [];
 
@@ -722,6 +723,7 @@ PDFViewer.prototype = {
   handleScriptingMessage: function(message) {
     if (this.parentWindow_ != message.source) {
       this.parentWindow_ = message.source;
+      this.parentOrigin_ = message.origin;
       // Ensure that we notify the embedder if the document is loaded.
       if (this.loadState_ != LoadState.LOADING)
         this.sendDocumentLoadedMessage_();
@@ -808,10 +810,21 @@ PDFViewer.prototype = {
    * @param {Object} message the message to send.
    */
   sendScriptingMessage_: function(message) {
-    if (this.parentWindow_)
-      this.parentWindow_.postMessage(message, '*');
+    if (this.parentWindow_ && this.parentOrigin_) {
+      var targetOrigin;
+      // Only send data back to the embedder if it is from the same origin,
+      // unless we're sending it to ourselves (which could happen in the case
+      // of tests). We also allow documentLoaded messages through as this won't
+      // leak important information.
+      if (this.parentOrigin_ == window.location.origin)
+        targetOrigin = this.parentOrigin_;
+      else if (message.type == 'documentLoaded')
+        targetOrigin = '*';
+      else
+        targetOrigin = this.browserApi_.getStreamInfo().originalUrl;
+      this.parentWindow_.postMessage(message, targetOrigin);
+    }
   },
-
 
   /**
    * @type {Viewport} the viewport of the PDF viewer.
