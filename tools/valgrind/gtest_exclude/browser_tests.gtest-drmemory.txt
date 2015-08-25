@@ -33,9 +33,6 @@ ClipboardApiTest.HostedAppNoPermission
 # http://crbug.com/475172
 BasicExtensionSettingsWebUITest.testUninstall
 
-# https://crbug.com/480721
-OutOfProcessProxyResolverBrowserTest.Verify
-
 # https://crbug.com/501106
 CrElementsBrowserTest.CrElementsTest
 
