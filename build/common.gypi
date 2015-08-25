@@ -3312,6 +3312,22 @@
             ],
           },
         },
+        'conditions': [
+          ['OS=="win" and win_fastlink==1', {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                # /PROFILE is incompatible with /debug:fastlink
+                'Profile': 'false',
+                'AdditionalOptions': [
+                  # Tell VS 2015+ to create a PDB that references debug
+                  # information in .obj and .lib files instead of copying
+                  # it all.
+                  '/DEBUG:FASTLINK',
+                ],
+              },
+            },
+          }],
+        ],
       },
       'x86_Base': {
         'abstract': 1,
@@ -3556,22 +3572,6 @@
           }],
           ['OS=="win"', {
             'defines': ['NO_TCMALLOC'],
-            'conditions': [
-              ['win_fastlink==1', {
-                'msvs_settings': {
-                  'VCLinkerTool': {
-                    # /PROFILE is incompatible with /debug:fastlink
-                    'Profile': 'false',
-                    'AdditionalOptions': [
-                      # Tell VS 2015+ to create a PDB that references debug
-                      # information in .obj and .lib files instead of copying
-                      # it all.
-                      '/DEBUG:FASTLINK',
-                    ],
-                  },
-                },
-              }],
-            ],
           }],
           # _FORTIFY_SOURCE isn't really supported by Clang now, see
           # http://llvm.org/bugs/show_bug.cgi?id=16821.
