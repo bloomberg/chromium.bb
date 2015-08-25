@@ -1417,9 +1417,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     return false;
   }
 
-  const Key key() const {
-    return key_;
-  }
+  const Key& key() const { return key_; }
 
   bool is_queued() const {
     return !handle_.is_null();
