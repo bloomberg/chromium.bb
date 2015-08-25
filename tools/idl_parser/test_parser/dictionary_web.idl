@@ -84,6 +84,17 @@ dictionary {
   DOMString? setString = null;
 };
 
+/* TREE
+ *Dictionary(MyDictionaryInvalidOptional)
+ *  Key(mandatory)
+ *    Type()
+ *      PrimitiveType(DOMString)
+ *  Error(Unexpected keyword "optional" after ">".)
+ */
+dictionary MyDictionaryInvalidOptional {
+  DOMString mandatory;
+  sequence<DOMString> optional;
+};
 
 /* ERROR Unexpected identifier "NoColon" after identifier "ForParent". */
 dictionary ForParent NoColon {

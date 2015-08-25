@@ -307,6 +307,11 @@ class IDLParser(object):
       p[2].AddChildren(p[1])
       p[0] = ListFromConcat(p[2], p[3])
 
+  # [12.1] Error recovery for DictionaryMembers
+  def p_DictionaryMembersError(self, p):
+    """DictionaryMembers : ExtendedAttributeList error"""
+    p[0] = self.BuildError(p, 'DictionaryMembers')
+
   # [13]
   def p_DictionaryMember(self, p):
     """DictionaryMember : Required Type identifier Default ';'"""
