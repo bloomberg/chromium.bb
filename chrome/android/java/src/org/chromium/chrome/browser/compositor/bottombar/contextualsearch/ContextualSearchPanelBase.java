@@ -54,7 +54,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * The height of the maximized Search Panel relative to the height of the screen when
      * the panel is in the narrow width mode.
      */
-    private static final float NARROW_MAXIMIZED_PANEL_HEIGHT_PERCENTAGE = .75f;
+    private static final float NARROW_MAXIMIZED_PANEL_HEIGHT_PERCENTAGE = .9f;
 
     /**
      * The width of the small version of the Search Panel in dps.
@@ -887,7 +887,8 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
         mSearchBarHeightPeeking = mContext.getResources().getDimension(
                 R.dimen.contextual_search_bar_height) * mPxToDp;
-        mSearchBarHeightMaximized = mToolbarHeight;
+        mSearchBarHeightMaximized = mContext.getResources().getDimension(
+                R.dimen.toolbar_height_no_shadow) * mPxToDp;
         mSearchBarHeightExpanded =
                 Math.round((mSearchBarHeightPeeking + mSearchBarHeightMaximized) / 2.f);
         mSearchBarMarginSide = SEARCH_BAR_ICON_SIDE_PADDING_DP;
@@ -920,13 +921,13 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             if (isFullscreenSizePanel()) {
                 panelHeight = fullscreenHeight * EXPANDED_PANEL_HEIGHT_PERCENTAGE;
             } else {
-                panelHeight = fullscreenHeight * NARROW_EXPANDED_PANEL_HEIGHT_PERCENTAGE;
+                panelHeight = mLayoutHeight * NARROW_EXPANDED_PANEL_HEIGHT_PERCENTAGE;
             }
         } else if (state == PanelState.MAXIMIZED) {
             if (isFullscreenSizePanel()) {
                 panelHeight = fullscreenHeight;
             } else {
-                panelHeight = fullscreenHeight * NARROW_MAXIMIZED_PANEL_HEIGHT_PERCENTAGE;
+                panelHeight = mLayoutHeight * NARROW_MAXIMIZED_PANEL_HEIGHT_PERCENTAGE;
             }
         }
 
