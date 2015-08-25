@@ -33,6 +33,12 @@ Bool NaClDfaProcessValidationError(const uint8_t *begin, const uint8_t *end,
 
 struct StubOutCallbackData {
   uint32_t flags;
+  /*
+   * |did_rewrite| records whether the validator modified the code being
+   * validated (e.g. to stub out instructions that aren't supported on this
+   * CPU).  This starts out as FALSE and may be set to TRUE.  It should
+   * never be reset to FALSE.
+   */
   int did_rewrite;
 };
 

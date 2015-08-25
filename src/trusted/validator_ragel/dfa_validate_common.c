@@ -50,7 +50,6 @@ Bool NaClDfaStubOutUnsupportedInstruction(const uint8_t *begin,
       /* TODO(ruiq): rewrite instruction. For now, we keep the original
        * instruction and indicate validation success, which is consistent
        * with current validation results. */
-      data->did_rewrite = 0;
       return TRUE;
     }
   } else {

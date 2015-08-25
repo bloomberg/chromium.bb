@@ -46,9 +46,17 @@ const char ret[CODE_SIZE + 1] =
     "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90";
 #endif
 
-// pblendw $0xc0,%xmm0,%xmm2
+// Example of an instruction which may get "stubbed out" (replaced with
+// HLTs) if the CPU does not support it.
 const char sse41[CODE_SIZE + 1] =
-    "\x66\x0f\x3a\x0e\xd0\xc0\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
+    "\x66\x0f\x3a\x0e\xd0\xc0"  // pblendw $0xc0,%xmm0,%xmm2
+    "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90"
+    "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90";
+
+const char sse41_plus_nontemporal[CODE_SIZE + 1] =
+    "\x66\x0f\x3a\x0e\xd0\xc0"  // pblendw $0xc0,%xmm0,%xmm2
+    "\x0f\x18\x04\x24"  // prefetchnta (%rsp)
+    "\x90\x90\x90\x90\x90\x90"
     "\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90";
 
 struct MockContext {
@@ -229,7 +237,23 @@ TEST_F(ValidationCachingInterfaceTests, SSE4Allowed) {
 }
 
 TEST_F(ValidationCachingInterfaceTests, SSE4Stubout) {
+  // Check that the validation is not cached if the validator modifies the
+  // the code (by stubbing out instructions).
   memcpy(code_buffer, sse41, CODE_SIZE);
+  context.query_result = 0;
+  /* TODO(jfb) Use a safe cast here, this test should only run for x86. */
+  NaClSetCPUFeatureX86((NaClCPUFeaturesX86 *) cpu_features,
+                       NaClCPUFeatureX86_SSE41, 0);
+  NaClValidationStatus status = Validate();
+  EXPECT_EQ(NaClValidationSucceeded, status);
+  EXPECT_EQ(true, context.query_destroyed);
+}
+
+TEST_F(ValidationCachingInterfaceTests, NonTemporalStubout) {
+  // The validation should not be cached if the validator modifies the
+  // code.  This test checks for a regression where that property was
+  // broken if the code contained a non-temporal instruction.
+  memcpy(code_buffer, sse41_plus_nontemporal, CODE_SIZE);
   context.query_result = 0;
   /* TODO(jfb) Use a safe cast here, this test should only run for x86. */
   NaClSetCPUFeatureX86((NaClCPUFeaturesX86 *) cpu_features,
