@@ -1471,6 +1471,16 @@ void CompositedDeprecatedPaintLayerMapping::updateShouldFlattenTransform()
             layer->setShouldFlattenTransform(false);
         }, ApplyToChildContainingLayers);
     }
+
+    // Regardless, mark the scrolling contents layer and scrolling block
+    // selection layer (if they exist) as not flattening. Having them flatten
+    // causes unclipped render surfaces which cause bugs.
+    // http://crbug.com/521768
+    if (hasScrollingLayer()) {
+        m_scrollingContentsLayer->setShouldFlattenTransform(false);
+        if (m_scrollingBlockSelectionLayer)
+            m_scrollingBlockSelectionLayer->setShouldFlattenTransform(false);
+    }
 }
 
 bool CompositedDeprecatedPaintLayerMapping::updateForegroundLayer(bool needsForegroundLayer)
