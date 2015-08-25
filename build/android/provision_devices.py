@@ -31,6 +31,8 @@ from pylib.utils import run_tests_helper
 from pylib.utils import timeout_retry
 
 _SYSTEM_WEBVIEW_PATHS = ['/system/app/webview', '/system/app/WebViewGoogle']
+_CHROME_PACKAGE_REGEX = re.compile('.*chrom.*')
+_TOMBSTONE_REGEX = re.compile('tombstone.*')
 
 
 class _DEFAULT_TIMEOUTS(object):
@@ -94,7 +96,10 @@ def ProvisionDevice(device, options):
 
   try:
     if should_run_phase(_PHASES.WIPE):
-      run_phase(WipeDevice)
+      if options.chrome_specific_wipe:
+        run_phase(WipeChromeData)
+      else:
+        run_phase(WipeDevice)
 
     if should_run_phase(_PHASES.PROPERTIES):
       run_phase(SetProperties)
@@ -111,6 +116,44 @@ def ProvisionDevice(device, options):
     logging.exception('Failed to provision device %s. Adding to blacklist.',
                       str(device))
     device_blacklist.ExtendBlacklist([str(device)])
+
+
+def WipeChromeData(device, options):
+  """Wipes chrome specific data from device
+  Chrome specific data is:
+  (1) any dir under /data/data/ whose name matches *chrom*, except
+      com.android.chrome, which is the chrome stable package
+  (2) any dir under /data/app/ and /data/app-lib/ whose name matches *chrom*
+  (3) any files under /data/tombstones/ whose name matches "tombstone*"
+  (4) /data/local.prop if there is any
+  (5) /data/local/chrome-command-line if there is any
+  (6) dir /data/local/.config/ if there is any (this is telemetry related)
+  (7) dir /data/local/tmp/
+
+  Arguments:
+    device: the device to wipe
+  """
+  if options.skip_wipe:
+    return
+
+  try:
+    device.EnableRoot()
+    _WipeUnderDirIfMatch(device, '/data/data/', _CHROME_PACKAGE_REGEX,
+                         constants.PACKAGE_INFO['chrome_stable'].package)
+    _WipeUnderDirIfMatch(device, '/data/app/', _CHROME_PACKAGE_REGEX)
+    _WipeUnderDirIfMatch(device, '/data/app-lib/', _CHROME_PACKAGE_REGEX)
+    _WipeUnderDirIfMatch(device, '/data/tombstones/', _TOMBSTONE_REGEX)
+
+    _WipeFileOrDir(device, '/data/local.prop')
+    _WipeFileOrDir(device, '/data/local/chrome-command-line')
+    _WipeFileOrDir(device, '/data/local/.config/')
+    _WipeFileOrDir(device, '/data/local/tmp/')
+
+    device.RunShellCommand('rm -rf %s/*' % device.GetExternalStoragePath(),
+                           check_return=True)
+  except device_errors.CommandFailedError:
+    logging.exception('Possible failure while wiping the device. '
+                      'Attempting to continue.')
 
 
 def WipeDevice(device, options):
@@ -274,6 +317,19 @@ def FinishProvisioning(device, options):
     _PushAndLaunchAdbReboot(device, options.target)
 
 
+def _WipeUnderDirIfMatch(device, path, pattern, app_to_keep=None):
+  ls_result = device.Ls(path)
+  for (content, _) in ls_result:
+    if pattern.match(content):
+      if content != app_to_keep:
+        _WipeFileOrDir(device, path + content)
+
+
+def _WipeFileOrDir(device, path):
+  if device.PathExists(path):
+    device.RunShellCommand(['rm', '-rf', path], check_return=True)
+
+
 def _PushAndLaunchAdbReboot(device, target):
   """Pushes and launches the adb_reboot binary on the device.
 
@@ -369,6 +425,8 @@ def main():
                       help='Wait for the battery to have this temp or lower.')
   parser.add_argument('--output-device-blacklist',
                       help='Json file to output the device blacklist.')
+  parser.add_argument('--chrome-specific-wipe', action='store_true',
+                      help='only wipe chrome specific data during provisioning')
   args = parser.parse_args()
   constants.SetBuildType(args.target)
 
