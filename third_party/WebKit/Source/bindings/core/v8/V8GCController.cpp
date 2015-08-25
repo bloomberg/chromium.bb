@@ -331,71 +331,123 @@ static unsigned long long usedHeapSize(v8::Isolate* isolate)
     return heapStatistics.used_heap_size();
 }
 
-void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
+namespace {
+
+void objectGroupingForMinorGC(v8::Isolate* isolate)
 {
-    // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (type == v8::kGCTypeScavenge) {
-        // Finish Oilpan's complete sweeping before running a V8 minor GC.
-        // This will let the minor GC collect more V8 objects.
-        ThreadState::current()->completeSweep();
-        minorGCPrologue(isolate);
-    } else if (type == v8::kGCTypeMarkSweepCompact) {
-        majorGCPrologue(isolate, flags & v8::kGCCallbackFlagConstructRetainedObjectInfos);
-    }
+    ASSERT(isMainThread());
+    MinorGCWrapperVisitor visitor(isolate);
+    v8::V8::VisitHandlesForPartialDependence(isolate, &visitor);
+    visitor.notifyFinished();
 }
 
-void V8GCController::minorGCPrologue(v8::Isolate* isolate)
+void objectGroupingForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfos)
 {
-    TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC", "usedHeapSizeBefore", usedHeapSize(isolate));
-    if (isMainThread()) {
-        ScriptForbiddenScope::enter();
-        {
-            TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMinorGC");
-            v8::HandleScope scope(isolate);
-            MinorGCWrapperVisitor visitor(isolate);
-            v8::V8::VisitHandlesForPartialDependence(isolate, &visitor);
-            visitor.notifyFinished();
-        }
-        V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
-        TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MinorGC");
-    }
+    MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
+    v8::V8::VisitHandlesWithClassIds(isolate, &visitor);
+    visitor.notifyFinished();
 }
 
-// Create object groups for DOM tree nodes.
-void V8GCController::majorGCPrologue(v8::Isolate* isolate, bool constructRetainedObjectInfos)
+void gcPrologueForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfos)
 {
-    v8::HandleScope scope(isolate);
-    TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MajorGC", "usedHeapSizeBefore", usedHeapSize(isolate));
     if (isMainThread()) {
-        ScriptForbiddenScope::enter();
         {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMajorGC");
-            MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
-            v8::V8::VisitHandlesWithClassIds(isolate, &visitor);
-            visitor.notifyFinished();
+            objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
         }
         V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
         TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MajorGC");
     } else {
-        MajorGCWrapperVisitor visitor(isolate, constructRetainedObjectInfos);
-        v8::V8::VisitHandlesWithClassIds(isolate, &visitor);
-        visitor.notifyFinished();
+        objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
+    }
+}
+
+}
+
+void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
+{
+    if (isMainThread()) {
+        ScriptForbiddenScope::enter();
+    }
+
+    // TODO(haraken): It would be nice if the GC callbacks passed the Isolate
+    // directly.
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope scope(isolate);
+    switch (type) {
+    case v8::kGCTypeScavenge:
+        // Finish Oilpan's complete sweeping before running a V8 minor GC.
+        // This will let the minor GC collect more V8 objects.
+        ThreadState::current()->completeSweep();
+
+        TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC", "usedHeapSizeBefore", usedHeapSize(isolate));
+        if (isMainThread()) {
+            {
+                TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMinorGC");
+                objectGroupingForMinorGC(isolate);
+            }
+            V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
+            TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8MinorGC");
+        }
+        break;
+    case v8::kGCTypeMarkSweepCompact:
+        TRACE_EVENT_BEGIN2("devtools.timeline,v8", "MajorGC", "usedHeapSizeBefore", usedHeapSize(isolate), "type", "atomic pause");
+        gcPrologueForMajorGC(isolate, flags & v8::kGCCallbackFlagConstructRetainedObjectInfos);
+        break;
+    case v8::kGCTypeIncrementalMarking:
+        TRACE_EVENT_BEGIN2("devtools.timeline,v8", "MajorGC", "usedHeapSizeBefore", usedHeapSize(isolate), "type", "incremental marking");
+        gcPrologueForMajorGC(isolate, flags & v8::kGCCallbackFlagConstructRetainedObjectInfos);
+        break;
+    case v8::kGCTypeProcessWeakCallbacks:
+        TRACE_EVENT_BEGIN2("devtools.timeline,v8", "MajorGC", "usedHeapSizeBefore", usedHeapSize(isolate), "type", "weak processing");
+        if (isMainThread()) {
+            V8PerIsolateData::from(isolate)->setPreviousSamplingState(TRACE_EVENT_GET_SAMPLING_STATE());
+            TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMajorGC");
+        }
+        break;
+    default:
+        ASSERT_NOT_REACHED();
     }
 }
 
 void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
 {
-    // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
+    // TODO(haraken): It would be nice if the GC callbacks passed the Isolate
+    // directly.
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (type == v8::kGCTypeScavenge) {
-        minorGCEpilogue(isolate);
+    switch (type) {
+    case v8::kGCTypeScavenge:
+        TRACE_EVENT_END1("devtools.timeline,v8", "MinorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
+        if (isMainThread()) {
+            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
+        }
         ThreadState::current()->scheduleV8FollowupGCIfNeeded();
-    } else if (type == v8::kGCTypeMarkSweepCompact) {
-        majorGCEpilogue(isolate);
-    } else if (type == v8::kGCTypeProcessWeakCallbacks) {
+        break;
+    case v8::kGCTypeMarkSweepCompact:
+        TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
+        if (isMainThread()) {
+            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
+        }
+        break;
+    case v8::kGCTypeIncrementalMarking:
+        TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
+        if (isMainThread()) {
+            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
+        }
+        break;
+    case v8::kGCTypeProcessWeakCallbacks:
+        TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
+        if (isMainThread()) {
+            TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
+        }
         ThreadState::current()->scheduleV8FollowupGCIfNeeded();
+        break;
+    default:
+        ASSERT_NOT_REACHED();
     }
+
+    if (isMainThread())
+        ScriptForbiddenScope::exit();
 
     // v8::kGCCallbackFlagForced forces a Blink heap garbage collection
     // when a garbage collection was forced from V8. This is either used
@@ -419,24 +471,6 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
-}
-
-void V8GCController::minorGCEpilogue(v8::Isolate* isolate)
-{
-    TRACE_EVENT_END1("devtools.timeline,v8", "MinorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
-    if (isMainThread()) {
-        TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
-        ScriptForbiddenScope::exit();
-    }
-}
-
-void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
-{
-    TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter", usedHeapSize(isolate));
-    if (isMainThread()) {
-        TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
-        ScriptForbiddenScope::exit();
-    }
 }
 
 void V8GCController::collectGarbage(v8::Isolate* isolate)
