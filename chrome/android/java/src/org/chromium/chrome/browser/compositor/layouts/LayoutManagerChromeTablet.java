@@ -204,6 +204,7 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
 
             getActiveLayout().tabTitleChanged(tab.getId(), getTitleForTab(tab));
         }
+        requestUpdate();
     }
 
     private class TabletToolbarSwipeHandler extends ToolbarSwipeHandler {
