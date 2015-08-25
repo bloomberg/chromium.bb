@@ -1,0 +1,10 @@
+Name: Proguard
+URL: http://proguard.sourceforge.net/
+Version: 4.7
+Date: 08/12/2015
+License: GNU General Public License (GPL), version 2
+Security Critical: no
+
+Description:
+This directory includes proguard.jar to allow Chromium to shrink, optimize java
+classes for Android.
