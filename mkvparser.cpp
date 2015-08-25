@@ -3688,14 +3688,12 @@ long Tags::Parse() {
     }
 
     pos += size;
-    assert(pos <= stop);
     if (pos > stop)
-      return -1;
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
   if (pos != stop)
-    return -1;
+    return E_FILE_FORMAT_INVALID;
 
   return 0;
 }
@@ -3806,14 +3804,12 @@ long Tags::Tag::Parse(IMkvReader* pReader, long long pos, long long size) {
     }
 
     pos += size;
-    assert(pos <= stop);
     if (pos > stop)
-      return -1;
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
   if (pos != stop)
-    return -1;
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -3904,14 +3900,12 @@ long Tags::SimpleTag::Parse(IMkvReader* pReader, long long pos,
     }
 
     pos += size;
-    assert(pos <= stop);
     if (pos > stop)
-      return -1;
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
   if (pos != stop)
-    return -1;
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -5363,10 +5357,12 @@ long Tracks::Parse() {
     }
 
     pos = payload_stop;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   return 0;  // success
 }
