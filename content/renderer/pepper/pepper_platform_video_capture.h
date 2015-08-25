@@ -42,7 +42,7 @@ class PepperPlatformVideoCapture {
   void OnDeviceOpened(int request_id, bool succeeded, const std::string& label);
   void OnStateUpdate(VideoCaptureState state);
   void OnFrameReady(const scoped_refptr<media::VideoFrame>& frame,
-                    base::TimeTicks estimated_capture_time);
+                    const base::TimeTicks& estimated_capture_time);
 
   // Can return NULL if the RenderFrame referenced by |render_frame_id_| has
   // gone away.

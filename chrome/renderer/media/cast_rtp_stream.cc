@@ -272,7 +272,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
       const scoped_refptr<media::cast::VideoFrameInput> frame_input,
       // These parameters are passed for each frame.
       const scoped_refptr<media::VideoFrame>& frame,
-      base::TimeTicks estimated_capture_time) {
+      const base::TimeTicks& estimated_capture_time) {
     const base::TimeTicks timestamp = estimated_capture_time.is_null()
                                           ? base::TimeTicks::Now()
                                           : estimated_capture_time;

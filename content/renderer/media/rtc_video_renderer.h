@@ -56,7 +56,7 @@ class CONTENT_EXPORT RTCVideoRenderer
   };
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    base::TimeTicks estimated_capture_time);
+                    const base::TimeTicks& estimated_capture_time);
 
   // MediaStreamVideoSink implementation. Called on the main thread.
   void OnReadyStateChanged(
