@@ -3223,10 +3223,12 @@ long Chapters::Parse() {
     }
 
     pos += size;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -3337,10 +3339,12 @@ long Chapters::Edition::Parse(IMkvReader* pReader, long long pos,
     }
 
     pos += size;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -3495,10 +3499,12 @@ long Chapters::Atom::Parse(IMkvReader* pReader, long long pos, long long size) {
     }
 
     pos += size;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
@@ -3629,10 +3635,12 @@ long Chapters::Display::Parse(IMkvReader* pReader, long long pos,
     }
 
     pos += size;
-    assert(pos <= stop);
+    if (pos > stop)
+      return E_FILE_FORMAT_INVALID;
   }
 
-  assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
   return 0;
 }
 
