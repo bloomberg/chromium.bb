@@ -5,8 +5,6 @@
 #ifndef MEDIA_BASE_CDM_CONFIG_H_
 #define MEDIA_BASE_CDM_CONFIG_H_
 
-#include "media/base/media_export.h"
-
 namespace media {
 
 // The runtime configuration for new CDM instances as computed by
