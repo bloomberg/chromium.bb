@@ -7362,7 +7362,6 @@ long Block::Parse(const Cluster* pCluster) {
     return E_FILE_FORMAT_INVALID;
 
   ++pos;  // consume frame count
-  assert(pos <= stop);
   if (pos > stop)
     return E_FILE_FORMAT_INVALID;
 
@@ -7420,8 +7419,6 @@ long Block::Parse(const Cluster* pCluster) {
       --frame_count;
     }
 
-    assert(pf < pf_end);
-    assert(pos <= stop);
     if (pf >= pf_end || pos > stop)
       return E_FILE_FORMAT_INVALID;
 
@@ -7566,7 +7563,6 @@ long Block::Parse(const Cluster* pCluster) {
         return E_FILE_FORMAT_INVALID;
 
       pos += len;  // consume length of (delta) size
-      assert(pos <= stop);
       if (pos > stop)
         return E_FILE_FORMAT_INVALID;
 
@@ -7590,20 +7586,18 @@ long Block::Parse(const Cluster* pCluster) {
 
     // parse last frame
     if (frame_count > 0) {
-      assert(pos <= stop);
-      assert(pf < pf_end);
+      if (pos > stop || pf >= pf_end)
+        return E_FILE_FORMAT_INVALID;
 
       const Frame& prev = *pf++;
       assert(prev.len == frame_size);
       if (prev.len != frame_size)
         return E_FILE_FORMAT_INVALID;
 
-      assert(pf < pf_end);
       if (pf >= pf_end)
         return E_FILE_FORMAT_INVALID;
 
       Frame& curr = *pf++;
-      assert(pf == pf_end);
       if (pf != pf_end)
         return E_FILE_FORMAT_INVALID;
 
