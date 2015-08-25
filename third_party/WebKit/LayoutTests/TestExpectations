@@ -440,10 +440,6 @@ crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 
-crbug.com/510492 fast/repaint/table-cell-collapsed-border.html [ NeedsRebaseline ]
-crbug.com/510492 fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
-crbug.com/510492 fast/table/border-collapsing/cached-change-cell-sl-border-color.html [ NeedsRebaseline ]
-
 crbug.com/518816 fast/events/hit-test-clip-path-reference.html [ NeedsRebaseline ]
 crbug.com/518816 virtual/trustedeventsdefaultaction/fast/events/hit-test-clip-path-reference.html [ NeedsRebaseline ]
 crbug.com/518816 virtual/pointerevent/fast/events/hit-test-clip-path-reference.html [ NeedsRebaseline ]
