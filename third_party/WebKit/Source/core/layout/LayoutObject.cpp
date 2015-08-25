@@ -986,7 +986,7 @@ IntRect LayoutObject::absoluteOutlineBoundingBoxRect() const
     Vector<LayoutRect> rects;
     const LayoutBoxModelObject* container = enclosingLayer()->layoutObject();
     addOutlineRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)));
-    return container->localToAbsoluteQuad(FloatQuad(unionRect(rects))).enclosingBoundingBox();
+    return container->localToAbsoluteQuad(FloatQuad(FloatRect(unionRect(rects)))).enclosingBoundingBox();
 }
 
 FloatRect LayoutObject::absoluteBoundingBoxRectForRange(const Range* range)

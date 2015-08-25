@@ -222,8 +222,8 @@ static inline void appendZoomableSubtargets(Node* node, SubtargetGeometryList& s
     ASSERT(layoutObject);
 
     Vector<FloatQuad> quads;
-    FloatRect borderBoxRect = layoutObject->borderBoxRect();
-    FloatRect contentBoxRect = layoutObject->contentBoxRect();
+    FloatRect borderBoxRect(layoutObject->borderBoxRect());
+    FloatRect contentBoxRect(layoutObject->contentBoxRect());
     quads.append(layoutObject->localToAbsoluteQuad(borderBoxRect));
     if (borderBoxRect != contentBoxRect)
         quads.append(layoutObject->localToAbsoluteQuad(contentBoxRect));

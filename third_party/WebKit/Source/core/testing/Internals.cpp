@@ -2004,7 +2004,7 @@ ClientRectList* Internals::annotatedRegions(Document* document, bool draggable, 
     Vector<FloatQuad> quads;
     for (size_t i = 0; i < regions.size(); ++i) {
         if (regions[i].draggable == draggable)
-            quads.append(FloatQuad(regions[i].bounds));
+            quads.append(FloatQuad(FloatRect(regions[i].bounds)));
     }
     return ClientRectList::create(quads);
 }
@@ -2121,7 +2121,7 @@ ClientRect* Internals::selectionBounds(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return ClientRect::create(document->frame()->selection().bounds());
+    return ClientRect::create(FloatRect(document->frame()->selection().bounds()));
 }
 
 String Internals::markerTextForListItem(Element* element)

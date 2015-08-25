@@ -1026,8 +1026,8 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const
 
     for (LayoutBlock* currBlock = containingBlock(); currBlock && currBlock->isAnonymousBlock(); currBlock = toLayoutBlock(currBlock->nextSibling())) {
         for (LayoutObject* curr = currBlock->firstChild(); curr; curr = curr->nextSibling()) {
-            LayoutRect rect = curr->clippedOverflowRectForPaintInvalidation(view());
-            context(rect);
+            LayoutRect rect(curr->clippedOverflowRectForPaintInvalidation(view()));
+            context(FloatRect(rect));
             if (curr == endContinuation)
                 return LayoutRect(enclosingIntRect(floatResult));
         }

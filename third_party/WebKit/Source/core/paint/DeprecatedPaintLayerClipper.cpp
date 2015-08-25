@@ -82,7 +82,7 @@ LayoutRect DeprecatedPaintLayerClipper::childrenClipRect() const
     // Need to use uncached clip rects, because the value of 'dontClipToOverflow' may be different from the painting path (<rdar://problem/11844909>).
     ClipRectsContext context(clippingRootLayer, UncachedClipRects);
     calculateRects(context, LayoutRect(m_layoutObject.view()->unscaledDocumentRect()), layerBounds, backgroundRect, foregroundRect, outlineRect);
-    return LayoutRect(clippingRootLayer->layoutObject()->localToAbsoluteQuad(FloatQuad(foregroundRect.rect())).enclosingBoundingBox());
+    return LayoutRect(clippingRootLayer->layoutObject()->localToAbsoluteQuad(FloatQuad(FloatRect(foregroundRect.rect()))).enclosingBoundingBox());
 }
 
 LayoutRect DeprecatedPaintLayerClipper::localClipRect() const
@@ -95,7 +95,7 @@ LayoutRect DeprecatedPaintLayerClipper::localClipRect() const
     calculateRects(context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds, backgroundRect, foregroundRect, outlineRect);
 
     LayoutRect clipRect = backgroundRect.rect();
-    if (clipRect == LayoutRect::infiniteIntRect())
+    if (IntRect(clipRect) == LayoutRect::infiniteIntRect())
         return clipRect;
 
     LayoutPoint clippingRootOffset;

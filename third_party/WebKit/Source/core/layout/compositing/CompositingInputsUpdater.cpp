@@ -113,7 +113,7 @@ void CompositingInputsUpdater::updateRecursive(DeprecatedPaintLayer* layer, Upda
         DeprecatedPaintLayer::AncestorDependentCompositingInputs properties;
 
         if (!layer->isRootLayer()) {
-            properties.clippedAbsoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(layer->boundingBoxForCompositingOverlapTest()));
+            properties.clippedAbsoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(FloatRect(layer->boundingBoxForCompositingOverlapTest())));
             // FIXME: Setting the absBounds to 1x1 instead of 0x0 makes very little sense,
             // but removing this code will make JSGameBench sad.
             // See https://codereview.chromium.org/13912020/

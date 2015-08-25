@@ -536,7 +536,7 @@ static void localToPageQuad(const LayoutObject& layoutObject, const LayoutRect& 
 {
     LocalFrame* frame = layoutObject.frame();
     FrameView* view = frame->view();
-    FloatQuad absolute = layoutObject.localToAbsoluteQuad(FloatQuad(rect));
+    FloatQuad absolute = layoutObject.localToAbsoluteQuad(FloatQuad(FloatRect(rect)));
     quad->setP1(view->contentsToRootFrame(roundedIntPoint(absolute.p1())));
     quad->setP2(view->contentsToRootFrame(roundedIntPoint(absolute.p2())));
     quad->setP3(view->contentsToRootFrame(roundedIntPoint(absolute.p3())));

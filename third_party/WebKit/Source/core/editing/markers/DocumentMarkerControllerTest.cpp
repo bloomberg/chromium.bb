@@ -201,7 +201,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML)
 
 TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects)
 {
-    LayoutRect invalidRect = RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect();
+    IntRect invalidRect(RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect());
 
     setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
     RefPtrWillBeRawPtr<Element> div = toElement(document().body()->firstChild());

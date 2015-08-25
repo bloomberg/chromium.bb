@@ -68,7 +68,7 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
     Optional<DrawingRecorder> drawingRecorder;
     Optional<ClipScope> clipScope;
     if (!skipRecording) {
-        drawingRecorder.emplace(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, bounds);
+        drawingRecorder.emplace(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, FloatRect(bounds));
         clipScope.emplace(paintInfo.context);
     }
 

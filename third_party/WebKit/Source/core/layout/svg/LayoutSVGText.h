@@ -75,7 +75,7 @@ private:
     void removeChild(LayoutObject*) override;
     void willBeDestroyed() override;
 
-    FloatRect objectBoundingBox() const override { return frameRect(); }
+    FloatRect objectBoundingBox() const override { return FloatRect(frameRect()); }
     FloatRect strokeBoundingBox() const override;
 
     RootInlineBox* createRootInlineBox() override;

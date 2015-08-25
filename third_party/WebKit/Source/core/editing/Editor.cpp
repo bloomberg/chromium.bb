@@ -1086,11 +1086,11 @@ IntRect Editor::firstRectForRange(const EphemeralRange& range) const
     ASSERT(range.isNotNull());
 
     IntRect startCaretRect = RenderedPosition(VisiblePosition(range.startPosition()).deepEquivalent(), TextAffinity::Downstream).absoluteRect(&extraWidthToEndOfLine);
-    if (startCaretRect == LayoutRect())
+    if (startCaretRect.isEmpty())
         return IntRect();
 
     IntRect endCaretRect = RenderedPosition(VisiblePosition(range.endPosition()).deepEquivalent(), TextAffinity::Upstream).absoluteRect();
-    if (endCaretRect == LayoutRect())
+    if (endCaretRect.isEmpty())
         return IntRect();
 
     if (startCaretRect.y() == endCaretRect.y()) {

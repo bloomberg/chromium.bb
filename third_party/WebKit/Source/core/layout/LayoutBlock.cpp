@@ -1686,7 +1686,7 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
         case ClipPathOperation::SHAPE: {
             ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style()->clipPath());
             // FIXME: handle marginBox etc.
-            if (!clipPath->path(borderBoxRect()).contains(FloatPoint(locationInContainer.point() - localOffset), clipPath->windRule()))
+            if (!clipPath->path(FloatRect(borderBoxRect())).contains(FloatPoint(locationInContainer.point() - localOffset), clipPath->windRule()))
                 return false;
             break;
         }

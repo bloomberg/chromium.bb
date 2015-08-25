@@ -120,8 +120,7 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
     targetViewport.setSize(LayoutSize(visualViewport().visibleContentRect().size()));
 
     // Snap the visible rect to layout units to match the calculated target viewport rect.
-    FloatRect visible =
-        LayoutRect(visualViewport().scrollPositionDouble(), visualViewport().visibleContentRect().size());
+    FloatRect visible(LayoutRect(visualViewport().scrollPositionDouble(), visualViewport().visibleContentRect().size()));
 
     float centeringOffsetX = (visible.width() - targetViewport.width()) / 2;
     float centeringOffsetY = (visible.height() - targetViewport.height()) / 2;

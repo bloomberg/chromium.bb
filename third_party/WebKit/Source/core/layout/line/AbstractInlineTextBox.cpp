@@ -99,7 +99,7 @@ LayoutRect AbstractInlineTextBox::bounds() const
     if (!m_inlineTextBox || !m_layoutText)
         return LayoutRect();
 
-    FloatRect boundaries = m_inlineTextBox->calculateBoundaries();
+    FloatRect boundaries(m_inlineTextBox->calculateBoundaries());
     return LayoutRect(m_layoutText->localToAbsoluteQuad(boundaries).enclosingBoundingBox());
 }
 

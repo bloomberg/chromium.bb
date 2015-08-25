@@ -136,7 +136,7 @@ bool HitTestLocation::intersectsRect(const RectType& rect, const RectType& bound
         return true;
 
     // Otherwise we need to do a slower quad based intersection test.
-    return m_transformedRect.intersectsRect(rect);
+    return m_transformedRect.intersectsRect(FloatRect(rect));
 }
 
 bool HitTestLocation::intersects(const LayoutRect& rect) const

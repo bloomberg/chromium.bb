@@ -108,7 +108,8 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
         BoxPainter::paintFillLayerExtended(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     } else if (m_inlineFlowBox.layoutObject().style()->boxDecorationBreak() == DCLONE) {
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
-        paintInfo.context->clip(LayoutRect(rect.x(), rect.y(), m_inlineFlowBox.width(), m_inlineFlowBox.height()));
+        // TODO(chrishtr): this should be pixel-snapped.
+        paintInfo.context->clip(FloatRect(LayoutRect(rect.x(), rect.y(), m_inlineFlowBox.width(), m_inlineFlowBox.height())));
         BoxPainter::paintFillLayerExtended(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     } else {
         // We have a fill image that spans multiple lines.
@@ -269,7 +270,8 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
         // but it isn't even clear how this should work at all.
         LayoutRect imageStripPaintRect = paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
-        paintInfo.context->clip(adjustedClipRect);
+        // TODO(chrishtr): this should be pixel-snapped.
+        paintInfo.context->clip(FloatRect(adjustedClipRect));
         BoxPainter::paintBorder(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()));
         break;
     }
@@ -328,8 +330,9 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
         // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
         // but it isn't even clear how this should work at all.
         LayoutRect imageStripPaintRect = paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
-        LayoutRect clipRect = clipRectForNinePieceImageStrip(&m_inlineFlowBox, maskNinePieceImage, paintRect);
+        FloatRect clipRect(clipRectForNinePieceImageStrip(&m_inlineFlowBox, maskNinePieceImage, paintRect));
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
+        // TODO(chrishtr): this should be pixel-snapped.
         paintInfo.context->clip(clipRect);
         BoxPainter::paintNinePieceImage(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo.context, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(), maskNinePieceImage, compositeOp);
     }

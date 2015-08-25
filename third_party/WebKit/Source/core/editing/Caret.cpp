@@ -197,7 +197,7 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
     if (element && element->layoutObject())
         caretColor = element->layoutObject()->resolveColor(CSSPropertyColor);
 
-    context->fillRect(caret, caretColor);
+    context->fillRect(FloatRect(caret), caretColor);
 }
 
 } // namespace blink

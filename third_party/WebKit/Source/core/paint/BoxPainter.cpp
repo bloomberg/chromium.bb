@@ -387,7 +387,8 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
     if (clippedWithLocalScrolling) {
         // Clip to the overflow area.
         LayoutBox* thisBox = toLayoutBox(&obj);
-        context->clip(thisBox->overflowClipRect(rect.location()));
+        // TODO(chrishtr): this should be pixel-snapped.
+        context->clip(FloatRect(thisBox->overflowClipRect(rect.location())));
 
         // Adjust the paint rect to reflect a scrolled content box with borders at the ends.
         IntSize offset = thisBox->scrolledContentOffset();
@@ -407,12 +408,13 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
 
         // Clip to the padding or content boxes as necessary.
         bool includePadding = bgLayer.clip() == ContentFillBox;
-        LayoutRect clipRect = LayoutRect(scrolledPaintRect.x() + bLeft + (includePadding ? pLeft : LayoutUnit()),
+        LayoutRect clipRect(scrolledPaintRect.x() + bLeft + (includePadding ? pLeft : LayoutUnit()),
             scrolledPaintRect.y() + obj.borderTop() + (includePadding ? obj.paddingTop() : LayoutUnit()),
             scrolledPaintRect.width() - bLeft - bRight - (includePadding ? pLeft + pRight : LayoutUnit()),
             scrolledPaintRect.height() - obj.borderTop() - obj.borderBottom() - (includePadding ? obj.paddingTop() + obj.paddingBottom() : LayoutUnit()));
         backgroundClipStateSaver.save();
-        context->clip(clipRect);
+        // TODO(chrishtr): this should be pixel-snapped.
+        context->clip(FloatRect(clipRect));
 
         break;
     }

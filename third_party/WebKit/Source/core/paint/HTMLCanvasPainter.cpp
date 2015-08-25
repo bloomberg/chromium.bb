@@ -34,7 +34,8 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
     bool clip = !contentRect.contains(paintRect);
     if (clip) {
         context->save();
-        context->clip(contentRect);
+        // TODO(chrishtr): this should be pixel-snapped.
+        context->clip(FloatRect(contentRect));
     }
 
     // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast is set.
