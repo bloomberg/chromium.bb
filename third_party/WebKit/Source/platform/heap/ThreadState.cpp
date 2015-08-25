@@ -676,6 +676,8 @@ bool ThreadState::shouldForceConservativeGC()
 void ThreadState::scheduleV8FollowupGCIfNeeded()
 {
     ASSERT(checkThread());
+    Heap::reportMemoryUsageForTracing();
+
     if (isGCForbidden())
         return;
 
@@ -683,7 +685,6 @@ void ThreadState::scheduleV8FollowupGCIfNeeded()
         return;
     ASSERT(!sweepForbidden());
 
-    Heap::reportMemoryUsageForTracing();
     if (shouldScheduleV8FollowupGC())
         schedulePreciseGC();
 }
@@ -691,6 +692,8 @@ void ThreadState::scheduleV8FollowupGCIfNeeded()
 void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
 {
     ASSERT(checkThread());
+    Heap::reportMemoryUsageForTracing();
+
     if (isGCForbidden())
         return;
 
@@ -701,7 +704,6 @@ void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
     ASSERT(!isSweepingInProgress());
     ASSERT(!sweepForbidden());
 
-    Heap::reportMemoryUsageForTracing();
     if (shouldSchedulePageNavigationGC(estimatedRemovalRatio))
         schedulePageNavigationGC();
 }
@@ -716,6 +718,8 @@ void ThreadState::schedulePageNavigationGC()
 void ThreadState::scheduleGCIfNeeded()
 {
     ASSERT(checkThread());
+    Heap::reportMemoryUsageForTracing();
+
     if (isGCForbidden())
         return;
 
@@ -724,8 +728,6 @@ void ThreadState::scheduleGCIfNeeded()
     if (isSweepingInProgress())
         return;
     ASSERT(!sweepForbidden());
-
-    Heap::reportMemoryUsageForTracing();
 
     if (shouldForceMemoryPressureGC()) {
         Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
@@ -1230,6 +1232,8 @@ void ThreadState::resumeThreads()
 void ThreadState::safePoint(StackState stackState)
 {
     ASSERT(checkThread());
+    Heap::reportMemoryUsageForTracing();
+
     runScheduledGC(stackState);
     ASSERT(!m_atSafePoint);
     m_stackState = stackState;
