@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,9 +46,9 @@ import java.io.IOException;
  * Robolectric tests for HttpNegotiateAuthenticator
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
-        shadows = HttpNegotiateAuthenticatorTest.ExtendedShadowAccountManager.class,
-        application = BaseChromiumApplication.class)
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {HttpNegotiateAuthenticatorTest.ExtendedShadowAccountManager.class,
+                ShadowMultiDex.class})
 public class HttpNegotiateAuthenticatorTest {
     // Since the account manager is an SDK singleton (it is fetched using AccountManager.get()) we
     // can't validate its method calls with Mockito, so do so using our shadow method. Since the

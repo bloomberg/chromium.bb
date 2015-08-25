@@ -8,6 +8,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Bundle;
 import android.test.AndroidTestRunner;
 import android.test.InstrumentationTestRunner;
 import android.text.TextUtils;
@@ -17,6 +18,7 @@ import junit.framework.TestResult;
 
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
+import org.chromium.base.multidex.ChromiumMultiDex;
 import org.chromium.base.test.BaseTestResult.SkipCheck;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -30,6 +32,12 @@ import java.lang.reflect.Method;
  */
 public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
     private static final String TAG = "cr.base.test";
+
+    @Override
+    public void onCreate(Bundle arguments) {
+        ChromiumMultiDex.install(getTargetContext());
+        super.onCreate(arguments);
+    }
 
     @Override
     protected AndroidTestRunner getAndroidTestRunner() {

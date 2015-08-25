@@ -54,6 +54,9 @@
   <property name="resource.package.file.name" value="${RESOURCE_PACKAGED_APK_NAME}" />
 
   <property name="intermediate.dex.file" location="${DEX_FILE_PATH}" />
+  <condition property="multidex.enabled" value="true">
+    <equals arg1="${MULTIDEX_ENABLED}" arg2="1"/>
+  </condition>
 
   <!-- Macro that enables passing a variable list of external jar files
        to ApkBuilder. -->
@@ -70,13 +73,32 @@
           hascode="${HAS_CODE}"
           previousBuildType="/"
           buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
-        <dex path="${intermediate.dex.file}"/>
+        <dex path="${intermediate.dex.file}" />
         <nativefolder path="${native.libs.absolute.dir}" />
         <extra-jars/>
       </apkbuilder>
     </sequential>
   </macrodef>
 
+  <macrodef name="multidex-package-helper">
+    <element name="extra-jars" optional="yes" />
+    <sequential>
+      <apkbuilder
+          outfolder="${out.absolute.dir}"
+          resourcefile="${resource.package.file.name}"
+          apkfilepath="${out.packaged.file}"
+          debugpackaging="${build.is.packaging.debug}"
+          debugsigning="${build.is.signing.debug}"
+          verbose="${verbose}"
+          hascode="false"
+          previousBuildType="/"
+          buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
+        <zip path="${intermediate.dex.file}" />
+        <nativefolder path="${native.libs.absolute.dir}" />
+        <extra-jars/>
+      </apkbuilder>
+    </sequential>
+  </macrodef>
 
   <!-- Packages the application. -->
   <target name="-package">
@@ -89,7 +111,14 @@
         </package-helper>
       </then>
       <else>
-        <package-helper />
+        <if condition="${multidex.enabled}">
+          <then>
+            <multidex-package-helper />
+          </then>
+          <else>
+            <package-helper />
+          </else>
+        </if>
       </else>
     </if>
   </target>

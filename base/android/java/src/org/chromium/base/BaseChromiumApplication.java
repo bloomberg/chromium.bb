@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Window;
 
+import org.chromium.base.multidex.ChromiumMultiDex;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,6 +22,15 @@ import java.lang.reflect.Proxy;
  * Basic application functionality that should be shared among all browser applications.
  */
 public class BaseChromiumApplication extends Application {
+
+    private static final String TAG = "cr.base";
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        ChromiumMultiDex.install(this);
+    }
+
     /**
      * Interface to be implemented by listeners for window focus events.
      */

@@ -189,6 +189,9 @@ ANDROID_SDK_TOOLS = os.path.join(ANDROID_SDK_ROOT,
 ANDROID_NDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
                                 'third_party/android_tools/ndk')
 
+PROGUARD_SCRIPT_PATH = os.path.join(
+    ANDROID_SDK_ROOT, 'tools', 'proguard', 'bin', 'proguard.sh')
+
 EMULATOR_SDK_ROOT = os.environ.get('ANDROID_EMULATOR_SDK_ROOT',
                                    os.path.join(DIR_SOURCE_ROOT,
                                                 'android_emulator_sdk'))

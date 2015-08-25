@@ -32,6 +32,7 @@ import android.support.v7.media.MediaRouter.RouteInfo;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLine;
+import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.remote.MediaRouteController.MediaStateListener;
 import org.chromium.chrome.browser.media.remote.MediaRouteController.UiListener;
@@ -51,8 +52,8 @@ import org.robolectric.internal.ReflectionHelpers;
 
 /** Tests for {@link AbstractMediaRouteController}. */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = AbstractMediaRouteControllerTest.ShadowMediaRouter.class,
-        application = BaseChromiumApplication.class)
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        shadows = {AbstractMediaRouteControllerTest.ShadowMediaRouter.class, ShadowMultiDex.class})
 public class AbstractMediaRouteControllerTest {
 
     /** Reset the environment before each test. */

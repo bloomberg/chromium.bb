@@ -940,6 +940,9 @@ template("java_library") {
 #   proguard_preprocess: If true, proguard preprocessing will be run. This can
 #     be used to remove unwanted parts of the library.
 #   proguard_config: Path to the proguard config for preprocessing.
+#   supports_android: If true, Android targets (android_library, android_apk)
+#     may depend on this target. Note: if true, this target must only use the
+#     subset of Java available on Android.
 #
 # Example
 #   java_prebuilt("foo_java") {
