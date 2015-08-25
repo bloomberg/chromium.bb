@@ -43,6 +43,7 @@ source_set("modules") {
   deps = [
     ":make_modules_generated",
     "//third_party/WebKit/Source/core",
+    "//third_party/icu",
     "//third_party/sqlite",
     "//third_party/zlib",
   ]

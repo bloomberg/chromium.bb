@@ -247,6 +247,8 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(angle_path)/src/angle.gyp:translator',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
+        '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
         '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
         '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',

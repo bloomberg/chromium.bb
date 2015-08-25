@@ -39,8 +39,10 @@
     # GN version: //third_party/WebKit/Source/modules:modules
     'target_name': 'modules',
     'dependencies': [
-      '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
+      '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
+      '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
+      '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
       '../config.gyp:config',
       'modules_generated.gyp:make_modules_generated',
     ],

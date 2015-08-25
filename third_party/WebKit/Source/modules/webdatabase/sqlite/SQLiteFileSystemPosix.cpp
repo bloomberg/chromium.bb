@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Expose chromium_sqlite3_* functions from Chromium's patched SQLite.
+#define CHROMIUM_SQLITE_INTERNALS
+
 #include "config.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 
@@ -37,15 +40,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
-
-// Defined in Chromium's codebase in third_party/sqlite/src/os_unix.c
-extern "C" {
-void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file);
-int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs, int fd, int dirfd, sqlite3_file* file, const char* fileName, int noLock);
-int chromium_sqlite3_get_reusable_file_handle(sqlite3_file* file, const char* fileName, int flags, int* fd);
-void chromium_sqlite3_update_reusable_file_handle(sqlite3_file* file, int fd, int flags);
-void chromium_sqlite3_destroy_reusable_file_handle(sqlite3_file* file);
-}
 
 namespace blink {
 

@@ -28,17 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Expose chromium_sqlite3_* functions from Chromium's patched SQLite.
+#define CHROMIUM_SQLITE_INTERNALS
+
 #include "config.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 
 #include <windows.h>
 #include <sqlite3.h>
 #include "public/platform/Platform.h"
-
-// Defined in Chromium's codebase in third_party/sqlite/src/os_win.c
-extern "C" {
-int chromium_sqlite3_initialize_win_sqlite3_file(sqlite3_file* file, HANDLE handle);
-}
 
 namespace blink {
 
