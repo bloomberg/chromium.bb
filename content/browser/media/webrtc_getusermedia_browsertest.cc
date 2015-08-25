@@ -353,8 +353,16 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("getUserMediaAndClone();");
 }
 
+// Test fails under Android, http://crbug.com/524388
+#if defined(OS_ANDROID)
+#define MAYBE_RenderVideoTrackInMultipleTagsAndPause \
+    DISABLED_RenderVideoTrackInMultipleTagsAndPause
+#else
+#define MAYBE_RenderVideoTrackInMultipleTagsAndPause \
+    RenderVideoTrackInMultipleTagsAndPause
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcGetUserMediaBrowserTest,
-                       RenderVideoTrackInMultipleTagsAndPause) {
+                       MAYBE_RenderVideoTrackInMultipleTagsAndPause) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
