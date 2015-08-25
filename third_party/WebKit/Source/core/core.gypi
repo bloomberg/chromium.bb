@@ -1335,7 +1335,6 @@
             'editing/commands/EditCommand.cpp',
             'editing/commands/EditCommand.h',
             'editing/commands/EditorCommand.cpp',
-            'editing/commands/EditorCommand.h',
             'editing/commands/FormatBlockCommand.cpp',
             'editing/commands/FormatBlockCommand.h',
             'editing/commands/IndentOutdentCommand.cpp',
