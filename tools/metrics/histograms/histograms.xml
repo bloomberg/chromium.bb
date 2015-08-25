@@ -67132,7 +67132,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="PERMISSION_NOTIFICATIONS"/>
   <int value="4" label="PERMISSION_GEOLOCATION"/>
   <int value="5" label="PERMISSION_PROTECTED_MEDIA_IDENTIFIER"/>
-  <int value="6" label="PERMISSION_DURABLE_STORAGE"/>
+  <int value="6" label="PERMISSION_MIDI"/>
+  <int value="7" label="PERMISSION_DURABLE_STORAGE"/>
 </enum>
 
 <enum name="PhotoEditorFileType" type="int">
