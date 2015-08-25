@@ -44,21 +44,21 @@ static JavaVM* s_java_vm = nullptr;
 // Returns the CPU ABI string for which the linker is running.
 jstring GetCpuAbi(JNIEnv* env, jclass clazz) {
 #if defined(__arm__) && defined(__ARM_ARCH_7A__)
-  static const char* kCurrentABI = "armeabi-v7a";
+  static const char* kCurrentAbi = "armeabi-v7a";
 #elif defined(__arm__)
-  static const char* kCurrentABI = "armeabi";
+  static const char* kCurrentAbi = "armeabi";
 #elif defined(__i386__)
-  static const char* kCurrentABI = "x86";
+  static const char* kCurrentAbi = "x86";
 #elif defined(__mips__)
-  static const char* kCurrentABI = "mips";
+  static const char* kCurrentAbi = "mips";
 #elif defined(__x86_64__)
-  static const char* kCurrentABI = "x86_64";
+  static const char* kCurrentAbi = "x86_64";
 #elif defined(__aarch64__)
-  static const char* kCurrentABI = "arm64-v8a";
+  static const char* kCurrentAbi = "arm64-v8a";
 #else
 #error "Unsupported target abi"
 #endif
-  return env->NewStringUTF(kCurrentABI);
+  return env->NewStringUTF(kCurrentAbi);
 }
 
 // Convenience wrapper around dlsym() on the main executable. Returns

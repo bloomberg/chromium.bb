@@ -375,8 +375,8 @@ class ModernLinker extends Linker {
                 // file at zip_path. This enables directly loading from APK. We add the
                 // "crazy." prefix to the path in the zip file to prevent the Android package
                 // manager from seeing this as a library and so extracting it from the APK.
-                String cpu_abi = nativeGetCpuAbi();
-                dlopenExtPath = zipFilePath + "!/lib/" + cpu_abi + "/crazy." + libFilePath;
+                String cpuAbi = nativeGetCpuAbi();
+                dlopenExtPath = zipFilePath + "!/lib/" + cpuAbi + "/crazy." + libFilePath;
             } else {
                 // Not loading from APK directly, so simply pass the library name to
                 // android_dlopen_ext().

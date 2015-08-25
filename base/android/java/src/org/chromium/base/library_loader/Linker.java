@@ -465,14 +465,14 @@ public abstract class Linker {
      * if the initial load fails we retry with a suffix.
      */
     protected void loadLinkerJNILibrary() {
-        String lib_name = "lib" + LINKER_JNI_LIBRARY + ".so";
+        String libName = "lib" + LINKER_JNI_LIBRARY + ".so";
         if (DEBUG) {
-            Log.i(TAG, "Loading " + lib_name);
+            Log.i(TAG, "Loading " + libName);
         }
         try {
             System.loadLibrary(LINKER_JNI_LIBRARY);
         } catch (UnsatisfiedLinkError  e) {
-            Log.w(TAG, "Couldn't load " + lib_name + ", trying " + lib_name + ".so");
+            Log.w(TAG, "Couldn't load " + libName + ", trying " + libName + ".so");
             System.loadLibrary(LINKER_JNI_LIBRARY + ".cr");
         }
     }
