@@ -8,10 +8,13 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 
 import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Entry point to manage all data reduction proxy configuration details.
@@ -44,6 +47,9 @@ public class DataReductionProxySettings {
             return mReceived;
         }
     }
+
+    @VisibleForTesting
+    public static final String DATA_REDUCTION_PROXY_ENABLED_KEY = "Data Reduction Proxy Enabled";
 
     private static DataReductionProxySettings sSettings;
 
@@ -251,6 +257,18 @@ public class DataReductionProxySettings {
         return percentageFormatter.format(savings);
     }
 
+    public Map<String, String> toFeedbackMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put(DATA_REDUCTION_PROXY_ENABLED_KEY, String.valueOf(isDataReductionProxyEnabled()));
+        map.put("Data Reduction Proxy HTTP Proxies",
+                nativeGetHttpProxyList(mNativeDataReductionProxySettings));
+        map.put("Data Reduction Proxy HTTPS Proxies",
+                nativeGetHttpsProxyList(mNativeDataReductionProxySettings));
+        map.put("Data Reduction Proxy Last Bypass",
+                nativeGetLastBypassEvent(mNativeDataReductionProxySettings));
+        return map;
+    }
+
     private native long nativeInit();
     private native boolean nativeIsDataReductionProxyAllowed(
             long nativeDataReductionProxySettingsAndroid);
@@ -286,4 +304,7 @@ public class DataReductionProxySettings {
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyUnreachable(
             long nativeDataReductionProxySettingsAndroid);
+    private native String nativeGetHttpProxyList(long nativeDataReductionProxySettingsAndroid);
+    private native String nativeGetHttpsProxyList(long nativeDataReductionProxySettingsAndroid);
+    private native String nativeGetLastBypassEvent(long nativeDataReductionProxySettingsAndroid);
 }

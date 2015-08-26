@@ -12,6 +12,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.UiUtils;
@@ -220,6 +221,8 @@ public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActi
         assertEquals("some description", mCollector.getDescription());
         assertEquals("bar", bundle.getString("foo"));
         assertEquals(bitmap, mCollector.getScreenshot());
+        assertEquals("false",
+                bundle.getString(DataReductionProxySettings.DATA_REDUCTION_PROXY_ENABLED_KEY));
     }
 
     @SmallTest

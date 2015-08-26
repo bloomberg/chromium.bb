@@ -4,8 +4,12 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/json/json_writer.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
@@ -39,6 +43,20 @@ const StringToConstant kDataReductionProxyBypassActionTypeTable[] = {
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_action_list.h"
 #undef BYPASS_ACTION_TYPE
 };
+
+std::string JoinListValueStrings(base::ListValue* list_value) {
+  std::vector<std::string> values;
+  for (auto it = list_value->begin(); it != list_value->end(); ++it) {
+    std::string value_string;
+    base::Value* value = *it;
+    if (!value->GetAsString(&value_string))
+      return std::string();
+
+    values.push_back(value_string);
+  }
+
+  return base::JoinString(values, ";");
+}
 
 }  // namespace
 
@@ -161,6 +179,89 @@ void DataReductionProxyEventStore::AddAndSetLastBypassEvent(
   last_bypass_event_.reset(event->DeepCopy());
   expiration_ticks_ = expiration_ticks;
   AddEvent(event.Pass());
+}
+
+std::string DataReductionProxyEventStore::GetHttpProxyList() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!enabled_ || !current_configuration_)
+    return std::string();
+
+  base::DictionaryValue* config_dict;
+  if (!current_configuration_->GetAsDictionary(&config_dict))
+    return std::string();
+
+  base::DictionaryValue* params_dict;
+  if (!config_dict->GetDictionary("params", &params_dict))
+    return std::string();
+
+  base::ListValue* proxy_list;
+  if (!params_dict->GetList("http_proxy_list", &proxy_list))
+    return std::string();
+
+  return JoinListValueStrings(proxy_list);
+}
+
+std::string DataReductionProxyEventStore::GetHttpsProxyList() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!enabled_ || !current_configuration_)
+    return std::string();
+
+  base::DictionaryValue* config_dict;
+  if (!current_configuration_->GetAsDictionary(&config_dict))
+    return std::string();
+
+  base::DictionaryValue* params_dict;
+  if (!config_dict->GetDictionary("params", &params_dict))
+    return std::string();
+
+  base::ListValue* proxy_list;
+  if (!params_dict->GetList("https_proxy_list", &proxy_list))
+    return std::string();
+
+  return JoinListValueStrings(proxy_list);
+}
+
+std::string DataReductionProxyEventStore::SanitizedLastBypassEvent() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!enabled_ || !last_bypass_event_)
+    return std::string();
+
+  base::DictionaryValue* bypass_dict;
+  base::DictionaryValue* params_dict;
+  if (!last_bypass_event_->GetAsDictionary(&bypass_dict))
+    return std::string();
+
+  if (!bypass_dict->GetDictionary("params", &params_dict))
+    return std::string();
+
+  // Explicitly add parameters to prevent automatic adding of new parameters.
+  scoped_ptr<base::DictionaryValue> last_bypass(new base::DictionaryValue());
+
+  std::string str_value;
+  int int_value;
+  if (bypass_dict->GetString("time", &str_value))
+    last_bypass->SetString("bypass_time", str_value);
+
+  if (params_dict->GetInteger("bypass_type", &int_value))
+    last_bypass->SetInteger("bypass_type", int_value);
+
+  if (params_dict->GetInteger("bypass_action_type", &int_value))
+    last_bypass->SetInteger("bypass_action", int_value);
+
+  if (params_dict->GetString("bypass_duration_seconds", &str_value))
+    last_bypass->SetString("bypass_seconds", str_value);
+
+  if (params_dict->GetString("url", &str_value)) {
+    GURL url(str_value);
+    GURL::Replacements replacements;
+    replacements.ClearQuery();
+    GURL clean_url = url.ReplaceComponents(replacements);
+    last_bypass->SetString("url", clean_url.spec());
+  }
+
+  std::string json;
+  base::JSONWriter::Write(*last_bypass.get(), &json);
+  return json;
 }
 
 }  // namespace data_reduction_proxy

@@ -38,11 +38,6 @@ public class FeedbackCollector
     static final String URL_KEY = "URL";
 
     /**
-     * A user visible string describing whether the data reduction proxy is enabled.
-     */
-    private static final String DATA_REDUCTION_PROXY_ENABLED_KEY = "Data reduction proxy enabled";
-
-    /**
      * The timeout (ms) for gathering data asynchronously.
      * This timeout is ignored for taking screenshots.
      */
@@ -259,9 +254,10 @@ public class FeedbackCollector
     }
 
     private void addDataReductionProxyData() {
-        mData.put(DATA_REDUCTION_PROXY_ENABLED_KEY,
-                String.valueOf(
-                        DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()));
+        if (mProfile.isOffTheRecord()) return;
+        Map<String, String> dataReductionProxyMap =
+                DataReductionProxySettings.getInstance().toFeedbackMap();
+        mData.putAll(dataReductionProxyMap);
     }
 
     private Bundle asBundle() {

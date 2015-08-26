@@ -4,14 +4,18 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log.h"
@@ -204,6 +208,50 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheckFailed) {
               secure_proxy_check_state())
         << test.test_case;
   }
+}
+
+TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
+  DataReductionProxyConfigurator configurator(net_log(), event_creator());
+  EXPECT_EQ(std::string(), event_store()->GetHttpProxyList());
+  EXPECT_EQ(std::string(), event_store()->GetHttpsProxyList());
+  EXPECT_EQ(std::string(), event_store()->SanitizedLastBypassEvent());
+
+  std::vector<net::ProxyServer> http_proxies;
+  std::vector<net::ProxyServer> https_proxies;
+  http_proxies.push_back(net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
+                                          net::HostPortPair("foo.com", 80)));
+  http_proxies.push_back(net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                                          net::HostPortPair("bar.com", 443)));
+  https_proxies.push_back(net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
+                                           net::HostPortPair("baz.com", 80)));
+  configurator.Enable(false, http_proxies, https_proxies);
+  EXPECT_EQ("foo.com:80;https://bar.com:443",
+            event_store()->GetHttpProxyList());
+  EXPECT_EQ("baz.com:80", event_store()->GetHttpsProxyList());
+
+  scoped_ptr<base::DictionaryValue> bypass_event(new base::DictionaryValue());
+  scoped_ptr<base::DictionaryValue> bypass_params(new base::DictionaryValue());
+  scoped_ptr<base::DictionaryValue> sanitized_event(
+      new base::DictionaryValue());
+
+  bypass_event->SetString("time", "12/31/2014 23:58");
+  sanitized_event->SetString("bypass_time", "12/31/2014 23:58");
+  bypass_params->SetInteger("bypass_type", 4);
+  sanitized_event->SetInteger("bypass_type", 4);
+  bypass_params->SetString("bypass_duration_seconds", "40");
+  sanitized_event->SetString("bypass_seconds", "40");
+  bypass_params->SetString("url", "http://www.foo.com/bar?baz=1234");
+  sanitized_event->SetString("url", "http://www.foo.com/bar");
+
+  bypass_event->Set("params", bypass_params.Pass());
+  std::string sanitized_output;
+  base::JSONWriter::Write(*sanitized_event.get(), &sanitized_output);
+  event_store()->AddAndSetLastBypassEvent(bypass_event.Pass(), 0);
+  EXPECT_EQ(sanitized_output, event_store()->SanitizedLastBypassEvent());
+
+  configurator.Disable();
+  EXPECT_EQ(std::string(), event_store()->GetHttpProxyList());
+  EXPECT_EQ(std::string(), event_store()->GetHttpsProxyList());
 }
 
 }  // namespace data_reduction_proxy
