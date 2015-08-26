@@ -45,6 +45,8 @@ class TouchList;
 class TreeScope;
 
 class CORE_EXPORT EventPath final : public NoBaseWillBeGarbageCollectedFinalized<EventPath> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(EventPath);
+    WTF_MAKE_NONCOPYABLE(EventPath);
 public:
     explicit EventPath(Node&, Event* = nullptr);
 

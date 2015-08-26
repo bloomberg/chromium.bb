@@ -29,6 +29,7 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "public/platform/WebThread.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -137,6 +138,7 @@ public:
     DECLARE_TRACE();
 
     struct TypeStatistic {
+        STACK_ALLOCATED();
         size_t count;
         size_t size;
         size_t liveSize;
@@ -162,6 +164,7 @@ public:
     };
 
     struct Statistics {
+        STACK_ALLOCATED();
         TypeStatistic images;
         TypeStatistic cssStyleSheets;
         TypeStatistic scripts;

@@ -66,7 +66,7 @@ private:
 
 class EventQueueScope {
     WTF_MAKE_NONCOPYABLE(EventQueueScope);
-
+    STACK_ALLOCATED();
 public:
     EventQueueScope() { ScopedEventQueue::instance()->incrementScopingLevel(); }
     ~EventQueueScope() { ScopedEventQueue::instance()->decrementScopingLevel(); }

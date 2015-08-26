@@ -26,12 +26,14 @@
 #ifndef FetchInitiatorInfo_h
 #define FetchInitiatorInfo_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
 
 struct FetchInitiatorInfo {
+    DISALLOW_ALLOCATION();
     FetchInitiatorInfo()
         : name()
         , position(TextPosition::belowRangePosition())
@@ -48,6 +50,7 @@ struct FetchInitiatorInfo {
 
 // Encode AtomicString as String to cross threads.
 struct CrossThreadFetchInitiatorInfoData {
+    DISALLOW_ALLOCATION();
     explicit CrossThreadFetchInitiatorInfoData(const FetchInitiatorInfo& info)
         : name(info.name.string().isolatedCopy())
         , position(info.position)

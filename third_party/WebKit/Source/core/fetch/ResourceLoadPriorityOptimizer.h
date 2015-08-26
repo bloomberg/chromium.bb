@@ -42,6 +42,8 @@
 namespace blink {
 
 class ResourceLoadPriorityOptimizer {
+    WTF_MAKE_FAST_ALLOCATED(ResourceLoadPriorityOptimizer);
+    WTF_MAKE_NONCOPYABLE(ResourceLoadPriorityOptimizer);
 public:
     enum VisibilityStatus {
         NotVisible,

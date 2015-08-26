@@ -32,6 +32,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "public/platform/WebDataConsumerHandle.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -324,6 +325,7 @@ protected:
     bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client); }
 
     struct RedirectPair {
+        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         explicit RedirectPair(const ResourceRequest& request, const ResourceResponse& redirectResponse)
             : m_request(request)
@@ -421,6 +423,7 @@ private:
 };
 
 class ResourceFactory {
+    STACK_ALLOCATED();
 public:
     virtual Resource* create(const ResourceRequest&, const String&) const = 0;
     Resource::Type type() const { return m_type; }

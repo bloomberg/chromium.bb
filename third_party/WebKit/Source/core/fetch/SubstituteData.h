@@ -28,6 +28,7 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -39,6 +40,7 @@ enum SubstituteDataLoadPolicy {
 };
 
 class SubstituteData {
+    DISALLOW_ALLOCATION();
 public:
     SubstituteData()
         : m_substituteDataLoadPolicy(LoadNormally)

@@ -5,6 +5,7 @@
 #ifndef PointerIdManager_h
 #define PointerIdManager_h
 
+#include "wtf/Allocator.h"
 #include "wtf/ListHashSet.h"
 
 namespace blink {
@@ -13,6 +14,7 @@ namespace blink {
   Helper class for tracking the primary pointer id for each type of PointerEvents.
 */
 class PointerIdManager {
+    DISALLOW_ALLOCATION();
 public:
     // TODO(mustaq): Move this enum to PointerEvent.h? Change the spec to use enums?
     enum PointerType {

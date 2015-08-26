@@ -28,10 +28,12 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class CORE_EXPORT ResourcePtrBase {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     Resource* get() const { return m_resource; }
     bool operator!() const { return !m_resource; }

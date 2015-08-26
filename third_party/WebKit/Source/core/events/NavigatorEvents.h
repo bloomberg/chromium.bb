@@ -31,11 +31,14 @@
 #ifndef NavigatorEvents_h
 #define NavigatorEvents_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class Navigator;
 
 class NavigatorEvents {
+    STATIC_ONLY(NavigatorEvents);
 public:
     static long maxTouchPoints(Navigator&);
 };

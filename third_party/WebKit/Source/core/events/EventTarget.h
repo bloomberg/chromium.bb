@@ -39,6 +39,7 @@
 #include "core/EventTypeNames.h"
 #include "core/events/EventListenerMap.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -50,6 +51,7 @@ class MessagePort;
 class Node;
 
 struct FiringEventIterator {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     FiringEventIterator(const AtomicString& eventType, size_t& iterator, size_t& end)
         : eventType(eventType)
         , iterator(iterator)

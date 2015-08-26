@@ -6,6 +6,7 @@
 #define ClientHintsPreferences_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -13,6 +14,7 @@ namespace blink {
 class ResourceFetcher;
 
 class CORE_EXPORT ClientHintsPreferences {
+    DISALLOW_ALLOCATION();
 public:
     ClientHintsPreferences();
 

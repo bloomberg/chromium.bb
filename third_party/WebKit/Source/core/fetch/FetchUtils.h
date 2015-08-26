@@ -6,6 +6,7 @@
 #define FetchUtils_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -13,6 +14,7 @@ namespace blink {
 class HTTPHeaderMap;
 
 class CORE_EXPORT FetchUtils {
+    STATIC_ONLY(FetchUtils);
 public:
     static bool isSimpleMethod(const String& method);
     static bool isSimpleHeader(const AtomicString& name, const AtomicString& value);
@@ -23,9 +25,6 @@ public:
     static bool isForbiddenResponseHeaderName(const String& name);
     static bool isSimpleOrForbiddenRequest(const String& method, const HTTPHeaderMap&);
     static AtomicString normalizeMethod(const AtomicString& method);
-
-private:
-    FetchUtils(); // = delete;
 };
 
 } // namespace blink

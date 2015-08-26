@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceRequest.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 
@@ -44,6 +45,7 @@ class ResourceResponse;
 class SecurityOrigin;
 
 class CrossOriginAccessControl {
+    STATIC_ONLY(CrossOriginAccessControl);
 public:
     // Given the new request URL, returns true if
     // - the URL has a CORS supported scheme and

@@ -32,17 +32,20 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
 class SecurityOrigin;
 
 class CORE_EXPORT FetchRequest {
+    STACK_ALLOCATED();
 public:
     enum DeferOption { NoDefer, LazyLoad, DeferredByClient };
     enum OriginRestriction { UseDefaultOriginRestrictionForType, RestrictToSameOrigin, NoOriginRestriction };
 
     struct ResourceWidth {
+        DISALLOW_ALLOCATION();
         float width;
         bool isSet;
 
