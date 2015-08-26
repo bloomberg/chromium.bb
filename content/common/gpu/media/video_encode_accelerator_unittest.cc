@@ -183,8 +183,8 @@ static base::TimeDelta Percentile(
     const std::vector<base::TimeDelta>& sorted_values,
     unsigned int percentile) {
   size_t size = sorted_values.size();
-  CHECK_GT(size, 0UL);
-  CHECK_LE(percentile, 100UL);
+  LOG_ASSERT(size > 0UL);
+  LOG_ASSERT(percentile <= 100UL);
   // Use Nearest Rank method in http://en.wikipedia.org/wiki/Percentile.
   int index =
       std::max(static_cast<int>(ceil(0.01f * percentile * size)) - 1, 0);
@@ -251,12 +251,12 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   }
 
   base::MemoryMappedFile src_file;
-  CHECK(src_file.Initialize(base::FilePath(test_stream->in_filename)));
-  CHECK(base::CreateTemporaryFile(&test_stream->aligned_in_file));
+  LOG_ASSERT(src_file.Initialize(base::FilePath(test_stream->in_filename)));
+  LOG_ASSERT(base::CreateTemporaryFile(&test_stream->aligned_in_file));
 
   size_t visible_buffer_size = media::VideoFrame::AllocationSize(
       kInputFormat, test_stream->visible_size);
-  CHECK_EQ(src_file.length() % visible_buffer_size, 0U)
+  LOG_ASSERT(src_file.length() % visible_buffer_size == 0U)
       << "Stream byte size is not a product of calculated frame byte size";
 
   test_stream->num_frames = src_file.length() / visible_buffer_size;
@@ -265,7 +265,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
 
   // Create a temporary file with coded_size length.
   base::File dest_file(test_stream->aligned_in_file, flags);
-  CHECK_GT(test_stream->aligned_buffer_size, 0UL);
+  LOG_ASSERT(test_stream->aligned_buffer_size > 0UL);
   dest_file.SetLength(test_stream->aligned_buffer_size *
                       test_stream->num_frames);
 
@@ -277,26 +277,26 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
       ASSERT_EQ(dest_offset & 63, 0)
           << "Planes of frame should be mapped at a 64 byte boundary";
       for (size_t j = 0; j < visible_plane_rows[i]; j++) {
-        CHECK(WriteFile(&dest_file, dest_offset, src, visible_bpl[i]));
+        LOG_ASSERT(WriteFile(&dest_file, dest_offset, src, visible_bpl[i]));
         src += visible_bpl[i];
         dest_offset += coded_bpl[i];
       }
       dest_offset += padding_sizes[i];
     }
   }
-  CHECK(test_stream->mapped_aligned_in_file.Initialize(dest_file.Pass()));
+  LOG_ASSERT(test_stream->mapped_aligned_in_file.Initialize(dest_file.Pass()));
   // Assert that memory mapped of file starts at 64 byte boundary. So each
   // plane of frames also start at 64 byte boundary.
+
   ASSERT_EQ(
       reinterpret_cast<off_t>(test_stream->mapped_aligned_in_file.data()) & 63,
       0)
       << "File should be mapped at a 64 byte boundary";
 
-  CHECK_EQ(test_stream->mapped_aligned_in_file.length() %
-               test_stream->aligned_buffer_size,
-           0U)
+  LOG_ASSERT(test_stream->mapped_aligned_in_file.length() %
+               test_stream->aligned_buffer_size == 0U)
       << "Stream byte size is not a product of calculated frame byte size";
-  CHECK_GT(test_stream->num_frames, 0UL);
+  LOG_ASSERT(test_stream->num_frames > 0UL);
 }
 
 // Parse |data| into its constituent parts, set the various output fields
@@ -307,27 +307,30 @@ static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
   std::vector<base::FilePath::StringType> test_streams_data = base::SplitString(
       data, base::FilePath::StringType(1, ';'),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  CHECK_GE(test_streams_data.size(), 1U) << data;
+  LOG_ASSERT(test_streams_data.size() >= 1U) << data;
 
   // Parse each test stream data and read the input file.
   for (size_t index = 0; index < test_streams_data.size(); ++index) {
     std::vector<base::FilePath::StringType> fields = base::SplitString(
         test_streams_data[index], base::FilePath::StringType(1, ':'),
         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    CHECK_GE(fields.size(), 4U) << data;
-    CHECK_LE(fields.size(), 9U) << data;
+    LOG_ASSERT(fields.size() >= 4U) << data;
+    LOG_ASSERT(fields.size() <= 9U) << data;
     TestStream* test_stream = new TestStream();
 
     test_stream->in_filename = fields[0];
     int width, height;
-    CHECK(base::StringToInt(fields[1], &width));
-    CHECK(base::StringToInt(fields[2], &height));
+    bool result = base::StringToInt(fields[1], &width);
+    LOG_ASSERT(result);
+    result = base::StringToInt(fields[2], &height);
+    LOG_ASSERT(result);
     test_stream->visible_size = gfx::Size(width, height);
-    CHECK(!test_stream->visible_size.IsEmpty());
+    LOG_ASSERT(!test_stream->visible_size.IsEmpty());
     int profile;
-    CHECK(base::StringToInt(fields[3], &profile));
-    CHECK_GT(profile, media::VIDEO_CODEC_PROFILE_UNKNOWN);
-    CHECK_LE(profile, media::VIDEO_CODEC_PROFILE_MAX);
+    result = base::StringToInt(fields[3], &profile);
+    LOG_ASSERT(result);
+    LOG_ASSERT(profile > media::VIDEO_CODEC_PROFILE_UNKNOWN);
+    LOG_ASSERT(profile <= media::VIDEO_CODEC_PROFILE_MAX);
     test_stream->requested_profile =
         static_cast<media::VideoCodecProfile>(profile);
 
@@ -335,18 +338,20 @@ static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
       test_stream->out_filename = fields[4];
 
     if (fields.size() >= 6 && !fields[5].empty())
-      CHECK(base::StringToUint(fields[5], &test_stream->requested_bitrate));
+      LOG_ASSERT(base::StringToUint(fields[5],
+          &test_stream->requested_bitrate));
 
     if (fields.size() >= 7 && !fields[6].empty())
-      CHECK(base::StringToUint(fields[6], &test_stream->requested_framerate));
+      LOG_ASSERT(base::StringToUint(fields[6],
+          &test_stream->requested_framerate));
 
     if (fields.size() >= 8 && !fields[7].empty()) {
-      CHECK(base::StringToUint(fields[7],
+      LOG_ASSERT(base::StringToUint(fields[7],
                                &test_stream->requested_subsequent_bitrate));
     }
 
     if (fields.size() >= 9 && !fields[8].empty()) {
-      CHECK(base::StringToUint(fields[8],
+      LOG_ASSERT(base::StringToUint(fields[8],
                                &test_stream->requested_subsequent_framerate));
     }
     test_streams->push_back(test_stream);
@@ -375,7 +380,7 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
     if (!log_path_.empty()) {
       log_file_.reset(new base::File(
           log_path_, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE));
-      CHECK(log_file_->IsValid());
+      LOG_ASSERT(log_file_->IsValid());
     }
     ParseAndReadTestStreamData(*test_stream_data_, &test_streams_);
   }
@@ -786,18 +791,18 @@ VEAClient::VEAClient(TestStream* test_stream,
       requested_subsequent_bitrate_(0),
       requested_subsequent_framerate_(0) {
   if (keyframe_period_)
-    CHECK_LT(kMaxKeyframeDelay, keyframe_period_);
+    LOG_ASSERT(kMaxKeyframeDelay < keyframe_period_);
 
   // Fake encoder produces an invalid stream, so skip validating it.
   if (!g_fake_encoder) {
     validator_ = StreamValidator::Create(
         test_stream_->requested_profile,
         base::Bind(&VEAClient::HandleEncodedFrame, base::Unretained(this)));
-    CHECK(validator_);
+    LOG_ASSERT(validator_);
   }
 
   if (save_to_file_) {
-    CHECK(!test_stream_->out_filename.empty());
+    LOG_ASSERT(!test_stream_->out_filename.empty());
     base::FilePath out_filename(test_stream_->out_filename);
     // This creates or truncates out_filename.
     // Without it, AppendToFile() will not work.
@@ -810,7 +815,7 @@ VEAClient::VEAClient(TestStream* test_stream,
   thread_checker_.DetachFromThread();
 }
 
-VEAClient::~VEAClient() { CHECK(!has_encoder()); }
+VEAClient::~VEAClient() { LOG_ASSERT(!has_encoder()); }
 
 scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateFakeVEA() {
   scoped_ptr<media::VideoEncodeAccelerator> encoder;
@@ -843,7 +848,7 @@ scoped_ptr<media::VideoEncodeAccelerator> VEAClient::CreateVaapiVEA() {
 
 void VEAClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(!has_encoder());
+  LOG_ASSERT(!has_encoder());
 
   scoped_ptr<media::VideoEncodeAccelerator> encoders[] = {
     CreateFakeVEA(),
@@ -927,7 +932,7 @@ void VEAClient::UpdateTestStreamData(bool mid_stream_bitrate_switch,
 }
 
 double VEAClient::frames_per_second() {
-  CHECK_NE(num_encoded_frames_, 0UL);
+  LOG_ASSERT(num_encoded_frames_ != 0UL);
   base::TimeDelta duration = last_frame_ready_time_ - first_frame_start_time_;
   return num_encoded_frames_ / duration.InSecondsF();
 }
@@ -965,7 +970,7 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
 
   for (unsigned int i = 0; i < kNumOutputBuffers; ++i) {
     base::SharedMemory* shm = new base::SharedMemory();
-    CHECK(shm->CreateAndMapAnonymous(output_buffer_size_));
+    LOG_ASSERT(shm->CreateAndMapAnonymous(output_buffer_size_));
     output_shms_.push_back(shm);
     FeedEncoderWithOutput(shm);
   }
@@ -1038,8 +1043,8 @@ void VEAClient::SetStreamParameters(unsigned int bitrate,
                                     unsigned int framerate) {
   current_requested_bitrate_ = bitrate;
   current_framerate_ = framerate;
-  CHECK_GT(current_requested_bitrate_, 0UL);
-  CHECK_GT(current_framerate_, 0UL);
+  LOG_ASSERT(current_requested_bitrate_ > 0UL);
+  LOG_ASSERT(current_framerate_ > 0UL);
   encoder_->RequestEncodingParametersChange(current_requested_bitrate_,
                                             current_framerate_);
   DVLOG(1) << "Switched parameters to " << current_requested_bitrate_
@@ -1056,7 +1061,7 @@ void VEAClient::InputNoLongerNeededCallback(int32 input_id) {
 
 scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(off_t position,
                                                               int32* input_id) {
-  CHECK_LE(position + test_stream_->aligned_buffer_size,
+  LOG_ASSERT(position + test_stream_->aligned_buffer_size <=
            test_stream_->mapped_aligned_in_file.length());
 
   uint8* frame_data_y = const_cast<uint8*>(
@@ -1064,7 +1069,7 @@ scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(off_t position,
   uint8* frame_data_u = frame_data_y + test_stream_->aligned_plane_size[0];
   uint8* frame_data_v = frame_data_u + test_stream_->aligned_plane_size[1];
 
-  CHECK_GT(current_framerate_, 0U);
+  LOG_ASSERT(current_framerate_ > 0U);
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalYuvData(
           kInputFormat,
@@ -1086,7 +1091,7 @@ scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(off_t position,
                          base::Unretained(this),
                          next_input_id_)));
 
-  CHECK(inputs_at_client_.insert(next_input_id_).second);
+  LOG_ASSERT(inputs_at_client_.insert(next_input_id_).second);
 
   *input_id = next_input_id_++;
   return frame;
@@ -1133,7 +1138,7 @@ void VEAClient::FeedEncoderWithOneInput() {
   }
 
   if (g_env->needs_encode_latency()) {
-    CHECK_EQ(input_id, static_cast<int32>(encode_start_time_.size()));
+    LOG_ASSERT(input_id == static_cast<int32>(encode_start_time_.size()));
     encode_start_time_.push_back(base::TimeTicks::Now());
   }
   encoder_->Encode(video_frame, force_keyframe);
@@ -1147,26 +1152,26 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
     return;
 
   base::SharedMemoryHandle dup_handle;
-  CHECK(shm->ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
+  LOG_ASSERT(shm->ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
 
   media::BitstreamBuffer bitstream_buffer(
       next_output_buffer_id_++, dup_handle, output_buffer_size_);
-  CHECK(output_buffers_at_client_.insert(std::make_pair(bitstream_buffer.id(),
-                                                        shm)).second);
+  LOG_ASSERT(output_buffers_at_client_.insert(
+      std::make_pair(bitstream_buffer.id(), shm)).second);
   encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
 }
 
 bool VEAClient::HandleEncodedFrame(bool keyframe) {
   // This would be a bug in the test, which should not ignore false
   // return value from this method.
-  CHECK_LE(num_encoded_frames_, num_frames_to_encode_);
+  LOG_ASSERT(num_encoded_frames_ <= num_frames_to_encode_);
 
   last_frame_ready_time_ = base::TimeTicks::Now();
 
   if (g_env->needs_encode_latency()) {
-    CHECK_LT(num_encoded_frames_, encode_start_time_.size());
+    LOG_ASSERT(num_encoded_frames_ < encode_start_time_.size());
     base::TimeTicks start_time = encode_start_time_[num_encoded_frames_];
-    CHECK(!start_time.is_null());
+    LOG_ASSERT(!start_time.is_null());
     encode_latencies_.push_back(last_frame_ready_time_ - start_time);
   }
 
@@ -1239,8 +1244,8 @@ void VEAClient::VerifyMinFPS() {
 }
 
 void VEAClient::VerifyStreamProperties() {
-  CHECK_GT(num_frames_since_last_check_, 0UL);
-  CHECK_GT(encoded_stream_size_since_last_check_, 0UL);
+  LOG_ASSERT(num_frames_since_last_check_ > 0UL);
+  LOG_ASSERT(encoded_stream_size_since_last_check_ > 0UL);
   unsigned int bitrate = encoded_stream_size_since_last_check_ * 8 *
                          current_framerate_ / num_frames_since_last_check_;
   DVLOG(1) << "Current chunk's bitrate: " << bitrate
@@ -1438,7 +1443,7 @@ int main(int argc, char** argv) {
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  CHECK(logging::InitLogging(settings));
+  LOG_ASSERT(logging::InitLogging(settings));
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   DCHECK(cmd_line);
@@ -1463,7 +1468,7 @@ int main(int argc, char** argv) {
     }
     if (it->first == "num_frames_to_encode") {
       std::string input(it->second.begin(), it->second.end());
-      CHECK(base::StringToInt(input, &content::g_num_frames_to_encode));
+      LOG_ASSERT(base::StringToInt(input, &content::g_num_frames_to_encode));
       continue;
     }
     if (it->first == "measure_latency") {

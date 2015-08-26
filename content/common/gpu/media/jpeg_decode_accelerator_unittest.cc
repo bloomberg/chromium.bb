@@ -189,21 +189,21 @@ void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
   size_t input_size = image_file->data_str.size();
   if (!in_shm_.get() || input_size > in_shm_->mapped_size()) {
     in_shm_.reset(new base::SharedMemory);
-    CHECK(in_shm_->CreateAndMapAnonymous(input_size));
+    LOG_ASSERT(in_shm_->CreateAndMapAnonymous(input_size));
   }
   memcpy(in_shm_->memory(), image_file->data_str.data(), input_size);
 
   if (!hw_out_shm_.get() ||
       image_file->output_size > hw_out_shm_->mapped_size()) {
     hw_out_shm_.reset(new base::SharedMemory);
-    CHECK(hw_out_shm_->CreateAndMapAnonymous(image_file->output_size));
+    LOG_ASSERT(hw_out_shm_->CreateAndMapAnonymous(image_file->output_size));
   }
   memset(hw_out_shm_->memory(), 0, image_file->output_size);
 
   if (!sw_out_shm_.get() ||
       image_file->output_size > sw_out_shm_->mapped_size()) {
     sw_out_shm_.reset(new base::SharedMemory);
-    CHECK(sw_out_shm_->CreateAndMapAnonymous(image_file->output_size));
+    LOG_ASSERT(sw_out_shm_->CreateAndMapAnonymous(image_file->output_size));
   }
   memset(sw_out_shm_->memory(), 0, image_file->output_size);
 }
@@ -257,7 +257,7 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id) {
           hw_out_shm_->handle(),
           0,
           base::TimeDelta());
-  CHECK(out_frame_.get());
+  LOG_ASSERT(out_frame_.get());
   decoder_->Decode(bitstream_buffer, out_frame_);
 }
 
@@ -406,7 +406,7 @@ bool JpegDecodeAcceleratorTestEnvironment::CreateTestJpegImage(
     return false;
   }
 
-  CHECK(base::CreateTemporaryFile(filename));
+  LOG_ASSERT(base::CreateTemporaryFile(filename));
   EXPECT_TRUE(base::AppendToFile(
       *filename, reinterpret_cast<char*>(&encoded[0]), encoded.size()));
   return true;
@@ -443,7 +443,7 @@ class JpegDecodeAcceleratorTest : public ::testing::Test {
 };
 
 void JpegDecodeAcceleratorTest::TestDecode(size_t num_concurrent_decoders) {
-  CHECK(test_image_files_.size() == expected_status_.size());
+  LOG_ASSERT(test_image_files_.size() == expected_status_.size());
   base::Thread decoder_thread("DecoderThread");
   ASSERT_TRUE(decoder_thread.Start());
 
@@ -546,7 +546,7 @@ int main(int argc, char** argv) {
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  CHECK(logging::InitLogging(settings));
+  LOG_ASSERT(logging::InitLogging(settings));
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   DCHECK(cmd_line);
