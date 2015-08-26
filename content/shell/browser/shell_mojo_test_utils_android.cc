@@ -33,9 +33,10 @@ static void TearDownTestEnvironment(JNIEnv* env,
   delete reinterpret_cast<TestEnvironment*>(test_environment);
 }
 
-static jobject CreateServiceRegistryPair(JNIEnv* env,
-                                         jclass jcaller,
-                                         jlong native_test_environment) {
+static ScopedJavaLocalRef<jobject> CreateServiceRegistryPair(
+    JNIEnv* env,
+    jclass jcaller,
+    jlong native_test_environment) {
   TestEnvironment* test_environment =
       reinterpret_cast<TestEnvironment*>(native_test_environment);
 
@@ -60,7 +61,7 @@ static jobject CreateServiceRegistryPair(JNIEnv* env,
   test_environment->wrappers.push_back(wrapper_b);
 
   return Java_ShellMojoTestUtils_makePair(env, wrapper_a->GetObj().obj(),
-                                          wrapper_b->GetObj().obj()).Release();
+                                          wrapper_b->GetObj().obj());
 }
 
 static void RunLoop(JNIEnv* env, jclass jcaller, jlong timeout_ms) {

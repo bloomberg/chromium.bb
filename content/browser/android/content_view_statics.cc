@@ -96,12 +96,14 @@ base::LazyInstance<SuspendedProcessWatcher> g_suspended_processes_watcher =
 }  // namespace
 
 // Returns the first substring consisting of the address of a physical location.
-static jstring FindAddress(JNIEnv* env, jclass clazz, jstring addr) {
+static ScopedJavaLocalRef<jstring> FindAddress(JNIEnv* env,
+                                               jclass clazz,
+                                               jstring addr) {
   base::string16 content_16 = ConvertJavaStringToUTF16(env, addr);
   base::string16 result_16;
   if (content::address_parser::FindAddress(content_16, &result_16))
-    return ConvertUTF16ToJavaString(env, result_16).Release();
-  return NULL;
+    return ConvertUTF16ToJavaString(env, result_16);
+  return ScopedJavaLocalRef<jstring>();
 }
 
 static void SetWebKitSharedTimersSuspended(JNIEnv* env,

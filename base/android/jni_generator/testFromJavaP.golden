@@ -230,10 +230,9 @@ static jlong Java_InputStream_skip(JNIEnv* env, jobject obj, jlong p0) {
 }
 
 static base::subtle::AtomicWord g_InputStream_Constructor = 0;
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_InputStream_Constructor(JNIEnv* env) __attribute__ ((unused));
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_InputStream_Constructor(JNIEnv* env) {
+static ScopedJavaLocalRef<jobject> Java_InputStream_Constructor(JNIEnv* env)
+    __attribute__ ((unused));
+static ScopedJavaLocalRef<jobject> Java_InputStream_Constructor(JNIEnv* env) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, InputStream_clazz(env),
       InputStream_clazz(env), NULL);
@@ -249,7 +248,7 @@ static base::android::ScopedJavaLocalRef<jobject>
       env->NewObject(InputStream_clazz(env),
           method_id);
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 // Step 3: RegisterNatives.

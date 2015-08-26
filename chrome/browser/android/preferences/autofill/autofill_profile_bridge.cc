@@ -46,12 +46,12 @@ enum AddressField {
 
 } // namespace
 
-static jstring GetDefaultCountryCode(JNIEnv* env,
-                                    jclass clazz) {
+static ScopedJavaLocalRef<jstring> GetDefaultCountryCode(JNIEnv* env,
+                                                         jclass clazz) {
   std::string default_country_code =
       autofill::AutofillCountry::CountryCodeForLocale(
           g_browser_process->GetApplicationLocale());
-  return ConvertUTF8ToJavaString(env, default_country_code).Release();
+  return ConvertUTF8ToJavaString(env, default_country_code);
 }
 
 static void GetSupportedCountries(JNIEnv* env,
@@ -81,12 +81,13 @@ static void GetSupportedCountries(JNIEnv* env,
       j_country_name_list);
 }
 
-static jstring GetAddressUiComponents(JNIEnv* env,
-                                   jclass clazz,
-                                   jstring j_country_code,
-                                   jstring j_language_code,
-                                   jobject j_id_list,
-                                   jobject j_name_list) {
+static ScopedJavaLocalRef<jstring> GetAddressUiComponents(
+    JNIEnv* env,
+    jclass clazz,
+    jstring j_country_code,
+    jstring j_language_code,
+    jobject j_id_list,
+    jobject j_name_list) {
   std::string best_language_tag;
   std::vector<int> component_ids;
   std::vector<std::string> component_labels;
@@ -151,7 +152,7 @@ static jstring GetAddressUiComponents(JNIEnv* env,
                                                    env, component_labels).obj(),
                                                j_name_list);
 
-  return ConvertUTF8ToJavaString(env, best_language_tag).Release();
+  return ConvertUTF8ToJavaString(env, best_language_tag);
 }
 
 // static

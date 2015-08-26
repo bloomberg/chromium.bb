@@ -77,9 +77,9 @@ void SetDataReductionProxyEnabled(JNIEnv* env, jclass, jboolean enabled) {
 }
 
 // static
-jstring GetUnreachableWebDataUrl(JNIEnv* env, jclass) {
+ScopedJavaLocalRef<jstring> GetUnreachableWebDataUrl(JNIEnv* env, jclass) {
   return base::android::ConvertUTF8ToJavaString(
-             env, content::kUnreachableWebDataURL).Release();
+      env, content::kUnreachableWebDataURL);
 }
 
 // static
@@ -93,8 +93,8 @@ void SetLegacyCacheRemovalDelayForTest(JNIEnv*, jclass, jlong delay_ms) {
 }
 
 // static
-jstring GetProductVersion(JNIEnv* env, jclass) {
-  return base::android::ConvertUTF8ToJavaString(env, PRODUCT_VERSION).Release();
+ScopedJavaLocalRef<jstring> GetProductVersion(JNIEnv* env, jclass) {
+  return base::android::ConvertUTF8ToJavaString(env, PRODUCT_VERSION);
 }
 
 bool RegisterAwContentsStatics(JNIEnv* env) {

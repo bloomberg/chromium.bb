@@ -1463,19 +1463,17 @@ jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(view);
 }
 
-static jobject FromWebContentsAndroid(
-    JNIEnv* env,
-    jclass clazz,
-    jobject jweb_contents) {
+static ScopedJavaLocalRef<jobject>
+FromWebContentsAndroid(JNIEnv* env, jclass clazz, jobject jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   if (!web_contents)
-    return NULL;
+    return ScopedJavaLocalRef<jobject>();
 
   ContentViewCore* view = ContentViewCore::FromWebContents(web_contents);
   if (!view)
-    return NULL;
+    return ScopedJavaLocalRef<jobject>();
 
-  return view->GetJavaObject().Release();
+  return view->GetJavaObject();
 }
 
 bool RegisterContentViewCore(JNIEnv* env) {

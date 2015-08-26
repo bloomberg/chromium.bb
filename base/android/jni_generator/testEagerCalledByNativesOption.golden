@@ -60,12 +60,11 @@ static jdouble testMethodWithNoParam(JNIEnv* env) {
   return ret;
 }
 
-static base::android::ScopedJavaLocalRef<jstring>
-    testStaticMethodWithNoParam(JNIEnv* env) {
+static ScopedJavaLocalRef<jstring> testStaticMethodWithNoParam(JNIEnv* env) {
   jstring ret =
       static_cast<jstring>(env->CallStaticObjectMethod(Test_clazz(env),
       g_Test_testStaticMethodWithNoParam));
-  return base::android::ScopedJavaLocalRef<jstring>(env, ret);
+  return ScopedJavaLocalRef<jstring>(env, ret);
 }
 }  // namespace
 

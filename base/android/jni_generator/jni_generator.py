@@ -1067,12 +1067,18 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
       stub_visibility = 'extern "C" __attribute__((visibility("default")))\n'
     else:
       stub_visibility = 'static '
-    return_type = JavaDataTypeToC(native.return_type)
+    return_type = return_declaration = JavaDataTypeToC(native.return_type)
+    post_call = ''
+    if re.match(RE_SCOPED_JNI_RETURN_TYPES, return_type):
+      post_call = '.Release()'
+      return_declaration = 'ScopedJavaLocalRef<' + return_type + '>'
     values = {
         'RETURN': return_type,
+        'RETURN_DECLARATION': return_declaration,
         'NAME': native.name,
         'PARAMS': self.GetParamsInDeclaration(native),
         'PARAMS_IN_CALL': params_in_call,
+        'POST_CALL': post_call,
         'STUB_NAME': self.GetStubName(native),
         'STUB_VISIBILITY': stub_visibility,
     }
@@ -1081,14 +1087,10 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
       optional_error_return = JavaReturnValueToC(native.return_type)
       if optional_error_return:
         optional_error_return = ', ' + optional_error_return
-      post_call = ''
-      if re.match(RE_SCOPED_JNI_RETURN_TYPES, return_type):
-        post_call = '.Release()'
       values.update({
           'OPTIONAL_ERROR_RETURN': optional_error_return,
           'PARAM0_NAME': native.params[0].name,
           'P0_TYPE': native.p0_type,
-          'POST_CALL': post_call,
       })
       template = Template("""\
 ${STUB_VISIBILITY}${RETURN} ${STUB_NAME}(JNIEnv* env,
@@ -1100,10 +1102,10 @@ ${STUB_VISIBILITY}${RETURN} ${STUB_NAME}(JNIEnv* env,
 """)
     else:
       template = Template("""
-static ${RETURN} ${NAME}(JNIEnv* env, ${PARAMS});
+static ${RETURN_DECLARATION} ${NAME}(JNIEnv* env, ${PARAMS});
 
 ${STUB_VISIBILITY}${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS}) {
-  return ${NAME}(${PARAMS_IN_CALL});
+  return ${NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)
 
@@ -1151,7 +1153,7 @@ ${STUB_VISIBILITY}${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS}) {
       pre_call = ' ' + pre_call
       return_declaration = return_type + ' ret ='
       if re.match(RE_SCOPED_JNI_RETURN_TYPES, return_type):
-        return_type = 'base::android::ScopedJavaLocalRef<' + return_type + '>'
+        return_type = 'ScopedJavaLocalRef<' + return_type + '>'
         return_clause = 'return ' + return_type + '(env, ret);'
       else:
         return_clause = 'return ret;'

@@ -51,12 +51,12 @@ class WebContentsState {
       bool initially_hidden);
 
   // Restores a WebContents from the passed in state.
-  static jobject RestoreContentsFromByteBuffer(
-      JNIEnv* env,
-      jclass clazz,
-      jobject state,
-      jint saved_state_version,
-      jboolean initially_hidden);
+  static base::android::ScopedJavaLocalRef<jobject>
+  RestoreContentsFromByteBuffer(JNIEnv* env,
+                                jclass clazz,
+                                jobject state,
+                                jint saved_state_version,
+                                jboolean initially_hidden);
 
   // Synthesizes a stub, single-navigation state for a tab that will be loaded
   // lazily.

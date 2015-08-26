@@ -284,9 +284,9 @@ static jint GetErrorCode(JNIEnv* env,
   return REQUEST_ERROR_UNKNOWN;
 }
 
-static jstring GetErrorString(JNIEnv* env,
-                              jobject jcaller,
-                              jlong jurl_request_adapter) {
+static ScopedJavaLocalRef<jstring> GetErrorString(JNIEnv* env,
+                                                  jobject jcaller,
+                                                  jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
@@ -298,7 +298,7 @@ static jstring GetErrorString(JNIEnv* env,
            "System error: %s(%d)",
            error_string.c_str(),
            error_code);
-  return ConvertUTF8ToJavaString(env, buffer).Release();
+  return ConvertUTF8ToJavaString(env, buffer);
 }
 
 static jint GetHttpStatusCode(JNIEnv* env,
@@ -310,27 +310,25 @@ static jint GetHttpStatusCode(JNIEnv* env,
   return request_adapter->http_status_code();
 }
 
-static jstring GetHttpStatusText(JNIEnv* env,
-                                 jobject jcaller,
-                                 jlong jurl_request_adapter) {
+static ScopedJavaLocalRef<jstring>
+GetHttpStatusText(JNIEnv* env, jobject jcaller, jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
-  return ConvertUTF8ToJavaString(env, request_adapter->http_status_text())
-      .Release();
+  return ConvertUTF8ToJavaString(env, request_adapter->http_status_text());
 }
 
-static jstring GetContentType(JNIEnv* env,
-                              jobject jcaller,
-                              jlong jurl_request_adapter) {
+static ScopedJavaLocalRef<jstring> GetContentType(JNIEnv* env,
+                                                  jobject jcaller,
+                                                  jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
   std::string type = request_adapter->content_type();
   if (!type.empty()) {
-    return ConvertUTF8ToJavaString(env, type.c_str()).Release();
+    return ConvertUTF8ToJavaString(env, type.c_str());
   } else {
-    return NULL;
+    return ScopedJavaLocalRef<jstring>();
   }
 }
 
@@ -343,18 +341,18 @@ static jlong GetContentLength(JNIEnv* env,
   return request_adapter->content_length();
 }
 
-static jstring GetHeader(JNIEnv* env,
-                         jobject jcaller,
-                         jlong jurl_request_adapter,
-                         jstring jheader_name) {
+static ScopedJavaLocalRef<jstring> GetHeader(JNIEnv* env,
+                                             jobject jcaller,
+                                             jlong jurl_request_adapter,
+                                             jstring jheader_name) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
   std::string header_name = ConvertJavaStringToUTF8(env, jheader_name);
   std::string header_value = request_adapter->GetHeader(header_name);
   if (!header_value.empty())
-    return ConvertUTF8ToJavaString(env, header_value.c_str()).Release();
-  return NULL;
+    return ConvertUTF8ToJavaString(env, header_value.c_str());
+  return ScopedJavaLocalRef<jstring>();
 }
 
 static void GetAllHeaders(JNIEnv* env,
@@ -389,15 +387,16 @@ static void GetAllHeaders(JNIEnv* env,
                                                  NULL, status_line.obj());
 }
 
-static jstring GetNegotiatedProtocol(JNIEnv* env,
-                                     jobject jcaller,
-                                     jlong jurl_request_adapter) {
+static ScopedJavaLocalRef<jstring> GetNegotiatedProtocol(
+    JNIEnv* env,
+    jobject jcaller,
+    jlong jurl_request_adapter) {
   URLRequestAdapter* request_adapter =
       reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
   DCHECK(request_adapter);
 
   std::string negotiated_protocol = request_adapter->GetNegotiatedProtocol();
-  return ConvertUTF8ToJavaString(env, negotiated_protocol.c_str()).Release();
+  return ConvertUTF8ToJavaString(env, negotiated_protocol.c_str());
 }
 
 static jboolean GetWasCached(JNIEnv* env,

@@ -10,18 +10,16 @@
 
 namespace net {
 
-jstring GetOrigin(JNIEnv* env, jclass clazz, jstring url) {
+ScopedJavaLocalRef<jstring> GetOrigin(JNIEnv* env, jclass clazz, jstring url) {
   GURL host(base::android::ConvertJavaStringToUTF16(env, url));
 
-  return base::android::ConvertUTF8ToJavaString(env,
-      host.GetOrigin().spec()).Release();
+  return base::android::ConvertUTF8ToJavaString(env, host.GetOrigin().spec());
 }
 
-jstring GetScheme(JNIEnv* env, jclass clazz, jstring url) {
+ScopedJavaLocalRef<jstring> GetScheme(JNIEnv* env, jclass clazz, jstring url) {
   GURL host(base::android::ConvertJavaStringToUTF16(env, url));
 
-  return base::android::ConvertUTF8ToJavaString(env,
-      host.scheme()).Release();
+  return base::android::ConvertUTF8ToJavaString(env, host.scheme());
 }
 
 bool RegisterGURLUtils(JNIEnv* env) {

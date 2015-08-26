@@ -40,14 +40,15 @@ static jboolean HasSwitch(JNIEnv* env, jclass clazz, jstring jswitch) {
   return CommandLine::ForCurrentProcess()->HasSwitch(switch_string);
 }
 
-static jstring GetSwitchValue(JNIEnv* env, jclass clazz, jstring jswitch) {
+static ScopedJavaLocalRef<jstring> GetSwitchValue(JNIEnv* env,
+                                                  jclass clazz,
+                                                  jstring jswitch) {
   std::string switch_string(ConvertJavaStringToUTF8(env, jswitch));
   std::string value(CommandLine::ForCurrentProcess()->GetSwitchValueNative(
       switch_string));
   if (value.empty())
-    return 0;
-  // OK to release, JNI binding.
-  return ConvertUTF8ToJavaString(env, value).Release();
+    return ScopedJavaLocalRef<jstring>();
+  return ConvertUTF8ToJavaString(env, value);
 }
 
 static void AppendSwitch(JNIEnv* env, jclass clazz, jstring jswitch) {

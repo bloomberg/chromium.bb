@@ -40,9 +40,10 @@ void DistillAndView(JNIEnv* env,
   ::DistillAndView(source_web_contents, destination_web_contents);
 }
 
-jstring GetFormattedUrlFromOriginalDistillerUrl(JNIEnv* env,
-                                                jclass clazz,
-                                                jstring j_url) {
+ScopedJavaLocalRef<jstring> GetFormattedUrlFromOriginalDistillerUrl(
+    JNIEnv* env,
+    jclass clazz,
+    jstring j_url) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
   Profile* profile = ProfileManager::GetLastUsedProfile();
   std::string languages;  // Empty if Profile cannot be retrieved.
@@ -57,10 +58,9 @@ jstring GetFormattedUrlFromOriginalDistillerUrl(JNIEnv* env,
   // and pastes it into another program, that program may think the URL ends at
   // the space.
   return base::android::ConvertUTF16ToJavaString(
-             env, url_formatter::FormatUrl(
-                      url, languages, url_formatter::kFormatUrlOmitAll,
-                      net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr))
-      .Release();
+      env, url_formatter::FormatUrl(
+               url, languages, url_formatter::kFormatUrlOmitAll,
+               net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
 }
 
 }  // namespace android

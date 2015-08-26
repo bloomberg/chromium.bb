@@ -518,11 +518,12 @@ static jlong Init(JNIEnv* env, jobject obj, jobject jprofile) {
   return reinterpret_cast<intptr_t>(native_bridge);
 }
 
-static jstring QualifyPartialURLQuery(
-    JNIEnv* env, jclass clazz, jstring jquery) {
+static ScopedJavaLocalRef<jstring> QualifyPartialURLQuery(JNIEnv* env,
+                                                          jclass clazz,
+                                                          jstring jquery) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
-    return NULL;
+    return ScopedJavaLocalRef<jstring>();
   AutocompleteMatch match;
   base::string16 query_string(ConvertJavaStringToUTF16(env, jquery));
   AutocompleteClassifierFactory::GetForProfile(profile)->Classify(
@@ -533,16 +534,16 @@ static jstring QualifyPartialURLQuery(
       &match,
       NULL);
   if (!match.destination_url.is_valid())
-    return NULL;
+    return ScopedJavaLocalRef<jstring>();
 
   // Only return a URL if the match is a URL type.
   if (match.type != AutocompleteMatchType::URL_WHAT_YOU_TYPED &&
       match.type != AutocompleteMatchType::HISTORY_URL &&
       match.type != AutocompleteMatchType::NAVSUGGEST)
-    return NULL;
+    return ScopedJavaLocalRef<jstring>();
 
   // As we are returning to Java, it is fine to call Release().
-  return ConvertUTF8ToJavaString(env, match.destination_url.spec()).Release();
+  return ConvertUTF8ToJavaString(env, match.destination_url.spec());
 }
 
 static void PrefetchZeroSuggestResults(JNIEnv* env, jclass clazz) {

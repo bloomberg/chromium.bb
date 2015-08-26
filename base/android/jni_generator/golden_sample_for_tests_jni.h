@@ -87,12 +87,13 @@ static void
   return SetNonPODDatatype(env, jcaller, rect);
 }
 
-static jobject GetNonPODDatatype(JNIEnv* env, jobject jcaller);
+static ScopedJavaLocalRef<jobject> GetNonPODDatatype(JNIEnv* env, jobject
+    jcaller);
 
 static jobject
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetNonPODDatatype(JNIEnv*
     env, jobject jcaller) {
-  return GetNonPODDatatype(env, jcaller);
+  return GetNonPODDatatype(env, jcaller).Release();
 }
 
 static jint
@@ -243,8 +244,8 @@ static void Java_SampleForTests_methodThatThrowsException(JNIEnv* env, jobject
 }
 
 static base::subtle::AtomicWord g_InnerStructA_create = 0;
-static base::android::ScopedJavaLocalRef<jobject>
-    Java_InnerStructA_create(JNIEnv* env, jlong l,
+static ScopedJavaLocalRef<jobject> Java_InnerStructA_create(JNIEnv* env, jlong
+    l,
     JniIntWrapper i,
     jstring s) {
   /* Must call RegisterNativesImpl()  */
@@ -268,7 +269,7 @@ static base::android::ScopedJavaLocalRef<jobject>
       env->CallStaticObjectMethod(InnerStructA_clazz(env),
           method_id, l, as_jint(i), s);
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
+  return ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_SampleForTests_addStructA = 0;
@@ -342,8 +343,8 @@ static jlong Java_InnerStructB_getKey(JNIEnv* env, jobject obj) {
 }
 
 static base::subtle::AtomicWord g_InnerStructB_getValue = 0;
-static base::android::ScopedJavaLocalRef<jstring>
-    Java_InnerStructB_getValue(JNIEnv* env, jobject obj) {
+static ScopedJavaLocalRef<jstring> Java_InnerStructB_getValue(JNIEnv* env,
+    jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
       InnerStructB_clazz(env), NULL);
@@ -362,7 +363,7 @@ static base::android::ScopedJavaLocalRef<jstring>
       static_cast<jstring>(env->CallObjectMethod(obj,
           method_id));
   jni_generator::CheckException(env);
-  return base::android::ScopedJavaLocalRef<jstring>(env, ret);
+  return ScopedJavaLocalRef<jstring>(env, ret);
 }
 
 // Step 3: RegisterNatives.

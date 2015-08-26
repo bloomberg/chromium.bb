@@ -51,21 +51,20 @@ static void LoadNative(JNIEnv* env, jclass clazz, jobject context) {
   remoting::ChromotingJniRuntime::GetInstance();
 }
 
-static jstring GetApiKey(JNIEnv* env, jclass clazz) {
-  return ConvertUTF8ToJavaString(
-      env, google_apis::GetAPIKey().c_str()).Release();
+static ScopedJavaLocalRef<jstring> GetApiKey(JNIEnv* env, jclass clazz) {
+  return ConvertUTF8ToJavaString(env, google_apis::GetAPIKey().c_str());
 }
 
-static jstring GetClientId(JNIEnv* env, jclass clazz) {
+static ScopedJavaLocalRef<jstring> GetClientId(JNIEnv* env, jclass clazz) {
   return ConvertUTF8ToJavaString(
-      env, google_apis::GetOAuth2ClientID(
-          google_apis::CLIENT_REMOTING).c_str()).Release();
+      env,
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING).c_str());
 }
 
-static jstring GetClientSecret(JNIEnv* env, jclass clazz) {
+static ScopedJavaLocalRef<jstring> GetClientSecret(JNIEnv* env, jclass clazz) {
   return ConvertUTF8ToJavaString(
-      env, google_apis::GetOAuth2ClientSecret(
-          google_apis::CLIENT_REMOTING).c_str()).Release();
+      env,
+      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING).c_str());
 }
 
 static void Connect(JNIEnv* env,
