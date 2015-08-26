@@ -40,10 +40,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
-#include "chrome/browser/upgrade_detector_impl.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif
@@ -111,21 +107,6 @@ std::string GetPlatformString() {
 #else
 #error Unknown platform
 #endif
-}
-
-// Gets the version number to use for variations seed simulation. Must be called
-// on a thread where IO is allowed.
-base::Version GetVersionForSimulation() {
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
-  const base::Version installed_version =
-      UpgradeDetectorImpl::GetCurrentlyInstalledVersion();
-  if (installed_version.IsValid())
-    return installed_version;
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
-
-  // TODO(asvitkine): Get the version that will be used on restart instead of
-  // the current version on Android, iOS and ChromeOS.
-  return base::Version(version_info::GetVersionNumber());
 }
 
 // Gets the restrict parameter from |policy_pref_service| or from Chrome OS
@@ -532,9 +513,8 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
     return true;
 
   base::PostTaskAndReplyWithResult(
-      client_->GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&GetVersionForSimulation),
+      client_->GetBlockingPool(), FROM_HERE,
+      client_->GetVersionForSimulationCallback(),
       base::Bind(&VariationsService::PerformSimulationWithVersion,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&seed)));
   return true;

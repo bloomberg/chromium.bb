@@ -23,6 +23,8 @@ class ChromeVariationsServiceClient
   // chrome_variations::VariationsServiceClient:
   std::string GetApplicationLocale() override;
   base::SequencedWorkerPool* GetBlockingPool() override;
+  base::Callback<base::Version(void)> GetVersionForSimulationCallback()
+      override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   void OnInitialStartup() override;

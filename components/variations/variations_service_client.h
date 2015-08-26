@@ -7,6 +7,9 @@
 
 #include <string>
 
+#include "base/callback.h"
+#include "base/version.h"
+
 namespace base {
 class SequencedWorkerPool;
 }
@@ -33,6 +36,13 @@ class VariationsServiceClient {
   // Returns the SequencedWorkerPool on which the VariationsService should run
   // tasks that may block.
   virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
+
+  // Returns a callback that when run returns the base::Version to use for
+  // variations seed simulation. VariationsService guarantees that the callback
+  // will be run on the pool returned by
+  // VariationsServiceClient::GetBlockingPool().
+  virtual base::Callback<base::Version(void)>
+  GetVersionForSimulationCallback() = 0;
 
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual network_time::NetworkTimeTracker* GetNetworkTimeTracker() = 0;
