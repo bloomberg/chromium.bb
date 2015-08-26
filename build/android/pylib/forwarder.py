@@ -96,6 +96,12 @@ class Forwarder(object):
           else: raise
         if exit_code != 0:
           Forwarder._KillDeviceLocked(device, tool)
+          # Log alive forwarders
+          ps_out = device.RunShellCommand(['ps'])
+          logging.info('Currently running device_forwarders:')
+          for line in ps_out:
+            if 'device_forwarder' in line:
+              logging.info('    %s', line)
           raise Exception('%s exited with %d:\n%s' % (
               instance._host_forwarder_path, exit_code, '\n'.join(output)))
         tokens = output.split(':')
