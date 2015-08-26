@@ -155,8 +155,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Call these if/when we know the form submission worked or failed.
   // These routines are used to update internal statistics ("ActionsTaken").
-  void SubmitPassed();
-  void SubmitFailed();
+  void LogSubmitPassed();
+  void LogSubmitFailed();
 
   // When attempting to provisionally save |form|, call this to check if it is
   // actually a change-password form which should be ignored, i.e., whether:
@@ -182,6 +182,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
   }
 
   bool password_overridden() const { return password_overridden_; }
+
+  // Called if the user could generate a password for this form.
+  void MarkGenerationAvailable() { generation_available_ = true; }
 
   // Returns the pending credentials.
   const autofill::PasswordForm& pending_credentials() const {
@@ -404,6 +407,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Whether the saved password was overridden.
   bool password_overridden_;
+
+  // Whether the user can choose to generate a password for this form.
+  bool generation_available_;
 
   // Set if the user has selected one of the other possible usernames in
   // |pending_credentials_|.

@@ -1801,7 +1801,8 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   EXPECT_EQ(nullptr,
             render_thread_->sink().GetFirstMessageMatching(
                 AutofillHostMsg_ShowPasswordSuggestions::ID));
-  ExpectPasswordGenerationAvailable(password_generation_, true);
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordGenerationPopup::ID));
 }
 
 // Tests that a password change form is properly filled with the username and

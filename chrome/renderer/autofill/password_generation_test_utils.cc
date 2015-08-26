@@ -46,17 +46,4 @@ void SetAccountCreationFormsDetectedMessage(
   generation_agent->OnMessageReceived(msg);
 }
 
-void ExpectPasswordGenerationAvailable(
-    TestPasswordGenerationAgent* password_generation,
-    bool available) {
-  if (available) {
-    ASSERT_EQ(1u, password_generation->messages().size());
-    EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
-              password_generation->messages()[0]->type());
-  } else {
-    EXPECT_TRUE(password_generation->messages().empty());
-  }
-  password_generation->clear_messages();
-}
-
 }  // namespace autofill

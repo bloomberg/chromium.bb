@@ -132,6 +132,10 @@ class ChromePasswordManagerClient
                                 const gfx::RectF& bounds,
                                 const autofill::PasswordForm& form);
 
+  // Notify the PasswordManager that generation is available for |form|. Used
+  // for UMA stats.
+  void GenerationAvailableForForm(const autofill::PasswordForm& form);
+
   // Sends a message to the renderer with the current value of
   // |can_use_log_router_|.
   void NotifyRendererOfLoggingAvailability();

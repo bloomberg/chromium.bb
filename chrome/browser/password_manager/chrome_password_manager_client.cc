@@ -412,6 +412,8 @@ bool ChromePasswordManagerClient::OnMessageReceived(
     IPC_BEGIN_MESSAGE_MAP(ChromePasswordManagerClient, message)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_HidePasswordGenerationPopup,
                         HidePasswordGenerationPopup)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_GenerationAvailableForForm,
+                        GenerationAvailableForForm)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordAutofillAgentConstructed,
                         NotifyRendererOfLoggingAvailability)
     // Default:
@@ -458,6 +460,11 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
           driver_factory_->GetDriverForFrame(render_frame_host), observer_,
           web_contents(), web_contents()->GetNativeView());
   popup_controller_->Show(false /* display_password */);
+}
+
+void ChromePasswordManagerClient::GenerationAvailableForForm(
+    const autofill::PasswordForm& form) {
+  password_manager_.GenerationAvailableForForm(form);
 }
 
 void ChromePasswordManagerClient::NotifyRendererOfLoggingAvailability() {

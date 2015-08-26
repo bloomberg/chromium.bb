@@ -59,8 +59,15 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
   void ExpectGenerationAvailable(const char* element_id,
                                  bool available) {
     FocusField(element_id);
-    ExpectPasswordGenerationAvailable(password_generation_,
-                                      available);
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(
+            AutofillHostMsg_ShowPasswordGenerationPopup::ID);
+    if (available)
+      ASSERT_TRUE(message);
+    else
+      ASSERT_FALSE(message);
+
+    render_thread_->sink().ClearMessages();
   }
 
  private:
@@ -300,7 +307,7 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   EXPECT_EQ(edited_password, second_password_element.value());
 
   // Clear any uninteresting sent messages.
-  password_generation_->clear_messages();
+  render_thread_->sink().ClearMessages();
 
   // Verify that password mirroring works correctly even when the password
   // is deleted.
@@ -310,11 +317,10 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
 
   // Should have notified the browser that the password is no longer generated
   // and trigger generation again.
-  ASSERT_EQ(2u, password_generation_->messages().size());
-  EXPECT_EQ(AutofillHostMsg_PasswordNoLongerGenerated::ID,
-            password_generation_->messages()[0]->type());
-  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
-            password_generation_->messages()[1]->type());
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordNoLongerGenerated::ID));
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordGenerationPopup::ID));
 }
 
 TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
@@ -393,42 +399,39 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
       &first_password_element,
       std::string(password_generation_->kMaximumOfferSize - 1, 'a'));
   // There should now be a message to show the UI.
-  ASSERT_EQ(1u, password_generation_->messages().size());
-  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
-            password_generation_->messages()[0]->type());
-  password_generation_->clear_messages();
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordGenerationPopup::ID));
+  render_thread_->sink().ClearMessages();
 
   // Simulate a user typing a password just over maximum offer size.
   SimulateUserTypingASCIICharacter('a', false);
   SimulateUserTypingASCIICharacter('a', true);
   // There should now be a message to hide the UI.
-  ASSERT_EQ(1u, password_generation_->messages().size());
-  EXPECT_EQ(AutofillHostMsg_HidePasswordGenerationPopup::ID,
-            password_generation_->messages()[0]->type());
-  password_generation_->clear_messages();
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_HidePasswordGenerationPopup::ID));
+  render_thread_->sink().ClearMessages();
 
   // Simulate the user deleting characters. The generation popup should be shown
   // again.
   SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
   // There should now be a message to show the UI.
-  ASSERT_EQ(1u, password_generation_->messages().size());
-  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
-            password_generation_->messages()[0]->type());
-  password_generation_->clear_messages();
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordGenerationPopup::ID));
+  render_thread_->sink().ClearMessages();
 
   // Change focus. Bubble should be hidden, but that is handled by AutofilAgent,
   // so no messages are sent.
   ExecuteJavaScriptForTests("document.getElementById('username').focus();");
-  EXPECT_EQ(0u, password_generation_->messages().size());
-  password_generation_->clear_messages();
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordGenerationPopup::ID));
+  render_thread_->sink().ClearMessages();
 
   // Focusing the password field will bring up the generation UI again.
   ExecuteJavaScriptForTests(
       "document.getElementById('first_password').focus();");
-  ASSERT_EQ(1u, password_generation_->messages().size());
-  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
-            password_generation_->messages()[0]->type());
-  password_generation_->clear_messages();
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordGenerationPopup::ID));
+  render_thread_->sink().ClearMessages();
 
   // Loading a different page triggers UMA stat upload. Verify that only one
   // display event is sent even though
@@ -512,6 +515,7 @@ TEST_F(PasswordGenerationAgentTest, MessagesAfterAccountSignupFormFound) {
 
 // Losing focus should not trigger a password generation popup.
 TEST_F(PasswordGenerationAgentTest, BlurTest) {
+  render_thread_->sink().ClearMessages();
   LoadHTMLWithUserGesture(kDisabledElementAccountCreationFormHTML);
   SetNotBlacklistedMessage(password_generation_,
                            kDisabledElementAccountCreationFormHTML);
@@ -526,7 +530,10 @@ TEST_F(PasswordGenerationAgentTest, BlurTest) {
   // Remove focus from everywhere by clicking an unfocusable element: password
   // generation popup should not show up.
   EXPECT_TRUE(SimulateElementClick("disabled"));
-  EXPECT_EQ(0u, password_generation_->messages().size());
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_GenerationAvailableForForm::ID));
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordGenerationPopup::ID));
 }
 
 TEST_F(PasswordGenerationAgentTest, AutocompleteAttributesTest) {

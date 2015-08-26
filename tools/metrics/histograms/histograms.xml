@@ -29033,9 +29033,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PasswordGeneration.SubmissionEvent"
-    enum="PasswordGenerationSubmissionEvent">
+<histogram name="PasswordGeneration.SubmissionAvailableEvent"
+    enum="PasswordSubmissionEvent">
   <owner>gcasto@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    Measures the frequency of submission events for passwords that could have
+    been generated, but the user didn't choose to use the feature. This is to
+    compare with PasswordGeneration.SubmssionEvent.
+  </summary>
+</histogram>
+
+<histogram name="PasswordGeneration.SubmissionEvent"
+    enum="PasswordSubmissionEvent">
+  <owner>gcasto@chromium.org</owner>
+  <owner>vabr@chromium.org</owner>
   <summary>
     Measures the frequency of submission events for generated passwords. This is
     similar to PasswordManager.ActionsTakenWithPsl but only tracks events which
@@ -66556,14 +66568,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="Generation triggered by autocomplete attributes"/>
 </enum>
 
-<enum name="PasswordGenerationSubmissionEvent" type="int">
-  <int value="0" label="Generated password original submission succeeded"/>
-  <int value="1" label="Generated password original submission failed"/>
-  <int value="2" label="Generated password not submitted"/>
-  <int value="3" label="Generated password overridden by a non-generated one"/>
-  <int value="4" label="Generated password used"/>
-</enum>
-
 <enum name="PasswordManagerActionsTaken" type="int">
   <obsolete>
     Deprecated as of Chrome 32. See PasswordManagerActionsTakenWithPsl
@@ -67044,6 +67048,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="Auto-signin toast timeout"/>
   <int value="10" label="Auto-signin toast clicked"/>
   <int value="11" label="Clicked 'Google Smart Lock'"/>
+</enum>
+
+<enum name="PasswordSubmissionEvent" type="int">
+  <int value="0" label="Password submission succeeded"/>
+  <int value="1" label="Password submission failed"/>
+  <int value="2" label="Password not submitted"/>
+  <int value="3" label="Generated password overridden by a non-generated one"/>
+  <int value="4" label="Password used"/>
+  <int value="5" label="Generated password submission would have failed"/>
 </enum>
 
 <enum name="PasswordSyncState" type="int">

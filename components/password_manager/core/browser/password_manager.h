@@ -71,6 +71,8 @@ class PasswordManager : public LoginModel {
   void AddObserver(LoginModelObserver* observer) override;
   void RemoveObserver(LoginModelObserver* observer) override;
 
+  void GenerationAvailableForForm(const autofill::PasswordForm& form);
+
   // Update the state of generation for this form.
   void SetHasGeneratedPasswordForForm(
       password_manager::PasswordManagerDriver* driver,
@@ -165,6 +167,11 @@ class PasswordManager : public LoginModel {
   void CreatePendingLoginManagers(
       password_manager::PasswordManagerDriver* driver,
       const std::vector<autofill::PasswordForm>& forms);
+
+  // Returns the best match in |pending_login_managers_| for |form|. May return
+  // nullptr if no match exists.
+  PasswordFormManager* GetMatchingPendingManager(
+      const autofill::PasswordForm& form);
 
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.

@@ -85,6 +85,7 @@ PasswordFormManager::PasswordFormManager(
       is_new_login_(true),
       has_generated_password_(false),
       password_overridden_(false),
+      generation_available_(false),
       password_manager_(password_manager),
       preferred_match_(nullptr),
       is_ignorable_change_password_form_(false),
@@ -100,9 +101,14 @@ PasswordFormManager::PasswordFormManager(
 PasswordFormManager::~PasswordFormManager() {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.ActionsTakenV3", GetActionsTaken(), kMaxNumActionsTaken);
-  if (has_generated_password_ && submit_result_ == kSubmitResultNotSubmitted)
-    metrics_util::LogPasswordGenerationSubmissionEvent(
-        metrics_util::PASSWORD_NOT_SUBMITTED);
+  if (submit_result_ == kSubmitResultNotSubmitted) {
+    if (has_generated_password_)
+      metrics_util::LogPasswordGenerationSubmissionEvent(
+          metrics_util::PASSWORD_NOT_SUBMITTED);
+    else if (generation_available_)
+      metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
+          metrics_util::PASSWORD_NOT_SUBMITTED);
+  }
   if (form_type_ != kFormTypeUnspecified) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormType", form_type_,
                               kFormTypeMax);
@@ -997,18 +1003,28 @@ PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
              : best_password_match_it->second;
 }
 
-void PasswordFormManager::SubmitPassed() {
+void PasswordFormManager::LogSubmitPassed() {
+  if (submit_result_ != kSubmitResultFailed) {
+    if (has_generated_password_) {
+      metrics_util::LogPasswordGenerationSubmissionEvent(
+          metrics_util::PASSWORD_SUBMITTED);
+    } else if (generation_available_) {
+      metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
+          metrics_util::PASSWORD_SUBMITTED);
+    }
+  }
   submit_result_ = kSubmitResultPassed;
-  if (has_generated_password_)
-    metrics_util::LogPasswordGenerationSubmissionEvent(
-        metrics_util::PASSWORD_SUBMITTED);
 }
 
-void PasswordFormManager::SubmitFailed() {
-  submit_result_ = kSubmitResultFailed;
-  if (has_generated_password_)
+void PasswordFormManager::LogSubmitFailed() {
+  if (has_generated_password_) {
     metrics_util::LogPasswordGenerationSubmissionEvent(
+        metrics_util::GENERATED_PASSWORD_FORCE_SAVED);
+  } else if (generation_available_) {
+    metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
         metrics_util::PASSWORD_SUBMISSION_FAILED);
+  }
+  submit_result_ = kSubmitResultFailed;
 }
 
 void PasswordFormManager::WipeStoreCopyIfOutdated() {

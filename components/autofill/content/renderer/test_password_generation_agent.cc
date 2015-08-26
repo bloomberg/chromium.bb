@@ -24,9 +24,4 @@ bool TestPasswordGenerationAgent::ShouldAnalyzeDocument() const {
   return true;
 }
 
-bool TestPasswordGenerationAgent::Send(IPC::Message* message) {
-  messages_.push_back(message);
-  return true;
-}
-
 }  // namespace autofill

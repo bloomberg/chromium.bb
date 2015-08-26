@@ -86,6 +86,7 @@ enum PasswordSubmissionEvent {
   PASSWORD_NOT_SUBMITTED,
   PASSWORD_OVERRIDDEN,
   PASSWORD_USED,
+  GENERATED_PASSWORD_FORCE_SAVED,
   SUBMISSION_EVENT_ENUM_COUNT
 };
 
@@ -163,6 +164,10 @@ void LogPasswordSyncState(PasswordSyncState state);
 
 // Log submission events related to generation.
 void LogPasswordGenerationSubmissionEvent(PasswordSubmissionEvent event);
+
+// Log when password generation is available for a particular form.
+void LogPasswordGenerationAvailableSubmissionEvent(
+    PasswordSubmissionEvent event);
 
 // Log submission events related to password update.
 void LogUpdatePasswordSubmissionEvent(UpdatePasswordSubmissionEvent event);
