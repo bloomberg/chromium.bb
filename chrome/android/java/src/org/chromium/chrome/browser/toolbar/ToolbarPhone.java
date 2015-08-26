@@ -32,6 +32,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
@@ -104,12 +105,18 @@ public class ToolbarPhone extends ToolbarLayout
 
     private final List<View> mTabSwitcherModeViews = new ArrayList<View>();
     private final Set<View> mBrowsingModeViews = new HashSet<View>();
+    @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mInTabSwitcherMode;
+
     // This determines whether or not the toolbar draws as expected (false) or whether it always
     // draws as if it's showing the non-tabswitcher, non-animating toolbar. This is used in grabbing
     // a bitmap to use as a texture representation of this view.
+    @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mTextureCaptureMode;
+
+    @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mAnimateNormalToolbar;
+    @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mDelayingTabSwitcherAnimation;
 
     private ColorDrawable mTabSwitcherAnimationBgOverlay;
@@ -118,20 +125,28 @@ public class ToolbarPhone extends ToolbarLayout
     // Value that determines the amount of transition from the normal toolbar mode to TabSwitcher
     // mode.  0 = entirely in normal mode and 1.0 = entirely in TabSwitcher mode.  In between values
     // can be used for animating between the two view modes.
+    @ViewDebug.ExportedProperty(category = "chrome")
     private float mTabSwitcherModePercent = 0;
+    @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mUIAnimatingTabSwitcherTransition;
 
     // Used to clip the toolbar during the fade transition into and out of TabSwitcher mode.  Only
     // used when |mAnimateNormalToolbar| is false.
+    @ViewDebug.ExportedProperty(category = "chrome")
     private Rect mClipRect;
 
     private OnClickListener mTabSwitcherListener;
     private OnClickListener mNewTabListener;
 
+    @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mUrlFocusChangeInProgress;
+
     /** 1.0 is 100% focused, 0 is completely unfocused */
+    @ViewDebug.ExportedProperty(category = "chrome")
     private float mUrlFocusChangePercent;
+
     /** 1.0 is 100% expanded to full width, 0 is original collapsed size. */
+    @ViewDebug.ExportedProperty(category = "chrome")
     private float mUrlExpansionPercent;
     private AnimatorSet mUrlFocusLayoutAnimator;
     private boolean mDisableLocationBarRelayout;
