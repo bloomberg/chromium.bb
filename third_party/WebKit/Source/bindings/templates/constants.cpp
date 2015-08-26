@@ -60,12 +60,12 @@ static_assert({{constant.value}} == {{constant_cpp_class}}::{{constant.reflected
 {######################################}
 {%- macro constant_configuration(constant) %}
 {% if constant.idl_type in ('Double', 'Float') %}
-    {% set value = '%sf' % constant.value %}
+    {% set value = '0, %s, 0' % constant.value %}
 {% elif constant.idl_type == 'String' %}
-    {% set value = '"%s"' % constant.value %}
+    {% set value = '0, 0, "%s"' % constant.value %}
 {% else %}
     {# 'Short', 'Long' etc. #}
-    {% set value = '%s' % constant.value %}
+    {% set value = '%s, 0, 0' % constant.value %}
 {% endif %}
 {"{{constant.name}}", {{value}}, V8DOMConfiguration::ConstantType{{constant.idl_type}}}
 {%- endmacro %}

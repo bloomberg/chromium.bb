@@ -12925,34 +12925,34 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorConfiguration);
     }
     static const V8DOMConfiguration::ConstantConfiguration V8TestObjectConstants[] = {
-        {"CONST_VALUE_0", 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_1", 1, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_2", 2, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_4", 4, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_8", 8, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_9", -1, V8DOMConfiguration::ConstantTypeShort},
-        {"CONST_VALUE_10", "my constant string", V8DOMConfiguration::ConstantTypeString},
-        {"CONST_VALUE_11", 0xffffffff, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_12", 0x01, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_13", 0X20, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_14", 0x1abc, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_15", 010, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_16", -010, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_16", -0x1A, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_17", -0X1a, V8DOMConfiguration::ConstantTypeUnsignedShort},
-        {"CONST_VALUE_18", 0.123f, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_19", 4e9f, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_20", 3.4e5f, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_21", -1.3f, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_22", -4e-9f, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_23", .123f, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_24", 5E+4f, V8DOMConfiguration::ConstantTypeDouble},
-        {"CONST_VALUE_25", 1f, V8DOMConfiguration::ConstantTypeFloat},
-        {"CONST_JAVASCRIPT", 1, V8DOMConfiguration::ConstantTypeShort},
+        {"CONST_VALUE_0", 0, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_1", 1, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_2", 2, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_4", 4, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_8", 8, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_9", -1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
+        {"CONST_VALUE_10", 0, 0, "my constant string", V8DOMConfiguration::ConstantTypeString},
+        {"CONST_VALUE_11", 0xffffffff, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_12", 0x01, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_13", 0X20, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_14", 0x1abc, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_15", 010, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_16", -010, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_16", -0x1A, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_17", -0X1a, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+        {"CONST_VALUE_18", 0, 0.123, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_19", 0, 4e9, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_20", 0, 3.4e5, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_21", 0, -1.3, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_22", 0, -4e-9, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_23", 0, .123, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_24", 0, 5E+4, 0, V8DOMConfiguration::ConstantTypeDouble},
+        {"CONST_VALUE_25", 0, 1, 0, V8DOMConfiguration::ConstantTypeFloat},
+        {"CONST_JAVASCRIPT", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
     };
     V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, V8TestObjectConstants, WTF_ARRAY_LENGTH(V8TestObjectConstants));
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", 1, V8DOMConfiguration::ConstantTypeShort};
+        static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort};
         V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, constantConfiguration);
     }
     V8DOMConfiguration::installConstantWithGetter(isolate, functionTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", TestObjectV8Internal::DEPRECATED_CONSTANTConstantGetterCallback);
