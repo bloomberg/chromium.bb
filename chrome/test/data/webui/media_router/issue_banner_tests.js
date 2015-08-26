@@ -57,11 +57,10 @@ cr.define('issue_banner', function() {
         assertEquals(expected.trim(), banner.$[elementId].textContent.trim());
       };
 
-      // Checks whether |issue| message are equal with the message text in the
-      // UI.
+      // Checks whether |issue| title are equal with the title text in the UI.
       var checkIssueText = function(issue) {
         if (issue) {
-          checkElementText(issue.message, 'message');
+          checkElementText(issue.title, 'title');
 
           checkElementText(loadTimeData.getString(
               banner.issueActionTypeToButtonTextResource_[
@@ -73,7 +72,7 @@ cr.define('issue_banner', function() {
                     issue.secondaryActionType]), 'opt-button');
           }
         } else {
-          checkElementText('', 'message');
+          checkElementText('', 'title');
           checkElementText('', 'default-button');
           checkElementText('', 'opt-button');
         }
@@ -167,17 +166,16 @@ cr.define('issue_banner', function() {
       // Tests the issue text. While the UI will show only the blocking or
       // non-blocking interface, the issue's info will be set if specified.
       test('issue text', function() {
-        // |issue| is null. Title and message text should be empty.
+        // |issue| is null. Title text should be empty.
         assertEquals(null, banner.issue);
         checkIssueText(banner.issue);
 
-        // Set |issue| to be a blocking issue. Title and message text should
-        // be updated.
+        // Set |issue| to be a blocking issue. Title text should be updated.
         banner.issue = fakeBlockingIssueOne;
         checkIssueText(banner.issue);
 
-        // Set |issue| to be a non-blocking issue. Title and message text
-        // should be updated.
+        // Set |issue| to be a non-blocking issue. Title text should be
+        // updated.
         banner.issue = fakeNonBlockingIssueOne;
         checkIssueText(banner.issue);
       });

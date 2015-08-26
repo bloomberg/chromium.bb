@@ -10,7 +10,7 @@
   text-align: center;
 }
 
-.blocking > div > #message {
+.blocking > div > #title {
   color: rgb(150, 150, 150);
   line-height: 1.125em;
   padding: 10px;
@@ -37,7 +37,7 @@
   width: 100%;
 }
 
-.non-blocking > div > #message {
+.non-blocking > div > #title {
   color: white;
   padding: 6px 6px 20px 6px;
 }
