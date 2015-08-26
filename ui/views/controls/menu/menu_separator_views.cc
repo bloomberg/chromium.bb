@@ -60,7 +60,10 @@ gfx::Rect MenuSeparator::GetPaintBounds() {
       break;
   }
 
-  return gfx::Rect(0, pos, width(), kSeparatorHeight);
+  gfx::Rect paint_rect(0, pos, width(), kSeparatorHeight);
+  if (parent_menu_item_->GetMenuConfig().use_outer_border)
+    paint_rect.Inset(1, 0);
+  return paint_rect;
 }
 
 void MenuSeparator::OnPaintAura(gfx::Canvas* canvas) {
