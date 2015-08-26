@@ -241,8 +241,9 @@ base::TimeDelta WebMClusterParser::ReadOpusDuration(const uint8_t* data,
     // things go sideways.
     LIMITED_MEDIA_LOG(DEBUG, media_log_, num_duration_errors_,
                       kMaxDurationErrorLogs)
-        << "Warning, demuxed Opus packet with encoded duration: " << duration
-        << ". Should be no greater than " << kPacketDurationMax;
+        << "Warning, demuxed Opus packet with encoded duration: "
+        << duration.InMilliseconds() << "ms. Should be no greater than "
+        << kPacketDurationMax.InMilliseconds() << "ms.";
   }
 
   return duration;
@@ -561,10 +562,9 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
       if (duration_difference.magnitude() > kWarnDurationDiff) {
         LIMITED_MEDIA_LOG(DEBUG, media_log_, num_duration_errors_,
                           kMaxDurationErrorLogs)
-            << "BlockDuration "
-            << "(" << block_duration_time_delta << ") "
-            << "differs significantly from encoded duration "
-            << "(" << encoded_duration << ").";
+            << "BlockDuration (" << block_duration_time_delta.InMilliseconds()
+            << "ms) differs significantly from encoded duration ("
+            << encoded_duration.InMilliseconds() << "ms).";
       }
     }
   } else if (block_duration_time_delta != kNoTimestamp()) {
@@ -693,10 +693,11 @@ void WebMClusterParser::Track::ApplyDurationEstimateIfNeeded() {
 
   LIMITED_MEDIA_LOG(INFO, media_log_, num_duration_estimates_,
                     kMaxDurationEstimateLogs)
-      << "Estimating WebM block duration to be " << estimated_duration << " "
-      << "for the last (Simple)Block in the Cluster for this Track. Use "
-      << "BlockGroups with BlockDurations at the end of each Track in a "
-      << "Cluster to avoid estimation.";
+      << "Estimating WebM block duration to be "
+      << estimated_duration.InMilliseconds()
+      << "ms for the last (Simple)Block in the Cluster for this Track. Use "
+         "BlockGroups with BlockDurations at the end of each Track in a "
+         "Cluster to avoid estimation.";
 
   DVLOG(2) << __FUNCTION__ << " new dur : ts "
            << last_added_buffer_missing_duration_->timestamp().InSecondsF()

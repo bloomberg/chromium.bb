@@ -2,18 +2,56 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "media/formats/webm/webm_constants.h"
 #include "media/formats/webm/webm_content_encodings_client.h"
+
+#include <string>
+
+#include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
+#include "media/base/mock_media_log.h"
+#include "media/formats/webm/webm_constants.h"
 #include "media/formats/webm/webm_parser.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::StrictMock;
+
 namespace media {
+
+// Matchers for verifying common media log entry strings.
+MATCHER(MissingContentEncoding, "") {
+  return CONTAINS_STRING(arg, "Missing ContentEncoding.");
+}
+
+MATCHER(UnexpectedContentEncodingOrder, "") {
+  return CONTAINS_STRING(arg, "Unexpected ContentEncodingOrder.");
+}
+
+MATCHER(UnexpectedContentEncodingScope, "") {
+  return CONTAINS_STRING(arg, "Unexpected ContentEncodingScope.");
+}
+
+MATCHER(ContentCompressionNotSupported, "") {
+  return CONTAINS_STRING(arg, "ContentCompression not supported.");
+}
+
+MATCHER(MissingContentEncryption, "") {
+  return CONTAINS_STRING(
+      arg,
+      "ContentEncodingType is encryption but ContentEncryption is missing.");
+}
+
+MATCHER_P(UnexpectedContentEncAlgo, algo, "") {
+  return CONTAINS_STRING(
+      arg, "Unexpected ContentEncAlgo " + base::IntToString(algo) + ".");
+}
 
 class WebMContentEncodingsClientTest : public testing::Test {
  public:
   WebMContentEncodingsClientTest()
-      : client_(new MediaLog()), parser_(kWebMIdContentEncodings, &client_) {}
+      : media_log_(new StrictMock<MockMediaLog>()),
+        client_(media_log_),
+        parser_(kWebMIdContentEncodings, &client_) {}
 
   void ParseAndExpectToFail(const uint8* buf, int size) {
     int result = parser_.Parse(buf, size);
@@ -21,6 +59,7 @@ class WebMContentEncodingsClientTest : public testing::Test {
   }
 
  protected:
+  scoped_refptr<StrictMock<MockMediaLog>> media_log_;
   WebMContentEncodingsClient client_;
   WebMListParser parser_;
 };
@@ -30,6 +69,7 @@ TEST_F(WebMContentEncodingsClientTest, EmptyContentEncodings) {
     0x6D, 0x80, 0x80,  // ContentEncodings (size = 0)
   };
   int size = sizeof(kContentEncodings);
+  EXPECT_MEDIA_LOG(MissingContentEncoding());
   ParseAndExpectToFail(kContentEncodings, size);
 }
 
@@ -182,6 +222,7 @@ TEST_F(WebMContentEncodingsClientTest, InvalidContentEncodingOrder) {
     0x50, 0x35, 0x80,        //     ContentEncryption (size = 0)
   };
   int size = sizeof(kContentEncodings);
+  EXPECT_MEDIA_LOG(UnexpectedContentEncodingOrder());
   ParseAndExpectToFail(kContentEncodings, size);
 }
 
@@ -194,6 +235,7 @@ TEST_F(WebMContentEncodingsClientTest, InvalidContentEncodingScope) {
     0x50, 0x35, 0x80,        //     ContentEncryption (size = 0)
   };
   int size = sizeof(kContentEncodings);
+  EXPECT_MEDIA_LOG(UnexpectedContentEncodingScope());
   ParseAndExpectToFail(kContentEncodings, size);
 }
 
@@ -205,6 +247,7 @@ TEST_F(WebMContentEncodingsClientTest, InvalidContentEncodingType) {
     0x50, 0x35, 0x80,        //     ContentEncryption (size = 0)
   };
   int size = sizeof(kContentEncodings);
+  EXPECT_MEDIA_LOG(ContentCompressionNotSupported());
   ParseAndExpectToFail(kContentEncodings, size);
 }
 
@@ -217,6 +260,7 @@ TEST_F(WebMContentEncodingsClientTest, MissingContentEncryption) {
                              //     ContentEncryption missing
   };
   int size = sizeof(kContentEncodings);
+  EXPECT_MEDIA_LOG(MissingContentEncryption());
   ParseAndExpectToFail(kContentEncodings, size);
 }
 
@@ -231,6 +275,7 @@ TEST_F(WebMContentEncodingsClientTest, InvalidContentEncAlgo) {
     0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
   };
   int size = sizeof(kContentEncodings);
+  EXPECT_MEDIA_LOG(UnexpectedContentEncAlgo(0xEE));
   ParseAndExpectToFail(kContentEncodings, size);
 }
 
