@@ -10,7 +10,6 @@
 
 namespace blink {
 
-class AffineTransform;
 class GraphicsContext;
 class LayoutObject;
 class LayoutSVGResourceClipper;
@@ -28,13 +27,8 @@ public:
     // FIXME: Filters are also stateful resources that could benefit from having their state managed
     //        on the caller stack instead of the current hashmap. We should look at refactoring these
     //        into a general interface that can be shared.
-    bool applyStatefulResource(const LayoutObject&, GraphicsContext*, ClipperState&);
-    void postApplyStatefulResource(const LayoutObject&, GraphicsContext*, ClipperState&);
-
-    // clipPath can be clipped too, but don't have a boundingBox or paintInvalidationRect. So we can't call
-    // applyResource directly and use the rects from the object, since they are empty for LayoutSVGResources
-    // FIXME: We made applyClippingToContext public because we cannot call applyResource on HTML elements (it asserts on LayoutObject::objectBoundingBox)
-    bool applyClippingToContext(const LayoutObject&, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperState&);
+    bool prepareEffect(const LayoutObject&, const FloatRect&, const FloatRect&, GraphicsContext*, ClipperState&);
+    void finishEffect(const LayoutObject&, GraphicsContext*, ClipperState&);
 
 private:
     void drawClipMaskContent(GraphicsContext*, const LayoutObject&, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect);
