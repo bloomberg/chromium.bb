@@ -336,8 +336,9 @@ Profile* ManagePasswordsBubbleModel::GetProfile() const {
 }
 
 bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
-  return state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
-         local_credentials_.size() > 1 && !password_overridden_;
+  ManagePasswordsUIController* controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
+  return controller->ShouldShowMultipleAccountUpdateUI();
 }
 
 // static
