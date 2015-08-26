@@ -264,8 +264,13 @@ class DownloadItemView : public views::ButtonListener,
   // Mode of the download item view.
   Mode mode_;
 
-  // When download progress began animating. Used for downloads of unknown size.
+  // When download progress last began animating (pausing and resuming will
+  // update this). Used for downloads of unknown size.
   base::TimeTicks progress_start_time_;
+
+  // Keeps the amount of time spent already animating. Used to keep track of
+  // total active time for downloads of unknown size.
+  base::TimeDelta previous_progress_elapsed_;
 
   // The left and right x coordinates of the drop-down button.
   int drop_down_x_left_;

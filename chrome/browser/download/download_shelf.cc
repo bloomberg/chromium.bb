@@ -74,7 +74,7 @@ DownloadShelf::~DownloadShelf() {}
 void DownloadShelf::PaintDownloadProgress(
     gfx::Canvas* canvas,
     const ui::ThemeProvider& theme_provider,
-    const base::TimeTicks& progress_start_time,
+    const base::TimeDelta& progress_time,
     int percent_done) {
   // Draw background (light blue circle).
   SkPaint bg_paint;
@@ -97,8 +97,7 @@ void DownloadShelf::PaintDownloadProgress(
     // For unknown size downloads, draw a 50 degree sweep that moves at
     // 0.08 degrees per millisecond.
     sweep_angle = 50.f;
-    start_pos += static_cast<SkScalar>(
-        (base::TimeTicks::Now() - progress_start_time).InMilliseconds() * 0.08);
+    start_pos += static_cast<SkScalar>(progress_time.InMilliseconds() * 0.08);
   } else if (percent_done > 0) {
     sweep_angle = static_cast<SkScalar>(360 * percent_done / 100.0);
   }
@@ -126,7 +125,7 @@ void DownloadShelf::PaintDownloadComplete(
   // Start at full opacity, then loop back and forth five times before ending
   // at zero opacity.
   canvas->sk_canvas()->saveLayerAlpha(nullptr, GetOpacity(animation_progress));
-  PaintDownloadProgress(canvas, theme_provider, base::TimeTicks(), 100);
+  PaintDownloadProgress(canvas, theme_provider, base::TimeDelta(), 100);
   canvas->sk_canvas()->restore();
 }
 

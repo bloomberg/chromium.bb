@@ -577,7 +577,7 @@ using content::DownloadItem;
     } else if (percentDone_ >= 0 || indeterminateProgressTimer_) {
       DownloadShelf::PaintDownloadProgress(
           &canvas, *themeProvider,
-          progressStartTime_, percentDone_);
+          base::TimeTicks::Now() - progressStartTime_, percentDone_);
     }
   }
 

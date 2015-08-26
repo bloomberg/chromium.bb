@@ -243,6 +243,10 @@ void DownloadItemView::StartDownloadProgress() {
 }
 
 void DownloadItemView::StopDownloadProgress() {
+  if (!progress_timer_.IsRunning())
+    return;
+  previous_progress_elapsed_ += base::TimeTicks::Now() - progress_start_time_;
+  progress_start_time_ = base::TimeTicks();
   progress_timer_.Stop();
 }
 
@@ -859,8 +863,11 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
             gfx::Vector2d(width() - DownloadShelf::kProgressIndicatorSize, 0));
 
       if (state == DownloadItem::IN_PROGRESS) {
+        base::TimeDelta progress_time = previous_progress_elapsed_;
+        if (!download()->IsPaused())
+          progress_time += base::TimeTicks::Now() - progress_start_time_;
         DownloadShelf::PaintDownloadProgress(canvas, *GetThemeProvider(),
-                                             progress_start_time_,
+                                             progress_time,
                                              model_.PercentComplete());
       } else if (complete_animation_.get() &&
                  complete_animation_->is_animating()) {
