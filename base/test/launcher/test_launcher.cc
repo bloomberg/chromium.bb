@@ -456,6 +456,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       test_broken_count_(0),
       retry_count_(0),
       retry_limit_(0),
+      force_run_broken_tests_(false),
       run_result_(true),
       watchdog_timer_(FROM_HERE,
                       TimeDelta::FromSeconds(kOutputTimeoutSeconds),
@@ -619,7 +620,7 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
   }
   size_t broken_threshold =
       std::max(static_cast<size_t>(20), test_started_count_ / 10);
-  if (test_broken_count_ >= broken_threshold) {
+  if (!force_run_broken_tests_ && test_broken_count_ >= broken_threshold) {
     fprintf(stdout, "Too many badly broken tests (%" PRIuS "), exiting now.\n",
             test_broken_count_);
     fflush(stdout);
@@ -754,6 +755,9 @@ bool TestLauncher::Init() {
     // in bot mode.
     retry_limit_ = 3;
   }
+
+  if (command_line->HasSwitch(switches::kTestLauncherForceRunBrokenTests))
+    force_run_broken_tests_ = true;
 
   if (command_line->HasSwitch(switches::kTestLauncherJobs)) {
     int jobs = -1;
