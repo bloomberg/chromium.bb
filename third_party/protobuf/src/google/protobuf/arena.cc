@@ -45,10 +45,23 @@ Arena::ThreadCache& Arena::thread_cache() {
   return *thread_cache_->Get();
 }
 #elif defined(PROTOBUF_USE_DLLS)
+
+#if defined(__clang__) && defined(_MSC_VER)
+// TODO(hans): Remove once crbug.com/525131 is resolved.
+Arena::ThreadCache& Arena::NonExport::thread_cache() {
+  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = { -1, NULL };
+  return thread_cache_;
+}
+Arena::ThreadCache& Arena::thread_cache() {
+  return NonExport::thread_cache();
+}
+#else
 Arena::ThreadCache& Arena::thread_cache() {
   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = { -1, NULL };
   return thread_cache_;
 }
+#endif
+
 #else
 GOOGLE_THREAD_LOCAL Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };
 #endif

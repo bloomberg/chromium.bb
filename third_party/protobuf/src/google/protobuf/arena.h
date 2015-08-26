@@ -542,6 +542,14 @@ class LIBPROTOBUF_EXPORT Arena {
 #elif defined(PROTOBUF_USE_DLLS)
   // Thread local variables cannot be exposed through DLL interface but we can
   // wrap them in static functions.
+
+#if defined(__clang__) && defined(_MSC_VER)
+  // TODO(hans): Remove once crbug.com/525131 is resolved. Clang does currently
+  // not allow __declspec(thread) on a dllexported variable, even when wrapped
+  // in a static member function.
+  struct NonExport { static ThreadCache& thread_cache(); };
+#endif
+
   static ThreadCache& thread_cache();
 #else
   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;
