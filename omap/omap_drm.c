@@ -186,6 +186,7 @@ static struct omap_bo * bo_from_handle(struct omap_device *dev,
 	}
 	bo->dev = omap_device_ref(dev);
 	bo->handle = handle;
+	bo->fd = -1;
 	atomic_set(&bo->refcnt, 1);
 	/* add ourselves to the handle table: */
 	drmHashInsert(dev->handle_table, handle, bo);
