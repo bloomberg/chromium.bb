@@ -18,6 +18,8 @@ applet, embed, object { display: block; margin: 10px; }
 </template>
 
 <script>
+internals.settings.setJavaEnabled(true);
+
 var templateContent = document.getElementById('placeholder-template').content;
 Array.prototype.forEach.call(document.querySelectorAll("applet, embed, object"), function(plugin) {
     internals.forcePluginPlaceholder(plugin, templateContent);

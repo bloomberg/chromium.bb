@@ -92,12 +92,20 @@ bool HTMLAppletElement::layoutObjectIsNeeded(const ComputedStyle& style)
 
 LayoutObject* HTMLAppletElement::createLayoutObject(const ComputedStyle& style)
 {
-    return LayoutObject::createObject(this, style);
+    if (!canEmbedJava() || openShadowRoot())
+        return LayoutObject::createObject(this, style);
+
+    if (usePlaceholderContent())
+        return new LayoutBlockFlow(this);
+
+    return new LayoutApplet(this);
 }
 
 LayoutPart* HTMLAppletElement::layoutPartForJSBindings() const
 {
-    return nullptr;
+    if (!canEmbedJava())
+        return nullptr;
+    return HTMLPlugInElement::layoutPartForJSBindings();
 }
 
 LayoutPart* HTMLAppletElement::existingLayoutPart() const
@@ -199,6 +207,21 @@ void HTMLAppletElement::updateWidgetInternal()
         setWidget(widget);
         setPlaceholder(nullptr);
     }
+}
+
+bool HTMLAppletElement::canEmbedJava() const
+{
+    if (document().isSandboxed(SandboxPlugins))
+        return false;
+
+    Settings* settings = document().settings();
+    if (!settings)
+        return false;
+
+    if (!settings->javaEnabled())
+        return false;
+
+    return true;
 }
 
 bool HTMLAppletElement::canEmbedURL(const KURL& url) const

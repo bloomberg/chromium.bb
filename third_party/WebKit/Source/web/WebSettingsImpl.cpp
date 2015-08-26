@@ -344,6 +344,11 @@ void WebSettingsImpl::setTextAreasAreResizable(bool areResizable)
     m_settings->setTextAreasAreResizable(areResizable);
 }
 
+void WebSettingsImpl::setJavaEnabled(bool enabled)
+{
+    m_settings->setJavaEnabled(enabled);
+}
+
 void WebSettingsImpl::setAllowScriptsToCloseWindows(bool allow)
 {
     m_settings->setAllowScriptsToCloseWindows(allow);

@@ -266,6 +266,7 @@ backgroundHtmlParserPendingTokenLimit type=unsigned, initial=0
 # be loaded later.
 doHtmlPreloadScanning initial=true
 
+javaEnabled initial=false
 pluginsEnabled initial=false
 
 viewportEnabled initial=false, invalidate=ViewportDescription
