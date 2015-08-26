@@ -24,8 +24,8 @@ var evt;
 es.onmessage = function (arg) {
     evt = arg;
     if (errCount)
-        shouldBeEqualToString("evt.data", "77");
-    shouldBeEqualToString("evt.lastEventId", "77");
+        shouldBeEqualToString("evt.data", "77\u2603");
+    shouldBeEqualToString("evt.lastEventId", "77\u2603");
 };
 
 es.onerror = function () {

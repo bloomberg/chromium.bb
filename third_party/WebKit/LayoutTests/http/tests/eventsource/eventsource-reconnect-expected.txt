@@ -5,11 +5,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS es.readyState is es.CONNECTING
 PASS es.readyState is es.OPEN
-PASS evt.lastEventId is "77"
+PASS evt.lastEventId is "77☃"
 PASS es.readyState is es.CONNECTING
 PASS es.readyState is es.OPEN
-PASS evt.data is "77"
-PASS evt.lastEventId is "77"
+PASS evt.data is "77☃"
+PASS evt.lastEventId is "77☃"
 PASS es.readyState is es.CLOSED
 PASS successfullyParsed is true
 

@@ -127,8 +127,12 @@ void EventSource::connect()
     request.setHTTPHeaderField("Accept", "text/event-stream");
     request.setHTTPHeaderField("Cache-Control", "no-cache");
     request.setRequestContext(WebURLRequest::RequestContextEventSource);
-    if (!m_lastEventId.isEmpty())
-        request.setHTTPHeaderField("Last-Event-ID", m_lastEventId);
+    if (!m_lastEventId.isEmpty()) {
+        // HTTP headers are Latin-1 byte strings, but the Last-Event-ID header is encoded as UTF-8.
+        // TODO(davidben): This should be captured in the type of setHTTPHeaderField's arguments.
+        CString lastEventIdUtf8 = m_lastEventId.utf8();
+        request.setHTTPHeaderField("Last-Event-ID", AtomicString(reinterpret_cast<const LChar*>(lastEventIdUtf8.data()), lastEventIdUtf8.length()));
+    }
 
     SecurityOrigin* origin = executionContext.securityOrigin();
 
