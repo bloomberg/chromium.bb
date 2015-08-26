@@ -144,7 +144,7 @@ public class AccountManagementFragment extends PreferenceFragment
         super.onResume();
         SigninManager.get(getActivity()).addSignInStateObserver(this);
         ProfileDownloader.addObserver(this);
-        ProfileSyncService.get(getActivity()).addSyncStateChangedListener(this);
+        ProfileSyncService.get().addSyncStateChangedListener(this);
 
         update();
     }
@@ -154,7 +154,7 @@ public class AccountManagementFragment extends PreferenceFragment
         super.onPause();
         SigninManager.get(getActivity()).removeSignInStateObserver(this);
         ProfileDownloader.removeObserver(this);
-        ProfileSyncService.get(getActivity()).removeSyncStateChangedListener(this);
+        ProfileSyncService.get().removeSyncStateChangedListener(this);
     }
 
     /**
@@ -492,7 +492,7 @@ public class AccountManagementFragment extends PreferenceFragment
     private static String getSyncStatusSummary(Activity activity) {
         if (!ChromeSigninController.get(activity).isSignedIn()) return "";
 
-        ProfileSyncService profileSyncService = ProfileSyncService.get(activity);
+        ProfileSyncService profileSyncService = ProfileSyncService.get();
         Resources res = activity.getResources();
 
         if (ChildAccountService.getInstance(activity).hasChildAccount()) {

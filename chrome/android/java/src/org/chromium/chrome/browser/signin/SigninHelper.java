@@ -122,7 +122,7 @@ public class SigninHelper {
 
     private SigninHelper(Context context) {
         mContext = context;
-        mProfileSyncService = ProfileSyncService.get(mContext);
+        mProfileSyncService = ProfileSyncService.get();
         mSigninManager = SigninManager.get(mContext);
         mOAuth2TokenService = OAuth2TokenService.getForProfile(Profile.getLastUsedProfile());
         mSyncController = SyncController.get(context);

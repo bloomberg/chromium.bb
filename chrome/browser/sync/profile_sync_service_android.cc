@@ -455,8 +455,8 @@ ProfileSyncServiceAndroid::ModelTypeSetToJavaIntArray(
 ProfileSyncServiceAndroid*
     ProfileSyncServiceAndroid::GetProfileSyncServiceAndroid() {
   return reinterpret_cast<ProfileSyncServiceAndroid*>(
-          Java_ProfileSyncService_getProfileSyncServiceAndroid(
-      AttachCurrentThread(), base::android::GetApplicationContext()));
+      Java_ProfileSyncService_getProfileSyncServiceAndroid(
+          AttachCurrentThread()));
 }
 
 static jlong Init(JNIEnv* env, jobject obj) {

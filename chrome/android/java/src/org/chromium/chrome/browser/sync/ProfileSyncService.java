@@ -77,10 +77,6 @@ public class ProfileSyncService {
 
     private static ProfileSyncService sProfileSyncService;
 
-    @VisibleForTesting
-    // Cannot be final because it is initialized in {@link init()}.
-    protected Context mContext;
-
     // Sync state changes more often than listeners are added/removed, so using CopyOnWrite.
     private final List<SyncStateChangedListener> mListeners =
             new CopyOnWriteArrayList<SyncStateChangedListener>();
@@ -92,20 +88,22 @@ public class ProfileSyncService {
     private long mNativeProfileSyncServiceAndroid;
 
     /**
-     * A helper method for retrieving the application-wide SyncSetupManager.
-     * <p/>
-     * Can only be accessed on the main thread.
+     * Retrieves or creates the ProfileSyncService singleton instance.
      *
-     * @param context the ApplicationContext is retrieved from the context used as an argument.
-     * @return a singleton instance of the SyncSetupManager
+     * Can only be accessed on the main thread.
      */
     @SuppressFBWarnings("LI_LAZY_INIT")
-    public static ProfileSyncService get(Context context) {
+    public static ProfileSyncService get() {
         ThreadUtils.assertOnUiThread();
         if (sProfileSyncService == null) {
-            sProfileSyncService = new ProfileSyncService(context);
+            sProfileSyncService = new ProfileSyncService();
         }
         return sProfileSyncService;
+    }
+
+    @Deprecated
+    public static ProfileSyncService get(Context context) {
+        return get();
     }
 
     @VisibleForTesting
@@ -113,8 +111,8 @@ public class ProfileSyncService {
         sProfileSyncService = profileSyncService;
     }
 
-    protected ProfileSyncService(Context context) {
-        init(context);
+    protected ProfileSyncService() {
+        init();
     }
 
     /**
@@ -122,10 +120,8 @@ public class ProfileSyncService {
      * is a separate function to enable a test subclass of ProfileSyncService to completely stub out
      * ProfileSyncService.
      */
-    protected void init(Context context) {
+    protected void init() {
         ThreadUtils.assertOnUiThread();
-        // We should store the application context, as we outlive any activity which may create us.
-        mContext = context.getApplicationContext();
 
         // This may cause us to create ProfileSyncService even if sync has not
         // been set up, but ProfileSyncService::Startup() won't be called until
@@ -134,8 +130,8 @@ public class ProfileSyncService {
     }
 
     @CalledByNative
-    private static long getProfileSyncServiceAndroid(Context context) {
-        return get(context).mNativeProfileSyncServiceAndroid;
+    private static long getProfileSyncServiceAndroid() {
+        return get().mNativeProfileSyncServiceAndroid;
     }
 
     /**

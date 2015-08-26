@@ -230,7 +230,7 @@ public final class SyncTestUtil {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                result.set(ProfileSyncService.get(context).getLastSyncedTimeForTest());
+                result.set(ProfileSyncService.get().getLastSyncedTimeForTest());
                 s.release();
             }
         });
@@ -250,7 +250,7 @@ public final class SyncTestUtil {
                                 new Callable<Boolean>() {
                                     @Override
                                     public Boolean call() throws Exception {
-                                        return ProfileSyncService.get(context).isSyncActive();
+                                        return ProfileSyncService.get().isSyncActive();
                                     }
                                 });
                     }
@@ -328,7 +328,7 @@ public final class SyncTestUtil {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                result.set(ProfileSyncService.get(context).hasKeepEverythingSynced());
+                result.set(ProfileSyncService.get().hasKeepEverythingSynced());
             }
         });
         return result.get();
@@ -366,7 +366,7 @@ public final class SyncTestUtil {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ProfileSyncService.get(context).getAllNodes(callback);
+                ProfileSyncService.get().getAllNodes(callback);
             }
         });
 
@@ -491,7 +491,7 @@ public final class SyncTestUtil {
 
         @Override
         public void run() {
-            String info = ProfileSyncService.get(mContext).getSyncInternalsInfoForTest();
+            String info = ProfileSyncService.get().getSyncInternalsInfoForTest();
             try {
                 mAboutInfo = getAboutInfoStats(info);
             } catch (JSONException e) {

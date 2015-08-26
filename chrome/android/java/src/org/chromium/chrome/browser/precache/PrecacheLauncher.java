@@ -106,7 +106,7 @@ public abstract class PrecacheLauncher {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final ProfileSyncService sync = ProfileSyncService.get(context);
+                final ProfileSyncService sync = ProfileSyncService.get();
 
                 if (mListener == null) {
                     mListener = new ProfileSyncService.SyncStateChangedListener() {

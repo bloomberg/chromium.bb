@@ -48,8 +48,8 @@ public class InvalidationControllerTest {
     private static class ProfileSyncServiceStub extends ProfileSyncService {
         private Set<Integer> mPreferredDataTypes;
 
-        public ProfileSyncServiceStub(Context context) {
-            super(context);
+        public ProfileSyncServiceStub() {
+            super();
         }
 
         public void setPreferredDataTypes(Set<Integer> types) {
@@ -57,7 +57,7 @@ public class InvalidationControllerTest {
         }
 
         @Override
-        protected void init(Context context) {
+        protected void init() {
             // Skip native initialization.
         }
 
@@ -95,7 +95,7 @@ public class InvalidationControllerTest {
             }
         });
 
-        ProfileSyncServiceStub profileSyncServiceStub = new ProfileSyncServiceStub(mContext);
+        ProfileSyncServiceStub profileSyncServiceStub = new ProfileSyncServiceStub();
         ProfileSyncService.overrideForTests(profileSyncServiceStub);
         profileSyncServiceStub.setPreferredDataTypes(
                 CollectionUtil.newHashSet(ModelType.BOOKMARKS, ModelType.SESSIONS));

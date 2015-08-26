@@ -36,7 +36,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             Class<? extends Fragment> accountManagementFragment) {
         mApplicationContext = context.getApplicationContext();
         mNotificationController = GoogleServicesNotificationController.get(context);
-        mProfileSyncService = ProfileSyncService.get(context);
+        mProfileSyncService = ProfileSyncService.get();
         mPassphraseRequestActivity = passphraseRequestActivity;
         mAccountManagementFragment = accountManagementFragment;
     }

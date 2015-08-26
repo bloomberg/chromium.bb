@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.sync;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.SwitchPreference;
@@ -57,8 +56,8 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     private static class FakeProfileSyncService extends ProfileSyncService {
         private boolean mPassphraseRequiredForDecryption;
 
-        public FakeProfileSyncService(Context context) {
-            super(context);
+        public FakeProfileSyncService() {
+            super();
         }
 
         @Override
@@ -311,7 +310,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testPassphraseDialogDismissed() throws Exception {
-        final FakeProfileSyncService pss = overrideProfileSyncService(mContext);
+        final FakeProfileSyncService pss = overrideProfileSyncService();
 
         setupTestAccountAndSignInToSync(CLIENT_ID);
         SyncTestUtil.waitForSyncActive(mContext);
@@ -399,12 +398,12 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertFalse(pcdf.isResumed());
     }
 
-    private FakeProfileSyncService overrideProfileSyncService(final Context context) {
+    private FakeProfileSyncService overrideProfileSyncService() {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<FakeProfileSyncService>() {
             @Override
             public FakeProfileSyncService call() {
                 // PSS has to be constructed on the UI thread.
-                FakeProfileSyncService fakeProfileSyncService = new FakeProfileSyncService(context);
+                FakeProfileSyncService fakeProfileSyncService = new FakeProfileSyncService();
                 ProfileSyncService.overrideForTests(fakeProfileSyncService);
                 return fakeProfileSyncService;
             }

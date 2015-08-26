@@ -114,7 +114,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mProfileSyncService = ProfileSyncService.get(getActivity());
+        mProfileSyncService = ProfileSyncService.get();
         mIsSyncInitialized = mProfileSyncService.isSyncInitialized();
         mIsPassphraseRequired =
                 mIsSyncInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();

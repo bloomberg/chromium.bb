@@ -86,7 +86,7 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         final EditText passphrase = (EditText) v.findViewById(R.id.passphrase);
         final Context context = passphrase.getContext();
         TextView resetText = (TextView) v.findViewById(R.id.reset_text);
-        ProfileSyncService profileSyncService = ProfileSyncService.get(context);
+        ProfileSyncService profileSyncService = ProfileSyncService.get();
         String accountName = profileSyncService.getCurrentSignedInAccountText() + "\n\n";
         resetText.setText(SpanApplier.applySpans(
                 context.getString(R.string.sync_passphrase_reset_instructions),

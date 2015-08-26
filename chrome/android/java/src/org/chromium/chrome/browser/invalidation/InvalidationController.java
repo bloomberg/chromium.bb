@@ -161,7 +161,7 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
         mEnableSessionInvalidationsTimer.resume();
 
         HashSet<Integer> typesToRegister = new HashSet<Integer>();
-        typesToRegister.addAll(ProfileSyncService.get(mContext).getPreferredDataTypes());
+        typesToRegister.addAll(ProfileSyncService.get().getPreferredDataTypes());
         if (!mSessionInvalidationsEnabled) {
             typesToRegister.remove(ModelType.SESSIONS);
             typesToRegister.remove(ModelType.FAVICON_TRACKING);

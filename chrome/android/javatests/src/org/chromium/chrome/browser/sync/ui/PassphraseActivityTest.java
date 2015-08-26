@@ -48,7 +48,7 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
     public void testCallbackAfterBackgrounded() throws Exception {
         final Context context = getInstrumentation().getTargetContext();
         // Override before creating the activity so we know initialized is false.
-        overrideProfileSyncService(context);
+        overrideProfileSyncService();
         // PassphraseActivity won't start if an account isn't set.
         ChromeSigninController.get(context).setSignedInAccountName(TEST_ACCOUNT);
         // Create the activity.
@@ -62,8 +62,7 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
                 getInstrumentation().callActivityOnPause(activity);
                 getInstrumentation().callActivityOnSaveInstanceState(activity, bundle);
                 // Fake sync's backend finishing its initialization.
-                FakeProfileSyncService pss =
-                        (FakeProfileSyncService) ProfileSyncService.get(context);
+                FakeProfileSyncService pss = (FakeProfileSyncService) ProfileSyncService.get();
                 pss.setSyncInitialized(true);
                 pss.syncStateChanged();
             }
@@ -82,12 +81,12 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
         return launchActivityWithIntent(context.getPackageName(), PassphraseActivity.class, intent);
     }
 
-    private void overrideProfileSyncService(final Context context) {
+    private void overrideProfileSyncService() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 // PSS has to be constructed on the UI thread.
-                ProfileSyncService.overrideForTests(new FakeProfileSyncService(context));
+                ProfileSyncService.overrideForTests(new FakeProfileSyncService());
             }
         });
     }

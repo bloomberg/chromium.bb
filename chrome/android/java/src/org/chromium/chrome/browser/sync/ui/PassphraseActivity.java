@@ -62,7 +62,7 @@ public class PassphraseActivity extends FragmentActivity implements
         }
 
         if (!isShowingDialog(FRAGMENT_PASSPHRASE)) {
-            if (ProfileSyncService.get(this).isSyncInitialized()) {
+            if (ProfileSyncService.get().isSyncInitialized()) {
                 displayPassphraseDialog();
             } else {
                 addSyncStateChangedListener();
@@ -86,18 +86,18 @@ public class PassphraseActivity extends FragmentActivity implements
         mSyncStateChangedListener = new ProfileSyncService.SyncStateChangedListener() {
             @Override
             public void syncStateChanged() {
-                if (ProfileSyncService.get(getApplicationContext()).isSyncInitialized()) {
+                if (ProfileSyncService.get().isSyncInitialized()) {
                     removeSyncStateChangedListener();
                     displayPassphraseDialog();
                 }
             }
         };
-        ProfileSyncService.get(this).addSyncStateChangedListener(mSyncStateChangedListener);
+        ProfileSyncService.get().addSyncStateChangedListener(mSyncStateChangedListener);
     }
 
     private void removeSyncStateChangedListener() {
         if (mSyncStateChangedListener != null) {
-            ProfileSyncService.get(this).removeSyncStateChangedListener(mSyncStateChangedListener);
+            ProfileSyncService.get().removeSyncStateChangedListener(mSyncStateChangedListener);
             mSyncStateChangedListener = null;
         }
     }
@@ -107,7 +107,7 @@ public class PassphraseActivity extends FragmentActivity implements
     }
 
     private void displayPassphraseDialog() {
-        assert ProfileSyncService.get(this).isSyncInitialized();
+        assert ProfileSyncService.get().isSyncInitialized();
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.addToBackStack(null);
         PassphraseDialogFragment.newInstance(null).show(ft, FRAGMENT_PASSPHRASE);
@@ -125,8 +125,7 @@ public class PassphraseActivity extends FragmentActivity implements
      */
     @Override
     public boolean onPassphraseEntered(String passphrase) {
-        if (!passphrase.isEmpty()
-                && ProfileSyncService.get(this).setDecryptionPassphrase(passphrase)) {
+        if (!passphrase.isEmpty() && ProfileSyncService.get().setDecryptionPassphrase(passphrase)) {
             // The passphrase was correct - close this activity.
             finish();
             return true;

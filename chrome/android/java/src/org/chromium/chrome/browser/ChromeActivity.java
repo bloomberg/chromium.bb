@@ -570,7 +570,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private void createContextReporterIfNeeded() {
         if (mContextReporter != null || getActivityTab() == null) return;
 
-        final ProfileSyncService syncService = ProfileSyncService.get(this);
+        final ProfileSyncService syncService = ProfileSyncService.get();
 
         if (syncService.isSyncingUrlsWithKeystorePassphrase()) {
             mContextReporter = ((ChromeApplication) getApplicationContext()).createGsaHelper()
@@ -621,7 +621,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mGSAServiceClient.disconnect();
             mGSAServiceClient = null;
             if (mSyncStateChangedListener != null) {
-                ProfileSyncService syncService = ProfileSyncService.get(this);
+                ProfileSyncService syncService = ProfileSyncService.get();
                 syncService.removeSyncStateChangedListener(mSyncStateChangedListener);
                 mSyncStateChangedListener = null;
             }

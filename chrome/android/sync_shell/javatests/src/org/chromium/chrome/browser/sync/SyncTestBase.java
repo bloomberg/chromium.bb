@@ -79,7 +79,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mProfileSyncService = ProfileSyncService.get(mContext);
+                mProfileSyncService = ProfileSyncService.get();
             }
         });
     }

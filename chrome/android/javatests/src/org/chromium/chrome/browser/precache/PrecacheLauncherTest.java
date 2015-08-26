@@ -46,8 +46,8 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     private static class StubProfileSyncService extends ProfileSyncService {
         private boolean mSyncInitialized = false;
 
-        public StubProfileSyncService(Context context) {
-            super(context);
+        public StubProfileSyncService() {
+            super();
         }
 
         @Override
@@ -84,7 +84,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
             public void run() {
                 // The StubProfileSyncService stubs out isSyncInitialized so we can change that on
                 // the fly.
-                mSync = new StubProfileSyncService(getTargetContext());
+                mSync = new StubProfileSyncService();
                 ProfileSyncService.overrideForTests(mSync);
 
                 // This is currently the default, but let's verify that, lest it ever change and we

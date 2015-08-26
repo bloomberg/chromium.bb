@@ -66,7 +66,7 @@ public class FakeServerHelper {
                 FakeServerHelper fakeServerHelper = FakeServerHelper.get();
                 long nativeFakeServer = fakeServerHelper.createFakeServer();
                 long resources = fakeServerHelper.createNetworkResources(nativeFakeServer);
-                ProfileSyncService.get(context).overrideNetworkResourcesForTest(resources);
+                ProfileSyncService.get().overrideNetworkResourcesForTest(resources);
 
                 return nativeFakeServer;
             }

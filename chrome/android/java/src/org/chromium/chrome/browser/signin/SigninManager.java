@@ -404,7 +404,7 @@ public class SigninManager {
         ChromeSigninController.get(mContext).setSignedInAccountName(mSignInAccount.name);
 
         // Sign-in to sync.
-        ProfileSyncService profileSyncService = ProfileSyncService.get(mContext);
+        ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (AndroidSyncSettings.isSyncEnabled(mContext)
                 && !profileSyncService.hasSyncSetupCompleted()) {
             profileSyncService.setSetupInProgress(true);
@@ -443,7 +443,7 @@ public class SigninManager {
         Log.d(TAG, "Signing out, wipe data? " + wipeData);
 
         ChromeSigninController.get(mContext).clearSignedInUser();
-        ProfileSyncService.get(mContext).signOut();
+        ProfileSyncService.get().signOut();
         nativeSignOut(mNativeSigninManagerAndroid);
 
         if (wipeData) {
@@ -510,7 +510,7 @@ public class SigninManager {
             public void onSigninComplete() {
                 // TODO(acleung): Maybe GoogleServicesManager should have a
                 // sync = true but setSetupInProgress(true) state?
-                ProfileSyncService.get(mContext).setSetupInProgress(
+                ProfileSyncService.get().setSetupInProgress(
                         signInSync == SIGNIN_SYNC_SETUP_IN_PROGRESS);
                 SyncController.get(mContext).start();
 
