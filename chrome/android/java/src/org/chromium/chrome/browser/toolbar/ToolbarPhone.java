@@ -935,6 +935,9 @@ public class ToolbarPhone extends ToolbarLayout
                     mMenuButton.getHeight() - mMenuButton.getPaddingBottom());
             translateCanvasToView(mToolbarButtonsContainer, mMenuButton, canvas);
             mTabSwitcherAnimationMenuDrawable.setAlpha(rgbAlpha);
+            int color = mUseLightToolbarDrawables ? getResources().getColor(R.color.light_mode_tint)
+                    : getResources().getColor(R.color.dark_mode_tint);
+            mTabSwitcherAnimationMenuDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
             mTabSwitcherAnimationMenuDrawable.draw(canvas);
         }
 
@@ -1659,8 +1662,6 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     protected void onPrimaryColorChanged() {
-        if (!FeatureUtilities.isDocumentMode(getContext())) return;
-
         super.onPrimaryColorChanged();
         if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
         if (!isVisualStateValidForBrandColorTransition(mVisualState)) {
@@ -1858,14 +1859,18 @@ public class ToolbarPhone extends ToolbarLayout
 
         getProgressBar().setBackgroundColor(
                 getResources().getColor(progressBarBackgroundColorResource));
+        ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
+        ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
 
         if (mToggleTabStackButton != null) {
             mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables
                     ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
+            if (mTabSwitcherAnimationTabStackDrawable != null) {
+                mTabSwitcherAnimationTabStackDrawable.setTint(
+                        mUseLightToolbarDrawables ? white : dark);
+            }
         }
 
-        ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
-        ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
         if (shouldShowMenuButton()) {
             mMenuButton.setTint(mUseLightToolbarDrawables ? white : dark);
         }

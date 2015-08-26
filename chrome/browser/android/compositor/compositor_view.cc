@@ -260,7 +260,8 @@ void CompositorView::UpdateToolbarLayer(JNIEnv* env,
   toolbar_layer_->layer()->SetHideLayerAndSubtree(!visible);
   if (visible) {
     toolbar_layer_->layer()->SetPosition(gfx::PointF(0, top_offset));
-    toolbar_layer_->PushResource(resource, false, false, false, brightness);
+    toolbar_layer_->PushResource(
+        resource, SK_ColorWHITE, false, false, brightness);
 
     // If we're at rest, hide the shadow.  The Android view should be drawing.
     toolbar_layer_->layer()->SetMasksToBounds(top_offset >= 0.f

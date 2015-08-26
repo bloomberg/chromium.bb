@@ -29,7 +29,7 @@ class ToolbarLayer : public Layer {
 
   void PushResource(ui::ResourceManager::Resource* resource,
                     bool anonymize,
-                    bool anonymize_component_is_incognito,
+                    int  toolbar_textbox_background_color,
                     bool show_debug,
                     float brightness);
 

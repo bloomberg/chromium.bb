@@ -954,8 +954,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             int defaultPrimaryColor = isIncognito
                     ? mToolbar.getResources().getColor(R.color.incognito_primary_color)
                     : mToolbar.getResources().getColor(R.color.default_primary_color);
-            int primaryColor = (tab != null && tab.getWebContents() != null)
-                    ? tab.getWebContents().getThemeColor(defaultPrimaryColor) : defaultPrimaryColor;
+            int primaryColor = tab != null ? tab.getThemeColor() : defaultPrimaryColor;
             updatePrimaryColor(primaryColor);
 
             mToolbar.onTabOrModelChanged();

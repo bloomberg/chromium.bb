@@ -122,6 +122,8 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
     /** The color of the background of the tab. Used as the best approximation to fill in. */
     private int mBackgroundColor = Color.WHITE;
 
+    private int mTextBoxBackgroundColor = Color.WHITE;
+
     private int mFallbackThumbnailId = Tab.INVALID_TAB_ID;
 
     // End section --------------
@@ -206,8 +208,9 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      * @param canUseLiveTexture     Whether the tab can use a live texture when being displayed.
      */
     public void initFromHost(int backgroundColor, int fallbackThumbnailId, boolean shouldStall,
-            boolean canUseLiveTexture) {
+            boolean canUseLiveTexture, int textBoxBackgroundColor) {
         mBackgroundColor = backgroundColor;
+        mTextBoxBackgroundColor = textBoxBackgroundColor;
         mFallbackThumbnailId = fallbackThumbnailId;
         mShouldStall = shouldStall;
         mCanUseLiveTexture = canUseLiveTexture;
@@ -865,6 +868,13 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      */
     public int getBackgroundColor() {
         return mBackgroundColor;
+    }
+
+    /**
+     * @return The color of the textbox in the toolbar. Used as the color for the anonymize rect.
+     */
+    public int getTextBoxBackgroundColor() {
+        return mTextBoxBackgroundColor;
     }
 
     /**

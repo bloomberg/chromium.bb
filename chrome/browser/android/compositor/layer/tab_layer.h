@@ -85,6 +85,7 @@ class TabLayer : public Layer {
                      float view_height,
                      bool show_toolbar,
                      bool anonymize_toolbar,
+                     int toolbar_textbox_background_color,
                      float toolbar_alpha,
                      float toolbar_y_offset,
                      float side_border_scale,

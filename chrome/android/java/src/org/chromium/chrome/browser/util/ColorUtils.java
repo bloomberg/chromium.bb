@@ -12,6 +12,7 @@ import android.graphics.Color;
 public class ColorUtils {
     private static final float CONTRAST_LIGHT_ITEM_THRESHOLD = 3f;
     private static final float LIGHTNESS_OPAQUE_BOX_THRESHOLD = 0.82f;
+    private static final float LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA = 0.2f;
 
     /** Percentage to darken a color by when setting the status bar color. */
     private static final float DARKEN_COLOR_FRACTION = 0.6f;
@@ -41,6 +42,24 @@ public class ColorUtils {
         bgB = (bgB < 0.03928f) ? bgB / 12.92f : (float) Math.pow((bgB + 0.055f) / 1.055f, 2.4f);
         float bgL = 0.2126f * bgR + 0.7152f * bgG + 0.0722f * bgB;
         return Math.abs((1.05f) / (bgL + 0.05f));
+    }
+
+    /**
+     * @return The base color for the textbox given a toolbar background color.
+     */
+    public static int getTextBoxColorForToolbarBackground(int color) {
+        if (shouldUseOpaqueTextboxBackground(color)) return Color.WHITE;
+        return getColorWithOverlay(Color.WHITE, color, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
+    }
+
+    private static int getColorWithOverlay(int baseColor, int overlayColor, float overlayAlpha) {
+        return Color.rgb(
+            (int) (overlayAlpha * Color.red(baseColor)
+                    + (1f - overlayAlpha) * Color.red(overlayColor)),
+            (int) (overlayAlpha * Color.green(baseColor)
+                    + (1f - overlayAlpha) * Color.green(overlayColor)),
+            (int) (overlayAlpha * Color.blue(baseColor)
+                    + (1f - overlayAlpha) * Color.blue(overlayColor)));
     }
 
     /**

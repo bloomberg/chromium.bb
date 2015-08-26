@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -118,5 +119,11 @@ public class TabSwitcherDrawable extends TintedDrawable {
 
     private int getColorForState() {
         return mTint.getColorForState(getState(), 0);
+    }
+
+    @Override
+    public void setTint(ColorStateList tint) {
+        super.setTint(tint);
+        if (mTextPaint != null) mTextPaint.setColor(getColorForState());
     }
 }

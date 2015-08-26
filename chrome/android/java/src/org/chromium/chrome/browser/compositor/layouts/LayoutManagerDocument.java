@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -175,6 +176,11 @@ public class LayoutManagerDocument extends LayoutManager
             public void onBackgroundColorChanged(Tab tab, int color) {
                 initLayoutTabFromHost(tab.getId());
             }
+
+            @Override
+            public void onDidChangeThemeColor(Tab tab, int color) {
+                initLayoutTabFromHost(tab.getId());
+            }
         };
 
         super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
@@ -261,7 +267,8 @@ public class LayoutManagerDocument extends LayoutManager
         boolean canUseLiveTexture =
                 tab.getContentViewCore() != null && !tab.isShowingSadTab() && !isNativePage;
         layoutTab.initFromHost(tab.getBackgroundColor(), tab.getFallbackTextureId(),
-                tab.shouldStall(), canUseLiveTexture);
+                tab.shouldStall(), canUseLiveTexture,
+                ColorUtils.getTextBoxColorForToolbarBackground(tab.getThemeColor()));
 
         mHost.requestRender();
     }

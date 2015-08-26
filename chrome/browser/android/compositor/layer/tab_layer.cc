@@ -96,6 +96,7 @@ void TabLayer::SetProperties(int id,
                              float view_height,
                              bool show_toolbar,
                              bool anonymize_toolbar,
+                             int  toolbar_textbox_background_color,
                              float toolbar_alpha,
                              float toolbar_y_offset,
                              float side_border_scale,
@@ -182,7 +183,7 @@ void TabLayer::SetProperties(int id,
 
     // TODO(kkimlabs): Tab switcher doesn't show the progress bar.
     toolbar_layer_->PushResource(toolbar_resource, anonymize_toolbar,
-                                 incognito_, false, 1.f);
+                                 toolbar_textbox_background_color, false, 1.f);
     toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
     if (show_toolbar && !back_visible)

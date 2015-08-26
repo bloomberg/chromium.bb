@@ -64,6 +64,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelBase;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
@@ -699,6 +700,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 color = mDefaultThemeColor;
             }
             if (isShowingInterstitialPage()) color = mDefaultThemeColor;
+            if (!FeatureUtilities.isDocumentMode(mApplicationContext)) color = mDefaultThemeColor;
             if (color == Color.TRANSPARENT) color = mDefaultThemeColor;
             color |= 0xFF000000;
             if (mThemeColor == color) return;
