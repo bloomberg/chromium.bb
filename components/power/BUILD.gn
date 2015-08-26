@@ -16,3 +16,14 @@ static_library("power") {
     "//content/public/common",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "origin_power_map_unittest.cc",
+  ]
+  deps = [
+    ":power",
+    "//testing/gtest",
+  ]
+}

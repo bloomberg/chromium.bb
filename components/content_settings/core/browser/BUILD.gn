@@ -66,6 +66,7 @@ source_set("unit_tests") {
     "content_settings_utils_unittest.cc",
     "cookie_settings_unittest.cc",
     "plugins_field_trial_unittest.cc",
+    "website_settings_registry_unittest.cc",
   ]
 
   deps = [

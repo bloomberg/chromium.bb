@@ -11,6 +11,11 @@ static_library("common") {
     "autofill_param_traits_macros.h",
   ]
 
+  public_deps = [
+    # This is indirectly required by autofill_messages because it includes
+    # some blink headers that include Skia.
+    "//skia",
+  ]
   deps = [
     "//base",
     "//components/autofill/core/common",

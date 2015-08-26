@@ -92,6 +92,7 @@ source_set("unit_tests") {
     "request_sender_unittest.cc",
     "update_checker_unittest.cc",
     "update_client_unittest.cc",
+    "update_query_params_unittest.cc",
     "update_response_unittest.cc",
   ]
 

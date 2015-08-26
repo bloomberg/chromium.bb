@@ -35,3 +35,17 @@ source_set("os_crypt") {
     ]
   }
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "ie7_password_win_unittest.cc",
+    "keychain_password_mac_unittest.mm",
+    "os_crypt_unittest.cc",
+  ]
+  deps = [
+    ":os_crypt",
+    "//base",
+    "//testing/gtest",
+  ]
+}

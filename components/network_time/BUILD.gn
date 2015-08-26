@@ -14,3 +14,14 @@ static_library("network_time") {
     "//base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "network_time_tracker_unittest.cc",
+  ]
+  deps = [
+    ":network_time",
+    "//testing/gtest",
+  ]
+}

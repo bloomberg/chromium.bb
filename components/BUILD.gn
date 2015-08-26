@@ -300,6 +300,7 @@ test("components_unittests") {
   deps = [
     "//components/auto_login_parser:unit_tests",
     "//components/autofill/content/browser:unit_tests",
+    "//components/autofill/content/renderer:unit_tests",
     "//components/autofill/core/browser:unit_tests",
     "//components/autofill/core/common:unit_tests",
     "//components/bookmarks/browser:unit_tests",
@@ -333,14 +334,17 @@ test("components_unittests") {
     "//components/json_schema:unit_tests",
     "//components/keyed_service/content:unit_tests",
     "//components/keyed_service/core:unit_tests",
+    "//components/language_usage_metrics:unit_tests",
     "//components/leveldb_proto:unit_tests",
     "//components/login:unit_tests",
     "//components/memory_pressure:unit_tests",
     "//components/metrics:unit_tests",
     "//components/mime_util:unit_tests",
+    "//components/network_time:unit_tests",
     "//components/offline_pages:unit_tests",
     "//components/omnibox/browser:unit_tests",
     "//components/open_from_clipboard:unit_tests",
+    "//components/os_crypt:unit_tests",
     "//components/packed_ct_ev_whitelist:unit_tests",
     "//components/password_manager/content/browser:unit_tests",
     "//components/password_manager/core/browser:unit_tests",
@@ -367,6 +371,7 @@ test("components_unittests") {
     "//components/upload_list:unit_tests",
     "//components/user_prefs/tracked:unit_tests",
     "//components/variations:unit_tests",
+    "//components/wallpaper:unit_tests",
     "//components/web_resource:unit_tests",
     "//components/webcrypto:unit_tests",
     "//components/webdata/common:unit_tests",
@@ -423,9 +428,6 @@ test("components_unittests") {
   # TODO(GYP) need this target.
   #'breakpad/app/crash_keys_win_unittest.cc',
 
-  # Precache tests need these defines.
-  #configs += [ "//components/precache/core:precache_config" ]
-
   if (enable_configuration_policy) {
     deps += [
       "//components/policy/core/browser:unit_tests",
@@ -451,8 +453,10 @@ test("components_unittests") {
       "//components/guest_view/browser:unit_tests",
       "//components/navigation_interception:unit_tests",
       "//components/network_hints/renderer:unit_tests",
+      "//components/power:unit_tests",
       "//components/safe_json:unit_tests",
       "//components/scheduler:unit_tests",
+      "//components/ui/zoom:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/web_cache/browser:unit_tests",
     ]

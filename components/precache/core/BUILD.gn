@@ -55,6 +55,9 @@ source_set("unit_tests") {
     "precache_fetcher_unittest.cc",
     "precache_url_table_unittest.cc",
   ]
+
+  configs += [ ":precache_config" ]
+
   deps = [
     ":core",
     ":proto",

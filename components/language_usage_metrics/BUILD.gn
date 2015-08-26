@@ -12,3 +12,15 @@ source_set("language_usage_metrics") {
     "//base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "language_usage_metrics_unittest.cc",
+  ]
+
+  deps = [
+    ":language_usage_metrics",
+    "//testing/gtest",
+  ]
+}

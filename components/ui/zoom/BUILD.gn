@@ -25,3 +25,14 @@ source_set("zoom") {
     "//url",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "page_zoom_unittests.cc",
+  ]
+  deps = [
+    ":zoom",
+    "//testing/gtest",
+  ]
+}
