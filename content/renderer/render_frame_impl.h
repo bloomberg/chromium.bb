@@ -129,13 +129,9 @@ class CONTENT_EXPORT RenderFrameImpl
       NON_EXPORTED_BASE(public blink::WebFrameClient),
       NON_EXPORTED_BASE(public media::WebMediaPlayerDelegate) {
  public:
-  // Creates a new RenderFrame. |render_view| is the RenderView object that this
-  // frame belongs to.
-  // Callers *must* call |SetWebFrame| immediately after creation.
-  // Note: This is called only when RenderFrame is created by Blink through
-  // createChildFrame.
-  // TODO(creis): We should structure this so that |SetWebFrame| isn't needed.
-  static RenderFrameImpl* Create(RenderViewImpl* render_view, int32 routing_id);
+  // Creates a new RenderFrame as the main frame of |render_view|.
+  static RenderFrameImpl* CreateMainFrame(RenderViewImpl* render_view,
+                                          int32 routing_id);
 
   // Creates a new RenderFrame with |routing_id| as a child of the RenderFrame
   // identified by |parent_routing_id| or as the top-level frame if the latter
@@ -624,6 +620,11 @@ class CONTENT_EXPORT RenderFrameImpl
   };
 
   typedef std::map<GURL, double> HostZoomLevels;
+
+  // Creates a new RenderFrame. |render_view| is the RenderView object that this
+  // frame belongs to.
+  // Callers *must* call |SetWebFrame| immediately after creation.
+  static RenderFrameImpl* Create(RenderViewImpl* render_view, int32 routing_id);
 
   // Functions to add and remove observers for this object.
   void AddObserver(RenderFrameObserver* observer);

@@ -678,16 +678,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
 
-  if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
-    main_render_frame_ = RenderFrameImpl::Create(
-        this, params.main_frame_routing_id);
-    // The main frame WebLocalFrame object is closed by
-    // RenderFrameImpl::frameDetached().
-    WebLocalFrame* web_frame = WebLocalFrame::create(
-        blink::WebTreeScopeType::Document, main_render_frame_);
-    main_render_frame_->SetWebFrame(web_frame);
-  }
-
   webwidget_ = WebView::create(this);
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
 
@@ -700,33 +690,27 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
 
-  RenderFrameProxy* proxy = NULL;
+  if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
+    main_render_frame_ =
+        RenderFrameImpl::CreateMainFrame(this, params.main_frame_routing_id);
+  }
+
   if (params.proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params.swapped_out);
     if (main_render_frame_) {
-      proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
+      DCHECK(!SiteIsolationPolicy::IsSwappedOutStateForbidden());
+      RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
           main_render_frame_, params.proxy_routing_id,
           blink::WebTreeScopeType::Document);
       main_render_frame_->set_render_frame_proxy(proxy);
     } else {
-      proxy = RenderFrameProxy::CreateFrameProxy(
-          params.proxy_routing_id,
-          MSG_ROUTING_NONE,
-          routing_id_,
-          params.replicated_frame_state);
+      DCHECK(SiteIsolationPolicy::IsSwappedOutStateForbidden());
+      RenderFrameProxy::CreateFrameProxy(params.proxy_routing_id,
+                                         MSG_ROUTING_NONE, routing_id_,
+                                         params.replicated_frame_state);
     }
   }
 
-  // When not using swapped out state, just use the WebRemoteFrame as the main
-  // frame.
-  if (proxy && SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
-    webview()->setMainFrame(proxy->web_frame());
-    // Initialize the WebRemoteFrame with information replicated from the
-    // browser process.
-    proxy->SetReplicatedState(params.replicated_frame_state);
-  } else {
-    webview()->setMainFrame(main_render_frame_->GetWebFrame());
-  }
   if (main_render_frame_)
     main_render_frame_->Initialize();
 

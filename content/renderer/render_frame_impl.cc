@@ -567,6 +567,18 @@ RenderFrameImpl* RenderFrameImpl::FromRoutingID(int routing_id) {
 }
 
 // static
+RenderFrameImpl* RenderFrameImpl::CreateMainFrame(RenderViewImpl* render_view,
+                                                  int32 routing_id) {
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::Create(render_view, routing_id);
+  WebLocalFrame* web_frame =
+      WebLocalFrame::create(blink::WebTreeScopeType::Document, render_frame);
+  render_frame->SetWebFrame(web_frame);
+  render_view->webview()->setMainFrame(web_frame);
+  return render_frame;
+}
+
+// static
 void RenderFrameImpl::CreateFrame(
     int routing_id,
     int parent_routing_id,
