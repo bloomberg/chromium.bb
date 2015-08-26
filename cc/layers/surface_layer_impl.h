@@ -34,6 +34,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
 
  private:
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
+  void AppendRainbowDebugBorder(RenderPass* render_pass);
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
   const char* LayerTypeAsString() const override;
 
