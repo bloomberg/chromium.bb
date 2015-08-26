@@ -3017,6 +3017,7 @@ interface Navigator
     getter permissions
     getter platform
     getter plugins
+    getter presentation
     getter product
     getter productSub
     getter serviceWorker
@@ -3279,6 +3280,38 @@ interface PluginArray
     method refresh
 interface PopStateEvent
     getter state
+    method constructor
+interface Presentation
+    getter defaultRequest
+    getter session
+    method constructor
+    setter defaultRequest
+interface PresentationAvailability
+    getter onchange
+    getter value
+    method constructor
+    setter onchange
+interface PresentationRequest
+    getter onsessionconnect
+    method constructor
+    method getAvailability
+    method join
+    method start
+    setter onsessionconnect
+interface PresentationSession
+    getter binaryType
+    getter id
+    getter onmessage
+    getter onstatechange
+    getter state
+    method close
+    method constructor
+    method send
+    setter binaryType
+    setter onmessage
+    setter onstatechange
+interface PresentationSessionConnectEvent
+    getter session
     method constructor
 interface ProcessingInstruction
     getter sheet
