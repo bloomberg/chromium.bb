@@ -9,6 +9,7 @@ import unittest
 
 from pylib import cmd_helper
 from pylib import constants
+from pylib.device import device_errors
 from pylib.utils import md5sum
 
 sys.path.append(
@@ -86,40 +87,23 @@ class Md5SumTest(unittest.TestCase):
     test_path = '/storage/emulated/legacy/test/file.dat'
 
     device = mock.NonCallableMock()
-    device.adb = mock.NonCallableMock()
-    device.adb.Push = mock.Mock()
     device_md5sum_output = [
         '0123456789abcdeffedcba9876543210 '
             '/storage/emulated/legacy/test/file.dat',
     ]
     device.RunShellCommand = mock.Mock(return_value=device_md5sum_output)
 
-    mock_temp_file = mock.mock_open()
-    mock_temp_file.return_value.name = '/tmp/test/script/file.sh'
-
-    mock_device_temp_file = mock.mock_open()
-    mock_device_temp_file.return_value.name = (
-        '/data/local/tmp/test/script/file.sh')
-
-    with mock.patch('tempfile.NamedTemporaryFile', new=mock_temp_file), (
-         mock.patch('pylib.utils.device_temp_file.DeviceTempFile',
-                    new=mock_device_temp_file)):
-      out = md5sum.CalculateDeviceMd5Sums(test_path, device)
-      self.assertEquals(1, len(out))
-      self.assertTrue('/storage/emulated/legacy/test/file.dat' in out)
-      self.assertEquals('0123456789abcdeffedcba9876543210',
-                        out['/storage/emulated/legacy/test/file.dat'])
-      device.adb.Push.assert_called_once_with(
-          '/tmp/test/script/file.sh', '/data/local/tmp/test/script/file.sh')
-      device.RunShellCommand.assert_called_once_with(
-          ['sh', '/data/local/tmp/test/script/file.sh'])
+    out = md5sum.CalculateDeviceMd5Sums(test_path, device)
+    self.assertEquals(1, len(out))
+    self.assertTrue('/storage/emulated/legacy/test/file.dat' in out)
+    self.assertEquals('0123456789abcdeffedcba9876543210',
+                      out['/storage/emulated/legacy/test/file.dat'])
+    self.assertEquals(1, len(device.RunShellCommand.call_args_list))
 
   def testCalculateDeviceMd5Sums_list(self):
     test_path = ['/storage/emulated/legacy/test/file0.dat',
                  '/storage/emulated/legacy/test/file1.dat']
     device = mock.NonCallableMock()
-    device.adb = mock.NonCallableMock()
-    device.adb.Push = mock.Mock()
     device_md5sum_output = [
         '0123456789abcdeffedcba9876543210 '
             '/storage/emulated/legacy/test/file0.dat',
@@ -128,36 +112,21 @@ class Md5SumTest(unittest.TestCase):
     ]
     device.RunShellCommand = mock.Mock(return_value=device_md5sum_output)
 
-    mock_temp_file = mock.mock_open()
-    mock_temp_file.return_value.name = '/tmp/test/script/file.sh'
-
-    mock_device_temp_file = mock.mock_open()
-    mock_device_temp_file.return_value.name = (
-        '/data/local/tmp/test/script/file.sh')
-
-    with mock.patch('tempfile.NamedTemporaryFile', new=mock_temp_file), (
-         mock.patch('pylib.utils.device_temp_file.DeviceTempFile',
-                    new=mock_device_temp_file)):
-      out = md5sum.CalculateDeviceMd5Sums(test_path, device)
-      self.assertEquals(2, len(out))
-      self.assertTrue('/storage/emulated/legacy/test/file0.dat' in out)
-      self.assertEquals('0123456789abcdeffedcba9876543210',
-                        out['/storage/emulated/legacy/test/file0.dat'])
-      self.assertTrue('/storage/emulated/legacy/test/file1.dat' in out)
-      self.assertEquals('123456789abcdef00fedcba987654321',
-                        out['/storage/emulated/legacy/test/file1.dat'])
-      device.adb.Push.assert_called_once_with(
-          '/tmp/test/script/file.sh', '/data/local/tmp/test/script/file.sh')
-      device.RunShellCommand.assert_called_once_with(
-          ['sh', '/data/local/tmp/test/script/file.sh'])
+    out = md5sum.CalculateDeviceMd5Sums(test_path, device)
+    self.assertEquals(2, len(out))
+    self.assertTrue('/storage/emulated/legacy/test/file0.dat' in out)
+    self.assertEquals('0123456789abcdeffedcba9876543210',
+                      out['/storage/emulated/legacy/test/file0.dat'])
+    self.assertTrue('/storage/emulated/legacy/test/file1.dat' in out)
+    self.assertEquals('123456789abcdef00fedcba987654321',
+                      out['/storage/emulated/legacy/test/file1.dat'])
+    self.assertEquals(1, len(device.RunShellCommand.call_args_list))
 
   def testCalculateDeviceMd5Sums_generator(self):
     test_path = ('/storage/emulated/legacy/test/file%d.dat' % n
                  for n in xrange(0, 2))
 
     device = mock.NonCallableMock()
-    device.adb = mock.NonCallableMock()
-    device.adb.Push = mock.Mock()
     device_md5sum_output = [
         '0123456789abcdeffedcba9876543210 '
             '/storage/emulated/legacy/test/file0.dat',
@@ -166,31 +135,58 @@ class Md5SumTest(unittest.TestCase):
     ]
     device.RunShellCommand = mock.Mock(return_value=device_md5sum_output)
 
-    mock_temp_file = mock.mock_open()
-    mock_temp_file.return_value.name = '/tmp/test/script/file.sh'
-
-    mock_device_temp_file = mock.mock_open()
-    mock_device_temp_file.return_value.name = (
-        '/data/local/tmp/test/script/file.sh')
-
-    with mock.patch('tempfile.NamedTemporaryFile', new=mock_temp_file), (
-         mock.patch('pylib.utils.device_temp_file.DeviceTempFile',
-                    new=mock_device_temp_file)):
-      out = md5sum.CalculateDeviceMd5Sums(test_path, device)
-      self.assertEquals(2, len(out))
-      self.assertTrue('/storage/emulated/legacy/test/file0.dat' in out)
-      self.assertEquals('0123456789abcdeffedcba9876543210',
-                        out['/storage/emulated/legacy/test/file0.dat'])
-      self.assertTrue('/storage/emulated/legacy/test/file1.dat' in out)
-      self.assertEquals('123456789abcdef00fedcba987654321',
-                        out['/storage/emulated/legacy/test/file1.dat'])
-      device.adb.Push.assert_called_once_with(
-          '/tmp/test/script/file.sh', '/data/local/tmp/test/script/file.sh')
-      device.RunShellCommand.assert_called_once_with(
-          ['sh', '/data/local/tmp/test/script/file.sh'])
+    out = md5sum.CalculateDeviceMd5Sums(test_path, device)
+    self.assertEquals(2, len(out))
+    self.assertTrue('/storage/emulated/legacy/test/file0.dat' in out)
+    self.assertEquals('0123456789abcdeffedcba9876543210',
+                      out['/storage/emulated/legacy/test/file0.dat'])
+    self.assertTrue('/storage/emulated/legacy/test/file1.dat' in out)
+    self.assertEquals('123456789abcdef00fedcba987654321',
+                      out['/storage/emulated/legacy/test/file1.dat'])
+    self.assertEquals(1, len(device.RunShellCommand.call_args_list))
 
   def testCalculateDeviceMd5Sums_singlePath_linkerWarning(self):
     # See crbug/479966
+    test_path = '/storage/emulated/legacy/test/file.dat'
+
+    device = mock.NonCallableMock()
+    device_md5sum_output = [
+        'WARNING: linker: /data/local/tmp/md5sum/md5sum_bin: '
+            'unused DT entry: type 0x1d arg 0x15db',
+        'THIS_IS_NOT_A_VALID_CHECKSUM_ZZZ some random text',
+        '0123456789abcdeffedcba9876543210 '
+            '/storage/emulated/legacy/test/file.dat',
+    ]
+    device.RunShellCommand = mock.Mock(return_value=device_md5sum_output)
+
+    out = md5sum.CalculateDeviceMd5Sums(test_path, device)
+    self.assertEquals(1, len(out))
+    self.assertTrue('/storage/emulated/legacy/test/file.dat' in out)
+    self.assertEquals('0123456789abcdeffedcba9876543210',
+                      out['/storage/emulated/legacy/test/file.dat'])
+    self.assertEquals(1, len(device.RunShellCommand.call_args_list))
+
+  def testCalculateDeviceMd5Sums_list_fileMissing(self):
+    test_path = ['/storage/emulated/legacy/test/file0.dat',
+                 '/storage/emulated/legacy/test/file1.dat']
+    device = mock.NonCallableMock()
+    device_md5sum_output = [
+        '0123456789abcdeffedcba9876543210 '
+            '/storage/emulated/legacy/test/file0.dat',
+        '[0819/203513:ERROR:md5sum.cc(25)] Could not open file asdf',
+        '',
+    ]
+    device.RunShellCommand = mock.Mock(return_value=device_md5sum_output)
+
+    out = md5sum.CalculateDeviceMd5Sums(test_path, device)
+    self.assertEquals(1, len(out))
+    self.assertTrue('/storage/emulated/legacy/test/file0.dat' in out)
+    self.assertEquals('0123456789abcdeffedcba9876543210',
+                      out['/storage/emulated/legacy/test/file0.dat'])
+    self.assertEquals(1, len(device.RunShellCommand.call_args_list))
+
+
+  def testCalculateDeviceMd5Sums_requiresBinary(self):
     test_path = '/storage/emulated/legacy/test/file.dat'
 
     device = mock.NonCallableMock()
@@ -203,27 +199,18 @@ class Md5SumTest(unittest.TestCase):
         '0123456789abcdeffedcba9876543210 '
             '/storage/emulated/legacy/test/file.dat',
     ]
-    device.RunShellCommand = mock.Mock(return_value=device_md5sum_output)
+    error = device_errors.AdbShellCommandFailedError('cmd', 'out', 2)
+    device.RunShellCommand = mock.Mock(
+        side_effect=(error, device_md5sum_output))
 
-    mock_temp_file = mock.mock_open()
-    mock_temp_file.return_value.name = '/tmp/test/script/file.sh'
-
-    mock_device_temp_file = mock.mock_open()
-    mock_device_temp_file.return_value.name = (
-        '/data/local/tmp/test/script/file.sh')
-
-    with mock.patch('tempfile.NamedTemporaryFile', new=mock_temp_file), (
-         mock.patch('pylib.utils.device_temp_file.DeviceTempFile',
-                    new=mock_device_temp_file)):
-      out = md5sum.CalculateDeviceMd5Sums(test_path, device)
-      self.assertEquals(1, len(out))
-      self.assertTrue('/storage/emulated/legacy/test/file.dat' in out)
-      self.assertEquals('0123456789abcdeffedcba9876543210',
-                        out['/storage/emulated/legacy/test/file.dat'])
-      device.adb.Push.assert_called_once_with(
-          '/tmp/test/script/file.sh', '/data/local/tmp/test/script/file.sh')
-      device.RunShellCommand.assert_called_once_with(
-          ['sh', '/data/local/tmp/test/script/file.sh'])
+    out = md5sum.CalculateDeviceMd5Sums(test_path, device)
+    self.assertEquals(1, len(out))
+    self.assertTrue('/storage/emulated/legacy/test/file.dat' in out)
+    self.assertEquals('0123456789abcdeffedcba9876543210',
+                      out['/storage/emulated/legacy/test/file.dat'])
+    self.assertEquals(2, len(device.RunShellCommand.call_args_list))
+    device.adb.Push.assert_called_once_with(
+        'test/out/directory/md5sum_dist', '/data/local/tmp/md5sum/')
 
 
 if __name__ == '__main__':
