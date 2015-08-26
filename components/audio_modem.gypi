@@ -12,6 +12,7 @@
         '../content/content.gyp:content_common',
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
+        '../third_party/webrtc/common_audio/common_audio.gyp:common_audio',
       ],
       'include_dirs': [
         '..',
