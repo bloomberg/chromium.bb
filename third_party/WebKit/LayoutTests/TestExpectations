@@ -1489,3 +1489,6 @@ crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Fail
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ ImageOnlyFailure Pass ]
 crbug.com/523500 http/tests/inspector-protocol/request-mixed-content-status.html [ Failure Pass ]
+
+crbug.com/524764 [ Win10 ] virtual/trustedeventsdefaultaction/fast/events/selectstart-prevent-selectall.html [ Failure Pass ]
+crbug.com/524764 [ Win10 ] virtual/pointerevent/fast/events/selectstart-prevent-selectall.html [ Failure Pass ]
