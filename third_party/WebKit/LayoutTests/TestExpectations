@@ -198,9 +198,6 @@ crbug.com/418091 [ SnowLeopard Debug ] inspector/elements/bidi-dom-tree.html [ P
 crbug.com/449242 [ SnowLeopard Debug ] fast/css/word-spacing-characters-complex-text.html [ Pass Crash ]
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 
-crbug.com/524859 fast/css/transformed-mask.html [ NeedsRebaseline ]
-crbug.com/524859 fast/reflections/opacity-reflection-transform.html [ NeedsRebaseline ]
-crbug.com/524859 fast/transforms/transform-on-inline.html [ NeedsRebaseline ]
 crbug.com/524859 fast/text/complex-text-opacity.html [ NeedsManualRebaseline ]
 # crbug.com/498021 [ Linux ] fast/text/complex-text-opacity.html [ ImageOnlyFailure ]
 # crbug.com/509025 [ Yosemite ] fast/text/complex-text-opacity.html [ Failure ]
