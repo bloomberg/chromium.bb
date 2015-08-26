@@ -7153,12 +7153,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- chrome://voicesearch strings -->
-      <message name="IDS_VOICESEARCH_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
-        Loading...
-      </message>
-      <message name="IDS_VOICESEARCH_TITLE_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
-        About Voice Search
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_VOICESEARCH_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
+          Loading...
+        </message>
+        <message name="IDS_VOICESEARCH_TITLE_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
+          About Voice Search
+        </message>
+      </if>
 
       <!-- About box strings -->
       <if expr="is_win">

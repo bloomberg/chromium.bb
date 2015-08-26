@@ -2625,8 +2625,6 @@
       'browser/ui/webui/extensions/extension_basic_info.h',
       'browser/ui/webui/extensions/extension_icon_source.cc',
       'browser/ui/webui/extensions/extension_icon_source.h',
-      'browser/ui/webui/voice_search_ui.cc',
-      'browser/ui/webui/voice_search_ui.h',
     ],
     'chrome_browser_ui_google_now_non_android_sources': [
       # These are non-Android because Android excludes all of options.

@@ -1099,6 +1099,8 @@
         'browser/chromeos/extensions/wallpaper_manager_util.h',
         'browser/chromeos/extensions/wallpaper_private_api.cc',
         'browser/chromeos/extensions/wallpaper_private_api.h',
+        'browser/ui/webui/voice_search_ui.cc',
+        'browser/ui/webui/voice_search_ui.h',
     ],
   },
   'targets': [
