@@ -80,6 +80,8 @@ function assert_promise_rejects_with_message(promise, expected, description) {
     assert_unreached('Promise should have rejected: ' + description);
   }, error => {
     assert_equals(error.name, expected.name, 'Unexpected Error Name:');
-    assert_equals(error.message, expected.message, 'Unexpected Error Message:');
+    if (expected.message) {
+      assert_equals(error.message, expected.message, 'Unexpected Error Message:');
+    }
   });
 }

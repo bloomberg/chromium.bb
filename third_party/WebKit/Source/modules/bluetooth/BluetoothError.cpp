@@ -41,8 +41,11 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothErr
         // NotFoundErrors:
         MAP_ERROR(BluetoothAdapterOff, NotFoundError, "Bluetooth adapter is off.");
         MAP_ERROR(NoBluetoothAdapter, NotFoundError, "Bluetooth adapter not available.");
+        MAP_ERROR(NoBluetoothChooser, NotFoundError, "Can't show Bluetooth chooser dialog.");
         MAP_ERROR(DiscoverySessionStartFailed, NotFoundError, "Couldn't start discovery session.");
         MAP_ERROR(DiscoverySessionStopFailed, NotFoundError, "Failed to stop discovery session.");
+        MAP_ERROR(ChosenDeviceVanished, NotFoundError, "User selected a device that doesn't exist anymore.");
+        MAP_ERROR(ChooserCancelled, NotFoundError, "User cancelled the requestDevice() chooser.");
         MAP_ERROR(NoDevicesFound, NotFoundError, "No Bluetooth devices in range.");
         MAP_ERROR(ServiceNotFound, NotFoundError, "Service not found in device.");
         MAP_ERROR(CharacteristicNotFound, NotFoundError, "Characteristic not found in device.");

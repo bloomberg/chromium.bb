@@ -21,11 +21,14 @@ promise_test(() => {
                                 new TypeError());
 }, 'RequestDeviceOptions requires a |filters| member.');
 
+// TODO(jyasskin): Add a test that the chooser is informed of a failed discovery
+// session.
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('FailStartDiscoveryAdapter');
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
-    {name: 'NotFoundError', message: 'Couldn\'t start discovery session.'},
+    // TODO(jyasskin): Uncomment the message when it's changed on the Chrome side.
+    {name: 'NotFoundError', /*message: 'User cancelled the requestDevice() chooser.'*/},
     'The adapter failed to start a discovery session.');
 }, 'Discovery session fails to start.');
 
@@ -37,19 +40,25 @@ promise_test(() => {
     'Bluetooth adapter is not present.');
 }, 'Reject with NotFoundError if the adapter is not present.');
 
+// TODO(jyasskin): Add a test that the chooser is informed of a disabled
+// Bluetooth adapter.
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('NotPoweredAdapter');
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
-    {name: 'NotFoundError', message: 'Bluetooth adapter is off.'},
+    // TODO(jyasskin): Uncomment the message when it's changed on the Chrome side.
+    {name: 'NotFoundError', /*message: 'User cancelled the requestDevice() chooser.'*/},
     'Bluetooth adapter is not powered.');
 }, 'Reject with NotFoundError if the adapter is off.');
 
+// TODO(jyasskin): Add a test that the chooser gets a full list of found
+// devices.
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('EmptyAdapter');
   return assert_promise_rejects_with_message(
     requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
-    {name: 'NotFoundError', message: 'No Bluetooth devices in range.'},
+    // TODO(jyasskin): Uncomment the message when it's changed on the Chrome side.
+    {name: 'NotFoundError', /*message: 'User cancelled the requestDevice() chooser.'*/},
     'No Bluetooth devices in range.');
 }, 'Reject with NotFoundError if there are no devices around.');
 

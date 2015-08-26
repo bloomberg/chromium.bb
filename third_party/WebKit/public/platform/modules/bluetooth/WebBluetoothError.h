@@ -36,9 +36,12 @@ enum class WebBluetoothError {
     // NotFoundError:
     BluetoothAdapterOff,
     NoBluetoothAdapter,
+    NoBluetoothChooser,
     DiscoverySessionStartFailed,
     DiscoverySessionStopFailed,
     NoDevicesFound,
+    ChosenDeviceVanished,
+    ChooserCancelled,
     ServiceNotFound,
     CharacteristicNotFound,
     // NotSupportedError:
