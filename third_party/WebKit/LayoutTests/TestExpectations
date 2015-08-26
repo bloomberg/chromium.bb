@@ -1551,3 +1551,5 @@ crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-xChannelSe
 crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed.html [ Pass Timeout ]
 
 crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
+
+crbug.com/525286 [ Debug Linux SnowLeopard Lion Win7 ] fast/hidpi/image-srcset-intrinsic-size-zero.html [ Timeout ]
