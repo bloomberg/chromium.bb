@@ -27,18 +27,10 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/layout/svg/SVGResources.h"
-#include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/CompositingRecorder.h"
 #include "core/paint/PaintInfo.h"
-#include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGGeometryElement.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/paint/ClipPathDisplayItem.h"
-#include "platform/graphics/paint/CompositingDisplayItem.h"
-#include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
@@ -68,13 +60,12 @@ void LayoutSVGResourceClipper::removeClientFromCache(LayoutObject* client, bool 
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObject, GraphicsContext* context,
-    const AffineTransform& animatedLocalTransform, const FloatRect& objectBoundingBox) {
+bool LayoutSVGResourceClipper::asPath(const AffineTransform& animatedLocalTransform,
+    const FloatRect& referenceBox, Path& clipPath) {
     // If the current clip-path gets clipped itself, we have to fallback to masking.
-    if (!style()->svgStyle().clipperResource().isEmpty())
+    if (style()->svgStyle().hasClipper())
         return false;
 
-    Path clipPath;
     bool usingBuilder = false;
     SkOpBuilder clipPathBuilder;
 
@@ -93,7 +84,7 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
             continue;
         const SVGComputedStyle& svgStyle = style->svgStyle();
         // Current shape in clip-path gets clipped too. Fallback to masking.
-        if (!svgStyle.clipperResource().isEmpty())
+        if (svgStyle.hasClipper())
             return false;
 
         // First clip shape.
@@ -135,22 +126,13 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
     // and transform the content to userspace if necessary.
     if (clipPathUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         AffineTransform transform;
-        transform.translate(objectBoundingBox.x(), objectBoundingBox.y());
-        transform.scaleNonUniform(objectBoundingBox.width(), objectBoundingBox.height());
+        transform.translate(referenceBox.x(), referenceBox.y());
+        transform.scaleNonUniform(referenceBox.width(), referenceBox.height());
         clipPath.transform(transform);
     }
 
     // Transform path by animatedLocalTransform.
     clipPath.transform(animatedLocalTransform);
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (!context->displayItemList()->displayItemConstructionIsDisabled())
-            context->displayItemList()->createAndAppend<BeginClipPathDisplayItem>(layoutObject, clipPath);
-    } else {
-        BeginClipPathDisplayItem clipPathDisplayItem(layoutObject, clipPath);
-        clipPathDisplayItem.replay(*context);
-    }
-
     return true;
 }
 

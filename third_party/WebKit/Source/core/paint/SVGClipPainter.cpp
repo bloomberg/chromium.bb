@@ -60,8 +60,16 @@ bool SVGClipPainter::applyClippingToContext(const LayoutObject& target, const Fl
     }
 
     // First, try to apply the clip as a clipPath.
-    if (m_clip.tryPathOnlyClipping(target, context, animatedLocalTransform, targetBoundingBox)) {
+    Path clipPath;
+    if (m_clip.asPath(animatedLocalTransform, targetBoundingBox, clipPath)) {
         clipperState = ClipperAppliedPath;
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            if (!context->displayItemList()->displayItemConstructionIsDisabled())
+                context->displayItemList()->createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
+        } else {
+            BeginClipPathDisplayItem clipPathDisplayItem(target, clipPath);
+            clipPathDisplayItem.replay(*context);
+        }
         return true;
     }
 
