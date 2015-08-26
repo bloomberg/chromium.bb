@@ -23,15 +23,10 @@ mkvparser::IMkvReader::~IMkvReader() {}
 template<typename Type> Type* mkvparser::SafeArrayAlloc(
     unsigned long long num_elements,
     unsigned long long element_size) {
-#if defined _MSC_VER
-#if !defined INT32_MAX
-#define INT32_MAX (1 << 31) - 1
-#endif
-#endif
   if (num_elements == 0 || element_size == 0)
     return NULL;
 
-  const size_t kMaxAllocSize = INT32_MAX;
+  const size_t kMaxAllocSize = 0x80000000;  // 2GiB
   const unsigned long long num_bytes = num_elements * element_size;
   if (element_size > (kMaxAllocSize / num_elements))
     return NULL;
