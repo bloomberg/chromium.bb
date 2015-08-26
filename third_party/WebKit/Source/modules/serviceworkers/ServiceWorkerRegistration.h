@@ -5,6 +5,7 @@
 #ifndef ServiceWorkerRegistration_h
 #define ServiceWorkerRegistration_h
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "modules/serviceworkers/ServiceWorker.h"
@@ -20,7 +21,6 @@
 namespace blink {
 
 class ScriptPromise;
-class ScriptPromiseResolver;
 class ScriptState;
 class WebServiceWorkerProvider;
 
@@ -43,9 +43,7 @@ public:
     void setWaiting(WebServiceWorker*) override;
     void setActive(WebServiceWorker*) override;
 
-    static ServiceWorkerRegistration* from(ExecutionContext*, WebServiceWorkerRegistration*);
-    static ServiceWorkerRegistration* take(ScriptPromiseResolver*, WebServiceWorkerRegistration*);
-    static void dispose(WebServiceWorkerRegistration*);
+    static ServiceWorkerRegistration* create(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
 
     ServiceWorker* installing() { return m_installing; }
     ServiceWorker* waiting() { return m_waiting; }
@@ -67,7 +65,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    static ServiceWorkerRegistration* getOrCreate(ExecutionContext*, WebServiceWorkerRegistration*);
     ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration>);
 
     // ActiveDOMObject overrides.
@@ -90,14 +87,8 @@ public:
     {
         HeapVector<Member<ServiceWorkerRegistration>> registrations;
         for (WebServiceWorkerRegistration* registration : *webServiceWorkerRegistrations)
-            registrations.append(ServiceWorkerRegistration::take(resolver, registration));
+            registrations.append(ServiceWorkerRegistration::create(resolver->executionContext(), adoptPtr(registration)));
         return registrations;
-    }
-
-    static void dispose(PassOwnPtr<WebVector<WebServiceWorkerRegistration*>> webServiceWorkerRegistrations)
-    {
-        for (WebServiceWorkerRegistration* registration : *webServiceWorkerRegistrations)
-            ServiceWorkerRegistration::dispose(registration);
     }
 };
 

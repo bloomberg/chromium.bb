@@ -154,13 +154,13 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
     return promise;
 }
 
-void ServiceWorkerGlobalScope::setRegistration(WebServiceWorkerRegistration* registration)
+void ServiceWorkerGlobalScope::setRegistration(WebServiceWorkerRegistration* registrationRaw)
 {
-    if (!executionContext()) {
-        ServiceWorkerRegistration::dispose(registration);
+    ASSERT(registrationRaw);
+    OwnPtr<WebServiceWorkerRegistration> registration = adoptPtr(registrationRaw);
+    if (!executionContext())
         return;
-    }
-    m_registration = ServiceWorkerRegistration::from(executionContext(), registration);
+    m_registration = ServiceWorkerRegistration::create(executionContext(), registration.release());
 }
 
 bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool useCapture)

@@ -64,11 +64,13 @@ public:
         : m_resolver(resolver) { }
     ~RegistrationCallback() override { }
 
-    void onSuccess(WebServiceWorkerRegistration* registration) override
+    // Takes ownership of |registrationRaw|.
+    void onSuccess(WebServiceWorkerRegistration* registrationRaw) override
     {
+        OwnPtr<WebServiceWorkerRegistration> registration = adoptPtr(registrationRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(ServiceWorkerRegistration::take(m_resolver.get(), registration));
+        m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), registration.release()));
     }
 
     // Takes ownership of |errorRaw|.
@@ -91,8 +93,10 @@ public:
         : m_resolver(resolver) { }
     ~GetRegistrationCallback() override { }
 
-    void onSuccess(WebServiceWorkerRegistration* registration) override
+    // Takes ownership of |registrationRaw|.
+    void onSuccess(WebServiceWorkerRegistration* registrationRaw) override
     {
+        OwnPtr<WebServiceWorkerRegistration> registration = adoptPtr(registrationRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         if (!registration) {
@@ -100,7 +104,7 @@ public:
             m_resolver->resolve();
             return;
         }
-        m_resolver->resolve(ServiceWorkerRegistration::take(m_resolver.get(), registration));
+        m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), registration.release()));
     }
 
     // Takes ownership of |errorRaw|.
@@ -151,13 +155,18 @@ public:
     explicit GetRegistrationForReadyCallback(ReadyProperty* ready)
         : m_ready(ready) { }
     ~GetRegistrationForReadyCallback() { }
-    void onSuccess(WebServiceWorkerRegistration* registration) override
+
+    // Takes ownership of |registrationRaw|.
+    void onSuccess(WebServiceWorkerRegistration* registrationRaw) override
     {
-        ASSERT(registration);
+        ASSERT(registrationRaw);
         ASSERT(m_ready->state() == ReadyProperty::Pending);
+
+        OwnPtr<WebServiceWorkerRegistration> registration = adoptPtr(registrationRaw);
         if (m_ready->executionContext() && !m_ready->executionContext()->activeDOMObjectsAreStopped())
-            m_ready->resolve(ServiceWorkerRegistration::from(m_ready->executionContext(), registration));
+            m_ready->resolve(ServiceWorkerRegistration::create(m_ready->executionContext(), registration.release()));
     }
+
 private:
     Persistent<ReadyProperty> m_ready;
     WTF_MAKE_NONCOPYABLE(GetRegistrationForReadyCallback);

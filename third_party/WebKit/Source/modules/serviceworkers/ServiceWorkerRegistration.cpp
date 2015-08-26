@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
@@ -63,22 +62,13 @@ void ServiceWorkerRegistration::setActive(WebServiceWorker* serviceWorker)
     m_active = ServiceWorker::from(executionContext(), serviceWorker);
 }
 
-ServiceWorkerRegistration* ServiceWorkerRegistration::from(ExecutionContext* executionContext, WebServiceWorkerRegistration* registration)
+ServiceWorkerRegistration* ServiceWorkerRegistration::create(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration> webRegistration)
 {
-    if (!registration)
-        return 0;
-    return getOrCreate(executionContext, registration);
-}
-
-ServiceWorkerRegistration* ServiceWorkerRegistration::take(ScriptPromiseResolver* resolver, WebServiceWorkerRegistration* registration)
-{
-    return from(resolver->scriptState()->executionContext(), registration);
-}
-
-void ServiceWorkerRegistration::dispose(WebServiceWorkerRegistration* registration)
-{
-    if (registration && !registration->proxy())
-        delete registration;
+    if (!webRegistration)
+        return nullptr;
+    ServiceWorkerRegistration* registration = new ServiceWorkerRegistration(executionContext, webRegistration);
+    registration->suspendIfNeeded();
+    return registration;
 }
 
 String ServiceWorkerRegistration::scope() const
@@ -114,29 +104,14 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
     return promise;
 }
 
-ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionContext* executionContext, WebServiceWorkerRegistration* outerRegistration)
-{
-    if (!outerRegistration)
-        return 0;
-
-    ServiceWorkerRegistration* existingRegistration = static_cast<ServiceWorkerRegistration*>(outerRegistration->proxy());
-    if (existingRegistration) {
-        ASSERT(existingRegistration->executionContext() == executionContext);
-        return existingRegistration;
-    }
-
-    ServiceWorkerRegistration* registration = new ServiceWorkerRegistration(executionContext, adoptPtr(outerRegistration));
-    registration->suspendIfNeeded();
-    return registration;
-}
-
 ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration> outerRegistration)
     : ActiveDOMObject(executionContext)
     , m_outerRegistration(outerRegistration)
-    , m_provider(0)
+    , m_provider(nullptr)
     , m_stopped(false)
 {
     ASSERT(m_outerRegistration);
+    ASSERT(!m_outerRegistration->proxy());
 
     if (!executionContext)
         return;
