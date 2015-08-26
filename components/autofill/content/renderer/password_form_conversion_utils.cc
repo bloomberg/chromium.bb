@@ -14,6 +14,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
@@ -62,28 +63,29 @@ const char kAutocompleteUsername[] = "username";
 const char kAutocompleteCurrentPassword[] = "current-password";
 const char kAutocompleteNewPassword[] = "new-password";
 
+icu::RegexMatcher* CreateMatcher(
+    void* instance, const char* pattern) {
+  const icu::UnicodeString icu_pattern(pattern);
+
+  UErrorCode status = U_ZERO_ERROR;
+  // Use placement new to initialize the instance in the preallocated space.
+  // The "(instance)" is very important to force POD type initialization.
+  icu::RegexMatcher* matcher = new (instance) icu::RegexMatcher(
+      icu_pattern, UREGEX_CASE_INSENSITIVE, status);
+  DCHECK(U_SUCCESS(status));
+  return matcher;
+}
+
 struct LoginAndSignupLazyInstanceTraits
     : public base::DefaultLazyInstanceTraits<icu::RegexMatcher> {
   static icu::RegexMatcher* New(void* instance) {
-    const icu::UnicodeString icu_pattern(kLoginAndSignupRegex);
-
-    UErrorCode status = U_ZERO_ERROR;
-    // Use placement new to initialize the instance in the preallocated space.
-    // The "(instance)" is very important to force POD type initialization.
-    scoped_ptr<icu::RegexMatcher> matcher(new (instance) icu::RegexMatcher(
-        icu_pattern, UREGEX_CASE_INSENSITIVE, status));
-    DCHECK(U_SUCCESS(status));
-    return matcher.release();
+    return CreateMatcher(instance, kLoginAndSignupRegex);
   }
 };
 
-base::LazyInstance<icu::RegexMatcher, LoginAndSignupLazyInstanceTraits>
-    login_and_signup_matcher = LAZY_INSTANCE_INITIALIZER;
-
-bool MatchesLoginAndSignupPattern(base::StringPiece layout_sequence) {
-  icu::RegexMatcher* matcher = login_and_signup_matcher.Pointer();
+bool Matches(icu::RegexMatcher* matcher, base::StringPiece expression) {
   icu::UnicodeString icu_input(icu::UnicodeString::fromUTF8(
-      icu::StringPiece(layout_sequence.data(), layout_sequence.length())));
+      icu::StringPiece(expression.data(), expression.length())));
   matcher->reset(icu_input);
 
   UErrorCode status = U_ZERO_ERROR;
@@ -92,11 +94,14 @@ bool MatchesLoginAndSignupPattern(base::StringPiece layout_sequence) {
   return match == TRUE;
 }
 
+base::LazyInstance<icu::RegexMatcher, LoginAndSignupLazyInstanceTraits>
+    login_and_signup_matcher = LAZY_INSTANCE_INITIALIZER;
+
 // Given the sequence of non-password and password text input fields of a form,
 // represented as a string of Ns (non-password) and Ps (password), computes the
 // layout type of that form.
 PasswordForm::Layout SequenceToLayout(base::StringPiece layout_sequence) {
-  if (MatchesLoginAndSignupPattern(layout_sequence))
+  if (Matches(login_and_signup_matcher.Pointer(), layout_sequence))
     return PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
   return PasswordForm::Layout::LAYOUT_OTHER;
 }
@@ -261,6 +266,20 @@ void FindPredictedElements(
   }
 }
 
+// TODO(msramek): Move the reauthentication recognition code to the browser.
+const char kPasswordSiteUrlRegex[] =
+    "passwords(?:-[a-z-]+\\.corp)?\\.google\\.com";
+
+struct PasswordSiteUrlLazyInstanceTraits
+    : public base::DefaultLazyInstanceTraits<icu::RegexMatcher> {
+  static icu::RegexMatcher* New(void* instance) {
+    return CreateMatcher(instance, kPasswordSiteUrlRegex);
+  }
+};
+
+base::LazyInstance<icu::RegexMatcher, PasswordSiteUrlLazyInstanceTraits>
+    password_site_matcher = LAZY_INSTANCE_INITIALIZER;
+
 // Get information about a login form encapsulated in a PasswordForm struct.
 // If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
@@ -280,6 +299,15 @@ void GetPasswordForm(
 
   WebVector<WebFormControlElement> control_elements;
   form.getFormControlElements(control_elements);
+
+  // Bail if this is a GAIA passwords site reauthentication form, so that
+  // the form will be ignored.
+  // TODO(msramek): Move this logic to the browser, and disable filling only
+  // for the sync credential and if passwords are being synced.
+  if (IsGaiaReauthenticationForm(
+          GURL(form.document().url()).GetOrigin(), control_elements)) {
+    return;
+  }
 
   std::map<WebInputElement, PasswordFormFieldPredictionType> predicted_elements;
   if (form_predictions) {
@@ -517,6 +545,38 @@ GURL GetCanonicalActionForForm(const WebFormElement& form) {
 GURL GetCanonicalOriginForDocument(const WebDocument& document) {
   GURL full_origin(document.url());
   return StripAuthAndParams(full_origin);
+}
+
+bool IsGaiaReauthenticationForm(
+    const GURL& origin,
+    const WebVector<blink::WebFormControlElement>& control_elements) {
+  if (origin != GaiaUrls::GetInstance()->gaia_url().GetOrigin())
+    return false;
+
+  bool has_rart_field = false;
+  bool has_continue_field = false;
+
+  for (const blink::WebFormControlElement& element : control_elements) {
+    // We're only interested in the presence
+    // of <input type="hidden" /> elements.
+    CR_DEFINE_STATIC_LOCAL(WebString, kHidden, ("hidden"));
+    const blink::WebInputElement* input = blink::toWebInputElement(&element);
+    if (!input || input->formControlType() != kHidden)
+      continue;
+
+    // There must be a hidden input named "rart".
+    if (input->formControlName() == "rart")
+      has_rart_field = true;
+
+    // There must be a hidden input named "continue", whose value points
+    // to a password (or password testing) site.
+    if (input->formControlName() == "continue" &&
+        Matches(password_site_matcher.Pointer(), input->value().utf8())) {
+      has_continue_field = true;
+    }
+  }
+
+  return has_rart_field && has_continue_field;
 }
 
 scoped_ptr<PasswordForm> CreatePasswordForm(
