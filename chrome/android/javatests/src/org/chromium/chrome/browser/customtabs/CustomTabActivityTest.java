@@ -14,9 +14,11 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.ICustomTabsCallback;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -401,7 +403,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                         return CustomTabActivity.handleInActiveContentIfNeeded(
                                 CustomTabsTestUtils.createMinimalCustomTabIntent(context,
                                         TEST_PAGE_2,
-                                        CustomTabsTestUtils.newDummyCallback().asBinder()));
+                                        (new CustomTabsTestUtils.DummyCallback()).asBinder()));
                     }
                 }));
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
@@ -480,12 +482,59 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         }
     }
 
-    private IBinder warmUpAndLaunchUrlWithSession() throws InterruptedException {
+    /**
+     * Tests that the navigation callbacks are sent.
+     */
+    @SmallTest
+    public void testCallbacksAreSent() {
+        final ArrayList<Integer> navigationEvents = new ArrayList<>();
+        ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback() {
+            @Override
+            public void onNavigationEvent(int navigationEvent, Bundle extras) {
+                navigationEvents.add(navigationEvent);
+            }
+        };
+        try {
+            warmUpAndLaunchUrlWithSession(cb);
+            assertTrue(navigationEvents.contains(CustomTabsCallback.NAVIGATION_STARTED));
+            assertTrue(navigationEvents.contains(CustomTabsCallback.NAVIGATION_FINISHED));
+            assertFalse(navigationEvents.contains(CustomTabsCallback.NAVIGATION_FAILED));
+            assertFalse(navigationEvents.contains(CustomTabsCallback.NAVIGATION_ABORTED));
+        } catch (InterruptedException e) {
+            fail();
+        }
+    }
+
+    /**
+     * Tests that when we use a pre-created renderer, the page loaded is the
+     * only one in the navigation history.
+     */
+    @SmallTest
+    public void testPrecreatedRenderer() {
+        CustomTabsConnection connection = warmUpAndWait();
+        ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        assertTrue(connection.newSession(cb));
+        Bundle extras = new Bundle();
+        extras.putBoolean(CustomTabsConnection.NO_PRERENDERING_KEY, true);
+        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(TEST_PAGE), extras, null));
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        try {
+            startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                    context, TEST_PAGE, cb.asBinder()));
+        } catch (InterruptedException e) {
+            fail();
+        }
+        Tab tab = getActivity().getActivityTab();
+        assertEquals(TEST_PAGE, tab.getUrl());
+        assertFalse(tab.canGoBack());
+    }
+
+    private CustomTabsConnection warmUpAndWait() {
         final Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        CustomTabsConnection connection = CustomTabsConnection.getInstance((Application) context);
-        ICustomTabsCallback callback = CustomTabsTestUtils.newDummyCallback();
+        CustomTabsConnection connection =
+                CustomTabsTestUtils.setUpConnection((Application) context);
         final CallbackHelper startupCallbackHelper = new CallbackHelper();
-        connection.warmup(0);
+        assertTrue(connection.warmup(0));
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -506,13 +555,25 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
 
         try {
             startupCallbackHelper.waitForCallback(0);
-        } catch (TimeoutException e) {
+        } catch (TimeoutException | InterruptedException e) {
             fail();
         }
-        connection.newSession(callback);
+        return connection;
+    }
+
+    private IBinder warmUpAndLaunchUrlWithSession(ICustomTabsCallback cb)
+            throws InterruptedException {
+        CustomTabsConnection connection = warmUpAndWait();
+        connection.newSession(cb);
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
         startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                context, TEST_PAGE, callback.asBinder()));
-        return callback.asBinder();
+                context, TEST_PAGE, cb.asBinder()));
+        return cb.asBinder();
+    }
+
+    private IBinder warmUpAndLaunchUrlWithSession() throws InterruptedException {
+        ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        return warmUpAndLaunchUrlWithSession(cb);
     }
 
     /**

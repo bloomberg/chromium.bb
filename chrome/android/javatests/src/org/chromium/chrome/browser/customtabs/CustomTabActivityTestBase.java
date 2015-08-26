@@ -49,7 +49,7 @@ public abstract class CustomTabActivityTestBase extends
      * Start a {@link CustomTabActivity} with given {@link Intent}, and wait till a tab is
      * initialized.
      */
-    protected void startCustomTabActivityWithIntent(Intent intent)throws InterruptedException {
+    protected void startCustomTabActivityWithIntent(Intent intent) throws InterruptedException {
         startActivityCompletely(intent);
         assertTrue("Tab never selected/initialized.",
                 CriteriaHelper.pollForUIThreadCriteria(new Criteria() {

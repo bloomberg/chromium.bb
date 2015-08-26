@@ -70,7 +70,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class CustomTabsConnection extends ICustomTabsService.Stub {
     private static final String TAG = "cr.ChromeConnection";
-    private static final String NO_PRERENDERING_KEY =
+    @VisibleForTesting
+    static final String NO_PRERENDERING_KEY =
             "android.support.customtabs.maylaunchurl.NO_PRERENDERING";
 
     // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
