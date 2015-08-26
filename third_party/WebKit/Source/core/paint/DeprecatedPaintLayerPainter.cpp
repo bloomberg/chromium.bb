@@ -211,20 +211,16 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
     // so they are nested properly.
     ClipPathHelper clipPathHelper(context, m_paintLayer, paintingInfo, rootRelativeBounds, rootRelativeBoundsComputed, offsetFromRoot, paintFlags);
 
-    Optional<LayerClipRecorder> clipRecorder;
     Optional<CompositingRecorder> compositingRecorder;
     // Blending operations must be performed only with the nearest ancestor stacking context.
     // Note that there is no need to composite if we're painting the root.
     // FIXME: this should be unified further into DeprecatedPaintLayer::paintsWithTransparency().
     bool shouldCompositeForBlendMode = (!m_paintLayer.layoutObject()->isDocumentElement() || m_paintLayer.layoutObject()->isSVGRoot()) && m_paintLayer.stackingNode()->isStackingContext() && m_paintLayer.hasNonIsolatedDescendantWithBlendMode();
     if (shouldCompositeForBlendMode || m_paintLayer.paintsWithTransparency(paintingInfo.globalPaintFlags())) {
-        clipRecorder.emplace(*context, *m_paintLayer.layoutObject(), DisplayItem::TransparencyClip,
-            m_paintLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.globalPaintFlags()),
-            &paintingInfo, LayoutPoint(), paintFlags);
-
+        FloatRect compositingBounds = FloatRect(m_paintLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.globalPaintFlags()));
         compositingRecorder.emplace(*context, *m_paintLayer.layoutObject(),
             WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_paintLayer.layoutObject()->style()->blendMode()),
-            m_paintLayer.layoutObject()->opacity());
+            m_paintLayer.layoutObject()->opacity(), &compositingBounds);
     }
 
     DeprecatedPaintLayerPaintingInfo localPaintingInfo(paintingInfo);

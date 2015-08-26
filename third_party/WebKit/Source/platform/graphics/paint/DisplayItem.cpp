@@ -140,7 +140,6 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(ClipPopupListBoxFrame);
         DEBUG_STRING_CASE(ClipSelectionImage);
         DEBUG_STRING_CASE(PageWidgetDelegateClip);
-        DEBUG_STRING_CASE(TransparencyClip);
         DEBUG_STRING_CASE(ClipPrintedPage);
         DEFAULT_CASE;
     }

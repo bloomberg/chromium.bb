@@ -125,7 +125,6 @@ public:
         ClipPopupListBoxFrame,
         ClipSelectionImage,
         PageWidgetDelegateClip,
-        TransparencyClip,
         ClipPrintedPage,
         ClipLast = ClipPrintedPage,
 
