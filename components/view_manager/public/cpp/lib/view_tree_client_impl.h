@@ -56,7 +56,6 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_services);
   void Embed(Id view_id, ViewTreeClientPtr client);
-  void EmbedAllowingReembed(mojo::URLRequestPtr request, Id view_id);
 
   void set_change_acked_callback(const Callback<void(void)>& callback) {
     change_acked_callback_ = callback;
@@ -92,10 +91,6 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
                ViewDataPtr root,
                ViewTreePtr tree,
                Id focused_view_id) override;
-  void OnEmbedForDescendant(
-      Id view,
-      mojo::URLRequestPtr request,
-      const OnEmbedForDescendantCallback& callback) override;
   void OnEmbeddedAppDisconnected(Id view_id) override;
   void OnUnembed() override;
   void OnViewBoundsChanged(Id view_id,

@@ -134,7 +134,6 @@ class View {
 
   // Embedding. See view_tree.mojom for details.
   void Embed(ViewTreeClientPtr client);
-  void EmbedAllowingReembed(mojo::URLRequestPtr request);
 
  protected:
   // This class is subclassed only by test classes that provide a public ctor.

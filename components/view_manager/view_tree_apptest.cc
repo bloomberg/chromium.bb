@@ -89,23 +89,6 @@ bool EmbedUrl(mojo::ApplicationImpl* app,
   return result;
 }
 
-bool EmbedAllowingReembed(mojo::ApplicationImpl* app,
-                          ViewTree* vm,
-                          const String& url,
-                          Id root_id) {
-  bool result = false;
-  base::RunLoop run_loop;
-  {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From(url);
-    vm->EmbedAllowingReembed(
-        root_id, request.Pass(),
-        base::Bind(&BoolResultCallback, &run_loop, &result));
-  }
-  run_loop.Run();
-  return result;
-}
-
 bool Embed(ViewTree* vm, Id root_id, mojo::ViewTreeClientPtr client) {
   bool result = false;
   base::RunLoop run_loop;
@@ -335,17 +318,6 @@ class ViewTreeClientImpl : public mojo::ViewTreeClient,
     if (embed_run_loop_)
       embed_run_loop_->Quit();
   }
-  void OnEmbedForDescendant(
-      uint32_t view,
-      mojo::URLRequestPtr request,
-      const OnEmbedForDescendantCallback& callback) override {
-    tracker()->OnEmbedForDescendant(view);
-    mojo::ViewTreeClientPtr client;
-    scoped_ptr<ApplicationConnection> connection =
-        app_->ConnectToApplication(request.Pass());
-    connection->ConnectToService(&client);
-    callback.Run(client.Pass());
-  }
   void OnEmbeddedAppDisconnected(Id view_id) override {
     tracker()->OnEmbeddedAppDisconnected(view_id);
   }
@@ -462,11 +434,6 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
    ~ViewTreeAppTest() override {}
 
  protected:
-  enum class EmbedType {
-    ALLOW_REEMBED,
-    NO_REEMBED,
-  };
-
   // Returns the changes from the various connections.
   std::vector<Change>* changes1() { return vm_client1_->tracker()->changes(); }
   std::vector<Change>* changes2() { return vm_client2_->tracker()->changes(); }
@@ -489,8 +456,8 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
 
   void EstablishSecondConnectionWithRoot(Id root_id) {
     ASSERT_TRUE(vm_client2_.get() == nullptr);
-    vm_client2_ = EstablishConnectionViaEmbed(
-        vm1(), root_id, EmbedType::NO_REEMBED, &connection_id_2_);
+    vm_client2_ =
+        EstablishConnectionViaEmbed(vm1(), root_id, &connection_id_2_);
     ASSERT_GT(connection_id_2_, 0);
     ASSERT_TRUE(vm_client2_.get() != nullptr);
     vm_client2_->set_root_view(root_view_id_);
@@ -513,8 +480,7 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
 
   void EstablishThirdConnection(ViewTree* owner, Id root_id) {
     ASSERT_TRUE(vm_client3_.get() == nullptr);
-    vm_client3_ = EstablishConnectionViaEmbed(owner, root_id,
-                                              EmbedType::NO_REEMBED, nullptr);
+    vm_client3_ = EstablishConnectionViaEmbed(owner, root_id, nullptr);
     ASSERT_TRUE(vm_client3_.get() != nullptr);
     vm_client3_->set_root_view(root_view_id_);
   }
@@ -524,16 +490,9 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
   scoped_ptr<ViewTreeClientImpl> EstablishConnectionViaEmbed(
     ViewTree* owner,
       Id root_id,
-      EmbedType embed_type,
       int* connection_id) {
-    if (embed_type == EmbedType::NO_REEMBED &&
-        !EmbedUrl(application_impl(), owner, application_impl()->url(),
+    if (!EmbedUrl(application_impl(), owner, application_impl()->url(),
                   root_id)) {
-      ADD_FAILURE() << "Embed() failed";
-      return nullptr;
-    } else if (embed_type == EmbedType::ALLOW_REEMBED &&
-               !EmbedAllowingReembed(application_impl(), owner,
-                                     application_impl()->url(), root_id)) {
       ADD_FAILURE() << "Embed() failed";
       return nullptr;
     }
@@ -1295,8 +1254,8 @@ TEST_F(ViewTreeAppTest, EmbedWithSameViewId2) {
     changes3()->clear();
 
     // We should get a new connection for the new embedding.
-    scoped_ptr<ViewTreeClientImpl> connection4(EstablishConnectionViaEmbed(
-        vm1(), view_1_1, EmbedType::NO_REEMBED, nullptr));
+    scoped_ptr<ViewTreeClientImpl> connection4(
+        EstablishConnectionViaEmbed(vm1(), view_1_1, nullptr));
     ASSERT_TRUE(connection4.get());
     EXPECT_EQ("[" + ViewParentToString(view_1_1, kNullParentId) + "]",
               ChangeViewDescription(*connection4->tracker()->changes()));
@@ -1652,63 +1611,6 @@ TEST_F(ViewTreeAppTest, EmbedSupplyingViewTreeClient) {
   client2.WaitForOnEmbed();
   EXPECT_EQ("OnEmbed",
             SingleChangeToDescription(*client2.tracker()->changes()));
-}
-
-TEST_F(ViewTreeAppTest, OnWillEmbed) {
-  // Create connections 2 and 3, marking 2 as an embed root.
-  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  Id view_1_1 = BuildViewId(connection_id_1(), 1);
-  ASSERT_TRUE(AddView(vm1(), root_view_id(), view_1_1));
-  Id view_2_2 = vm_client2()->CreateView(2);
-  ASSERT_TRUE(view_2_2);
-  ASSERT_TRUE(AddView(vm2(), view_1_1, view_2_2));
-  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), view_2_2));
-  Id view_3_3 = vm_client3()->CreateView(3);
-  ASSERT_TRUE(view_3_3);
-  ASSERT_TRUE(AddView(vm3(), view_2_2, view_3_3));
-  vm2()->SetEmbedRoot();
-  // Make sure the viewmanager processed the SetEmbedRoot() call.
-  ASSERT_TRUE(WaitForAllMessages(vm2()));
-  changes2()->clear();
-
-  // Embed 4 into 3, connection 2 should get the OnWillEmbed.
-  scoped_ptr<ViewTreeClientImpl> connection4(EstablishConnectionViaEmbed(
-      vm3(), view_3_3, EmbedType::ALLOW_REEMBED, nullptr));
-  ASSERT_TRUE(connection4.get());
-  EXPECT_EQ("OnEmbedForDescendant view=" + IdToString(view_3_3),
-            SingleChangeToDescription(*changes2()));
-
-  // Mark 3 as an embed root.
-  vm3()->SetEmbedRoot();
-  // Make sure the viewmanager processed the SetEmbedRoot() call.
-  ASSERT_TRUE(WaitForAllMessages(vm3()));
-  changes2()->clear();
-  changes3()->clear();
-
-  // Embed 5 into 4. Only 3 should get the will embed.
-  Id view_4_4 = connection4->CreateView(4);
-  ASSERT_TRUE(view_4_4);
-  ASSERT_TRUE(AddView(connection4->tree(), view_3_3, view_4_4));
-
-  // vm3() and vm2() should see view_4_4 as they are embed roots.
-  ASSERT_TRUE(WaitForAllMessages(vm3()));
-  EXPECT_EQ("HierarchyChanged view=" + IdToString(view_4_4) + " new_parent=" +
-                IdToString(view_3_3) + " old_parent=null",
-            SingleChangeToDescription(*changes3()));
-  changes3()->clear();
-
-  ASSERT_TRUE(WaitForAllMessages(vm2()));
-  EXPECT_EQ("HierarchyChanged view=" + IdToString(view_4_4) + " new_parent=" +
-                IdToString(view_3_3) + " old_parent=null",
-            SingleChangeToDescription(*changes2()));
-  changes2()->clear();
-
-  scoped_ptr<ViewTreeClientImpl> connection5(EstablishConnectionViaEmbed(
-    connection4->tree(), view_4_4, EmbedType::ALLOW_REEMBED, nullptr));
-  ASSERT_TRUE(connection5.get());
-  EXPECT_EQ("OnEmbedForDescendant view=" + IdToString(view_4_4),
-            SingleChangeToDescription(*changes3()));
-  ASSERT_TRUE(changes2()->empty());
 }
 
 TEST_F(ViewTreeAppTest, EmbedFailsFromOtherConnection) {

@@ -390,13 +390,6 @@ void View::Embed(ViewTreeClientPtr client) {
     static_cast<ViewTreeClientImpl*>(connection_)->Embed(id_, client.Pass());
 }
 
-void View::EmbedAllowingReembed(mojo::URLRequestPtr request) {
-  if (PrepareForEmbed()) {
-    static_cast<ViewTreeClientImpl*>(connection_)
-        ->EmbedAllowingReembed(request.Pass(), id_);
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // View, protected:
 

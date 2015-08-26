@@ -73,10 +73,8 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   bool AddView(const ViewId& parent_id, const ViewId& child_id);
   std::vector<const ServerView*> GetViewTree(const ViewId& view_id) const;
   bool SetViewVisibility(const ViewId& view_id, bool visible);
-  void EmbedAllowingReembed(const ViewId& view_id,
-                            mojo::URLRequestPtr request,
-                            const mojo::Callback<void(bool)>& callback);
   bool Embed(const ViewId& view_id, mojo::ViewTreeClientPtr client);
+  void Embed(const ViewId& view_id, mojo::URLRequestPtr request);
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
@@ -113,8 +111,6 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
  private:
   using ViewIdSet = base::hash_set<mojo::Id>;
   using ViewMap = std::map<mojo::ConnectionSpecificId, ServerView*>;
-
-  struct PendingEmbed;
 
   bool IsViewKnown(const ServerView* view) const;
 
@@ -164,18 +160,6 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   bool CanEmbed(const ViewId& view_id) const;
   void PrepareForEmbed(const ViewId& view_id);
   void RemoveChildrenAsPartOfEmbed(const ViewId& view_id);
-  void OnEmbedForDescendantDone(scoped_refptr<PendingEmbed> pending_embed,
-                                mojo::ViewTreeClientPtr client);
-
-  // Invalidates any PendingEmbeds with |connection| as the embed root.
-  void InvalidatePendingEmbedForConnection(ViewTreeImpl* connection);
-
-  // Invalidates any PendingEmbemds targetting |view_id|.
-  void InvalidatePendingEmbedForView(const ViewId& view_id);
-
-  // Runs the callback for |embed| and releases it.
-  void RemovePendingEmbedAndNotifyCallback(scoped_refptr<PendingEmbed> embed,
-                                           bool success);
 
   // ViewTree:
   void CreateView(
@@ -213,10 +197,6 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   void Embed(mojo::Id transport_view_id,
              mojo::ViewTreeClientPtr client,
              const mojo::Callback<void(bool)>& callback) override;
-  void EmbedAllowingReembed(
-      mojo::Id transport_view_id,
-      mojo::URLRequestPtr request,
-      const mojo::Callback<void(bool)>& callback) override;
   void SetFocus(uint32_t view_id, const SetFocusCallback& callback) override;
   void SetViewTextInputState(uint32_t view_id,
                              mojo::TextInputStatePtr state) override;
@@ -257,12 +237,6 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   scoped_ptr<ViewId> root_;
 
   bool is_embed_root_;
-
-  // If we have an ancestor marked as an embed root then we have to query it
-  // before completing the embed. |pending_embeds_| contains such requests.
-  // The requests are removed if the embed becomes invalid, for example, the
-  // view embed was called for is removed.
-  std::set<scoped_refptr<PendingEmbed>> pending_embeds_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTreeImpl);
 };

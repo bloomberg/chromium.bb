@@ -8,10 +8,4 @@ namespace mojo {
 
 void ViewTreeDelegate::OnUnembed() {}
 
-void ViewTreeDelegate::OnEmbedForDescendant(
-    View* view,
-    mojo::URLRequestPtr request,
-    mojo::ViewTreeClientPtr* client) {
-}
-
 }  // namespace mojo

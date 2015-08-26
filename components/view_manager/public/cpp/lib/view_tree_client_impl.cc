@@ -195,13 +195,6 @@ void ViewTreeClientImpl::Embed(Id view_id, ViewTreeClientPtr client) {
   tree_->Embed(view_id, client.Pass(), ActionCompletedCallback());
 }
 
-void ViewTreeClientImpl::EmbedAllowingReembed(mojo::URLRequestPtr request,
-                                              Id view_id) {
-  DCHECK(tree_);
-  tree_->EmbedAllowingReembed(view_id, request.Pass(),
-                              ActionCompletedCallback());
-}
-
 void ViewTreeClientImpl::AddView(View* view) {
   DCHECK(views_.find(view->id()) == views_.end());
   views_[view->id()] = view;
@@ -282,17 +275,6 @@ void ViewTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   focused_view_ = GetViewById(focused_view_id);
 
   delegate_->OnEmbed(root_);
-}
-
-void ViewTreeClientImpl::OnEmbedForDescendant(
-    Id view_id,
-    mojo::URLRequestPtr request,
-    const OnEmbedForDescendantCallback& callback) {
-  View* view = GetViewById(view_id);
-  ViewTreeClientPtr client;
-  if (view)
-    delegate_->OnEmbedForDescendant(view, request.Pass(), &client);
-  callback.Run(client.Pass());
 }
 
 void ViewTreeClientImpl::OnEmbeddedAppDisconnected(Id view_id) {

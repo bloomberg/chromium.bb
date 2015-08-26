@@ -30,21 +30,6 @@ using mojo::ViewDataPtr;
 
 namespace view_manager {
 
-// Contains information needed to complete an Embed(). See description of
-// |pending_embeds_| for more details.
-struct ViewTreeImpl::PendingEmbed : public base::RefCounted<PendingEmbed> {
-  PendingEmbed() : embed_root(nullptr) {}
-
-  ViewTreeImpl* embed_root;
-  ViewId view_id;
-  mojo::Callback<void(bool)> callback;
-
- private:
-  friend class base::RefCounted<PendingEmbed>;
-
-  ~PendingEmbed() {}
-};
-
 ViewTreeImpl::ViewTreeImpl(
     ConnectionManager* connection_manager,
     mojo::ConnectionSpecificId creator_id,
@@ -98,7 +83,6 @@ bool ViewTreeImpl::IsRoot(const ViewId& id) const {
 
 void ViewTreeImpl::OnWillDestroyViewTreeImpl(
     ViewTreeImpl* connection) {
-  InvalidatePendingEmbedForConnection(connection);
   if (creator_id_ == connection->id())
     creator_id_ = kInvalidConnectionId;
   if (connection->root_ && connection->root_->connection_id == id_ &&
@@ -152,47 +136,6 @@ bool ViewTreeImpl::SetViewVisibility(const ViewId& view_id, bool visible) {
   return true;
 }
 
-void ViewTreeImpl::EmbedAllowingReembed(
-    const ViewId& view_id,
-    mojo::URLRequestPtr request,
-    const mojo::Callback<void(bool)>& callback) {
-  if (!CanEmbed(view_id)) {
-    callback.Run(false);
-    return;
-  }
-
-  ViewTreeImpl* embed_root = nullptr;
-
-  ServerView* view = GetView(view_id);
-  DCHECK(view);  // CanEmbed() returns true only if |view_id| is valid.
-  if (view->id().connection_id == id_) {
-    view->set_allows_reembed(true);
-
-    // Only consult the embed root if the creator is doing the embed. If someone
-    // other than the creator is doing the embed they were granted embed access.
-    embed_root = connection_manager_->GetEmbedRoot(this);
-  }
-
-  if (!embed_root) {
-    PrepareForEmbed(view_id);
-    connection_manager_->EmbedAtView(id_, view_id, request.Pass());
-    callback.Run(true);
-    return;
-  }
-
-  // There is an embed root. We have to query it before completing the embed.
-  scoped_refptr<PendingEmbed> pending_embed(new PendingEmbed);
-  pending_embeds_.insert(pending_embed);
-  pending_embed->embed_root = embed_root;
-  pending_embed->view_id = view_id;
-  pending_embed->callback = callback;
-  pending_embeds_.insert(pending_embed);
-  embed_root->client()->OnEmbedForDescendant(
-      ViewIdToTransportId(view_id), request.Pass(),
-      base::Bind(&ViewTreeImpl::OnEmbedForDescendantDone,
-                 base::Unretained(this), pending_embed));
-}
-
 bool ViewTreeImpl::Embed(const ViewId& view_id,
                          mojo::ViewTreeClientPtr client) {
   if (!client.get() || !CanEmbed(view_id))
@@ -201,6 +144,13 @@ bool ViewTreeImpl::Embed(const ViewId& view_id,
   ::ignore_result(
       connection_manager_->EmbedAtView(id_, view_id, client.Pass()));
   return true;
+}
+
+void ViewTreeImpl::Embed(const ViewId& view_id, mojo::URLRequestPtr request) {
+  if (!CanEmbed(view_id))
+    return;
+  PrepareForEmbed(view_id);
+  connection_manager_->EmbedAtView(id_, view_id, request.Pass());
 }
 
 void ViewTreeImpl::ProcessViewBoundsChanged(
@@ -309,8 +259,6 @@ void ViewTreeImpl::ProcessViewDeleted(const ViewId& view,
 
   if (IsRoot(view))
     root_.reset();
-
-  InvalidatePendingEmbedForView(view);
 
   if (originated_change)
     return;
@@ -545,49 +493,6 @@ void ViewTreeImpl::RemoveChildrenAsPartOfEmbed(const ViewId& view_id) {
     view->Remove(children[i]);
 }
 
-void ViewTreeImpl::OnEmbedForDescendantDone(
-    scoped_refptr<PendingEmbed> pending_embed,
-    mojo::ViewTreeClientPtr client) {
-  if (!pending_embeds_.count(pending_embed.get()))
-    return;
-
-  const bool allow_embed = client.get() && CanEmbed(pending_embed->view_id);
-  if (allow_embed) {
-    PrepareForEmbed(pending_embed->view_id);
-    connection_manager_->EmbedAtView(id_, pending_embed->view_id,
-                                     client.Pass());
-  }
-  RemovePendingEmbedAndNotifyCallback(pending_embed.get(), allow_embed);
-}
-
-void ViewTreeImpl::InvalidatePendingEmbedForConnection(
-  ViewTreeImpl* connection) {
-  if (pending_embeds_.empty())
-    return;
-  std::set<scoped_refptr<PendingEmbed>> copy(pending_embeds_);
-  for (auto& embed : copy) {
-    if (embed->embed_root == connection)
-      RemovePendingEmbedAndNotifyCallback(embed, false);
-  }
-}
-
-void ViewTreeImpl::InvalidatePendingEmbedForView(const ViewId& view_id) {
-  if (pending_embeds_.empty())
-    return;
-  std::set<scoped_refptr<PendingEmbed>> copy(pending_embeds_);
-  for (auto& embed : copy) {
-    if (embed->view_id == view_id)
-      RemovePendingEmbedAndNotifyCallback(embed, false);
-  }
-}
-
-void ViewTreeImpl::RemovePendingEmbedAndNotifyCallback(
-    scoped_refptr<PendingEmbed> embed,
-    bool success) {
-  pending_embeds_.erase(embed);
-  embed->callback.Run(success);
-}
-
 void ViewTreeImpl::CreateView(
     Id transport_view_id,
     const Callback<void(mojo::ErrorCode)>& callback) {
@@ -736,14 +641,6 @@ void ViewTreeImpl::Embed(mojo::Id transport_view_id,
                          mojo::ViewTreeClientPtr client,
                          const mojo::Callback<void(bool)>& callback) {
   callback.Run(Embed(ViewIdFromTransportId(transport_view_id), client.Pass()));
-}
-
-void ViewTreeImpl::EmbedAllowingReembed(
-    mojo::Id transport_view_id,
-    mojo::URLRequestPtr request,
-    const mojo::Callback<void(bool)>& callback) {
-  EmbedAllowingReembed(ViewIdFromTransportId(transport_view_id), request.Pass(),
-                       callback);
 }
 
 void ViewTreeImpl::SetFocus(uint32_t view_id,

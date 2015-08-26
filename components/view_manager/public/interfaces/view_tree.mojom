@@ -112,27 +112,12 @@ interface ViewTree {
   // Shows the surface in the specified view.
   SetViewSurfaceId(uint32 view_id, SurfaceId surface_id) => (bool success);
 
-  // Tells the ViewTree that the ViewTreeClient wants to get
-  // OnEmbedForDescendant() when EmbedAllowingReembed() is invoked on any
-  // descendant Views.
-  //
-  // See Embed() docs for more details.
-  //
-  // TODO(sky): this needs to be restricted in some way. Maybe the root can
-  // grant this ability?
+  // TODO(sky): rename this and clarify what it does.
   SetEmbedRoot();
 
   // A connection may grant access to a view from another connection by way of
-  // the embed functions. The following variants exist:
-  //
-  // . Embed: the client supplies the ViewTreeClient to embed.
-  // . EmbedAllowingReembed: walks the view tree for the first embed root
-  //   ancestor and asks it to perform the embed (OnEmbedForDescendant()).
-  //   The embed root ancestor may allow or disallow the request. If there is no
-  //   embed root ancestor ViewManager connects to the application and requests
-  //   a ViewTreeClient from it.
-  //
-  // In all cases the new ViewTreeClient is configured with a root of |view_id|.
+  // Embed(). Embed() results in a new ViewTreeClient configured with a root of
+  // |view_id|.
   //
   // The caller must have created |view_id|. If not the request fails and the
   // response is false.
@@ -152,7 +137,6 @@ interface ViewTree {
   // connection and any embed roots. The root always see the full tree, and
   // embed roots see the complete tree at their embed point.
   Embed(uint32 view_id, ViewTreeClient client) => (bool success);
-  EmbedAllowingReembed(uint32 view_id, URLRequest request) => (bool success);
 
   SetFocus(uint32 view_id) => (bool success);
 
@@ -177,12 +161,6 @@ interface ViewTreeClient {
           ViewData root,
           ViewTree? tree,
           uint32 focused_view);
-
-  // Asks the ViewTreeClient that was marked as an embed root for the
-  // ViewTreeClient to embed in |view|. The embed can be disallowed by
-  // calling the callback with nullptr.
-  OnEmbedForDescendant(uint32 view, URLRequest request) =>
-      (ViewTreeClient? client);
 
   // Invoked when the application embedded at |view| is disconnected.
   OnEmbeddedAppDisconnected(uint32 view);

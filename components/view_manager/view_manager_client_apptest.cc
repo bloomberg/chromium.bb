@@ -44,18 +44,6 @@ bool WaitForBoundsToChange(View* view) {
   return ViewManagerTestBase::DoRunLoopWithTimeout();
 }
 
-// Increments the width of |view| and waits for a bounds change in |other_vm|s
-// root.
-bool IncrementWidthAndWaitForChange(View* view, ViewTreeConnection* other_vm) {
-  mojo::Rect bounds = view->bounds();
-  bounds.width++;
-  view->SetBounds(bounds);
-  View* view_in_vm = other_vm->GetRoot();
-  if (view_in_vm == view || view_in_vm->id() != view->id())
-    return false;
-  return WaitForBoundsToChange(view_in_vm);
-}
-
 // Spins a run loop until the tree beginning at |root| has |tree_size| views
 // (including |root|).
 class TreeSizeMatchesObserver : public ViewObserver {
@@ -155,26 +143,19 @@ class ViewTracker : public ViewObserver {
 
 class ViewManagerTest : public ViewManagerTestBase {
  public:
-  ViewManagerTest()
-      : on_will_embed_count_(0u), on_will_embed_return_value_(true) {}
-
-  void clear_on_will_embed_count() { on_will_embed_count_ = 0u; }
-  size_t on_will_embed_count() const { return on_will_embed_count_; }
-
-  void set_on_will_embed_return_value(bool value) {
-    on_will_embed_return_value_ = value;
-  }
+  ViewManagerTest() {}
 
   // Embeds another version of the test app @ view. This runs a run loop until
   // a response is received, or a timeout. On success the new ViewManager is
   // returned.
   ViewTreeConnection* Embed(View* view) {
-    return EmbedImpl(view, EmbedType::NO_REEMBED);
-  }
-
-  // Same as Embed(), but uses EmbedAllowingReembed().
-  ViewTreeConnection* EmbedAllowingReembed(View* view) {
-    return EmbedImpl(view, EmbedType::ALLOW_REEMBED);
+    most_recent_connection_ = nullptr;
+    ConnectToApplicationAndEmbed(view);
+    if (!ViewManagerTestBase::DoRunLoopWithTimeout())
+      return nullptr;
+    ViewTreeConnection* vm = nullptr;
+    std::swap(vm, most_recent_connection_);
+    return vm;
   }
 
   // Establishes a connection to this application and asks for a
@@ -190,48 +171,7 @@ class ViewManagerTest : public ViewManagerTestBase {
     view->Embed(client.Pass());
   }
 
-  // Overridden from ViewTreeDelegate:
-  void OnEmbedForDescendant(View* view,
-                            mojo::URLRequestPtr request,
-                            mojo::ViewTreeClientPtr* client) override {
-    on_will_embed_count_++;
-    if (on_will_embed_return_value_) {
-      scoped_ptr<ApplicationConnection> connection =
-          application_impl()->ConnectToApplication(request.Pass());
-      connection->ConnectToService(client);
-    } else {
-      EXPECT_TRUE(QuitRunLoop());
-    }
-  }
-
  private:
-  enum class EmbedType {
-    ALLOW_REEMBED,
-    NO_REEMBED,
-  };
-
-  ViewTreeConnection* EmbedImpl(View* view, EmbedType type) {
-    most_recent_connection_ = nullptr;
-    if (type == EmbedType::ALLOW_REEMBED) {
-      mojo::URLRequestPtr request(mojo::URLRequest::New());
-      request->url = mojo::String::From(application_impl()->url());
-      view->EmbedAllowingReembed(request.Pass());
-    } else {
-      ConnectToApplicationAndEmbed(view);
-    }
-    if (!ViewManagerTestBase::DoRunLoopWithTimeout())
-      return nullptr;
-    ViewTreeConnection* vm = nullptr;
-    std::swap(vm, most_recent_connection_);
-    return vm;
-  }
-
-  // Number of times OnWillEmbed() has been called.
-  size_t on_will_embed_count_;
-
-  // Value OnWillEmbed() should return.
-  bool on_will_embed_return_value_;
-
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);
 };
 
@@ -695,73 +635,6 @@ TEST_F(ViewManagerTest, EmbedRemovesChildren) {
   // we may end up reconnecting to the test and rerunning the test, which is
   // problematic since the other services don't shut down.
   ASSERT_TRUE(DoRunLoopWithTimeout());
-}
-
-TEST_F(ViewManagerTest, OnWillEmbed) {
-  window_manager()->SetEmbedRoot();
-
-  View* view1 = window_manager()->CreateView();
-  window_manager()->GetRoot()->AddChild(view1);
-
-  ViewTreeConnection* connection = EmbedAllowingReembed(view1);
-  View* view2 = connection->CreateView();
-  connection->GetRoot()->AddChild(view2);
-
-  EmbedAllowingReembed(view2);
-  EXPECT_EQ(1u, on_will_embed_count());
-}
-
-// Verifies Embed() doesn't succeed if OnWillEmbed() returns false.
-TEST_F(ViewManagerTest, OnWillEmbedFails) {
-  window_manager()->SetEmbedRoot();
-
-  View* view1 = window_manager()->CreateView();
-  window_manager()->GetRoot()->AddChild(view1);
-
-  ViewTreeConnection* connection = Embed(view1);
-  View* view2 = connection->CreateView();
-  connection->GetRoot()->AddChild(view2);
-
-  clear_on_will_embed_count();
-  set_on_will_embed_return_value(false);
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = application_impl()->url();
-  view2->EmbedAllowingReembed(request.Pass());
-
-  EXPECT_TRUE(DoRunLoopWithTimeout());
-  EXPECT_EQ(1u, on_will_embed_count());
-
-  // The run loop above quits when OnWillEmbed() returns, which means it's
-  // possible there is still an OnEmbed() message in flight. Sets the bounds of
-  // |view1| and wait for it to the change in |connection|, that way we know
-  // |connection| has processed all messages for it.
-  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, connection));
-
-  EXPECT_EQ(1u, on_will_embed_count());
-}
-
-// Verify an Embed() from an ancestor is allowed if the ancestor is an embed
-// root and Embed was done by way of EmbedAllowingReembed().
-TEST_F(ViewManagerTest, ReembedSucceeds) {
-  window_manager()->SetEmbedRoot();
-
-  View* view1 = window_manager()->CreateView();
-  window_manager()->GetRoot()->AddChild(view1);
-
-  ViewTreeConnection* connection = Embed(view1);
-  View* view2 = connection->CreateView();
-  connection->GetRoot()->AddChild(view2);
-  EmbedAllowingReembed(view2);
-
-  View* view2_in_wm = window_manager()->GetViewById(view2->id());
-  ViewTreeConnection* connection2 = Embed(view2_in_wm);
-  ASSERT_TRUE(connection2);
-
-  // The Embed() call above returns immediately. To ensure the server has
-  // processed it nudge the bounds and wait for it to be processed.
-  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, connection));
-
-  EXPECT_EQ(nullptr, most_recent_connection());
 }
 
 namespace {

@@ -50,18 +50,6 @@ class ViewTreeDelegate {
   // notified appropriately).
   virtual void OnUnembed();
 
-  // Only invoked if the connection has been marked as an embed root. This
-  // allows the delegate to disallow the embed (return false), or change
-  // the ServiceProviders that would be exposed to the new client.
-  //
-  // This implementation returns true (allowing the embed), and does not alter
-  // the supplied ServiceProviders.
-  //
-  // See the mojom for more details.
-  virtual void OnEmbedForDescendant(View* view,
-                                    URLRequestPtr request,
-                                    ViewTreeClientPtr* client);
-
   // Called from the destructor of ViewTreeConnection after all the Views have
   // been destroyed. |connection| is no longer valid after this call.
   virtual void OnConnectionLost(ViewTreeConnection* connection) = 0;

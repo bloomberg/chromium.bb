@@ -56,10 +56,6 @@ class TestViewTreeClient : public mojo::ViewTreeClient {
     // TODO(sky): add test coverage of |focused_view_id|.
     tracker_.OnEmbed(connection_id, root.Pass());
   }
-  void OnEmbedForDescendant(
-      uint32_t view,
-      mojo::URLRequestPtr request,
-      const OnEmbedForDescendantCallback& callback) override {}
   void OnEmbeddedAppDisconnected(uint32_t view) override {
     tracker_.OnEmbeddedAppDisconnected(view);
   }
@@ -349,8 +345,7 @@ void SetUpAnimate1(ViewTreeTest* test, ViewId* embed_view_id) {
   EXPECT_TRUE(test->wm_connection()->AddView(*(test->wm_connection()->root()),
                                              *embed_view_id));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  test->wm_connection()->EmbedAllowingReembed(*embed_view_id, request.Pass(),
-                                              mojo::Callback<void(bool)>());
+  test->wm_connection()->Embed(*embed_view_id, request.Pass());
   ViewTreeImpl* connection1 =
       test->connection_manager()->GetConnectionWithRoot(*embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
@@ -487,8 +482,7 @@ TEST_F(ViewTreeTest, CloneAndAnimateLargerDepth) {
   EXPECT_TRUE(
       wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->EmbedAllowingReembed(embed_view_id, request.Pass(),
-                                        mojo::Callback<void(bool)>());
+  wm_connection()->Embed(embed_view_id, request.Pass());
   ViewTreeImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
@@ -537,8 +531,7 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
   root_connection()->view_manager_root()->root_view()->
       SetBounds(gfx::Rect(0, 0, 100, 100));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->EmbedAllowingReembed(embed_view_id, request.Pass(),
-                                        mojo::Callback<void(bool)>());
+  wm_connection()->Embed(embed_view_id, request.Pass());
   ViewTreeImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
