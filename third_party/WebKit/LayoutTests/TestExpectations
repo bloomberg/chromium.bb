@@ -1,4 +1,6 @@
-crbug.com/504613 paint/images/image-backgrounds-not-antialiased.html [ ImageOnlyFailure ]
+# also crbug.com/524248 
+crbug.com/504613 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
+
 crbug.com/502531 fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ ImageOnlyFailure ]
@@ -1549,5 +1551,3 @@ crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-xChannelSe
 crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed.html [ Pass Timeout ]
 
 crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
-
-crbug.com/524248 [ Lion ] paint/images/image-backgrounds-not-antialiased.html [ Skip ]
