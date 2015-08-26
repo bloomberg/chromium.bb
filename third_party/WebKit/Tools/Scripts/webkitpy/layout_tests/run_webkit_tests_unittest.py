@@ -467,12 +467,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(host.filesystem.read_text_file('/tmp/layout-test-results/passes/error-stderr.txt'),
                           'stuff going to stderr')
 
-    def test_reftest_crash_log_is_saved(self):
-        host = MockHost()
-        self.assertTrue(logging_run(['failures/unexpected/crash-reftest.html'], tests_included=True, host=host))
-        self.assertEqual(host.filesystem.read_text_file('/tmp/layout-test-results/failures/unexpected/crash-reftest-crash-log.txt'),
-                         'reftest crash log')
-
     def test_test_list(self):
         host = MockHost()
         filename = '/tmp/foo.txt'
