@@ -1,0 +1,1517 @@
+diff --git a/third_party/protobuf/BUILD.gn b/third_party/protobuf/BUILD.gn
+new file mode 100644
+index 0000000..1c2c85e
+--- /dev/null
++++ b/third_party/protobuf/BUILD.gn
+@@ -0,0 +1,569 @@
++# Copyright 2014 The Chromium Authors. All rights reserved.
++# Use of this source code is governed by a BSD-style license that can be
++# found in the LICENSE file.
++
++config("protobuf_config") {
++  include_dirs = [ "src" ]
++  defines = [
++    "GOOGLE_PROTOBUF_NO_RTTI",
++    "GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER",
++    "HAVE_PTHREAD",
++  ]
++
++  if (is_mac || (current_toolchain == host_toolchain && host_os == "mac")) {
++    # Chromium builds don't yet support __thread on Mac -- not sure if the
++    # limiting factor is using libc++ or having OS X >=10.7.  Remove this once
++    # the above aren't issues.
++    defines += [ "GOOGLE_PROTOBUF_NO_THREADLOCAL" ]
++  }
++}
++
++# This config should be applied to targets using generated code from the proto
++# compiler. It sets up the include directories properly.
++config("using_proto") {
++  include_dirs = [
++    "src",
++    "$root_gen_dir/protoc_out",
++  ]
++}
++
++protobuf_lite_sources = [
++  "src/google/protobuf/arena.cc",
++  "src/google/protobuf/arena.h",
++  "src/google/protobuf/arenastring.cc",
++  "src/google/protobuf/arenastring.h",
++  "src/google/protobuf/descriptor.h",
++  "src/google/protobuf/descriptor.pb.h",
++  "src/google/protobuf/extension_set.cc",
++  "src/google/protobuf/extension_set.h",
++  "src/google/protobuf/generated_enum_reflection.h",
++  "src/google/protobuf/generated_enum_util.h",
++  "src/google/protobuf/generated_message_util.cc",
++  "src/google/protobuf/generated_message_util.h",
++  "src/google/protobuf/io/coded_stream.cc",
++  "src/google/protobuf/io/coded_stream.h",
++  "src/google/protobuf/io/coded_stream_inl.h",
++  "src/google/protobuf/io/zero_copy_stream.cc",
++  "src/google/protobuf/io/zero_copy_stream.h",
++  "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
++  "src/google/protobuf/io/zero_copy_stream_impl_lite.h",
++  "src/google/protobuf/message.h",
++  "src/google/protobuf/message_lite.cc",
++  "src/google/protobuf/message_lite.h",
++  "src/google/protobuf/metadata.h",
++  "src/google/protobuf/repeated_field.cc",
++  "src/google/protobuf/repeated_field.h",
++  "src/google/protobuf/stubs/atomic_sequence_num.h",
++  "src/google/protobuf/stubs/atomicops.h",
++  "src/google/protobuf/stubs/atomicops_internals_aix.h",
++  "src/google/protobuf/stubs/atomicops_internals_arm64_gcc.h",
++  "src/google/protobuf/stubs/atomicops_internals_arm_gcc.h",
++  "src/google/protobuf/stubs/atomicops_internals_arm_qnx.h",
++  "src/google/protobuf/stubs/atomicops_internals_atomicword_compat.h",
++  "src/google/protobuf/stubs/atomicops_internals_generic_gcc.h",
++  "src/google/protobuf/stubs/atomicops_internals_macosx.h",
++  "src/google/protobuf/stubs/atomicops_internals_mips_gcc.h",
++  "src/google/protobuf/stubs/atomicops_internals_pnacl.h",
++  "src/google/protobuf/stubs/atomicops_internals_solaris.h",
++  "src/google/protobuf/stubs/atomicops_internals_tsan.h",
++  "src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc",
++  "src/google/protobuf/stubs/atomicops_internals_x86_gcc.h",
++  "src/google/protobuf/stubs/atomicops_internals_x86_msvc.cc",
++  "src/google/protobuf/stubs/atomicops_internals_x86_msvc.h",
++  "src/google/protobuf/stubs/bytestream.cc",
++  "src/google/protobuf/stubs/bytestream.h",
++  "src/google/protobuf/stubs/callback.h",
++  "src/google/protobuf/stubs/casts.h",
++  "src/google/protobuf/stubs/common.cc",
++  "src/google/protobuf/stubs/common.h",
++  "src/google/protobuf/stubs/fastmem.h",
++  "src/google/protobuf/stubs/hash.h",
++  "src/google/protobuf/stubs/logging.h",
++  "src/google/protobuf/stubs/macros.h",
++  "src/google/protobuf/stubs/map_util.h",
++  "src/google/protobuf/stubs/mathlimits.h",
++  "src/google/protobuf/stubs/mutex.h",
++  "src/google/protobuf/stubs/once.cc",
++  "src/google/protobuf/stubs/once.h",
++  "src/google/protobuf/stubs/platform_macros.h",
++  "src/google/protobuf/stubs/port.h",
++  "src/google/protobuf/stubs/scoped_ptr.h",
++  "src/google/protobuf/stubs/status.cc",
++  "src/google/protobuf/stubs/status.h",
++  "src/google/protobuf/stubs/statusor.cc",
++  "src/google/protobuf/stubs/statusor.h",
++  "src/google/protobuf/stubs/stl_util.h",
++  "src/google/protobuf/stubs/stringpiece.cc",
++  "src/google/protobuf/stubs/stringpiece.h",
++  "src/google/protobuf/stubs/stringprintf.cc",
++  "src/google/protobuf/stubs/stringprintf.h",
++  "src/google/protobuf/stubs/strutil.cc",
++  "src/google/protobuf/stubs/strutil.h",
++  "src/google/protobuf/stubs/template_util.h",
++  "src/google/protobuf/stubs/time.cc",
++  "src/google/protobuf/stubs/time.h",
++  "src/google/protobuf/stubs/type_traits.h",
++  "src/google/protobuf/testing/googletest.h",
++  "src/google/protobuf/unknown_field_set.h",
++  "src/google/protobuf/wire_format_lite.cc",
++  "src/google/protobuf/wire_format_lite.h",
++  "src/google/protobuf/wire_format_lite_inl.h",
++]
++
++protobuf_lite_cflags = []
++if (is_win) {
++  protobuf_lite_cflags = [
++    "/wd4018",  # Signed/unsigned mismatch in comparison.
++    "/wd4065",  # Switch statement contains 'default' but no 'case' labels
++    "/wd4146",  # Unary minus operator applied to unsigned type
++    "/wd4244",  # Implicit conversion, possible loss of data.
++    "/wd4267",  # Size_t to int truncation.
++    "/wd4291",  # No matching operator delete for a placement new.
++    "/wd4355",  # 'this' used in base member initializer list.
++    "/wd4506",  # No definition for inline function.
++  ]
++}
++
++source_set("protobuf_lite") {
++  sources = protobuf_lite_sources
++
++  configs -= [ "//build/config/compiler:chromium_code" ]
++  configs += [ "//build/config/compiler:no_chromium_code" ]
++  if (is_win) {
++    configs -= [ "//build/config/win:lean_and_mean" ]
++  }
++  public_configs = [
++    ":protobuf_config",
++
++    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
++    "//build/config/compiler:no_size_t_to_int_warning",
++  ]
++
++  cflags = protobuf_lite_cflags
++}
++
++# This is the full, heavy protobuf lib that's needed for c++ .protos that don't
++# specify the LITE_RUNTIME option. The protocol compiler itself (protoc) falls
++# into that category. Do not use in Chrome code.
++
++source_set("protobuf_full") {
++  # Prevent people from depending on this outside our file.
++  visibility = [ ":*" ]
++
++  sources = [
++    "src/google/protobuf/any.cc",
++    "src/google/protobuf/any.h",
++    "src/google/protobuf/any.pb.cc",
++    "src/google/protobuf/any.pb.h",
++    "src/google/protobuf/api.pb.cc",
++    "src/google/protobuf/api.pb.h",
++    "src/google/protobuf/compiler/importer.cc",
++    "src/google/protobuf/compiler/importer.h",
++    "src/google/protobuf/compiler/parser.cc",
++    "src/google/protobuf/compiler/parser.h",
++    "src/google/protobuf/descriptor.cc",
++    "src/google/protobuf/descriptor.pb.cc",
++    "src/google/protobuf/descriptor_database.cc",
++    "src/google/protobuf/descriptor_database.h",
++    "src/google/protobuf/duration.pb.cc",
++    "src/google/protobuf/duration.pb.h",
++    "src/google/protobuf/dynamic_message.cc",
++    "src/google/protobuf/dynamic_message.h",
++    "src/google/protobuf/empty.pb.cc",
++    "src/google/protobuf/empty.pb.h",
++    "src/google/protobuf/extension_set_heavy.cc",
++    "src/google/protobuf/field_mask.pb.cc",
++    "src/google/protobuf/field_mask.pb.h",
++    "src/google/protobuf/generated_message_reflection.cc",
++    "src/google/protobuf/generated_message_reflection.h",
++
++    # gzip_stream.cc pulls in zlib, but it's not actually used by protoc, just
++    # by test code; so instead of compiling zlib for the host, let's just
++    # exclude these.
++    # "src/google/protobuf/io/gzip_stream.cc",
++    # "src/google/protobuf/io/gzip_stream.h",
++    "src/google/protobuf/io/printer.cc",
++    "src/google/protobuf/io/printer.h",
++    "src/google/protobuf/io/strtod.cc",
++    "src/google/protobuf/io/strtod.h",
++    "src/google/protobuf/io/tokenizer.cc",
++    "src/google/protobuf/io/tokenizer.h",
++    "src/google/protobuf/io/zero_copy_stream_impl.cc",
++    "src/google/protobuf/io/zero_copy_stream_impl.h",
++    "src/google/protobuf/map.h",
++    "src/google/protobuf/map_entry_lite.h",
++    "src/google/protobuf/map_field.cc",
++    "src/google/protobuf/map_field.h",
++    "src/google/protobuf/map_field_inl.h",
++    "src/google/protobuf/map_field_lite.h",
++    "src/google/protobuf/map_type_handler.h",
++    "src/google/protobuf/message.cc",
++    "src/google/protobuf/reflection_ops.cc",
++    "src/google/protobuf/reflection_ops.h",
++    "src/google/protobuf/service.cc",
++    "src/google/protobuf/service.h",
++    "src/google/protobuf/source_context.pb.cc",
++    "src/google/protobuf/source_context.pb.h",
++    "src/google/protobuf/struct.pb.cc",
++    "src/google/protobuf/struct.pb.h",
++    "src/google/protobuf/stubs/mathlimits.cc",
++    "src/google/protobuf/stubs/mathutil.h",
++    "src/google/protobuf/stubs/shared_ptr.h",
++    "src/google/protobuf/stubs/singleton.h",
++    "src/google/protobuf/stubs/status_macros.h",
++    "src/google/protobuf/stubs/structurally_valid.cc",
++    "src/google/protobuf/stubs/substitute.cc",
++    "src/google/protobuf/stubs/substitute.h",
++    "src/google/protobuf/text_format.cc",
++    "src/google/protobuf/text_format.h",
++    "src/google/protobuf/timestamp.pb.cc",
++    "src/google/protobuf/timestamp.pb.h",
++    "src/google/protobuf/type.pb.cc",
++    "src/google/protobuf/type.pb.h",
++    "src/google/protobuf/unknown_field_set.cc",
++    "src/google/protobuf/util/field_comparator.cc",
++    "src/google/protobuf/util/field_comparator.h",
++    "src/google/protobuf/util/internal/constants.h",
++    "src/google/protobuf/util/internal/datapiece.cc",
++    "src/google/protobuf/util/internal/datapiece.h",
++    "src/google/protobuf/util/internal/default_value_objectwriter.cc",
++    "src/google/protobuf/util/internal/default_value_objectwriter.h",
++    "src/google/protobuf/util/internal/error_listener.cc",
++    "src/google/protobuf/util/internal/error_listener.h",
++    "src/google/protobuf/util/internal/field_mask_utility.cc",
++    "src/google/protobuf/util/internal/field_mask_utility.h",
++    "src/google/protobuf/util/internal/json_escaping.cc",
++    "src/google/protobuf/util/internal/json_escaping.h",
++    "src/google/protobuf/util/internal/json_objectwriter.cc",
++    "src/google/protobuf/util/internal/json_objectwriter.h",
++    "src/google/protobuf/util/internal/json_stream_parser.cc",
++    "src/google/protobuf/util/internal/json_stream_parser.h",
++    "src/google/protobuf/util/internal/location_tracker.h",
++    "src/google/protobuf/util/internal/object_location_tracker.h",
++    "src/google/protobuf/util/internal/object_source.h",
++    "src/google/protobuf/util/internal/object_writer.cc",
++    "src/google/protobuf/util/internal/object_writer.h",
++    "src/google/protobuf/util/internal/protostream_objectsource.cc",
++    "src/google/protobuf/util/internal/protostream_objectsource.h",
++    "src/google/protobuf/util/internal/protostream_objectwriter.cc",
++    "src/google/protobuf/util/internal/protostream_objectwriter.h",
++    "src/google/protobuf/util/internal/snake2camel_objectwriter.h",
++    "src/google/protobuf/util/internal/structured_objectwriter.h",
++    "src/google/protobuf/util/internal/type_info.cc",
++    "src/google/protobuf/util/internal/type_info.h",
++    "src/google/protobuf/util/internal/type_info_test_helper.cc",
++    "src/google/protobuf/util/internal/type_info_test_helper.h",
++    "src/google/protobuf/util/internal/utility.cc",
++    "src/google/protobuf/util/internal/utility.h",
++    "src/google/protobuf/util/json_util.cc",
++    "src/google/protobuf/util/json_util.h",
++    "src/google/protobuf/util/message_differencer.cc",
++    "src/google/protobuf/util/message_differencer.h",
++    "src/google/protobuf/util/type_resolver.h",
++    "src/google/protobuf/util/type_resolver_util.cc",
++    "src/google/protobuf/util/type_resolver_util.h",
++    "src/google/protobuf/wire_format.cc",
++    "src/google/protobuf/wire_format.h",
++    "src/google/protobuf/wrappers.pb.cc",
++    "src/google/protobuf/wrappers.pb.h",
++  ]
++
++  configs -= [ "//build/config/compiler:chromium_code" ]
++  configs += [ "//build/config/compiler:no_chromium_code" ]
++  if (is_win) {
++    configs -= [ "//build/config/win:lean_and_mean" ]
++  }
++  public_configs = [
++    ":protobuf_config",
++
++    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
++    "//build/config/compiler:no_size_t_to_int_warning",
++  ]
++
++  cflags = protobuf_lite_cflags
++
++  deps = [
++    ":protobuf_lite",
++  ]
++}
++
++# Only compile the compiler for the host architecture.
++if (current_toolchain == host_toolchain) {
++  executable("protoc") {
++    sources = [
++      "src/google/protobuf/compiler/code_generator.cc",
++      "src/google/protobuf/compiler/code_generator.h",
++      "src/google/protobuf/compiler/command_line_interface.cc",
++      "src/google/protobuf/compiler/command_line_interface.h",
++      "src/google/protobuf/compiler/cpp/cpp_enum.cc",
++      "src/google/protobuf/compiler/cpp/cpp_enum.h",
++      "src/google/protobuf/compiler/cpp/cpp_enum_field.cc",
++      "src/google/protobuf/compiler/cpp/cpp_enum_field.h",
++      "src/google/protobuf/compiler/cpp/cpp_extension.cc",
++      "src/google/protobuf/compiler/cpp/cpp_extension.h",
++      "src/google/protobuf/compiler/cpp/cpp_field.cc",
++      "src/google/protobuf/compiler/cpp/cpp_field.h",
++      "src/google/protobuf/compiler/cpp/cpp_file.cc",
++      "src/google/protobuf/compiler/cpp/cpp_file.h",
++      "src/google/protobuf/compiler/cpp/cpp_generator.cc",
++      "src/google/protobuf/compiler/cpp/cpp_generator.h",
++      "src/google/protobuf/compiler/cpp/cpp_helpers.cc",
++      "src/google/protobuf/compiler/cpp/cpp_helpers.h",
++      "src/google/protobuf/compiler/cpp/cpp_map_field.cc",
++      "src/google/protobuf/compiler/cpp/cpp_map_field.h",
++      "src/google/protobuf/compiler/cpp/cpp_message.cc",
++      "src/google/protobuf/compiler/cpp/cpp_message.h",
++      "src/google/protobuf/compiler/cpp/cpp_message_field.cc",
++      "src/google/protobuf/compiler/cpp/cpp_message_field.h",
++      "src/google/protobuf/compiler/cpp/cpp_options.h",
++      "src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
++      "src/google/protobuf/compiler/cpp/cpp_primitive_field.h",
++      "src/google/protobuf/compiler/cpp/cpp_service.cc",
++      "src/google/protobuf/compiler/cpp/cpp_service.h",
++      "src/google/protobuf/compiler/cpp/cpp_string_field.cc",
++      "src/google/protobuf/compiler/cpp/cpp_string_field.h",
++      "src/google/protobuf/compiler/csharp/csharp_enum.cc",
++      "src/google/protobuf/compiler/csharp/csharp_enum.h",
++      "src/google/protobuf/compiler/csharp/csharp_enum_field.cc",
++      "src/google/protobuf/compiler/csharp/csharp_enum_field.h",
++      "src/google/protobuf/compiler/csharp/csharp_field_base.cc",
++      "src/google/protobuf/compiler/csharp/csharp_field_base.h",
++      "src/google/protobuf/compiler/csharp/csharp_generator.cc",
++      "src/google/protobuf/compiler/csharp/csharp_generator.h",
++      "src/google/protobuf/compiler/csharp/csharp_helpers.cc",
++      "src/google/protobuf/compiler/csharp/csharp_helpers.h",
++      "src/google/protobuf/compiler/csharp/csharp_map_field.cc",
++      "src/google/protobuf/compiler/csharp/csharp_map_field.h",
++      "src/google/protobuf/compiler/csharp/csharp_message.cc",
++      "src/google/protobuf/compiler/csharp/csharp_message.h",
++      "src/google/protobuf/compiler/csharp/csharp_message_field.cc",
++      "src/google/protobuf/compiler/csharp/csharp_message_field.h",
++      "src/google/protobuf/compiler/csharp/csharp_names.h",
++      "src/google/protobuf/compiler/csharp/csharp_primitive_field.cc",
++      "src/google/protobuf/compiler/csharp/csharp_primitive_field.h",
++      "src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc",
++      "src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.h",
++      "src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc",
++      "src/google/protobuf/compiler/csharp/csharp_repeated_message_field.h",
++      "src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc",
++      "src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h",
++      "src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc",
++      "src/google/protobuf/compiler/csharp/csharp_source_generator_base.h",
++      "src/google/protobuf/compiler/csharp/csharp_umbrella_class.cc",
++      "src/google/protobuf/compiler/csharp/csharp_umbrella_class.h",
++      "src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc",
++      "src/google/protobuf/compiler/csharp/csharp_wrapper_field.h",
++      "src/google/protobuf/compiler/java/java_context.cc",
++      "src/google/protobuf/compiler/java/java_context.h",
++      "src/google/protobuf/compiler/java/java_doc_comment.cc",
++      "src/google/protobuf/compiler/java/java_doc_comment.h",
++      "src/google/protobuf/compiler/java/java_enum.cc",
++      "src/google/protobuf/compiler/java/java_enum.h",
++      "src/google/protobuf/compiler/java/java_enum_field.cc",
++      "src/google/protobuf/compiler/java/java_enum_field.h",
++      "src/google/protobuf/compiler/java/java_enum_field_lite.cc",
++      "src/google/protobuf/compiler/java/java_enum_field_lite.h",
++      "src/google/protobuf/compiler/java/java_extension.cc",
++      "src/google/protobuf/compiler/java/java_extension.h",
++      "src/google/protobuf/compiler/java/java_field.cc",
++      "src/google/protobuf/compiler/java/java_field.h",
++      "src/google/protobuf/compiler/java/java_file.cc",
++      "src/google/protobuf/compiler/java/java_file.h",
++      "src/google/protobuf/compiler/java/java_generator.cc",
++      "src/google/protobuf/compiler/java/java_generator.h",
++      "src/google/protobuf/compiler/java/java_generator_factory.cc",
++      "src/google/protobuf/compiler/java/java_generator_factory.h",
++      "src/google/protobuf/compiler/java/java_helpers.cc",
++      "src/google/protobuf/compiler/java/java_helpers.h",
++      "src/google/protobuf/compiler/java/java_lazy_message_field.cc",
++      "src/google/protobuf/compiler/java/java_lazy_message_field.h",
++      "src/google/protobuf/compiler/java/java_lazy_message_field_lite.cc",
++      "src/google/protobuf/compiler/java/java_lazy_message_field_lite.h",
++      "src/google/protobuf/compiler/java/java_map_field.cc",
++      "src/google/protobuf/compiler/java/java_map_field.h",
++      "src/google/protobuf/compiler/java/java_map_field_lite.cc",
++      "src/google/protobuf/compiler/java/java_map_field_lite.h",
++      "src/google/protobuf/compiler/java/java_message.cc",
++      "src/google/protobuf/compiler/java/java_message.h",
++      "src/google/protobuf/compiler/java/java_message_builder.cc",
++      "src/google/protobuf/compiler/java/java_message_builder.h",
++      "src/google/protobuf/compiler/java/java_message_builder_lite.cc",
++      "src/google/protobuf/compiler/java/java_message_builder_lite.h",
++      "src/google/protobuf/compiler/java/java_message_field.cc",
++      "src/google/protobuf/compiler/java/java_message_field.h",
++      "src/google/protobuf/compiler/java/java_message_field_lite.cc",
++      "src/google/protobuf/compiler/java/java_message_field_lite.h",
++      "src/google/protobuf/compiler/java/java_message_lite.cc",
++      "src/google/protobuf/compiler/java/java_message_lite.h",
++      "src/google/protobuf/compiler/java/java_name_resolver.cc",
++      "src/google/protobuf/compiler/java/java_name_resolver.h",
++      "src/google/protobuf/compiler/java/java_primitive_field.cc",
++      "src/google/protobuf/compiler/java/java_primitive_field.h",
++      "src/google/protobuf/compiler/java/java_primitive_field_lite.cc",
++      "src/google/protobuf/compiler/java/java_primitive_field_lite.h",
++      "src/google/protobuf/compiler/java/java_service.cc",
++      "src/google/protobuf/compiler/java/java_service.h",
++      "src/google/protobuf/compiler/java/java_shared_code_generator.cc",
++      "src/google/protobuf/compiler/java/java_shared_code_generator.h",
++      "src/google/protobuf/compiler/java/java_string_field.cc",
++      "src/google/protobuf/compiler/java/java_string_field.h",
++      "src/google/protobuf/compiler/java/java_string_field_lite.cc",
++      "src/google/protobuf/compiler/java/java_string_field_lite.h",
++      "src/google/protobuf/compiler/javanano/javanano_enum.cc",
++      "src/google/protobuf/compiler/javanano/javanano_enum.h",
++      "src/google/protobuf/compiler/javanano/javanano_enum_field.cc",
++      "src/google/protobuf/compiler/javanano/javanano_enum_field.h",
++      "src/google/protobuf/compiler/javanano/javanano_extension.cc",
++      "src/google/protobuf/compiler/javanano/javanano_extension.h",
++      "src/google/protobuf/compiler/javanano/javanano_field.cc",
++      "src/google/protobuf/compiler/javanano/javanano_field.h",
++      "src/google/protobuf/compiler/javanano/javanano_file.cc",
++      "src/google/protobuf/compiler/javanano/javanano_file.h",
++      "src/google/protobuf/compiler/javanano/javanano_generator.cc",
++      "src/google/protobuf/compiler/javanano/javanano_generator.h",
++      "src/google/protobuf/compiler/javanano/javanano_helpers.cc",
++      "src/google/protobuf/compiler/javanano/javanano_helpers.h",
++      "src/google/protobuf/compiler/javanano/javanano_map_field.cc",
++      "src/google/protobuf/compiler/javanano/javanano_map_field.h",
++      "src/google/protobuf/compiler/javanano/javanano_message.cc",
++      "src/google/protobuf/compiler/javanano/javanano_message.h",
++      "src/google/protobuf/compiler/javanano/javanano_message_field.cc",
++      "src/google/protobuf/compiler/javanano/javanano_message_field.h",
++      "src/google/protobuf/compiler/javanano/javanano_params.h",
++      "src/google/protobuf/compiler/javanano/javanano_primitive_field.cc",
++      "src/google/protobuf/compiler/javanano/javanano_primitive_field.h",
++      "src/google/protobuf/compiler/main.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_enum.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_enum_field.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_extension.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_extension.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_field.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_field.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_file.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_file.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_generator.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_generator.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_helpers.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_helpers.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_map_field.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_map_field.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_message.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_message.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_message_field.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_message_field.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_oneof.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_oneof.h",
++      "src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
++      "src/google/protobuf/compiler/objectivec/objectivec_primitive_field.h",
++      "src/google/protobuf/compiler/plugin.cc",
++      "src/google/protobuf/compiler/plugin.h",
++      "src/google/protobuf/compiler/plugin.pb.cc",
++      "src/google/protobuf/compiler/plugin.pb.h",
++      "src/google/protobuf/compiler/python/python_generator.cc",
++      "src/google/protobuf/compiler/python/python_generator.h",
++      "src/google/protobuf/compiler/ruby/ruby_generator.cc",
++      "src/google/protobuf/compiler/ruby/ruby_generator.h",
++      "src/google/protobuf/compiler/subprocess.cc",
++      "src/google/protobuf/compiler/subprocess.h",
++      "src/google/protobuf/compiler/zip_writer.cc",
++      "src/google/protobuf/compiler/zip_writer.h",
++    ]
++
++    configs -= [ "//build/config/compiler:chromium_code" ]
++    configs += [ "//build/config/compiler:no_chromium_code" ]
++    if (is_win) {
++      # This is defined internally, don't warn on duplicate.
++      configs -= [ "//build/config/win:lean_and_mean" ]
++    }
++
++    cflags = protobuf_lite_cflags
++
++    deps = [
++      ":protobuf_full",
++    ]
++    deps += [ "//build/config/sanitizers:deps" ]
++  }
++}
++
++google_python_dir = "$root_out_dir/pyproto/google"
++
++copy("copy_google") {
++  sources = [
++    "python/google/__init__.py",
++  ]
++  outputs = [
++    "$google_python_dir/{{source_file_part}}",
++  ]
++}
++
++copy("copy_google_protobuf") {
++  sources = [
++    "python/google/protobuf/__init__.py",
++    "python/google/protobuf/descriptor.py",
++    "python/google/protobuf/descriptor_database.py",
++
++    # TODO(ncarter): protoc's python generator treats descriptor.proto
++    # specially, but only when the input path is exactly
++    # "google/protobuf/descriptor.proto".  I'm not sure how to execute a rule
++    # from a different directory.  For now, use a manually-generated copy of
++    # descriptor_pb2.py.
++    "python/google/protobuf/descriptor_pb2.py",
++    "python/google/protobuf/descriptor_pool.py",
++    "python/google/protobuf/message.py",
++    "python/google/protobuf/message_factory.py",
++    "python/google/protobuf/proto_builder.py",
++    "python/google/protobuf/reflection.py",
++    "python/google/protobuf/service.py",
++    "python/google/protobuf/service_reflection.py",
++    "python/google/protobuf/symbol_database.py",
++    "python/google/protobuf/text_encoding.py",
++    "python/google/protobuf/text_format.py",
++  ]
++  outputs = [
++    "$google_python_dir/protobuf/{{source_file_part}}",
++  ]
++}
++
++copy("copy_google_protobuf_internal") {
++  sources = [
++    "python/google/protobuf/internal/__init__.py",
++    "python/google/protobuf/internal/api_implementation.py",
++    "python/google/protobuf/internal/containers.py",
++    "python/google/protobuf/internal/decoder.py",
++    "python/google/protobuf/internal/encoder.py",
++    "python/google/protobuf/internal/enum_type_wrapper.py",
++    "python/google/protobuf/internal/generator_test.py",
++    "python/google/protobuf/internal/message_listener.py",
++    "python/google/protobuf/internal/python_message.py",
++    "python/google/protobuf/internal/type_checkers.py",
++    "python/google/protobuf/internal/wire_format.py",
++  ]
++  outputs = [
++    "$google_python_dir/protobuf/internal/{{source_file_part}}",
++  ]
++}
++
++copy("copy_google_protobuf_pyext") {
++  sources = [
++    "python/google/protobuf/pyext/__init__.py",
++    "python/google/protobuf/pyext/cpp_message.py",
++  ]
++  outputs = [
++    "$google_python_dir/protobuf/pyext/{{source_file_part}}",
++  ]
++}
++
++group("py_proto") {
++  public_deps = [
++    ":copy_google",
++    ":copy_google_protobuf",
++    ":copy_google_protobuf_internal",
++  ]
++
++  # Targets that depend on this should depend on the copied data files.
++  data = get_target_outputs(":copy_google")
++  data += get_target_outputs(":copy_google_protobuf")
++  data += get_target_outputs(":copy_google_protobuf_internal")
++}
+diff --git a/third_party/protobuf/DEPS b/third_party/protobuf/DEPS
+new file mode 100644
+index 0000000..2155370
+--- /dev/null
++++ b/third_party/protobuf/DEPS
+@@ -0,0 +1,4 @@
++include_rules = [
++  '+google/protobuf',
++  '+net/proto',  # Bogus include in upstream sources.
++]
+diff --git a/third_party/protobuf/OWNERS b/third_party/protobuf/OWNERS
+new file mode 100644
+index 0000000..07e9671
+--- /dev/null
++++ b/third_party/protobuf/OWNERS
+@@ -0,0 +1,2 @@
++agl@chromium.org
++pkasting@chromium.org
+diff --git a/third_party/protobuf/README.chromium b/third_party/protobuf/README.chromium
+new file mode 100644
+index 0000000..0375fd1
+--- /dev/null
++++ b/third_party/protobuf/README.chromium
+@@ -0,0 +1,32 @@
++Name: Protocol Buffers
++Short Name: protobuf
++URL: https://github.com/google/protobuf
++License: BSD
++License File: LICENSE
++Version: unknown
++Revision: 6994b07f1480f658e2ea6262f8ca804e836ef1d2
++Security Critical: yes
++
++Steps used to create the current version:
++(1) Download and unpack protobuf sources from
++    https://github.com/google/protobuf/archive/master.zip .
++(2) Apply the patches in patches/ in order.  In all these cases, after
++    determining how to adapt the patch to the current protobuf codebase, you
++    should regenerate the patch for the next maintainer.
++
++    A brief description of each patch:
++  00: Add initial GYP/GN buildfiles, DEPS, OWNERS, and README.chromium.  You
++      will need to modify the README to include the correct revision, and modify
++      the buildfiles to reflect the actual files in the source tree, what they
++      #include, what warnings they trigger, etc.
++(3) Generate descriptor_pb2.py using something like the following steps.  Make
++    sure you've regenerated your buildfiles and will build protoc from the
++    newly-modified sources above.
++  $ cd $SRC_DIR
++  $ ninja -C out/Debug protoc
++  $ cd third_party/protobuf/src
++  $ ../../../out/Debug/protoc --python_out=../python google/protobuf/descriptor.proto
++  $ cd ..
++  $ git add -f python/google/protobuf/descriptor_pb2.py
++  $ git commit
++(4) At this point you should be done, and able to successfully build everything.
+diff --git a/third_party/protobuf/proto_library.gni b/third_party/protobuf/proto_library.gni
+new file mode 100644
+index 0000000..8e7ea14
+--- /dev/null
++++ b/third_party/protobuf/proto_library.gni
+@@ -0,0 +1,175 @@
++# Copyright 2014 The Chromium Authors. All rights reserved.
++# Use of this source code is governed by a BSD-style license that can be
++# found in the LICENSE file.
++
++# Compile a protocol buffer.
++#
++# Protobuf parameters:
++#
++#   proto_out_dir (optional)
++#       Specifies the path suffix that output files are generated under. This
++#       path will be appended to the root_gen_dir.
++#
++#       Targets that depend on the proto target will be able to include the
++#       resulting proto headers with an include like:
++#         #include "dir/for/my_proto_lib/foo.pb.h"
++#       If undefined, this defaults to matching the input directory for each
++#       .proto file (you should almost always use the default mode).
++#
++#   cc_generator_options (optional)
++#       List of extra flags passed to the protocol compiler.  If you need to
++#       add an EXPORT macro to a protobuf's C++ header, set the
++#       'cc_generator_options' variable with the value:
++#       'dllexport_decl=FOO_EXPORT:' (note trailing colon).
++#
++#       It is likely you also need to #include a file for the above EXPORT
++#       macro to work. See cc_include.
++#
++#   cc_include (optional)
++#       String listing an extra include that should be passed.
++#       Example: cc_include = "foo/bar.h"
++#
++#   deps (optional)
++#       Additional dependencies.
++#
++# Parameters for compiling the generated code:
++#
++#   defines (optional)
++#       Defines to supply to the source set that compiles the generated source
++#       code.
++#
++#   extra_configs (optional)
++#       A list of config labels that will be appended to the configs applying
++#       to the source set.
++#
++# Example:
++#  proto_library("mylib") {
++#    sources = [
++#      "foo.proto",
++#    ]
++#  }
++
++template("proto_library") {
++  assert(defined(invoker.sources), "Need sources for proto_library")
++
++  # Don't apply OS-specific sources filtering to the assignments later on.
++  # Platform files should have gotten filtered out in the sources assignment
++  # when this template was invoked. If they weren't, it was on purpose and
++  # this template shouldn't re-apply the filter.
++  set_sources_assignment_filter([])
++
++  action_name = "${target_name}_gen"
++  source_set_name = target_name
++  action_foreach(action_name) {
++    visibility = [ ":$source_set_name" ]
++
++    script = "//tools/protoc_wrapper/protoc_wrapper.py"
++
++    sources = invoker.sources
++
++    # Compute the output directory, both relative to the source root (for
++    # declaring "outputs") and relative to the build dir (for passing to the
++    # script).
++    if (defined(invoker.proto_out_dir)) {
++      # Put the results in the specified dir in the gen tree.
++      out_dir = "$root_gen_dir/" + invoker.proto_out_dir
++      rel_out_dir = rebase_path(out_dir, root_build_dir)
++      py_out_dir = "$root_out_dir/pyproto/" + invoker.proto_out_dir
++    } else {
++      # Use the gen directory corresponding to the source file for C++ sources.
++      # This expansion will be done differently in the outputs and the args, so
++      # we don't need to worry about rebasing as above. Always put Python
++      # sources in "pyproto".
++      out_dir = "{{source_gen_dir}}"
++      rel_out_dir = "{{source_gen_dir}}"
++      py_out_dir = "$root_out_dir/pyproto/{{source_root_relative_dir}}"
++    }
++    rel_py_out_dir = rebase_path(py_out_dir, root_build_dir)
++
++    outputs = [
++      "$py_out_dir/{{source_name_part}}_pb2.py",
++      "$out_dir/{{source_name_part}}.pb.cc",
++      "$out_dir/{{source_name_part}}.pb.h",
++    ]
++
++    args = []
++    if (defined(invoker.cc_include)) {
++      args += [
++        "--include",
++        invoker.cc_include,
++      ]
++    }
++
++    args += [
++      "--protobuf",
++      "$rel_out_dir/{{source_name_part}}.pb.h",
++      "--proto-in-dir",
++      "{{source_dir}}",
++      "--proto-in-file",
++      "{{source_file_part}}",
++
++      # TODO(brettw) support system protobuf compiler.
++      "--use-system-protobuf=0",
++    ]
++
++    protoc_label = "//third_party/protobuf:protoc($host_toolchain)"
++    args += [
++      "--",
++
++      # Prepend with "./" so this will never pick up the system one (normally
++      # when not cross-compiling, protoc's output directory will be the same
++      # as the build dir, so the relative location will be empty).
++      "./" +
++          rebase_path(get_label_info(protoc_label, "root_out_dir") + "/protoc",
++                      root_build_dir),
++    ]
++
++    # If passed cc_generator_options should end in a colon, which will separate
++    # it from the directory when we concatenate them. The proto compiler
++    # understands this syntax.
++    if (defined(invoker.cc_generator_options)) {
++      cc_generator_options = invoker.cc_generator_options
++    } else {
++      cc_generator_options = ""
++    }
++    args += [
++      # cc_generator_options is supposed to end in a colon if it's nonempty.
++      "--cpp_out",
++      "$cc_generator_options$rel_out_dir",
++      "--python_out",
++      rel_py_out_dir,
++    ]
++
++    deps = [
++      protoc_label,
++    ]
++    if (defined(invoker.deps)) {
++      deps += invoker.deps
++    }
++  }
++
++  source_set(target_name) {
++    forward_variables_from(invoker,
++                           [
++                             "visibility",
++                             "defines",
++                           ])
++
++    sources = get_target_outputs(":$action_name")
++
++    if (defined(invoker.extra_configs)) {
++      configs += invoker.extra_configs
++    }
++
++    public_configs = [ "//third_party/protobuf:using_proto" ]
++
++    public_deps = [
++      # The generated headers reference headers within protobuf_lite, so
++      # dependencies must be able to find those headers too.
++      "//third_party/protobuf:protobuf_lite",
++    ]
++    deps = [
++      ":$action_name",
++    ]
++  }
++}
+diff --git a/third_party/protobuf/protobuf.gyp b/third_party/protobuf/protobuf.gyp
+new file mode 100644
+index 0000000..e839ad7
+--- /dev/null
++++ b/third_party/protobuf/protobuf.gyp
+@@ -0,0 +1,553 @@
++# Copyright (c) 2012 The Chromium Authors. All rights reserved.
++# Use of this source code is governed by a BSD-style license that can be
++# found in the LICENSE file.
++
++{
++  'conditions': [
++    ['use_system_protobuf==0', {
++      'target_defaults': {
++        'conditions': [
++          ['OS=="win"', {
++            'msvs_disabled_warnings': [
++              4018,  # signed/unsigned mismatch in comparison
++              4065,  # switch statement contains 'default' but no 'case' labels
++              4146,  # unary minus operator applied to unsigned type
++              4244,  # implicit conversion, possible loss of data
++              4267,  # size_t to int truncation
++              4291,  # no matching operator delete for a placement new
++              4355,  # 'this' used in base member initializer list
++              4506,  # no definition for inline function
++            ],
++            'defines!': [
++              'WIN32_LEAN_AND_MEAN',  # Protobuf defines this itself.
++            ],
++          }],
++          ['OS=="mac" or OS=="ios"', {
++            'defines': [
++              # Chromium builds don't yet support __thread on Mac -- not sure if
++              # the limiting factor is using libc++ or having OS X >=10.7.
++              # Remove this for Mac once the above aren't issues.
++              #
++              # The "ios" bit is for host binaries built on the Mac as part of
++              # the iOS build process -- target binaries would work anyway due
++              # to the preprocessor checks for iOS in the codebase.  What we
++              # really want is something like
++              # '_toolchain="host" and host_os=="mac"', but host_os isn't
++              # properly defined in all cases, and it's not worth trying to fix
++              # it, especially since we can do this more correctly in GN.
++              'GOOGLE_PROTOBUF_NO_THREADLOCAL',
++            ],
++          }],
++        ],
++      },
++      'conditions': [
++        ['OS=="ios" and "<(GENERATOR)"=="xcode" and "<(GENERATOR_FLAVOR)"!="ninja"', {
++          'variables': {
++            'ninja_output_dir': 'ninja-protoc',
++            'ninja_product_dir':
++              '<(DEPTH)/xcodebuild/<(ninja_output_dir)/<(CONFIGURATION_NAME)',
++            # Gyp to rerun
++            're_run_targets': [
++              'third_party/protobuf/protobuf.gyp',
++            ],
++          },
++          'targets': [
++            {
++              # On iOS, generating protoc is done via two actions: (1) compiling
++              # the executable with ninja, and (2) copying the executable into a
++              # location that is shared with other projects. These actions are
++              # separated into two targets in order to be able to specify that the
++              # second action should not run until the first action finishes (since
++              # the ordering of multiple actions in one target is defined only by
++              # inputs and outputs, and it's impossible to set correct inputs for
++              # the ninja build, so setting all the inputs and outputs isn't an
++              # option). The first target is given here; the second target is the
++              # normal protoc target under the condition that "OS==iOS".
++              'target_name': 'compile_protoc',
++              'type': 'none',
++              'toolsets': ['host'],
++              'includes': ['../../build/ios/mac_build.gypi'],
++              'actions': [
++                {
++                  'action_name': 'compile protoc',
++                  'inputs': [],
++                  'outputs': [],
++                  'action': [
++                    '<@(ninja_cmd)',
++                    'protoc',
++                  ],
++                  'message': 'Generating the C++ protocol buffers compiler',
++                },
++              ],
++            },
++          ],
++        }],
++      ],
++      'targets': [
++        # The "lite" lib is about 1/7th the size of the heavy lib,
++        # but it doesn't support some of the more exotic features of
++        # protobufs, like reflection.  To generate C++ code that can link
++        # against the lite version of the library, add the option line:
++        #
++        #   option optimize_for = LITE_RUNTIME;
++        #
++        # to your .proto file.
++        {
++          'target_name': 'protobuf_lite',
++          'type': 'static_library',
++          'toolsets': ['host', 'target'],
++          'includes': [
++            'protobuf_lite.gypi',
++          ],
++        },
++        # This is the full, heavy protobuf lib that's needed for c++ .protos
++        # that don't specify the LITE_RUNTIME option.  The protocol
++        # compiler itself (protoc) falls into that category.
++        #
++        # DO NOT LINK AGAINST THIS TARGET IN CHROME CODE  --agl
++        {
++          'target_name': 'protobuf_full_do_not_use',
++          'type': 'static_library',
++          'toolsets': ['host','target'],
++          'sources': [
++            'src/google/protobuf/any.cc',
++            'src/google/protobuf/any.h',
++            'src/google/protobuf/any.pb.cc',
++            'src/google/protobuf/any.pb.h',
++            'src/google/protobuf/api.pb.cc',
++            'src/google/protobuf/api.pb.h',
++            'src/google/protobuf/compiler/importer.cc',
++            'src/google/protobuf/compiler/importer.h',
++            'src/google/protobuf/compiler/parser.cc',
++            'src/google/protobuf/compiler/parser.h',
++            'src/google/protobuf/descriptor.cc',
++            'src/google/protobuf/descriptor.pb.cc',
++            'src/google/protobuf/descriptor_database.cc',
++            'src/google/protobuf/descriptor_database.h',
++            'src/google/protobuf/duration.pb.cc',
++            'src/google/protobuf/duration.pb.h',
++            'src/google/protobuf/dynamic_message.cc',
++            'src/google/protobuf/dynamic_message.h',
++            'src/google/protobuf/empty.pb.cc',
++            'src/google/protobuf/empty.pb.h',
++            'src/google/protobuf/extension_set_heavy.cc',
++            'src/google/protobuf/field_mask.pb.cc',
++            'src/google/protobuf/field_mask.pb.h',
++            'src/google/protobuf/generated_message_reflection.cc',
++            'src/google/protobuf/generated_message_reflection.h',
++            # gzip_stream.cc pulls in zlib, but it's not actually used by
++            # protoc, just by test code; so instead of compiling zlib for the
++            # host, let's just exclude these.
++            # 'src/google/protobuf/io/gzip_stream.cc',
++            # 'src/google/protobuf/io/gzip_stream.h',
++            'src/google/protobuf/io/printer.cc',
++            'src/google/protobuf/io/printer.h',
++            'src/google/protobuf/io/strtod.cc',
++            'src/google/protobuf/io/strtod.h',
++            'src/google/protobuf/io/tokenizer.cc',
++            'src/google/protobuf/io/tokenizer.h',
++            'src/google/protobuf/io/zero_copy_stream_impl.cc',
++            'src/google/protobuf/io/zero_copy_stream_impl.h',
++            'src/google/protobuf/map.h',
++            'src/google/protobuf/map_entry_lite.h',
++            'src/google/protobuf/map_field.cc',
++            'src/google/protobuf/map_field.h',
++            'src/google/protobuf/map_field_inl.h',
++            'src/google/protobuf/map_field_lite.h',
++            'src/google/protobuf/map_type_handler.h',
++            'src/google/protobuf/message.cc',
++            'src/google/protobuf/reflection_ops.cc',
++            'src/google/protobuf/reflection_ops.h',
++            'src/google/protobuf/service.cc',
++            'src/google/protobuf/service.h',
++            'src/google/protobuf/source_context.pb.cc',
++            'src/google/protobuf/source_context.pb.h',
++            'src/google/protobuf/struct.pb.cc',
++            'src/google/protobuf/struct.pb.h',
++            'src/google/protobuf/stubs/mathlimits.cc',
++            'src/google/protobuf/stubs/mathutil.h',
++            'src/google/protobuf/stubs/shared_ptr.h',
++            'src/google/protobuf/stubs/singleton.h',
++            'src/google/protobuf/stubs/status_macros.h',
++            'src/google/protobuf/stubs/structurally_valid.cc',
++            'src/google/protobuf/stubs/substitute.cc',
++            'src/google/protobuf/stubs/substitute.h',
++            'src/google/protobuf/text_format.cc',
++            'src/google/protobuf/text_format.h',
++            'src/google/protobuf/timestamp.pb.cc',
++            'src/google/protobuf/timestamp.pb.h',
++            'src/google/protobuf/type.pb.cc',
++            'src/google/protobuf/type.pb.h',
++            'src/google/protobuf/unknown_field_set.cc',
++            'src/google/protobuf/util/field_comparator.cc',
++            'src/google/protobuf/util/field_comparator.h',
++            'src/google/protobuf/util/internal/constants.h',
++            'src/google/protobuf/util/internal/datapiece.cc',
++            'src/google/protobuf/util/internal/datapiece.h',
++            'src/google/protobuf/util/internal/default_value_objectwriter.cc',
++            'src/google/protobuf/util/internal/default_value_objectwriter.h',
++            'src/google/protobuf/util/internal/error_listener.cc',
++            'src/google/protobuf/util/internal/error_listener.h',
++            'src/google/protobuf/util/internal/field_mask_utility.cc',
++            'src/google/protobuf/util/internal/field_mask_utility.h',
++            'src/google/protobuf/util/internal/json_escaping.cc',
++            'src/google/protobuf/util/internal/json_escaping.h',
++            'src/google/protobuf/util/internal/json_objectwriter.cc',
++            'src/google/protobuf/util/internal/json_objectwriter.h',
++            'src/google/protobuf/util/internal/json_stream_parser.cc',
++            'src/google/protobuf/util/internal/json_stream_parser.h',
++            'src/google/protobuf/util/internal/location_tracker.h',
++            'src/google/protobuf/util/internal/object_location_tracker.h',
++            'src/google/protobuf/util/internal/object_source.h',
++            'src/google/protobuf/util/internal/object_writer.cc',
++            'src/google/protobuf/util/internal/object_writer.h',
++            'src/google/protobuf/util/internal/protostream_objectsource.cc',
++            'src/google/protobuf/util/internal/protostream_objectsource.h',
++            'src/google/protobuf/util/internal/protostream_objectwriter.cc',
++            'src/google/protobuf/util/internal/protostream_objectwriter.h',
++            'src/google/protobuf/util/internal/snake2camel_objectwriter.h',
++            'src/google/protobuf/util/internal/structured_objectwriter.h',
++            'src/google/protobuf/util/internal/type_info.cc',
++            'src/google/protobuf/util/internal/type_info.h',
++            'src/google/protobuf/util/internal/type_info_test_helper.cc',
++            'src/google/protobuf/util/internal/type_info_test_helper.h',
++            'src/google/protobuf/util/internal/utility.cc',
++            'src/google/protobuf/util/internal/utility.h',
++            'src/google/protobuf/util/json_util.cc',
++            'src/google/protobuf/util/json_util.h',
++            'src/google/protobuf/util/message_differencer.cc',
++            'src/google/protobuf/util/message_differencer.h',
++            'src/google/protobuf/util/type_resolver.h',
++            'src/google/protobuf/util/type_resolver_util.cc',
++            'src/google/protobuf/util/type_resolver_util.h',
++            'src/google/protobuf/wire_format.cc',
++            'src/google/protobuf/wire_format.h',
++            'src/google/protobuf/wrappers.pb.cc',
++            'src/google/protobuf/wrappers.pb.h',
++          ],
++          'dependencies': [
++            'protobuf_lite',
++          ],
++          'export_dependent_settings': [
++            'protobuf_lite',
++          ],
++        },
++        {
++          'target_name': 'protoc',
++          'conditions': [
++            ['OS!="ios" or "<(GENERATOR)"!="xcode" or "<(GENERATOR_FLAVOR)"=="ninja"', {
++              'type': 'executable',
++              'toolsets': ['host'],
++              'sources': [
++                'src/google/protobuf/compiler/code_generator.cc',
++                'src/google/protobuf/compiler/code_generator.h',
++                'src/google/protobuf/compiler/command_line_interface.cc',
++                'src/google/protobuf/compiler/command_line_interface.h',
++                'src/google/protobuf/compiler/cpp/cpp_enum.cc',
++                'src/google/protobuf/compiler/cpp/cpp_enum.h',
++                'src/google/protobuf/compiler/cpp/cpp_enum_field.cc',
++                'src/google/protobuf/compiler/cpp/cpp_enum_field.h',
++                'src/google/protobuf/compiler/cpp/cpp_extension.cc',
++                'src/google/protobuf/compiler/cpp/cpp_extension.h',
++                'src/google/protobuf/compiler/cpp/cpp_field.cc',
++                'src/google/protobuf/compiler/cpp/cpp_field.h',
++                'src/google/protobuf/compiler/cpp/cpp_file.cc',
++                'src/google/protobuf/compiler/cpp/cpp_file.h',
++                'src/google/protobuf/compiler/cpp/cpp_generator.cc',
++                'src/google/protobuf/compiler/cpp/cpp_generator.h',
++                'src/google/protobuf/compiler/cpp/cpp_helpers.cc',
++                'src/google/protobuf/compiler/cpp/cpp_helpers.h',
++                'src/google/protobuf/compiler/cpp/cpp_map_field.cc',
++                'src/google/protobuf/compiler/cpp/cpp_map_field.h',
++                'src/google/protobuf/compiler/cpp/cpp_message.cc',
++                'src/google/protobuf/compiler/cpp/cpp_message.h',
++                'src/google/protobuf/compiler/cpp/cpp_message_field.cc',
++                'src/google/protobuf/compiler/cpp/cpp_message_field.h',
++                'src/google/protobuf/compiler/cpp/cpp_options.h',
++                'src/google/protobuf/compiler/cpp/cpp_primitive_field.cc',
++                'src/google/protobuf/compiler/cpp/cpp_primitive_field.h',
++                'src/google/protobuf/compiler/cpp/cpp_service.cc',
++                'src/google/protobuf/compiler/cpp/cpp_service.h',
++                'src/google/protobuf/compiler/cpp/cpp_string_field.cc',
++                'src/google/protobuf/compiler/cpp/cpp_string_field.h',
++                'src/google/protobuf/compiler/csharp/csharp_enum.cc',
++                'src/google/protobuf/compiler/csharp/csharp_enum.h',
++                'src/google/protobuf/compiler/csharp/csharp_enum_field.cc',
++                'src/google/protobuf/compiler/csharp/csharp_enum_field.h',
++                'src/google/protobuf/compiler/csharp/csharp_field_base.cc',
++                'src/google/protobuf/compiler/csharp/csharp_field_base.h',
++                'src/google/protobuf/compiler/csharp/csharp_generator.cc',
++                'src/google/protobuf/compiler/csharp/csharp_generator.h',
++                'src/google/protobuf/compiler/csharp/csharp_helpers.cc',
++                'src/google/protobuf/compiler/csharp/csharp_helpers.h',
++                'src/google/protobuf/compiler/csharp/csharp_map_field.cc',
++                'src/google/protobuf/compiler/csharp/csharp_map_field.h',
++                'src/google/protobuf/compiler/csharp/csharp_message.cc',
++                'src/google/protobuf/compiler/csharp/csharp_message.h',
++                'src/google/protobuf/compiler/csharp/csharp_message_field.cc',
++                'src/google/protobuf/compiler/csharp/csharp_message_field.h',
++                'src/google/protobuf/compiler/csharp/csharp_names.h',
++                'src/google/protobuf/compiler/csharp/csharp_primitive_field.cc',
++                'src/google/protobuf/compiler/csharp/csharp_primitive_field.h',
++                'src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc',
++                'src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.h',
++                'src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc',
++                'src/google/protobuf/compiler/csharp/csharp_repeated_message_field.h',
++                'src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc',
++                'src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h',
++                'src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc',
++                'src/google/protobuf/compiler/csharp/csharp_source_generator_base.h',
++                'src/google/protobuf/compiler/csharp/csharp_umbrella_class.cc',
++                'src/google/protobuf/compiler/csharp/csharp_umbrella_class.h',
++                'src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc',
++                'src/google/protobuf/compiler/csharp/csharp_wrapper_field.h',
++                'src/google/protobuf/compiler/java/java_context.cc',
++                'src/google/protobuf/compiler/java/java_context.h',
++                'src/google/protobuf/compiler/java/java_doc_comment.cc',
++                'src/google/protobuf/compiler/java/java_doc_comment.h',
++                'src/google/protobuf/compiler/java/java_enum.cc',
++                'src/google/protobuf/compiler/java/java_enum.h',
++                'src/google/protobuf/compiler/java/java_enum_field.cc',
++                'src/google/protobuf/compiler/java/java_enum_field.h',
++                'src/google/protobuf/compiler/java/java_enum_field_lite.cc',
++                'src/google/protobuf/compiler/java/java_enum_field_lite.h',
++                'src/google/protobuf/compiler/java/java_extension.cc',
++                'src/google/protobuf/compiler/java/java_extension.h',
++                'src/google/protobuf/compiler/java/java_field.cc',
++                'src/google/protobuf/compiler/java/java_field.h',
++                'src/google/protobuf/compiler/java/java_file.cc',
++                'src/google/protobuf/compiler/java/java_file.h',
++                'src/google/protobuf/compiler/java/java_generator.cc',
++                'src/google/protobuf/compiler/java/java_generator.h',
++                'src/google/protobuf/compiler/java/java_generator_factory.cc',
++                'src/google/protobuf/compiler/java/java_generator_factory.h',
++                'src/google/protobuf/compiler/java/java_helpers.cc',
++                'src/google/protobuf/compiler/java/java_helpers.h',
++                'src/google/protobuf/compiler/java/java_lazy_message_field.cc',
++                'src/google/protobuf/compiler/java/java_lazy_message_field.h',
++                'src/google/protobuf/compiler/java/java_lazy_message_field_lite.cc',
++                'src/google/protobuf/compiler/java/java_lazy_message_field_lite.h',
++                'src/google/protobuf/compiler/java/java_map_field.cc',
++                'src/google/protobuf/compiler/java/java_map_field.h',
++                'src/google/protobuf/compiler/java/java_map_field_lite.cc',
++                'src/google/protobuf/compiler/java/java_map_field_lite.h',
++                'src/google/protobuf/compiler/java/java_message.cc',
++                'src/google/protobuf/compiler/java/java_message.h',
++                'src/google/protobuf/compiler/java/java_message_builder.cc',
++                'src/google/protobuf/compiler/java/java_message_builder.h',
++                'src/google/protobuf/compiler/java/java_message_builder_lite.cc',
++                'src/google/protobuf/compiler/java/java_message_builder_lite.h',
++                'src/google/protobuf/compiler/java/java_message_field.cc',
++                'src/google/protobuf/compiler/java/java_message_field.h',
++                'src/google/protobuf/compiler/java/java_message_field_lite.cc',
++                'src/google/protobuf/compiler/java/java_message_field_lite.h',
++                'src/google/protobuf/compiler/java/java_message_lite.cc',
++                'src/google/protobuf/compiler/java/java_message_lite.h',
++                'src/google/protobuf/compiler/java/java_name_resolver.cc',
++                'src/google/protobuf/compiler/java/java_name_resolver.h',
++                'src/google/protobuf/compiler/java/java_primitive_field.cc',
++                'src/google/protobuf/compiler/java/java_primitive_field.h',
++                'src/google/protobuf/compiler/java/java_primitive_field_lite.cc',
++                'src/google/protobuf/compiler/java/java_primitive_field_lite.h',
++                'src/google/protobuf/compiler/java/java_service.cc',
++                'src/google/protobuf/compiler/java/java_service.h',
++                'src/google/protobuf/compiler/java/java_shared_code_generator.cc',
++                'src/google/protobuf/compiler/java/java_shared_code_generator.h',
++                'src/google/protobuf/compiler/java/java_string_field.cc',
++                'src/google/protobuf/compiler/java/java_string_field.h',
++                'src/google/protobuf/compiler/java/java_string_field_lite.cc',
++                'src/google/protobuf/compiler/java/java_string_field_lite.h',
++                'src/google/protobuf/compiler/javanano/javanano_enum.cc',
++                'src/google/protobuf/compiler/javanano/javanano_enum.h',
++                'src/google/protobuf/compiler/javanano/javanano_enum_field.cc',
++                'src/google/protobuf/compiler/javanano/javanano_enum_field.h',
++                'src/google/protobuf/compiler/javanano/javanano_extension.cc',
++                'src/google/protobuf/compiler/javanano/javanano_extension.h',
++                'src/google/protobuf/compiler/javanano/javanano_field.cc',
++                'src/google/protobuf/compiler/javanano/javanano_field.h',
++                'src/google/protobuf/compiler/javanano/javanano_file.cc',
++                'src/google/protobuf/compiler/javanano/javanano_file.h',
++                'src/google/protobuf/compiler/javanano/javanano_generator.cc',
++                'src/google/protobuf/compiler/javanano/javanano_generator.h',
++                'src/google/protobuf/compiler/javanano/javanano_helpers.cc',
++                'src/google/protobuf/compiler/javanano/javanano_helpers.h',
++                'src/google/protobuf/compiler/javanano/javanano_map_field.cc',
++                'src/google/protobuf/compiler/javanano/javanano_map_field.h',
++                'src/google/protobuf/compiler/javanano/javanano_message.cc',
++                'src/google/protobuf/compiler/javanano/javanano_message.h',
++                'src/google/protobuf/compiler/javanano/javanano_message_field.cc',
++                'src/google/protobuf/compiler/javanano/javanano_message_field.h',
++                'src/google/protobuf/compiler/javanano/javanano_params.h',
++                'src/google/protobuf/compiler/javanano/javanano_primitive_field.cc',
++                'src/google/protobuf/compiler/javanano/javanano_primitive_field.h',
++                'src/google/protobuf/compiler/main.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_enum.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_enum.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_enum_field.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_extension.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_extension.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_field.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_field.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_file.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_file.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_generator.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_generator.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_helpers.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_helpers.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_map_field.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_map_field.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_message.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_message.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_message_field.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_message_field.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_oneof.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_oneof.h',
++                'src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc',
++                'src/google/protobuf/compiler/objectivec/objectivec_primitive_field.h',
++                'src/google/protobuf/compiler/plugin.cc',
++                'src/google/protobuf/compiler/plugin.h',
++                'src/google/protobuf/compiler/plugin.pb.cc',
++                'src/google/protobuf/compiler/plugin.pb.h',
++                'src/google/protobuf/compiler/python/python_generator.cc',
++                'src/google/protobuf/compiler/python/python_generator.h',
++                'src/google/protobuf/compiler/ruby/ruby_generator.cc',
++                'src/google/protobuf/compiler/ruby/ruby_generator.h',
++                'src/google/protobuf/compiler/subprocess.cc',
++                'src/google/protobuf/compiler/subprocess.h',
++                'src/google/protobuf/compiler/zip_writer.cc',
++                'src/google/protobuf/compiler/zip_writer.h',
++              ],
++              'dependencies': [
++                'protobuf_full_do_not_use',
++              ],
++            }, {  # else, OS=="ios" and "<(GENERATOR)"=="xcode" and "<(GENERATOR_FLAVOR)"!="ninja"
++              'type': 'none',
++              'toolsets': ['host'],
++              'dependencies': [
++                'compile_protoc',
++              ],
++              'actions': [
++                {
++                  'action_name': 'copy protoc',
++                  'inputs': [
++                    '<(ninja_product_dir)/protoc',
++                  ],
++                  'outputs': [
++                    '<(PRODUCT_DIR)/protoc',
++                  ],
++                  'action': [
++                    'cp',
++                    '<(ninja_product_dir)/protoc',
++                    '<(PRODUCT_DIR)/protoc',
++                  ],
++                },
++              ],
++            }],
++          ],
++        },
++        {
++          # Generate the python module needed by all protoc-generated Python code.
++          'target_name': 'py_proto',
++          'type': 'none',
++          'copies': [
++            {
++              'destination': '<(PRODUCT_DIR)/pyproto/google/',
++              'files': [
++                'python/google/__init__.py',
++              ],
++            },
++            {
++              'destination': '<(PRODUCT_DIR)/pyproto/google/protobuf',
++              'files': [
++                'python/google/protobuf/__init__.py',
++                'python/google/protobuf/descriptor.py',
++                'python/google/protobuf/descriptor_database.py',
++                # TODO(ncarter): protoc's python generator treats
++                # descriptor.proto specially, but only when the input path is
++                # exactly "google/protobuf/descriptor.proto".  I'm not sure how
++                # to execute a rule from a different directory.  For now, use a
++                # manually-generated copy of descriptor_pb2.py.
++                'python/google/protobuf/descriptor_pb2.py',
++                'python/google/protobuf/descriptor_pool.py',
++                'python/google/protobuf/message.py',
++                'python/google/protobuf/message_factory.py',
++                'python/google/protobuf/proto_builder.py',
++                'python/google/protobuf/reflection.py',
++                'python/google/protobuf/service.py',
++                'python/google/protobuf/service_reflection.py',
++                'python/google/protobuf/symbol_database.py',
++                'python/google/protobuf/text_encoding.py',
++                'python/google/protobuf/text_format.py',
++              ],
++            },
++            {
++              'destination': '<(PRODUCT_DIR)/pyproto/google/protobuf/internal',
++              'files': [
++                'python/google/protobuf/internal/__init__.py',
++                'python/google/protobuf/internal/api_implementation.py',
++                'python/google/protobuf/internal/containers.py',
++                'python/google/protobuf/internal/decoder.py',
++                'python/google/protobuf/internal/encoder.py',
++                'python/google/protobuf/internal/enum_type_wrapper.py',
++                'python/google/protobuf/internal/generator_test.py',
++                'python/google/protobuf/internal/message_listener.py',
++                'python/google/protobuf/internal/python_message.py',
++                'python/google/protobuf/internal/type_checkers.py',
++                'python/google/protobuf/internal/wire_format.py',
++              ],
++            },
++            {
++              'destination': '<(PRODUCT_DIR)/pyproto/google/protobuf/pyext',
++              'files': [
++                'python/google/protobuf/pyext/__init__.py',
++                'python/google/protobuf/pyext/cpp_message.py',
++              ],
++            },
++          ],
++        },
++      ],
++    }, { # use_system_protobuf==1
++      'targets': [
++        {
++          'target_name': 'protobuf_lite',
++          'type': 'none',
++          'direct_dependent_settings': {
++            'cflags': [
++              # Use full protobuf, because vanilla protobuf doesn't have
++              # our custom patch to retain unknown fields in lite mode.
++              '<!@(pkg-config --cflags protobuf)',
++            ],
++            'defines': [
++              'USE_SYSTEM_PROTOBUF',
++
++              # This macro must be defined to suppress the use
++              # of dynamic_cast<>, which requires RTTI.
++              'GOOGLE_PROTOBUF_NO_RTTI',
++              'GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER',
++            ],
++          },
++          'link_settings': {
++            # Use full protobuf, because vanilla protobuf doesn't have
++            # our custom patch to retain unknown fields in lite mode.
++            'ldflags': [
++              '<!@(pkg-config --libs-only-L --libs-only-other protobuf)',
++            ],
++            'libraries': [
++              '<!@(pkg-config --libs-only-l protobuf)',
++            ],
++          },
++        },
++        {
++          'target_name': 'protoc',
++          'type': 'none',
++          'toolsets': ['host', 'target'],
++        },
++        {
++          'target_name': 'py_proto',
++          'type': 'none',
++        },
++      ],
++    }],
++  ],
++}
+diff --git a/third_party/protobuf/protobuf_lite.gypi b/third_party/protobuf/protobuf_lite.gypi
+new file mode 100644
+index 0000000..90fe65b
+--- /dev/null
++++ b/third_party/protobuf/protobuf_lite.gypi
+@@ -0,0 +1,109 @@
++# Copyright 2013 The Chromium Authors. All rights reserved.
++# Use of this source code is governed by a BSD-style license that can be
++# found in the LICENSE file.
++
++{
++  'sources': [
++    'src/google/protobuf/arena.cc',
++    'src/google/protobuf/arena.h',
++    'src/google/protobuf/arenastring.cc',
++    'src/google/protobuf/arenastring.h',
++    'src/google/protobuf/descriptor.h',
++    'src/google/protobuf/descriptor.pb.h',
++    'src/google/protobuf/extension_set.cc',
++    'src/google/protobuf/extension_set.h',
++    'src/google/protobuf/generated_enum_reflection.h',
++    'src/google/protobuf/generated_enum_util.h',
++    'src/google/protobuf/generated_message_util.cc',
++    'src/google/protobuf/generated_message_util.h',
++    'src/google/protobuf/io/coded_stream.cc',
++    'src/google/protobuf/io/coded_stream.h',
++    'src/google/protobuf/io/coded_stream_inl.h',
++    'src/google/protobuf/io/zero_copy_stream.cc',
++    'src/google/protobuf/io/zero_copy_stream.h',
++    'src/google/protobuf/io/zero_copy_stream_impl_lite.cc',
++    'src/google/protobuf/io/zero_copy_stream_impl_lite.h',
++    'src/google/protobuf/message.h',
++    'src/google/protobuf/message_lite.cc',
++    'src/google/protobuf/message_lite.h',
++    'src/google/protobuf/metadata.h',
++    'src/google/protobuf/repeated_field.cc',
++    'src/google/protobuf/repeated_field.h',
++    'src/google/protobuf/stubs/atomic_sequence_num.h',
++    'src/google/protobuf/stubs/atomicops.h',
++    'src/google/protobuf/stubs/atomicops_internals_aix.h',
++    'src/google/protobuf/stubs/atomicops_internals_arm64_gcc.h',
++    'src/google/protobuf/stubs/atomicops_internals_arm_gcc.h',
++    'src/google/protobuf/stubs/atomicops_internals_arm_qnx.h',
++    'src/google/protobuf/stubs/atomicops_internals_atomicword_compat.h',
++    'src/google/protobuf/stubs/atomicops_internals_generic_gcc.h',
++    'src/google/protobuf/stubs/atomicops_internals_macosx.h',
++    'src/google/protobuf/stubs/atomicops_internals_mips_gcc.h',
++    'src/google/protobuf/stubs/atomicops_internals_pnacl.h',
++    'src/google/protobuf/stubs/atomicops_internals_solaris.h',
++    'src/google/protobuf/stubs/atomicops_internals_tsan.h',
++    'src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc',
++    'src/google/protobuf/stubs/atomicops_internals_x86_gcc.h',
++    'src/google/protobuf/stubs/atomicops_internals_x86_msvc.cc',
++    'src/google/protobuf/stubs/atomicops_internals_x86_msvc.h',
++    'src/google/protobuf/stubs/bytestream.cc',
++    'src/google/protobuf/stubs/bytestream.h',
++    'src/google/protobuf/stubs/callback.h',
++    'src/google/protobuf/stubs/casts.h',
++    'src/google/protobuf/stubs/common.cc',
++    'src/google/protobuf/stubs/common.h',
++    'src/google/protobuf/stubs/fastmem.h',
++    'src/google/protobuf/stubs/hash.h',
++    'src/google/protobuf/stubs/logging.h',
++    'src/google/protobuf/stubs/macros.h',
++    'src/google/protobuf/stubs/map_util.h',
++    'src/google/protobuf/stubs/mathlimits.h',
++    'src/google/protobuf/stubs/mutex.h',
++    'src/google/protobuf/stubs/once.cc',
++    'src/google/protobuf/stubs/once.h',
++    'src/google/protobuf/stubs/platform_macros.h',
++    'src/google/protobuf/stubs/port.h',
++    'src/google/protobuf/stubs/scoped_ptr.h',
++    'src/google/protobuf/stubs/status.cc',
++    'src/google/protobuf/stubs/status.h',
++    'src/google/protobuf/stubs/statusor.cc',
++    'src/google/protobuf/stubs/statusor.h',
++    'src/google/protobuf/stubs/stl_util.h',
++    'src/google/protobuf/stubs/stringpiece.cc',
++    'src/google/protobuf/stubs/stringpiece.h',
++    'src/google/protobuf/stubs/stringprintf.cc',
++    'src/google/protobuf/stubs/stringprintf.h',
++    'src/google/protobuf/stubs/strutil.cc',
++    'src/google/protobuf/stubs/strutil.h',
++    'src/google/protobuf/stubs/template_util.h',
++    'src/google/protobuf/stubs/time.cc',
++    'src/google/protobuf/stubs/time.h',
++    'src/google/protobuf/stubs/type_traits.h',
++    'src/google/protobuf/testing/googletest.h',
++    'src/google/protobuf/unknown_field_set.h',
++    'src/google/protobuf/wire_format_lite.cc',
++    'src/google/protobuf/wire_format_lite.h',
++    'src/google/protobuf/wire_format_lite_inl.h',
++  ],
++  'include_dirs': [
++    'src',
++  ],
++  # This macro must be defined to suppress the use of dynamic_cast<>,
++  # which requires RTTI.
++  'defines': [
++    'GOOGLE_PROTOBUF_NO_RTTI',
++    'GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER',
++    'HAVE_PTHREAD',
++  ],
++  'direct_dependent_settings': {
++    'include_dirs': [
++      'src',
++    ],
++    'defines': [
++      'GOOGLE_PROTOBUF_NO_RTTI',
++      'GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER',
++    ],
++    # TODO(jschuh): http://crbug.com/167187 size_t -> int.
++    'msvs_disabled_warnings': [ 4267 ],
++  },
++}
+diff --git a/third_party/protobuf/protobuf_nacl.gyp b/third_party/protobuf/protobuf_nacl.gyp
+new file mode 100644
+index 0000000..4b63e5c
+--- /dev/null
++++ b/third_party/protobuf/protobuf_nacl.gyp
+@@ -0,0 +1,25 @@
++# Copyright 2014 The Chromium Authors. All rights reserved.
++# Use of this source code is governed by a BSD-style license that can be
++# found in the LICENSE file.
++
++{
++  'includes': [
++    '../../native_client/build/untrusted.gypi',
++  ],
++  'targets': [
++    {
++      'target_name': 'protobuf_lite_nacl',
++      'type': 'none',
++      'variables': {
++        'nacl_untrusted_build': 1,
++        'nlib_target': 'libprotobuf_lite_nacl.a',
++        'build_glibc': 0,
++        'build_newlib': 0,
++        'build_pnacl_newlib': 1,
++      },
++      'includes': [
++        'protobuf_lite.gypi',
++      ],
++    },
++  ]
++}

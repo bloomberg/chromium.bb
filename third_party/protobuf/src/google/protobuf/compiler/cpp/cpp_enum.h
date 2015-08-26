@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// http://code.google.com/p/protobuf/
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -60,6 +60,12 @@ class EnumGenerator {
 
   // Header stuff.
 
+  // Generate header code to forward-declare the enum. This is for use when
+  // generating other .proto.h files. This code should be placed within the
+  // enum's package namespace, but NOT within any class, even for nested
+  // enums.
+  void GenerateForwardDeclaration(io::Printer* printer);
+
   // Generate header code defining the enum.  This code should be placed
   // within the enum's package namespace, but NOT within any class, even for
   // nested enums.
@@ -89,6 +95,8 @@ class EnumGenerator {
   const EnumDescriptor* descriptor_;
   string classname_;
   Options options_;
+  // whether to generate the *_ARRAYSIZE constant.
+  bool generate_array_size_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);
 };

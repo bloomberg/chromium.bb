@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// http://code.google.com/p/protobuf/
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -39,6 +39,7 @@
 #include <google/protobuf/wire_format.h>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -102,6 +103,37 @@ bool WireFormat::ParseAndMergePartial(io::CodedInputStream* input,
     if (!ParseAndMergeField(tag, field, message, input)) {
       return false;
     }
+  }
+}
+
+bool WireFormat::SkipMessageSetField(io::CodedInputStream* input,
+                                     uint32 field_number,
+                                     UnknownFieldSet* unknown_fields) {
+  uint32 length;
+  if (!input->ReadVarint32(&length)) return false;
+  return input->ReadString(
+      unknown_fields->AddLengthDelimited(field_number), length);
+}
+
+bool WireFormat::ParseAndMergeMessageSetField(uint32 field_number,
+                                              const FieldDescriptor* field,
+                                              Message* message,
+                                              io::CodedInputStream* input) {
+  const Reflection* message_reflection = message->GetReflection();
+  if (field == NULL) {
+    // We store unknown MessageSet extensions as groups.
+    return SkipMessageSetField(
+        input, field_number, message_reflection->MutableUnknownFields(message));
+  } else if (field->is_repeated() ||
+             field->type() != FieldDescriptor::TYPE_MESSAGE) {
+    // This shouldn't happen as we only allow optional message extensions to
+    // MessageSet.
+    GOOGLE_LOG(ERROR) << "Extensions of MessageSets must be optional messages.";
+    return false;
+  } else {
+    Message* sub_message = message_reflection->MutableMessage(
+        message, field, input->GetExtensionFactory());
+    return WireFormatLite::ReadMessage(input, sub_message);
   }
 }
 
@@ -173,10 +205,23 @@ bool WireFormat::ParseAndMergeField(
           int value;
           if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
                   input, &value)) return false;
-          const EnumValueDescriptor* enum_value =
-              field->enum_type()->FindValueByNumber(value);
-          if (enum_value != NULL) {
-            message_reflection->AddEnum(message, field, enum_value);
+          if (message->GetDescriptor()->file()->syntax() ==
+              FileDescriptor::SYNTAX_PROTO3) {
+            message_reflection->AddEnumValue(message, field, value);
+          } else {
+            const EnumValueDescriptor* enum_value =
+                field->enum_type()->FindValueByNumber(value);
+            if (enum_value != NULL) {
+              message_reflection->AddEnum(message, field, enum_value);
+            } else {
+              // The enum value is not one of the known values.  Add it to the
+              // UnknownFieldSet.
+              int64 sign_extended_value = static_cast<int64>(value);
+              message_reflection->MutableUnknownFields(message)
+                  ->AddVarint(
+                      WireFormatLite::GetTagFieldNumber(tag),
+                      sign_extended_value);
+            }
           }
         }
 
@@ -233,21 +278,31 @@ bool WireFormat::ParseAndMergeField(
         int value;
         if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
                 input, &value)) return false;
-        const EnumValueDescriptor* enum_value =
-          field->enum_type()->FindValueByNumber(value);
-        if (enum_value != NULL) {
+        if (message->GetDescriptor()->file()->syntax() ==
+            FileDescriptor::SYNTAX_PROTO3) {
           if (field->is_repeated()) {
-            message_reflection->AddEnum(message, field, enum_value);
+            message_reflection->AddEnumValue(message, field, value);
           } else {
-            message_reflection->SetEnum(message, field, enum_value);
+            message_reflection->SetEnumValue(message, field, value);
           }
         } else {
-          // The enum value is not one of the known values.  Add it to the
-          // UnknownFieldSet.
-          int64 sign_extended_value = static_cast<int64>(value);
-          message_reflection->MutableUnknownFields(message)
-                            ->AddVarint(WireFormatLite::GetTagFieldNumber(tag),
-                                        sign_extended_value);
+          const EnumValueDescriptor* enum_value =
+              field->enum_type()->FindValueByNumber(value);
+          if (enum_value != NULL) {
+            if (field->is_repeated()) {
+              message_reflection->AddEnum(message, field, enum_value);
+            } else {
+              message_reflection->SetEnum(message, field, enum_value);
+            }
+          } else {
+            // The enum value is not one of the known values.  Add it to the
+            // UnknownFieldSet.
+            int64 sign_extended_value = static_cast<int64>(value);
+            message_reflection->MutableUnknownFields(message)
+                              ->AddVarint(
+                                  WireFormatLite::GetTagFieldNumber(tag),
+                                  sign_extended_value);
+          }
         }
         break;
       }
@@ -256,7 +311,8 @@ bool WireFormat::ParseAndMergeField(
       case FieldDescriptor::TYPE_STRING: {
         string value;
         if (!WireFormatLite::ReadString(input, &value)) return false;
-        VerifyUTF8String(value.data(), value.length(), PARSE);
+        VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
+                                   field->name().c_str());
         if (field->is_repeated()) {
           message_reflection->AddString(message, field, value);
         } else {
@@ -320,10 +376,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
   //   required int32 type_id = 2;
   //   required data message = 3;
 
-  // Once we see a type_id, we'll construct a fake tag for this extension
-  // which is the tag it would have had under the proto2 extensions wire
-  // format.
-  uint32 fake_tag = 0;
+  uint32 last_type_id = 0;
 
   // Once we see a type_id, we'll look up the FieldDescriptor for the
   // extension.
@@ -341,8 +394,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
       case WireFormatLite::kMessageSetTypeIdTag: {
         uint32 type_id;
         if (!input->ReadVarint32(&type_id)) return false;
-        fake_tag = WireFormatLite::MakeTag(
-            type_id, WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+        last_type_id = type_id;
         field = message_reflection->FindKnownExtensionByNumber(type_id);
 
         if (!message_data.empty()) {
@@ -351,8 +403,8 @@ bool WireFormat::ParseAndMergeMessageSetItem(
           io::ArrayInputStream raw_input(message_data.data(),
                                          message_data.size());
           io::CodedInputStream sub_input(&raw_input);
-          if (!ParseAndMergeField(fake_tag, field, message,
-                                  &sub_input)) {
+          if (!ParseAndMergeMessageSetField(last_type_id, field, message,
+                                            &sub_input)) {
             return false;
           }
           message_data.clear();
@@ -362,7 +414,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
       }
 
       case WireFormatLite::kMessageSetMessageTag: {
-        if (fake_tag == 0) {
+        if (last_type_id == 0) {
           // We haven't seen a type_id yet.  Append this data to message_data.
           string temp;
           uint32 length;
@@ -374,7 +426,8 @@ bool WireFormat::ParseAndMergeMessageSetItem(
           coded_output.WriteString(temp);
         } else {
           // Already saw type_id, so we can parse this directly.
-          if (!ParseAndMergeField(fake_tag, field, message, input)) {
+          if (!ParseAndMergeMessageSetField(last_type_id, field, message,
+                                            input)) {
             return false;
           }
         }
@@ -387,7 +440,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
       }
 
       default: {
-        if (!WireFormatLite::SkipField(input, tag, NULL)) return false;
+        if (!WireFormatLite::SkipField(input, tag)) return false;
       }
     }
   }
@@ -444,7 +497,7 @@ void WireFormat::SerializeFieldWithCachedSizes(
     count = 1;
   }
 
-  const bool is_packed = field->options().packed();
+  const bool is_packed = field->is_packed();
   if (is_packed && count > 0) {
     WireFormatLite::WriteTag(field->number(),
         WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
@@ -522,7 +575,8 @@ void WireFormat::SerializeFieldWithCachedSizes(
           message_reflection->GetRepeatedStringReference(
             message, field, j, &scratch) :
           message_reflection->GetStringReference(message, field, &scratch);
-        VerifyUTF8String(value.data(), value.length(), SERIALIZE);
+        VerifyUTF8StringNamedField(value.data(), value.length(), SERIALIZE,
+                                   field->name().c_str());
         WireFormatLite::WriteString(field->number(), value, output);
         break;
       }
@@ -610,7 +664,7 @@ int WireFormat::FieldByteSize(
 
   const int data_size = FieldDataOnlyByteSize(field, message);
   int our_size = data_size;
-  if (field->options().packed()) {
+  if (field->is_packed()) {
     if (data_size > 0) {
       // Packed fields get serialized like a string, not their native type.
       // Technically this doesn't really matter; the size only changes if it's
@@ -732,7 +786,8 @@ int WireFormat::MessageSetItemByteSize(
 
 void WireFormat::VerifyUTF8StringFallback(const char* data,
                                           int size,
-                                          Operation op) {
+                                          Operation op,
+                                          const char* field_name) {
   if (!IsStructurallyValidUTF8(data, size)) {
     const char* operation_str = NULL;
     switch (op) {
@@ -744,10 +799,15 @@ void WireFormat::VerifyUTF8StringFallback(const char* data,
         break;
       // no default case: have the compiler warn if a case is not covered.
     }
-    GOOGLE_LOG(ERROR) << "String field contains invalid UTF-8 data when "
-               << operation_str
-               << " a protocol buffer. Use the 'bytes' type if you intend to "
-                  "send raw bytes.";
+    string quoted_field_name = "";
+    if (field_name != NULL) {
+      quoted_field_name = StringPrintf(" '%s'", field_name);
+    }
+    // no space below to avoid double space when the field name is missing.
+    GOOGLE_LOG(ERROR) << "String field" << quoted_field_name << " contains invalid "
+               << "UTF-8 data when " << operation_str << " a protocol "
+               << "buffer. Use the 'bytes' type if you intend to send raw "
+               << "bytes. ";
   }
 }
 

@@ -1,0 +1,349 @@
+diff --git a/third_party/protobuf/README.chromium b/third_party/protobuf/README.chromium
+index 0375fd1..da9f26f 100644
+--- a/third_party/protobuf/README.chromium
++++ b/third_party/protobuf/README.chromium
+@@ -19,6 +19,9 @@ Steps used to create the current version:
+       will need to modify the README to include the correct revision, and modify
+       the buildfiles to reflect the actual files in the source tree, what they
+       #include, what warnings they trigger, etc.
++  01: Miscellaneous build fixes to make the upstream sources compile.  At this
++      point you should be able to build the protobuf_* and protoc targets (but
++      not necessarily anything depending on them).
+ (3) Generate descriptor_pb2.py using something like the following steps.  Make
+     sure you've regenerated your buildfiles and will build protoc from the
+     newly-modified sources above.
+diff --git a/third_party/protobuf/src/google/protobuf/arena.cc b/third_party/protobuf/src/google/protobuf/arena.cc
+index ed1c5ef..ff7b466 100644
+--- a/third_party/protobuf/src/google/protobuf/arena.cc
++++ b/third_party/protobuf/src/google/protobuf/arena.cc
+@@ -38,17 +38,17 @@ namespace google {
+ namespace protobuf {
+ 
+ google::protobuf::internal::SequenceNumber Arena::lifecycle_id_generator_;
+-#ifdef PROTOBUF_USE_DLLS
+-Arena::ThreadCache& Arena::thread_cache() {
+-  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = { -1, NULL };
+-  return thread_cache_;
+-}
+-#elif defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
++#if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
+ Arena::ThreadCache& Arena::thread_cache() {
+   static internal::ThreadLocalStorage<ThreadCache>* thread_cache_ =
+       new internal::ThreadLocalStorage<ThreadCache>();
+   return *thread_cache_->Get();
+ }
++#elif defined(PROTOBUF_USE_DLLS)
++Arena::ThreadCache& Arena::thread_cache() {
++  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = { -1, NULL };
++  return thread_cache_;
++}
+ #else
+ GOOGLE_THREAD_LOCAL Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };
+ #endif
+diff --git a/third_party/protobuf/src/google/protobuf/arena.h b/third_party/protobuf/src/google/protobuf/arena.h
+index 51149ba..2ef20a3 100644
+--- a/third_party/protobuf/src/google/protobuf/arena.h
++++ b/third_party/protobuf/src/google/protobuf/arena.h
+@@ -34,7 +34,16 @@
+ #if __cplusplus >= 201103L
+ #include <google/protobuf/stubs/type_traits.h>
+ #endif
++#if defined(_MSC_VER) && !_HAS_EXCEPTIONS
++// Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
++#include <exception>
+ #include <typeinfo>
++namespace std {
++using type_info = ::type_info;
++}
++#else
++#include <typeinfo>
++#endif
+ 
+ #include <google/protobuf/stubs/atomic_sequence_num.h>
+ #include <google/protobuf/stubs/atomicops.h>
+@@ -525,15 +534,15 @@ class LIBPROTOBUF_EXPORT Arena {
+ 
+   static const size_t kHeaderSize = sizeof(Block);
+   static google::protobuf::internal::SequenceNumber lifecycle_id_generator_;
+-#ifdef PROTOBUF_USE_DLLS
+-  // Thread local variables cannot be exposed through DLL interface but we can
+-  // wrap them in static functions.
+-  static ThreadCache& thread_cache();
+-#elif defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
++#if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
+   // Android ndk does not support GOOGLE_THREAD_LOCAL keyword so we use a custom thread
+   // local storage class we implemented.
+   // iOS also does not support the GOOGLE_THREAD_LOCAL keyword.
+   static ThreadCache& thread_cache();
++#elif defined(PROTOBUF_USE_DLLS)
++  // Thread local variables cannot be exposed through DLL interface but we can
++  // wrap them in static functions.
++  static ThreadCache& thread_cache();
+ #else
+   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;
+   static ThreadCache& thread_cache() { return thread_cache_; }
+diff --git a/third_party/protobuf/src/google/protobuf/message_lite.cc b/third_party/protobuf/src/google/protobuf/message_lite.cc
+index 4f63ad2..da6e933 100644
+--- a/third_party/protobuf/src/google/protobuf/message_lite.cc
++++ b/third_party/protobuf/src/google/protobuf/message_lite.cc
+@@ -35,6 +35,7 @@
+ 
+ #include <google/protobuf/message_lite.h>
+ #include <google/protobuf/arena.h>
++#include <google/protobuf/repeated_field.h>
+ #include <string>
+ #include <google/protobuf/stubs/common.h>
+ #include <google/protobuf/io/coded_stream.h>
+@@ -353,5 +354,18 @@ string MessageLite::SerializePartialAsString() const {
+   return output;
+ }
+ 
++namespace internal {
++template<>
++MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
++    const MessageLite* prototype, google::protobuf::Arena* arena) {
++  return prototype->New(arena);
++}
++template <>
++void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
++                                            MessageLite* to) {
++  to->CheckTypeAndMergeFrom(from);
++}
++}  // namespace internal
++
+ }  // namespace protobuf
+ }  // namespace google
+diff --git a/third_party/protobuf/src/google/protobuf/repeated_field.h b/third_party/protobuf/src/google/protobuf/repeated_field.h
+index 14f4629..03577ea 100644
+--- a/third_party/protobuf/src/google/protobuf/repeated_field.h
++++ b/third_party/protobuf/src/google/protobuf/repeated_field.h
+@@ -545,17 +545,11 @@ class GenericTypeHandler {
+   // constructors and destructors. Note that the GOOGLE_ATTRIBUTE_NOINLINE macro
+   // requires the 'inline' storage class here, which is somewhat confusing, but
+   // the compiler does the right thing.
+-  static inline GenericType* NewFromPrototype(const GenericType* prototype,
+-                                              ::google::protobuf::Arena* arena = NULL)
+-    GOOGLE_ATTRIBUTE_NOINLINE {
+-    return New(arena);
+-  }
+-  static inline void Delete(GenericType* value, Arena* arena)
+-    GOOGLE_ATTRIBUTE_NOINLINE {
+-    if (arena == NULL) {
+-      delete value;
+-    }
+-  }
++  static GenericType* NewFromPrototype(const GenericType* prototype,
++                                       ::google::protobuf::Arena* arena = NULL)
++      GOOGLE_ATTRIBUTE_NOINLINE;
++  static void Delete(GenericType* value, Arena* arena)
++      GOOGLE_ATTRIBUTE_NOINLINE;
+   static inline ::google::protobuf::Arena* GetArena(GenericType* value) {
+     return ::google::protobuf::Arena::GetArena<Type>(value);
+   }
+@@ -564,10 +558,8 @@ class GenericTypeHandler {
+   }
+ 
+   static inline void Clear(GenericType* value) { value->Clear(); }
+-  static inline void Merge(const GenericType& from, GenericType* to)
+-      GOOGLE_ATTRIBUTE_NOINLINE {
+-    to->MergeFrom(from);
+-  }
++  static void Merge(const GenericType& from, GenericType* to)
++      GOOGLE_ATTRIBUTE_NOINLINE;
+   static inline int SpaceUsed(const GenericType& value) {
+     return value.SpaceUsed();
+   }
+@@ -576,11 +568,32 @@ class GenericTypeHandler {
+   }
+ };
+ 
+-template<>
+-inline MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
+-    const MessageLite* prototype, google::protobuf::Arena* arena) {
+-  return prototype->New(arena);
++template<typename GenericType>
++GenericType* GenericTypeHandler<GenericType>::NewFromPrototype(
++    const GenericType* prototype,
++    ::google::protobuf::Arena* arena) {
++  return New(arena);
++}
++template<typename GenericType>
++void GenericTypeHandler<GenericType>::Delete(GenericType* value, Arena* arena) {
++  if (arena == NULL) {
++    delete value;
++  }
++}
++template<typename GenericType>
++void GenericTypeHandler<GenericType>::Merge(const GenericType& from,
++                                            GenericType* to) {
++  to->MergeFrom(from);
+ }
++
++// NewFromPrototype() and Merge() cannot be defined here; if they're declared
++// inline the compiler will complain about not matching ATTRIBUTE_NOINLINE
++// above, and if not, compilation will result in multiple definitions.  These
++// are therefore declared as specializations here and defined in
++// message_lite.cc.
++template<>
++MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
++    const MessageLite* prototype, google::protobuf::Arena* arena);
+ template<>
+ inline google::protobuf::Arena* GenericTypeHandler<MessageLite>::GetArena(
+     MessageLite* value) {
+@@ -591,14 +604,9 @@ inline void* GenericTypeHandler<MessageLite>::GetMaybeArenaPointer(
+     MessageLite* value) {
+   return value->GetMaybeArenaPointer();
+ }
+-
+-// Implements GenericTypeHandler specialization required by RepeatedPtrFields
+-// to work with MessageLite type.
+ template <>
+-inline void GenericTypeHandler<MessageLite>::Merge(
+-    const MessageLite& from, MessageLite* to) {
+-  to->CheckTypeAndMergeFrom(from);
+-}
++void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
++                                            MessageLite* to);
+ 
+ // Declarations of the specialization as we cannot define them here, as the
+ // header that defines ProtocolMessage depends on types defined in this header.
+diff --git a/third_party/protobuf/src/google/protobuf/stubs/hash.h b/third_party/protobuf/src/google/protobuf/stubs/hash.h
+index 9a6b217..3ff7253 100644
+--- a/third_party/protobuf/src/google/protobuf/stubs/hash.h
++++ b/third_party/protobuf/src/google/protobuf/stubs/hash.h
+@@ -41,10 +41,10 @@
+ #define GOOGLE_PROTOBUF_HAVE_HASH_MAP 1
+ #define GOOGLE_PROTOBUF_HAVE_HASH_SET 1
+ 
+-// Use C++11 unordered_{map|set} if available. Otherwise, libc++ always support
+-// unordered_{map|set}
+-#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X) || \
+-    defined(_LIBCPP_VERSION)
++// Use C++11 unordered_{map|set} if available.
++#if ((__cplusplus >= 201103L) &&                            \
++     ((defined(__GLIBCXX__) && (__GLIBCXX__ > 20090421)) || \
++      (defined(_LIBCPP_VERSION) && (_LIBCPP_STD_VER >= 11))))
+ # define GOOGLE_PROTOBUF_HAS_CXX11_HASH
+ 
+ // For XCode >= 4.6:  the compiler is clang with libc++.
+diff --git a/third_party/protobuf/src/google/protobuf/stubs/mathlimits.h b/third_party/protobuf/src/google/protobuf/stubs/mathlimits.h
+index d984694..090d1c0 100644
+--- a/third_party/protobuf/src/google/protobuf/stubs/mathlimits.h
++++ b/third_party/protobuf/src/google/protobuf/stubs/mathlimits.h
+@@ -43,15 +43,10 @@
+ #ifndef UTIL_MATH_MATHLIMITS_H__
+ #define UTIL_MATH_MATHLIMITS_H__
+ 
+-// <math.h> lacks a lot of prototypes. However, this file needs <math.h> to
+-// access old-fashioned isinf et al. Even worse more: this file must not
+-// include <cmath> because that breaks the definition of isinf with gcc 4.9.
+-//
+-// TODO(mec): after C++11 everywhere, use <cmath> and std::isinf in this file.
+-#include <math.h>
+ #include <string.h>
+ 
+ #include <cfloat>
++#include <cmath>
+ 
+ #include <google/protobuf/stubs/common.h>
+ 
+@@ -230,11 +225,11 @@ DECL_UNSIGNED_INT_LIMITS(unsigned long long int)
+   static bool IsNegInf(const Type x) { return _fpclass(x) == _FPCLASS_NINF; }
+ #else
+ #define DECL_FP_LIMIT_FUNCS \
+-  static bool IsFinite(const Type x) { return !isinf(x)  &&  !isnan(x); } \
+-  static bool IsNaN(const Type x) { return isnan(x); } \
+-  static bool IsInf(const Type x) { return isinf(x); } \
+-  static bool IsPosInf(const Type x) { return isinf(x)  &&  x > 0; } \
+-  static bool IsNegInf(const Type x) { return isinf(x)  &&  x < 0; }
++  static bool IsFinite(const Type x) { return !std::isinf(x)  &&  !std::isnan(x); } \
++  static bool IsNaN(const Type x) { return std::isnan(x); } \
++  static bool IsInf(const Type x) { return std::isinf(x); } \
++  static bool IsPosInf(const Type x) { return std::isinf(x)  &&  x > 0; } \
++  static bool IsNegInf(const Type x) { return std::isinf(x)  &&  x < 0; }
+ #endif
+ 
+ // We can't put floating-point constant values in the header here because
+diff --git a/third_party/protobuf/src/google/protobuf/stubs/mathutil.h b/third_party/protobuf/src/google/protobuf/stubs/mathutil.h
+index 99c4d45..cfd073b 100644
+--- a/third_party/protobuf/src/google/protobuf/stubs/mathutil.h
++++ b/third_party/protobuf/src/google/protobuf/stubs/mathutil.h
+@@ -31,7 +31,8 @@
+ #define GOOGLE_PROTOBUF_STUBS_MATHUTIL_H_
+ 
+ #include <float.h>
+-#include <math.h>
++
++#include <cmath>
+ 
+ #include <google/protobuf/stubs/common.h>
+ #include <google/protobuf/stubs/logging.h>
+@@ -45,9 +46,9 @@ bool IsNan(T value) {
+   return false;
+ }
+ template<>
+-inline bool IsNan(float value) { return isnan(value); }
++inline bool IsNan(float value) { return std::isnan(value); }
+ template<>
+-inline bool IsNan(double value) { return isnan(value); }
++inline bool IsNan(double value) { return std::isnan(value); }
+ 
+ template<typename T>
+ bool AlmostEquals(T a, T b) {
+diff --git a/third_party/protobuf/src/google/protobuf/stubs/port.h b/third_party/protobuf/src/google/protobuf/stubs/port.h
+index 8a5d1a1..da695ff 100644
+--- a/third_party/protobuf/src/google/protobuf/stubs/port.h
++++ b/third_party/protobuf/src/google/protobuf/stubs/port.h
+@@ -79,6 +79,15 @@
+   #define LIBPROTOC_EXPORT
+ #endif
+ 
++// These #includes are for the byte swap functions declared later on.
++#ifdef _MSC_VER
++#include <stdlib.h>  // NOLINT(build/include)
++#elif defined(__APPLE__)
++#include <libkern/OSByteOrder.h>
++#elif defined(__GLIBC__) || defined(__CYGWIN__)
++#include <byteswap.h>  // IWYU pragma: export
++#endif
++
+ // ===================================================================
+ // from google3/base/port.h
+ namespace google {
+@@ -272,7 +281,6 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
+ // The following guarantees declaration of the byte swap functions, and
+ // defines __BYTE_ORDER for MSVC
+ #ifdef _MSC_VER
+-#include <stdlib.h>  // NOLINT(build/include)
+ #define __BYTE_ORDER __LITTLE_ENDIAN
+ #define bswap_16(x) _byteswap_ushort(x)
+ #define bswap_32(x) _byteswap_ulong(x)
+@@ -280,15 +288,11 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
+ 
+ #elif defined(__APPLE__)
+ // Mac OS X / Darwin features
+-#include <libkern/OSByteOrder.h>
+ #define bswap_16(x) OSSwapInt16(x)
+ #define bswap_32(x) OSSwapInt32(x)
+ #define bswap_64(x) OSSwapInt64(x)
+ 
+-#elif defined(__GLIBC__) || defined(__CYGWIN__)
+-#include <byteswap.h>  // IWYU pragma: export
+-
+-#else
++#elif !defined(__GLIBC__) && !defined(__CYGWIN__)
+ 
+ static inline uint16 bswap_16(uint16 x) {
+   return static_cast<uint16>(((x & 0xFF) << 8) | ((x & 0xFF00) >> 8));
+diff --git a/third_party/protobuf/src/google/protobuf/stubs/time.cc b/third_party/protobuf/src/google/protobuf/stubs/time.cc
+index 3319a24..49c0412 100644
+--- a/third_party/protobuf/src/google/protobuf/stubs/time.cc
++++ b/third_party/protobuf/src/google/protobuf/stubs/time.cc
+@@ -21,7 +21,6 @@ static const int64 kSecondsFromEraToEpoch = 62135596800LL;
+ static const int64 kMinTime = -62135596800LL;  // 0001-01-01T00:00:00
+ static const int64 kMaxTime = 253402300799LL;  // 9999-12-31T23:59:59
+ 
+-static const int kNanosPerSecond = 1000000000;
+ static const int kNanosPerMillisecond = 1000000;
+ static const int kNanosPerMicrosecond = 1000;
+ 

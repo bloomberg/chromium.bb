@@ -1,0 +1,253 @@
+diff --git a/third_party/protobuf/BUILD.gn b/third_party/protobuf/BUILD.gn
+index aaeae89..bcfdca1 100644
+--- a/third_party/protobuf/BUILD.gn
++++ b/third_party/protobuf/BUILD.gn
+@@ -18,6 +18,12 @@ config("protobuf_config") {
+   }
+ }
+ 
++if (is_component_build) {
++  config("protobuf_use_dlls") {
++    defines = [ "PROTOBUF_USE_DLLS" ]
++  }
++}
++
+ # This config should be applied to targets using generated code from the proto
+ # compiler. It sets up the include directories properly.
+ config("using_proto") {
+@@ -50,6 +56,7 @@ protobuf_lite_sources = [
+   "src/google/protobuf/message.h",
+   "src/google/protobuf/message_lite.cc",
+   "src/google/protobuf/message_lite.h",
++  "src/google/protobuf/metadata.cc",
+   "src/google/protobuf/metadata.h",
+   "src/google/protobuf/repeated_field.cc",
+   "src/google/protobuf/repeated_field.h",
+@@ -125,7 +132,7 @@ if (is_win) {
+   ]
+ }
+ 
+-source_set("protobuf_lite") {
++component("protobuf_lite") {
+   sources = protobuf_lite_sources
+ 
+   configs -= [ "//build/config/compiler:chromium_code" ]
+@@ -141,6 +148,12 @@ source_set("protobuf_lite") {
+   ]
+ 
+   cflags = protobuf_lite_cflags
++
++  # Required for component builds. See http://crbug.com/172800.
++  if (is_component_build) {
++    public_configs += [ ":protobuf_use_dlls" ]
++    defines = [ "LIBPROTOBUF_EXPORTS" ]
++  }
+ }
+ 
+ # This is the full, heavy protobuf lib that's needed for c++ .protos that don't
+@@ -151,7 +164,8 @@ source_set("protobuf_full") {
+   # Prevent people from depending on this outside our file.
+   visibility = [ ":*" ]
+ 
+-  sources = [
++  sources = protobuf_lite_sources
++  sources += [
+     "src/google/protobuf/any.cc",
+     "src/google/protobuf/any.h",
+     "src/google/protobuf/any.pb.cc",
+@@ -281,10 +295,6 @@ source_set("protobuf_full") {
+   ]
+ 
+   cflags = protobuf_lite_cflags
+-
+-  deps = [
+-    ":protobuf_lite",
+-  ]
+ }
+ 
+ # Only compile the compiler for the host architecture.
+diff --git a/third_party/protobuf/README.chromium b/third_party/protobuf/README.chromium
+index aa428ad..04d1a9b 100644
+--- a/third_party/protobuf/README.chromium
++++ b/third_party/protobuf/README.chromium
+@@ -28,6 +28,7 @@ Steps used to create the current version:
+       patch and rebuild protoc; look at step (3) below and the
+       generate_descriptor_proto.sh script in the protobuf root directory for a
+       guide.  Based on http://crrev.com/62331 and http://crrev.com/173228 .
++  03: Convert protobuf_lite to a component.  Based on http://crrev.com/179806 .
+ (3) Generate descriptor_pb2.py using something like the following steps.  Make
+     sure you've regenerated your buildfiles and will build protoc from the
+     newly-modified sources above.
+diff --git a/third_party/protobuf/protobuf.gyp b/third_party/protobuf/protobuf.gyp
+index 9fba350..c7aab98 100644
+--- a/third_party/protobuf/protobuf.gyp
++++ b/third_party/protobuf/protobuf.gyp
+@@ -94,11 +94,21 @@
+         # to your .proto file.
+         {
+           'target_name': 'protobuf_lite',
+-          'type': 'static_library',
++          'type': '<(component)',
+           'toolsets': ['host', 'target'],
+           'includes': [
+             'protobuf_lite.gypi',
+           ],
++          # Required for component builds. See http://crbug.com/172800.
++          'defines': [
++            'LIBPROTOBUF_EXPORTS',
++            'PROTOBUF_USE_DLLS',
++          ],
++          'direct_dependent_settings': {
++            'defines': [
++              'PROTOBUF_USE_DLLS',
++            ],
++          },
+         },
+         # This is the full, heavy protobuf lib that's needed for c++ .protos
+         # that don't specify the LITE_RUNTIME option.  The protocol
+@@ -109,6 +119,9 @@
+           'target_name': 'protobuf_full_do_not_use',
+           'type': 'static_library',
+           'toolsets': ['host','target'],
++          'includes': [
++            'protobuf_lite.gypi',
++          ],
+           'sources': [
+             'src/google/protobuf/any.cc',
+             'src/google/protobuf/any.h',
+@@ -224,12 +237,6 @@
+             'src/google/protobuf/wrappers.pb.cc',
+             'src/google/protobuf/wrappers.pb.h',
+           ],
+-          'dependencies': [
+-            'protobuf_lite',
+-          ],
+-          'export_dependent_settings': [
+-            'protobuf_lite',
+-          ],
+         },
+         {
+           'target_name': 'protoc',
+diff --git a/third_party/protobuf/protobuf_lite.gypi b/third_party/protobuf/protobuf_lite.gypi
+index 6415ab2..4d7007a 100644
+--- a/third_party/protobuf/protobuf_lite.gypi
++++ b/third_party/protobuf/protobuf_lite.gypi
+@@ -26,6 +26,7 @@
+     'src/google/protobuf/message.h',
+     'src/google/protobuf/message_lite.cc',
+     'src/google/protobuf/message_lite.h',
++    'src/google/protobuf/metadata.cc',
+     'src/google/protobuf/metadata.h',
+     'src/google/protobuf/repeated_field.cc',
+     'src/google/protobuf/repeated_field.h',
+diff --git a/third_party/protobuf/src/google/protobuf/metadata.cc b/third_party/protobuf/src/google/protobuf/metadata.cc
+new file mode 100644
+index 0000000..99d2cf9
+--- /dev/null
++++ b/third_party/protobuf/src/google/protobuf/metadata.cc
+@@ -0,0 +1,42 @@
++// Protocol Buffers - Google's data interchange format
++// Copyright 2015 Google Inc.  All rights reserved.
++// https://developers.google.com/protocol-buffers/
++//
++// Redistribution and use in source and binary forms, with or without
++// modification, are permitted provided that the following conditions are
++// met:
++//
++//     * Redistributions of source code must retain the above copyright
++// notice, this list of conditions and the following disclaimer.
++//     * Redistributions in binary form must reproduce the above
++// copyright notice, this list of conditions and the following disclaimer
++// in the documentation and/or other materials provided with the
++// distribution.
++//     * Neither the name of Google Inc. nor the names of its
++// contributors may be used to endorse or promote products derived from
++// this software without specific prior written permission.
++//
++// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++#include <google/protobuf/metadata.h>
++
++namespace google {
++namespace protobuf {
++namespace internal {
++
++InternalMetadataWithArena::InternalMetadataWithArena(Arena* arena)
++    : ptr_ (arena) {}
++
++}  // namespace internal
++}  // namespace protobuf
++}  // namespace google
+diff --git a/third_party/protobuf/src/google/protobuf/metadata.h b/third_party/protobuf/src/google/protobuf/metadata.h
+index 30b2a6e..85065f0 100644
+--- a/third_party/protobuf/src/google/protobuf/metadata.h
++++ b/third_party/protobuf/src/google/protobuf/metadata.h
+@@ -59,8 +59,7 @@ namespace internal {
+ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
+  public:
+   InternalMetadataWithArena() : ptr_(NULL) {}
+-  explicit InternalMetadataWithArena(Arena* arena)
+-      : ptr_ (arena) {}
++  explicit InternalMetadataWithArena(Arena* arena);
+ 
+   ~InternalMetadataWithArena() {
+     if (have_unknown_fields() && arena() == NULL) {
+diff --git a/third_party/protobuf/src/google/protobuf/stubs/port.h b/third_party/protobuf/src/google/protobuf/stubs/port.h
+index da695ff..a9f5fd9 100644
+--- a/third_party/protobuf/src/google/protobuf/stubs/port.h
++++ b/third_party/protobuf/src/google/protobuf/stubs/port.h
+@@ -63,18 +63,33 @@
+     #define PROTOBUF_LITTLE_ENDIAN 1
+   #endif
+ #endif
+-#if defined(_MSC_VER) && defined(PROTOBUF_USE_DLLS)
+-  #ifdef LIBPROTOBUF_EXPORTS
+-    #define LIBPROTOBUF_EXPORT __declspec(dllexport)
+-  #else
+-    #define LIBPROTOBUF_EXPORT __declspec(dllimport)
++// The macros defined below are required in order to make protobuf_lite a
++// component on all platforms. See http://crbug.com/172800.
++#if defined(COMPONENT_BUILD) && defined(PROTOBUF_USE_DLLS)
++  #if defined(_MSC_VER)
++    #ifdef LIBPROTOBUF_EXPORTS
++      #define LIBPROTOBUF_EXPORT __declspec(dllexport)
++    #else
++      #define LIBPROTOBUF_EXPORT __declspec(dllimport)
++    #endif
++    #ifdef LIBPROTOC_EXPORTS
++      #define LIBPROTOC_EXPORT   __declspec(dllexport)
++    #else
++      #define LIBPROTOC_EXPORT   __declspec(dllimport)
++    #endif
++  #else  // defined(_MSC_VER)
++    #ifdef LIBPROTOBUF_EXPORTS
++      #define LIBPROTOBUF_EXPORT __attribute__((visibility("default")))
++    #else
++      #define LIBPROTOBUF_EXPORT
++    #endif
++    #ifdef LIBPROTOC_EXPORTS
++      #define LIBPROTOC_EXPORT   __attribute__((visibility("default")))
++    #else
++      #define LIBPROTOC_EXPORT
++    #endif
+   #endif
+-  #ifdef LIBPROTOC_EXPORTS
+-    #define LIBPROTOC_EXPORT   __declspec(dllexport)
+-  #else
+-    #define LIBPROTOC_EXPORT   __declspec(dllimport)
+-  #endif
+-#else
++#else  // defined(COMPONENT_BUILD) && defined(PROTOBUF_USE_DLLS)
+   #define LIBPROTOBUF_EXPORT
+   #define LIBPROTOC_EXPORT
+ #endif

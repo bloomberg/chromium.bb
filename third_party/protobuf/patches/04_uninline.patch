@@ -1,0 +1,81 @@
+diff --git a/third_party/protobuf/README.chromium b/third_party/protobuf/README.chromium
+index 04d1a9b..015dd0f 100644
+--- a/third_party/protobuf/README.chromium
++++ b/third_party/protobuf/README.chromium
+@@ -29,6 +29,7 @@ Steps used to create the current version:
+       generate_descriptor_proto.sh script in the protobuf root directory for a
+       guide.  Based on http://crrev.com/62331 and http://crrev.com/173228 .
+   03: Convert protobuf_lite to a component.  Based on http://crrev.com/179806 .
++  04: Uninline various functions.  Based on http://crrev.com/307332 .
+ (3) Generate descriptor_pb2.py using something like the following steps.  Make
+     sure you've regenerated your buildfiles and will build protoc from the
+     newly-modified sources above.
+diff --git a/third_party/protobuf/src/google/protobuf/generated_message_util.cc b/third_party/protobuf/src/google/protobuf/generated_message_util.cc
+index e8fb398..8b3d037 100644
+--- a/third_party/protobuf/src/google/protobuf/generated_message_util.cc
++++ b/third_party/protobuf/src/google/protobuf/generated_message_util.cc
+@@ -60,6 +60,11 @@ void InitEmptyString() {
+   OnShutdown(&DeleteEmptyString);
+ }
+ 
++const ::std::string& GetEmptyString() {
++  ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
++  return GetEmptyStringAlreadyInited();
++}
++
+ int StringSpaceUsedExcludingSelf(const string& str) {
+   const void* start = &str;
+   const void* end = &str + 1;
+diff --git a/third_party/protobuf/src/google/protobuf/generated_message_util.h b/third_party/protobuf/src/google/protobuf/generated_message_util.h
+index 6357e27..ae8196b 100644
+--- a/third_party/protobuf/src/google/protobuf/generated_message_util.h
++++ b/third_party/protobuf/src/google/protobuf/generated_message_util.h
+@@ -84,10 +84,7 @@ LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
+   assert(empty_string_ != NULL);
+   return *empty_string_;
+ }
+-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
+-  ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
+-  return GetEmptyStringAlreadyInited();
+-}
++LIBPROTOBUF_EXPORT const ::std::string& GetEmptyString();
+ 
+ // Defined in generated_message_reflection.cc -- not actually part of the lite
+ // library.
+diff --git a/third_party/protobuf/src/google/protobuf/stubs/once.cc b/third_party/protobuf/src/google/protobuf/stubs/once.cc
+index 889c647..1d93ddf 100644
+--- a/third_party/protobuf/src/google/protobuf/stubs/once.cc
++++ b/third_party/protobuf/src/google/protobuf/stubs/once.cc
+@@ -93,6 +93,13 @@ void GoogleOnceInitImpl(ProtobufOnceType* once, Closure* closure) {
+   }
+ }
+ 
++void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)()) {
++  if (internal::Acquire_Load(once) != ONCE_STATE_DONE) {
++    internal::FunctionClosure0 func(init_func, false);
++    GoogleOnceInitImpl(once, &func);
++  }
++}
++
+ }  // namespace protobuf
+ }  // namespace google
+ 
+diff --git a/third_party/protobuf/src/google/protobuf/stubs/once.h b/third_party/protobuf/src/google/protobuf/stubs/once.h
+index 1f082c3..9522b22 100644
+--- a/third_party/protobuf/src/google/protobuf/stubs/once.h
++++ b/third_party/protobuf/src/google/protobuf/stubs/once.h
+@@ -122,12 +122,8 @@ typedef internal::AtomicWord ProtobufOnceType;
+ LIBPROTOBUF_EXPORT
+ void GoogleOnceInitImpl(ProtobufOnceType* once, Closure* closure);
+ 
+-inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)()) {
+-  if (internal::Acquire_Load(once) != ONCE_STATE_DONE) {
+-    internal::FunctionClosure0 func(init_func, false);
+-    GoogleOnceInitImpl(once, &func);
+-  }
+-}
++LIBPROTOBUF_EXPORT
++void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)());
+ 
+ template <typename Arg>
+ inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)(Arg*),
