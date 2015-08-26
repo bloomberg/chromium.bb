@@ -83,6 +83,13 @@ class Md5SumTest(unittest.TestCase):
       mock_get_cmd_output.assert_called_once_with(
           [HOST_MD5_EXECUTABLE, '/test/host/file0.dat', '/test/host/file1.dat'])
 
+  def testCalculateDeviceMd5Sums_noPaths(self):
+    device = mock.NonCallableMock()
+    device.RunShellCommand = mock.Mock(side_effect=Exception())
+
+    out = md5sum.CalculateDeviceMd5Sums([], device)
+    self.assertEquals(0, len(out))
+
   def testCalculateDeviceMd5Sums_singlePath(self):
     test_path = '/storage/emulated/legacy/test/file.dat'
 

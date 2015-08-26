@@ -55,6 +55,9 @@ def CalculateDeviceMd5Sums(paths, device):
   Returns:
     A dict mapping file paths to their respective md5sum checksums.
   """
+  if not paths:
+    return {}
+
   if isinstance(paths, basestring):
     paths = [paths]
   # Allow generators
