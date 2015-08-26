@@ -104,10 +104,6 @@ class NotificationPromo {
   // When either is 0, we don't cap the number of seconds.
   bool ExceedsMaxSeconds() const;
 
-  // Returns false if this promo should not be displayed because it is a promo
-  // for the app launcher, and the user has already enabled the app launcher.
-  bool CheckAppLauncher() const;
-
   PrefService* local_state_;
 
   PromoType promo_type_;

@@ -17,7 +17,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/version_info/version_info.h"
@@ -398,21 +397,12 @@ void NotificationPromo::InitFromPrefs(PromoType promo_type) {
   ntp_promo->GetBoolean(kPrefPromoClosed, &closed_);
 }
 
-bool NotificationPromo::CheckAppLauncher() const {
-  bool is_app_launcher_promo = false;
-  if (!promo_payload_->GetBoolean("is_app_launcher_promo",
-                                  &is_app_launcher_promo))
-    return true;
-  return !is_app_launcher_promo || !IsAppLauncherEnabled();
-}
-
 bool NotificationPromo::CanShow() const {
   return !closed_ &&
          !promo_text_.empty() &&
          !ExceedsMaxGroup() &&
          !ExceedsMaxViews() &&
          !ExceedsMaxSeconds() &&
-         CheckAppLauncher() &&
          base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
          base::Time::FromDoubleT(EndTime()) > base::Time::Now();
 }
