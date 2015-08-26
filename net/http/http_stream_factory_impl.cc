@@ -152,9 +152,6 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
 
 AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
     const GURL& original_url) {
-  if (!session_->params().use_alternative_services)
-    return AlternativeServiceVector();
-
   if (original_url.SchemeIs("ftp"))
     return AlternativeServiceVector();
 
@@ -166,6 +163,9 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
   if (alternative_service_vector.empty())
     return AlternativeServiceVector();
 
+  const bool enable_different_host =
+      session_->params().use_alternative_services;
+
   AlternativeServiceVector enabled_alternative_service_vector;
   for (const AlternativeService& alternative_service :
        alternative_service_vector) {
@@ -175,6 +175,9 @@ AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
       HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
       continue;
     }
+
+    if (origin.host() != alternative_service.host && !enable_different_host)
+      continue;
 
     // Some shared unix systems may have user home directories (like
     // http://foo.com/~mike) which allow users to emit headers.  This is a bad

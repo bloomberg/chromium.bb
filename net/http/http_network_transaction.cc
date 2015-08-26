@@ -70,7 +70,8 @@ namespace {
 void ProcessAlternativeServices(HttpNetworkSession* session,
                                 const HttpResponseHeaders& headers,
                                 const HostPortPair& http_host_port_pair) {
-  if (headers.HasHeader(kAlternativeServiceHeader)) {
+  if (session->params().use_alternative_services &&
+      headers.HasHeader(kAlternativeServiceHeader)) {
     std::string alternative_service_str;
     headers.GetNormalizedHeader(kAlternativeServiceHeader,
                                 &alternative_service_str);
