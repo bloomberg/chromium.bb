@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/Crypto.h"
+#include "wtf/Allocator.h"
 
 namespace WTF {
 class String;
@@ -20,6 +21,7 @@ class KURL;
 class Resource;
 
 class CORE_EXPORT SubresourceIntegrity {
+    STATIC_ONLY(SubresourceIntegrity);
 public:
     enum IntegrityParseResult {
         IntegrityParseValidResult,

@@ -41,6 +41,7 @@
 #include "platform/scroll/Scrollbar.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebRect.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
@@ -585,6 +586,7 @@ protected:
     void updateScrollbars(const DoubleSize& desiredOffset);
 
     class InUpdateScrollbarsScope {
+        STACK_ALLOCATED();
     public:
         explicit InUpdateScrollbarsScope(FrameView* view)
             : m_scope(view->m_inUpdateScrollbars, true)

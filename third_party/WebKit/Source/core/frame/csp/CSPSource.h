@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "wtf/FastAllocBase.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -15,6 +16,7 @@ class ContentSecurityPolicy;
 class KURL;
 
 class CORE_EXPORT CSPSource {
+    WTF_MAKE_FAST_ALLOCATED(CSPSource);
 public:
     enum WildcardDisposition {
         HasWildcard,

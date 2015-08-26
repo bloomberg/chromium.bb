@@ -5,6 +5,7 @@
 #ifndef LayoutSubtreeRootList_h
 #define LayoutSubtreeRootList_h
 
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
@@ -27,6 +28,7 @@ class LayoutObject;
 // TODO(leviw): This should really be something akin to a LayoutController
 // that FrameView delegates layout work to.
 class LayoutSubtreeRootList {
+    DISALLOW_ALLOCATION();
 public:
     LayoutSubtreeRootList()
     { }

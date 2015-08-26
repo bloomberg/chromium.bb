@@ -18,6 +18,7 @@ class ContentSecurityPolicy;
 class KURL;
 
 class CORE_EXPORT CSPSourceList {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(CSPSourceList);
 public:
     CSPSourceList(ContentSecurityPolicy*, const String& directiveName);

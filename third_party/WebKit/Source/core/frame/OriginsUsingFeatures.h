@@ -44,6 +44,7 @@ public:
     void updateMeasurementsAndClear();
 
     class CORE_EXPORT Value {
+        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         Value();
 
