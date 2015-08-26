@@ -125,25 +125,9 @@ class WebglConformancePage(gpu_test_base.PageBase):
     self.script_to_evaluate_on_commit = conformance_harness_script
 
   def RunNavigateStepsInner(self, action_runner):
-    num_tries = 1 + self.GetExpectations().GetFlakyRetriesForPage(
-      self, action_runner.tab.browser)
-    # This loop will run once for tests that aren't marked flaky, and
-    # will fall through to the validator's ValidateAndMeasurePage on
-    # the last iteration.
-    for ii in xrange(0, num_tries):
-      # The first time through, the superclass has already run the
-      # default navigation steps.
-      if ii > 0:
-        self.RunDefaultNavigateSteps(action_runner)
-      action_runner.WaitForJavaScriptCondition(
-          'webglTestHarness._finished', timeout_in_seconds=180)
-      if ii < num_tries - 1:
-        if _DidWebGLTestSucceed(action_runner.tab):
-          return
-        else:
-          print 'FLAKY TEST FAILURE, retrying: ' + self.display_name
-          print 'Error messages from test run:'
-          print _WebGLTestMessages(action_runner.tab)
+    self.RunDefaultNavigateSteps(action_runner)
+    action_runner.WaitForJavaScriptCondition(
+        'webglTestHarness._finished', timeout_in_seconds=180)
 
 class WebglConformance(gpu_test_base.TestBase):
   """Conformance with Khronos WebGL Conformance Tests"""

@@ -16,6 +16,7 @@ class GpuExpectation(test_expectations.Expectation):
     self.device_id_conditions = []
     self.angle_conditions = []
     self.max_num_retries = max_num_retries
+    assert self.max_num_retries == 0 or expectation == 'flaky'
     super(GpuExpectation, self).__init__(
       expectation, pattern, conditions=conditions, bug=bug)
 
@@ -61,10 +62,10 @@ class GpuTestExpectations(test_expectations.TestExpectations):
 
   def Flaky(self, pattern, conditions=None, bug=None, max_num_retries=2):
     self._AddExpectation(GpuExpectation(
-      'pass', pattern, conditions=conditions, bug=bug,
+      'flaky', pattern, conditions=conditions, bug=bug,
       max_num_retries=max_num_retries))
 
-  def GetFlakyRetriesForPage(self, page, browser):
+  def GetFlakyRetriesForPage(self, browser, page):
     e = self._GetExpectationObjectForPage(browser, page)
     if e:
       return e.max_num_retries

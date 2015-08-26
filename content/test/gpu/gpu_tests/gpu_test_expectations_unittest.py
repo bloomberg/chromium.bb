@@ -86,8 +86,8 @@ class GpuTestExpectationsTest(unittest.TestCase):
   def getRetriesForPage(self, page, platform=StubPlatform(''), gpu=0,
       device=0, vendor_string='', device_string=''):
     self.expectations.ClearExpectationsCacheForTesting()
-    return self.expectations.GetFlakyRetriesForPage(page, StubBrowser(
-      platform, gpu, device, vendor_string, device_string))
+    return self.expectations.GetFlakyRetriesForPage(StubBrowser(
+      platform, gpu, device, vendor_string, device_string), page)
 
   # Pages with expectations for a GPU should only return them when running with
   # that GPU
@@ -165,19 +165,19 @@ class GpuTestExpectationsTest(unittest.TestCase):
   def testFlakyExpectation(self):
     ps = story_set.StorySet()
     page = page_module.Page('http://test.com/test7.html', ps)
-    self.assertExpectationEquals('pass', page)
+    self.assertExpectationEquals('flaky', page)
     self.assertEquals(5, self.getRetriesForPage(page))
 
   # Ensure the filtering from the TestExpectations superclass still works.
   def testFlakyPerPlatformExpectation(self):
     ps = story_set.StorySet()
     page1 = page_module.Page('http://test.com/test8.html', ps)
-    self.assertExpectationEquals('pass', page1, StubPlatform('win'))
+    self.assertExpectationEquals('flaky', page1, StubPlatform('win'))
     self.assertEquals(6, self.getRetriesForPage(page1, StubPlatform('win')))
     self.assertExpectationEquals('pass', page1, StubPlatform('mac'))
     self.assertEquals(0, self.getRetriesForPage(page1, StubPlatform('mac')))
     page2 = page_module.Page('http://test.com/wildcardtest1.html', ps)
-    self.assertExpectationEquals('pass', page2, StubPlatform('win'))
+    self.assertExpectationEquals('flaky', page2, StubPlatform('win'))
     self.assertEquals(7, self.getRetriesForPage(page2, StubPlatform('win')))
     self.assertExpectationEquals('pass', page2, StubPlatform('mac'))
     self.assertEquals(0, self.getRetriesForPage(page2, StubPlatform('mac')))
