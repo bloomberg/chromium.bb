@@ -823,7 +823,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll)
 // Page reload/navigation should not reset elastic overscroll.
 TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload)
 {
-    const std::string baseURL("http://www.test5.com/");
+    const std::string baseURL("http://www.test6.com/");
     const std::string fileName("fixed_layout.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
@@ -860,7 +860,7 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload)
 
 TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
 {
-    const std::string baseURL("http://www.test6.com/");
+    const std::string baseURL("http://www.test7.com/");
     const std::string fileName("fixed_layout.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
@@ -892,7 +892,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
 
 TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
 {
-    const std::string baseURL("http://www.test7.com/");
+    const std::string baseURL("http://www.test8.com/");
     const std::string fileName("fixed_layout.html");
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
