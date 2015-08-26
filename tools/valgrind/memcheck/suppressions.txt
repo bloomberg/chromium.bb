@@ -369,7 +369,7 @@
    ...
    fun:_ZN4base9SampleMap10AccumulateEii
    ...
-   fun:_ZN4base15SparseHistogram3AddEi
+   fun:_ZN4base15SparseHistogram*
 }
 {
    bug_73299 (Intentional)
