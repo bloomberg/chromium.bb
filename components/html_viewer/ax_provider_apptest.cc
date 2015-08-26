@@ -9,7 +9,7 @@
 #include "base/test/test_timeouts.h"
 #include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"

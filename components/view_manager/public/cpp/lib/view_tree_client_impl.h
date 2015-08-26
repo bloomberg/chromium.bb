@@ -7,19 +7,18 @@
 
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
-class ViewManager;
-class ViewManagerDelegate;
-class ViewManagerTransaction;
+class ViewTreeConnection;
+class ViewTreeDelegate;
 
 // Manages the connection with the View Manager service.
-class ViewTreeClientImpl : public ViewManager, public ViewTreeClient {
+class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
  public:
-  ViewTreeClientImpl(ViewManagerDelegate* delegate,
+  ViewTreeClientImpl(ViewTreeDelegate* delegate,
                      InterfaceRequest<ViewTreeClient> request);
   ~ViewTreeClientImpl() override;
 
@@ -65,7 +64,7 @@ class ViewTreeClientImpl : public ViewManager, public ViewTreeClient {
   void ClearChangeAckedCallback() { change_acked_callback_.reset(); }
 
   // Start/stop tracking views. While tracked, they can be retrieved via
-  // ViewManager::GetViewById.
+  // ViewTreeConnection::GetViewById.
   void AddView(View* view);
   void RemoveView(Id view_id);
 
@@ -81,7 +80,7 @@ class ViewTreeClientImpl : public ViewManager, public ViewTreeClient {
 
   Id CreateViewOnServer();
 
-  // Overridden from ViewManager:
+  // Overridden from ViewTreeConnection:
   View* GetRoot() override;
   View* GetViewById(Id id) override;
   View* GetFocusedView() override;
@@ -133,7 +132,7 @@ class ViewTreeClientImpl : public ViewManager, public ViewTreeClient {
 
   Callback<void(void)> change_acked_callback_;
 
-  ViewManagerDelegate* delegate_;
+  ViewTreeDelegate* delegate_;
 
   View* root_;
 

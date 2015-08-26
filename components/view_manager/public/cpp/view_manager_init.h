@@ -15,7 +15,7 @@ namespace mojo {
 
 class ApplicationConnection;
 class ApplicationImpl;
-class ViewManagerDelegate;
+class ViewTreeDelegate;
 
 // ViewManagerInit is used to establish the initial connection to the
 // ViewManager. Use it when you know the ViewManager is not running and you're
@@ -24,7 +24,7 @@ class ViewManagerInit {
  public:
   // |root_client| is optional.
   ViewManagerInit(ApplicationImpl* app,
-                  ViewManagerDelegate* delegate,
+                  ViewTreeDelegate* delegate,
                   ViewManagerRootClient* root_client);
   ~ViewManagerInit();
 
@@ -42,7 +42,7 @@ class ViewManagerInit {
 
   ApplicationImpl* app_;
   scoped_ptr<ApplicationConnection> connection_;
-  ViewManagerDelegate* delegate_;
+  ViewTreeDelegate* delegate_;
   scoped_ptr<ClientFactory> client_factory_;
   ViewManagerRootPtr view_manager_root_;
   scoped_ptr<Binding<ViewManagerRootClient>> root_client_binding_;

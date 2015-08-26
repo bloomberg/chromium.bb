@@ -5,7 +5,7 @@
 #include "components/view_manager/public/cpp/view_manager_init.h"
 
 #include "components/view_manager/public/cpp/lib/view_tree_client_impl.h"
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
 namespace mojo {
@@ -29,7 +29,7 @@ class ViewManagerInit::ClientFactory
 };
 
 ViewManagerInit::ViewManagerInit(ApplicationImpl* app,
-                                 ViewManagerDelegate* delegate,
+                                 ViewTreeDelegate* delegate,
                                  ViewManagerRootClient* root_client)
     : app_(app),
       connection_(nullptr),
@@ -56,7 +56,7 @@ ViewManagerInit::~ViewManagerInit() {}
 
 void ViewManagerInit::OnCreate(InterfaceRequest<ViewTreeClient> request) {
   // TODO(sky): straighten out lifetime.
-  ViewManager::Create(delegate_, request.Pass());
+  ViewTreeConnection::Create(delegate_, request.Pass());
 }
 
 }  // namespace mojo

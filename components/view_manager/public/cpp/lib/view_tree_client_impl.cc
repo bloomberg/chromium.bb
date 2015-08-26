@@ -6,8 +6,9 @@
 
 #include "components/view_manager/public/cpp/lib/view_private.h"
 #include "components/view_manager/public/cpp/util.h"
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
@@ -21,14 +22,14 @@ Id MakeTransportId(ConnectionSpecificId connection_id,
 }
 
 // Helper called to construct a local view object from transport data.
-View* AddViewToViewManager(ViewTreeClientImpl* client,
-                           View* parent,
-                           const ViewDataPtr& view_data) {
-  // We don't use the ctor that takes a ViewManager here, since it will call
-  // back to the service and attempt to create a new view.
+View* AddViewToConnection(ViewTreeClientImpl* client,
+                          View* parent,
+                          const ViewDataPtr& view_data) {
+  // We don't use the cto that takes a ViewTreeConnection here, since it will
+  // call back to the service and attempt to create a new view.
   View* view = ViewPrivate::LocalCreate();
   ViewPrivate private_view(view);
-  private_view.set_view_manager(client);
+  private_view.set_connection(client);
   private_view.set_id(view_data->view_id);
   private_view.set_visible(view_data->visible);
   private_view.set_drawn(view_data->drawn);
@@ -58,7 +59,7 @@ View* BuildViewTree(ViewTreeClientImpl* client,
       while (parents.back()->id() != views[i]->parent_id)
         parents.pop_back();
     }
-    View* view = AddViewToViewManager(
+    View* view = AddViewToConnection(
         client, !parents.empty() ? parents.back() : NULL, views[i]);
     if (!last_view)
       root = view;
@@ -67,14 +68,14 @@ View* BuildViewTree(ViewTreeClientImpl* client,
   return root;
 }
 
-ViewManager* ViewManager::Create(
-    ViewManagerDelegate* delegate,
+ViewTreeConnection* ViewTreeConnection::Create(
+    ViewTreeDelegate* delegate,
     InterfaceRequest<ViewTreeClient> request) {
   return new ViewTreeClientImpl(delegate, request.Pass());
 }
 
 ViewTreeClientImpl::ViewTreeClientImpl(
-    ViewManagerDelegate* delegate,
+    ViewTreeDelegate* delegate,
     InterfaceRequest<ViewTreeClient> request)
     : connection_id_(0),
       next_id_(1),
@@ -109,7 +110,7 @@ ViewTreeClientImpl::~ViewTreeClientImpl() {
   for (size_t i = 0; i < non_owned.size(); ++i)
     delete non_owned[i];
 
-  delegate_->OnViewManagerDestroyed(this);
+  delegate_->OnConnectionLost(this);
 }
 
 void ViewTreeClientImpl::DestroyView(Id view_id) {
@@ -225,7 +226,7 @@ void ViewTreeClientImpl::OnRootDestroyed(View* root) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewTreeClientImpl, ViewManager implementation:
+// ViewTreeClientImpl, ViewTreeConnection implementation:
 
 Id ViewTreeClientImpl::CreateViewOnServer() {
   DCHECK(tree_);
@@ -276,7 +277,7 @@ void ViewTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   connection_id_ = connection_id;
 
   DCHECK(!root_);
-  root_ = AddViewToViewManager(this, nullptr, root_data);
+  root_ = AddViewToConnection(this, nullptr, root_data);
 
   focused_view_ = GetViewById(focused_view_id);
 

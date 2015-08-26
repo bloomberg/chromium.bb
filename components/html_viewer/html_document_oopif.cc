@@ -20,7 +20,7 @@
 #include "components/html_viewer/web_url_loader_impl.h"
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
@@ -89,7 +89,7 @@ void HTMLDocumentOOPIF::Destroy() {
     if (root) {
       root->RemoveObserver(this);
       resource_waiter_.reset();
-      delete root->view_manager();
+      delete root->connection();
     } else {
       delete this;
     }
@@ -164,8 +164,7 @@ void HTMLDocumentOOPIF::OnEmbed(View* root) {
   LoadIfNecessary();
 }
 
-void HTMLDocumentOOPIF::OnViewManagerDestroyed(
-    mojo::ViewManager* view_manager) {
+void HTMLDocumentOOPIF::OnConnectionLost(mojo::ViewTreeConnection* connection) {
   delete this;
 }
 
@@ -210,7 +209,7 @@ HTMLFactory* HTMLDocumentOOPIF::GetHTMLFactory() {
 void HTMLDocumentOOPIF::OnFrameSwappedToRemote() {
   // When the frame becomes remote HTMLDocumentOOPIF is no longer needed.
   // Deleting the ViewManager triggers deleting us.
-  delete root_->view_manager();
+  delete root_->connection();
 }
 
 void HTMLDocumentOOPIF::Create(mojo::ApplicationConnection* connection,
@@ -263,7 +262,7 @@ void HTMLDocumentOOPIF::Create(
 void HTMLDocumentOOPIF::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  mojo::ViewManager::Create(this, request.Pass());
+  mojo::ViewTreeConnection::Create(this, request.Pass());
 }
 
 }  // namespace html_viewer

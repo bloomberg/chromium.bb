@@ -10,10 +10,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
-#include "components/view_manager/public/cpp/view_manager.h"
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mandoline/tab/frame.h"
 #include "mandoline/tab/frame_tree.h"
 #include "mandoline/tab/frame_tree_delegate.h"
@@ -26,7 +26,7 @@
 #include "mojo/application/public/cpp/service_provider_impl.h"
 
 using mojo::View;
-using mojo::ViewManager;
+using mojo::ViewTreeConnection;
 
 namespace mandoline {
 
@@ -65,12 +65,14 @@ void QuitRunLoop() {
 
 class FrameTest : public mojo::test::ApplicationTestBase,
                   public mojo::ApplicationDelegate,
-                  public mojo::ViewManagerDelegate,
+                  public mojo::ViewTreeDelegate,
                   public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
-  FrameTest() : most_recent_view_tree_(nullptr), window_manager_(nullptr) {}
+  FrameTest() : most_recent_connection_(nullptr), window_manager_(nullptr) {}
 
-  ViewManager* most_recent_view_tree() { return most_recent_view_tree_; }
+  ViewTreeConnection* most_recent_connection() {
+    return most_recent_connection_;
+  }
 
   // ApplicationDelegate implementation.
   bool ConfigureIncomingConnection(
@@ -79,17 +81,17 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     return true;
   }
 
-  ViewManager* window_manager() { return window_manager_; }
+  ViewTreeConnection* window_manager() { return window_manager_; }
 
   // ApplicationTestBase:
   ApplicationDelegate* GetApplicationDelegate() override { return this; }
 
-  // Overridden from ViewManagerDelegate:
+  // Overridden from ViewTreeDelegate:
   void OnEmbed(View* root) override {
-    most_recent_view_tree_ = root->view_manager();
+    most_recent_connection_ = root->connection();
     QuitRunLoop();
   }
-  void OnViewManagerDestroyed(ViewManager* view_manager) override {}
+  void OnConnectionLost(ViewTreeConnection* connection) override {}
 
  private:
   // Overridden from testing::Test:
@@ -99,7 +101,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     view_manager_init_.reset(
         new mojo::ViewManagerInit(application_impl(), this, nullptr));
     ASSERT_TRUE(DoRunLoopWithTimeout());
-    std::swap(window_manager_, most_recent_view_tree_);
+    std::swap(window_manager_, most_recent_connection_);
   }
 
   // Overridden from testing::Test:
@@ -112,16 +114,16 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   void Create(
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
-    mojo::ViewManager::Create(this, request.Pass());
+    mojo::ViewTreeConnection::Create(this, request.Pass());
   }
 
   scoped_ptr<mojo::ViewManagerInit> view_manager_init_;
 
   // Used to receive the most recent view manager loaded by an embed action.
-  ViewManager* most_recent_view_tree_;
+  ViewTreeConnection* most_recent_connection_;
   // The View Manager connection held by the window manager (app running at the
   // root view).
-  ViewManager* window_manager_;
+  ViewTreeConnection* window_manager_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(FrameTest);
 };

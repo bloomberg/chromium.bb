@@ -9,8 +9,8 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
 namespace mojo {
@@ -27,9 +27,9 @@ void TimeoutRunLoop(const base::Closure& timeout_task, bool* timeout) {
 }  // namespace
 
 ViewManagerTestBase::ViewManagerTestBase()
-    : most_recent_view_manager_(nullptr),
+    : most_recent_connection_(nullptr),
       window_manager_(nullptr),
-      view_manager_destroyed_(false) {
+      view_tree_connection_destroyed_(false) {
 }
 
 ViewManagerTestBase::~ViewManagerTestBase() {
@@ -68,7 +68,7 @@ void ViewManagerTestBase::SetUp() {
   view_manager_init_.reset(
       new ViewManagerInit(application_impl(), this, nullptr));
   ASSERT_TRUE(DoRunLoopWithTimeout());  // RunLoop should be quit by OnEmbed().
-  std::swap(window_manager_, most_recent_view_manager_);
+  std::swap(window_manager_, most_recent_connection_);
 }
 
 void ViewManagerTestBase::TearDown() {
@@ -87,17 +87,17 @@ bool ViewManagerTestBase::ConfigureIncomingConnection(
 }
 
 void ViewManagerTestBase::OnEmbed(View* root) {
-  most_recent_view_manager_ = root->view_manager();
+  most_recent_connection_ = root->connection();
   EXPECT_TRUE(QuitRunLoop());
 }
 
-void ViewManagerTestBase::OnViewManagerDestroyed(ViewManager* view_manager) {
-  view_manager_destroyed_ = true;
+void ViewManagerTestBase::OnConnectionLost(ViewTreeConnection* connection) {
+  view_tree_connection_destroyed_ = true;
 }
 
 void ViewManagerTestBase::Create(ApplicationConnection* connection,
                                  InterfaceRequest<ViewTreeClient> request) {
-  ViewManager::Create(this, request.Pass());
+  ViewTreeConnection::Create(this, request.Pass());
 }
 
 }  // namespace mojo

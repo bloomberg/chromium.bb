@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "components/devtools_service/public/cpp/switches.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "mandoline/tab/frame.h"
 #include "mandoline/tab/frame_connection.h"
 #include "mandoline/tab/frame_devtools_agent.h"
@@ -77,16 +77,16 @@ void WebViewImpl::LoadRequest(mojo::URLRequestPtr request) {
 
 void WebViewImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client) {
-  mojo::ViewManager::Create(this, view_tree_client.Pass());
+  mojo::ViewTreeConnection::Create(this, view_tree_client.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebViewImpl, mojo::ViewManagerDelegate implementation:
+// WebViewImpl, mojo::ViewTreeDelegate implementation:
 
 void WebViewImpl::OnEmbed(mojo::View* root) {
-  root->view_manager()->SetEmbedRoot();
+  root->connection()->SetEmbedRoot();
   root->AddObserver(this);
-  content_ = root->view_manager()->CreateView();
+  content_ = root->connection()->CreateView();
   content_->SetBounds(*mojo::Rect::From(gfx::Rect(0, 0, root->bounds().width,
                                                   root->bounds().height)));
   root->AddChild(content_);
@@ -97,7 +97,7 @@ void WebViewImpl::OnEmbed(mojo::View* root) {
     LoadRequest(pending_request_.Pass());
 }
 
-void WebViewImpl::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
+void WebViewImpl::OnConnectionLost(mojo::ViewTreeConnection* connection) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

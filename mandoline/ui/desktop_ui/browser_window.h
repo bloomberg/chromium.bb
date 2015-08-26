@@ -5,9 +5,9 @@
 #ifndef MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 #define MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 
-#include "components/view_manager/public/cpp/view_manager.h"
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "mandoline/tab/public/cpp/web_view.h"
 #include "mandoline/tab/public/interfaces/web_view.mojom.h"
@@ -35,7 +35,7 @@ namespace mandoline {
 class BrowserManager;
 class ProgressView;
 
-class BrowserWindow : public mojo::ViewManagerDelegate,
+class BrowserWindow : public mojo::ViewTreeDelegate,
                       public mojo::ViewManagerRootClient,
                       public web_view::mojom::WebViewClient,
                       public ViewEmbedder,
@@ -49,9 +49,9 @@ class BrowserWindow : public mojo::ViewManagerDelegate,
   void LoadURL(const GURL& url);
 
  private:
-  // Overridden from mojo::ViewManagerDelegate:
+  // Overridden from mojo::ViewTreeDelegate:
   void OnEmbed(mojo::View* root) override;
-  void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
 
   // Overridden from ViewManagerRootClient:
   void OnAccelerator(mojo::EventPtr event) override;

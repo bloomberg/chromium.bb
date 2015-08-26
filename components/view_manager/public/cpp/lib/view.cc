@@ -172,9 +172,9 @@ class ScopedSetBoundsNotifier {
 };
 
 // Some operations are only permitted in the connection that created the view.
-bool OwnsView(ViewManager* manager, View* view) {
-  return !manager ||
-      static_cast<ViewTreeClientImpl*>(manager)->OwnsView(view->id());
+bool OwnsView(ViewTreeConnection* connection, View* view) {
+  return !connection ||
+      static_cast<ViewTreeClientImpl*>(connection)->OwnsView(view->id());
 }
 
 }  // namespace
@@ -183,14 +183,14 @@ bool OwnsView(ViewManager* manager, View* view) {
 // View, public:
 
 void View::Destroy() {
-  if (!OwnsView(manager_, this))
+  if (!OwnsView(connection_, this))
     return;
 
-  if (manager_)
-    static_cast<ViewTreeClientImpl*>(manager_)->DestroyView(id_);
+  if (connection_)
+    static_cast<ViewTreeClientImpl*>(connection_)->DestroyView(id_);
   while (!children_.empty()) {
     View* child = children_.front();
-    if (!OwnsView(manager_, child)) {
+    if (!OwnsView(connection_, child)) {
       ViewPrivate(child).ClearParent();
       children_.erase(children_.begin());
     } else {
@@ -203,14 +203,14 @@ void View::Destroy() {
 }
 
 void View::SetBounds(const Rect& bounds) {
-  if (!OwnsView(manager_, this))
+  if (!OwnsView(connection_, this))
     return;
 
   if (bounds_.Equals(bounds))
     return;
 
-  if (manager_)
-    static_cast<ViewTreeClientImpl*>(manager_)->SetBounds(id_, bounds);
+  if (connection_)
+    static_cast<ViewTreeClientImpl*>(connection_)->SetBounds(id_, bounds);
   LocalSetBounds(bounds_, bounds);
 }
 
@@ -218,8 +218,8 @@ void View::SetVisible(bool value) {
   if (visible_ == value)
     return;
 
-  if (manager_)
-    static_cast<ViewTreeClientImpl*>(manager_)->SetVisible(id_, value);
+  if (connection_)
+    static_cast<ViewTreeClientImpl*>(connection_)->SetVisible(id_, value);
   LocalSetVisible(value);
 }
 
@@ -247,14 +247,14 @@ void View::SetSharedProperty(const std::string& name,
   }
 
   // TODO: add test coverage of this (450303).
-  if (manager_) {
+  if (connection_) {
     Array<uint8_t> transport_value;
     if (value) {
       transport_value.resize(value->size());
       if (value->size())
         memcpy(&transport_value.front(), &(value->front()), value->size());
     }
-    static_cast<ViewTreeClientImpl*>(manager_)->SetProperty(
+    static_cast<ViewTreeClientImpl*>(connection_)->SetProperty(
         id_, name, transport_value.Pass());
   }
 
@@ -287,21 +287,22 @@ const View* View::GetRoot() const {
 void View::AddChild(View* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
-  if (manager_)
-    CHECK_EQ(child->view_manager(), manager_);
+  if (connection_)
+    CHECK_EQ(child->connection(), connection_);
   LocalAddChild(child);
-  if (manager_)
-    static_cast<ViewTreeClientImpl*>(manager_)->AddChild(child->id(), id_);
+  if (connection_)
+    static_cast<ViewTreeClientImpl*>(connection_)->AddChild(child->id(), id_);
 }
 
 void View::RemoveChild(View* child) {
   // TODO(beng): not necessarily valid to all connections, but possibly to the
   //             embeddee in an embedder-embeddee relationship.
-  if (manager_)
-    CHECK_EQ(child->view_manager(), manager_);
+  if (connection_)
+    CHECK_EQ(child->connection(), connection_);
   LocalRemoveChild(child);
-  if (manager_) {
-    static_cast<ViewTreeClientImpl*>(manager_)->RemoveChild(child->id(), id_);
+  if (connection_) {
+    static_cast<ViewTreeClientImpl*>(connection_)->RemoveChild(child->id(),
+                                                               id_);
   }
 }
 
@@ -320,9 +321,9 @@ void View::MoveToBack() {
 void View::Reorder(View* relative, OrderDirection direction) {
   if (!LocalReorder(relative, direction))
     return;
-  if (manager_) {
-    static_cast<ViewTreeClientImpl*>(manager_)->Reorder(id_, relative->id(),
-                                                        direction);
+  if (connection_) {
+    static_cast<ViewTreeClientImpl*>(connection_)->Reorder(id_, relative->id(),
+                                                           direction);
   }
 }
 
@@ -331,8 +332,8 @@ bool View::Contains(View* child) const {
     return false;
   if (child == this)
     return true;
-  if (manager_)
-    CHECK_EQ(child->view_manager(), manager_);
+  if (connection_)
+    CHECK_EQ(child->connection(), connection_);
   for (View* p = child->parent(); p; p = p->parent()) {
     if (p == this)
       return true;
@@ -354,14 +355,14 @@ View* View::GetChildById(Id id) {
 }
 
 void View::SetSurfaceId(SurfaceIdPtr id) {
-  if (manager_) {
-    static_cast<ViewTreeClientImpl*>(manager_)->SetSurfaceId(id_, id.Pass());
+  if (connection_) {
+    static_cast<ViewTreeClientImpl*>(connection_)->SetSurfaceId(id_, id.Pass());
   }
 }
 
 void View::SetTextInputState(TextInputStatePtr state) {
-  if (manager_) {
-    static_cast<ViewTreeClientImpl*>(manager_)
+  if (connection_) {
+    static_cast<ViewTreeClientImpl*>(connection_)
         ->SetViewTextInputState(id_, state.Pass());
   }
 }
@@ -369,29 +370,29 @@ void View::SetTextInputState(TextInputStatePtr state) {
 void View::SetImeVisibility(bool visible, TextInputStatePtr state) {
   // SetImeVisibility() shouldn't be used if the view is not editable.
   DCHECK(state.is_null() || state->type != TEXT_INPUT_TYPE_NONE);
-  if (manager_) {
-    static_cast<ViewTreeClientImpl*>(manager_)
+  if (connection_) {
+    static_cast<ViewTreeClientImpl*>(connection_)
         ->SetImeVisibility(id_, visible, state.Pass());
   }
 }
 
 void View::SetFocus() {
-  if (manager_)
-    static_cast<ViewTreeClientImpl*>(manager_)->SetFocus(id_);
+  if (connection_)
+    static_cast<ViewTreeClientImpl*>(connection_)->SetFocus(id_);
 }
 
 bool View::HasFocus() const {
-  return manager_ && manager_->GetFocusedView() == this;
+  return connection_ && connection_->GetFocusedView() == this;
 }
 
 void View::Embed(ViewTreeClientPtr client) {
   if (PrepareForEmbed())
-    static_cast<ViewTreeClientImpl*>(manager_)->Embed(id_, client.Pass());
+    static_cast<ViewTreeClientImpl*>(connection_)->Embed(id_, client.Pass());
 }
 
 void View::EmbedAllowingReembed(mojo::URLRequestPtr request) {
   if (PrepareForEmbed()) {
-    static_cast<ViewTreeClientImpl*>(manager_)
+    static_cast<ViewTreeClientImpl*>(connection_)
         ->EmbedAllowingReembed(request.Pass(), id_);
   }
 }
@@ -412,7 +413,7 @@ ViewportMetricsPtr CreateEmptyViewportMetrics() {
 }  // namespace
 
 View::View()
-    : manager_(NULL),
+    : connection_(NULL),
       id_(static_cast<Id>(-1)),
       parent_(NULL),
       viewport_metrics_(CreateEmptyViewportMetrics()),
@@ -435,8 +436,8 @@ View::~View() {
 
   // TODO(beng): It'd be better to do this via a destruction observer in the
   //             ViewTreeClientImpl.
-  if (manager_)
-    static_cast<ViewTreeClientImpl*>(manager_)->RemoveView(id_);
+  if (connection_)
+    static_cast<ViewTreeClientImpl*>(connection_)->RemoveView(id_);
 
   // Clear properties.
   for (auto& pair : prop_map_) {
@@ -447,15 +448,15 @@ View::~View() {
 
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDestroyed(this));
 
-  if (manager_ && manager_->GetRoot() == this)
-    static_cast<ViewTreeClientImpl*>(manager_)->OnRootDestroyed(this);
+  if (connection_ && connection_->GetRoot() == this)
+    static_cast<ViewTreeClientImpl*>(connection_)->OnRootDestroyed(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // View, private:
 
-View::View(ViewManager* manager, Id id)
-    : manager_(manager),
+View::View(ViewTreeConnection* connection, Id id)
+    : connection_(connection),
       id_(id),
       parent_(nullptr),
       viewport_metrics_(CreateEmptyViewportMetrics()),
@@ -605,8 +606,8 @@ void View::NotifyViewVisibilityChangedUp(View* target) {
 }
 
 bool View::PrepareForEmbed() {
-  if (!OwnsView(manager_, this) &&
-      !static_cast<ViewTreeClientImpl*>(manager_)->is_embed_root()) {
+  if (!OwnsView(connection_, this) &&
+      !static_cast<ViewTreeClientImpl*>(connection_)->is_embed_root()) {
     return false;
   }
 

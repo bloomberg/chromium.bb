@@ -29,8 +29,8 @@ class ViewPrivate {
 
   void set_id(Id id) { view_->id_ = id; }
 
-  void set_view_manager(ViewManager* manager) {
-    view_->manager_ = manager;
+  void set_connection(ViewTreeConnection* connection) {
+    view_->connection_ = connection;
   }
 
   void set_properties(const std::map<std::string, std::vector<uint8_t>>& data) {

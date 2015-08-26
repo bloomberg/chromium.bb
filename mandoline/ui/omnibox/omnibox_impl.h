@@ -5,7 +5,7 @@
 #ifndef MANDOLINE_UI_OMNIBOX_OMNIBOX_IMPL_H_
 #define MANDOLINE_UI_OMNIBOX_OMNIBOX_IMPL_H_
 
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -23,7 +23,7 @@ namespace mandoline {
 class AuraInit;
 
 class OmniboxImpl : public mojo::ApplicationDelegate,
-                    public mojo::ViewManagerDelegate,
+                    public mojo::ViewTreeDelegate,
                     public views::LayoutManager,
                     public views::TextfieldController,
                     public mojo::InterfaceFactory<Omnibox>,
@@ -41,9 +41,9 @@ class OmniboxImpl : public mojo::ApplicationDelegate,
   bool ConfigureOutgoingConnection(
       mojo::ApplicationConnection* connection) override;
 
-  // Overridden from mojo::ViewManagerDelegate:
+  // Overridden from mojo::ViewTreeDelegate:
   void OnEmbed(mojo::View* root) override;
-  void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
 
   // Overridden from views::LayoutManager:
   gfx::Size GetPreferredSize(const views::View* view) const override;

@@ -141,10 +141,10 @@ TEST_F(BrowserTest, TwoBrowsers) {
   ASSERT_NE(browser1->root(), browser2->root());
 
   // Deleting the view manager closes the connection.
-  delete browser1->root()->view_manager();
+  delete browser1->root()->connection();
   EXPECT_EQ(browser1, WaitForBrowserClosed());
 
-  delete browser2->root()->view_manager();
+  delete browser2->root()->connection();
   EXPECT_EQ(browser2, WaitForBrowserClosed());
 }
 

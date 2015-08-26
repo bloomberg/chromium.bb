@@ -22,8 +22,8 @@ namespace mandoline {
 // SurfaceBinding is responsible for managing the connections necessary to
 // bind a View to the surfaces service.
 // Internally SurfaceBinding manages one connection (and related structures) per
-// ViewManager. That is, all Views from a particular ViewManager share the same
-// connection.
+// ViewTreeConnection. That is, all Views from a particular ViewTreeConnection
+// share the same connection.
 class SurfaceBinding {
  public:
   SurfaceBinding(mojo::Shell* shell, mojo::View* view);
@@ -34,11 +34,11 @@ class SurfaceBinding {
   scoped_ptr<cc::OutputSurface> CreateOutputSurface();
 
  private:
-  class PerViewManagerState;
+  class PerConnectionState;
 
   mojo::Shell* shell_;
   mojo::View* view_;
-  scoped_refptr<PerViewManagerState> state_;
+  scoped_refptr<PerConnectionState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceBinding);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_DELEGATE_H_
-#define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_DELEGATE_H_
+#ifndef COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_TREE_DELEGATE_H_
+#define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_TREE_DELEGATE_H_
 
 #include <string>
 
@@ -14,22 +14,22 @@
 namespace mojo {
 
 class View;
-class ViewManager;
+class ViewTreeConnection;
 
 // Interface implemented by an application using the view manager.
 //
-// Each call to OnEmbed() results in a new ViewManager and new root View.
-// ViewManager is deleted by any of the following:
+// Each call to OnEmbed() results in a new ViewTreeConnection and new root View.
+// ViewTreeConnection is deleted by any of the following:
 // . If the root of the connection is destroyed. This happens if the owner
 //   of the root Embed()s another app in root, or the owner explicitly deletes
 //   root.
-// . The connection to the viewmanager is lost.
+// . The connection to the view manager is lost.
 // . Explicitly by way of calling delete.
 //
-// When the ViewManager is deleted all views are deleted (and observers
+// When the ViewTreeConnection is deleted all views are deleted (and observers
 // notified). This is followed by notifying the delegate by way of
-// OnViewManagerDestroyed().
-class ViewManagerDelegate {
+// OnConnectionLost().
+class ViewTreeDelegate {
  public:
   // Called when the application implementing this interface is embedded at
   // |root|.
@@ -62,14 +62,14 @@ class ViewManagerDelegate {
                                     URLRequestPtr request,
                                     ViewTreeClientPtr* client);
 
-  // Called from the destructor of ViewManager after all the Views have been
-  // destroyed. |view_manager| is no longer valid after this call.
-  virtual void OnViewManagerDestroyed(ViewManager* view_manager) = 0;
+  // Called from the destructor of ViewTreeConnection after all the Views have
+  // been destroyed. |connection| is no longer valid after this call.
+  virtual void OnConnectionLost(ViewTreeConnection* connection) = 0;
 
  protected:
-  virtual ~ViewManagerDelegate() {}
+  virtual ~ViewTreeDelegate() {}
 };
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_DELEGATE_H_
+#endif  // COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_TREE_DELEGATE_H_

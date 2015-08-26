@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_H_
-#define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_H_
+#ifndef COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_TREE_CONNECTION_H_
+#define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_TREE_CONNECTION_H_
 
 #include <string>
 
@@ -13,18 +13,18 @@
 
 namespace mojo {
 class View;
-class ViewManagerDelegate;
+class ViewTreeDelegate;
 
-// Encapsulates a connection to the view manager service. A unique connection
-// is made every time an app is embedded.
-class ViewManager {
+// Encapsulates a connection to a view tree. A unique connection is made
+// every time an app is embedded.
+class ViewTreeConnection {
  public:
-  virtual ~ViewManager() {}
+  virtual ~ViewTreeConnection() {}
 
-  // The returned ViewManager instance owns itself, and is deleted when the
-  // last root is destroyed or the connection to the service is broken.
-  static ViewManager* Create(
-      ViewManagerDelegate* delegate,
+  // The returned ViewTreeConnection instance owns itself, and is deleted when
+  // the last root is destroyed or the connection to the service is broken.
+  static ViewTreeConnection* Create(
+      ViewTreeDelegate* delegate,
       InterfaceRequest<ViewTreeClient> request);
 
   // Returns the root of this connection.
@@ -47,4 +47,4 @@ class ViewManager {
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_H_
+#endif  // COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_TREE_CONNECTION_H_

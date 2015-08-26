@@ -5,7 +5,7 @@
 #include "mandoline/ui/omnibox/omnibox_impl.h"
 
 #include "base/strings/string16.h"
-#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "mandoline/ui/aura/aura_init.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -45,7 +45,7 @@ bool OmniboxImpl::ConfigureOutgoingConnection(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxImpl, mojo::ViewManagerDelegate implementation:
+// OmniboxImpl, mojo::ViewTreeDelegate implementation:
 
 void OmniboxImpl::OnEmbed(mojo::View* root) {
   root_ = root;
@@ -86,7 +86,7 @@ void OmniboxImpl::OnEmbed(mojo::View* root) {
   ShowWindow();
 }
 
-void OmniboxImpl::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
+void OmniboxImpl::OnConnectionLost(mojo::ViewTreeConnection* connection) {
   root_ = nullptr;
 }
 
@@ -137,7 +137,7 @@ void OmniboxImpl::Create(mojo::ApplicationConnection* connection,
 void OmniboxImpl::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
-  mojo::ViewManager::Create(this, request.Pass());
+  mojo::ViewTreeConnection::Create(this, request.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

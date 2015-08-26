@@ -35,7 +35,7 @@
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/cpp/scoped_view_ptr.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
@@ -591,7 +591,7 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   DCHECK(view_);  // If we're local we have to have a view.
   // Create the view that will house the frame now. We embed once we know the
   // url (see decidePolicyForNavigation()).
-  mojo::View* child_view = view_->view_manager()->CreateView();
+  mojo::View* child_view = view_->connection()->CreateView();
   ReplicatedFrameState child_state;
   child_state.name = frame_name;
   child_state.tree_scope = scope;

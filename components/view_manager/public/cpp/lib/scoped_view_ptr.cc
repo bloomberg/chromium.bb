@@ -5,8 +5,8 @@
 #include "components/view_manager/public/cpp/scoped_view_ptr.h"
 
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 
 namespace mojo {
 
@@ -23,8 +23,8 @@ ScopedViewPtr::~ScopedViewPtr() {
 
 // static
 void ScopedViewPtr::DeleteViewOrViewManager(View* view) {
-  if (view->view_manager()->GetRoot() == view)
-    delete view->view_manager();
+  if (view->connection()->GetRoot() == view)
+    delete view->connection();
   else
     view->Destroy();
 }

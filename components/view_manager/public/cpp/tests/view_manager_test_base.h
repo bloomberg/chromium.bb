@@ -6,7 +6,7 @@
 #define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_TESTS_VIEW_MANAGER_TEST_BASE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_test_base.h"
@@ -22,14 +22,16 @@ class ViewManagerInit;
 // established as part of SetUp().
 class ViewManagerTestBase : public test::ApplicationTestBase,
                             public ApplicationDelegate,
-                            public ViewManagerDelegate,
+                            public ViewTreeDelegate,
                             public InterfaceFactory<ViewTreeClient> {
  public:
   ViewManagerTestBase();
   ~ViewManagerTestBase() override;
 
-  // True if OnViewManagerDestroyed() was called.
-  bool view_manager_destroyed() const { return view_manager_destroyed_; }
+  // True if ViewTreeDelegate::OnConnectionLost() was called.
+  bool view_tree_connection_destroyed() const {
+    return view_tree_connection_destroyed_;
+  }
 
   // Runs the MessageLoop until QuitRunLoop() is called, or a timeout occurs.
   // Returns true on success. Generally prefer running a RunLoop and
@@ -40,10 +42,12 @@ class ViewManagerTestBase : public test::ApplicationTestBase,
   // success, false if a RunLoop isn't running.
   static bool QuitRunLoop() WARN_UNUSED_RESULT;
 
-  ViewManager* window_manager() { return window_manager_; }
+  ViewTreeConnection* window_manager() { return window_manager_; }
 
  protected:
-  ViewManager* most_recent_view_manager() { return most_recent_view_manager_; }
+  ViewTreeConnection* most_recent_connection() {
+    return most_recent_connection_;
+  }
 
   // testing::Test:
   void SetUp() override;
@@ -55,25 +59,26 @@ class ViewManagerTestBase : public test::ApplicationTestBase,
   // ApplicationDelegate:
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
 
-  // ViewManagerDelegate:
+  // ViewTreeDelegate:
   void OnEmbed(View* root) override;
-  void OnViewManagerDestroyed(ViewManager* view_manager) override;
+  void OnConnectionLost(ViewTreeConnection* connection) override;
 
   // InterfaceFactory<ViewTreeClient>:
   void Create(ApplicationConnection* connection,
               InterfaceRequest<ViewTreeClient> request) override;
 
-  // Used to receive the most recent view manager loaded by an embed action.
-  ViewManager* most_recent_view_manager_;
+  // Used to receive the most recent view tree connection loaded by an embed
+  // action.
+  ViewTreeConnection* most_recent_connection_;
 
  private:
   scoped_ptr<ViewManagerInit> view_manager_init_;
 
   // The View Manager connection held by the window manager (app running at the
   // root view).
-  ViewManager* window_manager_;
+  ViewTreeConnection* window_manager_;
 
-  bool view_manager_destroyed_;
+  bool view_tree_connection_destroyed_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerTestBase);
 };

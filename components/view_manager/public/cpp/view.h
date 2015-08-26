@@ -22,15 +22,15 @@ namespace mojo {
 
 class ServiceProviderImpl;
 class View;
-class ViewManager;
 class ViewObserver;
+class ViewTreeConnection;
 
 // Defined in view_property.h (which we do not include)
 template <typename T>
 struct ViewProperty;
 
-// Views are owned by the ViewManager. See ViewManagerDelegate for details on
-// ownership.
+// Views are owned by the ViewTreeConnection. See ViewTreeDelegate for details
+// on ownership.
 //
 // TODO(beng): Right now, you'll have to implement a ViewObserver to track
 //             destruction and NULL any pointers you have.
@@ -46,7 +46,7 @@ class View {
   // observers are notified and the View is immediately deleted.
   void Destroy();
 
-  ViewManager* view_manager() { return manager_; }
+  ViewTreeConnection* connection() { return connection_; }
 
   // Configuration.
   Id id() const { return id_; }
@@ -145,7 +145,7 @@ class View {
   friend class ViewPrivate;
   friend class ViewTreeClientImpl;
 
-  View(ViewManager* manager, Id id);
+  View(ViewTreeConnection* connection, Id id);
 
   // Called by the public {Set,Get,Clear}Property functions.
   int64_t SetLocalPropertyInternal(const void* key,
@@ -183,7 +183,7 @@ class View {
   // the children are removed.
   bool PrepareForEmbed();
 
-  ViewManager* manager_;
+  ViewTreeConnection* connection_;
   Id id_;
   View* parent_;
   Children children_;

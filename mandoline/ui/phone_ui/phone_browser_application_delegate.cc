@@ -5,8 +5,8 @@
 #include "mandoline/ui/phone_ui/phone_browser_application_delegate.h"
 
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
@@ -53,11 +53,11 @@ void PhoneBrowserApplicationDelegate::LaunchURL(const mojo::String& url) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PhoneBrowserApplicationDelegate, mojo::ViewManagerDelegate implementation:
+// PhoneBrowserApplicationDelegate, mojo::ViewTreeDelegate implementation:
 
 void PhoneBrowserApplicationDelegate::OnEmbed(mojo::View* root) {
-  root->view_manager()->SetEmbedRoot();
-  content_ = root->view_manager()->CreateView();
+  root->connection()->SetEmbedRoot();
+  content_ = root->connection()->CreateView();
   root->AddChild(content_);
   content_->SetBounds(root->bounds());
   content_->SetVisible(true);
@@ -68,8 +68,8 @@ void PhoneBrowserApplicationDelegate::OnEmbed(mojo::View* root) {
   LaunchURL("http://www.google.com/");
 }
 
-void PhoneBrowserApplicationDelegate::OnViewManagerDestroyed(
-    mojo::ViewManager* view_manager) {
+void PhoneBrowserApplicationDelegate::OnConnectionLost(
+    mojo::ViewTreeConnection* connection) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

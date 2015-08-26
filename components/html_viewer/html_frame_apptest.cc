@@ -13,7 +13,7 @@
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
 #include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "mandoline/tab/frame.h"
 #include "mandoline/tab/frame_connection.h"
 #include "mandoline/tab/frame_tree.h"

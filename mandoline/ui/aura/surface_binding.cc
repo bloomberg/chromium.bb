@@ -15,7 +15,7 @@
 #include "cc/output/software_output_device.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "mandoline/ui/aura/window_tree_host_mojo.h"
@@ -49,7 +49,7 @@ class OutputSurfaceImpl : public cc::OutputSurface {
   mojo::View* view_;
   mojo::Surface* surface_;
   uint32_t id_namespace_;
-  uint32_t* next_local_id_;  // Owned by PerViewManagerState.
+  uint32_t* next_local_id_;  // Owned by PerConnectionState.
   uint32_t local_id_;
   gfx::Size surface_size_;
 
@@ -99,30 +99,30 @@ void OutputSurfaceImpl::SwapBuffers(cc::CompositorFrame* frame) {
 
 }  // namespace
 
-// PerViewManagerState ---------------------------------------------------------
+// PerConnectionState ----------------------------------------------------------
 
 // State needed per ViewManager. Provides the real implementation of
 // CreateOutputSurface. SurfaceBinding obtains a pointer to the
-// PerViewManagerState appropriate for the ViewManager. PerViewManagerState is
-// stored in a thread local map. When no more refereces to a PerViewManagerState
-// remain the PerViewManagerState is deleted and the underlying map cleaned up.
-class SurfaceBinding::PerViewManagerState
-    : public base::RefCounted<PerViewManagerState>,
+// PerConnectionState appropriate for the ViewManager. PerConnectionState is
+// stored in a thread local map. When no more refereces to a PerConnectionState
+// remain the PerConnectionState is deleted and the underlying map cleaned up.
+class SurfaceBinding::PerConnectionState
+    : public base::RefCounted<PerConnectionState>,
       public mojo::ResourceReturner {
  public:
-  static PerViewManagerState* Get(mojo::Shell* shell,
-                                  mojo::ViewManager* view_manager);
+  static PerConnectionState* Get(mojo::Shell* shell,
+                                 mojo::ViewTreeConnection* connection);
 
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(mojo::View* view);
 
  private:
-  typedef std::map<mojo::ViewManager*,
-                   PerViewManagerState*> ViewManagerToStateMap;
+  typedef std::map<mojo::ViewTreeConnection*,
+                   PerConnectionState*> ConnectionToStateMap;
 
-  friend class base::RefCounted<PerViewManagerState>;
+  friend class base::RefCounted<PerConnectionState>;
 
-  PerViewManagerState(mojo::Shell* shell, mojo::ViewManager* view_manager);
-  ~PerViewManagerState() override;
+  PerConnectionState(mojo::Shell* shell, mojo::ViewTreeConnection* connection);
+  ~PerConnectionState() override;
 
   void Init();
 
@@ -133,10 +133,10 @@ class SurfaceBinding::PerViewManagerState
   void SetIdNamespace(uint32_t id_namespace);
 
   static base::LazyInstance<
-      base::ThreadLocalPointer<ViewManagerToStateMap>>::Leaky view_states;
+      base::ThreadLocalPointer<ConnectionToStateMap>>::Leaky view_states;
 
   mojo::Shell* shell_;
-  mojo::ViewManager* view_manager_;
+  mojo::ViewTreeConnection* connection_;
 
   // Set of state needed to create an OutputSurface.
   mojo::GpuPtr gpu_;
@@ -145,32 +145,32 @@ class SurfaceBinding::PerViewManagerState
   uint32_t id_namespace_;
   uint32_t next_local_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(PerViewManagerState);
+  DISALLOW_COPY_AND_ASSIGN(PerConnectionState);
 };
 
 // static
 base::LazyInstance<base::ThreadLocalPointer<
-    SurfaceBinding::PerViewManagerState::ViewManagerToStateMap>>::Leaky
-    SurfaceBinding::PerViewManagerState::view_states;
+    SurfaceBinding::PerConnectionState::ConnectionToStateMap>>::Leaky
+    SurfaceBinding::PerConnectionState::view_states;
 
 // static
-SurfaceBinding::PerViewManagerState* SurfaceBinding::PerViewManagerState::Get(
+SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
     mojo::Shell* shell,
-    mojo::ViewManager* view_manager) {
-  ViewManagerToStateMap* view_map = view_states.Pointer()->Get();
+    mojo::ViewTreeConnection* connection) {
+  ConnectionToStateMap* view_map = view_states.Pointer()->Get();
   if (!view_map) {
-    view_map = new ViewManagerToStateMap;
+    view_map = new ConnectionToStateMap;
     view_states.Pointer()->Set(view_map);
   }
-  if (!(*view_map)[view_manager]) {
-    (*view_map)[view_manager] = new PerViewManagerState(shell, view_manager);
-    (*view_map)[view_manager]->Init();
+  if (!(*view_map)[connection]) {
+    (*view_map)[connection] = new PerConnectionState(shell, connection);
+    (*view_map)[connection]->Init();
   }
-  return (*view_map)[view_manager];
+  return (*view_map)[connection];
 }
 
 scoped_ptr<cc::OutputSurface>
-SurfaceBinding::PerViewManagerState::CreateOutputSurface(mojo::View* view) {
+SurfaceBinding::PerConnectionState::CreateOutputSurface(mojo::View* view) {
   // TODO(sky): figure out lifetime here. Do I need to worry about the return
   // value outliving this?
   mojo::CommandBufferPtr cb;
@@ -181,28 +181,28 @@ SurfaceBinding::PerViewManagerState::CreateOutputSurface(mojo::View* view) {
       view, context_provider, surface_.get(), id_namespace_, &next_local_id_));
 }
 
-SurfaceBinding::PerViewManagerState::PerViewManagerState(
+SurfaceBinding::PerConnectionState::PerConnectionState(
     mojo::Shell* shell,
-    mojo::ViewManager* view_manager)
+    mojo::ViewTreeConnection* connection)
     : shell_(shell),
-      view_manager_(view_manager),
+      connection_(connection),
       returner_binding_(this),
       id_namespace_(0u),
       next_local_id_(0u) {
 }
 
-SurfaceBinding::PerViewManagerState::~PerViewManagerState() {
-  ViewManagerToStateMap* view_map = view_states.Pointer()->Get();
+SurfaceBinding::PerConnectionState::~PerConnectionState() {
+  ConnectionToStateMap* view_map = view_states.Pointer()->Get();
   DCHECK(view_map);
-  DCHECK_EQ(this, (*view_map)[view_manager_]);
-  view_map->erase(view_manager_);
+  DCHECK_EQ(this, (*view_map)[connection_]);
+  view_map->erase(connection_);
   if (view_map->empty()) {
     delete view_map;
     view_states.Pointer()->Set(nullptr);
   }
 }
 
-void SurfaceBinding::PerViewManagerState::Init() {
+void SurfaceBinding::PerConnectionState::Init() {
   DCHECK(!surface_.get());
 
   mojo::ServiceProviderPtr surfaces_service_provider;
@@ -214,7 +214,7 @@ void SurfaceBinding::PerViewManagerState::Init() {
                                nullptr);
   ConnectToService(surfaces_service_provider.get(), &surface_);
   surface_->GetIdNamespace(
-      base::Bind(&SurfaceBinding::PerViewManagerState::SetIdNamespace,
+      base::Bind(&SurfaceBinding::PerConnectionState::SetIdNamespace,
                  base::Unretained(this)));
   // Block until we receive our id namespace.
   surface_.WaitForIncomingResponse();
@@ -235,12 +235,12 @@ void SurfaceBinding::PerViewManagerState::Init() {
   ConnectToService(gpu_service_provider.get(), &gpu_);
 }
 
-void SurfaceBinding::PerViewManagerState::SetIdNamespace(
+void SurfaceBinding::PerConnectionState::SetIdNamespace(
     uint32_t id_namespace) {
   id_namespace_ = id_namespace;
 }
 
-void SurfaceBinding::PerViewManagerState::ReturnResources(
+void SurfaceBinding::PerConnectionState::ReturnResources(
     mojo::Array<mojo::ReturnedResourcePtr> resources) {
 }
 
@@ -248,7 +248,7 @@ void SurfaceBinding::PerViewManagerState::ReturnResources(
 
 SurfaceBinding::SurfaceBinding(mojo::Shell* shell, mojo::View* view)
     : view_(view),
-      state_(PerViewManagerState::Get(shell, view->view_manager())) {
+      state_(PerConnectionState::Get(shell, view->connection())) {
 }
 
 SurfaceBinding::~SurfaceBinding() {

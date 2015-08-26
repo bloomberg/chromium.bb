@@ -91,7 +91,7 @@ void BrowserWindow::LoadURL(const GURL& url) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserWindow, mojo::ViewManagerDelegate implementation:
+// BrowserWindow, mojo::ViewTreeDelegate implementation:
 
 void BrowserWindow::OnEmbed(mojo::View* root) {
   // BrowserWindow does not support being embedded more than once.
@@ -102,11 +102,11 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
 
   // Make it so we get OnWillEmbed() for any Embed()s done by other apps we
   // Embed().
-  root->view_manager()->SetEmbedRoot();
+  root->connection()->SetEmbedRoot();
 
   root_ = root;
 
-  content_ = root_->view_manager()->CreateView();
+  content_ = root_->connection()->CreateView();
   Init(root_);
 
   view_manager_init_.view_manager_root()->SetViewportSize(
@@ -147,7 +147,7 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
   }
 }
 
-void BrowserWindow::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
+void BrowserWindow::OnConnectionLost(mojo::ViewTreeConnection* connection) {
   root_ = nullptr;
   manager_->BrowserWindowClosed(this);
 }
@@ -250,7 +250,7 @@ void BrowserWindow::Init(mojo::View* root) {
     aura_init_.reset(new AuraInit(root, app_->shell()));
 
   root_ = root;
-  omnibox_view_ = root_->view_manager()->CreateView();
+  omnibox_view_ = root_->connection()->CreateView();
   root_->AddChild(omnibox_view_);
 
   views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;

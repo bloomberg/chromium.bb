@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mandoline/tab/frame_devtools_agent_delegate.h"
 #include "mandoline/tab/frame_tree_delegate.h"
 #include "mandoline/tab/public/interfaces/web_view.mojom.h"
@@ -34,7 +34,7 @@ namespace web_view {
 class FrameDevToolsAgent;
 
 class WebViewImpl : public mojom::WebView,
-                    public mojo::ViewManagerDelegate,
+                    public mojo::ViewTreeDelegate,
                     public mojo::ViewObserver,
                     public mandoline::FrameTreeDelegate,
                     public FrameDevToolsAgentDelegate {
@@ -51,9 +51,9 @@ class WebViewImpl : public mojom::WebView,
       mojo::InterfaceRequest<mojo::ViewTreeClient> view_tree_client)
           override;
 
-  // Overridden from mojo::ViewManagerDelegate:
+  // Overridden from mojo::ViewTreeDelegate:
   void OnEmbed(mojo::View* root) override;
-  void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
 
   // Overridden from mojo::ViewObserver:
   void OnViewBoundsChanged(mojo::View* view,

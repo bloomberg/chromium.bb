@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mandoline/tab/public/cpp/web_view.h"
 #include "mandoline/tab/public/interfaces/web_view.mojom.h"
 // TODO(beng): move this file somewhere common.
@@ -27,7 +27,7 @@ namespace mandoline {
 class PhoneBrowserApplicationDelegate :
     public mojo::ApplicationDelegate,
     public LaunchHandler,
-    public mojo::ViewManagerDelegate,
+    public mojo::ViewTreeDelegate,
     public mojo::ViewObserver,
     public web_view::mojom::WebViewClient,
     public mojo::InterfaceFactory<LaunchHandler> {
@@ -44,9 +44,9 @@ class PhoneBrowserApplicationDelegate :
   // Overridden from LaunchHandler:
   void LaunchURL(const mojo::String& url) override;
 
-  // Overridden from mojo::ViewManagerDelegate:
+  // Overridden from mojo::ViewTreeDelegate:
   void OnEmbed(mojo::View* root) override;
-  void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
 
   // Overridden from mojo::ViewObserver:
   void OnViewBoundsChanged(mojo::View* view,

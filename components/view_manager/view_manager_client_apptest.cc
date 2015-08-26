@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/view_manager/public/cpp/view_manager.h"
-
 #include "base/logging.h"
 #include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
@@ -47,7 +46,7 @@ bool WaitForBoundsToChange(View* view) {
 
 // Increments the width of |view| and waits for a bounds change in |other_vm|s
 // root.
-bool IncrementWidthAndWaitForChange(View* view, ViewManager* other_vm) {
+bool IncrementWidthAndWaitForChange(View* view, ViewTreeConnection* other_vm) {
   mojo::Rect bounds = view->bounds();
   bounds.width++;
   view->SetBounds(bounds);
@@ -119,7 +118,7 @@ class OrderChangeObserver : public ViewObserver {
 };
 
 // Wait until |view|'s tree size matches |tree_size|; returns false on timeout.
-bool WaitForOrderChange(ViewManager* view_manager, View* view) {
+bool WaitForOrderChange(ViewTreeConnection* connection, View* view) {
   OrderChangeObserver observer(view);
   return ViewManagerTestBase::DoRunLoopWithTimeout();
 }
@@ -169,12 +168,12 @@ class ViewManagerTest : public ViewManagerTestBase {
   // Embeds another version of the test app @ view. This runs a run loop until
   // a response is received, or a timeout. On success the new ViewManager is
   // returned.
-  ViewManager* Embed(View* view) {
+  ViewTreeConnection* Embed(View* view) {
     return EmbedImpl(view, EmbedType::NO_REEMBED);
   }
 
   // Same as Embed(), but uses EmbedAllowingReembed().
-  ViewManager* EmbedAllowingReembed(View* view) {
+  ViewTreeConnection* EmbedAllowingReembed(View* view) {
     return EmbedImpl(view, EmbedType::ALLOW_REEMBED);
   }
 
@@ -191,7 +190,7 @@ class ViewManagerTest : public ViewManagerTestBase {
     view->Embed(client.Pass());
   }
 
-  // Overridden from ViewManagerDelegate:
+  // Overridden from ViewTreeDelegate:
   void OnEmbedForDescendant(View* view,
                             mojo::URLRequestPtr request,
                             mojo::ViewTreeClientPtr* client) override {
@@ -211,8 +210,8 @@ class ViewManagerTest : public ViewManagerTestBase {
     NO_REEMBED,
   };
 
-  ViewManager* EmbedImpl(View* view, EmbedType type) {
-    most_recent_view_manager_ = nullptr;
+  ViewTreeConnection* EmbedImpl(View* view, EmbedType type) {
+    most_recent_connection_ = nullptr;
     if (type == EmbedType::ALLOW_REEMBED) {
       mojo::URLRequestPtr request(mojo::URLRequest::New());
       request->url = mojo::String::From(application_impl()->url());
@@ -222,8 +221,8 @@ class ViewManagerTest : public ViewManagerTestBase {
     }
     if (!ViewManagerTestBase::DoRunLoopWithTimeout())
       return nullptr;
-    ViewManager* vm = nullptr;
-    std::swap(vm, most_recent_view_manager_);
+    ViewTreeConnection* vm = nullptr;
+    std::swap(vm, most_recent_connection_);
     return vm;
   }
 
@@ -246,7 +245,7 @@ TEST_F(ViewManagerTest, Embed) {
   ASSERT_NE(nullptr, view);
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewManager* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view);
   ASSERT_NE(nullptr, embedded);
 
   View* view_in_embedded = embedded->GetRoot();
@@ -268,7 +267,7 @@ TEST_F(ViewManagerTest, EmbeddedDoesntSeeChild) {
   nested->SetVisible(true);
   view->AddChild(nested);
 
-  ViewManager* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view);
   ASSERT_NE(nullptr, embedded);
   View* view_in_embedded = embedded->GetRoot();
   EXPECT_EQ(view->id(), view_in_embedded->id());
@@ -294,7 +293,7 @@ TEST_F(ViewManagerTest, SetBounds) {
   View* view = window_manager()->CreateView();
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewManager* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view);
   ASSERT_NE(nullptr, embedded);
 
   View* view_in_embedded = embedded->GetViewById(view->id());
@@ -313,7 +312,7 @@ TEST_F(ViewManagerTest, SetBoundsSecurity) {
   View* view = window_manager()->CreateView();
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewManager* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view);
   ASSERT_NE(nullptr, embedded);
 
   View* view_in_embedded = embedded->GetViewById(view->id());
@@ -335,7 +334,7 @@ TEST_F(ViewManagerTest, DestroySecurity) {
   View* view = window_manager()->CreateView();
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewManager* embedded = Embed(view);
+  ViewTreeConnection* embedded = Embed(view);
   ASSERT_NE(nullptr, embedded);
 
   View* view_in_embedded = embedded->GetViewById(view->id());
@@ -357,9 +356,9 @@ TEST_F(ViewManagerTest, MultiRoots) {
   View* view2 = window_manager()->CreateView();
   view2->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view2);
-  ViewManager* embedded1 = Embed(view1);
+  ViewTreeConnection* embedded1 = Embed(view1);
   ASSERT_NE(nullptr, embedded1);
-  ViewManager* embedded2 = Embed(view2);
+  ViewTreeConnection* embedded2 = Embed(view2);
   ASSERT_NE(nullptr, embedded2);
   EXPECT_NE(embedded1, embedded2);
 }
@@ -371,7 +370,7 @@ TEST_F(ViewManagerTest, DISABLED_Reorder) {
   view1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view1);
 
-  ViewManager* embedded = Embed(view1);
+  ViewTreeConnection* embedded = Embed(view1);
   ASSERT_NE(nullptr, embedded);
 
   View* view11 = embedded->CreateView();
@@ -435,7 +434,7 @@ TEST_F(ViewManagerTest, Visible) {
   window_manager()->GetRoot()->AddChild(view1);
 
   // Embed another app and verify initial state.
-  ViewManager* embedded = Embed(view1);
+  ViewTreeConnection* embedded = Embed(view1);
   ASSERT_NE(nullptr, embedded);
   ASSERT_NE(nullptr, embedded->GetRoot());
   View* embedded_root = embedded->GetRoot();
@@ -499,7 +498,7 @@ TEST_F(ViewManagerTest, Drawn) {
   window_manager()->GetRoot()->AddChild(view1);
 
   // Embed another app and verify initial state.
-  ViewManager* embedded = Embed(view1);
+  ViewTreeConnection* embedded = Embed(view1);
   ASSERT_NE(nullptr, embedded);
   ASSERT_NE(nullptr, embedded->GetRoot());
   View* embedded_root = embedded->GetRoot();
@@ -560,7 +559,7 @@ TEST_F(ViewManagerTest, Focus) {
   view1->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view1);
 
-  ViewManager* embedded = Embed(view1);
+  ViewTreeConnection* embedded = Embed(view1);
   ASSERT_NE(nullptr, embedded);
   View* view11 = embedded->CreateView();
   view11->SetVisible(true);
@@ -610,8 +609,8 @@ class DestroyedChangedObserver : public ViewObserver {
     *got_destroy_ = true;
     view_ = nullptr;
 
-    // We should always get OnViewDestroyed() before OnViewManagerDestroyed().
-    EXPECT_FALSE(test_->view_manager_destroyed());
+    // We should always get OnViewDestroyed() before OnConnectionLost().
+    EXPECT_FALSE(test_->view_tree_connection_destroyed());
   }
 
   ViewManagerTestBase* test_;
@@ -629,13 +628,13 @@ TEST_F(ViewManagerTest, DeleteViewManager) {
   ASSERT_NE(nullptr, view);
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewManager* view_manager = Embed(view);
-  ASSERT_TRUE(view_manager);
+  ViewTreeConnection* connection = Embed(view);
+  ASSERT_TRUE(connection);
   bool got_destroy = false;
-  DestroyedChangedObserver observer(this, view_manager->GetRoot(),
+  DestroyedChangedObserver observer(this, connection->GetRoot(),
                                     &got_destroy);
-  delete view_manager;
-  EXPECT_TRUE(view_manager_destroyed());
+  delete connection;
+  EXPECT_TRUE(view_tree_connection_destroyed());
   EXPECT_TRUE(got_destroy);
 }
 
@@ -646,15 +645,15 @@ TEST_F(ViewManagerTest, DisconnectTriggersDelete) {
   ASSERT_NE(nullptr, view);
   view->SetVisible(true);
   window_manager()->GetRoot()->AddChild(view);
-  ViewManager* view_manager = Embed(view);
-  EXPECT_NE(view_manager, window_manager());
-  View* embedded_view = view_manager->CreateView();
-  // Embed again, this should trigger disconnect and deletion of view_manager.
+  ViewTreeConnection* connection = Embed(view);
+  EXPECT_NE(connection, window_manager());
+  View* embedded_view = connection->CreateView();
+  // Embed again, this should trigger disconnect and deletion of connection.
   bool got_destroy;
   DestroyedChangedObserver observer(this, embedded_view, &got_destroy);
-  EXPECT_FALSE(view_manager_destroyed());
+  EXPECT_FALSE(view_tree_connection_destroyed());
   Embed(view);
-  EXPECT_TRUE(view_manager_destroyed());
+  EXPECT_TRUE(view_tree_connection_destroyed());
 }
 
 class ViewRemovedFromParentObserver : public ViewObserver {
@@ -704,9 +703,9 @@ TEST_F(ViewManagerTest, OnWillEmbed) {
   View* view1 = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(view1);
 
-  ViewManager* view_manager = EmbedAllowingReembed(view1);
-  View* view2 = view_manager->CreateView();
-  view_manager->GetRoot()->AddChild(view2);
+  ViewTreeConnection* connection = EmbedAllowingReembed(view1);
+  View* view2 = connection->CreateView();
+  connection->GetRoot()->AddChild(view2);
 
   EmbedAllowingReembed(view2);
   EXPECT_EQ(1u, on_will_embed_count());
@@ -719,9 +718,9 @@ TEST_F(ViewManagerTest, OnWillEmbedFails) {
   View* view1 = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(view1);
 
-  ViewManager* view_manager = Embed(view1);
-  View* view2 = view_manager->CreateView();
-  view_manager->GetRoot()->AddChild(view2);
+  ViewTreeConnection* connection = Embed(view1);
+  View* view2 = connection->CreateView();
+  connection->GetRoot()->AddChild(view2);
 
   clear_on_will_embed_count();
   set_on_will_embed_return_value(false);
@@ -734,9 +733,9 @@ TEST_F(ViewManagerTest, OnWillEmbedFails) {
 
   // The run loop above quits when OnWillEmbed() returns, which means it's
   // possible there is still an OnEmbed() message in flight. Sets the bounds of
-  // |view1| and wait for it to the change in |view_manager|, that way we know
-  // |view_manager| has processed all messages for it.
-  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, view_manager));
+  // |view1| and wait for it to the change in |connection|, that way we know
+  // |connection| has processed all messages for it.
+  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, connection));
 
   EXPECT_EQ(1u, on_will_embed_count());
 }
@@ -749,29 +748,31 @@ TEST_F(ViewManagerTest, ReembedSucceeds) {
   View* view1 = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(view1);
 
-  ViewManager* view_manager = Embed(view1);
-  View* view2 = view_manager->CreateView();
-  view_manager->GetRoot()->AddChild(view2);
+  ViewTreeConnection* connection = Embed(view1);
+  View* view2 = connection->CreateView();
+  connection->GetRoot()->AddChild(view2);
   EmbedAllowingReembed(view2);
 
   View* view2_in_wm = window_manager()->GetViewById(view2->id());
-  ViewManager* view_manager2 = Embed(view2_in_wm);
-  ASSERT_TRUE(view_manager2);
+  ViewTreeConnection* connection2 = Embed(view2_in_wm);
+  ASSERT_TRUE(connection2);
 
   // The Embed() call above returns immediately. To ensure the server has
   // processed it nudge the bounds and wait for it to be processed.
-  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, view_manager));
+  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, connection));
 
-  EXPECT_EQ(nullptr, most_recent_view_manager());
+  EXPECT_EQ(nullptr, most_recent_connection());
 }
 
 namespace {
 
 class DestroyObserver : public ViewObserver {
  public:
-  DestroyObserver(ViewManagerTestBase* test, ViewManager* vm, bool* got_destroy)
+  DestroyObserver(ViewManagerTestBase* test,
+                  ViewTreeConnection* connection,
+                  bool* got_destroy)
       : test_(test), got_destroy_(got_destroy) {
-    vm->GetRoot()->AddObserver(this);
+    connection->GetRoot()->AddObserver(this);
   }
   ~DestroyObserver() override {}
 
@@ -782,7 +783,7 @@ class DestroyObserver : public ViewObserver {
     view->RemoveObserver(this);
 
     // We should always get OnViewDestroyed() before OnViewManagerDestroyed().
-    EXPECT_FALSE(test_->view_manager_destroyed());
+    EXPECT_FALSE(test_->view_tree_connection_destroyed());
 
     EXPECT_TRUE(ViewManagerTestBase::QuitRunLoop());
   }
@@ -802,12 +803,12 @@ TEST_F(ViewManagerTest, ViewManagerDestroyedAfterRootObserver) {
   View* embed_view = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(embed_view);
 
-  ViewManager* embedded_view_manager = Embed(embed_view);
+  ViewTreeConnection* embedded_connection = Embed(embed_view);
 
   bool got_destroy = false;
-  DestroyObserver observer(this, embedded_view_manager, &got_destroy);
-  // Delete the view |embedded_view_manager| is embedded in. This is async,
-  // but will eventually trigger deleting |embedded_view_manager|.
+  DestroyObserver observer(this, embedded_connection, &got_destroy);
+  // Delete the view |embedded_connection| is embedded in. This is async,
+  // but will eventually trigger deleting |embedded_connection|.
   embed_view->Destroy();
   EXPECT_TRUE(DoRunLoopWithTimeout());
   EXPECT_TRUE(got_destroy);
@@ -819,12 +820,12 @@ TEST_F(ViewManagerTest, EmbedRootSeesHierarchyChanged) {
   View* embed_view = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(embed_view);
 
-  ViewManager* vm2 = Embed(embed_view);
+  ViewTreeConnection* vm2 = Embed(embed_view);
   vm2->SetEmbedRoot();
   View* vm2_v1 = vm2->CreateView();
   vm2->GetRoot()->AddChild(vm2_v1);
 
-  ViewManager* vm3 = Embed(vm2_v1);
+  ViewTreeConnection* vm3 = Embed(vm2_v1);
   View* vm3_v1 = vm3->CreateView();
   vm3->GetRoot()->AddChild(vm3_v1);
 
@@ -836,12 +837,12 @@ TEST_F(ViewManagerTest, EmbedFromEmbedRoot) {
   View* embed_view = window_manager()->CreateView();
   window_manager()->GetRoot()->AddChild(embed_view);
 
-  ViewManager* vm2 = Embed(embed_view);
+  ViewTreeConnection* vm2 = Embed(embed_view);
   vm2->SetEmbedRoot();
   View* vm2_v1 = vm2->CreateView();
   vm2->GetRoot()->AddChild(vm2_v1);
 
-  ViewManager* vm3 = Embed(vm2_v1);
+  ViewTreeConnection* vm3 = Embed(vm2_v1);
   View* vm3_v1 = vm3->CreateView();
   vm3->GetRoot()->AddChild(vm3_v1);
 

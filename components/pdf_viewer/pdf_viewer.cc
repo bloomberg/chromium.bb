@@ -8,9 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager.h"
-#include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/surface_id.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
@@ -348,7 +348,7 @@ class EmbedderData {
 };
 
 class PDFView : public mojo::ApplicationDelegate,
-                public mojo::ViewManagerDelegate,
+                public mojo::ViewTreeDelegate,
                 public mojo::ViewObserver,
                 public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
@@ -377,7 +377,7 @@ class PDFView : public mojo::ApplicationDelegate,
     return true;
   }
 
-  // Overridden from ViewManagerDelegate:
+  // Overridden from ViewTreeDelegate:
   void OnEmbed(mojo::View* root) override {
     DCHECK(embedder_for_roots_.find(root) == embedder_for_roots_.end());
     root->AddObserver(this);
@@ -386,7 +386,7 @@ class PDFView : public mojo::ApplicationDelegate,
     DrawBitmap(embedder_data);
   }
 
-  void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override {}
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override {}
 
   // Overridden from ViewObserver:
   void OnViewBoundsChanged(mojo::View* view,
@@ -437,7 +437,7 @@ class PDFView : public mojo::ApplicationDelegate,
   void Create(
       mojo::ApplicationConnection* connection,
       mojo::InterfaceRequest<mojo::ViewTreeClient> request) override {
-    mojo::ViewManager::Create(this, request.Pass());
+    mojo::ViewTreeConnection::Create(this, request.Pass());
   }
 
   void DrawBitmap(EmbedderData* embedder_data) {
