@@ -968,8 +968,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setCookieEnabled(prefs.cookie_enabled);
   settings->setNavigateOnDragDrop(prefs.navigate_on_drag_drop);
 
-  settings->setJavaEnabled(prefs.java_enabled);
-
   // By default, allow_universal_access_from_file_urls is set to false and thus
   // we mitigate attacks from local HTML files by not granting file:// URLs
   // universal access. Only test shell will enable this.

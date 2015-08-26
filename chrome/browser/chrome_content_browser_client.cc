@@ -2150,8 +2150,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->web_security_enabled = false;
   if (!prefs->GetBoolean(prefs::kWebKitPluginsEnabled))
     web_prefs->plugins_enabled = false;
-  if (!prefs->GetBoolean(prefs::kWebKitJavaEnabled))
-    web_prefs->java_enabled = false;
   web_prefs->loads_images_automatically =
       prefs->GetBoolean(prefs::kWebKitLoadsImagesAutomatically);
 

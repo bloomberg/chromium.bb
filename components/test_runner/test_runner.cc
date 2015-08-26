@@ -2543,8 +2543,6 @@ void TestRunner::OverridePreference(const std::string key,
     prefs->loads_images_automatically = value->BooleanValue();
   } else if (key == "WebKitPluginsEnabled") {
     prefs->plugins_enabled = value->BooleanValue();
-  } else if (key == "WebKitJavaEnabled") {
-    prefs->java_enabled = value->BooleanValue();
   } else if (key == "WebKitOfflineWebApplicationCacheEnabled") {
     prefs->offline_web_application_cache_enabled = value->BooleanValue();
   } else if (key == "WebKitTabToLinksPreferenceKey") {

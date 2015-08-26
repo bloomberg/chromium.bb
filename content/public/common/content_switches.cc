@@ -160,9 +160,6 @@ const char kDisableHideInactiveStackedTabCloseButtons[] =
 // Disable the RenderThread's HistogramCustomizer.
 const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 
-// Prevent Java from running.
-const char kDisableJava[]                   = "disable-java";
-
 // Don't kill a child process when it sends a bad IPC message.  Apart
 // from testing, it is a bad idea from a security perspective to enable
 // this switch.

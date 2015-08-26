@@ -381,8 +381,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   prefs.web_security_enabled =
       !command_line.HasSwitch(switches::kDisableWebSecurity);
-  prefs.java_enabled =
-      !command_line.HasSwitch(switches::kDisableJava);
 
   prefs.remote_fonts_enabled =
       !command_line.HasSwitch(switches::kDisableRemoteFonts);

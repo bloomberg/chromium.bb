@@ -298,7 +298,6 @@ const char kWebKitUsesUniversalDetector[] =
     "webkit.webprefs.uses_universal_detector";
 const char kWebKitTextAreasAreResizable[] =
     "webkit.webprefs.text_areas_are_resizable";
-const char kWebKitJavaEnabled[] = "webkit.webprefs.java_enabled";
 const char kWebkitTabsToLinks[] = "webkit.webprefs.tabs_to_links";
 const char kWebKitAllowDisplayingInsecureContent[] =
     "webkit.webprefs.allow_displaying_insecure_content";

@@ -32,7 +32,6 @@ void ExportLayoutTestSpecificPreferences(
   to->supports_multiple_windows = from.supports_multiple_windows;
   to->loads_images_automatically = from.loads_images_automatically;
   to->plugins_enabled = from.plugins_enabled;
-  to->java_enabled = from.java_enabled;
   to->application_cache_enabled = from.offline_web_application_cache_enabled;
   to->tabs_to_links = from.tabs_to_links;
   to->experimental_webgl_enabled = from.experimental_webgl_enabled;
@@ -73,7 +72,6 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
 #else
   prefs->editing_behavior = EDITING_BEHAVIOR_WIN;
 #endif
-  prefs->java_enabled = false;
   prefs->application_cache_enabled = true;
   prefs->tabs_to_links = false;
   prefs->hyperlink_auditing_enabled = false;
