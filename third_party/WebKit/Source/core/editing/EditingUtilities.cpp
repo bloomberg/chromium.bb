@@ -943,15 +943,16 @@ Element* enclosingElementWithTag(const Position& p, const QualifiedName& tagName
     return 0;
 }
 
-Node* enclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule rule)
+template <typename Strategy>
+static Node* enclosingNodeOfTypeAlgorithm(const PositionAlgorithm<Strategy>& p, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule rule)
 {
-    // FIXME: support CanSkipCrossEditingBoundary
+    // TODO(yosin) support CanSkipCrossEditingBoundary
     ASSERT(rule == CanCrossEditingBoundary || rule == CannotCrossEditingBoundary);
     if (p.isNull())
-        return 0;
+        return nullptr;
 
-    ContainerNode* root = rule == CannotCrossEditingBoundary ? highestEditableRoot(p) : 0;
-    for (Node* n = p.anchorNode(); n; n = n->parentNode()) {
+    ContainerNode* const root = rule == CannotCrossEditingBoundary ? highestEditableRoot(p) : nullptr;
+    for (Node* n = p.anchorNode(); n; n = Strategy::parent(*n)) {
         // Don't return a non-editable node if the input position was editable, since
         // the callers from editing will no doubt want to perform editing inside the returned node.
         if (root && !n->hasEditableStyle())
@@ -959,10 +960,20 @@ Node* enclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const Node*), 
         if (nodeIsOfType(n))
             return n;
         if (n == root)
-            return 0;
+            return nullptr;
     }
 
-    return 0;
+    return nullptr;
+}
+
+Node* enclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule rule)
+{
+    return enclosingNodeOfTypeAlgorithm<EditingStrategy>(p, nodeIsOfType, rule);
+}
+
+Node* enclosingNodeOfType(const PositionInComposedTree& p, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule rule)
+{
+    return enclosingNodeOfTypeAlgorithm<EditingInComposedTreeStrategy>(p, nodeIsOfType, rule);
 }
 
 Node* highestEnclosingNodeOfType(const Position& p, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule rule, Node* stayWithin)

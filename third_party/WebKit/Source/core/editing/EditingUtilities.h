@@ -78,7 +78,8 @@ Element* associatedElementOf(const Position&);
 Node* enclosingEmptyListItem(const VisiblePosition&);
 Element* enclosingAnchorElement(const Position&);
 Element* enclosingElementWithTag(const Position&, const QualifiedName&);
-Node* enclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT Node* enclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT Node* enclosingNodeOfType(const PositionInComposedTree&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
 HTMLSpanElement* tabSpanElement(const Node*);
 Element* isLastPositionBeforeTable(const VisiblePosition&);
@@ -128,7 +129,7 @@ inline bool canHaveChildrenForEditing(const Node* node)
 }
 
 bool isAtomicNode(const Node*);
-bool isBlock(const Node*);
+CORE_EXPORT bool isBlock(const Node*);
 bool isInline(const Node*);
 bool isTabHTMLSpanElement(const Node*);
 bool isTabHTMLSpanElementTextNode(const Node*);
