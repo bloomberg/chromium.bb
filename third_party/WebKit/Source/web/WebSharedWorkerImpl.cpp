@@ -81,8 +81,8 @@ namespace blink {
 // possible.
 
 WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
-    : m_webView(0)
-    , m_mainFrame(0)
+    : m_webView(nullptr)
+    , m_mainFrame(nullptr)
     , m_askedToTerminate(false)
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
     , m_client(client)
@@ -133,7 +133,7 @@ void WebSharedWorkerImpl::initializeLoader()
     // FIXME: Settings information should be passed to the Worker process from Browser process when the worker
     // is created (similar to RenderThread::OnCreateNewView).
     m_mainFrame = toWebLocalFrameImpl(WebLocalFrame::create(WebTreeScopeType::Document, this));
-    m_webView->setMainFrame(m_mainFrame);
+    m_webView->setMainFrame(m_mainFrame.get());
     m_mainFrame->setDevToolsAgentClient(this);
 
     // If we were asked to pause worker context on start and wait for debugger then it is the good time to do that.

@@ -84,8 +84,8 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextC
     : m_workerContextClient(client)
     , m_contentSettingsClient(ContentSettingsClient)
     , m_workerInspectorProxy(WorkerInspectorProxy::create())
-    , m_webView(0)
-    , m_mainFrame(0)
+    , m_webView(nullptr)
+    , m_mainFrame(nullptr)
     , m_loadingShadowPage(false)
     , m_askedToTerminate(false)
     , m_waitingForDebuggerState(NotWaitingForDebugger)
@@ -219,7 +219,7 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     settings->setAllowDisplayOfInsecureContent(false);
     settings->setAllowRunningOfInsecureContent(false);
     m_mainFrame = toWebLocalFrameImpl(WebLocalFrame::create(WebTreeScopeType::Document, this));
-    m_webView->setMainFrame(m_mainFrame);
+    m_webView->setMainFrame(m_mainFrame.get());
     m_mainFrame->setDevToolsAgentClient(this);
 
     // If we were asked to wait for debugger then it is the good time to do that.

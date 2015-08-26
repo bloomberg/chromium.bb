@@ -115,7 +115,7 @@ private:
     // deref'ed) when this EmbeddedWorkerImpl is destructed, therefore they
     // are guaranteed to exist while this object is around.
     WebView* m_webView;
-    WebLocalFrameImpl* m_mainFrame;
+    RefPtrWillBePersistent<WebLocalFrameImpl> m_mainFrame;
 
     bool m_loadingShadowPage;
     bool m_askedToTerminate;
