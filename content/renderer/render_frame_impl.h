@@ -366,9 +366,6 @@ class CONTENT_EXPORT RenderFrameImpl
                            const std::string& message) override;
 
   // blink::WebFrameClient implementation:
-  blink::WebPluginPlaceholder* createPluginPlaceholder(
-      blink::WebLocalFrame*,
-      const blink::WebPluginParams&) override;
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                          const blink::WebPluginParams& params);
   virtual blink::WebMediaPlayer* createMediaPlayer(

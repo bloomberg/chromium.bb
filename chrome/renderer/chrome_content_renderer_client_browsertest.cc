@@ -14,7 +14,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "chrome/renderer/plugins/shadow_dom_plugin_placeholder.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
@@ -70,105 +69,4 @@ TEST_F(InstantProcessNavigationTest, ForkForNavigationsToSearchURLs) {
   EXPECT_FALSE(client->ShouldFork(
       GetMainFrame(), GURL("http://example.com/"), "GET", false, false,
       &unused));
-}
-
-namespace {
-
-// Intercepts plugin info IPCs for a mock render thread within its scope,
-// and allows tests to mock the response to each request.
-class ScopedMockPluginInfoFilter : public IPC::Listener, public IPC::Sender {
- public:
-  explicit ScopedMockPluginInfoFilter(
-      content::MockRenderThread* mock_render_thread)
-      : sink_(mock_render_thread->sink()), sender_(mock_render_thread) {
-    sink_.AddFilter(this);
-  }
-  ~ScopedMockPluginInfoFilter() override { sink_.RemoveFilter(this); }
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    IPC_BEGIN_MESSAGE_MAP(ScopedMockPluginInfoFilter, message)
-      IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetPluginInfo, OnGetPluginInfo)
-      IPC_MESSAGE_UNHANDLED(return false)
-    IPC_END_MESSAGE_MAP()
-    return true;
-  }
-
-  bool Send(IPC::Message* message) override { return sender_->Send(message); }
-
-  MOCK_METHOD5(OnGetPluginInfo,
-               void(int render_frame_id,
-                    const GURL& url,
-                    const GURL& top_origin_url,
-                    const std::string& mime_type,
-                    ChromeViewHostMsg_GetPluginInfo_Output* output));
-
- private:
-  IPC::TestSink& sink_;
-  IPC::Sender* sender_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedMockPluginInfoFilter);
-};
-
-}  // namespace
-
-class CreatePluginPlaceholderTest : public ChromeRenderViewTest {
- protected:
-  void SetUp() override {
-    ChromeRenderViewTest::SetUp();
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePluginPlaceholderShadowDom);
-  }
-
-  content::RenderFrame* GetMainRenderFrame() const {
-    return view_->GetMainRenderFrame();
-  }
-
-  int GetRoutingID() const { return GetMainRenderFrame()->GetRoutingID(); }
-};
-
-TEST_F(CreatePluginPlaceholderTest, MissingPlugin) {
-  GURL url("http://www.example.com/example.swf");
-  std::string mime_type("application/x-shockwave-flash");
-
-  blink::WebPluginParams params;
-  params.url = url;
-  params.mimeType = base::ASCIIToUTF16(mime_type);
-
-  ChromeViewHostMsg_GetPluginInfo_Output output;
-  output.status = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
-
-  ScopedMockPluginInfoFilter filter(render_thread_.get());
-#if defined(ENABLE_PLUGINS)
-  EXPECT_CALL(filter, OnGetPluginInfo(GetRoutingID(), url, _, mime_type, _))
-      .WillOnce(SetArgPointee<4>(output));
-#endif
-
-  scoped_ptr<blink::WebPluginPlaceholder> placeholder =
-      content_renderer_client_->CreatePluginPlaceholder(
-          GetMainRenderFrame(), GetMainFrame(), params);
-  ASSERT_NE(nullptr, placeholder);
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED),
-            placeholder->message());
-}
-
-TEST_F(CreatePluginPlaceholderTest, PluginFound) {
-  GURL url("http://www.example.com/example.swf");
-  std::string mime_type(content::kFlashPluginSwfMimeType);
-
-  blink::WebPluginParams params;
-  params.url = url;
-  params.mimeType = base::ASCIIToUTF16(mime_type);
-
-  ChromeViewHostMsg_GetPluginInfo_Output output;
-  output.status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
-
-  ScopedMockPluginInfoFilter filter(render_thread_.get());
-#if defined(ENABLE_PLUGINS)
-  EXPECT_CALL(filter, OnGetPluginInfo(GetRoutingID(), url, _, mime_type, _))
-      .WillOnce(SetArgPointee<4>(output));
-#endif
-
-  scoped_ptr<blink::WebPluginPlaceholder> placeholder =
-      content_renderer_client_->CreatePluginPlaceholder(
-          GetMainRenderFrame(), GetMainFrame(), params);
-  EXPECT_EQ(nullptr, placeholder);
 }
