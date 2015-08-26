@@ -29,17 +29,29 @@ base::i18n::TextDirection LayoutDirection() {
   return UseRTLLayout() ? base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
 }
 
+const LayoutRect LayoutRectZero = {0.0, 0.0, 0.0, CGSizeMake(0.0, 0.0)};
+
+LayoutRect LayoutRectMake(CGFloat leading,
+                          CGFloat boundingWidth,
+                          CGFloat originY,
+                          CGFloat width,
+                          CGFloat height) {
+  LayoutRect layout = {leading, boundingWidth, originY,
+                       CGSizeMake(width, height)};
+  return layout;
+}
+
 CGRect LayoutRectGetRectUsingDirection(LayoutRect layout,
                                        base::i18n::TextDirection direction) {
   CGRect rect;
   if (direction == base::i18n::RIGHT_TO_LEFT) {
     CGFloat trailing =
-        layout.contextWidth - (layout.leading + layout.size.width);
-    rect = CGRectMake(trailing, layout.yOrigin, layout.size.width,
+        layout.boundingWidth - (layout.leading + layout.size.width);
+    rect = CGRectMake(trailing, layout.originY, layout.size.width,
                       layout.size.height);
   } else {
     DCHECK_EQ(direction, base::i18n::LEFT_TO_RIGHT);
-    rect = CGRectMake(layout.leading, layout.yOrigin, layout.size.width,
+    rect = CGRectMake(layout.leading, layout.originY, layout.size.width,
                       layout.size.height);
   }
   return rect;
@@ -77,8 +89,8 @@ LayoutRect LayoutRectForRectInRectUsingDirection(
   } else {
     layout.leading = CGRectGetMinX(rect);
   }
-  layout.contextWidth = contextRect.size.width;
-  layout.yOrigin = rect.origin.y;
+  layout.boundingWidth = contextRect.size.width;
+  layout.originY = rect.origin.y;
   layout.size = rect.size;
   return layout;
 }
@@ -91,24 +103,24 @@ LayoutRect LayoutRectForRectInRect(CGRect rect, CGRect contextRect) {
 LayoutRect LayoutRectGetLeadingLayout(LayoutRect layout) {
   LayoutRect leadingLayout;
   leadingLayout.leading = 0;
-  leadingLayout.contextWidth = layout.contextWidth;
-  leadingLayout.yOrigin = layout.yOrigin;
+  leadingLayout.boundingWidth = layout.boundingWidth;
+  leadingLayout.originY = leadingLayout.originY;
   leadingLayout.size = CGSizeMake(layout.leading, layout.size.height);
   return leadingLayout;
 }
 
 LayoutRect LayoutRectGetTrailingLayout(LayoutRect layout) {
   LayoutRect leadingLayout;
-  CGFloat trailing = LayoutRectGetTrailing(layout);
+  CGFloat trailing = LayoutRectGetTrailingEdge(layout);
   leadingLayout.leading = trailing;
-  leadingLayout.contextWidth = layout.contextWidth;
-  leadingLayout.yOrigin = layout.yOrigin;
+  leadingLayout.boundingWidth = layout.boundingWidth;
+  leadingLayout.originY = leadingLayout.originY;
   leadingLayout.size =
-      CGSizeMake((layout.contextWidth - trailing), layout.size.height);
+      CGSizeMake((layout.boundingWidth - trailing), layout.size.height);
   return leadingLayout;
 }
 
-CGFloat LayoutRectGetTrailing(LayoutRect layout) {
+CGFloat LayoutRectGetTrailingEdge(LayoutRect layout) {
   return layout.leading + layout.size.width;
 }
 

@@ -30,15 +30,27 @@ base::i18n::TextDirection LayoutDirection();
 // may not be flipped if positioned in RTL or LTR contexts. |leading| is the
 // distance from the leading edge that the final rect's edge should be; in LTR
 // this will be the x-origin, in RTL it will be used to compute the x-origin.
-// |contextWidth| is the width of whatever element the rect will be used to
-// frame a subview of. |yOrigin| will be origin.y of the rect, and |size| will
+// |boundingWidth| is the width of whatever element the rect will be used to
+// frame a subview of. |originY| will be origin.y of the rect, and |size| will
 // be the size of the rect.
 struct LayoutRect {
   CGFloat leading;
-  CGFloat contextWidth;
-  CGFloat yOrigin;
+  CGFloat boundingWidth;
+  CGFloat originY;
   CGSize size;
 };
+
+// The null LayoutRect, with leading, boundingWidth and originY of 0.0, and
+// a size of CGSizeZero.
+extern const LayoutRect LayoutRectZero;
+
+// Returns a new LayoutRect; |height| and |width| are used to construct the
+// |size| field.
+LayoutRect LayoutRectMake(CGFloat leading,
+                          CGFloat boundingWidth,
+                          CGFloat originY,
+                          CGFloat width,
+                          CGFloat height);
 
 // Given |layout|, returns the rect for that layout in text direction
 // |direction|.
@@ -60,19 +72,23 @@ CGPoint LayoutRectGetPositionForAnchorUsingDirection(
     LayoutRect layout,
     CGPoint anchor,
     base::i18n::TextDirection direction);
+
+// As above, using |direction| == RIGHT_TO_LEFT if UseRTLLayout(), LEFT_TO_RIGHT
+// otherwise.
 CGPoint LayoutRectGetPositionForAnchor(LayoutRect layout, CGPoint anchor);
 
-// Given |layout|, a rect, and |contextRect|, a rect whose bounds are the
-// context in which |layout|'s frame is interpreted, return the layout that
-// defines |layout|.
-LayoutRect LayoutRectForRectInRectUsingDirection(
+// Given |rect|, a rect, and |boundingRect|, a rect whose bounds are the
+// context in which |rect|'s frame is interpreted, return the layout that
+// defines |rect|, assuming |direction| is the direction |rect| was positioned
+// under.
+LayoutRect LayoutRectForRectInBoundingRectUsingDirection(
     CGRect rect,
-    CGRect contextRect,
+    CGRect boundingRect,
     base::i18n::TextDirection direction);
 
 // As above, using |direction| == RIGHT_TO_LEFT if UseRTLLayout(), LEFT_TO_RIGHT
 // otherwise.
-LayoutRect LayoutRectForRectInRect(CGRect rect, CGRect contextRect);
+LayoutRect LayoutRectForRectInBoundingRect(CGRect rect, CGRect boundingRect);
 
 // Given a layout |layout|, return the layout that defines the leading area up
 // to |layout|.
@@ -83,7 +99,7 @@ LayoutRect LayoutRectGetLeadingLayout(LayoutRect layout);
 LayoutRect LayoutRectGetTrailingLayout(LayoutRect layout);
 
 // Return the trailing extent of |layout| (its leading plus its width).
-CGFloat LayoutRectGetTrailing(LayoutRect layout);
+CGFloat LayoutRectGetTrailingEdge(LayoutRect layout);
 
 // Is the screen of the device a high resolution screen, i.e. Retina Display.
 bool IsHighResScreen();
