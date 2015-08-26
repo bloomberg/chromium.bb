@@ -619,7 +619,7 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
     if (!settings)
         return false;
 
-    if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType) && !settings->javaEnabled())
+    if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType))
         return false;
 
     if (document().isSandboxed(SandboxPlugins))

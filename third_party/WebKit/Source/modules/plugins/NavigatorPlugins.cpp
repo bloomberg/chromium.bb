@@ -60,7 +60,7 @@ DOMMimeTypeArray* NavigatorPlugins::mimeTypes(Navigator& navigator)
 // static
 bool NavigatorPlugins::javaEnabled(Navigator& navigator)
 {
-    return NavigatorPlugins::from(navigator).javaEnabled(navigator.frame());
+    return false;
 }
 
 DOMPluginArray* NavigatorPlugins::plugins(LocalFrame* frame) const
@@ -75,14 +75,6 @@ DOMMimeTypeArray* NavigatorPlugins::mimeTypes(LocalFrame* frame) const
     if (!m_mimeTypes)
         m_mimeTypes = DOMMimeTypeArray::create(frame);
     return m_mimeTypes.get();
-}
-
-bool NavigatorPlugins::javaEnabled(LocalFrame* frame) const
-{
-    if (!frame || !frame->settings())
-        return false;
-
-    return frame->settings()->javaEnabled();
 }
 
 DEFINE_TRACE(NavigatorPlugins)

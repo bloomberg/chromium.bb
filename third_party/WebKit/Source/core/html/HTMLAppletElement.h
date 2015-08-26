@@ -50,7 +50,6 @@ private:
     LayoutPart* existingLayoutPart() const override;
     void updateWidgetInternal() override;
 
-    bool canEmbedJava() const;
     bool canEmbedURL(const KURL&) const;
 
     bool shouldRegisterAsNamedItem() const override { return true; }

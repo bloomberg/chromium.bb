@@ -36,7 +36,6 @@ private:
 
     DOMPluginArray* plugins(LocalFrame*) const;
     DOMMimeTypeArray* mimeTypes(LocalFrame*) const;
-    bool javaEnabled(LocalFrame*) const;
 
     mutable Member<DOMPluginArray> m_plugins;
     mutable Member<DOMMimeTypeArray> m_mimeTypes;
