@@ -270,7 +270,7 @@
     }],
     ['enable_errorprone == 1', {
       'dependencies': [
-        '<(DEPTH)/third_party/errorprone/errorprone.gyp:chromium_errorprone',
+        '<(DEPTH)/third_party/errorprone/errorprone.gyp:require_errorprone',
       ],
     }],
     ['native_lib_target != ""', {

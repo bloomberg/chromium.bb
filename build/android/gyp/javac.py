@@ -55,14 +55,10 @@ def ColorJavacOutput(output):
 
 
 ERRORPRONE_OPTIONS = [
-  '-Xepdisable:'
-  # Something in chrome_private_java makes this check crash.
-  'com.google.errorprone.bugpatterns.ClassCanBeStatic,'
   # These crash on lots of targets.
-  'com.google.errorprone.bugpatterns.WrongParameterPackage,'
-  'com.google.errorprone.bugpatterns.GuiceOverridesGuiceInjectableMethod,'
-  'com.google.errorprone.bugpatterns.GuiceOverridesJavaxInjectableMethod,'
-  'com.google.errorprone.bugpatterns.ElementsCountedInLoop'
+  '-Xep:ParameterPackage:OFF',
+  '-Xep:OverridesGuiceInjectableMethod:OFF',
+  '-Xep:OverridesJavaxInjectableMethod:OFF',
 ]
 
 def DoJavac(

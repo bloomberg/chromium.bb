@@ -119,6 +119,43 @@ template("findbugs") {
   }
 }
 
+# Generates a script in the output bin.java directory to run a java binary.
+template("java_binary_script") {
+  set_sources_assignment_filter([])
+  forward_variables_from(invoker, [ "testonly" ])
+
+  _main_class = invoker.main_class
+  _build_config = invoker.build_config
+  _jar_path = invoker.jar_path
+  _script_name = invoker.script_name
+
+  action(target_name) {
+    script = "//build/android/gyp/create_java_binary_script.py"
+    depfile = "$target_gen_dir/$_script_name.d"
+    java_script = "$root_build_dir/bin/$_script_name"
+    inputs = [
+      _build_config,
+    ]
+    outputs = [
+      depfile,
+      java_script,
+    ]
+    forward_variables_from(invoker, [ "deps" ])
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
+    args = [
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--output",
+      rebase_path(java_script, root_build_dir),
+      "--classpath=@FileArg($_rebased_build_config:java:full_classpath)",
+      "--jar-path",
+      rebase_path(_jar_path, root_build_dir),
+      "--main-class",
+      _main_class,
+    ]
+  }
+}
+
 template("dex") {
   set_sources_assignment_filter([])
 
@@ -920,6 +957,19 @@ template("java_prebuilt_impl") {
     }
   }
 
+  if (defined(invoker.main_class)) {
+    binary_script_target_name = "${_template_name}__java_binary_script"
+    java_binary_script(binary_script_target_name) {
+      build_config = _build_config
+      jar_path = _jar_path
+      main_class = invoker.main_class
+      script_name = _template_name
+      deps = [
+        ":$build_config_target_name",
+      ]
+    }
+  }
+
   group(target_name) {
     forward_variables_from(invoker, [ "data_deps" ])
     deps = [
@@ -927,6 +977,13 @@ template("java_prebuilt_impl") {
     ]
     if (_supports_android) {
       deps += [ ":$dex_target_name" ]
+    }
+    data_deps = []
+    if (defined(invoker.data_deps)) {
+      data_deps += invoker.data_deps
+    }
+    if (defined(invoker.main_class)) {
+      data_deps += [ ":$binary_script_target_name" ]
     }
   }
 }
@@ -1215,31 +1272,12 @@ template("java_library_impl") {
   }
 
   if (defined(invoker.main_class)) {
-    _final_deps += [ ":${_template_name}__binary_script" ]
-    action("${_template_name}__binary_script") {
-      script = "//build/android/gyp/create_java_binary_script.py"
-      depfile = "$target_gen_dir/$target_name.d"
-      java_script = "$root_build_dir/bin/$_template_name"
-      inputs = [
-        _build_config,
-      ]
-      outputs = [
-        depfile,
-        java_script,
-      ]
-      _rebased_build_config = rebase_path(_build_config, root_build_dir)
-      args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--output",
-        rebase_path(java_script, root_build_dir),
-        "--classpath=@FileArg($_rebased_build_config:java:full_classpath)",
-        "--jar-path",
-        rebase_path(_jar_path, root_build_dir),
-        "--main-class",
-        invoker.main_class,
-      ]
-
+    _final_datadeps += [ ":${_template_name}__java_binary_script" ]
+    java_binary_script("${_template_name}__java_binary_script") {
+      build_config = _build_config
+      jar_path = _jar_path
+      main_class = invoker.main_class
+      script_name = _template_name
       deps = build_config_deps
     }
   }
