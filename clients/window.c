@@ -2746,12 +2746,13 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 
 	/* when making the window smaller - e.g. after a unmaximise we might
 	 * still have a pending motion event that the compositor has picked
-	 * based on the old surface dimensions
+	 * based on the old surface dimensions. However, if we have an active
+	 * grab, we expect to see input from outside the window anyway.
 	 */
-	if (sx < window->main_surface->allocation.x ||
+	if (!input->grab && (sx < window->main_surface->allocation.x ||
 	    sy < window->main_surface->allocation.y ||
 	    sx > window->main_surface->allocation.width ||
-	    sy > window->main_surface->allocation.height)
+	    sy > window->main_surface->allocation.height))
 		return;
 
 	if (!(input->grab && input->grab_button)) {
