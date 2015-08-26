@@ -959,30 +959,29 @@ int HttpStreamParser::ParseResponseHeaders(int end_offset) {
       RecordHeaderParserEvent(HEADER_HTTP_09_ON_REUSED_SOCKET);
   }
 
-  // Check for multiple Content-Length headers with no Transfer-Encoding header.
-  // If they exist, and have distinct values, it's a potential response
-  // smuggling attack.
-  if (!headers->HasHeader("Transfer-Encoding")) {
-    if (HeadersContainMultipleCopiesOfField(*headers.get(), "Content-Length"))
+  // Check for multiple Content-Length headers when the response is not
+  // chunked-encoded.  If they exist, and have distinct values, it's a potential
+  // response smuggling attack.
+  if (!headers->IsChunkEncoded()) {
+    if (HeadersContainMultipleCopiesOfField(*headers, "Content-Length"))
       return ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH;
   }
 
   // Check for multiple Content-Disposition or Location headers.  If they exist,
   // it's also a potential response smuggling attack.
-  if (HeadersContainMultipleCopiesOfField(*headers.get(),
-                                          "Content-Disposition"))
+  if (HeadersContainMultipleCopiesOfField(*headers, "Content-Disposition"))
     return ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION;
-  if (HeadersContainMultipleCopiesOfField(*headers.get(), "Location"))
+  if (HeadersContainMultipleCopiesOfField(*headers, "Location"))
     return ERR_RESPONSE_HEADERS_MULTIPLE_LOCATION;
 
   response_->headers = headers;
   response_->connection_info = HttpResponseInfo::CONNECTION_INFO_HTTP1;
-  response_->vary_data.Init(*request_, *response_->headers.get());
+  response_->vary_data.Init(*request_, *response_->headers);
   DVLOG(1) << __FUNCTION__ << "()"
            << " content_length = \"" << response_->headers->GetContentLength()
            << "\n\""
-           << " headers = \""
-           << GetResponseHeaderLines(*response_->headers.get()) << "\"";
+           << " headers = \"" << GetResponseHeaderLines(*response_->headers)
+           << "\"";
   return OK;
 }
 
