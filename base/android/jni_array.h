@@ -74,6 +74,12 @@ BASE_EXPORT void JavaIntArrayToIntVector(
     std::vector<int>* out);
 
 // Replaces the content of |out| with the Java longs in |long_array|.
+BASE_EXPORT void JavaLongArrayToInt64Vector(
+    JNIEnv* env,
+    jlongArray long_array,
+    std::vector<int64>* out);
+
+// Replaces the content of |out| with the Java longs in |long_array|.
 BASE_EXPORT void JavaLongArrayToLongVector(
     JNIEnv* env,
     jlongArray long_array,

@@ -185,6 +185,16 @@ void JavaIntArrayToIntVector(JNIEnv* env,
   env->GetIntArrayRegion(int_array, 0, len, &(*out)[0]);
 }
 
+void JavaLongArrayToInt64Vector(JNIEnv* env,
+                                jlongArray long_array,
+                                std::vector<int64>* out) {
+  DCHECK(out);
+  std::vector<jlong> temp;
+  JavaLongArrayToLongVector(env, long_array, &temp);
+  out->resize(0);
+  out->insert(out->begin(), temp.begin(), temp.end());
+}
+
 void JavaLongArrayToLongVector(JNIEnv* env,
                                jlongArray long_array,
                                std::vector<jlong>* out) {
