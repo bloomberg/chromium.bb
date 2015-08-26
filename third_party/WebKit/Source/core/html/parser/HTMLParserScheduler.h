@@ -28,6 +28,7 @@
 
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -54,6 +55,7 @@ public:
 };
 
 class SpeculationsPumpSession : public ActiveParserSession {
+    STACK_ALLOCATED();
 public:
     SpeculationsPumpSession(unsigned& nestingLevel, Document*);
     ~SpeculationsPumpSession();

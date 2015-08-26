@@ -46,8 +46,11 @@ class WebScheduler;
 
 class BackgroundHTMLParser {
     WTF_MAKE_FAST_ALLOCATED(BackgroundHTMLParser);
+    WTF_MAKE_NONCOPYABLE(BackgroundHTMLParser);
 public:
     struct Configuration {
+        WTF_MAKE_FAST_ALLOCATED(Configuration);
+    public:
         Configuration();
         HTMLParserOptions options;
         WeakPtr<HTMLDocumentParser> parser;
@@ -63,6 +66,8 @@ public:
     static void start(PassRefPtr<WeakReference<BackgroundHTMLParser>>, PassOwnPtr<Configuration>, WebScheduler*);
 
     struct Checkpoint {
+        WTF_MAKE_FAST_ALLOCATED(CheckPoint);
+    public:
         WeakPtr<HTMLDocumentParser> parser;
         OwnPtr<HTMLToken> token;
         OwnPtr<HTMLTokenizer> tokenizer;

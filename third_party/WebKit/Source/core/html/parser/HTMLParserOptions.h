@@ -27,12 +27,14 @@
 #define HTMLParserOptions_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class Document;
 
 class CORE_EXPORT HTMLParserOptions {
+    DISALLOW_ALLOCATION();
 public:
     bool scriptEnabled;
     bool pluginsEnabled;

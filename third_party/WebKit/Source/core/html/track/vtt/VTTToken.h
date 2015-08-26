@@ -31,9 +31,12 @@
 #ifndef VTTToken_h
 #define VTTToken_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class VTTTokenTypes {
+    STATIC_ONLY(VTTTokenTypes);
 public:
     enum Type {
         Uninitialized,
@@ -45,6 +48,7 @@ public:
 };
 
 class VTTToken {
+    STACK_ALLOCATED();
 public:
     typedef VTTTokenTypes Type;
 

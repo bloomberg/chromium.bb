@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/geometry/IntRect.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -41,12 +42,14 @@ namespace blink {
 class AXObject;
 
 struct DateTimeSuggestion {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     double value;
     String localizedValue;
     String label;
 };
 
 struct DateTimeChooserParameters {
+    DISALLOW_ALLOCATION();
     AtomicString type;
     IntRect anchorRectInRootFrame;
     IntRect anchorRectInScreen;

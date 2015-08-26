@@ -31,11 +31,13 @@
 #ifndef HTMLImportState_h
 #define HTMLImportState_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
 class HTMLImportState {
+    DISALLOW_ALLOCATION();
 public:
     enum Value {
         BlockingScriptExecution = 0,

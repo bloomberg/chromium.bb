@@ -30,6 +30,7 @@
 #include "core/html/forms/StepRange.h"
 #include "core/html/shadow/DateTimeFieldElement.h"
 #include "platform/DateComponents.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -62,6 +63,7 @@ public:
     };
 
     struct LayoutParameters {
+        STACK_ALLOCATED();
         String dateTimeFormat;
         String fallbackDateTimeFormat;
         Locale& locale;

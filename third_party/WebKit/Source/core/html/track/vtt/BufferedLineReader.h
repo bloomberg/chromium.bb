@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/text/SegmentedString.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -44,6 +45,7 @@ namespace blink {
 // to 'REPLACEMENT CHARACTER' (U+FFFD) and does not return the linebreaks as
 // part of the result.
 class CORE_EXPORT BufferedLineReader {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(BufferedLineReader);
 public:
     BufferedLineReader()

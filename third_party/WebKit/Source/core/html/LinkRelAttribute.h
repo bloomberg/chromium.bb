@@ -34,11 +34,13 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/IconURL.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class CORE_EXPORT LinkRelAttribute {
+    DISALLOW_ALLOCATION();
 public:
     explicit LinkRelAttribute(const String& = "");
 

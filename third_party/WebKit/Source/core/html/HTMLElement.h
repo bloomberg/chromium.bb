@@ -159,6 +159,7 @@ inline bool Node::hasTagName(const HTMLQualifiedName& name) const
 
 // Functor used to match HTMLElements with a specific HTML tag when using the ElementTraversal API.
 class HasHTMLTagName {
+    STACK_ALLOCATED();
 public:
     explicit HasHTMLTagName(const HTMLQualifiedName& tagName): m_tagName(tagName) { }
     bool operator() (const HTMLElement& element) const { return element.hasTagName(m_tagName); }

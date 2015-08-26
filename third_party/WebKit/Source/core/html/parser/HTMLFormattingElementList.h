@@ -84,6 +84,7 @@ public:
     };
 
     class Bookmark {
+        STACK_ALLOCATED();
     public:
         explicit Bookmark(Entry* entry)
             : m_hasBeenMoved(false)

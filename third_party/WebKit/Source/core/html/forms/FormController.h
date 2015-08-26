@@ -24,6 +24,7 @@
 
 #include "core/html/forms/RadioButtonGroupScope.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
@@ -37,6 +38,7 @@ class HTMLFormElement;
 class SavedFormState;
 
 class FormControlState {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     FormControlState() : m_type(TypeSkip) { }
     explicit FormControlState(const String& value) : m_type(TypeRestore) { m_values.append(value); }

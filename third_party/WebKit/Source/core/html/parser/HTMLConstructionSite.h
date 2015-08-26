@@ -202,6 +202,7 @@ public:
     ParserContentPolicy parserContentPolicy() { return m_parserContentPolicy; }
 
     class RedirectToFosterParentGuard {
+        STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(RedirectToFosterParentGuard);
     public:
         RedirectToFosterParentGuard(HTMLConstructionSite& tree)

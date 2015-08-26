@@ -32,6 +32,7 @@
 
 #include "core/html/track/TextTrackCue.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -42,6 +43,7 @@ class VTTCue;
 class VTTScanner;
 
 struct VTTDisplayParameters {
+    STACK_ALLOCATED();
     VTTDisplayParameters();
 
     FloatPoint position;

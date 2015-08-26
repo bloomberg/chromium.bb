@@ -27,6 +27,7 @@
 #define CompactHTMLToken_h
 
 #include "core/html/parser/HTMLToken.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
@@ -36,8 +37,10 @@ namespace blink {
 class QualifiedName;
 
 class CompactHTMLToken {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     struct Attribute {
+        ALLOW_ONLY_INLINE_ALLOCATION();
         Attribute(const String& name, const String& value)
             : name(name)
             , value(value)

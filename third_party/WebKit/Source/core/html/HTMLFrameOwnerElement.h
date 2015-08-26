@@ -67,6 +67,7 @@ public:
     Widget* ownedWidget() const;
 
     class UpdateSuspendScope {
+        STACK_ALLOCATED();
     public:
         UpdateSuspendScope();
         ~UpdateSuspendScope();

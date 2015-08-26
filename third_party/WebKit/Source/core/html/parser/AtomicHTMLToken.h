@@ -30,12 +30,14 @@
 #include "core/dom/Attribute.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class AtomicHTMLToken {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(AtomicHTMLToken);
 public:
 

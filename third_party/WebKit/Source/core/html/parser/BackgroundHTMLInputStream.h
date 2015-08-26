@@ -27,6 +27,7 @@
 #define BackgroundHTMLInputStream_h
 
 #include "platform/text/SegmentedString.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -35,6 +36,7 @@ namespace blink {
 typedef size_t HTMLInputCheckpoint;
 
 class BackgroundHTMLInputStream {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(BackgroundHTMLInputStream);
 public:
     BackgroundHTMLInputStream();

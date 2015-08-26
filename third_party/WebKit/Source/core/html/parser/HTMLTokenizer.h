@@ -122,6 +122,7 @@ public:
     };
 
     struct Checkpoint {
+        STACK_ALLOCATED();
         HTMLParserOptions options;
         State state;
         UChar additionalAllowedCharacter;

@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/WebThreadSupportingGC.h"
+#include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -40,6 +41,7 @@
 namespace blink {
 
 class CORE_EXPORT HTMLParserThread {
+    WTF_MAKE_FAST_ALLOCATED(HTMLParserThread);
 public:
     static void init();
     static void shutdown();

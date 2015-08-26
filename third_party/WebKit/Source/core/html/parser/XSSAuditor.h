@@ -30,6 +30,7 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/text/SuffixTree.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextEncoding.h"
 
@@ -41,6 +42,7 @@ class XSSInfo;
 class XSSAuditorDelegate;
 
 struct FilterTokenRequest {
+    STACK_ALLOCATED();
     FilterTokenRequest(HTMLToken& token, HTMLSourceTracker& sourceTracker, bool shouldAllowCDATA)
         : token(token)
         , sourceTracker(sourceTracker)
@@ -53,6 +55,7 @@ struct FilterTokenRequest {
 };
 
 class XSSAuditor {
+    WTF_MAKE_FAST_ALLOCATED(XSSAuditor);
     WTF_MAKE_NONCOPYABLE(XSSAuditor);
 public:
     XSSAuditor();

@@ -28,6 +28,7 @@
 
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "platform/text/SegmentedString.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -49,6 +50,7 @@ namespace blink {
 // The network adds data at the end of the InputStream, which appends
 // them to the "last" string.
 class HTMLInputStream {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(HTMLInputStream);
 public:
     HTMLInputStream()
@@ -124,6 +126,7 @@ private:
 };
 
 class InsertionPointRecord {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(InsertionPointRecord);
 public:
     explicit InsertionPointRecord(HTMLInputStream& inputStream)

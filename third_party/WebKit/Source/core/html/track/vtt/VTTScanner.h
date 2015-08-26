@@ -32,6 +32,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/ParsingUtilities.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -48,6 +49,7 @@ namespace blink {
 // The 'scan' operation performs a 'match', and if the match is successful it
 // advance the input pointer past the matched sequence.
 class CORE_EXPORT VTTScanner {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(VTTScanner);
 public:
     explicit VTTScanner(const String& line);
@@ -55,6 +57,7 @@ public:
     typedef const LChar* Position;
 
     class Run {
+        STACK_ALLOCATED();
     public:
         Run(Position start, Position end, bool is8Bit)
             : m_start(start), m_end(end), m_is8Bit(is8Bit) { }

@@ -32,6 +32,7 @@
 #define HTMLDimension_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
@@ -40,6 +41,7 @@ namespace blink {
 // This class corresponds to a dimension as described in HTML5 by the
 // "rules for parsing a list of dimensions" (section 2.4.4.6).
 class HTMLDimension {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     enum HTMLDimensionType {
         Relative, Percentage, Absolute

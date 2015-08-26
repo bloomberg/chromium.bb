@@ -26,6 +26,7 @@
 #ifndef HTMLEntitySearch_h
 #define HTMLEntitySearch_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -33,6 +34,7 @@ namespace blink {
 struct HTMLEntityTableEntry;
 
 class HTMLEntitySearch {
+    STACK_ALLOCATED();
 public:
     HTMLEntitySearch();
 

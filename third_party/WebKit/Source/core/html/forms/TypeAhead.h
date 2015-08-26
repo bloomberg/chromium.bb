@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/DOMTimeStamp.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,6 +46,7 @@ public:
 };
 
 class TypeAhead {
+    DISALLOW_ALLOCATION();
 public:
     TypeAhead(TypeAheadDataSource*);
 

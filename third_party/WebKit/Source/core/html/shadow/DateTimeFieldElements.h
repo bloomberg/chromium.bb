@@ -29,6 +29,7 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/shadow/DateTimeNumericFieldElement.h"
 #include "core/html/shadow/DateTimeSymbolicFieldElement.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -226,6 +227,7 @@ class DateTimeYearFieldElement final : public DateTimeNumericFieldElement {
 
 public:
     struct Parameters {
+        STACK_ALLOCATED();
         int minimumYear;
         int maximumYear;
         bool minIsSpecified;

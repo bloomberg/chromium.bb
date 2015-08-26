@@ -34,6 +34,7 @@
 namespace blink {
 
 class DoctypeData {
+    WTF_MAKE_FAST_ALLOCATED(DoctypeData);
     WTF_MAKE_NONCOPYABLE(DoctypeData);
 public:
     DoctypeData()
@@ -74,8 +75,10 @@ public:
     };
 
     class Attribute {
+        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         class Range {
+            DISALLOW_ALLOCATION();
         public:
             int start;
             int end;

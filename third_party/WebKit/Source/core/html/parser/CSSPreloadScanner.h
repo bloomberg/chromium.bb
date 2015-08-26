@@ -36,6 +36,7 @@ namespace blink {
 class SegmentedString;
 
 class CSSPreloadScanner {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(CSSPreloadScanner);
 public:
     CSSPreloadScanner();

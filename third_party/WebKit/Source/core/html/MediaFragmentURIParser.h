@@ -27,6 +27,7 @@
 #define MediaFragmentURIParser_h
 
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -34,6 +35,7 @@ namespace blink {
 class KURL;
 
 class MediaFragmentURIParser final {
+    STACK_ALLOCATED();
 public:
 
     MediaFragmentURIParser(const KURL&);

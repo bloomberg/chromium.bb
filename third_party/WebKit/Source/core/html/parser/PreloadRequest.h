@@ -9,6 +9,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
@@ -16,6 +17,7 @@ namespace blink {
 class Document;
 
 class PreloadRequest {
+    WTF_MAKE_FAST_ALLOCATED(PreloadRequest);
 public:
     enum RequestType { RequestTypePreload, RequestTypePreconnect };
 

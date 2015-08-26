@@ -46,6 +46,8 @@ class HTMLTokenizer;
 class SegmentedString;
 
 struct CORE_EXPORT CachedDocumentParameters {
+    WTF_MAKE_FAST_ALLOCATED(CachedDocumentParameters);
+public:
     static PassOwnPtr<CachedDocumentParameters> create(Document* document, PassRefPtrWillBeRawPtr<MediaValues> mediaValues = nullptr)
     {
         return adoptPtr(new CachedDocumentParameters(document, mediaValues));

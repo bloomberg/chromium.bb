@@ -26,12 +26,14 @@
 #ifndef HTMLEntityTable_h
 #define HTMLEntityTable_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 // Member order to optimize packing. There will be thousands of these objects.
 struct HTMLEntityTableEntry {
+    DISALLOW_ALLOCATION();
     LChar lastCharacter() const;
 
     UChar32 firstValue;
@@ -41,6 +43,7 @@ struct HTMLEntityTableEntry {
 };
 
 class HTMLEntityTable {
+    STATIC_ONLY(HTMLEntityTable);
 public:
     static const HTMLEntityTableEntry* firstEntry();
     static const HTMLEntityTableEntry* lastEntry();

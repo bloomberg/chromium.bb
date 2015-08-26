@@ -22,6 +22,7 @@
 #define StepRange_h
 
 #include "platform/Decimal.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -29,6 +30,7 @@ namespace blink {
 enum AnyStepHandling { RejectAny, AnyIsDefaultStep };
 
 class StepRange {
+    DISALLOW_ALLOCATION();
 public:
     enum StepValueShouldBe {
         StepValueShouldBeReal,
@@ -101,7 +103,7 @@ public:
     }
 
 private:
-    StepRange& operator =(const StepRange&);
+    StepRange& operator=(const StepRange&) = delete;
     Decimal acceptableError() const;
     Decimal roundByStep(const Decimal& value, const Decimal& base) const;
 

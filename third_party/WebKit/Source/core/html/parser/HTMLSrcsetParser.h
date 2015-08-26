@@ -33,6 +33,7 @@
 #define HTMLSrcsetParser_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -42,6 +43,7 @@ class Document;
 enum { UninitializedDescriptor = -1 };
 
 class DescriptorParsingResult {
+    STACK_ALLOCATED();
 public:
     DescriptorParsingResult()
         : m_density(UninitializedDescriptor)
@@ -69,6 +71,7 @@ private:
 };
 
 class ImageCandidate {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     enum OriginAttribute {
         SrcsetOrigin,

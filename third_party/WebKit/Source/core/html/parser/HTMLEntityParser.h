@@ -28,10 +28,12 @@
 #define HTMLEntityParser_h
 
 #include "platform/text/SegmentedString.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class DecodedHTMLEntity {
+    STACK_ALLOCATED();
 private:
     // HTML entities contain at most four UTF-16 code units.
     static const unsigned kMaxLength = 4;

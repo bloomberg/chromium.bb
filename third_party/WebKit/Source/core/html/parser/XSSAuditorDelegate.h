@@ -40,6 +40,8 @@ class Document;
 class FormData;
 
 class XSSInfo {
+    WTF_MAKE_FAST_ALLOCATED(XSSInfo);
+    WTF_MAKE_NONCOPYABLE(XSSInfo);
 public:
     static PassOwnPtr<XSSInfo> create(const String& originalURL, bool didBlockEntirePage, bool didSendXSSProtectionHeader, bool didSendCSPHeader)
     {

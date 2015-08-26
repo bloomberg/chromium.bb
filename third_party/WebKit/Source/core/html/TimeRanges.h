@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebTimeRange.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 #include <algorithm>
@@ -43,6 +44,7 @@ class CORE_EXPORT TimeRanges : public GarbageCollectedFinalized<TimeRanges>, pub
 public:
     // We consider all the Ranges to be semi-bounded as follow: [start, end[
     struct Range {
+        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         Range() { }
         Range(double start, double end)

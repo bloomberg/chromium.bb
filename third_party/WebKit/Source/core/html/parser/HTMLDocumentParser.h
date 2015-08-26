@@ -92,6 +92,8 @@ public:
     void resumeScheduledTasks() final;
 
     struct ParsedChunk {
+        WTF_MAKE_FAST_ALLOCATED(ParsedChunk);
+    public:
         OwnPtr<CompactHTMLTokenStream> tokens;
         PreloadRequestStream preloads;
         XSSInfoStream xssInfos;

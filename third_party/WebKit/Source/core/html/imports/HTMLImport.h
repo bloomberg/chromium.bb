@@ -33,6 +33,7 @@
 
 #include "core/html/imports/HTMLImportState.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/TreeNode.h"
 
 namespace blink {
@@ -91,6 +92,7 @@ class HTMLImportLoader;
 // The superclass of HTMLImportTreeRoot and HTMLImportChild
 // This represents the import tree data structure.
 class HTMLImport : public NoBaseWillBeGarbageCollectedFinalized<HTMLImport>, public TreeNode<HTMLImport> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLImport);
 public:
     enum SyncMode {
         Sync  = 0,

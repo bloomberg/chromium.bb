@@ -29,6 +29,7 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/shadow/DateTimeFieldElement.h"
 
+#include "wtf/Allocator.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -46,12 +47,14 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
 
 public:
     struct Step {
+        DISALLOW_ALLOCATION();
         Step(int step = 1, int stepBase = 0) : step(step), stepBase(stepBase) { }
         int step;
         int stepBase;
     };
 
     struct Range {
+        DISALLOW_ALLOCATION();
         Range(int minimum, int maximum) : minimum(minimum), maximum(maximum) { }
         int clampValue(int) const;
         bool isInRange(int) const;
