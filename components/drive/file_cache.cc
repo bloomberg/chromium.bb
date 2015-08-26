@@ -118,7 +118,7 @@ uint64_t FileCache::CalculateEvictableCacheSize() {
   AssertOnSequencedWorkerPool();
 
   uint64_t evictable_cache_size = 0;
-  int64_t cache_size;
+  int64_t cache_size = 0;
 
   scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
