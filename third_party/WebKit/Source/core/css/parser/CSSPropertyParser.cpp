@@ -375,10 +375,10 @@ bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value, Units unitless
         if (m_context.useCounter()) {
             switch (value->id) {
             case CSSValueIntrinsic:
-                m_context.useCounter()->count(UseCounter::LegacyCSSValueIntrinsic);
+                UseCounter::countDeprecation(m_context.frame(), UseCounter::LegacyCSSValueIntrinsic);
                 break;
             case CSSValueMinIntrinsic:
-                m_context.useCounter()->count(UseCounter::LegacyCSSValueMinIntrinsic);
+                UseCounter::countDeprecation(m_context.frame(), UseCounter::LegacyCSSValueMinIntrinsic);
                 break;
             case CSSValueWebkitMinContent:
                 m_context.useCounter()->count(UseCounter::CSSValuePrefixedMinContent);

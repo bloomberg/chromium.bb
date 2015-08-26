@@ -33,12 +33,14 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 
 namespace blink {
 
 class Document;
+class LocalFrame;
 
 // Must not grow beyond 3 bits, due to packing in StylePropertySet.
 enum CSSParserMode {
@@ -92,7 +94,8 @@ public:
     CSSParserContext(const Document&, UseCounter*, const KURL& baseURL = KURL(), const String& charset = emptyString());
     // FIXME: This constructor shouldn't exist if we properly piped the UseCounter through the CSS
     // subsystem. Currently the UseCounter life time is too crazy and we need a way to override it.
-    CSSParserContext(const CSSParserContext&, UseCounter*);
+    CSSParserContext(const CSSParserContext&, LocalFrame*, UseCounter*);
+    ~CSSParserContext();
 
     bool operator==(const CSSParserContext&) const;
     bool operator!=(const CSSParserContext& other) const { return !(*this == other); }
@@ -117,6 +120,7 @@ public:
 
     KURL completeURL(const String& url) const;
 
+    LocalFrame* frame() const { return m_frame.get(); } // may be null
     UseCounter* useCounter() const { return m_useCounter; }
 
     ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy() const { return m_shouldCheckContentSecurityPolicy; }
@@ -130,6 +134,7 @@ private:
     bool m_useLegacyBackgroundSizeShorthandBehavior;
     ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;
 
+    RefPtrWillBePersistent<LocalFrame> m_frame;
     UseCounter* m_useCounter;
 };
 

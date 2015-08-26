@@ -30,6 +30,7 @@
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -122,7 +123,8 @@ void CSSKeyframesRule::appendRule(const String& ruleText)
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
 
     CSSStyleSheet* styleSheet = parentStyleSheet();
-    CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
+    Document* doc = styleSheet ? styleSheet->ownerDocument() : 0;
+    CSSParserContext context(parserContext(), doc ? doc->frame() : 0, UseCounter::getFrom(styleSheet));
     RefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe = CSSParser::parseKeyframeRule(context, ruleText);
     if (!keyframe)
         return;

@@ -35,6 +35,7 @@
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
@@ -69,7 +70,8 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     }
 
     CSSStyleSheet* styleSheet = parentStyleSheet();
-    CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
+    Document* doc = styleSheet ? styleSheet->ownerDocument() : 0;
+    CSSParserContext context(parserContext(), doc ? doc->frame() : 0, UseCounter::getFrom(styleSheet));
     RefPtrWillBeRawPtr<StyleRuleBase> newRule = CSSParser::parseRule(context, styleSheet ? styleSheet->contents() : nullptr, ruleString);
     // FIXME: @namespace rules have special handling in the CSSOM spec, but it
     // mostly doesn't make sense since we don't support CSSNamespaceRule
