@@ -55,37 +55,44 @@ public class ExpandedControllerActivity
     private TransportPerformer mTransportPerformer = new TransportPerformer() {
         @Override
         public void onStart() {
+            if (mMediaRouteController == null) return;
             mMediaRouteController.resume();
         }
 
         @Override
         public void onStop() {
+            if (mMediaRouteController == null) return;
             onPause();
             mMediaRouteController.release();
         }
 
         @Override
         public void onPause() {
+            if (mMediaRouteController == null) return;
             mMediaRouteController.pause();
         }
 
         @Override
         public long onGetDuration() {
+            if (mMediaRouteController == null) return 0;
             return mMediaRouteController.getDuration();
         }
 
         @Override
         public long onGetCurrentPosition() {
+            if (mMediaRouteController == null) return 0;
             return mMediaRouteController.getPosition();
         }
 
         @Override
         public void onSeekTo(long pos) {
+            if (mMediaRouteController == null) return;
             mMediaRouteController.seekTo((int) pos);
         }
 
         @Override
         public boolean onIsPlaying() {
+            if (mMediaRouteController == null) return false;
             return mMediaRouteController.isPlaying();
         }
 
@@ -93,7 +100,7 @@ public class ExpandedControllerActivity
         public int onGetTransportControlFlags() {
             int flags = TransportMediator.FLAG_KEY_MEDIA_REWIND
                     | TransportMediator.FLAG_KEY_MEDIA_FAST_FORWARD;
-            if (mMediaRouteController.isPlaying()) {
+            if (mMediaRouteController != null && mMediaRouteController.isPlaying()) {
                 flags |= TransportMediator.FLAG_KEY_MEDIA_PAUSE;
             } else {
                 flags |= TransportMediator.FLAG_KEY_MEDIA_PLAY;
