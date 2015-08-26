@@ -105,6 +105,9 @@ public class WebappActivity extends FullScreenActivity {
     public void preInflationStartup() {
         WebappInfo info = WebappInfo.create(getIntent());
         if (info != null) mWebappInfo.copy(info);
+
+        updateTaskDescription();
+
         mCleanupTask = new WebappDirectoryManager(getActivityDirectory(),
                 WEBAPP_SCHEME, FeatureUtilities.isDocumentModeEligible(this));
 
@@ -289,14 +292,19 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     private void updateTaskDescription() {
-        // TODO(lalitm): this is actually a temporary fix for the bigger issue of short
-        // name not being set to the meta tag title of the website if the short name
-        // is not present in the manifest. Some discussion is required for this before
-        // a CL which correctly fixes the issue is submitted.
-        String title = TextUtils.isEmpty(mWebappInfo.shortName())
-                ? getActivityTab().getTitle() : mWebappInfo.shortName();
-        Bitmap icon = mWebappInfo.icon() == null
-                ? getActivityTab().getFavicon() : mWebappInfo.icon();
+        String title = null;
+        if (!TextUtils.isEmpty(mWebappInfo.shortName())) {
+            title = mWebappInfo.shortName();
+        } else if (getActivityTab() != null) {
+            title = getActivityTab().getTitle();
+        }
+
+        Bitmap icon = null;
+        if (mWebappInfo.icon() != null) {
+            icon = mWebappInfo.icon();
+        } else if (getActivityTab() != null) {
+            icon = getActivityTab().getFavicon();
+        }
 
         if (mBrandColor == null
                 && mWebappInfo.themeColor() != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING
