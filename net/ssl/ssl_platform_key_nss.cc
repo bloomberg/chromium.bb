@@ -19,6 +19,7 @@
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/cert/x509_certificate.h"
+#include "net/ssl/client_key_store.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/threaded_ssl_private_key.h"
 
@@ -158,8 +159,10 @@ scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   crypto::ScopedSECKEYPrivateKey key(
       PK11_FindKeyByAnyCert(certificate->os_cert_handle(), nullptr));
-  if (!key)
-    return nullptr;
+  if (!key) {
+    return ClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
+        *certificate);
+  }
 
   KeyType nss_type = SECKEY_GetPrivateKeyType(key.get());
   SSLPrivateKey::Type type;

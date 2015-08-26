@@ -165,6 +165,8 @@
       'ssl/default_channel_id_store.h',
       'ssl/openssl_client_key_store.cc',
       'ssl/openssl_client_key_store.h',
+      'ssl/client_key_store.cc',
+      'ssl/client_key_store.h',
       'ssl/openssl_ssl_util.cc',
       'ssl/openssl_ssl_util.h',
       'ssl/signed_certificate_timestamp_and_status.cc',

@@ -266,7 +266,11 @@ component("net") {
       ]
     }
     if (use_nss_certs) {
-      sources -= [ "ssl/ssl_platform_key_nss.cc" ]
+      sources -= [
+        "ssl/client_key_store.cc",
+        "ssl/client_key_store.h",
+        "ssl/ssl_platform_key_nss.cc",
+      ]
     }
   }
 
@@ -353,7 +357,11 @@ component("net") {
         "cert/nss_profile_filter_chromeos.h",
       ]
     }
-    sources -= [ "ssl/ssl_platform_key_nss.cc" ]
+    sources -= [
+      "ssl/client_key_store.cc",
+      "ssl/client_key_store.h",
+      "ssl/ssl_platform_key_nss.cc",
+    ]
   } else if (use_openssl) {
     # client_cert_store_nss.c requires NSS_CmpCertChainWCANames from NSS's
     # libssl, but our bundled copy is not built in OpenSSL ports. Pull that file
