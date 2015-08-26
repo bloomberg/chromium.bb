@@ -32,7 +32,6 @@
 #include "public/platform/WebSpeechSynthesisUtterance.h"
 #include "public/platform/WebSpeechSynthesizer.h"
 #include "public/platform/WebSpeechSynthesizerClient.h"
-#include "wtf/RetainPtr.h"
 
 namespace blink {
 
