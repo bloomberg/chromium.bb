@@ -51,7 +51,8 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
       mojo::ApplicationConnection* connection) override;
 
   void OnHTMLDocumentDeleted2(HTMLDocumentOOPIF* document);
-  void OnResponseReceived(mojo::URLLoaderPtr loader,
+  void OnResponseReceived(scoped_ptr<mojo::AppRefCount> app_refcount,
+                          mojo::URLLoaderPtr loader,
                           mojo::ApplicationConnection* connection,
                           scoped_ptr<ServiceConnectorQueue> connector_queue,
                           mojo::URLResponsePtr response);

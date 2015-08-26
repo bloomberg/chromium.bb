@@ -98,8 +98,22 @@ void HTMLDocumentApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
 bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   if (initial_response_) {
-    OnResponseReceived(mojo::URLLoaderPtr(), connection, nullptr,
+    OnResponseReceived(nullptr, mojo::URLLoaderPtr(), connection, nullptr,
                        initial_response_.Pass());
+  } else if (url_ == "about:blank") {
+    // This is a little unfortunate. At the browser side, when starting a new
+    // app for "about:blank", the application manager uses
+    // mojo::runner::AboutFetcher to construct a response for "about:blank".
+    // However, when an app for "about:blank" already exists, it is reused and
+    // we end up here. We cannot fetch the URL using mojo::URLLoader because it
+    // is not an actual Web resource.
+    // TODO(yzshen): find out a better approach.
+    mojo::URLResponsePtr response(mojo::URLResponse::New());
+    response->url = url_;
+    response->status_code = 200;
+    response->mime_type = "text/html";
+    OnResponseReceived(nullptr, mojo::URLLoaderPtr(), connection, nullptr,
+                       response.Pass());
   } else {
     // HTMLDocument provides services, but is created asynchronously. Queue up
     // requests until the HTMLDocument is created.
@@ -117,11 +131,16 @@ bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
     // callback. Because order of evaluation is undefined, a reference to the
     // raw pointer is needed.
     mojo::URLLoader* raw_loader = loader.get();
+    // The app needs to stay alive while waiting for the response to be
+    // available.
+    scoped_ptr<mojo::AppRefCount> app_retainer(
+        app_.app_lifetime_helper()->CreateAppRefCount());
     raw_loader->Start(
         request.Pass(),
         base::Bind(&HTMLDocumentApplicationDelegate::OnResponseReceived,
-                   weak_factory_.GetWeakPtr(), base::Passed(&loader),
-                   connection, base::Passed(&service_connector_queue)));
+                   weak_factory_.GetWeakPtr(), base::Passed(&app_retainer),
+                   base::Passed(&loader), connection,
+                   base::Passed(&service_connector_queue)));
   }
   return true;
 }
@@ -133,6 +152,7 @@ void HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2(
 }
 
 void HTMLDocumentApplicationDelegate::OnResponseReceived(
+    scoped_ptr<mojo::AppRefCount> app_refcount,
     mojo::URLLoaderPtr loader,
     mojo::ApplicationConnection* connection,
     scoped_ptr<ServiceConnectorQueue> connector_queue,

@@ -17,8 +17,8 @@ namespace shell {
  * run in the context of another application.
  */
 struct Identity {
-  Identity(const GURL& url, const std::string& qualifier);
-  explicit Identity(const GURL& url);
+  Identity(const GURL& in_url, const std::string& in_qualifier);
+  explicit Identity(const GURL& in_url);
   bool operator<(const Identity& other) const;
 
   const GURL url;

@@ -521,7 +521,7 @@ TEST_F(ApplicationManagerTest, URLMapping) {
   loader->set_context(&context_);
   am.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader), test_url2);
   {
-    // Connext to the mapped url
+    // Connect to the mapped url
     TestServicePtr test_service;
     am.ConnectToService(test_url, &test_service);
     TestClient test_client(test_service.Pass());
@@ -529,7 +529,7 @@ TEST_F(ApplicationManagerTest, URLMapping) {
     loop_.Run();
   }
   {
-    // Connext to the target url
+    // Connect to the target url
     TestServicePtr test_service;
     am.ConnectToService(test_url2, &test_service);
     TestClient test_client(test_service.Pass());
@@ -797,6 +797,37 @@ TEST(ApplicationManagerTest2, ContentHandlerConnectionGetsRequestorURL) {
 
   ASSERT_EQ(1, loader->num_loads());
   EXPECT_EQ(requestor_url, loader->last_requestor_url());
+}
+
+TEST_F(ApplicationManagerTest, SameIdentityShouldNotCauseDuplicateLoad) {
+  // 1 because ApplicationManagerTest connects once at startup.
+  EXPECT_EQ(1, test_loader_->num_loads());
+
+  TestServicePtr test_service;
+  application_manager_->ConnectToService(GURL("http://www.example.org/abc?def"),
+                                         &test_service);
+  EXPECT_EQ(2, test_loader_->num_loads());
+
+  // Exactly the same URL as above.
+  application_manager_->ConnectToService(GURL("http://www.example.org/abc?def"),
+                                         &test_service);
+  EXPECT_EQ(2, test_loader_->num_loads());
+
+  // The same identity as the one above because only the query string is
+  // different.
+  application_manager_->ConnectToService(GURL("http://www.example.org/abc"),
+                                         &test_service);
+  EXPECT_EQ(2, test_loader_->num_loads());
+
+  // A different identity because the path is different.
+  application_manager_->ConnectToService(
+      GURL("http://www.example.org/another_path"), &test_service);
+  EXPECT_EQ(3, test_loader_->num_loads());
+
+  // A different identity because the domain is different.
+  application_manager_->ConnectToService(
+      GURL("http://www.another_domain.org/abc"), &test_service);
+  EXPECT_EQ(4, test_loader_->num_loads());
 }
 
 }  // namespace

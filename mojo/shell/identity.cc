@@ -9,15 +9,13 @@
 namespace mojo {
 namespace shell {
 
-Identity::Identity(const GURL& url, const std::string& qualifier)
-    : url(GetBaseURLAndQuery(url, nullptr)),
-      qualifier(qualifier.empty() ? url.spec() : qualifier) {
-}
+Identity::Identity(const GURL& in_url, const std::string& in_qualifier)
+    : url(GetBaseURLAndQuery(in_url, nullptr)),
+      qualifier(in_qualifier.empty() ? url.spec() : in_qualifier) {}
 
 // explicit
-Identity::Identity(const GURL& base_url)
-    : url(GetBaseURLAndQuery(base_url, nullptr)), qualifier(url.spec()) {
-}
+Identity::Identity(const GURL& in_url)
+    : url(GetBaseURLAndQuery(in_url, nullptr)), qualifier(url.spec()) {}
 
 bool Identity::operator<(const Identity& other) const {
   if (url != other.url)
