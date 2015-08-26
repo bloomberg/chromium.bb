@@ -11,7 +11,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -222,7 +221,9 @@ public class NotificationMediaPlaybackControls {
 
     private NotificationCompat.Builder mNotificationBuilder;
 
-    private Bitmap mNotificationIconBitmap;
+    private Bitmap mNotificationIcon;
+
+    private final Bitmap mMediaSessionIcon;
 
     private MediaNotificationInfo mMediaNotificationInfo;
 
@@ -247,6 +248,12 @@ public class NotificationMediaPlaybackControls {
         mContext = context;
         mPlayDescription = context.getResources().getString(R.string.accessibility_play);
         mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
+
+        // The MediaSession icon is a plain color.
+        int size = context.getResources().getDimensionPixelSize(R.dimen.media_session_icon_size);
+        mMediaSessionIcon = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        mMediaSessionIcon.eraseColor(
+                context.getResources().getColor(R.color.media_session_icon_color));
     }
 
     private void showNotification(MediaNotificationInfo mediaNotificationInfo) {
@@ -347,18 +354,14 @@ public class NotificationMediaPlaybackControls {
                     mMediaNotificationInfo.title);
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
                     mMediaNotificationInfo.origin);
-            // TODO(mlamouri): this is temporary until we figure out which icon we want to show.
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
-                    BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.app_icon));
+                    mMediaSessionIcon);
         } else {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE,
                     mMediaNotificationInfo.title);
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
                     mMediaNotificationInfo.origin);
-            // TODO(mlamouri): we don't show any kind of placeholder art for pre-L because it
-            // would be shown on the lockscreen. Having a big application icon in there is not
-            // what the user would expect. We will be able to show something when the page will
-            // be able to provide art via the MediaSession API.
+            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, mMediaSessionIcon);
         }
 
         return metadataBuilder.build();
@@ -375,10 +378,10 @@ public class NotificationMediaPlaybackControls {
 
         // Android doesn't badge the icons for RemoteViews automatically when
         // running the app under the Work profile.
-        if (mNotificationIconBitmap == null) {
+        if (mNotificationIcon == null) {
             Drawable notificationIconDrawable = ApiCompatibilityUtils.getUserBadgedIcon(
                     mContext, R.drawable.audio_playing);
-            mNotificationIconBitmap = drawableToBitmap(notificationIconDrawable);
+            mNotificationIcon = drawableToBitmap(notificationIconDrawable);
         }
 
         if (mNotificationBuilder == null) {
@@ -395,8 +398,8 @@ public class NotificationMediaPlaybackControls {
 
         contentView.setTextViewText(R.id.title, mMediaNotificationInfo.title);
         contentView.setTextViewText(R.id.status, getStatus());
-        if (mNotificationIconBitmap != null) {
-            contentView.setImageViewBitmap(R.id.icon, mNotificationIconBitmap);
+        if (mNotificationIcon != null) {
+            contentView.setImageViewBitmap(R.id.icon, mNotificationIcon);
         } else {
             contentView.setImageViewResource(R.id.icon, R.drawable.audio_playing);
         }
@@ -429,13 +432,6 @@ public class NotificationMediaPlaybackControls {
             mMediaSession.setActive(true);
         }
 
-        MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
-        metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE,
-                mMediaNotificationInfo.title);
-        metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
-                mMediaNotificationInfo.origin);
-        metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
-                BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.app_icon));
         mMediaSession.setMetadata(createMetadata());
 
         PlaybackStateCompat.Builder playbackStateBuilder = new PlaybackStateCompat.Builder()

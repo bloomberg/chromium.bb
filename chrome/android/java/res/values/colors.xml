@@ -150,4 +150,7 @@
 
     <!-- Opt out promo -->
     <color name="opt_out_text_color">#646464</color>
+
+    <!-- Media UI Colors -->
+    <color name="media_session_icon_color">#14181C</color>
 </resources>
