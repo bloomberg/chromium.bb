@@ -13,15 +13,16 @@
           window.scrollTo(100,100);
       }
 
-      function scaleWithEventSender() {
+      function applyScaleFactor() {
           var scaleFactor = 2.0;
           if (window.internals)
             internals.setPageScaleFactor(scaleFactor);
       }
 
       function test() {
-          scaleWithEventSender();
+          // Scroll before applying page scale so we scroll the layout viewport.
           scroll();
+          applyScaleFactor();
       }
     </script>
     <script src="../../resources/js-test.js"></script>
