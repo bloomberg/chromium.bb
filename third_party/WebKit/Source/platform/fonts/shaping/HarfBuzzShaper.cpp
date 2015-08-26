@@ -452,7 +452,8 @@ int ShapeResult::offsetForPosition(Vector<RefPtr<ShapeResult>>& results,
     unsigned totalOffset;
     if (run.rtl()) {
         totalOffset = run.length();
-        for (auto& wordResult : results) {
+        for (unsigned i = results.size(); i; --i) {
+            const RefPtr<ShapeResult>& wordResult = results[i - 1];
             if (!wordResult)
                 continue;
             totalOffset -= wordResult->numCharacters();
