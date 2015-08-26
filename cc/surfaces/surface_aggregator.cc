@@ -330,15 +330,21 @@ void SurfaceAggregator::CopyQuadsToPass(
   // transform isn't axis-aligned.
   gfx::Rect damage_rect_in_quad_space;
 
+#if DCHECK_IS_ON()
+  // If quads have come in with SharedQuadState out of order, or when quads have
+  // invalid SharedQuadState pointer, it should DCHECK.
   SharedQuadStateList::ConstIterator sqs_iter =
       source_shared_quad_state_list.begin();
   for (const auto& quad : source_quad_list) {
-    while (quad->shared_quad_state != *sqs_iter) {
+    while (sqs_iter != source_shared_quad_state_list.end() &&
+           quad->shared_quad_state != *sqs_iter) {
       ++sqs_iter;
-      DCHECK(sqs_iter != source_shared_quad_state_list.end());
     }
-    DCHECK_EQ(quad->shared_quad_state, *sqs_iter);
+    DCHECK(sqs_iter != source_shared_quad_state_list.end());
+  }
+#endif
 
+  for (const auto& quad : source_quad_list) {
     if (quad->material == DrawQuad::SURFACE_CONTENT) {
       const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
       // HandleSurfaceQuad may add other shared quad state, so reset the
