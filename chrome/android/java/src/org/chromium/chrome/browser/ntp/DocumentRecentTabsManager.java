@@ -15,7 +15,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
@@ -205,11 +204,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
             final Runnable startNewDocument = new Runnable() {
                 @Override
                 public void run() {
-                    Intent newIntent = new Intent();
-                    newIntent.setAction(Intent.ACTION_MAIN);
-                    newIntent.setPackage(mActivity.getPackageName());
-                    newIntent.putExtra(
-                            IntentHandler.TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
+                    Intent newIntent = Tab.createBringTabToFrontIntent(tabId);
                     newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                     mActivity.startActivity(newIntent);
                 }

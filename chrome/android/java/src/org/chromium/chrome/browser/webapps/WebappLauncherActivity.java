@@ -11,15 +11,17 @@ import android.os.Bundle;
 import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.WebappAuthenticator;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.content_public.common.ScreenOrientationValues;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Launches web apps.  This was separated from the ChromeLauncherActivity because the
@@ -40,22 +42,10 @@ public class WebappLauncherActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        String webappId = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ID);
-        String webappUrl = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
-        String webappIcon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
-        int webappOrientation = IntentUtils.safeGetIntExtra(intent,
-                ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
-        int webappSource = IntentUtils.safeGetIntExtra(intent,
-                ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
-        long webappThemeColor = IntentUtils.safeGetLongExtra(intent,
-                ShortcutHelper.EXTRA_THEME_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-        long webappBackgroundColor = IntentUtils.safeGetLongExtra(intent,
-                ShortcutHelper.EXTRA_BACKGROUND_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-
-        String webappName = WebappInfo.nameFromIntent(intent);
-        String webappShortName = WebappInfo.shortNameFromIntent(intent);
+        WebappInfo webappInfo = WebappInfo.create(intent);
+        String webappId = webappInfo.id();
+        String webappUrl = webappInfo.uri().toString();
+        int webappSource = webappInfo.source();
 
         if (webappId != null && webappUrl != null) {
             String webappMacString = IntentUtils.safeGetStringExtra(
@@ -66,9 +56,23 @@ public class WebappLauncherActivity extends Activity {
             Intent launchIntent = null;
             if (webappMac != null && WebappAuthenticator.isUrlValid(this, webappUrl, webappMac)) {
                 LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, webappSource);
-                launchIntent = createWebappIntent(webappId, webappUrl, webappIcon, webappName,
-                        webappShortName, webappOrientation, webappSource, webappThemeColor,
-                        webappBackgroundColor);
+
+                String activityName = WebappActivity.class.getName();
+                if (!FeatureUtilities.isDocumentModeEligible(this)) {
+                    // Specifically assign the app to a particular WebappActivity instance.
+                    int activityIndex = ActivityAssigner.instance(this).assign(webappId);
+                    activityName += String.valueOf(activityIndex);
+                }
+
+                // Create an intent to launch the Webapp in an unmapped WebappActivity.
+                launchIntent = new Intent();
+                launchIntent.setClassName(this, activityName);
+                webappInfo.setWebappIntentExtras(launchIntent);
+
+                // On L+, firing intents with the exact same data should relaunch a particular
+                // Activity.
+                launchIntent.setAction(Intent.ACTION_VIEW);
+                launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + webappId));
             } else {
                 Log.e(TAG, "Shortcut (" + webappUrl + ") opened in Chrome.");
 
@@ -89,44 +93,26 @@ public class WebappLauncherActivity extends Activity {
     }
 
     /**
-     * Creates an Intent that launches a WebappActivity for the given data.
-     * @param id               ID of the webapp.
-     * @param url              URL for the webapp.
-     * @param icon             Base64 encoded Bitmap representing the webapp.
-     * @param name             String to show on the splash screen.
-     * @param shortName        String to show on the recents menu
-     * @param orientation      Default orientation for the activity.
-     * @param themeColor       Theme color to use for the activity.
-     * @param backgroundColor  Background color to use for the activity.
-     * @return Intent that can be used to launch the releveant WebappActivity.
+     * Brings a live WebappActivity back to the foreground if one exists for the given tab ID.
+     * @param tabId ID of the Tab to bring back to the foreground.
+     * @return True if a live WebappActivity was found, false otherwise.
      */
-    private Intent createWebappIntent(String id, String url, String icon, String name,
-            String shortName, int orientation, int source, long themeColor,
-            long backgroundColor) {
-        String activityName = WebappActivity.class.getName();
-        if (!FeatureUtilities.isDocumentModeEligible(this)) {
-            // Specifically assign the app to a particular WebappActivity instance.
-            int activityIndex = ActivityAssigner.instance(this).assign(id);
-            activityName += String.valueOf(activityIndex);
+    public static boolean bringWebappToFront(int tabId) {
+        if (tabId == Tab.INVALID_TAB_ID) return false;
+
+        for (WeakReference<Activity> activityRef : ApplicationStatus.getRunningActivities()) {
+            Activity activity = activityRef.get();
+            if (activity == null || !(activity instanceof WebappActivity)) continue;
+
+            WebappActivity webappActivity = (WebappActivity) activity;
+            if (webappActivity.getActivityTab() != null
+                    && webappActivity.getActivityTab().getId() == tabId) {
+                Tab tab = webappActivity.getActivityTab();
+                tab.getChromeWebContentsDelegateAndroid().activateContents();
+                return true;
+            }
         }
 
-        // Fire an intent to launch the Webapp in an unmapped Activity.
-        Intent webappIntent = new Intent();
-        webappIntent.setClassName(this, activityName);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_ICON, icon);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_ID, id);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_URL, url);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_NAME, name);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, source);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor);
-        webappIntent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
-
-        // On L, firing intents with the exact same data should relaunch a particular Activity.
-        webappIntent.setAction(Intent.ACTION_VIEW);
-        webappIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + id));
-
-        return webappIntent;
+        return false;
     }
 }

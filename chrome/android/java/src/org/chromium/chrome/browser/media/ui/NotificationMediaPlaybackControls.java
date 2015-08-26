@@ -16,7 +16,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.IBinder;
-import android.provider.Browser;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -28,8 +27,8 @@ import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.metrics.MediaSessionUMA;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * A class for notifications that provide information and optional media controls for a given media.
@@ -336,11 +335,8 @@ public class NotificationMediaPlaybackControls {
 
     private PendingIntent createContentIntent() {
         int tabId = mMediaNotificationInfo.tabId;
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
-        intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
-        intent.setPackage(mContext.getPackageName());
-        return PendingIntent.getActivity(mContext, tabId, intent, 0);
+        return PendingIntent.getActivity(
+                mContext, tabId, Tab.createBringTabToFrontIntent(tabId), 0);
     }
 
     private MediaMetadataCompat createMetadata() {

@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
@@ -154,6 +155,18 @@ public class ChromeLauncherActivity extends Activity
         maybePerformMigrationTasks();
 
         mIsCustomTabIntent = isCustomTabIntent();
+
+        // Check if a LIVE WebappActivity has to be brought back to the foreground.  We can't
+        // check for a dead WebappActivity because we don't have that information without a global
+        // TabManager.  If that ever lands, code to bring back any Tab could be consolidated
+        // here instead of being spread between ChromeTabbedActivity and ChromeLauncherActivity.
+        // https://crbug.com/443772, https://crbug.com/522918
+        int tabId = IntentUtils.safeGetIntExtra(getIntent(),
+                TabOpenType.BRING_TAB_TO_FRONT.name(), Tab.INVALID_TAB_ID);
+        if (WebappLauncherActivity.bringWebappToFront(tabId)) {
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+            return;
+        }
 
         // Check if we should launch the ChromeTabbedActivity.
         if (!mIsCustomTabIntent && !FeatureUtilities.isDocumentMode(this)) {

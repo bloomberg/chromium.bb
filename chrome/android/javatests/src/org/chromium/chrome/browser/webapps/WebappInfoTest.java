@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -204,31 +203,5 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(intent);
         assertEquals(info.themeColor(), themeColor);
         assertEquals(info.backgroundColor(), backgroundColor);
-    }
-
-    @SmallTest
-    @Feature({"Webapps"})
-    public void testColorsWrittenToBundle() {
-        String id = "webapp id";
-        String name = "longName";
-        String shortName = "name";
-        String url = "http://money.cnn.com";
-        long themeColor = 0xFF0000FFL;
-        long backgroundColor = 0xFF00FF00L;
-
-        WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
-                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                themeColor, backgroundColor);
-
-        Bundle bundle = new Bundle();
-        info.writeToBundle(bundle);
-
-        long bundleThemeColor = bundle.getLong(ShortcutHelper.EXTRA_THEME_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-        assertEquals(bundleThemeColor, themeColor);
-
-        long bundleBgColor = bundle.getLong(ShortcutHelper.EXTRA_BACKGROUND_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-        assertEquals(bundleBgColor, backgroundColor);
     }
 }

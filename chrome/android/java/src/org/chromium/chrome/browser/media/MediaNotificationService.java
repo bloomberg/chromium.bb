@@ -13,13 +13,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.provider.Browser;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.SparseIntArray;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.net.MalformedURLException;
@@ -170,7 +168,7 @@ public class MediaNotificationService extends Service {
             notificationIconId = R.drawable.audio_playing;
         }
 
-        Intent tabIntent = createMediaTabOpenIntent(notificationId);
+        Intent tabIntent = Tab.createBringTabToFrontIntent(notificationId);
         PendingIntent contentIntent = PendingIntent.getActivity(
                 mContext, notificationId, tabIntent, 0);
         String contentText = mContext.getResources().getString(notificationContentTextId) + ". "
@@ -191,17 +189,6 @@ public class MediaNotificationService extends Service {
         mNotificationManager.notify(NOTIFICATION_NAMESPACE, notificationId, notification);
         mNotifications.put(notificationId, mediaType);
         updateSharedPreferencesEntry(notificationId, false);
-    }
-
-    /**
-     * Returns the Intent that opens the tab with the WebRTC call on click of the notification.
-     */
-    private Intent createMediaTabOpenIntent(int tabId) {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
-        intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
-        intent.setPackage(mContext.getPackageName());
-        return intent;
     }
 
     /**

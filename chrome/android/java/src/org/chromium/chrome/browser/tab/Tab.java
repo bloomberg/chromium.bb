@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.provider.Browser;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -32,6 +33,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AccessibilityUtil;
 import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.FrozenNativePage;
+import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.RepostFormWarningDialog;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
@@ -2823,6 +2825,18 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     tabModelSelector.getModel(incognito)));
         }
         return tab;
+    }
+
+    /**
+     * Returns an Intent that tells Chrome to open a Tab with a particular ID.
+     */
+    public static Intent createBringTabToFrontIntent(int tabId) {
+        String packageName = ApplicationStatus.getApplicationContext().getPackageName();
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName);
+        intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
+        intent.setPackage(packageName);
+        return intent;
     }
 
     private native void nativeInit();

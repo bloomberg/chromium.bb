@@ -123,7 +123,6 @@ public class WebappActivity extends FullScreenActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mWebappInfo.writeToBundle(outState);
         if (getActivityTab() != null) getActivityTab().saveInstanceState(outState);
     }
 

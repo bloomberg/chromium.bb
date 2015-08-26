@@ -312,25 +312,20 @@ public class FullScreenActivityTab extends ChromeTab {
         public void activateContents() {
             if (!(mActivity instanceof WebappActivity)) return;
 
-            WebappInfo webAppInfo = ((WebappActivity) mActivity).getWebappInfo();
-            String url = webAppInfo.uri().toString();
+            WebappInfo webappInfo = ((WebappActivity) mActivity).getWebappInfo();
+            String url = webappInfo.uri().toString();
 
+            // Create an Intent that will be fired toward the WebappLauncherActivity, which in turn
+            // will fire an Intent to launch the correct WebappActivity.  On L+ this could probably
+            // be changed to call AppTask.moveToFront(), but for backwards compatibility we relaunch
+            // it the hard way.
             Intent intent = new Intent();
             intent.setAction(WebappLauncherActivity.ACTION_START_WEBAPP);
             intent.setPackage(mActivity.getPackageName());
+            webappInfo.setWebappIntentExtras(intent);
 
-            intent.putExtra(ShortcutHelper.EXTRA_ICON, webAppInfo.getEncodedIcon());
-            intent.putExtra(ShortcutHelper.EXTRA_ID, webAppInfo.id());
-            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
-            intent.putExtra(ShortcutHelper.EXTRA_NAME, webAppInfo.name());
-            intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, webAppInfo.shortName());
-            intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, webAppInfo.orientation());
             intent.putExtra(ShortcutHelper.EXTRA_MAC, ShortcutHelper.getEncodedMac(mActivity, url));
-            intent.putExtra(ShortcutHelper.EXTRA_SOURCE, webAppInfo.source());
-            intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, webAppInfo.themeColor());
-            intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, webAppInfo.backgroundColor());
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
             getApplicationContext().startActivity(intent);
         }
     }

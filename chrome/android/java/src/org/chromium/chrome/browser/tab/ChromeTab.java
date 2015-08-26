@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.FrozenNativePage;
-import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
@@ -433,12 +432,7 @@ public class ChromeTab extends Tab {
             // Note that calling only the intent in order to activate the tab is slightly slower
             // because it will change the tab when the intent is handled, which happens after
             // Chrome gets back to the foreground.
-            Intent newIntent = new Intent();
-            newIntent.setAction(Intent.ACTION_MAIN);
-            newIntent.setPackage(mActivity.getPackageName());
-            newIntent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(),
-                               ChromeTab.this.getId());
-
+            Intent newIntent = Tab.createBringTabToFrontIntent(ChromeTab.this.getId());
             newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             getApplicationContext().startActivity(newIntent);
