@@ -55,8 +55,6 @@ public class NotificationMediaPlaybackControls {
                 "NotificationMediaPlaybackControls.ListenerService.PAUSE";
         private static final String ACTION_STOP =
                 "NotificationMediaPlaybackControls.ListenerService.STOP";
-        private static final String ACTION_MEDIA_BUTTON =
-                "NotificationMediaPlaybackControls.ListenerService.MEDIA_BUTTON";
 
         private PendingIntent getPendingIntent(String action) {
             Intent intent = new Intent(this, ListenerService.class);
@@ -104,7 +102,7 @@ public class NotificationMediaPlaybackControls {
 
             // Before Android L, instead of using the MediaSession callback, the system will fire
             // ACTION_MEDIA_BUTTON intents which stores the information about the key event.
-            if (ACTION_MEDIA_BUTTON.equals(action)) {
+            if (Intent.ACTION_MEDIA_BUTTON.equals(action)) {
                 assert Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
 
                 KeyEvent event = (KeyEvent) intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
@@ -426,8 +424,9 @@ public class NotificationMediaPlaybackControls {
 
         if (mMediaSession == null) {
             mMediaSession = new MediaSessionCompat(mContext, mContext.getString(R.string.app_name),
-                    new ComponentName(mService.getPackageName(), ListenerService.class.getName()),
-                    mService.getPendingIntent(ListenerService.ACTION_MEDIA_BUTTON));
+                    new ComponentName(mContext.getPackageName(),
+                            MediaButtonReceiver.class.getName()),
+                    null);
             mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                     | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
             mMediaSession.setCallback(mMediaSessionCallback);
