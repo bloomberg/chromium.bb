@@ -142,7 +142,7 @@ HistoryReportJniBridge::GetUsageReportsBatch(JNIEnv* env,
 
 void HistoryReportJniBridge::RemoveUsageReports(JNIEnv* env,
                                         jobject obj,
-                                        jobjectArray& batch) {
+                                        jobjectArray batch) {
   std::vector<std::string> to_remove;
   base::android::AppendJavaStringArrayToStringVector(env, batch, &to_remove);
   usage_reports_buffer_service_->Remove(to_remove);

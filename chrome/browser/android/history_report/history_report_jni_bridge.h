@@ -48,7 +48,7 @@ class HistoryReportJniBridge {
   // Removes a batch of usage reports from a usage reports buffer.
   void RemoveUsageReports(JNIEnv* env,
                           jobject obj,
-                          jobjectArray& batch);
+                          jobjectArray batch);
   // Populates the usage reports buffer with historic visits.
   // This should happen only once per corpus registration.
   jboolean AddHistoricVisitsToUsageReportsBuffer(JNIEnv* env, jobject obj);
