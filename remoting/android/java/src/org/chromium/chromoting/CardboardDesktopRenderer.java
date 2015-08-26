@@ -5,7 +5,6 @@
 package org.chromium.chromoting;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.opengl.GLES20;
@@ -77,19 +76,12 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private CardboardActivityEyePoint mEyePoint;
     private CardboardActivitySkybox mSkybox;
 
-    // Flag to indicate whether reload the desktop texture or not.
-    private boolean mReloadTexture;
-
-    /** Lock to allow multithreaded access to mReloadTexture. */
-    private final Object mReloadTextureLock = new Object();
-
     // Lock for eye position related operations.
     // This protects access to mEyePositionVector.
     private final Object mEyePositionLock = new Object();
 
     public CardboardDesktopRenderer(Activity activity) {
         mActivity = activity;
-        mReloadTexture = false;
         mCameraPosition = 0.0f;
 
         mCameraMatrix = new float[16];
@@ -112,9 +104,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         JniInterface.provideRedrawCallback(new Runnable() {
             @Override
             public void run() {
-                synchronized (mReloadTextureLock) {
-                    mReloadTexture = true;
-                }
+                mDesktop.reloadTexture();
             }
         });
     }
@@ -163,7 +153,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
         headTransform.getForwardVector(mForwardVector, 0);
         getLookingPosition();
-        maybeLoadDesktopTexture();
+        mDesktop.maybeLoadDesktopTexture();
         mSkybox.maybeLoadTextureAndCleanImages();
     }
 
@@ -207,9 +197,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         Matrix.multiplyMM(mDesktopCombinedMatrix, 0, mViewMatrix, 0, mDesktopModelMatrix, 0);
         Matrix.multiplyMM(mDesktopCombinedMatrix, 0, mProjectionMatrix,
                 0, mDesktopCombinedMatrix, 0);
-        mDesktop.setCombinedMatrix(mDesktopCombinedMatrix);
 
-        mDesktop.draw();
+        mDesktop.draw(mDesktopCombinedMatrix);
     }
 
     private void drawEyePoint() {
@@ -373,33 +362,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
                 mEyePositionVector[1] = mForwardVector[1] * DESKTOP_POSITION_Z / mForwardVector[2];
             }
             mEyePositionVector[2] = DESKTOP_POSITION_Z;
-        }
-    }
-
-    /**
-     * Link desktop texture with {@link CardboardActivityDesktop} if {@link mReloadTexture} is true.
-     * @param textureDataHandle the handle we want attach texture to
-     */
-    private void maybeLoadDesktopTexture() {
-        synchronized (mReloadTextureLock) {
-            if (!mReloadTexture) {
-                return;
-            }
-        }
-
-        // TODO(shichengfeng): Record the time desktop drawing takes.
-        Bitmap bitmap = JniInterface.getVideoFrame();
-
-        if (bitmap == null) {
-            // This can happen if the client is connected, but a complete video frame has not yet
-            // been decoded.
-            return;
-        }
-
-        mDesktop.updateVideoFrame(bitmap);
-
-        synchronized (mReloadTextureLock) {
-            mReloadTexture = false;
         }
     }
 

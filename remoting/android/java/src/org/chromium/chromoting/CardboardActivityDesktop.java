@@ -10,6 +10,8 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.opengl.GLES20;
 
+import org.chromium.chromoting.jni.JniInterface;
+
 import java.nio.FloatBuffer;
 
 /**
@@ -27,11 +29,18 @@ public class CardboardActivityDesktop {
             + "}";
 
     private static final String FRAGMENT_SHADER =
-            "precision mediump float;"
+            "precision highp float;"
             + "uniform sampler2D u_Texture;"
             + "varying vec2 v_TexCoordinate;"
+            + "const float borderWidth = 0.002;"
             + "void main() {"
-            + "  gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"
+            + "  if (v_TexCoordinate.x > (1.0 - borderWidth) || v_TexCoordinate.x < borderWidth"
+            + "      || v_TexCoordinate.y > (1.0 - borderWidth)"
+            + "      || v_TexCoordinate.y < borderWidth) {"
+            + "    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
+            + "  } else {"
+            + "    gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"
+            + "  }"
             + "}";
 
     private static final FloatBuffer TEXTURE_COORDINATES = makeFloatBuffer(new float[] {
@@ -62,7 +71,6 @@ public class CardboardActivityDesktop {
     private int mTextureDataHandle;
     private int mTextureCoordinateHandle;
     private FloatBuffer mPosition;
-    private float[] mCombinedMatrix;
     private float mHalfWidth;
 
     // Lock to allow multithreaded access to mHalfWidth.
@@ -72,6 +80,12 @@ public class CardboardActivityDesktop {
 
     // Lock to allow multithreaded access to mVideoFrame.
     private final Object mVideoFrameLock = new Object();
+
+    // Flag to indicate whether to reload the desktop texture.
+    private boolean mReloadTexture;
+
+    // Lock to allow multithreaded access to mReloadTexture.
+    private final Object mReloadTextureLock = new Object();
 
     public CardboardActivityDesktop() {
         mVertexShaderHandle =
@@ -90,14 +104,13 @@ public class CardboardActivityDesktop {
     }
 
     /**
-     * Draw the desktop. Make sure texture, position, and model view projection matrix
-     * are passed in before calling this method.
+     * Draw the desktop. Make sure {@link hasVideoFrame} returns true.
      */
-    public void draw() {
+    public void draw(float[] combinedMatrix) {
         GLES20.glUseProgram(mProgramHandle);
 
         // Pass in model view project matrix.
-        GLES20.glUniformMatrix4fv(mCombinedMatrixHandle, 1, false, mCombinedMatrix, 0);
+        GLES20.glUniformMatrix4fv(mCombinedMatrixHandle, 1, false, combinedMatrix, 0);
 
         // Pass in texture coordinate.
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, TEXTURE_COORDINATE_DATA_SIZE,
@@ -120,7 +133,7 @@ public class CardboardActivityDesktop {
      *  Update the desktop frame data based on the mVideoFrame. Note here we fix the
      *  height of the desktop and vary width accordingly.
      */
-    public void updateVideoFrame(Bitmap videoFrame) {
+    private void updateVideoFrame(Bitmap videoFrame) {
         float newHalfDesktopWidth;
         synchronized (mVideoFrameLock) {
             mVideoFrame = videoFrame;
@@ -153,10 +166,6 @@ public class CardboardActivityDesktop {
         GLES20.glDeleteTextures(1, new int[] {mTextureDataHandle}, 0);
     }
 
-    public void setCombinedMatrix(float[] combinedMatrix) {
-        mCombinedMatrix = combinedMatrix.clone();
-    }
-
     /**
      * Return true if video frame data are already loaded in.
      */
@@ -183,6 +192,44 @@ public class CardboardActivityDesktop {
         synchronized (mVideoFrameLock) {
             return new Point(mVideoFrame == null ? 0 : mVideoFrame.getHeight(),
                     mVideoFrame == null ? 0 : mVideoFrame.getWidth());
+        }
+    }
+
+    /**
+     * Link desktop texture if {@link reloadTexture} was previously called.
+     * Invoked from {@link com.google.vrtoolkit.cardboard.CardboardView.StereoRenderer.onNewFrame}
+     * so that both eyes will have the same texture.
+     */
+    public void maybeLoadDesktopTexture() {
+        synchronized (mReloadTextureLock) {
+            if (!mReloadTexture) {
+                return;
+            }
+        }
+
+        // TODO(shichengfeng): Record the time desktop drawing takes.
+        Bitmap bitmap = JniInterface.getVideoFrame();
+
+        if (bitmap == null) {
+            // This can happen if the client is connected, but a complete video frame has not yet
+            // been decoded.
+            return;
+        }
+
+        updateVideoFrame(bitmap);
+
+        synchronized (mReloadTextureLock) {
+            mReloadTexture = false;
+        }
+    }
+
+    /**
+     * Inform this object that a new video frame should be rendered.
+     * Called from native display thread.
+     */
+    public void reloadTexture() {
+        synchronized (mReloadTextureLock) {
+            mReloadTexture = true;
         }
     }
 }
