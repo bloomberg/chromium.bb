@@ -11735,10 +11735,12 @@ void GLES2DecoderImpl::ProcessPendingReadPixels(bool did_finish) {
 
 bool GLES2DecoderImpl::HasMoreIdleWork() {
   return !pending_readpixel_fences_.empty() ||
-      async_pixel_transfer_manager_->NeedsProcessMorePendingTransfers();
+      async_pixel_transfer_manager_->NeedsProcessMorePendingTransfers() ||
+      gpu_tracer_->HasTracesToProcess();
 }
 
 void GLES2DecoderImpl::PerformIdleWork() {
+  gpu_tracer_->ProcessTraces();
   ProcessPendingReadPixels(false);
   if (!async_pixel_transfer_manager_->NeedsProcessMorePendingTransfers())
     return;

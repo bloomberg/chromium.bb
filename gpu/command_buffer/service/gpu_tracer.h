@@ -72,6 +72,9 @@ class GPU_EXPORT GPUTracer
   // End the last started trace marker.
   bool End(GpuTracerSource source);
 
+  bool HasTracesToProcess();
+  void ProcessTraces();
+
   virtual bool IsTracing();
 
   // Retrieve the name of the current open trace.
@@ -82,14 +85,9 @@ class GPU_EXPORT GPUTracer
  protected:
   // Trace Processing.
   virtual scoped_refptr<Outputter> CreateOutputter(const std::string& name);
-  virtual void PostTask();
 
-  void Process();
-  void ProcessTraces();
   bool CheckDisjointStatus();
   void ClearOngoingTraces(bool have_context);
-
-  void IssueProcessTask();
 
   scoped_refptr<gfx::GPUTimingClient> gpu_timing_client_;
   scoped_refptr<Outputter> outputter_;
@@ -102,7 +100,6 @@ class GPU_EXPORT GPUTracer
   int64 disjoint_time_ = 0;
 
   bool gpu_executing_ = false;
-  bool process_posted_ = false;
   bool began_device_traces_ = false;
 
  private:
