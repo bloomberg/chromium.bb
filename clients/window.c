@@ -2748,7 +2748,9 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	 * still have a pending motion event that the compositor has picked
 	 * based on the old surface dimensions
 	 */
-	if (sx > window->main_surface->allocation.width ||
+	if (sx < window->main_surface->allocation.x ||
+	    sy < window->main_surface->allocation.y ||
+	    sx > window->main_surface->allocation.width ||
 	    sy > window->main_surface->allocation.height)
 		return;
 
