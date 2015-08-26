@@ -536,11 +536,9 @@ wl_shm_buffer_begin_access(struct wl_shm_buffer *buffer)
 
 	sigbus_data = pthread_getspecific(wl_shm_sigbus_data_key);
 	if (sigbus_data == NULL) {
-		sigbus_data = malloc(sizeof *sigbus_data);
+		sigbus_data = zalloc(sizeof *sigbus_data);
 		if (sigbus_data == NULL)
 			return;
-
-		memset(sigbus_data, 0, sizeof *sigbus_data);
 
 		pthread_setspecific(wl_shm_sigbus_data_key, sigbus_data);
 	}

@@ -331,11 +331,9 @@ proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 	struct wl_proxy *proxy;
 	struct wl_display *display = factory->display;
 
-	proxy = malloc(sizeof *proxy);
+	proxy = zalloc(sizeof *proxy);
 	if (proxy == NULL)
 		return NULL;
-
-	memset(proxy, 0, sizeof *proxy);
 
 	proxy->object.interface = interface;
 	proxy->display = display;
@@ -387,11 +385,9 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 	struct wl_proxy *proxy;
 	struct wl_display *display = factory->display;
 
-	proxy = malloc(sizeof *proxy);
+	proxy = zalloc(sizeof *proxy);
 	if (proxy == NULL)
 		return NULL;
-
-	memset(proxy, 0, sizeof *proxy);
 
 	proxy->object.interface = interface;
 	proxy->object.id = id;
@@ -817,13 +813,11 @@ wl_display_connect_to_fd(int fd)
 	if (debug && (strstr(debug, "client") || strstr(debug, "1")))
 		debug_client = 1;
 
-	display = malloc(sizeof *display);
+	display = zalloc(sizeof *display);
 	if (display == NULL) {
 		close(fd);
 		return NULL;
 	}
-
-	memset(display, 0, sizeof *display);
 
 	display->fd = fd;
 	wl_map_init(&display->objects, WL_MAP_CLIENT_SIDE);

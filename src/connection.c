@@ -163,10 +163,10 @@ wl_connection_create(int fd)
 {
 	struct wl_connection *connection;
 
-	connection = malloc(sizeof *connection);
+	connection = zalloc(sizeof *connection);
 	if (connection == NULL)
 		return NULL;
-	memset(connection, 0, sizeof *connection);
+
 	connection->fd = fd;
 
 	return connection;

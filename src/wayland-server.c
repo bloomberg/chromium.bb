@@ -415,11 +415,10 @@ wl_client_create(struct wl_display *display, int fd)
 	struct wl_client *client;
 	socklen_t len;
 
-	client = malloc(sizeof *client);
+	client = zalloc(sizeof *client);
 	if (client == NULL)
 		return NULL;
 
-	memset(client, 0, sizeof *client);
 	client->display = display;
 	client->source = wl_event_loop_add_fd(display->loop, fd,
 					      WL_EVENT_READABLE,
@@ -854,11 +853,10 @@ wl_socket_alloc(void)
 {
 	struct wl_socket *s;
 
-	s = malloc(sizeof *s);
+	s = zalloc(sizeof *s);
 	if (!s)
 		return NULL;
 
-	memset(s, 0, sizeof *s);
 	s->fd = -1;
 	s->fd_lock = -1;
 

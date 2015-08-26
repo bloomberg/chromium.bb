@@ -29,6 +29,7 @@
 #define WAYLAND_PRIVATE_H
 
 #include <stdarg.h>
+#include <stdlib.h>
 
 #define WL_HIDE_DEPRECATED 1
 
@@ -215,5 +216,11 @@ struct wl_display;
 
 struct wl_array *
 wl_display_get_additional_shm_formats(struct wl_display *display);
+
+static inline void *
+zalloc(size_t s)
+{
+	return calloc(1, s);
+}
 
 #endif
