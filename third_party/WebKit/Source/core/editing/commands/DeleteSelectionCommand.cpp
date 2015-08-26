@@ -426,7 +426,7 @@ void DeleteSelectionCommand::deleteTextFromNode(PassRefPtrWillBeRawPtr<Text> nod
 
 void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss()
 {
-    RefPtrWillBeRawPtr<Range> range = m_selectionToDelete.toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> range = createRange(m_selectionToDelete.toNormalizedEphemeralRange());
     RefPtrWillBeRawPtr<Node> node = range->firstNode();
     while (node && node != range->pastLastNode()) {
         RefPtrWillBeRawPtr<Node> nextNode = NodeTraversal::next(*node);
