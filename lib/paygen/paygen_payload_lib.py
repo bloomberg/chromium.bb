@@ -19,6 +19,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib.paygen import dryrun_lib
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gspaths
@@ -812,22 +813,14 @@ def FindExistingPayloads(payload):
   return _FilterNonPayloadUris(urilib.ListFiles(search_uri))
 
 
-def FindCacheDir(work_dir=None):
+def FindCacheDir():
   """Helper for deciding what cache directory to use.
 
-  Args:
-    work_dir: Directory that contains ALL work files, cache will
-              be created inside it, if present.
-
   Returns:
-    Returns a directory suitable for use with a DownloadCache. Will
-    always be consistent if a consistent work_dir is passed in.
+    Returns a directory suitable for use with a DownloadCache.
   """
   # Discover which directory to use for caching
-  if work_dir:
-    return os.path.join(work_dir, 'cache')
-  else:
-    return '/usr/local/google/payloads'
+  return os.path.join(path_util.GetCacheDir(), 'paygen_cache')
 
 
 def CreateAndUploadPayload(payload, cache, work_dir, sign=True, verify=True,

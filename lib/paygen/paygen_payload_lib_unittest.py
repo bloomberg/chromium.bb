@@ -725,13 +725,11 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
   def testFindCacheDir(self):
     """Test calculating the location of the cache directory."""
-    # Test default dir in /tmp.
     result = paygen_payload_lib.FindCacheDir()
-    self.assertEqual(result, '/usr/local/google/payloads')
 
-    # Test in specified dir.
-    result = paygen_payload_lib.FindCacheDir('/foo')
-    self.assertEqual(result, '/foo/cache')
+    # The correct result is based on the system cache directory, which changes.
+    # Ensure it ends with the right directory name.
+    self.assertEqual(os.path.basename(result), 'paygen_cache')
 
 
 class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):

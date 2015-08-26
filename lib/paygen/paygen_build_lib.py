@@ -253,7 +253,7 @@ def _GenerateSinglePayload(payload, work_dir, sign, au_generator_uri, dry_run):
   """
   # This cache dir will be shared with other processes, but we need our
   # own instance of the cache manager to properly coordinate.
-  cache_dir = paygen_payload_lib.FindCacheDir(work_dir)
+  cache_dir = paygen_payload_lib.FindCacheDir()
   with download_cache.DownloadCache(
       cache_dir, cache_size=_PaygenBuild.CACHE_SIZE) as cache:
     # Actually generate the payload.
