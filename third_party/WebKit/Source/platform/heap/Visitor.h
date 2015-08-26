@@ -42,7 +42,6 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashTraits.h"
 #include "wtf/InstanceCounter.h"
-#include "wtf/Threading.h"
 #include "wtf/TypeTraits.h"
 #include "wtf/text/WTFString.h"
 
@@ -387,11 +386,9 @@ private:
 
 template<typename T>
 struct TypenameStringTrait {
-    // This method is not thread safe.
-    static const String& get()
+    static const String get()
     {
-        AtomicallyInitializedStaticReference(AtomicString, typenameString, new AtomicString(WTF::extractTypeNameFromFunctionName(WTF::extractNameFunction<T>())));
-        return typenameString;
+        return WTF::extractTypeNameFromFunctionName(WTF::extractNameFunction<T>());
     }
 };
 
