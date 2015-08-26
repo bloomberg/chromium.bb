@@ -319,6 +319,9 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         if (scheme != null && !scheme.equals("http") && !scheme.equals("https")) return false;
         if (!isCallerForegroundOrSelf()) return false;
 
+        // Things below need the browser process to be initialized.
+        if (!warmup(0)) return false;
+
         final IBinder session = callback.asBinder();
         final String urlString = url.toString();
         final boolean noPrerendering =
