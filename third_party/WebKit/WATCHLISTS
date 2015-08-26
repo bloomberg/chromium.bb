@@ -140,7 +140,8 @@
       'filepath': 'Source/core/loader',
     },
     'notifications': {
-      'filepath': 'Source/modules/notifications' \
+      'filepath': 'LayoutTests/http/tests/notifications' \
+                  '|Source/modules/notifications' \
                   '|public/platform/modules/notifications'
     },
     'owners': {
@@ -160,7 +161,8 @@
       'filepath': 'public'
     },
     'push_messaging': {
-      'filepath': 'Source/modules/push_messaging' \
+      'filepath': 'LayoutTests/http/tests/push_messaging' \
+                  '|Source/modules/push_messaging' \
                   '|public/platform/modules/push_messaging'
     },
     'platform_graphics': {
