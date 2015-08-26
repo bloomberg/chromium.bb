@@ -927,6 +927,10 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
 void WebMediaPlayerAndroid::OnTimeUpdate(base::TimeDelta current_timestamp,
                                          base::TimeTicks current_time_ticks) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  if (seeking())
+    return;
+
   // Compensate the current_timestamp with the IPC latency.
   base::TimeDelta lower_bound =
       base::TimeTicks::Now() - current_time_ticks + current_timestamp;
@@ -940,7 +944,9 @@ void WebMediaPlayerAndroid::OnTimeUpdate(base::TimeDelta current_timestamp,
   // if the lower_bound is smaller than the current time, just use the current
   // time so that the timer is always progressing.
   lower_bound =
-      std::min(lower_bound, base::TimeDelta::FromSecondsD(currentTime()));
+      std::max(lower_bound, base::TimeDelta::FromSecondsD(currentTime()));
+  if (lower_bound > upper_bound)
+    upper_bound = lower_bound;
   interpolator_.SetBounds(lower_bound, upper_bound);
 }
 
