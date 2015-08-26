@@ -1085,6 +1085,21 @@ bool FormOrFieldsetsToFormData(
   return true;
 }
 
+bool UnownedFormElementsAndFieldSetsToFormData(
+    const std::vector<blink::WebElement>& fieldsets,
+    const std::vector<blink::WebFormControlElement>& control_elements,
+    const blink::WebFormControlElement* element,
+    const blink::WebDocument& document,
+    ExtractMask extract_mask,
+    FormData* form,
+    FormFieldData* field) {
+  form->origin = document.url();
+  form->is_form_tag = false;
+
+  return FormOrFieldsetsToFormData(nullptr, element, fieldsets,
+                                   control_elements, extract_mask, form, field);
+}
+
 }  // namespace
 
 const size_t kMaxParseableFields = 200;
@@ -1295,7 +1310,7 @@ GetUnownedAutofillableFormFieldElements(
   return ExtractAutofillableElementsFromSet(unowned_fieldset_children);
 }
 
-bool UnownedFormElementsAndFieldSetsToFormData(
+bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebElement>& fieldsets,
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
@@ -1304,12 +1319,12 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     FormData* form,
     FormFieldData* field) {
   // Only attempt formless Autofill on checkout flows. This avoids the many
-  // false positives found on the non-checkout web. See http://crbug.com/462375
-  // For now this early abort only applies to English-language pages, because
-  // the regex is not translated. Note that an empty "lang" attribute counts as
-  // English. A potential problem is that this only checks document.title(), but
-  // should actually check the main frame's title. Thus it may make bad
-  // decisions for iframes.
+  // false positives found on the non-checkout web. See
+  // http://crbug.com/462375. For now this early abort only applies to
+  // English-language pages, because the regex is not translated. Note that
+  // an empty "lang" attribute counts as English. A potential problem is that
+  // this only checks document.title(), but should actually check the main
+  // frame's title. Thus it may make bad decisions for iframes.
   WebElement html_element = document.documentElement();
   std::string lang;
   if (!html_element.isNull())
@@ -1321,12 +1336,24 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     return false;
   }
 
-  form->origin = document.url();
-  form->is_form_tag = false;
-
-  return FormOrFieldsetsToFormData(nullptr, element, fieldsets,
-                                   control_elements, extract_mask, form, field);
+  return UnownedFormElementsAndFieldSetsToFormData(
+      fieldsets, control_elements, element, document, extract_mask, form,
+      field);
 }
+
+bool UnownedPasswordFormElementsAndFieldSetsToFormData(
+    const std::vector<blink::WebElement>& fieldsets,
+    const std::vector<blink::WebFormControlElement>& control_elements,
+    const blink::WebFormControlElement* element,
+    const blink::WebDocument& document,
+    ExtractMask extract_mask,
+    FormData* form,
+    FormFieldData* field) {
+  return UnownedFormElementsAndFieldSetsToFormData(
+      fieldsets, control_elements, element, document, extract_mask, form,
+      field);
+}
+
 
 bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
                                            FormData* form,
@@ -1343,7 +1370,7 @@ bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
     std::vector<WebElement> fieldsets;
     std::vector<WebFormControlElement> control_elements =
         GetUnownedAutofillableFormFieldElements(document.all(), &fieldsets);
-    return UnownedFormElementsAndFieldSetsToFormData(
+    return UnownedCheckoutFormElementsAndFieldSetsToFormData(
         fieldsets, control_elements, &element, document, extract_mask,
         form, field);
   }

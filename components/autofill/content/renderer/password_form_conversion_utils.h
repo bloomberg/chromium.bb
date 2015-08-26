@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "url/gurl.h"
 
@@ -16,8 +17,8 @@ namespace blink {
 class WebDocument;
 class WebFormElement;
 class WebFormControlElement;
+class WebFrame;
 class WebInputElement;
-class WebString;
 }
 
 namespace autofill {
@@ -40,6 +41,9 @@ bool IsGaiaReauthenticationForm(
     const GURL& origin,
     const blink::WebVector<blink::WebFormControlElement>& control_elements);
 
+typedef std::map<const blink::WebInputElement,
+                 blink::WebString> ModifiedValues;
+
 // Create a PasswordForm from DOM form. Webkit doesn't allow storing
 // custom metadata to DOM nodes, so we have to do this every time an event
 // happens with a given form and compare against previously Create'd forms
@@ -49,12 +53,17 @@ bool IsGaiaReauthenticationForm(
 // the PasswordForm.
 // |form_predictions| is Autofill server response, if present it's used for
 // overwriting default username element selection.
-scoped_ptr<PasswordForm> CreatePasswordForm(
+scoped_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const blink::WebFormElement& form,
-    const std::map<const blink::WebInputElement, blink::WebString>*
-        nonscript_modified_values,
-    const std::map<autofill::FormData,
-                   autofill::PasswordFormFieldPredictionMap>* form_predictions);
+    const ModifiedValues* nonscript_modified_values,
+    const FormsPredictionsMap* form_predictions);
+
+// Same as CreatePasswordFormFromWebForm() but for input elements that are not
+// enclosed in <form> element.
+scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
+    const blink::WebFrame& frame,
+    const ModifiedValues* nonscript_modified_values,
+    const FormsPredictionsMap* form_predictions);
 
 }  // namespace autofill
 

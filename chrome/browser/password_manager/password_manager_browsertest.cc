@@ -1370,44 +1370,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        AutofillSuggetionsForPasswordFormWithoutUsernameField) {
-  scoped_refptr<password_manager::TestPasswordStore> password_store =
-      static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(
-              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
-
-  EXPECT_TRUE(password_store->IsEmpty());
-
-  // Password form without username-field.
-  NavigateToFile("/password/form_with_only_password_field.html");
-
-  NavigationObserver observer(WebContents());
-  scoped_ptr<PromptObserver> prompt_observer(
-      PromptObserver::Create(WebContents()));
   std::string submit =
       "document.getElementById('password').value = 'mypassword';"
       "document.getElementById('submit-button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
-  observer.Wait();
-
-  prompt_observer->Accept();
-
-  // Spin the message loop to make sure the password store had a chance to save
-  // the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-  EXPECT_FALSE(password_store->IsEmpty());
-
-  // Now, navigate to same html password form and verify whether password is
-  // autofilled.
-  NavigateToFile("/password/form_with_only_password_field.html");
-
-  // Let the user interact with the page, so that DOM gets modification events,
-  // needed for autofilling fields.
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
-
-  // Wait until that interaction causes the password value to be revealed.
-  WaitForElementValue("password", "mypassword");
+  VerifyPasswordIsSavedAndFilled("/password/form_with_only_password_field.html",
+                                 submit, "password", "mypassword");
 }
 
 // Test that if a form gets autofilled, then it gets autofilled on re-creation
@@ -1746,86 +1713,24 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // login form still gets autofilled.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        AutofillSuggetionsForLoginSignupForm) {
-  scoped_refptr<password_manager::TestPasswordStore> password_store =
-      static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(
-              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
-
-  EXPECT_TRUE(password_store->IsEmpty());
-
-  NavigateToFile("/password/login_signup_form.html");
-
-  NavigationObserver observer(WebContents());
-  scoped_ptr<PromptObserver> prompt_observer(
-      PromptObserver::Create(WebContents()));
   std::string submit =
       "document.getElementById('username').value = 'myusername';"
       "document.getElementById('password').value = 'mypassword';"
       "document.getElementById('submit').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
-  observer.Wait();
-
-  prompt_observer->Accept();
-
-  // Spin the message loop to make sure the password store had a chance to save
-  // the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-  EXPECT_FALSE(password_store->IsEmpty());
-
-  // Now, navigate to the same html password form and verify whether password is
-  // autofilled.
-  NavigateToFile("/password/login_signup_form.html");
-
-  // Let the user interact with the page, so that DOM gets modification events,
-  // needed for autofilling fields.
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
-
-  // Wait until that interaction causes the password value to be revealed.
-  WaitForElementValue("password", "mypassword");
+  VerifyPasswordIsSavedAndFilled("/password/login_signup_form.html",
+                                 submit, "password", "mypassword");
 }
 
 // Check that we can fill in cases where <base href> is set and the action of
 // the form is not set. Regression test for https://crbug.com/360230.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        BaseTagWithNoActionTest) {
-  scoped_refptr<password_manager::TestPasswordStore> password_store =
-      static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(
-              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
-
-  EXPECT_TRUE(password_store->IsEmpty());
-
-  NavigateToFile("/password/password_xhr_submit.html");
-
-  NavigationObserver observer(WebContents());
-  scoped_ptr<PromptObserver> prompt_observer(
-      PromptObserver::Create(WebContents()));
   std::string submit =
       "document.getElementById('username_field').value = 'myusername';"
       "document.getElementById('password_field').value = 'mypassword';"
       "document.getElementById('submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
-  observer.Wait();
-
-  prompt_observer->Accept();
-
-  // Spin the message loop to make sure the password store had a chance to save
-  // the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-  EXPECT_FALSE(password_store->IsEmpty());
-
-  NavigateToFile("/password/password_xhr_submit.html");
-
-  // Let the user interact with the page, so that DOM gets modification events,
-  // needed for autofilling fields.
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
-
-  // Wait until that interaction causes the password value to be revealed.
-  WaitForElementValue("password_field", "mypassword");
+  VerifyPasswordIsSavedAndFilled("/password/password_xhr_submit.html",
+                                 submit, "password_field", "mypassword");
 }
 
 // Check that a password form in an iframe of different origin will not be
@@ -1976,7 +1881,17 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   // Verify username has been autofilled
   CheckElementValue("iframe", "username_field", "temp");
+}
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoFormElementTest) {
+  std::string submit =
+      "document.getElementById('username_field').value = 'myusername';"
+      "document.getElementById('password_field').value = 'mypassword';"
+      "send_xhr();";
+  VerifyPasswordIsSavedAndFilled("/password/no_form_element.html",
+                                 submit,
+                                 "password_field",
+                                 "mypassword");
 }
 
 // The password manager driver will kill processes when they try to access

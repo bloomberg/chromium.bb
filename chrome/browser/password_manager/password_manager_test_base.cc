@@ -20,6 +20,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -69,7 +70,7 @@ bool PromptObserver::IsShowingUpdatePrompt() const {
 }
 
 void PromptObserver::Accept() const {
-  EXPECT_TRUE(IsShowingPrompt());
+  ASSERT_TRUE(IsShowingPrompt());
   AcceptImpl();
 }
 
@@ -211,6 +212,44 @@ void PasswordManagerBrowserTestBase::NavigateToFile(const std::string& path) {
   GURL url = embedded_test_server()->GetURL(path);
   ui_test_utils::NavigateToURL(browser(), url);
   observer.Wait();
+}
+
+void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
+    const std::string& filename,
+    const std::string& submission_script,
+    const std::string& expected_element,
+    const std::string& expected_value) {
+  password_manager::TestPasswordStore* password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
+  EXPECT_TRUE(password_store->IsEmpty());
+
+  NavigateToFile(filename);
+
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submission_script));
+  observer.Wait();
+
+  prompt_observer->Accept();
+
+  // Spin the message loop to make sure the password store had a chance to save
+  // the password.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  ASSERT_FALSE(password_store->IsEmpty());
+
+  NavigateToFile(filename);
+
+  // Let the user interact with the page, so that DOM gets modification events,
+  // needed for autofilling fields.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+
+  // Wait until that interaction causes the password value to be revealed.
+  WaitForElementValue(expected_element, expected_value);
 }
 
 void PasswordManagerBrowserTestBase::WaitForElementValue(

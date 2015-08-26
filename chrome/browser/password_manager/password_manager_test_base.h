@@ -114,6 +114,14 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
   // return immediately.
   void NavigateToFile(const std::string& path);
 
+  // Navigates to |filename| and runs |submission_script| to submit. Navigates
+  // back to |filename| and then verifies that |expected_element| has
+  // |expected_value|.
+  void VerifyPasswordIsSavedAndFilled(const std::string& filename,
+                                      const std::string& submission_script,
+                                      const std::string& expected_element,
+                                      const std::string& expected_value);
+
   // Waits until the "value" attribute of the HTML element with |element_id| is
   // equal to |expected_value|. If the current value is not as expected, this
   // waits until the "change" event is fired for the element. This also
