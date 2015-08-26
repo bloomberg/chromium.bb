@@ -3875,28 +3875,43 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
 
 void WebViewImpl::willInsertBody(WebLocalFrameImpl* webframe)
 {
-    resumeTreeViewCommitsIfNeeded(webframe);
+    if (webframe != mainFrameImpl())
+        return;
+
+    if (!m_page->mainFrame()->isLocalFrame())
+        return;
+
+    // If we get to the <body> tag and we have no pending stylesheet and import load, we
+    // can be fairly confident we'll have something sensible to paint soon and
+    // can turn off deferred commits.
+    if (m_page->deprecatedLocalMainFrame()->document()->isRenderingReady())
+        resumeTreeViewCommits();
 }
 
 void WebViewImpl::didFinishDocumentLoad(WebLocalFrameImpl* webframe)
 {
-    resumeTreeViewCommitsIfNeeded(webframe);
+    if (webframe != mainFrameImpl())
+        return;
+    // If we finished parsing and there's no sheets to load start painting.
+    if (webframe->frame()->document()->isRenderingReady())
+        resumeTreeViewCommits();
 }
 
 void WebViewImpl::didRemoveAllPendingStylesheet(WebLocalFrameImpl* webframe)
 {
-    resumeTreeViewCommitsIfNeeded(webframe);
-}
-
-void WebViewImpl::resumeTreeViewCommitsIfNeeded(WebLocalFrameImpl* webframe)
-{
     if (webframe != mainFrameImpl())
         return;
-    if (!webframe->frame()->document()->shouldProcessFrameLifecycle())
-        return;
-    if (!m_layerTreeView)
-        return;
-    m_layerTreeView->setDeferCommits(false);
+
+    // If we have no more stylesheets to load and we're past the body tag,
+    // we should have something to paint and should start as soon as possible.
+    if (m_page->deprecatedLocalMainFrame()->document()->body())
+        resumeTreeViewCommits();
+}
+
+void WebViewImpl::resumeTreeViewCommits()
+{
+    if (m_layerTreeView)
+        m_layerTreeView->setDeferCommits(false);
 }
 
 void WebViewImpl::postLayoutResize(WebLocalFrameImpl* webframe)

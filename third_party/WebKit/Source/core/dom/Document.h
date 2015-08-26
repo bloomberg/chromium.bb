@@ -911,8 +911,6 @@ public:
 
     const DocumentTiming& timing() const { return m_documentTiming; }
 
-    bool shouldProcessFrameLifecycle();
-
     int requestAnimationFrame(FrameRequestCallback*);
     void cancelAnimationFrame(int id);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
@@ -1153,7 +1151,6 @@ private:
 
     bool m_hasNodesWithPlaceholderStyle;
     bool m_evaluateMediaQueriesOnStyleRecalc;
-    bool m_shouldProcessFrameLifecycle;
 
     // If we do ignore the pending stylesheet count, then we need to add a boolean
     // to track that this happened so that we can do a full repaint when the stylesheets

@@ -544,7 +544,7 @@ private:
     float maximumLegiblePageScale() const;
     void refreshPageScaleFactorAfterLayout();
     void resetScrollAndScaleState(bool immediately);
-    void resumeTreeViewCommitsIfNeeded(WebLocalFrameImpl*);
+    void resumeTreeViewCommits();
     IntSize contentsSize() const;
 
     void performResize();
