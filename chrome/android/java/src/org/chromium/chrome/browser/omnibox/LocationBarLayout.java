@@ -1097,11 +1097,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     @Override
     public void setMenuButtonHelper(AppMenuButtonHelper helper) { }
 
-    @Override
-    public View getMenuAnchor() {
-        return null;
-    }
-
     /**
      * Sets the URL focus change listner that will be notified when the URL gains or loses focus.
      * @param listener The listener to be registered.

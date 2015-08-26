@@ -738,8 +738,7 @@ public class DocumentActivity extends ChromeActivity {
             }
         } else if (id == R.id.show_menu) {
             if (getToolbarManager().isInitialized()) {
-                getAppMenuHandler().showAppMenu(getToolbarManager().getMenuAnchor(), true,
-                        false);
+                getAppMenuHandler().showAppMenu(null, false);
             }
         } else if (id == R.id.focus_url_bar) {
             if (getToolbarManager().isInitialized()) getToolbarManager().setUrlBarFocus(true);

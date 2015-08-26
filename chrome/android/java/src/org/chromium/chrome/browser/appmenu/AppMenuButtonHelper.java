@@ -45,7 +45,7 @@ public class AppMenuButtonHelper implements OnTouchListener {
      */
     private boolean showAppMenu(View view, boolean startDragging) {
         if (!mMenuHandler.isAppMenuShowing()
-                && mMenuHandler.showAppMenu(view, false, startDragging)) {
+                && mMenuHandler.showAppMenu(view, startDragging)) {
             // Initial start dragging can be canceled in case if it was just single tap.
             // So we only record non-dragging here, and will deal with those dragging cases in
             // AppMenuDragHelper class.

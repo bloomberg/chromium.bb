@@ -19,7 +19,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -213,12 +212,10 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     private void showAppMenuAndAssertMenuShown() throws InterruptedException {
-        final View anchor = getActivity().findViewById(R.id.menu_anchor_stub);
-
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAppMenuHandler.showAppMenu(anchor, false, false);
+                mAppMenuHandler.showAppMenu(null, false);
             }
         });
         assertTrue("AppMenu did not show",

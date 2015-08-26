@@ -341,7 +341,7 @@ public class ChromeShellActivity extends AppCompatActivity implements AppMenuPro
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_MENU && event.getRepeatCount() == 0) {
             if (mToolbar != null) mToolbar.hideSuggestions();
-            mAppMenuHandler.showAppMenu(findViewById(R.id.menu_button), true, false);
+            mAppMenuHandler.showAppMenu(findViewById(R.id.menu_button), false);
             return true;
         }
         return super.onKeyDown(keyCode, event);

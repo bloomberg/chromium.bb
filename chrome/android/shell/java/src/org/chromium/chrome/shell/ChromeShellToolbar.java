@@ -220,7 +220,7 @@ public class ChromeShellToolbar extends LinearLayout {
         menuButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mMenuHandler != null) mMenuHandler.showAppMenu(view, false, false);
+                if (mMenuHandler != null) mMenuHandler.showAppMenu(view, false);
             }
         });
         menuButton.setOnTouchListener(new OnTouchListener() {

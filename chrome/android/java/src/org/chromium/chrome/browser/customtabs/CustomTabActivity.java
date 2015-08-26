@@ -339,7 +339,7 @@ public class CustomTabActivity extends ChromeActivity {
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == R.id.show_menu) {
             if (shouldShowAppMenu()) {
-                getAppMenuHandler().showAppMenu(getToolbarManager().getMenuAnchor(), true, false);
+                getAppMenuHandler().showAppMenu(null, false);
                 return true;
             }
         } else if (id == R.id.open_in_chrome_id) {

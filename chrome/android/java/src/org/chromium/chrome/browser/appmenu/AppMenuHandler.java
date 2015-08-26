@@ -31,6 +31,7 @@ public class AppMenuHandler {
     private Menu mMenu;
     private final ArrayList<AppMenuObserver> mObservers;
     private final int mMenuResourceId;
+    private final View mHardwareButtonMenuAnchor;
 
     private final AppMenuPropertiesDelegate mDelegate;
     private final Activity mActivity;
@@ -48,6 +49,9 @@ public class AppMenuHandler {
         mDelegate = delegate;
         mObservers = new ArrayList<AppMenuObserver>();
         mMenuResourceId = menuResourceId;
+        mHardwareButtonMenuAnchor = activity.findViewById(R.id.menu_anchor_stub);
+        assert mHardwareButtonMenuAnchor != null
+                : "Using AppMenu requires to have menu_anchor_stub view";
     }
 
     /**
@@ -63,9 +67,8 @@ public class AppMenuHandler {
 
     /**
      * Show the app menu.
-     * @param anchorView         Anchor view (usually a menu button) to be used for the popup.
-     * @param isByHardwareButton True if hardware button triggered it. (oppose to software
-     *                           button)
+     * @param anchorView         Anchor view (usually a menu button) to be used for the popup, if
+     *                           null is passed then hardware menu button anchor will be used.
      * @param startDragging      Whether dragging is started. For example, if the app menu is
      *                           showed by tapping on a button, this should be false. If it is
      *                           showed by start dragging down on the menu button, this should
@@ -75,9 +78,23 @@ public class AppMenuHandler {
      * @return True, if the menu is shown, false, if menu is not shown, example reasons:
      *         the menu is not yet available to be shown, or the menu is already showing.
      */
-    public boolean showAppMenu(View anchorView, boolean isByHardwareButton, boolean startDragging) {
-        assert !(isByHardwareButton && startDragging);
+    public boolean showAppMenu(View anchorView, boolean startDragging) {
         if (!mDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
+        boolean isByHardwareButton = false;
+        if (anchorView == null) {
+            // This fixes the bug where the bottom of the menu starts at the top of
+            // the keyboard, instead of overlapping the keyboard as it should.
+            int displayHeight = mActivity.getResources().getDisplayMetrics().heightPixels;
+            Rect rect = new Rect();
+            mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+            int statusBarHeight = rect.top;
+            mHardwareButtonMenuAnchor.setY((displayHeight - statusBarHeight));
+
+            anchorView = mHardwareButtonMenuAnchor;
+            isByHardwareButton = true;
+        }
+
+        assert !(isByHardwareButton && startDragging);
 
         if (mMenu == null) {
             // Use a PopupMenu to create the Menu object. Note this is not the same as the
