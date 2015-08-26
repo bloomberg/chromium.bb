@@ -4,6 +4,11 @@
             "group_name": "Enabled"
         }
     ],
+    "EnableSessionCrashedBubbleUI": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "InstanceID": [
         {
             "group_name": "Enabled"
