@@ -102,6 +102,16 @@ static unsigned toPlatformEventModifiers(int webModifiers)
     return newModifiers;
 }
 
+static unsigned toPlatformKeyboardEventModifiers(int webModifiers)
+{
+    unsigned newModifiers = toPlatformEventModifiers(webModifiers);
+    if (webModifiers & WebInputEvent::IsKeyPad)
+        newModifiers |= PlatformEvent::IsKeyPad;
+    if (webModifiers & WebInputEvent::IsAutoRepeat)
+        newModifiers |= PlatformEvent::IsAutoRepeat;
+    return newModifiers;
+}
+
 unsigned toPlatformMouseEventModifiers(int webModifiers)
 {
     unsigned newModifiers = toPlatformEventModifiers(webModifiers);
@@ -303,15 +313,13 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_text = String(e.text);
     m_unmodifiedText = String(e.unmodifiedText);
     m_keyIdentifier = String(e.keyIdentifier);
-    m_autoRepeat = (e.modifiers & WebInputEvent::IsAutoRepeat);
     m_nativeVirtualKeyCode = e.nativeKeyCode;
-    m_isKeypad = (e.modifiers & WebInputEvent::IsKeyPad);
     m_isSystemKey = e.isSystemKey;
     // TODO: BUG482880 Fix this initialization to lazy initialization.
     m_code = Platform::current()->domCodeStringFromEnum(e.domCode);
     m_key = Platform::current()->domKeyStringFromEnum(e.domKey);
 
-    m_modifiers = toPlatformEventModifiers(e.modifiers);
+    m_modifiers = toPlatformKeyboardEventModifiers(e.modifiers);
 
     // FIXME: PlatformKeyboardEvents expect a locational version of the keycode (e.g. VK_LSHIFT
     // instead of VK_SHIFT). This should be changed so the location/keycode are stored separately,

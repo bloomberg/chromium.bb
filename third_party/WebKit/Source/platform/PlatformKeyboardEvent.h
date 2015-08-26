@@ -40,13 +40,11 @@ public:
         : PlatformEvent(PlatformEvent::KeyDown)
         , m_windowsVirtualKeyCode(0)
         , m_nativeVirtualKeyCode(0)
-        , m_autoRepeat(false)
-        , m_isKeypad(false)
         , m_isSystemKey(false)
     {
     }
 
-    PlatformKeyboardEvent(Type type, const String& text, const String& unmodifiedText, const String& keyIdentifier, const String& code, const String& key, int windowsVirtualKeyCode, int nativeVirtualKeyCode, bool isAutoRepeat, bool isKeypad, bool isSystemKey, Modifiers modifiers, double timestamp)
+    PlatformKeyboardEvent(Type type, const String& text, const String& unmodifiedText, const String& keyIdentifier, const String& code, const String& key, int windowsVirtualKeyCode, int nativeVirtualKeyCode, bool isSystemKey, Modifiers modifiers, double timestamp)
         : PlatformEvent(type, modifiers, timestamp)
         , m_text(text)
         , m_unmodifiedText(unmodifiedText)
@@ -55,8 +53,6 @@ public:
         , m_key(key)
         , m_windowsVirtualKeyCode(windowsVirtualKeyCode)
         , m_nativeVirtualKeyCode(nativeVirtualKeyCode)
-        , m_autoRepeat(isAutoRepeat)
-        , m_isKeypad(isKeypad)
         , m_isSystemKey(isSystemKey)
     {
     }
@@ -87,8 +83,8 @@ public:
 
     int nativeVirtualKeyCode() const { return m_nativeVirtualKeyCode; }
 
-    bool isAutoRepeat() const { return m_autoRepeat; }
-    bool isKeypad() const { return m_isKeypad; }
+    bool isAutoRepeat() const { return modifiers() & IsAutoRepeat; }
+    bool isKeypad() const { return modifiers() & IsKeyPad; }
     bool isSystemKey() const { return m_isSystemKey; }
 
     PLATFORM_EXPORT static bool currentCapsLockState();
@@ -102,8 +98,6 @@ protected:
     String m_key;
     int m_windowsVirtualKeyCode;
     int m_nativeVirtualKeyCode;
-    bool m_autoRepeat;
-    bool m_isKeypad;
     bool m_isSystemKey;
 
 private:

@@ -78,6 +78,9 @@ public:
         MetaKey     = 1 << 2,
         ShiftKey    = 1 << 3,
 
+        IsKeyPad         = 1 << 4,
+        IsAutoRepeat     = 1 << 5,
+
         LeftButtonDown   = 1 << 6,
         MiddleButtonDown = 1 << 7,
         RightButtonDown  = 1 << 8,
