@@ -1095,7 +1095,7 @@ void LayerTreeHost::UnregisterLayer(Layer* layer) {
 }
 
 bool LayerTreeHost::IsLayerInTree(int layer_id, LayerTreeType tree_type) const {
-  return tree_type == LayerTreeType::ACTIVE;
+  return tree_type == LayerTreeType::ACTIVE && LayerById(layer_id);
 }
 
 void LayerTreeHost::SetMutatorsNeedCommit() {
