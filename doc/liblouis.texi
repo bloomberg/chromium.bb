@@ -1895,7 +1895,6 @@ namely YAML. If you have @file{libyaml} installed they will
 automatically be invoked as part of the standard @command{make check}
 command.
 
-
 @item Harness tests
 The harness tests are also data driven like the YAML tests. However
 the data is given in JSON and quite a bit more verbose than the YAML
@@ -1927,6 +1926,14 @@ Then it optionally defines flags such as the @samp{testmode}. Finally
 all the tests are defined.
 
 Let's just look at a simple example how tests could be defined:
+
+@iftex
+@emph{(For technical reasons the unicode braille in the expected
+translation in the following YAML examples is not displayed correctly.
+Please refer to the example YAML file @file{example_test.yaml} in the
+@file{tests} directory of the source distribution or read these
+examples in another version of the documentation such as HTML)}
+@end iftex
 
 @example
 # comments start with '#' anywhere on a line
