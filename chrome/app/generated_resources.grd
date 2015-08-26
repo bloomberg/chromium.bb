@@ -15459,7 +15459,7 @@ After you create a new supervised user, you can manage their settings at any tim
         Enable exporting of tracing events to ETW.
       </message>
       <message name="IDS_FLAGS_TRACE_EXPORT_EVENTS_TO_ETW_DESRIPTION" desc="Description for the flag to enable exporting of tracing events to ETW.">
-        If enabled, trace events are exported to ETW and can be captured by either UIForETW or Xperf.
+        If enabled, trace events will be exported to the Event Tracing for Windows (ETW) and can then be captured by tools such as UIForETW or Xperf.
       </message>
     </if>
 
