@@ -125,6 +125,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   SpdyMajorVersion GetSpdyVersion();
 
+  void ResetStream();
+
   // TODO(rtenneti): Temporary while investigating crbug.com/468529
   void CrashIfInvalid() const;
 

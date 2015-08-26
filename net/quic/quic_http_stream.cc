@@ -222,10 +222,9 @@ int QuicHttpStream::ReadResponseBody(
 void QuicHttpStream::Close(bool not_reusable) {
   // Note: the not_reusable flag has no meaning for SPDY streams.
   if (stream_) {
-    closed_stream_received_bytes_ = stream_->stream_bytes_read();
     stream_->SetDelegate(nullptr);
     stream_->Reset(QUIC_STREAM_CANCELLED);
-    stream_ = nullptr;
+    ResetStream();
     response_status_ = was_handshake_confirmed_ ?
         ERR_CONNECTION_CLOSED : ERR_QUIC_HANDSHAKE_FAILED;
   }
@@ -329,14 +328,13 @@ void QuicHttpStream::OnClose(QuicErrorCode error) {
     response_status_ = ERR_ABORTED;
   }
 
-  closed_stream_received_bytes_ = stream_->stream_bytes_read();
-  stream_ = nullptr;
+  ResetStream();
   if (!callback_.is_null())
     DoCallback(response_status_);
 }
 
 void QuicHttpStream::OnError(int error) {
-  stream_ = nullptr;
+  ResetStream();
   response_status_ = was_handshake_confirmed_ ?
       error : ERR_QUIC_HANDSHAKE_FAILED;
   if (!callback_.is_null())
@@ -538,13 +536,20 @@ int QuicHttpStream::ReadAvailableData(IOBuffer* buf, int buf_len) {
   if (stream_->IsDoneReading()) {
     stream_->SetDelegate(nullptr);
     stream_->OnFinRead();
-    stream_ = nullptr;
+    ResetStream();
   }
   return rv;
 }
 
 SpdyMajorVersion QuicHttpStream::GetSpdyVersion() {
   return SpdyUtils::GetSpdyVersionForQuicVersion(stream_->version());
+}
+
+void QuicHttpStream::ResetStream() {
+  if (!stream_)
+    return;
+  closed_stream_received_bytes_ = stream_->stream_bytes_read();
+  stream_ = nullptr;
 }
 
 void QuicHttpStream::CrashIfInvalid() const {
