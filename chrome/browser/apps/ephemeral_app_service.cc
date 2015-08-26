@@ -262,10 +262,13 @@ void EphemeralAppService::HandleEphemeralAppPromoted(const Extension* app) {
 
   int disable_reasons = prefs->GetDisableReasons(app->id());
   if (disable_reasons & Extension::DISABLE_INACTIVE_EPHEMERAL_APP) {
-    prefs->RemoveDisableReason(app->id(),
-                               Extension::DISABLE_INACTIVE_EPHEMERAL_APP);
-    if (disable_reasons == Extension::DISABLE_INACTIVE_EPHEMERAL_APP)
-      prefs->SetExtensionState(app->id(), Extension::ENABLED);
+    if (disable_reasons == Extension::DISABLE_INACTIVE_EPHEMERAL_APP) {
+      // This will also clear disable reasons.
+      prefs->SetExtensionEnabled(app->id());
+    } else {
+      prefs->RemoveDisableReason(app->id(),
+                                 Extension::DISABLE_INACTIVE_EPHEMERAL_APP);
+    }
   }
 }
 

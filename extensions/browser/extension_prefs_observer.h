@@ -16,6 +16,8 @@ class ExtensionPrefs;
 class ExtensionPrefsObserver {
  public:
   // Called when the reasons for an extension being disabled have changed.
+  // This is *not* called when the disable reasons change due to the extension
+  // being enabled/disabled.
   virtual void OnExtensionDisableReasonsChanged(const std::string& extension_id,
                                                 int disabled_reasons) {}
 
@@ -32,6 +34,9 @@ class ExtensionPrefsObserver {
   virtual void OnExtensionPrefsDeleted(const std::string& extension_id) {}
 
   // Called when an extension's enabled state pref is changed.
+  // Note: This does not necessarily correspond to the extension being loaded/
+  // unloaded. For that, observe the ExtensionRegistry, and reconcile that the
+  // events might not match up.
   virtual void OnExtensionStateChanged(const std::string& extension_id,
                                        bool state) {}
 };

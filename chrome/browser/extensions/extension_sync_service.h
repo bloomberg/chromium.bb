@@ -8,10 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/sync_bundle.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/common/extension.h"
+#include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "sync/api/syncable_service.h"
 
 class ExtensionService;
@@ -23,16 +24,12 @@ class ExtensionSet;
 class ExtensionSyncData;
 }  // namespace extensions
 
-namespace syncer {
-class SyncChange;
-class SyncChangeProcessor;
-class SyncErrorFactory;
-}
-
 // SyncableService implementation responsible for the APPS and EXTENSIONS data
 // types, i.e. "proper" apps/extensions (not themes).
 class ExtensionSyncService : public syncer::SyncableService,
-                             public KeyedService {
+                             public KeyedService,
+                             public extensions::ExtensionRegistryObserver,
+                             public extensions::ExtensionPrefsObserver {
  public:
   explicit ExtensionSyncService(Profile* profile);
   ~ExtensionSyncService() override;
@@ -40,11 +37,10 @@ class ExtensionSyncService : public syncer::SyncableService,
   // Convenience function to get the ExtensionSyncService for a BrowserContext.
   static ExtensionSyncService* Get(content::BrowserContext* context);
 
-  // Notifies Sync that the given |extension| has been uninstalled.
-  void SyncUninstallExtension(const extensions::Extension& extension);
-
   // Notifies Sync (if needed) of a newly-installed extension or a change to
-  // an existing extension.
+  // an existing extension. Call this when you change an extension setting that
+  // is synced as part of ExtensionSyncData (e.g. incognito_enabled or
+  // all_urls_enabled).
   void SyncExtensionChangeIfNeeded(const extensions::Extension& extension);
 
   // syncer::SyncableService implementation.
@@ -76,6 +72,20 @@ class ExtensionSyncService : public syncer::SyncableService,
       const syncer::SyncableService::StartSyncFlare& flare);
 
   ExtensionService* extension_service() const;
+
+  // extensions::ExtensionRegistryObserver:
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const extensions::Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
+
+  // extensions::ExtensionPrefsObserver:
+  void OnExtensionStateChanged(const std::string& extension_id,
+                               bool state) override;
+  void OnExtensionDisableReasonsChanged(const std::string& extension_id,
+                                        int disabled_reasons) override;
 
   // Gets the SyncBundle for the given |type|.
   extensions::SyncBundle* GetSyncBundle(syncer::ModelType type);
@@ -117,6 +127,11 @@ class ExtensionSyncService : public syncer::SyncableService,
 
   // The normal profile associated with this ExtensionSyncService.
   Profile* profile_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver> registry_observer_;
+  ScopedObserver<extensions::ExtensionPrefs,
+                 extensions::ExtensionPrefsObserver> prefs_observer_;
 
   extensions::SyncBundle app_sync_bundle_;
   extensions::SyncBundle extension_sync_bundle_;

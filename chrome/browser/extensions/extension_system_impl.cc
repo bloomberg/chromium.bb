@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_verifier.h"
@@ -206,6 +207,9 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   app_sorting_.reset(new ChromeAppSorting(profile_));
 
   extension_service_->Init();
+
+  // Make sure ExtensionSyncService is created.
+  ExtensionSyncService::Get(profile_);
 
   // Make the chrome://extension-icon/ resource available.
   content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));

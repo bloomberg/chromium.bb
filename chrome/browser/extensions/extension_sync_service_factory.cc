@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -30,6 +31,7 @@ ExtensionSyncServiceFactory::ExtensionSyncServiceFactory()
         "ExtensionSyncService",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
+  DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 

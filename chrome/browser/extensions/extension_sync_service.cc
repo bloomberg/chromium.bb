@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
@@ -94,35 +93,20 @@ syncer::SyncDataList ToSyncerSyncDataList(
 
 ExtensionSyncService::ExtensionSyncService(Profile* profile)
     : profile_(profile),
+      registry_observer_(this),
+      prefs_observer_(this),
       flare_(sync_start_util::GetFlareForSyncableService(profile->GetPath())) {
+  registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  prefs_observer_.Add(ExtensionPrefs::Get(profile_));
 }
 
-ExtensionSyncService::~ExtensionSyncService() {}
+ExtensionSyncService::~ExtensionSyncService() {
+}
 
 // static
 ExtensionSyncService* ExtensionSyncService::Get(
     content::BrowserContext* context) {
   return ExtensionSyncServiceFactory::GetForBrowserContext(context);
-}
-
-void ExtensionSyncService::SyncUninstallExtension(
-    const Extension& extension) {
-  if (!extensions::util::ShouldSync(&extension, profile_))
-    return;
-
-  // TODO(tim): If we get here and IsSyncing is false, this will cause
-  // "back from the dead" style bugs, because sync will add-back the extension
-  // that was uninstalled here when MergeDataAndStartSyncing is called.
-  // See crbug.com/256795.
-  syncer::ModelType type =
-      extension.is_app() ? syncer::APPS : syncer::EXTENSIONS;
-  SyncBundle* bundle = GetSyncBundle(type);
-  if (bundle->IsSyncing()) {
-    bundle->PushSyncDeletion(extension.id(),
-                             CreateSyncData(extension).GetSyncData());
-  } else if (extension_service()->is_ready() && !flare_.is_null()) {
-    flare_.Run(type);  // Tell sync to start ASAP.
-  }
 }
 
 void ExtensionSyncService::SyncExtensionChangeIfNeeded(
@@ -225,7 +209,17 @@ syncer::SyncError ExtensionSyncService::ProcessSyncChanges(
 ExtensionSyncData ExtensionSyncService::CreateSyncData(
     const Extension& extension) const {
   const ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
-  bool enabled = extension_service()->IsExtensionEnabled(extension.id());
+  // Query the enabled state from ExtensionPrefs rather than
+  // ExtensionService::IsExtensionEnabled - the latter uses ExtensionRegistry
+  // which might not have been updated yet (ExtensionPrefs are updated first,
+  // and we're listening for changes to these).
+  bool enabled = !extension_prefs->IsExtensionDisabled(extension.id());
+  enabled = enabled &&
+      !extension_prefs->IsExternalExtensionUninstalled(extension.id());
+  // Blacklisted extensions are not marked as disabled in ExtensionPrefs.
+  enabled = enabled &&
+      extension_prefs->GetExtensionBlacklistState(extension.id()) ==
+          extensions::NOT_BLACKLISTED;
   int disable_reasons = extension_prefs->GetDisableReasons(extension.id());
   bool incognito_enabled = extensions::util::IsIncognitoEnabled(extension.id(),
                                                                 profile_);
@@ -347,6 +341,65 @@ void ExtensionSyncService::SetSyncStartFlareForTesting(
 
 ExtensionService* ExtensionSyncService::extension_service() const {
   return ExtensionSystem::Get(profile_)->extension_service();
+}
+
+void ExtensionSyncService::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    bool is_update) {
+  DCHECK_EQ(profile_, browser_context);
+  SyncExtensionChangeIfNeeded(*extension);
+}
+
+void ExtensionSyncService::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
+  DCHECK_EQ(profile_, browser_context);
+  // Don't bother syncing if the extension will be re-installed momentarily.
+  if (reason == extensions::UNINSTALL_REASON_REINSTALL ||
+      !extensions::util::ShouldSync(extension, profile_))
+    return;
+
+  // TODO(tim): If we get here and IsSyncing is false, this will cause
+  // "back from the dead" style bugs, because sync will add-back the extension
+  // that was uninstalled here when MergeDataAndStartSyncing is called.
+  // See crbug.com/256795.
+  // Possible fix: Set NeedsSync here, then in MergeDataAndStartSyncing, if
+  // NeedsSync is set but the extension isn't installed, send a sync deletion.
+  syncer::ModelType type =
+      extension->is_app() ? syncer::APPS : syncer::EXTENSIONS;
+  SyncBundle* bundle = GetSyncBundle(type);
+  if (bundle->IsSyncing()) {
+    bundle->PushSyncDeletion(extension->id(),
+                             CreateSyncData(*extension).GetSyncData());
+  } else if (extension_service()->is_ready() && !flare_.is_null()) {
+    flare_.Run(type);  // Tell sync to start ASAP.
+  }
+}
+
+void ExtensionSyncService::OnExtensionStateChanged(
+    const std::string& extension_id,
+    bool state) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  const Extension* extension = registry->GetInstalledExtension(extension_id);
+  // We can get pref change notifications for extensions that aren't installed
+  // (yet). In that case, we'll pick up the change later via ExtensionRegistry
+  // observation (in OnExtensionInstalled).
+  if (extension)
+    SyncExtensionChangeIfNeeded(*extension);
+}
+
+void ExtensionSyncService::OnExtensionDisableReasonsChanged(
+    const std::string& extension_id,
+    int disabled_reasons) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  const Extension* extension = registry->GetInstalledExtension(extension_id);
+  // We can get pref change notifications for extensions that aren't installed
+  // (yet). In that case, we'll pick up the change later via ExtensionRegistry
+  // observation (in OnExtensionInstalled).
+  if (extension)
+    SyncExtensionChangeIfNeeded(*extension);
 }
 
 SyncBundle* ExtensionSyncService::GetSyncBundle(syncer::ModelType type) {

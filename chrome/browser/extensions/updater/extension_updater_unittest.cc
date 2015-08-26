@@ -1816,18 +1816,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     ExtensionPrefs* prefs = prefs_->prefs();
 
-    for (size_t i = 0; i < disabled.size(); i++) {
-      int reasons = disabled[i];
-      const std::string& id = disabled_extensions[i]->id();
-      // Iterate over the DisableReason values, marking that reason in prefs
-      // for this id if it is set.
-      for (int reason = 1; reason < Extension::DISABLE_REASON_LAST;
-           reason <<= 1) {
-        if (reasons & reason)
-          prefs->AddDisableReason(
-              id, static_cast<Extension::DisableReason>(reason));
-      }
-    }
+    for (size_t i = 0; i < disabled.size(); i++)
+      prefs->SetExtensionDisabled(disabled_extensions[i]->id(), disabled[i]);
 
     // Create the extension updater, make it issue an update, and capture the
     // URL that it tried to fetch.

@@ -40,7 +40,6 @@ namespace extensions {
 
 class AppSorting;
 class ExtensionPrefsObserver;
-class ExtensionPrefsUninstallExtension;
 class URLPatternSet;
 
 // Class for managing global and per-extension preferences.
@@ -169,6 +168,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Checks whether |extension_id| is disabled. If there's no state pref for
   // the extension, this will return false. Generally you should use
   // ExtensionService::IsExtensionEnabled instead.
+  // Note that blacklisted extensions are NOT marked as disabled!
   bool IsExtensionDisabled(const std::string& id) const;
 
   // Get/Set the order that the browser actions appear in the toolbar.
@@ -200,8 +200,14 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
                               const Manifest::Location& location,
                               bool external_uninstall);
 
-  // Called to change the extension's state when it is enabled/disabled.
-  void SetExtensionState(const std::string& extension_id, Extension::State);
+  // Sets the extension's state to enabled and clears disable reasons.
+  void SetExtensionEnabled(const std::string& extension_id);
+
+  // Sets the extension's state to disabled and sets the disable reasons.
+  // However, if the current state is EXTERNAL_EXTENSION_UNINSTALLED then that
+  // is preserved (but the disable reasons are still set).
+  void SetExtensionDisabled(const std::string& extension_id,
+                            int disable_reasons);
 
   // Called to change the extension's BlacklistState. Currently only used for
   // non-malicious extensions.
@@ -251,6 +257,10 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   bool DidExtensionEscalatePermissions(const std::string& id) const;
 
   // Getters and setters for disabled reason.
+  // Note that you should rarely need to modify disable reasons directly -
+  // pass the proper value to SetExtensionState instead when you enable/disable
+  // an extension. In particular, AddDisableReason(s) is only legal when the
+  // extension is not enabled.
   int GetDisableReasons(const std::string& extension_id) const;
   bool HasDisableReason(const std::string& extension_id,
                         Extension::DisableReason disable_reason) const;

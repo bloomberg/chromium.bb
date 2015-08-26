@@ -212,8 +212,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
     } else if (!extension_prefs_->IsExtensionDisabled(extension->id()) &&
                policy->MustRemainDisabled(
                    extension.get(), &disable_reason, NULL)) {
-      extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
-      extension_prefs_->AddDisableReason(extension->id(), disable_reason);
+      extension_prefs_->SetExtensionDisabled(extension->id(), disable_reason);
       force_disabled = true;
     }
     UMA_HISTOGRAM_BOOLEAN("ExtensionInstalledLoader.ForceDisabled",

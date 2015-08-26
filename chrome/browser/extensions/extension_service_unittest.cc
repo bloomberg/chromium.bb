@@ -5933,6 +5933,8 @@ TEST_F(ExtensionServiceTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
   sync_service->SetSyncSetupCompleted();
+  // Make sure ExtensionSyncService is created, so it'll be notified of changes.
+  extension_sync_service();
 
   service()->Init();
   ASSERT_TRUE(service()->is_ready());

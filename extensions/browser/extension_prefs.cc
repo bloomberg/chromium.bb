@@ -6,14 +6,11 @@
 
 #include <iterator>
 
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "base/value_conversions.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/app_sorting.h"
@@ -24,17 +21,11 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/user_script.h"
-#include "ui/base/l10n/l10n_util.h"
-
-using base::Value;
-using base::DictionaryValue;
-using base::ListValue;
 
 namespace extensions {
 
@@ -746,11 +737,13 @@ bool ExtensionPrefs::HasDisableReason(
 
 void ExtensionPrefs::AddDisableReason(const std::string& extension_id,
                                       Extension::DisableReason disable_reason) {
+  DCHECK(!DoesExtensionHaveState(extension_id, Extension::ENABLED));
   ModifyDisableReasons(extension_id, disable_reason, DISABLE_REASON_ADD);
 }
 
 void ExtensionPrefs::AddDisableReasons(const std::string& extension_id,
                                        int disable_reasons) {
+  DCHECK(!DoesExtensionHaveState(extension_id, Extension::ENABLED));
   ModifyDisableReasons(extension_id, disable_reasons, DISABLE_REASON_ADD);
 }
 
@@ -1153,8 +1146,7 @@ bool ExtensionPrefs::IsExternalExtensionUninstalled(
   return DoesExtensionHaveState(id, Extension::EXTERNAL_EXTENSION_UNINSTALLED);
 }
 
-bool ExtensionPrefs::IsExtensionDisabled(
-    const std::string& id) const {
+bool ExtensionPrefs::IsExtensionDisabled(const std::string& id) const {
   return DoesExtensionHaveState(id, Extension::DISABLED);
 }
 
@@ -1215,15 +1207,26 @@ void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
   }
 }
 
-void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
-                                       Extension::State state) {
+void ExtensionPrefs::SetExtensionEnabled(const std::string& extension_id) {
   UpdateExtensionPref(extension_id, kPrefState,
-                      new base::FundamentalValue(state));
-  bool enabled = (state == Extension::ENABLED);
-  extension_pref_value_map_->SetExtensionState(extension_id, enabled);
-  FOR_EACH_OBSERVER(ExtensionPrefsObserver,
-                    observer_list_,
-                    OnExtensionStateChanged(extension_id, enabled));
+                      new base::FundamentalValue(Extension::ENABLED));
+  extension_pref_value_map_->SetExtensionState(extension_id, true);
+  UpdateExtensionPref(extension_id, kPrefDisableReasons, nullptr);
+  FOR_EACH_OBSERVER(ExtensionPrefsObserver, observer_list_,
+                    OnExtensionStateChanged(extension_id, true));
+}
+
+void ExtensionPrefs::SetExtensionDisabled(const std::string& extension_id,
+                                          int disable_reasons) {
+  if (!IsExternalExtensionUninstalled(extension_id)) {
+    UpdateExtensionPref(extension_id, kPrefState,
+                        new base::FundamentalValue(Extension::DISABLED));
+    extension_pref_value_map_->SetExtensionState(extension_id, false);
+  }
+  UpdateExtensionPref(extension_id, kPrefDisableReasons,
+                      new base::FundamentalValue(disable_reasons));
+  FOR_EACH_OBSERVER(ExtensionPrefsObserver, observer_list_,
+                    OnExtensionStateChanged(extension_id, false));
 }
 
 void ExtensionPrefs::SetExtensionBlacklistState(const std::string& extension_id,
