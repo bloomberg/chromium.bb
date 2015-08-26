@@ -125,10 +125,28 @@ public:
     struct ConstantConfiguration {
         ConstantConfiguration& operator=(const ConstantConfiguration&) = delete;
         DISALLOW_ALLOCATION();
+        ConstantConfiguration(const char* const name, unsigned value, ConstantType type)
+            : name(name)
+            , ivalue(value)
+            , type(type) {}
+        ConstantConfiguration(const char* const name, int value, ConstantType type)
+            : name(name)
+            , ivalue(value)
+            , type(type) {}
+        ConstantConfiguration(const char* const name, double value, ConstantType type)
+            : name(name)
+            , dvalue(value)
+            , type(type) {}
+        ConstantConfiguration(const char* const name, const char* const value, ConstantType type)
+            : name(name)
+            , svalue(value)
+            , type(type) {}
         const char* const name;
-        int ivalue;
-        double dvalue;
-        const char* const svalue;
+        union {
+            int ivalue;
+            double dvalue;
+            const char* const svalue;
+        };
         ConstantType type;
     };
 
