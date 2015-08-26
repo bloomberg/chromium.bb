@@ -589,6 +589,14 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     return;
   }
 
+  // A null |provider_host_| probably means the tab was closed. The null value
+  // would cause problems down the line, so bail out.
+  if (!provider_host_) {
+    RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_PROVIDER_HOST);
+    DeliverErrorResponse();
+    return;
+  }
+
   if (status != SERVICE_WORKER_OK) {
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_FETCH_EVENT_DISPATCH);
     if (is_main_resource_load_) {

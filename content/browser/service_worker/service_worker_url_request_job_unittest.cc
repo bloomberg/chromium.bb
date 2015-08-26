@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -200,16 +202,10 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     helper_.reset();
   }
 
-  void TestRequest(int expected_status_code,
-                   const std::string& expected_status_text,
-                   const std::string& expected_response) {
-    request_ = url_request_context_.CreateRequest(
-        GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
-        &url_request_delegate_);
-
-    request_->set_method("GET");
-    request_->Start();
-    base::RunLoop().RunUntilIdle();
+  void TestRequestResult(int expected_status_code,
+                         const std::string& expected_status_text,
+                         const std::string& expected_response,
+                         bool expect_valid_ssl) {
     EXPECT_TRUE(request_->status().is_success());
     EXPECT_EQ(expected_status_code,
               request_->response_headers()->response_code());
@@ -217,9 +213,28 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
               request_->response_headers()->GetStatusText());
     EXPECT_EQ(expected_response, url_request_delegate_.response_data());
     const net::SSLInfo& ssl_info = request_->response_info().ssl_info;
-    EXPECT_TRUE(ssl_info.is_valid());
-    EXPECT_EQ(ssl_info.security_bits, 0x100);
-    EXPECT_EQ(ssl_info.connection_status, 0x300039);
+    if (expect_valid_ssl) {
+      EXPECT_TRUE(ssl_info.is_valid());
+      EXPECT_EQ(ssl_info.security_bits, 0x100);
+      EXPECT_EQ(ssl_info.connection_status, 0x300039);
+    } else {
+      EXPECT_FALSE(ssl_info.is_valid());
+    }
+  }
+
+  void TestRequest(int expected_status_code,
+                   const std::string& expected_status_text,
+                   const std::string& expected_response,
+                   bool expect_valid_ssl) {
+    request_ = url_request_context_.CreateRequest(
+        GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+        &url_request_delegate_);
+
+    request_->set_method("GET");
+    request_->Start();
+    base::RunLoop().RunUntilIdle();
+    TestRequestResult(expected_status_code, expected_status_text,
+                      expected_response, expect_valid_ssl);
   }
 
   bool HasInflightRequests() {
@@ -246,12 +261,12 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
 
 TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  TestRequest(200, "OK", std::string());
+  TestRequest(200, "OK", std::string(), true /* expect_valid_ssl */);
 }
 
 class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
  public:
-  ProviderDeleteHelper(int mock_render_process_id)
+  explicit ProviderDeleteHelper(int mock_render_process_id)
       : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
   ~ProviderDeleteHelper() override {}
 
@@ -280,7 +295,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostOnFetchEvent) {
   SetUpWithHelper(new ProviderDeleteHelper(kProcessID));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  TestRequest(200, "OK", std::string());
+  TestRequest(500, "Service Worker Response Error", std::string(),
+              false /* expect_valid_ssl */);
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
@@ -293,11 +309,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
   request_->Start();
   helper_->context()->RemoveProviderHost(kProcessID, kProviderID);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(request_->status().is_success());
-  EXPECT_EQ(500, request_->response_headers()->response_code());
-  EXPECT_EQ("Service Worker Response Error",
-            request_->response_headers()->GetStatusText());
-  EXPECT_EQ(std::string(), url_request_delegate_.response_data());
+  TestRequestResult(500, "Service Worker Response Error", std::string(),
+                    false /* expect_valid_ssl */);
 }
 
 // Responds to fetch events with a blob.
@@ -346,13 +359,14 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
       kProcessID, blob_handle->uuid(), expected_response.size()));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  TestRequest(200, "OK", expected_response);
+  TestRequest(200, "OK", expected_response, true /* expect_valid_ssl */);
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
   SetUpWithHelper(new BlobResponder(kProcessID, "blob-id:nothing-is-here", 0));
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  TestRequest(500, "Service Worker Response Error", std::string());
+  TestRequest(500, "Service Worker Response Error", std::string(),
+              true /* expect_valid_ssl */);
 }
 
 // Responds to fetch events with a stream.
@@ -602,7 +616,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
 // Helper to simulate failing to dispatch a fetch event to a worker.
 class FailFetchHelper : public EmbeddedWorkerTestHelper {
  public:
-  FailFetchHelper(int mock_render_process_id)
+  explicit FailFetchHelper(int mock_render_process_id)
       : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
   ~FailFetchHelper() override {}
 
