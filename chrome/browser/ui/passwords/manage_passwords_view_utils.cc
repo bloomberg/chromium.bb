@@ -19,7 +19,7 @@
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 
-const int kAvatarImageSize = 50;
+const int kAvatarImageSize = 40;
 
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia skia_image) {
   gfx::Size size = skia_image.size();

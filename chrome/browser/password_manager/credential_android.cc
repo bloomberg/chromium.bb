@@ -19,9 +19,9 @@ base::android::ScopedJavaLocalRef<jobject> CreateNativeCredential(
   using base::android::ConvertUTF8ToJavaString;
   std::string federation =
       password_form.federation_url.is_empty()
-          ? ""
+          ? std::string()
           : l10n_util::GetStringFUTF8(
-                IDS_MANAGE_PASSWORDS_IDENTITY_PROVIDER,
+                IDS_PASSWORDS_VIA_FEDERATION,
                 base::ASCIIToUTF16(password_form.federation_url.host()));
   return Java_Credential_createCredential(
       env, ConvertUTF16ToJavaString(env, password_form.username_value).obj(),

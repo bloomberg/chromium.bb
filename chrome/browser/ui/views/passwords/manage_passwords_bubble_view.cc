@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
-#include "chrome/browser/ui/views/passwords/manage_credential_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -243,11 +242,20 @@ void ManagePasswordsBubbleView::AccountChooserView::AddCredentialItemsWithType(
   net::URLRequestContextGetter* request_context =
       parent_->model()->GetProfile()->GetRequestContext();
   for (const autofill::PasswordForm* form : password_forms) {
-    // Add the title to the layout with appropriate padding.
+    const base::string16& upper_string =
+        form->display_name.empty() ? form->username_value : form->display_name;
+    base::string16 lower_string;
+    if (form->federation_url.is_empty()) {
+      if (!form->display_name.empty())
+        lower_string = form->username_value;
+    } else {
+      lower_string = l10n_util::GetStringFUTF16(
+          IDS_PASSWORDS_VIA_FEDERATION,
+          base::UTF8ToUTF16(form->federation_url.host()));
+    }
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-    layout->AddView(new CredentialsItemView(
-        this, form, type, CredentialsItemView::ACCOUNT_CHOOSER,
-        request_context));
+    layout->AddView(new CredentialsItemView(this, form, type, upper_string,
+                                            lower_string, request_context));
   }
 }
 
@@ -303,13 +311,16 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
     : parent_(parent),
       observed_browser_(this) {
   SetLayoutManager(new views::FillLayout);
+  const autofill::PasswordForm& form = parent_->model()->pending_password();
   CredentialsItemView* credential = new CredentialsItemView(
-      this, &parent_->model()->pending_password(),
+      this, &form,
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
-      CredentialsItemView::AUTO_SIGNIN,
+      base::string16(),
+      l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE,
+                                 form.username_value),
       parent_->model()->GetProfile()->GetRequestContext());
   AddChildView(credential);
-  parent_->set_initially_focused_view(credential);
+  credential->SetEnabled(false);
 
   Browser* browser =
       chrome::FindBrowserWithWebContents(parent_->web_contents());

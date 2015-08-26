@@ -251,7 +251,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
       passwordField_.reset([PasswordLabel(form.password_value) retain]);
     } else {
       base::string16 text = l10n_util::GetStringFUTF16(
-          IDS_MANAGE_PASSWORDS_IDENTITY_PROVIDER,
+          IDS_PASSWORDS_VIA_FEDERATION,
           base::UTF8ToUTF16(form.federation_url.host()));
       federationField_.reset([FederationLabel(text) retain]);
     }

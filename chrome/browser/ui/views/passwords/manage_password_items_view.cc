@@ -83,7 +83,7 @@ scoped_ptr<views::Label> GeneratePasswordLabel(
   base::string16 text = form.federation_url.is_empty()
       ? form.password_value
       : l10n_util::GetStringFUTF16(
-            IDS_MANAGE_PASSWORDS_IDENTITY_PROVIDER,
+            IDS_PASSWORDS_VIA_FEDERATION,
             base::UTF8ToUTF16(form.federation_url.host()));
   scoped_ptr<views::Label> label(new views::Label(text));
   label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(

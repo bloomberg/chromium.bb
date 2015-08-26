@@ -33,15 +33,11 @@ class Label;
 class CredentialsItemView : public AccountAvatarFetcherDelegate,
                             public views::LabelButton {
  public:
-  enum Style {
-    ACCOUNT_CHOOSER,
-    AUTO_SIGNIN,
-  };
-
   CredentialsItemView(views::ButtonListener* button_listener,
                       const autofill::PasswordForm* form,
                       password_manager::CredentialType credential_type,
-                      Style style,
+                      const base::string16& upper_text,
+                      const base::string16& lower_text,
                       net::URLRequestContextGetter* request_context);
   ~CredentialsItemView() override;
 
