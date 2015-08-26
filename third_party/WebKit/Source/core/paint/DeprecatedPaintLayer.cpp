@@ -365,8 +365,6 @@ void DeprecatedPaintLayer::updateTransform(const ComputedStyle* oldStyle, const 
 
         // DeprecatedPaintLayers with transforms act as clip rects roots, so clear the cached clip rects here.
         m_clipper.clearClipRectsIncludingDescendants();
-    } else if (hasTransform) {
-        m_clipper.clearClipRectsIncludingDescendants(AbsoluteClipRects);
     }
 
     updateTransformationMatrix();

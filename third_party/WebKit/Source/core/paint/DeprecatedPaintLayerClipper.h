@@ -149,6 +149,8 @@ public:
 
     DeprecatedPaintLayer* clippingRootForPainting() const;
 
+    void precalculateAbsoluteClipRects();
+
 private:
     void setClipRect(const ClipRectsContext&, const ClipRectComputationState&) const;
     void addClipsFromThisObject(const ClipRectsContext&, ClipRects&) const;

@@ -169,7 +169,7 @@ void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context
     }
 }
 
-static void precalculate(const ClipRectsContext& context)
+void precalculate(const ClipRectsContext& context)
 {
     bool isComputingPaintingRect = context.isComputingPaintingRect();
     ClipRectComputationState rects;
@@ -187,6 +187,13 @@ static void precalculate(const ClipRectsContext& context)
     rootLayer->clipper().calculateClipRects(context, rects);
 }
 
+void DeprecatedPaintLayerClipper::precalculateAbsoluteClipRects()
+{
+    ASSERT(m_layoutObject.layer()->isRootLayer());
+    // The absolute rectangles rely on layout sizes and position only.
+    ASSERT(m_layoutObject.document().lifecycle().state() >= DocumentLifecycle::LayoutClean);
+    precalculate(ClipRectsContext(m_layoutObject.layer(), AbsoluteClipRects));
+}
 
 // Calculates clipRect for each element in the section of the tree starting with context.rootLayer
 // For painting, context.rootLayer is ignored and the entire tree is calculated.
@@ -213,8 +220,11 @@ ClipRect DeprecatedPaintLayerClipper::backgroundClipRect(const ClipRectsContext&
 
     // TODO(chadarmstrong): precalculation for painting should be moved to updateLifecyclePhasesInternal
     // and precalculation could be done for all hit testing. This would let us avoid clearing the cache
-    if (!m_clips[context.cacheSlot()])
+    if (!m_clips[context.cacheSlot()]) {
+        // AbsoluteClipRects should have been updated during compositing updates so we shouldn't miss here.
+        ASSERT(context.cacheSlot() != AbsoluteClipRects);
         precalculate(context);
+    }
 
     // TODO(chadarmstrong): eliminate this if possible.
     // It is necessary only because of a seemingly atypical use of rootLayer that

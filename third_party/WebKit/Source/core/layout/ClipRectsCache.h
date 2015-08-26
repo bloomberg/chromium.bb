@@ -22,6 +22,7 @@ enum ClipRectsCacheSlot {
     RootRelativeClipRectsIgnoringViewportClip,
 
     // Relative to the LayoutView's layer. Used for compositing overlap testing.
+    // Computed during the compositing update step (see CompositingInputsUpdater::update).
     AbsoluteClipRects,
 
     // Relative to painting ancestor. Used for painting.

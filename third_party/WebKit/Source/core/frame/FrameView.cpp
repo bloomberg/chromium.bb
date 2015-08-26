@@ -2475,6 +2475,14 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
                 || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && lifecycle().state() == DocumentLifecycle::CompositingForSlimmingPaintV2Clean));
         }
     }
+
+#ifndef NDEBUG
+    // TODO(jchaffraix): We will want to clear the clip rects in release too
+    // to reduce our long-term memory consumption. However this requires us
+    // to migrate all of the clip rects to the state machine and evaluate
+    // the performance impacts of this.
+    layoutView()->layer()->clipper().clearClipRectsIncludingDescendants(AbsoluteClipRects);
+#endif
 }
 
 void FrameView::paintForSlimmingPaintV2()
