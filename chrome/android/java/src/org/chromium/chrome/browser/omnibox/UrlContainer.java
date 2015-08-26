@@ -211,8 +211,7 @@ public class UrlContainer extends ViewGroup {
 
             if (!TextUtils.isEmpty(mTrailingTextView.getText())) {
                 mUrlBarView.setAccessibilityTextOverride(
-                        TextUtils.concat(mUrlBarView.getText(), mTrailingTextView.getText())
-                                .toString());
+                        mUrlBarView.getText().toString() + mTrailingTextView.getText().toString());
             }
 
             AnimatorSet set = new AnimatorSet();
