@@ -445,10 +445,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     args->pnacl_mode = 0;
     args->initial_nexe_max_code_bytes = 0;
   } else if (params.process_type == nacl::kPNaClTranslatorProcessType) {
-    // Transitioning the PNaCl translators to use the IRT again:
-    // https://code.google.com/p/nativeclient/issues/detail?id=3914.
-    // Once done, this can be removed.
-    args->irt_load_optional = 1;
     args->pnacl_mode = 0;
   }
 
