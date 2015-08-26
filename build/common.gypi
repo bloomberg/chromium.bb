@@ -680,10 +680,10 @@
       'host_clang%': 1,
 
       # Variables to control Link-Time Optimization (LTO).
-      # On Android, the variable use_lto enables LTO on code compiled with -Os,
-      # and use_lto_o2 enables LTO on code compiled with -O2. On other
-      # platforms, use_lto enables LTO in all translation units, and use_lto_o2
-      # has no effect.
+      # On Android, when using GCC LTO, the variable use_lto enables LTO on code
+      # compiled with -Os, and use_lto_o2 enables LTO on code compiled with -O2.
+      # On other platforms (including Android with Clang), use_lto enables LTO
+      # in all translation units, and use_lto_o2 has no effect.
       #
       # On Linux and Android, when using LLVM LTO, the script
       # build/download_gold_plugin.py must be run to download a linker plugin.
@@ -691,8 +691,10 @@
       # tools/clang/scripts/update.py and the absolute path to
       # third_party/llvm-build/Release+Asserts/lib must be added to
       # $DYLD_LIBRARY_PATH to pick up the right version of the linker plugin.
+      # TODO(pcc): Teach build system to use -lto_library flag to specify path
+      # to linker plugin on Mac.
       #
-      # On Android, the variables must *not* be enabled at the same time.
+      # On Android/GCC, the variables must *not* be enabled at the same time.
       # In this case LTO would 'merge' the optimization flags at link-time
       # which would lead to all code be optimized with -O2. See crbug.com/407544
       'use_lto%': 0,

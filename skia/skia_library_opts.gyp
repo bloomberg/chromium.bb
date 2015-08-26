@@ -34,7 +34,7 @@
         # Disable LTO due to compiler error
         # in mems_in_disjoint_alias_sets_p, at alias.c:393
         # crbug.com/422255
-        '../build/android/disable_lto.gypi',
+        '../build/android/disable_gcc_lto.gypi',
       ],
       'include_dirs': [ '<@(include_dirs)' ],
       'conditions': [
@@ -192,7 +192,7 @@
             '../build/android/increase_size_for_speed.gypi',
             # Disable LTO due to Neon issues
             # crbug.com/408997
-            '../build/android/disable_lto.gypi',
+            '../build/android/disable_gcc_lto.gypi',
           ],
           'include_dirs': [ '<@(include_dirs)' ],
           'cflags!': [

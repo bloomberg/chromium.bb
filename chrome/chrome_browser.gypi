@@ -3223,7 +3223,7 @@
       'includes': [
         # Disable LTO due to ELF section name out of range
         # crbug.com/422251
-        '../build/android/disable_lto.gypi',
+        '../build/android/disable_gcc_lto.gypi',
       ],
       'conditions': [
         ['OS != "ios"', {

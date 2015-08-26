@@ -2772,7 +2772,7 @@
       'includes': [
         # Disable LTO due to undefined reference
         # crbug.com/422252
-        '../build/android/disable_lto.gypi',
+        '../build/android/disable_gcc_lto.gypi',
       ],
       'conditions': [
         ['OS != "ios"', {
