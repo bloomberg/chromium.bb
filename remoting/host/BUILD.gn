@@ -72,6 +72,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "//remoting/base",
       "//remoting/protocol",
       "//remoting/resources",
+      "//ui/base",
       "//ui/events/platform",
       "//ui/events:dom_keycode_converter",
     ]
@@ -283,6 +284,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "register_support_host_request_unittest.cc",
       "remote_input_filter_unittest.cc",
       "resizing_host_observer_unittest.cc",
+      "resources_unittest.cc",
       "screen_resolution_unittest.cc",
       "server_log_entry_host_unittest.cc",
       "setup/me2me_native_messaging_host_unittest.cc",

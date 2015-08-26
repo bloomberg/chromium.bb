@@ -121,12 +121,12 @@
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)',
         'sources': [
-          'base/resources_unittest.cc',
           'host/continue_window_mac.mm',
           'host/disconnect_window_mac.mm',
           'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
           'host/it2me/it2me_confirmation_dialog_chromeos.cc',
           'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
+          'host/resources_unittest.cc',
           'host/win/core.rc.jinja2',
           'host/win/host_messages.mc.jinja2',
           'host/win/version.rc.jinja2',

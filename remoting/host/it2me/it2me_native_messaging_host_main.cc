@@ -11,13 +11,13 @@
 #include "base/run_loop.h"
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/breakpad.h"
-#include "remoting/base/resources.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/native_messaging/native_messaging_pipe.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
+#include "remoting/host/resources.h"
 #include "remoting/host/usage_stats_consent.h"
 
 #if defined(OS_LINUX)

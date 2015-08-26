@@ -1,18 +1,22 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/base/resources.h"
+#include "remoting/host/resources.h"
 
 #include <dlfcn.h>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/mac/bundle_locations.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#include "base/path_service.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 
 namespace remoting {
+
+namespace {
+const char kLocaleResourcesDirName[] = "remoting_locales";
+}  // namespace
 
 bool LoadResources(const std::string& pref_locale) {
   if (ui::ResourceBundle::HasSharedInstance()) {
@@ -22,15 +26,10 @@ bool LoadResources(const std::string& pref_locale) {
     Dl_info info;
     CHECK(dladdr(reinterpret_cast<void*>(&LoadResources), &info) != 0);
 
-    // Use the plugin's bundle instead of the hosting app bundle. The three
-    // DirName() calls strip "Contents/MacOS/<binary>" from the path.
-    base::FilePath path =
-        base::FilePath(info.dli_fname).DirName().DirName().DirName();
-    base::mac::SetOverrideFrameworkBundlePath(path);
-
-    // Override the locale with the value from Cocoa.
-    if (pref_locale.empty())
-      l10n_util::OverrideLocaleWithCocoaLocale();
+    // Point DIR_LOCALES to 'remoting_locales'.
+    base::FilePath path = base::FilePath(info.dli_fname).DirName();
+    PathService::Override(ui::DIR_LOCALES,
+                          path.AppendASCII(kLocaleResourcesDirName));
 
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         pref_locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_BASE_RESOURCES_H_
-#define REMOTING_HOST_BASE_RESOURCES_H_
+#ifndef REMOTING_HOST_RESOURCES_H_
+#define REMOTING_HOST_RESOURCES_H_
 
 #include <string>
 
@@ -20,4 +20,4 @@ void UnloadResources();
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_BASE_RESOURCES_H_
+#endif  // REMOTING_HOST_RESOURCES_H_

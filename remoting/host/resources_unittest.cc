@@ -1,19 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/base/resources.h"
+#include "remoting/host/resources.h"
 
 #include "remoting/base/string_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace remoting {
 
 class ResourcesTest : public testing::Test {
  protected:
-  ResourcesTest(): resources_available_(false) {
-  }
+  ResourcesTest() : resources_available_(false) {}
 
   void SetUp() override { resources_available_ = LoadResources("en-US"); }
 

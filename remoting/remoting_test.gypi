@@ -214,7 +214,6 @@
         'base/capabilities_unittest.cc',
         'base/compound_buffer_unittest.cc',
         'base/rate_counter_unittest.cc',
-        'base/resources_unittest.cc',
         'base/rsa_key_pair_unittest.cc',
         'base/run_all_unittests.cc',
         'base/running_average_unittest.cc',
@@ -278,6 +277,7 @@
         'host/register_support_host_request_unittest.cc',
         'host/remote_input_filter_unittest.cc',
         'host/resizing_host_observer_unittest.cc',
+        'host/resources_unittest.cc',
         'host/screen_resolution_unittest.cc',
         'host/server_log_entry_host_unittest.cc',
         'host/setup/me2me_native_messaging_host.cc',
@@ -391,7 +391,6 @@
           'sources/': [
             ['exclude', '^codec/'],
             ['exclude', '^host/'],
-            ['exclude', '^base/resources_unittest\\.cc$'],
           ]
         }],
         [ 'OS == "linux" and use_allocator!="none"', {
