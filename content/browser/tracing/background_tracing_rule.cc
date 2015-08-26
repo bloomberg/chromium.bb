@@ -29,8 +29,8 @@ const char kPreemptiveConfigRuleMonitorNamed[] =
 const char kPreemptiveConfigRuleMonitorHistogram[] =
     "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE";
 
-const char kReactiveConfigRuleTraceFor10sOrTriggerOrFull[] =
-    "TRACE_FOR_10S_OR_TRIGGER_OR_FULL";
+const char kReactiveConfigRuleTraceOnNavigationUntilTriggerOrFull[] =
+    "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL";
 
 }  // namespace
 
@@ -149,7 +149,7 @@ class ReactiveTraceForNSOrTriggerOrFullRule : public BackgroundTracingRule {
         kConfigCategoryKey,
         BackgroundTracingConfigImpl::CategoryPresetToString(category_preset_));
     dict->SetString(kConfigRuleKey,
-                    kReactiveConfigRuleTraceFor10sOrTriggerOrFull);
+                    kReactiveConfigRuleTraceOnNavigationUntilTriggerOrFull);
     dict->SetString(kConfigRuleTriggerNameKey, named_event_.c_str());
   }
 
@@ -211,7 +211,7 @@ scoped_ptr<BackgroundTracingRule> BackgroundTracingRule::ReactiveRuleFromDict(
   if (!dict->GetString(kConfigRuleKey, &type))
     return nullptr;
 
-  if (type != kReactiveConfigRuleTraceFor10sOrTriggerOrFull)
+  if (type != kReactiveConfigRuleTraceOnNavigationUntilTriggerOrFull)
     return nullptr;
 
   std::string trigger_name;
