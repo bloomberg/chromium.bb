@@ -45,8 +45,8 @@ DataReductionProxyService::DataReductionProxyService(
                             base::Bind(&DBDataOwner::InitializeOnDBThread,
                                        db_data_owner_->GetWeakPtr()));
   if (prefs_) {
-    compression_stats_.reset(new DataReductionProxyCompressionStats(
-        this, prefs_, ui_task_runner, commit_delay));
+    compression_stats_.reset(
+        new DataReductionProxyCompressionStats(this, prefs_, commit_delay));
   }
   event_store_.reset(new DataReductionProxyEventStore());
 }
@@ -93,8 +93,8 @@ void DataReductionProxyService::EnableCompressionStatisticsLogging(
   DCHECK(!compression_stats_);
   DCHECK(!prefs_);
   prefs_ = prefs;
-  compression_stats_.reset(new DataReductionProxyCompressionStats(
-      this, prefs_, ui_task_runner, commit_delay));
+  compression_stats_.reset(
+      new DataReductionProxyCompressionStats(this, prefs_, commit_delay));
 }
 
 void DataReductionProxyService::UpdateContentLengths(

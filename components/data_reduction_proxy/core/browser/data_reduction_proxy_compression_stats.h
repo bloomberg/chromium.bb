@@ -17,6 +17,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
@@ -27,7 +28,6 @@ class PrefService;
 
 namespace base {
 class ListValue;
-class SequencedTaskRunner;
 class Value;
 }
 
@@ -73,7 +73,6 @@ class DataReductionProxyCompressionStats
   DataReductionProxyCompressionStats(
       DataReductionProxyService* service,
       PrefService* pref_service,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       base::TimeDelta delay);
   ~DataReductionProxyCompressionStats() override;
 
@@ -165,8 +164,8 @@ class DataReductionProxyCompressionStats
   // |DataReductionProxyListPrefMap| to |pref_service|.
   void WritePrefs();
 
-  // Writes the stored prefs to |pref_service| and then posts another a delayed
-  // task to write prefs again in |kMinutesBetweenWrites|.
+  // Starts a timer (if necessary) to write prefs in |kMinutesBetweenWrites| to
+  // the |pref_service|.
   void DelayedWritePrefs();
 
   // Copies the values at each index of |from_list| to the same index in
@@ -223,9 +222,7 @@ class DataReductionProxyCompressionStats
 
   DataReductionProxyService* service_;
   PrefService* pref_service_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const base::TimeDelta delay_;
-  bool delayed_task_posted_;
   DataReductionProxyPrefMap pref_map_;
   DataReductionProxyListPrefMap list_pref_map_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
@@ -243,6 +240,7 @@ class DataReductionProxyCompressionStats
   // Tracks state of loading data usage from storage.
   DataUsageLoadStatus data_usage_loaded_;
 
+  base::OneShotTimer<DataReductionProxyCompressionStats> pref_writer_timer_;
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<DataReductionProxyCompressionStats> weak_factory_;

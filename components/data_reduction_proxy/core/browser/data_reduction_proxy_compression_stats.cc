@@ -16,7 +16,6 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -349,13 +348,10 @@ class DailyDataSavingUpdate {
 DataReductionProxyCompressionStats::DataReductionProxyCompressionStats(
     DataReductionProxyService* service,
     PrefService* prefs,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::TimeDelta delay)
     : service_(service),
       pref_service_(prefs),
-      task_runner_(task_runner),
       delay_(delay),
-      delayed_task_posted_(false),
       pref_change_registrar_(new PrefChangeRegistrar()),
       data_usage_map_is_dirty_(false),
       data_usage_loaded_(NOT_LOADED),
@@ -547,8 +543,6 @@ void DataReductionProxyCompressionStats::WritePrefs() {
     TransferList(*(iter->second),
                  ListPrefUpdate(pref_service_, iter->first).Get());
   }
-
-  delayed_task_posted_ = false;
 }
 
 base::Value*
@@ -692,17 +686,11 @@ void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
 }
 
 void DataReductionProxyCompressionStats::DelayedWritePrefs() {
-  // Only write after the first time posting the task.
-  if (delayed_task_posted_)
+  if (pref_writer_timer_.IsRunning())
     return;
 
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DataReductionProxyCompressionStats::WritePrefs,
-                 weak_factory_.GetWeakPtr()),
-      delay_);
-
-  delayed_task_posted_ = true;
+  pref_writer_timer_.Start(FROM_HERE, delay_, this,
+                           &DataReductionProxyCompressionStats::WritePrefs);
 }
 
 void DataReductionProxyCompressionStats::TransferList(

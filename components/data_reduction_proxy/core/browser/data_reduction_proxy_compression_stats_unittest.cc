@@ -12,7 +12,6 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -48,9 +47,7 @@ const char kLastUpdateTime[] = "Wed, 18 Sep 2013 03:45:26";
 
 class DataReductionProxyCompressionStatsTest : public testing::Test {
  protected:
-  DataReductionProxyCompressionStatsTest()
-      : task_runner_(scoped_refptr<base::TestSimpleTaskRunner>(
-          new base::TestSimpleTaskRunner())) {
+  DataReductionProxyCompressionStatsTest() {
     base::Time::FromString(kLastUpdateTime, &now_);
   }
 
@@ -60,13 +57,12 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
                             .Build();
 
     compression_stats_.reset(new DataReductionProxyCompressionStats(
-        data_reduction_proxy_service(), pref_service(), task_runner(),
-        base::TimeDelta()));
+        data_reduction_proxy_service(), pref_service(), base::TimeDelta()));
   }
 
   void ResetCompressionStatsWithDelay(const base::TimeDelta& delay) {
     compression_stats_.reset(new DataReductionProxyCompressionStats(
-        data_reduction_proxy_service(), pref_service(), task_runner(), delay));
+        data_reduction_proxy_service(), pref_service(), delay));
   }
 
   base::Time FakeNow() const {
@@ -346,8 +342,10 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     return compression_stats_.get();
   }
 
-  void RunPendingTasks() {
-    task_runner_->RunPendingTasks();
+  void ForceWritePrefs() { compression_stats_->WritePrefs(); }
+
+  bool IsDelayedWriteTimerRunning() const {
+    return compression_stats_->pref_writer_timer_.IsRunning();
   }
 
   TestingPrefServiceSimple* pref_service() {
@@ -358,13 +356,8 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     return drp_test_context_->data_reduction_proxy_service();
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
-    return task_runner_;
-  }
-
  private:
   base::MessageLoopForUI loop_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<DataReductionProxyTestContext> drp_test_context_;
   scoped_ptr<DataReductionProxyCompressionStats> compression_stats_;
   base::Time now_;
@@ -383,9 +376,14 @@ TEST_F(DataReductionProxyCompressionStatsTest, WritePrefsDirect) {
 TEST_F(DataReductionProxyCompressionStatsTest, WritePrefsDelayed) {
   ResetCompressionStatsWithDelay(
       base::TimeDelta::FromMinutes(kWriteDelayMinutes));
-  SetUpPrefs();
 
-  RunPendingTasks();
+  EXPECT_EQ(0, pref_service()->GetInt64(prefs::kHttpOriginalContentLength));
+  EXPECT_EQ(0, pref_service()->GetInt64(prefs::kHttpReceivedContentLength));
+  EXPECT_FALSE(IsDelayedWriteTimerRunning());
+
+  SetUpPrefs();
+  EXPECT_TRUE(IsDelayedWriteTimerRunning());
+  ForceWritePrefs();
 
   VerifyPrefWasWritten(prefs::kHttpOriginalContentLength);
   VerifyPrefWasWritten(prefs::kHttpReceivedContentLength);
