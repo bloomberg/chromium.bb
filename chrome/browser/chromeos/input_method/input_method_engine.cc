@@ -275,6 +275,7 @@ bool InputMethodEngine::CommitText(int context_id, const char* text,
     size_t len = GetUtf8StringLength(text);
     UMA_HISTOGRAM_CUSTOM_COUNTS("InputMethod.CommitLength",
                                 len, 1, 25, 25);
+    composition_text_.reset(new CompositionText());
   }
   return true;
 }
@@ -613,6 +614,7 @@ void InputMethodEngine::PropertyActivate(const std::string& property_name) {
 void InputMethodEngine::Reset() {
   if (!CheckProfile())
     return;
+  composition_text_.reset(new CompositionText());
   observer_->OnReset(active_component_id_);
 }
 
