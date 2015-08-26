@@ -128,6 +128,8 @@ class FakeFileSystem : public FileSystemInterface {
                              const GetFilePathCallback& callback) override;
   void FreeDiskSpaceIfNeededFor(int64 num_bytes,
                                 const FreeDiskSpaceCallback& callback) override;
+  void CalculateEvictableCacheSize(
+      const EvictableCacheSizeCallback& callback) override;
 
  private:
   // Helpers of GetFileContent.

@@ -84,10 +84,7 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   // Remove all entries unless specially marked.
   scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    if (it->GetValue().file_specific_info().has_cache_state() &&
-        !it->GetValue().file_specific_info().cache_state().is_pinned() &&
-        !it->GetValue().file_specific_info().cache_state().is_dirty() &&
-        !mounted_files_.count(it->GetID())) {
+    if (IsEvictable(it->GetID(), it->GetValue())) {
       ResourceEntry entry(it->GetValue());
       entry.mutable_file_specific_info()->clear_cache_state();
       storage_->PutEntry(entry);
@@ -115,6 +112,27 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
 
   // Check the disk space again.
   return HasEnoughSpaceFor(num_bytes, cache_file_directory_);
+}
+
+uint64_t FileCache::CalculateEvictableCacheSize() {
+  AssertOnSequencedWorkerPool();
+
+  uint64_t evictable_cache_size = 0;
+  int64_t cache_size;
+
+  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (IsEvictable(it->GetID(), it->GetValue()) &&
+        base::GetFileSize(GetCacheFilePath(it->GetID()), &cache_size)) {
+      DCHECK_GE(cache_size, 0);
+      evictable_cache_size += cache_size;
+    }
+  }
+
+  if (it->HasError())
+    return 0;
+
+  return evictable_cache_size;
 }
 
 FileError FileCache::GetFile(const std::string& id,
@@ -620,6 +638,13 @@ void FileCache::CloseForWrite(const std::string& id) {
     LOG(ERROR) << "Failed to put entry: " << id << ", "
                << FileErrorToString(error);
   }
+}
+
+bool FileCache::IsEvictable(const std::string& id, const ResourceEntry& entry) {
+  return entry.file_specific_info().has_cache_state() &&
+         !entry.file_specific_info().cache_state().is_pinned() &&
+         !entry.file_specific_info().cache_state().is_dirty() &&
+         !mounted_files_.count(id);
 }
 
 }  // namespace internal

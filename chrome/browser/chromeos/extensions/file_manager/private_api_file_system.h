@@ -151,15 +151,18 @@ class FileManagerPrivateGetSizeStatsFunction
   bool RunAsync() override;
 
  private:
-  void GetDriveAvailableSpaceCallback(drive::FileError error,
-                                      int64 bytes_total,
-                                      int64 bytes_used);
+  void OnGetLocalSpace(uint64_t* total_size,
+                       uint64_t* remaining_size,
+                       bool is_download);
 
-  void GetMtpAvailableSpaceCallback(const MtpStorageInfo& mtp_storage_info,
-                                    const bool error);
+  void OnGetDriveAvailableSpace(drive::FileError error,
+                                int64 bytes_total,
+                                int64 bytes_used);
 
-  void GetSizeStatsCallback(const uint64* total_size,
-                            const uint64* remaining_size);
+  void OnGetMtpAvailableSpace(const MtpStorageInfo& mtp_storage_info,
+                              const bool error);
+
+  void OnGetSizeStats(const uint64* total_size, const uint64* remaining_size);
 };
 
 // Implements the chrome.fileManagerPrivate.validatePathNameLength method.

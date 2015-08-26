@@ -72,6 +72,9 @@ class FileCache {
   // false.
   bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
 
+  // Calculates and returns evictable cache size. In error case, this returns 0.
+  uint64_t CalculateEvictableCacheSize();
+
   // Checks if file corresponding to |id| exists in cache, and returns
   // FILE_ERROR_OK with |cache_file_path| storing the path to the file.
   // |cache_file_path| must not be null.
@@ -164,6 +167,9 @@ class FileCache {
   // This method must be called after writing to a cache file.
   // Used to implement OpenForWrite().
   void CloseForWrite(const std::string& id);
+
+  // Returns true if the cache entry can be evicted.
+  bool IsEvictable(const std::string& id, const ResourceEntry& entry);
 
   const base::FilePath cache_file_directory_;
 

@@ -77,6 +77,29 @@ void GetSizeStatsOnBlockingPool(const std::string& mount_path,
   }
 }
 
+// Used for OnCalculateEvictableCacheSize.
+typedef base::Callback<void(const uint64_t* total_size,
+                            const uint64_t* remaining_space)>
+    GetSizeStatsCallback;
+
+// Calculates the real remaining size of Download volume and pass it to
+// GetSizeStatsCallback.
+void OnCalculateEvictableCacheSize(const GetSizeStatsCallback& callback,
+                                   uint64_t total_size,
+                                   uint64_t remaining_size,
+                                   uint64_t evictable_cache_size) {
+  // For calculating real remaining size of Download volume
+  // - Adds evictable cache size since the space is available if they are
+  //   evicted.
+  // - Subtracts minimum free space of cryptohome since the space is not
+  //   available for file manager.
+  const uint64_t real_remaining_size =
+      std::max(static_cast<int64_t>(remaining_size + evictable_cache_size) -
+                   cryptohome::kMinFreeSpaceInBytes,
+               int64_t(0));
+  callback.Run(&total_size, &real_remaining_size);
+}
+
 // Retrieves the maximum file name length of the file system of |path|.
 // Returns 0 if it could not be queried.
 size_t GetFileNameMaxLengthOnBlockingPool(const std::string& path) {
@@ -416,10 +439,9 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
       return true;
     }
 
-    file_system->GetAvailableSpace(
-        base::Bind(&FileManagerPrivateGetSizeStatsFunction::
-                       GetDriveAvailableSpaceCallback,
-                   this));
+    file_system->GetAvailableSpace(base::Bind(
+        &FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace,
+        this));
   } else if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
     // Resolve storage_name.
     storage_monitor::StorageMonitor* storage_monitor =
@@ -434,24 +456,46 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
     device::MediaTransferProtocolManager* manager =
         storage_monitor->media_transfer_protocol_manager();
     manager->GetStorageInfoFromDevice(
-        storage_name, base::Bind(&FileManagerPrivateGetSizeStatsFunction::
-                                     GetMtpAvailableSpaceCallback,
-                                 this));
+        storage_name,
+        base::Bind(
+            &FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace,
+            this));
   } else {
-    uint64* total_size = new uint64(0);
-    uint64* remaining_size = new uint64(0);
+    uint64_t* total_size = new uint64_t(0);
+    uint64_t* remaining_size = new uint64_t(0);
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&GetSizeStatsOnBlockingPool, volume->mount_path().value(),
                    total_size, remaining_size),
         base::Bind(
-            &FileManagerPrivateGetSizeStatsFunction::GetSizeStatsCallback, this,
-            base::Owned(total_size), base::Owned(remaining_size)));
+            &FileManagerPrivateGetSizeStatsFunction::OnGetLocalSpace, this,
+            base::Owned(total_size), base::Owned(remaining_size),
+            volume->type() == file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY));
   }
   return true;
 }
 
-void FileManagerPrivateGetSizeStatsFunction::GetDriveAvailableSpaceCallback(
+void FileManagerPrivateGetSizeStatsFunction::OnGetLocalSpace(
+    uint64_t* total_size,
+    uint64_t* remaining_size,
+    bool is_download) {
+  if (!is_download) {
+    OnGetSizeStats(total_size, remaining_size);
+    return;
+  }
+
+  // If the volume is downloads, we need to add evictable cache size to
+  // remaining size.
+  drive::FileSystemInterface* file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+
+  file_system->CalculateEvictableCacheSize(base::Bind(
+      &OnCalculateEvictableCacheSize,
+      base::Bind(&FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats, this),
+      *total_size, *remaining_size));
+}
+
+void FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace(
     drive::FileError error,
     int64 bytes_total,
     int64 bytes_used) {
@@ -460,15 +504,14 @@ void FileManagerPrivateGetSizeStatsFunction::GetDriveAvailableSpaceCallback(
     // bytes_used can be larger than bytes_total (over quota).
     const uint64 bytes_remaining_unsigned =
         std::max(bytes_total - bytes_used, int64(0));
-    GetSizeStatsCallback(&bytes_total_unsigned,
-                         &bytes_remaining_unsigned);
+    OnGetSizeStats(&bytes_total_unsigned, &bytes_remaining_unsigned);
   } else {
     // If stats couldn't be gotten for drive, result should be left undefined.
     SendResponse(true);
   }
 }
 
-void FileManagerPrivateGetSizeStatsFunction::GetMtpAvailableSpaceCallback(
+void FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace(
     const MtpStorageInfo& mtp_storage_info,
     const bool error) {
   if (error) {
@@ -480,10 +523,10 @@ void FileManagerPrivateGetSizeStatsFunction::GetMtpAvailableSpaceCallback(
 
   const uint64 max_capacity = mtp_storage_info.max_capacity();
   const uint64 free_space_in_bytes = mtp_storage_info.free_space_in_bytes();
-  GetSizeStatsCallback(&max_capacity, &free_space_in_bytes);
+  OnGetSizeStats(&max_capacity, &free_space_in_bytes);
 }
 
-void FileManagerPrivateGetSizeStatsFunction::GetSizeStatsCallback(
+void FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats(
     const uint64* total_size,
     const uint64* remaining_size) {
   base::DictionaryValue* sizes = new base::DictionaryValue();

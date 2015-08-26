@@ -142,6 +142,9 @@ typedef base::Callback<void(FileError error, const base::FilePath& file_path)>
 // Used to free space.
 typedef base::Callback<void(bool)> FreeDiskSpaceCallback;
 
+// Used for returning result of calculated cache size.
+typedef base::Callback<void(uint64_t)> EvictableCacheSizeCallback;
+
 // The mode of opening a file.
 enum OpenMode {
   // Open the file if exists. If not, failed.
@@ -459,6 +462,11 @@ class FileSystemInterface {
   virtual void FreeDiskSpaceIfNeededFor(
       int64 num_bytes,
       const FreeDiskSpaceCallback& callback) = 0;
+
+  // Calculates evictable cache size.
+  // |callback| must not be null.
+  virtual void CalculateEvictableCacheSize(
+      const EvictableCacheSizeCallback& callback) = 0;
 };
 
 }  // namespace drive

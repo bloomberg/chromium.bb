@@ -102,6 +102,8 @@ class DummyFileSystem : public FileSystemInterface {
   void FreeDiskSpaceIfNeededFor(
       int64 num_bytes,
       const FreeDiskSpaceCallback& callback) override {}
+  void CalculateEvictableCacheSize(
+      const EvictableCacheSizeCallback& callback) override {}
 };
 
 }  // namespace drive

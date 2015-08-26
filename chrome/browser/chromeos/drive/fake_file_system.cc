@@ -250,6 +250,11 @@ void FakeFileSystem::FreeDiskSpaceIfNeededFor(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
+void FakeFileSystem::CalculateEvictableCacheSize(
+    const EvictableCacheSizeCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
 // Implementation of GetFileContent.
 void FakeFileSystem::GetFileContentAfterGetResourceEntry(
     const GetFileContentInitializedCallback& initialized_callback,

@@ -208,6 +208,10 @@ bool FreeDiskSpaceIfNeededForOnBlockingPool(internal::FileCache* cache,
   return cache->FreeDiskSpaceIfNeededFor(num_bytes);
 }
 
+uint64_t CalculateEvictableCacheSizeOnBlockingPool(internal::FileCache* cache) {
+  return cache->CalculateEvictableCacheSize();
+}
+
 // Excludes hosted documents from the given entries.
 // Used to implement ReadDirectory().
 void FilterHostedDocuments(const ReadDirectoryEntriesCallback& callback,
@@ -1043,5 +1047,14 @@ void FileSystem::FreeDiskSpaceIfNeededFor(
       blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&FreeDiskSpaceIfNeededForOnBlockingPool, cache_, num_bytes),
       callback);
+}
+
+void FileSystem::CalculateEvictableCacheSize(
+    const EvictableCacheSizeCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!callback.is_null());
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::Bind(&CalculateEvictableCacheSizeOnBlockingPool, cache_), callback);
 }
 }  // namespace drive
