@@ -239,6 +239,8 @@ dist_yaml_TESTS =				\
 TEST_EXTENSIONS = .yaml
 YAML_LOG_COMPILER = ./check_yaml
 
+EXTRA_DIST = $(dist_yaml_TESTS)
+
 TESTS =				\
 	$(program_TESTS)	\
 	$(dist_check_SCRIPTS)   \
