@@ -15,23 +15,22 @@ class CSSTransitionData final : public CSSTimingData {
 public:
     enum TransitionPropertyType {
         TransitionNone,
-        TransitionSingleProperty,
-        TransitionUnknown,
-        TransitionAll
+        TransitionKnownProperty,
+        TransitionUnknownProperty,
     };
 
     // FIXME: We shouldn't allow 'none' to be used alongside other properties.
     struct TransitionProperty {
         ALLOW_ONLY_INLINE_ALLOCATION();
         TransitionProperty(CSSPropertyID id)
-            : propertyType(TransitionSingleProperty)
+            : propertyType(TransitionKnownProperty)
             , unresolvedProperty(id)
         {
             ASSERT(id != CSSPropertyInvalid);
         }
 
         TransitionProperty(const String& string)
-            : propertyType(TransitionUnknown)
+            : propertyType(TransitionUnknownProperty)
             , unresolvedProperty(CSSPropertyInvalid)
             , propertyString(string)
         {
@@ -41,7 +40,7 @@ public:
             : propertyType(type)
             , unresolvedProperty(CSSPropertyInvalid)
         {
-            ASSERT(type == TransitionNone || type == TransitionAll);
+            ASSERT(type == TransitionNone);
         }
 
         bool operator==(const TransitionProperty& other) const { return propertyType == other.propertyType && unresolvedProperty == other.unresolvedProperty && propertyString == other.propertyString; }
@@ -68,7 +67,7 @@ public:
     const Vector<TransitionProperty>& propertyList() const { return m_propertyList; }
     Vector<TransitionProperty>& propertyList() { return m_propertyList; }
 
-    static TransitionProperty initialProperty() { return TransitionProperty(TransitionAll); }
+    static TransitionProperty initialProperty() { return TransitionProperty(CSSPropertyAll); }
 
 private:
     CSSTransitionData();

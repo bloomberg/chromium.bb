@@ -952,11 +952,9 @@ static PassRefPtrWillBeRawPtr<CSSValue> createTransitionPropertyValue(const CSST
 {
     if (property.propertyType == CSSTransitionData::TransitionNone)
         return cssValuePool().createIdentifierValue(CSSValueNone);
-    if (property.propertyType == CSSTransitionData::TransitionAll)
-        return cssValuePool().createIdentifierValue(CSSValueAll);
-    if (property.propertyType == CSSTransitionData::TransitionUnknown)
+    if (property.propertyType == CSSTransitionData::TransitionUnknownProperty)
         return cssValuePool().createValue(property.propertyString, CSSPrimitiveValue::UnitType::CustomIdentifier);
-    ASSERT(property.propertyType == CSSTransitionData::TransitionSingleProperty);
+    ASSERT(property.propertyType == CSSTransitionData::TransitionKnownProperty);
     return cssValuePool().createValue(getPropertyNameString(property.unresolvedProperty), CSSPrimitiveValue::UnitType::CustomIdentifier);
 }
 

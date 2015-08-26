@@ -3056,11 +3056,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
     CSSParserValue* value = m_valueList->current();
     if (value->m_unit != CSSParserValue::Identifier)
         return nullptr;
-    // Since all is valid css property keyword, cssPropertyID for all
-    // returns non-null value. We need to check "all" before
-    // cssPropertyID check.
-    if (value->id == CSSValueAll)
-        return cssValuePool().createIdentifierValue(CSSValueAll);
     CSSPropertyID property = unresolvedCSSPropertyID(value->string);
     if (property) {
         ASSERT(CSSPropertyMetadata::isEnabledProperty(property));
