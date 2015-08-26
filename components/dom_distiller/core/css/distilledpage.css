@@ -259,6 +259,18 @@ h6 {
   #closeReaderView {
     display: none;
   }
+
+  /* Remove backgrounds and custom colors. */
+  .light, .dark, .sepia {
+      color: #000 !important;
+      background-color: #fff !important;
+  }
+
+  /* If the transition duration is unchanged, the above color changes
+  happen after the document is ready for print. */
+  body {
+      transition-duration: unset !important;
+  }
 }
 
 #content {
