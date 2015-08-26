@@ -12,6 +12,7 @@
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/document_resource_waiter.h"
 #include "components/html_viewer/global_state.h"
+#include "components/html_viewer/html_factory.h"
 #include "components/html_viewer/html_frame.h"
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/html_viewer_switches.h"
@@ -93,7 +94,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
       CHECK(parent);
       HTMLFrame::CreateParams params(frame_tree, parent, view->id(), view,
                                      data->client_properties, delegate);
-      delegate->CreateHTMLFrame(&params);
+      delegate->GetHTMLFactory()->CreateHTMLFrame(&params);
     }
   }
 
@@ -168,7 +169,7 @@ HTMLFrame* HTMLFrameTreeManager::BuildFrameTree(
     if (frame_data[i]->frame_id == local_frame_id)
       params.delegate = delegate;
 
-    HTMLFrame* frame = delegate->CreateHTMLFrame(&params);
+    HTMLFrame* frame = delegate->GetHTMLFactory()->CreateHTMLFrame(&params);
     if (!last_frame)
       root = frame;
     else
@@ -233,7 +234,7 @@ void HTMLFrameTreeManager::ProcessOnFrameAdded(
   HTMLFrame::CreateParams params(this, parent, frame_data->frame_id, nullptr,
                                  frame_data->client_properties, nullptr);
   // |parent| takes ownership of created HTMLFrame.
-  source->GetLocalRoot()->delegate_->CreateHTMLFrame(&params);
+  source->GetLocalRoot()->delegate_->GetHTMLFactory()->CreateHTMLFrame(&params);
 }
 
 void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,

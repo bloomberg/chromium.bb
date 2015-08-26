@@ -13,14 +13,6 @@
 
 namespace html_viewer {
 
-namespace {
-
-HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) {
-  return new HTMLFrame(params);
-}
-
-}  // namespace
-
 // ServiceConnectorQueue records all incoming service requests and processes
 // them once PushRequestsTo() is called. This is useful if you need to delay
 // processing incoming service requests.
@@ -73,7 +65,7 @@ HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
       url_(response->url),
       initial_response_(response.Pass()),
       global_state_(global_state),
-      html_frame_creation_callback_(base::Bind(CreateHTMLFrame)),
+      html_factory_(this),
       weak_factory_(this) {}
 
 HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
@@ -84,11 +76,6 @@ HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
   for (HTMLDocumentOOPIF* doc : documents2)
     doc->Destroy();
   DCHECK(documents2_.empty());
-}
-
-void HTMLDocumentApplicationDelegate::SetHTMLFrameCreationCallback(
-    const HTMLFrameCreationCallback& callback) {
-  html_frame_creation_callback_ = callback;
 }
 
 // Callback from the quit closure. We key off this rather than
@@ -156,13 +143,23 @@ void HTMLDocumentApplicationDelegate::OnResponseReceived(
       &app_, connection, response.Pass(), global_state_,
       base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2,
                  base::Unretained(this)),
-      html_frame_creation_callback_);
+      html_factory_);
   documents2_.insert(document);
 
   if (connector_queue) {
     connector_queue->PushRequestsTo(connection);
     connection->SetServiceConnector(nullptr);
   }
+}
+
+HTMLFrame* HTMLDocumentApplicationDelegate::CreateHTMLFrame(
+    HTMLFrame::CreateParams* params) {
+  return new HTMLFrame(params);
+}
+
+HTMLWidgetRootLocal* HTMLDocumentApplicationDelegate::CreateHTMLWidgetRootLocal(
+    HTMLWidgetRootLocal::CreateParams* params) {
+  return new HTMLWidgetRootLocal(params);
 }
 
 }  // namespace html_viewer

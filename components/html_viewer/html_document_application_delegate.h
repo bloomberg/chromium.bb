@@ -7,11 +7,10 @@
 
 #include <set>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/html_viewer/html_frame.h"
+#include "components/html_viewer/html_factory.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
@@ -23,7 +22,8 @@ class GlobalState;
 class HTMLDocumentOOPIF;
 
 // ApplicationDelegate created by the content handler for a specific url.
-class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
+class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
+                                        public HTMLFactory {
  public:
   HTMLDocumentApplicationDelegate(
       mojo::InterfaceRequest<mojo::Application> request,
@@ -31,10 +31,8 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
       GlobalState* global_state,
       scoped_ptr<mojo::AppRefCount> parent_app_refcount);
 
-  using HTMLFrameCreationCallback =
-      base::Callback<HTMLFrame*(HTMLFrame::CreateParams*)>;
-
-  void SetHTMLFrameCreationCallback(const HTMLFrameCreationCallback& callback);
+  void set_html_factory(HTMLFactory* factory) { html_factory_ = factory; }
+  HTMLFactory* html_factory() { return html_factory_; }
 
  private:
   class ServiceConnectorQueue;
@@ -58,6 +56,11 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
                           scoped_ptr<ServiceConnectorQueue> connector_queue,
                           mojo::URLResponsePtr response);
 
+  // HTMLFactory:
+  HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) override;
+  HTMLWidgetRootLocal* CreateHTMLWidgetRootLocal(
+      HTMLWidgetRootLocal::CreateParams* params) override;
+
   mojo::ApplicationImpl app_;
   // AppRefCount of the parent (HTMLViewer).
   scoped_ptr<mojo::AppRefCount> parent_app_refcount_;
@@ -70,7 +73,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   // HTMLDocument is deleted.
   std::set<HTMLDocumentOOPIF*> documents2_;
 
-  HTMLFrameCreationCallback html_frame_creation_callback_;
+  HTMLFactory* html_factory_;
 
   base::WeakPtrFactory<HTMLDocumentApplicationDelegate> weak_factory_;
 

@@ -19,11 +19,11 @@
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebTextInputInfo.h"
-#include "third_party/WebKit/public/web/WebViewClient.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace blink {
 class WebFrame;
+class WebWidget;
 }
 
 namespace mojo {
@@ -39,6 +39,7 @@ class DevToolsAgentImpl;
 class GeolocationClientImpl;
 class HTMLFrameDelegate;
 class HTMLFrameTreeManager;
+class HTMLWidget;
 class TouchHandler;
 class WebLayerImpl;
 class WebLayerTreeViewImpl;
@@ -59,7 +60,6 @@ class WebLayerTreeViewImpl;
 // Remote frames may become local again if the embed happens in the same
 // process. See HTMLFrameTreeManager for details.
 class HTMLFrame : public blink::WebFrameClient,
-                  public blink::WebViewClient,
                   public blink::WebRemoteFrameClient,
                   public mandoline::FrameTreeClient,
                   public mojo::ViewObserver {
@@ -120,6 +120,7 @@ class HTMLFrame : public blink::WebFrameClient,
   // Returns the WebView for this frame, or null if there isn't one. The root
   // has a WebView, the children WebFrameWidgets.
   blink::WebView* web_view();
+  blink::WebWidget* GetWebWidget();
 
   // The mojo::View this frame renders to. This is non-null for the local frame
   // the frame tree was created with as well as non-null for any frames created
@@ -139,20 +140,6 @@ class HTMLFrame : public blink::WebFrameClient,
   virtual ~HTMLFrame();
 
   // TODO(sky): move implementations to match new position.
-
-  // WebViewClient methods:
-  virtual blink::WebStorageNamespace* createSessionStorageNamespace();
-  virtual void didCancelCompositionOnSelectionChange();
-  virtual void didChangeContents();
-
-  // WebWidgetClient methods:
-  virtual void initializeLayerTreeView();
-  virtual blink::WebLayerTreeView* layerTreeView();
-  virtual void resetInputMethod();
-  virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
-                                     bool eventCancelled);
-  virtual void didUpdateTextOfFocusedElementByNonUserInput();
-  virtual void showImeIfNeeded();
 
   // WebFrameClient methods:
   virtual blink::WebMediaPlayer* createMediaPlayer(
@@ -226,13 +213,7 @@ class HTMLFrame : public blink::WebFrameClient,
   void CreateRootWebWidget();
   void CreateLocalRootWebWidget(blink::WebLocalFrame* local_frame);
 
-  void InitializeWebWidget();
-
   void UpdateFocus();
-
-  // Updates the size and scale factor of the webview and related classes from
-  // |root_|.
-  void UpdateWebViewSizeFromViewSize();
 
   // Swaps this frame from a local frame to remote frame. |request| is the url
   // to load in the frame.
@@ -251,10 +232,6 @@ class HTMLFrame : public blink::WebFrameClient,
 
   // The various frameDetached() implementations call into this.
   void FrameDetachedImpl(blink::WebFrame* web_frame);
-
-  // Update text input state from WebView to mojo::View. If the focused element
-  // is editable and |show_ime| is True, the software keyboard will be shown.
-  void UpdateTextInputState(bool show_ime);
 
   // mojo::ViewObserver methods:
   void OnViewBoundsChanged(mojo::View* view,
@@ -305,9 +282,8 @@ class HTMLFrame : public blink::WebFrameClient,
   const uint32_t id_;
   std::vector<HTMLFrame*> children_;
   blink::WebFrame* web_frame_;
-  blink::WebWidget* web_widget_;
+  scoped_ptr<HTMLWidget> html_widget_;
   scoped_ptr<GeolocationClientImpl> geolocation_client_impl_;
-  scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
   scoped_ptr<TouchHandler> touch_handler_;
 
   scoped_ptr<WebLayerImpl> web_layer_;
@@ -330,8 +306,6 @@ class HTMLFrame : public blink::WebFrameClient,
   // frame was swapped to remote then the process rendering to the view would
   // be severed.
   scoped_ptr<mojo::ScopedViewPtr> owned_view_;
-
-  blink::WebTextInputInfo text_input_info_;
 
   // This object is only valid in the context of performance tests.
   tracing::StartupPerformanceDataCollectorPtr

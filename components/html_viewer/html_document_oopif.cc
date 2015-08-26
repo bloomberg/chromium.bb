@@ -53,13 +53,12 @@ HTMLDocumentOOPIF::BeforeLoadCache::~BeforeLoadCache() {
   STLDeleteElements(&test_interface_requests);
 }
 
-HTMLDocumentOOPIF::HTMLDocumentOOPIF(
-    mojo::ApplicationImpl* html_document_app,
-    mojo::ApplicationConnection* connection,
-    mojo::URLResponsePtr response,
-    GlobalState* global_state,
-    const DeleteCallback& delete_callback,
-    const HTMLFrameCreationCallback& frame_creation_callback)
+HTMLDocumentOOPIF::HTMLDocumentOOPIF(mojo::ApplicationImpl* html_document_app,
+                                     mojo::ApplicationConnection* connection,
+                                     mojo::URLResponsePtr response,
+                                     GlobalState* global_state,
+                                     const DeleteCallback& delete_callback,
+                                     HTMLFactory* factory)
     : app_refcount_(html_document_app->app_lifetime_helper()
                         ->CreateAppRefCount()),
       html_document_app_(html_document_app),
@@ -67,7 +66,7 @@ HTMLDocumentOOPIF::HTMLDocumentOOPIF(
       global_state_(global_state),
       frame_(nullptr),
       delete_callback_(delete_callback),
-      frame_creation_callback_(frame_creation_callback),
+      factory_(factory),
       root_(nullptr) {
   // TODO(sky): nuke headless. We're not going to care about it anymore.
   DCHECK(!global_state_->is_headless());
@@ -204,8 +203,8 @@ mojo::ApplicationImpl* HTMLDocumentOOPIF::GetApp() {
   return html_document_app_;
 }
 
-HTMLFrame* HTMLDocumentOOPIF::CreateHTMLFrame(HTMLFrame::CreateParams* params) {
-  return frame_creation_callback_.Run(params);
+HTMLFactory* HTMLDocumentOOPIF::GetHTMLFactory() {
+  return factory_;
 }
 
 void HTMLDocumentOOPIF::OnFrameSwappedToRemote() {

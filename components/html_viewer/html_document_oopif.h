@@ -38,6 +38,8 @@ namespace html_viewer {
 class AxProviderImpl;
 class DocumentResourceWaiter;
 class GlobalState;
+class HTMLFactory;
+class HTMLFrame;
 class HTMLFrameTreeManager;
 class TestHTMLViewerImpl;
 class WebLayerTreeViewImpl;
@@ -58,8 +60,6 @@ class HTMLDocumentOOPIF
       public mojo::InterfaceFactory<mojo::ViewTreeClient> {
  public:
   using DeleteCallback = base::Callback<void(HTMLDocumentOOPIF*)>;
-  using HTMLFrameCreationCallback =
-      base::Callback<HTMLFrame*(HTMLFrame::CreateParams*)>;
 
   // Load a new HTMLDocument with |response|.
   // |html_document_app| is the application this app was created in, and
@@ -70,7 +70,7 @@ class HTMLDocumentOOPIF
                     mojo::URLResponsePtr response,
                     GlobalState* setup,
                     const DeleteCallback& delete_callback,
-                    const HTMLFrameCreationCallback& frame_creation_callback);
+                    HTMLFactory* factory);
 
   // Deletes this object.
   void Destroy();
@@ -109,7 +109,7 @@ class HTMLDocumentOOPIF
   // HTMLFrameDelegate:
   void OnFrameDidFinishLoad() override;
   mojo::ApplicationImpl* GetApp() override;
-  HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) override;
+  HTMLFactory* GetHTMLFactory() override;
   void OnFrameSwappedToRemote() override;
 
   // mojo::InterfaceFactory<mojo::AxProvider>:
@@ -156,7 +156,7 @@ class HTMLDocumentOOPIF
 
   DeleteCallback delete_callback_;
 
-  HTMLFrameCreationCallback frame_creation_callback_;
+  HTMLFactory* factory_;
 
   mojo::View* root_;
 
