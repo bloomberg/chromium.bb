@@ -5,6 +5,7 @@
 from telemetry.page import page_test
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
+from telemetry.web_perf.metrics import smoothness
 
 
 class _CustomResultsWrapper(timeline_based_measurement.ResultsWrapperInterface):
@@ -50,9 +51,11 @@ class Smoothness(page_test.PageTest):
         'webkit.console', 'blink.console', 'benchmark', 'trace_event_overhead']
     category_filter = tracing_category_filter.TracingCategoryFilter(
         ','.join(custom_categories))
+
+    options = timeline_based_measurement.Options(category_filter)
+    options.SetTimelineBasedMetrics([smoothness.SmoothnessMetric()])
     self._tbm = timeline_based_measurement.TimelineBasedMeasurement(
-        timeline_based_measurement.Options(category_filter),
-        self._results_wrapper)
+        options, self._results_wrapper)
     self._tbm.WillRunStoryForPageTest(
         tracing_controller, page.GetSyntheticDelayCategories())
 

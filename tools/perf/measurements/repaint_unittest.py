@@ -59,6 +59,12 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(percentage_smooth), 1)
     self.assertGreaterEqual(percentage_smooth[0].GetRepresentativeNumber(), 0)
 
+    # Make sure that we don't have extra timeline based metrics that are not
+    # related to smoothness.
+    mainthread_jank = results.FindAllPageSpecificValuesNamed(
+        'responsive-total_big_jank_thread_time')
+    self.assertEquals(len(mainthread_jank), 0)
+
   @decorators.Disabled('android')
   def testCleanUpTrace(self):
     self.TestTracingCleanedUp(smoothness.Repaint, self._options)
