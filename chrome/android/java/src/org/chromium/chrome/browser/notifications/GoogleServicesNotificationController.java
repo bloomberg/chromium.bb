@@ -80,7 +80,7 @@ public class GoogleServicesNotificationController {
                                                      .setContentIntent(contentIntent)
                                                      .setContentTitle(title)
                                                      .setContentText(contentText)
-                                                     .setSmallIcon(R.drawable.ic_stat_notify)
+                                                     .setSmallIcon(R.drawable.ic_chrome)
                                                      .setTicker(tickerText)
                                                      .setLocalOnly(true);
 

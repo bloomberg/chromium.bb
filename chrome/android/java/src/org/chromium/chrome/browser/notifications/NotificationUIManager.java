@@ -385,7 +385,7 @@ public class NotificationUIManager {
                 .setContentText(body)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
                 .setLargeIcon(icon)
-                .setSmallIcon(R.drawable.notification_badge)
+                .setSmallIcon(R.drawable.ic_chrome)
                 .setContentIntent(getPendingIntent(
                         NotificationConstants.ACTION_CLICK_NOTIFICATION,
                         persistentNotificationId, origin, tag, intentData))
