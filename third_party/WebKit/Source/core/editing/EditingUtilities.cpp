@@ -454,27 +454,43 @@ PositionInComposedTree previousVisuallyDistinctCandidate(const PositionInCompose
 
 VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& position, ContainerNode* highestRoot)
 {
-    // position falls before highestRoot.
-    if (comparePositions(position, firstPositionInNode(highestRoot)) == -1 && highestRoot->hasEditableStyle())
-        return VisiblePosition(firstPositionInNode(highestRoot));
+    return VisiblePosition(firstEditablePositionAfterPositionInRoot(position, highestRoot));
+}
 
-    Position editablePosition = position;
+template <typename Strategy>
+PositionAlgorithm<Strategy> firstEditablePositionAfterPositionInRootAlgorithm(const PositionAlgorithm<Strategy>& position, Node* highestRoot)
+{
+    // position falls before highestRoot.
+    if (position.compareTo(PositionAlgorithm<Strategy>::firstPositionInNode(highestRoot)) == -1 && highestRoot->hasEditableStyle())
+        return PositionAlgorithm<Strategy>::firstPositionInNode(highestRoot);
+
+    PositionAlgorithm<Strategy> editablePosition = position;
 
     if (position.anchorNode()->treeScope() != highestRoot->treeScope()) {
         Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(editablePosition.anchorNode());
         if (!shadowAncestor)
-            return VisiblePosition();
+            return PositionAlgorithm<Strategy>();
 
-        editablePosition = positionAfterNode(shadowAncestor);
+        editablePosition = PositionAlgorithm<Strategy>::afterNode(shadowAncestor);
     }
 
     while (editablePosition.anchorNode() && !isEditablePosition(editablePosition) && editablePosition.anchorNode()->isDescendantOf(highestRoot))
-        editablePosition = isAtomicNode(editablePosition.anchorNode()) ? positionInParentAfterNode(*editablePosition.anchorNode()) : nextVisuallyDistinctCandidate(editablePosition);
+        editablePosition = isAtomicNode(editablePosition.anchorNode()) ? PositionAlgorithm<Strategy>::inParentAfterNode(*editablePosition.anchorNode()) : nextVisuallyDistinctCandidate(editablePosition);
 
     if (editablePosition.anchorNode() && editablePosition.anchorNode() != highestRoot && !editablePosition.anchorNode()->isDescendantOf(highestRoot))
-        return VisiblePosition();
+        return PositionAlgorithm<Strategy>();
 
-    return VisiblePosition(editablePosition);
+    return editablePosition;
+}
+
+Position firstEditablePositionAfterPositionInRoot(const Position& position, Node* highestRoot)
+{
+    return firstEditablePositionAfterPositionInRootAlgorithm<EditingStrategy>(position, highestRoot);
+}
+
+PositionInComposedTree firstEditablePositionAfterPositionInRoot(const PositionInComposedTree& position, Node* highestRoot)
+{
+    return firstEditablePositionAfterPositionInRootAlgorithm<EditingInComposedTreeStrategy>(position, highestRoot);
 }
 
 VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position& position, ContainerNode* highestRoot)

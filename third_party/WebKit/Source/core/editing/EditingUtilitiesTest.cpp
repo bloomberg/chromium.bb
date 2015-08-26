@@ -12,6 +12,25 @@ namespace blink {
 class EditingUtilitiesTest : public EditingTestBase {
 };
 
+TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot)
+{
+    const char* bodyContent = "<p id='host' contenteditable><b id='one'></b><b id='two'>22</b></p>";
+    const char* shadowContent = "<content select=#two></content><content select=#one></content><b id='three'>333</b>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    updateLayoutAndStyleForPainting();
+    Node* host = document().getElementById("host");
+    Node* one = document().getElementById("one");
+    Node* three = shadowRoot->getElementById("three");
+
+    EXPECT_EQ(Position(one, 0), firstEditablePositionAfterPositionInRoot(Position(one, 0), host));
+
+    EXPECT_EQ(PositionInComposedTree(one, 0), firstEditablePositionAfterPositionInRoot(PositionInComposedTree(one, 0), host));
+
+    EXPECT_EQ(Position::firstPositionInNode(host), firstEditablePositionAfterPositionInRoot(Position(three, 0), host));
+    EXPECT_EQ(PositionInComposedTree::afterNode(host), firstEditablePositionAfterPositionInRoot(PositionInComposedTree(three, 0), host));
+}
+
 TEST_F(EditingUtilitiesTest, enclosingNodeOfType)
 {
     const char* bodyContent = "<p id='host'><b id='one'>11</b></p>";

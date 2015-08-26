@@ -180,7 +180,9 @@ inline Position lastPositionInOrAfterNode(Node* node)
     return Position::lastPositionInOrAfterNode(node);
 }
 
+CORE_EXPORT Position firstEditablePositionAfterPositionInRoot(const Position&, Node*);
 Position lastEditablePositionBeforePositionInRoot(const Position&, Node*);
+CORE_EXPORT PositionInComposedTree firstEditablePositionAfterPositionInRoot(const PositionInComposedTree&, Node*);
 PositionInComposedTree lastEditablePositionBeforePositionInRoot(const PositionInComposedTree&, Node*);
 
 // Move up or down the DOM by one position.
