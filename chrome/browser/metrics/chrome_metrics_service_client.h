@@ -95,12 +95,12 @@ class ChromeMetricsServiceClient
   void OnInitTaskGotPluginInfo();
 
   // Called after GoogleUpdate init task has been completed that continues the
-  // init task by loading profiler data.
+  // init task by loading drive metrics.
   void OnInitTaskGotGoogleUpdateData();
 
-  // Called after WebCache statistics have been received from a renderer
-  // process.
-  void OnWebCacheStatsRefresh(int host_id);
+  // Called after the drive metrics init task has been completed that continues
+  // the init task by loading profiler data.
+  void OnInitTaskGotDriveMetrics();
 
   // TrackingSynchronizerObserver:
   void ReceivedProfilerData(
@@ -111,8 +111,13 @@ class ChromeMetricsServiceClient
 
   // Callbacks for various stages of final log info collection. Do not call
   // these directly.
+  void CollectFinalHistograms();
   void OnMemoryDetailCollectionDone();
   void OnHistogramSynchronizationDone();
+
+  // Called after WebCache statistics have been received from a renderer
+  // process.
+  void OnWebCacheStatsRefresh(int host_id);
 
   // Records metrics about the switches present on the command line.
   void RecordCommandLineMetrics();

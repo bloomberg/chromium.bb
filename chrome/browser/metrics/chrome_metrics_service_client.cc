@@ -239,52 +239,7 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   collect_final_metrics_done_callback_ = done_callback;
-
-  // Begin the multi-step process of collecting memory usage histograms:
-  // First spawn a task to collect the memory details; when that task is
-  // finished, it will call OnMemoryDetailCollectionDone. That will in turn
-  // call HistogramSynchronization to collect histograms from all renderers and
-  // then call OnHistogramSynchronizationDone to continue processing.
-  DCHECK(!waiting_for_collect_final_metrics_step_);
-  waiting_for_collect_final_metrics_step_ = true;
-
-  base::Closure callback =
-      base::Bind(&ChromeMetricsServiceClient::OnMemoryDetailCollectionDone,
-                 weak_ptr_factory_.GetWeakPtr());
-
-  scoped_refptr<MetricsMemoryDetails> details(
-      new MetricsMemoryDetails(callback, &memory_growth_tracker_));
-  details->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
-
-  base::ScopedPtrMap<int, scoped_ptr<ProcessResourceUsage>> current_map;
-  host_resource_usage_map_.swap(current_map);
-
-  // Collect WebCore cache information to put into a histogram.
-  for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    content::RenderProcessHost* host = i.GetCurrentValue();
-    int host_id = host->GetID();
-    ProcessResourceUsage* resource_usage = nullptr;
-    auto iter = current_map.find(host_id);
-    if (iter != current_map.end()) {
-      resource_usage = iter->second;
-      host_resource_usage_map_.set(host_id, current_map.take_and_erase(iter));
-    } else {
-      content::ServiceRegistry* service_registry = host->GetServiceRegistry();
-      if (service_registry) {
-        ResourceUsageReporterPtr service;
-        service_registry->ConnectToRemoteService(mojo::GetProxy(&service));
-        resource_usage = new ProcessResourceUsage(service.Pass());
-        host_resource_usage_map_.set(host_id, make_scoped_ptr(resource_usage));
-      }
-    }
-    if (resource_usage) {
-      resource_usage->Refresh(
-          base::Bind(&ChromeMetricsServiceClient::OnWebCacheStatsRefresh,
-                     weak_ptr_factory_.GetWeakPtr(), host_id));
-    }
-  }
+  CollectFinalHistograms();
 }
 
 scoped_ptr<metrics::MetricsLogUploader>
@@ -463,30 +418,16 @@ void ChromeMetricsServiceClient::OnInitTaskGotPluginInfo() {
 }
 
 void ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData() {
+  drive_metrics_provider_->GetDriveMetrics(
+      base::Bind(&ChromeMetricsServiceClient::OnInitTaskGotDriveMetrics,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ChromeMetricsServiceClient::OnInitTaskGotDriveMetrics() {
   // Start the next part of the init task: fetching performance data.  This will
   // call into |FinishedReceivingProfilerData()| when the task completes.
   metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
       weak_ptr_factory_.GetWeakPtr());
-}
-
-void ChromeMetricsServiceClient::OnWebCacheStatsRefresh(int host_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  auto iter = host_resource_usage_map_.find(host_id);
-  if (iter != host_resource_usage_map_.end()) {
-    blink::WebCache::ResourceTypeStats stats =
-        iter->second->GetWebCoreCacheStats();
-    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.ImagesSizeKB",
-                           static_cast<int>(stats.images.size / 1024));
-    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.CSSStylesheetsSizeKB",
-                           static_cast<int>(stats.cssStyleSheets.size / 1024));
-    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.ScriptsSizeKB",
-                           static_cast<int>(stats.scripts.size / 1024));
-    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.XSLStylesheetsSizeKB",
-                           static_cast<int>(stats.xslStyleSheets.size / 1024));
-    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.FontsSizeKB",
-                           static_cast<int>(stats.fonts.size / 1024));
-  }
 }
 
 void ChromeMetricsServiceClient::ReceivedProfilerData(
@@ -500,8 +441,57 @@ void ChromeMetricsServiceClient::ReceivedProfilerData(
 }
 
 void ChromeMetricsServiceClient::FinishedReceivingProfilerData() {
-  drive_metrics_provider_->GetDriveMetrics(
-      finished_gathering_initial_metrics_callback_);
+  finished_gathering_initial_metrics_callback_.Run();
+}
+
+void ChromeMetricsServiceClient::CollectFinalHistograms() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Begin the multi-step process of collecting memory usage histograms:
+  // First spawn a task to collect the memory details; when that task is
+  // finished, it will call OnMemoryDetailCollectionDone. That will in turn
+  // call HistogramSynchronization to collect histograms from all renderers and
+  // then call OnHistogramSynchronizationDone to continue processing.
+  DCHECK(!waiting_for_collect_final_metrics_step_);
+  waiting_for_collect_final_metrics_step_ = true;
+
+  base::Closure callback =
+      base::Bind(&ChromeMetricsServiceClient::OnMemoryDetailCollectionDone,
+                 weak_ptr_factory_.GetWeakPtr());
+
+  scoped_refptr<MetricsMemoryDetails> details(
+      new MetricsMemoryDetails(callback, &memory_growth_tracker_));
+  details->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
+
+  base::ScopedPtrMap<int, scoped_ptr<ProcessResourceUsage>> current_map;
+  host_resource_usage_map_.swap(current_map);
+
+  // Collect WebCore cache information to put into a histogram.
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    content::RenderProcessHost* host = i.GetCurrentValue();
+    int host_id = host->GetID();
+    ProcessResourceUsage* resource_usage = nullptr;
+    auto iter = current_map.find(host_id);
+    if (iter != current_map.end()) {
+      resource_usage = iter->second;
+      host_resource_usage_map_.set(host_id, current_map.take_and_erase(iter));
+    } else {
+      content::ServiceRegistry* service_registry = host->GetServiceRegistry();
+      if (service_registry) {
+        ResourceUsageReporterPtr service;
+        service_registry->ConnectToRemoteService(mojo::GetProxy(&service));
+        resource_usage = new ProcessResourceUsage(service.Pass());
+        host_resource_usage_map_.set(host_id, make_scoped_ptr(resource_usage));
+      }
+    }
+    if (resource_usage) {
+      resource_usage->Refresh(
+          base::Bind(&ChromeMetricsServiceClient::OnWebCacheStatsRefresh,
+                     weak_ptr_factory_.GetWeakPtr(), host_id));
+    }
+  }
 }
 
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
@@ -557,6 +547,26 @@ void ChromeMetricsServiceClient::OnHistogramSynchronizationDone() {
 
   waiting_for_collect_final_metrics_step_ = false;
   collect_final_metrics_done_callback_.Run();
+}
+
+void ChromeMetricsServiceClient::OnWebCacheStatsRefresh(int host_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  auto iter = host_resource_usage_map_.find(host_id);
+  if (iter != host_resource_usage_map_.end()) {
+    blink::WebCache::ResourceTypeStats stats =
+        iter->second->GetWebCoreCacheStats();
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.ImagesSizeKB",
+                           static_cast<int>(stats.images.size / 1024));
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.CSSStylesheetsSizeKB",
+                           static_cast<int>(stats.cssStyleSheets.size / 1024));
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.ScriptsSizeKB",
+                           static_cast<int>(stats.scripts.size / 1024));
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.XSLStylesheetsSizeKB",
+                           static_cast<int>(stats.xslStyleSheets.size / 1024));
+    LOCAL_HISTOGRAM_COUNTS("WebCoreCache.FontsSizeKB",
+                           static_cast<int>(stats.fonts.size / 1024));
+  }
 }
 
 void ChromeMetricsServiceClient::RecordCommandLineMetrics() {
