@@ -203,7 +203,7 @@ class CSSPropertyNamesWriter(css_properties.CSSProperties):
         property_offsets = []
         property_names = []
         current_offset = 0
-        for enum_value in range(1, max(enum_value_to_name) + 1):
+        for enum_value in range(self._first_enum_value, max(enum_value_to_name) + 1):
             property_offsets.append(current_offset)
             if enum_value in enum_value_to_name:
                 name = enum_value_to_name[enum_value]
