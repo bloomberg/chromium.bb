@@ -260,8 +260,8 @@ void DeleteSelectionCommand::initializePositionData()
     // like the one below, since editing functions should obviously accept editing positions.
     // FIXME: Passing false to enclosingNodeOfType tells it that it's OK to return a non-editable
     // node.  This was done to match existing behavior, but it seems wrong.
-    m_startBlock = enclosingNodeOfType(m_downstreamStart.parentAnchoredEquivalent(), &isBlock, CanCrossEditingBoundary);
-    m_endBlock = enclosingNodeOfType(m_upstreamEnd.parentAnchoredEquivalent(), &isBlock, CanCrossEditingBoundary);
+    m_startBlock = enclosingNodeOfType(m_downstreamStart.parentAnchoredEquivalent(), &isEnclosingBlock, CanCrossEditingBoundary);
+    m_endBlock = enclosingNodeOfType(m_upstreamEnd.parentAnchoredEquivalent(), &isEnclosingBlock, CanCrossEditingBoundary);
 }
 
 // We don't want to inherit style from an element which can't have contents.

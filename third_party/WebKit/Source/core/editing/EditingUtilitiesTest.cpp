@@ -42,8 +42,8 @@ TEST_F(EditingUtilitiesTest, enclosingNodeOfType)
     Node* one = document().getElementById("one");
     Node* three = shadowRoot->getElementById("three");
 
-    EXPECT_EQ(host, enclosingNodeOfType(Position(one, 0), isBlock));
-    EXPECT_EQ(three, enclosingNodeOfType(PositionInComposedTree(one, 0), isBlock));
+    EXPECT_EQ(host, enclosingNodeOfType(Position(one, 0), isEnclosingBlock));
+    EXPECT_EQ(three, enclosingNodeOfType(PositionInComposedTree(one, 0), isEnclosingBlock));
 }
 
 TEST_F(EditingUtilitiesTest, NextNodeIndex)

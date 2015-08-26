@@ -292,7 +292,7 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode, Node* pastEnd)
             next = EditingInComposedTreeStrategy::nextSkippingChildren(*n);
         } else {
             next = Strategy::next(*n);
-            if (isBlock(n) && canHaveChildrenForEditing(n) && next == pastEnd) {
+            if (isEnclosingBlock(n) && canHaveChildrenForEditing(n) && next == pastEnd) {
                 // Don't write out empty block containers that aren't fully selected.
                 continue;
             }
@@ -363,7 +363,7 @@ bool StyledMarkupTraverser<Strategy>::needsInlineStyle(const Element& element)
         return false;
     if (shouldAnnotate())
         return true;
-    return convertBlocksToInlines() && isBlock(&element);
+    return convertBlocksToInlines() && isEnclosingBlock(&element);
 }
 
 template<typename Strategy>
@@ -396,7 +396,7 @@ RefPtrWillBeRawPtr<EditingStyle> StyledMarkupTraverser<Strategy>::createInlineSt
     if (!node.isElementNode())
         return nullptr;
     RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(toElement(node));
-    if (convertBlocksToInlines() && isBlock(&node))
+    if (convertBlocksToInlines() && isEnclosingBlock(&node))
         inlineStyle->forceInline();
     return inlineStyle;
 }

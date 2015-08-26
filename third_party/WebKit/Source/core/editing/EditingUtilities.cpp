@@ -640,9 +640,7 @@ PositionInComposedTree nextPositionOf(const PositionInComposedTree& position, Po
     return nextPositionOfAlgorithm<EditingInComposedTreeStrategy>(position, moveType);
 }
 
-// FIXME: The method name, comment, and code say three different things here!
-// Whether or not content before and after this node will collapse onto the same line as it.
-bool isBlock(const Node* node)
+bool isEnclosingBlock(const Node* node)
 {
     return node && node->layoutObject() && !node->layoutObject()->isInline() && !node->layoutObject()->isRubyText();
 }
@@ -658,8 +656,8 @@ bool isInline(const Node* node)
 // knowing about these kinds of special cases.
 Element* enclosingBlock(Node* node, EditingBoundaryCrossingRule rule)
 {
-    Node* enclosingNode = enclosingNodeOfType(firstPositionInOrBeforeNode(node), isBlock, rule);
-    return enclosingNode && enclosingNode->isElementNode() ? toElement(enclosingNode) : 0;
+    Node* enclosingNode = enclosingNodeOfType(firstPositionInOrBeforeNode(node), isEnclosingBlock, rule);
+    return enclosingNode && enclosingNode->isElementNode() ? toElement(enclosingNode) : nullptr;
 }
 
 Element* enclosingBlockFlowElement(Node& node)

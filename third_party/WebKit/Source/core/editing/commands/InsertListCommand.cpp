@@ -381,7 +381,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
         listElement = createHTMLElement(document(), listTag);
         appendNode(listItemElement, listElement);
 
-        if (start.deepEquivalent() == end.deepEquivalent() && isBlock(start.deepEquivalent().anchorNode())) {
+        if (start.deepEquivalent() == end.deepEquivalent() && isEnclosingBlock(start.deepEquivalent().anchorNode())) {
             // Inserting the list into an empty paragraph that isn't held open
             // by a br or a '\n', will invalidate start and end.  Insert
             // a placeholder and then recompute start and end.

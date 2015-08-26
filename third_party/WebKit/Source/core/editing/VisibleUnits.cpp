@@ -1191,7 +1191,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
             continue;
         }
 
-        if (r->isBR() || isBlock(n))
+        if (r->isBR() || isEnclosingBlock(n))
             break;
 
         if (r->isText() && toLayoutText(r)->resolvedTextLength()) {
@@ -1268,7 +1268,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
             continue;
         }
 
-        if (r->isBR() || isBlock(n))
+        if (r->isBR() || isEnclosingBlock(n))
             break;
 
         // FIXME: We avoid returning a position where the layoutObject can't accept the caret.

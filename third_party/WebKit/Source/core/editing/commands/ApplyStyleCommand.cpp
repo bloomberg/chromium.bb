@@ -812,7 +812,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
             continue;
         }
 
-        if (isBlock(node.get()))
+        if (isEnclosingBlock(node.get()))
             continue;
 
         if (node->hasChildren()) {
@@ -828,7 +828,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
         Node* runEnd = node.get();
         Node* sibling = node->nextSibling();
         while (sibling && sibling != pastEndNode && !sibling->contains(pastEndNode.get())
-            && (!isBlock(sibling) || isHTMLBRElement(*sibling))
+            && (!isEnclosingBlock(sibling) || isHTMLBRElement(*sibling))
             && !containsNonEditableRegion(*sibling)) {
             runEnd = sibling;
             sibling = runEnd->nextSibling();

@@ -935,7 +935,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
         return nullptr;
 
     // Perform some checks to see if we need to perform work in this function.
-    if (isBlock(upstreamStart.anchorNode())) {
+    if (isEnclosingBlock(upstreamStart.anchorNode())) {
         // If the block is the root editable element, always move content to a new block,
         // since it is illegal to modify attributes on the root editable element for editing.
         if (upstreamStart.anchorNode() == editableRootForPosition(upstreamStart)) {
@@ -943,7 +943,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
             // block but don't try and move content into it, since there's nothing for moveParagraphs to move.
             if (!hasRenderedNonAnonymousDescendantsWithHeight(upstreamStart.anchorNode()->layoutObject()))
                 return insertNewDefaultParagraphElementAt(upstreamStart);
-        } else if (isBlock(upstreamEnd.anchorNode())) {
+        } else if (isEnclosingBlock(upstreamEnd.anchorNode())) {
             if (!upstreamEnd.anchorNode()->isDescendantOf(upstreamStart.anchorNode())) {
                 // If the paragraph end is a descendant of paragraph start, then we need to run
                 // the rest of this function. If not, we can bail here.
@@ -1099,7 +1099,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
             // doesn't require a placeholder to prop itself open (like a bordered
             // div or an li), remove it during the move (the list removal code
             // expects this behavior).
-        } else if (isBlock(node)) {
+        } else if (isEnclosingBlock(node)) {
             // If caret position after deletion and destination position coincides,
             // node should not be removed.
             if (!rendersInDifferentPosition(position, destination.deepEquivalent())) {
@@ -1428,7 +1428,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
         return result;
 
     // Don't avoid block level anchors, because that would insert content into the wrong paragraph.
-    if (enclosingAnchor && !isBlock(enclosingAnchor)) {
+    if (enclosingAnchor && !isEnclosingBlock(enclosingAnchor)) {
         VisiblePosition firstInAnchor(firstPositionInNode(enclosingAnchor));
         VisiblePosition lastInAnchor(lastPositionInNode(enclosingAnchor));
         // If visually just after the anchor, insert *inside* the anchor unless it's the last

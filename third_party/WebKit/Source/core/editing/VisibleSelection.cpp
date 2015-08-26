@@ -494,7 +494,7 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
             if (Element* table = isFirstPositionAfterTable(end)) {
                 // The paragraph break after the last paragraph in the last cell of a block table ends
                 // at the start of the paragraph after the table.
-                if (isBlock(table))
+                if (isEnclosingBlock(table))
                     end = end.next(CannotCrossEditingBoundary);
                 else
                     end = wordEnd;
@@ -537,7 +537,7 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
         if (Element* table = isFirstPositionAfterTable(end)) {
             // The paragraph break after the last paragraph in the last cell of a block table ends
             // at the start of the paragraph after the table, not at the position just after the table.
-            if (isBlock(table))
+            if (isEnclosingBlock(table))
                 end = end.next(CannotCrossEditingBoundary);
             // There is no parargraph break after the last paragraph in the last cell of an inline table.
             else

@@ -166,7 +166,7 @@ Node* enclosingBlockToSplitTreeTo(Node* startNode)
             return lastBlock;
         if (isTableCell(n) || isHTMLBodyElement(*n) || !n->parentNode() || !n->parentNode()->hasEditableStyle() || isElementForFormatBlock(n))
             return n;
-        if (isBlock(n))
+        if (isEnclosingBlock(n))
             lastBlock = n;
         if (isHTMLListElement(n))
             return n->parentNode()->hasEditableStyle() ? n->parentNode() : n;

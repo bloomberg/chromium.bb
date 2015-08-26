@@ -478,7 +478,7 @@ bool ReplaceSelectionCommand::shouldMerge(const VisiblePosition& source, const V
         && (!isHTMLHeaderElement(sourceBlock) || haveSameTagName(sourceBlock, destinationBlock))
         // Don't merge to or from a position before or after a block because it would
         // be a no-op and cause infinite recursion.
-        && !isBlock(sourceNode) && !isBlock(destinationNode);
+        && !isEnclosingBlock(sourceNode) && !isEnclosingBlock(destinationNode);
 }
 
 // Style rules that match just inserted elements could change their appearance, like
@@ -569,7 +569,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
             // in quirks mode (which Mail.app is always in). We should look for an alternative.
 
             // Mutate using the CSSOM wrapper so we get the same event behavior as a script.
-            if (isBlock(element))
+            if (isEnclosingBlock(element))
                 element->style()->setPropertyInternal(CSSPropertyDisplay, "inline", false, IGNORE_EXCEPTION);
             if (element->layoutObject() && element->layoutObject()->style()->isFloating())
                 element->style()->setPropertyInternal(CSSPropertyFloat, "none", false, IGNORE_EXCEPTION);
@@ -885,7 +885,7 @@ static Node* enclosingInline(Node* node)
 static bool isInlineHTMLElementWithStyle(const Node* node)
 {
     // We don't want to skip over any block elements.
-    if (isBlock(node))
+    if (isEnclosingBlock(node))
         return false;
 
     if (!node->isHTMLElement())
