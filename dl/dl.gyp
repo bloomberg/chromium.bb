@@ -287,9 +287,9 @@
             'sp/src/arm/neon/omxSP_FFTInv_CCSToR_F32_Sfs_s.S',
           ],
           'conditions': [
-            # Disable LTO due to NEON issues
+            # Disable GCC LTO due to NEON issues
             # crbug.com/408997
-            ['use_lto==1', {
+            ['clang==0 and use_lto==1', {
               'cflags!': [
                 '-flto',
                 '-ffat-lto-objects',
