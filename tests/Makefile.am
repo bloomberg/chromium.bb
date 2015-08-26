@@ -219,6 +219,7 @@ dist_yaml_TESTS =				\
 	ethio-g1_harness.yaml			\
 	fi_harness.yaml				\
 	foo.yaml				\
+	example_test.yaml			\
 	fr-bfu-g2_harness.yaml			\
 	ga-g1_harness.yaml			\
 	ga-g2_harness.yaml			\
