@@ -38,7 +38,7 @@ class CONTENT_EXPORT VideoTrackRecorder
   ~VideoTrackRecorder() override;
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    const base::TimeTicks& capture_time);
+                    base::TimeTicks capture_time);
 
  private:
   friend class VideoTrackRecorderTest;

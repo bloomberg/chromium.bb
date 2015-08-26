@@ -479,7 +479,7 @@ void VideoTrackAdapter::RemoveTrackOnIO(const MediaStreamVideoTrack* track) {
 
 void VideoTrackAdapter::DeliverFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
-    const base::TimeTicks& estimated_capture_time) {
+    base::TimeTicks estimated_capture_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("video", "VideoTrackAdapter::DeliverFrameOnIO");
   ++frame_counter_;

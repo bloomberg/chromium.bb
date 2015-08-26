@@ -81,7 +81,7 @@ void RTCVideoRenderer::OnReadyStateChanged(
 
 void RTCVideoRenderer::OnVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
-    const base::TimeTicks& estimated_capture_time) {
+    base::TimeTicks estimated_capture_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ != STARTED)
     return;

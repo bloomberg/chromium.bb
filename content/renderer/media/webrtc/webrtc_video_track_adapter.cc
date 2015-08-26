@@ -48,7 +48,7 @@ class WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter
   void ReleaseSourceOnMainThread();
 
   void OnVideoFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
-                        const base::TimeTicks& estimated_capture_time);
+                        base::TimeTicks estimated_capture_time);
 
  private:
   void OnVideoFrameOnWorkerThread(
@@ -114,7 +114,7 @@ ReleaseSourceOnMainThread() {
 
 void WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
-    const base::TimeTicks& estimated_capture_time) {
+    base::TimeTicks estimated_capture_time) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   libjingle_worker_thread_->PostTask(
       FROM_HERE,

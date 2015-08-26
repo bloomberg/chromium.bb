@@ -55,7 +55,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   // Triggers all registered callbacks with |frame|, |format| and
   // |estimated_capture_time| as parameters. Must be called on the IO-thread.
   void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
-                        const base::TimeTicks& estimated_capture_time);
+                        base::TimeTicks estimated_capture_time);
 
  private:
   friend class base::RefCountedThreadSafe<FrameDeliverer>;
@@ -154,7 +154,7 @@ void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(bool enabled) {
 
 void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
-    const base::TimeTicks& estimated_capture_time) {
+    base::TimeTicks estimated_capture_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   const scoped_refptr<media::VideoFrame>& video_frame =
       enabled_ ? frame : GetBlackFrame(frame);

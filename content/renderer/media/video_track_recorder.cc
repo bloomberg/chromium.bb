@@ -305,7 +305,7 @@ VideoTrackRecorder::~VideoTrackRecorder() {
 }
 
 void VideoTrackRecorder::OnVideoFrame(const scoped_refptr<VideoFrame>& frame,
-                                      const base::TimeTicks& timestamp) {
+                                      base::TimeTicks timestamp) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   encoder_->StartFrameEncode(frame, timestamp);
 }

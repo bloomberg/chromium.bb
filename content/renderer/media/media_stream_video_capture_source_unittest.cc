@@ -265,7 +265,7 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
   }
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                    const base::TimeTicks& capture_time) {
+                    base::TimeTicks capture_time) {
     *capture_time_ = capture_time;
     metadata_->Clear();
     base::DictionaryValue tmp;

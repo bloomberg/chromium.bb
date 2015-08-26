@@ -48,9 +48,8 @@ class VideoTrackAdapter
 
   // Delivers |frame| to all tracks that have registered a callback.
   // Must be called on the IO-thread.
-  void DeliverFrameOnIO(
-      const scoped_refptr<media::VideoFrame>& frame,
-      const base::TimeTicks& estimated_capture_time);
+  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+                        base::TimeTicks estimated_capture_time);
 
   base::SingleThreadTaskRunner* io_task_runner() const {
     DCHECK(thread_checker_.CalledOnValidThread());

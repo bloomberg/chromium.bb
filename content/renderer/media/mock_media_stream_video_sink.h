@@ -39,7 +39,7 @@ class MockMediaStreamVideoSink : public MediaStreamVideoSink {
 
  private:
   void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
-                         const base::TimeTicks& estimated_capture_time);
+                         base::TimeTicks estimated_capture_time);
 
   int number_of_frames_;
   bool enabled_;
