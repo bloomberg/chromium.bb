@@ -979,6 +979,11 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
     if (state.animationUpdate().isEmpty())
         return false;
 
+    if (state.style()->insideLink() != NotInsideLink) {
+        ASSERT(state.applyPropertyToRegularStyle());
+        state.setApplyPropertyToVisitedLinkStyle(true);
+    }
+
     const ActiveInterpolationMap& activeInterpolationsForAnimations = state.animationUpdate().activeInterpolationsForAnimations();
     const ActiveInterpolationMap& activeInterpolationsForTransitions = state.animationUpdate().activeInterpolationsForTransitions();
     applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsForAnimations);
@@ -993,6 +998,8 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
     loadPendingResources(state);
 
     ASSERT(!state.fontBuilder().fontDirty());
+
+    state.setApplyPropertyToVisitedLinkStyle(false);
 
     return true;
 }
