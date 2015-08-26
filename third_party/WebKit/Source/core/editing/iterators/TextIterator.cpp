@@ -1093,19 +1093,20 @@ static String createPlainText(const EphemeralRangeTemplate<Strategy>& range, Tex
         return emptyString();
 
     TextIteratorAlgorithm<Strategy> it(range.startPosition(), range.endPosition(), behavior);
+
+    if (it.atEnd())
+        return emptyString();
+
     // The initial buffer size can be critical for performance: https://bugs.webkit.org/show_bug.cgi?id=81192
     static const unsigned initialCapacity = 1 << 15;
 
-    unsigned bufferLength = 0;
     StringBuilder builder;
     builder.reserveCapacity(initialCapacity);
 
-    for (; !it.atEnd(); it.advance()) {
+    for (; !it.atEnd(); it.advance())
         it.text().appendTextToStringBuilder(builder);
-        bufferLength += it.length();
-    }
 
-    if (!bufferLength)
+    if (builder.isEmpty())
         return emptyString();
 
     return builder.toString();
