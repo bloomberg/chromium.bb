@@ -26,13 +26,13 @@
 #ifndef TextInsertionBaseCommand_h
 #define TextInsertionBaseCommand_h
 
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/commands/CompositeEditCommand.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class Document;
-class VisibleSelection;
 
 class TextInsertionBaseCommand : public CompositeEditCommand {
 public:

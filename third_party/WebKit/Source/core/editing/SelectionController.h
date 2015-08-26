@@ -29,6 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/TextGranularity.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/heap/Handle.h"
 
@@ -37,7 +38,6 @@ namespace blink {
 class FrameSelection;
 class HitTestResult;
 class LocalFrame;
-class VisibleSelection;
 
 class SelectionController final : public NoBaseWillBeGarbageCollected<SelectionController> {
     WTF_MAKE_NONCOPYABLE(SelectionController);

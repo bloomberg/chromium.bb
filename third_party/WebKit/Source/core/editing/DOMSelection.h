@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/editing/Position.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -45,7 +46,6 @@ class ExceptionState;
 class Node;
 class Range;
 class TreeScope;
-class VisibleSelection;
 
 class DOMSelection final : public RefCountedWillBeGarbageCollected<DOMSelection>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();

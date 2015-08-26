@@ -35,6 +35,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/editing/Position.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -57,7 +58,6 @@ class Node;
 class QualifiedName;
 class ComputedStyle;
 class StylePropertySet;
-class VisibleSelection;
 
 class EditingStyle final : public RefCountedWillBeGarbageCollectedFinalized<EditingStyle> {
 public:

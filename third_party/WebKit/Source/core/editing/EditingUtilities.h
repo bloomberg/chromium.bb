@@ -31,6 +31,7 @@
 #include "core/editing/Position.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleSelection.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Forward.h"
 #include "wtf/text/CharacterNames.h"
@@ -52,7 +53,6 @@ class HTMLSpanElement;
 class HTMLUListElement;
 class Node;
 class Range;
-class VisibleSelection;
 
 // This file contains a set of helper functions used by the editing commands
 
