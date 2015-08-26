@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.chromium.content.R;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * An ActionMode.Callback for in-page web content selection. This class handles both the editable
@@ -116,7 +117,9 @@ public class WebActionModeCallback implements ActionMode.Callback {
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        mode.setTitle(null);
+        mode.setTitle(DeviceFormFactor.isTablet(getContext())
+                        ? getContext().getString(R.string.actionbar_textselection_title)
+                        : null);
         mode.setSubtitle(null);
         mEditable = mActionHandler.isSelectionEditable();
         mIsPasswordType = mActionHandler.isSelectionPassword();

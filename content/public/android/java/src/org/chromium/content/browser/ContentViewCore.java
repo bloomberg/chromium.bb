@@ -2184,8 +2184,8 @@ public class ContentViewCore implements
     }
 
     private ActionMode startActionMode(boolean allowFallbackIfFloatingActionModeCreationFails) {
-        WebActionModeCallback callback = getContentViewClient().getWebActionModeCallback(
-                mContainerView.getContext(), mActionHandler);
+        WebActionModeCallback callback =
+                new WebActionModeCallback(mContainerView.getContext(), mActionHandler);
         if (supportsFloatingActionMode()) {
             ActionMode actionMode = startFloatingActionMode(callback);
             if (actionMode != null) return actionMode;

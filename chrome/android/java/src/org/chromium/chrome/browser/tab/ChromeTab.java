@@ -70,8 +70,6 @@ import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.WebActionModeCallback;
-import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.InvalidateTypes;
@@ -751,12 +749,6 @@ public class ChromeTab extends Tab {
             @Override
             public boolean doesPerformWebSearch() {
                 return true;
-            }
-
-            @Override
-            public WebActionModeCallback getWebActionModeCallback(
-                    Context context, ActionHandler actionHandler) {
-                return new ChromeWebActionModeCallback(context, actionHandler);
             }
 
             @Override

@@ -28,8 +28,6 @@ import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.WebActionMode;
-import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -372,20 +370,6 @@ public abstract class AwContentsClient {
      * @param picture New picture.
      */
     public abstract void onNewPicture(Picture picture);
-
-    /**
-     * TODO(jdduke): Remove when all embedders have been updated.
-     */
-    public WebActionMode startActionMode(View view, ActionHandler actionHandler, boolean floating) {
-        return null;
-    }
-
-    /**
-     * TODO(jdduke): Remove when all embedders have been updated.
-     */
-    public boolean supportsFloatingActionMode() {
-        return false;
-    }
 
     public void updateTitle(String title, boolean forceNotification) {
         if (!forceNotification && TextUtils.equals(mTitle, title)) return;
