@@ -311,7 +311,23 @@ String getUUIDForGATTAttribute(GATTAttribute attribute, StringOrUnsignedLong nam
     errorMessage.append(attributeType);
     errorMessage.append(" name: '");
     errorMessage.append(nameStr);
-    errorMessage.append("'.");
+    errorMessage.append("'. It must be a valid UUID alias (e.g. 0x1234), "
+        "UUID (lowercase hex characters e.g. '00001234-0000-1000-8000-00805f9b34fb'), "
+        "or recognized standard name from ");
+    switch (attribute) {
+    case GATTAttribute::Service:
+        errorMessage.append("https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx"
+            " e.g. 'alert_notification'.");
+        break;
+    case GATTAttribute::Characteristic:
+        errorMessage.append("https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicsHome.aspx"
+            " e.g. 'aerobic_heart_rate_lower_limit'.");
+        break;
+    case GATTAttribute::Descriptor:
+        errorMessage.append("https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorsHomePage.aspx"
+            " e.g. 'gatt.characteristic_presentation_format'.");
+        break;
+    }
     // Otherwise, throw a SyntaxError.
     exceptionState.throwDOMException(SyntaxError, errorMessage.toString());
     return String();
