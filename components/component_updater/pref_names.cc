@@ -22,6 +22,9 @@ const char kSwReporterLastExitCode[] = "software_reporter.last_exit_code";
 const char kSwReporterLastTimeTriggered[] =
     "software_reporter.last_time_triggered";
 
+// Identify whether there is a pending prompt to be added to the Chrome menu.
+const char kSwReporterPendingPrompt[] = "software_reporter.pending_prompt";
+
 // The version string of the reporter that triggered an SRT prompt. An empty
 // string when the prompt wasn't shown yet. Stored in the protected prefs of the
 // profile that owns the browser where the prompt was shown.

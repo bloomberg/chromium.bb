@@ -35,6 +35,9 @@ class SRTGlobalError : public GlobalErrorWithStandardBubble {
   void ExecuteMenuItem(Browser* browser) override;
   void ShowBubbleView(Browser* browser) override;
 
+  // WidgetDelegateView overrides:
+  bool ShouldShowCloseButton() const override;
+
   // GlobalErrorWithStandardBubble:
   base::string16 GetBubbleViewTitle() override;
   std::vector<base::string16> GetBubbleViewMessages() override;
@@ -62,6 +65,12 @@ class SRTGlobalError : public GlobalErrorWithStandardBubble {
 
   // The path to the downloaded executable.
   base::FilePath downloaded_path_;
+
+  // Identifies whether the Dismiss button should be shown or not.
+  bool show_dismiss_button_ = false;
+
+  // Identifies whether the user interacted with the bubble buttons or not.
+  bool interacted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SRTGlobalError);
 };

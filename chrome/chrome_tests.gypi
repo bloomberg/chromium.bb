@@ -391,6 +391,7 @@
       'browser/renderer_host/chrome_resource_dispatcher_host_delegate_browsertest.cc',
       'browser/renderer_host/render_process_host_chrome_browsertest.cc',
       'browser/repost_form_warning_browsertest.cc',
+      'browser/safe_browsing/srt_fetcher_browsertest_win.cc',
       'browser/safe_json_parser_browsertest.cc',
       'browser/search/hotword_installer_browsertest.cc',
       'browser/search/suggestions/image_fetcher_impl_browsertest.cc',

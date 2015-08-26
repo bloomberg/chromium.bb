@@ -9,14 +9,17 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
+#include "components/component_updater/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -98,12 +101,17 @@ base::string16 SRTGlobalError::MenuItemLabel() {
 }
 
 void SRTGlobalError::ExecuteMenuItem(Browser* browser) {
+  show_dismiss_button_ = true;
   ShowBubbleView(browser);
 }
 
 void SRTGlobalError::ShowBubbleView(Browser* browser) {
   safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_SHOWN);
   GlobalErrorWithStandardBubble::ShowBubbleView(browser);
+}
+
+bool SRTGlobalError::ShouldShowCloseButton() const {
+  return true;
 }
 
 base::string16 SRTGlobalError::GetBubbleViewTitle() {
@@ -128,20 +136,31 @@ bool SRTGlobalError::ShouldAddElevationIconToAcceptButton() {
 }
 
 base::string16 SRTGlobalError::GetBubbleViewCancelButtonLabel() {
-  return l10n_util::GetStringUTF16(IDS_SRT_BUBBLE_DISMISS);
+  if (show_dismiss_button_)
+    return l10n_util::GetStringUTF16(IDS_SRT_BUBBLE_DISMISS);
+  return base::string16();
 }
 
 void SRTGlobalError::OnBubbleViewDidClose(Browser* browser) {
+  // This won't happen when user interacted with the bubble since DestroySelf is
+  // called in those cases and will prevent the base class from calling virtual
+  // methods. This DCHECK makes sure that behavior won't change.
+  DCHECK(!interacted_);
+  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_CLOSED);
+  g_browser_process->local_state()->SetBoolean(prefs::kSwReporterPendingPrompt,
+                                               true);
 }
 
 void SRTGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
   safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_ACCEPTED);
+  interacted_ = true;
   global_error_service_->RemoveGlobalError(this);
   MaybeExecuteSRT();
 }
 
 void SRTGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
   safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_DENIED);
+  interacted_ = true;
   global_error_service_->RemoveGlobalError(this);
 
   BrowserThread::PostBlockingPoolTask(
@@ -187,5 +206,9 @@ void SRTGlobalError::FallbackToDownloadPage() {
 }
 
 void SRTGlobalError::DestroySelf() {
+  // This should only happen when user interacted with the bubble.
+  DCHECK(interacted_);
+  g_browser_process->local_state()->SetBoolean(prefs::kSwReporterPendingPrompt,
+                                               false);
   delete this;
 }

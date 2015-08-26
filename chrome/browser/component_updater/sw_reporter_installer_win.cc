@@ -21,6 +21,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
@@ -197,7 +199,9 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     ReportVersionWithUma(version);
     safe_browsing::RunSwReporter(install_dir.Append(kSwReporterExeName),
-                                 version.GetString());
+                                 version.GetString(),
+                                 base::ThreadTaskRunnerHandle::Get(),
+                                 base::WorkerPool::GetTaskRunner(true));
   }
 
   base::FilePath GetBaseDirectory() const override { return install_dir(); }
@@ -319,6 +323,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
 void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kSwReporterLastTimeTriggered, 0);
   registry->RegisterIntegerPref(prefs::kSwReporterLastExitCode, -1);
+  registry->RegisterBooleanPref(prefs::kSwReporterPendingPrompt, false);
 }
 
 void RegisterProfilePrefsForSwReporter(

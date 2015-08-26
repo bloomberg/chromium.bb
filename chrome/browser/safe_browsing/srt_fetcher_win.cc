@@ -9,12 +9,12 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_runner_util.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,8 +41,10 @@ namespace safe_browsing {
 
 namespace {
 
-// The number of days to wait before triggering another sw_reporter run.
-const int kDaysBetweenSuccessfulSwReporterRuns = 7;
+// Overrides for the reporter launcher and prompt triggers free function, used
+// by tests.
+ReporterLauncher g_reporter_launcher_;
+PromptTrigger g_prompt_trigger_;
 
 void DisplaySRTPrompt(const base::FilePath& download_path) {
   // Find the last active browser, which may be NULL, in which case we won't
@@ -73,17 +75,48 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
   // itself from the service and self-destructs when done.
   global_error_service->AddGlobalError(global_error);
 
-  // Do not try to show bubble if another GlobalError is already showing
-  // one. The bubble will be shown once the others have been dismissed.
-  bool need_to_show_bubble = true;
-  for (GlobalError* error : global_error_service->errors()) {
-    if (error->GetBubbleView()) {
-      need_to_show_bubble = false;
-      break;
+  bool show_bubble = true;
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state && local_state->GetBoolean(prefs::kSwReporterPendingPrompt)) {
+    // Don't show the bubble if there's already a pending prompt to only be
+    // sown in the Chrome menu.
+    RecordReporterStepHistogram(SW_REPORTER_ADDED_TO_MENU);
+    show_bubble = false;
+  } else {
+    // Do not try to show bubble if another GlobalError is already showing
+    // one. The bubble will be shown once the others have been dismissed.
+    for (GlobalError* error : global_error_service->errors()) {
+      if (error->GetBubbleView()) {
+        show_bubble = false;
+        break;
+      }
     }
   }
-  if (need_to_show_bubble)
+  if (show_bubble)
     global_error->ShowBubbleView(browser);
+}
+
+// This function is called from a worker thread to launch the SwReporter and
+// wait for termination to collect its exit code. This task could be
+// interrupted by a shutdown at any time, so it shouldn't depend on anything
+// external that could be shut down beforehand.
+int LaunchAndWaitForExit(const base::FilePath& exe_path,
+                         const std::string& version) {
+  if (!g_reporter_launcher_.is_null())
+    return g_reporter_launcher_.Run(exe_path, version);
+  base::Process reporter_process =
+      base::LaunchProcess(exe_path.value(), base::LaunchOptions());
+  // This exit code is used to identify that a reporter run didn't happen, so
+  // the result should be ignored and a rerun scheduled for the usual delay.
+  int exit_code = kReporterFailureExitCode;
+  if (reporter_process.IsValid()) {
+    RecordReporterStepHistogram(SW_REPORTER_START_EXECUTION);
+    bool success = reporter_process.WaitForExit(&exit_code);
+    DCHECK(success);
+  } else {
+    RecordReporterStepHistogram(SW_REPORTER_FAILED_TO_START);
+  }
+  return exit_code;
 }
 
 // Class that will attempt to download the SRT, showing the SRT notification
@@ -165,26 +198,73 @@ class SRTFetcher : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(SRTFetcher);
 };
 
+// Try to fetch the SRT, and on success, show the prompt to run it.
+void MaybeFetchSRT(Browser* browser, const std::string& reporter_version) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!g_prompt_trigger_.is_null()) {
+    g_prompt_trigger_.Run(browser, reporter_version);
+    return;
+  }
+  Profile* profile = browser->profile();
+  DCHECK(profile);
+  PrefService* prefs = profile->GetPrefs();
+  DCHECK(prefs);
+
+  // Don't show the prompt again if it's been shown before for this profile
+  // and for the current variations seed, unless there's a pending prompt to
+  // show in the Chrome menu.
+  std::string incoming_seed = GetIncomingSRTSeed();
+  std::string old_seed = prefs->GetString(prefs::kSwReporterPromptSeed);
+  PrefService* local_state = g_browser_process->local_state();
+  bool pending_prompt =
+      local_state && local_state->GetBoolean(prefs::kSwReporterPendingPrompt);
+  if (!incoming_seed.empty() && incoming_seed == old_seed && !pending_prompt) {
+    RecordReporterStepHistogram(SW_REPORTER_ALREADY_PROMPTED);
+    return;
+  }
+
+  if (!incoming_seed.empty())
+    prefs->SetString(prefs::kSwReporterPromptSeed, incoming_seed);
+  prefs->SetString(prefs::kSwReporterPromptVersion, reporter_version);
+
+  // Download the SRT.
+  RecordReporterStepHistogram(SW_REPORTER_DOWNLOAD_START);
+
+  // All the work happens in the self-deleting class below.
+  new SRTFetcher(profile);
+}
+
 // This class tries to run the reporter and reacts to its exit code. It
 // schedules subsequent runs as needed, or retries as soon as a browser is
 // available when none is on first try.
 class ReporterRunner : public chrome::BrowserListObserver {
  public:
-  static ReporterRunner* GetInstance() {
-    return Singleton<ReporterRunner,
-                     LeakySingletonTraits<ReporterRunner>>::get();
-  }
-
   // Starts the sequence of attempts to run the reporter.
-  void Run(const base::FilePath& exe_path, const std::string& version) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    exe_path_ = exe_path;
-    version_ = version;
-    TryToRun();
+  static void Run(
+      const base::FilePath& exe_path,
+      const std::string& version,
+      const scoped_refptr<base::TaskRunner>& main_thread_task_runner,
+      const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
+    if (!instance_)
+      instance_ = new ReporterRunner;
+    DCHECK(instance_->thread_checker_.CalledOnValidThread());
+    // There's nothing to do if the path and version of the reporter has not
+    // changed, we just keep running the tasks that are running now.
+    if (instance_->exe_path_ == exe_path && instance_->version_ == version)
+      return;
+    bool first_run = instance_->exe_path_.empty();
+
+    instance_->exe_path_ = exe_path;
+    instance_->version_ = version;
+    instance_->main_thread_task_runner_ = main_thread_task_runner;
+    instance_->blocking_task_runner_ = blocking_task_runner;
+
+    if (first_run)
+      instance_->TryToRun();
   }
 
  private:
-  friend struct DefaultSingletonTraits<ReporterRunner>;
   ReporterRunner() {}
   ~ReporterRunner() override {}
 
@@ -192,42 +272,37 @@ class ReporterRunner : public chrome::BrowserListObserver {
   void OnBrowserSetLastActive(Browser* browser) override {}
   void OnBrowserRemoved(Browser* browser) override {}
   void OnBrowserAdded(Browser* browser) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(browser);
     if (browser->host_desktop_type() == chrome::GetActiveDesktop()) {
-      MaybeFetchSRT(browser);
+      MaybeFetchSRT(browser, version_);
       BrowserList::RemoveObserver(this);
     }
-  }
-
-  // Identifies that we completed the run of the reporter and schedule the next
-  // run in kDaysBetweenSuccessfulSwReporterRuns.
-  void CompletedRun() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    g_browser_process->local_state()->SetInt64(
-        prefs::kSwReporterLastTimeTriggered,
-        base::Time::Now().ToInternalValue());
-
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&ReporterRunner::TryToRun, base::Unretained(this)),
-        base::TimeDelta::FromDays(kDaysBetweenSuccessfulSwReporterRuns));
   }
 
   // This method is called on the UI thread when the reporter run has completed.
   // This is run as a task posted from an interruptible worker thread so should
   // be resilient to unexpected shutdown.
   void ReporterDone(int exit_code) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    // Don't continue when the reporter process failed to launch, but still try
+    // again after the regular delay. It's not worth retrying earlier, risking
+    // running too often if it always fails, since not many users fail here.
+    main_thread_task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ReporterRunner::TryToRun, base::Unretained(this)),
+        base::TimeDelta::FromDays(days_between_reporter_runs_));
+    if (exit_code == kReporterFailureExitCode)
+      return;
+
     UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.ExitCode", exit_code);
-
-    if (g_browser_process && g_browser_process->local_state()) {
-      g_browser_process->local_state()->SetInteger(
-          prefs::kSwReporterLastExitCode, exit_code);
+    PrefService* local_state = g_browser_process->local_state();
+    if (local_state) {
+      local_state->SetInteger(prefs::kSwReporterLastExitCode, exit_code);
+      local_state->SetInt64(prefs::kSwReporterLastTimeTriggered,
+                            base::Time::Now().ToInternalValue());
     }
-
-    // To complete the run if we exit without releasing this scoped closure.
-    base::ScopedClosureRunner completed(
-        base::Bind(&ReporterRunner::CompletedRun, base::Unretained(this)));
 
     if (!IsInSRTPromptFieldTrialGroups()) {
       // Knowing about disabled field trial is more important than reporter not
@@ -252,119 +327,93 @@ class ReporterRunner : public chrome::BrowserListObserver {
     Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
     if (!browser) {
       RecordReporterStepHistogram(SW_REPORTER_NO_BROWSER);
-      BrowserList::AddObserver(GetInstance());
+      BrowserList::AddObserver(this);
     } else {
-      MaybeFetchSRT(browser);
+      MaybeFetchSRT(browser, version_);
     }
-  }
-
-  static void MaybeFetchSRT(Browser* browser) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    Profile* profile = browser->profile();
-    DCHECK(profile);
-    PrefService* prefs = profile->GetPrefs();
-    DCHECK(prefs);
-
-    // Don't show the prompt again if it's been shown before for this profile
-    // and for the current Finch seed.
-    std::string incoming_seed = GetIncomingSRTSeed();
-    std::string old_seed = prefs->GetString(prefs::kSwReporterPromptSeed);
-    if (!incoming_seed.empty() && incoming_seed == old_seed) {
-      RecordReporterStepHistogram(SW_REPORTER_ALREADY_PROMPTED);
-      return;
-    }
-
-    if (!incoming_seed.empty())
-      prefs->SetString(prefs::kSwReporterPromptSeed, incoming_seed);
-    prefs->SetString(prefs::kSwReporterPromptVersion, GetInstance()->version_);
-
-    // Download the SRT.
-    RecordReporterStepHistogram(SW_REPORTER_DOWNLOAD_START);
-
-    // All the work happens in the self-deleting class above.
-    new SRTFetcher(profile);
-  }
-
-  // This method is called from a worker thread to launch the SwReporter and
-  // wait for termination to collect its exit code. This task could be
-  // interrupted by a shutdown at anytime, so it shouldn't depend on anything
-  // external that could be shutdown beforehand. It's static to make sure it
-  // won't access data members, except for the need for a this pointer to call
-  // back member functions on the UI thread. We can safely use GetInstance()
-  // here because the singleton is leaky.
-  static void LaunchAndWaitForExit(const base::FilePath& exe_path,
-                                   const std::string& version) {
-    const base::CommandLine reporter_command_line(exe_path);
-    base::Process reporter_process =
-        base::LaunchProcess(reporter_command_line, base::LaunchOptions());
-    if (!reporter_process.IsValid()) {
-      RecordReporterStepHistogram(SW_REPORTER_FAILED_TO_START);
-      // Don't call ReporterDone when the reporter process failed to launch, but
-      // try again after the regular delay. It's not worth retrying earlier,
-      // risking running too often if it always fail, since not many users fail
-      // here, less than 1%.
-      BrowserThread::PostDelayedTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ReporterRunner::TryToRun,
-                     base::Unretained(GetInstance())),
-          base::TimeDelta::FromDays(kDaysBetweenSuccessfulSwReporterRuns));
-      return;
-    }
-    RecordReporterStepHistogram(SW_REPORTER_START_EXECUTION);
-
-    int exit_code = -1;
-    bool success = reporter_process.WaitForExit(&exit_code);
-    DCHECK(success);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&ReporterRunner::ReporterDone,
-                   base::Unretained(GetInstance()), exit_code));
   }
 
   void TryToRun() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (version_.empty()) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    PrefService* local_state = g_browser_process->local_state();
+    if (version_.empty() || !local_state) {
       DCHECK(exe_path_.empty());
       return;
     }
 
-    // Run the reporter if it hasn't been triggered in the
-    // kDaysBetweenSuccessfulSwReporterRuns days.
+    // Run the reporter if it hasn't been triggered in the last
+    // |days_between_reporter_runs_| days, which depends if there is a pending
+    // prompt to be added to Chrome's menu.
+    if (local_state->GetBoolean(prefs::kSwReporterPendingPrompt)) {
+      days_between_reporter_runs_ = kDaysBetweenSwReporterRunsForPendingPrompt;
+      safe_browsing::RecordReporterStepHistogram(
+          safe_browsing::SW_REPORTER_RAN_DAILY);
+    } else {
+      days_between_reporter_runs_ = kDaysBetweenSuccessfulSwReporterRuns;
+    }
     const base::Time last_time_triggered = base::Time::FromInternalValue(
-        g_browser_process->local_state()->GetInt64(
-            prefs::kSwReporterLastTimeTriggered));
+        local_state->GetInt64(prefs::kSwReporterLastTimeTriggered));
     base::TimeDelta next_trigger_delay(
         last_time_triggered +
-        base::TimeDelta::FromDays(kDaysBetweenSuccessfulSwReporterRuns) -
+        base::TimeDelta::FromDays(days_between_reporter_runs_) -
         base::Time::Now());
-    if (next_trigger_delay.ToInternalValue() <= 0) {
-      // Use a worker pool because this task is blocking and may take a long
-      // time to complete.
-      base::WorkerPool::PostTask(
-          FROM_HERE, base::Bind(&ReporterRunner::LaunchAndWaitForExit,
-                                exe_path_, version_),
-          true);
+    if (next_trigger_delay.ToInternalValue() <= 0 ||
+        // Also make sure the kSwReporterLastTimeTriggered value is not set in
+        // the future.
+        last_time_triggered > base::Time::Now()) {
+      // It's OK to simply |PostTaskAndReplyWithResult| so that
+      // |LaunchAndWaitForExit| doesn't need to access
+      // |main_thread_task_runner_| since the callback is not delayed and the
+      // test task runner won't need to force it.
+      base::PostTaskAndReplyWithResult(
+          blocking_task_runner_.get(), FROM_HERE,
+          base::Bind(&LaunchAndWaitForExit, exe_path_, version_),
+          base::Bind(&ReporterRunner::ReporterDone, base::Unretained(this)));
     } else {
-      BrowserThread::PostDelayedTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ReporterRunner::TryToRun,
-                     base::Unretained(GetInstance())),
+      main_thread_task_runner_->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&ReporterRunner::TryToRun, base::Unretained(this)),
           next_trigger_delay);
     }
   }
 
   base::FilePath exe_path_;
   std::string version_;
+  scoped_refptr<base::TaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
+  // This value is used to identify how long to wait before starting a new run
+  // of the reporter. It's initialized with the default value and may be changed
+  // to a different value when a prompt is pending and the reporter should be
+  // run before adding the global error to the Chrome menu.
+  int days_between_reporter_runs_ = kDaysBetweenSuccessfulSwReporterRuns;
+
+  // A single leaky instance.
+  static ReporterRunner* instance_;
+
+  base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(ReporterRunner);
 };
 
+ReporterRunner* ReporterRunner::instance_ = nullptr;
+
 }  // namespace
 
-void RunSwReporter(const base::FilePath& exe_path, const std::string& version) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ReporterRunner::GetInstance()->Run(exe_path, version);
+void RunSwReporter(
+    const base::FilePath& exe_path,
+    const std::string& version,
+    const scoped_refptr<base::TaskRunner>& main_thread_task_runner,
+    const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
+  ReporterRunner::Run(exe_path, version, main_thread_task_runner,
+                      blocking_task_runner);
+}
+
+void SetReporterLauncherForTesting(const ReporterLauncher& reporter_launcher) {
+  g_reporter_launcher_ = reporter_launcher;
+}
+
+void SetPromptTriggerForTesting(const PromptTrigger& prompt_trigger) {
+  g_prompt_trigger_ = prompt_trigger;
 }
 
 }  // namespace safe_browsing
