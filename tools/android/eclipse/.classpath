@@ -92,7 +92,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="ui/android/java/src"/>
     <classpathentry kind="src" path="ui/android/javatests/src"/>
     <classpathentry kind="src" path="out/Debug/android_webview_test_apk/gen"/>
-    <classpathentry kind="src" path="out/Debug/chrome_shell_apk/gen"/>
+    <classpathentry kind="src" path="out/Debug/chrome_public_apk/gen"/>
     <classpathentry kind="src" path="out/Debug/content_shell_apk/gen"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/accessibility_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/activity_type_ids_java"/>
