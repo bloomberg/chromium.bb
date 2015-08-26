@@ -1518,3 +1518,4 @@ crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-transform-
 crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-x1-interpolation.html [ Failure Pass ]
 crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-xChannelSelector-interpolation.html [ Failure Pass ]
 
+crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed.html [ Pass Timeout ]
