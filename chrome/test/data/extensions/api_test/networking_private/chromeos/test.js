@@ -417,7 +417,7 @@ var availableTests = [
       assertEq([
         {Scanning: false, State: 'Enabled', Type: 'Ethernet'},
         {Scanning: false, State: 'Enabled', Type: 'WiFi'},
-        {State: 'Uninitialized', Type: 'Cellular'},
+        {State: 'Uninitialized', Type: 'Cellular', SimPresent: true},
         {State: 'Disabled', Type: 'WiMAX'},
       ],
                result);

@@ -142,6 +142,8 @@ chrome.networkingPrivate.CellularStateProperties;
 /**
  * @typedef {{
  *   Scanning: (boolean|undefined),
+ *   SimLockType: (string|undefined),
+ *   SimPresent: (boolean|undefined),
  *   State: !chrome.networkingPrivate.DeviceStateType,
  *   Type: !chrome.networkingPrivate.NetworkType
  * }}

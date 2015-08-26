@@ -120,6 +120,11 @@ void AppendDeviceState(
   properties->state = state;
   if (device && state == private_api::DEVICE_STATE_TYPE_ENABLED)
     properties->scanning.reset(new bool(device->scanning()));
+  if (device && type == ::onc::network_config::kCellular) {
+    properties->sim_present.reset(new bool(!device->IsSimAbsent()));
+    if (!device->sim_lock_type().empty())
+      properties->sim_lock_type.reset(new std::string(device->sim_lock_type()));
+  }
   device_state_list->push_back(properties.Pass());
 }
 

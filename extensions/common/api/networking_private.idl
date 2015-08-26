@@ -105,6 +105,13 @@ namespace networkingPrivate {
     // Set if the device is enabled. True if the device is currently scanning.
     boolean? Scanning;
 
+    // Set to the SIM lock type if the device type is Cellular and the device
+    // is locked.
+    DOMString? SimLockType;
+
+    // Set to the SIM present state if the device type is Cellular.
+    boolean? SimPresent;
+
     // The current state of the device.
     DeviceStateType State;
 
