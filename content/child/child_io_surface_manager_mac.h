@@ -8,8 +8,6 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/threading/platform_thread.h"
 #include "content/common/mac/io_surface_manager.h"
 #include "content/common/mac/io_surface_manager_token.h"
 
@@ -31,17 +29,19 @@ class CONTENT_EXPORT ChildIOSurfaceManager : public IOSurfaceManager {
 
   // Set the service Mach port. Ownership of |service_port| is passed to the
   // manager.
+  // Note: This can be called on any thread but must happen before the
+  // thread-safe IOSurfaceManager interface is used. It is the responsibility
+  // of users of this class to ensure there are no races.
   void set_service_port(mach_port_t service_port) {
     service_port_.reset(service_port);
   }
 
   // Set the token used when communicating with the Mach service.
+  // Note: This can be called on any thread but must happen before the
+  // thread-safe IOSurfaceManager interface is used. It is the responsibility
+  // of users of this class to ensure there are no races.
   void set_token(const IOSurfaceManagerToken& token) {
     token_ = token;
-#if !defined(NDEBUG)
-    set_token_thread_id_ = base::PlatformThread::CurrentRef();
-#endif
-    set_token_event_.Signal();
   }
 
  private:
@@ -52,10 +52,6 @@ class CONTENT_EXPORT ChildIOSurfaceManager : public IOSurfaceManager {
 
   base::mac::ScopedMachSendRight service_port_;
   IOSurfaceManagerToken token_;
-#if !defined(NDEBUG)
-  base::PlatformThreadRef set_token_thread_id_;
-#endif
-  base::WaitableEvent set_token_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildIOSurfaceManager);
 };

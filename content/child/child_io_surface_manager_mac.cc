@@ -93,13 +93,6 @@ void ChildIOSurfaceManager::UnregisterIOSurface(IOSurfaceId io_surface_id,
 IOSurfaceRef ChildIOSurfaceManager::AcquireIOSurface(
     IOSurfaceId io_surface_id) {
   DCHECK(service_port_.is_valid());
-
-  // A valid token is required to acquire an IOSurface. This will wait for a
-  // valid token if one has not yet been set.
-  set_token_event_.Wait();
-#if !defined(NDEBUG)
-  DCHECK(!(set_token_thread_id_ == base::PlatformThread::CurrentRef()));
-#endif
   DCHECK(!token_.IsZero());
 
   mach_port_t reply_port;
@@ -142,10 +135,8 @@ IOSurfaceRef ChildIOSurfaceManager::AcquireIOSurface(
   return IOSurfaceLookupFromMachPort(scoped_io_surface_right);
 }
 
-ChildIOSurfaceManager::ChildIOSurfaceManager()
-    : set_token_event_(true, false) {}
+ChildIOSurfaceManager::ChildIOSurfaceManager() {}
 
-ChildIOSurfaceManager::~ChildIOSurfaceManager() {
-}
+ChildIOSurfaceManager::~ChildIOSurfaceManager() {}
 
 }  // namespace content
