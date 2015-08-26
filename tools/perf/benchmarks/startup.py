@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 from core import perf_benchmark
-
 from measurements import startup
 import page_sets
+
 from telemetry import benchmark
 
 
