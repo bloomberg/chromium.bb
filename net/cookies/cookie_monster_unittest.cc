@@ -1752,29 +1752,30 @@ TEST_F(CookieMonsterTest, UniqueCreationTime) {
 
   // SetCookie, SetCookieWithOptions, SetCookieWithDetails
 
-  SetCookie(cm.get(), url_google_, "SetCookie1=A");
-  SetCookie(cm.get(), url_google_, "SetCookie2=A");
-  SetCookie(cm.get(), url_google_, "SetCookie3=A");
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "SetCookie1=A"));
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "SetCookie2=A"));
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "SetCookie3=A"));
 
-  SetCookieWithOptions(cm.get(), url_google_, "setCookieWithOptions1=A",
-                       options);
-  SetCookieWithOptions(cm.get(), url_google_, "setCookieWithOptions2=A",
-                       options);
-  SetCookieWithOptions(cm.get(), url_google_, "setCookieWithOptions3=A",
-                       options);
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), url_google_,
+                                   "setCookieWithOptions1=A", options));
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), url_google_,
+                                   "setCookieWithOptions2=A", options));
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), url_google_,
+                                   "setCookieWithOptions3=A", options));
 
-  SetCookieWithDetails(cm.get(), url_google_, "setCookieWithDetails1", "A",
-                       ".google.com", "/", Time(), false, false, false,
-                       COOKIE_PRIORITY_DEFAULT);
-  SetCookieWithDetails(cm.get(), url_google_, "setCookieWithDetails2", "A",
-                       ".google.com", "/", Time(), false, false, false,
-                       COOKIE_PRIORITY_DEFAULT);
-  SetCookieWithDetails(cm.get(), url_google_, "setCookieWithDetails3", "A",
-                       ".google.com", "/", Time(), false, false, false,
-                       COOKIE_PRIORITY_DEFAULT);
+  EXPECT_TRUE(SetCookieWithDetails(
+      cm.get(), url_google_, "setCookieWithDetails1", "A", ".google.izzle", "/",
+      Time(), false, false, false, COOKIE_PRIORITY_DEFAULT));
+  EXPECT_TRUE(SetCookieWithDetails(
+      cm.get(), url_google_, "setCookieWithDetails2", "A", ".google.izzle", "/",
+      Time(), false, false, false, COOKIE_PRIORITY_DEFAULT));
+  EXPECT_TRUE(SetCookieWithDetails(
+      cm.get(), url_google_, "setCookieWithDetails3", "A", ".google.izzle", "/",
+      Time(), false, false, false, COOKIE_PRIORITY_DEFAULT));
 
   // Now we check
   CookieList cookie_list(GetAllCookies(cm.get()));
+  EXPECT_EQ(9u, cookie_list.size());
   typedef std::map<int64, CanonicalCookie> TimeCookieMap;
   TimeCookieMap check_map;
   for (CookieList::const_iterator it = cookie_list.begin();
