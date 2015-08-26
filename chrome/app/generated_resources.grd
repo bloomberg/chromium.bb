@@ -6356,12 +6356,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_NEW_APP_LIST_MIXER_DESCRIPTION" desc="Description of the flag to enable the new mixing algorithm in the app launcher.">
           This enables a new search result selecting and ranking algorithm in the App Launcher.
         </message>
-        <message name="IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_NAME" desc="Name of the flag to disable Drive apps in app launcher.">
-          Disable Drive apps in App Launcher.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_DESCRIPTION" desc="Description of the flag to disable Drive apps in app launcher.">
-          Do not show Drive apps side by side with Chrome apps in App Launcher.
-        </message>
       </if>
       <if expr="chromeos">
         <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_TRANSITIONS_NAME" desc="Name of the flag to enable animated transitions for the first-run tutorial.">

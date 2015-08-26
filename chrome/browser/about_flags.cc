@@ -1423,11 +1423,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION,
      kOsMac | kOsWin | kOsLinux,
      SINGLE_VALUE_TYPE(app_list::switches::kResetAppListInstallState)},
-    {"disable-drive-apps-in-app-list",
-     IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_NAME,
-     IDS_FLAGS_DISABLE_DRIVE_APPS_IN_APP_LIST_DESCRIPTION,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(app_list::switches::kDisableDriveAppsInAppList)},
 #endif
 #if defined(OS_ANDROID)
     {"enable-accessibility-tab-switcher",

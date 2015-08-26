@@ -14,7 +14,6 @@ namespace switches {
 // Please keep these flags sorted (but keep enable/disable pairs together).
 APP_LIST_EXPORT extern const char kCustomLauncherPage[];
 APP_LIST_EXPORT extern const char kDisableAppListDismissOnBlur[];
-APP_LIST_EXPORT extern const char kDisableDriveAppsInAppList[];
 APP_LIST_EXPORT extern const char kEnableAppList[];
 APP_LIST_EXPORT extern const char kEnableCenteredAppList[];
 APP_LIST_EXPORT extern const char kEnableExperimentalAppList[];

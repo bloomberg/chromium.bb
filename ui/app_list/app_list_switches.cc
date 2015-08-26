@@ -18,9 +18,6 @@ const char kCustomLauncherPage[] = "custom-launcher-page";
 // dismissed via the other methods (like the Esc key).
 const char kDisableAppListDismissOnBlur[] = "disable-app-list-dismiss-on-blur";
 
-// If set, Drive apps will not be shown side-by-side with Chrome apps.
-const char kDisableDriveAppsInAppList[] = "disable-drive-apps-in-app-list";
-
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[] = "enable-app-list";
 
@@ -113,8 +110,7 @@ bool ShouldNotDismissOnBlur() {
 
 bool IsDriveAppsInAppListEnabled() {
 #if defined(OS_CHROMEOS)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableDriveAppsInAppList);
+  return true;
 #else
   return false;
 #endif
