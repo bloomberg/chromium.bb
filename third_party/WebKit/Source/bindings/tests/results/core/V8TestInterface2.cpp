@@ -664,9 +664,9 @@ static void installV8TestInterface2Template(v8::Local<v8::FunctionTemplate> func
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
     {
-        v8::NamedPropertyHandlerConfiguration config(TestInterface2V8Internal::namedPropertyGetterCallback, TestInterface2V8Internal::namedPropertySetterCallback, TestInterface2V8Internal::namedPropertyQueryCallback, TestInterface2V8Internal::namedPropertyDeleterCallback, TestInterface2V8Internal::namedPropertyEnumeratorCallback);
-        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings));
-        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kNonMasking));
+        int flags = static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings);
+        flags |= static_cast<int>(v8::PropertyHandlerFlags::kNonMasking);
+        v8::NamedPropertyHandlerConfiguration config(TestInterface2V8Internal::namedPropertyGetterCallback, TestInterface2V8Internal::namedPropertySetterCallback, TestInterface2V8Internal::namedPropertyQueryCallback, TestInterface2V8Internal::namedPropertyDeleterCallback, TestInterface2V8Internal::namedPropertyEnumeratorCallback, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface2V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };

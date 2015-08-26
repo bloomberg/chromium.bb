@@ -409,18 +409,14 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
            '%sV8Internal::namedPropertyEnumeratorCallback' % cpp_class
            if named_property_getter.is_enumerable else '0' %}
     {
-        v8::NamedPropertyHandlerConfiguration config({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}});
-        {# TODO(yukishiino): Determine how to treat Window interface. #}
-        {% if interface_name != 'Window' %}
-        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings));
-        {% endif %}
+        int flags = static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings);
         {% if named_property_getter.do_not_check_security %}
-        config.flags = v8::PropertyHandlerFlags::kAllCanRead;
+        flags |= static_cast<int>(v8::PropertyHandlerFlags::kAllCanRead);
         {% endif %}
-        {# TODO(yukishiino): Determine how to treat Window interface. #}
-        {% if not is_override_builtins and interface_name != 'Window' %}
-        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kNonMasking));
+        {% if not is_override_builtins %}
+        flags |= static_cast<int>(v8::PropertyHandlerFlags::kNonMasking);
         {% endif %}
+        v8::NamedPropertyHandlerConfiguration config({{named_property_getter_callback}}, {{named_property_setter_callback}}, {{named_property_query_callback}}, {{named_property_deleter_callback}}, {{named_property_enumerator_callback}}, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
         functionTemplate->{{set_on_template}}()->SetHandler(config);
     }
     {% endif %}

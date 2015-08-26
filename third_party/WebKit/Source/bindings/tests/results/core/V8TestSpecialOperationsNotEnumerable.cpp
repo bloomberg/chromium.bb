@@ -91,9 +91,9 @@ static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Local<v8::Fu
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
     {
-        v8::NamedPropertyHandlerConfiguration config(TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetterCallback, 0, 0, 0, 0);
-        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings));
-        config.flags = static_cast<v8::PropertyHandlerFlags>(static_cast<int>(config.flags) | static_cast<int>(v8::PropertyHandlerFlags::kNonMasking));
+        int flags = static_cast<int>(v8::PropertyHandlerFlags::kOnlyInterceptStrings);
+        flags |= static_cast<int>(v8::PropertyHandlerFlags::kNonMasking);
+        v8::NamedPropertyHandlerConfiguration config(TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetterCallback, 0, 0, 0, 0, v8::Handle<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(flags));
         functionTemplate->InstanceTemplate()->SetHandler(config);
     }
 

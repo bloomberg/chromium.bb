@@ -300,9 +300,6 @@ static bool installTestInterfaceIfNeeded(LocalFrame& frame, v8::Local<v8::String
 
 void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
-
     auto nameString = name.As<v8::String>();
     DOMWindow* window = V8Window::toImpl(info.Holder());
     if (!window)
@@ -323,16 +320,6 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
         v8SetReturnValueFast(info, child->domWindow(), window);
         return;
     }
-
-    // Search IDL functions defined in the prototype
-    if (!info.Holder()->GetRealNamedProperty(info.GetIsolate()->GetCurrentContext(), nameString).IsEmpty())
-        return;
-
-    // Frame could have been detached in call to GetRealNamedProperty.
-    frame = window->frame();
-    // window is detached.
-    if (!frame)
-        return;
 
     // If the frame is remote, the caller will never be able to access further named results.
     if (!frame->isLocalFrame())
