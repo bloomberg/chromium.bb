@@ -87,7 +87,7 @@ class MemoryTracingTest : public ContentBrowserTest {
 
   void EnableMemoryTracing() {
     base::RunLoop run_loop;
-    std::string category_filter = MemoryDumpManager::kTraceCategoryForTesting;
+    std::string category_filter = MemoryDumpManager::kTraceCategory;
     base::trace_event::TraceConfig trace_config(category_filter, "");
     bool success = TracingController::GetInstance()->EnableRecording(
       trace_config, run_loop.QuitClosure());

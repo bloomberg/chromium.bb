@@ -10,6 +10,7 @@
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "base/values.h"
 
 namespace base {
@@ -34,6 +35,15 @@ enum TraceRecordMode {
 class BASE_EXPORT TraceConfig {
  public:
   typedef std::vector<std::string> StringList;
+
+  // Specifies the memory dump config for tracing. Used only when
+  // "memory-infra" category is enabled.
+  struct MemoryDumpTriggerConfig {
+    uint32 periodic_interval_ms;
+    MemoryDumpArgs::LevelOfDetail level_of_detail;
+  };
+
+  typedef std::vector<MemoryDumpTriggerConfig> MemoryDumpConfig;
 
   TraceConfig();
 
@@ -99,10 +109,21 @@ class BASE_EXPORT TraceConfig {
   //     "enable_argument_filter": true,
   //     "included_categories": ["included",
   //                             "inc_pattern*",
-  //                             "disabled-by-default-category1"],
+  //                             "disabled-by-default-memory-infra"],
   //     "excluded_categories": ["excluded", "exc_pattern*"],
   //     "synthetic_delays": ["test.Delay1;16", "test.Delay2;32"]
+  //     "memory_dump_config": {
+  //       "triggers": [
+  //         {
+  //           "mode": "detailed",
+  //           "periodic_interval_ms": 2000
+  //         }
+  //       ]
+  //     }
   //   }
+  //
+  // Note: memory_dump_config can be specified only if
+  // disabled-by-default-memory-infra category is enabled.
   explicit TraceConfig(const std::string& config_string);
 
   TraceConfig(const TraceConfig& tc);
@@ -140,6 +161,10 @@ class BASE_EXPORT TraceConfig {
 
   void Clear();
 
+  const MemoryDumpConfig& memory_dump_config() const {
+    return memory_dump_config_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromValidLegacyFormat);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest,
@@ -149,6 +174,9 @@ class BASE_EXPORT TraceConfig {
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromInvalidString);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest,
                            IsEmptyOrContainsLeadingOrTrailingWhitespace);
+  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromMemoryConfigString);
+  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, LegacyStringToMemoryDumpConfig);
+  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, EmptyMemoryDumpConfigTest);
 
   // The default trace config, used when none is provided.
   // Allows all non-disabled-by-default categories through, except if they end
@@ -168,6 +196,9 @@ class BASE_EXPORT TraceConfig {
   void AddCategoryToDict(base::DictionaryValue& dict,
                          const char* param,
                          const StringList& categories) const;
+
+  void SetMemoryDumpConfig(const base::DictionaryValue& memory_dump_config);
+  void SetDefaultMemoryDumpConfig();
 
   // Convert TraceConfig to the dict representation of the TraceConfig.
   void ToDict(base::DictionaryValue& dict) const;
@@ -192,6 +223,8 @@ class BASE_EXPORT TraceConfig {
   bool enable_sampling_ : 1;
   bool enable_systrace_ : 1;
   bool enable_argument_filter_ : 1;
+
+  MemoryDumpConfig memory_dump_config_;
 
   StringList included_categories_;
   StringList disabled_categories_;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,6 +17,44 @@ const char kDefaultTraceConfigString[] =
     "\"enable_sampling\":false,"
     "\"enable_systrace\":false,"
     "\"excluded_categories\":[\"*Debug\",\"*Test\"],"
+    "\"record_mode\":\"record-until-full\""
+  "}";
+
+const char kMemoryDumpTraceConfigString[] =
+  "{"
+    "\"enable_argument_filter\":false,"
+    "\"enable_sampling\":false,"
+    "\"enable_systrace\":false,"
+    "\"included_categories\":["
+      "\"disabled-by-default-memory-infra\""
+    "],"
+    "\"memory_dump_config\":{"
+      "\"triggers\":["
+        "{"
+          "\"mode\":\"light\","
+          "\"periodic_interval_ms\":200"
+        "},"
+        "{"
+          "\"mode\":\"detailed\","
+          "\"periodic_interval_ms\":2000"
+        "}"
+      "]"
+    "},"
+    "\"record_mode\":\"record-until-full\""
+  "}";
+
+const char kTraceConfigStringWithEmptyTriggers[] =
+  "{"
+    "\"enable_argument_filter\":false,"
+    "\"enable_sampling\":false,"
+    "\"enable_systrace\":false,"
+    "\"included_categories\":["
+      "\"disabled-by-default-memory-infra\""
+    "],"
+    "\"memory_dump_config\":{"
+      "\"triggers\":["
+      "]"
+    "},"
     "\"record_mode\":\"record-until-full\""
   "}";
 
@@ -486,6 +525,35 @@ TEST(TraceConfigTest, SetTraceOptionValues) {
 
   tc.EnableSystrace();
   EXPECT_TRUE(tc.IsSystraceEnabled());
+}
+
+TEST(TraceConfigTest, TraceConfigFromMemoryConfigString) {
+  TraceConfig tc(kMemoryDumpTraceConfigString);
+  EXPECT_STREQ(kMemoryDumpTraceConfigString, tc.ToString().c_str());
+  EXPECT_TRUE(tc.IsCategoryGroupEnabled(MemoryDumpManager::kTraceCategory));
+  EXPECT_EQ(2u, tc.memory_dump_config_.size());
+
+  EXPECT_EQ(200u, tc.memory_dump_config_[0].periodic_interval_ms);
+  EXPECT_EQ(MemoryDumpArgs::LevelOfDetail::LOW,
+            tc.memory_dump_config_[0].level_of_detail);
+
+  EXPECT_EQ(2000u, tc.memory_dump_config_[1].periodic_interval_ms);
+  EXPECT_EQ(MemoryDumpArgs::LevelOfDetail::HIGH,
+            tc.memory_dump_config_[1].level_of_detail);
+}
+
+TEST(TraceConfigTest, EmptyMemoryDumpConfigTest) {
+  // Empty trigger list should also be specified when converting back to string.
+  TraceConfig tc(kTraceConfigStringWithEmptyTriggers);
+  EXPECT_STREQ(kTraceConfigStringWithEmptyTriggers, tc.ToString().c_str());
+  EXPECT_EQ(0u, tc.memory_dump_config_.size());
+}
+
+TEST(TraceConfigTest, LegacyStringToMemoryDumpConfig) {
+  TraceConfig tc(MemoryDumpManager::kTraceCategory, "");
+  EXPECT_TRUE(tc.IsCategoryGroupEnabled(MemoryDumpManager::kTraceCategory));
+  EXPECT_NE(std::string::npos, tc.ToString().find("memory_dump_config"));
+  EXPECT_EQ(2u, tc.memory_dump_config_.size());
 }
 
 }  // namespace trace_event

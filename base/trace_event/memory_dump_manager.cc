@@ -38,10 +38,6 @@ namespace trace_event {
 
 namespace {
 
-// TODO(primiano): this should be smarter and should do something similar to
-// trace event synthetic delays.
-const char kTraceCategory[] = TRACE_DISABLED_BY_DEFAULT("memory-infra");
-
 // Throttle mmaps at a rate of once every kHeavyMmapsDumpsRate standard dumps.
 const int kHeavyDumpsRate = 8;  // 250 ms * 8 = 2000 ms.
 const int kDumpIntervalMs = 250;
@@ -68,7 +64,8 @@ void RequestPeriodicGlobalDump() {
 }  // namespace
 
 // static
-const char* const MemoryDumpManager::kTraceCategoryForTesting = kTraceCategory;
+const char* const MemoryDumpManager::kTraceCategory =
+    TRACE_DISABLED_BY_DEFAULT("memory-infra");
 
 // static
 const int MemoryDumpManager::kMaxConsecutiveFailuresCount = 3;

@@ -57,9 +57,9 @@ class TracingBrowserTest : public InProcessBrowserTest {
     // Begin tracing and watch for multiple periodic dump trace events.
     std::string event_name = base::trace_event::MemoryDumpTypeToString(
         MemoryDumpType::PERIODIC_INTERVAL);
-    ASSERT_TRUE(BeginTracingWithWatch(
-        MemoryDumpManager::kTraceCategoryForTesting,
-        MemoryDumpManager::kTraceCategoryForTesting, event_name, 10));
+    ASSERT_TRUE(BeginTracingWithWatch(MemoryDumpManager::kTraceCategory,
+                                      MemoryDumpManager::kTraceCategory,
+                                      event_name, 10));
 
     GURL url2("chrome://credits/");
     ui_test_utils::NavigateToURLWithDisposition(

@@ -72,8 +72,6 @@ class MemoryDumpManagerTest : public testing::Test {
   }
 
  protected:
-  const char* kTraceCategory = MemoryDumpManager::kTraceCategoryForTesting;
-
   void EnableTracing(const char* category) {
     TraceLog::GetInstance()->SetEnabled(
         TraceConfig(category, ""), TraceLog::RECORDING_MODE);
@@ -177,7 +175,7 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
 
   // Now repeat enabling the memory category and check that the dumper is
   // invoked this time.
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(3).WillRepeatedly(Return(true));
   for (int i = 0; i < 3; ++i)
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
@@ -187,7 +185,7 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
   mdm_->UnregisterDumpProvider(&mdp);
 
   // Finally check the unregister logic (no calls to the mdp after unregister).
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
                           high_detail_args);
@@ -200,7 +198,7 @@ TEST_F(MemoryDumpManagerTest, CheckMemoryDumpArgs) {
   MockDumpProvider mdp_high_detail(MemoryDumpArgs::LevelOfDetail::HIGH);
   mdm_->RegisterDumpProvider(&mdp_high_detail);
 
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(mdp_high_detail, OnMemoryDump(_, _))
       .Times(1)
       .WillRepeatedly(
@@ -216,7 +214,7 @@ TEST_F(MemoryDumpManagerTest, CheckMemoryDumpArgs) {
   MockDumpProvider mdp_low_detail(MemoryDumpArgs::LevelOfDetail::LOW);
   mdm_->RegisterDumpProvider(&mdp_low_detail);
 
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(mdp_low_detail, OnMemoryDump(_, _))
       .Times(1)
       .WillRepeatedly(
@@ -234,7 +232,7 @@ TEST_F(MemoryDumpManagerTest, SharedSessionState) {
   mdm_->RegisterDumpProvider(&mdp1);
   mdm_->RegisterDumpProvider(&mdp2);
 
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(mdp1, OnMemoryDump(_, _))
       .Times(2)
       .WillRepeatedly(
@@ -257,7 +255,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
 
   // Enable only mdp1.
   mdm_->RegisterDumpProvider(&mdp1);
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(mdp1, OnMemoryDump(_, _)).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(mdp2, OnMemoryDump(_, _)).Times(0);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
@@ -267,7 +265,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   // Invert: enable mdp1 and disable mdp2.
   mdm_->UnregisterDumpProvider(&mdp1);
   mdm_->RegisterDumpProvider(&mdp2);
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(mdp1, OnMemoryDump(_, _)).Times(0);
   EXPECT_CALL(mdp2, OnMemoryDump(_, _)).Times(1).WillRepeatedly(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
@@ -276,7 +274,7 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
 
   // Enable both mdp1 and mdp2.
   mdm_->RegisterDumpProvider(&mdp1);
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
   EXPECT_CALL(mdp1, OnMemoryDump(_, _)).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(mdp2, OnMemoryDump(_, _)).Times(1).WillRepeatedly(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
@@ -293,7 +291,7 @@ TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
 
   {
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(1);
-    EnableTracing(kTraceCategory);
+    EnableTracing(MemoryDumpManager::kTraceCategory);
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
                             high_detail_args);
     DisableTracing();
@@ -303,7 +301,7 @@ TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
 
   {
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
-    EnableTracing(kTraceCategory);
+    EnableTracing(MemoryDumpManager::kTraceCategory);
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
                             high_detail_args);
     DisableTracing();
@@ -314,7 +312,7 @@ TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
 
   {
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(0);
-    EnableTracing(kTraceCategory);
+    EnableTracing(MemoryDumpManager::kTraceCategory);
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
                             high_detail_args);
     DisableTracing();
@@ -326,7 +324,7 @@ TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
 
   {
     EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(1);
-    EnableTracing(kTraceCategory);
+    EnableTracing(MemoryDumpManager::kTraceCategory);
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
                             high_detail_args);
     DisableTracing();
@@ -358,7 +356,7 @@ TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
             Invoke(mdp, &MockDumpProvider::OnMemoryDump_CheckTaskRunner));
   }
 
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
 
   while (!threads.empty()) {
     last_callback_success_ = false;
@@ -403,7 +401,7 @@ TEST_F(MemoryDumpManagerTest, DisableFailingDumpers) {
 
   mdm_->RegisterDumpProvider(&mdp1);
   mdm_->RegisterDumpProvider(&mdp2);
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
 
   EXPECT_CALL(mdp1, OnMemoryDump(_, _))
       .Times(MemoryDumpManager::kMaxConsecutiveFailuresCount)
@@ -430,7 +428,7 @@ TEST_F(MemoryDumpManagerTest, RegisterDumperWhileDumping) {
 
   mdp1.dump_provider_to_register_or_unregister = &mdp2;
   mdm_->RegisterDumpProvider(&mdp1);
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
 
   EXPECT_CALL(mdp1, OnMemoryDump(_, _))
       .Times(4)
@@ -461,7 +459,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperWhileDumping) {
   mdm_->RegisterDumpProvider(&mdp1, ThreadTaskRunnerHandle::Get());
   mdm_->RegisterDumpProvider(&mdp2, ThreadTaskRunnerHandle::Get());
   mdp1.dump_provider_to_register_or_unregister = &mdp2;
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
 
   EXPECT_CALL(mdp1, OnMemoryDump(_, _))
       .Times(4)
@@ -526,7 +524,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
       Bind(&MemoryDumpManagerTest::DumpCallbackAdapter, Unretained(this),
            MessageLoop::current()->task_runner(), run_loop.QuitClosure());
 
-  EnableTracing(kTraceCategory);
+  EnableTracing(MemoryDumpManager::kTraceCategory);
   MemoryDumpRequestArgs request_args = {0, MemoryDumpType::EXPLICITLY_TRIGGERED,
                                         high_detail_args};
   mdm_->CreateProcessDump(request_args, callback);

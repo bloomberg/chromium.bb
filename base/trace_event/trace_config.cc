@@ -10,6 +10,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 
 namespace base {
@@ -36,6 +37,23 @@ const char kExcludedCategoriesParam[] = "excluded_categories";
 const char kSyntheticDelaysParam[] = "synthetic_delays";
 
 const char kSyntheticDelayCategoryFilterPrefix[] = "DELAY(";
+
+// String parameters that is used to parse memory dump config in trace config
+// string.
+const char kMemoryDumpConfigParam[] = "memory_dump_config";
+const char kTriggersParam[] = "triggers";
+const char kPeriodicIntervalParam[] = "periodic_interval_ms";
+const char kModeParam[] = "mode";
+const char kDetailedParam[] = "detailed";
+const char kLightParam[] = "light";
+
+// Default configuration of memory dumps.
+const TraceConfig::MemoryDumpTriggerConfig kDefaultHeavyMemoryDumpTrigger = {
+    2000,  // periodic_interval_ms
+    MemoryDumpArgs::LevelOfDetail::HIGH};
+const TraceConfig::MemoryDumpTriggerConfig kDefaultLightMemoryDumpTrigger = {
+    250,  // periodic_interval_ms
+    MemoryDumpArgs::LevelOfDetail::LOW};
 
 }  // namespace
 
@@ -82,11 +100,11 @@ TraceConfig::TraceConfig(const TraceConfig& tc)
       enable_sampling_(tc.enable_sampling_),
       enable_systrace_(tc.enable_systrace_),
       enable_argument_filter_(tc.enable_argument_filter_),
+      memory_dump_config_(tc.memory_dump_config_),
       included_categories_(tc.included_categories_),
       disabled_categories_(tc.disabled_categories_),
       excluded_categories_(tc.excluded_categories_),
-      synthetic_delays_(tc.synthetic_delays_) {
-}
+      synthetic_delays_(tc.synthetic_delays_) {}
 
 TraceConfig::~TraceConfig() {
 }
@@ -99,6 +117,7 @@ TraceConfig& TraceConfig::operator=(const TraceConfig& rhs) {
   enable_sampling_ = rhs.enable_sampling_;
   enable_systrace_ = rhs.enable_systrace_;
   enable_argument_filter_ = rhs.enable_argument_filter_;
+  memory_dump_config_ = rhs.memory_dump_config_;
   included_categories_ = rhs.included_categories_;
   disabled_categories_ = rhs.disabled_categories_;
   excluded_categories_ = rhs.excluded_categories_;
@@ -207,6 +226,10 @@ void TraceConfig::Merge(const TraceConfig& config) {
     included_categories_.clear();
   }
 
+  memory_dump_config_.insert(memory_dump_config_.end(),
+                             config.memory_dump_config_.begin(),
+                             config.memory_dump_config_.end());
+
   disabled_categories_.insert(disabled_categories_.end(),
                               config.disabled_categories_.begin(),
                               config.disabled_categories_.end());
@@ -227,6 +250,7 @@ void TraceConfig::Clear() {
   disabled_categories_.clear();
   excluded_categories_.clear();
   synthetic_delays_.clear();
+  memory_dump_config_.clear();
 }
 
 void TraceConfig::InitializeDefault() {
@@ -279,14 +303,23 @@ void TraceConfig::InitializeFromConfigString(const std::string& config_string) {
   else
     enable_argument_filter_ = enable_argument_filter;
 
-
-  base::ListValue* category_list = NULL;
+  base::ListValue* category_list = nullptr;
   if (dict->GetList(kIncludedCategoriesParam, &category_list))
     SetCategoriesFromIncludedList(*category_list);
   if (dict->GetList(kExcludedCategoriesParam, &category_list))
     SetCategoriesFromExcludedList(*category_list);
   if (dict->GetList(kSyntheticDelaysParam, &category_list))
     SetSyntheticDelaysFromList(*category_list);
+
+  if (IsCategoryEnabled(MemoryDumpManager::kTraceCategory)) {
+    // If dump triggers not set, the client is using the legacy with just
+    // category enabled. So, use the default periodic dump config.
+    base::DictionaryValue* memory_dump_config = nullptr;
+    if (dict->GetDictionary(kMemoryDumpConfigParam, &memory_dump_config))
+      SetMemoryDumpConfig(*memory_dump_config);
+    else
+      SetDefaultMemoryDumpConfig();
+  }
 }
 
 void TraceConfig::InitializeFromStrings(
@@ -353,6 +386,10 @@ void TraceConfig::InitializeFromStrings(
       }
     }
   }
+
+  if (IsCategoryEnabled(MemoryDumpManager::kTraceCategory)) {
+    SetDefaultMemoryDumpConfig();
+  }
 }
 
 void TraceConfig::SetCategoriesFromIncludedList(
@@ -412,6 +449,48 @@ void TraceConfig::AddCategoryToDict(base::DictionaryValue& dict,
   dict.Set(param, list.Pass());
 }
 
+void TraceConfig::SetMemoryDumpConfig(
+    const base::DictionaryValue& memory_dump_config) {
+  memory_dump_config_.clear();
+
+  const base::ListValue* trigger_list = nullptr;
+  if (!memory_dump_config.GetList(kTriggersParam, &trigger_list) ||
+      trigger_list->GetSize() == 0) {
+    return;
+  }
+
+  for (size_t i = 0; i < trigger_list->GetSize(); ++i) {
+    const base::DictionaryValue* trigger = nullptr;
+    if (!trigger_list->GetDictionary(i, &trigger))
+      continue;
+
+    MemoryDumpTriggerConfig dump_config;
+    std::string dump_type;
+    int interval = 0;
+
+    if (!trigger->GetInteger(kPeriodicIntervalParam, &interval)) {
+      continue;
+    }
+    DCHECK_GT(interval, 0);
+    dump_config.periodic_interval_ms = static_cast<uint32>(interval);
+    dump_config.level_of_detail = MemoryDumpArgs::LevelOfDetail::LOW;
+
+    if (trigger->GetString(kModeParam, &dump_type)) {
+      if (dump_type == kDetailedParam) {
+        dump_config.level_of_detail = MemoryDumpArgs::LevelOfDetail::HIGH;
+      }
+    }
+
+    memory_dump_config_.push_back(dump_config);
+  }
+}
+
+void TraceConfig::SetDefaultMemoryDumpConfig() {
+  memory_dump_config_.clear();
+  memory_dump_config_.push_back(kDefaultHeavyMemoryDumpTrigger);
+  memory_dump_config_.push_back(kDefaultLightMemoryDumpTrigger);
+}
+
 void TraceConfig::ToDict(base::DictionaryValue& dict) const {
   switch (record_mode_) {
     case RECORD_UNTIL_FULL:
@@ -452,6 +531,35 @@ void TraceConfig::ToDict(base::DictionaryValue& dict) const {
   AddCategoryToDict(dict, kIncludedCategoriesParam, categories);
   AddCategoryToDict(dict, kExcludedCategoriesParam, excluded_categories_);
   AddCategoryToDict(dict, kSyntheticDelaysParam, synthetic_delays_);
+
+  if (IsCategoryEnabled(MemoryDumpManager::kTraceCategory)) {
+    scoped_ptr<base::DictionaryValue> memory_dump_config(
+        new base::DictionaryValue());
+    scoped_ptr<base::ListValue> triggers_list(new base::ListValue());
+    for (const MemoryDumpTriggerConfig& config : memory_dump_config_) {
+      scoped_ptr<base::DictionaryValue> trigger_dict(
+          new base::DictionaryValue());
+      trigger_dict->SetInteger(kPeriodicIntervalParam,
+                               static_cast<int>(config.periodic_interval_ms));
+
+      switch (config.level_of_detail) {
+        case MemoryDumpArgs::LevelOfDetail::LOW:
+          trigger_dict->SetString(kModeParam, kLightParam);
+          break;
+        case MemoryDumpArgs::LevelOfDetail::HIGH:
+          trigger_dict->SetString(kModeParam, kDetailedParam);
+          break;
+        default:
+          NOTREACHED();
+      }
+      triggers_list->Append(trigger_dict.Pass());
+    }
+
+    // Empty triggers will still be specified explicitly since it means that
+    // the periodic dumps are not enabled.
+    memory_dump_config->Set(kTriggersParam, triggers_list.Pass());
+    dict.Set(kMemoryDumpConfigParam, memory_dump_config.Pass());
+  }
 }
 
 std::string TraceConfig::ToTraceOptionsString() const {
