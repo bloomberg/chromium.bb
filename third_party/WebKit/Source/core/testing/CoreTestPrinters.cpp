@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/testing/CoreTestHelpers.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"

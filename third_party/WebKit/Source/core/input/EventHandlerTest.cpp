@@ -13,7 +13,6 @@
 #include "core/html/HTMLDocument.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
-#include "core/testing/CoreTestHelpers.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/PlatformMouseEvent.h"
 #include <gtest/gtest.h>

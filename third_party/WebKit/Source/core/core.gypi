@@ -3656,8 +3656,7 @@
         'webcore_testing_files': [
             '<(blink_core_output_dir)/testing/InternalSettingsGenerated.cpp',
             '<(blink_core_output_dir)/testing/InternalSettingsGenerated.h',
-            'testing/CoreTestHelpers.cpp',
-            'testing/CoreTestHelpers.h',
+            'testing/CoreTestPrinters.cpp',
             'testing/DictionaryTest.cpp',
             'testing/DictionaryTest.h',
             'testing/DummyPageHolder.cpp',

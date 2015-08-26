@@ -897,6 +897,11 @@ PassRefPtrWillBeRawPtr<T> T::create(Document& document) \
     return adoptRefWillBeNoop(new T(document)); \
 }
 
+// These printers are available only for testing in "webkit_unit_tests", and
+// implemented in "core/testing/CoreTestPrinters.cpp".
+std::ostream& operator<<(std::ostream&, const Node&);
+std::ostream& operator<<(std::ostream&, const Node*);
+
 } // namespace blink
 
 #ifndef NDEBUG

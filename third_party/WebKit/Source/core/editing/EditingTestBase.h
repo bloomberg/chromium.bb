@@ -6,7 +6,6 @@
 #define EditingTestBase_h
 
 #include "core/editing/Position.h"
-#include "core/testing/CoreTestHelpers.h"
 #include "wtf/Forward.h"
 #include <gtest/gtest.h>
 
