@@ -725,7 +725,7 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="PowerfulFeatureUse.Host.DeviceMotion.Origin.Insecure"
+<rappor-metric name="PowerfulFeatureUse.Host.DeviceMotion.Insecure"
     type="ETLD_PLUS_ONE">
   <owner>jww@chromium.org</owner>
   <summary>
