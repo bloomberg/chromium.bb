@@ -10,8 +10,8 @@
 #include "chrome/browser/tracing/crash_service_uploader.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/tracing/tracing_switches.h"
+#include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
-#include "content/public/browser/background_tracing_reactive_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 
@@ -56,16 +56,22 @@ void SetupNavigationTracing() {
     return;
   }
 
-  scoped_ptr<content::BackgroundTracingReactiveConfig> config;
-  config.reset(new content::BackgroundTracingReactiveConfig());
+  base::DictionaryValue dict;
+  dict.SetString("mode", "REACTIVE_TRACING_MODE");
 
-  content::BackgroundTracingReactiveConfig::TracingRule rule;
-  rule.type = content::BackgroundTracingReactiveConfig::
-      TRACE_FOR_10S_OR_TRIGGER_OR_FULL;
-  rule.trigger_name = kNavigationTracingConfig;
-  rule.category_preset =
-      content::BackgroundTracingConfig::CategoryPreset::BENCHMARK_DEEP;
-  config->configs.push_back(rule);
+  scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+  {
+    scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+    rules_dict->SetString("rule", "TRACE_FOR_10S_OR_TRIGGER_OR_FULL");
+    rules_dict->SetString("trigger_name", kNavigationTracingConfig);
+    rules_dict->SetString("category", "BENCHMARK_DEEP");
+    rules_list->Append(rules_dict.Pass());
+  }
+  dict.Set("configs", rules_list.Pass());
+
+  scoped_ptr<content::BackgroundTracingConfig> config(
+      content::BackgroundTracingConfig::FromDict(&dict));
+  DCHECK(config);
 
   content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
       config.Pass(), base::Bind(&UploadCallback),

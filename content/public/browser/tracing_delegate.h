@@ -17,7 +17,7 @@ class URLRequestContextGetter;
 }
 
 namespace content {
-struct BackgroundTracingConfig;
+class BackgroundTracingConfig;
 class TraceUploader;
 
 // This can be implemented by the embedder to provide functionality for the

@@ -10,7 +10,7 @@
 #include "content/common/content_export.h"
 
 namespace content {
-struct BackgroundTracingConfig;
+class BackgroundTracingConfig;
 struct BackgroundTracingUploadConfig;
 
 // BackgroundTracingManager is used on the browser process to trigger the
@@ -86,9 +86,6 @@ class BackgroundTracingManager {
   // Registers a manual trigger handle, and returns a TriggerHandle which can
   // be passed to DidTriggerHappen().
   virtual TriggerHandle RegisterTriggerType(const char* trigger_name) = 0;
-
-  // Returns a list of all registered triggers.
-  virtual void GetTriggerNameList(std::vector<std::string>* trigger_names) = 0;
 
   virtual void InvalidateTriggerHandlesForTesting() = 0;
   virtual void SetTracingEnabledCallbackForTesting(

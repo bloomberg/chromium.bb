@@ -4,12 +4,18 @@
 
 #include "content/public/browser/background_tracing_config.h"
 
+#include "content/browser/tracing/background_tracing_config_impl.h"
+
 namespace content {
 
-BackgroundTracingConfig::BackgroundTracingConfig(Mode mode) : mode(mode) {
-}
+BackgroundTracingConfig::BackgroundTracingConfig(TracingMode tracing_mode)
+    : tracing_mode_(tracing_mode) {}
 
-BackgroundTracingConfig::~BackgroundTracingConfig() {
+BackgroundTracingConfig::~BackgroundTracingConfig() {}
+
+scoped_ptr<BackgroundTracingConfig> BackgroundTracingConfig::FromDict(
+    const base::DictionaryValue* dict) {
+  return BackgroundTracingConfigImpl::FromDict(dict);
 }
 
 }  // namespace content

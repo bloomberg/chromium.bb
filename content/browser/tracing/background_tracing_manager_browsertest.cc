@@ -6,9 +6,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/tracing/background_tracing_rule.h"
 #include "content/public/browser/background_tracing_manager.h"
-#include "content/public/browser/background_tracing_preemptive_config.h"
-#include "content/public/browser/background_tracing_reactive_config.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -92,33 +91,47 @@ void StartedFinalizingCallback(base::Closure callback,
     callback.Run();
 }
 
-scoped_ptr<BackgroundTracingPreemptiveConfig> CreatePreemptiveConfig() {
-  scoped_ptr<BackgroundTracingPreemptiveConfig> config(
-      new BackgroundTracingPreemptiveConfig());
+scoped_ptr<BackgroundTracingConfig> CreatePreemptiveConfig() {
+  base::DictionaryValue dict;
 
-  BackgroundTracingPreemptiveConfig::MonitoringRule rule;
-  rule.type =
-      BackgroundTracingPreemptiveConfig::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED;
-  rule.named_trigger_info.trigger_name = "preemptive_test";
+  dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+  dict.SetString("category", "BENCHMARK");
 
-  config->configs.push_back(rule);
+  scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+  {
+    scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+    rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+    rules_dict->SetString("trigger_name", "preemptive_test");
+    rules_list->Append(rules_dict.Pass());
+  }
+  dict.Set("configs", rules_list.Pass());
 
+  scoped_ptr<BackgroundTracingConfig> config(
+      BackgroundTracingConfigImpl::FromDict(&dict));
+
+  EXPECT_TRUE(config);
   return config.Pass();
 }
 
-scoped_ptr<BackgroundTracingReactiveConfig> CreateReactiveConfig() {
-  scoped_ptr<BackgroundTracingReactiveConfig> config(
-      new BackgroundTracingReactiveConfig());
+scoped_ptr<BackgroundTracingConfig> CreateReactiveConfig() {
+  base::DictionaryValue dict;
 
-  BackgroundTracingReactiveConfig::TracingRule rule;
-  rule.type =
-      BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL;
-  rule.trigger_name = "reactive_test";
-  rule.category_preset =
-      BackgroundTracingConfig::CategoryPreset::BENCHMARK_DEEP;
+  dict.SetString("mode", "REACTIVE_TRACING_MODE");
 
-  config->configs.push_back(rule);
+  scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+  {
+    scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+    rules_dict->SetString("rule", "TRACE_FOR_10S_OR_TRIGGER_OR_FULL");
+    rules_dict->SetString("trigger_name", "reactive_test");
+    rules_dict->SetString("category", "BENCHMARK");
+    rules_list->Append(rules_dict.Pass());
+  }
+  dict.Set("configs", rules_list.Pass());
 
+  scoped_ptr<BackgroundTracingConfig> config(
+      BackgroundTracingConfigImpl::FromDict(&dict));
+
+  EXPECT_TRUE(config);
   return config.Pass();
 }
 
@@ -143,8 +156,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingPreemptiveConfig> config =
-        CreatePreemptiveConfig();
+    scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
     BackgroundTracingManager::TriggerHandle handle =
         BackgroundTracingManager::
@@ -176,8 +188,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingPreemptiveConfig> config =
-        CreatePreemptiveConfig();
+    scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -227,8 +238,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
       wait_for_upload.QuitClosure());
 
-  scoped_ptr<BackgroundTracingPreemptiveConfig> config =
-      CreatePreemptiveConfig();
+  scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
   content::BackgroundTracingManager::TriggerHandle handle =
       content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -275,8 +285,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
       wait_for_upload.QuitClosure());
 
-  scoped_ptr<BackgroundTracingPreemptiveConfig> config =
-      CreatePreemptiveConfig();
+  scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
   content::BackgroundTracingManager::TriggerHandle handle =
       content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -317,17 +326,29 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingPreemptiveConfig> config =
-        CreatePreemptiveConfig();
+    base::DictionaryValue dict;
+    dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+    dict.SetString("category", "BENCHMARK");
 
-    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
-    rule.type =
-        BackgroundTracingPreemptiveConfig::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED;
-    rule.named_trigger_info.trigger_name = "test1";
-    config->configs.push_back(rule);
+    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+      rules_dict->SetString("trigger_name", "test1");
+      rules_list->Append(rules_dict.Pass());
+    }
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+      rules_dict->SetString("trigger_name", "test2");
+      rules_list->Append(rules_dict.Pass());
+    }
 
-    rule.named_trigger_info.trigger_name = "test2";
-    config->configs.push_back(rule);
+    dict.Set("configs", rules_list.Pass());
+
+    scoped_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+    EXPECT_TRUE(config);
 
     BackgroundTracingManager::TriggerHandle handle1 =
         BackgroundTracingManager::GetInstance()->RegisterTriggerType("test1");
@@ -390,8 +411,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         (base::Closure()));
 
-    scoped_ptr<BackgroundTracingPreemptiveConfig> config =
-        CreatePreemptiveConfig();
+    scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -424,8 +444,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         (base::Closure()));
 
-    scoped_ptr<BackgroundTracingPreemptiveConfig> config =
-        CreatePreemptiveConfig();
+    scoped_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
@@ -462,15 +481,25 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingPreemptiveConfig> config(
-        new content::BackgroundTracingPreemptiveConfig());
+    base::DictionaryValue dict;
+    dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+    dict.SetString("category", "BENCHMARK");
 
-    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
-    rule.type = BackgroundTracingPreemptiveConfig::
-        MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE;
-    rule.histogram_trigger_info.histogram_name = "fake";
-    rule.histogram_trigger_info.histogram_value = 1;
-    config->configs.push_back(rule);
+    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString(
+          "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+      rules_dict->SetString("histogram_name", "fake");
+      rules_dict->SetInteger("histogram_value", 1);
+      rules_list->Append(rules_dict.Pass());
+    }
+
+    dict.Set("configs", rules_list.Pass());
+
+    scoped_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+    EXPECT_TRUE(config);
 
     BackgroundTracingManager::GetInstance()->SetActiveScenario(
         config.Pass(), upload_config_wrapper.get_receive_callback(),
@@ -496,15 +525,25 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingPreemptiveConfig> config(
-        new content::BackgroundTracingPreemptiveConfig());
+    base::DictionaryValue dict;
+    dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+    dict.SetString("category", "BENCHMARK");
 
-    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
-    rule.type = BackgroundTracingPreemptiveConfig::
-        MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE;
-    rule.histogram_trigger_info.histogram_name = "fake";
-    rule.histogram_trigger_info.histogram_value = 1;
-    config->configs.push_back(rule);
+    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString(
+          "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+      rules_dict->SetString("histogram_name", "fake");
+      rules_dict->SetInteger("histogram_value", 1);
+      rules_list->Append(rules_dict.Pass());
+    }
+
+    dict.Set("configs", rules_list.Pass());
+
+    scoped_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+    EXPECT_TRUE(config);
 
     BackgroundTracingManager::GetInstance()->SetActiveScenario(
         config.Pass(), upload_config_wrapper.get_receive_callback(),
@@ -529,19 +568,23 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         (base::Closure()));
 
-    scoped_ptr<BackgroundTracingPreemptiveConfig> config(
-        new content::BackgroundTracingPreemptiveConfig());
+    base::DictionaryValue dict;
+    dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+    dict.SetString("category", "BENCHMARK");
 
-    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
-    rule.type = BackgroundTracingPreemptiveConfig::
-        MONITOR_AND_DUMP_WHEN_BROWSER_STARTUP_COMPLETE;
-    config->configs.push_back(rule);
+    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString("rule", "INVALID_RULE");
+      rules_list->Append(rules_dict.Pass());
+    }
 
-    bool result = BackgroundTracingManager::GetInstance()->SetActiveScenario(
-        config.Pass(), upload_config_wrapper.get_receive_callback(),
-        BackgroundTracingManager::NO_DATA_FILTERING);
+    dict.Set("configs", rules_list.Pass());
 
-    EXPECT_FALSE(result);
+    scoped_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+    // An invalid config should always return a nullptr here.
+    EXPECT_FALSE(config);
   }
 }
 
@@ -555,8 +598,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingReactiveConfig> config =
-        CreateReactiveConfig();
+    scoped_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
 
     BackgroundTracingManager::TriggerHandle handle =
         BackgroundTracingManager::
@@ -590,8 +632,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingReactiveConfig> config =
-        CreateReactiveConfig();
+    scoped_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
 
     BackgroundTracingManager::TriggerHandle handle =
         BackgroundTracingManager::
@@ -626,8 +667,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingReactiveConfig> config =
-        CreateReactiveConfig();
+    scoped_ptr<BackgroundTracingConfig> config = CreateReactiveConfig();
 
     BackgroundTracingManager::TriggerHandle handle =
         BackgroundTracingManager::

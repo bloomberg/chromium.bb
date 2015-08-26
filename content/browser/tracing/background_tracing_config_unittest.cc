@@ -6,15 +6,24 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "content/public/browser/background_tracing_preemptive_config.h"
-#include "content/public/browser/background_tracing_reactive_config.h"
+#include "content/browser/tracing/background_tracing_config_impl.h"
+#include "content/browser/tracing/background_tracing_rule.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-class BackgroundTracingConfigTest : public testing::Test {};
+class BackgroundTracingConfigTest : public testing::Test {
+ public:
+  BackgroundTracingConfigTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
-scoped_ptr<BackgroundTracingConfig> ReadFromJSONString(
+ protected:
+  base::MessageLoop message_loop_;
+  TestBrowserThread ui_thread_;
+};
+
+scoped_ptr<BackgroundTracingConfigImpl> ReadFromJSONString(
     const std::string& json_text) {
   scoped_ptr<base::Value> json_value(base::JSONReader::Read(json_text));
 
@@ -22,25 +31,27 @@ scoped_ptr<BackgroundTracingConfig> ReadFromJSONString(
   if (json_value)
     json_value->GetAsDictionary(&dict);
 
-  return content::BackgroundTracingConfig::FromDict(dict);
-}
-
-scoped_ptr<BackgroundTracingPreemptiveConfig> ReadPreemptiveFromJSONString(
-    const std::string& json_text) {
-  return make_scoped_ptr(static_cast<BackgroundTracingPreemptiveConfig*>(
-      ReadFromJSONString(json_text).release()));
-}
-
-scoped_ptr<BackgroundTracingReactiveConfig> ReadReactiveFromJSONString(
-    const std::string& json_text) {
-  return make_scoped_ptr(static_cast<BackgroundTracingReactiveConfig*>(
-      ReadFromJSONString(json_text).release()));
+  scoped_ptr<BackgroundTracingConfigImpl> config(
+      static_cast<BackgroundTracingConfigImpl*>(
+          BackgroundTracingConfig::FromDict(dict).release()));
+  return config;
 }
 
 std::string ConfigToString(const BackgroundTracingConfig* config) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-  BackgroundTracingConfig::IntoDict(config, dict.get());
+  config->IntoDict(dict.get());
+
+  std::string results;
+  if (base::JSONWriter::Write(*dict.get(), &results))
+    return results;
+  return "";
+}
+
+std::string RuleToString(const BackgroundTracingRule* rule) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+
+  rule->IntoDict(dict.get());
 
   std::string results;
   if (base::JSONWriter::Write(*dict.get(), &results))
@@ -59,6 +70,15 @@ TEST_F(BackgroundTracingConfigTest, PreemptiveConfigFromInvalidString) {
   EXPECT_FALSE(ReadFromJSONString("{\"mode\":\"preemptive\"}"));
   EXPECT_FALSE(ReadFromJSONString(
       "{\"mode\":\"preemptive\", \"category\": \"invalid\"}"));
+  EXPECT_FALSE(ReadFromJSONString(
+      "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
+      "\"invalid\",\"configs\": [{\"rule\": "
+      "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\", \"trigger_name\":\"foo\"}]}"));
+
+  // Missing rules.
+  EXPECT_FALSE(
+      ReadFromJSONString("{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
+                         "\"BENCHMARK\",\"configs\": []}"));
 
   // Missing or invalid configs
   EXPECT_FALSE(ReadFromJSONString(
@@ -96,6 +116,9 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromInvalidString) {
   EXPECT_FALSE(
       ReadFromJSONString("{\"mode\":\"reactive\", \"configs\": \"invalid\"}"));
   EXPECT_FALSE(ReadFromJSONString("{\"mode\":\"reactive\", \"configs\": {}}"));
+
+  EXPECT_FALSE(ReadFromJSONString(
+      "{\"mode\":\"REACTIVE_TRACING_MODE\", \"configs\": []}"));
 
   // Invalid config entries
   EXPECT_FALSE(
@@ -144,108 +167,78 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromInvalidString) {
 }
 
 TEST_F(BackgroundTracingConfigTest, PreemptiveConfigFromValidString) {
-  scoped_ptr<BackgroundTracingPreemptiveConfig> config;
+  scoped_ptr<BackgroundTracingConfigImpl> config;
 
-  config = ReadPreemptiveFromJSONString(
-      "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
-      "\"BENCHMARK\",\"configs\": []}");
-  EXPECT_TRUE(config);
-  EXPECT_EQ(config->mode, BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE);
-  EXPECT_EQ(config->category_preset, BackgroundTracingConfig::BENCHMARK);
-  EXPECT_EQ(config->configs.size(), 0u);
-
-  config = ReadPreemptiveFromJSONString(
-      "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
-      "\"BENCHMARK_DEEP\",\"configs\": []}");
-  EXPECT_TRUE(config);
-  EXPECT_EQ(config->mode, BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE);
-  EXPECT_EQ(config->category_preset, BackgroundTracingConfig::BENCHMARK_DEEP);
-  EXPECT_EQ(config->configs.size(), 0u);
-
-  config = ReadPreemptiveFromJSONString(
+  config = ReadFromJSONString(
       "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
       "\"BENCHMARK\",\"configs\": [{\"rule\": "
       "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\", \"trigger_name\":\"foo\"}]}");
   EXPECT_TRUE(config);
-  EXPECT_EQ(config->mode, BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE);
-  EXPECT_EQ(config->category_preset, BackgroundTracingConfig::BENCHMARK);
-  EXPECT_EQ(config->configs.size(), 1u);
-  EXPECT_EQ(
-      config->configs[0].type,
-      BackgroundTracingPreemptiveConfig::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED);
-  EXPECT_EQ(config->configs[0].named_trigger_info.trigger_name, "foo");
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::PREEMPTIVE);
+  EXPECT_EQ(config->category_preset(), BackgroundTracingConfigImpl::BENCHMARK);
+  EXPECT_EQ(config->rules().size(), 1u);
+  EXPECT_EQ(RuleToString(config->rules()[0]),
+            "{\"rule\":\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\","
+            "\"trigger_name\":\"foo\"}");
 
-  config = ReadPreemptiveFromJSONString(
+  config = ReadFromJSONString(
       "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
       "\"BENCHMARK\",\"configs\": [{\"rule\": "
       "\"MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE\", "
       "\"histogram_name\":\"foo\", \"histogram_value\": 1}]}");
   EXPECT_TRUE(config);
-  EXPECT_EQ(config->mode, BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE);
-  EXPECT_EQ(config->category_preset, BackgroundTracingConfig::BENCHMARK);
-  EXPECT_EQ(config->configs.size(), 1u);
-  EXPECT_EQ(config->configs[0].type,
-            BackgroundTracingPreemptiveConfig::
-                MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE);
-  EXPECT_EQ(config->configs[0].histogram_trigger_info.histogram_name, "foo");
-  EXPECT_EQ(config->configs[0].histogram_trigger_info.histogram_value, 1);
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::PREEMPTIVE);
+  EXPECT_EQ(config->category_preset(), BackgroundTracingConfigImpl::BENCHMARK);
+  EXPECT_EQ(config->rules().size(), 1u);
+  EXPECT_EQ(RuleToString(config->rules()[0]),
+            "{\"histogram_name\":\"foo\",\"histogram_value\":1,"
+            "\"rule\":\"MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE\"}");
 
-  config = ReadPreemptiveFromJSONString(
+  config = ReadFromJSONString(
       "{\"mode\":\"PREEMPTIVE_TRACING_MODE\", \"category\": "
       "\"BENCHMARK\",\"configs\": [{\"rule\": "
       "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\", \"trigger_name\":\"foo1\"}, "
       "{\"rule\": \"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\", "
       "\"trigger_name\":\"foo2\"}]}");
   EXPECT_TRUE(config);
-  EXPECT_EQ(config->mode, BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE);
-  EXPECT_EQ(config->category_preset, BackgroundTracingConfig::BENCHMARK);
-  EXPECT_EQ(config->configs.size(), 2u);
-  EXPECT_EQ(
-      config->configs[0].type,
-      BackgroundTracingPreemptiveConfig::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED);
-  EXPECT_EQ(config->configs[0].named_trigger_info.trigger_name, "foo1");
-  EXPECT_EQ(
-      config->configs[1].type,
-      BackgroundTracingPreemptiveConfig::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED);
-  EXPECT_EQ(config->configs[1].named_trigger_info.trigger_name, "foo2");
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::PREEMPTIVE);
+  EXPECT_EQ(config->category_preset(), BackgroundTracingConfigImpl::BENCHMARK);
+  EXPECT_EQ(config->rules().size(), 2u);
+  EXPECT_EQ(RuleToString(config->rules()[0]),
+            "{\"rule\":\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\","
+            "\"trigger_name\":\"foo1\"}");
+  EXPECT_EQ(RuleToString(config->rules()[1]),
+            "{\"rule\":\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\","
+            "\"trigger_name\":\"foo2\"}");
 }
 
 TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
-  scoped_ptr<BackgroundTracingReactiveConfig> config;
+  scoped_ptr<BackgroundTracingConfigImpl> config;
 
-  config = ReadReactiveFromJSONString(
-      "{\"mode\":\"REACTIVE_TRACING_MODE\", \"configs\": []}");
-  EXPECT_TRUE(config);
-  EXPECT_EQ(config->mode, BackgroundTracingConfig::REACTIVE_TRACING_MODE);
-  EXPECT_EQ(config->configs.size(), 0u);
-
-  config = ReadReactiveFromJSONString(
+  config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
       "\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\", "
       "\"category\": \"BENCHMARK\", \"trigger_name\": \"foo\"}]}");
   EXPECT_TRUE(config);
-  EXPECT_EQ(config->mode, BackgroundTracingConfig::REACTIVE_TRACING_MODE);
-  EXPECT_EQ(config->configs.size(), 1u);
-  EXPECT_EQ(config->configs[0].type,
-            BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL);
-  EXPECT_EQ(config->configs[0].trigger_name, "foo");
-  EXPECT_EQ(config->configs[0].category_preset,
-            BackgroundTracingConfig::BENCHMARK);
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
+  EXPECT_EQ(config->rules().size(), 1u);
+  EXPECT_EQ(RuleToString(config->rules()[0]),
+            "{\"category\":\"BENCHMARK\","
+            "\"rule\":\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\","
+            "\"trigger_name\":\"foo\"}");
 
-  config = ReadReactiveFromJSONString(
+  config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
       "\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\", "
       "\"category\": \"BENCHMARK_DEEP\", \"trigger_name\": \"foo\"}]}");
   EXPECT_TRUE(config);
-  EXPECT_EQ(config->mode, BackgroundTracingConfig::REACTIVE_TRACING_MODE);
-  EXPECT_EQ(config->configs.size(), 1u);
-  EXPECT_EQ(config->configs[0].type,
-            BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL);
-  EXPECT_EQ(config->configs[0].trigger_name, "foo");
-  EXPECT_EQ(config->configs[0].category_preset,
-            BackgroundTracingConfig::BENCHMARK_DEEP);
-
-  config = ReadReactiveFromJSONString(
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
+  EXPECT_EQ(config->rules().size(), 1u);
+  EXPECT_EQ(RuleToString(config->rules()[0]),
+            "{\"category\":\"BENCHMARK_DEEP\","
+            "\"rule\":\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\","
+            "\"trigger_name\":\"foo\"}");
+  config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
       "\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\", "
       "\"category\": \"BENCHMARK_DEEP\", \"trigger_name\": "
@@ -253,23 +246,21 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
       "\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\", "
       "\"category\": \"BENCHMARK_DEEP\", \"trigger_name\": \"foo2\"}]}");
   EXPECT_TRUE(config);
-  EXPECT_EQ(config->mode, BackgroundTracingConfig::REACTIVE_TRACING_MODE);
-  EXPECT_EQ(config->configs.size(), 2u);
-  EXPECT_EQ(config->configs[0].type,
-            BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL);
-  EXPECT_EQ(config->configs[0].trigger_name, "foo1");
-  EXPECT_EQ(config->configs[0].category_preset,
-            BackgroundTracingConfig::BENCHMARK_DEEP);
-  EXPECT_EQ(config->configs[1].type,
-            BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL);
-  EXPECT_EQ(config->configs[1].trigger_name, "foo2");
-  EXPECT_EQ(config->configs[1].category_preset,
-            BackgroundTracingConfig::BENCHMARK_DEEP);
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
+  EXPECT_EQ(config->rules().size(), 2u);
+  EXPECT_EQ(RuleToString(config->rules()[0]),
+            "{\"category\":\"BENCHMARK_DEEP\","
+            "\"rule\":\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\","
+            "\"trigger_name\":\"foo1\"}");
+  EXPECT_EQ(RuleToString(config->rules()[1]),
+            "{\"category\":\"BENCHMARK_DEEP\","
+            "\"rule\":\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\","
+            "\"trigger_name\":\"foo2\"}");
 }
 
 TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
-  scoped_ptr<BackgroundTracingPreemptiveConfig> config(
-      new BackgroundTracingPreemptiveConfig());
+  scoped_ptr<BackgroundTracingConfigImpl> config(
+      new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
 
   // Default values
   EXPECT_EQ(ConfigToString(config.get()),
@@ -277,20 +268,21 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
             "TRACING_MODE\"}");
 
   // Change category_preset
-  config->category_preset = BackgroundTracingConfig::BENCHMARK_DEEP;
+  config->set_category_preset(BackgroundTracingConfigImpl::BENCHMARK_DEEP);
   EXPECT_EQ(ConfigToString(config.get()),
             "{\"category\":\"BENCHMARK_DEEP\",\"configs\":[],\"mode\":"
             "\"PREEMPTIVE_TRACING_MODE\"}");
 
   {
-    config.reset(new BackgroundTracingPreemptiveConfig());
-    config->category_preset = BackgroundTracingConfig::BENCHMARK_DEEP;
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
+    config->set_category_preset(BackgroundTracingConfigImpl::BENCHMARK_DEEP);
 
-    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
-    rule.type =
-        BackgroundTracingPreemptiveConfig::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED;
-    rule.named_trigger_info.trigger_name = "foo";
-    config->configs.push_back(rule);
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+    dict->SetString("trigger_name", "foo");
+    config->AddPreemptiveRule(dict.get());
+
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"category\":\"BENCHMARK_DEEP\",\"configs\":[{\"rule\":"
               "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\",\"trigger_name\":"
@@ -298,16 +290,18 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
   }
 
   {
-    config.reset(new BackgroundTracingPreemptiveConfig());
-    config->category_preset = BackgroundTracingConfig::BENCHMARK_DEEP;
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
+    config->set_category_preset(BackgroundTracingConfigImpl::BENCHMARK_DEEP);
 
-    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
-    rule.type =
-        BackgroundTracingPreemptiveConfig::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED;
-    rule.named_trigger_info.trigger_name = "foo1";
-    config->configs.push_back(rule);
-    rule.named_trigger_info.trigger_name = "foo2";
-    config->configs.push_back(rule);
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED");
+    dict->SetString("trigger_name", "foo1");
+    config->AddPreemptiveRule(dict.get());
+
+    dict->SetString("trigger_name", "foo2");
+    config->AddPreemptiveRule(dict.get());
+
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"category\":\"BENCHMARK_DEEP\",\"configs\":[{\"rule\":"
               "\"MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED\",\"trigger_name\":"
@@ -317,14 +311,16 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
   }
 
   {
-    config.reset(new BackgroundTracingPreemptiveConfig());
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
 
-    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
-    rule.type = BackgroundTracingPreemptiveConfig::
-        MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE;
-    rule.histogram_trigger_info.histogram_name = "foo";
-    rule.histogram_trigger_info.histogram_value = 1;
-    config->configs.push_back(rule);
+    scoped_ptr<base::DictionaryValue> second_dict(new base::DictionaryValue());
+    second_dict->SetString(
+        "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+    second_dict->SetString("histogram_name", "foo");
+    second_dict->SetInteger("histogram_value", 1);
+    config->AddPreemptiveRule(second_dict.get());
+
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"category\":\"BENCHMARK\",\"configs\":[{\"histogram_name\":"
               "\"foo\",\"histogram_value\":1,\"rule\":\"MONITOR_AND_DUMP_WHEN_"
@@ -334,15 +330,16 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {
 }
 
 TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
-  scoped_ptr<BackgroundTracingPreemptiveConfig> config;
+  scoped_ptr<BackgroundTracingConfigImpl> config;
 
   {
-    config.reset(new BackgroundTracingPreemptiveConfig());
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::PREEMPTIVE));
 
-    BackgroundTracingPreemptiveConfig::MonitoringRule rule;
-    rule.type = BackgroundTracingPreemptiveConfig::
-        MONITOR_AND_DUMP_WHEN_BROWSER_STARTUP_COMPLETE;
-    config->configs.push_back(rule);
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetString("rule", "MONITOR_AND_DUMP_WHEN_BROWSER_STARTUP_COMPLETE");
+    config->AddPreemptiveRule(dict.get());
+
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"category\":\"BENCHMARK\",\"configs\":[],\"mode\":"
               "\"PREEMPTIVE_TRACING_MODE\"}");
@@ -350,22 +347,23 @@ TEST_F(BackgroundTracingConfigTest, InvalidPreemptiveConfigToString) {
 }
 
 TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
-  scoped_ptr<BackgroundTracingReactiveConfig> config(
-      new BackgroundTracingReactiveConfig());
+  scoped_ptr<BackgroundTracingConfigImpl> config(
+      new BackgroundTracingConfigImpl(BackgroundTracingConfig::REACTIVE));
 
   // Default values
   EXPECT_EQ(ConfigToString(config.get()),
             "{\"configs\":[],\"mode\":\"REACTIVE_TRACING_MODE\"}");
 
   {
-    config.reset(new BackgroundTracingReactiveConfig());
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::REACTIVE));
 
-    BackgroundTracingReactiveConfig::TracingRule rule;
-    rule.type = BackgroundTracingReactiveConfig::
-        TRACE_FOR_10S_OR_TRIGGER_OR_FULL;
-    rule.trigger_name = "foo";
-    rule.category_preset = BackgroundTracingConfig::BENCHMARK_DEEP;
-    config->configs.push_back(rule);
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetString("rule", "TRACE_FOR_10S_OR_TRIGGER_OR_FULL");
+    dict->SetString("trigger_name", "foo");
+    config->AddReactiveRule(dict.get(),
+                            BackgroundTracingConfigImpl::BENCHMARK_DEEP);
+
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"configs\":[{\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_"
               "FOR_10S_OR_TRIGGER_OR_FULL\",\"trigger_name\":\"foo\"}],\"mode\""
@@ -373,16 +371,19 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
   }
 
   {
-    config.reset(new BackgroundTracingReactiveConfig());
+    config.reset(
+        new BackgroundTracingConfigImpl(BackgroundTracingConfig::REACTIVE));
 
-    BackgroundTracingReactiveConfig::TracingRule rule;
-    rule.type = BackgroundTracingReactiveConfig::
-        TRACE_FOR_10S_OR_TRIGGER_OR_FULL;
-    rule.trigger_name = "foo1";
-    rule.category_preset = BackgroundTracingConfig::BENCHMARK_DEEP;
-    config->configs.push_back(rule);
-    rule.trigger_name = "foo2";
-    config->configs.push_back(rule);
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    dict->SetString("rule", "TRACE_FOR_10S_OR_TRIGGER_OR_FULL");
+    dict->SetString("trigger_name", "foo1");
+    config->AddReactiveRule(dict.get(),
+                            BackgroundTracingConfigImpl::BENCHMARK_DEEP);
+
+    dict->SetString("trigger_name", "foo2");
+    config->AddReactiveRule(dict.get(),
+                            BackgroundTracingConfigImpl::BENCHMARK_DEEP);
+
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"configs\":[{\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_"
               "FOR_10S_OR_TRIGGER_OR_FULL\",\"trigger_name\":\"foo1\"},{"

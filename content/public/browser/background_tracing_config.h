@@ -16,29 +16,26 @@ namespace content {
 
 // BackgroundTracingConfig is passed to the BackgroundTracingManager to
 // setup the trigger rules used to enable/disable background tracing.
-struct CONTENT_EXPORT BackgroundTracingConfig {
+class CONTENT_EXPORT BackgroundTracingConfig {
+ public:
   virtual ~BackgroundTracingConfig();
 
-  enum Mode {
-    PREEMPTIVE_TRACING_MODE,
-    REACTIVE_TRACING_MODE,
+  enum TracingMode {
+    PREEMPTIVE,
+    REACTIVE,
   };
-  enum CategoryPreset {
-    BENCHMARK,
-    BENCHMARK_DEEP,
-    BENCHMARK_GPU,
-    BENCHMARK_IPC
-  };
-
-  Mode mode;
+  TracingMode tracing_mode() const { return tracing_mode_; }
 
   static scoped_ptr<BackgroundTracingConfig> FromDict(
       const base::DictionaryValue* dict);
-  static void IntoDict(const BackgroundTracingConfig* config,
-                       base::DictionaryValue* dict);
 
- protected:
-  explicit BackgroundTracingConfig(Mode mode);
+  virtual void IntoDict(base::DictionaryValue* dict) const = 0;
+
+ private:
+  friend class BackgroundTracingConfigImpl;
+  explicit BackgroundTracingConfig(TracingMode tracing_mode);
+
+  const TracingMode tracing_mode_;
 };
 
 }  // namespace content

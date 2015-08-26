@@ -64,8 +64,7 @@ bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
   if (requires_anonymized_data && chrome::IsOffTheRecordSessionActive())
     return false;
 
-  if (config.mode ==
-      content::BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE) {
+  if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE) {
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
     const base::Time last_upload_time = base::Time::FromInternalValue(
@@ -88,8 +87,7 @@ bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
   if (requires_anonymized_data && incognito_launched_)
     return false;
 
-  if (config.mode ==
-      content::BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE) {
+  if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE) {
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
     local_state->SetInt64(prefs::kBackgroundTracingLastUpload,

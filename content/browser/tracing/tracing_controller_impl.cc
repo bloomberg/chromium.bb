@@ -494,8 +494,9 @@ void TracingControllerImpl::AddTraceMessageFilter(
     trace_message_filter->SendEnableMonitoring(
         TraceLog::GetInstance()->GetCurrentTraceConfig());
   }
-  if (!trace_message_filter_added_callback_.is_null())
-    trace_message_filter_added_callback_.Run(trace_message_filter);
+
+  FOR_EACH_OBSERVER(TraceMessageFilterObserver, trace_message_filter_observers_,
+                    OnTraceMessageFilterAdded(trace_message_filter));
 }
 
 void TracingControllerImpl::RemoveTraceMessageFilter(
@@ -853,16 +854,22 @@ uint64 TracingControllerImpl::GetTracingProcessId() const {
   return ChildProcessHost::kBrowserTracingProcessId;
 }
 
-void TracingControllerImpl::SetTraceMessageFilterAddedCallback(
-    const TraceMessageFilterAddedCallback& callback) {
+void TracingControllerImpl::AddTraceMessageFilterObserver(
+    TraceMessageFilterObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  trace_message_filter_added_callback_ = callback;
+  trace_message_filter_observers_.AddObserver(observer);
+
+  for (auto& filter : trace_message_filters_)
+    observer->OnTraceMessageFilterAdded(filter.get());
 }
 
-void TracingControllerImpl::GetTraceMessageFilters(
-    TraceMessageFilterSet* filters) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  filters->insert(trace_message_filters_.begin(), trace_message_filters_.end());
+void TracingControllerImpl::RemoveTraceMessageFilterObserver(
+    TraceMessageFilterObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  trace_message_filter_observers_.RemoveObserver(observer);
+
+  for (auto& filter : trace_message_filters_)
+    observer->OnTraceMessageFilterRemoved(filter.get());
 }
 
 void TracingControllerImpl::OnProcessMemoryDumpResponse(
