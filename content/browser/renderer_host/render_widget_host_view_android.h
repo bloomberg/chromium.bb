@@ -135,6 +135,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const base::Callback<void(bool)>& callback) override;
   bool CanCopyToVideoFrame() const override;
   void GetScreenInfo(blink::WebScreenInfo* results) override;
+  bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   gfx::Rect GetBoundsInRootWindow() override;
   gfx::GLSurfaceHandle GetCompositingSurface() override;
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,

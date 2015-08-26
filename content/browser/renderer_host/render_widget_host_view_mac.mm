@@ -73,6 +73,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/color_profile.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point.h"
@@ -870,7 +871,7 @@ void RenderWidgetHostViewMac::SpeakText(const std::string& text) {
   [NSApp speakString:base::SysUTF8ToNSString(text)];
 }
 
-void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
+void RenderWidgetHostViewMac::UpdateBackingStoreProperties() {
   if (!render_widget_host_)
     return;
   render_widget_host_->NotifyScreenInfoChanged();
@@ -1527,6 +1528,13 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 
 void RenderWidgetHostViewMac::GetScreenInfo(blink::WebScreenInfo* results) {
   *results = GetWebScreenInfo(GetNativeView());
+}
+
+bool RenderWidgetHostViewMac::GetScreenColorProfile(
+    std::vector<char>* color_profile) {
+  DCHECK(color_profile->empty());
+  NSWindow* window = GetWebContents()->GetTopLevelNativeWindow();
+  return gfx::GetDisplayColorProfile(window, color_profile);
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
@@ -2501,14 +2509,14 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 }
 
 - (void)updateScreenProperties{
-  renderWidgetHostView_->UpdateBackingStoreScaleFactor();
+  renderWidgetHostView_->UpdateBackingStoreProperties();
   renderWidgetHostView_->UpdateDisplayLink();
 }
 
 // http://developer.apple.com/library/mac/#documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/CapturingScreenContents/CapturingScreenContents.html#//apple_ref/doc/uid/TP40012302-CH10-SW4
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification {
-  // Background tabs check if their scale factor or vsync properties changed
-  // when they are added to a window.
+  // Background tabs check if their screen scale factor, color profile, and
+  // vsync properties changed when they are added to a window.
 
   // Allocating a CGLayerRef with the current scale factor immediately from
   // this handler doesn't work. Schedule the backing store update on the

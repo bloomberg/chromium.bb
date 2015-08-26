@@ -248,6 +248,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   // Get the screen info corresponding to this render widget.
   virtual void GetWebScreenInfo(blink::WebScreenInfo* result) = 0;
+  // Get the color profile corresponding to this render widget.
+  virtual bool GetScreenColorProfile(std::vector<char>* color_profile) = 0;
 
  protected:
   friend class RenderWidgetHostImpl;

@@ -76,6 +76,7 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_profile.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -1207,6 +1208,13 @@ bool RenderWidgetHostViewAura::HasAcceleratedSurface(
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
   GetScreenInfoForWindow(results, window_->GetRootWindow() ? window_ : NULL);
+}
+
+bool RenderWidgetHostViewAura::GetScreenColorProfile(
+    std::vector<char>* color_profile) {
+  DCHECK(color_profile->empty());
+  gfx::Rect bounds(window_->GetToplevelWindow()->GetBoundsInScreen());
+  return gfx::GetDisplayColorProfile(bounds, color_profile);
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {

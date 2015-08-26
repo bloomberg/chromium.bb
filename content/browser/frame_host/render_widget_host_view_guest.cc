@@ -451,6 +451,17 @@ void RenderWidgetHostViewGuest::GetScreenInfo(blink::WebScreenInfo* results) {
     embedder_view->GetScreenInfo(results);
 }
 
+bool RenderWidgetHostViewGuest::GetScreenColorProfile(
+    std::vector<char>* color_profile) {
+  if (!guest_)
+    return false;
+  DCHECK(color_profile->empty());
+  RenderWidgetHostViewBase* embedder_view = GetOwnerRenderWidgetHostView();
+  if (embedder_view)
+    return embedder_view->GetScreenColorProfile(color_profile);
+  return false;
+}
+
 #if defined(OS_MACOSX)
 void RenderWidgetHostViewGuest::SetActive(bool active) {
   platform_view_->SetActive(active);

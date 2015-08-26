@@ -1537,6 +1537,13 @@ void RenderWidgetHostViewAndroid::GetScreenInfo(blink::WebScreenInfo* result) {
   RenderWidgetHostViewBase::GetDefaultScreenInfo(result);
 }
 
+bool RenderWidgetHostViewAndroid::GetScreenColorProfile(
+    std::vector<char>* color_profile) {
+  DCHECK(color_profile->empty());
+  NOTREACHED();
+  return false;
+}
+
 // TODO(jrg): Find out the implications and answer correctly here,
 // as we are returning the WebView and not root window bounds.
 gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {

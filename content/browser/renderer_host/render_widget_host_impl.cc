@@ -155,6 +155,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_hidden_(hidden),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
+      color_profile_out_of_date_(false),
       auto_resize_enabled_(false),
       waiting_for_screen_rects_ack_(false),
       needs_repainting_on_restore_(false),
@@ -632,10 +633,14 @@ void RenderWidgetHostImpl::WasResized() {
   // it's web contents is being deleted.
   if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
       !renderer_initialized_ || auto_resize_enabled_ || !delegate_) {
+    if (resize_ack_pending_ && color_profile_out_of_date_)
+      DispatchColorProfile();
     return;
   }
 
   scoped_ptr<ViewMsg_Resize_Params> params(new ViewMsg_Resize_Params);
+  if (color_profile_out_of_date_)
+    DispatchColorProfile();
   if (!GetResizeParams(params.get()))
     return;
 
@@ -649,6 +654,44 @@ void RenderWidgetHostImpl::WasResized() {
 
   if (delegate_)
     delegate_->RenderWidgetWasResized(this, width_changed);
+}
+
+void RenderWidgetHostImpl::DispatchColorProfile() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  static bool image_profiles = base::CommandLine::ForCurrentProcess()->
+     HasSwitch(switches::kEnableImageColorProfiles);
+  if (!image_profiles)
+    return;
+#if defined(OS_WIN)
+  // Windows will read disk to get the color profile data if needed, so
+  // dispatch the SendColorProfile() work off the UI thread.
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&RenderWidgetHostImpl::SendColorProfile,
+                 weak_factory_.GetWeakPtr()));
+#elif !defined(OS_CHROMEOS) && !defined(OS_IOS) && !defined(OS_ANDROID)
+  // Only support desktop Mac and Linux at this time.
+  SendColorProfile();
+#endif
+#endif
+}
+
+void RenderWidgetHostImpl::SendColorProfile() {
+  if (!view_ || !delegate_)
+    return;
+  DCHECK(!view_->GetRequestedRendererSize().IsEmpty());
+#if defined(OS_WIN)
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+#endif
+  std::vector<char> color_profile;
+  if (!GetScreenColorProfile(&color_profile))
+    return;
+  if (!renderer_initialized_ || !process_->HasConnection())
+    return;
+  if (!Send(new ViewMsg_ColorProfile(routing_id_, color_profile)))
+    return;
+  color_profile_out_of_date_ = false;
 }
 
 void RenderWidgetHostImpl::ResizeRectChanged(const gfx::Rect& new_rect) {
@@ -1137,12 +1180,17 @@ void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
   latency_tracker_.set_device_scale_factor(result->deviceScaleFactor);
 }
 
-const NativeWebKeyboardEvent*
-    RenderWidgetHostImpl::GetLastKeyboardEvent() const {
-  return input_router_->GetLastKeyboardEvent();
+bool RenderWidgetHostImpl::GetScreenColorProfile(
+    std::vector<char>* color_profile) {
+  DCHECK(color_profile->empty());
+  if (view_)
+    return view_->GetScreenColorProfile(color_profile);
+  return false;
 }
 
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
+  color_profile_out_of_date_ = true;
+
   if (delegate_)
     delegate_->ScreenInfoChanged();
 
@@ -1157,6 +1205,11 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   int id = next_browser_snapshot_id_++;
   pending_browser_snapshots_.insert(std::make_pair(id, callback));
   Send(new ViewMsg_ForceRedraw(GetRoutingID(), id));
+}
+
+const NativeWebKeyboardEvent*
+    RenderWidgetHostImpl::GetLastKeyboardEvent() const {
+  return input_router_->GetLastKeyboardEvent();
 }
 
 void RenderWidgetHostImpl::OnSelectionChanged(const base::string16& text,

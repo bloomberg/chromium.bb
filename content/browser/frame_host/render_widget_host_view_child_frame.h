@@ -106,6 +106,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnSwapCompositorFrame(uint32 output_surface_id,
                              scoped_ptr<cc::CompositorFrame> frame) override;
   void GetScreenInfo(blink::WebScreenInfo* results) override;
+  bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   gfx::Rect GetBoundsInRootWindow() override;
   gfx::GLSurfaceHandle GetCompositingSurface() override;
 #if defined(USE_AURA)

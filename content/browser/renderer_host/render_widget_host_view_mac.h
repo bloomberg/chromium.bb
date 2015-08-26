@@ -331,6 +331,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void GetScreenInfo(blink::WebScreenInfo* results) override;
+  bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   gfx::Rect GetBoundsInRootWindow() override;
   gfx::GLSurfaceHandle GetCompositingSurface() override;
 
@@ -466,8 +467,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The scale factor for the screen that the view is currently on.
   float ViewScaleFactor() const;
 
-  // Update the scale factor for the backing store and for any CALayers.
-  void UpdateBackingStoreScaleFactor();
+  // Update properties, such as the scale factor for the backing store
+  // and for any CALayers, and the screen color profile.
+  void UpdateBackingStoreProperties();
 
   // Ensure that the display link is associated with the correct display.
   void UpdateDisplayLink();

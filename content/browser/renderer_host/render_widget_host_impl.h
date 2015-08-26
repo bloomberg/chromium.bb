@@ -162,6 +162,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void AddMouseEventCallback(const MouseEventCallback& callback) override;
   void RemoveMouseEventCallback(const MouseEventCallback& callback) override;
   void GetWebScreenInfo(blink::WebScreenInfo* result) override;
+  bool GetScreenColorProfile(std::vector<char>* color_profile) override;
+
+  // Notification that the screen info has changed.
+  void NotifyScreenInfoChanged();
 
   // Forces redraw in the renderer and when the update reaches the browser
   // grabs snapshot from the compositor. Returns PNG-encoded snapshot.
@@ -169,9 +173,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const base::Callback<void(const unsigned char*,size_t)> callback);
 
   const NativeWebKeyboardEvent* GetLastKeyboardEvent() const;
-
-  // Notification that the screen info has changed.
-  void NotifyScreenInfoChanged();
 
   // Sets the View of this RenderWidgetHost.
   void SetView(RenderWidgetHostViewBase* view);
@@ -577,6 +578,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // NotifyRendererResponsive.
   void RendererIsResponsive();
 
+  // Routines used to send the RenderWidget its screen color profile.
+  void DispatchColorProfile();
+  void SendColorProfile();
+
   // IPC message handlers
   void OnRenderViewReady();
   void OnRenderProcessGone(int status, int error_code);
@@ -700,6 +705,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // True when waiting for RESIZE_ACK.
   bool resize_ack_pending_;
+
+  // Set if the color profile should fetched and sent to the RenderWidget
+  // during the WasResized() resize message flow.
+  bool color_profile_out_of_date_;
 
   // The current size of the RenderWidget.
   gfx::Size current_size_;
