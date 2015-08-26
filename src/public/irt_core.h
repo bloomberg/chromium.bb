@@ -53,6 +53,20 @@ void nacl_irt_init(uint32_t *info);
  */
 void nacl_irt_enter_user_code(uint32_t *info, nacl_irt_query_func_t query_func);
 
+/* Function type for user code's initial entry point. */
+typedef void (*nacl_entry_func_t)(uint32_t *args);
+
+/*
+ * nacl_irt_nonsfi_entry() acts like nacl_irt_enter_user_code,
+ * but allows passing in additional arguments.
+ */
+int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
+                          nacl_entry_func_t entry_func,
+                          nacl_irt_query_func_t query_func);
+
+/* For nonsfi_loader. */
+void nacl_irt_nonsfi_allow_dev_interfaces(void);
+
 /* Function for querying for NaCl's core IRT interfaces. */
 size_t nacl_irt_query_core(const char *interface_ident,
                            void *table, size_t tablesize);

@@ -4,8 +4,6 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/nonsfi/irt/irt_interfaces.h"
-
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -810,7 +808,8 @@ size_t nacl_irt_query_core(const char *interface_ident,
 }
 
 int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
-                          nacl_entry_func_t entry_func) {
+                          nacl_entry_func_t entry_func,
+                          nacl_irt_query_func_t query_func) {
   /* Find size of environ array. */
   size_t env_count = 0;
   while (environ[env_count] != NULL)
@@ -822,7 +821,7 @@ int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
       + argc + 1  /* argv array, with terminator */
       + env_count + 1  /* environ array, with terminator */
       + 4;  /* auxv: 2 entries, one of them the terminator */
-  uintptr_t *data = malloc(count * sizeof(uintptr_t));
+  uint32_t *data = malloc(count * sizeof(uint32_t));
   if (data == NULL) {
     fprintf(stderr, "Failed to allocate argv/env/auxv array\n");
     return 1;
@@ -841,7 +840,7 @@ int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
   data[pos++] = 0;
   /* auxv[0] */
   data[pos++] = AT_SYSINFO;
-  data[pos++] = (uintptr_t) nacl_irt_query_core;
+  data[pos++] = (uintptr_t) query_func;
   /* auxv[1] */
   data[pos++] = 0;
   data[pos++] = 0;
@@ -868,6 +867,7 @@ int main(int argc, char **argv, char **environ) {
     _user_start;
 #endif
 
-  return nacl_irt_nonsfi_entry(argc, argv, environ, entry_func);
+  return nacl_irt_nonsfi_entry(argc, argv, environ, entry_func,
+                               nacl_irt_query_core);
 }
 #endif
