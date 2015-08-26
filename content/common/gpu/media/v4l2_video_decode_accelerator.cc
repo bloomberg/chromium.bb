@@ -53,15 +53,6 @@
 
 namespace content {
 
-namespace {
-
-// TODO(posciak): remove once we update linux-headers.
-#ifndef V4L2_EVENT_RESOLUTION_CHANGE
-#define V4L2_EVENT_RESOLUTION_CHANGE 5
-#endif
-
-}  // anonymous namespace
-
 struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<Client>& client,
@@ -277,7 +268,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   // Subscribe to the resolution change event.
   struct v4l2_event_subscription sub;
   memset(&sub, 0, sizeof(sub));
-  sub.type = V4L2_EVENT_RESOLUTION_CHANGE;
+  sub.type = V4L2_EVENT_SOURCE_CHANGE;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_SUBSCRIBE_EVENT, &sub);
 
   if (video_profile_ >= media::H264PROFILE_MIN &&
@@ -1032,10 +1023,19 @@ bool V4L2VideoDecodeAccelerator::DequeueResolutionChangeEvent() {
   memset(&ev, 0, sizeof(ev));
 
   while (device_->Ioctl(VIDIOC_DQEVENT, &ev) == 0) {
-    if (ev.type == V4L2_EVENT_RESOLUTION_CHANGE) {
-      DVLOG(3)
-          << "DequeueResolutionChangeEvent(): got resolution change event.";
-      return true;
+    if (ev.type == V4L2_EVENT_SOURCE_CHANGE) {
+      uint32_t changes = ev.u.src_change.changes;
+      // We used to define source change was always resolution change. The union
+      // |ev.u| is not used and it is zero by default. When using the upstream
+      // version of the resolution event change, we also need to check
+      // |ev.u.src_change.changes| to know what is changed. For API backward
+      // compatibility, event is treated as resolution change when all bits in
+      // |ev.u.src_change.changes| are cleared.
+      if (changes == 0 || (changes & V4L2_EVENT_SRC_CH_RESOLUTION)) {
+        DVLOG(3)
+            << "DequeueResolutionChangeEvent(): got resolution change event.";
+        return true;
+      }
     } else {
       LOG(ERROR) << "DequeueResolutionChangeEvent(): got an event (" << ev.type
                  << ") we haven't subscribed to.";
