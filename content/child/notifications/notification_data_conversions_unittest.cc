@@ -29,31 +29,25 @@ const char kAction2Name[] = "btn2";
 const char kAction2Title[] = "Button 2";
 
 TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
-  std::vector<int> vibration_pattern(
-      kNotificationVibrationPattern,
-      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+  blink::WebNotificationData web_data;
+  web_data.title = blink::WebString::fromUTF8(kNotificationTitle);
+  web_data.direction = blink::WebNotificationData::DirectionLeftToRight;
+  web_data.lang = blink::WebString::fromUTF8(kNotificationLang);
+  web_data.body = blink::WebString::fromUTF8(kNotificationBody);
+  web_data.tag = blink::WebString::fromUTF8(kNotificationTag);
+  web_data.icon = blink::WebURL(GURL(kNotificationIconUrl));
+  web_data.vibrate = blink::WebVector<int>(
+      kNotificationVibrationPattern, arraysize(kNotificationVibrationPattern));
+  web_data.silent = true;
+  web_data.data = blink::WebVector<char>(kNotificationData,
+                                         arraysize(kNotificationData));
 
-  std::vector<char> developer_data(
-      kNotificationData, kNotificationData + arraysize(kNotificationData));
-
-  blink::WebVector<blink::WebNotificationAction> web_actions(
+  web_data.actions = blink::WebVector<blink::WebNotificationAction>(
       static_cast<size_t>(2));
-  web_actions[0].action = blink::WebString::fromUTF8(kAction1Name);
-  web_actions[0].title = blink::WebString::fromUTF8(kAction1Title);
-  web_actions[1].action = blink::WebString::fromUTF8(kAction2Name);
-  web_actions[1].title = blink::WebString::fromUTF8(kAction2Title);
-
-  blink::WebNotificationData web_data(
-      blink::WebString::fromUTF8(kNotificationTitle),
-      blink::WebNotificationData::DirectionLeftToRight,
-      blink::WebString::fromUTF8(kNotificationLang),
-      blink::WebString::fromUTF8(kNotificationBody),
-      blink::WebString::fromUTF8(kNotificationTag),
-      blink::WebURL(GURL(kNotificationIconUrl)),
-      blink::WebVector<int>(vibration_pattern),
-      true /* silent */,
-      blink::WebVector<char>(developer_data),
-      web_actions);
+  web_data.actions[0].action = blink::WebString::fromUTF8(kAction1Name);
+  web_data.actions[0].title = blink::WebString::fromUTF8(kAction1Title);
+  web_data.actions[1].action = blink::WebString::fromUTF8(kAction2Name);
+  web_data.actions[1].title = blink::WebString::fromUTF8(kAction2Title);
 
   PlatformNotificationData platform_data = ToPlatformNotificationData(web_data);
   EXPECT_EQ(base::ASCIIToUTF16(kNotificationTitle), platform_data.title);
@@ -68,10 +62,10 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   EXPECT_THAT(platform_data.vibration_pattern,
       testing::ElementsAreArray(kNotificationVibrationPattern));
 
-  ASSERT_EQ(developer_data.size(), platform_data.data.size());
-  for (size_t i = 0; i < developer_data.size(); ++i)
-    EXPECT_EQ(developer_data[i], platform_data.data[i]);
-  ASSERT_EQ(web_actions.size(), platform_data.actions.size());
+  ASSERT_EQ(web_data.data.size(), platform_data.data.size());
+  for (size_t i = 0; i < web_data.data.size(); ++i)
+    EXPECT_EQ(web_data.data[i], platform_data.data[i]);
+  ASSERT_EQ(web_data.actions.size(), platform_data.actions.size());
   EXPECT_EQ(kAction1Name, platform_data.actions[0].action);
   EXPECT_EQ(base::ASCIIToUTF16(kAction1Title), platform_data.actions[0].title);
   EXPECT_EQ(kAction2Name, platform_data.actions[1].action);
