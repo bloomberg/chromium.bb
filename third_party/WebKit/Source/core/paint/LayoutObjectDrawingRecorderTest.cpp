@@ -123,5 +123,36 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[1]));
 }
 
+template <typename T>
+FloatRect drawAndGetCullRect(DisplayItemList& list, const LayoutObject& layoutObject, const T& bounds)
+{
+    list.invalidateAll();
+    {
+        // Draw some things which will produce a non-null picture.
+        GraphicsContext context(&list);
+        LayoutObjectDrawingRecorder recorder(
+            context, layoutObject, DisplayItem::BoxDecorationBackground, bounds);
+        context.drawRect(enclosedIntRect(bounds));
+    }
+    list.commitNewDisplayItems();
+    const auto& drawing = static_cast<const DrawingDisplayItem&>(list.displayItems()[0]);
+    return drawing.picture()->cullRect();
+}
+
+TEST_F(LayoutObjectDrawingRecorderTest, CullRectMatchesProvidedClip)
+{
+    // It's safe for the picture's cull rect to be expanded (though doing so
+    // excessively may harm performance), but it cannot be contracted.
+    // For now, this test expects the two rects to match completely.
+    //
+    // This rect is chosen so that in the x direction, pixel snapping rounds in
+    // the opposite direction to enclosing, and in the y direction, the edges
+    // are exactly on a half-pixel boundary. The numbers chosen map nicely to
+    // both float and LayoutUnit, to make equality checking reliable.
+    FloatRect rect(20.75, -5.5, 5.375, 10);
+    EXPECT_EQ(rect, drawAndGetCullRect(rootDisplayItemList(), layoutView(), rect));
+    EXPECT_EQ(rect, drawAndGetCullRect(rootDisplayItemList(), layoutView(), LayoutRect(rect)));
+}
+
 } // namespace
 } // namespace blink
