@@ -45,22 +45,9 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len) {
   if (!pReader || pos < 0)
     return E_FILE_FORMAT_INVALID;
 
-  int status;
-
-  //#ifdef _DEBUG
-  //    long long total, available;
-  //    status = pReader->Length(&total, &available);
-  //    assert(status >= 0);
-  //    assert((total < 0) || (available <= total));
-  //    assert(pos < available);
-  //    assert((available - pos) >= 1);  //assume here max u-int len is 8
-  //#endif
-
   len = 1;
-
   unsigned char b;
-
-  status = pReader->Read(pos, 1, &b);
+  int status = pReader->Read(pos, 1, &b);
 
   if (status < 0)  // error or underflow
     return status;
@@ -77,10 +64,6 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len) {
     m >>= 1;
     ++len;
   }
-
-  //#ifdef _DEBUG
-  //    assert((available - pos) >= len);
-  //#endif
 
   long long result = b & (~m);
   ++pos;
@@ -105,6 +88,17 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len) {
   }
 
   return result;
+}
+
+long long mkvparser::ReadID(mkvparser::IMkvReader* pReader,
+                            long long pos, long& len) {
+  const long long id = ReadUInt(pReader, pos, len);
+  if (id < 0 || len < 1 || len > 4) {
+    // An ID must be at least 1 byte long, and cannot exceed 4.
+    // See EBMLMaxIDLength: http://www.matroska.org/technical/specs/index.html
+    return E_FILE_FORMAT_INVALID;
+  }
+  return id;
 }
 
 long long mkvparser::GetUIntLength(IMkvReader* pReader, long long pos,
@@ -297,11 +291,9 @@ long mkvparser::ParseElementHeader(IMkvReader* pReader, long long& pos,
 
   long len;
 
-  id = ReadUInt(pReader, pos, len);
+  id = ReadID(pReader, pos, len);
 
-  if (id < 0 || len < 1 || len > 4)
-    // An ID must be at least 1 byte long, and cannot exceed 4.
-    // See EBMLMaxIDLength: http://www.matroska.org/technical/specs/index.html
+  if (id < 0)
     return E_FILE_FORMAT_INVALID;
 
   pos += len;  // consume id
@@ -347,8 +339,8 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
 
   long len = 0;
 
-  const long long id = ReadUInt(pReader, pos, len);
-  if (id < 0 || len < 1 || len > 4 || (available - pos) > len)
+  const long long id = ReadID(pReader, pos, len);
+  if (id < 0 || (available - pos) > len)
     return false;
 
   if (static_cast<unsigned long>(id) != expected_id)
@@ -385,8 +377,8 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
     return false;
 
   long len = 0;
-  const long long id = ReadUInt(pReader, pos, len);
-  if (id < 0 || len < 1 || len > 4 || (available - pos) > len)
+  const long long id = ReadID(pReader, pos, len);
+  if (id < 0 || (available - pos) > len)
     return false;
 
   if (static_cast<unsigned long>(id) != expected_id)
@@ -714,10 +706,10 @@ long long Segment::CreateInstance(IMkvReader* pReader, long long pos,
       return pos + len;
 
     const long long idpos = pos;
-    const long long id = ReadUInt(pReader, pos, len);
+    const long long id = ReadID(pReader, pos, len);
 
-    if (id < 0)  // error
-      return id;
+    if (id < 0)
+      return E_FILE_FORMAT_INVALID;
 
     pos += len;  // consume ID
 
@@ -836,15 +828,10 @@ long long Segment::ParseHeaders() {
       return pos + len;
 
     const long long idpos = pos;
-    const long long id = ReadUInt(m_pReader, idpos, len);
+    const long long id = ReadID(m_pReader, idpos, len);
 
-    if (id < 0 || len < 1 || len > 4) {
-      // TODO(tomfinegan): A helper that is intended for reading IDs would be
-      // handy; even better if its aware of the max ID size from the EBML
-      // header. It could easily enforce the rules here, instead of duping this
-      // check everytime an ID is read.
-      return id;
-    }
+    if (id < 0)
+      return E_FILE_FORMAT_INVALID;
 
     if (id == 0x0F43B675)  // Cluster ID
       break;
@@ -1048,10 +1035,10 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
       return E_BUFFER_NOT_FULL;
 
     const long long idpos = pos;
-    const long long id = ReadUInt(m_pReader, idpos, len);
+    const long long id = ReadID(m_pReader, idpos, len);
 
-    if (id < 0)  // error (or underflow)
-      return static_cast<long>(id);
+    if (id < 0)
+      return E_FILE_FORMAT_INVALID;
 
     pos += len;  // consume ID
 
@@ -1619,7 +1606,7 @@ long Segment::ParseCues(long long off, long long& pos, long& len) {
 
   const long long idpos = pos;
 
-  const long long id = ReadUInt(m_pReader, idpos, len);
+  const long long id = ReadID(m_pReader, idpos, len);
 
   if (id != 0x0C53BB6B)  // Cues ID
     return E_FILE_FORMAT_INVALID;
@@ -1699,8 +1686,9 @@ bool SeekHead::ParseEntry(IMkvReader* pReader, long long start, long long size_,
 
   // parse the container for the level-1 element ID
 
-  const long long seekIdId = ReadUInt(pReader, pos, len);
-  // seekIdId;
+  const long long seekIdId = ReadID(pReader, pos, len);
+  if (seekIdId < 0)
+    return false;
 
   if (seekIdId != 0x13AB)  // SeekID ID
     return false;
@@ -1839,7 +1827,7 @@ bool Cues::Init() const {
 
     long len;
 
-    const long long id = ReadUInt(pReader, pos, len);
+    const long long id = ReadID(pReader, pos, len);
     if (id < 0 || (pos + len) > stop) {
       return false;
     }
@@ -1919,18 +1907,19 @@ bool Cues::LoadCuePoint() const {
 
     long len;
 
-    const long long id = ReadUInt(pReader, m_pos, len);
-    assert(id >= 0);  // TODO
-    assert((m_pos + len) <= stop);
+    const long long id = ReadID(pReader, m_pos, len);
+    if (id < 0 || (m_pos + len) > stop)
+      return false;
 
     m_pos += len;  // consume ID
 
     const long long size = ReadUInt(pReader, m_pos, len);
-    assert(size >= 0);
-    assert((m_pos + len) <= stop);
+    if (size < 0 || (m_pos + len) > stop)
+      return false;
 
     m_pos += len;  // consume Size field
-    assert((m_pos + size) <= stop);
+    if ((m_pos + size) > stop)
+      return false;
 
     if (id != 0x3B) {  // CuePoint ID
       m_pos += size;  // consume payload
@@ -1940,12 +1929,11 @@ bool Cues::LoadCuePoint() const {
       continue;
     }
 
-    assert(m_preload_count > 0);
+    if (m_preload_count < 1)
+      return false;
 
     CuePoint* const pCP = m_cue_points[m_count];
-    assert(pCP);
-    assert((pCP->GetTimeCode() >= 0) || (-pCP->GetTimeCode() == idpos));
-    if (pCP->GetTimeCode() < 0 && (-pCP->GetTimeCode() != idpos))
+    if (!pCP || (pCP->GetTimeCode() < 0 && (-pCP->GetTimeCode() != idpos)))
       return false;
 
     if (!pCP->Load(pReader)) {
@@ -2253,8 +2241,7 @@ bool CuePoint::Load(IMkvReader* pReader) {
   {
     long len;
 
-    const long long id = ReadUInt(pReader, pos_, len);
-    assert(id == 0x3B);  // CuePoint ID
+    const long long id = ReadID(pReader, pos_, len);
     if (id != 0x3B)
       return false;
 
@@ -2278,7 +2265,7 @@ bool CuePoint::Load(IMkvReader* pReader) {
   while (pos < stop) {
     long len;
 
-    const long long id = ReadUInt(pReader, pos, len);
+    const long long id = ReadID(pReader, pos, len);
     if ((id < 0) || (pos + len > stop)) {
       return false;
     }
@@ -2324,9 +2311,9 @@ bool CuePoint::Load(IMkvReader* pReader) {
   while (pos < stop) {
     long len;
 
-    const long long id = ReadUInt(pReader, pos, len);
-    assert(id >= 0);
-    assert((pos + len) <= stop);
+    const long long id = ReadID(pReader, pos, len);
+    if (id < 0 || (pos + len) > stop)
+      return false;
 
     pos += len;  // consume ID
 
@@ -2369,7 +2356,7 @@ bool CuePoint::TrackPosition::Parse(IMkvReader* pReader, long long start_,
   while (pos < stop) {
     long len;
 
-    const long long id = ReadUInt(pReader, pos, len);
+    const long long id = ReadID(pReader, pos, len);
     if ((id < 0) || ((pos + len) > stop)) {
       return false;
     }
@@ -2525,9 +2512,8 @@ const Cluster* Segment::GetNext(const Cluster* pCurr) {
     if (result != 0)
       return NULL;
 
-    const long long id = ReadUInt(m_pReader, pos, len);
-    assert(id == 0x0F43B675);  // Cluster ID
-    if (id != 0x0F43B675)
+    const long long id = ReadID(m_pReader, pos, len);
+    if (id != 0x0F43B675)  // Cluster ID
       return NULL;
 
     pos += len;  // consume ID
@@ -2562,8 +2548,9 @@ const Cluster* Segment::GetNext(const Cluster* pCurr) {
 
     const long long idpos = pos;  // pos of next (potential) cluster
 
-    const long long id = ReadUInt(m_pReader, idpos, len);
-    assert(id > 0);  // TODO
+    const long long id = ReadID(m_pReader, idpos, len);
+    if (id < 0)
+      return NULL;
 
     pos += len;  // consume ID
 
@@ -6856,9 +6843,9 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
 
   while (pos < stop) {
     long len;
-    const long long id = ReadUInt(pReader, pos, len);
-    assert(id >= 0);  // TODO
-    assert((pos + len) <= stop);
+    const long long id = ReadID(pReader, pos, len);
+    if (id < 0 || (pos + len) > stop)
+      return E_FILE_FORMAT_INVALID;
 
     pos += len;  // consume ID
 

@@ -31,6 +31,7 @@ template<typename Type> Type* SafeArrayAlloc(unsigned long long num_elements,
                                              unsigned long long element_size);
 long long GetUIntLength(IMkvReader*, long long, long&);
 long long ReadUInt(IMkvReader*, long long, long&);
+long long ReadID(IMkvReader* pReader, long long pos, long& len);
 long long UnserializeUInt(IMkvReader*, long long pos, long long size);
 
 long UnserializeFloat(IMkvReader*, long long pos, long long size, double&);
