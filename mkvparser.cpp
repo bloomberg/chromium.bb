@@ -1812,8 +1812,8 @@ bool Cues::Init() const {
   if (m_cue_points)
     return true;
 
-  assert(m_count == 0);
-  assert(m_preload_count == 0);
+  if (m_count != 0 || m_preload_count != 0)
+    return false;
 
   IMkvReader* const pReader = m_pSegment->m_pReader;
 
@@ -1855,7 +1855,8 @@ bool Cues::Init() const {
 }
 
 bool Cues::PreloadCuePoint(long& cue_points_size, long long pos) const {
-  assert(m_count == 0);
+  if (m_count != 0)
+    return false;
 
   if (m_preload_count >= cue_points_size) {
     const long n = (cue_points_size <= 0) ? 2048 : 2 * cue_points_size;
@@ -1887,9 +1888,6 @@ bool Cues::PreloadCuePoint(long& cue_points_size, long long pos) const {
 }
 
 bool Cues::LoadCuePoint() const {
-  // odbgstream os;
-  // os << "Cues::LoadCuePoint" << endl;
-
   const long long stop = m_start + m_size;
 
   if (m_pos >= stop)
@@ -1950,19 +1948,12 @@ bool Cues::LoadCuePoint() const {
     return true;  // yes, we loaded a cue point
   }
 
-  // return (m_pos < stop);
   return false;  // no, we did not load a cue point
 }
 
 bool Cues::Find(long long time_ns, const Track* pTrack, const CuePoint*& pCP,
                 const CuePoint::TrackPosition*& pTP) const {
-  assert(time_ns >= 0);
-  assert(pTrack);
-
-  if (m_cue_points == NULL)
-    return false;
-
-  if (m_count == 0)
+  if (time_ns < 0 || pTrack == NULL || m_cue_points == NULL || m_count == 0)
     return false;
 
   CuePoint** const ii = m_cue_points;
@@ -1972,7 +1963,8 @@ bool Cues::Find(long long time_ns, const Track* pTrack, const CuePoint*& pCP,
   CuePoint** j = jj;
 
   pCP = *i;
-  assert(pCP);
+  if (pCP == NULL)
+    return false;
 
   if (time_ns <= pCP->GetTime(m_pSegment)) {
     pTP = pCP->Find(pTrack);
@@ -1986,10 +1978,12 @@ bool Cues::Find(long long time_ns, const Track* pTrack, const CuePoint*& pCP,
     //[j, jj) > time_ns
 
     CuePoint** const k = i + (j - i) / 2;
-    assert(k < jj);
+    if (k >= jj)
+      return false;
 
     CuePoint* const pCP = *k;
-    assert(pCP);
+    if (pCP == NULL)
+      return false;
 
     const long long t = pCP->GetTime(m_pSegment);
 
@@ -1998,16 +1992,17 @@ bool Cues::Find(long long time_ns, const Track* pTrack, const CuePoint*& pCP,
     else
       j = k;
 
-    assert(i <= j);
+    if (i > j)
+      return false;
   }
 
-  assert(i == j);
-  assert(i <= jj);
-  assert(i > ii);
+  if (i != j || i > jj || i <= ii)
+    return false;
 
   pCP = *--i;
-  assert(pCP);
-  assert(pCP->GetTime(m_pSegment) <= time_ns);
+
+  if (pCP == NULL || pCP->GetTime(m_pSegment) > time_ns)
+    return false;
 
   // TODO: here and elsewhere, it's probably not correct to search
   // for the cue point with this time, and then search for a matching
@@ -2022,55 +2017,50 @@ bool Cues::Find(long long time_ns, const Track* pTrack, const CuePoint*& pCP,
 }
 
 const CuePoint* Cues::GetFirst() const {
-  if (m_cue_points == NULL)
-    return NULL;
-
-  if (m_count == 0)
+  if (m_cue_points == NULL || m_count == 0)
     return NULL;
 
   CuePoint* const* const pp = m_cue_points;
-  assert(pp);
+  if (pp == NULL)
+    return NULL;
 
   CuePoint* const pCP = pp[0];
-  assert(pCP);
-  assert(pCP->GetTimeCode() >= 0);
+  if (pCP == NULL || pCP->GetTimeCode() < 0)
+    return NULL;
 
   return pCP;
 }
 
 const CuePoint* Cues::GetLast() const {
-  if (m_cue_points == NULL)
-    return NULL;
-
-  if (m_count <= 0)
+  if (m_cue_points == NULL || m_count <= 0)
     return NULL;
 
   const long index = m_count - 1;
 
   CuePoint* const* const pp = m_cue_points;
-  assert(pp);
+  if (pp == NULL)
+    return NULL;
 
   CuePoint* const pCP = pp[index];
-  assert(pCP);
-  assert(pCP->GetTimeCode() >= 0);
+  if (pCP == NULL || pCP->GetTimeCode() < 0)
+    return NULL;
 
   return pCP;
 }
 
 const CuePoint* Cues::GetNext(const CuePoint* pCurr) const {
-  if (pCurr == NULL)
+  if (pCurr == NULL || pCurr->GetTimeCode() < 0 ||
+      m_cue_points == NULL || m_count < 1) {
     return NULL;
-
-  assert(pCurr->GetTimeCode() >= 0);
-  assert(m_cue_points);
-  assert(m_count >= 1);
+  }
 
   long index = pCurr->m_index;
-  assert(index < m_count);
+  if (index >= m_count)
+    return NULL;
 
   CuePoint* const* const pp = m_cue_points;
-  assert(pp);
-  assert(pp[index] == pCurr);
+  if (pp == NULL || pp[index] != pCurr)
+    return NULL;
 
   ++index;
 
@@ -2078,18 +2068,16 @@ const CuePoint* Cues::GetNext(const CuePoint* pCurr) const {
     return NULL;
 
   CuePoint* const pNext = pp[index];
-  assert(pNext);
-  assert(pNext->GetTimeCode() >= 0);
+
+  if (pNext == NULL || pNext->GetTimeCode() < 0)
+    return NULL;
 
   return pNext;
 }
 
 const BlockEntry* Cues::GetBlock(const CuePoint* pCP,
                                  const CuePoint::TrackPosition* pTP) const {
-  if (pCP == NULL)
-    return NULL;
-
-  if (pTP == NULL)
+  if (pCP == NULL || pTP == NULL)
     return NULL;
 
   return m_pSegment->GetBlock(*pCP, *pTP);
