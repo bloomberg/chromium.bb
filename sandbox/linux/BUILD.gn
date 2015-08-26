@@ -131,6 +131,7 @@ source_set("sandbox_linux_unittests_sources") {
       "seccomp-bpf/syscall_unittest.cc",
       "seccomp-bpf/trap_unittest.cc",
     ]
+    deps += [ ":bpf_dsl_golden" ]
   }
   if (compile_credentials) {
     sources += [
@@ -147,6 +148,32 @@ source_set("sandbox_linux_unittests_sources") {
     # For credentials_unittest.cc
     configs += [ "//build/config/linux:libcap" ]
   }
+}
+
+action("bpf_dsl_golden") {
+  script = "bpf_dsl/golden/generate.py"
+  inputs = [
+    "bpf_dsl/golden/i386/ArgSizePolicy.txt",
+    "bpf_dsl/golden/i386/BasicPolicy.txt",
+    "bpf_dsl/golden/i386/ElseIfPolicy.txt",
+    "bpf_dsl/golden/i386/MaskingPolicy.txt",
+    "bpf_dsl/golden/i386/MoreBooleanLogicPolicy.txt",
+    "bpf_dsl/golden/i386/NegativeConstantsPolicy.txt",
+    "bpf_dsl/golden/i386/SwitchPolicy.txt",
+    "bpf_dsl/golden/x86-64/ArgSizePolicy.txt",
+    "bpf_dsl/golden/x86-64/BasicPolicy.txt",
+    "bpf_dsl/golden/x86-64/BooleanLogicPolicy.txt",
+    "bpf_dsl/golden/x86-64/ElseIfPolicy.txt",
+    "bpf_dsl/golden/x86-64/MaskingPolicy.txt",
+    "bpf_dsl/golden/x86-64/MoreBooleanLogicPolicy.txt",
+    "bpf_dsl/golden/x86-64/NegativeConstantsPolicy.txt",
+    "bpf_dsl/golden/x86-64/SwitchPolicy.txt",
+  ]
+  outputs = [
+    "$target_gen_dir/bpf_dsl/golden/golden_files.h",
+  ]
+  args =
+      rebase_path(outputs, root_build_dir) + rebase_path(inputs, root_build_dir)
 }
 
 # TODO(GYP): Delete this after we've converted everything to GN.

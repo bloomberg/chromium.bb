@@ -57,6 +57,9 @@
         'seccomp-bpf/syscall_unittest.cc',
         'seccomp-bpf/trap_unittest.cc',
       ],
+      'dependencies': [
+        'bpf_dsl_golden',
+      ],
     }],
     [ 'compile_credentials==1', {
       'sources': [

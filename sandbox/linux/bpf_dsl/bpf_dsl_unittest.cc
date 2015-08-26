@@ -20,6 +20,8 @@
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
+#include "sandbox/linux/bpf_dsl/dump_bpf.h"
+#include "sandbox/linux/bpf_dsl/golden/golden_files.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/bpf_dsl/seccomp_macros.h"
@@ -59,20 +61,28 @@ struct arch_seccomp_data FakeSyscall(int nr,
 
 class PolicyEmulator {
  public:
-  explicit PolicyEmulator(const Policy* policy) : program_(), traps_() {
-    program_ = *PolicyCompiler(policy, &traps_).Compile(true /* verify */);
-  }
-  ~PolicyEmulator() {}
+  PolicyEmulator(const golden::Golden& golden, const Policy& policy)
+      : program_() {
+    TestTrapRegistry traps;
+    program_ = *PolicyCompiler(&policy, &traps).Compile(true /* verify */);
 
-  uint32_t Emulate(const struct arch_seccomp_data& data) const {
-    const char* err = nullptr;
-    uint32_t res = Verifier::EvaluateBPF(program_, data, &err);
-    if (err) {
-      ADD_FAILURE() << err;
-      return 0;
+    // TODO(mdempsky): Generalize to more arches.
+    const char* expected = nullptr;
+#if defined(ARCH_CPU_X86)
+    expected = golden.i386_dump;
+#elif defined(ARCH_CPU_X86_64)
+    expected = golden.x86_64_dump;
+#endif
+
+    if (expected != nullptr) {
+      const std::string actual = DumpBPF::StringPrintProgram(program_);
+      EXPECT_EQ(expected, actual);
+    } else {
+      LOG(WARNING) << "Missing golden file data entry";
     }
-    return res;
   }
+
+  ~PolicyEmulator() {}
 
   void ExpectAllow(const struct arch_seccomp_data& data) const {
     EXPECT_EQ(SECCOMP_RET_ALLOW, Emulate(data));
@@ -87,8 +97,17 @@ class PolicyEmulator {
   }
 
  private:
+  uint32_t Emulate(const struct arch_seccomp_data& data) const {
+    const char* err = nullptr;
+    uint32_t res = Verifier::EvaluateBPF(program_, data, &err);
+    if (err) {
+      ADD_FAILURE() << err;
+      return 0;
+    }
+    return res;
+  }
+
   CodeGen::Program program_;
-  TestTrapRegistry traps_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyEmulator);
 };
@@ -114,8 +133,7 @@ class BasicPolicy : public Policy {
 };
 
 TEST(BPFDSL, Basic) {
-  BasicPolicy policy;
-  PolicyEmulator emulator(&policy);
+  PolicyEmulator emulator(golden::kBasicPolicy, BasicPolicy());
 
   emulator.ExpectErrno(EPERM, FakeSyscall(__NR_getpgid, 0));
   emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_getpgid, 1));
@@ -146,8 +164,7 @@ class BooleanLogicPolicy : public Policy {
 };
 
 TEST(BPFDSL, BooleanLogic) {
-  BooleanLogicPolicy policy;
-  PolicyEmulator emulator(&policy);
+  PolicyEmulator emulator(golden::kBooleanLogicPolicy, BooleanLogicPolicy());
 
   const intptr_t kFakeSV = 0x12345;
 
@@ -191,8 +208,8 @@ class MoreBooleanLogicPolicy : public Policy {
 };
 
 TEST(BPFDSL, MoreBooleanLogic) {
-  MoreBooleanLogicPolicy policy;
-  PolicyEmulator emulator(&policy);
+  PolicyEmulator emulator(golden::kMoreBooleanLogicPolicy,
+                          MoreBooleanLogicPolicy());
 
   // Expect EPERM if any set to 0.
   emulator.ExpectErrno(EPERM, FakeSyscall(__NR_setresuid, 0, 5, 5));
@@ -229,8 +246,7 @@ class ArgSizePolicy : public Policy {
 };
 
 TEST(BPFDSL, ArgSizeTest) {
-  ArgSizePolicy policy;
-  PolicyEmulator emulator(&policy);
+  PolicyEmulator emulator(golden::kArgSizePolicy, ArgSizePolicy());
 
   emulator.ExpectAllow(FakeSyscall(__NR_uname, 0));
   emulator.ExpectErrno(EPERM, FakeSyscall(__NR_uname, kDeadBeefAddr));
@@ -253,8 +269,8 @@ class NegativeConstantsPolicy : public Policy {
 };
 
 TEST(BPFDSL, NegativeConstantsTest) {
-  NegativeConstantsPolicy policy;
-  PolicyEmulator emulator(&policy);
+  PolicyEmulator emulator(golden::kNegativeConstantsPolicy,
+                          NegativeConstantsPolicy());
 
   emulator.ExpectAllow(FakeSyscall(__NR_fcntl, -5, F_DUPFD));
   emulator.ExpectAllow(FakeSyscall(__NR_fcntl, 20, F_DUPFD));
@@ -320,8 +336,7 @@ class MaskingPolicy : public Policy {
 };
 
 TEST(BPFDSL, MaskTest) {
-  MaskingPolicy policy;
-  PolicyEmulator emulator(&policy);
+  PolicyEmulator emulator(golden::kMaskingPolicy, MaskingPolicy());
 
   for (uid_t uid = 0; uid < 0x100; ++uid) {
     const int expect_errno = (uid & 0xf) == 0 ? EINVAL : EACCES;
@@ -359,8 +374,7 @@ class ElseIfPolicy : public Policy {
 };
 
 TEST(BPFDSL, ElseIfTest) {
-  ElseIfPolicy policy;
-  PolicyEmulator emulator(&policy);
+  PolicyEmulator emulator(golden::kElseIfPolicy, ElseIfPolicy());
 
   emulator.ExpectErrno(0, FakeSyscall(__NR_setuid, 0));
 
@@ -396,8 +410,7 @@ class SwitchPolicy : public Policy {
 };
 
 TEST(BPFDSL, SwitchTest) {
-  SwitchPolicy policy;
-  PolicyEmulator emulator(&policy);
+  PolicyEmulator emulator(golden::kSwitchPolicy, SwitchPolicy());
 
   const int kFakeSockFD = 42;
 
