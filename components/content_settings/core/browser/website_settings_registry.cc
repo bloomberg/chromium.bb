@@ -24,6 +24,33 @@ WebsiteSettingsRegistry* WebsiteSettingsRegistry::GetInstance() {
 }
 
 WebsiteSettingsRegistry::WebsiteSettingsRegistry() {
+  Init();
+}
+
+WebsiteSettingsRegistry::~WebsiteSettingsRegistry() {}
+
+void WebsiteSettingsRegistry::ResetForTest() {
+  website_settings_info_.clear();
+  Init();
+}
+
+const WebsiteSettingsInfo* WebsiteSettingsRegistry::Get(
+    ContentSettingsType type) const {
+  DCHECK_GE(type, 0);
+  DCHECK_LT(type, static_cast<int>(website_settings_info_.size()));
+  return website_settings_info_[type];
+}
+
+const WebsiteSettingsInfo* WebsiteSettingsRegistry::GetByName(
+    const std::string& name) const {
+  for (const auto& info : website_settings_info_) {
+    if (info && info->name() == name)
+      return info;
+  }
+  return nullptr;
+}
+
+void WebsiteSettingsRegistry::Init() {
   website_settings_info_.resize(CONTENT_SETTINGS_NUM_TYPES);
 
   // TODO(raymes): This registration code should not have to be in a single
@@ -97,24 +124,6 @@ WebsiteSettingsRegistry::WebsiteSettingsRegistry() {
   // Deprecated.
   RegisterWebsiteSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream",
                          WebsiteSettingsInfo::NOT_LOSSY);
-}
-
-WebsiteSettingsRegistry::~WebsiteSettingsRegistry() {}
-
-const WebsiteSettingsInfo* WebsiteSettingsRegistry::Get(
-    ContentSettingsType type) const {
-  DCHECK_GE(type, 0);
-  DCHECK_LT(type, static_cast<int>(website_settings_info_.size()));
-  return website_settings_info_[type];
-}
-
-const WebsiteSettingsInfo* WebsiteSettingsRegistry::GetByName(
-    const std::string& name) const {
-  for (const auto& info : website_settings_info_) {
-    if (info && info->name() == name)
-      return info;
-  }
-  return nullptr;
 }
 
 void WebsiteSettingsRegistry::RegisterWebsiteSetting(

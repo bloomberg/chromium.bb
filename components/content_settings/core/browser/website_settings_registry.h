@@ -24,6 +24,9 @@ class WebsiteSettingsRegistry {
  public:
   static WebsiteSettingsRegistry* GetInstance();
 
+  // Reset the instance for use inside tests.
+  void ResetForTest();
+
   const WebsiteSettingsInfo* Get(ContentSettingsType type) const;
   const WebsiteSettingsInfo* GetByName(const std::string& name) const;
 
@@ -33,6 +36,8 @@ class WebsiteSettingsRegistry {
 
   WebsiteSettingsRegistry();
   ~WebsiteSettingsRegistry();
+
+  void Init();
 
   // Register a new website setting. This maps an arbitrary base::Value to an
   // origin. NOTE: Currently we don't pass in WebsiteSettingsInfo::SyncStatus as

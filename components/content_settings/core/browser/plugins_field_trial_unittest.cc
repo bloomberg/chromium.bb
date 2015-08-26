@@ -78,14 +78,11 @@ TEST_F(PluginsFieldTrialTest, SwitchOverridesFieldTrial2) {
   EXPECT_FALSE(PluginsFieldTrial::IsPluginPowerSaverEnabled());
 }
 
-// Disabled on iOS due to flakiness. https://crbug.com/523462
-#if defined(OS_IOS)
-#define MAYBE_NoPrefLeftBehind DISABLED_NoPrefLeftBehind
-#else
-#define MAYBE_NoPrefLeftBehind NoPrefLeftBehind
-#endif
-TEST_F(PluginsFieldTrialTest, MAYBE_NoPrefLeftBehind) {
+TEST_F(PluginsFieldTrialTest, NoPrefLeftBehind) {
   ASSERT_TRUE(FieldTrialList::CreateFieldTrial(kEnableFieldTrial, "Enabled"));
+  // We need to reset the WebsiteSettingsRegistry as its construction depends on
+  // the field trial created above.
+  WebsiteSettingsRegistry::GetInstance()->ResetForTest();
   user_prefs::TestingPrefServiceSyncable prefs;
   {
     DefaultProvider::RegisterProfilePrefs(prefs.registry());
