@@ -40,11 +40,8 @@ SyncManager::SyncManager(ServiceWorkerRegistration* registration)
     ASSERT(registration);
 }
 
-ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, const SyncRegistrationOptions& options)
+ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionContext* context, const SyncRegistrationOptions& options)
 {
-    if (!m_registration->active())
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
-
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -56,16 +53,13 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, const Sync
         WebSyncRegistration::NetworkStateOnline /* networkState */,
         WebSyncRegistration::PowerStateAuto /* powerState */
     );
-    backgroundSyncProvider()->registerBackgroundSync(webSyncRegistration, m_registration->webRegistration(), new SyncRegistrationCallbacks(resolver, m_registration));
+    backgroundSyncProvider()->registerBackgroundSync(webSyncRegistration, m_registration->webRegistration(), context->isServiceWorkerGlobalScope(), new SyncRegistrationCallbacks(resolver, m_registration));
 
     return promise;
 }
 
 ScriptPromise SyncManager::getRegistration(ScriptState* scriptState, const String& syncRegistrationId)
 {
-    if (!m_registration->active())
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - no active Service Worker"));
-
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -76,9 +70,6 @@ ScriptPromise SyncManager::getRegistration(ScriptState* scriptState, const Strin
 
 ScriptPromise SyncManager::getRegistrations(ScriptState* scriptState)
 {
-    if (!m_registration->active())
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - no active Service Worker"));
-
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -89,9 +80,6 @@ ScriptPromise SyncManager::getRegistrations(ScriptState* scriptState)
 
 ScriptPromise SyncManager::permissionState(ScriptState* scriptState)
 {
-    if (!m_registration->active())
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - no active Service Worker"));
-
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 

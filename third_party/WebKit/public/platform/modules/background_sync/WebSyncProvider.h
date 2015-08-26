@@ -29,7 +29,14 @@ public:
 
     // Takes ownership of the WebSyncRegistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void registerBackgroundSync(const WebSyncRegistration*, WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) = 0;
+    // TODO(iclelland): Remove the body of this method once it is implemented in all subclasses.
+    virtual void registerBackgroundSync(const WebSyncRegistration* options, WebServiceWorkerRegistration* serviceWorkerRegistration, bool requestedFromServiceWorker, WebSyncRegistrationCallbacks* callbacks)
+    {
+        registerBackgroundSync(options, serviceWorkerRegistration, callbacks);
+    }
+
+    // TODO(iclelland): Remove this deprecated method once the browser implements the 4-argument version.
+    virtual void registerBackgroundSync(const WebSyncRegistration*, WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) { }
 
     // Takes ownership of the WebSyncUnregistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
