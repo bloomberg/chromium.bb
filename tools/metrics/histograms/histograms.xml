@@ -52957,7 +52957,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="90" label="BDH_INVALID_WRITE_VALUE_LENGTH"/>
   <int value="91" label="WC_MEMORY_CACHE_RESOURCE_BAD_SECURITY_INFO"/>
   <int value="92" label="WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO"/>
-  <int value="93" label="BDH_DUPLICATE_REQUEST_DEVICE_ID"/>
+  <int value="93" label="OBSOLETE_BDH_DUPLICATE_REQUEST_DEVICE_ID"/>
   <int value="94" label="CSDH_INVALID_ORIGIN"/>
   <int value="95" label="RDH_ILLEGAL_ORIGIN"/>
 </enum>
@@ -73249,11 +73249,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Success"/>
   <int value="1" label="No Bluetooth adapter"/>
   <int value="2" label="No RenderFrameHost for message source"/>
-  <int value="3" label="Discovery start failed"/>
-  <int value="4" label="Discovery stop failed"/>
-  <int value="5" label="No matching devices found"/>
+  <int value="3" label="(Obsolete) Discovery start failed"/>
+  <int value="4" label="(Obsolete) Discovery stop failed"/>
+  <int value="5" label="(Obsolete) No matching devices found"/>
   <int value="6" label="Bluetooth Adapter not present"/>
-  <int value="7" label="Bluetooth Adapter was off"/>
+  <int value="7" label="(Obsolete) Bluetooth Adapter was off"/>
+  <int value="8"
+      label="Chosen device vanished between discovery and user selection"/>
+  <int value="9" label="Chooser cancelled"/>
 </enum>
 
 <enum name="WebFontCacheHit" type="int">

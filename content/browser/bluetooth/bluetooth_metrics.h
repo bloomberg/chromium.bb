@@ -43,11 +43,13 @@ enum class UMARequestDeviceOutcome {
   SUCCESS = 0,
   NO_BLUETOOTH_ADAPTER = 1,
   NO_RENDER_FRAME = 2,
-  DISCOVERY_START_FAILED = 3,
-  DISCOVERY_STOP_FAILED = 4,
-  NO_MATCHING_DEVICES_FOUND = 5,
+  OBSOLETE_DISCOVERY_START_FAILED = 3,
+  OBSOLETE_DISCOVERY_STOP_FAILED = 4,
+  OBSOLETE_NO_MATCHING_DEVICES_FOUND = 5,
   BLUETOOTH_ADAPTER_NOT_PRESENT = 6,
-  BLUETOOTH_ADAPTER_OFF = 7,
+  OBSOLETE_BLUETOOTH_ADAPTER_OFF = 7,
+  CHOSEN_DEVICE_VANISHED = 8,
+  BLUETOOTH_CHOOSER_CANCELLED = 9,
   // NOTE: Add new requestDevice() outcomes immediately above this line. Make
   // sure to update the enum list in
   // tools/metrics/histograms/histograms.xml accordingly.

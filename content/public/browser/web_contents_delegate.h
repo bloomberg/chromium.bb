@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/media_stream_request.h"
@@ -341,6 +342,13 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void EnumerateDirectory(WebContents* web_contents,
                                   int request_id,
                                   const base::FilePath& path) {}
+
+  // Shows a chooser for the user to select a nearby Bluetooth device. The
+  // observer must live at least as long as the returned chooser object.
+  virtual scoped_ptr<BluetoothChooser> RunBluetoothChooser(
+      WebContents* web_contents,
+      const BluetoothChooser::EventHandler& event_handler,
+      const GURL& origin);
 
   // Returns true if the delegate will embed a WebContents-owned fullscreen
   // render widget.  In this case, the delegate may access the widget by calling
