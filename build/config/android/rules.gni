@@ -1162,6 +1162,11 @@ template("android_apk") {
           [ _final_apk_path ],
           "$root_build_dir/test.lib.java/{{source_name_part}}.jar")
   _dist_jar_path = _dist_jar_path_list[0]
+  _final_apk_path_no_ext_list =
+      process_file_template([ _final_apk_path ],
+                            "{{source_dir}}/{{source_name_part}}")
+  _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
+  assert(_final_apk_path_no_ext != "")  # Mark as used.
 
   _native_libs = []
 
@@ -1287,10 +1292,10 @@ template("android_apk") {
     native_libs = _native_libs
   }
 
-  final_deps = []
+  _final_deps = []
+  _incremental_final_deps = []
 
   process_resources_target = "${_template_name}__process_resources"
-  final_deps += [ ":$process_resources_target" ]
   process_resources(process_resources_target) {
     forward_variables_from(invoker, [ "include_all_resources" ])
     srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
@@ -1349,7 +1354,6 @@ template("android_apk") {
   }
 
   java_target = "${_template_name}__java"
-  final_deps += [ ":$java_target" ]
   java_library_impl(java_target) {
     forward_variables_from(invoker, [ "run_findbugs" ])
     supports_android = true
@@ -1376,7 +1380,8 @@ template("android_apk") {
 
   if (_dist_jar_path != "") {
     create_dist_target = "${_template_name}__create_dist_jar"
-    final_deps += [ ":$create_dist_target" ]
+    _final_deps += [ ":$create_dist_target" ]
+    _incremental_final_deps += [ ":$create_dist_target" ]
 
     # TODO(cjhopman): This is only ever needed to calculate the list of tests to
     # run. See build/android/pylib/instrumentation/test_jar.py. We should be
@@ -1408,7 +1413,6 @@ template("android_apk") {
     }
   }
 
-  final_deps += [ ":$final_dex_target_name" ]
   dex("$final_dex_target_name") {
     deps = [
       ":$build_config_target",
@@ -1483,7 +1487,8 @@ template("android_apk") {
     }
   }
 
-  final_deps += [ ":${_template_name}__create" ]
+  _final_deps += [ ":${_template_name}__create" ]
+  _incremental_final_deps += [ ":${_template_name}__create_incremental" ]
   create_apk("${_template_name}__create") {
     forward_variables_from(invoker, [ "language_splits" ])
     apk_path = _final_apk_path
@@ -1545,12 +1550,12 @@ template("android_apk") {
     }
 
     _apk_rule = "${_template_name}__split_apk_abi_${android_app_abi}"
-    final_deps += [ ":$_apk_rule" ]
+    _final_deps += [ ":$_apk_rule" ]
+
+    # Don't add this to _incremental_final_deps since for incremental installs
+    # we skip abi splits altogether.
     create_apk(_apk_rule) {
-      _split_paths = process_file_template(
-              [ _final_apk_path ],
-              "{{source_dir}}/{{source_name_part}}-abi-${android_app_abi}.apk")
-      apk_path = _split_paths[0]
+      apk_path = "${_final_apk_path_no_ext}-abi-${android_app_abi}.apk"
       base_path = "$gen_dir/$_apk_rule"
 
       manifest_outputs = get_target_outputs(":${_manifest_rule}")
@@ -1574,7 +1579,13 @@ template("android_apk") {
 
   group(target_name) {
     forward_variables_from(invoker, [ "data_deps" ])
-    deps = final_deps
+    deps = _final_deps
+  }
+  group("${target_name}_incremental") {
+    deps = _incremental_final_deps
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
   }
 }
 

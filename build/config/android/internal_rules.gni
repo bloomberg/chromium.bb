@@ -15,6 +15,11 @@ android_sdk_jar = "$android_sdk/android.jar"
 rebased_android_sdk_jar = rebase_path(android_sdk_jar, root_build_dir)
 android_aapt_path = "$rebased_android_sdk_build_tools/aapt"
 
+android_configuration_name = "Release"
+if (is_debug) {
+  android_configuration_name = "Debug"
+}
+
 template("android_lint") {
   set_sources_assignment_filter([])
 
@@ -467,17 +472,98 @@ template("process_java_prebuilt") {
   }
 }
 
-template("finalize_apk") {
+# Creates an unsigned .apk.
+#
+# Variables
+#   deps: Specifies the dependencies of this target.
+#   dex_path: Path to classes.dex file to include (optional).
+#   resource_packaged_apk_path: Path to .ap_ to use.
+#   output_apk_path: Output path for the generated .apk.
+#   native_libs_dir: Directory containing native libraries.
+template("package_apk") {
   action(target_name) {
     forward_variables_from(invoker,
                            [
-                             "data_deps",
                              "deps",
+                             "data_deps",
                              "public_deps",
                              "testonly",
                            ])
+    script = "//build/android/gyp/ant.py"
+    _ant_script = "//build/android/ant/apk-package.xml"
+
+    depfile = "$target_gen_dir/$target_name.d"
+
+    inputs = [
+      invoker.resource_packaged_apk_path,
+      _ant_script,
+    ]
+    if (defined(invoker.dex_path)) {
+      inputs += [ invoker.dex_path ]
+    }
+
+    outputs = [
+      depfile,
+      invoker.output_apk_path,
+    ]
+
+    _rebased_emma_jar = ""
+    _rebased_resource_packaged_apk_path =
+        rebase_path(invoker.resource_packaged_apk_path, root_build_dir)
+    _rebased_packaged_apk_path =
+        rebase_path(invoker.output_apk_path, root_build_dir)
+    _rebased_native_libs_dir =
+        rebase_path(invoker.native_libs_dir, root_build_dir)
+    args = [
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--",
+      "-quiet",
+      "-DANDROID_SDK_ROOT=$rebased_android_sdk_root",
+      "-DANDROID_SDK_TOOLS=$rebased_android_sdk_build_tools",
+      "-DRESOURCE_PACKAGED_APK_NAME=$_rebased_resource_packaged_apk_path",
+      "-DCONFIGURATION_NAME=$android_configuration_name",
+      "-DNATIVE_LIBS_DIR=$_rebased_native_libs_dir",
+      "-DOUT_DIR=",
+      "-DUNSIGNED_APK_PATH=$_rebased_packaged_apk_path",
+      "-DEMMA_INSTRUMENT=0",
+      "-DEMMA_DEVICE_JAR=$_rebased_emma_jar",
+      "-Dbasedir=.",
+      "-buildfile",
+      rebase_path(_ant_script, root_build_dir),
+    ]
+    if (defined(invoker.dex_path)) {
+      _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
+      args += [
+        "-DDEX_FILE_PATH=$_rebased_dex_path",
+        "-DHAS_CODE=true",
+      ]
+    } else {
+      args += [ "-DHAS_CODE=false" ]
+    }
+  }
+}
+
+# Signs & zipaligns an apk.
+#
+# Variables
+#   input_apk_path: Path of the .apk to be finalized.
+#   output_apk_path: Output path for the generated .apk.
+#   keystore_path: Path to keystore to use for signing.
+#   keystore_name: Key alias to use.
+#   keystore_password: Keystore password.
+#   rezip_apk: Whether to add crazy-linker alignment.
+template("finalize_apk") {
+  action(target_name) {
     script = "//build/android/gyp/finalize_apk.py"
     depfile = "$target_gen_dir/$target_name.d"
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "data_deps",
+                             "public_deps",
+                             "testonly",
+                           ])
 
     sources = [
       invoker.input_apk_path,
@@ -527,6 +613,11 @@ template("create_apk") {
   _android_manifest = invoker.android_manifest
   _base_path = invoker.base_path
   _final_apk_path = invoker.apk_path
+  _incremental_final_apk_path_helper =
+      process_file_template(
+          [ _final_apk_path ],
+          "{{source_dir}}/{{source_name_part}}_incremental.apk")
+  _incremental_final_apk_path = _incremental_final_apk_path_helper[0]
 
   if (defined(invoker.resources_zip)) {
     _resources_zip = invoker.resources_zip
@@ -557,13 +648,10 @@ template("create_apk") {
 
   _resource_packaged_apk_path = _base_apk_path + ".ap_"
   _packaged_apk_path = _base_apk_path + ".unfinished.apk"
+  _incremental_packaged_apk_path =
+      _base_apk_path + "_incremental.unfinished.apk"
   _shared_resources =
       defined(invoker.shared_resources) && invoker.shared_resources
-
-  _configuration_name = "Release"
-  if (is_debug) {
-    _configuration_name = "Debug"
-  }
 
   _keystore_path = invoker.keystore_path
   _keystore_name = invoker.keystore_name
@@ -609,7 +697,7 @@ template("create_apk") {
       rebased_android_sdk,
       "--aapt-path",
       android_aapt_path,
-      "--configuration-name=$_configuration_name",
+      "--configuration-name=$android_configuration_name",
       "--android-manifest",
       rebase_path(_android_manifest, root_build_dir),
       "--version-code",
@@ -656,63 +744,34 @@ template("create_apk") {
   }
 
   package_target = "${target_name}__package"
-  action(package_target) {
-    script = "//build/android/gyp/ant.py"
-    _ant_script = "//build/android/ant/apk-package.xml"
+  package_apk(package_target) {
+    deps = []
+    forward_variables_from(invoker, [ "deps" ])
+    deps += [ ":${_package_resources_target_name}" ]
 
-    deps = [
-      ":${_package_resources_target_name}",
-    ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-    depfile = "$target_gen_dir/$target_name.d"
-
-    inputs = [
-      _resource_packaged_apk_path,
-      _ant_script,
-    ]
     if (defined(_dex_path)) {
-      inputs += [ _dex_path ]
+      dex_path = _dex_path
     }
+    native_libs_dir = _native_libs_dir
+    output_apk_path = _packaged_apk_path
+    resource_packaged_apk_path = _resource_packaged_apk_path
+  }
 
-    outputs = [
-      depfile,
-      _packaged_apk_path,
-    ]
+  _incremental_package_target = "${target_name}_incremental__package"
+  package_apk(_incremental_package_target) {
+    deps = []
+    forward_variables_from(invoker, [ "deps" ])
+    deps += [ ":${_package_resources_target_name}" ]
 
-    _rebased_emma_jar = ""
-    _rebased_resource_packaged_apk_path =
-        rebase_path(_resource_packaged_apk_path, root_build_dir)
-    _rebased_packaged_apk_path = rebase_path(_packaged_apk_path, root_build_dir)
-    _rebased_native_libs_dir = rebase_path(_native_libs_dir, root_build_dir)
-    args = [
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
-      "--",
-      "-quiet",
-      "-DANDROID_SDK_ROOT=$rebased_android_sdk_root",
-      "-DANDROID_SDK_TOOLS=$rebased_android_sdk_build_tools",
-      "-DRESOURCE_PACKAGED_APK_NAME=$_rebased_resource_packaged_apk_path",
-      "-DCONFIGURATION_NAME=$_configuration_name",
-      "-DNATIVE_LIBS_DIR=$_rebased_native_libs_dir",
-      "-DOUT_DIR=",
-      "-DUNSIGNED_APK_PATH=$_rebased_packaged_apk_path",
-      "-DEMMA_INSTRUMENT=0",
-      "-DEMMA_DEVICE_JAR=$_rebased_emma_jar",
-      "-Dbasedir=.",
-      "-buildfile",
-      rebase_path(_ant_script, root_build_dir),
-    ]
+    # TODO(agrieve): Multidex
     if (defined(_dex_path)) {
-      _rebased_dex_path = rebase_path(_dex_path, root_build_dir)
-      args += [
-        "-DDEX_FILE_PATH=$_rebased_dex_path",
-        "-DHAS_CODE=true",
-      ]
-    } else {
-      args += [ "-DHAS_CODE=false" ]
+      dex_path = _dex_path
     }
+
+    # TODO(agrieve): Add a placeholder .so for http://crbug.com/384638
+    native_libs_dir = "//build/android/empty/res"
+    output_apk_path = _incremental_packaged_apk_path
+    resource_packaged_apk_path = _resource_packaged_apk_path
   }
 
   _finalize_apk_rule_name = "${target_name}__finalize"
@@ -730,7 +789,20 @@ template("create_apk") {
     ]
   }
 
-  _final_deps = [ ":${_finalize_apk_rule_name}" ]
+  _incremental_finalize_apk_rule_name = "${target_name}_incremental__finalize"
+  finalize_apk(_incremental_finalize_apk_rule_name) {
+    input_apk_path = _incremental_packaged_apk_path
+    output_apk_path = _incremental_final_apk_path
+    keystore_path = _keystore_path
+    keystore_name = _keystore_name
+    keystore_password = _keystore_password
+
+    public_deps = [
+      ":$_incremental_package_target",
+    ]
+  }
+
+  _split_deps = []
 
   template("finalize_split") {
     finalize_apk(target_name) {
@@ -756,7 +828,7 @@ template("create_apk") {
       split_type = "density"
       split_config = _split
     }
-    _final_deps += [ ":$_split_rule" ]
+    _split_deps += [ ":$_split_rule" ]
   }
   foreach(_split, _split_languages) {
     _split_rule = "${target_name}__finalize_${_split}_split"
@@ -764,11 +836,14 @@ template("create_apk") {
       split_type = "lang"
       split_config = _split
     }
-    _final_deps += [ ":$_split_rule" ]
+    _split_deps += [ ":$_split_rule" ]
   }
 
   group(target_name) {
-    public_deps = _final_deps
+    public_deps = [ ":${_finalize_apk_rule_name}" ] + _split_deps
+  }
+  group("${target_name}_incremental") {
+    public_deps = [ ":${_incremental_finalize_apk_rule_name}" ] + _split_deps
   }
 }
 
