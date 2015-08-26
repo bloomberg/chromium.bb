@@ -1564,22 +1564,6 @@
             {
                 "_template": "full",
                 "boards": [
-                    "cid"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "cid-full",
-                "prebuilts": "public",
-                "unittests": null,
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "_template": "full",
-                "boards": [
                     "gandof"
                 ],
                 "build_packages_in_background": true,
@@ -1610,7 +1594,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: lulu, cid, gandof, buddy)",
+        "description": "Full Builds; Group config (boards: lulu, gandof, buddy)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -1630,18 +1614,6 @@
                 ],
                 "grouped": true,
                 "name": "lulu-release"
-            },
-            {
-                "_template": "release",
-                "boards": [
-                    "cid"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "cid-release",
-                "unittests": null,
-                "vm_tests": []
             },
             {
                 "_template": "release",
@@ -1668,7 +1640,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: lulu, cid, gandof, buddy)"
+        "description": "Release Builds (canary) (internal); Group config (boards: lulu, gandof, buddy)",
+        "important": true
     },
     "auron-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -15468,22 +15441,6 @@
             {
                 "_template": "full",
                 "boards": [
-                    "cranky"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "cranky-full",
-                "prebuilts": "public",
-                "unittests": null,
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "_template": "full",
-                "boards": [
                     "ninja"
                 ],
                 "build_packages_in_background": true,
@@ -15514,7 +15471,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: banjo, cranky, ninja, sumo)",
+        "description": "Full Builds; Group config (boards: banjo, ninja, sumo)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -15534,18 +15491,6 @@
                 ],
                 "grouped": true,
                 "name": "banjo-release"
-            },
-            {
-                "_template": "release",
-                "boards": [
-                    "cranky"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "cranky-release",
-                "unittests": null,
-                "vm_tests": []
             },
             {
                 "_template": "release",
@@ -15572,7 +15517,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: banjo, cranky, ninja, sumo)"
+        "description": "Release Builds (canary) (internal); Group config (boards: banjo, ninja, sumo)",
+        "important": true
     },
     "rambi-depthcharge-firmware": {
         "_template": "depthcharge-firmware",
@@ -15695,7 +15641,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: orco, heli, wizpig)"
+        "description": "Release Builds (canary) (internal); Group config (boards: orco, heli, wizpig)",
+        "important": true
     },
     "rambi-firmware": {
         "_template": "firmware",

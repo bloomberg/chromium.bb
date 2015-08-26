@@ -613,11 +613,8 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Canaries (Group)
-        'auron-b-release-group',
         'glados-release-group',
         'kunimitsu-release-group',
-        'rambi-d-release-group',
-        'rambi-e-release-group',
         'storm-release-group',
         'strago-release-group',
         'veyron-b-release-group',
@@ -2509,11 +2506,9 @@ def GetConfig():
 
   _AddGroupConfig(
       'rambi-d', 'banjo', (
-          'cranky',
           'ninja',
           'sumo',
       ),
-      important=False,
   )
 
   _AddGroupConfig(
@@ -2521,7 +2516,6 @@ def GetConfig():
           'heli',
           'wizpig',
       ),
-      important=False,
   )
 
   # daisy-based boards
@@ -2558,11 +2552,9 @@ def GetConfig():
 
   _AddGroupConfig(
       'auron-b', 'lulu', (
-          'cid',
           'gandof',
           'buddy',
       ),
-      important=False,
   )
 
   # veyron-based boards
