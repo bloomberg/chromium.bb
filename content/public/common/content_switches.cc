@@ -491,9 +491,6 @@ const char kEnableViewport[]                = "enable-viewport";
 // only on mobile browsers.
 const char kEnableViewportMeta[]            = "enable-viewport-meta";
 
-// Enables experiment to scroll the inner viewport first in some situations.
-const char kInvertViewportScrollOrder[] = "invert-viewport-scroll-order";
-
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
 
