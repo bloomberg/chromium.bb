@@ -206,6 +206,9 @@ crbug.com/524859 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
 # crbug.com/463358 [ Linux Mac Debug ] transforms/2d/hindi-rotated.html [ ImageOnlyFailure ]
 # crbug.com/521764 [ Win10 ] transforms/2d/hindi-rotated.html [ Failure Timeout ]
 
+crbug.com/525050 svg/stroke/zero-length-subpaths-linecap-rendering.svg [ NeedsManualRebaseline ]
+crbug.com/525050 svg/W3C-SVG-1.1/painting-stroke-04-t.svg [ NeedsManualRebaseline ]
+
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]
