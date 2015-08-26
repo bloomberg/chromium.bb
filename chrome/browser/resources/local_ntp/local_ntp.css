@@ -293,13 +293,17 @@ html[dir=rtl] #mv-notice-x {
   cursor: default;
   display: inline-block;
   font-size: 13px;
+  left: auto;
   position: fixed;
   right: 8px;
   text-align: left;
   z-index: -1;
 }
 
-html[dir=rtl] #attribution {
+html[dir=rtl] #attribution,
+#attribution.left-align-attribution {
+  left: 8px;
+  right: auto;
   text-align: right;
 }
 
@@ -318,7 +322,6 @@ html[dir=rtl] #attribution {
   right: 8px;
 }
 
-html[dir=rtl] #attribution,
 html[dir=rtl] #recent-tabs {
   left: 8px;
   right: auto;

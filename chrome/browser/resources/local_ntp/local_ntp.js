@@ -120,6 +120,7 @@ var CLASSES = {
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
   HIDE_NOTIFICATION: 'mv-notice-hide',
+  LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   RTL: 'rtl'  // Right-to-left language text.
@@ -315,7 +316,7 @@ function renderTheme() {
 
   document.body.style.background = background;
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, info.alternateLogo);
-  updateThemeAttribution(info.attributionUrl);
+  updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
 
   var themeinfo = {cmd: 'updateTheme'};
@@ -401,9 +402,11 @@ function setCustomThemeStyle(opt_themeInfo) {
 /**
  * Renders the attribution if the URL is present, otherwise hides it.
  * @param {string} url The URL of the attribution image, if any.
+ * @param {string} themeBackgroundAlignment The alignment of the theme
+ *  background image. This is used to compute the attribution's alignment.
  * @private
  */
-function updateThemeAttribution(url) {
+function updateThemeAttribution(url, themeBackgroundAlignment) {
   if (!url) {
     setAttributionVisibility_(false);
     return;
@@ -415,6 +418,11 @@ function updateThemeAttribution(url) {
     attribution.appendChild(attributionImage);
   }
   attributionImage.style.content = url;
+
+  // To avoid conflicts, place the attribution on the left for themes that
+  // right align their background images.
+  attribution.classList.toggle(CLASSES.LEFT_ALIGN_ATTRIBUTION,
+                               themeBackgroundAlignment == 'right');
   setAttributionVisibility_(true);
 }
 
