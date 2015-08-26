@@ -1862,6 +1862,7 @@ _NAMED_TYPE_INFO = {
     'valid': [
       'GL_RGB',
       'GL_RGB_YUV_420_CHROMIUM',
+      'GL_RGB_YCBCR_422_CHROMIUM',
       'GL_RGBA',
     ],
   },

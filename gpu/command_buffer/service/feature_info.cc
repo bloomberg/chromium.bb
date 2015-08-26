@@ -167,10 +167,10 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       blend_equation_advanced(false),
       blend_equation_advanced_coherent(false),
       ext_texture_rg(false),
+      chromium_image_ycbcr_422(false),
       enable_subscribe_uniform(false),
       emulate_primitive_restart_fixed_index(false),
-      ext_render_buffer_format_bgra8888(false) {
-}
+      ext_render_buffer_format_bgra8888(false) {}
 
 FeatureInfo::Workarounds::Workarounds() :
 #define GPU_OP(type, name) name(false),
@@ -789,6 +789,11 @@ void FeatureInfo::InitializeFeatures() {
 #if defined(OS_MACOSX)
   AddExtensionString("GL_CHROMIUM_iosurface");
 #endif
+
+  if (extensions.Contains("GL_APPLE_ycbcr_422")) {
+    AddExtensionString("GL_CHROMIUM_ycbcr_422_image");
+    feature_flags_.chromium_image_ycbcr_422 = true;
+  }
 
   // TODO(gman): Add support for these extensions.
   //     GL_OES_depth32

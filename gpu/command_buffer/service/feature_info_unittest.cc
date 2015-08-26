@@ -293,6 +293,7 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
       GL_SRGB8_ALPHA8_EXT));
   EXPECT_FALSE(info_->validators()->frame_buffer_parameter.IsValid(
       GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
+  EXPECT_FALSE(info_->feature_flags().chromium_image_ycbcr_422);
 }
 
 TEST_P(FeatureInfoTest, InitializeWithANGLE) {
@@ -1361,6 +1362,11 @@ TEST_P(FeatureInfoTest, InitializeARB_texture_rgNoFloat) {
   EXPECT_TRUE(info_->validators()->read_pixel_format.IsValid(GL_RG_EXT));
   EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(GL_R8_EXT));
   EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(GL_RG8_EXT));
+}
+
+TEST_P(FeatureInfoTest, InitializeCHROMIUM_ycbcr_422_imageTrue) {
+  SetupInitExpectations("GL_APPLE_ycbcr_422");
+  EXPECT_TRUE(info_->feature_flags().chromium_image_ycbcr_422);
 }
 
 }  // namespace gles2
