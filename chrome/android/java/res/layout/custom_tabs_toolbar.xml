@@ -51,7 +51,7 @@
                 android:layout_gravity="bottom"
                 android:background="@null"
                 android:inputType="none"
-                android:maxLines="1"
+                android:singleLine="true"
                 android:paddingEnd="@dimen/toolbar_edge_padding"
                 android:textSize="@dimen/location_bar_url_text_size" />
         </FrameLayout>
