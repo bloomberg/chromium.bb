@@ -1755,7 +1755,6 @@
       'android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java',
       'android/java/src/org/chromium/chrome/browser/metrics/UmaUtils.java',
       'android/java/src/org/chromium/chrome/browser/metrics/VariationsSession.java',
-      'android/java/src/org/chromium/chrome/browser/NavigationPopup.java',
       'android/java/src/org/chromium/chrome/browser/net/spdyproxy/DataReductionProxySettings.java',
       'android/java/src/org/chromium/chrome/browser/ntp/ForeignSessionHelper.java',
       'android/java/src/org/chromium/chrome/browser/ntp/LogoBridge.java',

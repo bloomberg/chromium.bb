@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -29,8 +30,21 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
 
     private static final int INVALID_NAVIGATION_INDEX = -1;
 
+    private Profile mProfile;
+
     public NavigationPopupTest() {
         super(ChromeActivity.class);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mProfile = Profile.getLastUsedProfile();
+            }
+        });
     }
 
     @Override
@@ -207,7 +221,7 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
     public void testFaviconFetching() throws InterruptedException {
         final TestNavigationController controller = new TestNavigationController();
         final NavigationPopup popup = new NavigationPopup(
-                getActivity(), controller, true);
+                mProfile, getActivity(), controller, true);
         popup.setWidth(300);
         popup.setHeight(300);
         popup.setAnchorView(getActivity().getCurrentContentViewCore().getContainerView());
@@ -253,8 +267,8 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
     @Feature({"Navigation"})
     public void testItemSelection() {
         final TestNavigationController controller = new TestNavigationController();
-        final NavigationPopup popup = new NavigationPopup(
-                getActivity(), controller, true);
+        final NavigationPopup popup =
+                new NavigationPopup(mProfile, getActivity(), controller, true);
         popup.setWidth(300);
         popup.setHeight(300);
         popup.setAnchorView(getActivity().getCurrentContentViewCore().getContainerView());

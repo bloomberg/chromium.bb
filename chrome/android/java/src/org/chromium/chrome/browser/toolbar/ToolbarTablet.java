@@ -237,8 +237,8 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     private void displayNavigationPopup(boolean isForward, View anchorView) {
         Tab tab = getToolbarDataProvider().getTab();
         if (tab == null || tab.getWebContents() == null) return;
-        mNavigationPopup = new NavigationPopup(
-                getContext(), tab.getWebContents().getNavigationController(), isForward);
+        mNavigationPopup = new NavigationPopup(tab.getProfile(), getContext(),
+                tab.getWebContents().getNavigationController(), isForward);
 
         mNavigationPopup.setAnchorView(anchorView);
 

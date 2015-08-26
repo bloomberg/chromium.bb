@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -22,7 +23,10 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
@@ -36,10 +40,9 @@ import java.util.Set;
  */
 public class NavigationPopup extends ListPopupWindow implements AdapterView.OnItemClickListener {
 
-    private static final int FAVICON_SIZE_DP = 16;
-
     private static final int MAXIMUM_HISTORY_ITEMS = 8;
 
+    private final Profile mProfile;
     private final Context mContext;
     private final NavigationController mNavigationController;
     private final NavigationHistory mHistory;
@@ -48,26 +51,34 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
 
     private final int mFaviconSize;
 
-    private long mNativeNavigationPopup;
+    private Bitmap mDefaultFavicon;
+
+    /**
+      * Loads the favicons asynchronously.
+      */
+    private FaviconHelper mFaviconHelper;
+
+    private boolean mInitialized;
 
     /**
      * Constructs a new popup with the given history information.
      *
+     * @param profile The profile used for fetching favicons.
      * @param context The context used for building the popup.
      * @param navigationController The controller which takes care of page navigations.
      * @param isForward Whether to request forward navigation entries.
      */
-    public NavigationPopup(
-            Context context, NavigationController navigationController, boolean isForward) {
+    public NavigationPopup(Profile profile, Context context,
+            NavigationController navigationController, boolean isForward) {
         super(context, null, android.R.attr.popupMenuStyle);
+        mProfile = profile;
         mContext = context;
         mNavigationController = navigationController;
         mHistory = mNavigationController.getDirectedNavigationHistory(
                 isForward, MAXIMUM_HISTORY_ITEMS);
         mAdapter = new NavigationAdapter();
 
-        float density = mContext.getResources().getDisplayMetrics().density;
-        mFaviconSize = (int) (density * FAVICON_SIZE_DP);
+        mFaviconSize = mContext.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
 
         setModal(true);
         setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
@@ -88,41 +99,66 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
 
     @Override
     public void show() {
-        if (mNativeNavigationPopup == 0) initializeNative();
+        if (!mInitialized) initialize();
         super.show();
     }
 
     @Override
     public void dismiss() {
-        if (mNativeNavigationPopup != 0) {
-            nativeDestroy(mNativeNavigationPopup);
-            mNativeNavigationPopup = 0;
-        }
+        if (mInitialized) mFaviconHelper.destroy();
+        mInitialized = false;
         super.dismiss();
     }
 
-    private void initializeNative() {
+    private void initialize() {
         ThreadUtils.assertOnUiThread();
-        mNativeNavigationPopup = nativeInit();
+        mInitialized = true;
+        mFaviconHelper = new FaviconHelper();
 
         Set<String> requestedUrls = new HashSet<String>();
         for (int i = 0; i < mHistory.getEntryCount(); i++) {
             NavigationEntry entry = mHistory.getEntryAtIndex(i);
             if (entry.getFavicon() != null) continue;
-            String url = entry.getUrl();
-            if (!requestedUrls.contains(url)) {
-                nativeFetchFaviconForUrl(mNativeNavigationPopup, url);
-                requestedUrls.add(url);
+            final String pageUrl = entry.getUrl();
+            if (!requestedUrls.contains(pageUrl)) {
+                FaviconImageCallback imageCallback = new FaviconImageCallback() {
+                    @Override
+                    public void onFaviconAvailable(Bitmap bitmap, String iconUrl) {
+                        NavigationPopup.this.onFaviconAvailable(pageUrl, bitmap);
+                    }
+                };
+                mFaviconHelper.getLocalFaviconImageForURL(
+                        mProfile, pageUrl, mFaviconSize, imageCallback);
+                requestedUrls.add(pageUrl);
             }
         }
-        nativeFetchFaviconForUrl(mNativeNavigationPopup, nativeGetHistoryUrl());
+
+        FaviconImageCallback historyImageCallback = new FaviconImageCallback() {
+            @Override
+            public void onFaviconAvailable(Bitmap bitmap, String iconUrl) {
+                NavigationPopup.this.onFaviconAvailable(UrlConstants.HISTORY_URL, bitmap);
+            }
+        };
+        mFaviconHelper.getLocalFaviconImageForURL(
+                mProfile, UrlConstants.HISTORY_URL, mFaviconSize, historyImageCallback);
     }
 
-    @CalledByNative
-    private void onFaviconUpdated(String url, Object favicon) {
+    /**
+     * Called when favicon data requested by {@link #initialize()} is retrieved.
+     * @param pageUrl the page for which the favicon was retrieved.
+     * @param favicon the favicon data.
+     */
+    private void onFaviconAvailable(String pageUrl, Object favicon) {
+        if (favicon == null) {
+            if (mDefaultFavicon == null) {
+                mDefaultFavicon = BitmapFactory.decodeResource(
+                        mContext.getResources(), R.drawable.default_favicon);
+            }
+            favicon = mDefaultFavicon;
+        }
         for (int i = 0; i < mHistory.getEntryCount(); i++) {
             NavigationEntry entry = mHistory.getEntryAtIndex(i);
-            if (TextUtils.equals(url, entry.getUrl())) entry.updateFavicon((Bitmap) favicon);
+            if (TextUtils.equals(pageUrl, entry.getUrl())) entry.updateFavicon((Bitmap) favicon);
         }
         mAdapter.notifyDataSetChanged();
     }
@@ -230,10 +266,4 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
             return view;
         }
     }
-
-    private static native String nativeGetHistoryUrl();
-
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeNavigationPopup);
-    private native void nativeFetchFaviconForUrl(long nativeNavigationPopup, String url);
 }

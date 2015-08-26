@@ -57,8 +57,6 @@
       'browser/ui/android/infobars/translate_infobar.h',
       'browser/ui/android/javascript_app_modal_dialog_android.cc',
       'browser/ui/android/login_prompt_android.cc',
-      'browser/ui/android/navigation_popup.cc',
-      'browser/ui/android/navigation_popup.h',
       'browser/ui/android/omnibox/omnibox_url_emphasizer.cc',
       'browser/ui/android/omnibox/omnibox_url_emphasizer.h',
       'browser/ui/android/omnibox/omnibox_view_util.cc',

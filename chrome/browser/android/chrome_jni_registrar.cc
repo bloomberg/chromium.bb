@@ -126,7 +126,6 @@
 #include "chrome/browser/ui/android/infobars/save_password_infobar.h"
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
-#include "chrome/browser/ui/android/navigation_popup.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_url_emphasizer.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_view_util.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_snackbar_controller.h"
@@ -267,7 +266,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"LogoBridge", RegisterLogoBridge},
     {"MostVisitedSites", MostVisitedSites::Register},
     {"NativeInfoBar", RegisterNativeInfoBar},
-    {"NavigationPopup", NavigationPopup::RegisterNavigationPopup},
     {"ExternalEstimateProviderAndroid",
      RegisterExternalEstimateProviderAndroid},
     {"NewTabPagePrefs", NewTabPagePrefs::RegisterNewTabPagePrefs},
