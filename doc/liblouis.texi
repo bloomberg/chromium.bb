@@ -2056,7 +2056,8 @@ test:
   -
     - you went to
     - ⠽ ⠺⠑⠝⠞ ⠞⠕
-    - @{mode: [compbrlAtCursor], cursorPos: [0,1,2,3,4,5,6,7,8,9,10]@}
+    - mode: [compbrlAtCursor]
+      cursorPos: [0,1,2,3,4,5,6,7,8,9,10]
 @end example
 
 @item mode
