@@ -128,7 +128,7 @@ TEST_F(MicrodumpProcessorTest, TestProcess_MissingSymbols) {
   AnalyzeDump("microdump-arm64.dmp", &state, true /* omit_symbols */);
 
   ASSERT_EQ(8U, state.modules()->module_count());
-  ASSERT_EQ("aarch64", state.system_info()->cpu);
+  ASSERT_EQ("arm64", state.system_info()->cpu);
   ASSERT_EQ("OS 64 VERSION INFO", state.system_info()->os_version);
   ASSERT_EQ(1U, state.threads()->size());
   ASSERT_EQ(12U, state.threads()->at(0)->frames()->size());
@@ -158,7 +158,7 @@ TEST_F(MicrodumpProcessorTest, TestProcessArm) {
   AnalyzeDump("microdump-arm.dmp", &state, false /* omit_symbols */);
 
   ASSERT_EQ(6U, state.modules()->module_count());
-  ASSERT_EQ("armv7l", state.system_info()->cpu);
+  ASSERT_EQ("arm", state.system_info()->cpu);
   ASSERT_EQ("OS VERSION INFO", state.system_info()->os_version);
   ASSERT_EQ(8U, state.threads()->at(0)->frames()->size());
   ASSERT_EQ("MicrodumpWriterTest_Setup_Test::TestBody",
@@ -176,7 +176,7 @@ TEST_F(MicrodumpProcessorTest, TestProcessArm64) {
   AnalyzeDump("microdump-arm64.dmp", &state, false /* omit_symbols */);
 
   ASSERT_EQ(8U, state.modules()->module_count());
-  ASSERT_EQ("aarch64", state.system_info()->cpu);
+  ASSERT_EQ("arm64", state.system_info()->cpu);
   ASSERT_EQ("OS 64 VERSION INFO", state.system_info()->os_version);
   ASSERT_EQ(9U, state.threads()->at(0)->frames()->size());
   ASSERT_EQ("MicrodumpWriterTest_Setup_Test::TestBody",

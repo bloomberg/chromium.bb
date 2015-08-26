@@ -230,7 +230,7 @@ Microdump::Microdump(const string& contents)
       GetLine(&os_tokens, &os_version);
       os_version.erase(0, 1);  // remove leading space.
 
-      system_info_->cpu = hw_arch;
+      system_info_->cpu = arch;
       system_info_->cpu_count = HexStrToL<uint8_t>(num_cpus);
       system_info_->os_version = os_version;
 
