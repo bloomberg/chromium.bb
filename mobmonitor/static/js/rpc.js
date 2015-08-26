@@ -6,15 +6,20 @@
 
 
 function rpcGetServiceList(callback) {
-  $.getJSON('/GetServiceList', function(response) {
-    callback(response);
-  });
+  $.getJSON('/GetServiceList', callback);
 }
 
 function rpcGetStatus(service, callback) {
-  $.getJSON('/GetStatus', {service: service}, function(response) {
-    callback(response);
-  });
+  $.getJSON('/GetStatus', {service: service}, callback);
+}
+
+function rpcActionInfo(service, action, callback) {
+  var data = {
+    service: service,
+    action: action
+  };
+
+  $.getJSON('/ActionInfo', data, callback);
 }
 
 function rpcRepairService(service, action, args, kwargs, callback) {
@@ -34,7 +39,5 @@ function rpcRepairService(service, action, args, kwargs, callback) {
     kwargs: JSON.stringify(kwargs)
   };
 
-  $.post('/RepairService', data, function(response) {
-      callback(response);
-  }, 'json');
+  $.post('/RepairService', data, callback, 'json');
 }

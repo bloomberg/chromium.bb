@@ -108,19 +108,21 @@ td {
   width:95%;
 }
 
-.input-text {
-  margin-bottom: 10px;
+.label-help {
   width: 95%;
+  display: inline-block;
+  padding: 5px;
+  font-size: 12;
+  white-space: pre-wrap;
 }
 
-.actiondisplay {
+.input-text {
+  width: 95%;
+  margin-bottom: 10px;
+}
+
+.actionDisplay {
   width: 95%;
   height: 150px;
-  resize: none;
-}
-
-fieldset {
-  padding: 0;
-  border: 0;
-  margin-top: 10px;
+  resize: vertical;
 }

@@ -43,6 +43,9 @@ CHECKFILE_ENDING = '_check.py'
 SERVICE_STATUS = collections.namedtuple('service_status',
                                         ['service', 'health', 'healthchecks'])
 
+ACTION_INFO = collections.namedtuple('action_info',
+                                     ['action', 'info', 'args', 'kwargs'])
+
 
 class CollectionError(Exception):
   """Raise when an error occurs during checkfile collection."""
@@ -75,6 +78,11 @@ def MapServiceStatusToDict(status):
       MapHealthcheckStatusToDict(hcstatus) for hcstatus in status.healthchecks]
   return {'service': status.service, 'health': status.health,
           'healthchecks': hcstatuses}
+
+
+def MapActionInfoToDict(actioninfo):
+  return {'action': actioninfo.action, 'info': actioninfo.info,
+          'args': actioninfo.args, 'kwargs': actioninfo.kwargs}
 
 
 def isHealthcheckHealthy(hcstatus):
@@ -377,6 +385,64 @@ class CheckFileManager(object):
       return self.service_states.values()
 
     return self.service_states.get(service, SERVICE_STATUS(service, False, []))
+
+  def ActionInfo(self, service, action):
+    """Describes a currently valid action for the given service and healthcheck.
+
+    An action is valid if the following hold:
+      The |service| is recognized and is in an unhealthy or quasi-healthy state.
+      The |action| is one specified as a suitable repair action by the
+        Diagnose method of some non-healthy healthcheck of |service|.
+
+    Args:
+      service: A string. The name of a service being monitored.
+      action: A string. The name of an action returned by some healthcheck's
+        Diagnose method.
+
+    Returns:
+      An ACTION_INFO named tuple which has the following fields:
+        action: A string. The given |action| string.
+        info: A string. The docstring of |action|.
+        args: A list of strings. The positional arguments for |action|.
+        kwargs: A dictionary representing the default keyword arguments
+          for |action|. The keys will be the kwarg names and the values
+          will be the default arguments.
+    """
+    status = self.service_states.get(service, None)
+    if not status:
+      return ACTION_INFO(action, 'Service not recognized.', [], {})
+    elif isServiceHealthy(status):
+      return ACTION_INFO(action, 'Service is healthy.', [], {})
+
+    def FindAction():
+      for hc in status.healthchecks:
+        if isHealthcheckHealthy(hc):
+          continue
+        for a in hc.actions:
+          if a.__name__ == action:
+            return a
+      return None
+
+    func = FindAction()
+
+    if not func:
+      return ACTION_INFO(action, 'Action not recognized.', [], {})
+
+    # Collect information on the repair action.
+    argspec = inspect.getargspec(func)
+    func_args = argspec.args or []
+    func_args = [x for x in func_args if x not in ['self', 'cls']]
+    func_defaults = argspec.defaults or {}
+
+    num_args = len(func_args)
+    num_defaults = len(func_defaults)
+
+    args = func_args[:num_args-num_defaults]
+    kwargs = dict(zip(func_args[num_args-num_defaults:], func_defaults))
+
+    info = func.__doc__
+
+    return ACTION_INFO(action, info, args, kwargs)
 
   def RepairService(self, service, action, args, kwargs):
     """Execute the repair action on the specified service.

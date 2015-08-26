@@ -25,6 +25,8 @@ class MockCheckFileManager(object):
         manager.SERVICE_STATUS('service1', True, []),
         manager.SERVICE_STATUS('service2', False, [failed_check])]
 
+    self.action_info = manager.ACTION_INFO('DummyAction', '', ['x'], {})
+
   def GetServiceList(self):
     """Mock GetServiceList response."""
     return ['test_service_1', 'test_service_2']
@@ -35,6 +37,10 @@ class MockCheckFileManager(object):
       return self.service_statuses
 
     return self.service_statuses[0]
+
+  def ActionInfo(self, _service, _action):
+    """Mock ActionInfo response."""
+    return self.action_info
 
   def RepairService(self, _service, _action, _args, _kwargs):
     """Mock RepairService response."""
@@ -79,6 +85,15 @@ class MobMonitorRootTest(cros_test_lib.MockTempDirTestCase):
                                  'description': check.description,
                                  'actions': []}]}]
     self.assertEquals(expect, json.loads(root.GetStatus()))
+
+  def testActionInfo(self):
+    """Test the ActionInfo RPC."""
+    cfm = MockCheckFileManager()
+    root = mobmonitor.MobMonitorRoot(cfm, staticdir=self.staticdir)
+
+    expect = {'action': 'DummyAction', 'info': '', 'args': ['x'], 'kwargs': {}}
+    self.assertEquals(expect,
+                      json.loads(root.ActionInfo('service2', 'DummyAction')))
 
   def testRepairService(self):
     """Test the RepairService RPC."""

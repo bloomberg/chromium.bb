@@ -78,6 +78,9 @@ class MobMonCli(object):
     if 'GetStatus' == request:
       return rpcexec.GetStatus(service=service)
 
+    if 'ActionInfo' == request:
+      return rpcexec.ActionInfo(service=service, action=action)
+
     if 'RepairService' == request:
       return rpcexec.RepairService(service=service, action=action, args=args,
                                    kwargs=kwargs)
@@ -86,8 +89,8 @@ class MobMonCli(object):
 def ParseArguments(argv):
   parser = commandline.ArgumentParser()
   parser.add_argument('request', choices=rpc.RPC_LIST)
-  parser.add_argument('-s', '--service', help='The service to act upon')
-  parser.add_argument('-a', '--action', help='The action to execute')
+  parser.add_argument('-s', '--service', help='The service to act upon.')
+  parser.add_argument('-a', '--action', help='The action to execute.')
   parser.add_argument('--host', default='localhost',
                       help='The hostname of the Mob* Monitor.')
   parser.add_argument('-p', '--port', type=int, default=9991,

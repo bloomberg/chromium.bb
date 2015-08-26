@@ -1,16 +1,29 @@
 <div id="actionRepairDialog" title="Setup Repair Actions">
-  <label for="actionlist">Actions</label>
+  <label for="actionlist">Choose an Action:</label>
   <input list="actionlist" class="actionlist-dropdown">
   <datalist id="actionlist">
     {{#each actions}}
       <option value={{this}}>
     {{/each}}
   </datalist>
-  <label for="args">Arguments</label>
-  <input type="text" name="args" id="args" value="" class="input-text">
-  <label for="kwargs">Keyword Arguments</label>
-  <input type="text" name="kwargs" id="kwargs" value="" class="input-text">
-  <label for="stagedActions">Actions to Execute</label>
-  <textarea readonly name="stagedActions" id="stagedActions" class="actiondisplay">
+  <br><br>
+
+  <label for="actionDescription">Action Description:</label>
+  <textarea style="font-size:10pt" readonly name="actionDescription" id="actionDescription" class="actionDisplay">
+  </textarea><br><br>
+
+  <label for="args">Arguments:</label><br>
+  <label for="args" id="argsHelp" class="label-help">Help text for args</label>
+  <input style="font-size:10pt" type="text" name="args" id="args" value="" class="input-text">
+
+  <label for="kwargs">Default Arguments:</label>
+  <label for="kwargs" id="kwargsHelp" class="label-help">Help text for kwargs</label>
+  <input style="font-size:10pt" type="text" name="kwargs" id="kwargs" value="" class="input-text">
+
+  <input type="button" name="stageButton" id="stageButton" value="Stage Action">
+  <br><br>
+
+  <label for="stagedActions">Actions to Execute:</label>
+  <textarea style="font-size:10pt" readonly name="stagedActions" id="stagedActions" class="actionDisplay">
   </textarea>
 </div>

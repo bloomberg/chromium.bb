@@ -66,6 +66,42 @@ class TestHealthCheckUnhealthy(object):
     self.x = 0
 
 
+class TestHealthCheckMultipleActions(object):
+  """Unhealthy check with many actions that have different parameters."""
+
+  def __init__(self):
+    self.x = -1
+
+  def Check(self):
+    """Stub Check."""
+    return self.x
+
+  def Diagnose(self, errcode):
+    """Stub Diagnose."""
+    if errcode == -1:
+      return ('Stub Error.', [self.NoParams, self.PositionalParams,
+                              self.DefaultParams, self.MixedParams])
+    return ('Unknown Error.', [])
+
+  def NoParams(self):
+    """NoParams Action."""
+    self.x = 0
+
+  # pylint: disable=unused-argument
+  def PositionalParams(self, x, y, z):
+    """PositionalParams Action."""
+    self.x = 0
+
+  def DefaultParams(self, x=1, y=2, z=3):
+    """DefaultParams Action."""
+    self.x = 0
+
+  def MixedParams(self, x, y, z=1):
+    """MixedParams Action."""
+    self.x = 0
+  # pylint: enable=unused-argument
+
+
 class TestHealthCheckQuasihealthy(object):
   """Quasi-healthy test health check."""
 
@@ -76,10 +112,10 @@ class TestHealthCheckQuasihealthy(object):
   def Diagnose(self, errcode):
     """Stub Diagnose."""
     if errcode == 1:
-      return ('Stub Error.', ['RepairStub'])
+      return ('Stub Error.', [self.RepairStub])
     return ('Unknown Error.', [])
 
-  def ActionRepairStub(self):
+  def RepairStub(self):
     """Stub repair action."""
 
 
@@ -229,6 +265,13 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
     expect = {'service': 'test-service', 'health': False,
               'healthchecks': [hcexpect]}
     self.assertEquals(expect, manager.MapServiceStatusToDict(status))
+
+  def testMapActionInfoToDict(self):
+    """Test mapping a manager.ACTION_INFO to a dict."""
+    actioninfo = manager.ACTION_INFO('test', 'test', [1], {'a': 1})
+    expect = {'action': 'test', 'info': 'test', 'args': [1],
+              'kwargs': {'a': 1}}
+    self.assertEquals(expect, manager.MapActionInfoToDict(actioninfo))
 
   def testIsHealthcheckHealthy(self):
     """Test checking whether health check statuses are healthy."""
@@ -777,6 +820,85 @@ class CheckFileManagerTest(cros_test_lib.MockTestCase):
                                [], {})
     self.assertTrue(status.health)
     self.assertEquals(0, len(status.healthchecks))
+
+  def testActionInfoServiceNonExistent(self):
+    """Test the ActionInfo RPC when the service does not exist."""
+    cfm = manager.CheckFileManager(checkdir=CHECKDIR)
+
+    self.assertFalse(TEST_SERVICE_NAME in cfm.service_states)
+
+    expect = manager.ACTION_INFO('test', 'Service not recognized.',
+                                 [], {})
+    result = cfm.ActionInfo(TEST_SERVICE_NAME, 'test')
+    self.assertEquals(expect, result)
+
+  def testActionInfoServiceHealthy(self):
+    """Test the ActionInfo RPC when the service is healthy."""
+    cfm = manager.CheckFileManager(checkdir=CHECKDIR)
+
+    healthy_status = manager.SERVICE_STATUS(TEST_SERVICE_NAME, True, [])
+    cfm.service_states[TEST_SERVICE_NAME] = healthy_status
+
+    expect = manager.ACTION_INFO('test', 'Service is healthy.',
+                                 [], {})
+    result = cfm.ActionInfo(TEST_SERVICE_NAME, 'test')
+    self.assertEquals(expect, result)
+
+  def testActionInfoActionNonExistent(self):
+    """Test the ActionInfo RPC when the action does not exist."""
+    cfm = manager.CheckFileManager(checkdir=CHECKDIR)
+
+    hcobj = TestHealthCheckUnhealthy()
+    cfm.service_checks[TEST_SERVICE_NAME] = {
+        hcobj.__class__.__name__: (TEST_MTIME, hcobj)}
+
+    unhealthy_status = manager.SERVICE_STATUS(
+        TEST_SERVICE_NAME, False,
+        [manager.HEALTHCHECK_STATUS(hcobj.__class__.__name__,
+                                    False, 'Always fails', [hcobj.Repair])])
+    cfm.service_states[TEST_SERVICE_NAME] = unhealthy_status
+
+    expect = manager.ACTION_INFO('test', 'Action not recognized.', [], {})
+    result = cfm.ActionInfo(TEST_SERVICE_NAME, 'test')
+    self.assertEquals(expect, result)
+
+  def testActionInfo(self):
+    """Test the ActionInfo RPC to collect information on a repair action."""
+    cfm = manager.CheckFileManager(checkdir=CHECKDIR)
+
+    hcobj = TestHealthCheckMultipleActions()
+    actions = [hcobj.NoParams, hcobj.PositionalParams, hcobj.DefaultParams,
+               hcobj.MixedParams]
+
+    cfm.service_checks[TEST_SERVICE_NAME] = {
+        hcobj.__class__.__name__: (TEST_MTIME, hcobj)}
+
+    unhealthy_status = manager.SERVICE_STATUS(
+        TEST_SERVICE_NAME, False,
+        [manager.HEALTHCHECK_STATUS(hcobj.__class__.__name__,
+                                    False, 'Always fails', actions)])
+    cfm.service_states[TEST_SERVICE_NAME] = unhealthy_status
+
+    # Test ActionInfo when the action has no parameters.
+    expect = manager.ACTION_INFO('NoParams', 'NoParams Action.', [], {})
+    self.assertEquals(expect, cfm.ActionInfo(TEST_SERVICE_NAME, 'NoParams'))
+
+    # Test ActionInfo when the action has only positional parameters.
+    expect = manager.ACTION_INFO('PositionalParams', 'PositionalParams Action.',
+                                 ['x', 'y', 'z'], {})
+    self.assertEquals(expect,
+                      cfm.ActionInfo(TEST_SERVICE_NAME, 'PositionalParams'))
+
+    # Test ActionInfo when the action has only default parameters.
+    expect = manager.ACTION_INFO('DefaultParams', 'DefaultParams Action.',
+                                 [], {'x': 1, 'y': 2, 'z': 3})
+    self.assertEquals(expect,
+                      cfm.ActionInfo(TEST_SERVICE_NAME, 'DefaultParams'))
+
+    # Test ActionInfo when the action has positional and default parameters.
+    expect = manager.ACTION_INFO('MixedParams', 'MixedParams Action.',
+                                 ['x', 'y'], {'z': 1})
+    self.assertEquals(expect, cfm.ActionInfo(TEST_SERVICE_NAME, 'MixedParams'))
 
 
 @cros_test_lib.NetworkTest()

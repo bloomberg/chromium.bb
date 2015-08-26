@@ -75,6 +75,21 @@ class MobMonitorRoot(object):
     return json.dumps(result)
 
   @cherrypy.expose
+  def ActionInfo(self, service, action):
+    """Return usage and argument information for |action|.
+
+    Args:
+      service: A string. The name of a service being monitored.
+      action: A string. The name of an action specified by some healthcheck's
+        Diagnose method.
+
+    Returns:
+      TBD
+    """
+    result = self.checkfile_manager.ActionInfo(service, action)
+    return json.dumps(manager.MapActionInfoToDict(result))
+
+  @cherrypy.expose
   def RepairService(self, service, action, args, kwargs):
     """Execute the repair action on the specified service.
 

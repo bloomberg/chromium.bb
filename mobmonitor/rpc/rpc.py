@@ -16,7 +16,7 @@ from chromite.lib import retry_util
 URLLIB_CALL_FORMAT_STR = '%(host)s/%(func)s/?%(args)s'
 RPC_RETRY_TIMES = 5
 RPC_SLEEP_SECS = 2
-RPC_LIST = ['GetServiceList', 'GetStatus', 'RepairService']
+RPC_LIST = ['GetServiceList', 'GetStatus', 'ActionInfo', 'RepairService']
 
 
 class RpcError(Exception):
@@ -104,6 +104,31 @@ class RpcExecutor(object):
       service = ''
 
     return self.Execute('GetStatus', service=service)
+
+  def ActionInfo(self, service=None, action=None):
+    """Collect argument and usage information for |action|.
+
+    See checkfile.manager.ActionInfo for more documentation on the
+    behaviour of this RPC.
+
+    Args:
+      service: A string. The name of a service being monitored.
+      action: A string. The name of an action returned by some healthcheck's
+        Diagnose method.
+
+    Returns:
+      A named tuple with the following fields:
+        action: The |action| string.
+        info: The docstring of |action|.
+        args: A list of the positional arguments for |action|.
+        kwargs: A dictionary of default arguments for |action|.
+    """
+    if service is None or action is None:
+      raise RpcError('ActionInfo requires both the service'
+                     ' and action to be provided.'
+                     ' Given: service=%s action=%s' % (service, action))
+
+    return self.Execute('ActionInfo', service=service, action=action)
 
   def RepairService(self, service=None, action=None, args=None, kwargs=None):
     """Apply the specified action to the specified service.

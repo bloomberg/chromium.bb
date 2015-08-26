@@ -64,6 +64,14 @@ class MobMonCliTest(cros_test_lib.MockTestCase):
       self.cli.ExecuteRequest('GetStatus', 'TestService', '', '')
       self.assertTrue(mock_executor.GetStatus.called)
 
+  def testActionInfo(self):
+    """Test that we correctly execute an ActionInfo RPC."""
+    with mock.patch('chromite.mobmonitor.rpc.rpc.RpcExecutor') as rpc_executor:
+      mock_executor = mock.MagicMock()
+      rpc_executor.return_value = mock_executor
+      self.cli.ExecuteRequest('ActionInfo', 'TestService', 'action', '')
+      self.assertTrue(mock_executor.ActionInfo.called)
+
   def testRepairService(self):
     """Test that we correctly execute a RepairService RPC."""
     with mock.patch('chromite.mobmonitor.rpc.rpc.RpcExecutor') as rpc_executor:
