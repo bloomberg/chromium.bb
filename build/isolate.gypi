@@ -89,7 +89,6 @@
         '--config-variable',
           'internal_gles2_conform_tests=<(internal_gles2_conform_tests)',
         '--config-variable', 'kasko=<(kasko)',
-        '--config-variable', 'libpeer_target_type=<(libpeer_target_type)',
         '--config-variable', 'lsan=<(lsan)',
         '--config-variable', 'msan=<(msan)',
         '--config-variable', 'target_arch=<(target_arch)',

@@ -1434,9 +1434,6 @@
     # TODO(thakis): Make this a blacklist instead, http://crbug.com/101600
     'enable_wexit_time_destructors%': 0,
 
-    # Build libpeerconnection as a static library by default.
-    'libpeer_target_type%': 'static_library',
-
     # Set to 1 to compile with the OpenGL ES 2.0 conformance tests.
     'internal_gles2_conform_tests%': 0,
 

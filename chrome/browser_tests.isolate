@@ -50,13 +50,6 @@
         ],
       },
     }],
-    ['OS=="linux" and libpeer_target_type=="loadable_module"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/lib/libpeerconnection.so',
-        ],
-      },
-    }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [

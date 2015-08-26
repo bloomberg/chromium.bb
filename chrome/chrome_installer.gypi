@@ -5,7 +5,6 @@
 {
   'variables': {
     'lastchange_path': '../build/util/LASTCHANGE',
-    'libpeer_target_type%': 'static_library',
     'branding_dir': 'app/theme/<(branding_path_component)',
     'branding_dir_100': 'app/theme/default_100_percent/<(branding_path_component)',
   },
@@ -492,11 +491,6 @@
           ['target_arch=="arm"', {
             'deb_arch': 'arm',
             'rpm_arch': 'arm',
-          }],
-          ['libpeer_target_type!="static_library"', {
-            'packaging_files_binaries': [
-              '<(PRODUCT_DIR)/lib/libpeerconnection.so',
-            ],
           }],
           ['asan==1', {
             'packaging_files_binaries': [
