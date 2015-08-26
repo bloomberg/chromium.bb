@@ -11,8 +11,8 @@ information.
 import re
 
 # Minimum is Mac OS X 10.9.5 (13F34).
-HUMAN_DARWIN_VERSION = '10.9.x, x >= 1'
-ALLOWED_DARWIN_VERSION = 13  # Darwin 12 = 10.9.
+HUMAN_DARWIN_VERSION = '10.9.5'
+ALLOWED_DARWIN_VERSION = 13  # Darwin 13 = 10.9.
 MINIMUM_DARWIN_RELEASE = 'F'  # Release F = 10.9.5.
 
 MINIMUM_IB_VERSION = 5053  # Xcode 5.1.
