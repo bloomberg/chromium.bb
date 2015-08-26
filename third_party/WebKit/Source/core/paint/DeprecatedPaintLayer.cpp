@@ -1942,6 +1942,9 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration ch
 
 void DeprecatedPaintLayer::blockSelectionGapsBoundsChanged()
 {
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return;
+
     setNeedsCompositingInputsUpdate();
 }
 
