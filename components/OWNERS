@@ -310,7 +310,7 @@ per-file url_formatter.gypi=pkasting@chromium.org
 
 per-file user_prefs.gypi=battre@chromium.org
 per-file user_prefs.gypi=bauerb@chromium.org
-per-file user_prefs.gypi=mnissler@chromium.org
+per-file user_prefs.gypi=gab@chromium.org
 per-file user_prefs.gypi=pam@chromium.org
 
 per-file variations.gypi=asvitkine@chromium.org
