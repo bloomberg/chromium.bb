@@ -188,13 +188,19 @@ bool SkPathContainsPoint(const SkPath& originalPath, const FloatPoint& point, Sk
     // 1) Skia has trouble with coordinates close to the max signed 16-bit values, so we scale larger paths down.
     //    TODO: when Skia is patched to work properly with large values, this will not be necessary.
     // 2) Skia does not support analytic hit testing, so we scale paths up to do raster hit testing with subpixel accuracy.
-    SkScalar biggestCoord = std::max(std::max(std::max(bounds.fRight, bounds.fBottom), -bounds.fLeft), -bounds.fTop);
-    if (SkScalarNearlyZero(biggestCoord))
+    // 3) Scale the x/y axis separately so an extreme large/small scale factor on one axis won't
+    //    ruin the resolution of the other axis.
+    SkScalar biggestCoordX = std::max(bounds.fRight, -bounds.fLeft);
+    SkScalar biggestCoordY = std::max(bounds.fBottom, -bounds.fTop);
+    if (SkScalarNearlyZero(biggestCoordX) || SkScalarNearlyZero(biggestCoordY))
         return false;
-    biggestCoord = std::max(std::max(biggestCoord, fX + 1), fY + 1);
+
+    biggestCoordX = std::max(biggestCoordX, std::fabs(fX) + 1);
+    biggestCoordY = std::max(biggestCoordY, std::fabs(fY) + 1);
 
     const SkScalar kMaxCoordinate = SkIntToScalar(1 << 15);
-    SkScalar scale = kMaxCoordinate / biggestCoord;
+    SkScalar scaleX = kMaxCoordinate / biggestCoordX;
+    SkScalar scaleY = kMaxCoordinate / biggestCoordY;
 
     SkRegion rgn;
     SkRegion clip;
@@ -202,11 +208,11 @@ bool SkPathContainsPoint(const SkPath& originalPath, const FloatPoint& point, Sk
     SkPath scaledPath(originalPath);
 
     scaledPath.setFillType(ft);
-    m.setScale(scale, scale);
+    m.setScale(scaleX, scaleY);
     scaledPath.transform(m, 0);
 
-    int x = static_cast<int>(floorf(0.5f + point.x() * scale));
-    int y = static_cast<int>(floorf(0.5f + point.y() * scale));
+    int x = static_cast<int>(floorf(0.5f + point.x() * scaleX));
+    int y = static_cast<int>(floorf(0.5f + point.y() * scaleY));
     clip.setRect(x - 1, y - 1, x + 1, y + 1);
 
     return rgn.setPath(scaledPath, clip);
