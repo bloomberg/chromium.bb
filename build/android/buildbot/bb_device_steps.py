@@ -63,12 +63,6 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'ContentShellTest',
       'content:content/test/data/android/device_files',
       isolate_file_path='content/content_shell_test_apk.isolate'),
-    I('ChromeShell',
-      'ChromeShell.apk',
-      'org.chromium.chrome.shell',
-      'ChromeShellTest',
-      'chrome:chrome/test/data/android/device_files',
-      isolate_file_path='chrome/chrome_shell_test_apk.isolate'),
     I('AndroidWebView',
       'AndroidWebView.apk',
       'org.chromium.android_webview.shell',
@@ -81,6 +75,12 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'ChromeSyncShellTest',
       None),
     ])
+
+CHROME_SHELL = I('ChromeShell',
+                 'ChromeShell.apk', 'org.chromium.chrome.shell',
+                 'ChromeShellTest',
+                 'chrome:chrome/test/data/android/device_files',
+                 isolate_file_path='chrome/chrome_shell_test_apk.isolate')
 
 InstallablePackage = collections.namedtuple('InstallablePackage', [
     'name', 'apk', 'apk_package'])
@@ -197,9 +197,8 @@ def RunChromeDriverTests(options):
   """Run all the steps for running chromedriver tests."""
   bb_annotations.PrintNamedStep('chromedriver_annotation')
   RunCmd(['chrome/test/chromedriver/run_buildbot_steps.py',
-          '--android-packages=%s,%s,%s,%s' %
-          ('chrome_shell',
-           'chrome_stable',
+          '--android-packages=%s,%s,%s' %
+          ('chrome_stable',
            'chrome_beta',
            'chromedriver_webview_shell'),
           '--revision=%s' % _GetRevision(options),
@@ -211,7 +210,7 @@ def RunChromeProxyTests(options):
   Args:
     options: options object.
   """
-  InstallApk(options, INSTRUMENTATION_TESTS['ChromeShell'], False)
+  InstallApk(options, CHROME_SHELL, False)
   args = ['--browser', 'android-chrome-shell']
   devices = device_utils.DeviceUtils.HealthyDevices()
   if devices:
@@ -230,7 +229,7 @@ def RunTelemetryTests(options, step_name, run_tests_path):
                     perf_unittests and tools/telemetry/run_tests for
                     telemetry_unittests)
   """
-  InstallApk(options, INSTRUMENTATION_TESTS['ChromeShell'], False)
+  InstallApk(options, CHROME_SHELL, False)
   args = ['--browser', 'android-chrome-shell']
   devices = device_utils.DeviceUtils.HealthyDevices()
   if devices:

@@ -148,16 +148,8 @@ _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'])
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'])
-_ANDROID_NEGATIVE_FILTER['chrome_shell'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome'] + [
-        # ChromeShell doesn't support multiple tabs.
-        'ChromeDriverTest.testGetWindowHandles',
-        'ChromeDriverTest.testSwitchToWindow',
-        'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
-    ]
-)
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome_shell'] + [
+    _ANDROID_NEGATIVE_FILTER['chrome'] + [
         'PerformanceLoggerTest.testPerformanceLogger',
         'ChromeDriverTest.testShadowDom*',
         # WebView doesn't support emulating network conditions.
