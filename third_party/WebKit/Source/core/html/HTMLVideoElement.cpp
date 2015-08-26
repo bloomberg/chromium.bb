@@ -250,13 +250,7 @@ bool HTMLVideoElement::usesOverlayFullscreenVideo() const
     if (RuntimeEnabledFeatures::forceOverlayFullscreenVideoEnabled())
         return true;
 
-    // TODO(watk): Remove this and the REF check below when the chromium side change to not
-    // set OverlayFullscreenVideo on Android lands. http://crbug.com/511376
-    if (HTMLMediaElement::isMediaStreamURL(sourceURL().string()))
-        return false;
-
-    return RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()
-        || (webMediaPlayer() && webMediaPlayer()->supportsOverlayFullscreenVideo());
+    return webMediaPlayer() && webMediaPlayer()->supportsOverlayFullscreenVideo();
 }
 
 void HTMLVideoElement::didMoveToNewDocument(Document& oldDocument)

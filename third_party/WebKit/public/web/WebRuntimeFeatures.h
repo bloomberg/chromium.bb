@@ -134,8 +134,6 @@ public:
 
     BLINK_EXPORT static void enableOverlayScrollbars(bool);
 
-    BLINK_EXPORT static void enableOverlayFullscreenVideo(bool);
-
     BLINK_EXPORT static void forceOverlayFullscreenVideo(bool);
 
     BLINK_EXPORT static void enableSharedWorker(bool);
