@@ -123,7 +123,7 @@ Script execution paused.
 Call stack:
     0) appendElementToOpenShadowRoot (dom-breakpoints.html:79)
     1)  (:1)
-Paused on a "Subtree Modified" breakpoint set on #shadow-root, because a new child was added to that node.
+Paused on a "Subtree Modified" breakpoint set on #shadow-root (open), because a new child was added to that node.
 Script execution resumed.
 
 Running: testReloadWithShadowElementBreakpoint

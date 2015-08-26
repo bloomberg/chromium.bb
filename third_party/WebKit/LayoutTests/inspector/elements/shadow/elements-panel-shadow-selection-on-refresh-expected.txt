@@ -5,7 +5,11 @@ Running: setup
 
 Running: testOpenShadowRoot
 Page reloaded.
-Selected node: '#shadow-root'
+Selected node: '#shadow-root (open)'
+
+Running: testClosedShadowRoot
+Page reloaded.
+Selected node: '#shadow-root (closed)'
 
 Running: testUserAgentShadowRoot
 Page reloaded.
@@ -14,6 +18,10 @@ Selected node: '#shadow-root (user-agent)'
 Running: testOpenShadowRootChild
 Page reloaded.
 Selected node: 'input'
+
+Running: testClosedShadowRootChild
+Page reloaded.
+Selected node: 'button'
 
 Running: testUserAgentShadowRootChild
 Page reloaded.

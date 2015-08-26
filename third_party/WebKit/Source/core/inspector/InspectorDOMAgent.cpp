@@ -1568,8 +1568,9 @@ static TypeBuilder::DOM::ShadowRootType::Enum shadowRootType(ShadowRoot* shadowR
         return TypeBuilder::DOM::ShadowRootType::User_agent;
     case ShadowRootType::OpenByDefault:
     case ShadowRootType::Open:
+        return TypeBuilder::DOM::ShadowRootType::Open;
     case ShadowRootType::Closed:
-        return TypeBuilder::DOM::ShadowRootType::Author;
+        return TypeBuilder::DOM::ShadowRootType::Closed;
     }
     ASSERT_NOT_REACHED();
     return TypeBuilder::DOM::ShadowRootType::User_agent;

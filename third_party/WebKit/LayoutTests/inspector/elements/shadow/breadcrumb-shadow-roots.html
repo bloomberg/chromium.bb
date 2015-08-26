@@ -10,6 +10,8 @@ function loaded()
     var template = document.querySelector("#tmpl");
     var root = document.querySelector("#host").createShadowRoot();
     root.appendChild(template.content.cloneNode(true));
+    var rootClosed = document.querySelector("#hostClosed").createShadowRoot({mode: 'closed'});
+    rootClosed.appendChild(template.content.cloneNode(true));
     runTest();
 }
 
@@ -31,7 +33,13 @@ function test()
 
     function step2()
     {
-        InspectorTest.dumpBreadcrumb("Author shadow root breadcrumb");
+        InspectorTest.dumpBreadcrumb("Open shadow root breadcrumb");
+        selectNode(matchClosedShadowRoot, step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.dumpBreadcrumb("Closed shadow root breadcrumb");
         InspectorTest.completeTest();
     }
 
@@ -51,7 +59,12 @@ function test()
 
     function matchOpenShadowRoot(node)
     {
-        return node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Author;
+        return node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Open;
+    }
+
+    function matchClosedShadowRoot(node)
+    {
+        return node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Closed;
     }
 }
 
@@ -65,6 +78,7 @@ Tests that shadow roots are displayed correctly in breadcrumbs.
 
 <input type="text">
 <div id="host"></div>
+<div id="hostClosed"></div>
 <template id="tmpl">
     <style>.red { color: red; }</style>
     <div id="inner" class="red">inner</div>

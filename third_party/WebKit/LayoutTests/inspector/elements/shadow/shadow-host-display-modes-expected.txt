@@ -14,7 +14,7 @@ oldest distributed text
   </div>
 ========= After shadow root created ========
 - <div id="shadowHost">
-    - #shadow-root
+    - #shadow-root (open)
         - <div class="oldestShadowMain">
             - <content select=".distributeMeToOldest">
                   <div id="fallbackOldest"></div>
@@ -28,7 +28,7 @@ oldest distributed text
   </div>
 ========= After adding distributed node ========
 - <div id="shadowHost">
-    - #shadow-root
+    - #shadow-root (open)
         - <div class="oldestShadowMain">
             - <content select=".distributeMeToOldest">
                   <div id="fallbackOldest"></div>
@@ -44,7 +44,7 @@ oldest distributed text
   </div>
 ========= After adding another distributed node ========
 - <div id="shadowHost">
-    - #shadow-root
+    - #shadow-root (open)
         - <div class="oldestShadowMain">
             - <content select=".distributeMeToOldest">
                   <div id="fallbackOldest"></div>
@@ -62,7 +62,7 @@ oldest distributed text
   </div>
 ========= After adding youngest shadow root ========
 - <div id="shadowHost">
-    - #shadow-root
+    - #shadow-root (open)
         - <div class="youngestShadowMain">
             - <shadow>
                   ↪ <div>
@@ -78,7 +78,7 @@ oldest distributed text
                   </content>
               </div>
           </div>
-    - #shadow-root
+    - #shadow-root (open)
         - <div class="oldestShadowMain">
             - <content select=".distributeMeToOldest">
                   <div id="fallbackOldest"></div>
@@ -96,7 +96,7 @@ oldest distributed text
   </div>
 ========= After adding inner shadow root node ========
 - <div id="shadowHost">
-    - #shadow-root
+    - #shadow-root (open)
         - <div class="youngestShadowMain">
             - <shadow>
                   ↪ <div>
@@ -106,7 +106,7 @@ oldest distributed text
                   ↪ <div>
               </content>
             - <div class="innerShadowHost" id="innerShadowHost">
-                - #shadow-root
+                - #shadow-root (open)
                     - <div class="innerShadowMain">
                         - <content in-inner-shadow-root select=".distributeMeToInner">
                               ↪ <div>
@@ -119,7 +119,7 @@ oldest distributed text
                   </content>
               </div>
           </div>
-    - #shadow-root
+    - #shadow-root (open)
         - <div class="oldestShadowMain">
             - <content select=".distributeMeToOldest">
                   <div id="fallbackOldest"></div>

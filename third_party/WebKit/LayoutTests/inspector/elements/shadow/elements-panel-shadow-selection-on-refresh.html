@@ -19,6 +19,11 @@ function test()
             InspectorTest.findNode(isOpenShadowRoot, selectReloadAndDump.bind(null, next));
         },
 
+        function testClosedShadowRoot(next)
+        {
+            InspectorTest.findNode(isClosedShadowRoot, selectReloadAndDump.bind(null, next));
+        },
+
         function testUserAgentShadowRoot(next)
         {
             InspectorTest.findNode(isUserAgentShadowRoot, selectReloadAndDump.bind(null, next));
@@ -29,6 +34,11 @@ function test()
             InspectorTest.findNode(isOpenShadowRootChild, selectReloadAndDump.bind(null, next));
         },
 
+        function testClosedShadowRootChild(next)
+        {
+            InspectorTest.findNode(isClosedShadowRootChild, selectReloadAndDump.bind(null, next));
+        },
+
         function testUserAgentShadowRootChild(next)
         {
             InspectorTest.findNode(isUserAgentShadowRootChild, selectReloadAndDump.bind(null, next));
@@ -37,7 +47,12 @@ function test()
 
     function isOpenShadowRoot(node)
     {
-        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Author;
+        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Open;
+    }
+
+    function isClosedShadowRoot(node)
+    {
+        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Closed;
     }
 
     function isUserAgentShadowRoot(node)
@@ -48,6 +63,11 @@ function test()
     function isOpenShadowRootChild(node)
     {
         return isOpenShadowRoot(node.parentNode);
+    }
+
+    function isClosedShadowRootChild(node)
+    {
+        return isClosedShadowRoot(node.parentNode);
     }
 
     function isUserAgentShadowRootChild(node)
@@ -91,10 +111,12 @@ function test()
 <p>
 Tests that elements panel preserves selected shadow DOM node on page refresh.
 </p>
-<span id="hostElement"></span>
+<span id="hostElement"></span><span id="closedHostElement"></span>
 <script>
 var root = document.getElementById("hostElement").createShadowRoot();
 root.innerHTML = "<input type='text'>";
+var closedRoot = document.getElementById("closedHostElement").createShadowRoot({mode: 'closed'});
+closedRoot.innerHTML = "<button></button>";
 </script>
 </body>
 </html>

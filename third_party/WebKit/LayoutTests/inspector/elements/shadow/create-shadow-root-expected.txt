@@ -11,7 +11,7 @@ Running: testDumpInitial
 Running: testCreateShadowRoot
 ===== After createShadowRoot =====
 - <div id="container">
-    - #shadow-root
+    - #shadow-root (open)
           <div id="shadow-1"></div>
       <div id="child"></div>
   </div>
@@ -19,9 +19,9 @@ Running: testCreateShadowRoot
 Running: testCreateSecondShadowRoot
 ===== After second createShadowRoot =====
 - <div id="container">
-    - #shadow-root
+    - #shadow-root (open)
           <div id="shadow-2"></div>
-    - #shadow-root
+    - #shadow-root (open)
           <div id="shadow-1"></div>
       <div id="child"></div>
   </div>
