@@ -462,17 +462,6 @@ void ApplyVisualConstraintsWithMetricsAndOptions(
   }
 }
 
-NSLayoutFormatOptions LayoutOptionForRTLSupport() {
-// Under iOS9 when full RTL support is available return LeadingToTrailing.
-// Otherwise return LeftToRight
-#if __IPHONE_9_0
-  if (base::ios::IsRunningOnIOS9OrLater()) {
-    return NSLayoutFormatDirectionLeadingToTrailing;
-  }
-#endif
-  return NSLayoutFormatDirectionLeftToRight;
-}
-
 void AddSameCenterXConstraint(UIView* parentView, UIView* subview) {
   DCHECK_EQ(parentView, [subview superview]);
   [parentView addConstraint:[NSLayoutConstraint
@@ -542,57 +531,4 @@ bool IsCompact() {
 
 bool IsCompactTablet() {
   return IsIPadIdiom() && IsCompact();
-}
-
-bool IsRTLUILayout() {
-  if (base::ios::IsRunningOnIOS9OrLater()) {
-#if __IPHONE_9_0
-    // Calling this method is better than using the locale on iOS9 since it will
-    // work with the right to left pseudolanguage.
-    return [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:
-                       UISemanticContentAttributeUnspecified] ==
-           UIUserInterfaceLayoutDirectionRightToLeft;
-#endif
-  }
-  // Using NSLocale instead of base::i18n::IsRTL() in order to take into account
-  // right to left pseudolanguage correctly (which base::i18n::IsRTL() doesn't).
-  return
-      [NSLocale
-          characterDirectionForLanguage:
-              [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode]] ==
-      NSLocaleLanguageDirectionRightToLeft;
-}
-
-UIViewAutoresizing UIViewAutoresizingFlexibleLeadingMargin() {
-  return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater()
-             ? UIViewAutoresizingFlexibleRightMargin
-             : UIViewAutoresizingFlexibleLeftMargin;
-}
-
-UIViewAutoresizing UIViewAutoresizingFlexibleTrailingMargin() {
-  return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater()
-             ? UIViewAutoresizingFlexibleLeftMargin
-             : UIViewAutoresizingFlexibleRightMargin;
-}
-
-UIEdgeInsets UIEdgeInsetsMakeUsingDirection(
-    CGFloat top,
-    CGFloat leading,
-    CGFloat bottom,
-    CGFloat trailing,
-    base::i18n::TextDirection direction) {
-  if (direction == base::i18n::RIGHT_TO_LEFT) {
-    using std::swap;
-    swap(leading, trailing);
-  }
-  // At this point, |leading| == left, |trailing| = right.
-  return UIEdgeInsetsMake(top, leading, bottom, trailing);
-}
-
-UIEdgeInsets UIEdgeInsetsMakeDirected(CGFloat top,
-                                      CGFloat leading,
-                                      CGFloat bottom,
-                                      CGFloat trailing) {
-  return UIEdgeInsetsMakeUsingDirection(top, leading, bottom, trailing,
-                                        LayoutDirection());
 }

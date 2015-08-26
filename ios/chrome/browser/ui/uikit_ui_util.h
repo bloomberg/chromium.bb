@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#include "base/i18n/rtl.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 
 // UI Util containing functions that require UIKit.
@@ -154,14 +153,6 @@ void ApplyVisualConstraintsWithMetricsAndOptions(
     NSLayoutFormatOptions options,
     UIView* parentView);
 
-// Returns the correct NSLayoutFormatOption for the current OS and built. This
-// will return NSLayoutFormatDirectionLeadingToTrailing when a full RTL flip
-// is correct, and NSLayoutFormatDirectionLeftToRight when layout should not
-// change with text direction.
-// Generally speaking this option should be applied to any whole-page layouts;
-// smaller sections of views should be determined case by case.
-NSLayoutFormatOptions LayoutOptionForRTLSupport();
-
 // Adds a constraint that |subview| is center aligned horizontally in
 // |parentView|.
 // |subview| must be a subview of |parentView|.
@@ -192,33 +183,5 @@ bool IsCompact();
 // Whether the main application window's rootViewController has a compact
 // iPad horizontal size class.
 bool IsCompactTablet();
-
-// Whether the UI is configured for right to left layout.
-// The implementation will use the local in order to get the UI layout direction
-// for version of iOS under 9.
-// TODO(jbbegue): Use base::i18n::IsRTL() instead when it will support RTL
-// pseudo language. Remove that method once base::i18n::IsRTL() is fixed.
-// crbug/514625.
-bool IsRTLUILayout();
-
-// Leading/trailing autoresizing masks. 'Leading' is 'Left' under iOS <= 8 or
-// in an LTR language, 'Right' otherwise; 'Trailing' is the obverse.
-UIViewAutoresizing UIViewAutoresizingFlexibleLeadingMargin();
-UIViewAutoresizing UIViewAutoresizingFlexibleTrailingMargin();
-
-// Text-direction aware UIEdgeInsets constructor; just like UIEdgeInsetsMake(),
-// except |leading| and |trailing| map to left and right when |direction| is
-// LEFT_TO_RIGHT, and are swapped for RIGHT_TO_LEFT.
-UIEdgeInsets UIEdgeInsetsMakeUsingDirection(
-    CGFloat top,
-    CGFloat leading,
-    CGFloat bottom,
-    CGFloat trailing,
-    base::i18n::TextDirection direction);
-// As above, but uses LayoutDirection() for |direction|.
-UIEdgeInsets UIEdgeInsetsMakeDirected(CGFloat top,
-                                      CGFloat leading,
-                                      CGFloat bottom,
-                                      CGFloat trailing);
 
 #endif  // IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_

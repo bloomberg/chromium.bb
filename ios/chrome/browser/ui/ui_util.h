@@ -7,8 +7,6 @@
 
 #include <CoreGraphics/CoreGraphics.h>
 
-#include "base/i18n/rtl.h"
-
 // UI Util containing functions that do not require Objective-C.
 
 // Running on an iPad?
@@ -19,87 +17,6 @@ enum InterfaceIdiom { IPHONE_IDIOM, IPAD_IDIOM, INTERFACE_IDIOM_COUNT };
 
 // Array of widths for device idioms in portrait orientation.
 extern const CGFloat kPortraitWidth[INTERFACE_IDIOM_COUNT];
-
-// True if views should be laid out with full RTL mirroring.
-bool UseRTLLayout();
-
-// RIGHT_TO_LEFT if UseRTLLayout(), otherwise LEFT_TO_RIGHT.
-base::i18n::TextDirection LayoutDirection();
-
-// A LayoutRect contains the information needed to generate a CGRect that may or
-// may not be flipped if positioned in RTL or LTR contexts. |leading| is the
-// distance from the leading edge that the final rect's edge should be; in LTR
-// this will be the x-origin, in RTL it will be used to compute the x-origin.
-// |boundingWidth| is the width of whatever element the rect will be used to
-// frame a subview of. |originY| will be origin.y of the rect, and |size| will
-// be the size of the rect.
-struct LayoutRect {
-  CGFloat leading;
-  CGFloat boundingWidth;
-  CGFloat originY;
-  CGSize size;
-};
-
-// The null LayoutRect, with leading, boundingWidth and originY of 0.0, and
-// a size of CGSizeZero.
-extern const LayoutRect LayoutRectZero;
-
-// Returns a new LayoutRect; |height| and |width| are used to construct the
-// |size| field.
-LayoutRect LayoutRectMake(CGFloat leading,
-                          CGFloat boundingWidth,
-                          CGFloat originY,
-                          CGFloat width,
-                          CGFloat height);
-
-// Given |layout|, returns the rect for that layout in text direction
-// |direction|.
-CGRect LayoutRectGetRectUsingDirection(LayoutRect layout,
-                                       base::i18n::TextDirection direction);
-// As above, using |direction| == RIGHT_TO_LEFT if UseRTLLayout(), LEFT_TO_RIGHT
-// otherwise.
-CGRect LayoutRectGetRect(LayoutRect layout);
-
-// Utilities for getting CALayer positioning values from a layoutRect.
-// Given |layout|, return the bounds rectangle of the generated rect -- that is,
-// a rect with origin (0,0) and size equal to |layout|'s size.
-CGRect LayoutRectGetBoundsRect(LayoutRect layout);
-
-// Given |layout| and some anchor point |anchor| (defined in the way that
-// CALayer's anchorPoint property is), return the CGPoint that defines the
-// position of a rect in the context used by |layout|.
-CGPoint LayoutRectGetPositionForAnchorUsingDirection(
-    LayoutRect layout,
-    CGPoint anchor,
-    base::i18n::TextDirection direction);
-
-// As above, using |direction| == RIGHT_TO_LEFT if UseRTLLayout(), LEFT_TO_RIGHT
-// otherwise.
-CGPoint LayoutRectGetPositionForAnchor(LayoutRect layout, CGPoint anchor);
-
-// Given |rect|, a rect, and |boundingRect|, a rect whose bounds are the
-// context in which |rect|'s frame is interpreted, return the layout that
-// defines |rect|, assuming |direction| is the direction |rect| was positioned
-// under.
-LayoutRect LayoutRectForRectInBoundingRectUsingDirection(
-    CGRect rect,
-    CGRect boundingRect,
-    base::i18n::TextDirection direction);
-
-// As above, using |direction| == RIGHT_TO_LEFT if UseRTLLayout(), LEFT_TO_RIGHT
-// otherwise.
-LayoutRect LayoutRectForRectInBoundingRect(CGRect rect, CGRect boundingRect);
-
-// Given a layout |layout|, return the layout that defines the leading area up
-// to |layout|.
-LayoutRect LayoutRectGetLeadingLayout(LayoutRect layout);
-
-// Given a layout |layout|, return the layout that defines the trailing area
-// after |layout|.
-LayoutRect LayoutRectGetTrailingLayout(LayoutRect layout);
-
-// Return the trailing extent of |layout| (its leading plus its width).
-CGFloat LayoutRectGetTrailingEdge(LayoutRect layout);
 
 // Is the screen of the device a high resolution screen, i.e. Retina Display.
 bool IsHighResScreen();

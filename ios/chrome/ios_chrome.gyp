@@ -412,6 +412,8 @@
         'browser/ui/orientation_limiting_navigation_controller.mm',
         'browser/ui/reversed_animation.h',
         'browser/ui/reversed_animation.mm',
+        'browser/ui/rtl_geometry.h',
+        'browser/ui/rtl_geometry.mm',
         'browser/ui/show_mail_composer_util.h',
         'browser/ui/show_mail_composer_util.mm',
         'browser/ui/show_privacy_settings_util.h',
