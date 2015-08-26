@@ -11,6 +11,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_resource_holder.h"
 #include "cc/surfaces/surface_sequence.h"
@@ -21,7 +22,6 @@ class Size;
 }
 
 namespace cc {
-class CompositorFrame;
 class CopyOutputRequest;
 class Surface;
 class SurfaceFactoryClient;
