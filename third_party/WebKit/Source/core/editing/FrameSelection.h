@@ -169,8 +169,6 @@ public:
     // the return value from underlying VisibleSelection's firstRange() is returned.
     PassRefPtrWillBeRawPtr<Range> firstRange() const;
 
-    PassRefPtrWillBeRawPtr<Range> toNormalizedRange() const { return m_selection.toNormalizedRange(); }
-
     void nodeWillBeRemoved(Node&);
     void didUpdateCharacterData(CharacterData*, unsigned offset, unsigned oldLength, unsigned newLength);
     void didMergeTextNodes(const Text& oldNode, unsigned offset);

@@ -155,11 +155,10 @@ public:
 
     bool intersectsNode(Node*) const;
 
-    // FIXME: Most callers probably don't want these functions, but
-    // are using them for historical reasons. toNormalizedRange and
-    // toNormalizedEphemeralRange contracts the range around text, and
-    // moves the caret upstream before returning the range/positions.
-    PassRefPtrWillBeRawPtr<Range> toNormalizedRange() const;
+    // TODO(yosin) Most callers probably don't want these functions, but
+    // are using them for historical reasons. |toNormalizedEphemeralRange()|
+    // contracts the range around text, and moves the caret most backward
+    // visually equivalent position before returning the range/positions.
     EphemeralRange toNormalizedEphemeralRange() const;
     static EphemeralRange normalizeRange(const EphemeralRange&);
     static EphemeralRangeInComposedTree normalizeRange(const EphemeralRangeInComposedTree&);

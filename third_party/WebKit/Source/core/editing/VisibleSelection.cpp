@@ -240,11 +240,6 @@ bool VisibleSelection::intersectsNode(Node* node) const
     return Range::intersectsNode(node, start, end, exceptionState) && !exceptionState.hadException();
 }
 
-PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
-{
-    return createRange(toNormalizedEphemeralRange());
-}
-
 template <typename Strategy>
 static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralRangeTemplate<Strategy>& range)
 {
