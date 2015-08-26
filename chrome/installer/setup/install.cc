@@ -41,7 +41,6 @@
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 
-
 namespace {
 
 void LogShortcutOperation(ShellUtil::ShortcutLocation location,
@@ -249,6 +248,28 @@ installer::InstallStatus InstallNewVersion(
              << ", old version: " << (*current_version)->GetString();
 
   return installer::INSTALL_FAILED;
+}
+
+bool CanResetDefaultBrowserIntentPicker() {
+  return base::win::GetVersion() >= base::win::VERSION_WIN10;
+}
+
+void ResetDefaultBrowserIntentPicker() {
+  static const wchar_t kUrlAssociationKeyFormat[] =
+      L"SOFTWARE\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\"
+      L"%ls\\UserChoice";
+
+  if (ShellUtil::GetChromeDefaultState() != ShellUtil::IS_DEFAULT) {
+    const base::string16 hash_value_name(L"Hash");
+    InstallUtil::DeleteRegistryValue(
+        HKEY_CURRENT_USER,
+        base::StringPrintf(kUrlAssociationKeyFormat, L"http"), 0,
+        hash_value_name);
+    InstallUtil::DeleteRegistryValue(
+        HKEY_CURRENT_USER,
+        base::StringPrintf(kUrlAssociationKeyFormat, L"https"), 0,
+        hash_value_name);
+  }
 }
 
 }  // end namespace
@@ -462,6 +483,8 @@ void RegisterChromeOnMachine(const installer::InstallerState& installer_state,
     ShellUtil::MakeChromeDefault(dist, level, chrome_exe, true);
   } else {
     ShellUtil::RegisterChromeBrowser(dist, chrome_exe, base::string16(), false);
+    if (make_chrome_default && CanResetDefaultBrowserIntentPicker())
+      ResetDefaultBrowserIntentPicker();
   }
 }
 
