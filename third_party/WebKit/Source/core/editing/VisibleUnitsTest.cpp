@@ -63,11 +63,13 @@ TEST_F(VisibleUnitsTest, localCaretRectOfPosition)
     RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
 
     LayoutObject* layoutObjectFromDOMTree;
-    LayoutRect layoutRectFromDOMTree = localCaretRectOfPosition(Position(one, 0), layoutObjectFromDOMTree);
+    LayoutRect layoutRectFromDOMTree = localCaretRectOfPosition(Position(one->firstChild(), 0), layoutObjectFromDOMTree);
 
     LayoutObject* layoutObjectFromComposedTree;
-    LayoutRect layoutRectFromComposedTree = localCaretRectOfPosition(PositionInComposedTree(one, 0), layoutObjectFromComposedTree);
+    LayoutRect layoutRectFromComposedTree = localCaretRectOfPosition(PositionInComposedTree(one->firstChild(), 0), layoutObjectFromComposedTree);
 
+    EXPECT_TRUE(layoutObjectFromDOMTree);
+    EXPECT_FALSE(layoutRectFromDOMTree.isEmpty());
     EXPECT_EQ(layoutObjectFromDOMTree, layoutObjectFromComposedTree);
     EXPECT_EQ(layoutRectFromDOMTree, layoutRectFromComposedTree);
 }
