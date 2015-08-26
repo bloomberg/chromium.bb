@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.document;
+package org.chromium.chrome.browser.util;
 
 import android.graphics.Color;
 
 /**
- * Utilities for brand color related properties.
+ * Helper functions for working with colors.
  */
-public class BrandColorUtils {
-    private static final float CONTRAST_LIGHT_TEXT_THRESHOLD = 3f;
+public class ColorUtils {
+    private static final float CONTRAST_LIGHT_ITEM_THRESHOLD = 3f;
     private static final float LIGHTNESS_OPAQUE_BOX_THRESHOLD = 0.82f;
 
-    /** Percentage to darken the brand color by when setting the status bar color. */
+    /** Percentage to darken a color by when setting the status bar color. */
     private static final float DARKEN_COLOR_FRACTION = 0.6f;
 
     /**
@@ -45,10 +45,10 @@ public class BrandColorUtils {
 
     /**
      * Darkens the given color to use on the status bar.
-     * @param color Brand color of the website.
+     * @param color Color which should be darkened.
      * @return Color that should be used for Android status bar.
      */
-    public static int computeStatusBarColor(int color) {
+    public static int getDarkenedColorForStatusBar(int color) {
         float[] hsv = new float[3];
         Color.colorToHSV(color, hsv);
         hsv[2] *= DARKEN_COLOR_FRACTION;
@@ -56,18 +56,19 @@ public class BrandColorUtils {
     }
 
     /**
-     * Check which version of the drawables should be used depending on the given primary color.
-     * @param color The primary color value we are querying for.
-     * @return Whether the light colored text and drawable set should be used.
+     * Check whether lighter or darker foreground elements (i.e. text, drawables etc.)
+     * should be used depending on the given background color.
+     * @param backgroundColor The background color value which is being queried.
+     * @return Whether light colored elements should be used.
      */
-    public static boolean shouldUseLightDrawablesForToolbar(int color) {
-        return getContrastForColor(color) >= CONTRAST_LIGHT_TEXT_THRESHOLD;
+    public static boolean shoudUseLightForegroundOnBackground(int backgroundColor) {
+        return getContrastForColor(backgroundColor) >= CONTRAST_LIGHT_ITEM_THRESHOLD;
     }
 
     /**
      * Check which version of the textbox background should be used depending on the given
-     * primary color.
-     * @param color The primary color value we are querying for.
+     * color.
+     * @param color The color value we are querying for.
      * @return Whether the transparent version of the background should be used.
      */
     public static boolean shouldUseOpaqueTextboxBackground(int color) {

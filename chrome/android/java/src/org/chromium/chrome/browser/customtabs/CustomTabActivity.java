@@ -29,11 +29,11 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
-import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -138,7 +138,7 @@ public class CustomTabActivity extends ChromeActivity {
         getToolbarManager().updatePrimaryColor(toolbarColor);
         if (toolbarColor != getResources().getColor(R.color.default_primary_color)) {
             ApiCompatibilityUtils.setStatusBarColor(getWindow(),
-                    BrandColorUtils.computeStatusBarColor(toolbarColor));
+                    ColorUtils.getDarkenedColorForStatusBar(toolbarColor));
         }
 
         // Setting task title and icon to be null will preserve the client app's title and icon.

@@ -24,6 +24,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
+import org.chromium.chrome.browser.util.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +48,7 @@ public class DocumentUtils {
             int color, boolean useDefaultStatusBarColor) {
         ApiCompatibilityUtils.setTaskDescription(activity, title, icon, color);
         int statusBarColor = useDefaultStatusBarColor
-                ? Color.BLACK : BrandColorUtils.computeStatusBarColor(color);
+                ? Color.BLACK : ColorUtils.getDarkenedColorForStatusBar(color);
         ApiCompatibilityUtils.setStatusBarColor(activity.getWindow(), statusBarColor);
     }
 

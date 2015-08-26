@@ -45,13 +45,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.Invalidator;
-import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 import org.chromium.chrome.browser.omnibox.UrlContainer;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -1654,7 +1654,7 @@ public class ToolbarPhone extends ToolbarLayout
         final int initialColor = mToolbarBackground.getColor();
         final int finalColor = getToolbarDataProvider().getPrimaryColor();
         if (initialColor == finalColor) return;
-        boolean shouldUseOpaque = BrandColorUtils.shouldUseOpaqueTextboxBackground(finalColor);
+        boolean shouldUseOpaque = ColorUtils.shouldUseOpaqueTextboxBackground(finalColor);
         final int initialAlpha = mUrlBackgroundAlpha;
         final int finalAlpha =
                 shouldUseOpaque ? 255 : LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
@@ -1793,9 +1793,9 @@ public class ToolbarPhone extends ToolbarLayout
         int currentPrimaryColor = getToolbarDataProvider().getPrimaryColor();
         if (mVisualState == VisualState.BRAND_COLOR && !visualStateChanged) {
             boolean useLightToolbarDrawables =
-                    BrandColorUtils.shouldUseLightDrawablesForToolbar(currentPrimaryColor);
+                    ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
             boolean unfocusedLocationBarUsesTransparentBg =
-                    !BrandColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
+                    !ColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
             if (useLightToolbarDrawables != mUseLightToolbarDrawables
                     || unfocusedLocationBarUsesTransparentBg
                             != mUnfocusedLocationBarUsesTransparentBg) {
@@ -1832,9 +1832,9 @@ public class ToolbarPhone extends ToolbarLayout
             progressBarBackgroundColorResource = R.color.progress_bar_background_white;
         } else if (mVisualState == VisualState.BRAND_COLOR) {
             mUseLightToolbarDrawables =
-                    BrandColorUtils.shouldUseLightDrawablesForToolbar(currentPrimaryColor);
+                    ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
             mUnfocusedLocationBarUsesTransparentBg =
-                    !BrandColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
+                    !ColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
             mUrlBackgroundAlpha = mUnfocusedLocationBarUsesTransparentBg
                     ? LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA : 255;
             progressBarBackgroundColorResource = mUseLightToolbarDrawables
