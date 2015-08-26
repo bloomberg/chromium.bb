@@ -143,13 +143,17 @@ static bool isPotentialClusterRoot(const LayoutObject* layoutObject)
 {
     // "Potential cluster roots" are the smallest unit for which we can
     // enable/disable text autosizing.
+    // - Must have children.
+    //   An exception is made for LayoutView which should create a root to
+    //   maintain consistency with documents that have no child nodes but may
+    //   still have LayoutObject children.
     // - Must not be inline, as different multipliers on one line looks terrible.
     //   Exceptions are inline-block and alike elements (inline-table, -webkit-inline-*),
     //   as they often contain entire multi-line columns of text.
     // - Must not be normal list items, as items in the same list should look
     //   consistent, unless they are floating or position:absolute/fixed.
     Node* node = layoutObject->generatingNode();
-    if (node && !node->hasChildren())
+    if (node && !node->hasChildren() && !layoutObject->isLayoutView())
         return false;
     if (!layoutObject->isLayoutBlock())
         return false;
@@ -315,7 +319,7 @@ void TextAutosizer::destroy(const LayoutBlock* block)
         // LayoutBlock with a fingerprint was destroyed during layout.
         // Clear the cluster stack and the supercluster map to avoid stale pointers.
         // Speculative fix for http://crbug.com/369485.
-        m_firstBlockToBeginLayout = 0;
+        m_firstBlockToBeginLayout = nullptr;
         m_clusterStack.clear();
         m_superclusters.clear();
     }
@@ -362,8 +366,12 @@ void TextAutosizer::beginLayout(LayoutBlock* block)
     if (prepareForLayout(block) == StopLayout)
         return;
 
+    ASSERT(!m_clusterStack.isEmpty() || block->isLayoutView());
+
     if (Cluster* cluster = maybeCreateCluster(block))
         m_clusterStack.append(adoptPtr(cluster));
+
+    ASSERT(!m_clusterStack.isEmpty());
 
     // Cells in auto-layout tables are handled separately by inflateAutoTable.
     bool isAutoTableCell = block->isTableCell() && !toLayoutTableCell(block)->table()->style()->isFixedTableLayout();
@@ -404,7 +412,7 @@ void TextAutosizer::endLayout(LayoutBlock* block)
     ASSERT(shouldHandleLayout());
 
     if (block == m_firstBlockToBeginLayout) {
-        m_firstBlockToBeginLayout = 0;
+        m_firstBlockToBeginLayout = nullptr;
         m_clusterStack.clear();
         m_superclusters.clear();
         m_stylesRetainedDuringLayout.clear();
