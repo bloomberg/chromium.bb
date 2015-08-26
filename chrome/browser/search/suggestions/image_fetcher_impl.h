@@ -22,7 +22,8 @@ class URLRequestContextGetter;
 
 namespace suggestions {
 
-// A class used to fetch server images.
+// A class used to fetch server images. It can be called from any thread and the
+// callback will be called on the thread which initiated the fetch.
 class ImageFetcherImpl : public ImageFetcher,
                          public chrome::BitmapFetcherDelegate {
  public:
@@ -37,7 +38,7 @@ class ImageFetcherImpl : public ImageFetcher,
       base::Callback<void(const GURL&, const SkBitmap*)> callback) override;
 
  private:
-  // Inherited from BitmapFetcherDelegate. Runs on the UI thread.
+  // Inherited from BitmapFetcherDelegate.
   void OnFetchComplete(const GURL& image_url, const SkBitmap* bitmap) override;
 
   typedef std::vector<base::Callback<void(const GURL&, const SkBitmap*)> >

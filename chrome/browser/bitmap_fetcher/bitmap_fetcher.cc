@@ -41,8 +41,6 @@ void BitmapFetcher::Start() {
 // Methods inherited from URLFetcherDelegate.
 
 void BitmapFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
     ReportFailure();
     return;
@@ -54,12 +52,6 @@ void BitmapFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   // Call start to begin decoding.  The ImageDecoder will call OnImageDecoded
   // with the data when it is done.
   ImageDecoder::Start(this, image_data);
-}
-
-void BitmapFetcher::OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                               int64 current,
-                                               int64 total) {
-  // Do nothing here.
 }
 
 // Methods inherited from ImageDecoder::ImageRequest.

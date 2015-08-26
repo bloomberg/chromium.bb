@@ -54,13 +54,6 @@ class BitmapFetcher : public net::URLFetcherDelegate,
   // Use accessor methods on |source| to get the results.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // This will be called when some part of the response is read. |current|
-  // denotes the number of bytes received up to the call, and |total| is the
-  // expected total size of the response (or -1 if not determined).
-  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64 current,
-                                  int64 total) override;
-
   // Methods inherited from ImageDecoder::ImageRequest
 
   // Called when image is decoded. |decoder| is used to identify the image in
