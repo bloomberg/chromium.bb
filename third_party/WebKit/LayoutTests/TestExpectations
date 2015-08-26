@@ -312,15 +312,6 @@ crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure
 # But consistently passes on release builds.
 crbug.com/518005 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Pass Failure ]
 
-crbug.com/518347 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-br.html [ NeedsRebaseline ]
-crbug.com/518347 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-backward-p.html [ NeedsRebaseline ]
-crbug.com/518347 [ Mac ] editing/selection/vertical-rl-rtl-extend-line-forward-br.html [ NeedsRebaseline ]
-crbug.com/518347 [ SnowLeopard Lion Mavericks MountainLion Retina ] editing/selection/vertical-rl-rtl-extend-line-forward-p.html [ NeedsRebaseline ]
-crbug.com/518347 [ Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
-crbug.com/518347 [ Linux Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
-crbug.com/518347 [ Linux Mac XP Win7 ] fast/text/emphasis-ellipsis-complextext.html [ NeedsRebaseline ]
-crbug.com/518347 [ Linux ] fast/text/international/draw-complex-text-from-to.html [ NeedsRebaseline ]
-
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 crbug.com/510337 inspector/console/console-format.html [ Slow ]
 crbug.com/510337 inspector/elements/edit/edit-dom-actions.html [ Slow Timeout ]
