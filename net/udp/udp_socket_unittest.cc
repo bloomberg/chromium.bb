@@ -480,7 +480,14 @@ TEST_F(UDPSocketTest, VerifyConnectBindsAddr) {
   DCHECK(simple_message == str);
 }
 
-TEST_F(UDPSocketTest, ClientGetLocalPeerAddresses) {
+// TODO(ellyjones): This test is flaky on iOS devices bots.
+// http://crbug.com/523225
+#if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_ClientGetLocalPeerAddresses FLAKY_ClientGetLocalPeerAddresses
+#else
+#define MAYBE_ClientGetLocalPeerAddresses ClientGetLocalPeerAddresses
+#endif
+TEST_F(UDPSocketTest, MAYBE_ClientGetLocalPeerAddresses) {
   struct TestData {
     std::string remote_address;
     std::string local_address;
