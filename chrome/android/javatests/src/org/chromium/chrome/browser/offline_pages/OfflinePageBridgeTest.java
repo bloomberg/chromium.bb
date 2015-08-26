@@ -46,13 +46,17 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
             public void run() {
                 Profile profile = Profile.getLastUsedProfile();
                 mOfflinePageBridge = new OfflinePageBridge(profile);
-                mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
-                    @Override
-                    public void offlinePageModelLoaded() {
-                        semaphore.release();
-                        mOfflinePageBridge.removeObserver(this);
-                    }
-                });
+                if (mOfflinePageBridge.isOfflinePageModelLoaded()) {
+                    semaphore.release();
+                } else {
+                    mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
+                        @Override
+                        public void offlinePageModelLoaded() {
+                            semaphore.release();
+                            mOfflinePageBridge.removeObserver(this);
+                        }
+                    });
+                }
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));

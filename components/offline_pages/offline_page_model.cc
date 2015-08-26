@@ -11,6 +11,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_node.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
 #include "url/gurl.h"
@@ -56,6 +58,9 @@ void DeleteArchiveFiles(const std::vector<base::FilePath>& paths_to_delete,
   }
 }
 
+void EmptyDeleteCallback(OfflinePageModel::DeletePageResult /* result */) {
+}
+
 }  // namespace
 
 OfflinePageModel::OfflinePageModel(
@@ -64,6 +69,7 @@ OfflinePageModel::OfflinePageModel(
     : store_(store.Pass()),
       is_loaded_(false),
       task_runner_(task_runner),
+      scoped_observer_(this),
       weak_ptr_factory_(this) {
   store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -72,7 +78,12 @@ OfflinePageModel::OfflinePageModel(
 OfflinePageModel::~OfflinePageModel() {
 }
 
+void OfflinePageModel::Start(bookmarks::BookmarkModel* model) {
+  scoped_observer_.Add(model);
+}
+
 void OfflinePageModel::Shutdown() {
+  scoped_observer_.RemoveAll();
 }
 
 void OfflinePageModel::AddObserver(Observer* observer) {
@@ -218,6 +229,26 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
   DeletePendingArchiver(archiver);
 }
 
+void OfflinePageModel::BookmarkModelChanged() {
+}
+
+void OfflinePageModel::BookmarkNodeRemoved(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* parent,
+    int old_index,
+    const bookmarks::BookmarkNode* node,
+    const std::set<GURL>& removed_urls) {
+  if (!is_loaded_) {
+    delayed_tasks_.push_back(
+        base::Bind(&OfflinePageModel::DeletePageByBookmarkId,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   node->id(),
+                   base::Bind(&EmptyDeleteCallback)));
+    return;
+  }
+  DeletePageByBookmarkId(node->id(), base::Bind(&EmptyDeleteCallback));
+}
+
 void OfflinePageModel::OnLoadDone(
     bool success,
     const std::vector<OfflinePageItem>& offline_pages) {
@@ -230,6 +261,11 @@ void OfflinePageModel::OnLoadDone(
     for (const auto& offline_page : offline_pages)
       offline_pages_[offline_page.bookmark_id] = offline_page;
   }
+
+  // Run all the delayed tasks.
+  for (const auto& delayed_task : delayed_tasks_)
+    delayed_task.Run();
+  delayed_tasks_.clear();
 
   FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelLoaded(this));
 }

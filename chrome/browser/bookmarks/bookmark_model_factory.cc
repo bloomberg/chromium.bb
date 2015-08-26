@@ -24,6 +24,12 @@
 #include "components/undo/bookmark_undo_service.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "components/offline_pages/offline_page_feature.h"
+#include "components/offline_pages/offline_page_model.h"
+#endif  // defined(OS_ANDROID)
+
 using bookmarks::BookmarkModel;
 
 // static
@@ -50,6 +56,10 @@ BookmarkModelFactory::BookmarkModelFactory()
   DependsOn(BookmarkUndoServiceFactory::GetInstance());
   DependsOn(ChromeBookmarkClientFactory::GetInstance());
   DependsOn(StartupTaskRunnerServiceFactory::GetInstance());
+#if defined(OS_ANDROID)
+  if (offline_pages::IsOfflinePagesEnabled())
+    DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
+#endif
 }
 
 BookmarkModelFactory::~BookmarkModelFactory() {
@@ -77,6 +87,14 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
 #endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
   if (register_bookmark_undo_service_as_observer)
     BookmarkUndoServiceFactory::GetForProfile(profile)->Start(bookmark_model);
+
+#if defined(OS_ANDROID)
+  if (offline_pages::IsOfflinePagesEnabled()) {
+    offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile)->
+        Start(bookmark_model);
+  }
+#endif  // defined(OS_ANDROID)
+
   return bookmark_model;
 }
 

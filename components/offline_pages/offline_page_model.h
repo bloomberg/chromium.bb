@@ -15,12 +15,17 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
+#include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
 
 class GURL;
 namespace base {
 class SequencedTaskRunner;
+}
+namespace bookmarks {
+class BookmarkModel;
 }
 
 namespace offline_pages {
@@ -45,7 +50,8 @@ class OfflinePageMetadataStore;
 //
 // TODO(fgorski): Things to describe:
 // * how to cancel requests and what to expect
-class OfflinePageModel : public KeyedService {
+class OfflinePageModel : public KeyedService,
+                         public bookmarks::BaseBookmarkModelObserver {
  public:
   // Result of saving a page offline.
   // A Java counterpart will be generated for this enum.
@@ -99,6 +105,12 @@ class OfflinePageModel : public KeyedService {
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~OfflinePageModel() override;
 
+  // Starts the OfflinePageModel and registers it as a BookmarkModelObserver.
+  // Calling this method is optional, but offline pages will not be deleted
+  // when the bookmark is deleted, i.e. due to sync, until this method is
+  // called.
+  void Start(bookmarks::BookmarkModel* model);
+
   // KeyedService implementation.
   void Shutdown() override;
 
@@ -142,6 +154,14 @@ class OfflinePageModel : public KeyedService {
 
  private:
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
+
+  // BaseBookmarkModelObserver:
+  void BookmarkModelChanged() override;
+  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
+                           const bookmarks::BookmarkNode* parent,
+                           int old_index,
+                           const bookmarks::BookmarkNode* node,
+                           const std::set<GURL>& removed_urls) override;
 
   // Callback for loading pages from the offline page metadata store.
   void OnLoadDone(bool success,
@@ -188,6 +208,12 @@ class OfflinePageModel : public KeyedService {
 
   // Pending archivers owned by this model.
   PendingArchivers pending_archivers_;
+
+  // Delayed tasks that should be invoked after the loading is done.
+  std::vector<base::Closure> delayed_tasks_;
+
+  ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
+      scoped_observer_;
 
   base::WeakPtrFactory<OfflinePageModel> weak_ptr_factory_;
 
