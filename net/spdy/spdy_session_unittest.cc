@@ -183,7 +183,6 @@ class SpdySessionTest : public PlatformTest,
 INSTANTIATE_TEST_CASE_P(NextProto,
                         SpdySessionTest,
                         testing::Values(kProtoSPDY31,
-                                        kProtoHTTP2_14,
                                         kProtoHTTP2));
 
 // Try to create a SPDY session that will fail during

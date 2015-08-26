@@ -898,7 +898,6 @@ void IOThread::ConfigureSpdyGlobals(
   }
   if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy4GroupNamePrefix)) {
     globals->next_protos.push_back(net::kProtoSPDY31);
-    globals->next_protos.push_back(net::kProtoHTTP2_14);
     globals->next_protos.push_back(net::kProtoHTTP2);
     globals->use_alternative_services.set(true);
     return;
@@ -908,11 +907,6 @@ void IOThread::ConfigureSpdyGlobals(
     if (base::LowerCaseEqualsASCII(
             GetVariationParam(spdy_trial_params, "enable_spdy31"), "true")) {
       globals->next_protos.push_back(net::kProtoSPDY31);
-      spdy_enabled = true;
-    }
-    if (base::LowerCaseEqualsASCII(
-            GetVariationParam(spdy_trial_params, "enable_http2_14"), "true")) {
-      globals->next_protos.push_back(net::kProtoHTTP2_14);
       spdy_enabled = true;
     }
     if (base::LowerCaseEqualsASCII(
@@ -929,7 +923,6 @@ void IOThread::ConfigureSpdyGlobals(
 
   // By default, enable HTTP/2.
   globals->next_protos.push_back(net::kProtoSPDY31);
-  globals->next_protos.push_back(net::kProtoHTTP2_14);
   globals->next_protos.push_back(net::kProtoHTTP2);
   globals->use_alternative_services.set(true);
 }

@@ -28,12 +28,12 @@ enum NextProto {
   kProtoSPDYHistogramOffset = kProtoDeprecatedSPDY2,
   kProtoSPDY3 = 101,
   kProtoSPDY31 = 102,
-  kProtoHTTP2_14 = 103,  // HTTP/2 draft-14, designated implementation draft.
-  kProtoHTTP2MinimumVersion = kProtoHTTP2_14,
+  // kProtoHTTP2_14 = 103,  // HTTP/2 draft-14
   // kProtoHTTP2_15 = 104,  // HTTP/2 draft-15
   // kProtoHTTP2_16 = 105,  // HTTP/2 draft-16
   // kProtoHTTP2_17 = 106,  // HTTP/2 draft-17
   kProtoHTTP2 = 107,  // HTTP/2, see https://tools.ietf.org/html/rfc7540.
+  kProtoHTTP2MinimumVersion = kProtoHTTP2,
   kProtoHTTP2MaximumVersion = kProtoHTTP2,
   kProtoSPDYMaximumVersion = kProtoHTTP2MaximumVersion,
 

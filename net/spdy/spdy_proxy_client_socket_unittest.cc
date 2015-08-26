@@ -143,7 +143,6 @@ class SpdyProxyClientSocketTest
 INSTANTIATE_TEST_CASE_P(NextProto,
                         SpdyProxyClientSocketTest,
                         testing::Values(kProtoSPDY31,
-                                        kProtoHTTP2_14,
                                         kProtoHTTP2));
 
 SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()

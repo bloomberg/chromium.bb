@@ -111,9 +111,9 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
   bool use_alternative_services = false;
   field_trial_group_ = "Spdy4Enabled";
   ConfigureSpdyGlobals();
-  EXPECT_THAT(globals_.next_protos,
-              ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31,
-                          net::kProtoHTTP2_14, net::kProtoHTTP2));
+  EXPECT_THAT(
+      globals_.next_protos,
+      ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31, net::kProtoHTTP2));
   globals_.use_alternative_services.CopyToIfSet(&use_alternative_services);
   EXPECT_TRUE(use_alternative_services);
 }
@@ -121,9 +121,9 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
 TEST_F(IOThreadTest, SpdyFieldTrialDefault) {
   field_trial_group_ = "";
   ConfigureSpdyGlobals();
-  EXPECT_THAT(globals_.next_protos,
-              ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31,
-                          net::kProtoHTTP2_14, net::kProtoHTTP2));
+  EXPECT_THAT(
+      globals_.next_protos,
+      ElementsAre(net::kProtoHTTP11, net::kProtoSPDY31, net::kProtoHTTP2));
   bool use_alternative_services = false;
   globals_.use_alternative_services.CopyToIfSet(&use_alternative_services);
   EXPECT_TRUE(use_alternative_services);

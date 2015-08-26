@@ -55,7 +55,6 @@ NextProtoVector SpdyNextProtos() {
   NextProtoVector next_protos;
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoSPDY31);
-  next_protos.push_back(kProtoHTTP2_14);
   next_protos.push_back(kProtoHTTP2);
   next_protos.push_back(kProtoQUIC1SPDY3);
   return next_protos;

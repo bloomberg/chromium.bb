@@ -378,8 +378,6 @@ HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
     case kProtoSPDY3:
     case kProtoSPDY31:
       return CONNECTION_INFO_SPDY3;
-    case kProtoHTTP2_14:
-      return CONNECTION_INFO_HTTP2_14;
     case kProtoHTTP2:
       return CONNECTION_INFO_HTTP2;
     case kProtoQUIC1SPDY3:
@@ -406,15 +404,12 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "spdy/2";
     case CONNECTION_INFO_SPDY3:
       return "spdy/3";
+    // Since ConnectionInfo is persisted to disk, deprecated values have to be
+    // handled. Note that h2-14 and h2-15 are essentially wire compatible with
+    // h2.
+    // Intentional fallthrough.
     case CONNECTION_INFO_HTTP2_14:
-      // For internal consistency, HTTP/2 is named SPDY4 within Chromium.
-      // This is the HTTP/2 draft-14 identifier.
-      return "h2-14";
     case CONNECTION_INFO_HTTP2_15:
-      // Since ConnectionInfo is persisted to disk, this value has to be
-      // handled, but h2-15 is removed.  Note that h2-14 and h2-15 are wire
-      // compatible for all practical purposes.
-      return "h2-14";
     case CONNECTION_INFO_HTTP2:
       return "h2";
     case CONNECTION_INFO_QUIC1_SPDY3:

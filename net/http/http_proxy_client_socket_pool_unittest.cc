@@ -326,10 +326,6 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY31),
                       HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY31),
                       HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY31),
-                      HttpProxyClientSocketPoolTestParams(HTTP, kProtoHTTP2_14),
-                      HttpProxyClientSocketPoolTestParams(HTTPS,
-                                                          kProtoHTTP2_14),
-                      HttpProxyClientSocketPoolTestParams(SPDY, kProtoHTTP2_14),
                       HttpProxyClientSocketPoolTestParams(HTTP, kProtoHTTP2),
                       HttpProxyClientSocketPoolTestParams(HTTPS, kProtoHTTP2),
                       HttpProxyClientSocketPoolTestParams(SPDY, kProtoHTTP2)));

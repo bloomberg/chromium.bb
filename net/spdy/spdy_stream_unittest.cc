@@ -111,7 +111,6 @@ class SpdyStreamTest : public ::testing::Test,
 INSTANTIATE_TEST_CASE_P(NextProto,
                         SpdyStreamTest,
                         testing::Values(kProtoSPDY31,
-                                        kProtoHTTP2_14,
                                         kProtoHTTP2));
 
 TEST_P(SpdyStreamTest, SendDataAfterOpen) {

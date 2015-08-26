@@ -430,7 +430,6 @@ class HttpNetworkTransactionTest
 INSTANTIATE_TEST_CASE_P(NextProto,
                         HttpNetworkTransactionTest,
                         testing::Values(kProtoSPDY31,
-                                        kProtoHTTP2_14,
                                         kProtoHTTP2));
 
 namespace {
@@ -12191,7 +12190,6 @@ class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
 INSTANTIATE_TEST_CASE_P(NextProto,
                         AltSvcCertificateVerificationTest,
                         testing::Values(kProtoSPDY31,
-                                        kProtoHTTP2_14,
                                         kProtoHTTP2));
 
 // The alternative service host must exhibit a certificate that is valid for the

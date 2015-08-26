@@ -20,7 +20,6 @@ class HttpStreamFactoryImplRequestTest
 INSTANTIATE_TEST_CASE_P(NextProto,
                         HttpStreamFactoryImplRequestTest,
                         testing::Values(kProtoSPDY31,
-                                        kProtoHTTP2_14,
                                         kProtoHTTP2));
 
 namespace {

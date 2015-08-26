@@ -716,8 +716,6 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         SpdyNetworkTransactionTestParams(kProtoSPDY31, HTTPS_SPDY_VIA_NPN),
         SpdyNetworkTransactionTestParams(kProtoSPDY31, HTTP_SPDY_VIA_ALT_SVC),
-        SpdyNetworkTransactionTestParams(kProtoHTTP2_14, HTTPS_SPDY_VIA_NPN),
-        SpdyNetworkTransactionTestParams(kProtoHTTP2_14, HTTP_SPDY_VIA_ALT_SVC),
         SpdyNetworkTransactionTestParams(kProtoHTTP2, HTTPS_SPDY_VIA_NPN),
         SpdyNetworkTransactionTestParams(kProtoHTTP2, HTTP_SPDY_VIA_ALT_SVC)));
 
@@ -4421,7 +4419,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   // Expect HTTP/2 protocols too in SSLConfig.
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2_14);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
@@ -4512,7 +4509,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   // Expect HTTP/2 protocols too in SSLConfig.
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2_14);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
@@ -6615,7 +6611,6 @@ INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionTLSUsageCheckTest,
     ::testing::Values(
-        SpdyNetworkTransactionTestParams(kProtoHTTP2_14, HTTPS_SPDY_VIA_NPN),
         SpdyNetworkTransactionTestParams(kProtoHTTP2, HTTPS_SPDY_VIA_NPN)));
 
 TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {
