@@ -138,8 +138,10 @@ bool AndroidDlopenExt(const char* filename,
   const android_dlextinfo* extinfo = &dlextinfo->extinfo;
   LOG_INFO("android_dlopen_ext:"
            " flags=0x%llx, reserved_addr=%p, reserved_size=%d, relro_fd=%d",
-           extinfo->flags,
-           extinfo->reserved_addr, extinfo->reserved_size, extinfo->relro_fd);
+           static_cast<long long>(extinfo->flags),
+           extinfo->reserved_addr,
+           static_cast<int>(extinfo->reserved_size),
+           extinfo->relro_fd);
 
   *status = (*function_ptr)(filename, flag, extinfo);
   return true;
@@ -231,7 +233,8 @@ ScopedAnonymousMmap::ScopedAnonymousMmap(void* addr, size_t size) {
     addr = reinterpret_cast<void*>(
         reinterpret_cast<uintptr_t>(addr) - kBreakpadGuardRegionBytes);
   }
-  LOG_INFO("Added %d to size, for Breakpad guard", kBreakpadGuardRegionBytes);
+  LOG_INFO("Added %d to size, for Breakpad guard",
+           static_cast<int>(kBreakpadGuardRegionBytes));
 #endif
 
   addr_ = mmap(addr, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -288,7 +291,7 @@ bool ResizeReservedAddressSpace(void* addr,
                                 size_t reserved_size,
                                 size_t load_size) {
   LOG_INFO("Called for %p, reserved %d, loaded %d",
-           addr, reserved_size, load_size);
+           addr, static_cast<int>(reserved_size), static_cast<int>(load_size));
 
   if (reserved_size < load_size) {
     LOG_ERROR("WARNING: library reservation was too small");
