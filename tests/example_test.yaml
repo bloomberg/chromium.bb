@@ -21,6 +21,6 @@ tests:
   - # a simple, no-frills test
     - Good bye
     - ⠠⠛⠕⠕⠙ ⠃⠽⠑
-  # same as above using "inline notation"
+  # same as above using "flow style" notation
   - [Good bye,  ⠠⠛⠕⠕⠙ ⠃⠽⠑]
 

@@ -1959,7 +1959,7 @@ tests:
   - # a simple, no-frills test
     - Good bye
     - ⠠⠛⠕⠕⠙ ⠃⠽⠑
-  # same as above using "inline notation"
+  # same as above using "flow style" notation
   - [Good bye,  ⠠⠛⠕⠕⠙ ⠃⠽⠑]
 @end example
 
@@ -2015,7 +2015,7 @@ would look at follows:
     - ⠠⠛⠕⠕⠙ ⠃⠽⠑
 @end example
 
-Using the more compact "inline notation" it would look like the
+Using the more compact ``flow style'' notation it would look like the
 following:
 
 @example
@@ -2050,7 +2050,8 @@ form of a string.
 A list of cursor positions for each input position. Useful when
 simulating screenreader interaction, to debug contraction and cursor
 behavior as in the following example from the @file{en-GB-g2.ctb}
-test:
+test. Also note that in this example the additional options are not
+passed in using the ``flow style'' notation.
 
 @example
   -
