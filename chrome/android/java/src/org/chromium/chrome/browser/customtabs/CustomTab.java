@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.graphics.Rect;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.os.TransactionTooLargeException;
@@ -342,4 +343,34 @@ public class CustomTab extends ChromeTab {
         }
     }
 
+    @Override
+    protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
+        return new TabChromeWebContentsDelegateAndroidImpl() {
+            private String mTargetUrl;
+
+            @Override
+            public boolean shouldResumeRequestsForCreatedWindow() {
+                return true;
+            }
+
+            @Override
+            public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
+                    String frameName, String targetUrl, WebContents newWebContents) {
+                super.webContentsCreated(
+                        sourceWebContents, openerRenderFrameId, frameName, targetUrl,
+                        newWebContents);
+                mTargetUrl = targetUrl;
+            }
+
+            @Override
+            public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
+                    int disposition, Rect initialPosition, boolean userGesture) {
+                assert mTargetUrl != null;
+                loadUrlAndTrackFromTimestamp(
+                        new LoadUrlParams(mTargetUrl), SystemClock.elapsedRealtime());
+                mTargetUrl = null;
+                return false;
+            }
+        };
+    }
 }

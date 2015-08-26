@@ -369,8 +369,8 @@ public class ChromeTab extends Tab {
 
             // TODO(dfalcantara): Re-remove this once crbug.com/508366 is fixed.
             TabCreator tabCreator = mActivity.getTabCreator(isIncognito());
-            assert tabCreator != null;
-            if (tabCreator.createsTabsAsynchronously()) {
+
+            if (tabCreator != null && tabCreator.createsTabsAsynchronously()) {
                 DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
             }
         }
