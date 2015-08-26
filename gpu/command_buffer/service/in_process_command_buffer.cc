@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -23,9 +24,11 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -156,6 +159,17 @@ InProcessCommandBuffer::Service::pending_valuebuffer_state() {
     pending_valuebuffer_state_ = new ValueStateMap();
   }
   return pending_valuebuffer_state_;
+}
+
+gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
+  if (!program_cache_.get() &&
+      (gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
+       gfx::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuProgramCache)) {
+    program_cache_.reset(new gpu::gles2::MemoryProgramCache());
+  }
+  return program_cache_.get();
 }
 
 InProcessCommandBuffer::InProcessCommandBuffer(
@@ -361,6 +375,14 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     LOG(ERROR) << "Could not make context current.";
     DestroyOnGpuThread();
     return false;
+  }
+
+  if (!decoder_->GetContextGroup()->has_program_cache() &&
+      !decoder_->GetContextGroup()
+           ->feature_info()
+           ->workarounds()
+           .disable_program_cache) {
+    decoder_->GetContextGroup()->set_program_cache(service_->program_cache());
   }
 
   gles2::DisallowedFeatures disallowed_features;

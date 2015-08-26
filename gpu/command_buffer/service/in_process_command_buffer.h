@@ -54,6 +54,7 @@ namespace gles2 {
 class FramebufferCompletenessCache;
 class GLES2Decoder;
 class MailboxManager;
+class ProgramCache;
 class ShaderTranslatorCache;
 class SubscriptionRefSet;
 }
@@ -152,12 +153,14 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     scoped_refptr<gles2::MailboxManager> mailbox_manager();
     scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set();
     scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state();
+    gpu::gles2::ProgramCache* program_cache();
 
    private:
     scoped_refptr<gfx::GLShareGroup> share_group_;
     scoped_refptr<gles2::MailboxManager> mailbox_manager_;
     scoped_refptr<gles2::SubscriptionRefSet> subscription_ref_set_;
     scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
+    scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
   };
 
 #if defined(OS_ANDROID)
