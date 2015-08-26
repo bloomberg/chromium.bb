@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -474,9 +475,10 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 }
 
 bool AccessibilityManager::IsIncognitoAllowed() {
-  // Supervised users can't create incognito-mode windows.
-  return !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser() &&
-         !user_manager::UserManager::Get()->IsLoggedInAsChildUser();
+  return profile_ != NULL &&
+         profile_->GetProfileType() != Profile::GUEST_PROFILE &&
+         IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
+             IncognitoModePrefs::DISABLED;
 }
 
 bool AccessibilityManager::IsLargeCursorEnabled() {
