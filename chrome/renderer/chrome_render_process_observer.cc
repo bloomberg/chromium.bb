@@ -29,9 +29,9 @@
 #include "chrome/common/resource_usage_reporter.mojom.h"
 #include "chrome/common/resource_usage_reporter_type_converters.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/variations/variations_util.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/security_filter_peer.h"
+#include "components/variations/variations_util.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_thread.h"
@@ -260,7 +260,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
     crypto::InitNSSSafely();
 #endif
   // Setup initial set of crash dump data for Field Trials in this renderer.
-  chrome_variations::SetChildProcessLoggingVariationList();
+  variations::SetVariationListCrashKeys();
   // Listen for field trial activations to report them to the browser.
   base::FieldTrialList::AddObserver(this);
 }
@@ -322,7 +322,7 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
   // Ensure the trial is marked as "used" by calling group() on it if it is
   // marked as activated.
   trial->group();
-  chrome_variations::SetChildProcessLoggingVariationList();
+  variations::SetVariationListCrashKeys();
 }
 
 const RendererContentSettingRules*

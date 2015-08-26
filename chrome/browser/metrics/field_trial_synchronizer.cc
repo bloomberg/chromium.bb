@@ -9,7 +9,7 @@
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/variations/variations_util.h"
+#include "components/variations/variations_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -30,7 +30,7 @@ FieldTrialSynchronizer::FieldTrialSynchronizer() {
   g_field_trial_synchronizer = this;
   base::FieldTrialList::AddObserver(this);
 
-  chrome_variations::SetChildProcessLoggingVariationList();
+  variations::SetVariationListCrashKeys();
 }
 
 void FieldTrialSynchronizer::NotifyAllRenderers(
@@ -58,7 +58,7 @@ void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
                  this,
                  field_trial_name,
                  group_name));
-  chrome_variations::SetChildProcessLoggingVariationList();
+  variations::SetVariationListCrashKeys();
 }
 
 FieldTrialSynchronizer::~FieldTrialSynchronizer() {

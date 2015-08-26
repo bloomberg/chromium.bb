@@ -9,9 +9,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/variations/fieldtrial_testing_config.h"
-#include "components/variations/active_field_trials.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/escape.h"
 
@@ -24,12 +22,6 @@ std::string EscapeValue(const std::string& value) {
 }
 
 } // namespace
-
-void SetChildProcessLoggingVariationList() {
-  std::vector<std::string> experiment_strings;
-  variations::GetFieldTrialActiveGroupIdsAsStrings(&experiment_strings);
-  crash_keys::SetVariationsList(experiment_strings);
-}
 
 bool AssociateParamsFromString(const std::string& varations_string) {
   // Format: Trial1.Group1:k1/v1/k2/v2,Trial2.Group2:k1/v1/k2/v2

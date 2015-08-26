@@ -19,6 +19,8 @@
         '../crypto/crypto.gyp:crypto',
         '../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+        'compression',
+        'crash_keys',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
@@ -63,6 +65,8 @@
         'variations/variations_service_client.h',
         'variations/variations_url_constants.cc',
         'variations/variations_url_constants.h',
+        'variations/variations_util.cc',
+        'variations/variations_util.h',
       ],
       'variables': {
         'proto_in_dir': 'variations/proto',
@@ -94,11 +98,11 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'components.gyp:google_core_browser',
-        "components.gyp:metrics",
+        'components.gyp:metrics',
         'variations',
       ],
       'export_dependent_settings': [
-        "components.gyp:metrics",
+        'components.gyp:metrics',
       ],
       'sources': [
         'variations/net/variations_http_header_provider.cc',

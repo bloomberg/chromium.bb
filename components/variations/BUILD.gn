@@ -47,6 +47,8 @@ source_set("variations") {
     "variations_service_client.h",
     "variations_url_constants.cc",
     "variations_url_constants.h",
+    "variations_util.cc",
+    "variations_util.h",
   ]
 
   if (is_android || is_ios) {
@@ -61,6 +63,7 @@ source_set("variations") {
     "//base",
     "//base:prefs",
     "//components/compression",
+    "//components/crash_keys",
     "//crypto",
     "//third_party/mt19937ar",
     "//third_party/protobuf:protobuf_lite",

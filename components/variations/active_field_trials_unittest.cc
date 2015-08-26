@@ -9,7 +9,7 @@
 
 namespace variations {
 
-TEST(VariationsUtilTest, GetFieldTrialActiveGroups) {
+TEST(ActiveFieldTrialsTest, GetFieldTrialActiveGroups) {
   typedef std::set<ActiveGroupId, ActiveGroupIdCompare> ActiveGroupIdSet;
   std::string trial_one("trial one");
   std::string group_one("group one");
