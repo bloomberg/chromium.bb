@@ -27,15 +27,6 @@ eventType: click
 PASS objectsToString(actualReceivers) is "HTMLDocument,Window"
 eventType: wheel
 PASS objectsToString(actualReceivers) is "HTMLDocument,Window"
-outside body, outside element, outside frame
-eventType: mousedown
-PASS objectsToString(actualReceivers) is "HTMLDocument,Window"
-eventType: mouseup
-PASS objectsToString(actualReceivers) is "HTMLDocument,Window"
-eventType: click
-PASS objectsToString(actualReceivers) is "HTMLDocument,Window"
-eventType: wheel
-PASS objectsToString(actualReceivers) is "HTMLDocument,Window"
 PASS successfullyParsed is true
 
 TEST COMPLETE

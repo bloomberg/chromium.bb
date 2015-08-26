@@ -1491,17 +1491,27 @@ bool DeprecatedPaintLayer::hitTest(HitTestResult& result)
         hitTestArea.unite(LayoutRect(layoutObject()->view()->documentRect()));
 
     DeprecatedPaintLayer* insideLayer = hitTestLayer(this, 0, result, hitTestArea, hitTestLocation, false);
-    if (!insideLayer) {
-        // We didn't hit any layer. If we are the root layer and the mouse is -- or just was -- down,
-        // return ourselves. We do this so mouse events continue getting delivered after a drag has
-        // exited the WebView, and so hit testing over a scrollbar hits the content document.
-        // In addtion, it is possible for the mouse to stay in the document but there is no element.
-        // At that time, the events of the mouse should be fired.
+    if (!insideLayer && isRootLayer()) {
+        IntRect hitRect = hitTestLocation.boundingBox();
+        bool fallback = false;
+        // If we didn't hit any layers but are still inside the document
+        // bounds, then we should fallback to hitting the document.
+        // For rect-based hit test, we do the fallback only when the hit-rect
+        // is totally within the document bounds.
+        if (hitTestArea.contains(LayoutRect(hitRect))) {
+            fallback = true;
+
+        // Mouse dragging outside the main document should also be
+        // delivered to the document.
+        // TODO(miletus): Capture behavior inconsistent with iframes
+        // crbug.com/522109.
         // TODO(majidvp): This should apply more consistently across different event types and we
         // should not use RequestType for it. Perhaps best for it to be done at a higher level. See
         // http://crbug.com/505825
-        LayoutPoint hitPoint = hitTestLocation.point();
-        if (!request.isChildFrameHitTest() && ((request.active() || request.release()) || (request.move() && hitTestArea.contains(hitPoint.x(), hitPoint.y()))) && isRootLayer()) {
+        } else if ((request.active() || request.release()) && !request.isChildFrameHitTest()) {
+            fallback = true;
+        }
+        if (fallback) {
             layoutObject()->updateHitTestResult(result, toLayoutView(layoutObject())->flipForWritingMode(hitTestLocation.point()));
             insideLayer = this;
 

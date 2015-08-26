@@ -63,8 +63,6 @@ onload = function() {
     generateEventsAndVerify(10, 10, [document.body, document, window]);
     debug('outside body, outside element, inside frame'); // received by doc, window
     generateEventsAndVerify(10, 500, [document, window]);
-    debug('outside body, outside element, outside frame'); // received by doc, window
-    generateEventsAndVerify(10, 2000, [document, window]);
 
     finishJSTest();
 
