@@ -39,6 +39,8 @@
       'renderer/plugins/non_loadable_plugin_placeholder.h',
       'renderer/plugins/plugin_uma.cc',
       'renderer/plugins/plugin_uma.h',
+      'renderer/plugins/shadow_dom_plugin_placeholder.cc',
+      'renderer/plugins/shadow_dom_plugin_placeholder.h',
       'renderer/prerender/prerender_dispatcher.cc',
       'renderer/prerender/prerender_dispatcher.h',
       'renderer/prerender/prerender_extra_data.cc',

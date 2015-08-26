@@ -483,6 +483,10 @@ const char kEnablePanels[]                  = "enable-panels";
 // Enable the new material UI - requires out of process PDF plugin.
 const char kEnablePdfMaterialUI[]           = "enable-pdf-material-ui";
 
+// Enables presenting plugin placeholder content as shadow DOM.
+const char kEnablePluginPlaceholderShadowDom[] =
+    "enable-plugin-placeholder-shadow-dom";
+
 // Enables a number of potentially annoying security features (strict mixed
 // content mode, powerful feature restrictions, etc.)
 const char kEnablePotentiallyAnnoyingSecurityFeatures[] =
