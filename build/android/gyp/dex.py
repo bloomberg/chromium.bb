@@ -48,7 +48,10 @@ def DoMultiDex(options, paths):
 def DoDex(options, paths, dex_args=None):
   dx_binary = os.path.join(options.android_sdk_tools, 'dx')
   # See http://crbug.com/272064 for context on --force-jumbo.
-  dex_cmd = [dx_binary, '--dex', '--force-jumbo', '--output', options.dex_path]
+  # See https://github.com/android/platform_dalvik/commit/dd140a22d for
+  # --num-threads.
+  dex_cmd = [dx_binary, '--num-threads=8', '--dex', '--force-jumbo',
+             '--output', options.dex_path]
   if options.no_locals != '0':
     dex_cmd.append('--no-locals')
 
