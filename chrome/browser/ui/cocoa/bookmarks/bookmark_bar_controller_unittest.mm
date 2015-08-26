@@ -2086,30 +2086,39 @@ TEST_F(BookmarkBarControllerDragDropTest, PulseButton) {
 
   BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];
   EXPECT_FALSE([button isContinuousPulsing]);
-
-  NSValue *value = [NSValue valueWithPointer:node];
-  NSDictionary *dict = [NSDictionary
-                         dictionaryWithObjectsAndKeys:value,
-                         bookmark_button::kBookmarkKey,
-                         [NSNumber numberWithBool:YES],
-                         bookmark_button::kBookmarkPulseFlagKey,
-                         nil];
-  [[NSNotificationCenter defaultCenter]
-        postNotificationName:bookmark_button::kPulseBookmarkButtonNotification
-                      object:nil
-                    userInfo:dict];
+  [bar_ startPulsingBookmarkNode:node];
   EXPECT_TRUE([button isContinuousPulsing]);
-
-  dict = [NSDictionary dictionaryWithObjectsAndKeys:value,
-                       bookmark_button::kBookmarkKey,
-                       [NSNumber numberWithBool:NO],
-                       bookmark_button::kBookmarkPulseFlagKey,
-                       nil];
-  [[NSNotificationCenter defaultCenter]
-        postNotificationName:bookmark_button::kPulseBookmarkButtonNotification
-                      object:nil
-                    userInfo:dict];
+  [bar_ stopPulsingBookmarkNode];
   EXPECT_FALSE([button isContinuousPulsing]);
+
+  // Pulsing a node within a folder should pulse the folder button.
+  const BookmarkNode* folder =
+      model->AddFolder(root, root->child_count(), ASCIIToUTF16("folder"));
+  const BookmarkNode* inner =
+      model->AddURL(folder, folder->child_count(), ASCIIToUTF16("inner"), gurl);
+
+  BookmarkButton* folder_button = [[bar_ buttons] objectAtIndex:1];
+  EXPECT_FALSE([folder_button isContinuousPulsing]);
+  [bar_ startPulsingBookmarkNode:inner];
+  EXPECT_TRUE([folder_button isContinuousPulsing]);
+  [bar_ stopPulsingBookmarkNode];
+  EXPECT_FALSE([folder_button isContinuousPulsing]);
+
+  // Stop pulsing if the node moved.
+  [bar_ startPulsingBookmarkNode:inner];
+  EXPECT_TRUE([folder_button isContinuousPulsing]);
+  const BookmarkNode* folder2 =
+      model->AddFolder(root, root->child_count(), ASCIIToUTF16("folder2"));
+  model->Move(inner, folder2, 0);
+  EXPECT_FALSE([folder_button isContinuousPulsing]);
+
+  // Removing a pulsing folder is allowed.
+  [bar_ startPulsingBookmarkNode:inner];
+  BookmarkButton* folder2_button = [[bar_ buttons] objectAtIndex:2];
+  EXPECT_TRUE([folder2_button isContinuousPulsing]);
+  model->Remove(folder2);
+  EXPECT_FALSE([folder2_button isContinuousPulsing]);
+  [bar_ stopPulsingBookmarkNode];  // Should not crash.
 }
 
 TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkDataToTrash) {

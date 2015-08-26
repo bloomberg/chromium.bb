@@ -28,6 +28,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 @class AvatarBaseController;
+class BookmarkBubbleObserverCocoa;
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
@@ -91,6 +92,7 @@ class Command;
   // be shut down before our destructors are called.
   StatusBubbleMac* statusBubble_;
 
+  scoped_ptr<BookmarkBubbleObserverCocoa> bookmarkBubbleObserver_;
   BookmarkBubbleController* bookmarkBubbleController_;  // Weak.
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
@@ -356,6 +358,9 @@ class Command;
 // Return the point to which a bubble window's arrow should point, in window
 // coordinates.
 - (NSPoint)bookmarkBubblePoint;
+
+// Called by BookmarkBubbleObserverCocoa when the bubble is closed.
+- (void)bookmarkBubbleClosed;
 
 // Called when the Add Search Engine dialog is closed.
 - (void)sheetDidEnd:(NSWindow*)sheet

@@ -16,7 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view_observer.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bubble_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_observer.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
@@ -71,7 +71,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
                         public gfx::AnimationDelegate,
                         public BookmarkMenuControllerObserver,
                         public BookmarkBarInstructionsDelegate,
-                        public BookmarkBubbleViewObserver {
+                        public bookmarks::BookmarkBubbleObserver {
  public:
   // The internal view class name.
   static const char kViewClassName[];
@@ -203,8 +203,8 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // BookmarkBarInstructionsDelegate:
   void OnImportBookmarks() override;
 
-  // BookmarkBubbleViewObserver:
-  void OnBookmarkBubbleShown(const GURL& url) override;
+  // bookmarks::BookmarkBubbleObserver:
+  void OnBookmarkBubbleShown(const bookmarks::BookmarkNode* node) override;
   void OnBookmarkBubbleHidden() override;
 
   // bookmarks::BookmarkModelObserver:

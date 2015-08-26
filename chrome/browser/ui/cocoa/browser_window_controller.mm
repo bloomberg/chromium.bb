@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_observer_cocoa.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
@@ -1768,36 +1769,29 @@ using content::WebContents;
 // Show the bookmark bubble (e.g. user just clicked on the STAR).
 - (void)showBookmarkBubbleForURL:(const GURL&)url
                alreadyBookmarked:(BOOL)alreadyMarked {
-  if (!bookmarkBubbleController_) {
+  if (!bookmarkBubbleObserver_.get()) {
+    bookmarkBubbleObserver_.reset(new BookmarkBubbleObserverCocoa(self));
     BookmarkModel* model =
         BookmarkModelFactory::GetForProfile(browser_->profile());
     bookmarks::ManagedBookmarkService* managed =
         ManagedBookmarkServiceFactory::GetForProfile(browser_->profile());
     const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url);
-    bookmarkBubbleController_ =
-        [[BookmarkBubbleController alloc] initWithParentWindow:[self window]
-                                                       managed:managed
-                                                         model:model
-                                                          node:node
-                                             alreadyBookmarked:alreadyMarked];
+    bookmarkBubbleController_ = [[BookmarkBubbleController alloc]
+        initWithParentWindow:[self window]
+              bubbleObserver:bookmarkBubbleObserver_.get()
+                     managed:managed
+                       model:model
+                        node:node
+           alreadyBookmarked:alreadyMarked];
     [bookmarkBubbleController_ showWindow:self];
-    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self
-               selector:@selector(bookmarkBubbleWindowWillClose:)
-                   name:NSWindowWillCloseNotification
-                 object:[bookmarkBubbleController_ window]];
+    DCHECK(bookmarkBubbleObserver_);
   }
 }
 
-// Nil out the weak bookmark bubble controller reference.
-- (void)bookmarkBubbleWindowWillClose:(NSNotification*)notification {
-  DCHECK_EQ([notification object], [bookmarkBubbleController_ window]);
-
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center removeObserver:self
-                    name:NSWindowWillCloseNotification
-                  object:[bookmarkBubbleController_ window]];
+- (void)bookmarkBubbleClosed {
+  // Nil out the weak bookmark bubble controller reference.
   bookmarkBubbleController_ = nil;
+  bookmarkBubbleObserver_.reset();
 }
 
 // Handle the editBookmarkNode: action sent from bookmark bubble controllers.

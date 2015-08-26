@@ -11,6 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bubble_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
@@ -27,54 +28,42 @@
 #include "testing/platform_test.h"
 
 using base::ASCIIToUTF16;
+using bookmarks::BookmarkBubbleObserver;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 using content::WebContents;
-
-// Watch for bookmark pulse notifications so we can confirm they were sent.
-@interface BookmarkPulseObserver : NSObject {
-  int notifications_;
-}
-@property (assign, nonatomic) int notifications;
-@end
-
-
-@implementation BookmarkPulseObserver
-
-@synthesize notifications = notifications_;
-
-- (id)init {
-  if ((self = [super init])) {
-    [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(pulseBookmarkNotification:)
-             name:bookmark_button::kPulseBookmarkButtonNotification
-           object:nil];
-  }
-  return self;
-}
-
-- (void)pulseBookmarkNotification:(NSNotificationCenter *)notification {
-  notifications_++;
-}
-
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
-}
-
-@end
-
 
 namespace {
 
 // URL of the test bookmark.
 const char kTestBookmarkURL[] = "http://www.google.com";
 
+class TestBookmarkBubbleObserver : public BookmarkBubbleObserver {
+ public:
+  TestBookmarkBubbleObserver() {}
+  ~TestBookmarkBubbleObserver() override{};
+
+  // bookmarks::BookmarkBubbleObserver.
+  void OnBookmarkBubbleShown(const BookmarkNode* node) override {
+    ++shown_count_;
+  }
+  void OnBookmarkBubbleHidden() override { ++hidden_count_; }
+
+  int shown_count() { return shown_count_; }
+  int hidden_count() { return hidden_count_; }
+
+ private:
+  int shown_count_ = 0;
+  int hidden_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBookmarkBubbleObserver);
+};
+
 class BookmarkBubbleControllerTest : public CocoaProfileTest {
  public:
   static int edits_;
   BookmarkBubbleController* controller_;
+  TestBookmarkBubbleObserver test_observer_;
 
   BookmarkBubbleControllerTest() : controller_(nil) {
     edits_ = 0;
@@ -97,6 +86,7 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
         ManagedBookmarkServiceFactory::GetForProfile(profile());
     controller_ = [[BookmarkBubbleController alloc]
         initWithParentWindow:browser()->window()->GetNativeWindow()
+              bubbleObserver:&test_observer_
                      managed:managed
                        model:model
                         node:node
@@ -242,7 +232,6 @@ TEST_F(BookmarkBubbleControllerTest, TestFolderWithBlankName) {
   EXPECT_TRUE(blankFolderFound);
 }
 
-
 // Click on edit; bubble gets closed.
 TEST_F(BookmarkBubbleControllerTest, TestEdit) {
   const BookmarkNode* node = CreateTestBookmark();
@@ -257,22 +246,22 @@ TEST_F(BookmarkBubbleControllerTest, TestEdit) {
 }
 
 // CallClose; bubble gets closed.
-// Also confirm pulse notifications get sent.
+// Also confirm bubble notifications get sent.
 TEST_F(BookmarkBubbleControllerTest, TestClose) {
   const BookmarkNode* node = CreateTestBookmark();
   EXPECT_EQ(edits_, 0);
 
-  base::scoped_nsobject<BookmarkPulseObserver> observer(
-      [[BookmarkPulseObserver alloc] init]);
-  EXPECT_EQ([observer notifications], 0);
   BookmarkBubbleController* controller = ControllerForNode(node);
+  EXPECT_TRUE(controller.bookmarkBubbleObserver);
+  EXPECT_EQ(1, test_observer_.shown_count());
+  EXPECT_EQ(0, test_observer_.hidden_count());
   EXPECT_TRUE(controller);
   EXPECT_FALSE(IsWindowClosing());
-  EXPECT_EQ([observer notifications], 1);
   [controller ok:controller];
   EXPECT_EQ(edits_, 0);
   EXPECT_TRUE(IsWindowClosing());
-  EXPECT_EQ([observer notifications], 2);
+  EXPECT_FALSE(controller.bookmarkBubbleObserver);
+  EXPECT_EQ(1, test_observer_.hidden_count());
 }
 
 // User changes title and parent folder in the UI
@@ -401,6 +390,7 @@ TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
   const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller = [[BookmarkBubbleController alloc]
       initWithParentWindow:browser()->window()->GetNativeWindow()
+            bubbleObserver:&test_observer_
                    managed:managed
                      model:model
                       node:node

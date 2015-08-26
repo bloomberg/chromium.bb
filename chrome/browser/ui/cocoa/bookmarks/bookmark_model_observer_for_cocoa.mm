@@ -32,7 +32,7 @@ void BookmarkModelObserverForCocoa::StopObservingNode(
 
 void BookmarkModelObserverForCocoa::BookmarkModelBeingDeleted(
     BookmarkModel* model) {
-  Notify(YES);
+  Notify();
 }
 
 void BookmarkModelObserverForCocoa::BookmarkNodeMoved(
@@ -43,7 +43,7 @@ void BookmarkModelObserverForCocoa::BookmarkNodeMoved(
     int new_index) {
   // Editors often have a tree of parents, so movement of folders
   // must cause a cancel.
-  Notify(NO);
+  Notify();
 }
 
 void BookmarkModelObserverForCocoa::BookmarkNodeRemoved(
@@ -53,22 +53,22 @@ void BookmarkModelObserverForCocoa::BookmarkNodeRemoved(
     const BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
   // See comment in BookmarkNodeMoved.
-  Notify(YES);
+  Notify();
 }
 
 void BookmarkModelObserverForCocoa::BookmarkAllUserNodesRemoved(
     BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
-  Notify(YES);
+  Notify();
 }
 
 void BookmarkModelObserverForCocoa::BookmarkNodeChanged(
     BookmarkModel* model,
     const BookmarkNode* node) {
   if (!nodes_.size() || nodes_.find(node) != nodes_.end())
-    Notify(NO);
+    Notify();
 }
 
-void BookmarkModelObserverForCocoa::Notify(BOOL deleted) {
-  callback_.get()(deleted);
+void BookmarkModelObserverForCocoa::Notify() {
+  callback_.get()();
 }

@@ -13,6 +13,7 @@
 @class BookmarkSyncPromoController;
 
 namespace bookmarks {
+class BookmarkBubbleObserver;
 class BookmarkModel;
 class BookmarkNode;
 class ManagedBookmarkService;
@@ -30,8 +31,8 @@ class ManagedBookmarkService;
   bookmarks::BookmarkModel* model_;  // weak
   const bookmarks::BookmarkNode* node_;  // weak
 
-  // The bookmark node whose button we asked to pulse.
-  const bookmarks::BookmarkNode* pulsingBookmarkNode_;  // weak
+  // Inform the observer when the bubble is shown or closed.
+  bookmarks::BookmarkBubbleObserver* bookmarkBubbleObserver_;  // weak
 
   BOOL alreadyBookmarked_;
 
@@ -56,6 +57,7 @@ class ManagedBookmarkService;
 // it desires it to be visible on the screen.  It is not shown by the
 // init routine.  Closing of the window happens implicitly on dealloc.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
+            bubbleObserver:(bookmarks::BookmarkBubbleObserver*)bubbleObserver
                    managed:(bookmarks::ManagedBookmarkService*)managed
                      model:(bookmarks::BookmarkModel*)model
                       node:(const bookmarks::BookmarkNode*)node
@@ -77,6 +79,8 @@ class ManagedBookmarkService;
 @interface BookmarkBubbleController (ExposedForUnitTesting)
 
 @property(nonatomic, readonly) NSView* syncPromoPlaceholder;
+@property(nonatomic, readonly)
+    bookmarks::BookmarkBubbleObserver* bookmarkBubbleObserver;
 
 - (void)addFolderNodes:(const bookmarks::BookmarkNode*)parent
          toPopUpButton:(NSPopUpButton*)button

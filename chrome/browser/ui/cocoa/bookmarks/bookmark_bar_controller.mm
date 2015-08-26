@@ -33,6 +33,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
@@ -173,6 +174,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (BookmarkButton*)buttonForNode:(const BookmarkNode*)node
                          xOffset:(int*)xOffset;
 
+// Find a parent whose button is visible on the bookmark bar.
+- (BookmarkButton*)bookmarkButtonToPulseForNode:(const BookmarkNode*)node;
+
 // Puts stuff into the final state without animating, stopping a running
 // animation if necessary.
 - (void)finalizeState;
@@ -283,10 +287,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
                       selector:@selector(themeDidChangeNotification:)
                           name:kBrowserThemeDidChangeNotification
                         object:nil];
-    [defaultCenter addObserver:self
-                      selector:@selector(pulseBookmarkNotification:)
-                          name:bookmark_button::kPulseBookmarkButtonNotification
-                        object:nil];
 
     contextMenuController_.reset(
         [[BookmarkContextMenuCocoaController alloc]
@@ -308,45 +308,61 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   return contextMenuController_.get();
 }
 
-- (void)pulseBookmarkNotification:(NSNotification*)notification {
-  NSDictionary* dict = [notification userInfo];
-  const BookmarkNode* node = NULL;
-  NSValue *value = [dict objectForKey:bookmark_button::kBookmarkKey];
-  DCHECK(value);
-  if (value)
-    node = static_cast<const BookmarkNode*>([value pointerValue]);
-  NSNumber* number = [dict objectForKey:bookmark_button::kBookmarkPulseFlagKey];
-  DCHECK(number);
-  BOOL doPulse = number ? [number boolValue] : NO;
+- (BookmarkButton*)bookmarkButtonToPulseForNode:(const BookmarkNode*)node {
+  // Find the closest parent that is visible on the bar.
+  while (node) {
+    // Check if we've reached one of the special buttons. Otherwise, if the next
+    // parent is the boomark bar, find the corresponding button.
+    if ([managedBookmarksButton_ bookmarkNode] == node)
+      return managedBookmarksButton_;
 
-  // 3 cases:
-  // button on the bar: flash it
-  // button in "other bookmarks" folder: flash other bookmarks
-  // button in "off the side" folder: flash the chevron
-  for (BookmarkButton* button in [self buttons]) {
-    if ([button bookmarkNode] == node) {
-      [button setIsContinuousPulsing:doPulse];
-      return;
+    if ([supervisedBookmarksButton_ bookmarkNode] == node)
+      return supervisedBookmarksButton_;
+
+    if ([otherBookmarksButton_ bookmarkNode] == node)
+      return otherBookmarksButton_;
+
+    if ([offTheSideButton_ bookmarkNode] == node)
+      return offTheSideButton_;
+
+    if (node->parent() == bookmarkModel_->bookmark_bar_node()) {
+      for (BookmarkButton* button in [self buttons]) {
+        if ([button bookmarkNode] == node) {
+          [button setIsContinuousPulsing:YES];
+          return button;
+        }
+      }
     }
-  }
-  if ([managedBookmarksButton_ bookmarkNode] == node) {
-    [managedBookmarksButton_ setIsContinuousPulsing:doPulse];
-    return;
-  }
-  if ([supervisedBookmarksButton_ bookmarkNode] == node) {
-    [supervisedBookmarksButton_ setIsContinuousPulsing:doPulse];
-    return;
-  }
-  if ([otherBookmarksButton_ bookmarkNode] == node) {
-    [otherBookmarksButton_ setIsContinuousPulsing:doPulse];
-    return;
-  }
-  if (node->parent() == bookmarkModel_->bookmark_bar_node()) {
-    [offTheSideButton_ setIsContinuousPulsing:doPulse];
-    return;
-  }
 
-  NOTREACHED() << "no bookmark button found to pulse!";
+    node = node->parent();
+  }
+  NOTREACHED();
+  return nil;
+}
+
+- (void)startPulsingBookmarkNode:(const BookmarkNode*)node {
+  [self stopPulsingBookmarkNode];
+
+  pulsingButton_ = [self bookmarkButtonToPulseForNode:node];
+  if (!pulsingButton_)
+    return;
+
+  [pulsingButton_ setIsContinuousPulsing:YES];
+  pulsingBookmarkObserver_.reset(
+      new BookmarkModelObserverForCocoa(bookmarkModel_, ^() {
+        // Stop pulsing if anything happened to the node.
+        [self stopPulsingBookmarkNode];
+      }));
+  pulsingBookmarkObserver_->StartObservingNode(node);
+}
+
+- (void)stopPulsingBookmarkNode {
+  if (!pulsingButton_)
+    return;
+
+  [pulsingButton_ setIsContinuousPulsing:NO];
+  pulsingButton_ = nil;
+  pulsingBookmarkObserver_.reset();
 }
 
 - (void)dealloc {
@@ -1763,6 +1779,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Delete all buttons (bookmarks, chevron, "other bookmarks") from the
 // bookmark bar; reset knowledge of bookmarks.
 - (void)clearBookmarkBar {
+  [self stopPulsingBookmarkNode];
   for (BookmarkButton* button in buttons_.get()) {
     [button setDelegate:nil];
     [button removeFromSuperview];

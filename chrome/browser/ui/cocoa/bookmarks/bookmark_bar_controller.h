@@ -24,8 +24,9 @@
 @class BookmarkBarFolderController;
 @class BookmarkBarView;
 @class BookmarkButtonCell;
-@class BookmarkFolderTarget;
 @class BookmarkContextMenuCocoaController;
+@class BookmarkFolderTarget;
+class BookmarkModelObserverForCocoa;
 class Browser;
 class GURL;
 namespace ui {
@@ -286,6 +287,15 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // Controller responsible for all bookmark context menus.
   base::scoped_nsobject<BookmarkContextMenuCocoaController>
       contextMenuController_;
+
+  // Weak pointer to the pulsed button for the currently pulsing node. We need
+  // to store this as it may not be possible to determine the pulsing button if
+  // the pulsing node is deleted. Nil if there is no pulsing node.
+  BookmarkButton* pulsingButton_;
+
+  // Specifically watch the currently pulsing node. This lets us stop pulsing
+  // when anything happens to the node. Null if there is no pulsing node.
+  scoped_ptr<BookmarkModelObserverForCocoa> pulsingBookmarkObserver_;
 }
 
 @property(readonly, nonatomic) BookmarkBar::State currentState;
@@ -307,6 +317,12 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 // The controller for all bookmark bar context menus.
 - (BookmarkContextMenuCocoaController*)menuController;
+
+// Pulses the given bookmark node, or the closest parent node that is visible.
+- (void)startPulsingBookmarkNode:(const bookmarks::BookmarkNode*)node;
+
+// Stops pulsing any bookmark nodes.
+- (void)stopPulsingBookmarkNode;
 
 // Updates the bookmark bar (from its current, possibly in-transition) state to
 // the new state.

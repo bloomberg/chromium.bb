@@ -252,17 +252,3 @@ class BookmarkNode;
 - (void)beginDrag:(NSEvent*)event;
 @end
 
-namespace bookmark_button {
-
-// Notifications for pulsing of bookmarks.
-extern NSString* const kPulseBookmarkButtonNotification;
-
-// Key for userInfo dict of a kPulseBookmarkButtonNotification.
-// Value is a [NSValue valueWithPointer:]; pointer is a (const BookmarkNode*).
-extern NSString* const kBookmarkKey;
-
-// Key for userInfo dict of a kPulseBookmarkButtonNotification.
-// Value is a [NSNumber numberWithBool:] to turn pulsing on or off.
-extern NSString* const kBookmarkPulseFlagKey;
-
-};

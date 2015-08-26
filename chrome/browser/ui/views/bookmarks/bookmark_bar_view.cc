@@ -1213,9 +1213,8 @@ void BookmarkBarView::OnImportBookmarks() {
   chrome::ShowImportDialog(browser_);
 }
 
-void BookmarkBarView::OnBookmarkBubbleShown(const GURL& url) {
+void BookmarkBarView::OnBookmarkBubbleShown(const BookmarkNode* node) {
   StopThrobbing(true);
-  const BookmarkNode* node = model_->GetMostRecentlyAddedUserNodeForURL(url);
   if (!node)
     return;  // Generally shouldn't happen.
   StartThrobbing(node, false);

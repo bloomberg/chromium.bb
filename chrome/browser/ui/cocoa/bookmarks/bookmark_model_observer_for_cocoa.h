@@ -30,9 +30,8 @@
 
 class BookmarkModelObserverForCocoa : public bookmarks::BookmarkModelObserver {
  public:
-  // Callback called on a significant model change. |nodeWasDeleted| will
-  // be YES if an observed node was deleted in the change.
-  typedef void(^ChangeCallback)(BOOL nodeWasDeleted);
+  // Callback called on a significant model change.
+  typedef void (^ChangeCallback)();
 
   // When a |model| changes, or an observed node within it does, call a
   // |callback|.
@@ -89,9 +88,8 @@ class BookmarkModelObserverForCocoa : public bookmarks::BookmarkModelObserver {
       nodes_;  // Weak items owned by a BookmarkModel.
   base::mac::ScopedBlock<ChangeCallback> callback_;
 
-  // Send a notification to the client; |deleted| is YES if an observed node was
-  // deleted in the change.
-  void Notify(BOOL deleted);
+  // Send a notification to the client.
+  void Notify();
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelObserverForCocoa);
 };

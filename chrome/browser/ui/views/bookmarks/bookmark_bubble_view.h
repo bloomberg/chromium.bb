@@ -17,8 +17,11 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "url/gurl.h"
 
-class BookmarkBubbleViewObserver;
 class Profile;
+
+namespace bookmarks {
+class BookmarkBubbleObserver;
+}
 
 namespace views {
 class LabelButton;
@@ -34,7 +37,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
                            public views::ComboboxListener {
  public:
   static void ShowBubble(views::View* anchor_view,
-                         BookmarkBubbleViewObserver* observer,
+                         bookmarks::BookmarkBubbleObserver* observer,
                          scoped_ptr<BookmarkBubbleDelegate> delegate,
                          Profile* profile,
                          const GURL& url,
@@ -65,7 +68,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
 
   // Creates a BookmarkBubbleView.
   BookmarkBubbleView(views::View* anchor_view,
-                     BookmarkBubbleViewObserver* observer,
+                     bookmarks::BookmarkBubbleObserver* observer,
                      scoped_ptr<BookmarkBubbleDelegate> delegate,
                      Profile* profile,
                      const GURL& url,
@@ -97,7 +100,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   static BookmarkBubbleView* bookmark_bubble_;
 
   // Our observer, to notify when the bubble shows or hides.
-  BookmarkBubbleViewObserver* observer_;
+  bookmarks::BookmarkBubbleObserver* observer_;
 
   // Delegate, to handle clicks on the sign in link.
   scoped_ptr<BookmarkBubbleDelegate> delegate_;

@@ -24,15 +24,6 @@ using bookmarks::BookmarkNode;
 // The opacity of the bookmark button drag image.
 static const CGFloat kDragImageOpacity = 0.7;
 
-namespace bookmark_button {
-
-NSString* const kPulseBookmarkButtonNotification =
-    @"PulseBookmarkButtonNotification";
-NSString* const kBookmarkKey = @"BookmarkKey";
-NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
-
-};
-
 namespace {
 // We need a class variable to track the current dragged button to enable
 // proper live animated dragging behavior, and can't do it in the

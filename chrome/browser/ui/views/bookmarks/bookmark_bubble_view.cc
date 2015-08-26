@@ -10,9 +10,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bubble_observer.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
-#include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_sync_promo_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -63,7 +63,7 @@ BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = NULL;
 
 // static
 void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
-                                    BookmarkBubbleViewObserver* observer,
+                                    bookmarks::BookmarkBubbleObserver* observer,
                                     scoped_ptr<BookmarkBubbleDelegate> delegate,
                                     Profile* profile,
                                     const GURL& url,
@@ -82,8 +82,11 @@ void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
   bookmark_bubble_->title_tf_->SelectAll(true);
   bookmark_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
 
-  if (bookmark_bubble_->observer_)
-    bookmark_bubble_->observer_->OnBookmarkBubbleShown(url);
+  if (bookmark_bubble_->observer_) {
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+    const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url);
+    bookmark_bubble_->observer_->OnBookmarkBubbleShown(node);
+  }
 }
 
 void BookmarkBubbleView::Hide() {
@@ -264,7 +267,7 @@ views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
 
 BookmarkBubbleView::BookmarkBubbleView(
     views::View* anchor_view,
-    BookmarkBubbleViewObserver* observer,
+    bookmarks::BookmarkBubbleObserver* observer,
     scoped_ptr<BookmarkBubbleDelegate> delegate,
     Profile* profile,
     const GURL& url,

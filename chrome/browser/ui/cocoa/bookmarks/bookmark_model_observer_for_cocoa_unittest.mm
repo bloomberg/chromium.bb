@@ -27,14 +27,10 @@ TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
                                            GURL("http://www.google.com"));
 
   __block size_t pings = 0U;
-  __block size_t deletions = 0U;
 
-  BookmarkModelObserverForCocoa::ChangeCallback callback =
-      ^(BOOL nodeWasDeleted) {
-          ++pings;
-          if (nodeWasDeleted)
-            ++deletions;
-      };
+  BookmarkModelObserverForCocoa::ChangeCallback callback = ^() {
+    ++pings;
+  };
 
   scoped_ptr<BookmarkModelObserverForCocoa>
       observer(new BookmarkModelObserverForCocoa(model,
@@ -42,23 +38,18 @@ TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
   observer->StartObservingNode(node);
 
   EXPECT_EQ(0U, pings);
-  EXPECT_EQ(0U, deletions);
 
   model->SetTitle(node, base::ASCIIToUTF16("duper"));
   EXPECT_EQ(1U, pings);
-  EXPECT_EQ(0U, deletions);
 
   model->SetURL(node, GURL("http://www.google.com/reader"));
   EXPECT_EQ(2U, pings);
-  EXPECT_EQ(0U, deletions);
 
   model->Move(node, model->other_node(), 0);
   EXPECT_EQ(3U, pings);
-  EXPECT_EQ(0U, deletions);
 
   model->Remove(node->parent()->GetChild(0));
   EXPECT_EQ(4U, pings);
-  EXPECT_EQ(1U, deletions);
 }
 
 }  // namespace
