@@ -43,7 +43,14 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 
   gfx::Vector2dF pending_content_delta = content_delta;
 
-  pending_content_delta -= host_impl_->ScrollLayer(InnerScrollLayer(),
+  bool invert_scroll_order =
+      host_impl_->settings().invert_viewport_scroll_order;
+  LayerImpl* primary_layer =
+      invert_scroll_order ? InnerScrollLayer() : OuterScrollLayer();
+  LayerImpl* secondary_layer =
+      invert_scroll_order ? OuterScrollLayer() : InnerScrollLayer();
+
+  pending_content_delta -= host_impl_->ScrollLayer(primary_layer,
                                                    pending_content_delta,
                                                    viewport_point,
                                                    is_direct_manipulation);
@@ -55,7 +62,7 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
   if (gfx::ToRoundedVector2d(pending_content_delta).IsZero()) {
     result.consumed_delta = delta;
   } else {
-    pending_content_delta -= host_impl_->ScrollLayer(OuterScrollLayer(),
+    pending_content_delta -= host_impl_->ScrollLayer(secondary_layer,
                                                      pending_content_delta,
                                                      viewport_point,
                                                      is_direct_manipulation);
@@ -87,7 +94,8 @@ void Viewport::PinchUpdate(float magnify_delta, const gfx::Point& anchor) {
     // length of the screen edge, offset all updates by the amount so that we
     // effectively snap the pinch zoom to the edge of the screen. This makes it
     // easy to zoom in on position: fixed elements.
-    SnapPinchAnchorIfWithinMargin(anchor);
+    if (host_impl_->settings().invert_viewport_scroll_order)
+      SnapPinchAnchorIfWithinMargin(anchor);
 
     pinch_zoom_active_ = true;
   }
@@ -114,7 +122,14 @@ void Viewport::PinchUpdate(float magnify_delta, const gfx::Point& anchor) {
   // be accounted for from the intended move.
   move -= InnerScrollLayer()->ClampScrollToMaxScrollOffset();
 
-  Pan(move);
+  if (host_impl_->settings().invert_viewport_scroll_order) {
+    Pan(move);
+  } else {
+    gfx::Point viewport_point;
+    bool is_wheel_event = false;
+    bool affect_top_controls = false;
+    ScrollBy(move, viewport_point, is_wheel_event, affect_top_controls);
+  }
 }
 
 void Viewport::PinchEnd() {
