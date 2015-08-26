@@ -103,6 +103,75 @@ WARN_UNUSED_RESULT bool VerifySerialNumber(const der::Input& value) {
   return true;
 }
 
+// Consumes a "Time" value (as defined by RFC 5280) from |parser|. On success
+// writes the result to |*out| and returns true. On failure no guarantees are
+// made about the state of |parser|.
+//
+// From RFC 5280:
+//
+//     Time ::= CHOICE {
+//          utcTime        UTCTime,
+//          generalTime    GeneralizedTime }
+WARN_UNUSED_RESULT bool ReadTime(der::Parser* parser,
+                                 der::GeneralizedTime* out) {
+  der::Input value;
+  der::Tag tag;
+
+  if (!parser->ReadTagAndValue(&tag, &value))
+    return false;
+
+  if (tag == der::kUtcTime)
+    return der::ParseUTCTime(value, out);
+
+  if (tag == der::kGeneralizedTime)
+    return der::ParseGeneralizedTime(value, out);
+
+  // Unrecognized tag.
+  return false;
+}
+
+// Parses a DER-encoded "Validity" as specified by RFC 5280. Returns true on
+// success and sets the results in |not_before| and |not_after|:
+//
+//       Validity ::= SEQUENCE {
+//            notBefore      Time,
+//            notAfter       Time }
+//
+// Note that upon success it is NOT guaranteed that |*not_before <= *not_after|.
+bool ParseValidity(const der::Input& validity_tlv,
+                   der::GeneralizedTime* not_before,
+                   der::GeneralizedTime* not_after) {
+  der::Parser parser(validity_tlv);
+
+  //     Validity ::= SEQUENCE {
+  der::Parser validity_parser;
+  if (!parser.ReadSequence(&validity_parser))
+    return false;
+
+  //          notBefore      Time,
+  if (!ReadTime(&validity_parser, not_before))
+    return false;
+
+  //          notAfter       Time }
+  if (!ReadTime(&validity_parser, not_after))
+    return false;
+
+  // By definition the input was a single Validity sequence, so there shouldn't
+  // be unconsumed data.
+  if (parser.HasMore())
+    return false;
+
+  // The Validity type does not have an extension point.
+  if (validity_parser.HasMore())
+    return false;
+
+  // Note that RFC 5280 doesn't require notBefore to be <=
+  // notAfter, so that will not be considered a "parsing" error here. Instead it
+  // will be considered an expired certificate later when testing against the
+  // current timestamp.
+  return true;
+}
+
 }  // namespace
 
 ParsedTbsCertificate::ParsedTbsCertificate() {}
@@ -201,8 +270,13 @@ bool ParseTbsCertificate(const der::Input& tbs_tlv, ParsedTbsCertificate* out) {
     return false;
 
   //        validity             Validity,
-  if (!ReadSequenceTLV(&tbs_parser, &out->validity_tlv))
+  der::Input validity_tlv;
+  if (!tbs_parser.ReadRawTLV(&validity_tlv))
     return false;
+  if (!ParseValidity(validity_tlv, &out->validity_not_before,
+                     &out->validity_not_after)) {
+    return false;
+  }
 
   //        subject              Name,
   if (!ReadSequenceTLV(&tbs_parser, &out->subject_tlv))

@@ -4,6 +4,7 @@
 
 #include "net/cert/internal/parse_certificate.h"
 
+#include "base/strings/stringprintf.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/der/input.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,6 +12,15 @@
 namespace net {
 
 namespace {
+
+// Pretty-prints a GeneralizedTime as a human-readable string for use in test
+// expectations (it is more readable to specify the expected results as a
+// string).
+std::string ToString(const der::GeneralizedTime& time) {
+  return base::StringPrintf(
+      "year=%d, month=%d, day=%d, hours=%d, minutes=%d, seconds=%d", time.year,
+      time.month, time.day, time.hours, time.minutes, time.seconds);
+}
 
 std::string GetFilePath(const std::string file_name) {
   return std::string("net/data/parse_certificate_unittest/") + file_name;
@@ -117,7 +127,8 @@ void EnsureParsingTbsSucceeds(const std::string& file_name,
   std::string expected_serial_number;
   std::string expected_signature_algorithm;
   std::string expected_issuer;
-  std::string expected_validity;
+  std::string expected_validity_not_before;
+  std::string expected_validity_not_after;
   std::string expected_subject;
   std::string expected_spki;
   std::string expected_issuer_unique_id;
@@ -130,7 +141,8 @@ void EnsureParsingTbsSucceeds(const std::string& file_name,
       {"SIGNATURE ALGORITHM", &expected_signature_algorithm},
       {"SERIAL NUMBER", &expected_serial_number},
       {"ISSUER", &expected_issuer},
-      {"VALIDITY", &expected_validity},
+      {"VALIDITY NOTBEFORE", &expected_validity_not_before},
+      {"VALIDITY NOTAFTER", &expected_validity_not_after},
       {"SUBJECT", &expected_subject},
       {"SPKI", &expected_spki},
       {"ISSUER UNIQUE ID", &expected_issuer_unique_id, true},
@@ -151,7 +163,12 @@ void EnsureParsingTbsSucceeds(const std::string& file_name,
             parsed.signature_algorithm_tlv);
 
   EXPECT_EQ(InputFromString(&expected_issuer), parsed.issuer_tlv);
-  EXPECT_EQ(InputFromString(&expected_validity), parsed.validity_tlv);
+
+  // In the test expectations PEM file, validity is described as a
+  // textual string of the parsed value (rather than as DER).
+  EXPECT_EQ(expected_validity_not_before, ToString(parsed.validity_not_before));
+  EXPECT_EQ(expected_validity_not_after, ToString(parsed.validity_not_after));
+
   EXPECT_EQ(InputFromString(&expected_subject), parsed.subject_tlv);
   EXPECT_EQ(InputFromString(&expected_spki), parsed.spki_tlv);
 
@@ -272,6 +289,41 @@ TEST(ParseTbsCertificateTest, Version3DataAfterExtensions) {
 // (and in fact invalid) data.
 TEST(ParseTbsCertificateTest, Version3Real) {
   EnsureParsingTbsSucceeds("tbs_v3_real.pem", CertificateVersion::V3);
+}
+
+// Parses a TBSCertificate whose "validity" field expresses both notBefore
+// and notAfter using UTCTime.
+TEST(ParseTbsCertificateTest, ValidityBothUtcTime) {
+  EnsureParsingTbsSucceeds("tbs_validity_both_utc_time.pem",
+                           CertificateVersion::V3);
+}
+
+// Parses a TBSCertificate whose "validity" field expresses both notBefore
+// and notAfter using GeneralizedTime.
+TEST(ParseTbsCertificateTest, ValidityBothGeneralizedTime) {
+  EnsureParsingTbsSucceeds("tbs_validity_both_generalized_time.pem",
+                           CertificateVersion::V3);
+}
+
+// Parses a TBSCertificate whose "validity" field expresses notBefore using
+// UTCTime and notAfter using GeneralizedTime.
+TEST(ParseTbsCertificateTest, ValidityUTCTimeAndGeneralizedTime) {
+  EnsureParsingTbsSucceeds("tbs_validity_utc_time_and_generalized_time.pem",
+                           CertificateVersion::V3);
+}
+
+// Parses a TBSCertificate whose validity" field expresses notBefore using
+// GeneralizedTime and notAfter using UTCTime. Also of interest, notBefore >
+// notAfter. Parsing will succeed, however no time can satisfy this constraint.
+TEST(ParseTbsCertificateTest, ValidityGeneralizedTimeAndUTCTime) {
+  EnsureParsingTbsSucceeds("tbs_validity_generalized_time_and_utc_time.pem",
+                           CertificateVersion::V3);
+}
+
+// Parses a TBSCertificate whose "validity" field does not strictly follow
+// the DER rules (and fails to be parsed).
+TEST(ParseTbsCertificateTest, ValidityRelaxed) {
+  EnsureParsingTbsFails("tbs_validity_relaxed.pem");
 }
 
 }  // namespace

@@ -154,9 +154,19 @@ struct NET_EXPORT ParsedTbsCertificate {
   // Corresponds with "validity" from RFC 5280:
   //         validity             Validity,
   //
-  // This contains the full (unverified) Tag-Length-Value for a SEQUENCE. No
-  // guarantees are made regarding the value of this SEQUENCE.
-  der::Input validity_tlv;
+  // Where Validity is defined as:
+  //
+  //   Validity ::= SEQUENCE {
+  //        notBefore      Time,
+  //        notAfter       Time }
+  //
+  // Parsing guarantees that notBefore (validity_not_before) and notAfter
+  // (validity_not_after) are valid DER-encoded dates, however it DOES NOT
+  // gurantee anything about their values. For instance notAfter could be
+  // before notBefore, or the dates could indicate an expired certificate.
+  // Consumers are responsible for testing expiration.
+  der::GeneralizedTime validity_not_before;
+  der::GeneralizedTime validity_not_after;
 
   // Corresponds with "subject" from RFC 5280:
   //         subject              Name,
