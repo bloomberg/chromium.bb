@@ -128,7 +128,7 @@ class BuildArchiveTest(unittest.TestCase):
   def test_PerfBuildArchive_64BitWindows_BuilderName(self):
     archive = fetch_build.PerfBuildArchive()
     archive._platform = 'win64'
-    self.assertEqual('win_x64_perf_bisect_builder', archive.GetBuilderName())
+    self.assertEqual('winx64_bisect_builder', archive.GetBuilderName())
 
   def test_PerfBuildArchive_64BitWindows_BuildTime(self):
     archive = fetch_build.PerfBuildArchive()

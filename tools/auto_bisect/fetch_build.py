@@ -231,7 +231,7 @@ class PerfBuildArchive(BuildArchive):
   def GetBuilderName(self):
     """Gets builder bot name based on platform."""
     if self._platform == 'win64':
-      return 'win_x64_perf_bisect_builder'
+      return 'winx64_bisect_builder'
     elif self._platform == 'win':
       return 'win_perf_bisect_builder'
     elif self._platform == 'linux':
