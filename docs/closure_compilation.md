@@ -1,40 +1,50 @@
-# I just need to fix the compile!
+# Closure Compilation
+
+## I just need to fix the compile!
 
 To locally run closure compiler like the bots, do this:
 
-```
+```shell
 cd $CHROMIUM_SRC
 # sudo apt-get install openjdk-7-jre # may be required
-GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources.gyp
+GYP_GENERATORS=ninja tools/gyp/gyp --depth . \
+third_party/closure_compiler/compiled_resources.gyp
 ninja -C out/Default
 ```
 
-# Background
+## Background
 
-In C++ and Java, compiling the code gives you _some_ level of protection against misusing variables based on their type information.  JavaScript is loosely typed and therefore doesn't offer this safety.  This makes writing JavaScript more error prone as it's _one more thing_ to mess up.
+In C++ and Java, compiling the code gives you _some_ level of protection against
+misusing variables based on their type information. JavaScript is loosely typed
+and therefore doesn't offer this safety. This makes writing JavaScript more
+error prone as it's _one more thing_ to mess up.
 
-Because having this safety is handy, Chrome now has a way to optionally typecheck your JavaScript and produce compiled output with [Closure Compiler](https://developers.google.com/closure/compiler/).
+Because having this safety is handy, Chrome now has a way to optionally
+typecheck your JavaScript and produce compiled output with
+[Closure Compiler](https://developers.google.com/closure/compiler/).
 
-See also: [the design doc](https://docs.google.com/a/chromium.org/document/d/1Ee9ggmp6U-lM-w9WmxN5cSLkK9B5YAq14939Woo-JY0/edit).
+See also:
+[the design doc](https://docs.google.com/a/chromium.org/document/d/1Ee9ggmp6U-lM-w9WmxN5cSLkK9B5YAq14939Woo-JY0/edit).
 
-# Assumptions
+## Assumptions
 
-A working Chrome checkout.  See here: http://www.chromium.org/developers/how-tos/get-the-code
+A working Chrome checkout. See here:
+http://www.chromium.org/developers/how-tos/get-the-code
 
-# Typechecking Your Javascript
+## Typechecking Your Javascript
 
 So you'd like to compile your JavaScript!
 
 Maybe you're working on a page that looks like this:
 
-```
+```html
 <script src="other_file.js"></script>
 <script src="my_product/my_file.js"></script>
 ```
 
 Where `other_file.js` contains:
 
-```
+```javascript
 var wit = 100;
 
 // ... later on, sneakily ...
@@ -44,16 +54,14 @@ wit += ' IQ';  // '100 IQ'
 
 and `src/my_product/my_file.js` contains:
 
-```
+```javascript
 /** @type {number} */ var mensa = wit + 50;
 alert(mensa);  // '100 IQ50' instead of 150
 ```
 
 In order to check that our code acts as we'd expect, we can create a
 
-```
-my_project/compiled_resources.gyp
-```
+    my_project/compiled_resources.gyp
 
 with the contents:
 
@@ -92,11 +100,14 @@ You should get results like:
 ##                                   ^
 ```
 
-Yay!  We can easily find our unexpected type errors and write less error-prone code!
+Yay! We can easily find our unexpected type errors and write less error-prone
+code!
 
-# Continuous Checking
+## Continuous Checking
 
-To compile your code on every commit, add a line to [third\_party/closure\_compiler/compiled\_resources.gyp](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/closure_compiler/compiled_resources.gyp&sq=package:chromium&type=cs) like this:
+To compile your code on every commit, add a line to
+/third_party/closure_compiler/compiled_resources.gyp
+like this:
 
 ```
 {
@@ -112,15 +123,18 @@ To compile your code on every commit, add a line to [third\_party/closure\_compi
 }
 ```
 
-and the [Closure compiler bot](http://build.chromium.org/p/chromium.fyi/builders/Closure%20Compilation%20Linux) will [re-]compile your code whenever relevant .js files change.
+and the
+[Closure compiler bot](http://build.chromium.org/p/chromium.fyi/builders/Closure%20Compilation%20Linux)
+will [re-]compile your code whenever relevant .js files change.
 
-# Using Compiled JavaScript
+## Using Compiled JavaScript
 
-Compiled JavaScript is output in src/out/<Debug|Release>/gen/closure/my\_project/my\_file.js along with a source map for use in debugging. In order to use the compiled JavaScript, we can create a
+Compiled JavaScript is output in
+`src/out/<Debug|Release>/gen/closure/my_project/my_file.js` along with a source
+map for use in debugging. In order to use the compiled JavaScript, we can create
+a
 
-```
-my_project/my_project_resources.gpy
-```
+    my_project/my_project_resources.gpy
 
 with the contents:
 
@@ -158,11 +172,10 @@ with the contents:
 }
 ```
 
-The variables can also be defined in an existing .gyp file if appropriate. The variables can then be used in to create a
+The variables can also be defined in an existing .gyp file if appropriate. The
+variables can then be used in to create a
 
-```
-my_project/my_project_resources.grd
-```
+    my_project/my_project_resources.grd
 
 with the contents:
 
@@ -182,13 +195,18 @@ base::string16 my_script =
             .as_string());
 ```
 
-# Debugging Compiled JavaScript
+## Debugging Compiled JavaScript
 
-Along with the compiled JavaScript, a source map is created: src/out/<Debug|Release>/gen/closure/my\_project/my\_file.js.map
+Along with the compiled JavaScript, a source map is created:
+`src/out/<Debug|Release>/gen/closure/my_project/my_file.js.map`
 
-Chrome DevTools has built in support for working with source maps: [https://developer.chrome.com/devtools/docs/javascript-debugging#source-maps](https://developer.chrome.com/devtools/docs/javascript-debugging#source-maps)
+Chrome DevTools has built in support for working with source maps:
+https://developer.chrome.com/devtools/docs/javascript-debugging#source-maps
 
-In order to use the source map, you must first manually edit the path to the 'sources' in the .js.map file that was generated. For example, if the source map looks like this:
+In order to use the source map, you must first manually edit the path to the
+'sources' in the .js.map file that was generated. For example, if the source map
+looks like this:
+
 ```
 {
 "version":3,
@@ -201,19 +219,30 @@ In order to use the source map, you must first manually edit the path to the 'so
 ```
 
 sources should be changed to:
+
 ```
 ...
 "sources":["/tmp/test_script.js"],
 ...
 ```
 
-In your browser, the source map can be loaded through the Chrome DevTools context menu that appears when you right click in the compiled JavaScript source body. A dialog will pop up prompting you for the path to the source map file. Once the source map is loaded, the uncompiled version of the JavaScript will appear in the Sources panel on the left. You can set break points in the uncompiled version to help debug; behind the scenes Chrome will still be running the compiled version of the JavaScript.
+In your browser, the source map can be loaded through the Chrome DevTools
+context menu that appears when you right click in the compiled JavaScript source
+body. A dialog will pop up prompting you for the path to the source map file.
+Once the source map is loaded, the uncompiled version of the JavaScript will
+appear in the Sources panel on the left. You can set break points in the
+uncompiled version to help debug; behind the scenes Chrome will still be running
+the compiled version of the JavaScript.
 
-# Additional Arguments
+## Additional Arguments
 
-compile\_js.gypi accepts an optional script\_args variable, which passes additional arguments to compile.py, as well as an optional closure\_args variable, which passes additional arguments to the closure compiler. You may also override the disabled\_closure\_args for more strict compilation.
+`compile_js.gypi` accepts an optional `script_args` variable, which passes
+additional arguments to `compile.py`, as well as an optional `closure_args`
+variable, which passes additional arguments to the closure compiler. You may
+also override the `disabled_closure_args` for more strict compilation.
 
-For example, if you would like to specify multiple sources, strict compilation, and an output wrapper, you would create a
+For example, if you would like to specify multiple sources, strict compilation,
+and an output wrapper, you would create a
 
 ```
 my_project/compiled_resources.gyp
