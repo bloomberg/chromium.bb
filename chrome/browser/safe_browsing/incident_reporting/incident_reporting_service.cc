@@ -46,6 +46,7 @@ enum IncidentDisposition {
   ACCEPTED,
   PRUNED,
   DISCARDED,
+  NO_DOWNLOAD,
   NUM_DISPOSITIONS
 };
 
@@ -77,6 +78,7 @@ void LogIncidentDataType(IncidentDisposition disposition,
       "SBIRS.Incident",
       "SBIRS.PrunedIncident",
       "SBIRS.DiscardedIncident",
+      "SBIRS.NoDownloadIncident",
   };
   static_assert(arraysize(kHistogramNames) == NUM_DISPOSITIONS,
                 "Keep kHistogramNames in sync with enum IncidentDisposition.");
@@ -729,14 +731,6 @@ void IncidentReportingService::UploadIfCollectionComplete() {
   first_incident_time_ = base::Time();
   last_incident_time_ = base::TimeTicks();
 
-  // Drop the report if no executable download was found.
-  if (!report->has_download()) {
-    UMA_HISTOGRAM_ENUMERATION("SBIRS.UploadResult",
-                              IncidentReportUploader::UPLOAD_NO_DOWNLOAD,
-                              IncidentReportUploader::NUM_UPLOAD_RESULTS);
-    return;
-  }
-
   ClientIncidentReport_EnvironmentData_Process* process =
       report->mutable_environment()->mutable_process();
 
@@ -770,7 +764,6 @@ void IncidentReportingService::UploadIfCollectionComplete() {
   // incidents if the profile stopped participating before collection completed.
   // Prune previously submitted incidents.
   // Associate the profile contexts and their incident data with the upload.
-  size_t prune_count = 0;
   UploadContext::PersistentIncidentStateCollection profiles_to_state;
   for (ProfileContextCollection::iterator scan = profiles_.begin();
        scan != profiles_.end();
@@ -789,6 +782,7 @@ void IncidentReportingService::UploadIfCollectionComplete() {
       context->incidents.clear();
       continue;
     }
+    StateStore::Transaction transaction(context->state_store.get());
     std::vector<PersistentIncidentState> states;
     // Prep persistent data and prune any incidents already sent.
     for (Incident* incident : context->incidents) {
@@ -796,7 +790,11 @@ void IncidentReportingService::UploadIfCollectionComplete() {
       if (context->state_store->HasBeenReported(state.type, state.key,
                                                 state.digest)) {
         LogIncidentDataType(PRUNED, *incident);
-        ++prune_count;
+      } else if (!report->has_download()) {
+        LogIncidentDataType(NO_DOWNLOAD, *incident);
+        // Drop the incident and mark for future pruning since no executable
+        // download was found.
+        transaction.MarkAsReported(state.type, state.key, state.digest);
       } else {
         LogIncidentDataType(ACCEPTED, *incident);
         // Ownership of the payload is passed to the report.
@@ -813,21 +811,18 @@ void IncidentReportingService::UploadIfCollectionComplete() {
   }
 
   const int count = report->incident_size();
-  // Abandon the request if all incidents were dropped with none pruned.
-  if (!count && !prune_count)
+
+  // Abandon the request if all incidents were pruned or otherwise dropped.
+  if (!count) {
+    if (!report->has_download()) {
+      UMA_HISTOGRAM_ENUMERATION("SBIRS.UploadResult",
+                                IncidentReportUploader::UPLOAD_NO_DOWNLOAD,
+                                IncidentReportUploader::NUM_UPLOAD_RESULTS);
+    }
     return;
-
-  UMA_HISTOGRAM_COUNTS_100("SBIRS.IncidentCount", count + prune_count);
-
-  {
-    double prune_pct = static_cast<double>(prune_count);
-    prune_pct = prune_pct * 100.0 / (count + prune_count);
-    prune_pct = round(prune_pct);
-    UMA_HISTOGRAM_PERCENTAGE("SBIRS.PruneRatio", static_cast<int>(prune_pct));
   }
-  // Abandon the report if all incidents were pruned.
-  if (!count)
-    return;
+
+  UMA_HISTOGRAM_COUNTS_100("SBIRS.IncidentCount", count);
 
   scoped_ptr<UploadContext> context(new UploadContext(report.Pass()));
   context->profiles_to_state.swap(profiles_to_state);

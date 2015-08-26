@@ -577,6 +577,71 @@ TEST_F(IncidentReportingServiceTest, NoDownloadNoUpload) {
   ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
+// Tests that two incidents of the same type with different payloads lead to an
+// upload even if the first one is pruned.
+TEST_F(IncidentReportingServiceTest, NoDownloadPrunedIncidentOneUpload) {
+  // Tell the fixture to return no downloads found.
+  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_NO_DOWNLOADS);
+
+  // Create the profile, thereby causing the test to begin.
+  Profile* profile = CreateProfile("profile1", SAFE_BROWSING_OPT_IN,
+                                   ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Assert that no report upload took place.
+  AssertNoUpload();
+
+  // Tell the fixture to return a download now.
+  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_DOWNLOAD_FOUND);
+
+  // Add a variation on the incident to the service.
+  instance_->GetIncidentReceiver()->AddIncidentForProfile(
+      profile, MakeTestIncident("leeches"));
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Verify that an additional report upload took place.
+  ExpectTestIncidentUploaded(1);
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
+}
+
+// Tests that an identical incident added after an incident is pruned due to not
+// having a download does not lead to an upload.
+TEST_F(IncidentReportingServiceTest, NoDownloadPrunedSameIncidentNoUpload) {
+  // Tell the fixture to return no downloads found.
+  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_NO_DOWNLOADS);
+
+  // Create the profile, thereby causing the test to begin.
+  Profile* profile = CreateProfile("profile1", SAFE_BROWSING_OPT_IN,
+                                   ON_PROFILE_ADDITION_ADD_INCIDENT, nullptr);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Assert that no report upload took place.
+  AssertNoUpload();
+
+  // Tell the fixture to return a download now.
+  SetCreateDownloadFinderAction(ON_CREATE_DOWNLOAD_FINDER_DOWNLOAD_FOUND);
+
+  // Add the incident to the service again.
+  AddTestIncident(profile);
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // Verify that no additional report upload took place.
+  AssertNoUpload();
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
+}
+
 // Tests that no incident report is uploaded if there is no recent download.
 TEST_F(IncidentReportingServiceTest, NoProfilesNoUpload) {
   // Tell the fixture to pretend there are no profiles eligible for finding

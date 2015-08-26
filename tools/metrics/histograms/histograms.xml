@@ -38451,8 +38451,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SBIRS.IncidentCount">
   <owner>grt@google.com</owner>
   <summary>
-    The number of incidents collated into a single safe browsing incident report
-    before pruning.
+    The number of incidents collated into a single safe browsing incident
+    report.
   </summary>
 </histogram>
 
@@ -38461,6 +38461,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The elapsed time between two successive incidents collated into the same
     incident report by the safe browsing incident reporting service.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.NoDownloadIncident" enum="IncidentType">
+  <owner>grt@google.com</owner>
+  <summary>
+    The type of incident pruned by the safe browsing incident reporting service
+    as a result of not having a matching binary download.
   </summary>
 </histogram>
 
@@ -38474,6 +38482,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SBIRS.PruneRatio" units="percentage">
   <owner>grt@google.com</owner>
+  <obsolete>
+    Deprecated 08/2015.
+  </obsolete>
   <summary>
     The percentage of incidents pruned from a safe browsing incident report on
     account of having been previously reported.
