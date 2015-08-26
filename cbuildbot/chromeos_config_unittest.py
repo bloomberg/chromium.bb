@@ -745,8 +745,9 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
 
     # No configurations should be redundant with defaults.
     self.assertFalse(redundant,
-                     "Manual waterfall configs are automatically included: "
-                     "%s" % (sorted(redundant),))
+                     "Manual waterfall membership in "
+                     "`_waterfall_config_map` is redundant for these "
+                     "configs: %s" % (sorted(redundant),))
 
   def testNoDuplicateCanaryBuildersOnWaterfall(self):
     seen = {}
