@@ -57,6 +57,8 @@ class AwPermissionRequest {
   void CancelAndDelete();
 
  private:
+  friend class TestPermissionRequestHandlerClient;
+
   AwPermissionRequest(scoped_ptr<AwPermissionRequestDelegate> delegate,
                       base::android::ScopedJavaLocalRef<jobject>* java_peer);
   ~AwPermissionRequest();

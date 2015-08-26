@@ -80,13 +80,13 @@ class TestPermissionRequestHandlerClient :
 
   void Grant() {
     request_->OnAccept(NULL, NULL, true);
-    request_->Destroy(NULL, NULL);
+    request_->DeleteThis();
     request_ = NULL;
   }
 
   void Deny() {
     request_->OnAccept(NULL, NULL, false);
-    request_->Destroy(NULL, NULL);
+    request_->DeleteThis();
     request_ = NULL;
   }
 
