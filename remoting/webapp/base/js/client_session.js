@@ -563,11 +563,9 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
  */
 function recordState(state) {
   // According to src/base/metrics/histogram.h, for a UMA enumerated histogram,
-  // the upper limit should be 1 above the max-enum. Because SessionState's
-  // minimum enum value is negative, we'll just take the difference of the max
-  // and min enums.
-  var histogram_max = (remoting.ClientSession.State.MAX_STATE_ENUM -
-    remoting.ClientSession.State.MIN_STATE_ENUM);
+  // the upper limit should be 1 above the max-enum.
+  var histogram_max = remoting.ClientSession.State.MAX_STATE_ENUM -
+      remoting.ClientSession.State.MIN_STATE_ENUM + 1;
 
   var metricDescription = {
     metricName: 'Chromoting.Connections',
