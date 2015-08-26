@@ -157,7 +157,7 @@ static bool hasWillChangeThatCreatesStackingContext(const ComputedStyle& style)
     return false;
 }
 
-void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyle& parentStyle, Element *e, const AuthorStyleInfo& authorStyle)
+void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyle& parentStyle, Element *e)
 {
     if (style.display() != NONE) {
         if (e && e->isHTMLElement())
@@ -224,7 +224,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 
     // Let the theme also have a crack at adjusting the style.
     if (style.hasAppearance())
-        LayoutTheme::theme().adjustStyle(style, e, authorStyle);
+        LayoutTheme::theme().adjustStyle(style, e);
 
     // If we have first-letter pseudo style, transitions, or animations, do not share this style.
     if (style.hasPseudoStyle(FIRST_LETTER) || style.transitions() || style.animations())
