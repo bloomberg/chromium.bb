@@ -483,6 +483,18 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Provides functionality to transition a frame to DWM.
   void PerformDwmTransition();
 
+  // Generates a touch event and adds it to the |touch_events| parameter.
+  // |point| is the point where the touch was initiated.
+  // |id| is the event id associated with the touch event.
+  // |event_time| is the current time used for latency calculation.
+  // |time_stamp| is the time delta associated with the message.
+  void GenerateTouchEvent(ui::EventType event_type,
+                          const gfx::Point& point,
+                          unsigned int id,
+                          base::TimeTicks event_time,
+                          base::TimeDelta time_stamp,
+                          TouchEvents* touch_events);
+
   HWNDMessageHandlerDelegate* delegate_;
 
   scoped_ptr<FullscreenHandler> fullscreen_handler_;

@@ -2341,7 +2341,6 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
     // input[i].dwTime doesn't necessarily relate to the system time at all,
     // so use base::TimeTicks::Now().
     const base::TimeTicks event_time = base::TimeTicks::Now();
-    int flags = ui::GetModifiersFromKeyState();
     TouchEvents touch_events;
     for (int i = 0; i < num_points; ++i) {
       POINT point;
@@ -2363,39 +2362,32 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
 
       last_touch_message_time_ = ::GetMessageTime();
 
-      ui::EventType touch_event_type = ui::ET_UNKNOWN;
+      gfx::Point touch_point(point.x, point.y);
+      unsigned int touch_id = id_generator_.GetGeneratedID(input[i].dwID);
+      base::TimeDelta time_delta = event_time - base::TimeTicks();
 
       if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
         touch_ids_.insert(input[i].dwID);
-        touch_event_type = ui::ET_TOUCH_PRESSED;
+        GenerateTouchEvent(ui::ET_TOUCH_PRESSED, touch_point, touch_id,
+                           event_time, time_delta, &touch_events);
         touch_down_contexts_++;
         base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&HWNDMessageHandler::ResetTouchDownContext,
                        weak_factory_.GetWeakPtr()),
             base::TimeDelta::FromMilliseconds(kTouchDownContextResetTimeout));
-      } else if (input[i].dwFlags & TOUCHEVENTF_UP) {
-        touch_ids_.erase(input[i].dwID);
-        touch_event_type = ui::ET_TOUCH_RELEASED;
-      } else if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
-        touch_event_type = ui::ET_TOUCH_MOVED;
-      }
-      if (touch_event_type != ui::ET_UNKNOWN) {
-        ui::TouchEvent event(touch_event_type,
-                             gfx::Point(point.x, point.y),
-                             id_generator_.GetGeneratedID(input[i].dwID),
-                             event_time - base::TimeTicks());
-        event.set_flags(flags);
-        event.latency()->AddLatencyNumberWithTimestamp(
-            ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-            0,
-            0,
-            event_time,
-            1);
+      } else {
+        if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
+          GenerateTouchEvent(ui::ET_TOUCH_MOVED, touch_point, touch_id,
+                             event_time, time_delta, &touch_events);
+        }
 
-        touch_events.push_back(event);
-        if (touch_event_type == ui::ET_TOUCH_RELEASED)
+        if (input[i].dwFlags & TOUCHEVENTF_UP) {
+          touch_ids_.erase(input[i].dwID);
+          GenerateTouchEvent(ui::ET_TOUCH_RELEASED, touch_point, touch_id,
+                             event_time, time_delta, &touch_events);
           id_generator_.ReleaseNumber(input[i].dwID);
+        }
       }
     }
     // Handle the touch events asynchronously. We need this because touch
@@ -2788,6 +2780,26 @@ void HWNDMessageHandler::PerformDwmTransition() {
   // to notify our children too, since we can have MDI child windows who need to
   // update their appearance.
   EnumChildWindows(hwnd(), &SendDwmCompositionChanged, NULL);
+}
+
+void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
+                                            const gfx::Point& point,
+                                            unsigned int id,
+                                            base::TimeTicks event_time,
+                                            base::TimeDelta time_stamp,
+                                            TouchEvents* touch_events) {
+  ui::TouchEvent event(event_type, point, id, time_stamp);
+
+  event.set_flags(ui::GetModifiersFromKeyState());
+
+  event.latency()->AddLatencyNumberWithTimestamp(
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+      0,
+      0,
+      event_time,
+      1);
+
+  touch_events->push_back(event);
 }
 
 }  // namespace views
