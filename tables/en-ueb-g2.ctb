@@ -1,9 +1,5 @@
 # liblouis: Unified English Braille Code (Grade 2)
 #
-#Based on U.S. English Grade 2 braille.
-#Modified by Joseph Lee <joseph.lee22590@gmail.com>
-#Used for testing purposes.
-#
 #  This file is free software; you can redistribute it and/or modify it
 #   under the terms of the Lesser or Library GNU General Public License 
 #  as published by the
@@ -22,6 +18,10 @@
 #  Boston, MA 02110-1301, USA.
 #
 #  Maintained by John J. Boyer john.boyer@jjb-software.com
+#                Mike Gray <mgray@aph.org>
+#  Modified by Mike Gray <mgray@aph.org>
+#              Joseph Lee <joseph.lee22590@gmail.com>
+
 
 include en-ueb-g1.ctb
 
@@ -47,6 +47,7 @@ seqafterpattern 'RE
 seqafterpattern 'S
 seqafterpattern 'T
 seqafterpattern 'VE
+
 
 #   10.1   Alphabetic Wordsigns
 
@@ -122,6 +123,10 @@ contraction X
 contraction Y
 contraction Z
 
+#TODO:  check
+contraction ÿ
+
+
 #   10.2   Strong Wordsigns
 
 word child 16
@@ -131,6 +136,7 @@ word still 34
 word this 1456
 word which 156
 
+
 #   10.3   Strong Contractions
 
 always and 12346
@@ -138,6 +144,7 @@ always for 123456
 always of 12356
 always the 2346
 always with 23456
+
 
 #   10.4   Strong Groupsigns
 
@@ -154,6 +161,7 @@ always th 1456
 always wh 156
 
 #   10.4.2
+
 word ch =
 word ou =
 word sh =
@@ -162,10 +170,11 @@ word th =
 word wh =
 
 #   10.4.3
+
 match !%"^_~" ing - 346
 
-#   10.5   Lower Wordsigns
 
+#   10.5   Lower Wordsigns
 
 attribute 1 +=*,.?!"'“”‘’  punctuation with only lower dots (except hyphens)
 
@@ -226,6 +235,7 @@ match %"^_" were [;:)}\\]]%>*%"^_~" 2356
 match %"^_~"%<*[([{] were %"^_" 2356
 match %"^_~"%<*[([{] were [;:)}\\]]%>*%"^_~" 2356
 
+
 #   10.6   Lower Groupsigns
 
 #   be handled in 10.5   
@@ -241,6 +251,7 @@ midword gg 2356
 word en =
 always en 26
 #  in is used in 10.5
+
 
 #   10.7   Initial-Letter Contractions
 
@@ -273,12 +284,41 @@ always work 5-2456
 always world 456-2456
 always young 5-13456
 
-#   easier to define specific exceptions
+#   easier to define specific allowances in 10.7.2
 word there 5-2346
 word these 45-2346
 word those 45-1456
 word upon 45-136
 word whose 45-156
+
+#   10.7.2
+
+word hereupon 5-125-45-136
+word thereabouts 5-2346-1-12-234
+word thereafter 5-2346-1-124
+word thereby 5-2346-12-13456
+word therefore 5-2346-123456-15
+word therefrom 5-2346-124-1235-135-134
+word therein 5-2346-35
+word thereof 5-2346-12356
+word thereon 5-2346-135-1345
+word thereupon 5-2346-45-136
+word therewith 5-2346-23456
+word whereupon 5-156-45-136
+word wherever 156-12456-5-15
+word whosesoever 45-156-234-135-5-15
+
+#   10.7.5
+
+sufword hereabout 5-125-1-12
+
+#   10.7.8
+
+sufword presentiment 1234-1235-15-234-26-2345-24-56-2345
+sufword sentiment 234-26-2345-24-56-2345
+sufword sentimental 234-26-2345-24-56-2345-1-123
+word unsentimental 136-1345-234-26-2345-24-56-2345-1-123
+
 
 #   10.8   Final-Letter Groupsigns
 
@@ -302,6 +342,13 @@ word dacoity 145-1-14-135-24-2345-13456
 word fruity 124-1235-136-24-2345-13456
 word hoity-toity 124-135-24-2345-13456-36-2345-135-24-2345-13456
 word rabbity 1235-1-23-24-2345-13456
+
+#   10.8.4
+
+word chieftainess 16-24-15-124-2345-1-35-15-234-234
+word citizeness 14-24-2345-24-1356-26-15-234-234
+word heatheness 125-2-2346-1345-15-234-234
+
 
 #   10.9   Shortforms
 
@@ -333,7 +380,7 @@ word below 23-123
 word beneath 23-1345
 word beyond 23-13456
 word blind 12-123
-word braille 12-1235-123
+sufword braille 12-1235-123
 prfword children 16-1345
 sufword conceive 25-14-1236
 sufword conceiving 25-14-1236-1245
@@ -358,7 +405,7 @@ sufword little 123-123
 always much 134-16
 word must 134-34
 word myself 134-13456-124
-#prfword necessary 1345-15-14 unnecessary
+prfword necessary 1345-15-14
 word neither 1345-15-24
 word oneself 5-135-124
 always ourselves 1256-1235-1236-234
@@ -385,27 +432,36 @@ word your 13456-1235
 word yourself 13456-1235-124
 word yourselves 13456-1235-1236-234
 
-#   appendix 1
+#   10.9.2
 
 sufword belowdeck 23-123-145-15-14-13
-sufword hereabout 5-125-1-12
 sufword suchlike 234-16-123-24-13-15
 
-################################################################################
 
-word chieftainess 16-24-15-124-2345-1-35-15-234-234
-word citizeness 14-24-2345-24-1356-26-15-234-234
-word heatheness 125-2-2346-1345-15-234-234
-word hereupon 5-125-45-136
-word thereabouts 5-2346-1-12-234
-word thereafter 5-2346-1-124
-word thereby 5-2346-12-13456
-word therefore 5-2346-123456-15
-word therein 5-2346-35
-word thereupon 5-2346-45-136
-word whereupon 5-156-45-136
-word wherever 156-12456-5-15
-word whosesoever 45-156-234-135-5-15
+#   10.11
+
+sufword guesstimate 1245-136-15-234-234-2345-24-134-1-2345-15
+word guesstimated 1245-136-15-234-234-2345-24-134-1-2345-1246
+word guesstimating 1245-136-15-234-234-2345-24-134-1-2345-346
+sufword homeroom 125-135-134-15-1235-135-135-134
+sufword stateroom 34-1-2345-15-1235-135-135-134
+sufword storeroom 34-135-1235-15-1235-135-135-134
+sufword tearoom 2345-2-1235-135-135-134
+
+
+#   Appendex 1
+
+sufword afterbirth 1-124-12-24-1235-1456
+sufword afterburner 1-124-12-136-1235-1345-12456
+sufword aftercare 1-124-14-345-15
+sufword afterglow 1-124-1245-123-246
+sufword afterlife 1-124-123-24-124-15
+sufword aftermath 1-124-134-1-1456
+sufword aftershave 1-124-146-1-1236-15
+sufword aftershock 1-124-146-135-14-13
+sufword aftertaste 1-124-2345-1-34-15
+sufword afterthought 1-124-1456-5-1256
+sufword afterword 1-124-45-2456
 
 ################################################################################
 
@@ -966,8 +1022,6 @@ always scattergood 234-14-1-2345-2345-12456-1245-145
 word sch =
 syllable screw = screwhole
 contraction sd
-#always sent 234-26-2345 sentimental
-word sentiment 234-26-2345-24-56-2345
 always sever 234-15-1236-12456 perseverance 
 midword sever 234-15-1236-12456 perseverance 
 word sever 234-5-15

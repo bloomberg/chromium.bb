@@ -1,9 +1,5 @@
 # liblouis: Unified English Braille Code (Grade 1)
 #
-#Based on English U.S. Grade 1
-#Modified by Joseph Lee <joseph.lee22590@gmail.com>
-#Used to display symbols, Unicode chars and other symbols used throughout uEB code.
-#
 #  This file is free software; you can redistribute it and/or modify it
 #   under the terms of the Lesser or Library GNU General Public License 
 #  as published by the
@@ -22,6 +18,9 @@
 #  Boston, MA 02110-1301, USA.
 #
 #  Maintained by John J. Boyer john.boyer@jjb-software.com
+#                Mike Gray <mgray@aph.org>
+#  Modified by Mike Gray <mgray@aph.org>
+#              Joseph Lee <joseph.lee22590@gmail.com>
 
 include en-ueb-chardefs.uti UEB specific char defs.
 
