@@ -596,15 +596,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 
   // Build command line for nacl.
 
-#if defined(OS_MACOSX)
-  // The Native Client process needs to be able to allocate a 1GB contiguous
-  // region to use as the client environment's virtual address space. ASLR
-  // (PIE) interferes with this by making it possible that no gap large enough
-  // to accomodate this request will exist in the child process' address
-  // space. Disable PIE for NaCl processes. See http://crbug.com/90221 and
-  // http://code.google.com/p/nativeclient/issues/detail?id=2043.
-  int flags = ChildProcessHost::CHILD_NO_PIE;
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
   int flags = ChildProcessHost::CHILD_ALLOW_SELF;
 #else
   int flags = ChildProcessHost::CHILD_NORMAL;

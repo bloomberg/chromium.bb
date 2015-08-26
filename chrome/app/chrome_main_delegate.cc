@@ -627,24 +627,10 @@ void ChromeMainDelegate::InitMacCrashReporter(
             << "Executable-heap process requires --type="
             << switches::kPluginProcess << " or "
             << switches::kUtilityProcess << ", saw " << process_type;
-      } else if (last_three == " NP") {
-#if !defined(DISABLE_NACL)
-        CHECK_EQ(switches::kNaClLoaderProcess, process_type)
-            << "Non-PIE process requires --type="
-            << switches::kNaClLoaderProcess << ", saw " << process_type;
-#endif
       } else {
-#if defined(DISABLE_NACL)
         CHECK(process_type != switches::kPluginProcess)
             << "Non-executable-heap PIE process is intolerant of --type="
             << switches::kPluginProcess;
-#else
-        CHECK(process_type != switches::kPluginProcess &&
-              process_type != switches::kNaClLoaderProcess)
-            << "Non-executable-heap PIE process is intolerant of --type="
-            << switches::kPluginProcess << " and "
-            << switches::kNaClLoaderProcess << ", saw " << process_type;
-#endif
       }
     }
   } else {
