@@ -63,3 +63,6 @@ WebRtcBrowserTest.CanMakeAudioCallAndThenRenegotiateToVideo
 
 # https://crbug.com/505714
 NaClBrowserTestGLibc.PPAPICore
+
+# http://crbug.com/523152
+WebRtcGetUserMediaBrowserTest.RenderVideoTrackInMultipleTagsAndPause
