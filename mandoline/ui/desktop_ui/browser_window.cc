@@ -4,13 +4,17 @@
 
 #include "mandoline/ui/desktop_ui/browser_window.h"
 
+#include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mandoline/ui/desktop_ui/browser_manager.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/services/tracing/public/cpp/switches.h"
+#include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
@@ -93,6 +97,9 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
   // BrowserWindow does not support being embedded more than once.
   CHECK(!root_);
 
+  // Record when the browser window was displayed, used for performance testing.
+  const base::Time display_time = base::Time::Now();
+
   // Make it so we get OnWillEmbed() for any Embed()s done by other apps we
   // Embed().
   root->view_manager()->SetEmbedRoot();
@@ -118,6 +125,25 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(default_url_.spec());
     Embed(request.Pass());
+  }
+
+  // Record when the initial 'tabs' were opened, used for performance testing.
+  const base::Time open_tabs_time = base::Time::Now();
+
+  // Record the browser startup time metrics, used for performance testing.
+  static bool recorded_browser_startup_metrics = false;
+  if (!recorded_browser_startup_metrics &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          tracing::kEnableStatsCollectionBindings)) {
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:tracing");
+    tracing::StartupPerformanceDataCollectorPtr collector;
+    app_->ConnectToService(request.Pass(), &collector);
+    collector->SetBrowserWindowDisplayTime(display_time.ToInternalValue());
+    collector->SetBrowserOpenTabsTime(open_tabs_time.ToInternalValue());
+    collector->SetBrowserMessageLoopStartTime(
+        manager_->startup_time().ToInternalValue());
+    recorded_browser_startup_metrics = true;
   }
 }
 

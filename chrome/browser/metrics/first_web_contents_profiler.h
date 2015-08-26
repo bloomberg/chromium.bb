@@ -52,20 +52,11 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   // Initialize histograms for unresponsiveness metrics.
   void InitHistograms();
 
-  // Whether the "NonEmptyPaint" metric has been collected. If an attempt is
-  // made to collect the metric but the attempt fails, this member is set to
-  // true to prevent this class from sitting around forever attempting to
-  // collect the metric.
+  // Whether an attempt was made to collect the "NonEmptyPaint" metric.
   bool collected_paint_metric_;
 
-  // Whether the "MainFrameLoad" metric has been collected. If an attempt is
-  // made to collect the metric but the attempt fails, this member is set to
-  // true to prevent this class from sitting around forever attempting to
-  // collect the metric.
+  // Whether an attempt was made to collect the "MainFrameLoad" metric.
   bool collected_load_metric_;
-
-  // The time at which the process was created.
-  base::Time process_creation_time_;
 
   // |delegate_| owns |this|.
   Delegate* delegate_;

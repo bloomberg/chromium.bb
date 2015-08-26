@@ -27,6 +27,9 @@ bool WasNonBrowserUIDisplayed();
 // been displayed or not.
 void SetNonBrowserUIDisplayed();
 
+// Call this with the creation time of the startup (initial/main) process.
+void RecordStartupProcessCreationTime(const base::Time& time);
+
 // Call this with a time recorded as early as possible in the startup process.
 // On Android, the entry point time is the time at which the Java code starts.
 // In Mojo, the entry point time is the time at which the shell starts.
@@ -41,6 +44,15 @@ void RecordExeMainEntryPointTime(const base::Time& time);
 // |is_first_run| - is the current launch part of a first run.
 void RecordBrowserMainMessageLoopStart(const base::Time& time,
                                        bool is_first_run);
+
+// Call this with the time when the first browser window became visible.
+void RecordBrowserWindowDisplay(const base::Time& time);
+
+// Call this with the time when the first web contents loaded its main frame.
+void RecordFirstWebContentsMainFrameLoad(const base::Time& time);
+
+// Call this with the time when the first web contents had a non-empty paint.
+void RecordFirstWebContentsNonEmptyPaint(const base::Time& time);
 
 // Returns the time of main entry recorded from RecordMainEntryPointTime.
 // Returns a null Time if a value has not been recorded yet.

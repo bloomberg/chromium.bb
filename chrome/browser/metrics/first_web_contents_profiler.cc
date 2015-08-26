@@ -124,7 +124,6 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
       unresponsiveness_histogram_(NULL),
       unresponsiveness_1sec_histogram_(NULL),
       unresponsiveness_10sec_histogram_(NULL) {
-  process_creation_time_ = base::CurrentProcessInfo::CreationTime();
   InitHistograms();
 }
 
@@ -137,12 +136,7 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   }
 
   collected_paint_metric_ = true;
-  if (!process_creation_time_.is_null()) {
-    base::TimeDelta elapsed = base::Time::Now() - process_creation_time_;
-
-    UMA_HISTOGRAM_LONG_TIMES_100("Startup.FirstWebContents.NonEmptyPaint",
-                                 elapsed);
-  }
+  startup_metric_utils::RecordFirstWebContentsNonEmptyPaint(base::Time::Now());
 
   metrics::TrackingSynchronizer::OnProfilingPhaseCompleted(
       metrics::ProfilerEventProto::EVENT_FIRST_NONEMPTY_PAINT);
@@ -180,12 +174,7 @@ void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
   }
 
   collected_load_metric_ = true;
-  if (!process_creation_time_.is_null()) {
-    base::TimeDelta elapsed = base::Time::Now() - process_creation_time_;
-
-    UMA_HISTOGRAM_LONG_TIMES_100("Startup.FirstWebContents.MainFrameLoad",
-                                 elapsed);
-  }
+  startup_metric_utils::RecordFirstWebContentsMainFrameLoad(base::Time::Now());
 
   if (IsFinishedCollectingMetrics())
     FinishedCollectingMetrics();

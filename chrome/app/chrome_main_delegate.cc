@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
+#include "base/process/process_info.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -390,6 +391,12 @@ void InitializeUserDataDir() {
 }  // namespace
 
 ChromeMainDelegate::ChromeMainDelegate() {
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+  // Record the startup process creation time on supported platforms.
+  startup_metric_utils::RecordStartupProcessCreationTime(
+      base::CurrentProcessInfo::CreationTime());
+#endif
+
 // On Android the main entry point time is the time when the Java code starts.
 // This happens before the shared library containing this code is even loaded.
 // The Java startup code has recorded that time, but the C++ code can't fetch it

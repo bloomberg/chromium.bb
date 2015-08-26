@@ -9,10 +9,8 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/process/process_info.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
-#include "base/time/time.h"
 
 #if defined(OS_WIN)
 #include <winternl.h>
@@ -26,6 +24,9 @@ namespace {
 // Mark as volatile to defensively make sure usage is thread-safe.
 // Note that at the time of this writing, access is only on the UI thread.
 volatile bool g_non_browser_ui_displayed = false;
+
+base::LazyInstance<base::Time>::Leaky g_process_creation_time =
+    LAZY_INSTANCE_INITIALIZER;
 
 base::LazyInstance<base::Time>::Leaky g_main_entry_point_time =
     LAZY_INSTANCE_INITIALIZER;
@@ -228,6 +229,12 @@ void SetNonBrowserUIDisplayed() {
   g_non_browser_ui_displayed = true;
 }
 
+void RecordStartupProcessCreationTime(const base::Time& time) {
+  DCHECK(g_process_creation_time.Get().is_null());
+  g_process_creation_time.Get() = time;
+  DCHECK(!g_process_creation_time.Get().is_null());
+}
+
 void RecordMainEntryPointTime(const base::Time& time) {
   DCHECK(MainEntryPointTime().is_null());
   g_main_entry_point_time.Get() = time;
@@ -245,12 +252,7 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
   RecordHardFaultHistogram(is_first_run);
   RecordMainEntryTimeHistogram();
 
-  base::Time process_creation_time;
-// CurrentProcessInfo::CreationTime() is only implemented on some platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-  process_creation_time = base::CurrentProcessInfo::CreationTime();
-#endif
-
+  const base::Time& process_creation_time = g_process_creation_time.Get();
   if (!is_first_run && !process_creation_time.is_null()) {
     UMA_HISTOGRAM_LONG_TIMES_100("Startup.BrowserMessageLoopStartTime",
                                  time - process_creation_time);
@@ -263,12 +265,10 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
   if (base::SysInfo::Uptime() < kSevenMinutesInMilliseconds)
     return;
 
-  // The Startup.BrowserMessageLoopStartTime histogram recorded in
-  // chrome_browser_main.cc exhibits instability in the field which limits its
-  // usefulness in all scenarios except when we have a very large sample size.
-  // Attempt to mitigate this with a new metric:
-  // * Measure time from main entry rather than the OS' notion of process start
-  //   time.
+  // The Startup.BrowserMessageLoopStartTime histogram exhibits instability in
+  // the field which limits its usefulness in all scenarios except when we have
+  // a very large sample size. Attempt to mitigate this with a new metric:
+  // * Measure time from main entry rather than the OS' notion of process start.
   // * Only measure launches that occur 7 minutes after boot to try to avoid
   //   cases where Chrome is auto-started and IO is heavily loaded.
   const base::Time dll_main_time = MainEntryPointTime();
@@ -301,6 +301,42 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
                                dll_main_time - process_creation_time);
     }
   }
+}
+
+void RecordBrowserWindowDisplay(const base::Time& time) {
+  static bool is_first_call = true;
+  if (!is_first_call || time.is_null())
+    return;
+  is_first_call = false;
+  if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
+    return;
+
+  UMA_HISTOGRAM_LONG_TIMES("Startup.BrowserWindowDisplay",
+                           time - g_process_creation_time.Get());
+}
+
+void RecordFirstWebContentsMainFrameLoad(const base::Time& time) {
+  static bool is_first_call = true;
+  if (!is_first_call || time.is_null())
+    return;
+  is_first_call = false;
+  if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
+    return;
+
+  UMA_HISTOGRAM_LONG_TIMES_100("Startup.FirstWebContents.MainFrameLoad",
+                               time - g_process_creation_time.Get());
+}
+
+void RecordFirstWebContentsNonEmptyPaint(const base::Time& time) {
+  static bool is_first_call = true;
+  if (!is_first_call || time.is_null())
+    return;
+  is_first_call = false;
+  if (WasNonBrowserUIDisplayed() || g_process_creation_time.Get().is_null())
+    return;
+
+  UMA_HISTOGRAM_LONG_TIMES_100("Startup.FirstWebContents.NonEmptyPaint",
+                               time - g_process_creation_time.Get());
 }
 
 base::Time MainEntryPointTime() {

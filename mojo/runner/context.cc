@@ -227,7 +227,8 @@ class TracingServiceProvider : public ServiceProvider {
 
 }  // namespace
 
-Context::Context() : application_manager_(this) {
+Context::Context()
+    : application_manager_(this), main_entry_time_(base::Time::Now()) {
   DCHECK(!base::MessageLoop::current());
 
   // By default assume that the local apps reside alongside the shell.
@@ -315,19 +316,20 @@ bool Context::Init() {
       GetProxy(&service_provider_ptr), tracing_service_provider_ptr.Pass(),
       shell::GetPermissiveCapabilityFilter(), base::Closure());
 
-// CurrentProcessInfo::CreationTime() is missing on some platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-  // Record the shell process creation time for performance testing.
+  // Record the shell startup metrics used for performance testing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
     tracing::StartupPerformanceDataCollectorPtr collector;
     service_provider_ptr->ConnectToService(
         tracing::StartupPerformanceDataCollector::Name_,
         GetProxy(&collector).PassMessagePipe());
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+    // CurrentProcessInfo::CreationTime is only defined on some platforms.
     const base::Time creation_time = base::CurrentProcessInfo::CreationTime();
     collector->SetShellProcessCreationTime(creation_time.ToInternalValue());
-  }
 #endif
+    collector->SetShellMainEntryPointTime(main_entry_time_.ToInternalValue());
+  }
 
   InitDevToolsServiceIfNeeded(&application_manager_, command_line);
 

@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/runner/scoped_user_data_dir.h"
 #include "mojo/runner/task_runners.h"
@@ -93,6 +94,7 @@ class Context : public shell::ApplicationManager::Delegate,
   GURL shell_file_root_;
   GURL command_line_cwd_;
   base::Closure app_complete_callback_;
+  base::Time main_entry_time_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };

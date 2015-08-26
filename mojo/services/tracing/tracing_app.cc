@@ -94,6 +94,11 @@ void TracingApp::SetShellProcessCreationTime(int64 time) {
     startup_performance_times_.shell_process_creation_time = time;
 }
 
+void TracingApp::SetShellMainEntryPointTime(int64 time) {
+  if (startup_performance_times_.shell_main_entry_point_time == 0)
+    startup_performance_times_.shell_main_entry_point_time = time;
+}
+
 void TracingApp::SetBrowserMessageLoopStartTime(int64 time) {
   if (startup_performance_times_.browser_message_loop_start_time == 0)
     startup_performance_times_.browser_message_loop_start_time = time;

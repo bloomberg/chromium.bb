@@ -32,6 +32,7 @@ interface TraceCoordinator {
 struct StartupPerformanceTimes {
   // TODO(msw): Rename to match "BrowserMainEntryTimeAbsolute" metric?
   int64 shell_process_creation_time;
+  int64 shell_main_entry_point_time;
   int64 browser_message_loop_start_time;
   int64 browser_window_display_time;
   int64 browser_open_tabs_time;
@@ -45,6 +46,7 @@ struct StartupPerformanceTimes {
 interface StartupPerformanceDataCollector {
   // These setters may be called many times, only the first time is recorded.
   SetShellProcessCreationTime(int64 time);
+  SetShellMainEntryPointTime(int64 time);
   SetBrowserMessageLoopStartTime(int64 time);
   SetBrowserWindowDisplayTime(int64 time);
   SetBrowserOpenTabsTime(int64 time);
