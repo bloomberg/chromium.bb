@@ -74,10 +74,6 @@
           result = curTest.transform + ' expected <code>' + curTest.result + '</code>, got <code>' + computedTransform + '</code> : FAIL';
         resultsBox.innerHTML += result + '<br>';
 
-        if (computedSpanTransform !== 'none') {
-          result = curTest.transform + ' applied to a non-box element: ' + ' expected <code>none</code> got <code>' + computedSpanTransform + '</code> : FAIL';
-          resultsBox.innerHTML += result + '<br>';
-        }
       });
       
       if (window.testRunner)
