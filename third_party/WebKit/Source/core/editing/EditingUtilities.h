@@ -130,7 +130,6 @@ inline bool canHaveChildrenForEditing(const Node* node)
 
 bool isAtomicNode(const Node*);
 CORE_EXPORT bool isBlock(const Node*);
-bool isInline(const Node*);
 bool isTabHTMLSpanElement(const Node*);
 bool isTabHTMLSpanElementTextNode(const Node*);
 bool isMailHTMLBlockquoteElement(const Node*);
