@@ -272,9 +272,8 @@ class _PaygenBuild(object):
   It operates across a single build at a time, and is responsible for locking
   that build and for flagging it as finished when all payloads are generated.
   """
-
-  # 5 Gig bytes of cache.
-  CACHE_SIZE = 5 * 1024 * 1024 * 1024
+  # 50 GB of cache.
+  CACHE_SIZE = 50 * 1024 * 1024 * 1024
 
   # Relative subpath for dumping control files inside the temp directory.
   CONTROL_FILE_SUBDIR = os.path.join('autotest', 'au_control_files')
