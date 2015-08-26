@@ -19827,6 +19827,7 @@
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: veyron_mickey, veyron_romy)",
         "hw_tests": [],
+        "important": true,
         "vm_tests": []
     },
     "veyron-full-group": {

@@ -622,7 +622,6 @@ _waterfall_config_map = {
         'strago-release-group',
         'veyron-b-release-group',
         'veyron-c-release-group',
-        'veyron-d-release-group',
 
         # Experimental Canaries
         'bobcat-release',
@@ -2595,7 +2594,6 @@ def GetConfig():
       'veyron-d', 'veyron_mickey', (
           'veyron_romy',
       ),
-      important=False,
   )
 
   # jecht-based boards
