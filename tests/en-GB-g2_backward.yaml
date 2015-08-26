@@ -1,7 +1,7 @@
 tables: [unicode.dis, en-GB-g2.ctb]
 flags: {testmode: backward}
 tests:
-  - #an example of testing simple backtranslation.
+  - # an example of testing simple backtranslation.
     - ⠮ ⠉⠁⠞ ⠎⠁⠞ ⠕⠝ ⠮ ⠍⠁⠞
     - the cat sat on the mat
   - # same as above example.
