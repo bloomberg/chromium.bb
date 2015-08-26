@@ -5,6 +5,7 @@
 #include "config.h"
 #include "DictionaryTest.h"
 
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/testing/InternalDictionary.h"
 #include "core/testing/InternalDictionaryDerived.h"
 
@@ -66,6 +67,11 @@ void DictionaryTest::set(const InternalDictionary& testingDictionary)
     if (testingDictionary.hasDoubleOrStringSequenceMember())
         m_doubleOrStringSequenceMember = testingDictionary.doubleOrStringSequenceMember();
     m_eventTargetOrNullMember = testingDictionary.eventTargetOrNullMember();
+    if (testingDictionary.hasDictionaryMember()) {
+        HashMap<String, String> properties;
+        testingDictionary.dictionaryMember().getOwnPropertiesAsStringHashMap(properties);
+        m_dictionaryMemberProperties = properties;
+    }
 }
 
 void DictionaryTest::get(InternalDictionary& result)
@@ -112,6 +118,17 @@ void DictionaryTest::get(InternalDictionary& result)
     if (!m_doubleOrStringSequenceMember.isNull())
         result.setDoubleOrStringSequenceMember(m_doubleOrStringSequenceMember.get());
     result.setEventTargetOrNullMember(m_eventTargetOrNullMember);
+}
+
+ScriptValue DictionaryTest::getDictionaryMemberProperties(ScriptState* scriptState)
+{
+    if (!m_dictionaryMemberProperties)
+        return ScriptValue();
+    V8ObjectBuilder builder(scriptState);
+    HashMap<String, String> properties = m_dictionaryMemberProperties.get();
+    for (HashMap<String, String>::iterator it = properties.begin(); it != properties.end(); ++it)
+        builder.addString(it->key, it->value);
+    return builder.scriptValue();
 }
 
 void DictionaryTest::setDerived(const InternalDictionaryDerived& derived)
@@ -161,6 +178,7 @@ void DictionaryTest::reset()
     m_derivedStringMember = String();
     m_derivedStringMemberWithDefault = String();
     m_requiredBooleanMember = false;
+    m_dictionaryMemberProperties = nullptr;
 }
 
 DEFINE_TRACE(DictionaryTest)

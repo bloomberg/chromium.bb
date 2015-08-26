@@ -7,6 +7,7 @@
 #ifndef TestDictionary_h
 #define TestDictionary_h
 
+#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/UnionTypesCore.h"
@@ -41,6 +42,10 @@ public:
     bool hasCreateMember() const { return !m_createMember.isNull(); }
     bool createMember() const { return m_createMember.get(); }
     void setCreateMember(bool value) { m_createMember = value; }
+
+    bool hasDictionaryMember() const { return !m_dictionaryMember.isUndefinedOrNull(); }
+    Dictionary dictionaryMember() const { return m_dictionaryMember; }
+    void setDictionaryMember(Dictionary value) { m_dictionaryMember = value; }
 
     bool hasDoubleOrNullMember() const { return !m_doubleOrNullMember.isNull(); }
     double doubleOrNullMember() const { return m_doubleOrNullMember.get(); }
@@ -171,6 +176,7 @@ private:
     ScriptValue m_anyMember;
     Nullable<bool> m_booleanMember;
     Nullable<bool> m_createMember;
+    Dictionary m_dictionaryMember;
     Nullable<double> m_doubleOrNullMember;
     DoubleOrString m_doubleOrStringMember;
     Nullable<HeapVector<DoubleOrString>> m_doubleOrStringSequenceMember;

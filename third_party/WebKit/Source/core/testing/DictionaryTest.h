@@ -6,11 +6,13 @@
 #define DictionaryTest_h
 
 #include "bindings/core/v8/Nullable.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
+#include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -31,6 +33,9 @@ public:
     void set(const InternalDictionary&);
     // Sets each member of the given TestDictionary from fields
     void get(InternalDictionary&);
+    // Returns properties of the latest |dictionaryMember| which was set via
+    // set().
+    ScriptValue getDictionaryMemberProperties(ScriptState*);
 
     void setDerived(const InternalDictionaryDerived&);
     void getDerived(InternalDictionaryDerived&);
@@ -77,6 +82,7 @@ private:
     String m_derivedStringMember;
     String m_derivedStringMemberWithDefault;
     bool m_requiredBooleanMember;
+    Nullable<HashMap<String, String>> m_dictionaryMemberProperties;
 };
 
 } // namespace blink
