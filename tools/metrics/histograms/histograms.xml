@@ -21489,6 +21489,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.ErrorPageButtonPressedWhileInUnexpectedState"
     enum="ErrorPageButton">
+  <obsolete>
+    Deprecated as of 2015/8/21
+  </obsolete>
   <owner>mmenke@chromium.org</owner>
   <summary>
     Temporary histogram to investigate http://crbug.com/500556.  Records which
@@ -21501,6 +21504,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Net.ErrorPageButtonPressUnexpectedStates"
     enum="ErrorPageUnexpectedStates">
   <owner>mmenke@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 2015/8/21
+  </obsolete>
   <summary>
     Temporary histogram to investigate http://crbug.com/500556.  Records
     whether, when the handler for a button press on the network error page runs,

@@ -2459,14 +2459,14 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessPageLoadedBeforeTimerFires) {
 TEST_F(NetErrorHelperCoreTest, ExplicitReloadSucceeds) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_EQ(0, reload_count());
-  core()->ExecuteButtonPress(true, NetErrorHelperCore::RELOAD_BUTTON);
+  core()->ExecuteButtonPress(NetErrorHelperCore::RELOAD_BUTTON);
   EXPECT_EQ(1, reload_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, ExplicitShowSavedSucceeds) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_EQ(0, show_saved_count());
-  core()->ExecuteButtonPress(true, NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
+  core()->ExecuteButtonPress(NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
   EXPECT_EQ(1, show_saved_count());
   EXPECT_EQ(GURL(kFailedUrl), show_saved_url());
 }
@@ -2482,7 +2482,7 @@ TEST_F(NetErrorHelperCoreTest, CanShowNetworkDiagnostics) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   EXPECT_TRUE(last_can_show_network_diagnostics_dialog());
 
-  core()->ExecuteButtonPress(true, NetErrorHelperCore::DIAGNOSE_ERROR);
+  core()->ExecuteButtonPress(NetErrorHelperCore::DIAGNOSE_ERROR);
   EXPECT_EQ(1, diagnose_error_count());
   EXPECT_EQ(GURL(kFailedUrl), diagnose_error_url());
 }

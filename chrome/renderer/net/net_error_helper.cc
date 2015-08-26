@@ -94,9 +94,7 @@ NetErrorHelper::~NetErrorHelper() {
 
 void NetErrorHelper::ButtonPressed(
     error_page::NetErrorHelperCore::Button button) {
-  GURL url = render_frame()->GetWebFrame()->document().url();
-  bool is_error_page = (url == GURL(content::kUnreachableWebDataURL));
-  core_->ExecuteButtonPress(is_error_page, button);
+  core_->ExecuteButtonPress(button);
 }
 
 void NetErrorHelper::TrackClick(int tracking_id) {
