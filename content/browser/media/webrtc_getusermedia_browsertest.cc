@@ -354,8 +354,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcGetUserMediaBrowserTest,
 }
 
 // Test fails under Android, http://crbug.com/524388
-// Test fails under MSan, http://crbug.com/523152
-#if defined(OS_ANDROID) || defined(MEMORY_SANITIZER)
+// Test fails under MSan, flaky under Linux in general: http://crbug.com/523152
+#if defined(OS_ANDROID) || defined(MEMORY_SANITIZER) || defined(OS_LINUX)
 #define MAYBE_RenderVideoTrackInMultipleTagsAndPause \
     DISABLED_RenderVideoTrackInMultipleTagsAndPause
 #else
