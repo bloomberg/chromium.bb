@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
 
 /**
- * This is a helper class to create shortcuts on the Android home screen.
+ * This class acts as a proxy for AddToHomescreenDialog to interact with C++.
  */
 public class AddToHomescreenDialogHelper {
 
@@ -81,7 +81,7 @@ public class AddToHomescreenDialogHelper {
 
     /**
      * Adds a shortcut for the current Tab.
-     * @param userRequestedTitle Updated title for the shortcut.
+     * @param userRequestedTitle Title of the shortcut displayed on the homescreen.
      */
     public void addShortcut(String userRequestedTitle) {
         nativeAddShortcut(mNativeAddToHomescreenDialogHelper, userRequestedTitle);

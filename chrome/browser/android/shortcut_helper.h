@@ -11,8 +11,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 // ShortcutHelper is the C++ counterpart of org.chromium.chrome.browser's
-// ShortcutHelper in Java. The object is owned by the Java object. It is created
-// from there via a JNI (Initialize) call and MUST BE DESTROYED via Destroy().
+// ShortcutHelper in Java.
 class ShortcutHelper {
  public:
   // Registers JNI hooks.

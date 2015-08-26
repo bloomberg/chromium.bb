@@ -24,7 +24,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import java.util.concurrent.Callable;
 
 /**
- * Tests org.chromium.chrome.browser.webapps.AddToHomescreenDialogHelper and it's C++ counterpart.
+ * Tests org.chromium.chrome.browser.webapps.AddToHomescreenDialogHelper and its C++ counterpart.
  */
 public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String WEBAPP_ACTION_NAME = "WEBAPP_ACTION";
