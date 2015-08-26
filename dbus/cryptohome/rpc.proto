@@ -13,6 +13,8 @@
 // parameters exist, the less data is actually transferred on the wire
 // in "default" situations.
 
+syntax = "proto2";
+
 option optimize_for = LITE_RUNTIME;
 
 package cryptohome;

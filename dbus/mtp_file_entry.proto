@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+syntax = "proto2";
+
 option optimize_for = LITE_RUNTIME;
 
 // This protobuf is for sending file entries from a mtp/ptp device to the
