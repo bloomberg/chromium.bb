@@ -24,7 +24,7 @@ namespace blink {
 
 unsigned SegmentedString::length() const
 {
-    unsigned length = m_currentString.m_length;
+    unsigned length = m_currentString.length();
     if (m_pushedChar1) {
         ++length;
         if (m_pushedChar2)
@@ -34,7 +34,7 @@ unsigned SegmentedString::length() const
         Deque<SegmentedSubstring>::const_iterator it = m_substrings.begin();
         Deque<SegmentedSubstring>::const_iterator e = m_substrings.end();
         for (; it != e; ++it)
-            length += it->m_length;
+            length += it->length();
     }
     return length;
 }
@@ -70,10 +70,10 @@ void SegmentedString::clear()
 void SegmentedString::append(const SegmentedSubstring& s)
 {
     ASSERT(!m_closed);
-    if (!s.m_length)
+    if (!s.length())
         return;
 
-    if (!m_currentString.m_length) {
+    if (!m_currentString.length()) {
         m_numberOfCharactersConsumedPriorToCurrentString += m_currentString.numberOfCharactersConsumed();
         m_currentString = s;
         updateAdvanceFunctionPointers();
@@ -87,7 +87,7 @@ void SegmentedString::prepend(const SegmentedSubstring& s)
 {
     ASSERT(!escaped());
     ASSERT(!s.numberOfCharactersConsumed());
-    if (!s.m_length)
+    if (!s.length())
         return;
 
     // FIXME: We're assuming that the prepend were originally consumed by
@@ -96,8 +96,8 @@ void SegmentedString::prepend(const SegmentedSubstring& s)
     //        current use, but we might need to handle the more elaborate
     //        cases in the future.
     m_numberOfCharactersConsumedPriorToCurrentString += m_currentString.numberOfCharactersConsumed();
-    m_numberOfCharactersConsumedPriorToCurrentString -= s.m_length;
-    if (!m_currentString.m_length) {
+    m_numberOfCharactersConsumedPriorToCurrentString -= s.length();
+    if (!m_currentString.length()) {
         m_currentString = s;
         updateAdvanceFunctionPointers();
     } else {
@@ -134,7 +134,7 @@ void SegmentedString::append(const SegmentedString& s)
         for (; it != e; ++it)
             append(*it);
     }
-    m_currentChar = m_pushedChar1 ? m_pushedChar1 : (m_currentString.m_length ? m_currentString.getCurrentChar() : 0);
+    m_currentChar = m_pushedChar1 ? m_pushedChar1 : (m_currentString.length() ? m_currentString.getCurrentChar() : 0);
 }
 
 void SegmentedString::prepend(const SegmentedString& s)
@@ -148,7 +148,7 @@ void SegmentedString::prepend(const SegmentedString& s)
             prepend(*it);
     }
     prepend(s.m_currentString);
-    m_currentChar = m_currentString.m_length ? m_currentString.getCurrentChar() : 0;
+    m_currentChar = m_currentString.length() ? m_currentString.getCurrentChar() : 0;
 }
 
 void SegmentedString::advanceSubstring()
@@ -247,8 +247,9 @@ void SegmentedString::advanceSlowCase()
         }
 
         updateAdvanceFunctionPointers();
-    } else if (m_currentString.m_length) {
-        if (!--m_currentString.m_length)
+    } else if (m_currentString.length()) {
+        m_currentString.decrementLength();
+        if (!m_currentString.length())
             advanceSubstring();
     } else if (!isComposite()) {
         m_currentString.clear();
@@ -257,7 +258,7 @@ void SegmentedString::advanceSlowCase()
         m_advanceFunc = &SegmentedString::advanceEmpty;
         m_advanceAndUpdateLineNumberFunc = &SegmentedString::advanceEmpty;
     }
-    m_currentChar = m_currentString.m_length ? m_currentString.getCurrentChar() : 0;
+    m_currentChar = m_currentString.length() ? m_currentString.getCurrentChar() : 0;
 }
 
 void SegmentedString::advanceAndUpdateLineNumberSlowCase()
@@ -272,13 +273,14 @@ void SegmentedString::advanceAndUpdateLineNumberSlowCase()
         }
 
         updateAdvanceFunctionPointers();
-    } else if (m_currentString.m_length) {
+    } else if (m_currentString.length()) {
         if (m_currentString.getCurrentChar() == '\n' && m_currentString.doNotExcludeLineNumbers()) {
             ++m_currentLine;
-            // Plus 1 because numberOfCharactersConsumed value hasn't incremented yet; it does with m_length decrement below.
+            // Plus 1 because numberOfCharactersConsumed value hasn't incremented yet; it does with length() decrement below.
             m_numberOfCharactersConsumedPriorToCurrentLine = numberOfCharactersConsumed() + 1;
         }
-        if (!--m_currentString.m_length)
+        m_currentString.decrementLength();
+        if (!m_currentString.length())
             advanceSubstring();
         else
             m_currentString.incrementAndGetCurrentChar(); // Only need the ++
@@ -290,12 +292,12 @@ void SegmentedString::advanceAndUpdateLineNumberSlowCase()
         m_advanceAndUpdateLineNumberFunc = &SegmentedString::advanceEmpty;
     }
 
-    m_currentChar = m_currentString.m_length ? m_currentString.getCurrentChar() : 0;
+    m_currentChar = m_currentString.length() ? m_currentString.getCurrentChar() : 0;
 }
 
 void SegmentedString::advanceEmpty()
 {
-    ASSERT(!m_currentString.m_length && !isComposite());
+    ASSERT(!m_currentString.length() && !isComposite());
     m_currentChar = 0;
 }
 

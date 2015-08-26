@@ -125,14 +125,21 @@ public:
         return incrementAndGetCurrentChar16();
     }
 
-public:
+    ALWAYS_INLINE bool haveOneCharacterLeft() const
+    {
+        return m_length == 1;
+    }
+
+    ALWAYS_INLINE void decrementLength() { --m_length; }
+
+    ALWAYS_INLINE int length() const { return m_length; }
+
+private:
     union {
         const LChar* string8Ptr;
         const UChar* string16Ptr;
     } m_data;
     int m_length;
-
-private:
     bool m_doNotExcludeLineNumbers;
     bool m_is8Bit;
     String m_string;
@@ -167,7 +174,7 @@ public:
         , m_empty(!str.length())
         , m_fastPathFlags(NoFastPath)
     {
-        if (m_currentString.m_length)
+        if (m_currentString.length())
             m_currentChar = m_currentString.getCurrentChar();
         updateAdvanceFunctionPointers();
     }
@@ -211,10 +218,9 @@ public:
     {
         if (m_fastPathFlags & Use8BitAdvance) {
             ASSERT(!m_pushedChar1);
-            bool haveOneCharacterLeft = (--m_currentString.m_length == 1);
             m_currentChar = m_currentString.incrementAndGetCurrentChar8();
-
-            if (!haveOneCharacterLeft)
+            m_currentString.decrementLength();
+            if (!m_currentString.haveOneCharacterLeft())
                 return;
 
             updateSlowCaseFunctionPointers();
@@ -231,12 +237,9 @@ public:
             ASSERT(!m_pushedChar1);
 
             bool haveNewLine = (m_currentChar == '\n') & !!(m_fastPathFlags & Use8BitAdvanceAndUpdateLineNumbers);
-            bool haveOneCharacterLeft = (--m_currentString.m_length == 1);
-
             m_currentChar = m_currentString.incrementAndGetCurrentChar8();
-
-            if (!(haveNewLine | haveOneCharacterLeft))
-                return;
+            m_currentString.decrementLength();
+            bool haveOneCharacterLeft = m_currentString.haveOneCharacterLeft();
 
             if (haveNewLine) {
                 ++m_currentLine;
@@ -273,7 +276,7 @@ public:
     void advancePastNewlineAndUpdateLineNumber()
     {
         ASSERT(currentChar() == '\n');
-        if (!m_pushedChar1 && m_currentString.m_length > 1) {
+        if (!m_pushedChar1 && m_currentString.length() > 1) {
             int newLineFlag = m_currentString.doNotExcludeLineNumbers();
             m_currentLine += newLineFlag;
             if (newLineFlag)
@@ -336,14 +339,15 @@ private:
 
     void decrementAndCheckLength()
     {
-        ASSERT(m_currentString.m_length > 1);
-        if (--m_currentString.m_length == 1)
+        ASSERT(m_currentString.length() > 1);
+        m_currentString.decrementLength();
+        if (m_currentString.haveOneCharacterLeft())
             updateSlowCaseFunctionPointers();
     }
 
     void updateAdvanceFunctionPointers()
     {
-        if ((m_currentString.m_length > 1) && !m_pushedChar1) {
+        if ((m_currentString.length() > 1) && !m_pushedChar1) {
             if (m_currentString.is8Bit()) {
                 m_advanceFunc = &SegmentedString::advance8;
                 m_fastPathFlags = Use8BitAdvance;
@@ -365,7 +369,7 @@ private:
             return;
         }
 
-        if (!m_currentString.m_length && !isComposite()) {
+        if (!m_currentString.length() && !isComposite()) {
             m_advanceFunc = &SegmentedString::advanceEmpty;
             m_fastPathFlags = NoFastPath;
             m_advanceAndUpdateLineNumberFunc = &SegmentedString::advanceEmpty;
@@ -376,7 +380,7 @@ private:
 
     inline LookAheadResult lookAheadInline(const String& string, TextCaseSensitivity caseSensitivity)
     {
-        if (!m_pushedChar1 && string.length() <= static_cast<unsigned>(m_currentString.m_length)) {
+        if (!m_pushedChar1 && string.length() <= static_cast<unsigned>(m_currentString.length())) {
             String currentSubstring = m_currentString.currentSubString(string.length());
             if (currentSubstring.startsWith(string, caseSensitivity))
                 return DidMatch;
