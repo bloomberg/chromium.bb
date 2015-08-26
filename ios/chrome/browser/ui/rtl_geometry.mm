@@ -116,6 +116,28 @@ CGFloat LayoutRectGetTrailingEdge(LayoutRect layout) {
 
 #pragma mark - UIKit utilities
 
+CGFloat CGRectGetLeadingEdgeUsingDirection(
+    CGRect rect,
+    base::i18n::TextDirection direction) {
+  return direction == base::i18n::RIGHT_TO_LEFT ? CGRectGetMaxX(rect)
+                                                : CGRectGetMinX(rect);
+}
+
+CGFloat CGRectGetTrailingEdgeUsingDirection(
+    CGRect rect,
+    base::i18n::TextDirection direction) {
+  return direction == base::i18n::RIGHT_TO_LEFT ? CGRectGetMinX(rect)
+                                                : CGRectGetMaxX(rect);
+}
+
+CGFloat CGRectGetLeadingEdge(CGRect rect) {
+  return CGRectGetLeadingEdgeUsingDirection(rect, LayoutDirection());
+}
+
+CGFloat CGRectGetTrailingEdge(CGRect rect) {
+  return CGRectGetTrailingEdgeUsingDirection(rect, LayoutDirection());
+}
+
 UIViewAutoresizing UIViewAutoresizingFlexibleLeadingMargin() {
   return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater()
              ? UIViewAutoresizingFlexibleRightMargin
@@ -148,6 +170,14 @@ UIEdgeInsets UIEdgeInsetsMakeDirected(CGFloat top,
                                       CGFloat trailing) {
   return UIEdgeInsetsMakeUsingDirection(top, leading, bottom, trailing,
                                         LayoutDirection());
+}
+
+CGFloat UIEdgeInsetsGetLeading(UIEdgeInsets insets) {
+  return UseRTLLayout() ? insets.right : insets.left;
+}
+
+CGFloat UIEdgeInsetsGetTrailing(UIEdgeInsets insets) {
+  return UseRTLLayout() ? insets.left : insets.right;
 }
 
 #pragma mark - autolayout utilities

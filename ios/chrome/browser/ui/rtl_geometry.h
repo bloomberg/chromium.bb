@@ -94,7 +94,19 @@ LayoutRect LayoutRectGetTrailingLayout(LayoutRect layout);
 // Return the trailing extent of |layout| (its leading plus its width).
 CGFloat LayoutRectGetTrailingEdge(LayoutRect layout);
 
-// Utilities for mapping UIKit geometric structures to RTL-independent
+// Utilities for mapping UIKit geometric structures to RTL-independent geometry.
+
+// Get leading and trailing edges of |rect|, assuming layout direction
+// |direction|.
+CGFloat CGRectGetLeadingEdgeUsingDirection(CGRect rect,
+                                           base::i18n::TextDirection direction);
+CGFloat CGRectGetTrailingEdgeUsingDirection(
+    CGRect rect,
+    base::i18n::TextDirection direction);
+
+// As above, with |direction| == LayoutDirection().
+CGFloat CGRectGetLeadingEdge(CGRect rect);
+CGFloat CGRectGetTrailingEdge(CGRect rect);
 
 // Leading/trailing autoresizing masks. 'Leading' is 'Left' under iOS <= 8 or
 // in an LTR language, 'Right' otherwise; 'Trailing' is the obverse.
@@ -115,6 +127,11 @@ UIEdgeInsets UIEdgeInsetsMakeDirected(CGFloat top,
                                       CGFloat leading,
                                       CGFloat bottom,
                                       CGFloat trailing);
+
+// Inverses of the above functions: return the leading/trailing inset for
+// the current direction.
+CGFloat UIEdgeInsetsGetLeading(UIEdgeInsets insets);
+CGFloat UIEdgeInsetsGetTrailing(UIEdgeInsets insets);
 
 // Autolayout utilities
 
