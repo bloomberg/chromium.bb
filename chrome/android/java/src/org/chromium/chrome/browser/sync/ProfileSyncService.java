@@ -4,13 +4,9 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -135,16 +131,6 @@ public class ProfileSyncService {
         // been set up, but ProfileSyncService::Startup() won't be called until
         // credentials are available.
         mNativeProfileSyncServiceAndroid = nativeInit();
-
-        // When the application gets paused, tell sync to flush the directory to disk.
-        ApplicationStatus.registerStateListenerForAllActivities(new ActivityStateListener() {
-            @Override
-            public void onActivityStateChange(Activity activity, int newState) {
-                if (newState == ActivityState.PAUSED) {
-                    flushDirectory();
-                }
-            }
-        });
     }
 
     @CalledByNative
