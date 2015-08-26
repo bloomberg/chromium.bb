@@ -165,8 +165,6 @@ def main(argv):
       tcarch = 'arm'
       tcsubarch = 'arm'
       usr_arch = 'arm'
-      # TODO(sbc): Remove this once we get elf_loader.nexe added to the SDK
-      raise Error('Running arm/glibc binaries via sel_ldr.py is not supported')
     elif elf_arch == 'x86-32':
       lib_subdir = 'lib32'
       tcarch = 'x86'
@@ -177,18 +175,28 @@ def main(argv):
 
     toolchain = '%s_%s_glibc' % (osname, tcarch)
     toolchain_dir = os.path.join(NACL_SDK_ROOT, 'toolchain', toolchain)
-    lib_dir = os.path.join(toolchain_dir, tcsubarch + '-nacl', lib_subdir)
+    interp_prefix = os.path.join(toolchain_dir, tcsubarch + '-nacl')
+    lib_dir = os.path.join(interp_prefix, lib_subdir)
     usr_lib_dir = os.path.join(toolchain_dir, usr_arch + '-nacl', 'usr', 'lib')
 
-    ldso = os.path.join(lib_dir, 'runnable-ld.so')
-    cmd.append(ldso)
-    Log('LD.SO = %s' % ldso)
     libpath = [usr_lib_dir, sdk_lib_dir, lib_dir]
     if options.library_path:
       libpath.extend([os.path.abspath(p) for p
                       in options.library_path.split(':')])
-    cmd.append('--library-path')
-    cmd.append(':'.join(libpath))
+    libpath = ':'.join(libpath)
+    if elf_arch == 'arm':
+      ldso = os.path.join(SCRIPT_DIR, 'elf_loader_arm.nexe')
+      cmd.append('-E')
+      cmd.append('LD_LIBRARY_PATH=%s' % libpath)
+      cmd.append(ldso)
+      cmd.append('--interp-prefix')
+      cmd.append(interp_prefix)
+    else:
+      ldso = os.path.join(lib_dir, 'runnable-ld.so')
+      cmd.append(ldso)
+      cmd.append('--library-path')
+      cmd.append(libpath)
+    Log('dynamic loader = %s' % ldso)
 
 
   # Append arguments for the executable itself.

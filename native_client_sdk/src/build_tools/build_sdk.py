@@ -438,7 +438,7 @@ def GypNinjaInstall(pepperdir, toolchains):
   if platform == 'linux' and not options.no_arm_trusted:
     arm_files = [
       ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
-      ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
+      ['elf_loader_newlib_arm.nexe', 'elf_loader_arm.nexe'],
       ['nacl_helper_bootstrap', 'nacl_helper_bootstrap_arm'],
       ['nonsfi_loader_newlib_arm_nonsfi.nexe', 'nonsfi_loader_arm'],
       ['sel_ldr', 'sel_ldr_arm']
