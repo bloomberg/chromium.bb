@@ -1201,13 +1201,6 @@ void PersonalDataManager::LoadProfiles() {
   pending_server_profiles_query_ = database_->GetServerProfiles(this);
 }
 
-// Win, Linux, Android and iOS implementations do nothing. Mac implementation
-// fills in the contents of |auxiliary_profiles_|.
-#if defined(OS_IOS) || !defined(OS_MACOSX)
-void PersonalDataManager::LoadAuxiliaryProfiles(bool record_metrics) const {
-}
-#endif
-
 void PersonalDataManager::LoadCreditCards() {
   if (!database_.get()) {
     NOTREACHED();
@@ -1237,13 +1230,6 @@ std::string PersonalDataManager::SaveImportedProfile(
     const AutofillProfile& imported_profile) {
   if (is_off_the_record_)
     return std::string();
-
-  // Don't save a web profile if the data in the profile is a subset of an
-  // auxiliary profile...
-  for (AutofillProfile* profile : auxiliary_profiles_) {
-    if (imported_profile.IsSubsetOf(*profile, app_locale_))
-      return profile->guid();
-  }
 
   // ...or server profile.
   for (AutofillProfile* profile : server_profiles_) {
@@ -1344,23 +1330,9 @@ void PersonalDataManager::EnabledPrefChanged() {
 
 const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles(
     bool record_metrics) const {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  bool use_auxiliary_profiles =
-      pref_service_->GetBoolean(prefs::kAutofillUseMacAddressBook);
-#else
-  bool use_auxiliary_profiles =
-      pref_service_->GetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   profiles_.clear();
   profiles_.insert(profiles_.end(), web_profiles().begin(),
                    web_profiles().end());
-  if (use_auxiliary_profiles) {
-    LoadAuxiliaryProfiles(record_metrics);
-    profiles_.insert(
-        profiles_.end(), auxiliary_profiles_.begin(),
-        auxiliary_profiles_.end());
-  }
   if (IsExperimentalWalletIntegrationEnabled() &&
       pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
     profiles_.insert(

@@ -555,11 +555,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Added 06/2014.
-  autofill::AutofillManager::MigrateUserPrefs(profile_prefs);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   // Added 07/2014.
   translate::TranslatePrefs::MigrateUserPrefs(profile_prefs,
                                               prefs::kAcceptLanguages);

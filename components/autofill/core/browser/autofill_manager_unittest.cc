@@ -139,20 +139,12 @@ class TestPersonalDataManager : public PersonalDataManager {
     }
   }
 
-  // Do nothing (auxiliary profiles will be created in
-  // CreateTestAuxiliaryProfile).
-  void LoadAuxiliaryProfiles(bool record_metrics) const override {}
-
   void ClearAutofillProfiles() {
     web_profiles_.clear();
   }
 
   void ClearCreditCards() {
     local_credit_cards_.clear();
-  }
-
-  void CreateTestAuxiliaryProfiles() {
-    CreateTestAutofillProfiles(&auxiliary_profiles_);
   }
 
   void CreateTestCreditCardsYearAndMonth(const char* year, const char* month) {
@@ -1476,35 +1468,6 @@ TEST_F(AutofillManagerTest, WillFillCreditCardNumber) {
   EXPECT_TRUE(WillFillCreditCardNumber(form, *number_field));
 }
 
-// Test that we correctly fill an address form from an auxiliary profile.
-TEST_F(AutofillManagerTest, FillAddressFormFromAuxiliaryProfile) {
-  personal_data_.ClearAutofillProfiles();
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  autofill_client_.GetPrefs()->SetBoolean(
-      ::autofill::prefs::kAutofillUseMacAddressBook, true);
-#else
-  autofill_client_.GetPrefs()->SetBoolean(
-      ::autofill::prefs::kAutofillAuxiliaryProfilesEnabled, true);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-  personal_data_.CreateTestAuxiliaryProfiles();
-
-  // Set up our form data.
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  std::string guid("00000000-0000-0000-0000-000000000001");
-  int response_page_id = 0;
-  FormData response_data;
-  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
-                                     &response_page_id, &response_data);
-  ExpectFilledAddressFormElvis(response_page_id, response_data, kDefaultPageID,
-                               false);
-}
-
 // Test that we correctly fill a credit card form.
 TEST_F(AutofillManagerTest, FillCreditCardForm) {
   // Set up our form data.
@@ -2472,30 +2435,6 @@ TEST_F(AutofillManagerTest, ImportFormDataCreditCardHTTP) {
   TestSaveCreditCards(false);
 }
 
-// Checks that resetting the auxiliary profile enabled preference does the right
-// thing on all platforms.
-TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
-  PrefService* prefs = autofill_client_.GetPrefs();
-#if defined(OS_MACOSX)
-  // Auxiliary profiles is implemented on Mac only.
-  // OSX: This preference exists for legacy reasons. It is no longer used.
-  ASSERT_TRUE(
-      prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-  prefs->SetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled,
-                    false);
-  prefs->ClearPref(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
-  ASSERT_TRUE(
-      prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-#else
-  ASSERT_FALSE(
-      prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-  prefs->SetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled, true);
-  prefs->ClearPref(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
-  ASSERT_FALSE(
-      prefs->GetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-#endif  // defined(OS_MACOSX)
-}
-
 TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
@@ -2847,35 +2786,6 @@ TEST_F(AutofillManagerTest, RemoveCreditCard){
 
   EXPECT_FALSE(autofill_manager_->GetCreditCardWithGUID(guid.c_str()));
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-TEST_F(AutofillManagerTest, AccessAddressBookPrompt) {
-  // TODO(erikchen): After Address Book integration has been disabled for 6
-  // weeks, and there are no major problems, rip out all the code. Expected
-  // removal date: 07/15/2015. http://crbug.com/488146.
-  return;
-
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  FormFieldData& field = form.fields[0];
-  field.should_autocomplete = true;
-
-  // A profile already exists.
-  EXPECT_FALSE(
-      autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
-
-  // Remove all profiles.
-  personal_data_.ClearAutofillProfiles();
-  EXPECT_TRUE(
-      autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
-
-  field.should_autocomplete = false;
-  EXPECT_TRUE(
-      autofill_manager_->ShouldShowAccessAddressBookSuggestion(form, field));
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 // Test our external delegate is called at the right time.
 TEST_F(AutofillManagerTest, TestExternalDelegate) {

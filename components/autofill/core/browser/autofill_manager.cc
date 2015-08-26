@@ -177,64 +177,11 @@ void AutofillManager::RegisterProfilePrefs(
   // This choice is made on a per-device basis, so it's not syncable.
   registry->RegisterBooleanPref(
       prefs::kAutofillWalletImportStorageCheckboxState, true);
-#if defined(OS_MACOSX)
-  registry->RegisterBooleanPref(
-      prefs::kAutofillAuxiliaryProfilesEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#else  // defined(OS_MACOSX)
-  registry->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
-                                false);
-#endif  // defined(OS_MACOSX)
-#if defined(OS_MACOSX)
-  registry->RegisterBooleanPref(prefs::kAutofillMacAddressBookQueried, false);
-#endif  // defined(OS_MACOSX)
   registry->RegisterDoublePref(prefs::kAutofillPositiveUploadRate,
                                kAutofillPositiveUploadRateDefaultValue);
   registry->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
                                kAutofillNegativeUploadRateDefaultValue);
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  registry->RegisterBooleanPref(prefs::kAutofillUseMacAddressBook, false);
-  registry->RegisterIntegerPref(prefs::kAutofillMacAddressBookShowedCount, 0);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void AutofillManager::MigrateUserPrefs(PrefService* prefs) {
-  const PrefService::Preference* pref =
-      prefs->FindPreference(prefs::kAutofillUseMacAddressBook);
-
-  // If the pref is not its default value, then the migration has already been
-  // performed.
-  if (!pref->IsDefaultValue())
-    return;
-
-  // Whether Chrome has already tried to access the user's Address Book.
-  const PrefService::Preference* pref_accessed =
-      prefs->FindPreference(prefs::kAutofillMacAddressBookQueried);
-  // Whether the user wants to use the Address Book to populate Autofill.
-  const PrefService::Preference* pref_enabled =
-      prefs->FindPreference(prefs::kAutofillAuxiliaryProfilesEnabled);
-
-  if (pref_accessed->IsDefaultValue() && pref_enabled->IsDefaultValue()) {
-    // This is likely a new user. Reset the default value to prevent the
-    // migration from happening again.
-    prefs->SetBoolean(prefs::kAutofillUseMacAddressBook,
-                      prefs->GetBoolean(prefs::kAutofillUseMacAddressBook));
-    return;
-  }
-
-  bool accessed;
-  bool enabled;
-  bool success = pref_accessed->GetValue()->GetAsBoolean(&accessed);
-  DCHECK(success);
-  success = pref_enabled->GetValue()->GetAsBoolean(&enabled);
-  DCHECK(success);
-
-  prefs->SetBoolean(prefs::kAutofillUseMacAddressBook, accessed && enabled);
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
   // TODO(jrg): consider passing delegate into the ctor.  That won't
@@ -247,35 +194,6 @@ void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
 void AutofillManager::ShowAutofillSettings() {
   client_->ShowAutofillSettings();
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-bool AutofillManager::ShouldShowAccessAddressBookSuggestion(
-    const FormData& form,
-    const FormFieldData& field) {
-  AutofillField* autofill_field = GetAutofillField(form, field);
-  return autofill_field &&
-         personal_data_->ShouldShowAccessAddressBookSuggestion(
-             autofill_field->Type());
-}
-
-bool AutofillManager::AccessAddressBook() {
-  if (!personal_data_)
-    return false;
-  return personal_data_->AccessAddressBook();
-}
-
-void AutofillManager::ShowedAccessAddressBookPrompt() {
-  if (!personal_data_)
-    return;
-  return personal_data_->ShowedAccessAddressBookPrompt();
-}
-
-int AutofillManager::AccessAddressBookPromptCount() {
-  if (!personal_data_)
-    return 0;
-  return personal_data_->AccessAddressBookPromptCount();
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
                                                const FormFieldData& field) {
@@ -622,10 +540,6 @@ void AutofillManager::FillOrPreviewForm(
     const FormData& form,
     const FormFieldData& field,
     int unique_id) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  EmitIsFromAddressBookMetric(unique_id);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
@@ -1591,21 +1505,6 @@ bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
 
   return true;
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void AutofillManager::EmitIsFromAddressBookMetric(int unique_id) {
-  const AutofillProfile* profile = nullptr;
-  bool result = GetProfile(unique_id, &profile);
-  if (!result)
-    return;
-
-  bool is_from_address_book =
-      profile->record_type() == AutofillProfile::AUXILIARY_PROFILE;
-  UMA_HISTOGRAM_BOOLEAN(
-      "Autofill.MacAddressBook.AcceptedSuggestionIsFromAddressBook",
-      is_from_address_book);
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 #ifdef ENABLE_FORM_DEBUG_DUMP
 void AutofillManager::DumpAutofillData(bool imported_cc) const {

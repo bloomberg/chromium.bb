@@ -81,10 +81,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   // Registers our Enable/Disable Autofill pref.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  static void MigrateUserPrefs(PrefService* prefs);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   AutofillManager(AutofillDriver* driver,
                   AutofillClient* client,
                   const std::string& app_locale,
@@ -95,25 +91,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
   void ShowAutofillSettings();
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Whether the |field| should show an entry to prompt the user to give Chrome
-  // access to the user's address book.
-  bool ShouldShowAccessAddressBookSuggestion(const FormData& form,
-                                             const FormFieldData& field);
-
-  // If Chrome has not prompted for access to the user's address book, the
-  // method prompts the user for permission and blocks the process. Otherwise,
-  // this method has no effect. The return value reflects whether the user was
-  // prompted with a modal dialog.
-  bool AccessAddressBook();
-
-  // The access Address Book prompt was shown for a form.
-  void ShowedAccessAddressBookPrompt();
-
-  // The number of times that the access address book prompt was shown.
-  int AccessAddressBookPromptCount();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // Whether the |field| should show an entry to scan a credit card.
   virtual bool ShouldShowScanCreditCard(const FormData& form,
@@ -383,12 +360,6 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   // Shared code to determine if |form| should be uploaded.
   bool ShouldUploadForm(const FormStructure& form);
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Emits a UMA metric indicating whether the accepted Autofill suggestion is
-  // from the Mac Address Book.
-  void EmitIsFromAddressBookMetric(int unique_id);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 #ifdef ENABLE_FORM_DEBUG_DUMP
   // Dumps the cached forms to a file on disk.

@@ -237,9 +237,6 @@ void AutofillOptionsHandler::GetLocalizedValues(
     { "addCreditCardTitle", IDS_AUTOFILL_ADD_CREDITCARD_CAPTION },
     { "editCreditCardTitle", IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION },
     { "autofillWalletOption", IDS_AUTOFILL_USE_WALLET_DATA },
-#if defined(OS_MACOSX)
-    { "auxiliaryProfilesEnabled", IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK },
-#endif  // defined(OS_MACOSX)
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -290,12 +287,6 @@ void AutofillOptionsHandler::InitializePage() {
 }
 
 void AutofillOptionsHandler::RegisterMessages() {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  web_ui()->RegisterMessageCallback(
-      "accessAddressBook",
-      base::Bind(&AutofillOptionsHandler::AccessAddressBook,
-                 base::Unretained(this)));
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   web_ui()->RegisterMessageCallback(
       "removeData",
       base::Bind(&AutofillOptionsHandler::RemoveData,
@@ -407,12 +398,6 @@ void AutofillOptionsHandler::LoadAutofillData() {
   web_ui()->CallJavascriptFunction("AutofillOptions.setCreditCardList",
                                    credit_cards);
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void AutofillOptionsHandler::AccessAddressBook(const base::ListValue* args) {
-  personal_data_->AccessAddressBook();
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 void AutofillOptionsHandler::RemoveData(const base::ListValue* args) {
   DCHECK(IsPersonalDataLoaded());

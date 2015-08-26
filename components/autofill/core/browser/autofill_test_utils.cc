@@ -280,16 +280,6 @@ void DisableSystemServices(PrefService* prefs) {
 #if defined(OS_MACOSX)
   OSCrypt::UseMockKeychain(true);
 #endif  // defined(OS_MACOSX)
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Don't use the Address Book on Mac, as it reaches out to system services.
-  if (prefs)
-    prefs->SetBoolean(prefs::kAutofillUseMacAddressBook, false);
-#else
-  // Disable auxiliary profiles for unit testing by default.
-  if (prefs)
-    prefs->SetBoolean(prefs::kAutofillAuxiliaryProfilesEnabled, false);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
 void SetServerCreditCards(AutofillTable* table,

@@ -79,13 +79,6 @@ void ContentAutofillDriver::SendFormDataToRenderer(
   }
 }
 
-void ContentAutofillDriver::PingRenderer() {
-  if (!RendererIsAvailable())
-    return;
-  render_frame_host_->Send(
-      new AutofillMsg_Ping(render_frame_host_->GetRoutingID()));
-}
-
 void ContentAutofillDriver::PropagateAutofillPredictions(
     const std::vector<FormStructure*>& forms) {
   autofill_manager_->client()->PropagateAutofillPredictions(render_frame_host_,

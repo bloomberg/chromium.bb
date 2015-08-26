@@ -90,7 +90,6 @@ source_set("browser") {
     "password_generator.h",
     "personal_data_manager.cc",
     "personal_data_manager.h",
-    "personal_data_manager_mac.mm",
     "personal_data_manager_observer.h",
     "phone_field.cc",
     "phone_field.h",

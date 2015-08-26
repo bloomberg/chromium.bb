@@ -1540,60 +1540,6 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
   ASSERT_EQ(0U, cards.size());
 }
 
-TEST_F(PersonalDataManagerTest, AggregateExistingAuxiliaryProfile) {
-  // Simulate having access to an auxiliary profile.
-  // |auxiliary_profile| will be owned by |personal_data_|.
-  AutofillProfile* auxiliary_profile =
-      new AutofillProfile(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(auxiliary_profile,
-      "Tester", "Frederick", "McAddressBookTesterson",
-      "tester@example.com", "Acme Inc.", "1 Main", "Apt A", "San Francisco",
-      "CA", "94102", "US", "1.415.888.9999");
-  ScopedVector<AutofillProfile>& auxiliary_profiles =
-      personal_data_->auxiliary_profiles_;
-  auxiliary_profiles.push_back(auxiliary_profile);
-
-  // Simulate a form submission with a subset of the info.
-  // Note that the phone number format is different from the saved format.
-  FormData form;
-  FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "Tester", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "McAddressBookTesterson", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "tester@example.com", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Address:", "address1", "1 Main", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("State:", "state", "CA", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
-  form.fields.push_back(field);
-  test::CreateTestFormField("Phone:", "phone", "4158889999", "text", &field);
-  form.fields.push_back(field);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
-  scoped_ptr<CreditCard> imported_credit_card;
-  EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
-                                             &imported_credit_card));
-  EXPECT_FALSE(imported_credit_card);
-
-  // Note: No refresh.
-
-  // Expect no change.
-  const std::vector<AutofillProfile*>& web_profiles =
-      personal_data_->web_profiles();
-  EXPECT_EQ(0U, web_profiles.size());
-  ASSERT_EQ(1U, auxiliary_profiles.size());
-  EXPECT_EQ(0, auxiliary_profile->Compare(*auxiliary_profiles[0]));
-}
-
 TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   FormData form1;
 
@@ -2875,61 +2821,6 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
   EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[3].value);
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-TEST_F(PersonalDataManagerTest, ShowAddressBookPrompt) {
-  // TODO(erikchen): After Address Book integration has been disabled for 6
-  // weeks, and there are no major problems, rip out all the code. Expected
-  // removal date: 07/15/2015. http://crbug.com/488146.
-  return;
-
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(2);
-
-  AutofillType type(ADDRESS_HOME_STREET_ADDRESS);
-
-  prefs_->SetBoolean(prefs::kAutofillEnabled, false);
-  EXPECT_FALSE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
-
-  prefs_->SetBoolean(prefs::kAutofillEnabled, true);
-  EXPECT_TRUE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
-
-  // Adding an Autofill Profile should prevent the prompt from appearing.
-  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
-  test::SetProfileInfo(&profile,
-      "Marion", "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
-  personal_data_->AddProfile(profile);
-
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-      .WillOnce(QuitMainMessageLoop());
-  base::MessageLoop::current()->Run();
-
-  EXPECT_FALSE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
-}
-
-// Tests that the logic to show the access Address Book prompt respects the
-// preference that indicates the total number of times the prompt has already
-// been shown.
-TEST_F(PersonalDataManagerTest, MaxTimesToShowAddressBookPrompt) {
-  // TODO(erikchen): After Address Book integration has been disabled for 6
-  // weeks, and there are no major problems, rip out all the code. Expected
-  // removal date: 07/15/2015. http://crbug.com/488146.
-  return;
-  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(1);
-
-  AutofillType type(ADDRESS_HOME_STREET_ADDRESS);
-
-  prefs_->SetBoolean(prefs::kAutofillEnabled, true);
-  EXPECT_TRUE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
-
-  prefs_->SetInteger(prefs::kAutofillMacAddressBookShowedCount, 4);
-  EXPECT_TRUE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
-
-  prefs_->SetInteger(prefs::kAutofillMacAddressBookShowedCount, 6);
-  EXPECT_FALSE(personal_data_->ShouldShowAccessAddressBookSuggestion(type));
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 TEST_F(PersonalDataManagerTest, RecordUseOf) {
   AutofillProfile profile(test::GetFullProfile());

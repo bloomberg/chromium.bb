@@ -72,10 +72,6 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
   if (zoom_controller)
     zoom_controller->AddObserver(this);
 #endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  RegisterForKeystoneNotifications();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
 ChromeAutofillClient::~ChromeAutofillClient() {
@@ -84,9 +80,6 @@ ChromeAutofillClient::~ChromeAutofillClient() {
   // this point (in particular, the WebContentsImpl destructor has already
   // finished running and we are now in the base class destructor).
   DCHECK(!popup_controller_);
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  UnregisterFromKeystoneNotifications();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
 void ChromeAutofillClient::TabActivated() {

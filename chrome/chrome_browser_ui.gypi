@@ -97,7 +97,6 @@
       'browser/ui/autofill/autofill_popup_view_delegate.h',
       'browser/ui/autofill/chrome_autofill_client.cc',
       'browser/ui/autofill/chrome_autofill_client.h',
-      'browser/ui/autofill/chrome_autofill_client_mac.mm',
       'browser/ui/autofill/country_combobox_model.cc',
       'browser/ui/autofill/country_combobox_model.h',
       'browser/ui/autofill/create_card_unmask_prompt_view.h',

@@ -21,31 +21,6 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-namespace {
-
-enum AccessAddressBookEventType {
-  // An Autofill entry was shown that prompts the user to give Chrome access to
-  // the user's Address Book.
-  SHOWED_ACCESS_ADDRESS_BOOK_ENTRY = 0,
-
-  // The user selected the Autofill entry which prompts Chrome to access the
-  // user's Address Book.
-  SELECTED_ACCESS_ADDRESS_BOOK_ENTRY = 1,
-
-  // Always keep this at the end.
-  ACCESS_ADDRESS_BOOK_ENTRY_MAX,
-};
-
-// Emits an entry for the histogram.
-void EmitHistogram(AccessAddressBookEventType type) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Autofill.MacAddressBook", type, ACCESS_ADDRESS_BOOK_ENTRY_MAX);
-}
-
-}  // namespace
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
 namespace autofill {
 
 AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
@@ -133,23 +108,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // updated to match.
   InsertDataListValues(&suggestions);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (suggestions.empty() &&
-      manager_->ShouldShowAccessAddressBookSuggestion(query_form_,
-                                                      query_field_)) {
-    Suggestion mac_contacts(
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_ACCESS_MAC_CONTACTS));
-    mac_contacts.icon = base::ASCIIToUTF16("macContactsIcon");
-    mac_contacts.frontend_id = POPUP_ITEM_ID_MAC_ACCESS_CONTACTS;
-
-    if (!has_shown_address_book_prompt) {
-      has_shown_address_book_prompt = true;
-      EmitHistogram(SHOWED_ACCESS_ADDRESS_BOOK_ENTRY);
-      manager_->ShowedAccessAddressBookPrompt();
-    }
-  }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   if (suggestions.empty()) {
     // No suggestions, any popup currently showing is obsolete.
     manager_->client()->HideAutofillPopup();
@@ -215,43 +173,6 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
     // User selected an Autocomplete, so we fill directly.
     driver_->RendererShouldFillFieldWithValue(value);
-  } else if (identifier == POPUP_ITEM_ID_MAC_ACCESS_CONTACTS) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    EmitHistogram(SELECTED_ACCESS_ADDRESS_BOOK_ENTRY);
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Autofill.MacAddressBook.NumShowsBeforeSelected",
-        manager_->AccessAddressBookPromptCount());
-
-    // User wants to give Chrome access to user's address book.
-    manager_->AccessAddressBook();
-
-    // There is no deterministic method for deciding whether a blocking dialog
-    // was presented. The following comments and code assume that a blocking
-    // dialog was presented, but still behave correctly if no dialog was
-    // presented.
-
-    // A blocking dialog was presented, and the user has already responded to
-    // the dialog. The presentation of the dialog added an NSEvent to the
-    // NSRunLoop which will cause all windows to lose focus. When the NSEvent
-    // is processed, it will be sent to the renderer which will cause the text
-    // field to lose focus. This returns an IPC to Chrome which will dismiss
-    // the Autofill popup. We post a task which we expect to run after the
-    // NSEvent has been processed by the NSRunLoop. It pings the renderer,
-    // which returns an IPC acknowledging the ping.  At that time, redisplay
-    // the popup. FIFO processing of IPCs ensures that all side effects of the
-    // NSEvent will have been processed.
-
-    // 10ms sits nicely under the 16ms threshold for 60 fps, and likely gives
-    // the NSApplication run loop sufficient time to process the NSEvent. In
-    // testing, a delay of 0ms was always sufficient.
-    base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&AutofillExternalDelegate::PingRenderer, GetWeakPtr()),
-        delay);
-#else
-    NOTREACHED();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   } else if (identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
     manager_->client()->ScanCreditCard(base::Bind(
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
@@ -402,11 +323,5 @@ void AutofillExternalDelegate::InsertDataListValues(
     (*suggestions)[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
   }
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void AutofillExternalDelegate::PingRenderer() {
-  driver_->PingRenderer();
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace autofill

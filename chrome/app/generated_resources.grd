@@ -10350,11 +10350,6 @@ I don't think this site should be blocked!
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill settings
         </message>
-        <if expr="is_macosx">
-          <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable access to the user's Address Book on Mac. On Mac 10.8+ the application that manages the Address Book is called Contacts.">
-            Include addresses from your Contacts card
-          </message>
-        </if>
         <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">
           Addresses
         </message>

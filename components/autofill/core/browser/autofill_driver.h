@@ -58,9 +58,6 @@ class AutofillDriver {
                                       RendererFormDataAction action,
                                       const FormData& data) = 0;
 
-  // Pings renderer. The renderer will return an IPC acknowledging the ping.
-  virtual void PingRenderer() = 0;
-
   // Pass the form structures to the password manager to choose correct username
   // and to the password generation manager to detect account creation forms.
   virtual void PropagateAutofillPredictions(

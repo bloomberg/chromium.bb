@@ -218,29 +218,6 @@ class PersonalDataManager : public KeyedService,
   // will only update when Chrome is restarted.
   virtual const std::string& GetDefaultCountryCodeForNewAddress() const;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // If Chrome has not prompted for access to the user's address book, the
-  // method prompts the user for permission and blocks the process. Otherwise,
-  // this method has no effect. The return value reflects whether the user was
-  // prompted with a modal dialog.
-  bool AccessAddressBook();
-
-  // Whether an autofill suggestion should be displayed to prompt the user to
-  // grant Chrome access to the user's address book.
-  bool ShouldShowAccessAddressBookSuggestion(AutofillType type);
-
-  // The access Address Book prompt was shown for a form.
-  void ShowedAccessAddressBookPrompt();
-
-  // The number of times that the access address book prompt was shown.
-  int AccessAddressBookPromptCount();
-
-  // The Chrome binary is in the process of being changed, or has been changed.
-  // Future attempts to access the Address Book might incorrectly present a
-  // blocking dialog.
-  void BinaryChanging();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   // Returns true if the wallet integration feature is enabled. Note that the
   // feature can still disabled by a user pref.
   bool IsExperimentalWalletIntegrationEnabled() const;
@@ -250,8 +227,6 @@ class PersonalDataManager : public KeyedService,
   // PersonalDataManager.
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FirstMiddleLast);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AutofillIsEnabledAtStartup);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           AggregateExistingAuxiliaryProfile);
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::AutofillTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -288,9 +263,6 @@ class PersonalDataManager : public KeyedService,
 
   // Loads the saved profiles from the web database.
   virtual void LoadProfiles();
-
-  // Loads the auxiliary profiles.  Currently Mac and Android only.
-  virtual void LoadAuxiliaryProfiles(bool record_metrics) const;
 
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
@@ -334,15 +306,11 @@ class PersonalDataManager : public KeyedService,
   // and from manually editing in the settings.
   ScopedVector<AutofillProfile> web_profiles_;
 
-  // Auxiliary profiles. On some systems, these are loaded from the system
-  // address book.
-  mutable ScopedVector<AutofillProfile> auxiliary_profiles_;
-
   // Profiles read from the user's account stored on the server.
   mutable ScopedVector<AutofillProfile> server_profiles_;
 
-  // Storage for combined web and auxiliary profiles.  Contents are weak
-  // references.  Lifetime managed by |web_profiles_| and |auxiliary_profiles_|.
+  // Storage for web profiles.  Contents are weak references.  Lifetime managed
+  // by |web_profiles_|.
   mutable std::vector<AutofillProfile*> profiles_;
 
   // Cached versions of the local and server credit cards.

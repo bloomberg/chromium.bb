@@ -172,7 +172,6 @@
         'autofill/core/browser/password_generator.h',
         'autofill/core/browser/personal_data_manager.cc',
         'autofill/core/browser/personal_data_manager.h',
-        'autofill/core/browser/personal_data_manager_mac.mm',
         'autofill/core/browser/personal_data_manager_observer.h',
         'autofill/core/browser/phone_field.cc',
         'autofill/core/browser/phone_field.h',

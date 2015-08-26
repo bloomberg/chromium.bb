@@ -97,34 +97,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, ComplexPrefs) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
-                       kAutofillAuxiliaryProfilesEnabled) {
-  ASSERT_TRUE(SetupSync());
-  DisableVerifier();
-
-  ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
-  ASSERT_TRUE(AwaitBooleanPrefMatches(
-      autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-
-  // This pref may be syncable.
-  ChangeBooleanPref(0, autofill::prefs::kAutofillAuxiliaryProfilesEnabled);
-
-  // This pref is always syncable.
-  ChangeStringPref(0, prefs::kHomePage, "http://news.google.com");
-
-  // Wait for the syncable pref to propagate.
-  ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
-
-  // kAutofillAuxiliaryProfilesEnabled is only synced on Mac and Android.
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-  ASSERT_TRUE(
-      BooleanPrefMatches(autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-#else
-  ASSERT_FALSE(
-      BooleanPrefMatches(autofill::prefs::kAutofillAuxiliaryProfilesEnabled));
-#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
                        SingleClientEnabledEncryptionBothChanged) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitBooleanPrefMatches(prefs::kHomePageIsNewTabPage));

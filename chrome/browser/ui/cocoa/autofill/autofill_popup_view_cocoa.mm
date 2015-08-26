@@ -28,16 +28,12 @@ using autofill::AutofillPopupView;
 // Draws an Autofill suggestion in the given |bounds|, labeled with the given
 // |name| and |subtext| hint.  If the suggestion |isSelected|, then it is drawn
 // with a highlight.  |index| determines the font to use, as well as the icon,
-// if the row requires it -- such as for credit cards. |imageFirst| indicates
-// whether the image should be drawn before the name, and with the same
-// alignment, or whether it should be drawn afterwards, with the opposite
-// alignment.
+// if the row requires it -- such as for credit cards.
 - (void)drawSuggestionWithName:(NSString*)name
                        subtext:(NSString*)subtext
                          index:(size_t)index
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
-                    imageFirst:(BOOL)imageFirst
                    textYOffset:(CGFloat)textYOffset;
 
 // This comment block applies to all three draw* methods that follow.
@@ -113,13 +109,6 @@ using autofill::AutofillPopupView;
 
     // Additional offset applied to the text in the vertical direction.
     CGFloat textYOffset = 0;
-    BOOL imageFirst = NO;
-    if (suggestion.frontend_id == autofill::POPUP_ITEM_ID_MAC_ACCESS_CONTACTS) {
-      // Due to the weighting of the asset used for this autofill entry, the
-      // text needs to be bumped up by 1 pt to make it look vertically aligned.
-      textYOffset = -1;
-      imageFirst = YES;
-    }
 
     NSString* value = SysUTF16ToNSString(controller_->GetElidedValueAt(i));
     NSString* label = SysUTF16ToNSString(controller_->GetElidedLabelAt(i));
@@ -129,7 +118,6 @@ using autofill::AutofillPopupView;
                            index:i
                           bounds:rowBounds
                         selected:isSelected
-                      imageFirst:imageFirst
                      textYOffset:textYOffset];
   }
 }
@@ -158,7 +146,6 @@ using autofill::AutofillPopupView;
                          index:(size_t)index
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
-                    imageFirst:(BOOL)imageFirst
                    textYOffset:(CGFloat)textYOffset {
   // If this row is selected, highlight it.
   if (isSelected) {
@@ -174,8 +161,6 @@ using autofill::AutofillPopupView;
 
   // Draw left side if isRTL == NO, right side if isRTL == YES.
   CGFloat x = isRTL ? rightX : leftX;
-  if (imageFirst)
-    x = [self drawIconAtIndex:index atX:x rightAlign:isRTL bounds:bounds];
   [self drawName:name
               atX:x
             index:index
@@ -185,8 +170,7 @@ using autofill::AutofillPopupView;
 
   // Draw right side if isRTL == NO, left side if isRTL == YES.
   x = isRTL ? leftX : rightX;
-  if (!imageFirst)
-    x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
+  x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
   [self drawSubtext:subtext
                 atX:x
          rightAlign:!isRTL

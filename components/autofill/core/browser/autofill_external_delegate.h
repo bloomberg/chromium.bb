@@ -112,11 +112,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // any required separators.
   void InsertDataListValues(std::vector<Suggestion>* suggestions);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Pings the renderer.
-  void PingRenderer();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   AutofillManager* manager_;  // weak.
 
   // Provides driver-level context to the shared code of the component. Must

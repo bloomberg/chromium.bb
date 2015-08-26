@@ -67,9 +67,6 @@ void AutofillDriverIOS::SendFormDataToRenderer(
   [bridge_ onFormDataFilled:query_id result:data];
 }
 
-void AutofillDriverIOS::PingRenderer() {
-}
-
 void AutofillDriverIOS::PropagateAutofillPredictions(
     const std::vector<autofill::FormStructure*>& forms) {
   autofill_manager_.client()->PropagateAutofillPredictions(nullptr, forms);

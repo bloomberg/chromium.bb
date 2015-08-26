@@ -27,7 +27,6 @@ class WebContents;
 namespace autofill {
 
 class AutofillDialogController;
-class AutofillKeystoneBridgeWrapper;
 class AutofillPopupControllerImpl;
 class CreditCardScannerController;
 struct FormData;
@@ -104,32 +103,12 @@ class ChromeAutofillClient
   }
 
  private:
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Creates |bridge_wrapper_|, which is responsible for dealing with Keystone
-  // notifications.
-  void RegisterForKeystoneNotifications();
-
-  // Deletes |bridge_wrapper_|.
-  void UnregisterFromKeystoneNotifications();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   explicit ChromeAutofillClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromeAutofillClient>;
 
   base::WeakPtr<AutofillDialogController> dialog_controller_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Listens to Keystone notifications and passes relevant ones on to the
-  // PersonalDataManager.
-  //
-  // The class of this member must remain a forward declaration, even in the
-  // .cc implementation file, since the class is defined in a Mac-only
-  // implementation file. This means that the pointer cannot be wrapped in a
-  // scoped_ptr.
-  AutofillKeystoneBridgeWrapper* bridge_wrapper_;
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // The last render frame that called requestAutocomplete.
   content::RenderFrameHost* last_rfh_to_rac_;

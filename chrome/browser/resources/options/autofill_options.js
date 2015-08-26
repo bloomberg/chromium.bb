@@ -69,24 +69,6 @@ cr.define('options', function() {
       $('autofill-options-confirm').onclick = function(event) {
         PageManager.closeOverlay();
       };
-// TODO(erikchen): After Address Book integration has been disabled for
-// 6 weeks, and there are no major problems, rip out all the code. Expected
-// removal date: 07/15/2015. http://crbug.com/488146.
-/*
-<if expr="is_macosx">
-      $('autofill-use-mac-address-book-checkbox').onchange = function(event) {
-        if (this.checked) {
-          setTimeout(function() {
-            // Prompt the user to give Chrome access to the user's Address
-            // Book, if the user was not previously prompted. The dialog that
-            // appears blocks the Chrome process, so wait for a small period of
-            // time to allow the checkbox to appear filled in.
-            chrome.send('accessAddressBook');
-          }, 10);
-        }
-      };
-</if>
-*/
 
       $('autofill-help').onclick = function(event) {
         chrome.send('coreOptionsUserMetricsAction',
