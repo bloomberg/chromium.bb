@@ -40,10 +40,9 @@ class MachOImageReader {
 
     template <typename T>
     const T* as_command() const {
-      const T* command = reinterpret_cast<const T*>(&data[0]);
-      if (data.size() < sizeof(T) || command->cmdsize < sizeof(T))
+      if (data.size() < sizeof(T))
         return nullptr;
-      return command;
+      return reinterpret_cast<const T*>(&data[0]);
     }
 
     std::vector<uint8_t> data;

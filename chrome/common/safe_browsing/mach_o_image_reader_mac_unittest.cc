@@ -434,5 +434,52 @@ TEST_F(MachOImageReaderTest, IsMachOMagicValue) {
   }
 }
 
+// https://crbug.com/524044
+TEST_F(MachOImageReaderTest, CmdsizeSmallerThanLoadCommand) {
+#pragma pack(push, 1)
+  struct TestImage {
+    mach_header_64 header;
+    segment_command_64 page_zero;
+    load_command small_sized;
+    segment_command_64 fake_code;
+  };
+#pragma pack(pop)
+
+  TestImage test_image = {};
+
+  test_image.header.magic = MH_MAGIC_64;
+  test_image.header.cputype = CPU_TYPE_X86_64;
+  test_image.header.filetype = MH_EXECUTE;
+  test_image.header.ncmds = 3;
+  test_image.header.sizeofcmds = sizeof(test_image) - sizeof(test_image.header);
+
+  test_image.page_zero.cmd = LC_SEGMENT;
+  test_image.page_zero.cmdsize = sizeof(test_image.page_zero);
+  strcpy(test_image.page_zero.segname, SEG_PAGEZERO);
+  test_image.page_zero.vmsize = PAGE_SIZE;
+
+  test_image.small_sized.cmd = LC_SYMSEG;
+  test_image.small_sized.cmdsize = sizeof(test_image.small_sized) - 3;
+
+  test_image.fake_code.cmd = LC_SEGMENT;
+  test_image.fake_code.cmdsize = sizeof(test_image.fake_code);
+  strcpy(test_image.fake_code.segname, SEG_TEXT);
+
+  MachOImageReader reader;
+  EXPECT_TRUE(reader.Initialize(reinterpret_cast<const uint8_t*>(&test_image),
+                                sizeof(test_image)));
+
+  EXPECT_FALSE(reader.IsFat());
+  EXPECT_TRUE(reader.Is64Bit());
+
+  const auto& load_commands = reader.GetLoadCommands();
+  EXPECT_EQ(3u, load_commands.size());
+
+  EXPECT_EQ(static_cast<uint32_t>(LC_SEGMENT), load_commands[0].cmd());
+  EXPECT_EQ(static_cast<uint32_t>(LC_SYMSEG), load_commands[1].cmd());
+  EXPECT_EQ(sizeof(load_command) - 3, load_commands[1].cmdsize());
+  EXPECT_EQ(static_cast<uint32_t>(LC_SEGMENT), load_commands[2].cmd());
+}
+
 }  // namespace
 }  // namespace safe_browsing

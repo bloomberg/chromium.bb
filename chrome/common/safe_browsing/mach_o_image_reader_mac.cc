@@ -168,6 +168,14 @@ bool MachOImageReader::Initialize(const uint8_t* image, size_t image_size) {
 
     uint32_t cmdsize = do_swap ? OSSwapInt32(command->cmdsize())
                                : command->cmdsize();
+    // If the load_command's reported size is smaller than the size of the base
+    // struct, do not try to copy additional data (or resize to be smaller
+    // than the base struct). This may not be valid Mach-O.
+    if (cmdsize < load_command_size) {
+      offset += load_command_size;
+      continue;
+    }
+
     command->data.resize(cmdsize);
     if (!data_->CopyDataAt(offset, cmdsize, &command->data[0])) {
       return false;
