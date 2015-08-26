@@ -169,6 +169,9 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // Examine the parsed headers to try to determine the response body size.
   void CalculateResponseBodySize();
 
+  // Uploads statistics about status line compliance with RFC 7230.
+  void ValidateStatusLine(const std::string& status_line);
+
   // Next state of the request, when the current one completes.
   State io_state_;
 

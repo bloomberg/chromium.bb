@@ -18,6 +18,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_line_validator.h"
 #include "net/http/http_util.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
@@ -940,8 +941,11 @@ int HttpStreamParser::ParseResponseHeaders(int end_offset) {
 
   if (response_header_start_offset_ >= 0) {
     received_bytes_ += end_offset;
-    headers = new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(
-        read_buf_->StartOfBuffer(), end_offset));
+    std::string raw_headers =
+        HttpUtil::AssembleRawHeaders(read_buf_->StartOfBuffer(), end_offset);
+    ValidateStatusLine(
+        std::string(read_buf_->StartOfBuffer(), raw_headers.find('\0')));
+    headers = new HttpResponseHeaders(raw_headers);
   } else {
     // Enough data was read -- there is no status line.
     headers = new HttpResponseHeaders(std::string("HTTP/0.9 200 OK"));
@@ -1124,6 +1128,13 @@ bool HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       return true;
   }
   return false;
+}
+
+void HttpStreamParser::ValidateStatusLine(const std::string& status_line) {
+  HttpStatusLineValidator::StatusLineStatus status =
+      HttpStatusLineValidator::ValidateStatusLine(status_line);
+  UMA_HISTOGRAM_ENUMERATION("Net.HttpStatusLineStatus", status,
+                            HttpStatusLineValidator::STATUS_LINE_MAX);
 }
 
 }  // namespace net

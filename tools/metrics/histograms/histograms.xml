@@ -22120,6 +22120,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.HttpStatusLineStatus" enum="HttpStatusLineStatus">
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    Records how often violations of RFC 7230's header parsing rules are
+    observed.
+  </summary>
+</histogram>
+
 <histogram name="Net.HttpTimeToFirstByte" units="milliseconds">
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -61362,6 +61370,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     connected unused socket (idle prior to use)
   </int>
   <int value="2" label="REUSED_IDLE">previously used (keep-alive?) socket</int>
+</enum>
+
+<enum name="HttpStatusLineStatus" type="int">
+  <int value="0" label="OK">Spec-compliant status line</int>
+  <int value="1" label="EMPTY">Empty status line</int>
+  <int value="2" label="NOT_HTTP">Incorrect protocol name</int>
+  <int value="3" label="HTTP_CASE_MISMATCH">Protocol name not uppercase</int>
+  <int value="4" label="HTTP_NO_VERSION">Protocol version missing</int>
+  <int value="5" label="INVALID_VERSION">Protocol version invalid</int>
+  <int value="6" label="MULTI_DIGIT_VERSION">
+    Protocol version number is multiple digits
+  </int>
+  <int value="7" label="UNKNOWN_VERSION">Unknown but valid-looking version</int>
+  <int value="8" label="EXPLICIT_0_9">Explicitly specified HTTP/0.9</int>
+  <int value="9" label="MISSING_STATUS_CODE">Missing status code</int>
+  <int value="10" label="INVALID_STATUS_CODE">Invalid status code</int>
+  <int value="11" label="STATUS_CODE_TRAILING">
+    Trailing characters after status code
+  </int>
+  <int value="12" label="MISSING_REASON_PHRASE">Missing reason phrase</int>
+  <int value="13" label="REASON_DISALLOWED_CHARACTER">
+    Disallowed character in reason phrase
+  </int>
+  <int value="14" label="EXCESS_WHITESPACE">
+    Excess whitespace separating protocol version and status code
+  </int>
+  <int value="15" label="RESERVED_STATUS_CODE">
+    Status code from reserved ranges (0xx or 6xx-9xx)
+  </int>
 </enum>
 
 <enum name="IceCandidatePairTypes" type="int">
