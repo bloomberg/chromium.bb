@@ -75,8 +75,6 @@ bool TransferBufferManager::RegisterTransferBuffer(
            (kCommandBufferEntrySize - 1)));
 
   shared_memory_bytes_allocated_ += buffer->size();
-  TRACE_COUNTER_ID1(
-      "gpu", "GpuTransferBufferMemory", this, shared_memory_bytes_allocated_);
 
   registered_buffers_[id] = buffer;
 
@@ -92,8 +90,6 @@ void TransferBufferManager::DestroyTransferBuffer(int32 id) {
 
   DCHECK(shared_memory_bytes_allocated_ >= it->second->size());
   shared_memory_bytes_allocated_ -= it->second->size();
-  TRACE_COUNTER_ID1(
-      "gpu", "GpuTransferBufferMemory", this, shared_memory_bytes_allocated_);
 
   registered_buffers_.erase(it);
 }

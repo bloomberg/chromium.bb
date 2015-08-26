@@ -152,11 +152,6 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(
       NOTREACHED();
       break;
   }
-  if (new_size != old_size) {
-    TRACE_COUNTER1("gpu",
-                   "GpuMemoryUsage",
-                   GetCurrentUsage());
-  }
 
   if (GetCurrentUsage() > bytes_allocated_historical_max_ +
                           kBytesAllocatedUnmanagedStep) {
