@@ -112,7 +112,6 @@ class CC_EXPORT Tile {
   bool required_for_draw_ : 1;
 
   Id id_;
-  static Id s_next_id_;
 
   // The rect bounding the changes in this Tile vs the previous tile it
   // replaced.

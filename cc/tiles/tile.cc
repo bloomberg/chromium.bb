@@ -14,8 +14,6 @@
 
 namespace cc {
 
-Tile::Id Tile::s_next_id_ = 1;
-
 Tile::Tile(TileManager* tile_manager,
            const gfx::Size& desired_texture_size,
            const gfx::Rect& content_rect,
@@ -34,10 +32,9 @@ Tile::Tile(TileManager* tile_manager,
       tiling_j_index_(-1),
       required_for_activation_(false),
       required_for_draw_(false),
-      id_(s_next_id_++),
+      id_(tile_manager->GetUniqueTileId()),
       invalidated_id_(0),
-      scheduled_priority_(0) {
-}
+      scheduled_priority_(0) {}
 
 Tile::~Tile() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(

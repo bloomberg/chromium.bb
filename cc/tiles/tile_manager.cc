@@ -213,8 +213,8 @@ TileManager::TileManager(
                               base::Bind(&TileManager::CheckAndIssueSignals,
                                          base::Unretained(this))),
       has_scheduled_tile_tasks_(false),
-      prepare_tiles_count_(0u) {
-}
+      prepare_tiles_count_(0u),
+      next_tile_id_(0u) {}
 
 TileManager::~TileManager() {
   FinishTasksAndCleanUp();

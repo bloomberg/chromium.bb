@@ -215,6 +215,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   friend class Tile;
   // Virtual for testing.
   virtual void Release(Tile* tile);
+  Tile::Id GetUniqueTileId() { return ++next_tile_id_; }
 
   // Overriden from TileTaskRunnerClient:
   void DidFinishRunningTileTasks(TaskSet task_set) override;
@@ -329,6 +330,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   bool has_scheduled_tile_tasks_;
 
   uint64_t prepare_tiles_count_;
+  uint64_t next_tile_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
