@@ -48,4 +48,11 @@
   return handleMiddleClick_ && [theEvent buttonNumber] == 2;
 }
 
+- (void)drawFocusRingMask {
+  // Match the hover image's bezel.
+  [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect([self bounds], 2, 2)
+                                   xRadius:2
+                                   yRadius:2] fill];
+}
+
 @end

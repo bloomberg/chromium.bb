@@ -8,6 +8,15 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace {
+
+NSImage* GetMaskImage() {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  return bundle.GetNativeImageNamed(IDR_NEWTAB_BUTTON_MASK).ToNSImage();
+}
+
+}
+
 // A simple override of the ImageButtonCell to disable handling of
 // -mouseEntered.
 @interface NewTabButtonCell : ImageButtonCell
@@ -22,6 +31,11 @@
   // Ignore this since the NTB enter is handled by the TabStripController.
 }
 
+- (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame inView:(NSView*)view {
+  // Match the button's shape.
+  [self drawImage:GetMaskImage() withFrame:cellFrame inView:view];
+}
+
 @end
 
 
@@ -34,9 +48,7 @@
 - (BOOL)pointIsOverButton:(NSPoint)point {
   NSPoint localPoint = [self convertPoint:point fromView:[self superview]];
   NSRect pointRect = NSMakeRect(localPoint.x, localPoint.y, 1, 1);
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  NSImage* buttonMask =
-      bundle.GetNativeImageNamed(IDR_NEWTAB_BUTTON_MASK).ToNSImage();
+  NSImage* buttonMask = GetMaskImage();
   NSRect destinationRect = NSMakeRect(
       (NSWidth(self.bounds) - [buttonMask size].width) / 2,
       (NSHeight(self.bounds) - [buttonMask size].height) / 2,

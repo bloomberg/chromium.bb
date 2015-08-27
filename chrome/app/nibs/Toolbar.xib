@@ -24,18 +24,18 @@
             <rect key="frame" x="0.0" y="0.0" width="604" height="35"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             <subviews>
-                <button toolTip="^IDS_APPMENU_TOOLTIP" focusRingType="none" id="38" customClass="MenuButton">
+                <button toolTip="^IDS_APPMENU_TOOLTIP" id="38" customClass="MenuButton">
                     <rect key="frame" x="572" y="4" width="29" height="29"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" focusRingType="none" inset="2" id="39" customClass="WrenchToolbarButtonCell">
+                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" inset="2" id="39" customClass="WrenchToolbarButtonCell">
                         <behavior key="behavior" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                 </button>
-                <button toolTip="^IDS_TOOLTIP_BACK" focusRingType="none" tag="33000" id="2" customClass="MenuButton">
+                <button toolTip="^IDS_TOOLTIP_BACK" tag="33000" id="2" customClass="MenuButton">
                     <rect key="frame" x="3" y="4" width="29" height="29"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" state="on" focusRingType="none" inset="2" id="15" customClass="ClickHoldButtonCell">
+                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" state="on" inset="2" id="15" customClass="ClickHoldButtonCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -43,10 +43,10 @@
                         <action selector="commandDispatchUsingKeyModifiers:" target="-1" id="138"/>
                     </connections>
                 </button>
-                <button toolTip="^IDS_TOOLTIP_FORWARD" focusRingType="none" tag="33001" id="7" customClass="MenuButton">
+                <button toolTip="^IDS_TOOLTIP_FORWARD" tag="33001" id="7" customClass="MenuButton">
                     <rect key="frame" x="31" y="4" width="29" height="29"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" state="on" focusRingType="none" inset="2" id="10" customClass="ClickHoldButtonCell">
+                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" state="on" inset="2" id="10" customClass="ClickHoldButtonCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -54,10 +54,10 @@
                         <action selector="commandDispatchUsingKeyModifiers:" target="-1" id="139"/>
                     </connections>
                 </button>
-                <button toolTip="^IDS_TOOLTIP_RELOAD" focusRingType="none" tag="33002" id="3" customClass="ReloadButton">
+                <button toolTip="^IDS_TOOLTIP_RELOAD" tag="33002" id="3" customClass="ReloadButton">
                     <rect key="frame" x="59" y="4" width="29" height="29"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" focusRingType="none" inset="2" id="14" customClass="ClickHoldButtonCell">
+                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" inset="2" id="14" customClass="ClickHoldButtonCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
@@ -65,10 +65,10 @@
                         <action selector="commandDispatchUsingKeyModifiers:" target="-1" id="26"/>
                     </connections>
                 </button>
-                <button toolTip="^IDS_TOOLTIP_HOME" focusRingType="none" tag="33003" id="8" customClass="ToolbarButton">
+                <button toolTip="^IDS_TOOLTIP_HOME" tag="33003" id="8" customClass="ToolbarButton">
                     <rect key="frame" x="87" y="4" width="29" height="29"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" focusRingType="none" inset="2" id="9" customClass="ClickHoldButtonCell">
+                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" inset="2" id="9" customClass="ClickHoldButtonCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>

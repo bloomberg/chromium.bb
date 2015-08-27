@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
@@ -528,14 +529,20 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   ui::ThemeProvider* themeProvider = [window themeProvider];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
 
+  // Draw custom focus ring only if AppKit won't draw one automatically.
+  // The new focus ring APIs became available with 10.7, but did not get
+  // applied to buttons (only editable text fields) until 10.8.
+  BOOL shouldDrawFocusRing = base::mac::IsOSLionOrEarlier() &&
+                             [self showsFirstResponder];
+
   // Stroke the borders and appropriate fill gradient. If we're borderless, the
   // only time we want to draw the inner gradient is if we're highlighted or if
-  // we're the first responder (when "Full Keyboard Access" is turned on).
+  // we're drawing the focus ring manually.
   if (([self isBordered] && ![self showsBorderOnlyWhileMouseInside]) ||
       pressed ||
       [self isMouseInside] ||
       [self isContinuousPulsing] ||
-      [self showsFirstResponder]) {
+      shouldDrawFocusRing) {
 
     // When pulsing we want the bookmark to stand out a little more.
     BOOL showClickedGradient = pressed ||
@@ -569,8 +576,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   }
   [self drawInteriorWithFrame:innerFrame inView:controlView];
 
-  // Draws the blue focus ring.
-  if ([self showsFirstResponder]) {
+  if (shouldDrawFocusRing) {
     gfx::ScopedNSGraphicsContextSaveGState scoped_state;
     const CGFloat lineWidth = [controlView cr_lineWidth];
     // insetX = 1.0 is used for the drawing of blue highlight so that this

@@ -549,6 +549,13 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
                    hints:nil];
 }
 
+- (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame inView:(NSView*)view {
+  // Match the hover image's bezel.
+  [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(cellFrame, 2, 2)
+                                   xRadius:2
+                                   yRadius:2] fill];
+}
+
 - (ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window {
   ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)

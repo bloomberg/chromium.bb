@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/rect_path_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -100,10 +101,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   [self drawImageWithFrame:cellFrame inView:controlView];
-  // Only draw custom focus ring if the 10.7 focus ring APIs are not available.
-  // TODO(groby): Remove once we build against the 10.7 SDK.
-  if (![self respondsToSelector:@selector(drawFocusRingMaskWithFrame:inView:)])
-    [self drawFocusRingWithFrame:cellFrame inView:controlView];
+  [self drawFocusRingWithFrame:cellFrame inView:controlView];
 }
 
 - (void)setImageID:(NSInteger)imageID
@@ -137,6 +135,12 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 }
 
 - (void)drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  // Draw custom focus ring only if AppKit won't draw one automatically.
+  // The new focus ring APIs became available with 10.7, but did not get
+  // applied to buttons (only editable text fields) until 10.8.
+  if (base::mac::IsOSMountainLionOrLater())
+    return;
+
   if (![self showsFirstResponder])
     return;
   gfx::ScopedNSGraphicsContextSaveGState scoped_state;

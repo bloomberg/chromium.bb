@@ -41,10 +41,7 @@ const int kSidePadding = 2.0;
   if ([title length])
     [self drawTitle:title withFrame:titleRect inView:controlView];
 
-  // Only draw custom focus ring if the 10.7 focus ring APIs are not available.
-  // TODO(groby): Remove once we build against the 10.7 SDK.
-  if (![self respondsToSelector:@selector(drawFocusRingMaskWithFrame:inView:)])
-    [super drawFocusRingWithFrame:cellFrame inView:controlView];
+  [self drawFocusRingWithFrame:cellFrame inView:controlView];
 }
 
 @end
