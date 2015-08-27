@@ -157,11 +157,7 @@ private:
 
     OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
     RefPtrWillBeMember<ViewportChangeListener> m_listener;
-#if ENABLE(OILPAN)
-    Member<HTMLFormElement> m_form;
-#else
-    WeakPtr<HTMLFormElement> m_form;
-#endif
+    WeakPtrWillBeMember<HTMLFormElement> m_form;
     AtomicString m_bestFitImageURL;
     float m_imageDevicePixelRatio;
     unsigned m_formWasSetByParser : 1;

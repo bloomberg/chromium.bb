@@ -23,14 +23,18 @@ template <typename T>
 class GlobalFetchImpl final : public NoBaseWillBeGarbageCollectedFinalized<GlobalFetchImpl<T>>, public GlobalFetch::ScopedFetcher, public WillBeHeapSupplement<T> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
 public:
-    static WeakPtr<ScopedFetcher> from(T& supplementable, ExecutionContext* executionContext)
+    static WeakPtrWillBeRawPtr<ScopedFetcher> from(T& supplementable, ExecutionContext* executionContext)
     {
-        GlobalFetchImpl* supplement = static_cast<GlobalFetchImpl*>(WillBeHeapSupplement<T>::from(supplementable, name()));
+        GlobalFetchImpl* supplement = static_cast<GlobalFetchImpl*>(WillBeHeapSupplement<T>::from(supplementable, supplementName()));
         if (!supplement) {
             supplement = new GlobalFetchImpl(executionContext);
-            WillBeHeapSupplement<T>::provideTo(supplementable, name(), adoptPtrWillBeNoop(supplement));
+            WillBeHeapSupplement<T>::provideTo(supplementable, supplementName(), adoptPtrWillBeNoop(supplement));
         }
+#if ENABLE(OILPAN)
+        return supplement;
+#else
         return supplement->m_weakFactory.createWeakPtr();
+#endif
     }
 
     ScriptPromise fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState) override
@@ -90,14 +94,18 @@ private:
     explicit GlobalFetchImpl(ExecutionContext* executionContext)
         : m_fetchManager(FetchManager::create(executionContext))
         , m_stopDetector(StopDetector::create(executionContext, m_fetchManager.get()))
+#if !ENABLE(OILPAN)
         , m_weakFactory(this)
+#endif
     {
     }
-    static const char* name() { return "GlobalFetch"; }
+    static const char* supplementName() { return "GlobalFetch"; }
 
     OwnPtrWillBeMember<FetchManager> m_fetchManager;
     OwnPtrWillBeMember<StopDetector> m_stopDetector;
+#if !ENABLE(OILPAN)
     WeakPtrFactory<ScopedFetcher> m_weakFactory;
+#endif
 };
 
 } // namespace
@@ -106,12 +114,12 @@ GlobalFetch::ScopedFetcher::~ScopedFetcher()
 {
 }
 
-WeakPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(DOMWindow& window)
+WeakPtrWillBeRawPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(DOMWindow& window)
 {
     return GlobalFetchImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.executionContext());
 }
 
-WeakPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(WorkerGlobalScope& worker)
+WeakPtrWillBeRawPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(WorkerGlobalScope& worker)
 {
     return GlobalFetchImpl<WorkerGlobalScope>::from(worker, worker.executionContext());
 }

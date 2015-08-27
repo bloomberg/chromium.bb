@@ -126,11 +126,7 @@ private:
     void resetFormAttributeTargetObserver();
 
     OwnPtrWillBeMember<FormAttributeTargetObserver> m_formAttributeTargetObserver;
-#if ENABLE(OILPAN)
-    Member<HTMLFormElement> m_form;
-#else
-    WeakPtr<HTMLFormElement> m_form;
-#endif
+    WeakPtrWillBeMember<HTMLFormElement> m_form;
     OwnPtrWillBeMember<ValidityState> m_validityState;
     String m_customValidationMessage;
     // Non-Oilpan: Even if m_formWasSetByParser is true, m_form can be null

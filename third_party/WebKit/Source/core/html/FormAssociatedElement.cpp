@@ -162,11 +162,7 @@ void FormAssociatedElement::setForm(HTMLFormElement* newForm)
 #endif
         m_form->associate(*this);
     } else {
-#if ENABLE(OILPAN)
         m_form = nullptr;
-#else
-        m_form = WeakPtr<HTMLFormElement>();
-#endif
     }
     didChangeForm();
 }

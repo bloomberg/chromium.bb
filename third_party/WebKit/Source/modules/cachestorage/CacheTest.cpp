@@ -33,13 +33,12 @@ namespace {
 
 const char kNotImplementedString[] = "NotSupportedError: Method is not implemented.";
 
-class ScopedFetcherForTests final : public GlobalFetch::ScopedFetcher {
+class ScopedFetcherForTests final : public NoBaseWillBeGarbageCollectedFinalized<ScopedFetcherForTests>, public GlobalFetch::ScopedFetcher {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScopedFetcherForTests);
 public:
-    ScopedFetcherForTests()
-        : m_fetchCount(0)
-        , m_expectedUrl(nullptr)
-        , m_weakFactory(this)
+    static PassOwnPtrWillBeRawPtr<ScopedFetcherForTests> create()
     {
+        return adoptPtrWillBeNoop(new ScopedFetcherForTests);
     }
 
     ScriptPromise fetch(ScriptState* scriptState, const RequestInfo& requestInfo, const Dictionary&, ExceptionState&) override
@@ -63,9 +62,13 @@ public:
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Unexpected call to fetch, no response available."));
     }
 
-    WeakPtr<GlobalFetch::ScopedFetcher> weakPtr()
+    WeakPtrWillBeRawPtr<GlobalFetch::ScopedFetcher> weakPtr()
     {
+#if ENABLE(OILPAN)
+        return this;
+#else
         return m_weakFactory.createWeakPtr();
+#endif
     }
 
     // This does not take ownership of its parameter. The provided sample object is used to check the parameter when called.
@@ -74,12 +77,29 @@ public:
 
     int fetchCount() const { return m_fetchCount; }
 
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_response);
+        GlobalFetch::ScopedFetcher::trace(visitor);
+    }
+
 private:
+    ScopedFetcherForTests()
+        : m_fetchCount(0)
+        , m_expectedUrl(nullptr)
+#if !ENABLE(OILPAN)
+        , m_weakFactory(this)
+#endif
+    {
+    }
+
     int m_fetchCount;
     const String* m_expectedUrl;
-    Persistent<Response> m_response;
+    PersistentWillBeMember<Response> m_response;
 
+#if !ENABLE(OILPAN)
     WeakPtrFactory<GlobalFetch::ScopedFetcher> m_weakFactory;
+#endif
 };
 
 // A test implementation of the WebServiceWorkerCache interface which returns a (provided) error for every operation, and optionally checks arguments
@@ -322,7 +342,7 @@ RequestInfo requestToRequestInfo(Request* value)
 TEST_F(CacheStorageTest, Basics)
 {
     ScriptState::Scope scope(scriptState());
-    OwnPtr<ScopedFetcherForTests> fetcher = adoptPtr(new ScopedFetcherForTests());
+    OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     ErrorWebCacheForTests* testCache;
     Cache* cache = createCache(fetcher.get(), testCache = new NotImplementedErrorCache());
     ASSERT(cache);
@@ -348,7 +368,7 @@ TEST_F(CacheStorageTest, Basics)
 TEST_F(CacheStorageTest, BasicArguments)
 {
     ScriptState::Scope scope(scriptState());
-    OwnPtr<ScopedFetcherForTests> fetcher = adoptPtr(new ScopedFetcherForTests());
+    OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     ErrorWebCacheForTests* testCache;
     Cache* cache = createCache(fetcher.get(), testCache = new NotImplementedErrorCache());
     ASSERT(cache);
@@ -404,7 +424,7 @@ TEST_F(CacheStorageTest, BasicArguments)
 TEST_F(CacheStorageTest, BatchOperationArguments)
 {
     ScriptState::Scope scope(scriptState());
-    OwnPtr<ScopedFetcherForTests> fetcher = adoptPtr(new ScopedFetcherForTests());
+    OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     ErrorWebCacheForTests* testCache;
     Cache* cache = createCache(fetcher.get(), testCache = new NotImplementedErrorCache());
     ASSERT(cache);
@@ -484,7 +504,7 @@ private:
 TEST_F(CacheStorageTest, MatchResponseTest)
 {
     ScriptState::Scope scope(scriptState());
-    OwnPtr<ScopedFetcherForTests> fetcher = adoptPtr(new ScopedFetcherForTests());
+    OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     const String requestUrl = "http://request.url/";
     const String responseUrl = "http://match.response.test/";
 
@@ -520,7 +540,7 @@ private:
 TEST_F(CacheStorageTest, KeysResponseTest)
 {
     ScriptState::Scope scope(scriptState());
-    OwnPtr<ScopedFetcherForTests> fetcher = adoptPtr(new ScopedFetcherForTests());
+    OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     const String url1 = "http://first.request/";
     const String url2 = "http://second.request/";
 
@@ -571,7 +591,7 @@ private:
 TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest)
 {
     ScriptState::Scope scope(scriptState());
-    OwnPtr<ScopedFetcherForTests> fetcher = adoptPtr(new ScopedFetcherForTests());
+    OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     const String url1 = "http://first.response/";
     const String url2 = "http://second.response/";
 
@@ -609,7 +629,7 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest)
 TEST_F(CacheStorageTest, Add)
 {
     ScriptState::Scope scope(scriptState());
-    OwnPtr<ScopedFetcherForTests> fetcher = adoptPtr(new ScopedFetcherForTests());
+    OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     const String url = "http://www.cacheadd.test/";
     const KURL kurl(ParsedURLString, url);
 

@@ -48,11 +48,7 @@ public:
     void run() override;
 
 private:
-#if ENABLE(OILPAN)
-    CrossThreadWeakPersistent<MainThreadTaskRunner> m_runner;
-#else
-    WeakPtr<MainThreadTaskRunner> m_runner;
-#endif
+    WeakPtrWillBeCrossThreadWeakPersistent<MainThreadTaskRunner> m_runner;
     OwnPtr<ExecutionContextTask> m_task;
     bool m_isInspectorTask;
 };
