@@ -35253,6 +35253,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Initial quota for global temporary storage.</summary>
 </histogram>
 
+<histogram name="Quota.LRUOriginTypes" enum="QuotaOriginTypes">
+  <owner>dgrogan@chromium.org</owner>
+  <summary>
+    Types of origins that are initially selected for eviction via LRU. Some of
+    these types are exempt from eviction.
+  </summary>
+</histogram>
+
 <histogram name="Quota.NumberOfEvictedOriginsPerRound">
   <owner>tzik@chromium.org</owner>
   <summary>Number of evicted origins per round.</summary>
@@ -69057,6 +69065,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="CREATE_OUTGOING_RELIABLE_STREAM"/>
   <int value="4" label="NOTIFY_FACTORY_OF_SESSION_CLOSED_LATER"/>
   <int value="5" label="NOTIFY_FACTORY_OF_SESSION_CLOSED"/>
+</enum>
+
+<enum name="QuotaOriginTypes" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="None"/>
+  <int value="2" label="google.com durable"/>
+  <int value="3" label="non-google.com durable"/>
+  <int value="4" label="google.com unlimitedStorage app/ext"/>
+  <int value="5" label="non-google.com unlimitedStorage app/ext"/>
+  <int value="6" label="In use"/>
 </enum>
 
 <enum name="RapporDiscardReason" type="int">

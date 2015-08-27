@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -34,6 +35,24 @@ bool VerifyValidQuotaConfig(const char* key) {
 }
 
 const int kCommitIntervalMs = 30000;
+
+enum OriginType {
+  // This enum is logged to UMA so only append to it - don't change
+  // the meaning of the existing values.
+  OTHER = 0,
+  NONE = 1,
+  GOOGLE_DURABLE = 2,
+  NON_GOOGLE_DURABLE = 3,
+  GOOGLE_UNLIMITED_EXTENSION = 4,
+  NON_GOOGLE_UNLIMITED_EXTENSION = 5,
+  IN_USE = 6,
+
+  MAX_ORIGIN_TYPE
+};
+
+void HistogramOriginType(const OriginType& entry) {
+  UMA_HISTOGRAM_ENUMERATION("Quota.LRUOriginTypes", entry, MAX_ORIGIN_TYPE);
+}
 
 }  // anonymous namespace
 
@@ -340,16 +359,28 @@ bool QuotaDatabase::GetLRUOrigin(
 
   while (statement.Step()) {
     GURL url(statement.ColumnString(0));
-    if (exceptions.find(url) != exceptions.end())
+    if (exceptions.find(url) != exceptions.end()) {
+      HistogramOriginType(IN_USE);
       continue;
-    if (special_storage_policy &&
-        (special_storage_policy->IsStorageDurable(url) ||
-         special_storage_policy->IsStorageUnlimited(url)))
-      continue;
+    }
+    if (special_storage_policy) {
+      bool is_google = url.DomainIs("google.com");
+      if (special_storage_policy->IsStorageDurable(url)) {
+        HistogramOriginType(is_google ? GOOGLE_DURABLE : NON_GOOGLE_DURABLE);
+        continue;
+      }
+      if (special_storage_policy->IsStorageUnlimited(url)) {
+        HistogramOriginType(is_google ? GOOGLE_UNLIMITED_EXTENSION
+                                      : NON_GOOGLE_UNLIMITED_EXTENSION);
+        continue;
+      }
+    }
+    HistogramOriginType(OTHER);
     *origin = url;
     return true;
   }
 
+  HistogramOriginType(NONE);
   *origin = GURL();
   return statement.Succeeded();
 }
