@@ -115,13 +115,10 @@ public class SysUtils {
         if (CommandLine.getInstance().hasSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)) {
             return false;
         }
-        // Any pre-KitKat device cannot be considered 'low-end'.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            return false;
-        }
 
         Context context = ApplicationStatus.getApplicationContext();
-        if (context != null) {
+        // Only KitKat and later devices have isLowRamDevice() call available.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && context != null) {
             ActivityManager activityManager = (ActivityManager)
                     context.getSystemService(Context.ACTIVITY_SERVICE);
             if (activityManager.isLowRamDevice()) {
