@@ -114,9 +114,10 @@
               # KeygenHandlerTest.SmokeTest and KeygenHandlerTest.ConcurrencyTest fail due to
               # readonly certdb (b/8153161)
               # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
-              # timeout to 75s from 45s to allow it to pass (b/19821476)
+              # timeout to 90s from 45s to allow it to pass (b/19821476)
               # ProxyScriptFetcherImplTest.HttpMimeType is flaking (b/19848784)
-             'net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest:ProxyScriptFetcherImplTest.HttpMimeType --test-launcher-timeout=75000',
+              # Running a batch of net_unittests has high overhead. Run tests in batches of 25 to reduce number of batches (b/23156294).
+             'net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest:ProxyScriptFetcherImplTest.HttpMimeType --test-launcher-timeout=90000 --test-launcher-batch-limit=25',
               # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
               # Disable ProcessUtilTest.* (need to define OS_ANDROID)
               # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
