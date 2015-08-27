@@ -733,7 +733,7 @@ class ContentSettingBubbleWebContentsObserverBridge
   const ContentSettingBubbleModel::BubbleContent& content =
       contentSettingBubbleModel_->bubble_content();
   [manageButton_ setTitle:base::SysUTF8ToNSString(content.manage_link)];
-  [GTMUILocalizerAndLayoutTweaker sizeToFitView:manageButton_];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:[manageButton_ superview]];
 
   CGFloat actualWidth = NSWidth([[[self window] contentView] frame]);
   CGFloat requiredWidth = NSMaxX([manageButton_ frame]) + kManageDonePadding +
