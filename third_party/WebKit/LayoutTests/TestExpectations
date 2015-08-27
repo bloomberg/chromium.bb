@@ -334,7 +334,6 @@ crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/the
 crbug.com/508725 imported/web-platform-tests/html/semantics/forms/textfieldselection/textfieldselection-setRangeText.html [ Failure Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/text-level-semantics/the-wbr-element/wbr-element.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
-crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrack/language.html [ Crash ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure ]
 crbug.com/520835 imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/formAction_document_address.html [ Failure ]
 crbug.com/520835 imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/formaction.html [ Failure ]
@@ -354,15 +353,11 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/events/retargeting-relat
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-001.html [ Failure Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-004.html [ Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/custom-pseudo-elements/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/css-variables/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-008.html [ Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-010.html [ Failure Crash ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-002.html [ Crash ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure Crash ]
 
 
@@ -526,7 +521,6 @@ crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vr
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-220.xht [ ImageOnlyFailure ]
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-224.xht [ ImageOnlyFailure ]
 
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-normal-011.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/caption-side-vlr-007.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/caption-side-vlr-009.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/caption-side-vrl-006.xht [ ImageOnlyFailure ]
