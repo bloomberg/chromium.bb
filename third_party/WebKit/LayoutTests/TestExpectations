@@ -947,8 +947,6 @@ crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Fail
 
 crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ ImageOnlyFailure ]
 
-crbug.com/524623 svg/as-background-image/svg-as-background-5.html [ NeedsRebaseline ]
-
 crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-match.html [ Pass Failure ]
 crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-put.html [ Pass Failure Timeout ]
 crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-storage-match.html [ Pass Failure Timeout ]
