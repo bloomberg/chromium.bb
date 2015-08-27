@@ -19302,6 +19302,7 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: veyron_gus, veyron_jaq, veyron_minnie, veyron_rialto)",
+        "important": true,
         "vm_tests": []
     },
     "veyron-c-full-group": {

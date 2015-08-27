@@ -593,7 +593,6 @@ _waterfall_config_map = {
         # Experimental Canaries (Group)
         'storm-release-group',
         'strago-release-group',
-        'veyron-b-release-group',
         'veyron-c-release-group',
 
         # Experimental Canaries
@@ -2582,7 +2581,6 @@ def GetConfig():
           'veyron_minnie',
           'veyron_rialto',
       ),
-      important=False,
   )
 
   _AddGroupConfig(
