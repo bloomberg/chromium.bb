@@ -254,8 +254,6 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
           base::Bind(
               &BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO,
               gpu_client_id_, cache_dir));
-    } else {
-      LOG(ERROR) << "Failed to init browser shader disk cache.";
     }
   }
 }
