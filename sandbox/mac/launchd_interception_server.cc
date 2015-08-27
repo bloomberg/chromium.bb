@@ -24,6 +24,7 @@ const mach_msg_size_t kBufferSize = 2096;
 LaunchdInterceptionServer::LaunchdInterceptionServer(
     const BootstrapSandbox* sandbox)
     : sandbox_(sandbox),
+      xpc_launchd_(false),
       sandbox_port_(MACH_PORT_NULL),
       compat_shim_(OSCompatibility::CreateForPlatform()) {
 }
@@ -52,6 +53,7 @@ bool LaunchdInterceptionServer::Initialize(mach_port_t server_receive_right) {
 
   if (base::mac::IsOSYosemiteOrLater()) {
     message_server_.reset(new XPCMessageServer(this, server_receive_right));
+    xpc_launchd_ = true;
   } else {
     message_server_.reset(
         new MachMessageServer(this, server_receive_right, kBufferSize));
@@ -159,6 +161,18 @@ void LaunchdInterceptionServer::HandleSwapInteger(IPCMessage request) {
   }
 }
 void LaunchdInterceptionServer::ForwardMessage(IPCMessage request) {
+  // If launchd is using XPC, then when the request is forwarded, it must
+  // contain a valid domain port. Because the client processes are sandboxed,
+  // they have not had their launchd domains uncorked (and launchd will
+  // reject the message as being from an invalid client). Instead, provide the
+  // original bootstrap as the domain port, so launchd services the request
+  // as if it were coming from the sandbox host process (this).
+  if (xpc_launchd_) {
+    // xpc_dictionary_set_mach_send increments the send right count.
+    xpc_dictionary_set_mach_send(request.xpc, "domain-port",
+                                 sandbox_->real_bootstrap_port());
+  }
+
   message_server_->ForwardMessage(request, sandbox_->real_bootstrap_port());
 }
 

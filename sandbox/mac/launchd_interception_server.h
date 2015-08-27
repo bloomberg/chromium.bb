@@ -56,6 +56,9 @@ class LaunchdInterceptionServer : public MessageDemuxer {
   // The Mach IPC server.
   scoped_ptr<MessageServer> message_server_;
 
+  // Whether or not the system is using an XPC-based launchd.
+  bool xpc_launchd_;
+
   // The Mach port handed out in reply to denied look up requests. All denied
   // requests share the same port, though nothing reads messages from it.
   base::mac::ScopedMachReceiveRight sandbox_port_;
