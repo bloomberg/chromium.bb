@@ -83,8 +83,6 @@
     'java_in_dir_suffix%': '/src',
     'proguard_config%': '',
     'proguard_preprocess%': '0',
-    'enable_errorprone%': '0',
-    'errorprone_exe_path': '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
     'variables': {
       'variables': {
         'proguard_preprocess%': 0,
@@ -105,6 +103,13 @@
     },
     'emma_instrument': '<(emma_instrument)',
     'javac_jar_path': '<(javac_jar_path)',
+    'conditions': [
+      ['chromium_code == 0', {
+        'enable_errorprone': 0,
+      }],
+    ],
+    'enable_errorprone%': 0,
+    'errorprone_exe_path': '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
   },
   'conditions': [
     ['add_to_dependents_classpaths == 1', {

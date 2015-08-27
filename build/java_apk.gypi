@@ -223,7 +223,12 @@
     'native_lib_placeholders': [],
     'main_apk_name': '<(apk_name)',
     'dex_path': '<(dex_path)',
-    'enable_errorprone%': '0',
+    'conditions': [
+      ['chromium_code == 0', {
+        'enable_errorprone': 0,
+      }],
+    ],
+    'enable_errorprone%': 0,
     'errorprone_exe_path': '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as

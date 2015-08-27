@@ -53,7 +53,12 @@
     'jar_path': '<(jar_dir)/<(jar_name)',
     'main_class%': '',
     'stamp': '<(intermediate_dir)/jar.stamp',
-    'enable_errorprone%': '0',
+    'conditions': [
+      ['chromium_code == 0', {
+        'enable_errorprone': 0,
+      }],
+    ],
+    'enable_errorprone%': 0,
     'errorprone_exe_path': '<(PRODUCT_DIR)/bin.java/chromium_errorprone',
   },
   'all_dependent_settings': {

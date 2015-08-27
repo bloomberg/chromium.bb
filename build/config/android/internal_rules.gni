@@ -1033,7 +1033,9 @@ template("compile_java") {
   }
 
   _enable_errorprone = use_errorprone_java_compiler
-  if (defined(invoker.enable_errorprone)) {
+  if (!_chromium_code) {
+    _enable_errorprone = false
+  } else if (defined(invoker.enable_errorprone)) {
     _enable_errorprone = invoker.enable_errorprone
   }
 
