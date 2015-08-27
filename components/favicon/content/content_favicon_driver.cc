@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "components/favicon/content/favicon_url_util.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_url.h"
+#include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
@@ -31,6 +33,29 @@ void ContentFaviconDriver::CreateForWebContents(
   web_contents->SetUserData(
       UserDataKey(), new ContentFaviconDriver(web_contents, favicon_service,
                                               history_service, bookmark_model));
+}
+
+void ContentFaviconDriver::SaveFavicon() {
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  // Make sure the page is in history, otherwise adding the favicon does
+  // nothing.
+  if (!history_service())
+    return;
+  GURL page_url = entry->GetURL();
+  history_service()->AddPageNoVisitForBookmark(page_url, entry->GetTitle());
+
+  const content::FaviconStatus& favicon_status = entry->GetFavicon();
+  if (!favicon_service() || !favicon_status.valid ||
+      favicon_status.url.is_empty() || favicon_status.image.IsEmpty()) {
+    return;
+  }
+
+  favicon_service()->SetFavicons(page_url, favicon_status.url,
+                                 favicon_base::FAVICON, favicon_status.image);
 }
 
 gfx::Image ContentFaviconDriver::GetFavicon() const {
@@ -88,12 +113,6 @@ GURL ContentFaviconDriver::GetActiveURL() {
   return entry ? entry->GetURL() : GURL();
 }
 
-base::string16 ContentFaviconDriver::GetActiveTitle() {
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  return entry ? entry->GetTitle() : base::string16();
-}
-
 bool ContentFaviconDriver::GetActiveFaviconValidity() {
   return GetFaviconStatus().valid;
 }
@@ -108,10 +127,6 @@ GURL ContentFaviconDriver::GetActiveFaviconURL() {
 
 void ContentFaviconDriver::SetActiveFaviconURL(const GURL& url) {
   GetFaviconStatus().url = url;
-}
-
-gfx::Image ContentFaviconDriver::GetActiveFaviconImage() {
-  return GetFaviconStatus().image;
 }
 
 void ContentFaviconDriver::SetActiveFaviconImage(const gfx::Image& image) {

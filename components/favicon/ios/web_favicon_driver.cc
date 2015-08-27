@@ -67,12 +67,6 @@ GURL WebFaviconDriver::GetActiveURL() {
   return item ? item->GetURL() : GURL();
 }
 
-base::string16 WebFaviconDriver::GetActiveTitle() {
-  web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetVisibleItem();
-  return item ? item->GetTitle() : base::string16();
-}
-
 bool WebFaviconDriver::GetActiveFaviconValidity() {
   return GetFaviconStatus().valid;
 }
@@ -87,10 +81,6 @@ GURL WebFaviconDriver::GetActiveFaviconURL() {
 
 void WebFaviconDriver::SetActiveFaviconURL(const GURL& url) {
   GetFaviconStatus().url = url;
-}
-
-gfx::Image WebFaviconDriver::GetActiveFaviconImage() {
-  return GetFaviconStatus().image;
 }
 
 void WebFaviconDriver::SetActiveFaviconImage(const gfx::Image& image) {

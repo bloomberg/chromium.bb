@@ -34,12 +34,10 @@ class WebFaviconDriver : public web::WebStateObserver,
   int StartDownload(const GURL& url, int max_bitmap_size) override;
   bool IsOffTheRecord() override;
   GURL GetActiveURL() override;
-  base::string16 GetActiveTitle() override;
   bool GetActiveFaviconValidity() override;
   void SetActiveFaviconValidity(bool valid) override;
   GURL GetActiveFaviconURL() override;
   void SetActiveFaviconURL(const GURL& url) override;
-  gfx::Image GetActiveFaviconImage() override;
   void SetActiveFaviconImage(const gfx::Image& image) override;
 
  private:

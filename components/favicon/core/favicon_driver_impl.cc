@@ -70,31 +70,6 @@ void FaviconDriverImpl::FetchFavicon(const GURL& url) {
     large_icon_handler_->FetchFavicon(url);
 }
 
-void FaviconDriverImpl::SaveFavicon() {
-  GURL active_url = GetActiveURL();
-  if (active_url.is_empty())
-    return;
-
-  // Make sure the page is in history, otherwise adding the favicon does
-  // nothing.
-  if (!history_service_)
-    return;
-  history_service_->AddPageNoVisitForBookmark(active_url, GetActiveTitle());
-
-  if (!favicon_service_)
-    return;
-  if (!GetActiveFaviconValidity())
-    return;
-  GURL favicon_url = GetActiveFaviconURL();
-  if (favicon_url.is_empty())
-    return;
-  gfx::Image image = GetActiveFaviconImage();
-  if (image.IsEmpty())
-    return;
-  favicon_service_->SetFavicons(active_url, favicon_url, favicon_base::FAVICON,
-                                image);
-}
-
 void FaviconDriverImpl::DidDownloadFavicon(
     int id,
     int http_status_code,

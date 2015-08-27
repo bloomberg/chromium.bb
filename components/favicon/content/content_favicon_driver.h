@@ -37,18 +37,20 @@ class ContentFaviconDriver
     return favicon_urls_;
   }
 
+  // Saves the favicon for the last committed navigation entry to the thumbnail
+  // database.
+  void SaveFavicon();
+
   // FaviconDriver implementation.
   gfx::Image GetFavicon() const override;
   bool FaviconIsValid() const override;
   int StartDownload(const GURL& url, int max_bitmap_size) override;
   bool IsOffTheRecord() override;
   GURL GetActiveURL() override;
-  base::string16 GetActiveTitle() override;
   bool GetActiveFaviconValidity() override;
   void SetActiveFaviconValidity(bool valid) override;
   GURL GetActiveFaviconURL() override;
   void SetActiveFaviconURL(const GURL& url) override;
-  gfx::Image GetActiveFaviconImage() override;
   void SetActiveFaviconImage(const gfx::Image& image) override;
 
  protected:

@@ -199,11 +199,6 @@ class TestFaviconDriver : public FaviconDriver {
                   << "should never be called in tests.";
   }
 
-  void SaveFavicon() override {
-    ADD_FAILURE() << "TestFaviconDriver::SaveFavicon() "
-                  << "should never be called in tests.";
-  }
-
   gfx::Image GetFavicon() const override {
     ADD_FAILURE() << "TestFaviconDriver::GetFavicon() "
                   << "should never be called in tests.";
@@ -234,8 +229,6 @@ class TestFaviconDriver : public FaviconDriver {
 
   GURL GetActiveURL() override { return url_; }
 
-  base::string16 GetActiveTitle() override { return base::string16(); }
-
   bool GetActiveFaviconValidity() override { return favicon_validity_; }
 
   void SetActiveFaviconValidity(bool favicon_validity) override {
@@ -248,7 +241,7 @@ class TestFaviconDriver : public FaviconDriver {
     favicon_url_ = favicon_url;
   }
 
-  gfx::Image GetActiveFaviconImage() override { return image_; }
+  gfx::Image GetActiveFaviconImage() { return image_; }
 
   void SetActiveFaviconImage(const gfx::Image& image) override {
     image_ = image;
