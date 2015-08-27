@@ -61,7 +61,7 @@ void WebServiceWorkerProviderImpl::registerServiceWorker(
 
 void WebServiceWorkerProviderImpl::getRegistration(
     const blink::WebURL& document_url,
-    WebServiceWorkerRegistrationCallbacks* callbacks) {
+    WebServiceWorkerGetRegistrationCallbacks* callbacks) {
   GetDispatcher()->GetRegistration(
       context_->provider_id(), document_url, callbacks);
 }

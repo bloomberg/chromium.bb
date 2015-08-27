@@ -92,10 +92,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
       int64 registration_id,
       WebServiceWorkerUnregistrationCallbacks* callbacks);
   // Corresponds to navigator.serviceWorker.getRegistration().
-  void GetRegistration(
-      int provider_id,
-      const GURL& document_url,
-      WebServiceWorkerRegistrationCallbacks* callbacks);
+  void GetRegistration(int provider_id,
+                       const GURL& document_url,
+                       WebServiceWorkerGetRegistrationCallbacks* callbacks);
   // Corresponds to navigator.serviceWorker.getRegistrations().
   void GetRegistrations(
       int provider_id,
