@@ -650,13 +650,20 @@ bool isInline(const Node* node)
     return node && node->layoutObject() && node->layoutObject()->isInline();
 }
 
-// FIXME: Deploy this in all of the places where enclosingBlockFlow/enclosingBlockFlowOrTableElement are used.
-// FIXME: Pass a position to this function. The enclosing block of [table, x] for example, should be the
-// block that contains the table and not the table, and this function should be the only one responsible for
-// knowing about these kinds of special cases.
+// TODO(yosin) Deploy this in all of the places where |enclosingBlockFlow()| and
+// |enclosingBlockFlowOrTableElement()| are used.
+// TODO(yosin) Callers of |Node| version of |enclosingBlock()| should use
+// |Position| version The enclosing block of [table, x] for example, should be
+// the block that contains the table and not the table, and this function should
+// be the only one responsible for knowing about these kinds of special cases.
 Element* enclosingBlock(Node* node, EditingBoundaryCrossingRule rule)
 {
-    Node* enclosingNode = enclosingNodeOfType(firstPositionInOrBeforeNode(node), isEnclosingBlock, rule);
+    return enclosingBlock(firstPositionInOrBeforeNode(node), rule);
+}
+
+Element* enclosingBlock(const Position& position, EditingBoundaryCrossingRule rule)
+{
+    Node* enclosingNode = enclosingNodeOfType(position, isEnclosingBlock, rule);
     return enclosingNode && enclosingNode->isElementNode() ? toElement(enclosingNode) : nullptr;
 }
 
