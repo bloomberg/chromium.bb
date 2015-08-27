@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/test/mock_drm_device.h"
 
+#include <drm_fourcc.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
@@ -31,8 +32,12 @@ class MockHardwareDisplayPlaneManager
     crtcs_.swap(crtcs);
     for (size_t crtc_idx = 0; crtc_idx < crtcs_.size(); crtc_idx++) {
       for (size_t i = 0; i < planes_per_crtc; i++) {
-        planes_.push_back(
+        scoped_ptr<HardwareDisplayPlane> plane(
             new HardwareDisplayPlane(kPlaneBaseId + i, 1 << crtc_idx));
+        // Add support to test more formats.
+        plane->Initialize(drm, std::vector<uint32_t>(1, DRM_FORMAT_XRGB8888),
+                          false, true);
+        planes_.push_back(plane.Pass());
       }
     }
   }

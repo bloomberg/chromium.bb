@@ -25,11 +25,22 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<DrmDevice>& drm,
                              gbm_bo* bo,
                              bool scanout)
     : drm_(drm), bo_(bo) {
-  if (scanout &&
-      !drm_->AddFramebuffer(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
-                            kColorDepth, kPixelDepth, gbm_bo_get_stride(bo),
-                            gbm_bo_get_handle(bo).u32, &framebuffer_))
-    PLOG(ERROR) << "Failed to register buffer";
+  if (scanout) {
+    if (!drm_->AddFramebuffer(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
+                              kColorDepth, kPixelDepth, gbm_bo_get_stride(bo),
+                              gbm_bo_get_handle(bo).u32, &framebuffer_)) {
+      PLOG(ERROR) << "Failed to register buffer";
+      return;
+    }
+
+    fb_pixel_format_ = gbm_bo_get_format(bo);
+    if (fb_pixel_format_ == GBM_FORMAT_ARGB8888)
+      fb_pixel_format_ = GBM_FORMAT_XRGB8888;
+
+    // For now, we always create a frame buffer of 24 bit color depth and
+    // support only XRGB format.
+    DCHECK(fb_pixel_format_ == GBM_FORMAT_XRGB8888);
+  }
 }
 
 GbmBufferBase::~GbmBufferBase() {
@@ -49,8 +60,8 @@ gfx::Size GbmBufferBase::GetSize() const {
   return gfx::Size(gbm_bo_get_width(bo_), gbm_bo_get_height(bo_));
 }
 
-uint32_t GbmBufferBase::GetFormat() const {
-  return gbm_bo_get_format(bo_);
+uint32_t GbmBufferBase::GetFramebufferPixelFormat() const {
+  return fb_pixel_format_;
 }
 
 }  // namespace ui

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <drm_fourcc.h>
+
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -35,7 +37,9 @@ class MockScanoutBuffer : public ui::ScanoutBuffer {
   uint32_t GetFramebufferId() const override { return 0; }
   uint32_t GetHandle() const override { return 0; }
   gfx::Size GetSize() const override { return size_; }
-  uint32_t GetFormat() const override { return 0; }
+  uint32_t GetFramebufferPixelFormat() const override {
+    return DRM_FORMAT_XRGB8888;
+  }
 
  private:
   ~MockScanoutBuffer() override {}

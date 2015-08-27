@@ -25,9 +25,6 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
                     const gfx::Rect& crtc_rect,
                     const gfx::Rect& src_rect);
 
-  // HardwareDisplayPlane:
-  bool IsSupportedFormat(uint32_t format) const override;
-
   void set_crtc(CrtcController* crtc) { crtc_ = crtc; }
   CrtcController* crtc() const { return crtc_; }
 

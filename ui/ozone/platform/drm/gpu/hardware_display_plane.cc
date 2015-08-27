@@ -56,14 +56,18 @@ bool HardwareDisplayPlane::CanUseForCrtc(uint32_t crtc_index) {
 
 bool HardwareDisplayPlane::Initialize(DrmDevice* drm,
                                       const std::vector<uint32_t>& formats,
-                                      bool is_dummy) {
+                                      bool is_dummy,
+                                      bool test_only) {
+  supported_formats_ = formats;
+
+  if (test_only)
+    return true;
+
   if (is_dummy) {
     type_ = kDummy;
     supported_formats_.push_back(DRM_FORMAT_XRGB8888);
     return true;
   }
-
-  supported_formats_ = formats;
 
   ScopedDrmObjectPropertyPtr plane_props(drmModeObjectGetProperties(
       drm->get_fd(), plane_id_, DRM_MODE_OBJECT_PLANE));
@@ -84,8 +88,22 @@ bool HardwareDisplayPlane::Initialize(DrmDevice* drm,
   return InitializeProperties(drm, plane_props);
 }
 
-bool HardwareDisplayPlane::IsSupportedFormat(uint32_t format) const {
-  return true;
+bool HardwareDisplayPlane::IsSupportedFormat(uint32_t format) {
+  if (!format)
+    return false;
+
+  if (last_used_format_ == format)
+    return true;
+
+  for (auto& element : supported_formats_) {
+    if (element == format) {
+      last_used_format_ = format;
+      return true;
+    }
+  }
+
+  last_used_format_ = 0;
+  return false;
 }
 
 bool HardwareDisplayPlane::InitializeProperties(

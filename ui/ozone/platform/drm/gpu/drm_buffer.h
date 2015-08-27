@@ -32,9 +32,9 @@ class OZONE_EXPORT DrmBuffer : public ScanoutBuffer {
 
   // ScanoutBuffer:
   uint32_t GetFramebufferId() const override;
+  uint32_t GetFramebufferPixelFormat() const override;
   uint32_t GetHandle() const override;
   gfx::Size GetSize() const override;
-  uint32_t GetFormat() const override;
 
  protected:
   ~DrmBuffer() override;
@@ -56,6 +56,9 @@ class OZONE_EXPORT DrmBuffer : public ScanoutBuffer {
   // Buffer ID used by the DRM modesettings API. This is set when the buffer is
   // registered with the CRTC.
   uint32_t framebuffer_ = 0;
+
+  // Pixel format of |framebuffer_|
+  uint32_t fb_pixel_format_ = 0;
 
   // Wrapper around the native pixel memory.
   skia::RefPtr<SkSurface> surface_;

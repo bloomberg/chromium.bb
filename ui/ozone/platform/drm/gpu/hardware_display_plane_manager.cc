@@ -101,7 +101,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
     for (uint32_t j = 0; j < formats_size; j++)
       supported_formats.push_back(drm_plane->formats[j]);
 
-    if (plane->Initialize(drm, supported_formats, false)) {
+    if (plane->Initialize(drm, supported_formats, false, false)) {
       // CRTC controllers always assume they have a cursor plane and the cursor
       // plane is updated via cursor specific DRM API. Hence, we dont keep
       // track of Cursor plane here to avoid re-using it for any other purpose.
@@ -119,7 +119,8 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
       if (plane_ids.find(resources->crtcs[i] - 1) == plane_ids.end()) {
         scoped_ptr<HardwareDisplayPlane> dummy_plane(
             CreatePlane(resources->crtcs[i] - 1, (1 << i)));
-        if (dummy_plane->Initialize(drm, std::vector<uint32_t>(), true)) {
+        if (dummy_plane->Initialize(drm, std::vector<uint32_t>(), true,
+                                    false)) {
           planes_.push_back(dummy_plane.Pass());
         }
       }
@@ -182,8 +183,8 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
 
   size_t plane_idx = 0;
   for (const auto& plane : overlay_list) {
-    HardwareDisplayPlane* hw_plane =
-        FindNextUnusedPlane(&plane_idx, crtc_index, plane.buffer->GetFormat());
+    HardwareDisplayPlane* hw_plane = FindNextUnusedPlane(
+        &plane_idx, crtc_index, plane.buffer->GetFramebufferPixelFormat());
     if (!hw_plane) {
       LOG(ERROR) << "Failed to find a free plane for crtc " << crtc_id;
       return false;
