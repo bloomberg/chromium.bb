@@ -1508,11 +1508,12 @@ _NAMED_TYPE_INFO = {
       'GL_RGBA',
     ],
     'valid_es3': [
+      'GL_RED',
+      'GL_RED_INTEGER',
+      'GL_RG',
+      'GL_RG_INTEGER',
+      'GL_RGB_INTEGER',
       'GL_RGBA_INTEGER',
-    ],
-    'deprecated_es3': [
-      'GL_ALPHA',
-      'GL_RGB',
     ],
   },
   'PixelType': {
@@ -1600,19 +1601,15 @@ _NAMED_TYPE_INFO = {
       'GL_UNSIGNED_SHORT_4_4_4_4',
       'GL_UNSIGNED_SHORT_5_5_5_1',
     ],
-    'invalid': [
-      'GL_SHORT',
-    ],
     'valid_es3': [
+      'GL_BYTE',
+      'GL_UNSIGNED_SHORT',
+      'GL_SHORT',
       'GL_UNSIGNED_INT',
       'GL_INT',
+      'GL_HALF_FLOAT',
       'GL_FLOAT',
       'GL_UNSIGNED_INT_2_10_10_10_REV',
-    ],
-    'deprecated_es3': [
-      'GL_UNSIGNED_SHORT_5_6_5',
-      'GL_UNSIGNED_SHORT_4_4_4_4',
-      'GL_UNSIGNED_SHORT_5_5_5_1',
     ],
   },
   'RenderBufferFormat': {

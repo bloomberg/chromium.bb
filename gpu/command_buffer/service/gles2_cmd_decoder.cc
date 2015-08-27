@@ -5068,7 +5068,7 @@ bool GLES2DecoderImpl::GetHelper(
             if (glGetError() == GL_NO_ERROR)
               return true;
           }
-          *params = GLES2Util::GetPreferredGLReadPixelsFormat(
+          *params = GLES2Util::GetGLReadPixelsImplementationFormat(
               GetBoundReadFrameBufferInternalFormat());
         }
         return true;
@@ -5082,7 +5082,7 @@ bool GLES2DecoderImpl::GetHelper(
             if (glGetError() == GL_NO_ERROR)
               return true;
           }
-          *params = GLES2Util::GetPreferredGLReadPixelsType(
+          *params = GLES2Util::GetGLReadPixelsImplementationType(
               GetBoundReadFrameBufferInternalFormat(),
               GetBoundReadFrameBufferTextureType());
         }
@@ -8754,9 +8754,6 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
   std::vector<GLenum> accepted_formats;
   std::vector<GLenum> accepted_types;
   switch (src_internal_format) {
-    case GL_RGB10_A2UI:
-      accepted_formats.push_back(GL_RGBA);
-      accepted_types.push_back(GL_UNSIGNED_INT_2_10_10_10_REV);
     case GL_R8UI:
     case GL_R16UI:
     case GL_R32UI:
@@ -8765,6 +8762,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
     case GL_RG32UI:
     // All the RGB_INTEGER formats are not renderable.
     case GL_RGBA8UI:
+    case GL_RGB10_A2UI:
     case GL_RGBA16UI:
     case GL_RGBA32UI:
       accepted_formats.push_back(GL_RGBA_INTEGER);
@@ -8782,6 +8780,13 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
       accepted_formats.push_back(GL_RGBA_INTEGER);
       accepted_types.push_back(GL_INT);
       break;
+    case GL_RGB10_A2:
+      accepted_formats.push_back(GL_RGBA);
+      accepted_types.push_back(GL_UNSIGNED_BYTE);
+      // Special case with an extra supported format/type.
+      accepted_formats.push_back(GL_RGBA);
+      accepted_types.push_back(GL_UNSIGNED_INT_2_10_10_10_REV);
+      break;
     default:
       accepted_formats.push_back(GL_RGBA);
       {
@@ -8791,7 +8796,11 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
           case GL_HALF_FLOAT_OES:
           case GL_FLOAT:
           case GL_UNSIGNED_INT_10F_11F_11F_REV:
-            accepted_types.push_back(GL_FLOAT);
+            if (!feature_info_->IsES3Enabled()) {
+              accepted_types.push_back(GL_UNSIGNED_BYTE);
+            } else {
+              accepted_types.push_back(GL_FLOAT);
+            }
             break;
           default:
             accepted_types.push_back(GL_UNSIGNED_BYTE);
