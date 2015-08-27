@@ -12,7 +12,13 @@
 // Single instance mock ADB server for use in browser tests. Runs on IO thread.
 
 // These methods can be called from any thread.
-void StartMockAdbServer();
+enum FlushMode {
+  FlushWithoutSize,
+  FlushWithSize,
+  FlushWithData
+};
+
+void StartMockAdbServer(FlushMode flush_mode);
 void StopMockAdbServer();
 
 // Part of mock server independent of transport.
