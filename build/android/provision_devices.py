@@ -299,18 +299,25 @@ def FinishProvisioning(device, options):
       logging.exception('Unable to let battery cool to specified temperature.')
 
   def _set_and_verify_date():
-    strgmtime = time.strftime('%Y%m%d.%H%M%S', time.gmtime())
-    device.RunShellCommand(['date', '-s', strgmtime], as_root=True,
-                            check_return=True)
+    if (device.build_version_sdk
+        >= constants.ANDROID_SDK_VERSION_CODES.MARSHMALLOW):
+      date_format = '%m%d%H%M%Y.%S'
+      set_date_command = ['date']
+    else:
+      date_format = '%Y%m%d.%H%M%S'
+      set_date_command = ['date', '-s']
+    strgmtime = time.strftime(date_format, time.gmtime())
+    set_date_command.append(strgmtime)
+    device.RunShellCommand(set_date_command, as_root=True, check_return=True)
 
     device_time = device.RunShellCommand(
-      ['date', '+"%Y%m%d.%H%M%S"'], as_root=True,
-      single_line=True).replace('"', '')
-    correct_time = datetime.datetime.strptime(strgmtime,"%Y%m%d.%H%M%S")
-    tdelta = (correct_time - datetime.datetime.strptime(device_time,
-                                                       "%Y%m%d.%H%M%S")).seconds
+        ['date', '+"%Y%m%d.%H%M%S"'], as_root=True,
+        single_line=True).replace('"', '')
+    device_time = datetime.datetime.strptime(device_time, "%Y%m%d.%H%M%S")
+    correct_time = datetime.datetime.strptime(strgmtime, date_format)
+    tdelta = (correct_time - device_time).seconds
     if tdelta <= 1:
-      logging.info('Date/time successfully set on %s' % device)
+      logging.info('Date/time successfully set on %s', device)
       return True
     else:
       return False
@@ -318,8 +325,8 @@ def FinishProvisioning(device, options):
   # Sometimes the date is not set correctly on the devices. Retry on failure.
   if not timeout_retry.WaitFor(_set_and_verify_date, wait_period=1,
                                max_tries=2):
-    logging.warning('Error setting time on device %s.', device)
-    device_blacklist.ExtendBlacklist([str(device)])
+    raise device_errors.CommandFailedError(
+        'Failed to set date & time.', device_serial=str(device))
 
   props = device.RunShellCommand('getprop', check_return=True)
   for prop in props:

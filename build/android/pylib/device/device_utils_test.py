@@ -645,6 +645,20 @@ class DeviceUtilsUninstallTest(DeviceUtilsTest):
       self.device.Uninstall('test.package', True)
 
 
+class DeviceUtilsSuTest(DeviceUtilsTest):
+  def testSu_preM(self):
+    with self.patch_call(
+        self.call.device.build_version_sdk,
+        return_value=constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP_MR1):
+      self.assertEquals('su -c foo', self.device._Su('foo'))
+
+  def testSu_mAndAbove(self):
+    with self.patch_call(
+        self.call.device.build_version_sdk,
+        return_value=constants.ANDROID_SDK_VERSION_CODES.MARSHMALLOW):
+      self.assertEquals('su 0 foo', self.device._Su('foo'))
+
+
 class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
 
   def setUp(self):
@@ -697,11 +711,13 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
       self.assertEquals([payload],
                         self.device.RunShellCommand(['echo', payload]))
 
-  def testRunShellCommand_withHugeCmdAmdSU(self):
+  def testRunShellCommand_withHugeCmdAndSU(self):
     payload = 'hi! ' * 1024
-    expected_cmd = """su -c sh -c 'echo '"'"'%s'"'"''""" % payload
+    expected_cmd_without_su = """sh -c 'echo '"'"'%s'"'"''""" % payload
+    expected_cmd = 'su -c %s' % expected_cmd_without_su
     with self.assertCalls(
       (self.call.device.NeedsSU(), True),
+      (self.call.device._Su(expected_cmd_without_su), expected_cmd),
       (mock.call.pylib.utils.device_temp_file.DeviceTempFile(
           self.adb, suffix='.sh'), MockTempFile('/sdcard/temp-123.sh')),
       self.call.device._WriteFileWithPush('/sdcard/temp-123.sh', expected_cmd),
@@ -711,9 +727,12 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
           self.device.RunShellCommand(['echo', payload], as_root=True))
 
   def testRunShellCommand_withSu(self):
+    expected_cmd_without_su = "sh -c 'setprop service.adb.root 0'"
+    expected_cmd = 'su -c %s' % expected_cmd_without_su
     with self.assertCalls(
         (self.call.device.NeedsSU(), True),
-        (self.call.adb.Shell("su -c sh -c 'setprop service.adb.root 0'"), '')):
+        (self.call.device._Su(expected_cmd_without_su), expected_cmd),
+        (self.call.adb.Shell(expected_cmd), '')):
       self.device.RunShellCommand('setprop service.adb.root 0', as_root=True)
 
   def testRunShellCommand_manyLines(self):
@@ -908,6 +927,8 @@ class DeviceUtilsKillAllTest(DeviceUtilsTest):
     with self.assertCalls(
         (self.call.device.GetPids('some.process'), {'some.process': ['1234']}),
         (self.call.device.NeedsSU(), True),
+        (self.call.device._Su("sh -c 'kill -9 1234'"),
+         "su -c sh -c 'kill -9 1234'"),
         (self.call.adb.Shell("su -c sh -c 'kill -9 1234'"), '')):
       self.assertEquals(
           1, self.device.KillAll('some.process', as_root=True))
@@ -1576,9 +1597,12 @@ class DeviceUtilsWriteFileTest(DeviceUtilsTest):
       self.device.WriteFile('/test/file/to write', 'the contents')
 
   def testWriteFile_withEchoAndSU(self):
+    expected_cmd_without_su =  "sh -c 'echo -n contents > /test/file'"
+    expected_cmd = 'su -c %s' % expected_cmd_without_su
     with self.assertCalls(
         (self.call.device.NeedsSU(), True),
-        (self.call.adb.Shell("su -c sh -c 'echo -n contents > /test/file'"),
+        (self.call.device._Su(expected_cmd_without_su), expected_cmd),
+        (self.call.adb.Shell(expected_cmd),
          '')):
       self.device.WriteFile('/test/file', 'contents', as_root=True)
 

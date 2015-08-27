@@ -277,7 +277,7 @@ class DeviceUtils(object):
     if 'needs_su' not in self._cache:
       try:
         self.RunShellCommand(
-            'su -c ls /root && ! ls /root', check_return=True,
+            '%s && ! ls /root' % self._Su('ls /root'), check_return=True,
             timeout=self._default_timeout if timeout is DEFAULT else timeout,
             retries=self._default_retries if retries is DEFAULT else retries)
         self._cache['needs_su'] = True
@@ -285,6 +285,11 @@ class DeviceUtils(object):
         self._cache['needs_su'] = False
     return self._cache['needs_su']
 
+  def _Su(self, command):
+    if (self.build_version_sdk
+        >= constants.ANDROID_SDK_VERSION_CODES.MARSHMALLOW):
+      return 'su 0 %s' % command
+    return 'su -c %s' % command
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def EnableRoot(self, timeout=None, retries=None):
@@ -746,7 +751,7 @@ class DeviceUtils(object):
       cmd = 'cd %s && %s' % (cmd_helper.SingleQuote(cwd), cmd)
     if as_root and self.NeedsSU():
       # "su -c sh -c" allows using shell features in |cmd|
-      cmd = 'su -c sh -c %s' % cmd_helper.SingleQuote(cmd)
+      cmd = self._Su('sh -c %s' % cmd_helper.SingleQuote(cmd))
 
     output = handle_large_output(cmd, large_output).splitlines()
 
