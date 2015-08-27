@@ -157,7 +157,9 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData)
         m_lastSeenEncodingData = encodingData;
 
         m_xssAuditor->setEncoding(encodingData.encoding());
-        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, AllowCrossThreadAccess(m_parser), encodingData));
+        m_scheduler->postLoadingTask(
+            FROM_HERE,
+            new Task(threadSafeBind(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, AllowCrossThreadAccess(m_parser), encodingData)));
     }
 
     if (decodedData.isEmpty())
