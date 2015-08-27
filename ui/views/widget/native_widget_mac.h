@@ -36,6 +36,10 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // override this method for an early hook into the native window teardown.
   virtual void OnWindowWillClose();
 
+  // Returns the vertical position that sheets should be anchored, in pixels
+  // from the bottom of the window.
+  virtual int SheetPositionY();
+
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;
   NonClientFrameView* CreateNonClientFrameView() override;

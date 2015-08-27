@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/frame/browser_shutdown.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #import "chrome/browser/ui/views/frame/native_widget_mac_frameless_nswindow.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #import "ui/base/cocoa/window_size_constants.h"
 
 BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
@@ -27,6 +28,17 @@ void BrowserFrameMac::OnWindowWillClose() {
   // See comment in DesktopBrowserFrameAura::OnHostClosed().
   DestroyBrowserWebContents(browser_view_->browser());
   NativeWidgetMac::OnWindowWillClose();
+}
+
+int BrowserFrameMac::SheetPositionY() {
+  web_modal::WebContentsModalDialogHost* dialog_host =
+      browser_view_->GetWebContentsModalDialogHost();
+  NSView* view = dialog_host->GetHostView();
+  // Get the position of the host view relative to the window since
+  // ModalDialogHost::GetDialogPosition() is relative to the host view.
+  int host_view_y =
+      [view convertPoint:NSMakePoint(0, NSHeight([view frame])) toView:nil].y;
+  return host_view_y - dialog_host->GetDialogPosition(gfx::Size()).y();
 }
 
 void BrowserFrameMac::InitNativeWidget(

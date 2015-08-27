@@ -130,4 +130,16 @@
   return proposedSize;
 }
 
+// Override to correctly position modal dialogs.
+- (NSRect)window:(NSWindow*)window
+    willPositionSheet:(NSWindow*)sheet
+            usingRect:(NSRect)defaultSheetLocation {
+  // As per NSWindowDelegate documentation, the origin indicates the top left
+  // point of the host frame in window coordinates. The width changes the
+  // animation from vertical to trapezoid if it is smaller than the width of the
+  // dialog. The height is ignored but should be set to zero.
+  return NSMakeRect(0, [self nativeWidgetMac]->SheetPositionY(),
+                    NSWidth(defaultSheetLocation), 0);
+}
+
 @end

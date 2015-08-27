@@ -105,6 +105,12 @@ void NativeWidgetMac::OnWindowWillClose() {
     delete this;
 }
 
+int NativeWidgetMac::SheetPositionY() {
+  NSView* view = GetNativeView();
+  return
+      [view convertPoint:NSMakePoint(0, NSHeight([view frame])) toView:nil].y;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, internal::NativeWidgetPrivate implementation:
 
