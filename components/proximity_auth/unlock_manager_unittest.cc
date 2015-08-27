@@ -12,7 +12,7 @@
 #include "components/proximity_auth/client.h"
 #include "components/proximity_auth/controller.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "components/proximity_auth/proximity_auth_client.h"
+#include "components/proximity_auth/mock_proximity_auth_client.h"
 #include "components/proximity_auth/proximity_monitor.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -89,21 +89,6 @@ class MockProximityMonitor : public ProximityMonitor {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProximityMonitor);
-};
-
-class MockProximityAuthClient : public ProximityAuthClient {
- public:
-  MockProximityAuthClient() {}
-  ~MockProximityAuthClient() override {}
-
-  MOCK_CONST_METHOD0(GetAuthenticatedUsername, std::string());
-  MOCK_METHOD1(UpdateScreenlockState,
-               void(proximity_auth::ScreenlockState state));
-  MOCK_METHOD1(FinalizeUnlock, void(bool success));
-  MOCK_METHOD1(FinalizeSignin, void(const std::string& secret));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockProximityAuthClient);
 };
 
 class FakeLockHandler : public ScreenlockBridge::LockHandler {

@@ -12,7 +12,7 @@
 #include "components/proximity_auth/ble/bluetooth_low_energy_device_whitelist.h"
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/cryptauth/mock_cryptauth_client.h"
-#include "components/proximity_auth/proximity_auth_client.h"
+#include "components/proximity_auth/mock_proximity_auth_client.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,25 +59,6 @@ class MockLockHandler : public ScreenlockBridge::LockHandler {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLockHandler);
-};
-
-const char kTestUser[] = "example@gmail.com";
-
-class MockProximityAuthClient : public ProximityAuthClient {
- public:
-  MockProximityAuthClient() {}
-  ~MockProximityAuthClient() override {}
-
-  // ProximityAuthClient:
-  std::string GetAuthenticatedUsername() const override { return kTestUser; }
-
-  MOCK_METHOD1(UpdateScreenlockState,
-               void(proximity_auth::ScreenlockState state));
-  MOCK_METHOD1(FinalizeUnlock, void(bool success));
-  MOCK_METHOD1(FinalizeSignin, void(const std::string& secret));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockProximityAuthClient);
 };
 
 }  // namespace
