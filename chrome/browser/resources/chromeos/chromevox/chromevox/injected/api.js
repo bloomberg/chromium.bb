@@ -277,29 +277,19 @@ if (typeof(goog) != 'undefined' && goog.require) {
     *   ALERT_NONMODAL
     *   BULLET
     *   BUSY_PROGRESS_LOOP
-    *   BUSY_WORKING_LOOP
     *   BUTTON
     *   CHECK_OFF
     *   CHECK_ON
-    *   COLLAPSED
     *   EDITABLE_TEXT
-    *   ELLIPSIS
-    *   EXPANDED
     *   FONT_CHANGE
     *   INVALID_KEYPRESS
     *   LINK
     *   LISTBOX
     *   LIST_ITEM
-    *   NEW_MAIL
     *   OBJECT_CLOSE
-    *   OBJECT_DELETE
-    *   OBJECT_DESELECT
     *   OBJECT_OPEN
     *   OBJECT_SELECT
     *   PARAGRAPH_BREAK
-    *   SEARCH_HIT
-    *   SEARCH_MISS
-    *   SECTION
     *   TASK_SUCCESS
     *   WRAP
     *   WRAP_EDGE
