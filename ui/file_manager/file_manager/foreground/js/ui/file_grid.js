@@ -98,9 +98,16 @@ FileGrid.decorate = function(
       new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
 
   var style = window.getComputedStyle(self);
-  /** @private {number} */
-  self.paddingLeft_ = parseFloat(style.paddingLeft);
-  /** @private {number} */
+  /**
+   * @private {number}
+   * @const
+   */
+  self.paddingStart_ = parseFloat(
+      isRTL() ? style.paddingRight : style.paddingLeft);
+  /**
+   * @private {number}
+   * @const
+   */
   self.paddingTop_ = parseFloat(style.paddingTop);
 };
 
@@ -833,15 +840,16 @@ FileGrid.prototype.getHitColumnIndex_ = function(x, reverse) {
  */
 FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {
   var currentSelection = [];
-  var left = Math.max(0, x - this.paddingLeft_);
+  var startXWithPadding = isRTL() ? this.clientWidth - (x + opt_width) : x;
+  var startX = Math.max(0, startXWithPadding - this.paddingStart_);
+  var endX = startX + (opt_width ? opt_width - 1 : 0);
   var top = Math.max(0, y - this.paddingTop_);
-  var right = left + (opt_width ? opt_width - 1 : 0);
   var bottom = top + (opt_height ? opt_height - 1 : 0);
 
   var firstRow = this.getHitRowIndex_(top, false);
   var lastRow = this.getHitRowIndex_(bottom, true);
-  var firstColumn = this.getHitColumnIndex_(left, false);
-  var lastColumn = this.getHitColumnIndex_(right, true);
+  var firstColumn = this.getHitColumnIndex_(startX, false);
+  var lastColumn = this.getHitColumnIndex_(endX, true);
 
   for (var row = firstRow; row <= lastRow; row++) {
     for (var col = firstColumn; col <= lastColumn; col++) {
