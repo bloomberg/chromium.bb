@@ -165,6 +165,16 @@ static void Java_org_chromium_TestJni_nativeGotOrientation(JNIEnv* env,
   return native->GotOrientation(env, jcaller, alpha, beta, gamma);
 }
 
+static ScopedJavaLocalRef<jthrowable> MessWithJavaException(JNIEnv* env, jclass
+    jcaller,
+    jthrowable e);
+
+static jthrowable Java_org_chromium_TestJni_nativeMessWithJavaException(JNIEnv*
+    env, jclass jcaller,
+    jthrowable e) {
+  return MessWithJavaException(env, jcaller, e).Release();
+}
+
 // Step 3: RegisterNatives.
 
 static const JNINativeMethod kMethodsTestJni[] = {
@@ -263,6 +273,13 @@ static const JNINativeMethod kMethodsTestJni[] = {
 "D"
 ")"
 "V", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeGotOrientation) },
+    { "nativeMessWithJavaException",
+"("
+"Ljava/lang/Throwable;"
+")"
+"Ljava/lang/Throwable;",
+    reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeMessWithJavaException)
+    },
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {

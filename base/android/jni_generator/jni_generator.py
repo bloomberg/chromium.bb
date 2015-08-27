@@ -113,8 +113,10 @@ def JavaDataTypeToC(java_type):
   java_type_map = {
       'void': 'void',
       'String': 'jstring',
+      'Throwable': 'jthrowable',
       'java/lang/String': 'jstring',
       'java/lang/Class': 'jclass',
+      'java/lang/Throwable': 'jthrowable',
   }
 
   if java_type in java_pod_type_map:
@@ -430,6 +432,8 @@ def ExtractNatives(contents, ptr_type):
 def GetStaticCastForReturnType(return_type):
   type_map = { 'String' : 'jstring',
                'java/lang/String' : 'jstring',
+               'Throwable': 'jthrowable',
+               'java/lang/Throwable': 'jthrowable',
                'boolean[]': 'jbooleanArray',
                'byte[]': 'jbyteArray',
                'char[]': 'jcharArray',
@@ -525,7 +529,8 @@ def MangleCalledByNatives(called_by_natives):
 
 # Regex to match the JNI return types that should be included in a
 # ScopedJavaLocalRef.
-RE_SCOPED_JNI_RETURN_TYPES = re.compile('jobject|jclass|jstring|.*Array')
+RE_SCOPED_JNI_RETURN_TYPES = re.compile(
+    'jobject|jclass|jstring|jthrowable|.*Array')
 
 # Regex to match a string like "@CalledByNative public void foo(int bar)".
 RE_CALLED_BY_NATIVE = re.compile(

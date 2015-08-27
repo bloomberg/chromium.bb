@@ -149,6 +149,7 @@ class TestGenerator(unittest.TestCase):
     private native void nativeGotOrientation(
             int nativeDataFetcherImplAndroid,
             double alpha, double beta, double gamma);
+    private static native Throwable nativeMessWithJavaException(Throwable e);
     """
     jni_generator.JniParams.SetFullyQualifiedClass(
         'org/chromium/example/jni_generator/SampleForTests')
@@ -272,6 +273,11 @@ class TestGenerator(unittest.TestCase):
                      java_class_name=None,
                      type='method',
                      p0_type='content::DataFetcherImplAndroid'),
+        NativeMethod(return_type='Throwable', static=True,
+                     name='MessWithJavaException',
+                     params=[Param(datatype='Throwable', name='e')],
+                     java_class_name=None,
+                     type='function')
     ]
     self.assertListEquals(golden_natives, natives)
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
