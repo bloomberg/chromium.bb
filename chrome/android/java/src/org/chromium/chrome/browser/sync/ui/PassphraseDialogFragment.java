@@ -31,7 +31,7 @@ import android.widget.TextView.OnEditorActionListener;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.sync.internal_api.pub.PassphraseType;
+import org.chromium.sync.PassphraseType;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
