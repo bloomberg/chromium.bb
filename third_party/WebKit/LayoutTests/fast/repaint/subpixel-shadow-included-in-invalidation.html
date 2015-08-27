@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<style>
+#box {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100px;
+    height: 100px;
+    background: green;
+    box-shadow: 1.4px 1.4px blue;
+}
+</style>
+<div id="box"></div>
+<script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
+<script>
+var jsTestIsAsync = true;
+description('Tests whether a repaint rect encompasses box-shadow with subpixel offset when the shadow changes.');
+
+// Accepts [x, y, width, height] rects. Checks if the first argument contains the second.
+function rectContainsRect(outer, inner) {
+    return outer[0] <= inner[0]
+        && outer[1] <= inner[1]
+        && outer[0] + outer[2] >= inner[0] + inner[2]
+        && outer[1] + outer[3] >= inner[1] + inner[3];
+}
+
+if (!window.internals) {
+    testFailed('Test requires window.internals.');
+    finishJSTest();
+} else {
+    var box = document.getElementById('box');
+    runAfterLayoutAndPaint(function() {
+        internals.startTrackingRepaints(document);
+        box.style.boxShadow = 'none';
+
+        runAfterLayoutAndPaint(function() {
+            var layerTree = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS));
+            var repaintRects = layerTree.children[0].repaintRects;
+            var shadowRect = [1.4, 1.4, 100, 100];
+            if (repaintRects.some(repaintRect => rectContainsRect(repaintRect, shadowRect)))
+                testPassed('Subpixel shadow was repainted.');
+            else
+                testFailed('Subpixel shadow ' + JSON.stringify(shadowRect) + ' was not repainted. Repaint rects were ' + JSON.stringify(repaintRects) + '.');
+
+            internals.stopTrackingRepaints(document);
+            box.remove();
+            finishJSTest();
+        });
+    });
+}
+</script>

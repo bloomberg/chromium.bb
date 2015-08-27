@@ -64,7 +64,7 @@ LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
     // Use the visual overflow rect here, because it will include overflow introduced by the theme.
     LayoutRect bounds = m_layoutBox.visualOverflowRect();
     bounds.moveBy(paintOffset);
-    return LayoutRect(pixelSnappedIntRect(bounds));
+    return bounds;
 }
 
 namespace {

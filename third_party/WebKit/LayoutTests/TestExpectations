@@ -991,6 +991,8 @@ crbug.com/479533 accessibility/show-context-menu.html [ Skip ]
 crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
+crbug.com/525702 [ Mac ] fast/forms/color/input-appearance-color.html [ NeedsRebaseline ]
+
 crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Timeout ]
 crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Failure ]
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
