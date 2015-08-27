@@ -7,6 +7,8 @@ package org.chromium.ui.picker;
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 
+import org.chromium.base.VisibleForTesting;
+
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -14,8 +16,8 @@ import java.util.TimeZone;
  * Normalize a date dialog so that it respect min and max.
  */
 public class DateDialogNormalizer {
-
-    private static void setLimits(DatePicker picker, long minMillis, long maxMillis) {
+    @VisibleForTesting
+    static void setLimits(DatePicker picker, long minMillis, long maxMillis) {
         // DatePicker intervals are non inclusive, the DatePicker will throw an
         // exception when setting the min/max attribute to the current date
         // so make sure this never happens
@@ -27,6 +29,7 @@ public class DateDialogNormalizer {
         int currentYear = picker.getYear();
         int currentMonth = picker.getMonth();
         int currentDayOfMonth = picker.getDayOfMonth();
+
         picker.updateDate(maxCal.get(Calendar.YEAR),
                 maxCal.get(Calendar.MONTH),
                 maxCal.get(Calendar.DAY_OF_MONTH));
@@ -36,12 +39,20 @@ public class DateDialogNormalizer {
                 minCal.get(Calendar.DAY_OF_MONTH));
         picker.setMaxDate(maxCal.getTimeInMillis());
 
-        // Restore the current date, this will keep the min/max settings
+        // Restore the current date, only if within the accepted range
+        // This will keep the min/max settings
         // previously set into account.
-        picker.updateDate(currentYear, currentMonth, currentDayOfMonth);
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        cal.clear();
+        cal.set(currentYear, currentMonth, currentDayOfMonth);
+        if (cal.getTimeInMillis() > minCal.getTimeInMillis()
+                && cal.getTimeInMillis() < maxCal.getTimeInMillis()) {
+            picker.updateDate(currentYear, currentMonth, currentDayOfMonth);
+        }
     }
 
-    private static Calendar trimToDate(long time) {
+    @VisibleForTesting
+    static Calendar trimToDate(long time) {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
         cal.clear();
         cal.setTimeInMillis(time);
