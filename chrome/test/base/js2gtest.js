@@ -10,6 +10,7 @@
  * @see WebUI testing: http://goo.gl/ZWFXF
  * @see gtest documentation: http://goo.gl/Ujj3H
  * @see chrome/chrome_tests.gypi
+ * @see chrome/test/base/js2gtest.js
  * @see tools/gypv8sh.py
  */
 
@@ -99,6 +100,23 @@ var needGenHeader = true;
  */
 var argHint = '// ' + this['arguments'].join(' ');
 
+/**
+ * @type {Array<string>}
+ */
+var pendingOutput = '';
+
+/**
+ * Adds a string followed by a newline to the pending output.
+ * If present, an initial newline character is stripped from the string.
+ * @param {string=} opt_string
+ */
+function output(opt_string) {
+  opt_string = opt_string || '';
+  if (opt_string[0] == '\n')
+    opt_string = opt_string.substring(1);
+    pendingOutput += opt_string;
+  pendingOutput += '\n';
+}
 
 /**
  * Generates the header of the cc file to stdout.
@@ -108,10 +126,11 @@ function maybeGenHeader(testFixture) {
   if (!needGenHeader)
     return;
   needGenHeader = false;
-  print('// GENERATED FILE');
-  print(argHint);
-  print('// PLEASE DO NOT HAND EDIT!');
-  print();
+  output(`
+// GENERATED FILE'
+${argHint}
+// PLEASE DO NOT HAND EDIT!
+`);
 
   // Output some C++ headers based upon the |testType|.
   //
@@ -122,31 +141,32 @@ function maybeGenHeader(testFixture) {
   // 'webui' - browser_tests harness, js2webui rule, WebUIBrowserTest
   // superclass.
   if (testType === 'extension') {
-    print('#include "chrome/test/base/extension_js_browser_test.h"');
+    output('#include "chrome/test/base/extension_js_browser_test.h"');
     testing.Test.prototype.typedefCppFixture = 'ExtensionJSBrowserTest';
     addSetPreloadInfo = false;
     testF = 'IN_PROC_BROWSER_TEST_F';
   } else if (testType === 'unit') {
-    print('#include "chrome/test/base/v8_unit_test.h"');
+    output('#include "chrome/test/base/v8_unit_test.h"');
     testing.Test.prototype.typedefCppFixture = 'V8UnitTest';
     testF = 'TEST_F';
     addSetPreloadInfo = false;
   } else {
-    print('#include "chrome/test/base/web_ui_browser_test.h"');
+    output('#include "chrome/test/base/web_ui_browser_test.h"');
     testing.Test.prototype.typedefCppFixture = 'WebUIBrowserTest';
     testF = 'IN_PROC_BROWSER_TEST_F';
     addSetPreloadInfo = true;
   }
-  print('#include "url/gurl.h"');
-  print('#include "testing/gtest/include/gtest/gtest.h"');
+  output(`
+#include "url/gurl.h"
+#include "testing/gtest/include/gtest/gtest.h"`);
   // Add includes specified by test fixture.
   if (testFixture) {
     if (this[testFixture].prototype.testGenCppIncludes)
       this[testFixture].prototype.testGenCppIncludes();
     if (this[testFixture].prototype.commandLineSwitches)
-      print('#include "base/command_line.h"');
+      output('#include "base/command_line.h"');
   }
-  print();
+  output();
 }
 
 
@@ -170,6 +190,16 @@ function includeFileToPaths(includeFile) {
     path: paths.path.replace(/[^\/\\]+$/, includeFile),
     base: paths.base.replace(/[^\/\\]+$/, includeFile),
   };
+}
+
+/**
+ * Returns the content of a javascript file with a sourceURL comment
+ * appended to facilitate better stack traces.
+ * @param {string} path Relative path name.
+ * return {string}
+ */
+function readJsFile(path) {
+  return read(path) + '\n//# sourceURL=' + path;
 }
 
 
@@ -205,7 +235,7 @@ if (depsFile) {
 
   // Read and eval the deps file.  It should only contain goog.addDependency
   // calls.
-  eval(read(depsFile));
+  eval(readJsFile(depsFile));
 }
 
 /**
@@ -272,7 +302,7 @@ function resolveClosureModuleDeps(deps) {
  */
 function GEN(code) {
   maybeGenHeader(null);
-  print(code);
+  output(code);
 }
 
 /**
@@ -301,7 +331,7 @@ function GEN_BLOCK(commentEncodedCode) {
 function GEN_INCLUDE(includes) {
   for (var i = 0; i < includes.length; i++) {
     var includePaths = includeFileToPaths(includes[i]);
-    var js = read(includePaths.path);
+    var js = readJsFile(includePaths.path);
     pathStack.push(includePaths);
     ('global', eval)(js);
     pathStack.pop();
@@ -324,7 +354,7 @@ function TEST_F(testFixture, testFunction, testBody) {
   var testGenPostamble = this[testFixture].prototype.testGenPostamble;
   var typedefCppFixture = this[testFixture].prototype.typedefCppFixture;
   var isAsyncParam = testType === 'unit' ? '' :
-      this[testFixture].prototype.isAsync + ', ';
+      this[testFixture].prototype.isAsync + ',\n          ';
   var testShouldFail = this[testFixture].prototype.testShouldFail;
   var testPredicate = testShouldFail ? 'ASSERT_FALSE' : 'ASSERT_TRUE';
   var extraLibraries = genIncludes.concat(
@@ -337,55 +367,68 @@ function TEST_F(testFixture, testFunction, testBody) {
   if (typedefCppFixture && !(testFixture in typedeffedCppFixtures)) {
     var switches = this[testFixture].prototype.commandLineSwitches;
     if (!switches || !switches.length || typedefCppFixture == 'V8UnitTest') {
-      print('typedef ' + typedefCppFixture + ' ' + testFixture + ';');
+      output(`
+typedef ${typedefCppFixture} ${testFixture};
+`);
     } else {
       // Make the testFixture a class inheriting from the base fixture.
-      print('class ' + testFixture + ' : public ' + typedefCppFixture + ' {');
-      print(' private:');
+      output(`
+class ${testFixture} : public ${typedefCppFixture} {
+ private:`);
       // Override SetUpCommandLine and add each switch.
-      print('  void');
-      print('  SetUpCommandLine(base::CommandLine* command_line) override {');
+      output(`
+  void SetUpCommandLine(base::CommandLine* command_line) override {`);
       for (var i = 0; i < switches.length; i++) {
-        print('    command_line->AppendSwitchASCII(');
-        print('        "' + switches[i].switchName + '",');
-        print('        "' + (switches[i].switchValue || '') + '");');
+        output(`
+    command_line->AppendSwitchASCII(
+        "${switches[i].switchName}",
+        "${(switches[i].switchValue || '')}");`);
       }
-      print('  }');
-      print('};');
+      output(`
+  }
+};
+`);
     }
     typedeffedCppFixtures[testFixture] = typedefCppFixture;
   }
 
-  print(testF + '(' + testFixture + ', ' + testFunction + ') {');
+  output(`${testF}(${testFixture}, ${testFunction}) {`);
   for (var i = 0; i < extraLibraries.length; i++) {
-    print('  AddLibrary(base::FilePath(FILE_PATH_LITERAL("' +
-        extraLibraries[i].replace(/\\/g, '/') + '")));');
+    var libraryName = extraLibraries[i].replace(/\\/g, '/');
+    output(`
+  AddLibrary(base::FilePath(FILE_PATH_LITERAL(
+      "${libraryName}")));`);
   }
-  print('  AddLibrary(base::FilePath(FILE_PATH_LITERAL("' +
-      jsFileBase.replace(/\\/g, '/') + '")));');
+  output(`
+  AddLibrary(base::FilePath(FILE_PATH_LITERAL(
+      "${jsFileBase.replace(/\\/g, '/')}")));`);
   if (addSetPreloadInfo) {
-    print('  set_preload_test_fixture("' + testFixture + '");');
-    print('  set_preload_test_name("' + testFunction + '");');
+    output(`
+  set_preload_test_fixture("${testFixture}");
+  set_preload_test_name("${testFunction}");`);
   }
   if (testGenPreamble)
     testGenPreamble(testFixture, testFunction);
   if (browsePreload)
-    print('  BrowsePreload(GURL("' + browsePreload + '"));');
+    output(`  BrowsePreload(GURL("${browsePreload}"));`);
   if (browsePrintPreload) {
-    print('  BrowsePrintPreload(GURL(WebUITestDataPathToURL(\n' +
-          '      FILE_PATH_LITERAL("' + browsePrintPreload + '"))));');
+    output(`
+  BrowsePrintPreload(GURL(WebUITestDataPathToURL(
+    FILE_PATH_LITERAL("${browsePrintPreload}"))));`);
   }
-  print('  ' + testPredicate + '(RunJavascriptTestF(' + isAsyncParam +
-        '"' + testFixture + '", ' +
-        '"' + testFunction + '"));');
+  output(`
+  ${testPredicate}(
+      RunJavascriptTestF(
+          ${isAsyncParam}"${testFixture}",
+          "${testFunction}"));`);
   if (testGenPostamble)
     testGenPostamble(testFixture, testFunction);
-  print('}');
-  print();
+  output('}\n');
 }
 
 // Now that generation functions are defined, load in |jsFile|.
-var js = read(jsFile);
+var js = readJsFile(jsFile);
 pathStack.push({path: jsFile, base: jsFileBase});
 eval(js);
 pathStack.pop();
+print(pendingOutput);

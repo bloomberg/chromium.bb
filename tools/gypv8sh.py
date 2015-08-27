@@ -65,6 +65,9 @@ def main ():
       p = subprocess.Popen(
           cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
       out, err = p.communicate()
+      if p.returncode != 0:
+        sys.stderr.write(out + err);
+        return 1
       if not HasSameContent(cxxoutfile, out):
         with open(cxxoutfile, 'wb') as f:
           f.write(out)
