@@ -83,11 +83,14 @@ ExtensionSettingsWebUITest.prototype = {
 
   /** @protected */
   enableDeveloperMode: function() {
-    var next = this.nextStep.bind(this);
+    // Toggling developer mode triggers a page update, so we need to be able to
+    // wait for the update to finish.
+    $('extension-settings-list').resetLoadFinished();
+    var waitForPage = this.waitForPageLoad.bind(this);
     document.addEventListener('devControlsVisibilityUpdated',
                               function devCallback() {
       // Callback should only be handled once.
-      document.removeEventListener(devCallback);
+      document.removeEventListener('devControlsVisibilityUpdated', devCallback);
 
       chrome.developerPrivate.getProfileConfiguration(function(profileInfo) {
         assertTrue(extensionSettings.classList.contains('dev-mode'));
@@ -97,7 +100,7 @@ ExtensionSettingsWebUITest.prototype = {
         // Ensure transition here so that any dependent code does not break.
         ensureTransitionEndEvent($('dev-controls'), 0);
 
-        next();
+        waitForPage();
       });
     });
 
@@ -246,7 +249,6 @@ TEST_F('BasicExtensionSettingsWebUITest', 'testDeveloperModeManyExtensions',
   this.testDeveloperMode();
 });
 
-
 TEST_F('BasicExtensionSettingsWebUITest', 'testDisable', function() {
   this.steps = [this.waitForPageLoad, this.verifyDisabledWorks, testDone];
   this.nextStep();
@@ -275,6 +277,58 @@ TEST_F('BasicExtensionSettingsWebUITest', 'testNonEmptyExtensionList',
   };
 
   this.steps = [this.waitForPageLoad, verifyListIsNotHiddenAndEmpty, testDone];
+  this.nextStep();
+});
+
+function AutoScrollExtensionSettingsWebUITest() {}
+
+/**
+ * A variation for testing auto-scroll when an id query param is passed in the
+ * url.
+ * @constructor
+ * @extends {BasicExtensionSettingsWebUITest}
+ */
+AutoScrollExtensionSettingsWebUITest.prototype = {
+  __proto__: BasicExtensionSettingsWebUITest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://extensions-frame/?id=' + GOOD_EXTENSION_ID,
+
+  /** @override */
+  testGenPreamble: function() {
+    BasicExtensionSettingsWebUITest.prototype.testGenPreamble.call(this);
+    // The window needs to be sufficiently small in order to ensure a scroll bar
+    // is available.
+    GEN('  ShrinkWebContentsView();');
+  },
+};
+
+TEST_F('AutoScrollExtensionSettingsWebUITest', 'testAutoScroll', function() {
+  var checkHasScrollbar = function() {
+    assertGT(document.body.scrollHeight, document.body.clientHeight);
+    this.nextStep();
+  };
+  var checkIsScrolled = function() {
+    assertGT(document.body.scrollTop, 0);
+    this.nextStep();
+  };
+  var checkScrolledToTop = function() {
+    assertEquals(0, document.body.scrollTop);
+    this.nextStep();
+  };
+  var scrollToTop = function() {
+    document.body.scrollTop = 0;
+    this.nextStep();
+  };
+  // Test that a) autoscroll works on first page load and b) updating the
+  // page doesn't result in autoscroll triggering again.
+  this.steps = [this.waitForPageLoad,
+                checkHasScrollbar,
+                checkIsScrolled,
+                scrollToTop,
+                this.enableDeveloperMode,
+                checkScrolledToTop,
+                testDone];
   this.nextStep();
 });
 

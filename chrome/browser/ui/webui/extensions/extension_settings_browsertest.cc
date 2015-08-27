@@ -17,7 +17,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -93,6 +95,13 @@ void ExtensionSettingsUIBrowserTest::SetAutoConfirmUninstall() {
 void ExtensionSettingsUIBrowserTest::EnableErrorConsole() {
   error_console_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::error_console(), true));
+}
+
+void ExtensionSettingsUIBrowserTest::ShrinkWebContentsView() {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  CHECK(web_contents);
+  ResizeWebContents(web_contents, gfx::Size(400, 400));
 }
 
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {

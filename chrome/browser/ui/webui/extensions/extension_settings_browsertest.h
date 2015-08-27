@@ -46,6 +46,9 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
   // Enables the error console so errors are displayed in the extensions page.
   void EnableErrorConsole();
 
+  // Shrinks the web contents view in order to ensure vertical overflow.
+  void ShrinkWebContentsView();
+
  private:
   bool WaitForExtensionViewsToLoad();
   const extensions::Extension* InstallUnpackedExtension(

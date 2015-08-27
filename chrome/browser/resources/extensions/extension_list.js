@@ -144,6 +144,13 @@ cr.define('extensions', function() {
     butterbarShown_: false,
 
     /**
+     * Whether or not any initial navigation (like scrolling to an extension,
+     * or opening an options page) has occurred.
+     * @private {boolean}
+     */
+    didInitialNavigation_: false,
+
+    /**
      * Whether or not incognito mode is available.
      * @private {boolean}
      */
@@ -166,15 +173,7 @@ cr.define('extensions', function() {
       /** @private {!extensions.ExtensionListDelegate} */
       this.delegate_ = delegate;
 
-      /**
-       * |loadFinished| should be used for testing purposes and will be
-       * fulfilled when this list has finished loading the first time.
-       * @type {Promise}
-       * */
-      this.loadFinished = new Promise(function(resolve, reject) {
-        /** @private {function(?)} */
-        this.resolveLoadFinished_ = resolve;
-      }.bind(this));
+      this.resetLoadFinished();
 
       chrome.developerPrivate.onItemStateChanged.addListener(
           function(eventData) {
@@ -225,6 +224,22 @@ cr.define('extensions', function() {
     },
 
     /**
+     * Resets the |loadFinished| promise so that it can be used again; this
+     * is useful if the page updates and tests need to wait for it to finish.
+     */
+    resetLoadFinished: function() {
+      /**
+       * |loadFinished| should be used for testing purposes and will be
+       * fulfilled when this list has finished loading the first time.
+       * @type {Promise}
+       * */
+      this.loadFinished = new Promise(function(resolve, reject) {
+        /** @private {function(?)} */
+        this.resolveLoadFinished_ = resolve;
+      }.bind(this));
+    },
+
+    /**
      * Updates the extensions on the page.
      * @param {boolean} incognitoAvailable Whether or not incognito is allowed.
      * @param {boolean} enableAppInfoDialog Whether or not the app info dialog
@@ -271,10 +286,12 @@ cr.define('extensions', function() {
      * @private
      */
     onUpdateFinished_: function() {
-      // Cannot focus or highlight a extension if there are none.
-      if (this.extensions_.length == 0)
+      // Cannot focus or highlight a extension if there are none, and we should
+      // only scroll to a particular extension or open the options page once.
+      if (this.extensions_.length == 0 || this.didInitialNavigation_)
         return;
 
+      this.didInitialNavigation_ = true;
       assert(!this.hidden);
       assert(!this.parentElement.hidden);
 
