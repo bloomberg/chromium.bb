@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.ModelType;
+import org.chromium.sync.internal_api.pub.PassphraseType;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -212,6 +214,15 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 updateSyncStateFromAndroid();
             }
         });
+    }
+
+    /**
+     * @return Whether sync is enabled to sync urls or open tabs with a non custom passphrase.
+     */
+    public boolean isSyncingUrlsWithKeystorePassphrase() {
+        return mProfileSyncService.isSyncInitialized()
+            && mProfileSyncService.getPreferredDataTypes().contains(ModelType.TYPED_URLS)
+            && mProfileSyncService.getPassphraseType().equals(PassphraseType.KEYSTORE_PASSPHRASE);
     }
 
     /**

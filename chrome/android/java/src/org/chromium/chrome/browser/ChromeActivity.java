@@ -102,6 +102,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -570,9 +571,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private void createContextReporterIfNeeded() {
         if (mContextReporter != null || getActivityTab() == null) return;
 
-        final ProfileSyncService syncService = ProfileSyncService.get();
+        ProfileSyncService syncService = ProfileSyncService.get();
 
-        if (syncService.isSyncingUrlsWithKeystorePassphrase()) {
+        if (SyncController.get(this).isSyncingUrlsWithKeystorePassphrase()) {
             mContextReporter = ((ChromeApplication) getApplicationContext()).createGsaHelper()
                     .getContextReporter(this);
 

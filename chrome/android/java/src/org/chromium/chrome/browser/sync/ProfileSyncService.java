@@ -23,15 +23,11 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Android wrapper of the ProfileSyncService which provides access from the Java layer.
- * <p/>
- * This class mostly wraps native classes, but it make a few business logic decisions, both in Java
- * and in native.
- * <p/>
- * Only usable from the UI thread as the native ProfileSyncService requires its access to be in the
- * UI thread.
- * <p/>
- * See chrome/browser/sync/profile_sync_service.h for more details.
+ * JNI wrapper for the native ProfileSyncService.
+ *
+ * This class purely makes calls to native and contains absolutely  no business logic. It is only
+ * usable from the UI thread as the native ProfileSyncService requires its access to be on the
+ * UI thread. See chrome/browser/sync/profile_sync_service.h for more details.
  */
 public class ProfileSyncService {
 
@@ -138,6 +134,7 @@ public class ProfileSyncService {
      * If we are currently in the process of setting up sync, this method clears the
      * sync setup in progress flag.
      */
+    @Deprecated
     @VisibleForTesting
     public void finishSyncFirstSetupIfNeeded() {
         if (isFirstSetupInProgress()) {
@@ -491,9 +488,7 @@ public class ProfileSyncService {
         nativeOverrideNetworkResourcesForTest(mNativeProfileSyncServiceAndroid, networkResources);
     }
 
-    /**
-     * @return Whether sync is enabled to sync urls or open tabs with a non custom passphrase.
-     */
+    @Deprecated
     public boolean isSyncingUrlsWithKeystorePassphrase() {
         return isSyncInitialized()
             && getPreferredDataTypes().contains(ModelType.TYPED_URLS)
