@@ -388,7 +388,6 @@ void RenderWidgetCompositor::Initialize() {
   settings.using_synchronous_renderer_compositor =
       synchronous_compositor_factory;
   settings.record_full_layer = widget_->DoesRecordFullLayer();
-  settings.max_partial_texture_updates = 0;
   if (synchronous_compositor_factory) {
     // Android WebView uses system scrollbars, so make ours invisible.
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;

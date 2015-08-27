@@ -62,7 +62,6 @@ class CC_EXPORT LayerTreeSettings {
   float top_controls_show_threshold;
   float top_controls_hide_threshold;
   double background_animation_rate;
-  size_t max_partial_texture_updates;
   gfx::Size default_tile_size;
   gfx::Size max_untiled_layer_size;
   gfx::Size default_tile_grid_size;
