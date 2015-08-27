@@ -417,9 +417,14 @@ public class ChromeTab extends Tab {
             TabModel model = getTabModel();
             int index = model.indexOf(ChromeTab.this);
             if (index == TabModel.INVALID_TAB_INDEX) return;
-
             TabModelUtils.setIndex(model, index);
+            bringActivityToForeground();
+        }
 
+        /**
+         * Brings chrome's Activity to foreground, if it is not so.
+         */
+        protected void bringActivityToForeground() {
             // This intent is sent in order to get the activity back to the foreground if it was
             // not already. The previous call will activate the right tab in the context of the
             // TabModel but will only show the tab to the user if Chrome was already in the

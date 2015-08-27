@@ -371,6 +371,11 @@ public class CustomTab extends ChromeTab {
                 mTargetUrl = null;
                 return false;
             }
+
+            @Override
+            protected void bringActivityToForeground() {
+                // No-op here. If client's task is in background Chrome is unable to foreground it.
+            }
         };
     }
 }
