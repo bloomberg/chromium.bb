@@ -6,11 +6,8 @@ package org.chromium.sync.signin;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
-import com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
@@ -43,8 +40,6 @@ public class ChromeSigninController {
     private final Context mApplicationContext;
 
     private final ObserverList<Listener> mListeners = new ObserverList<Listener>();
-
-    private boolean mGcmInitialized;
 
     private ChromeSigninController(Context context) {
         mApplicationContext = context.getApplicationContext();
@@ -114,34 +109,5 @@ public class ChromeSigninController {
      */
     public void removeListener(Listener listener) {
         mListeners.removeObserver(listener);
-    }
-
-    /**
-     * Registers for Google Cloud Messaging (GCM) if there is no existing registration.
-     */
-    public void ensureGcmIsInitialized() {
-        if (mGcmInitialized) return;
-        mGcmInitialized = true;
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... arg0) {
-                try {
-                    String regId = MultiplexingGcmListener.initializeGcm(mApplicationContext);
-                    if (!regId.isEmpty()) Log.d(TAG, "Already registered with GCM");
-                } catch (IllegalStateException exception) {
-                    Log.w(TAG, "Application manifest does not correctly configure GCM; "
-                            + "sync notifications will not work", exception);
-                } catch (UnsupportedOperationException exception) {
-                    Log.w(TAG, "Device does not support GCM; sync notifications will not work",
-                            exception);
-                }
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    @VisibleForTesting
-    public boolean isGcmInitialized() {
-        return mGcmInitialized;
     }
 }

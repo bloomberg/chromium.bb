@@ -20,7 +20,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
-import org.chromium.sync.signin.ChromeSigninController;
 
 import java.util.concurrent.TimeoutException;
 
@@ -29,16 +28,6 @@ import java.util.concurrent.TimeoutException;
  */
 public class SyncTest extends SyncTestBase {
     private static final String TAG = "SyncTest";
-
-    /**
-     * This is a regression test for http://crbug.com/475299.
-     */
-    @LargeTest
-    @Feature({"Sync"})
-    public void testGcmInitialized() throws Throwable {
-        setupTestAccountAndSignInToSync(CLIENT_ID);
-        assertTrue(ChromeSigninController.get(mContext).isGcmInitialized());
-    }
 
     @LargeTest
     @Feature({"Sync"})

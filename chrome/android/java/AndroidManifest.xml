@@ -484,9 +484,9 @@ by a child template that "extends" this file.
             android:exported="false" />
         <receiver android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"
             android:exported="false" />
-
-        <!-- Receiver for GCM messages. Rebroadcasts them locally for sync and cloudprint. -->
-        <receiver android:name="com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener$GCMReceiver"
+            
+        <!-- Receiver for GCM messages. -->
+        <receiver android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
             android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
@@ -495,11 +495,32 @@ by a child template that "extends" this file.
                <category android:name="{{ manifest_package }}"/>
             </intent-filter>
         </receiver>
-        <service android:name="com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener"
-            android:exported="false">
-            <meta-data android:name="sender_ids"
-                android:value="cloudprint.c2dm@gmail.com,ipc.invalidation@gmail.com"/>
+        <!-- GcmTaskService for registration for Invalidations. -->
+        <service android:name="com.google.ipc.invalidation.ticl.android2.channel.GcmRegistrationTaskService"
+            android:exported="true"
+            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE" >
+            <intent-filter>
+                <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
+            </intent-filter>
         </service>
+        <!-- InstanceIDListenerService for token refresh events from GCM. -->
+        <service android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidInstanceIDListenerService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID"/>
+            </intent-filter>
+        </service>
+        <!-- GcmListenerService for messages from GCM. -->
+        <service android:name="org.chromium.chrome.browser.services.gcm.ChromeGcmListenerService"
+            android:exported="false" >
+            <intent-filter>
+              <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+        <meta-data android:name="ipc.invalidation.ticl.gcm_upstream_service_class"
+            android:value="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender" />
+        <service android:name="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"
+            android:exported="false"/>
 
         <!-- Notification service for sync. -->
         <meta-data android:name="ipc.invalidation.ticl.listener_service_class"
@@ -518,27 +539,6 @@ by a child template that "extends" this file.
             android:exported="false"/>
         <receiver android:name="com.google.ipc.invalidation.external.client2.contrib.AndroidListener$AlarmReceiver"
             android:exported="false"/>
-
-        <!-- Notification service multiplexed GCM receiver -->
-        <service android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageReceiverService"
-            android:exported="false"
-            android:enabled="true"/>
-        <receiver android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageReceiverService$Receiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.ipc.invalidation.gcmmplex.EVENT" />
-            </intent-filter>
-        </receiver>
-
-        <!-- GCMDriver multiplexed GCM receiver -->
-        <service android:name="org.chromium.chrome.browser.services.gcm.GCMListener"
-            android:exported="false"/>
-        <receiver android:name="org.chromium.chrome.browser.services.gcm.GCMListener$Receiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.ipc.invalidation.gcmmplex.EVENT" />
-            </intent-filter>
-        </receiver>
 
         <!-- Android Notification service listener -->
         <service android:name="org.chromium.chrome.browser.notifications.NotificationService"

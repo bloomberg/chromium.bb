@@ -16,6 +16,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeApplication;
 
 /**
@@ -50,6 +51,7 @@ public class GSAServiceClient {
     /**
      * Handler of incoming messages from service.
      */
+    @SuppressFBWarnings("BC_IMPOSSIBLE_CAST")
     private class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {

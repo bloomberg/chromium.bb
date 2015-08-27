@@ -6,8 +6,11 @@ package org.chromium.chrome.browser.invalidation;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.SystemClock;
+
+import com.google.ipc.invalidation.ticl.android2.channel.AndroidGcmController;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
@@ -151,11 +154,25 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     private int mNumRecentTabPages;
 
     /**
+     * Whether GCM Upstream should be used for sending upstream messages.
+     */
+    private boolean mUseGcmUpstream;
+
+    /**
+     * Whether GCM has been initialized for Invalidations.
+     */
+    private boolean mGcmInitialized;
+
+    /**
      * Updates the sync invalidation types that the client is registered for based on the preferred
      * sync types.  Starts the client if needed.
      */
     public void ensureStartedAndUpdateRegisteredTypes() {
         mStarted = true;
+
+        // Ensure GCM has been initialized.
+        ensureGcmIsInitialized();
+
         // Do not apply changes to {@link #mSessionInvalidationsEnabled} yet because the timer task
         // may be scheduled far into the future.
         mEnableSessionInvalidationsTimer.resume();
@@ -173,6 +190,26 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
                 typesToRegister);
         registerIntent.setClass(mContext, InvalidationClientService.class);
         mContext.startService(registerIntent);
+    }
+
+    /**
+     * Registers for Google Cloud Messaging (GCM) for Invalidations.
+     */
+    private void ensureGcmIsInitialized() {
+        if (mGcmInitialized) return;
+        mGcmInitialized = true;
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... arg0) {
+                AndroidGcmController.get(mContext).initializeGcm(mUseGcmUpstream);
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @VisibleForTesting
+    public boolean isGcmInitialized() {
+        return mGcmInitialized;
     }
 
     /**
@@ -232,7 +269,10 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
                 boolean canDisableSessionInvalidations =
                         FieldTrialList.findFullName("AndroidSessionNotifications")
                                 .equals("Disabled");
-                sInstance = new InvalidationController(context, canDisableSessionInvalidations);
+                boolean canUseGcmUpstream =
+                        FieldTrialList.findFullName("InvalidationsGCMUpstream").equals("Enabled");
+                sInstance = new InvalidationController(
+                        context, canDisableSessionInvalidations, canUseGcmUpstream);
             }
             return sInstance;
         }
@@ -264,10 +304,12 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      * Creates an instance using {@code context} to send intents.
      */
     @VisibleForTesting
-    InvalidationController(Context context, boolean canDisableSessionInvalidations) {
+    InvalidationController(
+            Context context, boolean canDisableSessionInvalidations, boolean canUseGcmUpstream) {
         Context appContext = context.getApplicationContext();
         if (appContext == null) throw new NullPointerException("Unable to get application context");
         mContext = appContext;
+        mUseGcmUpstream = canUseGcmUpstream;
         mCanDisableSessionInvalidations = canDisableSessionInvalidations;
         mSessionInvalidationsEnabled = !mCanDisableSessionInvalidations;
         mEnableSessionInvalidationsTimer = new Timer();

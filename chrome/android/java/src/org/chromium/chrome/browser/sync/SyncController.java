@@ -68,8 +68,6 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         mProfileSyncService = ProfileSyncService.get();
         mProfileSyncService.addSyncStateChangedListener(this);
 
-        mChromeSigninController.ensureGcmIsInitialized();
-
         // Set the sessions ID using the generator that was registered for GENERATOR_ID.
         mProfileSyncService.setSessionsId(
                 UniqueIdentificationGeneratorFactory.getInstance(GENERATOR_ID));
