@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.content.Context;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
@@ -95,11 +94,6 @@ public class ProfileSyncService {
             sProfileSyncService = new ProfileSyncService();
         }
         return sProfileSyncService;
-    }
-
-    @Deprecated
-    public static ProfileSyncService get(Context context) {
-        return get();
     }
 
     @VisibleForTesting
