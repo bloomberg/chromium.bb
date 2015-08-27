@@ -28,7 +28,6 @@
 #include "core/css/parser/CSSParserMode.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
@@ -57,10 +56,9 @@ CSSParserContext::CSSParserContext(const Document& document, UseCounter* useCoun
         m_shouldCheckContentSecurityPolicy = DoNotCheckContentSecurityPolicy;
     else
         m_shouldCheckContentSecurityPolicy = CheckContentSecurityPolicy;
-    m_frame = document.frame();
 }
 
-CSSParserContext::CSSParserContext(const CSSParserContext& other, LocalFrame* frame, UseCounter* useCounter)
+CSSParserContext::CSSParserContext(const CSSParserContext& other, UseCounter* useCounter)
     : m_baseURL(other.m_baseURL)
     , m_charset(other.m_charset)
     , m_mode(other.m_mode)
@@ -68,12 +66,7 @@ CSSParserContext::CSSParserContext(const CSSParserContext& other, LocalFrame* fr
     , m_isHTMLDocument(other.m_isHTMLDocument)
     , m_useLegacyBackgroundSizeShorthandBehavior(other.m_useLegacyBackgroundSizeShorthandBehavior)
     , m_shouldCheckContentSecurityPolicy(other.m_shouldCheckContentSecurityPolicy)
-    , m_frame(frame)
     , m_useCounter(useCounter)
-{
-}
-
-CSSParserContext::~CSSParserContext()
 {
 }
 
@@ -83,8 +76,7 @@ bool CSSParserContext::operator==(const CSSParserContext& other) const
         && m_charset == other.m_charset
         && m_mode == other.m_mode
         && m_isHTMLDocument == other.m_isHTMLDocument
-        && m_useLegacyBackgroundSizeShorthandBehavior == other.m_useLegacyBackgroundSizeShorthandBehavior
-        && m_frame == other.m_frame;
+        && m_useLegacyBackgroundSizeShorthandBehavior == other.m_useLegacyBackgroundSizeShorthandBehavior;
 }
 
 const CSSParserContext& strictCSSParserContext()

@@ -945,19 +945,19 @@ String UseCounter::deprecationMessage(Feature feature)
         return "PermissionStatus.status is deprecated and will be removed in M47, around November 2015. Please use PermissionStatus.state instead.";
 
     case ElementOffsetParent:
-        return "'Element.offsetParent' is deprecated and will be removed in M47, around November 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+        return "'Element.offsetParent' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
 
     case ElementOffsetTop:
-        return "'Element.offsetTop' is deprecated and will be removed in M47, around November 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+        return "'Element.offsetTop' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
 
     case ElementOffsetLeft:
-        return "'Element.offsetLeft' is deprecated and will be removed in M47, around November 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+        return "'Element.offsetLeft' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
 
     case ElementOffsetWidth:
-        return "'Element.offsetWidth' is deprecated and will be removed in M47, around November 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+        return "'Element.offsetWidth' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
 
     case ElementOffsetHeight:
-        return "'Element.offsetHeight' is deprecated and will be removed in M47, around November 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
+        return "'Element.offsetHeight' is deprecated and will be removed in M47, around Novemver 2015. The offset* attributes are only standardized and widely supported for HTML elements.";
 
     case PrefixedPerformanceClearResourceTimings:
         return replacedBy("Performance.webkitClearResourceTimings", "Performance.clearResourceTimings");
@@ -970,12 +970,6 @@ String UseCounter::deprecationMessage(Feature feature)
 
     case FetchAPIRequestContext:
         return "Request.context is deprecated and will be removed in M46 (see: https://www.chromestatus.com/feature/5534702526005248).";
-
-    case LegacyCSSValueIntrinsic:
-        return "The 'intrinsic' CSS keyword is deprecated and will be removed in M47, around November 2015. Use the standard 'max-content' keyword instead.";
-
-    case LegacyCSSValueMinIntrinsic:
-        return "The 'min-intrinsic' CSS keyword is deprecated and will be removed in M47, around November 2015. Use the standard 'min-content' keyword instead.";
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

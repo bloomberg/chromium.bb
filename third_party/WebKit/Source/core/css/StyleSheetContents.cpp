@@ -290,8 +290,7 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
         m_sourceMapURL = response.httpHeaderField("X-SourceMap");
     }
 
-    Document* singleOwnerDoc = singleOwnerDocument();
-    CSSParserContext context(parserContext(), singleOwnerDoc ? singleOwnerDoc->frame() : 0, UseCounter::getFrom(this));
+    CSSParserContext context(parserContext(), UseCounter::getFrom(this));
     CSSParser::parseSheet(context, this, sheetText);
 }
 
@@ -302,8 +301,7 @@ void StyleSheetContents::parseString(const String& sheetText)
 
 void StyleSheetContents::parseStringAtPosition(const String& sheetText, const TextPosition& startPosition)
 {
-    Document* singleOwnerDoc = singleOwnerDocument();
-    CSSParserContext context(parserContext(), singleOwnerDoc ? singleOwnerDoc->frame() : 0, UseCounter::getFrom(this));
+    CSSParserContext context(parserContext(), UseCounter::getFrom(this));
     CSSParser::parseSheet(context, this, sheetText);
 }
 

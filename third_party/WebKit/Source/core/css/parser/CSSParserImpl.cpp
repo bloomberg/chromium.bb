@@ -81,7 +81,7 @@ static PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> createStylePropertySet(
 PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParserImpl::parseInlineStyleDeclaration(const String& string, Element* element)
 {
     Document& document = element->document();
-    CSSParserContext context = CSSParserContext(document.elementSheet().contents()->parserContext(), document.frame(), UseCounter::getFrom(&document));
+    CSSParserContext context = CSSParserContext(document.elementSheet().contents()->parserContext(), UseCounter::getFrom(&document));
     CSSParserMode mode = element->isHTMLElement() && !document.inQuirksMode() ? HTMLStandardMode : HTMLQuirksMode;
     context.setMode(mode);
     CSSParserImpl parser(context, document.elementSheet().contents());

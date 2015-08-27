@@ -289,8 +289,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
         exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is larger than the maximum index (" + String::number(length()) + ").");
         return 0;
     }
-    Document* ownerDoc = ownerDocument();
-    CSSParserContext context(m_contents->parserContext(), ownerDoc ? ownerDoc->frame() : 0, UseCounter::getFrom(this));
+    CSSParserContext context(m_contents->parserContext(), UseCounter::getFrom(this));
     RefPtrWillBeRawPtr<StyleRuleBase> rule = CSSParser::parseRule(context, m_contents.get(), ruleString);
 
     // FIXME: @namespace rules have special handling in the CSSOM spec, but it

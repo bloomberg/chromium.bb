@@ -92,7 +92,7 @@ String CSSStyleRule::selectorText() const
 
 void CSSStyleRule::setSelectorText(const String& selectorText)
 {
-    CSSParserContext context(parserContext(), 0, 0);
+    CSSParserContext context(parserContext(), 0);
     CSSSelectorList selectorList;
     CSSParser::parseSelector(context, selectorText, selectorList);
     if (!selectorList.isValid())
