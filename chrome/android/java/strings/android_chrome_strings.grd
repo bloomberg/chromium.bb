@@ -1783,12 +1783,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_PAGE_SAVED" desc="Message shown after user adds a new bookmark. [CHAR-LIMIT=32]">
         Bookmarked
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_PAGE_SAVED_OFFLINE_PAGES" desc="Message shown after user adds a new offline page. [CHAR-LIMIT=32]">
-        Page saved offline
-      </message>
-      <message name="IDS_ENHANCED_BOOKMARK_PAGE_SAVED_OFFLINE_PAGES_STORAGE_NEAR_FULL" desc="Message shown after user adds a new offline page and the storage is almost full. [CHAR-LIMIT=32]">
-        Page saved offline. Storage almost full.
-      </message>
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=24]">
         All bookmarks
       </message>
@@ -1862,6 +1856,18 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       </message>
       <message name="IDS_OFFLINE_PAGES_FREE_UP_SPACE_MESSAGE" desc="Text explaining how many pages are going to be removed and how much storage is going to be freed.">
         Delete <ph name="PAGES_NUMBER">%1$d<ex>8</ex></ph> saved pages that are older than 1 month? This will clear <ph name="TOTAL_PAGE_SIZE">%2$s<ex>8.3 MB</ex></ph> of space.
+      </message>
+      <message name="IDS_OFFLINE_PAGES_PAGE_SAVED" desc="Message shown after user adds a new offline page.">
+        Page saved offline
+      </message>
+      <message name="IDS_OFFLINE_PAGES_PAGE_SAVED_STORAGE_NEAR_FULL" desc="Message shown after user adds a new offline page and the storage is almost full.">
+        Page saved offline. Storage almost full.
+      </message>
+      <message name="IDS_OFFLINE_PAGES_PAGE_FAILED_TO_SAVE" desc="Message shown after a new offline page failed to be added.">
+        Saved page not available offline. Please try again later.
+      </message>
+      <message name="IDS_OFFLINE_PAGES_PAGE_FAILED_TO_SAVE_STORAGE_NEAR_FULL" desc="Message shown after a new offline page failed to be added, probably due to that the storage is almost full.">
+        Saved page not available offline.
       </message>
       <message name="IDS_OFFLINE_PAGES_STORAGE_SPACE_TITLE" desc="Title of the promo header for managing offline pages storage. [CHAR-LIMIT=32]">
         Storage space

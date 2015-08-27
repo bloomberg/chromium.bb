@@ -67,7 +67,13 @@ class SnackbarPopupWindow extends PopupWindow {
         mMessageView.setMaxLines(snackbar.getSingleLine() ? 1 : Integer.MAX_VALUE);
         mMessageView.setTemplate(snackbar.getTemplateText());
         setViewText(mMessageView, snackbar.getText(), animate);
-        setViewText(mActionButtonView, snackbar.getActionText(), animate);
+        String actionText = snackbar.getActionText();
+        if (actionText != null) {
+            mActionButtonView.setVisibility(View.VISIBLE);
+            setViewText(mActionButtonView, snackbar.getActionText(), animate);
+        } else {
+            mActionButtonView.setVisibility(View.GONE);
+        }
     }
 
     private void setViewText(TextView view, CharSequence text, boolean animate) {

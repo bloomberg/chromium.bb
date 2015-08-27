@@ -52,9 +52,10 @@ public class Snackbar {
 
     /**
      * Sets the action button to show on the snackbar.
-     * @param actionText The text to show on the button.
-     * @param actionData The data to be passed to {@link SnackbarController#onAction} when the
-     *                   button is pressed.
+     * @param actionText The text to show on the button. If null, the button will not be shown.
+     * @param actionData An object to be passed to {@linkSnackbarController#onAction} or
+     *        {@link SnackbarController#onDismissNoAction} when the button is pressed or the
+     *        snackbar is dismissed.
      */
     public Snackbar setAction(String actionText, Object actionData) {
         mActionText = actionText;

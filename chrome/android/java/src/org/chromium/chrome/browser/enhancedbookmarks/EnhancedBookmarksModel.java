@@ -36,8 +36,10 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
         /**
          * Called when the bookmark has been added.
          * @param bookmarkId ID of the bookmark that has been added.
+         * @param whether an offline copy of the bookmarked page was successfully saved. This could
+         *        be false due to, e.g. save not requested or storage full.
          */
-        void onBookmarkAdded(BookmarkId bookmarkId);
+        void onBookmarkAdded(BookmarkId bookmarkId, boolean pageSavedOffline);
     }
 
     /**
@@ -71,6 +73,9 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     public EnhancedBookmarksModel(Profile profile) {
         super(profile);
 
+        // Note: we check if mOfflinePageBridge is null after this to determine if offline pages
+        // feature is enabled. When it is enabled by default, we should check all the places
+        // that checks for nullability of mOfflinePageBridge.
         if (OfflinePageBridge.isEnabled()) {
             mOfflinePageBridge = new OfflinePageBridge(profile);
             if (mOfflinePageBridge.isOfflinePageModelLoaded()) {
@@ -185,7 +190,7 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
 
         // If there is no need to save offline page, return now.
         if (mOfflinePageBridge == null) {
-            callback.onBookmarkAdded(enhancedId);
+            callback.onBookmarkAdded(enhancedId, false);
             return;
         }
 
@@ -193,10 +198,8 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
                 new SavePageCallback() {
                     @Override
                     public void onSavePageDone(int savePageResult, String url) {
-                        // TODO(jianli): Error handling.
-                        if (savePageResult == SavePageResult.SUCCESS) {
-                            callback.onBookmarkAdded(enhancedId);
-                        }
+                        callback.onBookmarkAdded(
+                                enhancedId, savePageResult == SavePageResult.SUCCESS);
                     }
                 });
     }

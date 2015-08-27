@@ -231,10 +231,11 @@ public class EnhancedBookmarksModelTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mBookmarksModel.addBookmarkAsync(parent, index, title, url, null,
-                        new AddBookmarkCallback() {
+                mBookmarksModel.addBookmarkAsync(
+                        parent, index, title, url, null, new AddBookmarkCallback() {
                             @Override
-                            public void onBookmarkAdded(final BookmarkId bookmarkId) {
+                            public void onBookmarkAdded(
+                                    final BookmarkId bookmarkId, boolean savePageSucceeded) {
                                 result.set(bookmarkId);
                                 semaphore.release();
                             }

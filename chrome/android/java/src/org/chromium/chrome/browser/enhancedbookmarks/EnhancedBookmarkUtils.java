@@ -73,7 +73,7 @@ public class EnhancedBookmarkUtils {
 
         AddBookmarkCallback callback = new AddBookmarkCallback() {
             @Override
-            public void onBookmarkAdded(final BookmarkId enhancedId) {
+            public void onBookmarkAdded(final BookmarkId enhancedId, boolean pageSavedOffline) {
                 Pair<EnhancedBookmarksModel, BookmarkId> pair =
                         Pair.create(bookmarkModel, enhancedId);
 
@@ -95,6 +95,7 @@ public class EnhancedBookmarkUtils {
                         @SuppressWarnings("unchecked")
                         Pair<EnhancedBookmarksModel, BookmarkId> pair = (Pair<
                                 EnhancedBookmarksModel, BookmarkId>) actionData;
+
                         // Show edit activity with the name of parent folder highlighted.
                         startEditActivity(activity, enhancedId, null);
                         pair.first.destroy();
@@ -109,15 +110,29 @@ public class EnhancedBookmarkUtils {
                     buttonId = R.string.enhanced_bookmark_item_edit;
                 } else {
                     boolean almostFull = offlinePageBridge.isStorageAlmostFull();
-                    messageId = almostFull
-                            ? R.string.enhanced_bookmark_page_saved_offline_pages_storage_near_full
-                            : R.string.enhanced_bookmark_page_saved_offline_pages;
-                    // TODO(fgorski): show "FREE UP SPACE" button.
-                    buttonId = R.string.enhanced_bookmark_item_edit;
+                    if (pageSavedOffline) {
+                        messageId = almostFull ? R.string.offline_pages_page_saved_storage_near_full
+                                               : R.string.offline_pages_page_saved;
+                        // TODO(fgorski): show "FREE UP SPACE" button.
+                        // buttonId = almostFull
+                        //        ? R.string.offline_pages_free_up_space_title
+                        //        : R.string.enhanced_bookmark_item_edit;
+                        buttonId = R.string.enhanced_bookmark_item_edit;
+                    } else {
+                        messageId = almostFull
+                                ? R.string.offline_pages_page_failed_to_save_storage_near_full
+                                : R.string.offline_pages_page_failed_to_save;
+                        // TODO(fgorski): show "FREE UP SPACE" button.
+                        // buttonId = almostFull
+                        //        ? R.string.offline_pages_free_up_space_title : 0;
+                        buttonId = 0;
+                    }
                 }
-                snackbarManager.showSnackbar(Snackbar.make(
-                        activity.getString(messageId), snackbarController)
-                        .setAction(activity.getString(buttonId), pair));
+                snackbarManager.showSnackbar(
+                        Snackbar.make(activity.getString(messageId), snackbarController)
+                                .setAction(
+                                        buttonId == 0 ? null : activity.getString(buttonId), pair)
+                                .setSingleLine(false));
             }
         };
 
