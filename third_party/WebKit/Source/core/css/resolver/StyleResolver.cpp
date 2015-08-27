@@ -1195,7 +1195,7 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     }
 }
 
-static bool shouldIgnoreTextTrackAuthorStyle(Document& document)
+static bool shouldIgnoreTextTrackAuthorStyle(const Document& document)
 {
     Settings* settings = document.settings();
     if (!settings)
@@ -1212,10 +1212,25 @@ static bool shouldIgnoreTextTrackAuthorStyle(Document& document)
     return false;
 }
 
+static inline bool isPropertyInWhitelist(PropertyWhitelistType propertyWhitelistType, CSSPropertyID property, const Document& document)
+{
+    if (propertyWhitelistType == PropertyWhitelistNone)
+        return true; // Early bail for the by far most common case.
+
+    if (propertyWhitelistType == PropertyWhitelistFirstLetter)
+        return isValidFirstLetterStyleProperty(property);
+
+    if (propertyWhitelistType == PropertyWhitelistCue)
+        return isValidCueStyleProperty(property) && !shouldIgnoreTextTrackAuthorStyle(document);
+
+    ASSERT_NOT_REACHED();
+    return true;
+}
+
 // This method expands the 'all' shorthand property to longhand properties
 // and applies the expanded longhand properties.
 template <CSSPropertyPriority priority>
-void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue, bool inheritedOnly)
+void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
     unsigned startCSSProperty = CSSPropertyPriorityData<priority>::first();
     unsigned endCSSProperty = CSSPropertyPriorityData<priority>::last();
@@ -1234,6 +1249,9 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
         // We skip applyProperty when a given property is unicode-bidi or
         // direction.
         if (!CSSProperty::isAffectedByAllProperty(propertyId))
+            continue;
+
+        if (!isPropertyInWhitelist(propertyWhitelistType, propertyId, document()))
             continue;
 
         // When hitting matched properties' cache, only inherited properties will be
@@ -1256,14 +1274,11 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
 
         CSSPropertyID property = current.id();
         if (property == CSSPropertyAll) {
-            applyAllProperty<priority>(state, current.value(), inheritedOnly);
+            applyAllProperty<priority>(state, current.value(), inheritedOnly, propertyWhitelistType);
             continue;
         }
 
-        if (propertyWhitelistType == PropertyWhitelistCue && (!isValidCueStyleProperty(property) || shouldIgnoreTextTrackAuthorStyle(document())))
-            continue;
-
-        if (propertyWhitelistType == PropertyWhitelistFirstLetter && !isValidFirstLetterStyleProperty(property))
+        if (!isPropertyInWhitelist(propertyWhitelistType, property, document()))
             continue;
 
         if (inheritedOnly && !current.isInherited()) {
