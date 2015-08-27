@@ -7,7 +7,6 @@ description("Test that IndexedDB's cursor key/primaryKey/value properties preser
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

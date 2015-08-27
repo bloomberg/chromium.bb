@@ -3,8 +3,6 @@ Upgrade a database, open a second connection at the same version, ensure specify
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "intversion-upgrades.html"
 indexedDB.deleteDatabase(dbname)
 PASS String(request) is "[object IDBOpenDBRequest]"

@@ -31,8 +31,6 @@ data = [
     ];
 i = 0;
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "object-store-remove-values.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -44,8 +42,6 @@ PASS test.storedObject.name is event.target.result.name
 request = objectStore.delete(id);
 request = objectStore.get(id);
 PASS event.target.result === undefined is true
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "object-store-remove-values.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -57,8 +53,6 @@ PASS test.storedObject.name is event.target.result.name
 request = objectStore.delete(id);
 request = objectStore.get(id);
 PASS event.target.result === undefined is true
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "object-store-remove-values.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -70,8 +64,6 @@ PASS test.storedObject.name is event.target.result.name
 request = objectStore.delete(id);
 request = objectStore.get(id);
 PASS event.target.result === undefined is true
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "object-store-remove-values.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

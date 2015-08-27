@@ -7,7 +7,6 @@ description("Test that bad version parameters cause TypeError");
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

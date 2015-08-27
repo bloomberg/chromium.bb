@@ -7,7 +7,6 @@ description("Test calling db.open in upgradeneeded.");
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

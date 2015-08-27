@@ -3,8 +3,6 @@ Ensure cursor calls behave as expected after cursor has run to the end.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "cursor-finished.html"
 
 prepareDatabase():

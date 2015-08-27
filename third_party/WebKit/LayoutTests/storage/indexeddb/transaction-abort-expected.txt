@@ -3,8 +3,6 @@ Test transaction aborts send the proper onabort messages..
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "transaction-abort.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

@@ -7,7 +7,6 @@ description("Check that transactions in different databases can run in parallel.
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
     evalAndLog("dbname1 = dbname + '1'");
     evalAndLog("dbname2 = dbname + '2'");

@@ -7,7 +7,6 @@ description("Try to call db.close() after upgradeneeded but before the correspon
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

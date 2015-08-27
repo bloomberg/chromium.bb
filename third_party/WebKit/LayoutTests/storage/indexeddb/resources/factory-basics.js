@@ -7,8 +7,6 @@ description("Test the basics of IndexedDB's IDBFactory.");
 
 function test()
 {
-    removeVendorPrefixes();
-
     shouldBeEqualToString("typeof indexedDB.open", "function");
     shouldBeEqualToString("typeof indexedDB.cmp", "function");
     shouldBeEqualToString("typeof indexedDB.deleteDatabase", "function");

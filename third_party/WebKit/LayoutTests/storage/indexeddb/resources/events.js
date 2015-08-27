@@ -7,7 +7,6 @@ description("Test IndexedDB's event interfaces.");
 
 function test()
 {
-    removeVendorPrefixes();
     shouldBeTrue("'IDBVersionChangeEvent' in self");
 
     if ('document' in self) {

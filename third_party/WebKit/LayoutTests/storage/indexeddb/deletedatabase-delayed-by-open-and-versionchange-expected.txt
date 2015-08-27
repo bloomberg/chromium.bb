@@ -3,8 +3,6 @@ Test that deleteDatabase is delayed if a VERSION_CHANGE transaction is running
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "deletedatabase-delayed-by-open-and-versionchange.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

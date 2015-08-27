@@ -13,7 +13,6 @@ versions = [1,
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");
     request.onblocked = unexpectedBlockedCallback;

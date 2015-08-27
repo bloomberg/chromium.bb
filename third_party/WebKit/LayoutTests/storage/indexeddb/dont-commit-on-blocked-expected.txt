@@ -3,8 +3,6 @@ Regression test for WK82678 - don't commit after a blocked event
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "dont-commit-on-blocked.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -15,8 +13,6 @@ holdConnection():
 holding connection until versionchange event
 
 Starting worker: resources/dont-commit-on-blocked-worker.js
-[Worker] indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-[Worker] 
 [Worker] opening database connection
 [Worker] request = indexedDB.open('dont-commit-on-blocked.html', 2)
 [Worker] state = 'setversion'

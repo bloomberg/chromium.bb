@@ -7,7 +7,6 @@ description("Upgrade a database, open a second connection at the same version, e
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

@@ -51,7 +51,6 @@ function checkBoundKeyRange(lower, upper, lowerOpen, upperOpen)
 
 function test()
 {
-    removeVendorPrefixes();
     shouldBeFalse("'lower' in IDBKeyRange");
     shouldBeFalse("'upper' in IDBKeyRange");
     shouldBeFalse("'lowerOpen' in IDBKeyRange");

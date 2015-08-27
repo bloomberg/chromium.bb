@@ -3,8 +3,6 @@ Test that an abort in the initial upgradeneeded sets version back to 0
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "intversion-abort-in-initial-upgradeneeded.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname, 2)

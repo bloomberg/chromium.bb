@@ -7,7 +7,6 @@ description("Test lazy IndexedDB index population with various key types.");
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

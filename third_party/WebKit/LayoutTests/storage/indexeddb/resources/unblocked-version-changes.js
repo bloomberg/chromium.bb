@@ -6,7 +6,6 @@ if (this.importScripts) {
 description("Ensure that metadata remains correct when an aborted version change is followed by another. ");
 
 function test() {
-    removeVendorPrefixes();
     setDBNameFromPath();
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");
     request.onblocked = unexpectedBlockedCallback;

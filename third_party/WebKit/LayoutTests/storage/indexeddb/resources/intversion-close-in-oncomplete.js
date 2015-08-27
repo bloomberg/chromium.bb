@@ -7,7 +7,6 @@ description("Call db.close() in the complete handler for a version change transa
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

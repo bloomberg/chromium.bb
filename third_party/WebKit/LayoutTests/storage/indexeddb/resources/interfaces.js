@@ -7,7 +7,6 @@ description("Test IndexedDB's interfaces.");
 
 function test()
 {
-    removeVendorPrefixes();
     shouldBeTrue("'IDBCursor' in self");
     shouldBeTrue("'IDBCursorWithValue' in self");
     shouldBeTrue("'IDBDatabase' in self");

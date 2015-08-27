@@ -7,7 +7,6 @@ description("Check that readwrite transactions with overlapping scopes do not ru
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

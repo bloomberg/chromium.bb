@@ -3,8 +3,6 @@ Test IndexedDB's basics.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 indexedDB.open('basics')
 PASS 'result' in request is true
 Expecting exception from request.result

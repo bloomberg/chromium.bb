@@ -7,7 +7,6 @@ description("Test that specifying a version when opening a non-existent db cause
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");
     request.onsuccess = deleteSuccess;

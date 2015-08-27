@@ -7,7 +7,6 @@ description("Test that integer versions are reverted when their version transact
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

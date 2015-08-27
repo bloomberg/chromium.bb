@@ -7,7 +7,6 @@ description("Check that a page reloaded during an in-flight upgradeneeded event 
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
     evalAndLog("dbname1 = dbname + '1'");
     evalAndLog("dbname2 = dbname + '2'");

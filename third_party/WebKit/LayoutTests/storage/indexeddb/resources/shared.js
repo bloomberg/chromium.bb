@@ -24,12 +24,6 @@ if (self.importScripts && !self.postMessage) {
     };
 }
 
-function removeVendorPrefixes()
-{
-    indexedDB = evalAndLog("indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;");
-    debug("");
-}
-
 function unexpectedSuccessCallback()
 {
     testFailed("Success function called unexpectedly.");
@@ -171,7 +165,6 @@ if (!self.DOMException) {
 }
 
 function indexedDBTest(upgradeCallback, optionalOpenCallback, optionalParameters) {
-    removeVendorPrefixes();
     if (optionalParameters && 'suffix' in optionalParameters) {
         setDBNameFromPath(optionalParameters['suffix']);
     } else {

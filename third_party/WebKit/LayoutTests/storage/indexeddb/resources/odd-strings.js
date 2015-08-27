@@ -7,8 +7,6 @@ description("Test IndexedDB odd value datatypes");
 
 function test()
 {
-    removeVendorPrefixes();
-
     testData = [{ description: 'empty string',       name: '' },
                 { description: 'null',               name: '\u0000' },
                 { description: 'faihu',              name: '\ud800\udf46' },

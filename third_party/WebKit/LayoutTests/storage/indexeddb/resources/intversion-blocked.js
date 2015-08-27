@@ -7,7 +7,6 @@ description("Test that blocked events get delivered properly with the new open a
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");
     request.onsuccess = deleteSuccess;

@@ -7,7 +7,6 @@ description("Test IndexedDB's basics.");
 
 function test()
 {
-    removeVendorPrefixes();
     request = evalAndLog("indexedDB.open('basics')");
     shouldBeTrue("'result' in request");
     evalAndExpectException("request.result", "DOMException.INVALID_STATE_ERR", "'InvalidStateError'");

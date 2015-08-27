@@ -10,7 +10,6 @@ description("Explicitly terminating worker with blocked call should allow later 
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
     if (self.location.search !== "?second") {
         firstOpen();

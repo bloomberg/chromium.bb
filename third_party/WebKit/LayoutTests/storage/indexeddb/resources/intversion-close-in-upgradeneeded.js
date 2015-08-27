@@ -7,7 +7,6 @@ description("Test that when db.close is called in upgradeneeded, the db is clean
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

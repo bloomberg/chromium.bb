@@ -3,8 +3,6 @@ Verify edge cases that lazy index population in an IndexedDB implementation migh
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "lazy-index-population.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

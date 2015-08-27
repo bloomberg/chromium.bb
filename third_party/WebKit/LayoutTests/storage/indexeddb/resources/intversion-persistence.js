@@ -7,7 +7,6 @@ description("Test that integer versions are retained when backing store is opene
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     // NOTE: deleteDatabase is not used, otherwise it would set the backing store schema version

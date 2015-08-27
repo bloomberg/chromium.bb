@@ -3,8 +3,6 @@ Test IndexedDB's IDBCursor.continue() with a primary key parameter.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "cursor-continueprimarykey.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

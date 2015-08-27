@@ -3,8 +3,6 @@ Ensure deleteDatabase() can run concurrently with transactions in other database
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "deletedatabase-transaction.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

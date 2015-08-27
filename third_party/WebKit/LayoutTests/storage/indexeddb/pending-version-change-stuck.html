@@ -10,7 +10,6 @@ description("Implicitly terminating worker with blocked setVersion call should a
 
 function test()
 {
-    removeVendorPrefixes();
     dbname = self.location.pathname.substring(1 + self.location.pathname.lastIndexOf("/"));
     evalAndLog("request = indexedDB.open(\"" + dbname + "\")");
     request.onblocked = unexpectedBlockedCallback;

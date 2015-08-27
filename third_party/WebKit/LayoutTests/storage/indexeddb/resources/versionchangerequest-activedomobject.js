@@ -6,8 +6,6 @@ if (this.importScripts) {
 description("Ensure that IDBVersionChangeRequest objects are not GC'd if they have pending events");
 
 function test() {
-    removeVendorPrefixes();
-
     debug("");
     evalAndLog("self.dbname = 'versionchangerequest-activedomobject'");
 

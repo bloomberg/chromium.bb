@@ -17,8 +17,6 @@ objectStoreInfo = [
     ];
 i = 0;
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "cursor-update-updates-indexes.html"
 indexedDB.deleteDatabase(dbname)
 info = objectStoreInfo[i];
@@ -45,8 +43,6 @@ request = uniqueIndex.get(secondValue);
 PASS value.data is event.target.result.data
 i++;
 db.close()
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "cursor-update-updates-indexes.html"
 indexedDB.deleteDatabase(dbname)
 info = objectStoreInfo[i];
@@ -73,8 +69,6 @@ request = uniqueIndex.get(secondValue);
 PASS value.data is event.target.result.data
 i++;
 db.close()
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "cursor-update-updates-indexes.html"
 indexedDB.deleteDatabase(dbname)
 info = objectStoreInfo[i];
@@ -101,8 +95,6 @@ request = uniqueIndex.get(secondValue);
 PASS value.data is event.target.result.data
 i++;
 db.close()
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "cursor-update-updates-indexes.html"
 indexedDB.deleteDatabase(dbname)
 info = objectStoreInfo[i];

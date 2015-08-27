@@ -6,7 +6,6 @@ if (this.importScripts) {
 description("Test that deleteDatabase is blocked on open connections");
 
 function test() {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     evalAndLog("blockedEventFired = false");

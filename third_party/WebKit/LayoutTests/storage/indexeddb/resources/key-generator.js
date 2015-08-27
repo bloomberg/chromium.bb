@@ -7,8 +7,6 @@ description("Test IndexedDB's key generator behavior.");
 
 function test()
 {
-    removeVendorPrefixes();
-
     runTests();
 }
 

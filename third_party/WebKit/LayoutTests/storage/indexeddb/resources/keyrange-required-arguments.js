@@ -7,8 +7,6 @@ description("Test IndexedDB keyrange required arguments");
 
 function test()
 {
-    removeVendorPrefixes();
-
     shouldThrow("IDBKeyRange.only();");
     shouldThrow("IDBKeyRange.lowerBound();");
     shouldThrow("IDBKeyRange.upperBound();");

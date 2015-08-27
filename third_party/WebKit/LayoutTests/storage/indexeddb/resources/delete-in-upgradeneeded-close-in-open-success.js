@@ -7,7 +7,6 @@ description("Test that a deleteDatabase called while handling an upgradeneeded e
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

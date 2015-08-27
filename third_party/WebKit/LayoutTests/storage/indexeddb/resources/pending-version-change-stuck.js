@@ -5,7 +5,6 @@ if (this.importScripts) {
 
 function test()
 {
-    removeVendorPrefixes();
     dbname = decodeURIComponent(self.location.search.substring(1));
     request = evalAndLog("indexedDB.open(dbname, 2)");
     request.onerror = unexpectedErrorCallback;

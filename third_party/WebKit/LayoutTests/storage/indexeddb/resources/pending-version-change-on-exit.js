@@ -3,7 +3,6 @@ if (this.importScripts) {
     importScripts('shared.js');
 }
 
-removeVendorPrefixes();
 dbname = decodeURIComponent(self.location.search.substring(1));
 evalAndLog("request = indexedDB.open(\"" + dbname + "\", 2)");
 request.onupgradeneeded = unexpectedUpgradeNeededCallback;

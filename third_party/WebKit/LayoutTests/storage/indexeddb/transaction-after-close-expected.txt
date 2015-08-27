@@ -3,8 +3,6 @@ Test closing a database connection in IndexedDB.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "transaction-after-close.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

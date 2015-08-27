@@ -1,8 +1,6 @@
 importScripts('../../../resources/js-test.js');
 importScripts('shared.js');
 
-removeVendorPrefixes();
-
 debug("opening database connection");
 evalAndLog("request = indexedDB.open('dont-commit-on-blocked.html', 2)");
 request.onerror = unexpectedErrorCallback;

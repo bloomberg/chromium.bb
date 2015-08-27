@@ -7,8 +7,6 @@ description("Test opening twice");
 
 function test()
 {
-    removeVendorPrefixes();
-
     request = evalAndLog("indexedDB.open('open-twice1')");
     request.onerror = unexpectedErrorCallback;
     request.onblocked = unexpectedBlockedCallback;

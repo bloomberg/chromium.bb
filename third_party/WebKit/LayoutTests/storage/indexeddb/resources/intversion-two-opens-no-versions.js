@@ -7,7 +7,6 @@ description("Test that only the first open call gets an upgradeneeded");
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

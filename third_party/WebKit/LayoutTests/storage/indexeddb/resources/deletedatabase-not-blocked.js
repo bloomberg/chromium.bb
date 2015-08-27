@@ -6,7 +6,6 @@ if (this.importScripts) {
 description("Test that deleteDatabase is not blocked when connections close in on versionchange callback");
 
 function test() {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.open(dbname)");

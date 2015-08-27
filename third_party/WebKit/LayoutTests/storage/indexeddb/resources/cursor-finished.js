@@ -2,7 +2,6 @@ description("Ensure cursor calls behave as expected after cursor has run to the 
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
     prepareDatabase();
 }

@@ -7,7 +7,6 @@ description("Test that initial version after a successful open of a non-existent
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

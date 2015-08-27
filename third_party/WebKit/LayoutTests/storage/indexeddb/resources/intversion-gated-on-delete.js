@@ -7,7 +7,6 @@ description("Test that a database is recreated correctly when an open-with-versi
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");
     request.onsuccess = deleteSuccess;

@@ -13,8 +13,6 @@ description("Test IndexedDB: should NOT throw when opening a database with a nul
 
 function test()
 {
-    removeVendorPrefixes();
-
     request = evalAndLog("indexedDB.open(null);");
     request.onsuccess = openSuccess;
     request.onerror = unexpectedErrorCallback;

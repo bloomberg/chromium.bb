@@ -7,7 +7,6 @@ description("Test that an abort in the initial upgradeneeded sets version back t
 
 function test()
 {
-    removeVendorPrefixes();
     setDBNameFromPath();
 
     request = evalAndLog("indexedDB.deleteDatabase(dbname)");

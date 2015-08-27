@@ -10,7 +10,6 @@ description("No crashes when opening and reloading with bad version numbers");
 
 function test()
 {
-  removeVendorPrefixes();
   evalAndLog("dbname = String(window.location)");
 
   try { indexedDB.open(dbname, -1); } catch (e) { }

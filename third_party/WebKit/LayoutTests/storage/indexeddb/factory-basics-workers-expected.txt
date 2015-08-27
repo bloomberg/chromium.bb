@@ -4,8 +4,6 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Starting worker: resources/factory-basics.js
-[Worker] indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-[Worker] 
 PASS [Worker] typeof indexedDB.open is "function"
 PASS [Worker] typeof indexedDB.cmp is "function"
 PASS [Worker] typeof indexedDB.deleteDatabase is "function"

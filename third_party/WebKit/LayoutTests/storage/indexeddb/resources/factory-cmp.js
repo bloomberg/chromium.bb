@@ -7,8 +7,6 @@ description("Test IndexedDB key comparison using IDBFactory.cmp().");
 
 function test()
 {
-    removeVendorPrefixes();
-
     shouldBeEqualToString("typeof indexedDB.cmp", "function");
 
     testValidKeys();

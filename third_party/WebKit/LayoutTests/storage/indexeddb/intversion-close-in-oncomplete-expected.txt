@@ -3,8 +3,6 @@ Call db.close() in the complete handler for a version change transaction, before
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-indexedDB = self.indexedDB || self.webkitIndexedDB || self.mozIndexedDB || self.msIndexedDB || self.OIndexedDB;
-
 dbname = "intversion-close-in-oncomplete.html"
 indexedDB.deleteDatabase(dbname)
 request = indexedDB.open(dbname, 7)
