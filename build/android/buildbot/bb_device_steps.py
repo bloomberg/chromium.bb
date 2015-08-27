@@ -212,7 +212,7 @@ def RunChromeProxyTests(options):
   """
   InstallApk(options, CHROME_SHELL, False)
   args = ['--browser', 'android-chrome-shell']
-  devices = device_utils.DeviceUtils.HealthyDevices()
+  devices = device_utils.DeviceUtils.HealthyDevices(blacklist=None)
   if devices:
     args = args + ['--device', devices[0].adb.GetDeviceSerial()]
   bb_annotations.PrintNamedStep('chrome_proxy')
@@ -231,7 +231,7 @@ def RunTelemetryTests(options, step_name, run_tests_path):
   """
   InstallApk(options, CHROME_SHELL, False)
   args = ['--browser', 'android-chrome-shell']
-  devices = device_utils.DeviceUtils.HealthyDevices()
+  devices = device_utils.DeviceUtils.HealthyDevices(blacklist=None)
   if devices:
     args = args + ['--device', 'android']
   bb_annotations.PrintNamedStep(step_name)

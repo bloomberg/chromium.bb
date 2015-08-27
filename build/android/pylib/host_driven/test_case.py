@@ -155,7 +155,8 @@ class HostDrivenTestCase(object):
     start_ms = int(time.time()) * 1000
     done = False
     for test_filter in test_filters:
-      tests = test_pkg.GetAllMatchingTests(None, None, test_filter)
+      tests = test_pkg.GetAllMatchingTests(
+          None, None, test_filter, [self.device])
       # Filters should always result in >= 1 test.
       if len(tests) == 0:
         raise Exception('Java test filter "%s" returned no tests.'

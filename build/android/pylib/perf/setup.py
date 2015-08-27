@@ -18,7 +18,7 @@ from pylib.perf import test_runner
 from pylib.utils import test_environment
 
 
-def _GetAllDevices():
+def _GetAllDevices(active_devices):
   devices_path = os.path.join(os.environ.get('CHROMIUM_OUT_DIR', 'out'),
                               device_list.LAST_DEVICES_FILENAME)
   try:
@@ -26,7 +26,7 @@ def _GetAllDevices():
                for s in device_list.GetPersistentDeviceList(devices_path)]
   except IOError as e:
     logging.error('Unable to find %s [%s]', devices_path, e)
-    devices = device_utils.DeviceUtils.HealthyDevices()
+    devices = active_devices
   return sorted(devices)
 
 
@@ -56,7 +56,7 @@ def _GetStepsDict(test_options):
       return steps
 
 
-def Setup(test_options):
+def Setup(test_options, active_devices):
   """Create and return the test runner factory and tests.
 
   Args:
@@ -72,10 +72,10 @@ def Setup(test_options):
   os.makedirs(constants.PERF_OUTPUT_DIR)
 
   # Before running the tests, kill any leftover server.
-  test_environment.CleanupLeftoverProcesses()
+  test_environment.CleanupLeftoverProcesses(active_devices)
 
   # We want to keep device affinity, so return all devices ever seen.
-  all_devices = _GetAllDevices()
+  all_devices = _GetAllDevices(active_devices)
 
   steps_dict = _GetStepsDict(test_options)
   sorted_step_names = sorted(steps_dict['steps'].keys())
