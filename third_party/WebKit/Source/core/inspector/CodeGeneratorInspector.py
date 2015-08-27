@@ -114,7 +114,7 @@ class Capitalizer:
         str = possible_abbreviation.lower() + str[pos:]
         return str
 
-    ABBREVIATION = frozenset(["XHR", "DOM", "CSS"])
+    ABBREVIATION = frozenset(["XHR", "DOM", "CSS", "IO"])
 
 VALIDATOR_IFDEF_NAME = "ENABLE(ASSERT)"
 
