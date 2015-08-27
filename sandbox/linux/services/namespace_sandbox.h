@@ -38,6 +38,18 @@ namespace sandbox {
 class SANDBOX_EXPORT NamespaceSandbox {
  public:
 #if !defined(OS_NACL_NONSFI)
+  struct Options {
+    Options();
+    ~Options();
+
+    // Bitmask of namespace types. Must be some combination of CLONE_NEWUSER
+    // (required), CLONE_NEWPID, and CLONE_NEWNET. Defaults to all of the above.
+    int ns_types;
+
+    // Fail if any of the namespace types are not supported. Defaults to false.
+    bool fail_on_unsupported_ns_type;
+  };
+
   // Launch a new process inside its own user/PID/network namespaces (depending
   // on kernel support). Requires at a minimum that user namespaces are
   // supported (use Credentials::CanCreateProcessInNewUserNS to check this).
@@ -46,9 +58,20 @@ class SANDBOX_EXPORT NamespaceSandbox {
   // and 0, respectively, since this function makes a copy of options and
   // overrides them.
   static base::Process LaunchProcess(const base::CommandLine& cmdline,
-                                     const base::LaunchOptions& options);
+                                     const base::LaunchOptions& launch_options);
   static base::Process LaunchProcess(const std::vector<std::string>& argv,
-                                     const base::LaunchOptions& options);
+                                     const base::LaunchOptions& launch_options);
+
+  // Versions which take namespace sandbox options. These allow fine grained
+  // control over the types of namespaces used.
+  static base::Process LaunchProcessWithOptions(
+      const base::CommandLine& cmdline,
+      const base::LaunchOptions& launch_options,
+      const Options& ns_sandbox_options);
+  static base::Process LaunchProcessWithOptions(
+      const std::vector<std::string>& argv,
+      const base::LaunchOptions& launch_options,
+      const Options& ns_sandbox_options);
 #endif  // !defined(OS_NACL_NONSFI)
 
   // Forks a process in its own PID namespace. The child process is the init

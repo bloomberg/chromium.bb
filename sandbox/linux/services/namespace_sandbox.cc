@@ -86,35 +86,64 @@ void TerminationSignalHandler(int sig) {
 }  // namespace
 
 #if !defined(OS_NACL_NONSFI)
+NamespaceSandbox::Options::Options()
+    : ns_types(CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNET),
+      fail_on_unsupported_ns_type(false) {}
+
+NamespaceSandbox::Options::~Options() {}
+
 // static
 base::Process NamespaceSandbox::LaunchProcess(
     const base::CommandLine& cmdline,
-    const base::LaunchOptions& options) {
-  return LaunchProcess(cmdline.argv(), options);
+    const base::LaunchOptions& launch_options) {
+  return LaunchProcessWithOptions(cmdline.argv(), launch_options, Options());
 }
 
 // static
 base::Process NamespaceSandbox::LaunchProcess(
     const std::vector<std::string>& argv,
-    const base::LaunchOptions& options) {
+    const base::LaunchOptions& launch_options) {
+  return LaunchProcessWithOptions(argv, launch_options, Options());
+}
+
+// static
+base::Process NamespaceSandbox::LaunchProcessWithOptions(
+    const base::CommandLine& cmdline,
+    const base::LaunchOptions& launch_options,
+    const Options& ns_sandbox_options) {
+  return LaunchProcessWithOptions(cmdline.argv(), launch_options,
+                                  ns_sandbox_options);
+}
+
+// static
+base::Process NamespaceSandbox::LaunchProcessWithOptions(
+    const std::vector<std::string>& argv,
+    const base::LaunchOptions& launch_options,
+    const Options& ns_sandbox_options) {
+  // These fields may not be set by the caller.
+  CHECK(launch_options.pre_exec_delegate == nullptr);
+  CHECK_EQ(0, launch_options.clone_flags);
+
   int clone_flags = 0;
-  int ns_types[] = {CLONE_NEWUSER, CLONE_NEWPID, CLONE_NEWNET};
-  for (const int ns_type : ns_types) {
+  const int kSupportedTypes[] = {CLONE_NEWUSER, CLONE_NEWPID, CLONE_NEWNET};
+  for (const int ns_type : kSupportedTypes) {
+    if ((ns_type & ns_sandbox_options.ns_types) == 0) {
+      continue;
+    }
+
     if (NamespaceUtils::KernelSupportsUnprivilegedNamespace(ns_type)) {
       clone_flags |= ns_type;
+    } else if (ns_sandbox_options.fail_on_unsupported_ns_type) {
+      return base::Process();
     }
   }
   CHECK(clone_flags & CLONE_NEWUSER);
 
-  // These fields may not be set by the caller.
-  CHECK(options.pre_exec_delegate == nullptr);
-  CHECK_EQ(0, options.clone_flags);
-
   WriteUidGidMapDelegate write_uid_gid_map_delegate;
 
-  base::LaunchOptions launch_options = options;
-  launch_options.pre_exec_delegate = &write_uid_gid_map_delegate;
-  launch_options.clone_flags = clone_flags;
+  base::LaunchOptions launch_options_copy = launch_options;
+  launch_options_copy.pre_exec_delegate = &write_uid_gid_map_delegate;
+  launch_options_copy.clone_flags = clone_flags;
 
   const std::pair<int, const char*> clone_flag_environ[] = {
       std::make_pair(CLONE_NEWUSER, kSandboxUSERNSEnvironmentVarName),
@@ -122,14 +151,14 @@ base::Process NamespaceSandbox::LaunchProcess(
       std::make_pair(CLONE_NEWNET, kSandboxNETNSEnvironmentVarName),
   };
 
-  base::EnvironmentMap* environ = &launch_options.environ;
+  base::EnvironmentMap* environ = &launch_options_copy.environ;
   for (const auto& entry : clone_flag_environ) {
     const int flag = entry.first;
     const char* environ_name = entry.second;
     SetEnvironForNamespaceType(environ, environ_name, clone_flags & flag);
   }
 
-  return base::LaunchProcess(argv, launch_options);
+  return base::LaunchProcess(argv, launch_options_copy);
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
