@@ -24,6 +24,8 @@ class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
 
   const uint8_t* data(webrtc::PlaneType type) const override;
 
+  uint8_t* data(webrtc::PlaneType type) override;
+
   int stride(webrtc::PlaneType type) const override;
 
   void* native_handle() const override;
