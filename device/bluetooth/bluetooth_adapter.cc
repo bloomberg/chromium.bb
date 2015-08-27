@@ -5,9 +5,11 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 
 namespace device {
 
@@ -56,11 +58,12 @@ void BluetoothAdapter::StartDiscoverySessionWithFilter(
     const DiscoverySessionCallback& callback,
     const ErrorCallback& error_callback) {
   BluetoothDiscoveryFilter* ptr = discovery_filter.get();
-  AddDiscoverySession(ptr,
-                      base::Bind(&BluetoothAdapter::OnStartDiscoverySession,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 base::Passed(&discovery_filter), callback),
-                      error_callback);
+  AddDiscoverySession(
+      ptr, base::Bind(&BluetoothAdapter::OnStartDiscoverySession,
+                      weak_ptr_factory_.GetWeakPtr(),
+                      base::Passed(&discovery_filter), callback),
+      base::Bind(&BluetoothAdapter::OnStartDiscoverySessionError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 scoped_ptr<BluetoothDiscoveryFilter>
@@ -160,11 +163,21 @@ void BluetoothAdapter::OnStartDiscoverySession(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const DiscoverySessionCallback& callback) {
   VLOG(1) << "Discovery session started!";
+  RecordBluetoothDiscoverySessionStartOutcome(
+      UMABluetoothDiscoverySessionOutcome::SUCCESS);
+
   scoped_ptr<BluetoothDiscoverySession> discovery_session(
       new BluetoothDiscoverySession(scoped_refptr<BluetoothAdapter>(this),
                                     discovery_filter.Pass()));
   discovery_sessions_.insert(discovery_session.get());
   callback.Run(discovery_session.Pass());
+}
+
+void BluetoothAdapter::OnStartDiscoverySessionError(
+    const ErrorCallback& callback,
+    UMABluetoothDiscoverySessionOutcome outcome) {
+  RecordBluetoothDiscoverySessionStartOutcome(outcome);
+  callback.Run();
 }
 
 void BluetoothAdapter::MarkDiscoverySessionsAsInactive() {
@@ -222,6 +235,22 @@ BluetoothAdapter::GetMergedDiscoveryFilterHelper(
   }
 
   return result.Pass();
+}
+
+// static
+void BluetoothAdapter::RecordBluetoothDiscoverySessionStartOutcome(
+    UMABluetoothDiscoverySessionOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Bluetooth.DiscoverySession.Start.Outcome", static_cast<int>(outcome),
+      static_cast<int>(UMABluetoothDiscoverySessionOutcome::COUNT));
+}
+
+// static
+void BluetoothAdapter::RecordBluetoothDiscoverySessionStopOutcome(
+    UMABluetoothDiscoverySessionOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Bluetooth.DiscoverySession.Stop.Outcome", static_cast<int>(outcome),
+      static_cast<int>(UMABluetoothDiscoverySessionOutcome::COUNT));
 }
 
 }  // namespace device

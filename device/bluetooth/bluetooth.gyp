@@ -70,6 +70,7 @@
         'bluetooth_discovery_manager_mac.h',
         'bluetooth_discovery_session.cc',
         'bluetooth_discovery_session.h',
+        'bluetooth_discovery_session_outcome.h',
         'bluetooth_gatt_characteristic.cc',
         'bluetooth_gatt_characteristic.h',
         'bluetooth_gatt_connection.cc',

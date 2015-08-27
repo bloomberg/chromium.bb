@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_low_energy_central_manager_delegate.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -237,7 +238,7 @@ void BluetoothAdapterMac::RemovePairingDelegateInternal(
 void BluetoothAdapterMac::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const DiscoverySessionErrorCallback& error_callback) {
   DVLOG(1) << __func__;
   if (num_discovery_sessions_ > 0) {
     DCHECK(IsDiscovering());
@@ -245,7 +246,8 @@ void BluetoothAdapterMac::AddDiscoverySession(
     // We are already running a discovery session, notify the system if the
     // filter has changed.
     if (!StartDiscovery(discovery_filter)) {
-      error_callback.Run();
+      // TODO: Provide a more precise error here.
+      error_callback.Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
       return;
     }
     callback.Run();
@@ -255,7 +257,8 @@ void BluetoothAdapterMac::AddDiscoverySession(
   DCHECK_EQ(0, num_discovery_sessions_);
 
   if (!StartDiscovery(discovery_filter)) {
-    error_callback.Run();
+    // TODO: Provide a more precise error here.
+    error_callback.Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
     return;
   }
 
@@ -270,7 +273,7 @@ void BluetoothAdapterMac::AddDiscoverySession(
 void BluetoothAdapterMac::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const DiscoverySessionErrorCallback& error_callback) {
   DVLOG(1) << __func__;
 
   if (num_discovery_sessions_ > 1) {
@@ -283,7 +286,7 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
 
   if (num_discovery_sessions_ == 0) {
     DVLOG(1) << "No active discovery sessions. Returning error.";
-    error_callback.Run();
+    error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_ACTIVE);
     return;
   }
 
@@ -296,7 +299,8 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
   if (transport & BluetoothDiscoveryFilter::Transport::TRANSPORT_CLASSIC) {
     if (!classic_discovery_manager_->StopDiscovery()) {
       DVLOG(1) << "Failed to stop classic discovery";
-      error_callback.Run();
+      // TODO: Provide a more precise error here.
+      error_callback.Run(UMABluetoothDiscoverySessionOutcome::UNKNOWN);
       return;
     }
   }
@@ -313,9 +317,9 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
 void BluetoothAdapterMac::SetDiscoveryFilter(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const DiscoverySessionErrorCallback& error_callback) {
   NOTIMPLEMENTED();
-  error_callback.Run();
+  error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
 }
 
 bool BluetoothAdapterMac::StartDiscovery(

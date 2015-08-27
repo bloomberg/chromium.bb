@@ -2759,6 +2759,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.DiscoverySession.Start.Outcome"
+    enum="BluetoothDiscoveryOutcomes">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the outcome of calls to BluetoothAdapter::StartDiscoverySession.
+    Used to prioritize efforts to fix failures of this function.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.DiscoverySession.Stop.Outcome"
+    enum="BluetoothDiscoveryOutcomes">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the outcome of calls to BluetoothDiscoverySession::Stop. Used to
+    prioritize efforts to fix failures of this function.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.GATTErrors" enum="BluetoothGATTErrors">
   <owner>jyasskin@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
@@ -53126,6 +53148,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Available without LE"/>
   <int value="3" label="Available with LE"/>
   <int value="4" label="Available unknown LE"/>
+</enum>
+
+<enum name="BluetoothDiscoveryOutcomes" type="int">
+  <int value="0" label="Success"/>
+  <int value="1"
+      label="Unknown error; used when we could add code to get more detail"/>
+  <int value="2" label="Function not implemented on this platform"/>
+  <int value="3" label="Adapter not present"/>
+  <int value="4" label="Adapter removed since call chain started"/>
+  <int value="5" label="Discovery session not active"/>
+  <int value="6"
+      label="Attempted to remove a discovery session with another pending
+             request"/>
+  <int value="7"
+      label="Active BluetoothDiscoverySession wasn't found in
+             BluetoothAdapter"/>
+  <int value="8" label="Failed without a more specific reason"/>
+  <int value="9" label="(ChromeOS) DBus failed to find the adapter"/>
+  <int value="10" label="(ChromeOS) DBus didn't return an error code"/>
+  <int value="11" label="(ChromeOS) org.bluez.Error.InProgress"/>
+  <int value="12" label="(ChromeOS) org.bluez.Error.NotReady"/>
+  <int value="13"
+      label="(ChromeOS) org.bluez.Error.Failed inside SetDiscoveryFilter,
+             maybe indicating an unsupported transport"/>
 </enum>
 
 <enum name="BluetoothGATTErrors" type="int">

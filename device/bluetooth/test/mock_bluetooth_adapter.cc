@@ -24,19 +24,17 @@ void MockBluetoothAdapter::Shutdown() {
 void MockBluetoothAdapter::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-}
+    const DiscoverySessionErrorCallback& error_callback) {}
 
 void MockBluetoothAdapter::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-}
+    const DiscoverySessionErrorCallback& error_callback) {}
 
 void MockBluetoothAdapter::SetDiscoveryFilter(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const DiscoverySessionErrorCallback& error_callback) {
   SetDiscoveryFilterRaw(discovery_filter.get(), callback, error_callback);
 }
 

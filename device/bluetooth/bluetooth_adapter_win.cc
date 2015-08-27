@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_device_win.h"
+#include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_socket_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
@@ -104,16 +105,22 @@ bool BluetoothAdapterWin::IsDiscovering() const {
       discovery_status_ == DISCOVERY_STOPPING;
 }
 
+static void RunDiscoverySessionErrorCallback(
+    const base::Callback<void(UMABluetoothDiscoverySessionOutcome)>& callback,
+    UMABluetoothDiscoverySessionOutcome outcome) {
+  callback.Run(outcome);
+}
+
 void BluetoothAdapterWin::DiscoveryStarted(bool success) {
   discovery_status_ = success ? DISCOVERING : NOT_DISCOVERING;
-  for (std::vector<std::pair<base::Closure, ErrorCallback> >::const_iterator
-       iter = on_start_discovery_callbacks_.begin();
-       iter != on_start_discovery_callbacks_.end();
-       ++iter) {
+  for (const auto& callbacks : on_start_discovery_callbacks_) {
     if (success)
-      ui_task_runner_->PostTask(FROM_HERE, iter->first);
+      ui_task_runner_->PostTask(FROM_HERE, callbacks.first);
     else
-      ui_task_runner_->PostTask(FROM_HERE, iter->second);
+      ui_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&RunDiscoverySessionErrorCallback, callbacks.second,
+                     UMABluetoothDiscoverySessionOutcome::UNKNOWN));
   }
   num_discovery_listeners_ = on_start_discovery_callbacks_.size();
   on_start_discovery_callbacks_.clear();
@@ -293,7 +300,7 @@ void BluetoothAdapterWin::DevicesPolled(
 void BluetoothAdapterWin::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const DiscoverySessionErrorCallback& error_callback) {
   if (discovery_status_ == DISCOVERING) {
     num_discovery_listeners_++;
     callback.Run();
@@ -307,9 +314,9 @@ void BluetoothAdapterWin::AddDiscoverySession(
 void BluetoothAdapterWin::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const DiscoverySessionErrorCallback& error_callback) {
   if (discovery_status_ == NOT_DISCOVERING) {
-    error_callback.Run();
+    error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_ACTIVE);
     return;
   }
   on_stop_discovery_callbacks_.push_back(callback);
@@ -319,9 +326,9 @@ void BluetoothAdapterWin::RemoveDiscoverySession(
 void BluetoothAdapterWin::SetDiscoveryFilter(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const DiscoverySessionErrorCallback& error_callback) {
   NOTIMPLEMENTED();
-  error_callback.Run();
+  error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
 }
 
 void BluetoothAdapterWin::Init() {

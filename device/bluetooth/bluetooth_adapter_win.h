@@ -109,15 +109,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   ~BluetoothAdapterWin() override;
 
   // BluetoothAdapter:
-  void AddDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) override;
-  void RemoveDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
-                              const base::Closure& callback,
-                              const ErrorCallback& error_callback) override;
-  void SetDiscoveryFilter(scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) override;
+  void AddDiscoverySession(
+      BluetoothDiscoveryFilter* discovery_filter,
+      const base::Closure& callback,
+      const DiscoverySessionErrorCallback& error_callback) override;
+  void RemoveDiscoverySession(
+      BluetoothDiscoveryFilter* discovery_filter,
+      const base::Closure& callback,
+      const DiscoverySessionErrorCallback& error_callback) override;
+  void SetDiscoveryFilter(
+      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+      const base::Closure& callback,
+      const DiscoverySessionErrorCallback& error_callback) override;
 
   void Init();
   void InitForTest(
@@ -135,7 +138,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   DiscoveryStatus discovery_status_;
   base::hash_set<std::string> discovered_devices_;
 
-  std::vector<std::pair<base::Closure, ErrorCallback> >
+  std::vector<std::pair<base::Closure, DiscoverySessionErrorCallback>>
       on_start_discovery_callbacks_;
   std::vector<base::Closure> on_stop_discovery_callbacks_;
   size_t num_discovery_listeners_;

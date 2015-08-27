@@ -35,6 +35,8 @@ void BluetoothDiscoverySession::Stop(const base::Closure& success_callback,
                                      const ErrorCallback& error_callback) {
   if (!active_) {
     LOG(WARNING) << "Discovery session not active. Cannot stop.";
+    BluetoothAdapter::RecordBluetoothDiscoverySessionStopOutcome(
+        UMABluetoothDiscoverySessionOutcome::NOT_ACTIVE);
     error_callback.Run();
     return;
   }
@@ -49,17 +51,28 @@ void BluetoothDiscoverySession::Stop(const base::Closure& success_callback,
   base::Closure discovery_session_removed_callback =
       base::Bind(&BluetoothDiscoverySession::OnDiscoverySessionRemoved,
                  deactive_discovery_session, success_callback);
-  adapter_->RemoveDiscoverySession(discovery_filter_.get(),
-                                   discovery_session_removed_callback,
-                                   error_callback);
+  adapter_->RemoveDiscoverySession(
+      discovery_filter_.get(), discovery_session_removed_callback,
+      base::Bind(&BluetoothDiscoverySession::OnDiscoverySessionRemovalFailed,
+                 error_callback));
 }
 
 // static
 void BluetoothDiscoverySession::OnDiscoverySessionRemoved(
     const base::Closure& deactivate_discovery_session,
     const base::Closure& success_callback) {
+  BluetoothAdapter::RecordBluetoothDiscoverySessionStopOutcome(
+      UMABluetoothDiscoverySessionOutcome::SUCCESS);
   deactivate_discovery_session.Run();
   success_callback.Run();
+}
+
+// static
+void BluetoothDiscoverySession::OnDiscoverySessionRemovalFailed(
+    const base::Closure& error_callback,
+    UMABluetoothDiscoverySessionOutcome outcome) {
+  BluetoothAdapter::RecordBluetoothDiscoverySessionStopOutcome(outcome);
+  error_callback.Run();
 }
 
 void BluetoothDiscoverySession::DeactivateDiscoverySession() {
@@ -74,13 +87,22 @@ void BluetoothDiscoverySession::MarkAsInactive() {
   adapter_->DiscoverySessionBecameInactive(this);
 }
 
+static void IgnoreDiscoveryOutcome(
+    const base::Closure& error_callback,
+    UMABluetoothDiscoverySessionOutcome outcome) {
+  error_callback.Run();
+}
+
 void BluetoothDiscoverySession::SetDiscoveryFilter(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   discovery_filter_.reset(discovery_filter.release());
-  adapter_->SetDiscoveryFilter(adapter_->GetMergedDiscoveryFilter().Pass(),
-                               callback, error_callback);
+  // BluetoothDiscoverySession::SetDiscoveryFilter is only used from a private
+  // extension API, so we don't bother histogramming its failures.
+  adapter_->SetDiscoveryFilter(
+      adapter_->GetMergedDiscoveryFilter().Pass(), callback,
+      base::Bind(&IgnoreDiscoveryOutcome, error_callback));
 }
 
 const BluetoothDiscoveryFilter* BluetoothDiscoverySession::GetDiscoveryFilter()
