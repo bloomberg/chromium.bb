@@ -123,6 +123,7 @@
       ],
       'targets': [
         {
+          # GN version: //chrome/browser/extensions/default_extensions
           'target_name': 'default_extensions',
           'type': 'none',
           'conditions': [

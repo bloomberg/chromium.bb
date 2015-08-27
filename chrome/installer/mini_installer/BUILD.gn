@@ -142,11 +142,11 @@ action("archive") {
   deps = [
     "//chrome",
     "//chrome:main_dll",
+    "//chrome/browser/extensions/default_extensions",
     "//chrome/installer/setup",
     "//third_party/icu:icudata",
 
     #"../chrome.gyp:chrome_nacl_win64",  TODO(GYP) bug 512869.
-    #"../chrome.gyp:default_extensions",  TODO(GYP) bug 521048.
   ]
 }
 
