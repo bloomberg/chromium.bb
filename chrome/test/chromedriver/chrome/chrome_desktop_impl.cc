@@ -101,6 +101,7 @@ Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
                                             scoped_ptr<WebView>* web_view) {
   base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
   std::string id;
+  WebViewInfo::Type type = WebViewInfo::Type::kPage;
   while (base::TimeTicks::Now() < deadline) {
     WebViewsInfo views_info;
     Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
@@ -108,8 +109,10 @@ Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
       return status;
 
     for (size_t i = 0; i < views_info.GetSize(); ++i) {
-      if (views_info.Get(i).url.find(url) == 0) {
-        id = views_info.Get(i).id;
+      const WebViewInfo& view_info = views_info.Get(i);
+      if (view_info.url.find(url) == 0) {
+        id = view_info.id;
+        type = view_info.type;
         break;
       }
     }
@@ -120,11 +123,20 @@ Status ChromeDesktopImpl::WaitForPageToLoad(const std::string& url,
   if (id.empty())
     return Status(kUnknownError, "page could not be found: " + url);
 
+  const DeviceMetrics* device_metrics = devtools_http_client_->device_metrics();
+  if (type == WebViewInfo::Type::kApp ||
+      type == WebViewInfo::Type::kBackgroundPage) {
+    // Apps and extensions don't work on Android, so it doesn't make sense to
+    // provide override device metrics in mobile emulation mode, and can also
+    // potentially crash the renderer, for more details see:
+    // https://code.google.com/p/chromedriver/issues/detail?id=1205
+    device_metrics = nullptr;
+  }
   scoped_ptr<WebView> web_view_tmp(
       new WebViewImpl(id,
                       devtools_http_client_->browser_info(),
                       devtools_http_client_->CreateClient(id),
-                      devtools_http_client_->device_metrics()));
+                      device_metrics));
   Status status = web_view_tmp->ConnectIfNecessary();
   if (status.IsError())
     return status;
