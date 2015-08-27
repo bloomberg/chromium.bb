@@ -111,10 +111,8 @@ class BatteryUtilsSetChargingTest(BatteryUtilsTest):
     self.battery._cache['profile'] = self._NEXUS_5
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            mock.ANY, check_return=True, as_root=True), []),
+            mock.ANY, check_return=True, as_root=True, large_output=True), []),
         (self.call.battery.GetCharging(), False),
-        (self.call.device.RunShellCommand(
-            mock.ANY, check_return=True, as_root=True), []),
         (self.call.battery.GetCharging(), True)):
       self.battery.SetCharging(True)
 
@@ -122,7 +120,7 @@ class BatteryUtilsSetChargingTest(BatteryUtilsTest):
     self.battery._cache['profile'] = self._NEXUS_5
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            mock.ANY, check_return=True, as_root=True), []),
+            mock.ANY, check_return=True, as_root=True, large_output=True), []),
         (self.call.battery.GetCharging(), True)):
       self.battery.SetCharging(True)
 
@@ -131,10 +129,8 @@ class BatteryUtilsSetChargingTest(BatteryUtilsTest):
     self.battery._cache['profile'] = self._NEXUS_5
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            mock.ANY, check_return=True, as_root=True), []),
+            mock.ANY, check_return=True, as_root=True, large_output=True), []),
         (self.call.battery.GetCharging(), True),
-        (self.call.device.RunShellCommand(
-            mock.ANY, check_return=True, as_root=True), []),
         (self.call.battery.GetCharging(), False)):
       self.battery.SetCharging(False)
 

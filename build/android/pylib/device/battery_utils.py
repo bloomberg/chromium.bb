@@ -350,11 +350,12 @@ class BatteryUtils(object):
     else:
       command = self._cache['profile']['disable_command']
 
-    def set_and_verify_charging():
-      self._device.RunShellCommand(command, check_return=True, as_root=True)
+    def verify_charging():
       return self.GetCharging() == enabled
 
-    timeout_retry.WaitFor(set_and_verify_charging, wait_period=1)
+    self._device.RunShellCommand(
+        command, check_return=True, as_root=True, large_output=True)
+    timeout_retry.WaitFor(verify_charging, wait_period=1)
 
   # TODO(rnephew): Make private when all use cases can use the context manager.
   @decorators.WithTimeoutAndRetriesFromInstance()
