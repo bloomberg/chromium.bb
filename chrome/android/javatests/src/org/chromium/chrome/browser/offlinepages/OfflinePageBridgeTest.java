@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.offline_pages;
+package org.chromium.chrome.browser.offlinepages;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.DeletePageCallback;
-import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.OfflinePageModelObserver;
-import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.SavePageCallback;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
-import org.chromium.components.offline_pages.DeletePageResult;
-import org.chromium.components.offline_pages.SavePageResult;
+import org.chromium.components.offlinepages.DeletePageResult;
+import org.chromium.components.offlinepages.SavePageResult;
 
 import java.util.ArrayList;
 import java.util.List;

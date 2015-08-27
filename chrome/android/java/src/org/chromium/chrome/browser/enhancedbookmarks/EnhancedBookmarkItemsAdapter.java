@@ -17,9 +17,9 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkPromoHeader.PromoHeaderShowingChangeListener;
-import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
-import org.chromium.chrome.browser.offline_pages.OfflinePageFreeUpSpaceCallback;
-import org.chromium.chrome.browser.offline_pages.OfflinePageStorageSpaceHeader;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceCallback;
+import org.chromium.chrome.browser.offlinepages.OfflinePageStorageSpaceHeader;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
