@@ -1749,8 +1749,11 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         } else if (!mUrlHasFocus && isLocationIcon(v)) {
             Tab currentTab = getCurrentTab();
             if (currentTab != null && currentTab.getWebContents() != null) {
-                WebsiteSettingsPopup.show(getContext(), currentTab.getProfile(),
-                        currentTab.getWebContents());
+                Activity activity = currentTab.getWindowAndroid().getActivity().get();
+                if (activity != null) {
+                    WebsiteSettingsPopup.show(activity, currentTab.getProfile(),
+                            currentTab.getWebContents());
+                }
             }
         } else if (v == mMicButton) {
             RecordUserAction.record("MobileOmniboxVoiceSearch");

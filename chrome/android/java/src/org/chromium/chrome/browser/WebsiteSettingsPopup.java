@@ -8,6 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -281,8 +282,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      * @param webContents The WebContents for which to show Website information. This information is
      *                    retrieved for the visible entry.
      */
-    private WebsiteSettingsPopup(Context context, Profile profile, WebContents webContents) {
-        mContext = context;
+    private WebsiteSettingsPopup(Activity activity, Profile profile, WebContents webContents) {
+        mContext = activity;
         mProfile = profile;
         mWebContents = webContents;
         mIsReadOnlyDialog = enableReadOnlyPopup();
@@ -955,13 +956,13 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      * Shows a WebsiteSettings dialog for the provided WebContents. The popup adds itself to the
      * view hierarchy which owns the reference while it's visible.
      *
-     * @param context Context which is used for launching a dialog.
+     * @param activity Activity which is used for launching a dialog.
      * @param webContents The WebContents for which to show Website information. This information is
      *                    retrieved for the visible entry.
      */
     @SuppressWarnings("unused")
-    public static void show(Context context, Profile profile, WebContents webContents) {
-        new WebsiteSettingsPopup(context, profile, webContents);
+    public static void show(Activity activity, Profile profile, WebContents webContents) {
+        new WebsiteSettingsPopup(activity, profile, webContents);
     }
 
     private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);
