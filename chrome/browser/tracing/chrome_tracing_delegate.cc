@@ -49,19 +49,31 @@ scoped_ptr<content::TraceUploader> ChromeTracingDelegate::GetTraceUploader(
       new TraceCrashServiceUploader(request_context));
 }
 
-bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
-    const content::BackgroundTracingConfig& config,
-    bool requires_anonymized_data) {
-  Profile* profile = g_browser_process->profile_manager()
-                         ->GetLastUsedProfile()
-                         ->GetOriginalProfile();
-  DCHECK(profile);
+namespace {
+
+enum PermitMissingProfile { PROFILE_REQUIRED, PROFILE_NOT_REQUIRED };
+
+bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
+                           PermitMissingProfile profile_permission) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
+    return false;
+
+  Profile* profile = profile_manager->GetProfileByPath(
+      profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir()));
+
+  // If the profile hasn't loaded or been created yet, we allow the scenario
+  // to start up, but not be finalized.
+  if (!profile) {
+    if (profile_permission == PROFILE_REQUIRED)
+      return false;
+    else
+      return true;
+  }
+
   // Safeguard, in case background tracing is responsible for a crash on
   // startup.
   if (profile->GetLastSessionExitType() == Profile::EXIT_CRASHED)
-    return false;
-
-  if (requires_anonymized_data && chrome::IsOffTheRecordSessionActive())
     return false;
 
   if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE) {
@@ -81,10 +93,27 @@ bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
   return true;
 }
 
+}  // namespace
+
+bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
+    const content::BackgroundTracingConfig& config,
+    bool requires_anonymized_data) {
+  if (!ProfileAllowsScenario(config, PROFILE_NOT_REQUIRED))
+    return false;
+
+  if (requires_anonymized_data && chrome::IsOffTheRecordSessionActive())
+    return false;
+
+  return true;
+}
+
 bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
     const content::BackgroundTracingConfig& config,
     bool requires_anonymized_data) {
   if (requires_anonymized_data && incognito_launched_)
+    return false;
+
+  if (!ProfileAllowsScenario(config, PROFILE_REQUIRED))
     return false;
 
   if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE) {
