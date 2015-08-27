@@ -54,6 +54,20 @@
 
 namespace blink {
 
+namespace {
+
+const LayoutSVGText* findTextRoot(const LayoutObject* start)
+{
+    ASSERT(start);
+    for (; start; start = start->parent()) {
+        if (start->isSVGText())
+            return toLayoutSVGText(start);
+    }
+    return nullptr;
+}
+
+}
+
 LayoutSVGText::LayoutSVGText(SVGTextElement* node)
     : LayoutSVGBlock(node)
     , m_needsReordering(false)
@@ -75,22 +89,12 @@ bool LayoutSVGText::isChildAllowed(LayoutObject* child, const ComputedStyle&) co
 
 LayoutSVGText* LayoutSVGText::locateLayoutSVGTextAncestor(LayoutObject* start)
 {
-    ASSERT(start);
-    while (start && !start->isSVGText())
-        start = start->parent();
-    if (!start || !start->isSVGText())
-        return nullptr;
-    return toLayoutSVGText(start);
+    return const_cast<LayoutSVGText*>(findTextRoot(start));
 }
 
 const LayoutSVGText* LayoutSVGText::locateLayoutSVGTextAncestor(const LayoutObject* start)
 {
-    ASSERT(start);
-    while (start && !start->isSVGText())
-        start = start->parent();
-    if (!start || !start->isSVGText())
-        return nullptr;
-    return toLayoutSVGText(start);
+    return findTextRoot(start);
 }
 
 static inline void collectLayoutAttributes(LayoutObject* text, Vector<SVGTextLayoutAttributes*>& attributes)

@@ -30,7 +30,6 @@ namespace blink {
 
 class LayoutSVGInlineText;
 class SVGTextElement;
-class LayoutSVGInlineText;
 
 class LayoutSVGText final : public LayoutSVGBlock {
 public:
@@ -43,6 +42,8 @@ public:
     void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
     void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
     FloatRect paintInvalidationRectInLocalCoordinates() const override;
+    FloatRect objectBoundingBox() const override { return FloatRect(frameRect()); }
+    FloatRect strokeBoundingBox() const override;
 
     static LayoutSVGText* locateLayoutSVGTextAncestor(LayoutObject*);
     static const LayoutSVGText* locateLayoutSVGTextAncestor(const LayoutObject*);
@@ -74,9 +75,6 @@ private:
     void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
     void removeChild(LayoutObject*) override;
     void willBeDestroyed() override;
-
-    FloatRect objectBoundingBox() const override { return FloatRect(frameRect()); }
-    FloatRect strokeBoundingBox() const override;
 
     RootInlineBox* createRootInlineBox() override;
 
