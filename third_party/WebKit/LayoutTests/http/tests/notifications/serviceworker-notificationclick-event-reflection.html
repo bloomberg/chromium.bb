@@ -68,11 +68,12 @@
                   // set on the Notification object are as expected.
                   assert_equals(event.data.command, 'click', 'The notification was expected to be clicked.');
 
+                  options.actions = options.actions.slice(0, Notification.maxActions);
                   Object.keys(options).forEach(function(key) {
-                      if (key == 'actions')
-                          assert_object_equals(event.data.notification.actions, options.actions.slice(0, Notification.maxActions));
-                      else
+                      if (typeof options[key] == 'object')
                           assert_object_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
+                      else
+                          assert_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
                   });
 
                   test.done();

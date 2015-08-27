@@ -21,7 +21,6 @@
           var notificationDataList = new Array(
               true, // Check Boolean type
               1024, // Check Number type
-              Number.NaN, // Check Number.NaN type
               'any data', // Check String type
               new Array('Saab', 'Volvo', 'BMW'),  // Check Array type
               { first: 'first', second: 'second' }  // Check object
@@ -64,10 +63,13 @@
 
                   var pos = event.data.notification.tag;
 
-                  assert_object_equals(event.data.notification.data, notificationDataList[pos], 'The data field must be the same.');
+                  if (typeof notificationDataList[pos] === 'object')
+                      assert_object_equals(event.data.notification.data, notificationDataList[pos], 'The data field must be the same.');
+                  else
+                      assert_equals(event.data.notification.data, notificationDataList[pos], 'The data field must be the same.');
 
-                  if (pos < notificationDataList.length)
-                      assertNotificationDataReflects(++pos);
+                  if (++pos < notificationDataList.length)
+                      assertNotificationDataReflects(pos);
                   else
                       test.done();
               });

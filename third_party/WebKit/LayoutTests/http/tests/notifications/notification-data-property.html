@@ -14,10 +14,8 @@
     function assertNotificationDataReflects(value) {
         var notification = new Notification('Title', { data: value });
 
-        if (Array.isArray(value))
+        if (typeof value === 'object')
             assert_object_equals(notification.data, value);
-        else if (typeof value === 'object')
-            assert_array_equals(notification.data, value);
         else
             assert_equals(notification.data, value);
     }
