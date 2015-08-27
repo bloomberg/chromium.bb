@@ -19,6 +19,7 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "mojo/converters/transform/transform_type_converters.h"
 
 namespace mojo {
@@ -63,7 +64,8 @@ cc::SharedQuadState* ConvertSharedQuadState(const SharedQuadStatePtr& input,
 
 bool ConvertDrawQuad(const QuadPtr& input,
                      cc::SharedQuadState* sqs,
-                     cc::RenderPass* render_pass) {
+                     cc::RenderPass* render_pass,
+                     CustomSurfaceConverter* custom_converter) {
   switch (input->material) {
     case MATERIAL_DEBUG_BORDER: {
       cc::DebugBorderDrawQuad* debug_border_quad =
@@ -120,6 +122,12 @@ bool ConvertDrawQuad(const QuadPtr& input,
     case MATERIAL_SURFACE_CONTENT: {
       if (input->surface_quad_state.is_null())
         return false;
+
+      if (custom_converter) {
+        return custom_converter->ConvertSurfaceDrawQuad(input,
+                                                        sqs,
+                                                        render_pass);
+      }
       cc::SurfaceDrawQuad* surface_quad =
           render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
       surface_quad->SetAll(
@@ -417,9 +425,9 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
 }
 
 // static
-scoped_ptr<cc::RenderPass>
-TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
-    const PassPtr& input) {
+scoped_ptr<cc::RenderPass> ConvertToRenderPass(
+    const mojo::PassPtr& input,
+    CustomSurfaceConverter* custom_converter) {
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create(
       input->shared_quad_states.size(), input->quads.size());
   pass->SetAll(input->id.To<cc::RenderPassId>(),
@@ -437,10 +445,17 @@ TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
     while (quad->shared_quad_state_index > sqs_iter.index()) {
       ++sqs_iter;
     }
-    if (!ConvertDrawQuad(quad, *sqs_iter, pass.get()))
+    if (!ConvertDrawQuad(quad, *sqs_iter, pass.get(), custom_converter))
       return scoped_ptr<cc::RenderPass>();
   }
   return pass.Pass();
+}
+
+// static
+scoped_ptr<cc::RenderPass>
+TypeConverter<scoped_ptr<cc::RenderPass>, PassPtr>::Convert(
+    const PassPtr& input) {
+  return ConvertToRenderPass(input, nullptr /* CustomSurfaceConverter */);
 }
 
 // static
@@ -601,9 +616,9 @@ TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
 }
 
 // static
-scoped_ptr<cc::CompositorFrame>
-TypeConverter<scoped_ptr<cc::CompositorFrame>, CompositorFramePtr>::Convert(
-    const CompositorFramePtr& input) {
+scoped_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
+    const mojo::CompositorFramePtr& input,
+    CustomSurfaceConverter* custom_converter) {
   scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
   frame_data->device_scale_factor = 1.f;
   frame_data->resource_list =
@@ -611,7 +626,7 @@ TypeConverter<scoped_ptr<cc::CompositorFrame>, CompositorFramePtr>::Convert(
   frame_data->render_pass_list.reserve(input->passes.size());
   for (size_t i = 0; i < input->passes.size(); ++i) {
     scoped_ptr<cc::RenderPass> pass =
-        input->passes[i].To<scoped_ptr<cc::RenderPass> >();
+        ConvertToRenderPass(input->passes[i], custom_converter);
     if (!pass)
       return scoped_ptr<cc::CompositorFrame>();
     frame_data->render_pass_list.push_back(pass.Pass());
@@ -619,6 +634,13 @@ TypeConverter<scoped_ptr<cc::CompositorFrame>, CompositorFramePtr>::Convert(
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   frame->delegated_frame_data = frame_data.Pass();
   return frame.Pass();
+}
+
+// static
+scoped_ptr<cc::CompositorFrame>
+TypeConverter<scoped_ptr<cc::CompositorFrame>, CompositorFramePtr>::Convert(
+    const CompositorFramePtr& input) {
+  return ConvertToCompositorFrame(input, nullptr);
 }
 
 }  // namespace mojo

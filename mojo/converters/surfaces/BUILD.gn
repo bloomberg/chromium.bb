@@ -7,6 +7,7 @@ component("surfaces") {
   output_name = "mojo_surfaces_lib"
 
   sources = [
+    "custom_surface_converter.h",
     "mojo_surfaces_export.h",
     "surfaces_type_converters.cc",
     "surfaces_type_converters.h",

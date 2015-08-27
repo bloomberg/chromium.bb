@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/quads/shared_quad_state.h"
 #include "components/view_manager/client_connection.h"
 #include "components/view_manager/connection_manager_delegate.h"
 #include "components/view_manager/focus_controller.h"
@@ -17,6 +18,7 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 using mojo::ConnectionSpecificId;
 
@@ -498,6 +500,12 @@ ViewTreeHostImpl* ConnectionManager::GetViewTreeHostByView(
   return nullptr;
 }
 
+scoped_ptr<cc::CompositorFrame>
+ConnectionManager::UpdateViewTreeFromCompositorFrame(
+    const mojo::CompositorFramePtr& input) {
+  return ConvertToCompositorFrame(input, this);
+}
+
 surfaces::SurfacesState* ConnectionManager::GetSurfacesState() {
   return surfaces_state_.get();
 }
@@ -718,6 +726,25 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
     new_host->UpdateTextInputState(new_focused_view->text_input_state());
   else if (old_host)
     old_host->UpdateTextInputState(ui::TextInputState());
+}
+
+bool ConnectionManager::ConvertSurfaceDrawQuad(const mojo::QuadPtr& input,
+                                               cc::SharedQuadState* sqs,
+                                               cc::RenderPass* render_pass) {
+  unsigned int id = static_cast<unsigned int>(
+      input->surface_quad_state->surface.To<cc::SurfaceId>().id);
+  // TODO(fsamuel): Security check.
+  ServerView* view = GetView(ViewIdFromTransportId(id));
+  // If a CompositorFrame message arrives late, say during a navigation, then
+  // it may contain view IDs that no longer exist.
+  if (!view)
+    return false;
+  gfx::Rect bounds(input->visible_rect.To<gfx::Rect>());
+  gfx::Point p;
+  sqs->quad_to_target_transform.TransformPoint(&p);
+  bounds.set_origin(p);
+  view->SetBounds(bounds);
+  return true;
 }
 
 }  // namespace view_manager

@@ -276,7 +276,7 @@ void ServerView::SubmitCompositorFrame(
   }
   surface_factory_->SubmitCompositorFrame(
       surface_id(),
-      frame.To<scoped_ptr<cc::CompositorFrame>>(),
+      delegate_->UpdateViewTreeFromCompositorFrame(frame),
       base::Bind(&CallCallback, callback));
   delegate_->GetSurfacesState()->scheduler()->SetNeedsDraw();
   last_submitted_frame_size_ = frame_size;

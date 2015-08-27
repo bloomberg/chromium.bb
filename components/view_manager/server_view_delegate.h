@@ -5,8 +5,13 @@
 #ifndef COMPONENTS_VIEW_MANAGER_SERVER_VIEW_DELEGATE_H_
 #define COMPONENTS_VIEW_MANAGER_SERVER_VIEW_DELEGATE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/interfaces/compositor_frame.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_constants.mojom.h"
+
+namespace cc {
+class CompositorFrame;
+}
 
 namespace gfx {
 class Rect;
@@ -32,6 +37,9 @@ class ServerView;
 // ServerViewDelegate gets non-const arguments.
 class ServerViewDelegate {
  public:
+  virtual scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
+      const mojo::CompositorFramePtr& input) = 0;
+
   virtual surfaces::SurfacesState* GetSurfacesState() = 0;
 
   // Invoked when a view is about to be destroyed; before any of the children

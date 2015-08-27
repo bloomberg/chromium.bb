@@ -21,6 +21,7 @@
 #include "components/view_manager/server_view_observer.h"
 #include "components/view_manager/surfaces/surfaces_state.h"
 #include "components/view_manager/view_tree_host_impl.h"
+#include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
@@ -37,7 +38,8 @@ class ViewTreeImpl;
 // ViewTreeImpl) as well as providing the root of the hierarchy.
 class ConnectionManager : public ServerViewDelegate,
                           public ServerViewObserver,
-                          public FocusControllerDelegate {
+                          public FocusControllerDelegate,
+                          public mojo::CustomSurfaceConverter {
  public:
   // Create when a ViewTreeImpl is about to make a change. Ensures clients are
   // notified correctly.
@@ -226,6 +228,8 @@ class ConnectionManager : public ServerViewDelegate,
   ViewTreeHostImpl* GetViewTreeHostByView(const ServerView* view) const;
 
   // Overridden from ServerViewDelegate:
+  scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
+      const mojo::CompositorFramePtr& input) override;
   surfaces::SurfacesState* GetSurfacesState() override;
   void PrepareToDestroyView(ServerView* view) override;
   void PrepareToChangeViewHierarchy(ServerView* view,
@@ -262,6 +266,11 @@ class ConnectionManager : public ServerViewDelegate,
   // FocusControllerDelegate:
   void OnFocusChanged(ServerView* old_focused_view,
                       ServerView* new_focused_view) override;
+
+  // Overriden from CustomSurfaceConverter:
+  bool ConvertSurfaceDrawQuad(const mojo::QuadPtr& input,
+                              cc::SharedQuadState* sqs,
+                              cc::RenderPass* render_pass) override;
 
   ConnectionManagerDelegate* delegate_;
 

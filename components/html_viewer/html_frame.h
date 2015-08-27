@@ -21,6 +21,10 @@
 #include "third_party/WebKit/public/web/WebTextInputInfo.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
+namespace cc_blink {
+class WebLayerImpl;
+}
+
 namespace blink {
 class WebFrame;
 class WebWidget;
@@ -41,7 +45,6 @@ class HTMLFrameDelegate;
 class HTMLFrameTreeManager;
 class HTMLWidget;
 class TouchHandler;
-class WebLayerImpl;
 class WebLayerTreeViewImpl;
 
 // Frame is used to represent a single frame in the frame tree of a page. The
@@ -286,7 +289,7 @@ class HTMLFrame : public blink::WebFrameClient,
   scoped_ptr<GeolocationClientImpl> geolocation_client_impl_;
   scoped_ptr<TouchHandler> touch_handler_;
 
-  scoped_ptr<WebLayerImpl> web_layer_;
+  scoped_ptr<cc_blink::WebLayerImpl> web_layer_;
 
   HTMLFrameDelegate* delegate_;
   scoped_ptr<mojo::Binding<mandoline::FrameTreeClient>>

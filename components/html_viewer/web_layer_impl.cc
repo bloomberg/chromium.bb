@@ -4,6 +4,7 @@
 
 #include "components/html_viewer/web_layer_impl.h"
 
+#include "base/bind.h"
 #include "cc/layers/layer.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -14,41 +15,38 @@ using blink::WebSize;
 
 namespace html_viewer {
 
+namespace {
+
+// See surface_layer.h for a description of this callback.
+void SatisfyCallback(cc::SurfaceSequence sequence) {
+  // TODO(fsamuel): Implement this.
+}
+
+// See surface_layer.h for a description of this callback.
+void RequireCallback(cc::SurfaceId surface_id,
+                     cc::SurfaceSequence sequence) {
+  // TODO(fsamuel): Implement this.
+}
+
+}
+
 WebLayerImpl::WebLayerImpl(mojo::View* view, float device_pixel_ratio)
-    : view_(view), device_pixel_ratio_(device_pixel_ratio) {}
+    : cc_blink::WebLayerImpl(cc::SurfaceLayer::Create(
+          cc_blink::WebLayerImpl::LayerSettings(),
+          base::Bind(&SatisfyCallback),
+          base::Bind(&RequireCallback))),
+      view_(view),
+      device_pixel_ratio_(device_pixel_ratio) {
+}
 
 WebLayerImpl::~WebLayerImpl() {
 }
 
 void WebLayerImpl::setBounds(const WebSize& size) {
-  mojo::Rect rect = view_->bounds();
-  const gfx::Size size_in_pixels(ConvertSizeToPixel(
-      device_pixel_ratio_, gfx::Size(size.width, size.height)));
-  rect.width = size_in_pixels.width();
-  rect.height = size_in_pixels.height();
-  view_->SetBounds(rect);
+  static_cast<cc::SurfaceLayer*>(layer())->
+      SetSurfaceId(cc::SurfaceId(view_->id()),
+                   device_pixel_ratio_, size);
   cc_blink::WebLayerImpl::setBounds(size);
-}
-
-void WebLayerImpl::setPosition(const WebFloatPoint& position) {
-  int x = 0, y = 0;
-  // TODO(fsamuel): This is a temporary hack until we have a UI process in
-  // Mandoline. The View will always lag behind the cc::Layer.
-  cc::Layer* current_layer = layer();
-  while (current_layer) {
-    x += current_layer->position().x();
-    x -= current_layer->scroll_offset().x();
-    y += current_layer->position().y();
-    y -= current_layer->scroll_offset().y();
-    current_layer = current_layer->parent();
-  }
-  const gfx::Point point_in_pixels(
-      ConvertPointToPixel(device_pixel_ratio_, gfx::Point(x, y)));
-  mojo::Rect rect = view_->bounds();
-  rect.x = point_in_pixels.x();
-  rect.y = point_in_pixels.y();
-  view_->SetBounds(rect);
-  cc_blink::WebLayerImpl::setPosition(position);
 }
 
 }  // namespace html_viewer

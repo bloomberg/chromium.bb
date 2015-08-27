@@ -13,6 +13,12 @@ TestServerViewDelegate::TestServerViewDelegate() : root_view_(nullptr) {
 TestServerViewDelegate::~TestServerViewDelegate() {
 }
 
+scoped_ptr<cc::CompositorFrame>
+TestServerViewDelegate::UpdateViewTreeFromCompositorFrame(
+    const mojo::CompositorFramePtr& input) {
+  return scoped_ptr<cc::CompositorFrame>();
+}
+
 surfaces::SurfacesState* TestServerViewDelegate::GetSurfacesState() {
   return nullptr;
 }

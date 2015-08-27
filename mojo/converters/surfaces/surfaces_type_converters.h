@@ -27,6 +27,8 @@ class SharedQuadState;
 
 namespace mojo {
 
+class CustomSurfaceConverter;
+
 // Types from surface_id.mojom
 template <>
 struct MOJO_SURFACES_EXPORT TypeConverter<SurfaceIdPtr, cc::SurfaceId> {
@@ -67,6 +69,10 @@ struct MOJO_SURFACES_EXPORT
 TypeConverter<SharedQuadStatePtr, cc::SharedQuadState> {
   static SharedQuadStatePtr Convert(const cc::SharedQuadState& input);
 };
+
+scoped_ptr<cc::RenderPass> ConvertToRenderPass(
+    const mojo::PassPtr& input,
+    CustomSurfaceConverter* custom_converter);
 
 template <>
 struct MOJO_SURFACES_EXPORT TypeConverter<PassPtr, cc::RenderPass> {
@@ -146,6 +152,10 @@ struct MOJO_SURFACES_EXPORT
   static cc::ReturnedResourceArray Convert(
       const Array<ReturnedResourcePtr>& input);
 };
+
+scoped_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
+    const mojo::CompositorFramePtr& input,
+    CustomSurfaceConverter* custom_converter);
 
 template <>
 struct MOJO_SURFACES_EXPORT

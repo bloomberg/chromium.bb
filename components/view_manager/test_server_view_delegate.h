@@ -18,6 +18,8 @@ class TestServerViewDelegate : public ServerViewDelegate {
   void set_root_view(const ServerView* view) { root_view_ = view; }
  private:
   // ServerViewDelegate:
+  scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
+      const mojo::CompositorFramePtr& input) override;
   surfaces::SurfacesState* GetSurfacesState() override;
   void PrepareToDestroyView(ServerView* view) override;
   void PrepareToChangeViewHierarchy(ServerView* view,
