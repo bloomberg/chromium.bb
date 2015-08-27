@@ -97,7 +97,7 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
   v4l2_thread_.Start();
 
   const int line_frequency =
-      TranslatePowerLineFrequencyToV4L2(GetPowerLineFrequencyForLocation());
+      TranslatePowerLineFrequencyToV4L2(GetPowerLineFrequency(params));
   capture_impl_ = V4L2CaptureDelegate::CreateV4L2CaptureDelegate(
       device_name_, v4l2_thread_.task_runner(), line_frequency);
   if (!capture_impl_) {
@@ -134,9 +134,9 @@ void VideoCaptureDeviceLinux::SetRotation(int rotation) {
 // static
 int VideoCaptureDeviceLinux::TranslatePowerLineFrequencyToV4L2(int frequency) {
   switch (frequency) {
-    case kPowerLine50Hz:
+    case static_cast<int>(media::PowerLineFrequency::FREQUENCY_50HZ):
       return V4L2_CID_POWER_LINE_FREQUENCY_50HZ;
-    case kPowerLine60Hz:
+    case static_cast<int>(media::PowerLineFrequency::FREQUENCY_60HZ):
       return V4L2_CID_POWER_LINE_FREQUENCY_60HZ;
     default:
       // If we have no idea of the frequency, at least try and set it to AUTO.

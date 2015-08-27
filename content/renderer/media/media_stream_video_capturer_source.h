@@ -26,6 +26,9 @@ class CONTENT_EXPORT VideoCapturerDelegate : public media::VideoCapturerSource {
   explicit VideoCapturerDelegate(const StreamDeviceInfo& device_info);
   ~VideoCapturerDelegate() override;
 
+  // Allows the user to Override default power line frequency.
+  static const char kPowerLineFrequency[];
+
   // VideoCaptureDelegate Implementation.
   void GetCurrentSupportedFormats(
       int max_requested_width,

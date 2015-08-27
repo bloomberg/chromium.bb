@@ -133,7 +133,7 @@ std::string VideoCaptureFormat::PixelStorageToString(
 }
 
 VideoCaptureParams::VideoCaptureParams()
-    : resolution_change_policy(RESOLUTION_POLICY_FIXED_RESOLUTION) {
-}
+    : resolution_change_policy(RESOLUTION_POLICY_FIXED_RESOLUTION),
+      power_line_frequency(PowerLineFrequency::FREQUENCY_DEFAULT) {}
 
 }  // namespace media

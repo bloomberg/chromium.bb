@@ -728,7 +728,7 @@
       'renderer/media/media_stream_audio_processor_unittest.cc',
       'renderer/media/media_stream_constraints_util_unittest.cc',
       'renderer/media/media_stream_dispatcher_unittest.cc',
-      'renderer/media/media_stream_video_capture_source_unittest.cc',
+      'renderer/media/media_stream_video_capturer_source_unittest.cc',
       'renderer/media/media_stream_video_source_unittest.cc',
       'renderer/media/media_stream_video_track_unittest.cc',
       'renderer/media/mock_media_constraint_factory.cc',

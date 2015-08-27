@@ -27,24 +27,22 @@ class MockVideoCapturerDelegate : public VideoCapturerDelegate {
   explicit MockVideoCapturerDelegate(const StreamDeviceInfo& device_info)
       : VideoCapturerDelegate(device_info) {}
 
-  MOCK_METHOD4(
-      StartCapture,
-      void(const media::VideoCaptureParams& params,
-           const VideoCaptureDeliverFrameCB& new_frame_callback,
-           scoped_refptr<base::SingleThreadTaskRunner>
-           frame_callback_task_runner,
-           const RunningCallback& running_callback));
+  MOCK_METHOD4(StartCapture,
+               void(const media::VideoCaptureParams& params,
+                    const VideoCaptureDeliverFrameCB& new_frame_callback,
+                    scoped_refptr<base::SingleThreadTaskRunner>
+                        frame_callback_task_runner,
+                    const RunningCallback& running_callback));
   MOCK_METHOD0(StopCapture, void());
 };
 
 class MediaStreamVideoCapturerSourceTest : public testing::Test {
  public:
   MediaStreamVideoCapturerSourceTest()
-     : child_process_(new ChildProcess()),
-       source_(NULL),
-       delegate_(NULL),
-       source_stopped_(false) {
-  }
+      : child_process_(new ChildProcess()),
+        source_(NULL),
+        delegate_(NULL),
+        source_stopped_(false) {}
 
   void TearDown() override {
     webkit_source_.reset();
@@ -57,14 +55,14 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     delegate_ = delegate.get();
     source_ = new MediaStreamVideoCapturerSource(
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
-                    base::Unretained(this)),
+                   base::Unretained(this)),
         delegate.Pass());
     source_->SetDeviceInfo(device_info);
 
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
                               base::UTF8ToUTF16("dummy_source_name"),
-                              false /* remote */ , true /* readonly */);
+                              false /* remote */, true /* readonly */);
     webkit_source_.setExtraData(source_);
     webkit_source_id_ = webkit_source_.id();
   }
@@ -78,32 +76,28 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     // CreateVideoTrack will trigger OnConstraintsApplied.
     return MediaStreamVideoTrack::CreateVideoTrack(
         source_, constraint_factory_.CreateWebMediaConstraints(),
-        base::Bind(
-            &MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
-            base::Unretained(this)),
-            enabled);
+        base::Bind(&MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
+                   base::Unretained(this)),
+        enabled);
   }
 
-  MockVideoCapturerDelegate& mock_delegate() {
-    return *delegate_;
-  }
+  MockVideoCapturerDelegate& mock_delegate() { return *delegate_; }
 
   void OnSourceStopped(const blink::WebMediaStreamSource& source) {
-    source_stopped_ =  true;
+    source_stopped_ = true;
     EXPECT_EQ(source.id(), webkit_source_id_);
   }
 
  protected:
   void OnConstraintsApplied(MediaStreamSource* source,
                             MediaStreamRequestResult result,
-                            const blink::WebString& result_name) {
-  }
+                            const blink::WebString& result_name) {}
 
   base::MessageLoopForUI message_loop_;
   scoped_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamSource webkit_source_;
   MediaStreamVideoCapturerSource* source_;  // owned by |webkit_source_|.
-  MockVideoCapturerDelegate* delegate_; // owned by |source|.
+  MockVideoCapturerDelegate* delegate_;     // owned by |source|.
   blink::WebString webkit_source_id_;
   bool source_stopped_;
   MockMediaConstraintFactory constraint_factory_;
@@ -220,6 +214,75 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   EXPECT_CALL(mock_delegate(), StopCapture());
 }
 
+TEST_F(MediaStreamVideoCapturerSourceTest,
+       DeviceCaptureConstraintsSupportPowerLineFrequency) {
+  for (int frequency = -100; frequency < 100; ++frequency) {
+    StreamDeviceInfo device_info;
+    device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
+    InitWithDeviceInfo(device_info);
+    constraint_factory_ = MockMediaConstraintFactory();
+    constraint_factory()->AddOptional(
+        VideoCapturerDelegate::kPowerLineFrequency, frequency);
+
+    media::VideoCaptureParams expected_params;
+    expected_params.requested_format.frame_size.SetSize(
+        MediaStreamVideoSource::kDefaultWidth,
+        MediaStreamVideoSource::kDefaultHeight);
+    expected_params.requested_format.frame_rate =
+        MediaStreamVideoSource::kDefaultFrameRate;
+    expected_params.requested_format.pixel_format =
+        media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+    expected_params.resolution_change_policy =
+        media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+    if (frequency == 50) {
+      expected_params.power_line_frequency =
+          media::PowerLineFrequency::FREQUENCY_50HZ;
+    } else if (frequency == 60) {
+      expected_params.power_line_frequency =
+          media::PowerLineFrequency::FREQUENCY_60HZ;
+    } else {
+      expected_params.power_line_frequency =
+          media::PowerLineFrequency::FREQUENCY_DEFAULT;
+    }
+
+    EXPECT_CALL(mock_delegate(), StartCapture(expected_params, _, _, _))
+        .Times(1);
+    blink::WebMediaStreamTrack track = StartSource();
+    // When the track goes out of scope, the source will be stopped.
+    EXPECT_CALL(mock_delegate(), StopCapture());
+  }
+}
+
+TEST_F(MediaStreamVideoCapturerSourceTest,
+       InvalidPowerLineFrequencyHandledProperly) {
+  // Test out other varieties of invalid input, like non-numeric strings.
+  StreamDeviceInfo device_info;
+  device_info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
+  InitWithDeviceInfo(device_info);
+  constraint_factory_ = MockMediaConstraintFactory();
+  constraint_factory()->AddOptional(VideoCapturerDelegate::kPowerLineFrequency,
+                                    std::string("this is not a frequency"));
+
+  media::VideoCaptureParams expected_params;
+  expected_params.requested_format.frame_size.SetSize(
+      MediaStreamVideoSource::kDefaultWidth,
+      MediaStreamVideoSource::kDefaultHeight);
+  expected_params.requested_format.frame_rate =
+      MediaStreamVideoSource::kDefaultFrameRate;
+  expected_params.requested_format.pixel_format =
+      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  expected_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+  // Invalid frequencies should result in default setting.
+  expected_params.power_line_frequency =
+      media::PowerLineFrequency::FREQUENCY_DEFAULT;
+
+  EXPECT_CALL(mock_delegate(), StartCapture(expected_params, _, _, _)).Times(1);
+  blink::WebMediaStreamTrack track = StartSource();
+  // When the track goes out of scope, the source will be stopped.
+  EXPECT_CALL(mock_delegate(), StopCapture());
+}
+
 TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
@@ -234,7 +297,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeVideo,
                             base::UTF8ToUTF16("dummy_source_name"),
-                            false /* remote */ , true /* readonly */);
+                            false /* remote */, true /* readonly */);
   webkit_source_.setExtraData(source_);
   webkit_source_id_ = webkit_source_.id();
   blink::WebMediaStreamTrack track = StartSource();
@@ -261,8 +324,7 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
                            base::Closure got_frame_cb)
       : capture_time_(capture_time),
         metadata_(metadata),
-        got_frame_cb_(got_frame_cb) {
-  }
+        got_frame_cb_(got_frame_cb) {}
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     base::TimeTicks capture_time) {
@@ -302,13 +364,11 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   base::TimeTicks capture_time;
   media::VideoFrameMetadata metadata;
   FakeMediaStreamVideoSink fake_sink(
-      &capture_time,
-      &metadata,
+      &capture_time, &metadata,
       media::BindToCurrentLoop(run_loop.QuitClosure()));
   FakeMediaStreamVideoSink::AddToVideoTrack(
-      &fake_sink,
-      base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
-                 base::Unretained(&fake_sink)),
+      &fake_sink, base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
+                             base::Unretained(&fake_sink)),
       track);
   const scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));

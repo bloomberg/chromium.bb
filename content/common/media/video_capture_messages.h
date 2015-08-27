@@ -25,10 +25,13 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::StorageType,
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoCapturePixelFormat,
                           media::VIDEO_CAPTURE_PIXEL_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelStorage, media::PIXEL_STORAGE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::PowerLineFrequency,
+                          media::PowerLineFrequency::FREQUENCY_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(media::VideoCaptureParams)
   IPC_STRUCT_TRAITS_MEMBER(requested_format)
   IPC_STRUCT_TRAITS_MEMBER(resolution_change_policy)
+  IPC_STRUCT_TRAITS_MEMBER(power_line_frequency)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(VideoCaptureMsg_BufferReady_Params)

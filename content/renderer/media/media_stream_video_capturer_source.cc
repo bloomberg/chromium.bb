@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -16,6 +17,10 @@
 #include "media/base/video_frame.h"
 
 namespace content {
+
+// Allows the user to Override default power line frequency.
+const char VideoCapturerDelegate::kPowerLineFrequency[] =
+    "googPowerLineFrequency";
 
 namespace {
 
@@ -165,6 +170,23 @@ void SetScreenCastParamsFromConstraints(
            << params->resolution_change_policy;
 }
 
+// Interprets the properties in |constraints| to override values in |params| and
+// determine the power line frequency.
+void SetPowerLineFrequencyParamFromConstraints(
+    const blink::WebMediaConstraints& constraints,
+    media::VideoCaptureParams* params) {
+  int freq;
+  params->power_line_frequency = media::PowerLineFrequency::FREQUENCY_DEFAULT;
+  if (!GetOptionalConstraintValueAsInteger(
+          constraints, VideoCapturerDelegate::kPowerLineFrequency, &freq)) {
+    return;
+  }
+  if (freq == static_cast<int>(media::PowerLineFrequency::FREQUENCY_50HZ))
+    params->power_line_frequency = media::PowerLineFrequency::FREQUENCY_50HZ;
+  else if (freq == static_cast<int>(media::PowerLineFrequency::FREQUENCY_60HZ))
+    params->power_line_frequency = media::PowerLineFrequency::FREQUENCY_60HZ;
+}
+
 }  // namespace
 
 VideoCapturerDelegate::VideoCapturerDelegate(
@@ -202,7 +224,9 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
       << " { max_requested_width = " << max_requested_width << "})"
       << " { max_requested_frame_rate = " << max_requested_frame_rate << "})";
 
-  if (is_screen_cast_) {
+  // RenderThreadImpl will be NULL in unit test, but should still behave
+  // reasonably even if |is_screen_cast_| is not set.
+  if (is_screen_cast_ || !RenderThreadImpl::current()) {
     const int width = max_requested_width ?
         max_requested_width : MediaStreamVideoSource::kDefaultWidth;
     const int height = max_requested_height ?
@@ -216,9 +240,6 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
     return;
   }
 
-  // NULL in unit test.
-  if (!RenderThreadImpl::current())
-    return;
   VideoCaptureImplManager* const manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
   if (!manager)
@@ -385,7 +406,10 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
       device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
     SetScreenCastParamsFromConstraints(
         constraints, device_info().device.type, &new_params);
+  } else if (device_info().device.type == MEDIA_DEVICE_VIDEO_CAPTURE) {
+    SetPowerLineFrequencyParamFromConstraints(constraints, &new_params);
   }
+
   delegate_->StartCapture(
       new_params,
       frame_callback,

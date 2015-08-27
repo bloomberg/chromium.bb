@@ -395,7 +395,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     return;
   }
 
-  SetAntiFlickerInCaptureFilter();
+  SetAntiFlickerInCaptureFilter(params);
 
   if (media_type->subtype == kMediaSubTypeHDYC) {
     // HDYC pixel format, used by the DeckLink capture card, needs an AVI
@@ -541,10 +541,13 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
 }
 
 // Set the power line frequency removal in |capture_filter_| if available.
-void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter() {
-  const int power_line_frequency = GetPowerLineFrequencyForLocation();
-  if (power_line_frequency != kPowerLine50Hz &&
-      power_line_frequency != kPowerLine60Hz) {
+void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter(
+    const VideoCaptureParams& params) {
+  const int power_line_frequency = GetPowerLineFrequency(params);
+  if (power_line_frequency !=
+          static_cast<int>(media::PowerLineFrequency::FREQUENCY_50HZ) &&
+      power_line_frequency !=
+          static_cast<int>(media::PowerLineFrequency::FREQUENCY_60HZ)) {
     return;
   }
   ScopedComPtr<IKsPropertySet> ks_propset;
@@ -560,7 +563,10 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter() {
     data.Property.Set = PROPSETID_VIDCAP_VIDEOPROCAMP;
     data.Property.Id = KSPROPERTY_VIDEOPROCAMP_POWERLINE_FREQUENCY;
     data.Property.Flags = KSPROPERTY_TYPE_SET;
-    data.Value = (power_line_frequency == kPowerLine50Hz) ? 1 : 2;
+    data.Value = (power_line_frequency ==
+                  static_cast<int>(media::PowerLineFrequency::FREQUENCY_50HZ))
+                     ? 1
+                     : 2;
     data.Flags = KSPROPERTY_VIDEOPROCAMP_FLAGS_MANUAL;
     hr = ks_propset->Set(PROPSETID_VIDCAP_VIDEOPROCAMP,
                          KSPROPERTY_VIDEOPROCAMP_POWERLINE_FREQUENCY, &data,

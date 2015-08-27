@@ -153,9 +153,20 @@ int VideoCaptureDevice::GetPowerLineFrequencyForLocation() const {
       countries_using_60Hz + arraysize(countries_using_60Hz);
   if (std::find(countries_using_60Hz, countries_using_60Hz_end,
                 current_country) == countries_using_60Hz_end) {
-    return kPowerLine50Hz;
+    return static_cast<int>(media::PowerLineFrequency::FREQUENCY_50HZ);
   }
-  return kPowerLine60Hz;
+  return static_cast<int>(media::PowerLineFrequency::FREQUENCY_60HZ);
+}
+
+int VideoCaptureDevice::GetPowerLineFrequency(
+    const VideoCaptureParams& params) const {
+  switch (params.power_line_frequency) {
+    case media::PowerLineFrequency::FREQUENCY_50HZ:  // fall through
+    case media::PowerLineFrequency::FREQUENCY_60HZ:
+      return static_cast<int>(params.power_line_frequency);
+    default:
+      return GetPowerLineFrequencyForLocation();
+  }
 }
 
 }  // namespace media

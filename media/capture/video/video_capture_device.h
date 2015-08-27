@@ -280,13 +280,14 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // happens first.
   virtual void StopAndDeAllocate() = 0;
 
+  // Gets the power line frequency, either from the params if specified by the
+  // user or from the current system time zone.
+  int GetPowerLineFrequency(const VideoCaptureParams& params) const;
+
+ private:
   // Gets the power line frequency from the current system time zone if this is
   // defined, otherwise returns 0.
   int GetPowerLineFrequencyForLocation() const;
-
- protected:
-  static const int kPowerLine50Hz = 50;
-  static const int kPowerLine60Hz = 60;
 };
 
 }  // namespace media

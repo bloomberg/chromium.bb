@@ -84,7 +84,7 @@ class VideoCaptureDeviceWin : public base::NonThreadSafe,
   void FrameReceived(const uint8* buffer, int length) override;
 
   bool CreateCapabilityMap();
-  void SetAntiFlickerInCaptureFilter();
+  void SetAntiFlickerInCaptureFilter(const VideoCaptureParams& params);
   void SetErrorState(const std::string& reason);
 
   Name device_name_;

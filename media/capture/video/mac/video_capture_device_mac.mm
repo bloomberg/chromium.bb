@@ -416,7 +416,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     if (base::HexStringToInt(base::StringPiece(vendor_id), &vendor_id_as_int) &&
         base::HexStringToInt(base::StringPiece(model_id), &model_id_as_int)) {
       SetAntiFlickerInUsbDevice(vendor_id_as_int, model_id_as_int,
-                                GetPowerLineFrequencyForLocation());
+                                GetPowerLineFrequency(params));
     }
   }
 
