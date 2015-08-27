@@ -38723,6 +38723,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Sdch3.AdvertisedWithSecureScheme" enum="BooleanHttps">
+  <obsolete>
+    Experiment complete, histogram gathering code removed.
+  </obsolete>
   <owner>ellyjones@chromium.org</owner>
   <summary>
     Whether an SDCH dictionary was advertised over a secure scheme or not. This
