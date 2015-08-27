@@ -537,12 +537,11 @@ void NavigationControllerImpl::SetScreenshotManager(
 }
 
 bool NavigationControllerImpl::CanGoBack() const {
-  return entries_.size() > 1 && GetCurrentEntryIndex() > 0;
+  return CanGoToOffset(-1);
 }
 
 bool NavigationControllerImpl::CanGoForward() const {
-  int index = GetCurrentEntryIndex();
-  return index >= 0 && index < (static_cast<int>(entries_.size()) - 1);
+  return CanGoToOffset(1);
 }
 
 bool NavigationControllerImpl::CanGoToOffset(int offset) const {
