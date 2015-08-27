@@ -12,6 +12,7 @@ namespace content {
 class DevToolsProtocolHandler;
 
 namespace devtools {
+namespace io { class IOHandler; }
 namespace system_info { class SystemInfoHandler; }
 namespace tethering { class TetheringHandler; }
 namespace tracing { class TracingHandler; }
@@ -37,6 +38,7 @@ class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
   bool Close() override;
   bool DispatchProtocolMessage(const std::string& message) override;
 
+  scoped_ptr<devtools::io::IOHandler> io_handler_;
   scoped_ptr<devtools::system_info::SystemInfoHandler> system_info_handler_;
   scoped_ptr<devtools::tethering::TetheringHandler> tethering_handler_;
   scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;

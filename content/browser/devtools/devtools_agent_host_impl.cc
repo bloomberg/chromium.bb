@@ -108,7 +108,7 @@ void DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   if (client_) {
     client_->AgentHostClosed(this, true);
-    Detach();
+    InnerDetach();
   }
   client_ = client;
   Attach();
@@ -120,7 +120,12 @@ void DevToolsAgentHostImpl::DetachClient() {
 
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   client_ = NULL;
+  InnerDetach();
+}
+
+void DevToolsAgentHostImpl::InnerDetach() {
   Detach();
+  io_context_.DiscardAllStreams();
 }
 
 bool DevToolsAgentHostImpl::IsAttached() {
@@ -181,7 +186,7 @@ void DevToolsAgentHost::DetachAllClients() {
       DevToolsAgentHostClient* client = agent_host->client_;
       agent_host->client_ = NULL;
       client->AgentHostClosed(agent_host, true);
-      agent_host->Detach();
+      agent_host->InnerDetach();
     }
   }
 }

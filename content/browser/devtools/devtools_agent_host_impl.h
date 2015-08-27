@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "content/browser/devtools/devtools_io_context.h"
 #include "content/common/content_export.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -49,13 +50,17 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   void HostClosed();
   void SendMessageToClient(const std::string& message);
+  devtools::DevToolsIOContext* GetIOContext() { return &io_context_; }
+
   static void NotifyCallbacks(DevToolsAgentHostImpl* agent_host, bool attached);
 
  private:
   friend class DevToolsAgentHost; // for static methods
+  void InnerDetach();
 
   const std::string id_;
   DevToolsAgentHostClient* client_;
+  devtools::DevToolsIOContext io_context_;
 };
 
 class DevToolsMessageChunkProcessor {

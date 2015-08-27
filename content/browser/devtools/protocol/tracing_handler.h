@@ -20,6 +20,9 @@ class Timer;
 
 namespace content {
 namespace devtools {
+
+class DevToolsIOContext;
+
 namespace tracing {
 
 class TracingHandler {
@@ -27,7 +30,7 @@ class TracingHandler {
   typedef DevToolsProtocolClient::Response Response;
 
   enum Target { Browser, Renderer };
-  explicit TracingHandler(Target target);
+  TracingHandler(Target target, DevToolsIOContext* io_context);
   virtual ~TracingHandler();
 
   void SetClient(scoped_ptr<Client> client);
@@ -35,14 +38,22 @@ class TracingHandler {
 
   void OnTraceDataCollected(const std::string& trace_fragment);
   void OnTraceComplete();
+  void OnTraceToStreamComplete(const std::string& stream_handle);
 
+  // Protocol methods.
   Response Start(DevToolsCommandId command_id,
                  const std::string* categories,
                  const std::string* options,
                  const double* buffer_usage_reporting_interval);
+  Response Start(DevToolsCommandId command_id,
+                 const std::string* categories,
+                 const std::string* options,
+                 const double* buffer_usage_reporting_interval,
+                 const std::string* transfer_mode);
   Response End(DevToolsCommandId command_id);
   Response GetCategories(DevToolsCommandId command);
   Response RequestMemoryDump(DevToolsCommandId command_id);
+
   bool did_initiate_recording() { return did_initiate_recording_; }
 
  private:
@@ -57,7 +68,8 @@ class TracingHandler {
 
   void SetupTimer(double usage_reporting_interval);
 
-  void DisableRecording(bool abort);
+  void DisableRecording(
+      const scoped_refptr<TracingController::TraceDataSink>& trace_data_sink);
 
   bool IsRecording() const;
 
@@ -65,6 +77,7 @@ class TracingHandler {
   Target target_;
 
   scoped_ptr<Client> client_;
+  DevToolsIOContext* io_context_;
   bool did_initiate_recording_;
   base::WeakPtrFactory<TracingHandler> weak_factory_;
 
