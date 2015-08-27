@@ -18,15 +18,16 @@
 namespace cc {
 
 OverlayStrategyCommon::OverlayStrategyCommon(
-    OverlayCandidateValidator* capability_checker)
-    : capability_checker_(capability_checker) {
-}
+    OverlayCandidateValidator* capability_checker,
+    OverlayStrategyCommonDelegate* delegate)
+    : capability_checker_(capability_checker), delegate_(delegate) {}
 
 OverlayStrategyCommon::~OverlayStrategyCommon() {
 }
 
 bool OverlayStrategyCommon::Attempt(RenderPassList* render_passes_in_draw_order,
-                                    OverlayCandidateList* candidate_list) {
+                                    OverlayCandidateList* candidate_list,
+                                    float device_scale_factor) {
   if (!capability_checker_)
     return false;
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
@@ -38,8 +39,9 @@ bool OverlayStrategyCommon::Attempt(RenderPassList* render_passes_in_draw_order,
     const DrawQuad* draw_quad = *it;
     if (IsOverlayQuad(draw_quad) &&
         GetCandidateQuadInfo(*draw_quad, &candidate) &&
-        TryOverlay(capability_checker_, render_passes_in_draw_order,
-                   candidate_list, candidate, it))
+        delegate_->TryOverlay(capability_checker_, render_passes_in_draw_order,
+                              candidate_list, candidate, it,
+                              device_scale_factor))
       return true;
   }
   return false;
@@ -58,6 +60,7 @@ bool OverlayStrategyCommon::IsOverlayQuad(const DrawQuad* draw_quad) {
   }
 }
 
+// static
 bool OverlayStrategyCommon::IsInvisibleQuad(const DrawQuad* draw_quad) {
   if (draw_quad->material == DrawQuad::SOLID_COLOR) {
     const SolidColorDrawQuad* solid_quad =

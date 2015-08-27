@@ -10,18 +10,15 @@
 
 namespace cc {
 
-OverlayStrategyUnderlay::OverlayStrategyUnderlay(
-    OverlayCandidateValidator* capability_checker)
-    : OverlayStrategyCommon(capability_checker) {
-}
+OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
 bool OverlayStrategyUnderlay::TryOverlay(
     OverlayCandidateValidator* capability_checker,
-
     RenderPassList* render_passes_in_draw_order,
     OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
-    QuadList::Iterator candidate_iterator) {
+    QuadList::Iterator candidate_iterator,
+    float device_scale_factor) {
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
   QuadList& quad_list = root_render_pass->quad_list;
 

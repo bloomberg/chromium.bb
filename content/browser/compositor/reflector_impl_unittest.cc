@@ -76,7 +76,10 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
       : BrowserCompositorOutputSurface(context_provider,
                                        nullptr,
                                        vsync_manager,
-                                       CreateTestValidatorOzone().Pass()) {}
+                                       CreateTestValidatorOzone().Pass()) {
+    surface_size_ = gfx::Size(256, 256);
+    device_scale_factor_ = 1.f;
+  }
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
@@ -98,8 +101,6 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
     return false;
   }
 #endif
-
-  gfx::Size SurfaceSize() const override { return gfx::Size(256, 256); }
 
  private:
   scoped_ptr<ReflectorTexture> reflector_texture_;

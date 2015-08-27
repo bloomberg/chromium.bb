@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
 
+#include "cc/output/overlay_strategy_single_on_top.h"
+#include "cc/output/overlay_strategy_underlay.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace content {
@@ -31,6 +33,14 @@ BrowserCompositorOverlayCandidateValidatorOzone::
 
 BrowserCompositorOverlayCandidateValidatorOzone::
     ~BrowserCompositorOverlayCandidateValidatorOzone() {
+}
+
+void BrowserCompositorOverlayCandidateValidatorOzone::GetStrategies(
+    cc::OverlayProcessor::StrategyList* strategies) {
+  strategies->push_back(scoped_ptr<cc::OverlayProcessor::Strategy>(
+      new cc::OverlayStrategyCommon(this, new cc::OverlayStrategySingleOnTop)));
+  strategies->push_back(scoped_ptr<cc::OverlayProcessor::Strategy>(
+      new cc::OverlayStrategyCommon(this, new cc::OverlayStrategyUnderlay)));
 }
 
 void BrowserCompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(

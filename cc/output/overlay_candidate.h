@@ -41,6 +41,9 @@ class CC_EXPORT OverlayCandidate {
   gfx::RectF display_rect;
   // Crop within the buffer to be placed inside |display_rect|.
   gfx::RectF uv_rect;
+  // True if the texture for this overlay should be the same one used by the
+  // output surface's main overlay.
+  bool use_output_surface_for_resource;
   // Texture resource to present in an overlay.
   unsigned resource_id;
   // Stacking order of the overlay plane relative to the main surface,

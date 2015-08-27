@@ -9,6 +9,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/output/overlay_candidate.h"
+#include "cc/output/overlay_processor.h"
 
 namespace cc {
 
@@ -16,6 +17,9 @@ namespace cc {
 // configurations for a particular output device.
 class CC_EXPORT OverlayCandidateValidator {
  public:
+  // Populates a list of strategies that may work with this validator.
+  virtual void GetStrategies(OverlayProcessor::StrategyList* strategies) = 0;
+
   // A list of possible overlay candidates is presented to this function.
   // The expected result is that those candidates that can be in a separate
   // plane are marked with |overlay_handled| set to true, otherwise they are

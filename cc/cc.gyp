@@ -309,6 +309,8 @@
         'output/overlay_processor.h',
         'output/overlay_strategy_common.cc',
         'output/overlay_strategy_common.h',
+        'output/overlay_strategy_sandwich.cc',
+        'output/overlay_strategy_sandwich.h',
         'output/overlay_strategy_single_on_top.cc',
         'output/overlay_strategy_single_on_top.h',
         'output/overlay_strategy_underlay.cc',

@@ -56,6 +56,11 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     ~GpuSurfacelessBrowserCompositorOutputSurface() {
 }
 
+unsigned GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayTextureId()
+    const {
+  return output_surface_->current_texture_id();
+}
+
 void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(output_surface_);

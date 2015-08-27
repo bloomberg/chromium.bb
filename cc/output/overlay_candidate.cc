@@ -38,6 +38,7 @@ OverlayCandidate::OverlayCandidate()
     : transform(gfx::OVERLAY_TRANSFORM_NONE),
       format(RGBA_8888),
       uv_rect(0.f, 0.f, 1.f, 1.f),
+      use_output_surface_for_resource(false),
       resource_id(0),
       plane_z_order(0),
       overlay_handled(false) {}

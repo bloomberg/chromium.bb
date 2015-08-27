@@ -11,18 +11,15 @@
 
 namespace cc {
 
-OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
-    OverlayCandidateValidator* capability_checker)
-    : OverlayStrategyCommon(capability_checker) {
-}
+OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
 bool OverlayStrategySingleOnTop::TryOverlay(
     OverlayCandidateValidator* capability_checker,
-
     RenderPassList* render_passes_in_draw_order,
     OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
-    QuadList::Iterator candidate_iterator) {
+    QuadList::Iterator candidate_iterator,
+    float device_scale_factor) {
   RenderPass* root_render_pass = render_passes_in_draw_order->back();
   QuadList& quad_list = root_render_pass->quad_list;
   const DrawQuad* draw_quad = *candidate_iterator;
@@ -35,7 +32,8 @@ bool OverlayStrategySingleOnTop::TryOverlay(
     gfx::RectF overlap_rect = overlap_iter->rect;
     overlap_iter->shared_quad_state->quad_to_target_transform.TransformRect(
         &overlap_rect);
-    if (rect.Intersects(overlap_rect) && !IsInvisibleQuad(*overlap_iter))
+    if (rect.Intersects(overlap_rect) &&
+        !OverlayStrategyCommon::IsInvisibleQuad(*overlap_iter))
       return false;
   }
 

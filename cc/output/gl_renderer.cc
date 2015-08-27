@@ -3518,16 +3518,20 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
     if (overlay.plane_z_order == 0)
       continue;
 
-    pending_overlay_resources_.push_back(
-        make_scoped_ptr(new ResourceProvider::ScopedReadLockGL(
-            resource_provider_, overlay.resource_id)));
+    unsigned texture_id = 0;
+    if (overlay.use_output_surface_for_resource) {
+      texture_id = output_surface_->GetOverlayTextureId();
+      DCHECK(texture_id);
+    } else {
+      pending_overlay_resources_.push_back(
+          make_scoped_ptr(new ResourceProvider::ScopedReadLockGL(
+              resource_provider_, overlay.resource_id)));
+      texture_id = pending_overlay_resources_.back()->texture_id();
+    }
 
     context_support_->ScheduleOverlayPlane(
-        overlay.plane_z_order,
-        overlay.transform,
-        pending_overlay_resources_.back()->texture_id(),
-        ToNearestRect(overlay.display_rect),
-        overlay.uv_rect);
+        overlay.plane_z_order, overlay.transform, texture_id,
+        ToNearestRect(overlay.display_rect), overlay.uv_rect);
   }
 }
 

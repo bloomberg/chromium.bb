@@ -19,6 +19,7 @@ class CONTENT_EXPORT BrowserCompositorOverlayCandidateValidatorMac
   ~BrowserCompositorOverlayCandidateValidatorMac() override;
 
   // cc::OverlayCandidateValidator implementation.
+  void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override;
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
 
   // BrowserCompositorOverlayCandidateValidator implementation.

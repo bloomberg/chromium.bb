@@ -4,6 +4,8 @@
 
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_mac.h"
 
+#include "cc/output/overlay_strategy_sandwich.h"
+
 namespace content {
 
 BrowserCompositorOverlayCandidateValidatorMac::
@@ -15,6 +17,12 @@ BrowserCompositorOverlayCandidateValidatorMac::
 
 BrowserCompositorOverlayCandidateValidatorMac::
     ~BrowserCompositorOverlayCandidateValidatorMac() {
+}
+
+void BrowserCompositorOverlayCandidateValidatorMac::GetStrategies(
+    cc::OverlayProcessor::StrategyList* strategies) {
+  strategies->push_back(scoped_ptr<cc::OverlayProcessor::Strategy>(
+      new cc::OverlayStrategyCommon(this, new cc::OverlayStrategySandwich)));
 }
 
 void BrowserCompositorOverlayCandidateValidatorMac::CheckOverlaySupport(

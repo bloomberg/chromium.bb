@@ -166,10 +166,6 @@ void OutputSurface::Reshape(const gfx::Size& size, float scale_factor) {
     software_device_->Resize(size, scale_factor);
 }
 
-gfx::Size OutputSurface::SurfaceSize() const {
-  return surface_size_;
-}
-
 void OutputSurface::BindFramebuffer() {
   DCHECK(context_provider_.get());
   context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -199,6 +195,10 @@ void OutputSurface::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
 
 OverlayCandidateValidator* OutputSurface::GetOverlayCandidateValidator() const {
   return nullptr;
+}
+
+unsigned OutputSurface::GetOverlayTextureId() const {
+  return 0;
 }
 
 void OutputSurface::SetWorkerContextShouldAggressivelyFreeResources(

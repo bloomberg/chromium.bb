@@ -25,7 +25,8 @@ class CC_EXPORT OverlayProcessor {
     // and adds any additional passes necessary to represent overlays to
     // |render_passes_in_draw_order|.
     virtual bool Attempt(RenderPassList* render_passes_in_draw_order,
-                         OverlayCandidateList* candidates) = 0;
+                         OverlayCandidateList* candidates,
+                         float device_scale_factor) = 0;
   };
   typedef ScopedPtrVector<Strategy> StrategyList;
 
