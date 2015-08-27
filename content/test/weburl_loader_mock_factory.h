@@ -38,11 +38,11 @@ class WebURLLoaderMockFactory {
   virtual blink::WebURLLoader* CreateURLLoader(
       blink::WebURLLoader* default_loader);
 
-  // Registers a response and the contents to be served when the specified URL
-  // is loaded.
+  // Registers a response and the file to be served when the specified URL
+  // is loaded. If no file is specified then the response content will be empty.
   void RegisterURL(const blink::WebURL& url,
                    const blink::WebURLResponse& response,
-                   const blink::WebString& filePath);
+                   const blink::WebString& filePath = blink::WebString());
 
   // Registers an error to be served when the specified URL is requested.
   void RegisterErrorURL(const blink::WebURL& url,
