@@ -308,9 +308,6 @@ private:
 
     void makeChildrenNonInline(LayoutObject* insertionPoint = nullptr);
 
-    // Promote all children and make them siblings that come right after this block.
-    void promoteAllChildrenAndInsertAfter();
-
     virtual void removeLeftoverAnonymousBlock(LayoutBlock* child);
 
     static void collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child);

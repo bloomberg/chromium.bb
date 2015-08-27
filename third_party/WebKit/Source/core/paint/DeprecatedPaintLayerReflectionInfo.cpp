@@ -63,7 +63,7 @@ DeprecatedPaintLayerReflectionInfo::DeprecatedPaintLayerReflectionInfo(LayoutBox
     UseCounter::count(box().document(), UseCounter::Reflection);
 
     m_reflection = LayoutReplica::createAnonymous(&box().document());
-    m_reflection->setParent(m_box); // We create a 1-way connection.
+    m_reflection->setDangerousOneWayParent(m_box);
 }
 
 void DeprecatedPaintLayerReflectionInfo::destroy()
@@ -71,7 +71,7 @@ void DeprecatedPaintLayerReflectionInfo::destroy()
     if (!m_reflection->documentBeingDestroyed())
         m_reflection->removeLayers(box().layer());
 
-    m_reflection->setParent(0);
+    m_reflection->setDangerousOneWayParent(nullptr);
     m_reflection->destroy();
     m_reflection = nullptr;
 }

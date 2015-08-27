@@ -117,10 +117,6 @@ const int showTreeCharacterOffset = 39;
 
 // Base class for all layout tree objects.
 class CORE_EXPORT LayoutObject : public ImageResourceClient {
-    friend class LayoutBlock;
-    friend class LayoutBlockFlow;
-    friend class DeprecatedPaintLayerReflectionInfo; // For setParent
-    friend class DeprecatedPaintLayerScrollableArea; // For setParent.
     friend class LayoutObjectChildList;
     WTF_MAKE_NONCOPYABLE(LayoutObject);
 public:
@@ -265,7 +261,10 @@ public:
     virtual bool createsAnonymousWrapper() const { return false; }
     //////////////////////////////////////////
 
-protected:
+    // Sets the parent of this object but doesn't add it as a child of the parent.
+    void setDangerousOneWayParent(LayoutObject*);
+
+private:
     //////////////////////////////////////////
     // Helper functions. Dangerous to use!
     void setPreviousSibling(LayoutObject* previous) { m_previous = previous; }
@@ -1053,6 +1052,9 @@ public:
     // FIXME: should we hook up scrollbar parts in the layout tree? crbug.com/484263.
     void invalidateDisplayItemClientForNonCompositingDescendantsOf(const LayoutObject&) const;
 
+    // Called before anonymousChild.setStyle(). Override to set custom styles for the child.
+    virtual void updateAnonymousChildStyle(const LayoutObject& anonymousChild, ComputedStyle& style) const { }
+
 protected:
     enum LayoutObjectType {
         LayoutObjectBr,
@@ -1133,7 +1135,6 @@ protected:
     // time this function is called.
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle);
     void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
-    virtual void updateAnonymousChildStyle(const LayoutObject& child, ComputedStyle& style) const { }
 
 protected:
     virtual void willBeDestroyed();
@@ -1183,6 +1184,14 @@ protected:
 
     void setIsSlowRepaintObject(bool);
 
+    void clearSelfNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(false); }
+    void clearChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(false); }
+    void setShouldInvalidateOverflowForPaint() { m_bitfields.setShouldInvalidateOverflowForPaint(true); }
+    void setEverHadLayout() { m_bitfields.setEverHadLayout(true); }
+
+    // Remove this object and all descendants from the containing LayoutFlowThread.
+    void removeFromLayoutFlowThread();
+
 private:
     const LayoutRect& previousPaintInvalidationRect() const { return m_previousPaintInvalidationRect; }
 
@@ -1222,7 +1231,6 @@ private:
     const LayoutBoxModelObject* enclosingCompositedContainer() const;
 
     LayoutFlowThread* locateFlowThreadContainingBlock() const;
-    void removeFromLayoutFlowThread();
     void removeFromLayoutFlowThreadRecursive(LayoutFlowThread*);
 
     ComputedStyle* cachedFirstLineStyle() const;
@@ -1410,10 +1418,9 @@ private:
     void setPosChildNeedsLayout(bool b) { m_bitfields.setPosChildNeedsLayout(b); }
     void setNeedsSimplifiedNormalFlowLayout(bool b) { m_bitfields.setNeedsSimplifiedNormalFlowLayout(b); }
     void setIsDragging(bool b) { m_bitfields.setIsDragging(b); }
-    void setEverHadLayout(bool b) { m_bitfields.setEverHadLayout(b); }
-    void setShouldInvalidateOverflowForPaint(bool b) { m_bitfields.setShouldInvalidateOverflowForPaint(b); }
-    void setSelfNeedsOverflowRecalcAfterStyleChange(bool b) { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(b); }
-    void setChildNeedsOverflowRecalcAfterStyleChange(bool b) { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(b); }
+    void clearShouldInvalidateOverflowForPaint() { m_bitfields.setShouldInvalidateOverflowForPaint(false); }
+    void setSelfNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setSelfNeedsOverflowRecalcAfterStyleChange(true); }
+    void setChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(true); }
 
 private:
     // Store state between styleWillChange and styleDidChange
@@ -1512,7 +1519,7 @@ inline void LayoutObject::setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidat
 inline void LayoutObject::clearNeedsLayout()
 {
     // Set flags for later stages/cycles.
-    setEverHadLayout(true);
+    setEverHadLayout();
     setMayNeedPaintInvalidation();
     m_bitfields.setNeededLayoutBecauseOfChildren(needsLayoutBecauseOfChildren());
 

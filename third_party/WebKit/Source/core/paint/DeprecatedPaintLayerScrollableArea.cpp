@@ -1136,7 +1136,7 @@ void DeprecatedPaintLayerScrollableArea::updateScrollCornerStyle()
     if (corner) {
         if (!m_scrollCorner) {
             m_scrollCorner = LayoutScrollbarPart::createAnonymous(&box().document());
-            m_scrollCorner->setParent(&box());
+            m_scrollCorner->setDangerousOneWayParent(&box());
         }
         m_scrollCorner->setStyle(corner.release());
     } else if (m_scrollCorner) {
@@ -1264,7 +1264,7 @@ void DeprecatedPaintLayerScrollableArea::updateResizerStyle()
     if (resizer) {
         if (!m_resizer) {
             m_resizer = LayoutScrollbarPart::createAnonymous(&box().document());
-            m_resizer->setParent(&box());
+            m_resizer->setDangerousOneWayParent(&box());
         }
         m_resizer->setStyle(resizer.release());
     } else if (m_resizer) {

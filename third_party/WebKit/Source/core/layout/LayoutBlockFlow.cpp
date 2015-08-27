@@ -315,7 +315,7 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
             hasVisibleContent = layer->hasVisibleContent();
         }
         if (hasVisibleContent)
-            setShouldInvalidateOverflowForPaint(true);
+            setShouldInvalidateOverflowForPaint();
     }
 
     if (isHTMLDialogElement(node()) && isOutOfFlowPositioned())
@@ -386,7 +386,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     }
 
     if (shouldBreakAtLineToAvoidWidow()) {
-        setEverHadLayout(true);
+        setEverHadLayout();
         return false;
     }
 

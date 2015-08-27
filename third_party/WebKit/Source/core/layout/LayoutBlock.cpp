@@ -554,27 +554,6 @@ void LayoutBlock::makeChildrenNonInline(LayoutObject *insertionPoint)
     setShouldDoFullPaintInvalidation();
 }
 
-void LayoutBlock::promoteAllChildrenAndInsertAfter()
-{
-    LayoutObject* firstPromotee = firstChild();
-    if (!firstPromotee)
-        return;
-    LayoutObject* lastPromotee = lastChild();
-    LayoutBlock* parent = toLayoutBlock(this->parent());
-    LayoutObject* nextSiblingOfPromotees = nextSibling();
-    for (LayoutObject* o = firstPromotee; o; o = o->nextSibling())
-        o->setParent(parent);
-    children()->setFirstChild(nullptr);
-    children()->setLastChild(nullptr);
-    firstPromotee->setPreviousSibling(this);
-    setNextSibling(firstPromotee);
-    lastPromotee->setNextSibling(nextSiblingOfPromotees);
-    if (nextSiblingOfPromotees)
-        nextSiblingOfPromotees->setPreviousSibling(lastPromotee);
-    if (parent->children()->lastChild() == this)
-        parent->children()->setLastChild(lastPromotee);
-}
-
 void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child)
 {
     ASSERT(child->isAnonymousBlock());
@@ -587,7 +566,7 @@ void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child)
     // Promote all the leftover anonymous block's children (to become children of this block
     // instead). We still want to keep the leftover block in the tree for a moment, for notification
     // purposes done further below (flow threads and grids).
-    child->promoteAllChildrenAndInsertAfter();
+    child->moveAllChildrenTo(this, child->nextSibling());
 
     // Remove all the information in the flow thread associated with the leftover anonymous block.
     child->removeFromLayoutFlowThread();
@@ -2785,7 +2764,7 @@ static bool recalcNormalFlowChildOverflowIfNeeded(LayoutObject* layoutObject)
 bool LayoutBlock::recalcChildOverflowAfterStyleChange()
 {
     ASSERT(childNeedsOverflowRecalcAfterStyleChange());
-    setChildNeedsOverflowRecalcAfterStyleChange(false);
+    clearChildNeedsOverflowRecalcAfterStyleChange();
 
     bool childrenOverflowChanged = false;
 
@@ -2841,7 +2820,7 @@ bool LayoutBlock::recalcOverflowAfterStyleChange()
     if (!selfNeedsOverflowRecalcAfterStyleChange() && !childrenOverflowChanged)
         return false;
 
-    setSelfNeedsOverflowRecalcAfterStyleChange(false);
+    clearSelfNeedsOverflowRecalcAfterStyleChange();
     // If the current block needs layout, overflow will be recalculated during
     // layout time anyway. We can safely exit here.
     if (needsLayout())

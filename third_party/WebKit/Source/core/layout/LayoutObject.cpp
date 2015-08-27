@@ -361,6 +361,14 @@ void LayoutObject::removeChild(LayoutObject* oldChild)
     children->removeChildNode(this, oldChild);
 }
 
+void LayoutObject::setDangerousOneWayParent(LayoutObject* parent)
+{
+    ASSERT(!previousSibling());
+    ASSERT(!nextSibling());
+    ASSERT(!parent || !m_parent);
+    setParent(parent);
+}
+
 void LayoutObject::registerSubtreeChangeListenerOnDescendants(bool value)
 {
     // If we're set to the same value then we're done as that means it's
@@ -1762,13 +1770,13 @@ void LayoutObject::firstLineStyleDidChange(const ComputedStyle& oldStyle, const 
 void LayoutObject::markContainingBlocksForOverflowRecalc()
 {
     for (LayoutBlock* container = containingBlock(); container && !container->childNeedsOverflowRecalcAfterStyleChange(); container = container->containingBlock())
-        container->setChildNeedsOverflowRecalcAfterStyleChange(true);
+        container->setChildNeedsOverflowRecalcAfterStyleChange();
 }
 
 void LayoutObject::setNeedsOverflowRecalcAfterStyleChange()
 {
     bool neededRecalc = needsOverflowRecalcAfterStyleChange();
-    setSelfNeedsOverflowRecalcAfterStyleChange(true);
+    setSelfNeedsOverflowRecalcAfterStyleChange();
     if (!neededRecalc)
         markContainingBlocksForOverflowRecalc();
 }
