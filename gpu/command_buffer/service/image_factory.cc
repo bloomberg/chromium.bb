@@ -39,6 +39,8 @@ gfx::BufferFormat ImageFactory::DefaultBufferFormatForImageFormat(
       return gfx::BufferFormat::ETC1;
     case GL_RGB_YUV_420_CHROMIUM:
       return gfx::BufferFormat::YUV_420;
+    case GL_RGB_YCBCR_422_CHROMIUM:
+      return gfx::BufferFormat::UYVY_422;
     default:
       NOTREACHED();
       return gfx::BufferFormat::RGBA_8888;
@@ -74,11 +76,10 @@ bool ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::UYVY_422:
       return format == DefaultBufferFormatForImageFormat(internalformat);
     case gfx::BufferFormat::RGBA_4444:
       return internalformat == GL_RGBA;
-    case gfx::BufferFormat::UYVY_422:
-      return internalformat == GL_RGB;
   }
 
   NOTREACHED();
@@ -103,11 +104,12 @@ bool ImageFactory::IsGpuMemoryBufferFormatSupported(
       return capabilities.texture_format_etc1;
     case gfx::BufferFormat::R_8:
       return capabilities.texture_rg;
+    case gfx::BufferFormat::UYVY_422:
+      return capabilities.image_ycbcr_422;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
-    case gfx::BufferFormat::UYVY_422:
       return true;
   }
 
