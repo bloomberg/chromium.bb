@@ -169,6 +169,10 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         # WebView shell doesn't support popups or popup blocking.
         'ChromeDriverTest.testPopups',
         'ChromeDriverTest.testDontGoBackOrGoForward',
+        # ChromeDriver WebView shell doesn't support multiple tabs.
+        'ChromeDriverTest.testGetWindowHandles',
+        'ChromeDriverTest.testSwitchToWindow',
+        'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
     ]
 )
 
