@@ -11,5 +11,6 @@
 
 void DownloadsWebUIForSupervisedUsersTest::SetUpCommandLine(
     base::CommandLine* command_line) {
+  DownloadsUIBrowserTest::SetUpCommandLine(command_line);
   command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
 }

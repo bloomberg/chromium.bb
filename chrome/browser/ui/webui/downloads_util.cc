@@ -21,7 +21,7 @@ bool MdDownloadsEnabled() {
   switch (chrome::GetChannel()) {
     case version_info::Channel::CANARY:
     case version_info::Channel::UNKNOWN:
-      return false;  // TODO(dbeam): return true when I update the tests.
+      return true;
     default:
       return false;
   }

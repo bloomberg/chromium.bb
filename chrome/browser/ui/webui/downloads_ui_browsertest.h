@@ -13,6 +13,9 @@ class DownloadsUIBrowserTest : public WebUIBrowserTest {
   DownloadsUIBrowserTest();
   ~DownloadsUIBrowserTest() override;
 
+  // WebUIBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
  protected:
   // Sets the pref to allow or prohibit deleting history entries.
   void SetDeleteAllowed(bool allowed);
