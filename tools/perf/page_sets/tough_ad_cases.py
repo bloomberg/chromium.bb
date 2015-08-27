@@ -36,7 +36,8 @@ class SwiffyPage(page_module.Page):
 class ScrollingPage(page_module.Page):
 
   def __init__(self, url, page_set, make_javascript_deterministic=True,
-               y_scroll_distance_multiplier=0.5, bidirectional_scroll=False):
+               y_scroll_distance_multiplier=0.5, bidirectional_scroll=False,
+               wait_for_interactive_or_better=False):
     super(ScrollingPage, self).__init__(
         url=url,
         page_set=page_set,
@@ -46,6 +47,7 @@ class ScrollingPage(page_module.Page):
                 RepeatableSynthesizeScrollGestureSharedState))
     self._y_scroll_distance_multiplier = y_scroll_distance_multiplier
     self._bidirectional_scroll = bidirectional_scroll
+    self._wait_for_interactive_or_better = wait_for_interactive_or_better
 
   def RunNavigateSteps(self, action_runner):
     # Rewrite file urls to point to the replay server instead.
@@ -60,10 +62,18 @@ class ScrollingPage(page_module.Page):
     # to main thread round trips),  insert a no-op touch handler on the body.
     # Most ads have touch handlers and we want to simulate the worst case of the
     # user trying to scroll the page by grabbing an ad.
-    action_runner.WaitForJavaScriptCondition(
-        'document.body != null && '
-        'document.body.scrollHeight > window.innerHeight && '
-        '!document.body.addEventListener("touchstart", function() {})')
+    if self._wait_for_interactive_or_better:
+        action_runner.WaitForJavaScriptCondition(
+            '(document.readyState == "interactive" || '
+            'document.readyState == "complete") &&'
+            'document.body != null && '
+            'document.body.scrollHeight > window.innerHeight && '
+            '!document.body.addEventListener("touchstart", function() {})')
+    else:
+        action_runner.WaitForJavaScriptCondition(
+            'document.body != null && '
+            'document.body.scrollHeight > window.innerHeight && '
+            '!document.body.addEventListener("touchstart", function() {})')
 
   def RunPageInteractions(self, action_runner):
     if self._bidirectional_scroll:
@@ -87,7 +97,8 @@ class ScrollingForbesPage(ScrollingPage):
     # screen. Start at the very top of the viewport to avoid this.
     super(ScrollingForbesPage, self).__init__(
         url=url, page_set=page_set, make_javascript_deterministic=False,
-        bidirectional_scroll=bidirectional_scroll)
+        bidirectional_scroll=bidirectional_scroll,
+        wait_for_interactive_or_better=True)
 
   def RunNavigateSteps(self, action_runner):
     super(ScrollingForbesPage, self).RunNavigateSteps(action_runner)
@@ -173,12 +184,14 @@ class ScrollingToughAdCasesPageSet(story.StorySet):
         self, make_javascript_deterministic=False,
         bidirectional_scroll=bidirectional_scroll))
     self.AddStory(ScrollingPage('http://www.latimes.com', self,
-        bidirectional_scroll=bidirectional_scroll))
+        bidirectional_scroll=bidirectional_scroll,
+        wait_for_interactive_or_better=True))
     self.AddStory(ScrollingForbesPage('http://www.forbes.com/sites/parmyolson/'
         '2015/07/29/jana-mobile-data-facebook-internet-org/', self,
         bidirectional_scroll=bidirectional_scroll))
     self.AddStory(ScrollingPage('http://androidcentral.com', self,
-        bidirectional_scroll=bidirectional_scroll))
+        bidirectional_scroll=bidirectional_scroll,
+        wait_for_interactive_or_better=True))
     self.AddStory(ScrollingPage('http://mashable.com', self,
         y_scroll_distance_multiplier=0.25,
         bidirectional_scroll=bidirectional_scroll))
@@ -198,7 +211,8 @@ class ScrollingToughAdCasesPageSet(story.StorySet):
         y_scroll_distance_multiplier=0.25,
         bidirectional_scroll=bidirectional_scroll))
     self.AddStory(ScrollingPage('http://androidpolice.com', self,
-      bidirectional_scroll=bidirectional_scroll))
+        bidirectional_scroll=bidirectional_scroll,
+        wait_for_interactive_or_better=True))
 
 
 class BidirectionallyScrollingToughAdCasesPageSet(ScrollingToughAdCasesPageSet):
