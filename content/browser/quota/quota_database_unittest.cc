@@ -15,6 +15,7 @@
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
+#include "sql/test/test_helpers.h"
 #include "storage/browser/quota/quota_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -43,6 +44,13 @@ class QuotaDatabaseTest : public testing::Test {
     QuotaDatabase db(kDbFile);
     EXPECT_FALSE(db.LazyOpen(false));
     ASSERT_TRUE(db.LazyOpen(true));
+    EXPECT_TRUE(db.db_.get());
+    EXPECT_TRUE(kDbFile.empty() || base::PathExists(kDbFile));
+  }
+
+  void Reopen(const base::FilePath& kDbFile) {
+    QuotaDatabase db(kDbFile);
+    ASSERT_TRUE(db.LazyOpen(false));
     EXPECT_TRUE(db.db_.get());
     EXPECT_TRUE(kDbFile.empty() || base::PathExists(kDbFile));
   }
@@ -569,4 +577,14 @@ TEST_F(QuotaDatabaseTest, DumpOriginInfoTable) {
   DumpOriginInfoTable(kDbFile);
   DumpOriginInfoTable(base::FilePath());
 }
+
+TEST_F(QuotaDatabaseTest, OpenCorruptedDatabase) {
+  base::ScopedTempDir data_dir;
+  ASSERT_TRUE(data_dir.CreateUniqueTempDir());
+  const base::FilePath kDbFile = data_dir.path().AppendASCII(kDBFileName);
+  LazyOpen(kDbFile);
+  ASSERT_TRUE(sql::test::CorruptSizeInHeader(kDbFile));
+  Reopen(kDbFile);
+}
+
 }  // namespace content
