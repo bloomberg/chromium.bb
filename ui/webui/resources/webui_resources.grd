@@ -183,8 +183,10 @@ without changes to the corresponding grd file. -->
                file="images/error.svg" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_SELECT"
                file="images/select.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_THROBBER"
-               file="images/throbber.svg" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_THROBBER_MEDIUM"
+               file="images/throbber_medium.svg" type="BINDATA" />
+      <include name="IDR_WEBUI_IMAGES_THROBBER_SMALL"
+               file="images/throbber_small.svg" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_TRASH"
                file="images/trash.png" type="BINDATA" />
 

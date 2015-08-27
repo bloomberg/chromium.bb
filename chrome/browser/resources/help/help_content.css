@@ -77,7 +77,7 @@
 }
 
 #update-status-icon.working {
-  background-image: url(chrome://resources/images/throbber.svg);
+  background-image: url(chrome://resources/images/throbber_small.svg);
   background-size: 16px;
 }
 

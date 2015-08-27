@@ -1,7 +1,9 @@
+<!-- This version of the throbber is good for sizes less than 28x28dp,
+     which follow the stroke thickness calculation: 3 - (28 - diameter) / 16 -->
 <svg version="1" xmlns="http://www.w3.org/2000/svg"
                  xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="16px" height="16px" viewBox="0 0 28 28">
-  <!-- 28= RADIUS*2 + STROKEWIDTH -->
+     width="16px" height="16px" viewBox="0 0 16 16">
+  <!-- 16= RADIUS*2 + STROKEWIDTH -->
 
   <title>Material design circular activity spinner with CSS3 animation</title>
   <style type="text/css">
@@ -11,8 +13,8 @@
 
       /*
        * Constants:
-       *      RADIUS      = 12.5
-       *      STROKEWIDTH = 3
+       *      RADIUS      = 6.875
+       *      STROKEWIDTH = 2.25
        *      ARCSIZE     = 270 degrees (amount of circle the arc takes up)
        *      ARCTIME     = 1333ms (time it takes to expand and contract arc)
        *      ARCSTARTROT = 216 degrees (how much the start location of the arc
@@ -25,12 +27,12 @@
        */
 
       .qp-circular-loader {
-        width:28px;  /* 2*RADIUS + STROKEWIDTH */
-        height:28px; /* 2*RADIUS + STROKEWIDTH */
+        width:16px;  /* 2*RADIUS + STROKEWIDTH */
+        height:16px; /* 2*RADIUS + STROKEWIDTH */
       }
       .qp-circular-loader-path {
-        stroke-dasharray: 58.9;  /* 2*RADIUS*PI * ARCSIZE/360 */
-        stroke-dashoffset: 58.9; /* 2*RADIUS*PI * ARCSIZE/360 */
+        stroke-dasharray: 32.4;  /* 2*RADIUS*PI * ARCSIZE/360 */
+        stroke-dashoffset: 32.4; /* 2*RADIUS*PI * ARCSIZE/360 */
                                  /* hides things initially */
       }
 
@@ -54,14 +56,14 @@
       /* Filling and unfilling the arc */
       @-webkit-keyframes fillunfill {
         from {
-          stroke-dashoffset: 58.8 /* 2*RADIUS*PI * ARCSIZE/360 - 0.1 */
+          stroke-dashoffset: 32.3 /* 2*RADIUS*PI * ARCSIZE/360 - 0.1 */
                                   /* 0.1 a bit of a magic constant here */
         }
         50% {
           stroke-dashoffset: 0;
         }
         to {
-          stroke-dashoffset: -58.4 /* -(2*RADIUS*PI * ARCSIZE/360 - 0.5) */
+          stroke-dashoffset: -31.9 /* -(2*RADIUS*PI * ARCSIZE/360 - 0.5) */
                                    /* 0.5 a bit of a magic constant here */
         }
       }
@@ -92,15 +94,13 @@
 
   </style>
 
-  <!-- 3= STROKEWIDTH -->
-  <!-- 14= RADIUS + STROKEWIDTH/2 -->
-  <!-- 12.5= RADIUS -->
-  <!-- 1.5=  STROKEWIDTH/2 -->
-  <!-- ARCSIZE would affect the 1.5,14 part of this... 1.5,14 is specific to
-       270 degress -->
+  <!-- 2.25= STROKEWIDTH -->
+  <!-- 8 = RADIUS + STROKEWIDTH/2 -->
+  <!-- 6.875= RADIUS -->
+  <!-- 1.125=  STROKEWIDTH/2 -->
   <g class="qp-circular-loader">
     <path class="qp-circular-loader-path" fill="none" 
-          d="M 14,1.5 A 12.5,12.5 0 1 1 1.5,14" stroke-width="3"
+          d="M 8,1.125 A 6.875,6.875 0 1 1 1.125,8" stroke-width="2.25"
           stroke-linecap="round"></path>
   </g>
 </svg>

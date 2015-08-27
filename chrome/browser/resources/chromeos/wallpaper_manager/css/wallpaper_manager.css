@@ -129,7 +129,8 @@ body {
 #spinner-container {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  background: url(chrome://resources/images/throbber.svg) center/32px no-repeat;
+  background: url(chrome://resources/images/throbber_medium.svg) center/32px
+      no-repeat;
   display: -webkit-box;
   height: 287px;
   padding-bottom: 15px;

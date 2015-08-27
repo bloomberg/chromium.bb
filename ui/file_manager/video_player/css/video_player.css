@@ -53,7 +53,8 @@ body {
 }
 
 #spinner-container > .spinner {
-  background: url(chrome://resources/images/throbber.svg) center/100% no-repeat;
+  background: url(chrome://resources/images/throbber_medium.svg) center/100%
+      no-repeat;
   height: 32px;
   left: 50%;
   margin-left: -16px;

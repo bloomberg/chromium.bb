@@ -1073,8 +1073,7 @@ paper-slider::shadow paper-progress::shadow #progressContainer {
 /* Load spinner and error banner. */
 
 .gallery .spinner {
-  background-image:
-      url(chrome://resources/images/throbber.svg);
+  background-image: url(chrome://resources/images/throbber_medium.svg);
   background-size: 100%;
   height: 32px;
   left: 50%;

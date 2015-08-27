@@ -50,7 +50,7 @@ iron-icon {
 }
 
 :host([connecting]) .iron-selected .throbber {
-  background: url(chrome://resources/images/throbber.svg) no-repeat;
+  background: url(chrome://resources/images/throbber_small.svg) no-repeat;
   background-size: cover;
   display: inline-block;
   height: 25px;
