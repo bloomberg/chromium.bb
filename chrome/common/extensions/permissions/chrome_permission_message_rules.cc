@@ -8,8 +8,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
-#include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/coalesced_permission_message.h"
 #include "grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -26,10 +24,10 @@ class DefaultPermissionMessageFormatter
       : message_id_(message_id) {}
   ~DefaultPermissionMessageFormatter() override {}
 
-  CoalescedPermissionMessage GetPermissionMessage(
+  PermissionMessage GetPermissionMessage(
       const PermissionIDSet& permissions) const override {
-    return CoalescedPermissionMessage(l10n_util::GetStringUTF16(message_id_),
-                                      permissions);
+    return PermissionMessage(l10n_util::GetStringUTF16(message_id_),
+                             permissions);
   }
 
  private:
@@ -46,14 +44,14 @@ class SingleParameterFormatter : public ChromePermissionMessageFormatter {
   explicit SingleParameterFormatter(int message_id) : message_id_(message_id) {}
   ~SingleParameterFormatter() override {}
 
-  CoalescedPermissionMessage GetPermissionMessage(
+  PermissionMessage GetPermissionMessage(
       const PermissionIDSet& permissions) const override {
     DCHECK(permissions.size() > 0);
     std::vector<base::string16> parameters =
         permissions.GetAllPermissionParameters();
     DCHECK_EQ(1U, parameters.size())
         << "Only one message with each ID can be parameterized.";
-    return CoalescedPermissionMessage(
+    return PermissionMessage(
         l10n_util::GetStringFUTF16(message_id_, parameters[0]), permissions);
   }
 
@@ -71,12 +69,12 @@ class SimpleListFormatter : public ChromePermissionMessageFormatter {
       : root_message_id_(root_message_id) {}
   ~SimpleListFormatter() override {}
 
-  CoalescedPermissionMessage GetPermissionMessage(
+  PermissionMessage GetPermissionMessage(
       const PermissionIDSet& permissions) const override {
     DCHECK(permissions.size() > 0);
-    return CoalescedPermissionMessage(
-        l10n_util::GetStringUTF16(root_message_id_), permissions,
-        permissions.GetAllPermissionParameters());
+    return PermissionMessage(l10n_util::GetStringUTF16(root_message_id_),
+                             permissions,
+                             permissions.GetAllPermissionParameters());
   }
 
  private:
@@ -98,14 +96,14 @@ class SpaceSeparatedListFormatter : public ChromePermissionMessageFormatter {
         message_id_for_multiple_hosts_(message_id_for_multiple_hosts) {}
   ~SpaceSeparatedListFormatter() override {}
 
-  CoalescedPermissionMessage GetPermissionMessage(
+  PermissionMessage GetPermissionMessage(
       const PermissionIDSet& permissions) const override {
     DCHECK(permissions.size() > 0);
     std::vector<base::string16> hostnames =
         permissions.GetAllPermissionParameters();
     base::string16 hosts_string =
         base::JoinString(hostnames, base::ASCIIToUTF16(" "));
-    return CoalescedPermissionMessage(
+    return PermissionMessage(
         l10n_util::GetStringFUTF16(hostnames.size() == 1
                                        ? message_id_for_one_host_
                                        : message_id_for_multiple_hosts_,
@@ -125,7 +123,7 @@ class SpaceSeparatedListFormatter : public ChromePermissionMessageFormatter {
 // of 1-3 permissions, and the other for the case where there are 4 or more
 // permissions. In the case of 4 or more permissions, rather than insert the
 // list into the message, the permissions are displayed as submessages in the
-// resultant CoalescedPermissionMessage.
+// resultant PermissionMessage.
 class CommaSeparatedListFormatter : public ChromePermissionMessageFormatter {
  public:
   CommaSeparatedListFormatter(int message_id_for_one_host,
@@ -138,20 +136,20 @@ class CommaSeparatedListFormatter : public ChromePermissionMessageFormatter {
         message_id_for_many_hosts_(message_id_for_many_hosts) {}
   ~CommaSeparatedListFormatter() override {}
 
-  CoalescedPermissionMessage GetPermissionMessage(
+  PermissionMessage GetPermissionMessage(
       const PermissionIDSet& permissions) const override {
     DCHECK(permissions.size() > 0);
     std::vector<base::string16> hostnames =
         permissions.GetAllPermissionParameters();
-    CoalescedPermissionMessages messages;
+    PermissionMessages messages;
     if (hostnames.size() <= 3) {
-      return CoalescedPermissionMessage(
+      return PermissionMessage(
           l10n_util::GetStringFUTF16(message_id_for_hosts(hostnames.size()),
                                      hostnames, NULL),
           permissions);
     }
 
-    return CoalescedPermissionMessage(
+    return PermissionMessage(
         l10n_util::GetStringUTF16(message_id_for_many_hosts_), permissions,
         hostnames);
   }
@@ -183,7 +181,7 @@ class USBDevicesFormatter : public ChromePermissionMessageFormatter {
   USBDevicesFormatter() {}
   ~USBDevicesFormatter() override {}
 
-  CoalescedPermissionMessage GetPermissionMessage(
+  PermissionMessage GetPermissionMessage(
       const PermissionIDSet& permissions) const override {
     DCHECK(permissions.size() > 0);
     return permissions.size() == 1 ? GetItemMessage(permissions)
@@ -191,8 +189,7 @@ class USBDevicesFormatter : public ChromePermissionMessageFormatter {
   }
 
  private:
-  CoalescedPermissionMessage GetItemMessage(
-      const PermissionIDSet& permissions) const {
+  PermissionMessage GetItemMessage(const PermissionIDSet& permissions) const {
     DCHECK(permissions.size() == 1);
     const PermissionID& permission = *permissions.begin();
     base::string16 msg;
@@ -213,10 +210,10 @@ class USBDevicesFormatter : public ChromePermissionMessageFormatter {
       default:
         NOTREACHED();
     }
-    return CoalescedPermissionMessage(msg, permissions);
+    return PermissionMessage(msg, permissions);
   }
 
-  CoalescedPermissionMessage GetMultiItemMessage(
+  PermissionMessage GetMultiItemMessage(
       const PermissionIDSet& permissions) const {
     DCHECK(permissions.size() > 1);
     // Put all the individual items into submessages.
@@ -242,7 +239,7 @@ class USBDevicesFormatter : public ChromePermissionMessageFormatter {
           IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_VENDOR));
     }
 
-    return CoalescedPermissionMessage(
+    return PermissionMessage(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
         permissions, submessages);
   }
@@ -288,7 +285,7 @@ std::set<APIPermission::ID> ChromePermissionMessageRule::all_permissions()
                                                         optional_permissions());
 }
 
-CoalescedPermissionMessage ChromePermissionMessageRule::GetPermissionMessage(
+PermissionMessage ChromePermissionMessageRule::GetPermissionMessage(
     const PermissionIDSet& permissions) const {
   return formatter_->GetPermissionMessage(permissions);
 }

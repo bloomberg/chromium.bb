@@ -4,16 +4,9 @@
 
 #include "chrome/browser/extensions/extension_install_prompt.h"
 
-#include <map>
-
-#include "base/command_line.h"
 #include "base/location.h"
-#include "base/prefs/pref_service.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/bundle_installer.h"
@@ -22,7 +15,6 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/extension_install_ui_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -40,6 +32,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -52,8 +45,8 @@
 using extensions::BundleInstaller;
 using extensions::Extension;
 using extensions::Manifest;
-using extensions::CoalescedPermissionMessage;
-using extensions::CoalescedPermissionMessages;
+using extensions::PermissionMessage;
+using extensions::PermissionMessages;
 using extensions::PermissionSet;
 
 namespace {
@@ -246,7 +239,7 @@ ExtensionInstallPrompt::Prompt::~Prompt() {
 }
 
 void ExtensionInstallPrompt::Prompt::SetPermissions(
-    const CoalescedPermissionMessages& permissions,
+    const PermissionMessages& permissions,
     PermissionsType permissions_type) {
   InstallPromptPermissions& install_permissions =
       GetPermissionsForType(permissions_type);
@@ -255,7 +248,7 @@ void ExtensionInstallPrompt::Prompt::SetPermissions(
   install_permissions.details.clear();
   install_permissions.is_showing_details.clear();
 
-  for (const CoalescedPermissionMessage& msg : permissions) {
+  for (const PermissionMessage& msg : permissions) {
     install_permissions.permissions.push_back(msg.message());
     // Add a dash to the front of each permission detail.
     base::string16 details;

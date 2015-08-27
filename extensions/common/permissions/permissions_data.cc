@@ -13,7 +13,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
-#include "extensions/common/permissions/permission_message_util.h"
+#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
@@ -194,7 +194,7 @@ bool PermissionsData::HasEffectiveAccessToAllHosts() const {
   return active_permissions()->HasEffectiveAccessToAllHosts();
 }
 
-CoalescedPermissionMessages PermissionsData::GetPermissionMessages() const {
+PermissionMessages PermissionsData::GetPermissionMessages() const {
   return PermissionMessageProvider::Get()->GetPermissionMessages(
       PermissionMessageProvider::Get()->GetAllPermissionIDs(
           active_permissions().get(), manifest_type_));

@@ -9,7 +9,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/coalesced_permission_message.h"
+#include "extensions/common/permissions/permission_message.h"
 
 namespace extensions {
 
@@ -18,8 +18,8 @@ namespace extensions {
 // are bucketed together, then GetPermissionMessage() is called with the
 // resultant permission set.
 // Note: since a ChromePermissionMessageFormatter can only produce a single
-// CoalescedPermissionMessage and applies to all permissions with a given ID,
-// this maintains the property that one permission ID can still only produce one
+// PermissionMessage and applies to all permissions with a given ID, this
+// maintains the property that one permission ID can still only produce one
 // message (that is, multiple permissions with the same ID cannot appear in
 // multiple messages).
 class ChromePermissionMessageFormatter {
@@ -30,7 +30,7 @@ class ChromePermissionMessageFormatter {
   // Returns the permission message for the given set of |permissions|.
   // |permissions| is guaranteed to have the IDs specified by the
   // required/optional permissions for the rule. The set will never be empty.
-  virtual CoalescedPermissionMessage GetPermissionMessage(
+  virtual PermissionMessage GetPermissionMessage(
       const PermissionIDSet& permissions) const = 0;
 
  private:
@@ -44,8 +44,8 @@ class ChromePermissionMessageFormatter {
 // any |optional| permissions are present, they are also 'absorbed' by the rule
 // to generate the final coalesced message.
 // An optional |formatter| can be provided, which decides how the final
-// CoalescedPermissionMessage appears. The default formatter simply displays the
-// message with the ID |message_id|.
+// PermissionMessage appears. The default formatter simply displays the message
+// with the ID |message_id|.
 // Once a permission is used in a rule, it cannot apply to any future rules.
 // TODO(sashab): Move all ChromePermissionMessageFormatters to their own
 // provider class and remove ownership from ChromePermissionMessageRule.
@@ -101,7 +101,7 @@ class ChromePermissionMessageRule {
   std::set<APIPermission::ID> optional_permissions() const;
   std::set<APIPermission::ID> all_permissions() const;
 
-  CoalescedPermissionMessage GetPermissionMessage(
+  PermissionMessage GetPermissionMessage(
       const PermissionIDSet& permissions) const;
 
  private:

@@ -43,16 +43,16 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/common/permissions/coalesced_permission_message.h"
+#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
-using extensions::CoalescedPermissionMessage;
-using extensions::CoalescedPermissionMessages;
 using extensions::Extension;
+using extensions::PermissionMessage;
+using extensions::PermissionMessages;
 
 namespace {
 
@@ -294,7 +294,7 @@ base::string16 ExtensionDisabledGlobalError::GetBubbleViewTitle() {
 std::vector<base::string16>
 ExtensionDisabledGlobalError::GetBubbleViewMessages() {
   std::vector<base::string16> messages;
-  CoalescedPermissionMessages permission_warnings =
+  PermissionMessages permission_warnings =
       extension_->permissions_data()->GetPermissionMessages();
   if (is_remote_install_) {
     messages.push_back(l10n_util::GetStringFUTF16(
@@ -315,7 +315,7 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
     messages.push_back(l10n_util::GetStringUTF16(
         IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO));
   }
-  for (const CoalescedPermissionMessage& msg : permission_warnings) {
+  for (const PermissionMessage& msg : permission_warnings) {
     messages.push_back(l10n_util::GetStringFUTF16(IDS_EXTENSION_PERMISSION_LINE,
                                                   msg.message()));
   }

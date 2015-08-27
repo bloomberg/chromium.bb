@@ -261,7 +261,7 @@ bool AppInfoPermissionsPanel::HasActivePermissionMessages() const {
   return !GetActivePermissionMessages().empty();
 }
 
-extensions::CoalescedPermissionMessages
+extensions::PermissionMessages
 AppInfoPermissionsPanel::GetActivePermissionMessages() const {
   return app_->permissions_data()->GetPermissionMessages();
 }

@@ -17,8 +17,8 @@ namespace extensions {
 
 namespace {
 
-CoalescedPermissionMessages GetMessages(const PermissionSet* permissions,
-                                        Manifest::Type extension_type) {
+PermissionMessages GetMessages(const PermissionSet* permissions,
+                               Manifest::Type extension_type) {
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   return provider->GetPermissionMessages(
       provider->GetAllPermissionIDs(permissions, extension_type));
@@ -73,9 +73,9 @@ base::string16 MessagesVectorToString(
          base::ASCIIToUTF16("\"\n");
 }
 
-base::string16 MessagesToString(const CoalescedPermissionMessages& messages) {
+base::string16 MessagesToString(const PermissionMessages& messages) {
   std::vector<base::string16> messages_vec;
-  for (const CoalescedPermissionMessage& msg : messages)
+  for (const PermissionMessage& msg : messages)
     messages_vec.push_back(msg.message());
   return MessagesVectorToString(messages_vec);
 }
@@ -107,10 +107,10 @@ bool CheckThatSubmessagesMatch(
 testing::AssertionResult VerifyHasPermissionMessageImpl(
     const base::string16& expected_message,
     const std::vector<base::string16>& expected_submessages,
-    const CoalescedPermissionMessages& actual_messages) {
+    const PermissionMessages& actual_messages) {
   auto message_it =
       std::find_if(actual_messages.begin(), actual_messages.end(),
-                   [&expected_message](const CoalescedPermissionMessage& msg) {
+                   [&expected_message](const PermissionMessage& msg) {
                      return msg.message() == expected_message;
                    });
   bool found = message_it != actual_messages.end();
@@ -135,7 +135,7 @@ testing::AssertionResult VerifyHasPermissionMessageImpl(
 testing::AssertionResult VerifyPermissionMessagesWithSubmessagesImpl(
     const std::vector<base::string16>& expected_messages,
     const std::vector<std::vector<base::string16>>& expected_submessages,
-    const CoalescedPermissionMessages& actual_messages,
+    const PermissionMessages& actual_messages,
     bool check_order) {
   CHECK_EQ(expected_messages.size(), expected_submessages.size());
   if (expected_messages.size() != actual_messages.size()) {
@@ -150,7 +150,7 @@ testing::AssertionResult VerifyPermissionMessagesWithSubmessagesImpl(
   if (check_order) {
     auto it = actual_messages.begin();
     for (size_t i = 0; i < expected_messages.size(); i++, ++it) {
-      const CoalescedPermissionMessage& actual_message = *it;
+      const PermissionMessage& actual_message = *it;
       if (expected_messages[i] != actual_message.message()) {
         // Message: Expected messages to be { "Foo" }, but got { "Bar", "Baz" }
         return testing::AssertionFailure()

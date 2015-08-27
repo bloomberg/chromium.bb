@@ -42,9 +42,9 @@ class ShellPermissionMessageProvider : public PermissionMessageProvider {
   ~ShellPermissionMessageProvider() override {}
 
   // PermissionMessageProvider implementation.
-  CoalescedPermissionMessages GetPermissionMessages(
+  PermissionMessages GetPermissionMessages(
       const PermissionIDSet& permissions) const override {
-    return CoalescedPermissionMessages();
+    return PermissionMessages();
   }
 
   bool IsPrivilegeIncrease(const PermissionSet* old_permissions,

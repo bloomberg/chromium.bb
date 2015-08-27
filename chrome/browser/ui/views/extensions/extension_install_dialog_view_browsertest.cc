@@ -23,9 +23,9 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-using extensions::CoalescedPermissionMessage;
-using extensions::CoalescedPermissionMessages;
 using extensions::PermissionIDSet;
+using extensions::PermissionMessage;
+using extensions::PermissionMessages;
 
 // A simple delegate implementation that counts the number of times
 // |InstallUIProceed| and |InstallUIAbort| are called.
@@ -86,7 +86,7 @@ class ExtensionInstallDialogViewTestBase : public ExtensionBrowserTest {
   content::WebContents* web_contents() { return web_contents_; }
   MockExtensionInstallPromptDelegate* delegate() { return &delegate_; }
 
-  void SetPromptPermissions(const CoalescedPermissionMessages& permissions);
+  void SetPromptPermissions(const PermissionMessages& permissions);
   void SetPromptRetainedFiles(std::vector<base::FilePath> files);
 
  private:
@@ -124,12 +124,12 @@ void ExtensionInstallDialogViewTestBase::SetUpOnMainThread() {
   gfx::Image icon = gfx::Image::CreateFrom1xBitmap(icon_bitmap);
   prompt_->set_icon(icon);
 
-  this->SetPromptPermissions(CoalescedPermissionMessages());
+  this->SetPromptPermissions(PermissionMessages());
   this->SetPromptRetainedFiles(std::vector<base::FilePath>());
 }
 
 void ExtensionInstallDialogViewTestBase::SetPromptPermissions(
-    const CoalescedPermissionMessages& permissions) {
+    const PermissionMessages& permissions) {
   prompt_->SetPermissions(permissions,
                           ExtensionInstallPrompt::REGULAR_PERMISSIONS);
 }
@@ -176,10 +176,10 @@ bool ScrollbarTest::IsScrollbarVisible() {
 // install prompt.
 IN_PROC_BROWSER_TEST_F(ScrollbarTest, LongPromptScrollbar) {
   base::string16 permission_string(base::ASCIIToUTF16("Test"));
-  CoalescedPermissionMessages permissions;
+  PermissionMessages permissions;
   for (int i = 0; i < 20; i++) {
-    permissions.push_back(CoalescedPermissionMessage(permission_string,
-                                                     PermissionIDSet()));
+    permissions.push_back(PermissionMessage(permission_string,
+                                            PermissionIDSet()));
   }
   this->SetPromptPermissions(permissions);
   ASSERT_TRUE(IsScrollbarVisible()) << "Scrollbar is not visible";
@@ -190,9 +190,9 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, LongPromptScrollbar) {
 IN_PROC_BROWSER_TEST_F(ScrollbarTest, ScrollbarRegression) {
   base::string16 permission_string(base::ASCIIToUTF16(
       "Read and modify your data on *.facebook.com"));
-  CoalescedPermissionMessages permissions;
-  permissions.push_back(CoalescedPermissionMessage(permission_string,
-                                                   PermissionIDSet()));
+  PermissionMessages permissions;
+  permissions.push_back(PermissionMessage(permission_string,
+                                          PermissionIDSet()));
   this->SetPromptPermissions(permissions);
   ASSERT_FALSE(IsScrollbarVisible()) << "Scrollbar is visible";
 }

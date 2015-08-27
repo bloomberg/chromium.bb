@@ -41,10 +41,9 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-size_t IndexOf(const CoalescedPermissionMessages& warnings,
-               const std::string& warning) {
+size_t IndexOf(const PermissionMessages& warnings, const std::string& warning) {
   size_t i = 0;
-  for (const CoalescedPermissionMessage& msg : warnings) {
+  for (const PermissionMessage& msg : warnings) {
     if (msg.message() == base::ASCIIToUTF16(warning))
       return i;
     ++i;
@@ -81,10 +80,9 @@ std::string PermissionIDsToString(const PermissionIDSet& ids) {
   return base::StringPrintf("[ %s ]", base::JoinString(strs, ", ").c_str());
 }
 
-std::string CoalescedPermissionIDsToString(
-    const CoalescedPermissionMessages& msgs) {
+std::string CoalescedPermissionIDsToString(const PermissionMessages& msgs) {
   std::vector<std::string> strs;
-  for (const CoalescedPermissionMessage& msg : msgs)
+  for (const PermissionMessage& msg : msgs)
     strs.push_back(PermissionIDsToString(msg.permissions()));
   return base::JoinString(strs, " ");
 }
@@ -97,7 +95,7 @@ testing::AssertionResult PermissionSetProducesMessage(
     const PermissionIDSet& expected_ids) {
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
 
-  CoalescedPermissionMessages msgs = provider->GetPermissionMessages(
+  PermissionMessages msgs = provider->GetPermissionMessages(
       provider->GetAllPermissionIDs(permissions, extension_type));
   if (msgs.size() != 1) {
     return testing::AssertionFailure()
@@ -1107,7 +1105,7 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kAudio));
   EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kVideo));
   EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(), kBoth));
-  CoalescedPermissionMessages warnings = provider->GetPermissionMessages(
+  PermissionMessages warnings = provider->GetPermissionMessages(
       provider->GetAllPermissionIDs(set, extension->GetType()));
   size_t combined_index = IndexOf(warnings, kBoth);
   size_t combined_size = warnings.size();
@@ -1117,7 +1115,7 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(), kAudio));
   EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kVideo));
   EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kBoth));
-  CoalescedPermissionMessages warnings2 = provider->GetPermissionMessages(
+  PermissionMessages warnings2 = provider->GetPermissionMessages(
       provider->GetAllPermissionIDs(set, extension->GetType()));
   EXPECT_EQ(combined_size, warnings2.size());
   EXPECT_EQ(combined_index, IndexOf(warnings2, kAudio));
@@ -1128,7 +1126,7 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kAudio));
   EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(), kVideo));
   EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kBoth));
-  CoalescedPermissionMessages warnings3 = provider->GetPermissionMessages(
+  PermissionMessages warnings3 = provider->GetPermissionMessages(
       provider->GetAllPermissionIDs(set, extension->GetType()));
   EXPECT_EQ(combined_size, warnings3.size());
   EXPECT_EQ(combined_index, IndexOf(warnings3, kVideo));

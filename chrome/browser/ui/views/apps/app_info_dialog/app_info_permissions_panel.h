@@ -50,7 +50,7 @@ class AppInfoPermissionsPanel : public AppInfoPanel {
   void LayoutPermissionsList();
 
   bool HasActivePermissionMessages() const;
-  extensions::CoalescedPermissionMessages GetActivePermissionMessages() const;
+  extensions::PermissionMessages GetActivePermissionMessages() const;
 
   int GetRetainedFileCount() const;
   base::string16 GetRetainedFileHeading() const;

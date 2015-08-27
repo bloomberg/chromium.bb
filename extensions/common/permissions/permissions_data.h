@@ -14,8 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
-#include "extensions/common/permissions/coalesced_permission_message.h"
-#include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_set.h"
 
 class GURL;
@@ -131,7 +130,7 @@ class PermissionsData {
 
   // Returns the full list of permission details for messages that should
   // display at install time, in a nested format ready for display.
-  CoalescedPermissionMessages GetPermissionMessages() const;
+  PermissionMessages GetPermissionMessages() const;
 
   // Returns true if the extension has requested all-hosts permissions (or
   // something close to it), but has had it withheld.

@@ -12,10 +12,9 @@ TestPermissionMessageProvider::TestPermissionMessageProvider() {
 TestPermissionMessageProvider::~TestPermissionMessageProvider() {
 }
 
-CoalescedPermissionMessages
-TestPermissionMessageProvider::GetPermissionMessages(
+PermissionMessages TestPermissionMessageProvider::GetPermissionMessages(
     const PermissionIDSet& permissions) const {
-  return CoalescedPermissionMessages();
+  return PermissionMessages();
 }
 
 bool TestPermissionMessageProvider::IsPrivilegeIncrease(

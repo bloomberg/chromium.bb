@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_COMMON_PERMISSIONS_COALESCED_PERMISSION_MESSAGE_H_
-#define EXTENSIONS_COMMON_PERMISSIONS_COALESCED_PERMISSION_MESSAGE_H_
+#ifndef EXTENSIONS_COMMON_PERMISSIONS_PERMISSION_MESSAGE_H_
+#define EXTENSIONS_COMMON_PERMISSIONS_PERMISSION_MESSAGE_H_
 
 #include <list>
 #include <string>
@@ -15,10 +15,10 @@ namespace extensions {
 
 // The new kind of Chrome app/extension permission messages.
 //
-// A CoalescedPermissionMessage is an immutable object that represents a single
-// bullet in the list of an app or extension's permissions. It contains the
-// localized permission message to display, as well as the set of permissions
-// that contributed to that message (and should be revoked if this permission is
+// A PermissionMessage is an immutable object that represents a single bullet
+// in the list of an app or extension's permissions. It contains the localized
+// permission message to display, as well as the set of permissions that
+// contributed to that message (and should be revoked if this permission is
 // revoked). It can also optionally contain a list of sub-messages which should
 // appear as nested bullet points below the main one.
 //
@@ -26,8 +26,8 @@ namespace extensions {
 // message and should be revoked if this permission message is revoked. Note
 // that other permissions could have contributed to the message, but these are
 // the ones 'contained' in this message - if this set is taken for all
-// CoalescedPermissionMessages, each permission will only be in at most one
-// CoalescedPermissionMessage.
+// PermissionMessages, each permission will only be in at most one
+// PermissionMessage.
 //
 // Some permissions may contain nested messages, stored in |submessages|. These
 // are appropriate to show as nested bullet points below the permission,
@@ -37,16 +37,14 @@ namespace extensions {
 //
 // TODO(sashab): Add a custom revoke action for each permission and nested
 // permission message, registerable as a callback.
-// TODO(sashab): Once the existing PermissionMessage is no longer used, rename
-// this to PermissionMessage.
-class CoalescedPermissionMessage {
+class PermissionMessage {
  public:
-  CoalescedPermissionMessage(const base::string16& message,
-                             const PermissionIDSet& permissions);
-  CoalescedPermissionMessage(const base::string16& message,
-                             const PermissionIDSet& permissions,
-                             const std::vector<base::string16>& submessages);
-  virtual ~CoalescedPermissionMessage();
+  PermissionMessage(const base::string16& message,
+                    const PermissionIDSet& permissions);
+  PermissionMessage(const base::string16& message,
+                    const PermissionIDSet& permissions,
+                    const std::vector<base::string16>& submessages);
+  virtual ~PermissionMessage();
 
   const base::string16& message() const { return message_; }
   const PermissionIDSet& permissions() const { return permissions_; }
@@ -62,8 +60,8 @@ class CoalescedPermissionMessage {
 
 // TODO(treib): Make this an std::vector when we have C++11 library support on
 // all platforms. (In C++03, std::vector's elements must be copy-assignable...)
-typedef std::list<CoalescedPermissionMessage> CoalescedPermissionMessages;
+typedef std::list<PermissionMessage> PermissionMessages;
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_COMMON_PERMISSIONS_COALESCED_PERMISSION_MESSAGE_H_
+#endif  // EXTENSIONS_COMMON_PERMISSIONS_PERMISSION_MESSAGE_H_

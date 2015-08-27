@@ -5,11 +5,9 @@
 #include "extensions/common/permissions/permission_message_util.h"
 
 #include "base/macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "extensions/common/permissions/coalesced_permission_message.h"
-#include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/extensions_strings.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

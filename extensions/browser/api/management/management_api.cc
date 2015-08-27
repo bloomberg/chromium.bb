@@ -37,8 +37,7 @@
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
-#include "extensions/common/permissions/coalesced_permission_message.h"
-#include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 
@@ -62,7 +61,7 @@ AutoConfirmForTest auto_confirm_for_test = DO_NOT_SKIP;
 
 std::vector<std::string> CreateWarningsList(const Extension* extension) {
   std::vector<std::string> warnings_list;
-  for (const CoalescedPermissionMessage& msg :
+  for (const PermissionMessage& msg :
        extension->permissions_data()->GetPermissionMessages()) {
     warnings_list.push_back(base::UTF16ToUTF8(msg.message()));
   }

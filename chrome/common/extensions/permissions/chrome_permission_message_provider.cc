@@ -25,11 +25,10 @@ namespace extensions {
 
 namespace {
 
-// Copyable wrapper to make CoalescedPermissionMessages comparable.
+// Copyable wrapper to make PermissionMessages comparable.
 class ComparablePermission {
  public:
-  explicit ComparablePermission(const CoalescedPermissionMessage& msg)
-      : msg_(&msg) {}
+  explicit ComparablePermission(const PermissionMessage& msg) : msg_(&msg) {}
 
   bool operator<(const ComparablePermission& rhs) const {
     if (msg_->message() < rhs.msg_->message())
@@ -40,7 +39,7 @@ class ComparablePermission {
   }
 
  private:
-  const CoalescedPermissionMessage* msg_;
+  const PermissionMessage* msg_;
 };
 using ComparablePermissions = std::vector<ComparablePermission>;
 
@@ -54,8 +53,7 @@ ChromePermissionMessageProvider::ChromePermissionMessageProvider() {
 ChromePermissionMessageProvider::~ChromePermissionMessageProvider() {
 }
 
-CoalescedPermissionMessages
-ChromePermissionMessageProvider::GetPermissionMessages(
+PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
     const PermissionIDSet& permissions) const {
   std::vector<ChromePermissionMessageRule> rules =
       ChromePermissionMessageRule::GetAllRules();
@@ -64,7 +62,7 @@ ChromePermissionMessageProvider::GetPermissionMessages(
   // permissions. Once a permission is used in a rule, remove it from the set
   // of available permissions so it cannot be applied to subsequent rules.
   PermissionIDSet remaining_permissions = permissions;
-  CoalescedPermissionMessages messages;
+  PermissionMessages messages;
   for (const auto& rule : rules) {
     // Only apply the rule if we have all the required permission IDs. If the
     // rule has no required IDs, then apply it only if any of the optional ones
@@ -190,8 +188,8 @@ bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
 
   // Otherwise, check the actual messages - not all IDs result in a message,
   // and some messages can suppress others.
-  CoalescedPermissionMessages old_messages = GetPermissionMessages(old_ids);
-  CoalescedPermissionMessages new_messages = GetPermissionMessages(new_ids);
+  PermissionMessages old_messages = GetPermissionMessages(old_ids);
+  PermissionMessages new_messages = GetPermissionMessages(new_ids);
 
   ComparablePermissions old_strings(old_messages.begin(), old_messages.end());
   ComparablePermissions new_strings(new_messages.begin(), new_messages.end());

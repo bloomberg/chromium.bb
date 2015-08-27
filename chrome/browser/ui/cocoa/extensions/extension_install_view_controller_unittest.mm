@@ -17,10 +17,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
-using extensions::CoalescedPermissionMessage;
-using extensions::CoalescedPermissionMessages;
 using extensions::Extension;
 using extensions::PermissionIDSet;
+using extensions::PermissionMessage;
+using extensions::PermissionMessages;
 
 // Base class for our tests.
 class ExtensionInstallViewControllerTest : public CocoaProfileTest {
@@ -43,10 +43,9 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;
 
-  CoalescedPermissionMessages permissions;
-  permissions.push_back(
-      CoalescedPermissionMessage(base::UTF8ToUTF16("warning 1"),
-                                 PermissionIDSet()));
+  PermissionMessages permissions;
+  permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 1"),
+                                          PermissionIDSet()));
   prompt->SetPermissions(permissions, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
@@ -100,10 +99,9 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalOK) {
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;
 
-  CoalescedPermissionMessages permissions;
-  permissions.push_back(
-      CoalescedPermissionMessage(base::UTF8ToUTF16("warning 1"),
-                                 PermissionIDSet()));
+  PermissionMessages permissions;
+  permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 1"),
+                                          PermissionIDSet()));
   prompt->SetPermissions(permissions, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
@@ -130,17 +128,15 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;
 
-  CoalescedPermissionMessages permissions;
-  permissions.push_back(
-      CoalescedPermissionMessage(base::UTF8ToUTF16("warning 1"),
-                                 PermissionIDSet()));
+  PermissionMessages permissions;
+  permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 1"),
+                                          PermissionIDSet()));
   one_warning_prompt->SetPermissions(permissions, type);
 
   scoped_refptr<ExtensionInstallPrompt::Prompt> two_warnings_prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
-  permissions.push_back(
-      CoalescedPermissionMessage(base::UTF8ToUTF16("warning 2"),
-                                 PermissionIDSet()));
+  permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 2"),
+                                          PermissionIDSet()));
   two_warnings_prompt->SetPermissions(permissions, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller1(
@@ -282,10 +278,9 @@ TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;
 
-  CoalescedPermissionMessages permissions;
-  permissions.push_back(
-      CoalescedPermissionMessage(base::UTF8ToUTF16("warning 1"),
-                                 PermissionIDSet()));
+  PermissionMessages permissions;
+  permissions.push_back(PermissionMessage(base::UTF8ToUTF16("warning 1"),
+                                          PermissionIDSet()));
   prompt->SetPermissions(permissions, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
@@ -312,8 +307,8 @@ TEST_F(ExtensionInstallViewControllerTest, PermissionsDetails) {
   ExtensionInstallPrompt::PermissionsType type =
       ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS;
 
-  CoalescedPermissionMessages permissions;
-  permissions.push_back(CoalescedPermissionMessage(
+  PermissionMessages permissions;
+  permissions.push_back(PermissionMessage(
       base::UTF8ToUTF16("warning 1"),
       PermissionIDSet(),
       std::vector<base::string16>(1, base::UTF8ToUTF16("Detail 1"))));
