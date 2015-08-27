@@ -168,5 +168,23 @@
     "prefix": "threaded",
     "base": "fast/idle-callback",
     "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "spv2",
+    "base": "compositing/repaint",
+    "args": ["--enable-slimming-paint-v2",
+             "--enable-blink-features=SelectionPaintingWithoutSelectionGaps"]
+  },
+  {
+    "prefix": "spv2",
+    "base": "fast/repaint",
+    "args": ["--enable-slimming-paint-v2",
+             "--enable-blink-features=SelectionPaintingWithoutSelectionGaps"]
+  },
+  {
+    "prefix": "spv2",
+    "base": "paint",
+    "args": ["--enable-slimming-paint-v2",
+             "--enable-blink-features=SelectionPaintingWithoutSelectionGaps"]
   }
 ]

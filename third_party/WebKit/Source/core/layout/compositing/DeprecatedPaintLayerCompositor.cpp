@@ -878,9 +878,16 @@ void DeprecatedPaintLayerCompositor::resetTrackedPaintInvalidationRects()
 
 void DeprecatedPaintLayerCompositor::setTracksPaintInvalidations(bool tracksPaintInvalidations)
 {
-    ASSERT(lifecycle().state() ==
-        (RuntimeEnabledFeatures::slimmingPaintV2Enabled()
-            ? DocumentLifecycle::CompositingForSlimmingPaintV2Clean : DocumentLifecycle::PaintInvalidationClean));
+#if ENABLE(ASSERT)
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        ASSERT(lifecycle().state() == DocumentLifecycle::CompositingForSlimmingPaintV2Clean
+            // TODO(wangxianzhu): Remove this when we remove the old path for spv2.
+            || lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
+    } else {
+        ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
+    }
+#endif
+
     m_isTrackingPaintInvalidations = tracksPaintInvalidations;
 }
 
