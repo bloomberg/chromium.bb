@@ -30,12 +30,12 @@ using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using ::testing::_;
 using ::testing::ElementsAre;
-using ::testing::Eq;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::UnorderedElementsAre;
 
 namespace password_manager {
 
@@ -265,10 +265,6 @@ class PasswordFormManagerTest : public testing::Test {
     p->preferred_match_ = match.get();
     base::string16 username = match->username_value;
     p->best_matches_.insert(username, match.Pass());
-  }
-
-  void SanitizePossibleUsernames(PasswordFormManager* p, PasswordForm* form) {
-    p->SanitizePossibleUsernames(form);
   }
 
   // Save saved_match() for observed_form() where |observed_form_data|,
@@ -1053,39 +1049,79 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
 }
 
 TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
-  PasswordFormManager form_manager(password_manager(), client(), kNoDriver,
-                                   *observed_form(), false);
+  const base::string16 kUsernameOther = ASCIIToUTF16("other username");
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+
   PasswordForm credentials(*observed_form());
   credentials.other_possible_usernames.push_back(ASCIIToUTF16("543-43-1234"));
   credentials.other_possible_usernames.push_back(
       ASCIIToUTF16("378282246310005"));
-  credentials.other_possible_usernames.push_back(
-      ASCIIToUTF16("other username"));
+  credentials.other_possible_usernames.push_back(kUsernameOther);
   credentials.username_value = ASCIIToUTF16("test@gmail.com");
+  credentials.preferred = true;
 
-  SanitizePossibleUsernames(&form_manager, &credentials);
+  // Pass in ALLOW_OTHER_POSSIBLE_USERNAMES, although it will not make a
+  // difference as no matches coming from the password store were autofilled.
+  form_manager.ProvisionallySave(
+      credentials, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+
+  PasswordForm saved_result;
+  EXPECT_CALL(*mock_store(), UpdateLogin(_)).Times(0);
+  EXPECT_CALL(*mock_store(), UpdateLoginWithPrimaryKey(_, _)).Times(0);
+  EXPECT_CALL(*mock_store(), AddLogin(_)).WillOnce(SaveArg<0>(&saved_result));
+  form_manager.Save();
 
   // Possible credit card number and SSN are stripped.
-  std::vector<base::string16> expected;
-  expected.push_back(ASCIIToUTF16("other username"));
-  EXPECT_THAT(credentials.other_possible_usernames, Eq(expected));
+  EXPECT_THAT(saved_result.other_possible_usernames,
+              UnorderedElementsAre(kUsernameOther));
+}
 
-  credentials.other_possible_usernames.clear();
+TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernamesDuplicates) {
+  const base::string16 kUsernameEmail = ASCIIToUTF16("test@gmail.com");
+  const base::string16 kUsernameDuplicate = ASCIIToUTF16("duplicate");
+  const base::string16 kUsernameRandom = ASCIIToUTF16("random");
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), *observed_form(),
+                                   false);
+
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(ScopedVector<PasswordForm>());
+
+  PasswordForm credentials(*observed_form());
   credentials.other_possible_usernames.push_back(ASCIIToUTF16("511-32-9830"));
-  credentials.other_possible_usernames.push_back(ASCIIToUTF16("duplicate"));
-  credentials.other_possible_usernames.push_back(ASCIIToUTF16("duplicate"));
-  credentials.other_possible_usernames.push_back(ASCIIToUTF16("random"));
-  credentials.other_possible_usernames.push_back(
-      ASCIIToUTF16("test@gmail.com"));
+  credentials.other_possible_usernames.push_back(kUsernameDuplicate);
+  credentials.other_possible_usernames.push_back(kUsernameDuplicate);
+  credentials.other_possible_usernames.push_back(kUsernameRandom);
+  credentials.other_possible_usernames.push_back(kUsernameEmail);
+  credentials.username_value = kUsernameEmail;
+  credentials.preferred = true;
 
-  SanitizePossibleUsernames(&form_manager, &credentials);
+  // Pass in ALLOW_OTHER_POSSIBLE_USERNAMES, although it will not make a
+  // difference as no matches coming from the password store were autofilled.
+  form_manager.ProvisionallySave(
+      credentials, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+
+  PasswordForm saved_result;
+  EXPECT_CALL(*mock_store(), UpdateLogin(_)).Times(0);
+  EXPECT_CALL(*mock_store(), UpdateLoginWithPrimaryKey(_, _)).Times(0);
+  EXPECT_CALL(*mock_store(), AddLogin(_)).WillOnce(SaveArg<0>(&saved_result));
+  form_manager.Save();
 
   // SSN, duplicate in |other_possible_usernames| and duplicate of
   // |username_value| all removed.
-  expected.clear();
-  expected.push_back(ASCIIToUTF16("duplicate"));
-  expected.push_back(ASCIIToUTF16("random"));
-  EXPECT_THAT(credentials.other_possible_usernames, Eq(expected));
+  EXPECT_THAT(saved_result.other_possible_usernames,
+              UnorderedElementsAre(kUsernameDuplicate, kUsernameRandom));
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
