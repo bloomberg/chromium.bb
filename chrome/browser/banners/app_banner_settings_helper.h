@@ -132,9 +132,8 @@ class AppBannerSettingsHelper {
   static base::Time BucketTimeToResolution(base::Time time,
                                            unsigned int minutes);
 
-  // Queries a field trial for updates to the default number of minutes between
-  // site visits counted for the purposes of displaying a banner.
-  static void UpdateMinutesBetweenVisits();
+  // Updates all values from field trial.
+  static void UpdateFromFieldTrial();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AppBannerSettingsHelper);
