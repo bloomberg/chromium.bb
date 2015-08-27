@@ -19,6 +19,12 @@ using autofill::PasswordForm;
 
 class PasswordsCounterTest : public InProcessBrowserTest {
  public:
+  void SetUpOnMainThread() override {
+    time_ = base::Time::Now();
+    SetPasswordsDeletionPref(true);
+    SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
+  }
+
   void AddLogin(const std::string& origin,
                 const std::string& username,
                 bool blacklisted) {
@@ -40,6 +46,15 @@ class PasswordsCounterTest : public InProcessBrowserTest {
   void SetPasswordsDeletionPref(bool value) {
     browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kDeletePasswords, value);
+  }
+
+  void SetDeletionPeriodPref(BrowsingDataRemover::TimePeriod period) {
+    browser()->profile()->GetPrefs()->SetInteger(
+        prefs::kDeleteTimePeriod, static_cast<int>(period));
+  }
+
+  void RevertTimeInDays(int days) {
+    time_ -= base::TimeDelta::FromDays(days);
   }
 
   void WaitForCounting() {
@@ -69,10 +84,12 @@ class PasswordsCounterTest : public InProcessBrowserTest {
     result.username_value = base::ASCIIToUTF16(username);
     result.password_value = base::ASCIIToUTF16("hunter2");
     result.blacklisted_by_user = blacklisted;
+    result.date_created = time_;
     return result;
   }
 
   scoped_ptr<base::RunLoop> run_loop_;
+  base::Time time_;
 
   bool finished_;
   uint32 result_;
@@ -81,7 +98,6 @@ class PasswordsCounterTest : public InProcessBrowserTest {
 // Tests that the counter correctly counts each individual credential on
 // the same domain.
 IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, SameDomain) {
-  SetPasswordsDeletionPref(true);
   AddLogin("https://www.google.com", "user1", false);
   AddLogin("https://www.google.com", "user2", false);
   AddLogin("https://www.google.com", "user3", false);
@@ -99,7 +115,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, SameDomain) {
 
 // Tests that the counter doesn't count blacklisted entries.
 IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, Blacklisted) {
-  SetPasswordsDeletionPref(true);
   AddLogin("https://www.google.com", "user1", false);
   AddLogin("https://www.google.com", "user2", true);
   AddLogin("https://www.chrome.com", "user3", true);
@@ -147,7 +162,6 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefIsFalse) {
 // Tests that the counter starts counting automatically when
 // the password store changes.
 IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, StoreChanged) {
-  SetPasswordsDeletionPref(true);
   AddLogin("https://www.google.com", "user", false);
 
   PasswordsCounter counter;
@@ -165,6 +179,43 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, StoreChanged) {
   RemoveLogin("https://www.chrome.com", "user", false);
   WaitForCounting();
   EXPECT_EQ(1u, GetResult());
+}
+
+// Tests that changing the deletion period restarts the counting, and that
+// the result takes login creation dates into account.
+IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PeriodChanged) {
+  AddLogin("https://www.google.com", "user", false);
+  RevertTimeInDays(2);
+  AddLogin("https://example.com", "user1", false);
+  RevertTimeInDays(3);
+  AddLogin("https://example.com", "user2", false);
+  RevertTimeInDays(30);
+  AddLogin("https://www.chrome.com", "user", false);
+
+  PasswordsCounter counter;
+  counter.Init(browser()->profile(),
+               base::Bind(&PasswordsCounterTest::Callback,
+                          base::Unretained(this)));
+
+  SetDeletionPeriodPref(BrowsingDataRemover::LAST_HOUR);
+  WaitForCounting();
+  EXPECT_EQ(1u, GetResult());
+
+  SetDeletionPeriodPref(BrowsingDataRemover::LAST_DAY);
+  WaitForCounting();
+  EXPECT_EQ(1u, GetResult());
+
+  SetDeletionPeriodPref(BrowsingDataRemover::LAST_WEEK);
+  WaitForCounting();
+  EXPECT_EQ(3u, GetResult());
+
+  SetDeletionPeriodPref(BrowsingDataRemover::FOUR_WEEKS);
+  WaitForCounting();
+  EXPECT_EQ(3u, GetResult());
+
+  SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
+  WaitForCounting();
+  EXPECT_EQ(4u, GetResult());
 }
 
 }  // namespace

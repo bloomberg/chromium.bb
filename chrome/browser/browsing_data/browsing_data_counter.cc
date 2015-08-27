@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 
 BrowsingDataCounter::BrowsingDataCounter() {}
 
@@ -23,6 +24,11 @@ void BrowsingDataCounter::Init(
       profile_->GetPrefs(),
       base::Bind(&BrowsingDataCounter::RestartCounting,
                  base::Unretained(this)));
+  period_.Init(
+      prefs::kDeleteTimePeriod,
+      profile_->GetPrefs(),
+      base::Bind(&BrowsingDataCounter::RestartCounting,
+                 base::Unretained(this)));
 
   initialized_ = true;
   OnInitialized();
@@ -34,6 +40,11 @@ Profile* BrowsingDataCounter::GetProfile() const {
 }
 
 void BrowsingDataCounter::OnInitialized() {
+}
+
+base::Time BrowsingDataCounter::GetPeriodStart() {
+  return BrowsingDataRemover::CalculateBeginDeleteTime(
+      static_cast<BrowsingDataRemover::TimePeriod>(*period_));
 }
 
 void BrowsingDataCounter::RestartCounting() {

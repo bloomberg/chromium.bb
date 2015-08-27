@@ -36,12 +36,20 @@ void PasswordsCounter::Count() {
   cancelable_task_tracker()->TryCancelAll();
   // TODO(msramek): We don't actually need the logins themselves, just their
   // count. Consider implementing |PasswordStore::CountAutofillableLogins|.
+  // This custom request should also allow us to specify the time range, so that
+  // we can use it to filter the login creation date in the database.
   store_->GetAutofillableLogins(this);
 }
 
 void PasswordsCounter::OnGetPasswordStoreResults(
     ScopedVector<autofill::PasswordForm> results) {
-  ReportResult(results.size());
+  base::Time start = GetPeriodStart();
+  ReportResult(std::count_if(
+      results.begin(),
+      results.end(),
+      [start](const autofill::PasswordForm* form) {
+        return form->date_created >= start;
+      }));
 }
 
 void PasswordsCounter::OnLoginsChanged(
