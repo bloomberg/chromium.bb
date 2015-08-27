@@ -14,6 +14,7 @@
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/cachestorage/CacheStorageError.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchDataLoader.h"
@@ -26,6 +27,16 @@
 namespace blink {
 
 namespace {
+
+void checkCacheQueryOptions(const CacheQueryOptions& options, ExecutionContext* context)
+{
+    if (options.ignoreSearch())
+        context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Cache.match() does not support 'ignoreSearch' option yet. See http://crbug.com/520784"));
+    if (options.ignoreMethod())
+        context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Cache.match() does not support 'ignoreMethod' option yet. See http://crbug.com/482256"));
+    if (options.ignoreVary())
+        context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Cache.match() does not support 'ignoreVary' option yet. See http://crbug.com/499216"));
+}
 
 // FIXME: Consider using CallbackPromiseAdapter.
 class CacheMatchCallbacks : public WebServiceWorkerCache::CacheMatchCallbacks {
@@ -404,6 +415,7 @@ ScriptPromise Cache::matchImpl(ScriptState* scriptState, const Request* request,
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
+    checkCacheQueryOptions(options, scriptState->executionContext());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
@@ -423,6 +435,7 @@ ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, const Request* reque
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
+    checkCacheQueryOptions(options, scriptState->executionContext());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
@@ -457,6 +470,7 @@ ScriptPromise Cache::deleteImpl(ScriptState* scriptState, const Request* request
     WebVector<WebServiceWorkerCache::BatchOperation> batchOperations(size_t(1));
     batchOperations[0].operationType = WebServiceWorkerCache::OperationTypeDelete;
     request->populateWebServiceWorkerRequest(batchOperations[0].request);
+    checkCacheQueryOptions(options, scriptState->executionContext());
     batchOperations[0].matchParams = toWebQueryParams(options);
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -526,6 +540,7 @@ ScriptPromise Cache::keysImpl(ScriptState* scriptState, const Request* request, 
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
+    checkCacheQueryOptions(options, scriptState->executionContext());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
