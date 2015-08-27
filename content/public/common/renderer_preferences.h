@@ -169,8 +169,6 @@ struct CONTENT_EXPORT RendererPreferences {
   int32 arrow_bitmap_width_horizontal_scroll_bar_in_dips;
 #endif
 
-  // The default font size used for rendering on Linux.
-  int default_font_size;
 };
 
 }  // namespace content
