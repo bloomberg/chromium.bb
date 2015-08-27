@@ -169,7 +169,7 @@ HTMLFrame::HTMLFrame(CreateParams* params)
     HTMLFrame* previous_sibling = GetPreviousSibling(this);
     blink::WebFrame* previous_web_frame =
         previous_sibling ? previous_sibling->web_frame() : nullptr;
-    DCHECK(!parent_->IsLocal());
+    CHECK(!parent_->IsLocal());
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createLocalChild(
         state_.tree_scope, state_.name, state_.sandbox_flags, this,
         previous_web_frame);

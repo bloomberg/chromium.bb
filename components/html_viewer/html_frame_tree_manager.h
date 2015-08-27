@@ -35,7 +35,8 @@ class HTMLFrameDelegate;
 // that is backed by a mojo::View.
 class HTMLFrameTreeManager {
  public:
-  // Creates a new HTMLFrame. The caller owns the return value and must call
+  // Returns a new HTMLFrame or null if a HTMLFrame does not need to be created.
+  // If this returns non-null the caller owns the return value and must call
   // Close() when done.
   static HTMLFrame* CreateFrameAndAttachToTree(
       GlobalState* global_state,

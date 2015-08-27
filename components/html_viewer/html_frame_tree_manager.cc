@@ -90,6 +90,19 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
       CHECK(!existing_frame->IsLocal());
       existing_frame->SwapToLocal(delegate, view, data->client_properties);
     } else {
+      // If we can't find the frame and the change_id of the incoming
+      // tree is before the change id we've processed, then we removed the
+      // frame and need do nothing.
+      if (change_id < frame_tree->change_id_)
+        return nullptr;
+
+      // We removed the frame but it hasn't been acked yet.
+      if (frame_tree->pending_remove_ids_.count(view->id()))
+        return nullptr;
+
+      // TODO(sky): if change_id > frame_tree->change_id_ then this needs
+      // to wait and bind once the change has been processed.
+
       HTMLFrame* parent = frame_tree->root_->FindFrame(data->parent_id);
       CHECK(parent);
       HTMLFrame::CreateParams params(frame_tree, parent, view->id(), view,

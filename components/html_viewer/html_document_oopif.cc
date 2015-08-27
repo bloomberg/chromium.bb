@@ -96,7 +96,8 @@ void HTMLDocumentOOPIF::Destroy() {
   } else {
     // Closing the frame ends up destroying the ViewManager, which triggers
     // deleting this (OnViewManagerDestroyed()).
-    frame_->Close();
+    if (frame_)
+      frame_->Close();
   }
 }
 
@@ -119,14 +120,22 @@ void HTMLDocumentOOPIF::Load() {
       view->viewport_metrics().size_in_pixels.To<gfx::Size>(),
       view->viewport_metrics().device_pixel_ratio);
 
-  view->RemoveObserver(this);
-
-  WebURLRequestExtraData* extra_data = new WebURLRequestExtraData;
+  scoped_ptr<WebURLRequestExtraData> extra_data(new WebURLRequestExtraData);
   extra_data->synthetic_response =
       resource_waiter_->ReleaseURLResponse().Pass();
 
   frame_ = HTMLFrameTreeManager::CreateFrameAndAttachToTree(
       global_state_, view, resource_waiter_.Pass(), this);
+
+  // If the frame wasn't created we can destroy the connection.
+  if (!frame_) {
+    root_->RemoveObserver(this);
+    // This triggers deleting us.
+    delete root_->connection();
+    return;
+  }
+
+  view->RemoveObserver(this);
 
   if (devtools_agent_request_.is_pending()) {
     if (frame_->devtools_agent()) {
@@ -142,7 +151,7 @@ void HTMLDocumentOOPIF::Load() {
   blink::WebURLRequest web_request;
   web_request.initialize();
   web_request.setURL(url);
-  web_request.setExtraData(extra_data);
+  web_request.setExtraData(extra_data.release());
 
   frame_->web_frame()->toWebLocalFrame()->loadRequest(web_request);
 }
@@ -176,8 +185,10 @@ void HTMLDocumentOOPIF::OnViewViewportMetricsChanged(
 }
 
 void HTMLDocumentOOPIF::OnViewDestroyed(View* view) {
-  resource_waiter_->root()->RemoveObserver(this);
-  resource_waiter_->set_root(nullptr);
+  if (resource_waiter_) {
+    resource_waiter_->root()->RemoveObserver(this);
+    resource_waiter_->set_root(nullptr);
+  }
 }
 
 void HTMLDocumentOOPIF::OnFrameDidFinishLoad() {
