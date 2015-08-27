@@ -94,6 +94,7 @@
 #include "public/web/WebSettings.h"
 #include "web/DevToolsEmulator.h"
 #include "web/InspectorEmulationAgent.h"
+#include "web/InspectorOverlayImpl.h"
 #include "web/InspectorRenderingAgent.h"
 #include "web/WebFrameWidgetImpl.h"
 #include "web/WebInputEventConversion.h"
@@ -281,13 +282,13 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
     WebViewImpl* view = frame->viewImpl();
     bool isMainFrame = view && view->mainFrameImpl() == frame;
     if (!isMainFrame) {
-        WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, frame->inspectorOverlay());
+        WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlayImpl::createEmpty());
         if (frame->frameWidget())
             agent->layerTreeViewChanged(toWebFrameWidgetImpl(frame->frameWidget())->layerTreeView());
         return adoptPtrWillBeNoop(agent);
     }
 
-    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, view->inspectorOverlay());
+    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlayImpl::create(view));
     agent->registerAgent(InspectorRenderingAgent::create(view));
     agent->registerAgent(InspectorEmulationAgent::create(view));
     // TODO(dgozman): migrate each of the following agents to frame once module is ready.
@@ -305,7 +306,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* webLocalFrameImpl,
     WebDevToolsAgentClient* client,
-    InspectorOverlay* overlay)
+    PassOwnPtrWillBeRawPtr<InspectorOverlay> overlay)
     : m_client(client)
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_attached(false)
@@ -335,11 +336,11 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_inspectorAgent = inspectorAgentPtr.get();
     m_agents.append(inspectorAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_webLocalFrameImpl->frame(), m_overlay, m_resourceContentLoader.get()));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_webLocalFrameImpl->frame(), m_overlay.get(), m_resourceContentLoader.get()));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, m_overlay));
+    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, m_overlay.get()));
     m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
 
@@ -459,7 +460,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorApplicationCacheAgent::create(m_pageAgent));
 
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_pageAgent, injectedScriptManager, m_overlay));
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_pageAgent, injectedScriptManager, m_overlay.get()));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
     m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(debuggerAgent->v8DebuggerAgent(), m_instrumentingAgents.get()));
@@ -469,7 +470,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_agents.append(InspectorInputAgent::create(m_pageAgent));
 
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    m_agents.append(InspectorProfilerAgent::create(isolate, injectedScriptManager, m_overlay));
+    m_agents.append(InspectorProfilerAgent::create(isolate, injectedScriptManager, m_overlay.get()));
 
     m_agents.append(InspectorHeapProfilerAgent::create(isolate, injectedScriptManager));
 

@@ -219,12 +219,10 @@
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/FindInPageCoordinates.h"
 #include "web/GeolocationClientProxy.h"
-#include "web/InspectorOverlayImpl.h"
 #include "web/LocalFileSystemClient.h"
 #include "web/MIDIClientProxy.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
 #include "web/NotificationPermissionClientImpl.h"
-#include "web/PageOverlay.h"
 #include "web/RemoteBridgeFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/SuspendableScriptExecutor.h"
@@ -1695,7 +1693,6 @@ DEFINE_TRACE(WebLocalFrameImpl)
     visitor->trace(m_frameLoaderClientImpl);
     visitor->trace(m_frame);
     visitor->trace(m_devToolsAgent);
-    visitor->trace(m_inspectorOverlay);
     visitor->trace(m_textFinder);
     visitor->trace(m_printContext);
     visitor->trace(m_geolocationClientProxy);
@@ -2043,13 +2040,6 @@ void WebLocalFrameImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsC
         m_devToolsAgent->dispose();
         m_devToolsAgent.clear();
     }
-}
-
-InspectorOverlay* WebLocalFrameImpl::inspectorOverlay()
-{
-    if (!m_inspectorOverlay)
-        m_inspectorOverlay = InspectorOverlayImpl::createEmpty();
-    return m_inspectorOverlay.get();
 }
 
 WebDevToolsAgent* WebLocalFrameImpl::devToolsAgent()

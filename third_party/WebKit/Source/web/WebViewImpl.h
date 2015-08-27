@@ -72,7 +72,6 @@ class DataObject;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
-class InspectorOverlay;
 class InspectorOverlayImpl;
 class LinkHighlightImpl;
 class PageOverlay;
@@ -332,8 +331,6 @@ public:
 
     WebDevToolsAgentImpl* mainFrameDevToolsAgentImpl();
 
-    InspectorOverlay* inspectorOverlay();
-
     DevToolsEmulator* devToolsEmulator() const
     {
         return m_devToolsEmulator.get();
@@ -537,6 +534,8 @@ public:
     WebPageImportanceSignals& pageImportanceSignals() { return m_pageImportanceSignals; }
 
 private:
+    InspectorOverlayImpl* inspectorOverlay();
+
     void setPageScaleFactorAndLocation(float, const FloatPoint&);
 
     void scrollAndRescaleViewports(float scaleFactor, const IntPoint& mainFrameOrigin, const FloatPoint& visualViewportOrigin);

@@ -47,7 +47,6 @@ namespace blink {
 
 class ChromePrintContext;
 class GeolocationClientProxy;
-class InspectorOverlay;
 class IntSize;
 class KURL;
 class Range;
@@ -285,7 +284,6 @@ public:
 
     FrameView* frameView() const { return frame() ? frame()->view() : 0; }
 
-    InspectorOverlay* inspectorOverlay();
     WebDevToolsAgentImpl* devToolsAgentImpl() const { return m_devToolsAgent.get(); }
 
     // Getters for the impls corresponding to Get(Provisional)DataSource. They
@@ -366,7 +364,6 @@ private:
     // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
     RefPtrWillBeMember<LocalFrame> m_frame;
 
-    OwnPtrWillBeMember<InspectorOverlay> m_inspectorOverlay;
     OwnPtrWillBeMember<WebDevToolsAgentImpl> m_devToolsAgent;
 
     // This is set if the frame is the root of a local frame tree, and requires a widget for layout.

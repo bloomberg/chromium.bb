@@ -501,11 +501,11 @@ WebDevToolsAgentImpl* WebViewImpl::mainFrameDevToolsAgentImpl()
     return mainFrame ? mainFrame->devToolsAgentImpl() : nullptr;
 }
 
-InspectorOverlay* WebViewImpl::inspectorOverlay()
+InspectorOverlayImpl* WebViewImpl::inspectorOverlay()
 {
-    if (!m_inspectorOverlay)
-        m_inspectorOverlay = InspectorOverlayImpl::create(this);
-    return m_inspectorOverlay.get();
+    if (WebDevToolsAgentImpl* devtools = mainFrameDevToolsAgentImpl())
+        return static_cast<InspectorOverlayImpl*>(devtools->overlay());
+    return nullptr;
 }
 
 WebLocalFrameImpl* WebViewImpl::mainFrameImpl()
@@ -1894,8 +1894,8 @@ void WebViewImpl::layout()
 
     PageWidgetDelegate::layout(*m_page, *mainFrameImpl()->frame());
     updateLayerTreeBackgroundColor();
-    if (m_inspectorOverlay)
-        m_inspectorOverlay->layout();
+    if (InspectorOverlayImpl* overlay = inspectorOverlay())
+        overlay->layout();
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->updateGeometry();
 
@@ -2087,8 +2087,10 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     if (devTools && devTools->handleInputEvent(inputEvent))
         return true;
 
-    if (m_inspectorOverlay && m_inspectorOverlay->handleInputEvent(inputEvent))
-        return true;
+    if (InspectorOverlayImpl* overlay = inspectorOverlay()) {
+        if (overlay->handleInputEvent(inputEvent))
+            return true;
+    }
 
     // Report the event to be NOT processed by WebKit, so that the browser can handle it appropriately.
     if (m_ignoreInputEvents)
@@ -3968,8 +3970,8 @@ void WebViewImpl::pageScaleFactorChanged()
 {
     pageScaleConstraintsSet().setNeedsReset(false);
     updateLayerTreeViewport();
-    if (m_inspectorOverlay)
-        m_inspectorOverlay->update();
+    if (InspectorOverlayImpl* overlay = inspectorOverlay())
+        overlay->update();
     m_devToolsEmulator->viewportChanged();
     m_client->pageScaleFactorChanged();
 }
@@ -4430,8 +4432,8 @@ void WebViewImpl::updatePageOverlays()
 {
     if (m_pageColorOverlay)
         m_pageColorOverlay->update();
-    if (m_inspectorOverlay) {
-        PageOverlay* inspectorPageOverlay = m_inspectorOverlay->pageOverlay();
+    if (InspectorOverlayImpl* overlay = inspectorOverlay()) {
+        PageOverlay* inspectorPageOverlay = overlay->pageOverlay();
         if (inspectorPageOverlay)
             inspectorPageOverlay->update();
     }
