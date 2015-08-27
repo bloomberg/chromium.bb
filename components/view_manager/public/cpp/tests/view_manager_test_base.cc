@@ -10,7 +10,7 @@
 #include "base/test/test_timeouts.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
-#include "components/view_manager/public/cpp/view_tree_host_connection.h"
+#include "components/view_manager/public/cpp/view_tree_host_factory.h"
 #include "mojo/application/public/cpp/application_impl.h"
 
 namespace mojo {
@@ -65,14 +65,13 @@ bool ViewManagerTestBase::QuitRunLoop() {
 void ViewManagerTestBase::SetUp() {
   ApplicationTestBase::SetUp();
 
-  host_connection_.reset(
-      new ViewTreeHostConnection(application_impl(), this, nullptr));
+  CreateSingleViewTreeHost(application_impl(), this, &host_);
+
   ASSERT_TRUE(DoRunLoopWithTimeout());  // RunLoop should be quit by OnEmbed().
   std::swap(window_manager_, most_recent_connection_);
 }
 
 void ViewManagerTestBase::TearDown() {
-  host_connection_.reset();  // Uses application_impl() from base class.
   ApplicationTestBase::TearDown();
 }
 

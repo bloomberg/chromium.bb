@@ -6,8 +6,9 @@
 
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
-#include "components/view_manager/public/cpp/view_tree_host_connection.h"
+#include "components/view_manager/public/cpp/view_tree_host_factory.h"
 #include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "ui/gfx/geometry/size.h"
@@ -31,10 +32,7 @@ PhoneBrowserApplicationDelegate::~PhoneBrowserApplicationDelegate() {
 
 void PhoneBrowserApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
-
-  // This results in this application being embedded at the root view.
-  // Initialization continues below in OnEmbed()...
-  host_connection_.reset(new mojo::ViewTreeHostConnection(app, this, nullptr));
+  mojo::CreateSingleViewTreeHost(app_, this, &host_);
 }
 
 bool PhoneBrowserApplicationDelegate::ConfigureIncomingConnection(
@@ -62,7 +60,7 @@ void PhoneBrowserApplicationDelegate::OnEmbed(mojo::View* root) {
   content_->SetBounds(root->bounds());
   content_->SetVisible(true);
 
-  host_connection_->host()->SetSize(mojo::Size::From(gfx::Size(320, 640)));
+  host_->SetSize(mojo::Size::From(gfx::Size(320, 640)));
   web_view_.Init(app_, content_);
   LaunchURL("http://www.google.com/");
 }

@@ -25,7 +25,7 @@ BrowserManager::~BrowserManager() {
 }
 
 BrowserWindow* BrowserManager::CreateBrowser(const GURL& default_url) {
-  BrowserWindow* browser = new BrowserWindow(app_, this);
+  BrowserWindow* browser = new BrowserWindow(app_, host_factory_.get(), this);
   browsers_.insert(browser);
   browser->LoadURL(default_url);
   return browser;
@@ -48,6 +48,11 @@ void BrowserManager::LaunchURL(const mojo::String& url) {
 
 void BrowserManager::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
+
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = "mojo:view_manager";
+  app_->ConnectToService(request.Pass(), &host_factory_);
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Create a Browser for each valid URL in the command line.
   for (const auto& arg : command_line->GetArgs()) {

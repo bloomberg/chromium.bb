@@ -7,7 +7,6 @@
 
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
-#include "components/view_manager/public/cpp/view_tree_host_connection.h"
 #include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "mandoline/tab/public/cpp/web_view.h"
 #include "mandoline/tab/public/interfaces/web_view.mojom.h"
@@ -43,7 +42,9 @@ class BrowserWindow : public mojo::ViewTreeDelegate,
                       public views::LayoutManager,
                       public views::ButtonListener {
  public:
-  BrowserWindow(mojo::ApplicationImpl* app, BrowserManager* manager);
+  BrowserWindow(mojo::ApplicationImpl* app,
+                mojo::ViewTreeHostFactory* host_factory,
+                BrowserManager* manager);
   ~BrowserWindow() override;
 
   void LoadURL(const GURL& url);
@@ -82,7 +83,8 @@ class BrowserWindow : public mojo::ViewTreeDelegate,
 
   mojo::ApplicationImpl* app_;
   scoped_ptr<AuraInit> aura_init_;
-  mojo::ViewTreeHostConnection host_connection_;
+  mojo::ViewTreeHostPtr host_;
+  mojo::Binding<ViewTreeHostClient> host_client_binding_;
   BrowserManager* manager_;
   views::LabelButton* omnibox_launcher_;
   ProgressView* progress_bar_;

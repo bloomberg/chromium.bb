@@ -13,7 +13,7 @@
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
-#include "components/view_manager/public/cpp/view_tree_host_connection.h"
+#include "components/view_manager/public/cpp/view_tree_host_factory.h"
 #include "mandoline/tab/frame.h"
 #include "mandoline/tab/frame_tree.h"
 #include "mandoline/tab/frame_tree_delegate.h"
@@ -98,15 +98,14 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    host_connection_.reset(
-        new mojo::ViewTreeHostConnection(application_impl(), this, nullptr));
+    mojo::CreateSingleViewTreeHost(application_impl(), this, &host_);
+
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_connection_);
   }
 
   // Overridden from testing::Test:
   void TearDown() override {
-    host_connection_.reset();  // Uses application_impl() from base class.
     ApplicationTestBase::TearDown();
   }
 
@@ -117,7 +116,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     mojo::ViewTreeConnection::Create(this, request.Pass());
   }
 
-  scoped_ptr<mojo::ViewTreeHostConnection> host_connection_;
+  mojo::ViewTreeHostPtr host_;
 
   // Used to receive the most recent view manager loaded by an embed action.
   ViewTreeConnection* most_recent_connection_;

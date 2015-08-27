@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/view_manager/public/cpp/view_tree_host_factory.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mandoline/ui/desktop_ui/browser_manager.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
@@ -64,16 +65,21 @@ class ProgressView : public views::View {
 // BrowserWindow, public:
 
 BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
+                             mojo::ViewTreeHostFactory* host_factory,
                              BrowserManager* manager)
     : app_(app),
-      host_connection_(app, this, this),
+      host_client_binding_(this),
       manager_(manager),
       omnibox_launcher_(nullptr),
       progress_bar_(nullptr),
       root_(nullptr),
       content_(nullptr),
       omnibox_view_(nullptr),
-      web_view_(this) {}
+      web_view_(this) {
+  mojo::ViewTreeHostClientPtr host_client;
+  host_client_binding_.Bind(GetProxy(&host_client));
+  mojo::CreateViewTreeHost(host_factory, host_client.Pass(), this, &host_);
+}
 
 BrowserWindow::~BrowserWindow() {}
 
@@ -109,15 +115,15 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
   content_ = root_->connection()->CreateView();
   Init(root_);
 
-  host_connection_.host()->SetSize(mojo::Size::From(gfx::Size(1280, 800)));
+  host_->SetSize(mojo::Size::From(gfx::Size(1280, 800)));
 
   root_->AddChild(content_);
   content_->SetVisible(true);
 
   web_view_.Init(app_, content_);
 
-  host_connection_.host()->AddAccelerator(mojo::KEYBOARD_CODE_BROWSER_BACK,
-                                          mojo::EVENT_FLAGS_NONE);
+  host_->AddAccelerator(mojo::KEYBOARD_CODE_BROWSER_BACK,
+                        mojo::EVENT_FLAGS_NONE);
 
   // Now that we're ready, load the default url.
   if (default_url_.is_valid()) {

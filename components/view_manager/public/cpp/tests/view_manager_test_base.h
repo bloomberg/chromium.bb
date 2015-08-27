@@ -8,13 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 
 namespace mojo {
-
-class ViewTreeHostConnection;
 
 // ViewManagerTestBase is a base class for use with app tests that use
 // ViewManager. SetUp() connects to the ViewManager and blocks until OnEmbed()
@@ -72,7 +71,7 @@ class ViewManagerTestBase : public test::ApplicationTestBase,
   ViewTreeConnection* most_recent_connection_;
 
  private:
-  scoped_ptr<ViewTreeHostConnection> host_connection_;
+  ViewTreeHostPtr host_;
 
   // The View Manager connection held by the window manager (app running at the
   // root view).

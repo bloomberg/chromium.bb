@@ -18,7 +18,7 @@ mojo_sdk_source_set("cpp") {
     "lib/view_tree_client_impl.cc",
     "lib/view_tree_client_impl.h",
     "lib/view_tree_delegate.cc",
-    "lib/view_tree_host_connection.cc",
+    "lib/view_tree_host_factory.cc",
     "scoped_view_ptr.h",
     "view.h",
     "view_observer.h",
@@ -29,7 +29,7 @@ mojo_sdk_source_set("cpp") {
     "view_tracker.h",
     "view_tree_connection.h",
     "view_tree_delegate.h",
-    "view_tree_host_connection.h",
+    "view_tree_host_factory.h",
   ]
 
   public_deps = [

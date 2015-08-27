@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
+#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "mandoline/tab/public/cpp/web_view.h"
 #include "mandoline/tab/public/interfaces/web_view.mojom.h"
 // TODO(beng): move this file somewhere common.
@@ -19,7 +20,6 @@
 
 namespace mojo {
 class View;
-class ViewTreeHostConnection;
 }
 
 namespace mandoline {
@@ -63,7 +63,7 @@ class PhoneBrowserApplicationDelegate :
               mojo::InterfaceRequest<LaunchHandler> request) override;
 
   mojo::ApplicationImpl* app_;
-  scoped_ptr<mojo::ViewTreeHostConnection> host_connection_;
+  mojo::ViewTreeHostPtr host_;
 
   mojo::View* content_;
   web_view::WebView web_view_;
