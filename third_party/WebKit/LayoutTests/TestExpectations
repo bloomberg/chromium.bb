@@ -864,9 +864,6 @@ crbug.com/449197 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManu
 crbug.com/449197 virtual/gpu/fast/canvas/canvas-drawImage-video.html [ NeedsManualRebaseline ]
 crbug.com/449197 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ NeedsManualRebaseline ]
 
-crbug.com/515771 fast/table/table-row-before-after-content-around-table-cell.html [ NeedsRebaseline ]
-crbug.com/515771 tables/mozilla/bugs/bug2479-1.html [ NeedsRebaseline ]
-
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
 # This means that CoreGraphics may draw outside the reported glyph bounds, and in this case does.
