@@ -118,7 +118,7 @@ class APIPermission {
     kFileSystemRequestFileSystem,
     kFileSystemRetainEntries,
     kFileSystemWrite,
-    kFileSystemWriteDirectory,
+    kDeleted_FileSystemWriteDirectory,
     kFirstRunPrivate,
     kFontSettings,
     kFullscreen,

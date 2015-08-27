@@ -60,8 +60,6 @@ class APIPermissionSet : public BaseSetOperators<APIPermissionSet> {
       APIPermissionSet* api_permissions,
       base::string16* error,
       std::vector<std::string>* unhandled_permissions);
-
-  void AddImpliedPermissions();
 };
 
 // An ID representing a single permission that belongs to an app or extension.

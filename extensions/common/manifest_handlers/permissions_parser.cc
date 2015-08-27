@@ -149,8 +149,6 @@ bool ParseHelper(Extension* extension,
     }
   }
 
-  api_permissions->AddImpliedPermissions();
-
   // Remove permissions that are not available to this extension.
   for (std::vector<APIPermission::ID>::const_iterator iter = to_remove.begin();
        iter != to_remove.end();

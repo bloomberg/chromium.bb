@@ -58781,7 +58781,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="71" label="kFileSystemRequestFileSystem"/>
   <int value="72" label="kFileSystemRetainEntries"/>
   <int value="73" label="kFileSystemWrite"/>
-  <int value="74" label="kFileSystemWriteDirectory"/>
+  <int value="74" label="kDeleted_FileSystemWriteDirectory"/>
   <int value="75" label="kFirstRunPrivate"/>
   <int value="76" label="kFontSettings"/>
   <int value="77" label="kFullscreen"/>

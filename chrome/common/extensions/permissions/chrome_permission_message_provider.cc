@@ -105,10 +105,7 @@ bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
   if (IsHostPrivilegeIncrease(old_permissions, new_permissions, extension_type))
     return true;
 
-  if (IsAPIPrivilegeIncrease(old_permissions, new_permissions))
-    return true;
-
-  if (IsManifestPermissionPrivilegeIncrease(old_permissions, new_permissions))
+  if (IsAPIOrManifestPrivilegeIncrease(old_permissions, new_permissions))
     return true;
 
   return false;
@@ -177,36 +174,16 @@ void ChromePermissionMessageProvider::AddHostPermissions(
   }
 }
 
-bool ChromePermissionMessageProvider::IsAPIPrivilegeIncrease(
+bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
     const PermissionSet* old_permissions,
     const PermissionSet* new_permissions) const {
   PermissionIDSet old_ids;
   AddAPIPermissions(old_permissions, &old_ids);
-  PermissionIDSet new_ids;
-  AddAPIPermissions(new_permissions, &new_ids);
-
-  // A special hack: kFileSystemWriteDirectory implies kFileSystemDirectory.
-  // TODO(sammc): Remove this. See http://crbug.com/284849.
-  if (old_ids.ContainsID(APIPermission::kFileSystemWriteDirectory))
-    old_ids.insert(APIPermission::kFileSystemDirectory);
-
-  return IsAPIOrManifestPrivilegeIncrease(old_ids, new_ids);
-}
-
-bool ChromePermissionMessageProvider::IsManifestPermissionPrivilegeIncrease(
-    const PermissionSet* old_permissions,
-    const PermissionSet* new_permissions) const {
-  PermissionIDSet old_ids;
   AddManifestPermissions(old_permissions, &old_ids);
   PermissionIDSet new_ids;
+  AddAPIPermissions(new_permissions, &new_ids);
   AddManifestPermissions(new_permissions, &new_ids);
 
-  return IsAPIOrManifestPrivilegeIncrease(old_ids, new_ids);
-}
-
-bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
-    const PermissionIDSet& old_ids,
-    const PermissionIDSet& new_ids) const {
   // If all the IDs were already there, it's not a privilege increase.
   if (old_ids.Includes(new_ids))
     return false;

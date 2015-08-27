@@ -49,19 +49,11 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
                           PermissionIDSet* permission_ids,
                           Manifest::Type extension_type) const;
 
-  // Returns true if |new_permissions| has an elevated API privilege level
-  // compared to |old_permissions|.
-  bool IsAPIPrivilegeIncrease(const PermissionSet* old_permissions,
-                              const PermissionSet* new_permissions) const;
-
-  // Returns true if |new_permissions| has an elevated manifest permission
-  // privilege level compared to |old_permissions|.
-  bool IsManifestPermissionPrivilegeIncrease(
+  // Returns true if |new_permissions| has an elevated API or manifest privilege
+  // level compared to |old_permissions|.
+  bool IsAPIOrManifestPrivilegeIncrease(
       const PermissionSet* old_permissions,
       const PermissionSet* new_permissions) const;
-
-  bool IsAPIOrManifestPrivilegeIncrease(const PermissionIDSet& old_ids,
-                                        const PermissionIDSet& new_ids) const;
 
   // Returns true if |new_permissions| has more host permissions compared to
   // |old_permissions|.

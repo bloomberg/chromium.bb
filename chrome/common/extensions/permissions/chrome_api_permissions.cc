@@ -238,7 +238,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        "fileSystem.requestFileSystem"},
       {APIPermission::kFileSystemRetainEntries, "fileSystem.retainEntries"},
       {APIPermission::kFileSystemWrite, "fileSystem.write"},
-      {APIPermission::kFileSystemWriteDirectory, "fileSystem.writeDirectory"},
       {APIPermission::kMediaGalleries, "mediaGalleries",
        APIPermissionInfo::kFlagNone,
        &CreateAPIPermission<MediaGalleriesPermission>},

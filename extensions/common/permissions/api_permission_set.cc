@@ -182,17 +182,6 @@ bool APIPermissionSet::ParseFromJSON(
   return true;
 }
 
-void APIPermissionSet::AddImpliedPermissions() {
-  // The fileSystem.write and fileSystem.directory permissions imply
-  // fileSystem.writeDirectory.
-  // Has a corresponding rule in ChromePermissionMessageProvider.
-  // TODO(sammc): Remove this. See http://crbug.com/284849.
-  if (ContainsKey(map(), APIPermission::kFileSystemWrite) &&
-      ContainsKey(map(), APIPermission::kFileSystemDirectory)) {
-    insert(APIPermission::kFileSystemWriteDirectory);
-  }
-}
-
 PermissionID::PermissionID(APIPermission::ID id)
     : std::pair<APIPermission::ID, base::string16>(id, base::string16()) {
 }

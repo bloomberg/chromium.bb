@@ -431,13 +431,9 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kHistory},
        {APIPermission::kFavicon, APIPermission::kProcesses, APIPermission::kTab,
         APIPermission::kTopSites, APIPermission::kWebNavigation}},
-      // A special hack: If kFileSystemWriteDirectory would be displayed, hide
-      // kFileSystemDirectory as the write directory message implies it.
-      // TODO(sashab): Remove kFileSystemWriteDirectory; it's no longer needed
-      // since this rules system can represent the rule. See crbug.com/284849.
       {IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE_DIRECTORY,
        {APIPermission::kFileSystemWrite, APIPermission::kFileSystemDirectory},
-       {APIPermission::kFileSystemWriteDirectory}},
+       {}},
       // Full access already allows DeclarativeWebRequest, reading the list of
       // most frequently visited sites, and tab access.
       // The warning message for declarativeWebRequest
@@ -576,9 +572,6 @@ ChromePermissionMessageRule::GetAllRules() {
       // the file or directory is considered consent to read it.
       {IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_DIRECTORY,
        {APIPermission::kFileSystemDirectory},
-       {}},
-      {IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE_DIRECTORY,
-       {APIPermission::kFileSystemWriteDirectory},
        {}},
 
       // Because warning messages for the "mediaGalleries" permission
