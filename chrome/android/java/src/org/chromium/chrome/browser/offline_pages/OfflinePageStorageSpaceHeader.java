@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.offlinepages;
+package org.chromium.chrome.browser.offline_pages;
 
 import android.app.Activity;
 import android.content.Context;

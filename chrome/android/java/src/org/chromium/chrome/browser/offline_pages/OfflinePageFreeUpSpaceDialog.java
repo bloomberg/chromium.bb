@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.offlinepages;
+package org.chromium.chrome.browser.offline_pages;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -12,7 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.text.format.Formatter;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.DeletePageCallback;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;

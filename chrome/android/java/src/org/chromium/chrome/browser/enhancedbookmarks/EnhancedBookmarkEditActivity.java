@@ -20,15 +20,15 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlUtilities;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
-import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.DeletePageCallback;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.SavePageCallback;
+import org.chromium.chrome.browser.offline_pages.OfflinePageItem;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.offlinepages.DeletePageResult;
-import org.chromium.components.offlinepages.SavePageResult;
+import org.chromium.components.offline_pages.DeletePageResult;
+import org.chromium.components.offline_pages.SavePageResult;
 import org.chromium.content_public.browser.WebContents;
 
 /**

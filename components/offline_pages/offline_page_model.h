@@ -55,7 +55,7 @@ class OfflinePageModel : public KeyedService,
  public:
   // Result of saving a page offline.
   // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_pages
   enum class SavePageResult {
     SUCCESS,
     CANCELLED,
@@ -68,7 +68,7 @@ class OfflinePageModel : public KeyedService,
 
   // Result of deleting an offline page.
   // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_pages
   enum class DeletePageResult {
     SUCCESS,
     CANCELLED,
@@ -78,6 +78,8 @@ class OfflinePageModel : public KeyedService,
   };
 
   // Result of loading all pages.
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_pages
   enum class LoadResult {
     SUCCESS,
     CANCELLED,

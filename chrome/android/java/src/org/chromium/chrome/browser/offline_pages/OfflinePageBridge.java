@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.offlinepages;
+package org.chromium.chrome.browser.offline_pages;
 
 import android.os.Environment;
 
@@ -43,7 +43,7 @@ public final class OfflinePageBridge {
          * Delivers result of saving a page.
          *
          * @param savePageResult Result of the saving. Uses
-         *     {@see org.chromium.components.offlinepages.SavePageResult} enum.
+         *     {@see org.chromium.components.offline_pages.SavePageResult} enum.
          * @param url URL of the saved page.
          * @see OfflinePageBridge#savePage()
          */
@@ -59,7 +59,7 @@ public final class OfflinePageBridge {
          * Delivers result of deleting a page.
          *
          * @param deletePageResult Result of deleting the page. Uses
-         *     {@see org.chromium.components.offlinepages.DeletePageResult} enum.
+         *     {@see org.chromium.components.offline_pages.DeletePageResult} enum.
          * @see OfflinePageBridge#deletePage()
          */
         @CalledByNative("DeletePageCallback")
