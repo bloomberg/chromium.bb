@@ -151,12 +151,13 @@ public:
     // Called from other agents.
     void setHostId(const String&);
     bool fetchResourceContent(Document*, const KURL&, String* content, bool* base64Encoded);
-    bool shouldBlockRequest(const ResourceRequest&);
+    bool shouldBlockRequest(LocalFrame*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&);
 
 private:
     explicit InspectorResourceAgent(InspectorPageAgent*);
 
     void enable();
+    void willSendRequestInternal(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void delayedRemoveReplayXHR(XMLHttpRequest*);
     void removeFinishedReplayXHRFired(Timer<InspectorResourceAgent>*);
     void didFinishXHRInternal(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString&, const String&, bool);

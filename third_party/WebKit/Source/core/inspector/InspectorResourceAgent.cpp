@@ -41,6 +41,7 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/fetch/UniqueIdentifier.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/FrameHost.h"
@@ -366,26 +367,26 @@ DEFINE_TRACE(InspectorResourceAgent)
     InspectorBaseAgent::trace(visitor);
 }
 
-bool InspectorResourceAgent::shouldBlockRequest(const ResourceRequest& request)
+bool InspectorResourceAgent::shouldBlockRequest(LocalFrame* frame, const ResourceRequest& request, DocumentLoader* loader, const FetchInitiatorInfo& initiatorInfo)
 {
     String url = request.url().string();
     RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
     for (const auto& blocked : *blockedURLs) {
-        if (url.contains(blocked.key))
+        if (url.contains(blocked.key)) {
+            unsigned long identifier = createUniqueIdentifier();
+            willSendRequestInternal(frame, identifier, loader, request, ResourceResponse(), initiatorInfo);
+
+            String requestId = IdentifiersFactory::requestId(identifier);
+            bool blocked = true;
+            frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), String(), nullptr, &blocked);
             return true;
+        }
     }
     return false;
 }
 
-void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
+void InspectorResourceAgent::willSendRequestInternal(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
-    // Ignore the request initiated internally.
-    if (initiatorInfo.name == FetchInitiatorTypeNames::internal)
-        return;
-
-    if (initiatorInfo.name == FetchInitiatorTypeNames::document && loader->substituteData().isValid())
-        return;
-
     String requestId = IdentifiersFactory::requestId(identifier);
     String loaderId = IdentifiersFactory::loaderId(loader);
     m_resourcesData->resourceCreated(requestId, loaderId);
@@ -398,6 +399,33 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
         type = InspectorPageAgent::DocumentResource;
         m_resourcesData->setResourceType(requestId, type);
     }
+
+    String frameId = loader->frame() ? IdentifiersFactory::frameId(loader->frame()) : "";
+    RefPtr<TypeBuilder::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0, initiatorInfo);
+    if (initiatorInfo.name == FetchInitiatorTypeNames::document) {
+        FrameNavigationInitiatorMap::iterator it = m_frameNavigationInitiatorMap.find(frameId);
+        if (it != m_frameNavigationInitiatorMap.end())
+            initiatorObject = it->value;
+    }
+
+    RefPtr<TypeBuilder::Network::Request> requestInfo(buildObjectForResourceRequest(request));
+
+    requestInfo->setMixedContentType(mixedContentTypeForContextType(MixedContentChecker::contextTypeForInspector(frame, request)));
+
+    TypeBuilder::Page::ResourceType::Enum resourceType = InspectorPageAgent::resourceTypeJson(type);
+    frontend()->requestWillBeSent(requestId, frameId, loaderId, urlWithoutFragment(loader->url()).string(), requestInfo.release(), monotonicallyIncreasingTime(), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse), &resourceType);
+    if (m_pendingXHRReplayData && !m_pendingXHRReplayData->async())
+        frontend()->flush();
+}
+
+void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
+{
+    // Ignore the request initiated internally.
+    if (initiatorInfo.name == FetchInitiatorTypeNames::internal)
+        return;
+
+    if (initiatorInfo.name == FetchInitiatorTypeNames::document && loader->substituteData().isValid())
+        return;
 
     RefPtr<JSONObject> headers = m_state->getObject(ResourceAgentState::extraRequestHeaders);
 
@@ -416,25 +444,10 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
         request.setShouldResetAppCache(true);
     }
 
-    String frameId = loader->frame() ? IdentifiersFactory::frameId(loader->frame()) : "";
-    RefPtr<TypeBuilder::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0, initiatorInfo);
-    if (initiatorInfo.name == FetchInitiatorTypeNames::document) {
-        FrameNavigationInitiatorMap::iterator it = m_frameNavigationInitiatorMap.find(frameId);
-        if (it != m_frameNavigationInitiatorMap.end())
-            initiatorObject = it->value;
-    }
-
-    RefPtr<TypeBuilder::Network::Request> requestInfo(buildObjectForResourceRequest(request));
-
-    requestInfo->setMixedContentType(mixedContentTypeForContextType(MixedContentChecker::contextTypeForInspector(frame, request)));
-
     if (!m_hostId.isEmpty())
         request.addHTTPHeaderField(kDevToolsEmulateNetworkConditionsClientId, AtomicString(m_hostId));
 
-    TypeBuilder::Page::ResourceType::Enum resourceType = InspectorPageAgent::resourceTypeJson(type);
-    frontend()->requestWillBeSent(requestId, frameId, loaderId, urlWithoutFragment(loader->url()).string(), requestInfo.release(), monotonicallyIncreasingTime(), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse), &resourceType);
-    if (m_pendingXHRReplayData && !m_pendingXHRReplayData->async())
-        frontend()->flush();
+    willSendRequestInternal(frame, identifier, loader, request, redirectResponse, initiatorInfo);
 }
 
 void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
@@ -535,7 +548,7 @@ void InspectorResourceAgent::didFailLoading(unsigned long identifier, const Reso
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     bool canceled = error.isCancellation();
-    frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), error.localizedDescription(), canceled ? &canceled : 0);
+    frontend()->loadingFailed(requestId, monotonicallyIncreasingTime(), InspectorPageAgent::resourceTypeJson(m_resourcesData->resourceType(requestId)), error.localizedDescription(), canceled ? &canceled : 0, nullptr);
 }
 
 void InspectorResourceAgent::scriptImported(unsigned long identifier, const String& sourceString)

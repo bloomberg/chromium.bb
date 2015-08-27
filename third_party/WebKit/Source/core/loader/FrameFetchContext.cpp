@@ -206,7 +206,7 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
 // |loader| can be null if the resource is loaded from imported document.
 // This means inspector, which uses DocumentLoader as an grouping entity,
 // cannot see imported documents.
-inline DocumentLoader* FrameFetchContext::ensureLoaderForNotifications()
+inline DocumentLoader* FrameFetchContext::ensureLoaderForNotifications() const
 {
     return m_documentLoader ? m_documentLoader.get() : frame()->loader().documentLoader();
 }
@@ -349,7 +349,7 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
 {
     InstrumentingAgents* agents = InspectorInstrumentation::instrumentingAgentsFor(frame());
     if (agents && agents->inspectorResourceAgent()) {
-        if (agents->inspectorResourceAgent()->shouldBlockRequest(resourceRequest))
+        if (agents->inspectorResourceAgent()->shouldBlockRequest(frame(), resourceRequest, ensureLoaderForNotifications(), options.initiatorInfo))
             return false;
     }
 
