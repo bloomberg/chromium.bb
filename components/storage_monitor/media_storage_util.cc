@@ -135,6 +135,7 @@ void MediaStorageUtil::FilterAttachedDevices(DeviceIdSet* devices,
 }
 
 // TODO(kmadhusu) Write unit tests for GetDeviceInfoFromPath().
+// static
 bool MediaStorageUtil::GetDeviceInfoFromPath(const base::FilePath& path,
                                              StorageInfo* device_info,
                                              base::FilePath* relative_path) {
@@ -236,12 +237,15 @@ void MediaStorageUtil::RecordDeviceInfoHistogram(
                             DEVICE_INFO_BUCKET_BOUNDARY);
 }
 
+// static
 bool MediaStorageUtil::IsRemovableStorageAttached(const std::string& id) {
-  StorageInfoList devices =
-      StorageMonitor::GetInstance()->GetAllAvailableStorages();
-  for (StorageInfoList::const_iterator it = devices.begin();
-       it != devices.end(); ++it) {
-    if (StorageInfo::IsRemovableDevice(id) && it->device_id() == id)
+  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  if (!monitor)
+    return false;
+
+  StorageInfoList devices = monitor->GetAllAvailableStorages();
+  for (const auto& device : devices) {
+    if (StorageInfo::IsRemovableDevice(id) && device.device_id() == id)
       return true;
   }
   return false;
