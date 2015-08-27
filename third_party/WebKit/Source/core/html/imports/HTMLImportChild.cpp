@@ -31,10 +31,12 @@
 #include "config.h"
 #include "core/html/imports/HTMLImportChild.h"
 
+#include "core/css/StyleSheetList.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportTreeRoot.h"
@@ -88,6 +90,8 @@ void HTMLImportChild::didFinish()
 void HTMLImportChild::didFinishLoading()
 {
     stateWillChange();
+    if (document() && document()->styleSheets()->length() > 0)
+        UseCounter::count(root()->document(), UseCounter::HTMLImportsHasStyleSheets);
     CustomElement::didFinishLoadingImport(*(root()->document()));
 }
 
