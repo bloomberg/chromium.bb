@@ -11424,11 +11424,6 @@ I don't think this site should be blocked!
                  desc="Help message for screenreader users, spoken when navigating to a tile grid for the first time.">
           Use left and right arrow keys to navigate.
         </message>
-        <if expr="chromeos">
-        <message name="IDS_NEW_TAB_CLOSE_MENU_EXPAND" desc="Text for the closed section menu footer that will restore the section.">
-            Expand
-          </message>
-        </if>
         <message name="IDS_NEW_TAB_APP_INSTALL_HINT_LABEL" desc="Text for the plus icon on the NTP that links to the web store.">
           Add more apps
         </message>

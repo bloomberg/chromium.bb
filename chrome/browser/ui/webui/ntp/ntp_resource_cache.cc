@@ -487,11 +487,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("canShowAppInfoDialog",
                             CanShowAppInfoDialog());
 
-#if defined(OS_CHROMEOS)
-  load_time_data.SetString("expandMenu",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));
-#endif
-
   NewTabPageHandler::GetLocalizedValues(profile_, &load_time_data);
   AppLauncherLoginHandler::GetLocalizedValues(profile_, &load_time_data);
 
