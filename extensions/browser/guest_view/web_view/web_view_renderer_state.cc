@@ -26,8 +26,8 @@ WebViewRendererState::WebViewRendererState() {
 WebViewRendererState::~WebViewRendererState() {
 }
 
-bool WebViewRendererState::IsGuest(int render_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+bool WebViewRendererState::IsGuest(int render_process_id) const {
+  base::AutoLock auto_lock(web_view_partition_id_map_lock_);
   return web_view_partition_id_map_.find(render_process_id) !=
          web_view_partition_id_map_.end();
 }
@@ -35,7 +35,9 @@ bool WebViewRendererState::IsGuest(int render_process_id) {
 void WebViewRendererState::AddGuest(int guest_process_id,
                                     int guest_routing_id,
                                     const WebViewInfo& web_view_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::AutoLock auto_lock(web_view_info_map_lock_);
+  base::AutoLock auto_lock2(web_view_partition_id_map_lock_);
+
   RenderId render_id(guest_process_id, guest_routing_id);
   bool updating =
       web_view_info_map_.find(render_id) != web_view_info_map_.end();
@@ -54,7 +56,9 @@ void WebViewRendererState::AddGuest(int guest_process_id,
 
 void WebViewRendererState::RemoveGuest(int guest_process_id,
                                        int guest_routing_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::AutoLock auto_lock(web_view_info_map_lock_);
+  base::AutoLock auto_lock2(web_view_partition_id_map_lock_);
+
   RenderId render_id(guest_process_id, guest_routing_id);
   web_view_info_map_.erase(render_id);
   auto iter = web_view_partition_id_map_.find(guest_process_id);
@@ -68,8 +72,9 @@ void WebViewRendererState::RemoveGuest(int guest_process_id,
 
 bool WebViewRendererState::GetInfo(int guest_process_id,
                                    int guest_routing_id,
-                                   WebViewInfo* web_view_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+                                   WebViewInfo* web_view_info) const {
+  base::AutoLock auto_lock(web_view_info_map_lock_);
+
   RenderId render_id(guest_process_id, guest_routing_id);
   auto iter = web_view_info_map_.find(render_id);
   if (iter != web_view_info_map_.end()) {
@@ -82,7 +87,8 @@ bool WebViewRendererState::GetInfo(int guest_process_id,
 bool WebViewRendererState::GetOwnerInfo(int guest_process_id,
                                         int* owner_process_id,
                                         std::string* owner_host) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::AutoLock auto_lock(web_view_info_map_lock_);
+
   // TODO(fsamuel): Store per-process info in WebViewPartitionInfo instead of in
   // WebViewInfo.
   for (const auto& info : web_view_info_map_) {
@@ -98,8 +104,8 @@ bool WebViewRendererState::GetOwnerInfo(int guest_process_id,
 }
 
 bool WebViewRendererState::GetPartitionID(int guest_process_id,
-                                          std::string* partition_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+                                          std::string* partition_id) const {
+  base::AutoLock auto_lock(web_view_partition_id_map_lock_);
 
   auto iter = web_view_partition_id_map_.find(guest_process_id);
   if (iter != web_view_partition_id_map_.end()){
@@ -113,7 +119,7 @@ void WebViewRendererState::AddContentScriptIDs(
     int embedder_process_id,
     int view_instance_id,
     const std::set<int>& script_ids) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::AutoLock auto_lock(web_view_info_map_lock_);
 
   for (auto& render_id_info : web_view_info_map_) {
     WebViewInfo& info = render_id_info.second;
@@ -130,7 +136,7 @@ void WebViewRendererState::RemoveContentScriptIDs(
     int embedder_process_id,
     int view_instance_id,
     const std::set<int>& script_ids) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::AutoLock auto_lock(web_view_info_map_lock_);
 
   for (auto& render_id_info : web_view_info_map_) {
     WebViewInfo& info = render_id_info.second;

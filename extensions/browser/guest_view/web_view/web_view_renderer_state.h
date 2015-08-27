@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// WebViewRendererState manages state data for WebView guest renderer processes.
+//
+// This class's data can be accessed via its methods from both the UI and IO
+// threads, and uses locks to mediate this access. When making changes to this
+// class, ensure that you avoid introducing any reentrant code in the methods,
+// and that you always aquire the locks in the order |web_view_info_map_lock_|
+// -> |web_view_partition_id_map_lock_| (if both are needed in one method).
+
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_RENDERER_STATE_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_RENDERER_STATE_H_
 
@@ -36,8 +44,9 @@ class WebViewRendererState {
 
   // Looks up the information for the embedder <webview> for a given render
   // view, if one exists. Called on the IO thread.
-  bool GetInfo(int guest_process_id, int guest_routing_id,
-               WebViewInfo* web_view_info);
+  bool GetInfo(int guest_process_id,
+               int guest_routing_id,
+               WebViewInfo* web_view_info) const;
 
   // Looks up the information for the owner for a given guest process in a
   // <webview>. Called on the IO thread.
@@ -47,10 +56,10 @@ class WebViewRendererState {
 
   // Looks up the partition info for the embedder <webview> for a given guest
   // process. Called on the IO thread.
-  bool GetPartitionID(int guest_process_id, std::string* partition_id);
+  bool GetPartitionID(int guest_process_id, std::string* partition_id) const;
 
   // Returns true if the given renderer is used by webviews.
-  bool IsGuest(int render_process_id);
+  bool IsGuest(int render_process_id) const;
 
   void AddContentScriptIDs(int embedder_process_id,
                            int view_instance_id,
@@ -85,8 +94,12 @@ class WebViewRendererState {
                 const WebViewInfo& web_view_info);
   void RemoveGuest(int render_process_host_id, int routing_id);
 
+  // Locks are used to mediate access to these maps from both the UI and IO
+  // threads.
   WebViewInfoMap web_view_info_map_;
+  mutable base::Lock web_view_info_map_lock_;
   WebViewPartitionIDMap web_view_partition_id_map_;
+  mutable base::Lock web_view_partition_id_map_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewRendererState);
 };
