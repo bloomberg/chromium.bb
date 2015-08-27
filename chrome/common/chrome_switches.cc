@@ -1171,9 +1171,6 @@ const char kAuthAndroidNegotiateAccountType[] = "auth-spnego-account-type";
 // Disables Contextual Search.
 const char kDisableContextualSearch[]        = "disable-contextual-search";
 
-// Disables zero suggest experiment on Dev channel.
-const char kDisableZeroSuggest[] = "disable-zero-suggest";
-
 // Enable the accessibility tab switcher.
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
@@ -1191,16 +1188,6 @@ const char kEnableHostedMode[] = "enable-hosted-mode";
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] =
     "enable-reader-mode-toolbar-icon";
-
-// Enables zero suggest functionality on Dev channel, showing most visited
-// sites as default suggestions.
-const char kEnableZeroSuggestMostVisited[] =
-    "enable-zero-suggest-most-visited";
-
-// Enable zero suggest functionality on Dev channel, showing most visited
-// sites on non-search-result pages as default suggestions.
-const char kEnableZeroSuggestMostVisitedWithoutSerp[] =
-    "enable-zero-suggest-most-visited-without-serp";
 
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";

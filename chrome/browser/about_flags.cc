@@ -304,16 +304,6 @@ const Experiment::Choice kTabCaptureDownscaleQualityChoices[] = {
 #endif
 
 #if defined(OS_ANDROID)
-const Experiment::Choice kZeroSuggestExperimentsChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED,
-    switches::kEnableZeroSuggestMostVisited, ""},
-  { IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED_WITHOUT_SERP,
-    switches::kEnableZeroSuggestMostVisitedWithoutSerp, ""},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    switches::kDisableZeroSuggest, ""}
-};
-
 const Experiment::Choice kReaderModeHeuristicsChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     { IDS_FLAGS_READER_MODE_HEURISTICS_MARKUP,
@@ -1506,11 +1496,6 @@ const Experiment kExperiments[] = {
                                          switches::kEnhancedBookmarksExperiment,
                                          "0")},
 #if defined(OS_ANDROID)
-    {"enable-zero-suggest-experiment",
-     IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_NAME,
-     IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_DESCRIPTION,
-     kOsAndroid,
-     MULTI_VALUE_TYPE(kZeroSuggestExperimentsChoices)},
     {"reader-mode-heuristics",
      IDS_FLAGS_READER_MODE_HEURISTICS_NAME,
      IDS_FLAGS_READER_MODE_HEURISTICS_DESCRIPTION,

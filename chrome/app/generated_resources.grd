@@ -14667,22 +14667,6 @@ After you create a new supervised user, you can manage their settings at any tim
         Share
       </message>
 
-      <!-- Zero suggest experiment flags -->
-      <if expr="is_android">
-        <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_NAME" desc="An about:flags experiment for zero suggest">
-          Zero Suggest
-        </message>
-        <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_DESCRIPTION" desc="Describes about:flags experiment options for zero suggest">
-          NOTE: Only works dev and canary channels. Turns on suggestions in the omnibox that are shown on focus before typing.
-        </message>
-        <message name="IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED" desc="A choice in dropdown dialog on about:flags page for the most visited sites option">
-          Most visited
-        </message>
-        <message name="IDS_FLAGS_ZERO_SUGGEST_MOST_VISITED_WITHOUT_SERP" desc="A choice in dropdown dialog on about:flags page to show most visited option on non-search pages">
-          Most visited excl. search pages
-        </message>
-      </if>
-
       <!-- Autofill experiment flags -->
       <message name="IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_NAME" desc="Name of the single click autofill lab">
         Enable single-click autofill
