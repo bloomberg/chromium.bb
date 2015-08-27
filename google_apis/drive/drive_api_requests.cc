@@ -434,7 +434,7 @@ bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
 }
 
 GURL FilesInsertRequest::GetURLInternal() const {
-  return url_generator_.GetFilesInsertUrl();
+  return url_generator_.GetFilesInsertUrl(visibility_);
 }
 
 //============================== FilesPatchRequest ============================
@@ -526,7 +526,7 @@ net::URLFetcher::RequestType FilesCopyRequest::GetRequestType() const {
 }
 
 GURL FilesCopyRequest::GetURLInternal() const {
-  return url_generator_.GetFilesCopyUrl(file_id_);
+  return url_generator_.GetFilesCopyUrl(file_id_, visibility_);
 }
 
 bool FilesCopyRequest::GetContentData(std::string* upload_content_type,

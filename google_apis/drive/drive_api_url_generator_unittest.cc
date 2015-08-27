@@ -83,7 +83,11 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesAuthorizeUrl) {
 
 TEST_F(DriveApiUrlGeneratorTest, GetFilesInsertUrl) {
   EXPECT_EQ("https://www.example.com/drive/v2/files",
-            url_generator_.GetFilesInsertUrl().spec());
+            url_generator_.GetFilesInsertUrl("").spec());
+  EXPECT_EQ("https://www.example.com/drive/v2/files?visibility=DEFAULT",
+            url_generator_.GetFilesInsertUrl("DEFAULT").spec());
+  EXPECT_EQ("https://www.example.com/drive/v2/files?visibility=PRIVATE",
+            url_generator_.GetFilesInsertUrl("PRIVATE").spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFilePatchUrl) {
@@ -126,11 +130,17 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilePatchUrl) {
 TEST_F(DriveApiUrlGeneratorTest, GetFilesCopyUrl) {
   // |file_id| should be embedded into the url.
   EXPECT_EQ("https://www.example.com/drive/v2/files/0ADK06pfg/copy",
-            url_generator_.GetFilesCopyUrl("0ADK06pfg").spec());
+            url_generator_.GetFilesCopyUrl("0ADK06pfg", "").spec());
   EXPECT_EQ("https://www.example.com/drive/v2/files/0Bz0bd074/copy",
-            url_generator_.GetFilesCopyUrl("0Bz0bd074").spec());
+            url_generator_.GetFilesCopyUrl("0Bz0bd074", "").spec());
   EXPECT_EQ("https://www.example.com/drive/v2/files/file%3Afile_id/copy",
-            url_generator_.GetFilesCopyUrl("file:file_id").spec());
+            url_generator_.GetFilesCopyUrl("file:file_id", "").spec());
+  EXPECT_EQ("https://www.example.com/drive/v2/files/0Bz0bd074/copy"
+            "?visibility=DEFAULT",
+            url_generator_.GetFilesCopyUrl("0Bz0bd074", "DEFAULT").spec());
+  EXPECT_EQ("https://www.example.com/drive/v2/files/file%3Afile_id/copy"
+            "?visibility=PRIVATE",
+            url_generator_.GetFilesCopyUrl("file:file_id", "PRIVATE").spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {

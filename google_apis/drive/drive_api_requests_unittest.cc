@@ -558,6 +558,7 @@ TEST_F(DriveApiRequestsTest, FilesInsertRequest) {
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&error, &file_resource)));
+    request->set_visibility("DEFAULT");
     request->set_last_viewed_by_me_date(
         base::Time::FromUTCExploded(kLastViewedByMeDate));
     request->set_mime_type("application/vnd.google-apps.folder");
@@ -571,7 +572,7 @@ TEST_F(DriveApiRequestsTest, FilesInsertRequest) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
-  EXPECT_EQ("/drive/v2/files", http_request_.relative_url);
+  EXPECT_EQ("/drive/v2/files?visibility=DEFAULT", http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);
@@ -819,6 +820,7 @@ TEST_F(DriveApiRequestsTest, FilesCopyRequest) {
         test_util::CreateQuitCallback(
             &run_loop,
             test_util::CreateCopyResultCallback(&error, &file_resource)));
+    request->set_visibility("PRIVATE");
     request->set_file_id("resource_id");
     request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
     request->add_parent("parent_resource_id");
@@ -829,7 +831,8 @@ TEST_F(DriveApiRequestsTest, FilesCopyRequest) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
-  EXPECT_EQ("/drive/v2/files/resource_id/copy", http_request_.relative_url);
+  EXPECT_EQ("/drive/v2/files/resource_id/copy?visibility=PRIVATE",
+            http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
   EXPECT_TRUE(http_request_.has_content);

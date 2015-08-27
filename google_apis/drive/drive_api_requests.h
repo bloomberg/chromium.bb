@@ -261,6 +261,12 @@ class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
                      const FileResourceCallback& callback);
   ~FilesInsertRequest() override;
 
+  // Optional parameter
+  const std::string& visibility() const { return visibility_; }
+  void set_visibility(const std::string& visibility) {
+    visibility_ = visibility;
+  }
+
   // Optional request body.
   const base::Time& last_viewed_by_me_date() const {
     return last_viewed_by_me_date_;
@@ -302,6 +308,7 @@ class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
  private:
   const DriveApiUrlGenerator url_generator_;
 
+  std::string visibility_;
   base::Time last_viewed_by_me_date_;
   std::string mime_type_;
   base::Time modified_date_;
@@ -409,6 +416,12 @@ class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
   const std::string& file_id() const { return file_id_; }
   void set_file_id(const std::string& file_id) { file_id_ = file_id; }
 
+  // Optional parameter
+  const std::string& visibility() const { return visibility_; }
+  void set_visibility(const std::string& visibility) {
+    visibility_ = visibility;
+  }
+
   // Optional request body.
   const std::vector<std::string>& parents() const { return parents_; }
   void add_parent(const std::string& parent) { parents_.push_back(parent); }
@@ -434,6 +447,7 @@ class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
   const DriveApiUrlGenerator url_generator_;
 
   std::string file_id_;
+  std::string visibility_;
   base::Time modified_date_;
   std::vector<std::string> parents_;
   std::string title_;

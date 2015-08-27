@@ -116,8 +116,14 @@ GURL DriveApiUrlGenerator::GetFilesAuthorizeUrl(
                                               net::EscapePath(app_id).c_str()));
 }
 
-GURL DriveApiUrlGenerator::GetFilesInsertUrl() const {
-  return base_url_.Resolve(kDriveV2FilesUrl);
+GURL DriveApiUrlGenerator::GetFilesInsertUrl(
+    const std::string& visibility) const {
+  GURL url =  base_url_.Resolve(kDriveV2FilesUrl);
+
+  if (!visibility.empty())
+    url = net::AppendOrReplaceQueryParameter(url, "visibility", visibility);
+
+  return url;
 }
 
 GURL DriveApiUrlGenerator::GetFilesPatchUrl(const std::string& file_id,
@@ -137,9 +143,16 @@ GURL DriveApiUrlGenerator::GetFilesPatchUrl(const std::string& file_id,
   return url;
 }
 
-GURL DriveApiUrlGenerator::GetFilesCopyUrl(const std::string& file_id) const {
-  return base_url_.Resolve(base::StringPrintf(
+GURL DriveApiUrlGenerator::GetFilesCopyUrl(
+    const std::string& file_id,
+    const std::string& visibility) const {
+  GURL url =  base_url_.Resolve(base::StringPrintf(
       kDriveV2FileCopyUrlFormat, net::EscapePath(file_id).c_str()));
+
+  if (!visibility.empty())
+    url = net::AppendOrReplaceQueryParameter(url, "visibility", visibility);
+
+  return url;
 }
 
 GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
