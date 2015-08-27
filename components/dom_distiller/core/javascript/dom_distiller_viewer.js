@@ -85,22 +85,34 @@ function useFontFamily(fontFamily) {
 // CSS classes must agree with distilledpage.css.
 function useTheme(theme) {
   var cssClass;
-  var toolbarColor;
   if (theme == "sepia") {
     cssClass = "sepia";
-    toolbarColor = "#BF9A73";
   } else if (theme == "dark") {
     cssClass = "dark";
-    toolbarColor = "#1A1A1A";
   } else {
     cssClass = "light";
-    toolbarColor = "#F5F5F5";
   }
   // Relies on the classname order of the body being Theme class, then Font
   // Family class.
   var fontFamilyClass = document.body.className.split(" ")[1];
   document.body.className = cssClass + " " + fontFamilyClass;
 
+  updateToolbarColor();
+}
+
+function updateToolbarColor() {
+  // Relies on the classname order of the body being Theme class, then Font
+  // Family class.
+  var themeClass = document.body.className.split(" ")[0];
+
+  var toolbarColor;
+  if (themeClass == "sepia") {
+    toolbarColor = "#BF9A73";
+  } else if (themeClass == "dark") {
+    toolbarColor = "#1A1A1A";
+  } else {
+    toolbarColor = "#F5F5F5";
+  }
   document.getElementById('theme-color').content = toolbarColor;
 }
 
@@ -199,6 +211,8 @@ document.getElementById('contentWrap').addEventListener('transitionend',
       var contentWrap = document.getElementById('contentWrap');
       contentWrap.style.transition = '';
     }, true);
+
+updateToolbarColor();
 
 var pincher = (function() {
   'use strict';

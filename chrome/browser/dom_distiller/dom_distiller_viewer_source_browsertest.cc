@@ -65,6 +65,8 @@ const char kGetBodyClass[] =
     "window.domAutomationController.send("
         "document.body.className)";
 
+const unsigned kDarkToolbarThemeColor = 0xFF1A1A1A;
+
 void AddEntry(const ArticleEntry& e, FakeDB<ArticleEntry>::EntryMap* map) {
   (*map)[e.entry_id()] = e;
 }
@@ -438,6 +440,9 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChange) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       contents, kGetBodyClass, &result));
   EXPECT_EQ("dark sans-serif", result);
+
+  // Verify that the theme color for the tab is updated as well.
+  EXPECT_EQ(kDarkToolbarThemeColor, contents->GetThemeColor());
 
   distilled_page_prefs->SetFontFamily(DistilledPagePrefs::SERIF);
   base::RunLoop().RunUntilIdle();
