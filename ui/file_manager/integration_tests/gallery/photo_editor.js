@@ -181,6 +181,68 @@ function exposureImage(testVolumeName, volumeType) {
 }
 
 /**
+ * Tests whether overwrite original checkbox is enabled or disabled properly.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+function enableDisableOverwriteOriginalCheckbox(testVolumeName, volumeType) {
+  var appId;
+  var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
+  return launchedPromise.then(function(result) {
+    appId = result.appId;
+
+    // Confirm overwrite original checkbox is enabled and checked.
+    return gallery.waitForElement(appId,
+        '.overwrite-original[checked]:not([disabled])');
+  }).then(function() {
+    // Uncheck overwrite original.
+    return gallery.waitAndClickElement(appId, '.overwrite-original');
+  }).then(function() {
+    // Rotate image.
+    return gallery.waitAndClickElement(appId, '.rotate_right');
+  }).then(function() {
+    // Confirm that edited image has been saved.
+    return gallery.waitForAFile(volumeType,
+        'My Desktop Background - Edited.png');
+  }).then(function() {
+    // Confirm overwrite original checkbox is disabled and not checked.
+    return gallery.waitForElement(appId,
+        '.overwrite-original[disabled]:not([checked])');
+  }).then(function() {
+    // Go back to the slide mode.
+    return gallery.waitAndClickElement(appId, 'button.edit');
+  }).then(function() {
+    // Confirm current image is My Desktop Background - Edited.png.
+    return gallery.waitForSlideImage(appId, 600, 800,
+        'My Desktop Background - Edited');
+  }).then(function() {
+    // Move to My Desktop Background.png. Switching to other image is required
+    // to end edit session of the edited image.
+    return gallery.waitAndClickElement(appId, '.arrow.right');
+  }).then(function() {
+    // Confirm current image has changed to another image.
+    return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
+  }).then(function() {
+    // Back to the edited image.
+    return gallery.waitAndClickElement(appId, '.arrow.left');
+  }).then(function() {
+    // Confirm current image is switched to My Desktop Background - Edited.png.
+    return gallery.waitForSlideImage(appId, 600, 800,
+        'My Desktop Background - Edited');
+  }).then(function() {
+    // Click edit button again.
+    return gallery.waitAndClickElement(appId, 'button.edit');
+  }).then(function() {
+    // Confirm overwrite original checkbox is enabled and not checked.
+    return gallery.waitForElement(appId,
+        '.overwrite-original:not([checked]):not([disabled])');
+  });
+}
+
+/**
  * The rotateImage test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
@@ -226,4 +288,20 @@ testcase.exposureImageOnDownloads = function() {
  */
 testcase.exposureImageOnDrive = function() {
   return exposureImage('drive', 'drive');
+};
+
+/**
+ * The enableDisableOverwriteOriginalCheckbox test for Downloads.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.enableDisableOverwriteOriginalCheckboxOnDownloads = function() {
+  return enableDisableOverwriteOriginalCheckbox('local', 'downloads');
+};
+
+/**
+ * The enableDisableOverwriteOriginalCheckbox test for Drive.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.enableDisableOverwriteOriginalCheckboxOnDrive = function() {
+  return enableDisableOverwriteOriginalCheckbox('drive', 'drive');
 };

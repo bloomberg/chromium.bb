@@ -121,6 +121,13 @@ Gallery.Item.prototype.getFileName = function() {
 Gallery.Item.prototype.isOriginal = function() { return this.original_; };
 
 /**
+ * Sets an item as original.
+ */
+Gallery.Item.prototype.setAsOriginal = function() {
+  this.original_ = true;
+};
+
+/**
  * Obtains the last accessed date.
  * @return {number} Last accessed date.
  */

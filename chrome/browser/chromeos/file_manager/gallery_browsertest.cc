@@ -210,6 +210,33 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, MAYBE_ExposureImageOnDrive) {
   StartTest();
 }
 
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_EnableDisableOverwriteOriginalCheckboxOnDownloads \
+  DISABLED_EnableDisableOverwriteOriginalCheckboxOnDownloads
+#else
+#define MAYBE_EnableDisableOverwriteOriginalCheckboxOnDownloads \
+  EnableDisableOverwriteOriginalCheckboxOnDownloads
+#endif
+IN_PROC_BROWSER_TEST_F(
+    GalleryBrowserTest,
+    MAYBE_EnableDisableOverwriteOriginalCheckboxOnDownloads) {
+  set_test_case_name("enableDisableOverwriteOriginalCheckboxOnDownloads");
+  StartTest();
+}
+
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_EnableDisableOverwriteOriginalCheckboxOnDrive \
+  DISABLED_EnableDisableOverwriteOriginalCheckboxOnDrive
+#else
+#define MAYBE_EnableDisableOverwriteOriginalCheckboxOnDrive \
+  EnableDisableOverwriteOriginalCheckboxOnDrive
+#endif
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       MAYBE_EnableDisableOverwriteOriginalCheckboxOnDrive) {
+  set_test_case_name("enableDisableOverwriteOriginalCheckboxOnDrive");
+  StartTest();
+}
+
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
                        RenameImageInThumbnailModeOnDownloads) {
   set_test_case_name("renameImageInThumbnailModeOnDownloads");

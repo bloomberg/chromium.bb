@@ -208,6 +208,10 @@ ImageEditor.prototype.openSession = function(
   this.imageView_.load(
       item, effect, displayCallback, function(loadType, delay, error) {
         self.lockUI(false);
+
+        // Always handle an item as original for new session.
+        item.setAsOriginal();
+
         self.commandQueue_ = new CommandQueue(
             self.container_.ownerDocument, assert(self.imageView_.getCanvas()),
             saveFunction);
