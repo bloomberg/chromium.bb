@@ -68,16 +68,18 @@ bool DiscardableSharedMemoryHeap::ScopedMemorySegment::ContainsSpan(
 base::trace_event::MemoryAllocatorDump*
 DiscardableSharedMemoryHeap::ScopedMemorySegment::CreateMemoryAllocatorDump(
     Span* span,
+    size_t block_size,
     const char* name,
     base::trace_event::ProcessMemoryDump* pmd) const {
   DCHECK_EQ(shared_memory_, span->shared_memory());
   base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  static_cast<uint64_t>(span->length()));
+                  static_cast<uint64_t>(span->length() * block_size));
 
-  pmd->AddSuballocation(dump->guid(),
-                        base::StringPrintf("discardable/segment_%d", id_));
+  pmd->AddSuballocation(
+      dump->guid(),
+      base::StringPrintf("discardable/segment_%d/allocated_objects", id_));
   return dump;
 }
 
@@ -438,7 +440,7 @@ DiscardableSharedMemoryHeap::CreateMemoryAllocatorDump(
                      return segment->ContainsSpan(span);
                    });
   DCHECK(it != memory_segments_.end());
-  return (*it)->CreateMemoryAllocatorDump(span, name, pmd);
+  return (*it)->CreateMemoryAllocatorDump(span, block_size_, name, pmd);
 }
 
 }  // namespace content

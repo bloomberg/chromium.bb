@@ -118,6 +118,7 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
 
     base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
         Span* span,
+        size_t block_size,
         const char* name,
         base::trace_event::ProcessMemoryDump* pmd) const;
 
