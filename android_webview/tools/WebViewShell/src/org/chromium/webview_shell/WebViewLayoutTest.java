@@ -7,6 +7,8 @@ package org.chromium.webview_shell;
 import android.os.Environment;
 import android.test.ActivityInstrumentationTestCase2;
 
+import junit.framework.ComparisonFailure;
+
 import org.chromium.base.Log;
 
 import java.io.BufferedReader;
@@ -70,9 +72,10 @@ public class WebViewLayoutTest
                              "experimental/basic-logging-expected.txt");
     }
 
-    public void testGlobalInterface() throws Exception {
+    // This is a non-failing test because it tends to require frequent rebaselines.
+    public void testGlobalInterfaceNoFail() throws Exception {
         runBlinkLayoutTest("webexposed/global-interface-listing.html",
-                           "webexposed/global-interface-listing-expected.txt");
+                           "webexposed/global-interface-listing-expected.txt", true);
     }
 
     public void testWebViewExcludedInterfaces() throws Exception {
@@ -140,16 +143,16 @@ public class WebViewLayoutTest
 
     private void runWebViewLayoutTest(final String fileName, final String fileNameExpected)
             throws Exception {
-        runTest(PATH_WEBVIEW_PREFIX + fileName, PATH_WEBVIEW_PREFIX + fileNameExpected);
+        runTest(PATH_WEBVIEW_PREFIX + fileName, PATH_WEBVIEW_PREFIX + fileNameExpected, false);
     }
 
-    private void runBlinkLayoutTest(final String fileName, final String fileNameExpected)
-            throws Exception {
+    private void runBlinkLayoutTest(final String fileName, final String fileNameExpected,
+            boolean noFail) throws Exception {
         ensureJsTestCopied();
-        runTest(PATH_BLINK_PREFIX + fileName, PATH_WEBVIEW_PREFIX + fileNameExpected);
+        runTest(PATH_BLINK_PREFIX + fileName, PATH_WEBVIEW_PREFIX + fileNameExpected, noFail);
     }
 
-    private void runTest(final String fileName, final String fileNameExpected)
+    private void runTest(final String fileName, final String fileNameExpected, boolean noFail)
             throws FileNotFoundException, IOException, InterruptedException, TimeoutException {
         loadUrlWebViewAsync("file://" + fileName, mTestActivity);
 
@@ -163,7 +166,12 @@ public class WebViewLayoutTest
             String expected = readFile(fileNameExpected);
             mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             String result = mTestActivity.getTestResult();
-            assertEquals(expected, result);
+            if (noFail && !expected.equals(result)) {
+                ComparisonFailure cf = new ComparisonFailure("Unexpected result", expected, result);
+                Log.e(TAG, cf.toString());
+            } else {
+                assertEquals(expected, result);
+            }
         }
     }
 
