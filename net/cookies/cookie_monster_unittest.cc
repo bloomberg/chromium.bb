@@ -1355,6 +1355,33 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
   ASSERT_TRUE(++it == cookies.end());
 }
 
+TEST_F(CookieMonsterTest, CookieSorting) {
+  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
+
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "B=B1; path=/"));
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "B=B2; path=/foo"));
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "B=B3; path=/foo/bar"));
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "A=A1; path=/"));
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "A=A2; path=/foo"));
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "A=A3; path=/foo/bar"));
+
+  // Re-set cookie which should not change sort order.
+  EXPECT_TRUE(SetCookie(cm.get(), url_google_, "B=B3; path=/foo/bar"));
+
+  CookieList cookies = GetAllCookies(cm.get());
+  ASSERT_EQ(6u, cookies.size());
+  // According to RFC 6265 5.3 (11) re-setting this cookie should retain the
+  // initial creation-time from above, and the sort order should not change.
+  // Chrome's current implementation deviates from the spec so capturing this to
+  // avoid any inadvertent changes to this behavior.
+  EXPECT_EQ("A3", cookies[0].Value());
+  EXPECT_EQ("B3", cookies[1].Value());
+  EXPECT_EQ("B2", cookies[2].Value());
+  EXPECT_EQ("A2", cookies[3].Value());
+  EXPECT_EQ("B1", cookies[4].Value());
+  EXPECT_EQ("A1", cookies[5].Value());
+}
+
 TEST_F(CookieMonsterTest, DeleteCookieByName) {
   scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
 
