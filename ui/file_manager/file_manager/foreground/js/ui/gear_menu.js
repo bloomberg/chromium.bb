@@ -13,21 +13,21 @@ function GearMenu(element) {
    * @const
    */
   this.syncButton = /** @type {!HTMLMenuItemElement} */
-      (queryRequiredElement(element, '#gear-menu-drive-sync-settings'));
+      (queryRequiredElement('#gear-menu-drive-sync-settings', element));
 
   /**
    * @type {!HTMLMenuItemElement}
    * @const
    */
   this.hostedButton = /** @type {!HTMLMenuItemElement} */
-      (queryRequiredElement(element, '#gear-menu-drive-hosted-settings'));
+      (queryRequiredElement('#gear-menu-drive-hosted-settings', element));
 
   /**
    * @type {!HTMLElement}
    * @const
    * @private
    */
-  this.volumeSpaceInfo_ = queryRequiredElement(element, '#volume-space-info');
+  this.volumeSpaceInfo_ = queryRequiredElement('#volume-space-info', element);
 
   /**
    * @type {!HTMLElement}
@@ -35,7 +35,7 @@ function GearMenu(element) {
    * @private
    */
   this.volumeSpaceInfoSeparator_ =
-      queryRequiredElement(element, '#volume-space-info-separator');
+      queryRequiredElement('#volume-space-info-separator', element);
 
   /**
    * @type {!HTMLElement}
@@ -43,7 +43,7 @@ function GearMenu(element) {
    * @private
    */
   this.volumeSpaceInfoLabel_ =
-      queryRequiredElement(element, '#volume-space-info-label');
+      queryRequiredElement('#volume-space-info-label', element);
 
   /**
    * @type {!HTMLElement}
@@ -51,7 +51,7 @@ function GearMenu(element) {
    * @private
    */
   this.volumeSpaceInnerBar_ =
-      queryRequiredElement(element, '#volume-space-info-bar');
+      queryRequiredElement('#volume-space-info-bar', element);
 
   /**
    * @type {!HTMLElement}

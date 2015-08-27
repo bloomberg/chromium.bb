@@ -190,7 +190,7 @@ function ProgressCenterPanel(element) {
    * @private
    */
   this.openView_ = assertInstanceof(
-      queryRequiredElement(this.element_, '#progress-center-open-view'),
+      queryRequiredElement('#progress-center-open-view', this.element_),
       HTMLDivElement);
 
   /**

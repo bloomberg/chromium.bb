@@ -39,7 +39,7 @@ function SearchBox(element, searchButton, noResultMessage) {
    */
   this.searchButtonToggleRipple_ =
       /** @type {!FilesToggleRipple} */ (queryRequiredElement(
-          this.searchButton, 'files-toggle-ripple'));
+          'files-toggle-ripple', this.searchButton));
 
   /**
    * No result message.

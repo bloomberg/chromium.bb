@@ -109,14 +109,14 @@ function ImageEditor(
    * @const
    */
   this.exitButton_ = /** @type {!HTMLElement} */
-      (queryRequiredElement(document, '.edit-mode-toolbar paper-button.exit'));
+      (queryRequiredElement('.edit-mode-toolbar paper-button.exit'));
   this.exitButton_.addEventListener('click', this.onExitClicked_.bind(this));
 
   /**
    * @private {!FilesToast}
    */
   this.filesToast_ = /** @type {!FilesToast}*/
-      (queryRequiredElement(document, 'files-toast'));
+      (queryRequiredElement('files-toast'));
 }
 
 ImageEditor.prototype.__proto__ = cr.EventTarget.prototype;

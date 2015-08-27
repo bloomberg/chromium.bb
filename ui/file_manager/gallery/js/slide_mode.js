@@ -222,7 +222,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @const
    */
   this.imageContainer_ = util.createChild(queryRequiredElement(
-      this.document_, '.content'), 'image-container');
+      '.content', this.document_), 'image-container');
 
   this.document_.addEventListener('click', this.onDocumentClick_.bind(this));
 
@@ -232,21 +232,21 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.options_ = queryRequiredElement(this.bottomToolbar_, '.options');
+  this.options_ = queryRequiredElement('.options', this.bottomToolbar_);
 
   /**
    * @type {!HTMLElement}
    * @private
    * @const
    */
-  this.savedLabel_ = queryRequiredElement(this.options_, '.saved');
+  this.savedLabel_ = queryRequiredElement('.saved', this.options_);
 
   /**
    * @private {!PaperCheckboxElement}
    * @const
    */
   this.overwriteOriginalCheckbox_ = /** @type {!PaperCheckboxElement} */
-      (queryRequiredElement(this.options_, '.overwrite-original'));
+      (queryRequiredElement('.overwrite-original', this.options_));
   this.overwriteOriginalCheckbox_.addEventListener('change',
       this.onOverwriteOriginalCheckboxChanged_.bind(this));
 
@@ -255,19 +255,19 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @const
    */
   this.filesToast_ = /** @type {!FilesToast} */
-      (queryRequiredElement(document, 'files-toast'));
+      (queryRequiredElement('files-toast'));
 
   /**
    * @private {!HTMLElement}
    * @const
    */
-  this.bubble_ = queryRequiredElement(this.bottomToolbar_, '.bubble');
+  this.bubble_ = queryRequiredElement('.bubble', this.bottomToolbar_);
 
-  var bubbleContent = queryRequiredElement(this.bubble_, '.content');
+  var bubbleContent = queryRequiredElement('.content', this.bubble_);
   // GALLERY_OVERWRITE_BUBBLE contains <br> tag inside message.
   bubbleContent.innerHTML = strf('GALLERY_OVERWRITE_BUBBLE');
 
-  var bubbleClose = queryRequiredElement(this.bubble_, '.close-x');
+  var bubbleClose = queryRequiredElement('.close-x', this.bubble_);
   bubbleClose.addEventListener('click', this.onCloseBubble_.bind(this));
 
   /**
@@ -305,8 +305,8 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.ribbonSpacer_ = queryRequiredElement(this.bottomToolbar_,
-      '.ribbon-spacer');
+  this.ribbonSpacer_ = queryRequiredElement('.ribbon-spacer',
+      this.bottomToolbar_);
 
   /**
    * @type {!Ribbon}
@@ -323,8 +323,8 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @type {!HTMLElement}
    * @const
    */
-  var slideShowButton = queryRequiredElement(this.topToolbar_,
-      'paper-button.slideshow');
+  var slideShowButton = queryRequiredElement('paper-button.slideshow',
+      this.topToolbar_);
   slideShowButton.addEventListener('click',
       this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
 
@@ -345,7 +345,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.editButton_ = queryRequiredElement(this.topToolbar_, 'button.edit');
+  this.editButton_ = queryRequiredElement('button.edit', this.topToolbar_);
   GalleryUtil.decorateMouseFocusHandling(this.editButton_);
   this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
 
@@ -361,8 +361,8 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.printButton_ = queryRequiredElement(
-      this.topToolbar_, 'paper-button.print');
+  this.printButton_ = queryRequiredElement('paper-button.print',
+      this.topToolbar_);
   this.printButton_.addEventListener('click', this.print_.bind(this));
 
   /**
@@ -370,8 +370,8 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.editBarSpacer_ = queryRequiredElement(this.bottomToolbar_,
-      '.edit-bar-spacer');
+  this.editBarSpacer_ = queryRequiredElement('.edit-bar-spacer',
+      this.bottomToolbar_);
 
   /**
    * @type {!HTMLElement}

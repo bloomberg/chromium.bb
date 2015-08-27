@@ -114,7 +114,7 @@ FullWindowVideoControls.prototype.getInactivityWatcher = function() {
  * @param {string} message Message id.
  */
 FullWindowVideoControls.prototype.showErrorMessage = function(message) {
-  var errorBanner = queryRequiredElement(document, '#error');
+  var errorBanner = getRequiredElement('error');
   errorBanner.textContent = loadTimeData.getString(message);
   errorBanner.setAttribute('visible', 'true');
 
@@ -142,8 +142,7 @@ FullWindowVideoControls.prototype.onPlaybackError_ = function(error) {
 
   // Disable inactivity watcher, and disable the ui, by hiding tools manually.
   this.getInactivityWatcher().disabled = true;
-  queryRequiredElement(document, '#video-player')
-      .setAttribute('disabled', 'true');
+  getRequiredElement('video-player').setAttribute('disabled', 'true');
 
   // Detach the video element, since it may be unreliable and reset stored
   // current playback time.
@@ -219,7 +218,7 @@ VideoPlayer.prototype.prepare = function(videos) {
 
   document.ondragstart = preventDefault;
 
-  var maximizeButton = queryRequiredElement(document, '.maximize-button');
+  var maximizeButton = queryRequiredElement('.maximize-button');
   maximizeButton.addEventListener(
       'click',
       function(event) {
@@ -232,7 +231,7 @@ VideoPlayer.prototype.prepare = function(videos) {
       }.wrap(null));
   maximizeButton.addEventListener('mousedown', preventDefault);
 
-  var minimizeButton = queryRequiredElement(document, '.minimize-button');
+  var minimizeButton = queryRequiredElement('.minimize-button');
   minimizeButton.addEventListener(
       'click',
       function(event) {
@@ -241,7 +240,7 @@ VideoPlayer.prototype.prepare = function(videos) {
       }.wrap(null));
   minimizeButton.addEventListener('mousedown', preventDefault);
 
-  var closeButton = queryRequiredElement(document, '.close-button');
+  var closeButton = queryRequiredElement('.close-button');
   closeButton.addEventListener(
       'click',
       function(event) {
@@ -250,13 +249,12 @@ VideoPlayer.prototype.prepare = function(videos) {
       }.wrap(null));
   closeButton.addEventListener('mousedown', preventDefault);
 
-  var menu = queryRequiredElement(document, '#cast-menu');
-  cr.ui.decorate(menu, cr.ui.Menu);
+  cr.ui.decorate(getRequiredElement('cast-menu'), cr.ui.Menu);
 
   this.controls_ = new FullWindowVideoControls(
-      queryRequiredElement(document, '#video-player'),
-      queryRequiredElement(document, '#video-container'),
-      queryRequiredElement(document, '#controls'));
+      getRequiredElement('video-player'),
+      getRequiredElement('video-container'),
+      getRequiredElement('controls'));
 
   var reloadVideo = function(e) {
     if (this.controls_.decodeErrorOccured &&
@@ -269,12 +267,12 @@ VideoPlayer.prototype.prepare = function(videos) {
     }
   }.wrap(this);
 
-  var arrowRight = queryRequiredElement(document, '.arrow-box .arrow.right');
+  var arrowRight = queryRequiredElement('.arrow-box .arrow.right');
   arrowRight.addEventListener('click', this.advance_.wrap(this, 1));
-  var arrowLeft = queryRequiredElement(document, '.arrow-box .arrow.left');
+  var arrowLeft = queryRequiredElement('.arrow-box .arrow.left');
   arrowLeft.addEventListener('click', this.advance_.wrap(this, 0));
 
-  var videoPlayerElement = queryRequiredElement(document, '#video-player');
+  var videoPlayerElement = getRequiredElement('video-player');
   if (videos.length > 1)
     videoPlayerElement.setAttribute('multiple', true);
   else
@@ -310,9 +308,9 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
   this.loadQueue_.run(function(callback) {
     document.title = video.name;
 
-    queryRequiredElement(document, '#title').innerText = video.name;
+    getRequiredElement('title').innerText = video.name;
 
-    var videoPlayerElement = queryRequiredElement(document, '#video-player');
+    var videoPlayerElement = getRequiredElement('video-player');
     if (this.currentPos_ === (this.videos_.length - 1))
       videoPlayerElement.setAttribute('last-video', true);
     else
@@ -324,8 +322,8 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
       videoPlayerElement.removeAttribute('first-video');
 
     // Re-enables ui and hides error message if already displayed.
-    queryRequiredElement(document, '#video-player').removeAttribute('disabled');
-    queryRequiredElement(document, '#error').removeAttribute('visible');
+    getRequiredElement('video-player').removeAttribute('disabled');
+    getRequiredElement('error').removeAttribute('visible');
     this.controls.detachMedia();
     this.controls.getInactivityWatcher().disabled = true;
     this.controls.decodeErrorOccured = false;
@@ -340,17 +338,15 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
           var url = results[0];
           var token = results[1];
           if (url && token) {
-            queryRequiredElement(document, '#thumbnail').style.backgroundImage =
+            getRequiredElement('thumbnail').style.backgroundImage =
                 'url(' + url + '&access_token=' + token + ')';
           } else {
-            queryRequiredElement(document, '#thumbnail').style.backgroundImage =
-                '';
+            getRequiredElement('thumbnail').style.backgroundImage = '';
           }
         })
         .catch(function() {
           // Shows no image on error.
-          queryRequiredElement(document, '#thumbnail').style.backgroundImage =
-              '';
+          getRequiredElement('thumbnail').style.backgroundImage = '';
         });
 
     var videoElementInitializePromise;
@@ -359,7 +355,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
       videoPlayerElement.setAttribute('casting', true);
 
-      queryRequiredElement(document, '#cast-name').textContent =
+      getRequiredElement('cast-name').textContent =
           this.currentCast_.friendlyName;
 
       videoPlayerElement.setAttribute('castable', true);
@@ -385,8 +381,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
       videoPlayerElement.removeAttribute('casting');
 
       this.videoElement_ = document.createElement('video');
-      queryRequiredElement(document, '#video-container').appendChild(
-          this.videoElement_);
+      getRequiredElement('video-container').appendChild(this.videoElement_);
 
       this.controls.attachMedia(this.videoElement_);
       this.videoElement_.src = video.toURL();
@@ -578,8 +573,8 @@ VideoPlayer.prototype.onCastSelected_ = function(cast) {
  * @param {Array<Object>} casts List of casts.
  */
 VideoPlayer.prototype.setCastList = function(casts) {
-  var videoPlayerElement = queryRequiredElement(document, '#video-player');
-  var menu = queryRequiredElement(document, '#cast-menu');
+  var videoPlayerElement = getRequiredElement('video-player');
+  var menu = getRequiredElement('cast-menu');
   menu.innerHTML = '';
 
   // TODO(yoshiki): Handle the case that the current cast disappears.
@@ -625,8 +620,7 @@ VideoPlayer.prototype.setCastList = function(casts) {
  * @private
  */
 VideoPlayer.prototype.updateCheckOnCastMenu_ = function() {
-  var menu = queryRequiredElement(document, '#cast-menu');
-  var menuItems = menu.menuItems;
+  var menuItems = getRequiredElement('cast-menu').menuItems;
   for (var i = 0; i < menuItems.length; i++) {
     var item = menuItems[i];
     if (this.currentCast_ === null) {

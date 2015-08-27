@@ -89,8 +89,8 @@ DialogFooter.prototype = {
 DialogFooter.findDialogFooter = function(dialogType, document) {
   return new DialogFooter(
       dialogType,
-      queryRequiredElement(document, '.dialog-footer'),
-      queryRequiredElement(document, '#filename-input-box input'));
+      queryRequiredElement('.dialog-footer'),
+      queryRequiredElement('#filename-input-box input'));
 };
 
 /**

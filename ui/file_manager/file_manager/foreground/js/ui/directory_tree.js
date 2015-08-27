@@ -805,11 +805,11 @@ function MenuItem(modelItem, tree) {
   item.label = modelItem.label;
 
   item.menuButton_ = /** @type {!cr.ui.MenuButton} */(queryRequiredElement(
-        assert(item.firstElementChild), '.button'));
+        '.button', assert(item.firstElementChild)));
   item.menuButton_.setAttribute('menu', item.modelItem_.menu);
   cr.ui.MenuButton.decorate(item.menuButton_);
 
-  var icon = queryRequiredElement(item, '.icon');
+  var icon = queryRequiredElement('.icon', item);
   icon.setAttribute('menu-button-icon', item.modelItem_.icon);
 
   return item;

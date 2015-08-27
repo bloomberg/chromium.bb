@@ -275,7 +275,7 @@ util.createChild = function(parent, opt_className, opt_tag) {
  * @return {!T} Decorated element.
  */
 util.queryDecoratedElement = function(query, type) {
-  var element = queryRequiredElement(document, query);
+  var element = queryRequiredElement(query);
   cr.ui.decorate(element, type);
   return element;
 };

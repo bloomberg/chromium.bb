@@ -112,7 +112,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @private
    */
   this.dialogContainer =
-      queryRequiredElement(this.element, '.dialog-container');
+      queryRequiredElement('.dialog-container', this.element);
 
   /**
    * Context menu for texts.
@@ -133,7 +133,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {!HTMLElement}
    * @const
    */
-  this.toolbar = queryRequiredElement(this.element, '.dialog-header');
+  this.toolbar = queryRequiredElement('.dialog-header', this.element);
 
   /**
    * The navigation list.
@@ -141,7 +141,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @const
    */
   this.dialogNavigationList =
-      queryRequiredElement(this.element, '.dialog-navigation-list');
+      queryRequiredElement('.dialog-navigation-list', this.element);
 
   /**
    * Search box.
@@ -149,9 +149,9 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @const
    */
   this.searchBox = new SearchBox(
-      queryRequiredElement(this.element, '#search-box'),
-      queryRequiredElement(this.element, '#search-button'),
-      queryRequiredElement(this.element, '#no-search-results'));
+      queryRequiredElement('#search-box', this.element),
+      queryRequiredElement('#search-button', this.element),
+      queryRequiredElement('#no-search-results', this.element));
 
   /**
    * Empty folder UI.
@@ -159,14 +159,14 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @const
    */
   this.emptyFolder = new EmptyFolder(
-      queryRequiredElement(this.element, '#empty-folder'));
+      queryRequiredElement('#empty-folder', this.element));
 
   /**
    * Toggle-view button.
    * @type {!Element}
    * @const
    */
-  this.toggleViewButton = queryRequiredElement(this.element, '#view-button');
+  this.toggleViewButton = queryRequiredElement('#view-button', this.element);
 
   /**
    * The button to sort the file list.
@@ -183,7 +183,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    */
   this.sortButtonToggleRipple =
       /** @type {!FilesToggleRipple} */ (queryRequiredElement(
-          this.sortButton, 'files-toggle-ripple'));
+          'files-toggle-ripple', this.sortButton));
 
   /**
    * The button to open gear menu.
@@ -200,7 +200,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    */
   this.gearButtonToggleRipple =
       /** @type {!FilesToggleRipple} */ (queryRequiredElement(
-          this.gearButton, 'files-toggle-ripple'));
+          'files-toggle-ripple', this.gearButton));
 
   /**
    * @type {!GearMenu}
@@ -220,7 +220,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @const
    */
   this.progressCenterPanel = new ProgressCenterPanel(
-      queryRequiredElement(this.element, '#progress-center'));
+      queryRequiredElement('#progress-center', this.element));
 
   /**
    * List container.
@@ -232,7 +232,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {!HTMLElement}
    */
   this.formatPanelError =
-      queryRequiredElement(this.element, '#format-panel > .error');
+      queryRequiredElement('#format-panel > .error', this.element);
 
   /**
    * @type {!cr.ui.Menu}
@@ -247,13 +247,13 @@ function FileManagerUI(providersModel, element, launchParam) {
    */
   this.fileContextMenu.defaultActionMenuItem =
       /** @type {!HTMLMenuItemElement} */
-      (queryRequiredElement(this.fileContextMenu, '#default-action-menu-item'));
+      (queryRequiredElement('#default-action-menu-item', this.fileContextMenu));
 
   /**
    * @const {!cr.ui.MenuItem}
    */
   this.fileContextMenu.actionItemsSeparator = /** @type {!cr.ui.MenuItem} */
-      (queryRequiredElement(this.fileContextMenu, '#action-items-separator'));
+      (queryRequiredElement('#action-items-separator', this.fileContextMenu));
 
   /**
    * The combo button to specify the task.
@@ -329,11 +329,11 @@ FileManagerUI.prototype.initAdditionalUI = function(
     table, grid, locationLine) {
   // List container.
   this.listContainer = new ListContainer(
-      queryRequiredElement(this.element, '#list-container'), table, grid);
+      queryRequiredElement('#list-container', this.element), table, grid);
 
   // Splitter.
   this.decorateSplitter_(
-      queryRequiredElement(this.element, '#navigation-list-splitter'));
+      queryRequiredElement('#navigation-list-splitter', this.element));
 
   // Location line.
   this.locationLine = locationLine;
@@ -342,7 +342,7 @@ FileManagerUI.prototype.initAdditionalUI = function(
   cr.ui.contextMenuHandler.setContextMenu(grid, this.fileContextMenu);
   cr.ui.contextMenuHandler.setContextMenu(table.list, this.fileContextMenu);
   cr.ui.contextMenuHandler.setContextMenu(
-      queryRequiredElement(document, '.drive-welcome.page'),
+      queryRequiredElement('.drive-welcome.page'),
       this.fileContextMenu);
 
   // Add handlers.

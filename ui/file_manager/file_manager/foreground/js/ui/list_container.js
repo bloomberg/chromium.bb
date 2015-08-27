@@ -68,7 +68,7 @@ function ListContainer(element, table, grid) {
    * @type {!HTMLElement}
    * @const
    */
-  this.spinner = queryRequiredElement(element, '.loading-indicator');
+  this.spinner = queryRequiredElement('.loading-indicator', element);
 
   /**
    * @type {FileListModel}

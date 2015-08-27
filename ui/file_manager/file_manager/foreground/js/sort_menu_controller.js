@@ -18,16 +18,16 @@ function SortMenuController(sortButton, toggleRipple, fileListModel) {
 
   /** @private {!HTMLElement} */
   this.sortByNameButton_ = queryRequiredElement(
-      sortButton.menu, '#sort-menu-sort-by-name');
+      '#sort-menu-sort-by-name', sortButton.menu);
   /** @private {!HTMLElement} */
   this.sortBySizeButton_ = queryRequiredElement(
-      sortButton.menu, '#sort-menu-sort-by-size');
+      '#sort-menu-sort-by-size', sortButton.menu);
   /** @private {!HTMLElement} */
   this.sortByTypeButton_ = queryRequiredElement(
-      sortButton.menu, '#sort-menu-sort-by-type');
+      '#sort-menu-sort-by-type', sortButton.menu);
   /** @private {!HTMLElement} */
   this.sortByDateButton_ = queryRequiredElement(
-      sortButton.menu, '#sort-menu-sort-by-date');
+      '#sort-menu-sort-by-date', sortButton.menu);
 
   sortButton.addEventListener('menushow', this.updateCheckmark_.bind(this));
   sortButton.addEventListener('menuhide', this.onHideSortMenu_.bind(this));

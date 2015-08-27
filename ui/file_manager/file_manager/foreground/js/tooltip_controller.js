@@ -15,7 +15,7 @@ function TooltipController(tooltip, targets) {
   this.tooltip_ = tooltip;
 
   /** @private {!HTMLElement} */
-  this.tooltipLabel_ = queryRequiredElement(tooltip, '#tooltip-label');
+  this.tooltipLabel_ = queryRequiredElement('#tooltip-label', tooltip);
 
   /** @private {!Array<!HTMLElement>} */
   this.targets_ = targets;

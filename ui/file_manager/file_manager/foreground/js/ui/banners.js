@@ -171,7 +171,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
   this.showWelcomeBanner_(type);
 
   var container = queryRequiredElement(
-      this.document_, '.drive-welcome.' + type);
+      '.drive-welcome.' + type, this.document_);
   if (container.firstElementChild)
     return;  // Do not re-create.
 

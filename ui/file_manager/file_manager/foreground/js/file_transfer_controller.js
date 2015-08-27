@@ -161,7 +161,7 @@ function FileTransferController(doc,
    * @private
    * @const
    */
-  this.copyCommand_ = queryRequiredElement(this.document_, 'command#copy');
+  this.copyCommand_ = queryRequiredElement('command#copy', this.document_);
 
   /**
    * @type {DirectoryEntry}

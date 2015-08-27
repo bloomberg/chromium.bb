@@ -34,34 +34,34 @@ function ToolbarController(toolbar,
    * @const
    */
   this.cancelSelectionButton_ =
-      queryRequiredElement(this.toolbar_, '#cancel-selection-button');
+      queryRequiredElement('#cancel-selection-button', this.toolbar_);
 
   /**
    * @private {!HTMLElement}
    * @const
    */
   this.cancelSelectionButtonWrapper_ =
-      queryRequiredElement(this.toolbar_, '#cancel-selection-button-wrapper');
+      queryRequiredElement('#cancel-selection-button-wrapper', this.toolbar_);
 
   /**
    * @private {!HTMLElement}
    * @const
    */
   this.filesSelectedLabel_ =
-      queryRequiredElement(this.toolbar_, '#files-selected-label');
+      queryRequiredElement('#files-selected-label', this.toolbar_);
 
   /**
    * @private {!HTMLElement}
    * @const
    */
-  this.deleteButton_ = queryRequiredElement(this.toolbar_, '#delete-button');
+  this.deleteButton_ = queryRequiredElement('#delete-button', this.toolbar_);
 
   /**
    * @private {!cr.ui.Command}
    * @const
    */
   this.deleteCommand_ = assertInstanceof(
-      queryRequiredElement(assert(this.toolbar_.ownerDocument), '#delete'),
+      queryRequiredElement('#delete', assert(this.toolbar_.ownerDocument)),
       cr.ui.Command);
 
   /**

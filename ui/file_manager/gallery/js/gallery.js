@@ -27,7 +27,7 @@ function Gallery(volumeManager) {
     displayStringFunction: function() { return ''; },
     loadTimeData: {},
   };
-  this.container_ = queryRequiredElement(document, '.gallery');
+  this.container_ = queryRequiredElement('.gallery');
   this.document_ = document;
   this.volumeManager_ = volumeManager;
   /**
@@ -74,21 +74,21 @@ function Gallery(volumeManager) {
   cr.ui.dialogs.BaseDialog.OK_LABEL = str('GALLERY_OK_LABEL');
   cr.ui.dialogs.BaseDialog.CANCEL_LABEL = str('GALLERY_CANCEL_LABEL');
 
-  var content = queryRequiredElement(document, '#content');
+  var content = getRequiredElement('content');
   content.addEventListener('click', this.onContentClick_.bind(this));
 
-  this.topToolbar_ = queryRequiredElement(document, '#top-toolbar');
-  this.bottomToolbar_ = queryRequiredElement(document, '#bottom-toolbar');
+  this.topToolbar_ = getRequiredElement('top-toolbar');
+  this.bottomToolbar_ = getRequiredElement('bottom-toolbar');
 
-  this.filenameSpacer_ = queryRequiredElement(this.topToolbar_,
-      '.filename-spacer');
+  this.filenameSpacer_ = queryRequiredElement('.filename-spacer',
+      this.topToolbar_);
 
   /**
    * @private {HTMLInputElement}
    * @const
    */
   this.filenameEdit_ = /** @type {HTMLInputElement} */
-      (queryRequiredElement(this.filenameSpacer_, 'input'));
+      (queryRequiredElement('input', this.filenameSpacer_));
 
   this.filenameCanvas_ = document.createElement('canvas');
   this.filenameCanvasContext_ = this.filenameCanvas_.getContext('2d');
@@ -106,7 +106,7 @@ function Gallery(volumeManager) {
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
 
-  var buttonSpacer = queryRequiredElement(this.topToolbar_, '.button-spacer');
+  var buttonSpacer = queryRequiredElement('.button-spacer', this.topToolbar_);
 
   this.prompt_ = new ImageEditor.Prompt(this.container_, strf);
 
@@ -116,8 +116,8 @@ function Gallery(volumeManager) {
    * @private {!HTMLElement}
    * @const
    */
-  this.modeSwitchButton_ = queryRequiredElement(this.topToolbar_,
-      'button.mode');
+  this.modeSwitchButton_ = queryRequiredElement('button.mode',
+      this.topToolbar_);
   GalleryUtil.decorateMouseFocusHandling(this.modeSwitchButton_);
   this.modeSwitchButton_.addEventListener('click',
       this.onModeSwitchButtonClicked_.bind(this));
@@ -126,7 +126,7 @@ function Gallery(volumeManager) {
    * @private {!PaperRipple}
    */
   this.modeSwitchButtonRipple_ = /** @type {!PaperRipple} */
-      (queryRequiredElement(this.modeSwitchButton_, 'paper-ripple'));
+      (queryRequiredElement('paper-ripple', this.modeSwitchButton_));
 
   /**
    * @private {!DimmableUIController}
@@ -166,22 +166,22 @@ function Gallery(volumeManager) {
    * @const
    */
   this.deleteButton_ = queryRequiredElement(
-      this.topToolbar_, 'paper-button.delete');
+      'paper-button.delete', this.topToolbar_);
   this.deleteButton_.addEventListener('click', this.delete_.bind(this));
 
   /**
    * @private {!HTMLElement}
    * @const
    */
-  this.slideshowButton_ = queryRequiredElement(this.topToolbar_,
-      'paper-button.slideshow');
+  this.slideshowButton_ = queryRequiredElement('paper-button.slideshow',
+      this.topToolbar_);
 
   /**
    * @private {!HTMLElement}
    * @const
    */
   this.shareButton_ = queryRequiredElement(
-      this.topToolbar_, 'paper-button.share');
+      'paper-button.share', this.topToolbar_);
   this.shareButton_.addEventListener(
       'click', this.onShareButtonClick_.bind(this));
 

@@ -479,7 +479,7 @@ FileManager.prototype = /** @struct */ {
         this.selectionHandler_,
         this.directoryModel_);
     this.tooltipController_ = new TooltipController(
-        queryRequiredElement(this.dialogDom_, '#tooltip'),
+        queryRequiredElement('#tooltip', this.dialogDom_),
         Array.prototype.slice.call(
             this.dialogDom_.querySelectorAll('[has-tooltip]')));
     this.emptyFolderController_ = new EmptyFolderController(
@@ -786,14 +786,14 @@ FileManager.prototype = /** @struct */ {
     // Initialize the dialog.
     FileManagerDialogBase.setFileManager(this);
 
-    var table = queryRequiredElement(dom, '.detail-table');
+    var table = queryRequiredElement('.detail-table', dom);
     FileTable.decorate(
         table,
         this.metadataModel_,
         this.volumeManager_,
         this.historyLoader_,
         this.dialogType == DialogType.FULL_PAGE);
-    var grid = queryRequiredElement(dom, '.thumbnail-grid');
+    var grid = queryRequiredElement('.thumbnail-grid', dom);
     FileGrid.decorate(
         grid,
         this.metadataModel_,
@@ -806,7 +806,7 @@ FileManager.prototype = /** @struct */ {
         assertInstanceof(table, FileTable),
         assertInstanceof(grid, FileGrid),
         new LocationLine(
-            queryRequiredElement(dom, '#location-breadcrumbs'),
+            queryRequiredElement('#location-breadcrumbs', dom),
             this.volumeManager_));
 
     // Handle UI events.
