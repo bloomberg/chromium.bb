@@ -77,6 +77,9 @@ class HidServiceLinux::FileThreadHelper
   static void Start(scoped_ptr<FileThreadHelper> self) {
     base::ThreadRestrictions::AssertIOAllowed();
     self->thread_checker_.DetachFromThread();
+    // |self| must be added as a destruction observer first so that it will be
+    // notified before DeviceMonitorLinux.
+    base::MessageLoop::current()->AddDestructionObserver(self.get());
 
     DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
     self->observer_.Add(monitor);
@@ -87,7 +90,7 @@ class HidServiceLinux::FileThreadHelper
         base::Bind(&HidServiceLinux::FirstEnumerationComplete, self->service_));
 
     // |self| is now owned by the current message loop.
-    base::MessageLoop::current()->AddDestructionObserver(self.release());
+    ignore_result(self.release());
   }
 
  private:
