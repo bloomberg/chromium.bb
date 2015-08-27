@@ -25,8 +25,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 bool DownloadNotificationManager::IsEnabled() {
-  // Disabled by default.
+#if defined(OS_CHROMEOS)
+  bool enable_download_notification = true;
+#else
   bool enable_download_notification = false;
+#endif
 
   std::string arg = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kEnableDownloadNotification);
