@@ -34,7 +34,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
-import org.chromium.sync.PassphraseType;
+import org.chromium.sync.internal_api.pub.PassphraseType;
 
 import java.util.HashSet;
 import java.util.Set;

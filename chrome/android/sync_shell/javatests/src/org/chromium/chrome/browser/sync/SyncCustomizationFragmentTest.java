@@ -33,7 +33,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
-import org.chromium.sync.PassphraseType;
+import org.chromium.sync.internal_api.pub.PassphraseType;
 
 import java.util.Collection;
 import java.util.HashMap;
