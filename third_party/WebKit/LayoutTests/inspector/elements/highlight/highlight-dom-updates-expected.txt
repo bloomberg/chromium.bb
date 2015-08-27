@@ -34,6 +34,7 @@ Running: testSetTextContent
 //*[@id="textTest"]/text() "Text"
 
 Running: testSetTextNodeTextContent
+//*[@id="textTest"]
 //*[@id="textTest"]/text() "NewText"
 
 Running: testRemoveInlineTextNode
@@ -44,6 +45,7 @@ Running: testSetTextContentWithEmptyText
 //*[@id="textTest"]/text() "Text"
 
 Running: testClearTextNodeTextContent
+//*[@id="textTest"]
 //*[@id="textTest"]/text() ""
 
 Running: testAppendChildWhenHidden
