@@ -62,7 +62,6 @@
         'variations/variations_seed_simulator.h',
         'variations/variations_seed_store.cc',
         'variations/variations_seed_store.h',
-        'variations/variations_service_client.h',
         'variations/variations_url_constants.cc',
         'variations/variations_url_constants.h',
         'variations/variations_util.cc',
@@ -84,6 +83,22 @@
             'variations/variations_request_scheduler_mobile.cc',
           ],
         }],
+      ],
+    },
+    {
+      # GN version: //components/variations/service
+      'target_name': 'variations_service',
+
+      # TODO(blundell): Change to static_library once it has code in it.
+      'type': 'none',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'variations/service/variations_service_client.h',
       ],
     },
     {

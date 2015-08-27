@@ -166,6 +166,7 @@ source_set("browser") {
     "//components/user_prefs/tracked:user_prefs_tracked",
     "//components/variations",
     "//components/variations/net",
+    "//components/variations/service",
     "//components/webdata/common",
     "//components/webdata_services",
     "//components/web_resource",

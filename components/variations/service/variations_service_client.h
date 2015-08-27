@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VARIATIONS_VARIATIONS_SERVICE_CLIENT_H_
-#define COMPONENTS_VARIATIONS_VARIATIONS_SERVICE_CLIENT_H_
+#ifndef COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_CLIENT_H_
+#define COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_CLIENT_H_
 
 #include <string>
 
@@ -53,4 +53,4 @@ class VariationsServiceClient {
 
 }  // namespace chrome_variations
 
-#endif  // COMPONENTS_VARIATIONS_VARIATIONS_SERVICE_CLIENT_H_
+#endif  // COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_CLIENT_H_

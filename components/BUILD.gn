@@ -122,6 +122,7 @@ group("all_components") {
     "//components/user_prefs",
     "//components/user_prefs/tracked:user_prefs_tracked",
     "//components/variations",
+    "//components/variations/service",
     "//components/version_info",
     "//components/visitedlink/browser",
     "//components/visitedlink/common",

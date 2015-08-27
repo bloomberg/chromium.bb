@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_METRICS_VARIATIONS_CHROME_VARIATIONS_SERVICE_CLIENT_H_
 
 #include "base/basictypes.h"
-#include "components/variations/variations_service_client.h"
+#include "components/variations/service/variations_service_client.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/metrics/variations/variations_registry_syncer_win.h"

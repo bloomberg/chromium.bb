@@ -3171,6 +3171,7 @@
         # be generated before code in this target can start building.
         '../components/components.gyp:variations',
         '../components/components.gyp:variations_http_provider',
+        '../components/components.gyp:variations_service',
         '../components/components.gyp:webdata_common',
         '../components/components.gyp:webdata_services',
         '../components/mime_util/mime_util.gyp:mime_util',
