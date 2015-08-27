@@ -6,6 +6,7 @@
 #define PDF_PDFIUM_PDFIUM_API_STRING_BUFFER_ADAPTER_H_
 
 #include "base/basictypes.h"
+#include "base/numerics/safe_math.h"
 
 namespace chrome_pdf {
 
@@ -35,8 +36,13 @@ class PDFiumAPIStringBufferAdapter {
   // Resizes |str_| to |actual_size| - 1 characters, thereby removing the extra
   // null-terminator. This must be called prior to the adapter's destruction.
   // The pointer returned by GetData() should be considered invalid.
-  void Close(int actual_size);
   void Close(size_t actual_size);
+
+  template <typename IntType>
+  void Close(IntType actual_size) {
+    base::CheckedNumeric<size_t> unsigned_size = actual_size;
+    Close(unsigned_size.ValueOrDie());
+  }
 
  private:
   StringType* const str_;
@@ -46,6 +52,46 @@ class PDFiumAPIStringBufferAdapter {
   bool is_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFiumAPIStringBufferAdapter);
+};
+
+// Helper to deal with the fact that many PDFium APIs write the null-terminator
+// into string buffers that are passed to them, but the PDF plugin likes to pass
+// in std::strings / base::string16s, where one should not count on the internal
+// string buffers to be null-terminated. This version is suitable for APIs that
+// work in terms of number of bytes instead of the number of characters.
+template <class StringType>
+class PDFiumAPIStringBufferSizeInBytesAdapter {
+ public:
+  // |str| is the string to write into.
+  // |expected_size| is the number of bytes the PDFium API will write,
+  // including the null-terminator. It should be at least the size of a
+  // character in bytes.
+  // |check_expected_size| whether to check the actual number of bytes
+  // written into |str| against |expected_size| when calling Close().
+  PDFiumAPIStringBufferSizeInBytesAdapter(StringType* str,
+                                          size_t expected_size,
+                                          bool check_expected_size);
+  ~PDFiumAPIStringBufferSizeInBytesAdapter();
+
+  // Returns a pointer to |str_|'s buffer. The buffer's size is large enough to
+  // hold |expected_size_| + sizeof(StringType::value_type) bytes, so the PDFium
+  // API that uses the pointer has space to write a null-terminator.
+  void* GetData();
+
+  // Resizes |str_| to |actual_size| - sizeof(StringType::value_type) bytes,
+  // thereby removing the extra null-terminator. This must be called prior to
+  // the adapter's destruction. The pointer returned by GetData() should be
+  // considered invalid.
+  void Close(size_t actual_size);
+
+  template <typename IntType>
+  void Close(IntType actual_size) {
+    base::CheckedNumeric<size_t> unsigned_size = actual_size;
+    Close(unsigned_size.ValueOrDie());
+  }
+
+ private:
+  PDFiumAPIStringBufferAdapter<StringType> adapter_;
 };
 
 }  // namespace chrome_pdf

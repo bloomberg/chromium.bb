@@ -77,9 +77,10 @@ const char kJSPageHeight[] = "height";
 // Document load progress arguments (Plugin -> Page)
 const char kJSLoadProgressType[] = "loadProgress";
 const char kJSProgressPercentage[] = "progress";
-// Bookmarks
-const char kJSBookmarksType[] = "bookmarks";
+// Metadata
+const char kJSMetadataType[] = "metadata";
 const char kJSBookmarks[] = "bookmarks";
+const char kJSTitle[] = "title";
 // Get password arguments (Plugin -> Page)
 const char kJSGetPasswordType[] = "getPassword";
 // Get password complete arguments (Page -> Plugin)
@@ -1126,10 +1127,14 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
     OnGeometryChanged(0, 0);
   }
 
-  pp::VarDictionary bookmarks_message;
-  bookmarks_message.Set(pp::Var(kType), pp::Var(kJSBookmarksType));
-  bookmarks_message.Set(pp::Var(kJSBookmarks), engine_->GetBookmarks());
-  PostMessage(bookmarks_message);
+  pp::VarDictionary metadata_message;
+  metadata_message.Set(pp::Var(kType), pp::Var(kJSMetadataType));
+  std::string title = engine_->GetMetadata("Title");
+  if (!title.empty())
+    metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
+
+  metadata_message.Set(pp::Var(kJSBookmarks), engine_->GetBookmarks());
+  PostMessage(metadata_message);
 
   pp::VarDictionary progress_message;
   progress_message.Set(pp::Var(kType), pp::Var(kJSLoadProgressType));

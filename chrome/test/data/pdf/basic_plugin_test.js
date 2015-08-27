@@ -55,6 +55,15 @@ var tests = [
       chrome.test.assertEq('this is some text\nsome more text', selectedText);
     }));
   },
+
+  /**
+   * Test that the filename is used as the title.pdf.
+   */
+  function testHasCorrectTitle() {
+    chrome.test.assertEq('test.pdf', document.title);
+
+    chrome.test.succeed();
+  },
 ];
 
 var scriptingAPI = new PDFScriptingAPI(window, window);

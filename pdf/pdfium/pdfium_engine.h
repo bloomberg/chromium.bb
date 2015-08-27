@@ -99,6 +99,7 @@ class PDFiumEngine : public PDFEngine,
   virtual pp::Point GetScrollPosition();
   virtual void SetScrollPosition(const pp::Point& position);
   virtual bool IsProgressiveLoad();
+  virtual std::string GetMetadata(const std::string& key);
 
   // DocumentLoader::Client implementation.
   virtual pp::Instance* GetPluginInstance();

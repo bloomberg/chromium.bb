@@ -279,6 +279,8 @@ class PDFEngine {
   virtual void SetScrollPosition(const pp::Point& position) = 0;
 
   virtual bool IsProgressiveLoad() = 0;
+
+  virtual std::string GetMetadata(const std::string& key) = 0;
 };
 
 // Interface for exports that wrap the PDF engine.

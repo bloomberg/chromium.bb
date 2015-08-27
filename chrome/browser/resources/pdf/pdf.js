@@ -149,8 +149,6 @@ function PDFViewer(browserApi) {
   window.addEventListener('message', this.handleScriptingMessage.bind(this),
                           false);
 
-  document.title = decodeURIComponent(
-      getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl));
   this.plugin_.setAttribute('src',
                             this.browserApi_.getStreamInfo().originalUrl);
   this.plugin_.setAttribute('stream-url',
@@ -198,7 +196,6 @@ function PDFViewer(browserApi) {
         this.viewport_.zoomOut.bind(this.viewport_));
 
     this.materialToolbar_ = $('material-toolbar');
-    this.materialToolbar_.docTitle = document.title;
     this.materialToolbar_.addEventListener('save', this.save_.bind(this));
     this.materialToolbar_.addEventListener('print', this.print_.bind(this));
     this.materialToolbar_.addEventListener('rotate-right',
@@ -607,10 +604,18 @@ PDFViewer.prototype = {
       case 'cancelStreamUrl':
         chrome.mimeHandlerPrivate.abortStream();
         break;
-      case 'bookmarks':
+      case 'metadata':
+        if (message.data.title) {
+          document.title = message.data.title;
+        } else {
+          document.title = decodeURIComponent(
+              getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl));
+        }
         this.bookmarks_ = message.data.bookmarks;
-        if (this.isMaterial_ && this.bookmarks_.length !== 0)
+        if (this.isMaterial_) {
+          this.materialToolbar_.docTitle = document.title;
           this.materialToolbar_.bookmarks = this.bookmarks;
+        }
         break;
       case 'setIsSelecting':
         this.viewportScroller_.setEnableScrolling(message.data.isSelecting);

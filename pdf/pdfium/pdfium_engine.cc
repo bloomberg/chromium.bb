@@ -525,14 +525,11 @@ pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc, FPDF_BOOKMARK bookmark) {
   pp::VarDictionary dict;
   base::string16 title;
   unsigned long buffer_size = FPDFBookmark_GetTitle(bookmark, NULL, 0);
-  size_t title_length = base::checked_cast<size_t>(buffer_size) /
-      sizeof(base::string16::value_type);
-  if (title_length > 0) {
-    PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
-        &title, title_length, true);
-    void* data = api_string_adapter.GetData();
-    FPDFBookmark_GetTitle(bookmark, data, buffer_size);
-    api_string_adapter.Close(title_length);
+  if (buffer_size > 0) {
+    PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> api_string_adapter(
+        &title, buffer_size, true);
+    api_string_adapter.Close(FPDFBookmark_GetTitle(
+        bookmark, api_string_adapter.GetData(), buffer_size));
   }
   dict.Set(pp::Var("title"), pp::Var(base::UTF16ToUTF8(title)));
 
@@ -553,6 +550,19 @@ pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc, FPDF_BOOKMARK bookmark) {
   }
   dict.Set(pp::Var("children"), children);
   return dict;
+}
+
+std::string GetDocumentMetadata(FPDF_DOCUMENT doc, const std::string& key) {
+  size_t size = FPDF_GetMetaText(doc, key.c_str(), nullptr, 0);
+  if (size == 0)
+    return std::string();
+
+  base::string16 value;
+  PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> string_adapter(
+      &value, size, false);
+  string_adapter.Close(
+      FPDF_GetMetaText(doc, key.c_str(), string_adapter.GetData(), size));
+  return base::UTF16ToUTF8(value);
 }
 
 }  // namespace
@@ -1174,6 +1184,10 @@ void PDFiumEngine::SetScrollPosition(const pp::Point& position) {
 
 bool PDFiumEngine::IsProgressiveLoad() {
   return doc_loader_.is_partial_document();
+}
+
+std::string PDFiumEngine::GetMetadata(const std::string& key) {
+  return GetDocumentMetadata(doc(), key);
 }
 
 void PDFiumEngine::OnPartialDocumentLoaded() {
@@ -3931,15 +3945,11 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
   // bitmap. Note that this code does not kick in for PDFs printed from Chrome
   // because in that case we create a temp PDF first before printing and this
   // temp PDF does not have a creator string that starts with "cairo".
-  base::string16 creator;
-  size_t buffer_bytes = FPDF_GetMetaText(doc, "Creator", NULL, 0);
-  if (buffer_bytes > 1) {
-    FPDF_GetMetaText(doc, "Creator",
-                     base::WriteInto(&creator, buffer_bytes + 1), buffer_bytes);
-  }
   bool use_bitmap = false;
-  if (base::StartsWith(creator, L"cairo", base::CompareCase::INSENSITIVE_ASCII))
+  if (base::StartsWith(GetDocumentMetadata(doc, "Creator"), "cairo",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
     use_bitmap = true;
+  }
 
   // Another temporary hack. Some PDFs seems to render very slowly if
   // FPDF_RenderPage is directly used on a printer DC. I suspect it is
