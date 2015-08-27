@@ -453,6 +453,7 @@ int BytesPerElement(int type) {
     case GL_FLOAT:
     case GL_UNSIGNED_INT_24_8_OES:
     case GL_UNSIGNED_INT:
+    case GL_INT:
     case GL_UNSIGNED_INT_2_10_10_10_REV:
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
     case GL_UNSIGNED_INT_5_9_9_9_REV:
@@ -1083,6 +1084,49 @@ uint32_t GLES2Util::MapBufferTargetToBindingEnum(uint32_t target) {
     default:
       return 0;
   }
+}
+
+// static
+bool GLES2Util::IsUnsignedIntegerFormat(uint32_t internal_format) {
+  switch (internal_format) {
+    case GL_R8UI:
+    case GL_R16UI:
+    case GL_R32UI:
+    case GL_RG8UI:
+    case GL_RG16UI:
+    case GL_RG32UI:
+    case GL_RGBA8UI:
+    case GL_RGB10_A2UI:
+    case GL_RGBA16UI:
+    case GL_RGBA32UI:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// static
+bool GLES2Util::IsSignedIntegerFormat(uint32_t internal_format) {
+  switch (internal_format) {
+    case GL_R8I:
+    case GL_R16I:
+    case GL_R32I:
+    case GL_RG8I:
+    case GL_RG16I:
+    case GL_RG32I:
+    case GL_RGBA8I:
+    case GL_RGBA16I:
+    case GL_RGBA32I:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// static
+bool GLES2Util::IsIntegerFormat(uint32_t internal_format) {
+  return (IsUnsignedIntegerFormat(internal_format) ||
+          IsSignedIntegerFormat(internal_format));
 }
 
 

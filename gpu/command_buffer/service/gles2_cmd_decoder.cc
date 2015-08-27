@@ -415,22 +415,26 @@ ScopedModifyPixels::~ScopedModifyPixels() {
 
 class ScopedRenderTo {
  public:
-  explicit ScopedRenderTo(Framebuffer* framebuffer);
+  explicit ScopedRenderTo(Framebuffer* framebuffer)
+      : ScopedRenderTo(framebuffer, 0) {}
+  ScopedRenderTo(Framebuffer* framebuffer, GLenum attachment);
   ~ScopedRenderTo();
 
  private:
   const Framebuffer* framebuffer_;
+  GLenum attachment_;
 };
 
-ScopedRenderTo::ScopedRenderTo(Framebuffer* framebuffer)
-    : framebuffer_(framebuffer) {
-  if (framebuffer)
-    framebuffer_->OnWillRenderTo();
+ScopedRenderTo::ScopedRenderTo(Framebuffer* framebuffer, GLenum attachment)
+    : framebuffer_(framebuffer),
+      attachment_(attachment) {
+  if (framebuffer_)
+    framebuffer_->OnWillRenderTo(attachment_);
 }
 
 ScopedRenderTo::~ScopedRenderTo() {
   if (framebuffer_)
-    framebuffer_->OnDidRenderTo();
+    framebuffer_->OnDidRenderTo(attachment_);
 }
 
 // Encapsulates an OpenGL texture.
@@ -905,6 +909,13 @@ class GLES2DecoderImpl : public GLES2Decoder,
   GLenum GetBoundReadFrameBufferTextureType();
   GLenum GetBoundReadFrameBufferInternalFormat();
 
+  // Get the i-th draw buffer's internal format from the bound framebuffer.
+  // If no framebuffer is bound, or no image is attached, or the DrawBuffers
+  // setting for that image is GL_NONE, return 0.
+  GLenum GetBoundColorDrawBufferInternalFormat(GLint drawbuffer_i);
+
+  void MarkDrawBufferAsCleared(GLenum buffer, GLint drawbuffer_i);
+
   // Wrapper for CompressedTexImage2D commands.
   error::Error DoCompressedTexImage2D(
       GLenum target,
@@ -1359,6 +1370,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
       GLenum target,
       const char* func_name);
 
+  bool CheckBoundDrawFramebufferValid(const char* func_name);
+
   // Check if the current valuebuffer exists and is valid. If not generates
   // the appropriate GL error. Returns true if the current valuebuffer is in
   // a usable state.
@@ -1454,8 +1467,16 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Wrapper for glCheckFramebufferStatus
   GLenum DoCheckFramebufferStatus(GLenum target);
 
-  // Wrapper for glClear
+  // Wrapper for glClear*()
   error::Error DoClear(GLbitfield mask);
+  void DoClearBufferiv(
+      GLenum buffer, GLint drawbuffer, const GLint* value);
+  void DoClearBufferuiv(
+      GLenum buffer, GLint drawbuffer, const GLuint* value);
+  void DoClearBufferfv(
+      GLenum buffer, GLint drawbuffer, const GLfloat* value);
+  void DoClearBufferfi(
+      GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil);
 
   // Wrappers for various state.
   void DoDepthRangef(GLclampf znear, GLclampf zfar);
@@ -3755,6 +3776,25 @@ bool GLES2DecoderImpl::CheckBoundFramebuffersValid(const char* func_name) {
                                func_name);
 }
 
+bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(const char* func_name) {
+  Framebuffer* framebuffer = framebuffer_state_.bound_draw_framebuffer.get();
+  if (!framebuffer) {
+    // Assume the default back buffer is always complete.
+    return true;
+  }
+  if (!framebuffer_manager()->IsComplete(framebuffer)) {
+    if (framebuffer->GetStatus(texture_manager(), GL_DRAW_FRAMEBUFFER) !=
+        GL_FRAMEBUFFER_COMPLETE) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_FRAMEBUFFER_OPERATION, func_name,
+          "framebuffer incomplete (check)");
+      return false;
+    }
+    framebuffer_manager()->MarkAsComplete(framebuffer);
+  }
+  return true;
+}
+
 bool GLES2DecoderImpl::CheckBoundReadFramebufferColorAttachment(
     const char* func_name) {
   Framebuffer* framebuffer = features().chromium_framebuffer_multisample ?
@@ -3826,6 +3866,54 @@ GLenum GLES2DecoderImpl::GetBoundReadFrameBufferInternalFormat() {
     }
     return back_buffer_color_format_;
   }
+}
+
+GLenum GLES2DecoderImpl::GetBoundColorDrawBufferInternalFormat(
+    GLint drawbuffer_i) {
+  DCHECK(drawbuffer_i >= 0 &&
+         drawbuffer_i < static_cast<GLint>(group_->max_draw_buffers()));
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+  if (!framebuffer) {
+    return 0;
+  }
+  GLenum drawbuffer = static_cast<GLenum>(GL_DRAW_BUFFER0 + drawbuffer_i);
+  if (framebuffer->GetDrawBuffer(drawbuffer) == GL_NONE) {
+    return 0;
+  }
+  GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer_i);
+  const Framebuffer::Attachment* buffer =
+      framebuffer->GetAttachment(attachment);
+  if (!buffer) {
+    return 0;
+  }
+  return buffer->internal_format();
+}
+
+void GLES2DecoderImpl::MarkDrawBufferAsCleared(
+    GLenum buffer, GLint drawbuffer_i) {
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+  if (!framebuffer)
+    return;
+  GLenum attachment  = 0;
+  switch (buffer) {
+    case GL_COLOR:
+      DCHECK(drawbuffer_i >= 0 &&
+             drawbuffer_i < static_cast<GLint>(group_->max_draw_buffers()));
+      attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer_i);
+      break;
+    case GL_DEPTH:
+      attachment = GL_DEPTH;
+      break;
+    case GL_STENCIL:
+      attachment = GL_STENCIL;
+      break;
+    default:
+      // Caller is responsible for breaking GL_DEPTH_STENCIL into GL_DEPTH and
+      // GL_STENCIL.
+      NOTREACHED();
+  }
+  framebuffer->MarkAttachmentAsCleared(
+      renderbuffer_manager(), texture_manager(), attachment, true);
 }
 
 void GLES2DecoderImpl::UpdateParentTextureInfo() {
@@ -5663,6 +5751,8 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
   DCHECK(!ShouldDeferDraws());
   if (CheckBoundFramebuffersValid("glClear")) {
     ApplyDirtyState();
+    // TODO(zmo): Filter out INTEGER/SIGNED INTEGER images to avoid
+    // undefined results.
     ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get());
     if (workarounds().gl_clear_broken) {
       ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
@@ -5680,6 +5770,177 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
     glClear(mask);
   }
   return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoClearBufferiv(
+    GLenum buffer, GLint drawbuffer, const GLint* value) {
+  if (!CheckBoundDrawFramebufferValid("glClearBufferiv"))
+    return;
+  ApplyDirtyState();
+
+  switch (buffer) {
+    case GL_COLOR:
+    case GL_STENCIL:
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_ENUM, "glClearBufferiv", "invalid buffer");
+      return;
+  }
+  GLenum attachment = 0;
+  if (buffer == GL_COLOR) {
+    if (drawbuffer < 0 ||
+        drawbuffer >= static_cast<GLint>(group_->max_draw_buffers())) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE, "glClearBufferiv", "invalid drawBuffer");
+      return;
+    }
+    GLenum internal_format =
+        GetBoundColorDrawBufferInternalFormat(drawbuffer);
+    if (!GLES2Util::IsSignedIntegerFormat(internal_format)) {
+      // To avoid undefined results, return without calling the gl function.
+      return;
+    }
+    attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer);
+  } else {
+    DCHECK(buffer == GL_STENCIL);
+    if (drawbuffer != 0) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE, "glClearBufferiv", "invalid drawBuffer");
+      return;
+    }
+    if (!BoundFramebufferHasStencilAttachment()) {
+      return;
+    }
+    attachment = GL_STENCIL_ATTACHMENT;
+  }
+  MarkDrawBufferAsCleared(buffer, drawbuffer);
+  {
+    ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get(),
+                             attachment);
+    glClearBufferiv(buffer, drawbuffer, value);
+  }
+}
+
+void GLES2DecoderImpl::DoClearBufferuiv(
+    GLenum buffer, GLint drawbuffer, const GLuint* value) {
+  if (!CheckBoundDrawFramebufferValid("glClearBufferuiv"))
+    return;
+  ApplyDirtyState();
+
+  switch (buffer) {
+    case GL_COLOR:
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_ENUM, "glClearBufferuiv", "invalid buffer");
+      return;
+  }
+  if (drawbuffer < 0 ||
+      drawbuffer >= static_cast<GLint>(group_->max_draw_buffers())) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glClearBufferuiv", "invalid drawBuffer");
+    return;
+  }
+  GLenum internal_format =
+      GetBoundColorDrawBufferInternalFormat(drawbuffer);
+  if (!GLES2Util::IsUnsignedIntegerFormat(internal_format)) {
+    // To avoid undefined results, return without calling the gl function.
+    return;
+  }
+  MarkDrawBufferAsCleared(buffer, drawbuffer);
+  GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer);
+  {
+    ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get(),
+                             attachment);
+    glClearBufferuiv(buffer, drawbuffer, value);
+  }
+}
+
+void GLES2DecoderImpl::DoClearBufferfv(
+    GLenum buffer, GLint drawbuffer, const GLfloat* value) {
+  if (!CheckBoundDrawFramebufferValid("glClearBufferfv"))
+    return;
+  ApplyDirtyState();
+
+  switch (buffer) {
+    case GL_COLOR:
+    case GL_DEPTH:
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_ENUM, "glClearBufferfv", "invalid buffer");
+      return;
+  }
+  GLenum attachment = 0;
+  if (buffer == GL_COLOR) {
+    if (drawbuffer < 0 ||
+        drawbuffer >= static_cast<GLint>(group_->max_draw_buffers())) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE, "glClearBufferfv", "invalid drawBuffer");
+      return;
+    }
+    GLenum internal_format =
+        GetBoundColorDrawBufferInternalFormat(drawbuffer);
+    if (GLES2Util::IsIntegerFormat(internal_format)) {
+      // To avoid undefined results, return without calling the gl function.
+      return;
+    }
+    attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + drawbuffer);
+  } else {
+    DCHECK(buffer == GL_DEPTH);
+    if (drawbuffer != 0) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE, "glClearBufferfv", "invalid drawBuffer");
+      return;
+    }
+    if (!BoundFramebufferHasDepthAttachment()) {
+      return;
+    }
+    attachment = GL_DEPTH_ATTACHMENT;
+  }
+  MarkDrawBufferAsCleared(buffer, drawbuffer);
+  {
+    ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get(),
+                             attachment);
+    glClearBufferfv(buffer, drawbuffer, value);
+  }
+}
+
+void GLES2DecoderImpl::DoClearBufferfi(
+    GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil) {
+  if (!CheckBoundDrawFramebufferValid("glClearBufferfi"))
+    return;
+  ApplyDirtyState();
+
+  switch (buffer) {
+    case GL_DEPTH_STENCIL:
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_ENUM, "glClearBufferfi", "invalid buffer");
+      return;
+  }
+  if (drawbuffer != 0) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glClearBufferfi", "invalid drawBuffer");
+    return;
+  }
+  if (!BoundFramebufferHasDepthAttachment() &&
+      !BoundFramebufferHasStencilAttachment()) {
+    return;
+  }
+  MarkDrawBufferAsCleared(GL_DEPTH, drawbuffer);
+  MarkDrawBufferAsCleared(GL_STENCIL, drawbuffer);
+  {
+    ScopedRenderTo do_render_depth(
+        framebuffer_state_.bound_draw_framebuffer.get(),
+        GL_DEPTH_ATTACHMENT);
+    ScopedRenderTo do_render_stencil(
+        framebuffer_state_.bound_draw_framebuffer.get(),
+        GL_STENCIL_ATTACHMENT);
+    glClearBufferfi(buffer, drawbuffer, depth, stencil);
+  }
 }
 
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
@@ -5760,8 +6021,10 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     clear_bits |= GL_COLOR_BUFFER_BIT;
-    if (feature_info_->feature_flags().ext_draw_buffers)
+    if (feature_info_->feature_flags().ext_draw_buffers ||
+        feature_info_->IsES3Enabled()) {
       framebuffer->PrepareDrawBuffersForClear();
+    }
   }
 
   if (framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT) ||
@@ -5783,8 +6046,16 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
   glClear(clear_bits);
 
   if ((clear_bits & GL_COLOR_BUFFER_BIT) != 0 &&
-      feature_info_->feature_flags().ext_draw_buffers)
+      (feature_info_->feature_flags().ext_draw_buffers ||
+       feature_info_->IsES3Enabled())) {
     framebuffer->RestoreDrawBuffersAfterClear();
+  }
+
+  if (feature_info_->IsES3Enabled()) {
+    // TODO(zmo): track more state to know whether there are any integer
+    // buffers attached to the current framebuffer.
+    framebuffer->ClearIntegerBuffers();
+  }
 
   framebuffer_manager()->MarkAttachmentsAsCleared(
       framebuffer, renderbuffer_manager(), texture_manager());

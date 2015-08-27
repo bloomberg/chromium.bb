@@ -186,6 +186,10 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   static uint32_t MapBufferTargetToBindingEnum(uint32_t target);
 
+  static bool IsUnsignedIntegerFormat(uint32_t internal_format);
+  static bool IsSignedIntegerFormat(uint32_t internal_format);
+  static bool IsIntegerFormat(uint32_t internal_format);
+
   #include "../common/gles2_cmd_utils_autogen.h"
 
  private:

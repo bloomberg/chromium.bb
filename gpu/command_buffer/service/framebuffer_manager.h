@@ -150,6 +150,9 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   // PrepareDrawBuffersForClear().
   void RestoreDrawBuffersAfterClear() const;
 
+  // Clear all the active INT or UINT type color buffers to (0, 0, 0, 0).
+  void ClearIntegerBuffers();
+
   // Return true if any draw buffers has an alpha channel.
   bool HasAlphaMRT() const;
 
@@ -158,8 +161,11 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   bool HasSameInternalFormatsMRT() const;
 
   void OnTextureRefDetached(TextureRef* texture);
-  void OnWillRenderTo() const;
-  void OnDidRenderTo() const;
+
+  // If attachment is 0, apply to all attachments; otherwise, apply only to
+  // the specified attachment.
+  void OnWillRenderTo(GLenum attachment) const;
+  void OnDidRenderTo(GLenum attachment) const;
 
   void set_read_buffer(GLenum read_buffer) {
     read_buffer_ = read_buffer;

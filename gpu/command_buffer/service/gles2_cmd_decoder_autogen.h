@@ -395,7 +395,7 @@ error::Error GLES2DecoderImpl::HandleClearBufferfi(uint32_t immediate_data_size,
   GLint drawbuffers = static_cast<GLint>(c.drawbuffers);
   GLfloat depth = static_cast<GLfloat>(c.depth);
   GLint stencil = static_cast<GLint>(c.stencil);
-  glClearBufferfi(buffer, drawbuffers, depth, stencil);
+  DoClearBufferfi(buffer, drawbuffers, depth, stencil);
   return error::kNoError;
 }
 
@@ -421,7 +421,7 @@ error::Error GLES2DecoderImpl::HandleClearBufferfvImmediate(
   if (value == NULL) {
     return error::kOutOfBounds;
   }
-  glClearBufferfv(buffer, drawbuffers, value);
+  DoClearBufferfv(buffer, drawbuffers, value);
   return error::kNoError;
 }
 
@@ -447,7 +447,7 @@ error::Error GLES2DecoderImpl::HandleClearBufferivImmediate(
   if (value == NULL) {
     return error::kOutOfBounds;
   }
-  glClearBufferiv(buffer, drawbuffers, value);
+  DoClearBufferiv(buffer, drawbuffers, value);
   return error::kNoError;
 }
 
@@ -473,7 +473,7 @@ error::Error GLES2DecoderImpl::HandleClearBufferuivImmediate(
   if (value == NULL) {
     return error::kOutOfBounds;
   }
-  glClearBufferuiv(buffer, drawbuffers, value);
+  DoClearBufferuiv(buffer, drawbuffers, value);
   return error::kNoError;
 }
 

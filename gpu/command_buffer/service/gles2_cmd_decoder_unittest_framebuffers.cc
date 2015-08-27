@@ -1393,6 +1393,128 @@ TEST_P(GLES2DecoderTest, RenderbufferStorageBadArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, ClearBufferivImmediateValidArgs) {
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoBindRenderbuffer(
+      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_RGBA8I, GL_RGBA8I, 1, 1, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+      client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  cmds::ClearBufferivImmediate& cmd =
+      *GetImmediateAs<cmds::ClearBufferivImmediate>();
+  GLint temp[4] = { 0 };
+  cmd.Init(GL_COLOR, 0, &temp[0]);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  SetupExpectationsForApplyingDirtyState(
+      false, false, false, 0x1111, false, false, 0, 0, false);
+  EXPECT_CALL(*gl_, ClearBufferiv(
+                        GL_COLOR, 0,
+                        reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, ClearBufferuivImmediateValidArgs) {
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoBindRenderbuffer(
+      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_RGBA8UI, GL_RGBA8UI, 1, 1, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+      client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  cmds::ClearBufferuivImmediate& cmd =
+      *GetImmediateAs<cmds::ClearBufferuivImmediate>();
+  GLuint temp[4] = { 0u };
+  cmd.Init(GL_COLOR, 0, &temp[0]);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  SetupExpectationsForApplyingDirtyState(
+      false, false, false, 0x1111, false, false, 0, 0, false);
+  EXPECT_CALL(*gl_, ClearBufferuiv(
+                        GL_COLOR, 0,
+                        reinterpret_cast<GLuint*>(
+                            ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, ClearBufferfvImmediateValidArgs) {
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoBindRenderbuffer(
+      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT32F,
+      1, 1, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+      client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  Enable cmd_enable;
+  cmd_enable.Init(GL_DEPTH_TEST);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd_enable));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  cmds::ClearBufferfvImmediate& cmd =
+      *GetImmediateAs<cmds::ClearBufferfvImmediate>();
+  GLfloat temp[4] = { 1.0f };
+  cmd.Init(GL_DEPTH, 0, &temp[0]);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  SetupExpectationsForApplyingDirtyState(
+      true, true, false, 0x1110, true, true, 0, 0, false);
+  EXPECT_CALL(*gl_, ClearBufferfv(
+                        GL_DEPTH, 0,
+                        reinterpret_cast<GLfloat*>(
+                            ImmediateDataAddress(&cmd))));
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, ClearBufferfiValidArgs) {
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoBindRenderbuffer(
+      GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
+  DoRenderbufferStorage(
+      GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, GL_DEPTH24_STENCIL8,
+      1, 1, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(
+      GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+      client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  Enable cmd_enable;
+  cmd_enable.Init(GL_STENCIL_TEST);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd_enable));
+  cmd_enable.Init(GL_DEPTH_TEST);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd_enable));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  cmds::ClearBufferfi cmd;
+  cmd.Init(GL_DEPTH_STENCIL, 0, 1.0f, 0);
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  SetupExpectationsForApplyingDirtyState(
+      true, true, true, 0x1110, true, true,
+      GLES2Decoder::kDefaultStencilMask, GLES2Decoder::kDefaultStencilMask,
+      true);
+  EXPECT_CALL(*gl_, ClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0f, 0));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_P(GLES2DecoderManualInitTest,
        RenderbufferStorageMultisampleCHROMIUMGLError) {
   InitState init;
