@@ -664,9 +664,19 @@ void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
   DCHECK(!connection()->connected());
   logger_->OnConnectionClosed(error, from_peer);
   if (from_peer) {
+    if (IsCryptoHandshakeConfirmed()) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Net.QuicSession.ConnectionCloseErrorCodeServer.HandshakeConfirmed",
+          error);
+    }
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.QuicSession.ConnectionCloseErrorCodeServer", error);
   } else {
+    if (IsCryptoHandshakeConfirmed()) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Net.QuicSession.ConnectionCloseErrorCodeClient.HandshakeConfirmed",
+          error);
+    }
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.QuicSession.ConnectionCloseErrorCodeClient", error);
   }

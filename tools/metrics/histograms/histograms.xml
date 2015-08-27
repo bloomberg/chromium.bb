@@ -74983,6 +74983,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.PT_StartToFinish_WithPreview"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="HandshakeConfirmed" separator=".">
+  <suffix name="HandshakeConfirmed" label="the handshake was confirmed"/>
+  <affected-histogram name="Net.QuicSession.ConnectionCloseErrorCodeClient"/>
+  <affected-histogram name="Net.QuicSession.ConnectionCloseErrorCodeServer"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="HistogramInconsistencies" separator=".">
   <suffix name="Cronet" label="Cronet histograms."/>
   <affected-histogram name="Histogram.InconsistenciesBrowser"/>
