@@ -78,6 +78,29 @@ public class WebViewLayoutTest
                            "webexposed/global-interface-listing-expected.txt", true);
     }
 
+    public void testNoUnexpectedInterfaces() throws Exception {
+        ensureJsTestCopied();
+        loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
+                + "webexposed/global-interface-listing.html", mTestActivity);
+        String webviewExpected = readFile(PATH_WEBVIEW_PREFIX
+                + "webexposed/global-interface-listing-expected.txt");
+        mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        String result = mTestActivity.getTestResult();
+
+        HashMap<String, HashSet<String>> webviewInterfacesMap = buildHashMap(result);
+        HashMap<String, HashSet<String>> webviewExpectedInterfacesMap =
+                buildHashMap(webviewExpected);
+        StringBuilder newInterfaces = new StringBuilder();
+
+        // Check that each current webview interface is one of webview expected interfaces.
+        for (String interfaceS : webviewInterfacesMap.keySet()) {
+            if (webviewExpectedInterfacesMap.get(interfaceS) == null) {
+                newInterfaces.append(interfaceS + "\n");
+            }
+        }
+        assertEquals("Unexpected new webview interfaces found", "", newInterfaces.toString());
+    }
+
     public void testWebViewExcludedInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
