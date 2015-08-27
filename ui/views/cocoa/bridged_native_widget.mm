@@ -32,6 +32,16 @@
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 
+extern "C" {
+
+typedef int32_t CGSConnection;
+CGSConnection _CGSDefaultConnection();
+CGError CGSSetWindowBackgroundBlurRadius(CGSConnection connection,
+                                         NSInteger windowNumber,
+                                         int radius);
+
+}
+
 // The NSView that hosts the composited CALayer drawing the UI. It fills the
 // window but is not hittable so that accessibility hit tests always go to the
 // BridgedContentView.
@@ -69,6 +79,10 @@
 @end
 
 namespace {
+
+const CGFloat kMavericksMenuOpacity = 251.0 / 255.0;
+const CGFloat kYosemiteMenuOpacity = 194.0 / 255.0;
+const int kYosemiteMenuBlur = 80;
 
 int kWindowPropertiesKey;
 
@@ -778,9 +792,21 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
   // Transparent window support.
   layer()->GetCompositor()->SetHostHasTransparentBackground(translucent);
   layer()->SetFillsBoundsOpaquely(!translucent);
+
   if (translucent) {
     [window_ setOpaque:NO];
-    [window_ setBackgroundColor:[NSColor clearColor]];
+    NSColor* background_color;
+    if (widget_type_ == Widget::InitParams::TYPE_MENU &&
+        base::mac::IsOSYosemiteOrLater()) {
+      // Blur doesn't happen if the alpha is less than 0.2%.
+      background_color = [NSColor colorWithCalibratedWhite:0.0 alpha:0.002];
+      CGSSetWindowBackgroundBlurRadius(_CGSDefaultConnection(),
+                                       [window_ windowNumber],
+                                       kYosemiteMenuBlur);
+    } else {
+      background_color = [NSColor clearColor];
+    }
+    [window_ setBackgroundColor:background_color];
   }
 
   UpdateLayerProperties();
@@ -1051,6 +1077,15 @@ void BridgedNativeWidget::AddCompositorSuperview() {
   base::scoped_nsobject<CALayer> background_layer([[CALayer alloc] init]);
   [background_layer
       setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
+
+  if (widget_type_ == Widget::InitParams::TYPE_MENU) {
+    // Giving the canvas opacity messes up subpixel font rendering, so use a
+    // solid background, but make the CALayer transparent.
+    if (base::mac::IsOSYosemiteOrLater())
+      [background_layer setOpacity:kYosemiteMenuOpacity];
+    else
+      [background_layer setOpacity:kMavericksMenuOpacity];
+  }
 
   // Set the layer first to create a layer-hosting view (not layer-backed).
   [compositor_superview_ setLayer:background_layer];

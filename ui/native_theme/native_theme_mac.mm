@@ -38,9 +38,12 @@ const int kScrollerThumbInset = 3;
 // value between 0.0 and 1.0 (i.e. divide by 255.0). Then,
 // alpha = (P2 - P1 + B1 - B2) / (B1 - B2)
 // color = (P1 - B1 + alpha * B1) / alpha.
-const SkColor kMenuPopupBackgroundColor = SkColorSetARGB(251, 255, 255, 255);
+const SkColor kMenuPopupBackgroundColor = SkColorSetARGB(255, 255, 255, 255);
 const SkColor kMenuSeparatorColor = SkColorSetARGB(243, 228, 228, 228);
 const SkColor kMenuBorderColor = SkColorSetARGB(60, 0, 0, 0);
+
+const SkColor kMenuPopupBackgroundColorYosemite =
+    SkColorSetARGB(255, 230, 230, 230);
 
 // Hardcoded color used for some existing dialogs in Chrome's Cocoa UI.
 const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
@@ -333,7 +336,10 @@ void NativeThemeMac::PaintMenuPopupBackground(
     const MenuBackgroundExtraParams& menu_background) const {
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setColor(kMenuPopupBackgroundColor);
+  if (base::mac::IsOSYosemiteOrLater())
+    paint.setColor(kMenuPopupBackgroundColorYosemite);
+  else
+    paint.setColor(kMenuPopupBackgroundColor);
   const SkScalar radius = SkIntToScalar(menu_background.corner_radius);
   SkRect rect = gfx::RectToSkRect(gfx::Rect(size));
   canvas->drawRoundRect(rect, radius, radius, paint);
