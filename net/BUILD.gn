@@ -6,6 +6,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
+import("//url/config.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -62,8 +63,11 @@ config("net_config") {
   }
 }
 
-# net_internal_config is shared with net and net_small.
-config("net_internal_config") {
+component("net") {
+  sources =
+      gypi_values.net_nacl_common_sources + gypi_values.net_non_nacl_sources
+
+  cflags = []
   defines = [
     # TODO(GYP) Note that the GYP file supports linux_link_kerberos (defaults to
     # 0) which implies that we run pkg_config on kerberos and link to that
@@ -74,345 +78,376 @@ config("net_internal_config") {
     "NET_IMPLEMENTATION",
   ]
 
+  configs += [
+    "//build/config:precompiled_headers",
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+  public_configs = [ ":net_config" ]
+  include_dirs = []
+
+  public_deps = [
+    ":net_quic_proto",
+    "//crypto",
+    "//crypto:platform",
+    "//url",
+  ]
+  deps = [
+    ":net_resources",
+    "//base",
+    "//base:prefs",
+    "//base/third_party/dynamic_annotations",
+    "//net/base/registry_controlled_domains",
+    "//sdch",
+    "//third_party/protobuf:protobuf_lite",
+    "//third_party/zlib",
+    "//url",
+  ]
+
   if (use_kerberos) {
     defines += [ "USE_KERBEROS" ]
     if (is_android) {
-      include_dirs = [ "/usr/include/kerberosV" ]
+      include_dirs += [ "/usr/include/kerberosV" ]
     }
+  } else {
+    sources -= [
+      "http/http_auth_gssapi_posix.cc",
+      "http/http_auth_gssapi_posix.h",
+      "http/http_auth_handler_negotiate.cc",
+      "http/http_auth_handler_negotiate.h",
+    ]
+  }
+
+  if (is_posix) {
+    if (posix_avoid_mmap) {
+      sources -= [ "disk_cache/blockfile/mapped_file_posix.cc" ]
+    } else {
+      sources -= [ "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc" ]
+    }
+  }
+
+  if (disable_file_support) {
+    sources -= [
+      "base/directory_lister.cc",
+      "base/directory_lister.h",
+      "url_request/file_protocol_handler.cc",
+      "url_request/file_protocol_handler.h",
+      "url_request/url_request_file_dir_job.cc",
+      "url_request/url_request_file_dir_job.h",
+      "url_request/url_request_file_job.cc",
+      "url_request/url_request_file_job.h",
+    ]
+  }
+
+  if (disable_ftp_support) {
+    sources -= [
+      "ftp/ftp_auth_cache.cc",
+      "ftp/ftp_auth_cache.h",
+      "ftp/ftp_ctrl_response_buffer.cc",
+      "ftp/ftp_ctrl_response_buffer.h",
+      "ftp/ftp_directory_listing_parser.cc",
+      "ftp/ftp_directory_listing_parser.h",
+      "ftp/ftp_directory_listing_parser_ls.cc",
+      "ftp/ftp_directory_listing_parser_ls.h",
+      "ftp/ftp_directory_listing_parser_netware.cc",
+      "ftp/ftp_directory_listing_parser_netware.h",
+      "ftp/ftp_directory_listing_parser_os2.cc",
+      "ftp/ftp_directory_listing_parser_os2.h",
+      "ftp/ftp_directory_listing_parser_vms.cc",
+      "ftp/ftp_directory_listing_parser_vms.h",
+      "ftp/ftp_directory_listing_parser_windows.cc",
+      "ftp/ftp_directory_listing_parser_windows.h",
+      "ftp/ftp_network_layer.cc",
+      "ftp/ftp_network_layer.h",
+      "ftp/ftp_network_session.cc",
+      "ftp/ftp_network_session.h",
+      "ftp/ftp_network_transaction.cc",
+      "ftp/ftp_network_transaction.h",
+      "ftp/ftp_request_info.h",
+      "ftp/ftp_response_info.cc",
+      "ftp/ftp_response_info.h",
+      "ftp/ftp_server_type_histograms.cc",
+      "ftp/ftp_server_type_histograms.h",
+      "ftp/ftp_transaction.h",
+      "ftp/ftp_transaction_factory.h",
+      "ftp/ftp_util.cc",
+      "ftp/ftp_util.h",
+      "url_request/ftp_protocol_handler.cc",
+      "url_request/ftp_protocol_handler.h",
+      "url_request/url_request_ftp_job.cc",
+      "url_request/url_request_ftp_job.h",
+    ]
   }
 
   if (enable_built_in_dns) {
     defines += [ "ENABLE_BUILT_IN_DNS" ]
-  }
-}
-
-# net_shared_* are settings shared between net and net_small
-net_shared_sources =
-    gypi_values.net_nacl_common_sources + gypi_values.net_non_nacl_sources
-
-net_shared_unfiltered_sources = []
-
-net_shared_configs = [
-  ":net_internal_config",
-  "//build/config:precompiled_headers",
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  "//build/config/compiler:no_size_t_to_int_warning",
-]
-
-net_shared_public_deps = [
-  ":net_quic_proto",
-  "//crypto",
-  "//crypto:platform",
-]
-
-net_shared_deps = [
-  ":net_resources",
-  "//base",
-  "//base:prefs",
-  "//base/third_party/dynamic_annotations",
-  "//net/base/registry_controlled_domains",
-  "//sdch",
-  "//third_party/protobuf:protobuf_lite",
-  "//third_party/zlib",
-]
-
-if (!use_kerberos) {
-  net_shared_sources -= [
-    "http/http_auth_gssapi_posix.cc",
-    "http/http_auth_gssapi_posix.h",
-    "http/http_auth_handler_negotiate.cc",
-    "http/http_auth_handler_negotiate.h",
-  ]
-}
-
-if (is_posix) {
-  if (posix_avoid_mmap) {
-    net_shared_sources -= [ "disk_cache/blockfile/mapped_file_posix.cc" ]
   } else {
-    net_shared_sources -=
-        [ "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc" ]
-  }
-}
-
-if (!enable_built_in_dns) {
-  net_shared_sources -= [
-    "dns/address_sorter_posix.cc",
-    "dns/address_sorter_posix.h",
-    "dns/dns_client.cc",
-  ]
-}
-
-if (use_openssl) {
-  net_shared_sources -= [
-    "base/nss_memio.c",
-    "base/nss_memio.h",
-    "cert/ct_log_verifier_nss.cc",
-    "cert/ct_objects_extractor_nss.cc",
-    "cert/jwk_serializer_nss.cc",
-    "cert/scoped_nss_types.h",
-    "cert/x509_util_nss.cc",
-    "quic/crypto/aead_base_decrypter_nss.cc",
-    "quic/crypto/aead_base_encrypter_nss.cc",
-    "quic/crypto/aes_128_gcm_12_decrypter_nss.cc",
-    "quic/crypto/aes_128_gcm_12_encrypter_nss.cc",
-    "quic/crypto/chacha20_poly1305_decrypter_nss.cc",
-    "quic/crypto/chacha20_poly1305_encrypter_nss.cc",
-    "quic/crypto/channel_id_nss.cc",
-    "quic/crypto/p256_key_exchange_nss.cc",
-    "socket/nss_ssl_util.cc",
-    "socket/nss_ssl_util.h",
-    "socket/ssl_client_socket_nss.cc",
-    "socket/ssl_client_socket_nss.h",
-    "socket/ssl_server_socket_nss.cc",
-    "socket/ssl_server_socket_nss.h",
-  ]
-  if (is_ios) {
-    # Always removed for !ios below.
-    net_shared_sources -= [
-      "cert/cert_verify_proc_nss.cc",
-      "cert/cert_verify_proc_nss.h",
+    sources -= [
+      "dns/address_sorter_posix.cc",
+      "dns/address_sorter_posix.h",
+      "dns/dns_client.cc",
     ]
   }
-  if (is_win) {
-    net_shared_sources -= [ "cert/sha256_legacy_support_nss_win.cc" ]
+
+  if (use_openssl) {
+    sources -= [
+      "base/nss_memio.c",
+      "base/nss_memio.h",
+      "cert/ct_log_verifier_nss.cc",
+      "cert/ct_objects_extractor_nss.cc",
+      "cert/jwk_serializer_nss.cc",
+      "cert/scoped_nss_types.h",
+      "cert/x509_util_nss.cc",
+      "quic/crypto/aead_base_decrypter_nss.cc",
+      "quic/crypto/aead_base_encrypter_nss.cc",
+      "quic/crypto/aes_128_gcm_12_decrypter_nss.cc",
+      "quic/crypto/aes_128_gcm_12_encrypter_nss.cc",
+      "quic/crypto/chacha20_poly1305_decrypter_nss.cc",
+      "quic/crypto/chacha20_poly1305_encrypter_nss.cc",
+      "quic/crypto/channel_id_nss.cc",
+      "quic/crypto/p256_key_exchange_nss.cc",
+      "socket/nss_ssl_util.cc",
+      "socket/nss_ssl_util.h",
+      "socket/ssl_client_socket_nss.cc",
+      "socket/ssl_client_socket_nss.h",
+      "socket/ssl_server_socket_nss.cc",
+      "socket/ssl_server_socket_nss.h",
+    ]
+    if (is_ios) {
+      # Always removed for !ios below.
+      sources -= [
+        "cert/cert_verify_proc_nss.cc",
+        "cert/cert_verify_proc_nss.h",
+      ]
+    }
+    if (is_win) {
+      sources -= [ "cert/sha256_legacy_support_nss_win.cc" ]
+    }
+    if (!use_nss_certs && !is_ios) {
+      sources -= [ "cert/x509_util_nss.h" ]
+    }
+  } else {
+    sources -= [
+      "cert/ct_log_verifier_openssl.cc",
+      "cert/ct_objects_extractor_openssl.cc",
+      "cert/jwk_serializer_openssl.cc",
+      "cert/x509_util_openssl.cc",
+      "cert/x509_util_openssl.h",
+      "quic/crypto/aead_base_decrypter_openssl.cc",
+      "quic/crypto/aead_base_encrypter_openssl.cc",
+      "quic/crypto/aes_128_gcm_12_decrypter_openssl.cc",
+      "quic/crypto/aes_128_gcm_12_encrypter_openssl.cc",
+      "quic/crypto/chacha20_poly1305_decrypter_openssl.cc",
+      "quic/crypto/chacha20_poly1305_encrypter_openssl.cc",
+      "quic/crypto/channel_id_openssl.cc",
+      "quic/crypto/p256_key_exchange_openssl.cc",
+      "quic/crypto/scoped_evp_aead_ctx.cc",
+      "quic/crypto/scoped_evp_aead_ctx.h",
+      "socket/ssl_client_socket_openssl.cc",
+      "socket/ssl_client_socket_openssl.h",
+      "socket/ssl_server_socket_openssl.cc",
+      "socket/ssl_server_socket_openssl.h",
+      "ssl/openssl_ssl_util.cc",
+      "ssl/openssl_ssl_util.h",
+      "ssl/ssl_client_session_cache_openssl.cc",
+      "ssl/ssl_client_session_cache_openssl.h",
+      "ssl/ssl_platform_key.h",
+      "ssl/threaded_ssl_private_key.cc",
+      "ssl/threaded_ssl_private_key.h",
+    ]
+    if (is_mac) {
+      sources -= [ "ssl/ssl_platform_key_mac.cc" ]
+    }
+    if (is_win) {
+      sources -= [
+        "cert/sha256_legacy_support_openssl_win.cc",
+        "ssl/ssl_platform_key_win.cc",
+      ]
+    }
+    if (use_nss_certs) {
+      sources -= [
+        "ssl/client_key_store.cc",
+        "ssl/client_key_store.h",
+        "ssl/ssl_platform_key_nss.cc",
+      ]
+    }
   }
-  if (!use_nss_certs && !is_ios) {
-    net_shared_sources -= [ "cert/x509_util_nss.h" ]
-  }
-} else {
-  net_shared_sources -= [
-    "cert/ct_log_verifier_openssl.cc",
-    "cert/ct_objects_extractor_openssl.cc",
-    "cert/jwk_serializer_openssl.cc",
-    "cert/x509_util_openssl.cc",
-    "cert/x509_util_openssl.h",
-    "quic/crypto/aead_base_decrypter_openssl.cc",
-    "quic/crypto/aead_base_encrypter_openssl.cc",
-    "quic/crypto/aes_128_gcm_12_decrypter_openssl.cc",
-    "quic/crypto/aes_128_gcm_12_encrypter_openssl.cc",
-    "quic/crypto/chacha20_poly1305_decrypter_openssl.cc",
-    "quic/crypto/chacha20_poly1305_encrypter_openssl.cc",
-    "quic/crypto/channel_id_openssl.cc",
-    "quic/crypto/p256_key_exchange_openssl.cc",
-    "quic/crypto/scoped_evp_aead_ctx.cc",
-    "quic/crypto/scoped_evp_aead_ctx.h",
-    "socket/ssl_client_socket_openssl.cc",
-    "socket/ssl_client_socket_openssl.h",
-    "socket/ssl_server_socket_openssl.cc",
-    "socket/ssl_server_socket_openssl.h",
-    "ssl/openssl_ssl_util.cc",
-    "ssl/openssl_ssl_util.h",
-    "ssl/ssl_client_session_cache_openssl.cc",
-    "ssl/ssl_client_session_cache_openssl.h",
-    "ssl/ssl_platform_key.h",
-    "ssl/threaded_ssl_private_key.cc",
-    "ssl/threaded_ssl_private_key.h",
-  ]
-  if (is_mac) {
-    net_shared_sources -= [ "ssl/ssl_platform_key_mac.cc" ]
-  }
-  if (is_win) {
-    net_shared_sources -= [
-      "cert/sha256_legacy_support_openssl_win.cc",
-      "ssl/ssl_platform_key_win.cc",
+
+  if (!use_openssl_certs) {
+    sources -= [
+      "base/crypto_module_openssl.cc",
+      "base/keygen_handler_openssl.cc",
+      "base/openssl_private_key_store.h",
+      "base/openssl_private_key_store_memory.cc",
+      "cert/cert_database_openssl.cc",
+      "cert/cert_verify_proc_openssl.cc",
+      "cert/cert_verify_proc_openssl.h",
+      "cert/test_root_certs_openssl.cc",
+      "cert/x509_certificate_openssl.cc",
+      "ssl/openssl_client_key_store.cc",
+      "ssl/openssl_client_key_store.h",
+    ]
+    if (is_android) {
+      sources -= [ "base/openssl_private_key_store_android.cc" ]
+    }
+  } else {
+    if (is_android) {
+      # Android doesn't use these even when using OpenSSL.
+      sources -= [
+        "base/openssl_private_key_store_memory.cc",
+        "cert/cert_database_openssl.cc",
+        "cert/cert_verify_proc_openssl.cc",
+        "cert/test_root_certs_openssl.cc",
+      ]
+    }
+
+    # TODO(davidben): Remove these exclusions when use_openssl_certs builds also
+    # use the SSLPrivateKey machinery.
+    sources -= [
+      "ssl/threaded_ssl_private_key.cc",
+      "ssl/threaded_ssl_private_key.h",
     ]
   }
-  if (use_nss_certs) {
-    net_shared_sources -= [
+
+  if (use_glib && !is_chromeos) {
+    configs += [ "//build/config/linux:gconf" ]
+    deps += [ "//build/config/linux:gio" ]
+  }
+
+  if (is_linux) {
+    configs += [ "//build/config/linux:libresolv" ]
+  }
+
+  if (!use_nss_certs) {
+    sources -= [
+      "base/crypto_module_nss.cc",
+      "base/keygen_handler_nss.cc",
+      "cert/cert_database_nss.cc",
+      "cert/nss_cert_database.cc",
+      "cert/nss_cert_database.h",
+      "cert/x509_certificate_nss.cc",
+      "ssl/client_cert_store_nss.cc",
+      "ssl/client_cert_store_nss.h",
+      "third_party/mozilla_security_manager/nsKeygenHandler.cpp",
+      "third_party/mozilla_security_manager/nsKeygenHandler.h",
+      "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
+      "third_party/mozilla_security_manager/nsNSSCertificateDB.h",
+      "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
+      "third_party/mozilla_security_manager/nsPKCS12Blob.h",
+    ]
+    if (!is_ios) {
+      # These files are part of the partial implementation of NSS on iOS so
+      # keep them in that case (even though use_nss_certs is not set).
+      sources -= [
+        "cert/cert_verify_proc_nss.cc",
+        "cert/cert_verify_proc_nss.h",
+        "cert/test_root_certs_nss.cc",
+        "cert/x509_util_nss_certs.cc",
+        "cert_net/nss_ocsp.cc",
+        "cert_net/nss_ocsp.h",
+      ]
+    }
+    if (is_chromeos) {
+      # These were already removed on non-ChromeOS.
+      sources -= [
+        "cert/nss_cert_database_chromeos.cc",
+        "cert/nss_cert_database_chromeos.h",
+        "cert/nss_profile_filter_chromeos.cc",
+        "cert/nss_profile_filter_chromeos.h",
+      ]
+    }
+    sources -= [
       "ssl/client_key_store.cc",
       "ssl/client_key_store.h",
       "ssl/ssl_platform_key_nss.cc",
     ]
+  } else if (use_openssl) {
+    # client_cert_store_nss.c requires NSS_CmpCertChainWCANames from NSS's
+    # libssl, but our bundled copy is not built in OpenSSL ports. Pull that file
+    # in directly.
+    sources += [ "third_party/nss/ssl/cmpcert.c" ]
   }
-}
 
-if (!use_openssl_certs) {
-  net_shared_sources -= [
-    "base/crypto_module_openssl.cc",
-    "base/keygen_handler_openssl.cc",
-    "base/openssl_private_key_store.h",
-    "base/openssl_private_key_store_memory.cc",
-    "cert/cert_database_openssl.cc",
-    "cert/cert_verify_proc_openssl.cc",
-    "cert/cert_verify_proc_openssl.h",
-    "cert/test_root_certs_openssl.cc",
-    "cert/x509_certificate_openssl.cc",
-    "ssl/openssl_client_key_store.cc",
-    "ssl/openssl_client_key_store.h",
-  ]
-  if (is_android) {
-    net_shared_sources -= [ "base/openssl_private_key_store_android.cc" ]
-  }
-} else {
-  if (is_android) {
-    # Android doesn't use these even when using OpenSSL.
-    net_shared_sources -= [
-      "base/openssl_private_key_store_memory.cc",
-      "cert/cert_database_openssl.cc",
-      "cert/cert_verify_proc_openssl.cc",
-      "cert/test_root_certs_openssl.cc",
+  if (!enable_websockets) {
+    sources -= [
+      "websockets/websocket_basic_handshake_stream.cc",
+      "websockets/websocket_basic_handshake_stream.h",
+      "websockets/websocket_basic_stream.cc",
+      "websockets/websocket_basic_stream.h",
+      "websockets/websocket_channel.cc",
+      "websockets/websocket_channel.h",
+      "websockets/websocket_deflate_predictor.h",
+      "websockets/websocket_deflate_predictor_impl.cc",
+      "websockets/websocket_deflate_predictor_impl.h",
+      "websockets/websocket_deflate_stream.cc",
+      "websockets/websocket_deflate_stream.h",
+      "websockets/websocket_deflater.cc",
+      "websockets/websocket_deflater.h",
+      "websockets/websocket_errors.cc",
+      "websockets/websocket_errors.h",
+      "websockets/websocket_extension.cc",
+      "websockets/websocket_extension.h",
+      "websockets/websocket_extension_parser.cc",
+      "websockets/websocket_extension_parser.h",
+      "websockets/websocket_frame.cc",
+      "websockets/websocket_frame.h",
+      "websockets/websocket_frame_parser.cc",
+      "websockets/websocket_frame_parser.h",
+      "websockets/websocket_handshake_challenge.cc",
+      "websockets/websocket_handshake_challenge.h",
+      "websockets/websocket_handshake_constants.cc",
+      "websockets/websocket_handshake_constants.h",
+      "websockets/websocket_handshake_request_info.cc",
+      "websockets/websocket_handshake_request_info.h",
+      "websockets/websocket_handshake_response_info.cc",
+      "websockets/websocket_handshake_response_info.h",
+      "websockets/websocket_handshake_stream_base.h",
+      "websockets/websocket_handshake_stream_create_helper.cc",
+      "websockets/websocket_handshake_stream_create_helper.h",
+      "websockets/websocket_inflater.cc",
+      "websockets/websocket_inflater.h",
+      "websockets/websocket_mux.h",
+      "websockets/websocket_stream.cc",
+      "websockets/websocket_stream.h",
     ]
   }
 
-  # TODO(davidben): Remove these exclusions when use_openssl_certs builds also
-  # use the SSLPrivateKey machinery.
-  net_shared_sources -= [
-    "ssl/threaded_ssl_private_key.cc",
-    "ssl/threaded_ssl_private_key.h",
-  ]
-}
-
-if (use_glib && !is_chromeos) {
-  net_shared_configs += [ "//build/config/linux:gconf" ]
-  net_shared_deps += [ "//build/config/linux:gio" ]
-}
-
-if (is_linux) {
-  net_shared_configs += [ "//build/config/linux:libresolv" ]
-}
-
-if (!use_nss_certs) {
-  net_shared_sources -= [
-    "base/crypto_module_nss.cc",
-    "base/keygen_handler_nss.cc",
-    "cert/cert_database_nss.cc",
-    "cert/nss_cert_database.cc",
-    "cert/nss_cert_database.h",
-    "cert/x509_certificate_nss.cc",
-    "ssl/client_cert_store_nss.cc",
-    "ssl/client_cert_store_nss.h",
-    "third_party/mozilla_security_manager/nsKeygenHandler.cpp",
-    "third_party/mozilla_security_manager/nsKeygenHandler.h",
-    "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
-    "third_party/mozilla_security_manager/nsNSSCertificateDB.h",
-    "third_party/mozilla_security_manager/nsPKCS12Blob.cpp",
-    "third_party/mozilla_security_manager/nsPKCS12Blob.h",
-  ]
-  if (!is_ios) {
-    # These files are part of the partial implementation of NSS on iOS so
-    # keep them in that case (even though use_nss_certs is not set).
-    net_shared_sources -= [
-      "cert/cert_verify_proc_nss.cc",
-      "cert/cert_verify_proc_nss.h",
-      "cert/test_root_certs_nss.cc",
-      "cert/x509_util_nss_certs.cc",
-      "cert_net/nss_ocsp.cc",
-      "cert_net/nss_ocsp.h",
+  if (!enable_mdns) {
+    sources -= [
+      "dns/mdns_cache.cc",
+      "dns/mdns_cache.h",
+      "dns/mdns_client.cc",
+      "dns/mdns_client.h",
+      "dns/mdns_client_impl.cc",
+      "dns/mdns_client_impl.h",
+      "dns/record_parsed.cc",
+      "dns/record_parsed.h",
+      "dns/record_rdata.cc",
+      "dns/record_rdata.h",
     ]
   }
-  if (is_chromeos) {
-    # These were already removed on non-ChromeOS.
-    net_shared_sources -= [
-      "cert/nss_cert_database_chromeos.cc",
-      "cert/nss_cert_database_chromeos.h",
-      "cert/nss_profile_filter_chromeos.cc",
-      "cert/nss_profile_filter_chromeos.h",
+
+  if (is_win) {
+    sources -= [
+      "http/http_auth_handler_ntlm_portable.cc",
+      "socket/socket_libevent.cc",
+      "socket/socket_libevent.h",
+      "socket/tcp_socket_libevent.cc",
+      "socket/tcp_socket_libevent.h",
+      "udp/udp_socket_libevent.cc",
+      "udp/udp_socket_libevent.h",
+    ]
+  } else {  # !is_win
+    sources -= [
+      "base/winsock_init.cc",
+      "base/winsock_init.h",
+      "base/winsock_util.cc",
+      "base/winsock_util.h",
+      "proxy/proxy_resolver_winhttp.cc",
+      "proxy/proxy_resolver_winhttp.h",
     ]
   }
-  net_shared_sources -= [
-    "ssl/client_key_store.cc",
-    "ssl/client_key_store.h",
-    "ssl/ssl_platform_key_nss.cc",
-  ]
-} else if (use_openssl) {
-  # client_cert_store_nss.c requires NSS_CmpCertChainWCANames from NSS's
-  # libssl, but our bundled copy is not built in OpenSSL ports. Pull that file
-  # in directly.
-  net_shared_sources += [ "third_party/nss/ssl/cmpcert.c" ]
-}
-
-if (!enable_mdns) {
-  net_shared_sources -= [
-    "dns/mdns_cache.cc",
-    "dns/mdns_cache.h",
-    "dns/mdns_client.cc",
-    "dns/mdns_client.h",
-    "dns/mdns_client_impl.cc",
-    "dns/mdns_client_impl.h",
-    "dns/record_parsed.cc",
-    "dns/record_parsed.h",
-    "dns/record_rdata.cc",
-    "dns/record_rdata.h",
-  ]
-}
-
-if (is_win) {
-  net_shared_sources -= [
-    "http/http_auth_handler_ntlm_portable.cc",
-    "socket/socket_libevent.cc",
-    "socket/socket_libevent.h",
-    "socket/tcp_socket_libevent.cc",
-    "socket/tcp_socket_libevent.h",
-    "udp/udp_socket_libevent.cc",
-    "udp/udp_socket_libevent.h",
-  ]
-} else {  # !is_win
-  net_shared_sources -= [
-    "base/winsock_init.cc",
-    "base/winsock_init.h",
-    "base/winsock_util.cc",
-    "base/winsock_util.h",
-    "proxy/proxy_resolver_winhttp.cc",
-    "proxy/proxy_resolver_winhttp.h",
-  ]
-}
-
-if (is_ios) {
-  # Add back some sources that were otherwise filtered out. iOS needs some Mac
-  # files.
-  net_shared_unfiltered_sources += [
-    "base/mac/url_conversions.h",
-    "base/mac/url_conversions.mm",
-    "base/network_change_notifier_mac.cc",
-    "base/network_config_watcher_mac.cc",
-    "base/network_interfaces_mac.cc",
-    "base/network_interfaces_mac.h",
-    "base/platform_mime_util_mac.mm",
-    "proxy/proxy_resolver_mac.cc",
-    "proxy/proxy_server_mac.cc",
-  ]
-
-  net_shared_sources -= [ "disk_cache/blockfile/file_posix.cc" ]
-  net_shared_deps += [
-    "//third_party/nss:nspr",
-    "//third_party/nss",
-    "//net/third_party/nss/ssl:libssl",
-  ]
-}
-
-if (is_ios || is_mac) {
-  net_shared_sources += gypi_values.net_base_mac_ios_sources
-}
-
-if (is_android) {
-  net_shared_deps += [ ":net_jni_headers" ]
-
-  # Add some Linux sources that were excluded by the filter, but which
-  # are needed.
-  net_shared_unfiltered_sources += [
-    "base/address_tracker_linux.cc",
-    "base/address_tracker_linux.h",
-    "base/network_interfaces_linux.cc",
-    "base/network_interfaces_linux.h",
-    "base/platform_mime_util_linux.cc",
-  ]
-}
-
-component("net") {
-  sources = net_shared_sources
-
-  # Add back some sources that were otherwise filtered out.
-  set_sources_assignment_filter([])
-  sources += net_shared_unfiltered_sources
-  set_sources_assignment_filter(sources_assignment_filter)
-
-  cflags = []
-  configs += net_shared_configs
-  public_configs = [ ":net_config" ]
-
-  public_deps = net_shared_public_deps + [ "//url" ]
-  deps = net_shared_deps
 
   if (is_mac) {
     libs = [
@@ -424,6 +459,23 @@ component("net") {
   }
 
   if (is_ios) {
+    # Add back some sources that were otherwise filtered out. iOS needs some Mac
+    # files.
+    set_sources_assignment_filter([])
+    sources += [
+      "base/mac/url_conversions.h",
+      "base/mac/url_conversions.mm",
+      "base/network_change_notifier_mac.cc",
+      "base/network_config_watcher_mac.cc",
+      "base/network_interfaces_mac.cc",
+      "base/network_interfaces_mac.h",
+      "base/platform_mime_util_mac.mm",
+      "proxy/proxy_resolver_mac.cc",
+      "proxy/proxy_server_mac.cc",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+
+    sources -= [ "disk_cache/blockfile/file_posix.cc" ]
     libs = [
       "CFNetwork.framework",
       "MobileCoreServices.framework",
@@ -431,61 +483,47 @@ component("net") {
       "SystemConfiguration.framework",
       "resolv",
     ]
-  }
 
-  if (!disable_file_support) {
-    sources += gypi_values.net_file_support_sources
-  }
-
-  if (!disable_ftp_support) {
-    sources += gypi_values.net_ftp_support_sources
-  }
-
-  if (enable_websockets) {
-    sources += gypi_values.net_websockets_sources
-  }
-
-  # ICU support.
-  deps += [
-    "//base:i18n",
-    "//third_party/icu",
-  ]
-  sources += [
-    "base/filename_util_icu.cc",
-    "base/net_string_util_icu.cc",
-    "base/net_util_icu.cc",
-  ]
-}
-
-if (is_android) {
-  # Same as net, but with ICU, file, ftp, and websocket support stripped.
-  component("net_small") {
-    sources = net_shared_sources
-
-    # Add back some sources that were otherwise filtered out.
-    set_sources_assignment_filter([])
-    sources += net_shared_unfiltered_sources
-    set_sources_assignment_filter(sources_assignment_filter)
-
-    cflags = []
-    defines = []
-    configs += net_shared_configs
-    public_configs = [ ":net_config" ]
-
-    public_deps = net_shared_public_deps +
-                  [ "//url:url_lib_use_icu_alternatives_on_android" ]
-    deps = net_shared_deps + [ ":net_jni_headers" ]
-
-    defines += [
-      "DISABLE_FILE_SUPPORT",
-      "DISABLE_FTP_SUPPORT",
-      "USE_ICU_ALTERNATIVES_ON_ANDROID=1",
+    deps += [
+      "//third_party/nss:nspr",
+      "//third_party/nss",
+      "//net/third_party/nss/ssl:libssl",
     ]
+  }
 
-    # Use ICU alternative on Android.
+  if (is_ios || is_mac) {
+    sources += gypi_values.net_base_mac_ios_sources
+  }
+
+  if (is_android) {
+    # Add some Linux sources that were excluded by the filter, but which
+    # are needed.
+    set_sources_assignment_filter([])
+    sources += [
+      "base/address_tracker_linux.cc",
+      "base/address_tracker_linux.h",
+      "base/network_interfaces_linux.cc",
+      "base/network_interfaces_linux.h",
+      "base/platform_mime_util_linux.cc",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+    deps += [ ":net_jni_headers" ]
+  }
+
+  if (use_icu_alternatives_on_android) {
     sources += [
       "base/net_string_util_icu_alternatives_android.cc",
       "base/net_string_util_icu_alternatives_android.h",
+    ]
+  } else {
+    deps += [
+      "//base:i18n",
+      "//third_party/icu",
+    ]
+    sources += [
+      "base/filename_util_icu.cc",
+      "base/net_string_util_icu.cc",
+      "base/net_util_icu.cc",
     ]
   }
 }
@@ -500,10 +538,7 @@ grit("net_resources") {
 }
 
 proto_library("net_quic_proto") {
-  visibility = [
-    ":net",
-    ":net_small",
-  ]
+  visibility = [ "//net" ]  # Part of the net component.
 
   sources = [
     "quic/proto/cached_network_parameters.proto",
@@ -980,11 +1015,15 @@ if (!is_ios && !is_android) {
       ]
 
       if (is_desktop_linux) {
-        configs += [
-          "//build/config/linux:gconf",
-          "//build/config/linux:glib",
-        ]
         deps += [ "//build/config/linux:gio" ]
+      }
+
+      if (use_gconf) {
+        configs += [ "//build/config/linux:gconf" ]
+      }
+
+      if (use_glib) {
+        configs += [ "//build/config/linux:glib" ]
       }
     }
   }
@@ -1195,7 +1234,6 @@ if (is_android) {
       "android/java/src/org/chromium/net/AndroidPrivateKey.java",
       "android/java/src/org/chromium/net/GURLUtils.java",
       "android/java/src/org/chromium/net/HttpNegotiateAuthenticator.java",
-      "android/java/src/org/chromium/net/NetStringUtil.java",
       "android/java/src/org/chromium/net/NetworkChangeNotifier.java",
       "android/java/src/org/chromium/net/ProxyChangeListener.java",
       "android/java/src/org/chromium/net/X509Util.java",
@@ -1332,7 +1370,6 @@ test("net_unittests") {
     "//crypto",
     "//crypto:platform",
     "//crypto:test_support",
-    "//gin",
     "//net/base/registry_controlled_domains",
     "//sql",
     "//testing/gmock",
@@ -1341,6 +1378,9 @@ test("net_unittests") {
     "//url",
   ]
 
+  if (!is_ios) {
+    deps += [ "//gin" ]
+  }
   data = [
     "data/",
   ]
@@ -1501,7 +1541,10 @@ test("net_unittests") {
     ]
   }
 
-  if (use_v8_in_net) {
+  # Always need use_v8_in_net to be 1 to run on Android, so just remove
+  # net_unittest's dependency on v8 when using icu alternatives instead of
+  # setting use_v8_in_net to 0.
+  if (use_v8_in_net && !use_icu_alternatives_on_android) {
     deps += [ ":net_with_v8" ]
   } else {
     sources -= [
@@ -1608,6 +1651,14 @@ test("net_unittests") {
     sources += [ "base/address_tracker_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
     isolate_file = "net_unittests.isolate"
+  }
+
+  if (use_icu_alternatives_on_android) {
+    sources -= [
+      "base/filename_util_unittest.cc",
+      "base/net_util_icu_unittest.cc",
+    ]
+    deps -= [ "//base:i18n" ]
   }
 
   # Symbols for crashes when running tests on swarming.
