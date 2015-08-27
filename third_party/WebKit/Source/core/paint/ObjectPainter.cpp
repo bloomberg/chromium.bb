@@ -16,13 +16,6 @@
 
 namespace blink {
 
-LayoutRect ObjectPainter::outlineBounds(const LayoutRect& objectBounds, const ComputedStyle& style)
-{
-    LayoutRect outlineBounds(objectBounds);
-    outlineBounds.inflate(style.outlineOutsetExtent());
-    return outlineBounds;
-}
-
 void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const ComputedStyle& style, const Vector<LayoutRect>& focusRingRects)
 {
     ASSERT(style.outlineStyleIsAuto());
@@ -32,7 +25,7 @@ void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const ComputedSty
     paintInfo.context->drawFocusRing(focusRingIntRects, style.outlineWidth(), style.outlineOffset(), m_layoutObject.resolveColor(style, CSSPropertyOutlineColor));
 }
 
-void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& objectBounds, const LayoutRect& visualOverflowBounds)
+void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& visualOverflowRect, const LayoutSize& objectSize, const LayoutPoint& paintOffset)
 {
     const ComputedStyle& styleToUse = m_layoutObject.styleRef();
     if (!styleToUse.hasOutline())
@@ -41,13 +34,15 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, paintInfo.phase))
         return;
 
+    LayoutRect visualOverflowBounds(visualOverflowRect);
+    visualOverflowBounds.moveBy(paintOffset);
     LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, paintInfo.phase, visualOverflowBounds);
 
     if (styleToUse.outlineStyleIsAuto()) {
         if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject)) {
             // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
             Vector<LayoutRect> focusRingRects;
-            m_layoutObject.addOutlineRects(focusRingRects, objectBounds.location());
+            m_layoutObject.addOutlineRects(focusRingRects, paintOffset);
             paintFocusRing(paintInfo, styleToUse, focusRingRects);
         }
         return;
@@ -56,7 +51,8 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
     if (styleToUse.outlineStyle() == BNONE)
         return;
 
-    LayoutRect inner(pixelSnappedIntRect(objectBounds));
+    LayoutRect inner(paintOffset, objectSize);
+    inner = LayoutRect(pixelSnappedIntRect(inner));
     inner.inflate(styleToUse.outlineOffset());
 
     LayoutRect outer(inner);

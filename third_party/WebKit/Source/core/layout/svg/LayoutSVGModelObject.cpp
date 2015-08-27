@@ -142,4 +142,12 @@ void LayoutSVGModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintI
     invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
 }
 
+LayoutRect LayoutSVGModelObject::outlineVisualOverflowRect() const
+{
+    LayoutRect outlineBounds(FloatPoint(), m_paintInvalidationBoundingBox.size());
+    if (int outlineOutset = styleRef().outlineOutsetExtent())
+        outlineBounds.inflate(outlineOutset);
+    return outlineBounds;
+}
+
 } // namespace blink

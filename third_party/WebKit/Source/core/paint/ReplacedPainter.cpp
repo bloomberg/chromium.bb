@@ -23,10 +23,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutReplaced.location();
-    LayoutRect paintRect(adjustedPaintOffset, m_layoutReplaced.size());
-
-    LayoutRect visualOverflowRect(m_layoutReplaced.visualOverflowRect());
-    visualOverflowRect.moveBy(adjustedPaintOffset);
+    LayoutRect borderRect(adjustedPaintOffset, m_layoutReplaced.size());
 
     if (m_layoutReplaced.hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
         m_layoutReplaced.paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
@@ -41,7 +38,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
 
     if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) {
         if (m_layoutReplaced.styleRef().outlineWidth())
-            ObjectPainter(m_layoutReplaced).paintOutline(paintInfo, paintRect, visualOverflowRect);
+            ObjectPainter(m_layoutReplaced).paintOutline(paintInfo, m_layoutReplaced.visualOverflowRect(), borderRect.size(), adjustedPaintOffset);
         return;
     }
 
@@ -59,13 +56,11 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         Optional<RoundedInnerRectClipper> clipper;
         bool completelyClippedOut = false;
         if (m_layoutReplaced.style()->hasBorderRadius()) {
-            LayoutRect borderRect = LayoutRect(adjustedPaintOffset, m_layoutReplaced.size());
-
             if (borderRect.isEmpty()) {
                 completelyClippedOut = true;
             } else {
                 // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
-                FloatRoundedRect roundedInnerRect = m_layoutReplaced.style()->getRoundedInnerBorderFor(paintRect,
+                FloatRoundedRect roundedInnerRect = m_layoutReplaced.style()->getRoundedInnerBorderFor(borderRect,
                     LayoutRectOutsets(
                         -(m_layoutReplaced.paddingTop() + m_layoutReplaced.borderTop()),
                         -(m_layoutReplaced.paddingRight() + m_layoutReplaced.borderRight()),
@@ -73,7 +68,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
                         -(m_layoutReplaced.paddingLeft() + m_layoutReplaced.borderLeft())),
                     true, true);
 
-                clipper.emplace(m_layoutReplaced, paintInfo, paintRect, roundedInnerRect, ApplyToDisplayListIfEnabled);
+                clipper.emplace(m_layoutReplaced, paintInfo, borderRect, roundedInnerRect, ApplyToDisplayListIfEnabled);
             }
         }
 

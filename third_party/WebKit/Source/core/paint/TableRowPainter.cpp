@@ -38,12 +38,10 @@ void TableRowPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
 
 void TableRowPainter::paintOutlineForRowIfNeeded(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableRow.location();
     PaintPhase paintPhase = paintInfo.phase;
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutTableRow.style()->visibility() == VISIBLE) {
-        LayoutRect visualOverflowRect(m_layoutTableRow.visualOverflowRect());
-        visualOverflowRect.moveBy(adjustedPaintOffset);
-        ObjectPainter(m_layoutTableRow).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_layoutTableRow.size()), visualOverflowRect);
+        LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableRow.location();
+        ObjectPainter(m_layoutTableRow).paintOutline(paintInfo, m_layoutTableRow.visualOverflowRect(), m_layoutTableRow.size(), adjustedPaintOffset);
     }
 }
 
