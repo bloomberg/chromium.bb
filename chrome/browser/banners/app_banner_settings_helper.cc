@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/browser_process.h"
@@ -107,6 +108,49 @@ double GetEventEngagement(ui::PageTransition transition_type) {
   } else {
     return kIndirectNavigationEnagagement;
   }
+}
+
+// Queries a field trial for updates to the default engagement values assigned
+// to direct and indirect navigations.
+void UpdateEngagementWeights() {
+  // Expect a field trial value of "X:Y", where X is the direct engagement
+  // value and Y is the indirect engagement value.
+  std::string weights =
+      base::FieldTrialList::FindFullName("AppBannersEngagementWeights");
+  if (weights.empty())
+    return;
+
+  std::vector<std::string> tokens = base::SplitString(
+      weights, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (tokens.size() == 2) {
+    double direct_engagement = -1;
+    double indirect_engagement = -1;
+
+    // Ensure that we get valid doubles from the field trial, and that both
+    // values are greater than or equal to zero and less than or equal to the
+    // total engagement required to trigger the banner.
+    if (base::StringToDouble(tokens[0], &direct_engagement) &&
+        base::StringToDouble(tokens[1], &indirect_engagement) &&
+        direct_engagement >= 0 && indirect_engagement >= 0 &&
+        direct_engagement <= kTotalEngagementToTrigger &&
+        indirect_engagement <= kTotalEngagementToTrigger) {
+      AppBannerSettingsHelper::SetEngagementWeights(direct_engagement,
+                                                    indirect_engagement);
+    }
+  }
+}
+
+// Queries a field trial for updates to the default number of minutes between
+// site visits counted for the purposes of displaying a banner.
+void UpdateMinutesBetweenVisits() {
+  std::string minutes_between_visits =
+      base::FieldTrialList::FindFullName("AppBannersMinutesBetweenVisits");
+  if (minutes_between_visits.empty())
+    return;
+
+  int minimum_minutes = 0;
+  if (base::StringToInt(minutes_between_visits, &minimum_minutes))
+    AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(minimum_minutes);
 }
 
 }  // namespace
@@ -456,7 +500,7 @@ base::Time AppBannerSettingsHelper::BucketTimeToResolution(
   // Only support resolutions smaller than or equal to one day. Enforce
   // that resolutions divide evenly into one day. Otherwise, default to a
   // day resolution (each time converted to midnight local time).
-  if (minutes == 0 || minutes > kNumberOfMinutesInADay ||
+  if (minutes == 0 || minutes >= kNumberOfMinutesInADay ||
       kNumberOfMinutesInADay % minutes != 0) {
     return time.LocalMidnight();
   }
@@ -473,10 +517,7 @@ base::Time AppBannerSettingsHelper::BucketTimeToResolution(
          base::TimeDelta::FromMinutes((total_minutes / minutes) * minutes);
 }
 
-void AppBannerSettingsHelper::UpdateMinutesBetweenVisits() {
-  std::string minutes_between_visits =
-      base::FieldTrialList::FindFullName("AppBannersMinutesBetweenVisits");
-  int minimum_minutes = 0;
-  if (base::StringToInt(minutes_between_visits, &minimum_minutes))
-    AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(minimum_minutes);
+void AppBannerSettingsHelper::UpdateFromFieldTrial() {
+  UpdateEngagementWeights();
+  UpdateMinutesBetweenVisits();
 }
