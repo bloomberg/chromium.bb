@@ -29,7 +29,7 @@ enum CSSValueID {
 const int numCSSValueKeywords = %(value_keywords_count)d;
 const size_t maxCSSValueKeywordLength = %(max_value_keyword_length)d;
 
-const char* getValueName(unsigned short id);
+const char* getValueName(CSSValueID);
 bool isValueAllowedInMode(unsigned short id, CSSParserMode mode);
 
 } // namespace blink
@@ -48,7 +48,6 @@ GPERF_TEMPLATE = """
 
 namespace blink {
 static const char valueListStringPool[] = {
-"\\0"
 %(value_keyword_strings)s
 };
 
@@ -78,11 +77,10 @@ const Value* findValue(register const char* str, register unsigned int len)
     return CSSValueKeywordsHash::findValueImpl(str, len);
 }
 
-const char* getValueName(unsigned short id)
+const char* getValueName(CSSValueID id)
 {
-    if (id >= numCSSValueKeywords || id <= 0)
-        return 0;
-    return valueListStringPool + valueListStringOffsets[id];
+    ASSERT(id > 0 && id < numCSSValueKeywords);
+    return valueListStringPool + valueListStringOffsets[id - 1];
 }
 
 bool isValueAllowedInMode(unsigned short id, CSSParserMode mode)
@@ -148,8 +146,8 @@ class CSSValueKeywordsWriter(in_generator.Writer):
         return filter(lambda property: property['mode'] == mode, self._value_keywords)
 
     def generate_implementation(self):
-        keyword_offsets = [0]
-        current_offset = 1
+        keyword_offsets = []
+        current_offset = 0
         for keyword in self._value_keywords:
             keyword_offsets.append(current_offset)
             current_offset += len(keyword["name"]) + 1
