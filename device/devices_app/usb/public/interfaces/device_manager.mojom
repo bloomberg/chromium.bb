@@ -38,10 +38,21 @@ struct EnumerationOptions {
   array<DeviceFilter> filters;
 };
 
+struct DeviceChangeNotification {
+  array<DeviceInfo> devices_added;
+  array<string> devices_removed;
+};
+
 interface DeviceManager {
   // Retrieves information about all devices available to the DeviceManager
   // implementation.
   GetDevices(EnumerationOptions options) => (array<DeviceInfo> results);
+
+  // Retrieves information about changes to the set of devices available to the
+  // DeviceManager since the last call to this method. The first call will
+  // return the set of all devices available. Device added and removed between
+  // calls will not be included.
+  GetDeviceChanges() => (DeviceChangeNotification changes);
 
   // Attempts to open a device given its GUID.
   OpenDevice(string guid, Device& device_request) => (OpenDeviceError error);

@@ -56,8 +56,8 @@ class TestDeviceClient : public DeviceClient {
 class USBDeviceManagerImplTest : public testing::Test {
  public:
   USBDeviceManagerImplTest()
-      : message_loop_(new base::MessageLoop),
-        device_client_(new TestDeviceClient) {}
+      : device_client_(new TestDeviceClient),
+        message_loop_(new base::MessageLoop) {}
   ~USBDeviceManagerImplTest() override {}
 
  protected:
@@ -75,8 +75,8 @@ class USBDeviceManagerImplTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<TestDeviceClient> device_client_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 };
 
 class MockOpenCallback {
@@ -103,6 +103,24 @@ void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
   for (size_t i = 0; i < results.size(); ++i)
     actual_guids.insert(results[i]->guid);
   EXPECT_EQ(expected_guids, actual_guids);
+  continuation.Run();
+}
+
+void ExpectDeviceChangesAndThen(
+    const std::set<std::string>& expected_added_guids,
+    const std::set<std::string>& expected_removed_guids,
+    const base::Closure& continuation,
+    DeviceChangeNotificationPtr results) {
+  EXPECT_EQ(expected_added_guids.size(), results->devices_added.size());
+  std::set<std::string> actual_added_guids;
+  for (size_t i = 0; i < results->devices_added.size(); ++i)
+    actual_added_guids.insert(results->devices_added[i]->guid);
+  EXPECT_EQ(expected_added_guids, actual_added_guids);
+  EXPECT_EQ(expected_removed_guids.size(), results->devices_removed.size());
+  std::set<std::string> actual_removed_guids;
+  for (size_t i = 0; i < results->devices_removed.size(); ++i)
+    actual_removed_guids.insert(results->devices_removed[i]);
+  EXPECT_EQ(expected_removed_guids, actual_removed_guids);
   continuation.Run();
 }
 
@@ -198,6 +216,65 @@ TEST_F(USBDeviceManagerImplTest, OpenDevice) {
     base::RunLoop loop;
     bad_device.set_connection_error_handler(loop.QuitClosure());
     bad_device->GetDeviceInfo(base::Bind(&FailOnGetDeviceInfoResponse));
+    loop.Run();
+  }
+}
+
+// Test requesting device enumeration updates with GetDeviceChanges.
+TEST_F(USBDeviceManagerImplTest, GetDeviceChanges) {
+  scoped_refptr<MockUsbDevice> device0 =
+      new MockUsbDevice(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
+  scoped_refptr<MockUsbDevice> device1 =
+      new MockUsbDevice(0x1234, 0x5679, "ACME", "Frobinator+", "GHIJKL");
+  scoped_refptr<MockUsbDevice> device2 =
+      new MockUsbDevice(0x1234, 0x567a, "ACME", "Frobinator Mk II", "MNOPQR");
+  scoped_refptr<MockUsbDevice> device3 =
+      new MockUsbDevice(0x1234, 0x567b, "ACME", "Frobinator Xtreme", "STUVWX");
+
+  mock_usb_service().AddDevice(device0);
+
+  DeviceManagerPtr device_manager = ConnectToDeviceManager();
+
+  {
+    std::set<std::string> added_guids;
+    std::set<std::string> removed_guids;
+    added_guids.insert(device0->guid());
+    base::RunLoop loop;
+    device_manager->GetDeviceChanges(base::Bind(&ExpectDeviceChangesAndThen,
+                                                added_guids, removed_guids,
+                                                loop.QuitClosure()));
+    loop.Run();
+  }
+
+  mock_usb_service().AddDevice(device1);
+  mock_usb_service().AddDevice(device2);
+  mock_usb_service().RemoveDevice(device1);
+
+  {
+    std::set<std::string> added_guids;
+    std::set<std::string> removed_guids;
+    added_guids.insert(device2->guid());
+    base::RunLoop loop;
+    device_manager->GetDeviceChanges(base::Bind(&ExpectDeviceChangesAndThen,
+                                                added_guids, removed_guids,
+                                                loop.QuitClosure()));
+    loop.Run();
+  }
+
+  mock_usb_service().RemoveDevice(device0);
+  mock_usb_service().RemoveDevice(device2);
+  mock_usb_service().AddDevice(device3);
+
+  {
+    std::set<std::string> added_guids;
+    std::set<std::string> removed_guids;
+    added_guids.insert(device3->guid());
+    removed_guids.insert(device0->guid());
+    removed_guids.insert(device2->guid());
+    base::RunLoop loop;
+    device_manager->GetDeviceChanges(base::Bind(&ExpectDeviceChangesAndThen,
+                                                added_guids, removed_guids,
+                                                loop.QuitClosure()));
     loop.Run();
   }
 }

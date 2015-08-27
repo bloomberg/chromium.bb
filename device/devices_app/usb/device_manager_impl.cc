@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/core/device_client.h"
 #include "device/devices_app/usb/device_impl.h"
@@ -107,6 +110,57 @@ void OpenDeviceOnServiceThread(
 
 }  // namespace
 
+class DeviceManagerImpl::ServiceThreadHelper
+    : public UsbService::Observer,
+      public base::MessageLoop::DestructionObserver {
+ public:
+  ServiceThreadHelper(base::WeakPtr<DeviceManagerImpl> manager,
+                      scoped_refptr<base::TaskRunner> task_runner)
+      : observer_(this), manager_(manager), task_runner_(task_runner) {}
+
+  ~ServiceThreadHelper() override {
+    base::MessageLoop::current()->RemoveDestructionObserver(this);
+  }
+
+  static void Start(
+      scoped_ptr<ServiceThreadHelper> self,
+      const base::Callback<void(mojo::Array<DeviceInfoPtr>)>& callback) {
+    UsbService* usb_service = DeviceClient::Get()->GetUsbService();
+    if (usb_service) {
+      self->observer_.Add(usb_service);
+      std::vector<UsbDeviceFilter> no_filters;
+      usb_service->GetDevices(base::Bind(&OnGetDevicesOnServiceThread,
+                                         no_filters, callback,
+                                         self->task_runner_));
+    }
+
+    // |self| now owned by the current message loop.
+    base::MessageLoop::current()->AddDestructionObserver(self.release());
+  }
+
+ private:
+  // UsbService::Observer
+  void OnDeviceAdded(scoped_refptr<UsbDevice> device) override {
+    DeviceInfoPtr mojo_device(DeviceInfo::From(*device));
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DeviceManagerImpl::OnDeviceAdded, manager_,
+                              base::Passed(&mojo_device)));
+  }
+
+  void OnDeviceRemoved(scoped_refptr<UsbDevice> device) override {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&DeviceManagerImpl::OnDeviceRemoved, manager_,
+                              device->guid()));
+  }
+
+  // base::MessageLoop::DestructionObserver
+  void WillDestroyCurrentMessageLoop() override { delete this; }
+
+  ScopedObserver<UsbService, UsbService::Observer> observer_;
+  base::WeakPtr<DeviceManagerImpl> manager_;
+  scoped_refptr<base::TaskRunner> task_runner_;
+};
+
 DeviceManagerImpl::DeviceManagerImpl(
     mojo::InterfaceRequest<DeviceManager> request,
     scoped_ptr<DeviceManagerDelegate> delegate,
@@ -118,6 +172,11 @@ DeviceManagerImpl::DeviceManagerImpl(
 }
 
 DeviceManagerImpl::~DeviceManagerImpl() {
+  if (helper_) {
+    // It is safe to call this if |helper_| was already destroyed when
+    // |service_task_runner_| exited as the task will never execute.
+    service_task_runner_->DeleteSoon(FROM_HERE, helper_);
+  }
 }
 
 void DeviceManagerImpl::set_connection_error_handler(
@@ -134,6 +193,24 @@ void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
       FROM_HERE,
       base::Bind(&GetDevicesOnServiceThread, filters, get_devices_callback,
                  base::ThreadTaskRunnerHandle::Get()));
+}
+
+void DeviceManagerImpl::GetDeviceChanges(
+    const GetDeviceChangesCallback& callback) {
+  if (helper_) {
+    device_change_callbacks_.push(callback);
+    MaybeRunDeviceChangesCallback();
+  } else {
+    scoped_ptr<ServiceThreadHelper> helper(new ServiceThreadHelper(
+        weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
+    helper_ = helper.get();
+    auto get_devices_callback =
+        base::Bind(&DeviceManagerImpl::OnGetInitialDevices,
+                   weak_factory_.GetWeakPtr(), callback);
+    service_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ServiceThreadHelper::Start,
+                              base::Passed(&helper), get_devices_callback));
+  }
 }
 
 void DeviceManagerImpl::OpenDevice(
@@ -154,6 +231,55 @@ void DeviceManagerImpl::OnGetDevices(const GetDevicesCallback& callback,
       allowed_devices.push_back(devices[i].Pass());
   }
   callback.Run(allowed_devices.Pass());
+}
+
+void DeviceManagerImpl::OnGetInitialDevices(
+    const GetDeviceChangesCallback& callback,
+    mojo::Array<DeviceInfoPtr> devices) {
+  DeviceChangeNotificationPtr notification = DeviceChangeNotification::New();
+  notification->devices_added = mojo::Array<DeviceInfoPtr>::New(0);
+  notification->devices_removed = mojo::Array<mojo::String>::New(0);
+  for (size_t i = 0; i < devices.size(); ++i) {
+    if (delegate_->IsDeviceAllowed(*devices[i]))
+      notification->devices_added.push_back(devices[i].Pass());
+  }
+  callback.Run(notification.Pass());
+}
+
+void DeviceManagerImpl::OnDeviceAdded(DeviceInfoPtr device) {
+  DCHECK(!ContainsKey(devices_removed_, device->guid));
+  devices_added_.push_back(device.Pass());
+  MaybeRunDeviceChangesCallback();
+}
+
+void DeviceManagerImpl::OnDeviceRemoved(std::string device_guid) {
+  bool found = false;
+  mojo::Array<DeviceInfoPtr> devices_added;
+  for (size_t i = 0; i < devices_added_.size(); ++i) {
+    if (devices_added_[i]->guid == device_guid)
+      found = true;
+    else
+      devices_added.push_back(devices_added_[i].Pass());
+  }
+  devices_added.Swap(&devices_added_);
+  if (!found)
+    devices_removed_.insert(device_guid);
+  MaybeRunDeviceChangesCallback();
+}
+
+void DeviceManagerImpl::MaybeRunDeviceChangesCallback() {
+  if (!device_change_callbacks_.empty()) {
+    DeviceChangeNotificationPtr notification = DeviceChangeNotification::New();
+    notification->devices_added.Swap(&devices_added_);
+    notification->devices_removed.resize(0);
+    for (const std::string& device : devices_removed_)
+      notification->devices_removed.push_back(device);
+    devices_removed_.clear();
+
+    const GetDeviceChangesCallback& callback = device_change_callbacks_.front();
+    callback.Run(notification.Pass());
+    device_change_callbacks_.pop();
+  }
 }
 
 }  // namespace usb

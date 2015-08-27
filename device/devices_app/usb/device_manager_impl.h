@@ -5,8 +5,10 @@
 #ifndef DEVICE_USB_DEVICE_MANAGER_IMPL_H_
 #define DEVICE_USB_DEVICE_MANAGER_IMPL_H_
 
-#include <vector>
+#include <queue>
+#include <set>
 
+#include "base/containers/scoped_ptr_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -43,21 +45,43 @@ class DeviceManagerImpl : public DeviceManager {
   void set_connection_error_handler(const mojo::Closure& error_handler);
 
  private:
+  class ServiceThreadHelper;
+
   // DeviceManager implementation:
   void GetDevices(EnumerationOptionsPtr options,
                   const GetDevicesCallback& callback) override;
+  void GetDeviceChanges(const GetDeviceChangesCallback& callback) override;
   void OpenDevice(const mojo::String& guid,
                   mojo::InterfaceRequest<Device> device_request,
                   const OpenDeviceCallback& callback) override;
 
-  // Callback to handle the async response from the underlying UsbService.
+  // Callbacks to handle the async responses from the underlying UsbService.
   void OnGetDevices(const GetDevicesCallback& callback,
                     mojo::Array<DeviceInfoPtr> devices);
+  void OnGetInitialDevices(const GetDeviceChangesCallback& callback,
+                           mojo::Array<DeviceInfoPtr> devices);
+
+  // Methods called by |helper_| when devices are added or removed.
+  void OnDeviceAdded(DeviceInfoPtr device);
+  void OnDeviceRemoved(std::string device_guid);
+  void MaybeRunDeviceChangesCallback();
 
   mojo::StrongBinding<DeviceManager> binding_;
 
   scoped_ptr<DeviceManagerDelegate> delegate_;
   scoped_refptr<base::SequencedTaskRunner> service_task_runner_;
+
+  // If there are unfinished calls to GetDeviceChanges their callbacks
+  // are stored in |device_change_callbacks_|. Otherwise device changes
+  // are collected in |devices_added_| and |devices_removed_| until the
+  // next call to GetDeviceChanges.
+  std::queue<GetDeviceChangesCallback> device_change_callbacks_;
+  mojo::Array<DeviceInfoPtr> devices_added_;
+  std::set<std::string> devices_removed_;
+
+  // |helper_| is owned by the service thread and holds a weak reference
+  // back to the device manager that created it.
+  ServiceThreadHelper* helper_ = nullptr;
 
   base::WeakPtrFactory<DeviceManagerImpl> weak_factory_;
 
