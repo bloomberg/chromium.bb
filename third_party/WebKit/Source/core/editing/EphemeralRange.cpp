@@ -118,13 +118,6 @@ bool EphemeralRangeTemplate<Strategy>::isCollapsed() const
 }
 
 template <typename Strategy>
-bool EphemeralRangeTemplate<Strategy>::isNotNull() const
-{
-    ASSERT(isValid());
-    return m_startPosition.isNotNull();
-}
-
-template <typename Strategy>
 EphemeralRangeTemplate<Strategy> EphemeralRangeTemplate<Strategy>::rangeOfContents(const Node& node)
 {
     return EphemeralRangeTemplate<Strategy>(PositionAlgorithm<Strategy>::firstPositionInNode(&const_cast<Node&>(node)), PositionAlgorithm<Strategy>::lastPositionInNode(&const_cast<Node&>(node)));

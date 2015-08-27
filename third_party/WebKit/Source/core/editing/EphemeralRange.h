@@ -40,9 +40,9 @@ class CORE_TEMPLATE_CLASS_EXPORT EphemeralRangeTemplate final {
 public:
     EphemeralRangeTemplate(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end);
     EphemeralRangeTemplate(const EphemeralRangeTemplate& other);
-    // |position| should be null or in-document.
+    // |position| should be |Position::isNull()| or in-document.
     explicit EphemeralRangeTemplate(const PositionAlgorithm<Strategy>& /* position */);
-    // When |range| is nullptr, |EphemeralRangeTemplate| is null.
+    // When |range| is nullptr, |EphemeralRangeTemplate| is |isNull()|.
     explicit EphemeralRangeTemplate(const Range* /* range */);
     EphemeralRangeTemplate();
     ~EphemeralRangeTemplate();
@@ -58,8 +58,12 @@ public:
 
     // Returns true if |m_startPositoin| == |m_endPosition| or |isNull()|.
     bool isCollapsed() const;
-    bool isNull() const { return !isNotNull(); }
-    bool isNotNull() const;
+    bool isNull() const
+    {
+        ASSERT(isValid());
+        return m_startPosition.isNull();
+    }
+    bool isNotNull() const { return !isNull(); }
 
     DEFINE_INLINE_TRACE()
     {
