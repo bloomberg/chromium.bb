@@ -173,10 +173,10 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   void StopThread();
 
   // Contains the thread ID of the creating thread.
-  base::PlatformThreadId creating_thread_id_;
+  const base::PlatformThreadId creating_thread_id_;
 
   // Our creator, the audio manager needs to be notified when we close.
-  AudioManagerWin* manager_;
+  AudioManagerWin* const manager_;
 
   // Rendering is driven by this thread (which has no message loop).
   // All OnMoreData() callbacks will be called from this thread.
@@ -208,12 +208,12 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   const std::string device_id_;
 
   // Defines the role that the system has assigned to an audio endpoint device.
-  ERole device_role_;
+  const ERole device_role_;
 
   // The sharing mode for the connection.
   // Valid values are AUDCLNT_SHAREMODE_SHARED and AUDCLNT_SHAREMODE_EXCLUSIVE
   // where AUDCLNT_SHAREMODE_SHARED is the default.
-  AUDCLNT_SHAREMODE share_mode_;
+  const AUDCLNT_SHAREMODE share_mode_;
 
   // Counts the number of audio frames written to the endpoint buffer.
   UINT64 num_written_frames_;
