@@ -2123,10 +2123,12 @@ LayoutRect DeprecatedPaintLayer::fragmentsBoundingBox(const DeprecatedPaintLayer
 
 LayoutRect DeprecatedPaintLayer::boundingBoxForCompositingOverlapTest() const
 {
-    return overlapBoundsIncludeChildren() ? boundingBoxForCompositing() : fragmentsBoundingBox(this);
+    // Apply NeverIncludeTransformForAncestorLayer, because the geometry map in CompositingInputsUpdater will take care of applying the
+    // transform of |this| (== the ancestorLayer argument to boundingBoxForCompositing).
+    return overlapBoundsIncludeChildren() ? boundingBoxForCompositing(this, NeverIncludeTransformForAncestorLayer) : fragmentsBoundingBox(this);
 }
 
-static void expandRectForReflectionAndStackingChildren(const DeprecatedPaintLayer* ancestorLayer, DeprecatedPaintLayer::CalculateBoundsOptions options, LayoutRect& result)
+static void expandRectForReflectionAndStackingChildren(const DeprecatedPaintLayer* ancestorLayer, LayoutRect& result)
 {
     if (ancestorLayer->reflectionInfo() && !ancestorLayer->reflectionInfo()->reflectionLayer()->hasCompositedDeprecatedPaintLayerMapping())
         result.unite(ancestorLayer->reflectionInfo()->reflectionLayer()->boundingBoxForCompositing(ancestorLayer));
@@ -2144,9 +2146,9 @@ static void expandRectForReflectionAndStackingChildren(const DeprecatedPaintLaye
         // for this Layer. For example, the bounds of squashed Layers
         // will be included in the computation of the appropriate squashing
         // GraphicsLayer.
-        if (options != DeprecatedPaintLayer::ApplyBoundsChickenEggHacks && node->layer()->compositingState() != NotComposited)
+        if (node->layer()->compositingState() != NotComposited)
             continue;
-        result.unite(node->layer()->boundingBoxForCompositing(ancestorLayer, options));
+        result.unite(node->layer()->boundingBoxForCompositing(ancestorLayer));
     }
 }
 
@@ -2157,7 +2159,7 @@ LayoutRect DeprecatedPaintLayer::physicalBoundingBoxIncludingReflectionAndStacki
 
     const_cast<DeprecatedPaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-    expandRectForReflectionAndStackingChildren(this, DoNotApplyBoundsChickenEggHacks, result);
+    expandRectForReflectionAndStackingChildren(this, result);
 
     result.moveBy(offsetFromRoot);
     return result;
@@ -2199,9 +2201,9 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
         // children of the parent, that need to be included in reflected composited bounds.
         // Fix this by including composited bounds of stacking children of the reflected Layer.
         if (hasCompositedDeprecatedPaintLayerMapping() && parent() && parent()->reflectionInfo() && parent()->reflectionInfo()->reflectionLayer() == this)
-            expandRectForReflectionAndStackingChildren(parent(), options, result);
+            expandRectForReflectionAndStackingChildren(parent(), result);
         else
-            expandRectForReflectionAndStackingChildren(this, options, result);
+            expandRectForReflectionAndStackingChildren(this, result);
 
         // FIXME: We can optimize the size of the composited layers, by not enlarging
         // filtered areas with the outsets if we know that the filter is going to render in hardware.
@@ -2209,7 +2211,7 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
         result.expand(m_layoutObject->style()->filterOutsets());
     }
 
-    if (transform() && (paintsWithTransform(GlobalPaintNormalPhase) || options == ApplyBoundsChickenEggHacks))
+    if (transform() && paintsWithTransform(GlobalPaintNormalPhase) && (this != ancestorLayer || options == MaybeIncludeTransformForAncestorLayer))
         result = transform()->mapRect(result);
 
     if (enclosingPaginationLayer()) {

@@ -250,11 +250,13 @@ public:
     // We can't rely on the children's positions if this layer has a filter that could have moved the children's pixels around.
     bool overlapBoundsIncludeChildren() const { return hasFilter() && layoutObject()->style()->filter().hasFilterThatMovesPixels(); }
 
+    // MaybeIncludeTransformForAncestorLayer means that a transform on |ancestorLayer| may be applied to the bounding box,
+    // in particular if paintsWithTransform() is true.
     enum CalculateBoundsOptions {
-        ApplyBoundsChickenEggHacks,
-        DoNotApplyBoundsChickenEggHacks,
+        MaybeIncludeTransformForAncestorLayer,
+        NeverIncludeTransformForAncestorLayer,
     };
-    LayoutRect boundingBoxForCompositing(const DeprecatedPaintLayer* ancestorLayer = 0, CalculateBoundsOptions = DoNotApplyBoundsChickenEggHacks) const;
+    LayoutRect boundingBoxForCompositing(const DeprecatedPaintLayer* ancestorLayer = 0, CalculateBoundsOptions = MaybeIncludeTransformForAncestorLayer) const;
 
     LayoutUnit staticInlinePosition() const { return m_staticInlinePosition; }
     LayoutUnit staticBlockPosition() const { return m_staticBlockPosition; }
