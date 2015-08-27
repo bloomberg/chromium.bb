@@ -64,22 +64,18 @@ public:
         : m_resolver(resolver) { }
     ~RegistrationCallback() override { }
 
-    // Takes ownership of |registrationRaw|.
-    void onSuccess(WebServiceWorkerRegistration* registrationRaw) override
+    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration> registration) override
     {
-        OwnPtr<WebServiceWorkerRegistration> registration = adoptPtr(registrationRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), registration.release()));
     }
 
-    // Takes ownership of |errorRaw|.
-    void onError(WebServiceWorkerError* errorRaw) override
+    void onError(const WebServiceWorkerError& error) override
     {
-        OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), *error));
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
     }
 
 private:
@@ -93,10 +89,9 @@ public:
         : m_resolver(resolver) { }
     ~GetRegistrationCallback() override { }
 
-    // Takes ownership of |registrationRaw|.
-    void onSuccess(WebServiceWorkerRegistration* registrationRaw) override
+    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration> r) override
     {
-        OwnPtr<WebServiceWorkerRegistration> registration = adoptPtr(registrationRaw);
+        OwnPtr<WebServiceWorkerRegistration> registration = r.release();
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         if (!registration) {
@@ -107,13 +102,11 @@ public:
         m_resolver->resolve(ServiceWorkerRegistration::create(m_resolver->executionContext(), registration.release()));
     }
 
-    // Takes ownership of |errorRaw|.
-    void onError(WebServiceWorkerError* errorRaw) override
+    void onError(const WebServiceWorkerError& error) override
     {
-        OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), *error));
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
     }
 
 private:
@@ -127,22 +120,24 @@ public:
         : m_resolver(resolver) { }
     ~GetRegistrationsCallback() override { }
 
-    // Takes ownership of |registrationsRaw|.
-    void onSuccess(WebVector<WebServiceWorkerRegistration*>* registrationsRaw) override
+    void onSuccess(WebPassOwnPtr<WebVector<WebServiceWorkerRegistration*>> webPassRegistrations) override
     {
-        OwnPtr<WebVector<WebServiceWorkerRegistration*>> registrations = adoptPtr(registrationsRaw);
+        Vector<OwnPtr<WebServiceWorkerRegistration>> registrations;
+        OwnPtr<WebVector<WebServiceWorkerRegistration*>> webRegistrations = webPassRegistrations.release();
+        for (auto& registration : *webRegistrations) {
+            registrations.append(adoptPtr(registration));
+        }
+
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(ServiceWorkerRegistrationArray::take(m_resolver.get(), registrations.release()));
+        m_resolver->resolve(ServiceWorkerRegistrationArray::take(m_resolver.get(), &registrations));
     }
 
-    // Takes ownership of |errorRaw|.
-    void onError(WebServiceWorkerError* errorRaw) override
+    void onError(const WebServiceWorkerError& error) override
     {
-        OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), *error));
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
     }
 
 private:
@@ -154,15 +149,12 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback : public WebServic
 public:
     explicit GetRegistrationForReadyCallback(ReadyProperty* ready)
         : m_ready(ready) { }
-    ~GetRegistrationForReadyCallback() { }
+    ~GetRegistrationForReadyCallback() override { }
 
-    // Takes ownership of |registrationRaw|.
-    void onSuccess(WebServiceWorkerRegistration* registrationRaw) override
+    void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration> registration) override
     {
-        ASSERT(registrationRaw);
         ASSERT(m_ready->state() == ReadyProperty::Pending);
 
-        OwnPtr<WebServiceWorkerRegistration> registration = adoptPtr(registrationRaw);
         if (m_ready->executionContext() && !m_ready->executionContext()->activeDOMObjectsAreStopped())
             m_ready->resolve(ServiceWorkerRegistration::create(m_ready->executionContext(), registration.release()));
     }

@@ -83,11 +83,11 @@ private:
 class ServiceWorkerRegistrationArray {
     STATIC_ONLY(ServiceWorkerRegistrationArray);
 public:
-    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebVector<WebServiceWorkerRegistration*>> webServiceWorkerRegistrations)
+    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, Vector<OwnPtr<WebServiceWorkerRegistration>>* webServiceWorkerRegistrations)
     {
         HeapVector<Member<ServiceWorkerRegistration>> registrations;
-        for (WebServiceWorkerRegistration* registration : *webServiceWorkerRegistrations)
-            registrations.append(ServiceWorkerRegistration::create(resolver->executionContext(), adoptPtr(registration)));
+        for (auto& registration : *webServiceWorkerRegistrations)
+            registrations.append(ServiceWorkerRegistration::create(resolver->executionContext(), registration.release()));
         return registrations;
     }
 };
