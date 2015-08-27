@@ -662,7 +662,7 @@ static unsigned startWordBoundary(const UChar* characters, unsigned length, unsi
     return start;
 }
 
-VisiblePosition startOfWord(const VisiblePosition &c, EWordSide side)
+VisiblePosition startOfWord(const VisiblePosition& c, EWordSide side)
 {
     // FIXME: This returns a null VP for c at the start of the document
     // and side == LeftWordIfOnBoundary
@@ -690,7 +690,7 @@ static unsigned endWordBoundary(const UChar* characters, unsigned length, unsign
     return findWordEndBoundary(characters, length, offset);
 }
 
-VisiblePosition endOfWord(const VisiblePosition &c, EWordSide side)
+VisiblePosition endOfWord(const VisiblePosition& c, EWordSide side)
 {
     VisiblePosition p = c;
     if (side == LeftWordIfOnBoundary) {
@@ -717,7 +717,7 @@ static unsigned previousWordPositionBoundary(const UChar* characters, unsigned l
     return findNextWordFromIndex(characters, length, offset, false);
 }
 
-VisiblePosition previousWordPosition(const VisiblePosition &c)
+VisiblePosition previousWordPosition(const VisiblePosition& c)
 {
     VisiblePosition prev = previousBoundary(c, previousWordPositionBoundary);
     return c.honorEditingBoundaryAtOrBefore(prev);
@@ -733,7 +733,7 @@ static unsigned nextWordPositionBoundary(const UChar* characters, unsigned lengt
     return findNextWordFromIndex(characters, length, offset, true);
 }
 
-VisiblePosition nextWordPosition(const VisiblePosition &c)
+VisiblePosition nextWordPosition(const VisiblePosition& c)
 {
     VisiblePosition next = nextBoundary(c, nextWordPositionBoundary);
     return c.honorEditingBoundaryAtOrAfter(next);
@@ -959,17 +959,17 @@ bool inSameLine(const VisiblePosition& position1, const VisiblePosition& positio
     return inSameLine(position1.toPositionWithAffinity(), position2.toPositionWithAffinity());
 }
 
-bool isStartOfLine(const VisiblePosition &p)
+bool isStartOfLine(const VisiblePosition& p)
 {
     return p.isNotNull() && p.deepEquivalent() == startOfLine(p).deepEquivalent();
 }
 
-bool isEndOfLine(const VisiblePosition &p)
+bool isEndOfLine(const VisiblePosition& p)
 {
     return p.isNotNull() && p.deepEquivalent() == endOfLine(p).deepEquivalent();
 }
 
-bool isLogicalEndOfLine(const VisiblePosition &p)
+bool isLogicalEndOfLine(const VisiblePosition& p)
 {
     return p.isNotNull() && p.deepEquivalent() == logicalEndOfLine(p).deepEquivalent();
 }
@@ -988,7 +988,7 @@ static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInli
     return LayoutPoint(root->blockDirectionPointInLine(), lineDirectionPoint - absoluteBlockPoint.y());
 }
 
-VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
+VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.anchorNode();
@@ -1041,7 +1041,7 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, Lay
     return VisiblePosition(firstPositionInNode(rootElement));
 }
 
-VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
+VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.anchorNode();
@@ -1106,7 +1106,7 @@ static unsigned startSentenceBoundary(const UChar* characters, unsigned length, 
     return iterator->preceding(length);
 }
 
-VisiblePosition startOfSentence(const VisiblePosition &c)
+VisiblePosition startOfSentence(const VisiblePosition& c)
 {
     return previousBoundary(c, startSentenceBoundary);
 }
@@ -1118,7 +1118,7 @@ static unsigned endSentenceBoundary(const UChar* characters, unsigned length, un
 }
 
 // FIXME: This includes the space after the punctuation that marks the end of the sentence.
-VisiblePosition endOfSentence(const VisiblePosition &c)
+VisiblePosition endOfSentence(const VisiblePosition& c)
 {
     return nextBoundary(c, endSentenceBoundary);
 }
@@ -1131,7 +1131,7 @@ static unsigned previousSentencePositionBoundary(const UChar* characters, unsign
     return iterator->preceding(length);
 }
 
-VisiblePosition previousSentencePosition(const VisiblePosition &c)
+VisiblePosition previousSentencePosition(const VisiblePosition& c)
 {
     VisiblePosition prev = previousBoundary(c, previousSentencePositionBoundary);
     return c.honorEditingBoundaryAtOrBefore(prev);
@@ -1145,7 +1145,7 @@ static unsigned nextSentencePositionBoundary(const UChar* characters, unsigned l
     return iterator->following(0);
 }
 
-VisiblePosition nextSentencePosition(const VisiblePosition &c)
+VisiblePosition nextSentencePosition(const VisiblePosition& c)
 {
     VisiblePosition next = nextBoundary(c, nextSentencePositionBoundary);
     return c.honorEditingBoundaryAtOrAfter(next);
@@ -1226,7 +1226,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
     return VisiblePosition(Position(node, type));
 }
 
-VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossingRule boundaryCrossingRule)
+VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
     if (c.isNull())
         return VisiblePosition();
@@ -1314,17 +1314,17 @@ VisiblePosition startOfNextParagraph(const VisiblePosition& visiblePosition)
     return afterParagraphEnd;
 }
 
-bool inSameParagraph(const VisiblePosition &a, const VisiblePosition &b, EditingBoundaryCrossingRule boundaryCrossingRule)
+bool inSameParagraph(const VisiblePosition& a, const VisiblePosition& b, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
     return a.isNotNull() && startOfParagraph(a, boundaryCrossingRule).deepEquivalent() == startOfParagraph(b, boundaryCrossingRule).deepEquivalent();
 }
 
-bool isStartOfParagraph(const VisiblePosition &pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+bool isStartOfParagraph(const VisiblePosition& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
     return pos.isNotNull() && pos.deepEquivalent() == startOfParagraph(pos, boundaryCrossingRule).deepEquivalent();
 }
 
-bool isEndOfParagraph(const VisiblePosition &pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+bool isEndOfParagraph(const VisiblePosition& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
     return pos.isNotNull() && pos.deepEquivalent() == endOfParagraph(pos, boundaryCrossingRule).deepEquivalent();
 }
@@ -1369,17 +1369,17 @@ VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBounda
     return endBlock ? VisiblePosition(lastPositionInNode(endBlock)) : VisiblePosition();
 }
 
-bool inSameBlock(const VisiblePosition &a, const VisiblePosition &b)
+bool inSameBlock(const VisiblePosition& a, const VisiblePosition& b)
 {
     return !a.isNull() && enclosingBlock(a.deepEquivalent().computeContainerNode()) == enclosingBlock(b.deepEquivalent().computeContainerNode());
 }
 
-bool isStartOfBlock(const VisiblePosition &pos)
+bool isStartOfBlock(const VisiblePosition& pos)
 {
     return pos.isNotNull() && pos.deepEquivalent() == startOfBlock(pos, CanCrossEditingBoundary).deepEquivalent();
 }
 
-bool isEndOfBlock(const VisiblePosition &pos)
+bool isEndOfBlock(const VisiblePosition& pos)
 {
     return pos.isNotNull() && pos.deepEquivalent() == endOfBlock(pos, CanCrossEditingBoundary).deepEquivalent();
 }
@@ -1394,7 +1394,7 @@ VisiblePosition startOfDocument(const Node* node)
     return VisiblePosition(firstPositionInNode(node->document().documentElement()));
 }
 
-VisiblePosition startOfDocument(const VisiblePosition &c)
+VisiblePosition startOfDocument(const VisiblePosition& c)
 {
     return startOfDocument(c.deepEquivalent().anchorNode());
 }
@@ -1408,17 +1408,17 @@ VisiblePosition endOfDocument(const Node* node)
     return VisiblePosition(lastPositionInNode(doc));
 }
 
-VisiblePosition endOfDocument(const VisiblePosition &c)
+VisiblePosition endOfDocument(const VisiblePosition& c)
 {
     return endOfDocument(c.deepEquivalent().anchorNode());
 }
 
-bool isStartOfDocument(const VisiblePosition &p)
+bool isStartOfDocument(const VisiblePosition& p)
 {
     return p.isNotNull() && p.previous(CanCrossEditingBoundary).isNull();
 }
 
-bool isEndOfDocument(const VisiblePosition &p)
+bool isEndOfDocument(const VisiblePosition& p)
 {
     return p.isNotNull() && p.next(CanCrossEditingBoundary).isNull();
 }
@@ -1443,7 +1443,7 @@ VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)
     return VisiblePosition(lastPositionInNode(highestRoot));
 }
 
-bool isEndOfEditableOrNonEditableContent(const VisiblePosition &p)
+bool isEndOfEditableOrNonEditableContent(const VisiblePosition& p)
 {
     return p.isNotNull() && p.next().isNull();
 }

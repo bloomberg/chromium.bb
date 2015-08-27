@@ -77,41 +77,41 @@ struct InlineBoxPosition {
 // endsOfNodeAreVisuallyDistinctPositions(boundary).
 // FIXME: This function should never be called when the line box tree is dirty.
 // See https://bugs.webkit.org/show_bug.cgi?id=97264
-CORE_EXPORT Position mostBackwardCaretPosition(const Position &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT Position mostForwardCaretPosition(const Position &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT Position mostBackwardCaretPosition(const Position&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT Position mostForwardCaretPosition(const Position&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
 CORE_EXPORT bool isVisuallyEquivalentCandidate(const Position&);
 CORE_EXPORT bool isVisuallyEquivalentCandidate(const PositionInComposedTree&);
 
 // words
-CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
-CORE_EXPORT VisiblePosition endOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
-VisiblePosition previousWordPosition(const VisiblePosition &);
-VisiblePosition nextWordPosition(const VisiblePosition &);
+CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition&, EWordSide = RightWordIfOnBoundary);
+CORE_EXPORT VisiblePosition endOfWord(const VisiblePosition&, EWordSide = RightWordIfOnBoundary);
+VisiblePosition previousWordPosition(const VisiblePosition&);
+VisiblePosition nextWordPosition(const VisiblePosition&);
 VisiblePosition rightWordPosition(const VisiblePosition&, bool skipsSpaceWhenMovingRight);
 VisiblePosition leftWordPosition(const VisiblePosition&, bool skipsSpaceWhenMovingRight);
 
 // sentences
-CORE_EXPORT VisiblePosition startOfSentence(const VisiblePosition &);
-CORE_EXPORT VisiblePosition endOfSentence(const VisiblePosition &);
-VisiblePosition previousSentencePosition(const VisiblePosition &);
-VisiblePosition nextSentencePosition(const VisiblePosition &);
+CORE_EXPORT VisiblePosition startOfSentence(const VisiblePosition&);
+CORE_EXPORT VisiblePosition endOfSentence(const VisiblePosition&);
+VisiblePosition previousSentencePosition(const VisiblePosition&);
+VisiblePosition nextSentencePosition(const VisiblePosition&);
 
 // lines
-VisiblePosition startOfLine(const VisiblePosition &);
-VisiblePosition endOfLine(const VisiblePosition &);
+VisiblePosition startOfLine(const VisiblePosition&);
+VisiblePosition endOfLine(const VisiblePosition&);
 CORE_EXPORT VisiblePosition previousLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
 CORE_EXPORT VisiblePosition nextLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
-CORE_EXPORT bool inSameLine(const VisiblePosition &, const VisiblePosition &);
-CORE_EXPORT bool inSameLine(const PositionWithAffinity&, const PositionWithAffinity &);
+CORE_EXPORT bool inSameLine(const VisiblePosition&, const VisiblePosition&);
+CORE_EXPORT bool inSameLine(const PositionWithAffinity&, const PositionWithAffinity&);
 CORE_EXPORT bool inSameLine(const PositionInComposedTreeWithAffinity&, const PositionInComposedTreeWithAffinity&);
-bool isStartOfLine(const VisiblePosition &);
-bool isEndOfLine(const VisiblePosition &);
-VisiblePosition logicalStartOfLine(const VisiblePosition &);
-VisiblePosition logicalEndOfLine(const VisiblePosition &);
-bool isLogicalEndOfLine(const VisiblePosition &);
+bool isStartOfLine(const VisiblePosition&);
+bool isEndOfLine(const VisiblePosition&);
+VisiblePosition logicalStartOfLine(const VisiblePosition&);
+VisiblePosition logicalEndOfLine(const VisiblePosition&);
+bool isLogicalEndOfLine(const VisiblePosition&);
 VisiblePosition leftBoundaryOfLine(const VisiblePosition&, TextDirection);
 VisiblePosition rightBoundaryOfLine(const VisiblePosition&, TextDirection);
 
@@ -119,26 +119,26 @@ VisiblePosition rightBoundaryOfLine(const VisiblePosition&, TextDirection);
 VisiblePosition startOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 VisiblePosition endOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 VisiblePosition startOfNextParagraph(const VisiblePosition&);
-VisiblePosition previousParagraphPosition(const VisiblePosition &, LayoutUnit x);
-VisiblePosition nextParagraphPosition(const VisiblePosition &, LayoutUnit x);
-bool isStartOfParagraph(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-bool isEndOfParagraph(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-bool inSameParagraph(const VisiblePosition &, const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+VisiblePosition previousParagraphPosition(const VisiblePosition&, LayoutUnit x);
+VisiblePosition nextParagraphPosition(const VisiblePosition&, LayoutUnit x);
+bool isStartOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+bool isEndOfParagraph(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+bool inSameParagraph(const VisiblePosition&, const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
 // blocks (true paragraphs; line break elements don't break blocks)
-VisiblePosition startOfBlock(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-VisiblePosition endOfBlock(const VisiblePosition &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-bool inSameBlock(const VisiblePosition &, const VisiblePosition &);
-bool isStartOfBlock(const VisiblePosition &);
-bool isEndOfBlock(const VisiblePosition &);
+VisiblePosition startOfBlock(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+VisiblePosition endOfBlock(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+bool inSameBlock(const VisiblePosition&, const VisiblePosition&);
+bool isStartOfBlock(const VisiblePosition&);
+bool isEndOfBlock(const VisiblePosition&);
 
 // document
 VisiblePosition startOfDocument(const Node*);
 VisiblePosition endOfDocument(const Node*);
-VisiblePosition startOfDocument(const VisiblePosition &);
-VisiblePosition endOfDocument(const VisiblePosition &);
-bool isStartOfDocument(const VisiblePosition &);
-bool isEndOfDocument(const VisiblePosition &);
+VisiblePosition startOfDocument(const VisiblePosition&);
+VisiblePosition endOfDocument(const VisiblePosition&);
+bool isStartOfDocument(const VisiblePosition&);
+bool isEndOfDocument(const VisiblePosition&);
 
 // editable content
 VisiblePosition startOfEditableContent(const VisiblePosition&);
