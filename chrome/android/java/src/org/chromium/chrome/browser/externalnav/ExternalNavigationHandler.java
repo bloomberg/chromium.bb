@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
+import android.text.TextUtils;
 import android.webkit.WebView;
 
 import org.chromium.base.CommandLine;
@@ -322,7 +323,7 @@ public class ExternalNavigationHandler {
                 }
 
                 if (currentUri != null && previousUri != null
-                        && currentUri.getHost().equals(previousUri.getHost())) {
+                        && TextUtils.equals(currentUri.getHost(), previousUri.getHost())) {
 
                     Intent previousIntent;
                     try {
