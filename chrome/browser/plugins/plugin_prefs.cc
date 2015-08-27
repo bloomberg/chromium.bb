@@ -57,6 +57,24 @@ bool IsComponentUpdatedPepperFlash(const base::FilePath& plugin) {
   return false;
 }
 
+// Returns true if |path| looks like the path to an NPAPI Flash plugin.
+bool IsNpapiFlashPath(const base::FilePath& path) {
+  base::FilePath npapi_flash;
+  // Check NPAPI Flash is installed.
+  if (!PathService::Get(chrome::FILE_FLASH_SYSTEM_PLUGIN, &npapi_flash))
+    return false;
+  // Check for same architecture NPAPI Flash.
+  if (base::FilePath::CompareEqualIgnoreCase(path.value(), npapi_flash.value()))
+    return true;
+#if defined(OS_WIN)
+  // Fuzzy check for NPAPI Flash on Windows.
+  base::FilePath::StringType kSwfPrefix = FILE_PATH_LITERAL("NPSWF");
+  if (path.BaseName().value().compare(0, kSwfPrefix.size(), kSwfPrefix) == 0)
+    return true;
+#endif
+  return false;
+}
+
 }  // namespace
 
 PluginPrefs::PluginState::PluginState() {
@@ -345,12 +363,10 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     if (saved_plugins_list && !saved_plugins_list->empty()) {
       // The following four variables are only valid when
       // |migrate_to_pepper_flash| is set to true.
-      base::FilePath npapi_flash;
       base::FilePath pepper_flash;
       base::DictionaryValue* pepper_flash_node = NULL;
       bool npapi_flash_enabled = false;
       if (migrate_to_pepper_flash) {
-        PathService::Get(chrome::FILE_FLASH_SYSTEM_PLUGIN, &npapi_flash);
         PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &pepper_flash);
       }
 
@@ -415,8 +431,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
             }
           }
 
-          if (migrate_to_pepper_flash && base::FilePath::CompareEqualIgnoreCase(
-                                             path, npapi_flash.value())) {
+          if (migrate_to_pepper_flash && IsNpapiFlashPath(plugin_path)) {
             npapi_flash_enabled = enabled;
           } else if (migrate_to_pepper_flash &&
                      base::FilePath::CompareEqualIgnoreCase(
