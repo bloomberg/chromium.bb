@@ -32,8 +32,7 @@ def _PageOperationWrapper(page, tab, expectations,
       'Skip expectations should have been handled at a higher level')
   try:
     inner_func()
-  # TODO(kbr): change this to "except Exception".
-  except:
+  except Exception:
     page.SetHadError()
     if expectation == 'pass':
       raise
@@ -118,8 +117,7 @@ class ValidatorBase(page_test.PageTest):
         page, tab, page.GetExpectations(), True,
         lambda: self.ValidateAndMeasurePageInner(page, tab, results),
         results=results)
-    # TODO(kbr): change this to "except Exception".
-    except:
+    except Exception:
       # If we're going to re-execute a flaky test in the finally
       # clause, then we have to squelch this exception.
       if num_retries == 0:
@@ -145,8 +143,7 @@ class ValidatorBase(page_test.PageTest):
               page, tab, page.GetExpectations(), True,
               lambda: self.ValidateAndMeasurePageInner(page, tab, results),
               results=results)
-          # TODO(kbr): change this to "except Exception".
-          except:
+          except Exception:
             # Squelch any exceptions from any but the last retry.
             if ii == num_retries - 1:
               raise
