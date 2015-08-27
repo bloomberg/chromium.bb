@@ -893,13 +893,11 @@ void IOThread::ConfigureSpdyGlobals(
   }
   if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy31GroupNamePrefix)) {
     globals->next_protos.push_back(net::kProtoSPDY31);
-    globals->use_alternative_services.set(true);
     return;
   }
   if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy4GroupNamePrefix)) {
     globals->next_protos.push_back(net::kProtoSPDY31);
     globals->next_protos.push_back(net::kProtoHTTP2);
-    globals->use_alternative_services.set(true);
     return;
   }
   if (spdy_trial_group.starts_with(kSpdyFieldTrialParametrizedPrefix)) {
@@ -917,14 +915,12 @@ void IOThread::ConfigureSpdyGlobals(
     // TODO(bnc): HttpStreamFactory::spdy_enabled_ is redundant with
     // globals->next_protos, can it be eliminated?
     net::HttpStreamFactory::set_spdy_enabled(spdy_enabled);
-    globals->use_alternative_services.set(true);
     return;
   }
 
   // By default, enable HTTP/2.
   globals->next_protos.push_back(net::kProtoSPDY31);
   globals->next_protos.push_back(net::kProtoHTTP2);
-  globals->use_alternative_services.set(true);
 }
 
 void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -1163,6 +1159,8 @@ void IOThread::ConfigureQuicGlobals(
         ShouldQuicDisableDiskCache(quic_trial_params));
     globals->quic_prefer_aes.set(
         ShouldQuicPreferAes(quic_trial_params));
+    globals->use_alternative_services.set(
+        ShouldQuicEnableAlternativeServices(quic_trial_params));
     int max_number_of_lossy_connections = GetQuicMaxNumberOfLossyConnections(
         quic_trial_params);
     if (max_number_of_lossy_connections != 0) {
@@ -1371,6 +1369,12 @@ bool IOThread::ShouldQuicPreferAes(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "prefer_aes"), "true");
+}
+
+bool IOThread::ShouldQuicEnableAlternativeServices(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "use_alternative_services"), "true");
 }
 
 int IOThread::GetQuicMaxNumberOfLossyConnections(

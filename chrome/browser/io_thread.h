@@ -378,6 +378,10 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns true if QUIC should prefer AES-GCN even without hardware support.
   static bool ShouldQuicPreferAes(const VariationParameters& quic_trial_params);
 
+  // Returns true if QUIC should enable alternative services.
+  static bool ShouldQuicEnableAlternativeServices(
+      const VariationParameters& quic_trial_params);
+
   // Returns the maximum number of QUIC connections with high packet loss in a
   // row after which QUIC should be disabled.  Returns 0 if the default value
   // should be used.
