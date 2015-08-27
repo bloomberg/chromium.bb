@@ -20,34 +20,14 @@ struct WebNotificationData {
         DirectionAuto
     };
 
-    WebNotificationData()
-        : direction(DirectionLeftToRight)
-        , silent(false)
-    {
-    }
-
-    WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, const WebVector<int>& vibrate, bool silent, const WebVector<char>& data, const WebVector<WebNotificationAction>& actions)
-        : title(title)
-        , direction(direction)
-        , lang(lang)
-        , body(body)
-        , tag(tag)
-        , icon(icon)
-        , vibrate(vibrate)
-        , silent(silent)
-        , data(data)
-        , actions(actions)
-    {
-    }
-
     WebString title;
-    Direction direction;
+    Direction direction = DirectionLeftToRight;
     WebString lang;
     WebString body;
     WebString tag;
     WebURL icon;
     WebVector<int> vibrate;
-    bool silent;
+    bool silent = false;
     WebVector<char> data;
     WebVector<WebNotificationAction> actions;
 };
