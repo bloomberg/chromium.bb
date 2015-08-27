@@ -32,12 +32,13 @@
 
     shouldBeEqualToString("getComputedStyle(outerSpan).color", "rgb(255, 0, 0)");
 
+    document.body.offsetTop;
     var sheet = document.createElement("style");
     sheet.appendChild(document.createTextNode("::content #outerSpan { color: green }"));
     root2.appendChild(sheet);
 
     if (window.internals)
-        shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "9");
+        shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "5");
 
     shouldBeEqualToString("getComputedStyle(outerSpan).color", "rgb(0, 128, 0)");
 </script>

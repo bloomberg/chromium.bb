@@ -177,12 +177,12 @@ static bool elementMatchesSelectorScopes(const Element* element, const HashSet<S
     return false;
 }
 
-static ContainerNode* outermostShadowHost(const ShadowRoot& root)
+static ContainerNode* outermostShadowHost(ContainerNode& host)
 {
-    ContainerNode* host = root.host();
-    while (host->isInShadowTree())
-        host = host->containingShadowRoot()->host();
-    return host;
+    ContainerNode* outerHost = &host;
+    while (outerHost->isInShadowTree())
+        outerHost = outerHost->containingShadowRoot()->host();
+    return outerHost;
 }
 
 void StyleSheetInvalidationAnalysis::invalidateStyle()
@@ -190,9 +190,9 @@ void StyleSheetInvalidationAnalysis::invalidateStyle()
     ASSERT(!m_dirtiesAllStyle);
 
     if (m_treeScope->rootNode().isShadowRoot()) {
-        ContainerNode* invalidationRoot = &m_treeScope->rootNode();
+        ContainerNode* invalidationRoot = toShadowRoot(m_treeScope->rootNode()).host();
         if (m_hasDistributedRules)
-            invalidationRoot = outermostShadowHost(*toShadowRoot(invalidationRoot));
+            invalidationRoot = outermostShadowHost(*invalidationRoot);
         invalidationRoot->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
         return;
     }
