@@ -246,19 +246,6 @@ ContainerNode* highestEditableRoot(const PositionInComposedTree& position, Edita
     return highestEditableRoot(toPositionInDOMTree(position), editableType);
 }
 
-Element* lowestEditableAncestor(Node* node)
-{
-    while (node) {
-        if (node->hasEditableStyle())
-            return node->rootEditableElement();
-        if (isHTMLBodyElement(*node))
-            break;
-        node = node->parentNode();
-    }
-
-    return 0;
-}
-
 bool isEditablePosition(const Position& p, EditableType editableType, EUpdateStyle updateStyle)
 {
     Node* node = p.parentAnchoredEquivalent().anchorNode();

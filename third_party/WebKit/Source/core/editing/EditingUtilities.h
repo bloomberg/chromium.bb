@@ -68,7 +68,6 @@ ContainerNode* highestEditableRoot(const PositionInComposedTree&, EditableType =
 Node* highestEnclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*),
     EditingBoundaryCrossingRule = CannotCrossEditingBoundary, Node* stayWithin = nullptr);
 Node* highestNodeToRemoveInPruning(Node*, Node* excludeNode = nullptr);
-Element* lowestEditableAncestor(Node*);
 
 Element* enclosingBlock(Node*, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 Element* enclosingBlock(const Position&, EditingBoundaryCrossingRule);

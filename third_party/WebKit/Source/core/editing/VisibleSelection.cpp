@@ -905,6 +905,19 @@ bool VisibleSelection::isBaseFirstInComposedTree() const
     return m_baseInComposedTree.isNotNull() && m_baseInComposedTree.compareTo(m_extentInComposedTree) <= 0;
 }
 
+static Element* lowestEditableAncestor(Node* node)
+{
+    while (node) {
+        if (node->hasEditableStyle())
+            return node->rootEditableElement();
+        if (isHTMLBodyElement(*node))
+            break;
+        node = node->parentNode();
+    }
+
+    return nullptr;
+}
+
 void VisibleSelection::adjustSelectionToAvoidCrossingEditingBoundaries()
 {
     if (m_base.isNull() || m_start.isNull() || m_end.isNull())
