@@ -24,6 +24,7 @@ using ::testing::HasSubstr;
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::Mock;
 using ::testing::_;
 
 namespace media {
@@ -1037,10 +1038,10 @@ TEST_F(WebMClusterParserTest,
 }
 
 TEST_F(WebMClusterParserTest, ReadOpusDurationsSimpleBlockAtEndOfCluster) {
-  InSequence s;
-
   int loop_count = 0;
   for (const auto* packet_ptr : BuildAllOpusPackets()) {
+    InSequence s;
+
     // Get a new parser each iteration to prevent exceeding the media log cap.
     parser_.reset(CreateParserWithKeyIdsAndAudioCodec(
         std::string(), std::string(), kCodecOpus));
@@ -1062,6 +1063,10 @@ TEST_F(WebMClusterParserTest, ReadOpusDurationsSimpleBlockAtEndOfCluster) {
     int result = parser_->Parse(cluster->data(), cluster->size());
     EXPECT_EQ(cluster->size(), result);
     ASSERT_TRUE(VerifyBuffers(parser_, kBlockInfo, block_count));
+
+    // Fail early if any iteration fails to meet the logging expectations.
+    ASSERT_TRUE(Mock::VerifyAndClearExpectations(media_log_.get()));
+
     loop_count++;
   }
 
@@ -1070,12 +1075,10 @@ TEST_F(WebMClusterParserTest, ReadOpusDurationsSimpleBlockAtEndOfCluster) {
 }
 
 TEST_F(WebMClusterParserTest, PreferOpusDurationsOverBlockDurations) {
-  // Exhaustively testing expected media logs' emission sequence in this test at
-  // least causes 10x execution time. Therefore, no InSequence is used here, but
-  // the set of expected messages is verified.
-
   int loop_count = 0;
   for (const auto* packet_ptr : BuildAllOpusPackets()) {
+    InSequence s;
+
     // Get a new parser each iteration to prevent exceeding the media log cap.
     parser_.reset(CreateParserWithKeyIdsAndAudioCodec(
         std::string(), std::string(), kCodecOpus));
@@ -1106,6 +1109,10 @@ TEST_F(WebMClusterParserTest, PreferOpusDurationsOverBlockDurations) {
     block_infos[0].duration = packet_ptr->duration_ms();
 
     ASSERT_TRUE(VerifyBuffers(parser_, block_infos, block_count));
+
+    // Fail early if any iteration fails to meet the logging expectations.
+    ASSERT_TRUE(Mock::VerifyAndClearExpectations(media_log_.get()));
+
     loop_count++;
   }
 
