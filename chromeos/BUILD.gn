@@ -43,6 +43,11 @@ component("chromeos") {
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
+# TYhis must be a static library instead of a source set because some of the
+# files pull in things with dependencies that aren't linked in all cases.
+#
+# TODO this should probably be changed such that it links in all cases and
+# can be converted to a source set.
 static_library("test_support") {
   testonly = true
   configs += [ "//build/config/linux:dbus" ]
