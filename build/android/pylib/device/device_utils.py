@@ -386,6 +386,28 @@ class DeviceUtils(object):
     return apks
 
   @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetApplicationVersion(self, package, timeout=None, retries=None):
+    """Get the version name of a package installed on the device.
+
+    Args:
+      package: Name of the package.
+
+    Returns:
+      A string with the version name or None if the package is not found
+      on the device.
+    """
+    output = self.RunShellCommand(
+        ['dumpsys', 'package', package], check_return=True)
+    if not output:
+      return None
+    for line in output:
+      line = line.strip()
+      if line.startswith('versionName='):
+        return line[len('versionName='):]
+    raise device_errors.CommandFailedError(
+        'Version name for %s not found on dumpsys output' % package, str(self))
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def GetApplicationDataDirectory(self, package, timeout=None, retries=None):
     """Get the data directory on the device for the given package.
 
