@@ -1656,6 +1656,8 @@ void RenderFrameHostImpl::Navigate(
     const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params) {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::Navigate");
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation));
 
   UpdatePermissionsForNavigation(common_params, request_params);
 
@@ -1693,12 +1695,19 @@ void RenderFrameHostImpl::Navigate(
     frame_tree_node_->DidStartLoading(true);
 }
 
-void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
+void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
+  DCHECK(data_url.SchemeIs(url::kDataScheme));
   CommonNavigationParams common_params(
-      url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::NORMAL,
-      true, false, base::TimeTicks::Now(),
+      data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
+      FrameMsg_Navigate_Type::NORMAL, false, false, base::TimeTicks::Now(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL());
-  Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    CommitNavigation(nullptr, nullptr, common_params,
+                     RequestNavigationParams());
+  } else {
+    Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
+  }
 }
 
 void RenderFrameHostImpl::OpenURL(const FrameHostMsg_OpenURL_Params& params,

@@ -324,8 +324,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                 const StartNavigationParams& start_params,
                 const RequestNavigationParams& request_params);
 
-  // Load the specified URL; this is a shortcut for Navigate().
-  void NavigateToURL(const GURL& url);
+  // Navigates to an interstitial page represented by the provided data URL.
+  void NavigateToInterstitialURL(const GURL& data_url);
 
   // Treat this prospective navigation as though it originated from the frame.
   // Used, e.g., for a navigation request that originated from a RemoteFrame.

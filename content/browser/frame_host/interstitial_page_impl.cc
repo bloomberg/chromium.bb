@@ -253,9 +253,9 @@ void InterstitialPageImpl::Show() {
   render_view_host_ = CreateRenderViewHost();
   CreateWebContentsView();
 
-  std::string data_url = "data:text/html;charset=utf-8," +
-                         net::EscapePath(delegate_->GetHTMLContents());
-  frame_tree_.root()->current_frame_host()->NavigateToURL(GURL(data_url));
+  GURL data_url = GURL("data:text/html;charset=utf-8," +
+                       net::EscapePath(delegate_->GetHTMLContents()));
+  frame_tree_.root()->current_frame_host()->NavigateToInterstitialURL(data_url);
   frame_tree_.root()->current_frame_host()->SetAccessibilityMode(
       GetAccessibilityMode());
 
