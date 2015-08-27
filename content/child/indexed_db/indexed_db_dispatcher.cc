@@ -14,7 +14,6 @@
 #include "content/child/indexed_db/webidbcursor_impl.h"
 #include "content/child/indexed_db/webidbdatabase_impl.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
@@ -47,12 +46,8 @@ IndexedDBDispatcher* const kHasBeenDeleted =
 
 }  // unnamed namespace
 
-const size_t kMaxIDBValueSizeInBytes =
-    IPC::Channel::kMaximumMessageSize - kMaxIDBMessageOverhead;
-
 IndexedDBDispatcher::IndexedDBDispatcher(ThreadSafeSender* thread_safe_sender)
-    : thread_safe_sender_(thread_safe_sender),
-      max_put_value_size_(kMaxIDBValueSizeInBytes) {
+    : thread_safe_sender_(thread_safe_sender) {
   g_idb_dispatcher_tls.Pointer()->Set(this);
 }
 

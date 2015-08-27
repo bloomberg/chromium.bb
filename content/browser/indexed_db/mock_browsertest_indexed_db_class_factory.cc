@@ -41,6 +41,22 @@ class FunctionTracer {
 
 namespace content {
 
+class IndexedDBTestDatabase : public IndexedDBDatabase {
+ public:
+  IndexedDBTestDatabase(const base::string16& name,
+                        IndexedDBBackingStore* backing_store,
+                        IndexedDBFactory* factory,
+                        const IndexedDBDatabase::Identifier& unique_identifier)
+      : IndexedDBDatabase(name, backing_store, factory, unique_identifier) {}
+
+ protected:
+  ~IndexedDBTestDatabase() override {}
+
+  size_t GetMaxMessageSizeInBytes() const override {
+    return 10 * 1024 * 1024;  // 10MB
+  }
+};
+
 class IndexedDBTestTransaction : public IndexedDBTransaction {
  public:
   IndexedDBTestTransaction(
@@ -232,6 +248,16 @@ MockBrowserTestIndexedDBClassFactory::MockBrowserTestIndexedDBClassFactory()
 }
 
 MockBrowserTestIndexedDBClassFactory::~MockBrowserTestIndexedDBClassFactory() {
+}
+
+IndexedDBDatabase*
+MockBrowserTestIndexedDBClassFactory::CreateIndexedDBDatabase(
+    const base::string16& name,
+    IndexedDBBackingStore* backing_store,
+    IndexedDBFactory* factory,
+    const IndexedDBDatabase::Identifier& unique_identifier) {
+  return new IndexedDBTestDatabase(name, backing_store, factory,
+                                   unique_identifier);
 }
 
 IndexedDBTransaction*

@@ -132,7 +132,8 @@ scoped_refptr<IndexedDBDatabase> IndexedDBDatabase::Create(
     const Identifier& unique_identifier,
     leveldb::Status* s) {
   scoped_refptr<IndexedDBDatabase> database =
-      new IndexedDBDatabase(name, backing_store, factory, unique_identifier);
+      IndexedDBClassFactory::Get()->CreateIndexedDBDatabase(
+          name, backing_store, factory, unique_identifier);
   *s = database->OpenInternal();
   if (s->ok())
     return database;
@@ -225,6 +226,10 @@ IndexedDBDatabase::~IndexedDBDatabase() {
   DCHECK(transactions_.empty());
   DCHECK(pending_open_calls_.empty());
   DCHECK(pending_delete_calls_.empty());
+}
+
+size_t IndexedDBDatabase::GetMaxMessageSizeInBytes() const {
+  return kMaxIDBMessageSizeInBytes;
 }
 
 scoped_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
@@ -853,9 +858,11 @@ void IndexedDBDatabase::GetAllOperation(
       response_size += return_key.size_estimate();
     else
       response_size += return_value.SizeEstimate();
-    if (response_size > IPC::Channel::kMaximumMessageSize) {
-      // TODO(cmumford): Reach this limit more gracefully (crbug.com/478949)
-      break;
+    if (response_size > GetMaxMessageSizeInBytes()) {
+      callbacks->OnError(
+          IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Maximum IPC message size exceeded."));
+      return;
     }
 
     if (cursor_type == indexed_db::CURSOR_KEY_ONLY)

@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
@@ -19,8 +20,9 @@ class Iterator;
 
 namespace content {
 
-class IndexedDBDatabase;
+class IndexedDBBackingStore;
 class IndexedDBDatabaseCallbacks;
+class IndexedDBFactory;
 class IndexedDBTransaction;
 class LevelDBDatabase;
 class LevelDBIteratorImpl;
@@ -35,6 +37,12 @@ class CONTENT_EXPORT IndexedDBClassFactory {
   static IndexedDBClassFactory* Get();
 
   static void SetIndexedDBClassFactoryGetter(GetterCallback* cb);
+
+  virtual IndexedDBDatabase* CreateIndexedDBDatabase(
+      const base::string16& name,
+      IndexedDBBackingStore* backing_store,
+      IndexedDBFactory* factory,
+      const IndexedDBDatabase::Identifier& unique_identifier);
 
   virtual IndexedDBTransaction* CreateIndexedDBTransaction(
       int64 id,

@@ -187,6 +187,16 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTest);
 };
 
+class IndexedDBBrowserTestWithExperimentalAPIs
+    : public IndexedDBBrowserTest,
+      public ::testing::WithParamInterface<const char*> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
   SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"));
 }
@@ -230,6 +240,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CallbackAccounting) {
   SimpleTest(GetTestUrl("indexeddb", "callback_accounting.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithExperimentalAPIs,
+                       GetAllMaxMessageSize) {
+  SimpleTest(GetTestUrl("indexeddb", "getall_max_message_size.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
@@ -679,16 +694,8 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 
 }  // namespace
 
-class IndexedDBBrowserCorruptionTest
-    : public IndexedDBBrowserTest,
-      public ::testing::WithParamInterface<const char*> {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Experimental for IDBObjectStore.getAll()
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-};
+// Experimental for IDBObjectStore.getAll()
+using IndexedDBBrowserCorruptionTest = IndexedDBBrowserTestWithExperimentalAPIs;
 
 IN_PROC_BROWSER_TEST_P(IndexedDBBrowserCorruptionTest,
                        OperationOnCorruptedOpenDatabase) {

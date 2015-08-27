@@ -5,11 +5,16 @@
 #ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_CONSTANTS_H_
 #define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_CONSTANTS_H_
 
+#include "ipc/ipc_channel.h"
+
 namespace content {
 
 const int32 kNoDatabase = -1;
 
 const size_t kMaxIDBMessageOverhead = 1024 * 1024;  // 1MB; arbitrarily chosen.
+
+const size_t kMaxIDBMessageSizeInBytes =
+    IPC::Channel::kMaximumMessageSize - kMaxIDBMessageOverhead;
 
 }  // namespace content
 

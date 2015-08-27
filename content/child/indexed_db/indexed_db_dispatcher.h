@@ -15,6 +15,7 @@
 #include "base/strings/nullable_string16.h"
 #include "content/child/worker_task_runner.h"
 #include "content/common/content_export.h"
+#include "content/common/indexed_db/indexed_db_constants.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/platform/WebBlobInfo.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
@@ -40,8 +41,6 @@ class IndexedDBKeyRange;
 class WebIDBCursorImpl;
 class WebIDBDatabaseImpl;
 class ThreadSafeSender;
-
-CONTENT_EXPORT extern const size_t kMaxIDBValueSizeInBytes;
 
 // Handle the indexed db related communication for this context thread - the
 // main thread and each worker thread have their own copies.
@@ -257,7 +256,7 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerTaskRunner::Observer {
   // requests larger than this size will be rejected.
   // Used by unit tests to exercise behavior without allocating huge chunks
   // of memory.
-  size_t max_put_value_size_;
+  size_t max_put_value_size_ = kMaxIDBMessageSizeInBytes;
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.

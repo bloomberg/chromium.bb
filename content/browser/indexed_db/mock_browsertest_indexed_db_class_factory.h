@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
+#include "content/browser/indexed_db/indexed_db_database.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace content {
@@ -36,6 +37,12 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
  public:
   MockBrowserTestIndexedDBClassFactory();
   ~MockBrowserTestIndexedDBClassFactory() override;
+
+  IndexedDBDatabase* CreateIndexedDBDatabase(
+      const base::string16& name,
+      IndexedDBBackingStore* backing_store,
+      IndexedDBFactory* factory,
+      const IndexedDBDatabase::Identifier& unique_identifier) override;
   IndexedDBTransaction* CreateIndexedDBTransaction(
       int64 id,
       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,

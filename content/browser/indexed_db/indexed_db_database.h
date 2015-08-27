@@ -235,8 +235,19 @@ class CONTENT_EXPORT IndexedDBDatabase
                       scoped_refptr<IndexedDBCallbacks> callbacks,
                       IndexedDBTransaction* transaction);
 
+ protected:
+  IndexedDBDatabase(const base::string16& name,
+                    IndexedDBBackingStore* backing_store,
+                    IndexedDBFactory* factory,
+                    const Identifier& unique_identifier);
+  virtual ~IndexedDBDatabase();
+
+  // May be overridden in tests.
+  virtual size_t GetMaxMessageSizeInBytes() const;
+
  private:
   friend class base::RefCounted<IndexedDBDatabase>;
+  friend class IndexedDBClassFactory;
 
   class PendingDeleteCall;
   class PendingSuccessCall;
@@ -246,12 +257,6 @@ class CONTENT_EXPORT IndexedDBDatabase
   typedef std::list<IndexedDBPendingConnection> PendingOpenCallList;
   typedef std::list<PendingDeleteCall*> PendingDeleteCallList;
   typedef list_set<IndexedDBConnection*> ConnectionSet;
-
-  IndexedDBDatabase(const base::string16& name,
-                    IndexedDBBackingStore* backing_store,
-                    IndexedDBFactory* factory,
-                    const Identifier& unique_identifier);
-  ~IndexedDBDatabase();
 
   bool IsOpenConnectionBlocked() const;
   leveldb::Status OpenInternal();

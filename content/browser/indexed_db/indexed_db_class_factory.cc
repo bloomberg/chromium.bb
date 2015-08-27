@@ -24,6 +24,14 @@ IndexedDBClassFactory* IndexedDBClassFactory::Get() {
     return s_factory.Pointer();
 }
 
+IndexedDBDatabase* IndexedDBClassFactory::CreateIndexedDBDatabase(
+    const base::string16& name,
+    IndexedDBBackingStore* backing_store,
+    IndexedDBFactory* factory,
+    const IndexedDBDatabase::Identifier& unique_identifier) {
+  return new IndexedDBDatabase(name, backing_store, factory, unique_identifier);
+}
+
 IndexedDBTransaction* IndexedDBClassFactory::CreateIndexedDBTransaction(
     int64 id,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
