@@ -716,6 +716,33 @@ protected:
         return m_extensionEnabled[name];
     }
 
+    // ScopedDrawingBufferBinder is used for ReadPixels/CopyTexImage2D/CopySubImage2D to read from
+    // a multisampled DrawingBuffer. In this situation, we need to blit to a single sampled buffer
+    // for reading, during which the bindings could be changed and need to be recovered.
+    class ScopedDrawingBufferBinder {
+        STACK_ALLOCATED();
+    public:
+        ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer, WebGLFramebuffer* framebufferBinding)
+            : m_drawingBuffer(drawingBuffer)
+            , m_readFramebufferBinding(framebufferBinding)
+        {
+            // Commit DrawingBuffer if needed (e.g., for multisampling)
+            if (!m_readFramebufferBinding && m_drawingBuffer)
+                m_drawingBuffer->commit();
+        }
+
+        ~ScopedDrawingBufferBinder()
+        {
+            // Restore DrawingBuffer if needed
+            if (!m_readFramebufferBinding && m_drawingBuffer)
+                m_drawingBuffer->restoreFramebufferBindings();
+        }
+
+    private:
+        DrawingBuffer* m_drawingBuffer;
+        Member<WebGLFramebuffer> m_readFramebufferBinding;
+    };
+
     // Errors raised by synthesizeGLError() while the context is lost.
     Vector<GLenum> m_lostContextErrors;
 
@@ -789,7 +816,7 @@ protected:
 
     // Helper function to check if size is non-negative.
     // Generate GL error and return false for negative inputs; otherwise, return true.
-    bool validateSize(const char* functionName, GLint x, GLint y);
+    bool validateSize(const char* functionName, GLint x, GLint y, GLint z = 0);
 
     // Helper function to check if all characters in the string belong to the
     // ASCII subset as defined in GLSL ES 1.0 spec section 3.1.
@@ -861,6 +888,9 @@ protected:
     // is of the correct type and contains enough data for the texImage call.
     // Generates GL error and returns false if parameters are invalid.
     bool validateTexFuncData(const char* functionName, GLint level, GLsizei width, GLsizei height, GLenum internalformat, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition);
+
+    // Helper function to validate that a copyTexSubImage call is valid.
+    bool validateCopyTexSubImage(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
 
     // Helper function to validate a given texture format is settable as in
     // you can supply data to texImage2D, or call texImage2D, copyTexImage2D and

@@ -222,33 +222,6 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
 
 namespace {
 
-// ScopedDrawingBufferBinder is used for ReadPixels/CopyTexImage2D/CopySubImage2D to read from
-// a multisampled DrawingBuffer. In this situation, we need to blit to a single sampled buffer
-// for reading, during which the bindings could be changed and need to be recovered.
-class ScopedDrawingBufferBinder {
-    STACK_ALLOCATED();
-public:
-    ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer, WebGLFramebuffer* framebufferBinding)
-        : m_drawingBuffer(drawingBuffer)
-        , m_readFramebufferBinding(framebufferBinding)
-    {
-        // Commit DrawingBuffer if needed (e.g., for multisampling)
-        if (!m_readFramebufferBinding && m_drawingBuffer)
-            m_drawingBuffer->commit();
-    }
-
-    ~ScopedDrawingBufferBinder()
-    {
-        // Restore DrawingBuffer if needed
-        if (!m_readFramebufferBinding && m_drawingBuffer)
-            m_drawingBuffer->restoreFramebufferBindings();
-    }
-
-private:
-    DrawingBuffer* m_drawingBuffer;
-    Member<WebGLFramebuffer> m_readFramebufferBinding;
-};
-
 GLint clamp(GLint value, GLint min, GLint max)
 {
     if (value < min)
@@ -1896,33 +1869,8 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GL
 {
     if (isContextLost())
         return;
-    if (!validateTexFuncLevel("copyTexSubImage2D", target, level))
+    if (!validateCopyTexSubImage("copyTexSubImage2D", target, level, xoffset, yoffset, 0, x, y, width, height))
         return;
-    WebGLTexture* tex = validateTextureBinding("copyTexSubImage2D", target, true);
-    if (!tex)
-        return;
-    if (!validateSize("copyTexSubImage2D", xoffset, yoffset) || !validateSize("copyTexSubImage2D", width, height))
-        return;
-    // Before checking if it is in the range, check if overflow happens first.
-    Checked<GLint, RecordOverflow> maxX = xoffset;
-    maxX += width;
-    Checked<GLint, RecordOverflow> maxY = yoffset;
-    maxY += height;
-    if (maxX.hasOverflowed() || maxY.hasOverflowed()) {
-        synthesizeGLError(GL_INVALID_VALUE, "copyTexSubImage2D", "bad dimensions");
-        return;
-    }
-    if (maxX.unsafeGet() > tex->getWidth(target, level) || maxY.unsafeGet() > tex->getHeight(target, level)) {
-        synthesizeGLError(GL_INVALID_VALUE, "copyTexSubImage2D", "rectangle out of range");
-        return;
-    }
-    GLenum internalformat = tex->getInternalFormat(target, level);
-    if (!validateSettableTexFormat("copyTexSubImage2D", internalformat))
-        return;
-    if (!isTexInternalFormatColorBufferCombinationValid(internalformat, boundFramebufferColorFormat())) {
-        synthesizeGLError(GL_INVALID_OPERATION, "copyTexSubImage2D", "framebuffer is incompatible format");
-        return;
-    }
     WebGLFramebuffer* readFramebufferBinding = nullptr;
     if (!validateReadBufferAndGetInfo("copyTexSubImage2D", readFramebufferBinding, nullptr, nullptr))
         return;
@@ -5388,9 +5336,9 @@ bool WebGLRenderingContextBase::validateLocationLength(const char* functionName,
     return true;
 }
 
-bool WebGLRenderingContextBase::validateSize(const char* functionName, GLint x, GLint y)
+bool WebGLRenderingContextBase::validateSize(const char* functionName, GLint x, GLint y, GLint z)
 {
-    if (x < 0 || y < 0) {
+    if (x < 0 || y < 0 || z < 0) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "size < 0");
         return false;
     }
@@ -5667,6 +5615,39 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "ArrayBufferView not big enough for request");
         return false;
     }
+    return true;
+}
+
+bool WebGLRenderingContextBase::validateCopyTexSubImage(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+{
+    if (!validateTexFuncLevel(functionName, target, level))
+        return false;
+    WebGLTexture* tex = validateTextureBinding(functionName, target, true);
+    if (!tex)
+        return false;
+    if (!validateSize(functionName, xoffset, yoffset, zoffset) || !validateSize(functionName, width, height))
+        return false;
+    // Before checking if it is in the range, check if overflow happens first.
+    Checked<GLint, RecordOverflow> maxX = xoffset;
+    maxX += width;
+    Checked<GLint, RecordOverflow> maxY = yoffset;
+    maxY += height;
+    if (maxX.hasOverflowed() || maxY.hasOverflowed()) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "bad dimensions");
+        return false;
+    }
+    if (maxX.unsafeGet() > tex->getWidth(target, level) || maxY.unsafeGet() > tex->getHeight(target, level) || zoffset >= tex->getDepth(target, level)) {
+        synthesizeGLError(GL_INVALID_VALUE, functionName, "rectangle out of range");
+        return false;
+    }
+    GLenum internalformat = tex->getInternalFormat(target, level);
+    if (!validateSettableTexFormat(functionName, internalformat))
+        return false;
+    if (!isTexInternalFormatColorBufferCombinationValid(internalformat, boundFramebufferColorFormat())) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "framebuffer is incompatible format");
+        return false;
+    }
+
     return true;
 }
 

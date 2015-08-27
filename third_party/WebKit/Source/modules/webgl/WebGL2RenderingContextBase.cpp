@@ -593,8 +593,14 @@ void WebGL2RenderingContextBase::copyTexSubImage3D(GLenum target, GLint level, G
 {
     if (isContextLost())
         return;
-
-    notImplemented();
+    if (!validateCopyTexSubImage("copyTexSubImage3D", target, level, xoffset, yoffset, zoffset, x, y, width, height))
+        return;
+    WebGLFramebuffer* readFramebufferBinding = nullptr;
+    if (!validateReadBufferAndGetInfo("copyTexSubImage3D", readFramebufferBinding, nullptr, nullptr))
+        return;
+    clearIfComposited();
+    ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
+    webContext()->copyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width, height);
 }
 
 void WebGL2RenderingContextBase::compressedTexImage3D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, DOMArrayBufferView* data)
