@@ -3814,7 +3814,6 @@
             'html/TimeRangesTest.cpp',
             'html/canvas/CanvasFontCacheTest.cpp',
             'html/forms/FileInputTypeTest.cpp',
-            'html/parser/HTMLEntityParserTest.cpp',
             'html/parser/HTMLParserThreadTest.cpp',
             'html/parser/HTMLPreloadScannerTest.cpp',
             'html/parser/HTMLResourcePreloaderTest.cpp',

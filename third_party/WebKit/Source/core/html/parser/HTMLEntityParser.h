@@ -27,7 +27,6 @@
 #ifndef HTMLEntityParser_h
 #define HTMLEntityParser_h
 
-#include "core/CoreExport.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/Allocator.h"
 
@@ -64,11 +63,11 @@ public:
     UChar data[kMaxLength];
 };
 
-CORE_EXPORT bool consumeHTMLEntity(SegmentedString&, DecodedHTMLEntity& decodedEntity, bool& notEnoughCharacters, UChar additionalAllowedCharacter = '\0');
+bool consumeHTMLEntity(SegmentedString&, DecodedHTMLEntity& decodedEntity, bool& notEnoughCharacters, UChar additionalAllowedCharacter = '\0');
 
 // Used by the XML parser.  Not suitable for use in HTML parsing.  Use consumeHTMLEntity instead.
 size_t decodeNamedEntityToUCharArray(const char*, UChar result[4]);
 
-} // namespace blink
+}
 
 #endif
