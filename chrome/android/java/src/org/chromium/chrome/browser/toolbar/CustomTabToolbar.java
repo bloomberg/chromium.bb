@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -113,8 +114,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             public void onClick(View v) {
                 Tab currentTab = getToolbarDataProvider().getTab();
                 if (currentTab == null || currentTab.getWebContents() == null) return;
-
-                WebsiteSettingsPopup.show(getContext(), currentTab.getProfile(),
+                Activity activity = currentTab.getWindowAndroid().getActivity().get();
+                if (activity == null) return;
+                WebsiteSettingsPopup.show(activity, currentTab.getProfile(),
                         currentTab.getWebContents());
             }
         });
