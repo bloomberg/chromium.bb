@@ -785,12 +785,16 @@ class DeviceUtils(object):
     return output
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def KillAll(self, process_name, signum=device_signal.SIGKILL, as_root=False,
-              blocking=False, quiet=False, timeout=None, retries=None):
+  def KillAll(self, process_name, exact=False, signum=device_signal.SIGKILL,
+              as_root=False, blocking=False, quiet=False,
+              timeout=None, retries=None):
     """Kill all processes with the given name on the device.
 
     Args:
       process_name: A string containing the name of the process to kill.
+      exact: A boolean indicating whether to kill all processes matching
+             the string |process_name| exactly, or all of those which contain
+             |process_name| as a substring. Defaults to False.
       signum: An integer containing the signal number to send to kill. Defaults
               to SIGKILL (9).
       as_root: A boolean indicating whether the kill should be executed with
@@ -811,7 +815,9 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
     procs_pids = self.GetPids(process_name)
-    pids = list(itertools.chain(*procs_pids.values()))
+    if exact:
+      procs_pids = {process_name: procs_pids.get(process_name, [])}
+    pids = set(itertools.chain(*procs_pids.values()))
     if not pids:
       if quiet:
         return 0
@@ -820,19 +826,20 @@ class DeviceUtils(object):
             'No process "%s"' % process_name, str(self))
 
     logging.info(
-        'KillAll(%s, ...) attempting to kill the following:', process_name)
+        'KillAll(%r, ...) attempting to kill the following:', process_name)
     for name, ids  in procs_pids.iteritems():
       for i in ids:
         logging.info('  %05s %s', str(i), name)
 
-    cmd = ['kill', '-%d' % signum] + pids
+    cmd = ['kill', '-%d' % signum] + sorted(pids)
     self.RunShellCommand(cmd, as_root=as_root, check_return=True)
 
+    def all_pids_killed():
+      procs_pids_remain = self.GetPids(process_name)
+      return not pids.intersection(itertools.chain(*procs_pids_remain.values()))
+
     if blocking:
-      # TODO(perezu): use timeout_retry.WaitFor
-      wait_period = 0.1
-      while self.GetPids(process_name):
-        time.sleep(wait_period)
+      timeout_retry.WaitFor(all_pids_killed, wait_period=0.1)
 
     return len(pids)
 

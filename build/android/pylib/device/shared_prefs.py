@@ -268,7 +268,7 @@ class SharedPrefs(object):
         ['mkdir', '-p', posixpath.dirname(self.path)],
         as_root=True, check_return=True)
     self._device.WriteFile(self.path, str(self), as_root=True)
-    self._device.KillAll(self.package, as_root=True, quiet=True)
+    self._device.KillAll(self.package, exact=True, as_root=True, quiet=True)
     self._changed = False
 
   def __len__(self):

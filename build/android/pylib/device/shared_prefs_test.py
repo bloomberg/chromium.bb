@@ -113,8 +113,8 @@ class SharedPrefsTest(unittest.TestCase):
     self.assertTrue(prefs.changed)
     prefs.Commit()
     self.assertTrue(self.device.FileExists(prefs.path)) # should exist now
-    self.device.KillAll.assert_called_once_with(prefs.package, as_root=True,
-                                                quiet=True)
+    self.device.KillAll.assert_called_once_with(prefs.package, exact=True,
+                                                as_root=True, quiet=True)
     self.assertFalse(prefs.changed)
 
     prefs = shared_prefs.SharedPrefs(

@@ -866,19 +866,43 @@ class DeviceUtilsKillAllTest(DeviceUtilsTest):
 
   def testKillAll_nonblocking(self):
     with self.assertCalls(
-        (self.call.device.GetPids('some.process'), {'some.process': ['1234']}),
-        (self.call.adb.Shell('kill -9 1234'), '')):
+        (self.call.device.GetPids('some.process'),
+         {'some.process': ['1234'], 'some.processing.thing': ['5678']}),
+        (self.call.adb.Shell('kill -9 1234 5678'), '')):
       self.assertEquals(
-          1, self.device.KillAll('some.process', blocking=False))
+          2, self.device.KillAll('some.process', blocking=False))
 
   def testKillAll_blocking(self):
     with self.assertCalls(
-        (self.call.device.GetPids('some.process'), {'some.process': ['1234']}),
-        (self.call.adb.Shell('kill -9 1234'), ''),
-        (self.call.device.GetPids('some.process'), {'some.process': ['1234']}),
-        (self.call.device.GetPids('some.process'), [])):
+        (self.call.device.GetPids('some.process'),
+         {'some.process': ['1234'], 'some.processing.thing': ['5678']}),
+        (self.call.adb.Shell('kill -9 1234 5678'), ''),
+        (self.call.device.GetPids('some.process'),
+         {'some.processing.thing': ['5678']}),
+        (self.call.device.GetPids('some.process'),
+         {'some.process': ['1111']})): #  Other instance with different pid.
       self.assertEquals(
-          1, self.device.KillAll('some.process', blocking=True))
+          2, self.device.KillAll('some.process', blocking=True))
+
+  def testKillAll_exactNonblocking(self):
+    with self.assertCalls(
+        (self.call.device.GetPids('some.process'),
+         {'some.process': ['1234'], 'some.processing.thing': ['5678']}),
+        (self.call.adb.Shell('kill -9 1234'), '')):
+      self.assertEquals(
+          1, self.device.KillAll('some.process', exact=True, blocking=False))
+
+  def testKillAll_exactBlocking(self):
+    with self.assertCalls(
+        (self.call.device.GetPids('some.process'),
+         {'some.process': ['1234'], 'some.processing.thing': ['5678']}),
+        (self.call.adb.Shell('kill -9 1234'), ''),
+        (self.call.device.GetPids('some.process'),
+         {'some.process': ['1234'], 'some.processing.thing': ['5678']}),
+        (self.call.device.GetPids('some.process'),
+         {'some.processing.thing': ['5678']})):
+      self.assertEquals(
+          1, self.device.KillAll('some.process', exact=True, blocking=True))
 
   def testKillAll_root(self):
     with self.assertCalls(
