@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -23,6 +24,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -119,13 +121,7 @@ public class ShortcutHelper {
         Intent shortcutIntent;
         if (isWebappCapable) {
             // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
-            String encodedIcon = "";
-            if (icon != null) {
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                icon.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-                byte[] byteArray = byteArrayOutputStream.toByteArray();
-                encodedIcon = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            }
+            String encodedIcon = encodeBitmapAsString(icon);
 
             // Add the shortcut as a launcher icon for a full-screen Activity.
             shortcutIntent = new Intent();
@@ -255,6 +251,31 @@ public class ShortcutHelper {
             Log.w(TAG, "OutOfMemoryError while trying to draw bitmap on canvas.");
         }
         return bitmap;
+    }
+
+    /**
+     * Compresses a bitmap into a PNG and converts into a Base64 encoded string.
+     * The encoded string can be decoded using {@link decodeBitmapFromString(String)}.
+     * @param bitmap The Bitmap to compress and encode.
+     * @return the String encoding the Bitmap.
+     */
+    public static String encodeBitmapAsString(Bitmap bitmap) {
+        if (bitmap == null) return "";
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
+        return Base64.encodeToString(output.toByteArray(), Base64.DEFAULT);
+    }
+
+    /**
+     * Decodes a Base64 string into a Bitmap. Used to decode Bitmaps encoded by
+     * {@link encodeBitmapAsString(Bitmap)}.
+     * @param encodedString the Base64 String to decode.
+     * @return the Bitmap which was encoded by the String.
+     */
+    public static Bitmap decodeBitmapFromString(String encodedString) {
+        if (TextUtils.isEmpty(encodedString)) return null;
+        byte[] decoded = Base64.decode(encodedString, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
     }
 
     private static Bitmap getBitmapFromResourceId(Context context, int id, int density) {

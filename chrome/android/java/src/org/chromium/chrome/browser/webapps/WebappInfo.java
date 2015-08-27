@@ -6,10 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -197,10 +194,7 @@ public class WebappInfo {
      */
     public Bitmap icon() {
         if (mDecodedIcon != null) return mDecodedIcon;
-        if (TextUtils.isEmpty(mEncodedIcon)) return null;
-
-        byte[] decoded = Base64.decode(mEncodedIcon, Base64.DEFAULT);
-        mDecodedIcon = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+        mDecodedIcon = ShortcutHelper.decodeBitmapFromString(mEncodedIcon);
         return mDecodedIcon;
     }
 
