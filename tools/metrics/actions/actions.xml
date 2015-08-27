@@ -7684,76 +7684,91 @@ should be able to be added at any place in this file.
 <action name="MobileContextMenuCopyImageLinkAddress">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuCopyLinkAddress">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuCopyLinkText">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuDownloadImage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuDownloadLink">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuDownloadVideo">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuImage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuLink">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuOpenImageInNewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuOpenLink">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuOpenLinkInIncognito">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuOpenLinkInNewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuOpenOriginalImageInNewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of the metric.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuSaveImage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuSearchByImage">
   <owner>bdibello@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuShareLink">
@@ -7765,16 +7780,19 @@ should be able to be added at any place in this file.
 <action name="MobileContextMenuText">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuVideo">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileContextMenuViewImage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated as of 8/2015</obsolete>
 </action>
 
 <action name="MobileFirstEditInOmnibox">

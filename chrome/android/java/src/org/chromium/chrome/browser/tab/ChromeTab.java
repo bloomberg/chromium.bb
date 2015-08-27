@@ -15,7 +15,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Pair;
-import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -31,7 +30,6 @@ import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
-import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
@@ -570,14 +568,6 @@ public class ChromeTab extends Tab {
     }
 
     private class ChromeTabChromeContextMenuItemDelegate extends TabChromeContextMenuItemDelegate {
-        private boolean mIsImage;
-        private boolean mIsVideo;
-
-        public void setParamsInfo(boolean isImage, boolean isVideo) {
-            mIsImage = isImage;
-            mIsVideo = isVideo;
-        }
-
         @Override
         public boolean isIncognitoSupported() {
             return PrefServiceBridge.getInstance().isIncognitoModeEnabled();
@@ -595,46 +585,14 @@ public class ChromeTab extends Tab {
 
         @Override
         public boolean startDownload(String url, boolean isLink) {
-            if (isLink) {
-                RecordUserAction.record("MobileContextMenuDownloadLink");
-                if (shouldInterceptContextMenuDownload(url)) {
-                    return false;
-                }
-            } else if (mIsImage) {
-                RecordUserAction.record("MobileContextMenuDownloadImage");
-            } else if (mIsVideo) {
-                RecordUserAction.record("MobileContextMenuDownloadVideo");
+            if (isLink && shouldInterceptContextMenuDownload(url)) {
+                return false;
             }
             return true;
         }
 
         @Override
-        public void onSaveToClipboard(String text, int clipboardType) {
-            switch (clipboardType) {
-                case CLIPBOARD_TYPE_LINK_URL:
-                    RecordUserAction.record("MobileContextMenuCopyLinkAddress");
-                    break;
-                case CLIPBOARD_TYPE_LINK_TEXT:
-                    RecordUserAction.record("MobileContextMenuCopyLinkText");
-                    break;
-                case CLIPBOARD_TYPE_IMAGE_URL:
-                    RecordUserAction.record("MobileContextMenuCopyImageLinkAddress");
-                    break;
-                default:
-                    assert false;
-            }
-            super.onSaveToClipboard(text, clipboardType);
-        }
-
-        @Override
-        public void onSaveImageToClipboard(String url) {
-            RecordUserAction.record("MobileContextMenuSaveImage");
-            super.onSaveImageToClipboard(url);
-        }
-
-        @Override
         public void onOpenInNewTab(String url, Referrer referrer) {
-            RecordUserAction.record("MobileContextMenuOpenLinkInNewTab");
             RecordUserAction.record("MobileNewTabOpened");
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setReferrer(referrer);
@@ -644,73 +602,25 @@ public class ChromeTab extends Tab {
 
         @Override
         public void onOpenInNewIncognitoTab(String url) {
-            RecordUserAction.record("MobileContextMenuOpenLinkInIncognito");
             RecordUserAction.record("MobileNewTabOpened");
             mActivity.getTabModelSelector().openNewTab(new LoadUrlParams(url),
                     TabLaunchType.FROM_LONGPRESS_FOREGROUND, ChromeTab.this, true);
         }
 
         @Override
-        public void onOpenImageUrl(String url, Referrer referrer) {
-            RecordUserAction.record("MobileContextMenuViewImage");
-            super.onOpenImageUrl(url, referrer);
-        }
-
-        @Override
         public void onOpenImageInNewTab(String url, Referrer referrer) {
             boolean useOriginal = isSpdyProxyEnabledForUrl(url);
-            RecordUserAction.record("MobileContextMenuOpenImageInNewTab");
-            if (useOriginal) {
-                RecordUserAction.record("MobileContextMenuOpenOriginalImageInNewTab");
-            }
-
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADERS : null);
             loadUrlParams.setReferrer(referrer);
             mActivity.getTabModelSelector().openNewTab(loadUrlParams,
                     TabLaunchType.FROM_LONGPRESS_BACKGROUND, ChromeTab.this, isIncognito());
         }
-
-        @Override
-        public void onSearchByImageInNewTab() {
-            RecordUserAction.record("MobileContextMenuSearchByImage");
-            super.onSearchByImageInNewTab();
-        }
-    }
-
-    /**
-     * This class is solely to track UMA stats.  When we upstream UMA stats we can remove this.
-     */
-    private static class ChromeTabChromeContextMenuPopulator extends ChromeContextMenuPopulator {
-        private final ChromeTabChromeContextMenuItemDelegate mDelegate;
-
-        public ChromeTabChromeContextMenuPopulator(
-                ChromeTabChromeContextMenuItemDelegate delegate) {
-            super(delegate);
-
-            mDelegate = delegate;
-        }
-
-        @Override
-        public void buildContextMenu(ContextMenu menu, Context context,
-                ContextMenuParams params) {
-            if (params.isAnchor()) {
-                RecordUserAction.record("MobileContextMenuLink");
-            } else if (params.isImage()) {
-                RecordUserAction.record("MobileContextMenuImage");
-            } else if (params.isVideo()) {
-                RecordUserAction.record("MobileContextMenuVideo");
-            }
-
-            mDelegate.setParamsInfo(params.isImage(), params.isVideo());
-            super.buildContextMenu(menu, context, params);
-        }
     }
 
     @Override
     protected ContextMenuPopulator createContextMenuPopulator() {
-        return new ChromeTabChromeContextMenuPopulator(
-                new ChromeTabChromeContextMenuItemDelegate());
+        return new ChromeContextMenuPopulator(new ChromeTabChromeContextMenuItemDelegate());
     }
 
     @VisibleForTesting
