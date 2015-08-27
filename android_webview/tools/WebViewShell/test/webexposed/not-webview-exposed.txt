@@ -21,7 +21,13 @@ interface SharedWorker
 interface PushManager
 interface PushSubscription
 
+# presentation api not supported in webview crbug.com/521319
+interface Presentation
+interface PresentationAvailability
+interface PresentationRequest
+interface PresentationSession
+interface PresentationSessionConnectEvent
+
 # TODO(timvolodine): check screen orientation lock api
 # TODO(timvolodine): check notifications in service workers
-# TODO(timvolodine): add Presentation API
 # TODO(timvolodine): add File System API
