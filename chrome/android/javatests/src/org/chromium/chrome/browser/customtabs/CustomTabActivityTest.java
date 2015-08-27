@@ -529,6 +529,40 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertFalse(tab.canGoBack());
     }
 
+    /** Tests that calling mayLaunchUrl() without warmup() succeeds. */
+    @SmallTest
+    public void testMayLaunchUrlWithoutWarmup() {
+        mayLaunchUrlWithoutWarmup(false);
+    }
+
+    /** Tests that calling warmup() is optional without prerendering. */
+    @SmallTest
+    public void testMayLaunchUrlWithoutWarmupNoPrerendering() {
+        mayLaunchUrlWithoutWarmup(true);
+    }
+
+    private void mayLaunchUrlWithoutWarmup(boolean noPrerendering) {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        CustomTabsConnection connection =
+                CustomTabsTestUtils.setUpConnection((Application) context);
+        ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        connection.newSession(cb);
+        Bundle extras = null;
+        if (noPrerendering) {
+            extras = new Bundle();
+            extras.putBoolean(CustomTabsConnection.NO_PRERENDERING_KEY, true);
+        }
+        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(TEST_PAGE), extras, null));
+        try {
+            startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                    context, TEST_PAGE, cb.asBinder()));
+        } catch (InterruptedException e) {
+            fail();
+        }
+        Tab tab = getActivity().getActivityTab();
+        assertEquals(TEST_PAGE, tab.getUrl());
+    }
+
     private CustomTabsConnection warmUpAndWait() {
         final Context context = getInstrumentation().getTargetContext().getApplicationContext();
         CustomTabsConnection connection =
