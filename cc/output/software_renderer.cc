@@ -640,16 +640,12 @@ void SoftwareRenderer::DidChangeVisibility() {
 }
 
 bool SoftwareRenderer::ShouldApplyBackgroundFilters(
-    const DrawingFrame* frame,
     const RenderPassDrawQuad* quad) const {
   if (quad->background_filters.IsEmpty())
     return false;
 
-  // TODO(danakj): We only allow background filters on an opaque render surface
-  // because other surfaces may contain translucent pixels, and the contents
-  // behind those translucent pixels wouldn't have the filter applied.
-  if (frame->current_render_pass->has_transparent_background)
-    return false;
+  // TODO(hendrikw): Look into allowing background filters to see pixels from
+  // other render targets.  See crbug.com/314867.
 
   return true;
 }
@@ -688,7 +684,7 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     const DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform) const {
-  DCHECK(ShouldApplyBackgroundFilters(frame, quad));
+  DCHECK(ShouldApplyBackgroundFilters(quad));
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(
       MathUtil::MapClippedRect(contents_device_transform, QuadVertexRect()));
 
@@ -706,7 +702,7 @@ skia::RefPtr<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
     const DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     SkShader::TileMode content_tile_mode) const {
-  if (!ShouldApplyBackgroundFilters(frame, quad))
+  if (!ShouldApplyBackgroundFilters(quad))
     return skia::RefPtr<SkShader>();
 
   gfx::Transform quad_rect_matrix;

@@ -91,8 +91,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
                     const TileDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawingFrame* frame,
                            const DrawQuad* quad);
-  bool ShouldApplyBackgroundFilters(const DrawingFrame* frame,
-                                    const RenderPassDrawQuad* quad) const;
+  bool ShouldApplyBackgroundFilters(const RenderPassDrawQuad* quad) const;
   SkBitmap ApplyImageFilter(SkImageFilter* filter,
                             const RenderPassDrawQuad* quad,
                             const SkBitmap* to_filter) const;
