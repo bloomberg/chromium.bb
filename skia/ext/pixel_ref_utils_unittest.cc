@@ -30,12 +30,6 @@ class TestImageGenerator : public SkImageGenerator {
      : SkImageGenerator(info) { }
 };
 
-void CreateDiscardableBitmap(const gfx::Size& size, SkBitmap* bitmap) {
-  const SkImageInfo info =
-      SkImageInfo::MakeN32Premul(size.width(), size.height());
-  SkInstallDiscardablePixelRef(new TestImageGenerator(info), bitmap);
-}
-
 skia::RefPtr<SkImage> CreateDiscardableImage(const gfx::Size& size) {
   const SkImageInfo info =
       SkImageInfo::MakeN32Premul(size.width(), size.height());
@@ -43,44 +37,11 @@ skia::RefPtr<SkImage> CreateDiscardableImage(const gfx::Size& size) {
       SkImage::NewFromGenerator(new TestImageGenerator(info)));
 }
 
-class TestDiscardableShader : public SkShader {
- public:
-  TestDiscardableShader() {
-    CreateDiscardableBitmap(gfx::Size(50, 50), &bitmap_);
-  }
-
-  TestDiscardableShader(SkReadBuffer& buffer) {
-    CreateDiscardableBitmap(gfx::Size(50, 50), &bitmap_);
-  }
-
-  SkShader::BitmapType asABitmap(SkBitmap* bitmap,
-                                 SkMatrix* matrix,
-                                 TileMode xy[2]) const override {
-    if (bitmap)
-      *bitmap = bitmap_;
-    return SkShader::kDefault_BitmapType;
-  }
-
-  // not indended to return an actual context. Just need to supply this.
-  size_t contextSize() const override { return sizeof(SkShader::Context); }
-
-  void flatten(SkWriteBuffer&) const override {}
-
-  // Manual expansion of SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS to
-  // satisfy Chrome's style checker, since Skia isn't ready to make the C++11
-  // leap yet.
- private:
-  static SkFlattenable* CreateProc(SkReadBuffer&);
-
- public:
-  Factory getFactory() const override { return CreateProc; }
-
- private:
-  SkBitmap bitmap_;
-};
-
-SkFlattenable* TestDiscardableShader::CreateProc(SkReadBuffer&) {
-  return new TestDiscardableShader;
+void SetDiscardableShader(SkPaint* paint) {
+  skia::RefPtr<SkImage> image = CreateDiscardableImage(gfx::Size(50, 50));
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(
+      image->newShader(SkShader::kClamp_TileMode, SkShader::kClamp_TileMode));
+  paint->setShader(shader.get());
 }
 
 SkCanvas* StartRecording(SkPictureRecorder* recorder, gfx::Rect layer_rect) {
@@ -119,17 +80,14 @@ TEST(PixelRefUtilsTest, DrawPaint) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = StartRecording(&recorder, layer_rect);
 
-  TestDiscardableShader first_shader;
   SkPaint first_paint;
-  first_paint.setShader(&first_shader);
+  SetDiscardableShader(&first_paint);
 
-  TestDiscardableShader second_shader;
   SkPaint second_paint;
-  second_paint.setShader(&second_shader);
+  SetDiscardableShader(&second_paint);
 
-  TestDiscardableShader third_shader;
   SkPaint third_paint;
-  third_paint.setShader(&third_shader);
+  SetDiscardableShader(&third_paint);
 
   canvas->drawPaint(first_paint);
   canvas->clipRect(SkRect::MakeXYWH(34, 45, 56, 67));
@@ -174,17 +132,14 @@ TEST(PixelRefUtilsTest, DrawPoints) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = StartRecording(&recorder, layer_rect);
 
-  TestDiscardableShader first_shader;
   SkPaint first_paint;
-  first_paint.setShader(&first_shader);
+  SetDiscardableShader(&first_paint);
 
-  TestDiscardableShader second_shader;
   SkPaint second_paint;
-  second_paint.setShader(&second_shader);
+  SetDiscardableShader(&second_paint);
 
-  TestDiscardableShader third_shader;
   SkPaint third_paint;
-  third_paint.setShader(&third_shader);
+  SetDiscardableShader(&third_paint);
 
   SkPoint points[3];
   points[0].set(10, 10);
@@ -234,17 +189,14 @@ TEST(PixelRefUtilsTest, DrawRect) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = StartRecording(&recorder, layer_rect);
 
-  TestDiscardableShader first_shader;
   SkPaint first_paint;
-  first_paint.setShader(&first_shader);
+  SetDiscardableShader(&first_paint);
 
-  TestDiscardableShader second_shader;
   SkPaint second_paint;
-  second_paint.setShader(&second_shader);
+  SetDiscardableShader(&second_paint);
 
-  TestDiscardableShader third_shader;
   SkPaint third_paint;
-  third_paint.setShader(&third_shader);
+  SetDiscardableShader(&third_paint);
 
   // (10, 20, 30, 40).
   canvas->drawRect(SkRect::MakeXYWH(10, 20, 30, 40), first_paint);
@@ -289,17 +241,14 @@ TEST(PixelRefUtilsTest, DrawRRect) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = StartRecording(&recorder, layer_rect);
 
-  TestDiscardableShader first_shader;
   SkPaint first_paint;
-  first_paint.setShader(&first_shader);
+  SetDiscardableShader(&first_paint);
 
-  TestDiscardableShader second_shader;
   SkPaint second_paint;
-  second_paint.setShader(&second_shader);
+  SetDiscardableShader(&second_paint);
 
-  TestDiscardableShader third_shader;
   SkPaint third_paint;
-  third_paint.setShader(&third_shader);
+  SetDiscardableShader(&third_paint);
 
   SkRRect rrect;
   rrect.setRect(SkRect::MakeXYWH(10, 20, 30, 40));
@@ -349,17 +298,14 @@ TEST(PixelRefUtilsTest, DrawOval) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = StartRecording(&recorder, layer_rect);
 
-  TestDiscardableShader first_shader;
   SkPaint first_paint;
-  first_paint.setShader(&first_shader);
+  SetDiscardableShader(&first_paint);
 
-  TestDiscardableShader second_shader;
   SkPaint second_paint;
-  second_paint.setShader(&second_shader);
+  SetDiscardableShader(&second_paint);
 
-  TestDiscardableShader third_shader;
   SkPaint third_paint;
-  third_paint.setShader(&third_shader);
+  SetDiscardableShader(&third_paint);
 
   canvas->save();
 
@@ -408,13 +354,11 @@ TEST(PixelRefUtilsTest, DrawPath) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = StartRecording(&recorder, layer_rect);
 
-  TestDiscardableShader first_shader;
   SkPaint first_paint;
-  first_paint.setShader(&first_shader);
+  SetDiscardableShader(&first_paint);
 
-  TestDiscardableShader second_shader;
   SkPaint second_paint;
-  second_paint.setShader(&second_shader);
+  SetDiscardableShader(&second_paint);
 
   SkPath path;
   path.moveTo(12, 13);
@@ -450,242 +394,14 @@ TEST(PixelRefUtilsTest, DrawPath) {
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
 }
 
-TEST(PixelRefUtilsTest, DrawBitmap) {
-  gfx::Rect layer_rect(0, 0, 256, 256);
-
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = StartRecording(&recorder, layer_rect);
-
-  SkBitmap first;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &first);
-  SkBitmap second;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &second);
-  SkBitmap third;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &third);
-  SkBitmap fourth;
-  CreateDiscardableBitmap(gfx::Size(50, 1), &fourth);
-  SkBitmap fifth;
-  CreateDiscardableBitmap(gfx::Size(10, 10), &fifth);
-  SkBitmap sixth;
-  CreateDiscardableBitmap(gfx::Size(10, 10), &sixth);
-
-  canvas->save();
-
-  // At (0, 0).
-  canvas->drawBitmap(first, 0, 0);
-  canvas->translate(25, 0);
-  // At (25, 0).
-  canvas->drawBitmap(second, 0, 0);
-  canvas->translate(0, 50);
-  // At (50, 50).
-  canvas->drawBitmap(third, 25, 0);
-
-  canvas->restore();
-  canvas->save();
-
-  canvas->translate(1, 0);
-  canvas->rotate(90);
-  // At (1, 0), rotated 90 degrees
-  canvas->drawBitmap(fourth, 0, 0);
-
-  canvas->restore();
-  canvas->save();
-
-  canvas->scale(5.f, 6.f);
-  // At (0, 0), scaled by 5 and 6
-  canvas->drawBitmap(fifth, 0, 0);
-
-  canvas->restore();
-
-  canvas->rotate(27);
-  canvas->scale(3.3f, 0.4f);
-
-  canvas->drawBitmap(sixth, 0, 0);
-
-  canvas->restore();
-
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(StopRecording(&recorder, canvas));
-
-  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
-  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
-
-  EXPECT_EQ(6u, pixel_refs.size());
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 50),
-                       gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(25, 0, 50, 50),
-                       gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 50, 50, 50),
-                       gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 1, 50),
-                       gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[3].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[3].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 60),
-                       gfx::SkRectToRectF(pixel_refs[4].pixel_ref_rect));
-  VerifyScales(5.f, 6.f, pixel_refs[4].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[4].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(-1.8159621f, 0, 31.219175f, 18.545712f),
-                       gfx::SkRectToRectF(pixel_refs[5].pixel_ref_rect));
-  VerifyScales(3.3f, 0.4f, pixel_refs[5].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[5].filter_quality);
-}
-
-TEST(PixelRefUtilsTest, DrawBitmapRect) {
-  gfx::Rect layer_rect(0, 0, 256, 256);
-
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = StartRecording(&recorder, layer_rect);
-
-  SkBitmap first;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &first);
-  SkBitmap second;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &second);
-  SkBitmap third;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &third);
-
-  TestDiscardableShader first_shader;
-  SkPaint first_paint;
-  first_paint.setShader(&first_shader);
-
-  SkPaint non_discardable_paint;
-
-  canvas->save();
-
-  // (0, 0, 100, 100).
-  canvas->drawBitmapRect(
-      first, SkRect::MakeWH(100, 100), &non_discardable_paint);
-  canvas->translate(25, 0);
-  // (75, 50, 10, 10).
-  canvas->drawBitmapRect(
-      second, SkRect::MakeXYWH(50, 50, 10, 10), &non_discardable_paint);
-  canvas->translate(5, 50);
-  // (0, 30, 100, 100). One from bitmap, one from paint.
-  canvas->drawBitmapRect(
-      third, SkRect::MakeXYWH(-30, -20, 100, 100), &first_paint);
-
-  canvas->restore();
-
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(StopRecording(&recorder, canvas));
-
-  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
-  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
-
-  EXPECT_EQ(4u, pixel_refs.size());
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 100, 100),
-                       gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
-  VerifyScales(2.f, 2.f, pixel_refs[0].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(75, 50, 10, 10),
-                       gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
-  VerifyScales(0.2f, 0.2f, pixel_refs[1].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 30, 100, 100),
-                       gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
-  VerifyScales(2.f, 2.f, pixel_refs[2].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 30, 100, 100),
-                       gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
-  VerifyScales(2.f, 2.f, pixel_refs[3].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[3].filter_quality);
-}
-
-TEST(PixelRefUtilsTest, DrawSprite) {
-  gfx::Rect layer_rect(0, 0, 256, 256);
-
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = StartRecording(&recorder, layer_rect);
-
-  SkBitmap first;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &first);
-  SkBitmap second;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &second);
-  SkBitmap third;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &third);
-  SkBitmap fourth;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &fourth);
-  SkBitmap fifth;
-  CreateDiscardableBitmap(gfx::Size(50, 50), &fifth);
-
-  canvas->save();
-
-  // Sprites aren't affected by the current matrix.
-
-  // (0, 0, 50, 50).
-  canvas->drawSprite(first, 0, 0);
-  canvas->translate(25, 0);
-  // (10, 0, 50, 50).
-  canvas->drawSprite(second, 10, 0);
-  canvas->translate(0, 50);
-  // (25, 0, 50, 50).
-  canvas->drawSprite(third, 25, 0);
-
-  canvas->restore();
-  canvas->save();
-
-  canvas->rotate(90);
-  // (0, 0, 50, 50).
-  canvas->drawSprite(fourth, 0, 0);
-
-  canvas->restore();
-
-  TestDiscardableShader first_shader;
-  SkPaint first_paint;
-  first_paint.setShader(&first_shader);
-
-  canvas->scale(5.f, 6.f);
-  // (100, 100, 50, 50).
-  canvas->drawSprite(fifth, 100, 100, &first_paint);
-
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(StopRecording(&recorder, canvas));
-
-  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
-  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
-
-  EXPECT_EQ(6u, pixel_refs.size());
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 50),
-                       gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 0, 50, 50),
-                       gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(25, 0, 50, 50),
-                       gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 50),
-                       gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[3].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[3].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(100, 100, 50, 50),
-                       gfx::SkRectToRectF(pixel_refs[4].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[4].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[4].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(100, 100, 50, 50),
-                       gfx::SkRectToRectF(pixel_refs[5].pixel_ref_rect));
-  VerifyScales(1.f, 1.f, pixel_refs[5].matrix, __LINE__);
-  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[5].filter_quality);
-}
-
 TEST(PixelRefUtilsTest, DrawText) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = StartRecording(&recorder, layer_rect);
 
-  TestDiscardableShader first_shader;
   SkPaint first_paint;
-  first_paint.setShader(&first_shader);
+  SetDiscardableShader(&first_paint);
 
   SkPoint points[4];
   points[0].set(10, 50);
@@ -719,17 +435,14 @@ TEST(PixelRefUtilsTest, DrawVertices) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = StartRecording(&recorder, layer_rect);
 
-  TestDiscardableShader first_shader;
   SkPaint first_paint;
-  first_paint.setShader(&first_shader);
+  SetDiscardableShader(&first_paint);
 
-  TestDiscardableShader second_shader;
   SkPaint second_paint;
-  second_paint.setShader(&second_shader);
+  SetDiscardableShader(&second_paint);
 
-  TestDiscardableShader third_shader;
   SkPaint third_paint;
-  third_paint.setShader(&third_shader);
+  SetDiscardableShader(&third_paint);
 
   SkPoint points[3];
   SkColor colors[3];
@@ -891,9 +604,8 @@ TEST(PixelRefUtilsTest, DrawImageRect) {
   skia::RefPtr<SkImage> second = CreateDiscardableImage(gfx::Size(50, 50));
   skia::RefPtr<SkImage> third = CreateDiscardableImage(gfx::Size(50, 50));
 
-  TestDiscardableShader first_shader;
   SkPaint first_paint;
-  first_paint.setShader(&first_shader);
+  SetDiscardableShader(&first_paint);
 
   SkPaint non_discardable_paint;
 
