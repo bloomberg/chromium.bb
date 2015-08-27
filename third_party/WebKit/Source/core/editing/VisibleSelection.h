@@ -153,8 +153,6 @@ public:
     bool expandUsingGranularity(TextGranularity);
     bool expandUsingGranularityInComposedTree(TextGranularity);
 
-    bool intersectsNode(Node*) const;
-
     // TODO(yosin) Most callers probably don't want these functions, but
     // are using them for historical reasons. |toNormalizedEphemeralRange()|
     // contracts the range around text, and moves the caret most backward
@@ -257,6 +255,9 @@ private:
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.
 CORE_EXPORT PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection&);
+
+// TODO(yosin) We should move |intersectsNode()| to "FrameSelection.cpp".
+bool intersectsNode(const VisibleSelection&, Node*);
 
 } // namespace blink
 

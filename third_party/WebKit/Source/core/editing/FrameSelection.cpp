@@ -394,7 +394,7 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
             m_selection.setWithoutValidation(m_selection.start(), m_selection.end());
         else
             m_selection.setWithoutValidation(m_selection.end(), m_selection.start());
-    } else if (m_selection.intersectsNode(&node)) {
+    } else if (intersectsNode(m_selection, &node)) {
         // If we did nothing here, when this node's layoutObject was destroyed, the rect that it
         // occupied would be invalidated, but, selection gaps that change as a result of
         // the removal wouldn't be invalidated.

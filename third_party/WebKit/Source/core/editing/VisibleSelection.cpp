@@ -230,13 +230,15 @@ PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection& selection)
     return Range::create(*start.document(), start, end);
 }
 
-bool VisibleSelection::intersectsNode(Node* node) const
+// TODO(yosin) We should move |intersectsNode()| to "FrameSelection.cpp".
+bool intersectsNode(const VisibleSelection& selection, Node* node)
 {
-    if (isNone())
+    if (selection.isNone())
         return false;
-    Position start = m_start.parentAnchoredEquivalent();
-    Position end = m_end.parentAnchoredEquivalent();
+    Position start = selection.start().parentAnchoredEquivalent();
+    Position end = selection.end().parentAnchoredEquivalent();
     TrackExceptionState exceptionState;
+    // TODO(yosin) We should avoid to use |Range::intersectsNode()|.
     return Range::intersectsNode(node, start, end, exceptionState) && !exceptionState.hadException();
 }
 
