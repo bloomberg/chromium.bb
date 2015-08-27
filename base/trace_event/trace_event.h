@@ -97,11 +97,12 @@
 //                    const unsigned char* category_group_enabled,
 //                    const char* name,
 //                    unsigned long long id,
-//                    unsigned long long context_id,
 //                    int num_args,
 //                    const char** arg_names,
 //                    const unsigned char* arg_types,
 //                    const unsigned long long* arg_values,
+//                    const scoped_refptr<ConvertableToTraceFormat>*
+//                    convertable_values,
 //                    unsigned int flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT \
     base::trace_event::TraceLog::GetInstance()->AddTraceEvent
@@ -118,6 +119,8 @@
 //                    const char** arg_names,
 //                    const unsigned char* arg_types,
 //                    const unsigned long long* arg_values,
+//                    const scoped_refptr<ConvertableToTraceFormat>*
+//                    convertable_values,
 //                    unsigned int flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_CONTEXT_ID \
     base::trace_event::TraceLog::GetInstance()->AddTraceEventWithContextId
@@ -136,6 +139,8 @@
 //                    const char** arg_names,
 //                    const unsigned char* arg_types,
 //                    const unsigned long long* arg_values,
+//                    const scoped_refptr<ConvertableToTraceFormat>*
+//                    convertable_values,
 //                    unsigned int flags)
 #define TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP \
     base::trace_event::TraceLog::GetInstance() \
