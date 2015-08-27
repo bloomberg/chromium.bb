@@ -86,31 +86,14 @@
         'disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc',
       ],
     }],
-    ['disable_file_support==1', {
+    ['disable_file_support!=1', {
       # TODO(mmenke):  Should probably get rid of the dependency on
       # net_resources in this case (It's used in net_util, to format
       # directory listings.  Also used outside of net/).
-      'sources!': [
-        'base/directory_lister.cc',
-        'base/directory_lister.h',
-        'url_request/file_protocol_handler.cc',
-        'url_request/file_protocol_handler.h',
-        'url_request/url_request_file_dir_job.cc',
-        'url_request/url_request_file_dir_job.h',
-        'url_request/url_request_file_job.cc',
-        'url_request/url_request_file_job.h',
-      ],
+      'sources': ['<@(net_file_support_sources)']
     }],
-    ['disable_ftp_support==1', {
-      'sources/': [
-        ['exclude', '^ftp/'],
-      ],
-      'sources!': [
-        'url_request/ftp_protocol_handler.cc',
-        'url_request/ftp_protocol_handler.h',
-        'url_request/url_request_ftp_job.cc',
-        'url_request/url_request_ftp_job.h',
-      ],
+    ['disable_ftp_support!=1', {
+      'sources': ['<@(net_ftp_support_sources)']
     }],
     ['enable_built_in_dns==1', {
       'defines': [
@@ -300,10 +283,8 @@
           'third_party/nss/ssl/cmpcert.c',
         ],
     }],
-    [ 'enable_websockets != 1', {
-        'sources/': [
-          ['exclude', '^websockets/'],
-        ],
+    [ 'enable_websockets == 1', {
+        'sources': ['<@(net_websockets_sources)']
     }],
     [ 'enable_mdns != 1', {
         'sources!' : [
