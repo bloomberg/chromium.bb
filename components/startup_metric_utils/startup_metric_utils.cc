@@ -315,6 +315,15 @@ void RecordBrowserWindowDisplay(const base::Time& time) {
                            time - g_process_creation_time.Get());
 }
 
+void RecordBrowserOpenTabsDelta(const base::TimeDelta& delta) {
+  static bool is_first_call = true;
+  if (!is_first_call)
+    return;
+  is_first_call = false;
+
+  UMA_HISTOGRAM_LONG_TIMES_100("Startup.BrowserOpenTabs", delta);
+}
+
 void RecordFirstWebContentsMainFrameLoad(const base::Time& time) {
   static bool is_first_call = true;
   if (!is_first_call || time.is_null())

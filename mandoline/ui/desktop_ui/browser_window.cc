@@ -132,8 +132,8 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
     Embed(request.Pass());
   }
 
-  // Record when the initial 'tabs' were opened, used for performance testing.
-  const base::Time open_tabs_time = base::Time::Now();
+  // Record the time spent opening initial tabs, used for performance testing.
+  const base::TimeDelta open_tabs_delta = base::Time::Now() - display_time;
 
   // Record the browser startup time metrics, used for performance testing.
   static bool recorded_browser_startup_metrics = false;
@@ -145,7 +145,7 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
     tracing::StartupPerformanceDataCollectorPtr collector;
     app_->ConnectToService(request.Pass(), &collector);
     collector->SetBrowserWindowDisplayTime(display_time.ToInternalValue());
-    collector->SetBrowserOpenTabsTime(open_tabs_time.ToInternalValue());
+    collector->SetBrowserOpenTabsTimeDelta(open_tabs_delta.ToInternalValue());
     collector->SetBrowserMessageLoopStartTime(
         manager_->startup_time().ToInternalValue());
     recorded_browser_startup_metrics = true;

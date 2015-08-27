@@ -35,7 +35,7 @@ struct StartupPerformanceTimes {
   int64 shell_main_entry_point_time;
   int64 browser_message_loop_start_time;
   int64 browser_window_display_time;
-  int64 browser_open_tabs_time;
+  int64 browser_open_tabs_time_delta;
   // TODO(msw): Rename to avoid "web contents"?
   int64 first_web_contents_main_frame_load_time;
   // TODO(msw): Rename to match "FirstWebContents.NonEmptyPaint" metric?
@@ -49,7 +49,7 @@ interface StartupPerformanceDataCollector {
   SetShellMainEntryPointTime(int64 time);
   SetBrowserMessageLoopStartTime(int64 time);
   SetBrowserWindowDisplayTime(int64 time);
-  SetBrowserOpenTabsTime(int64 time);
+  SetBrowserOpenTabsTimeDelta(int64 delta);
   SetFirstWebContentsMainFrameLoadTime(int64 time);
   SetFirstVisuallyNonEmptyLayoutTime(int64 time);
 

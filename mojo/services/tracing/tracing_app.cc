@@ -109,9 +109,9 @@ void TracingApp::SetBrowserWindowDisplayTime(int64 time) {
     startup_performance_times_.browser_window_display_time = time;
 }
 
-void TracingApp::SetBrowserOpenTabsTime(int64 time) {
-  if (startup_performance_times_.browser_open_tabs_time == 0)
-    startup_performance_times_.browser_open_tabs_time = time;
+void TracingApp::SetBrowserOpenTabsTimeDelta(int64 delta) {
+  if (startup_performance_times_.browser_open_tabs_time_delta == 0)
+    startup_performance_times_.browser_open_tabs_time_delta = delta;
 }
 
 void TracingApp::SetFirstWebContentsMainFrameLoadTime(int64 time) {

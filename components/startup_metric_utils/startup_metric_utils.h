@@ -48,6 +48,9 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
 // Call this with the time when the first browser window became visible.
 void RecordBrowserWindowDisplay(const base::Time& time);
 
+// Call this with the time delta that the browser spent opening its tabs.
+void RecordBrowserOpenTabsDelta(const base::TimeDelta& delta);
+
 // Call this with the time when the first web contents loaded its main frame.
 void RecordFirstWebContentsMainFrameLoad(const base::Time& time);
 

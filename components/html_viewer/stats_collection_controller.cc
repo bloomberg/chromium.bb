@@ -42,14 +42,8 @@ void GetStartupPerformanceTimesCallbackImpl(
   startup_metric_utils::RecordBrowserWindowDisplay(
       base::Time::FromInternalValue(times->browser_window_display_time));
 
-  // TODO(msw): Consolidate with chrome's PreMainMessageLoopRunImpl()...
-  // TODO(msw): Need to measure the "browser_open_start" time for this delta...
-  const base::Time browser_open_start =
-      base::Time::FromInternalValue(times->shell_process_creation_time);
-  const base::Time browser_open_tabs_time =
-      base::Time::FromInternalValue(times->browser_open_tabs_time);
-  base::TimeDelta delta = browser_open_tabs_time - browser_open_start;
-  UMA_HISTOGRAM_LONG_TIMES_100("Startup.BrowserOpenTabs", delta);
+  startup_metric_utils::RecordBrowserOpenTabsDelta(
+      base::TimeDelta::FromInternalValue(times->browser_open_tabs_time_delta));
 
   startup_metric_utils::RecordFirstWebContentsMainFrameLoad(
       base::Time::FromInternalValue(

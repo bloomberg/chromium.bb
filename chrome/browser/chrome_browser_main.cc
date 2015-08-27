@@ -1610,13 +1610,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // We are in regular browser boot sequence. Open initial tabs and enter the
   // main message loop.
-#if defined(OS_CHROMEOS)
+  std::vector<Profile*> last_opened_profiles;
+#if !defined(OS_CHROMEOS)
   // On ChromeOS multiple profiles doesn't apply, and will break if we load
   // them this early as the cryptohome hasn't yet been mounted (which happens
-  // only once we log in.
-  std::vector<Profile*> last_opened_profiles;
-#else
-  std::vector<Profile*> last_opened_profiles =
+  // only once we log in).
+  last_opened_profiles =
       g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif  // defined(OS_CHROMEOS)
 
@@ -1625,7 +1624,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // This step is costly and is already measured in
   // Startup.StartupBrowserCreator_Start.
-  bool started = browser_creator_->Start(
+  const bool started = browser_creator_->Start(
       parsed_command_line(), base::FilePath(), profile_, last_opened_profiles);
   const base::TimeTicks start_time_step3 = base::TimeTicks::Now();
   if (started) {
@@ -1655,8 +1654,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       parameters().autorelease_pool->Recycle();
 #endif  // defined(OS_MACOSX)
 
-    base::TimeDelta delay = base::TimeTicks::Now() - browser_open_start;
-    UMA_HISTOGRAM_LONG_TIMES_100("Startup.BrowserOpenTabs", delay);
+    const base::TimeDelta delta = base::TimeTicks::Now() - browser_open_start;
+    startup_metric_utils::RecordBrowserOpenTabsDelta(delta);
 
     // If we're running tests (ui_task is non-null), then we don't want to
     // call RequestLanguageList or StartRepeatedVariationsSeedFetch or
@@ -1671,11 +1670,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       translate::TranslateDownloadManager::RequestLanguageList(
           profile_->GetPrefs());
     }
-
-    run_message_loop_ = true;
-  } else {
-    run_message_loop_ = false;
   }
+  run_message_loop_ = started;
   browser_creator_.reset();
 
 #if !defined(OS_LINUX) || defined(OS_CHROMEOS)  // http://crbug.com/426393
