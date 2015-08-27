@@ -5,6 +5,7 @@
 #ifndef NET_PROXY_PROXY_SERVICE_H_
 #define NET_PROXY_PROXY_SERVICE_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -294,11 +295,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   class InitProxyResolver;
   class ProxyScriptDeciderPoller;
 
-  // TODO(eroman): change this to a std::set. Note that this requires updating
-  // some tests in proxy_service_unittest.cc such as:
-  //   ProxyServiceTest.InitialPACScriptDownload
-  // which expects requests to finish in the order they were added.
-  typedef std::vector<scoped_refptr<PacRequest> > PendingRequests;
+  typedef std::set<scoped_refptr<PacRequest>> PendingRequests;
 
   enum State {
     STATE_NONE,

@@ -1075,7 +1075,7 @@ int ProxyService::ResolveProxyHelper(const GURL& raw_url,
 
   DCHECK_EQ(ERR_IO_PENDING, rv);
   DCHECK(!ContainsPendingRequest(req.get()));
-  pending_requests_.push_back(req);
+  pending_requests_.insert(req);
 
   // Completion will be notified through |callback|, unless the caller cancels
   // the request using |pac_request|.
@@ -1348,16 +1348,12 @@ LoadState ProxyService::GetLoadState(const PacRequest* req) const {
 }
 
 bool ProxyService::ContainsPendingRequest(PacRequest* req) {
-  PendingRequests::iterator it = std::find(
-      pending_requests_.begin(), pending_requests_.end(), req);
-  return pending_requests_.end() != it;
+  return pending_requests_.count(req) == 1;
 }
 
 void ProxyService::RemovePendingRequest(PacRequest* req) {
   DCHECK(ContainsPendingRequest(req));
-  PendingRequests::iterator it = std::find(
-      pending_requests_.begin(), pending_requests_.end(), req);
-  pending_requests_.erase(it);
+  pending_requests_.erase(req);
 }
 
 int ProxyService::DidFinishResolvingProxy(const GURL& url,
