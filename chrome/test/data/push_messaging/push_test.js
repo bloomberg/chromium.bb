@@ -111,7 +111,7 @@ function getCurve25519dh() {
     return swRegistration.pushManager.getSubscription()
         .then(function(subscription) {
           sendResultToTest(btoa(String.fromCharCode.apply(null,
-              new Uint8Array(subscription.curve25519dh))));
+              new Uint8Array(subscription.getKey('curve25519dh')))));
         });
   }).catch(sendErrorToTest);
 }
