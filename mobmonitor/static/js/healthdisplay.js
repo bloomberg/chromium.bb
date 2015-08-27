@@ -66,6 +66,12 @@ $.widget('mobmonitor.healthDisplay', {
       // Create the new content for the healthDisplay widget.
       var templateData = jQuery.extend({}, serviceStatus);
       templateData.serviceId = SERVICE_CONTAINER_PREFIX + serviceStatus.service;
+      templateData.errors = serviceStatus.healthchecks.filter(function(v) {
+        return !v.health;
+      });
+      templateData.warnings = serviceStatus.healthchecks.filter(function(v) {
+        return v.health;
+      });
 
       var healthContainer = renderTemplate('healthstatuscontainer',
                                            templateData);

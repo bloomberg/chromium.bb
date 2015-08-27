@@ -19,6 +19,28 @@ td {
   font-weight: bold;
 }
 
+.circle-healthy {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: green;
+}
+
+.circle-quasi-healthy {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: #CC7A00;
+}
+
+.circle-unhealthy {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: red;
+}
+
+/* Site Header Settings */
 .site-header {
   background-color: #20262c;
   padding-top: 50px;
@@ -42,6 +64,17 @@ td {
   color: #ACD6FF;
 }
 
+/* Color Legend Settings */
+.color-legend-table {
+  background-color: #FFF;
+  border: 2px solid black;
+  margin: 0px auto;
+}
+
+.color-legend-table-header {
+  background-color: #FFFAAA;
+}
+
 /* Health Display Style Settings */
 .health-display {
   max-width: 1000px;
@@ -61,17 +94,7 @@ td {
 .health-container-header {
   background-color: #FFFAAA;
 
-  float: left;
   width: 100%;
-}
-
-.header-service-name {
-  float: left;
-  width: 80%;
-}
-
-.header-service-status {
-  float: left;
 }
 
 .header-service-status-button {
@@ -85,6 +108,15 @@ td {
 .healthcheck-table {
   margin: auto;
   border: 1px solid black;
+  width: 100%;
+}
+
+.healthcheck-table-column1 {
+  width: 65%;
+}
+
+.healthcheck-table-column2 {
+  width: 35%;
 }
 
 .healthcheck {
@@ -100,7 +132,7 @@ td {
 }
 
 .color-quasi-healthy {
-  color: orange;
+  color: #CC7A00;
 }
 
 /* Action Repair Style Settings */

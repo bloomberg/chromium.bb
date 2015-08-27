@@ -1,36 +1,74 @@
 <div id={{serviceId}} class="health-container">
   <div class="health-container-header">
-    <div class="header-service-name">{{service}}</div>
-    <div class="header-service-status">
-      {{#if healthchecks.length}}
-        {{#if health}}
-          <button class="header-service-status-button color-quasi-healthy">Healthy</button>
-        {{else}}
-          <button class="header-service-status-button color-unhealthy">Unhealthy</button>
-        {{/if}}
+
+    {{#if healthchecks.length}}
+      {{#if health}}
+        <div style="float:left;">Service: <b>{{service}}</b> is <font class="color-quasi-healthy">healthy</font>.</div>
+        <button style="float:right;" class="header-service-status-button color-quasi-healthy">Click to Repair</button>
       {{else}}
-        <button class="header-service-status-button color-healthy">Healthy</button>
+        <div style="float:left;">Service: <b>{{service}}</b> is <font class="color-unhealthy">unhealthy</font>.</div>
+        <button style="float:right;" class="header-service-status-button color-unhealthy">Click to Repair</button>
       {{/if}}
-    </div>
+    {{else}}
+        <div style="float:left;">Service: <b>{{service}}</b> is <font class="color-healthy">healthy</font>.</div>
+    {{/if}}
+
+    <!--
+      Clear must be used or else floating causes the height of other
+      divs to warp.
+    -->
+    <div style="clear:both;"</div>
   </div>
+
   {{#if healthchecks.length}}
     <div class="health-container-content">
-      <table class="healthcheck-table">
-        <tr>
-          <td class="bold">Health Check Name</td>
-          <td class="bold">Health</td>
-          <td class="bold">Description</td>
-          <td class="bold">Actions</td>
-        </tr>
-        {{#each healthchecks}}
+      {{#if errors.length}}
+        <b>Errors:</b>
+        <table class="healthcheck-table">
           <tr>
-            <td>{{name}}</td>
-            <td>{{health}}</td>
-            <td>{{description}}</td>
-            <td>{{actions}}</td>
+            <td class="bold healthcheck-table-column1">Issue Description</td>
+            <td class="bold healthcheck-table-column2">Recommended Action(s)</td>
           </tr>
-        {{/each}}
-      </table>
+          {{#each errors}}
+            <tr>
+              <td>{{description}}</td>
+              <td>
+                <ul>
+                  {{#each actions}}
+                    <li>{{this}}</li>
+                  {{/each}}
+                </ul>
+              </td>
+            </tr>
+          {{/each}}
+        </table>
+      {{/if}}
+
+      {{#if warnings.length}}
+        {{#if errors.length}}
+          <br>
+        {{/if}}
+        <b>Warnings:</b>
+        <table class="healthcheck-table">
+          <tr>
+            <td class="bold healthcheck-table-column1">Issue Description</td>
+            <td class="bold healthcheck-table-column2">Recommended Action(s)</td>
+          </tr>
+          {{#each warnings}}
+            <tr>
+              <td>{{description}}</td>
+              <td>
+                <ul>
+                  {{#each actions}}
+                    <li>{{this}}</li>
+                  {{/each}}
+                </ul>
+              </td>
+            </tr>
+          {{/each}}
+        </table>
+      {{/if}}
     </div>
   {{/if}}
+
 </div>

@@ -10,9 +10,9 @@ var ARGS_HELP_TEXT = 'Enter arguments as a comma separated list of the form: ' +
 
 var ARGS_ACTION_HELP_TEXT = '\n\nYou must enter the arguments: ';
 
-var KWARGS_HELP_TEXT = 'Enter default arguments as a comma separated list of ' +
+var KWARGS_HELP_TEXT = 'Enter keyword arguments as a comma separated list of ' +
                        'equal sign separated values of the form: ' +
-                       'default1=value1,default2=value2,...,defaultN=valueN.';
+                       'kwarg1=value1,kwarg2=value2,...,kwargN=valueN.';
 
 var KWARGS_ACTION_HELP_TEXT = '\n\nYou may enter zero or more of the' +
                               ' following arguments: ';
@@ -124,12 +124,12 @@ ActionRepairDialog.prototype.constructActionInfo = function(action) {
     }
 
     if (!isEmpty(response.kwargs)) {
-      var defaults = [];
+      var kwargs = [];
       Object.keys(response.kwargs).forEach(function(key) {
-        defaults.push(key + '=' + response.kwargs[key]);
+        kwargs.push(key + '=' + response.kwargs[key]);
       });
 
-      self.dialogKwargs.value = defaults.join(',');
+      self.dialogKwargs.value = kwargs.join(',');
       self.dialogKwargs.disabled = false;
       $(self.dialogKwargsHelp).text(KWARGS_HELP_TEXT + KWARGS_ACTION_HELP_TEXT +
                                     Object.keys(response.kwargs).join(','));
@@ -183,7 +183,7 @@ ActionRepairDialog.prototype.stage = function() {
   // Add the action to the display.
   var stagedActionDisplay = 'action: ' + action +
                             ', args: ' + args +
-                            ', defaults: ' + kwargs;
+                            ', kwargs: ' + kwargs;
 
   if (!isEmpty(this.dialogStagedActions.value)) {
     this.dialogStagedActions.value += '\n';
