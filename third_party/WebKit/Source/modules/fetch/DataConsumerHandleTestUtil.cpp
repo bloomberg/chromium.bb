@@ -44,6 +44,9 @@ void DataConsumerHandleTestUtil::Thread::initialize()
 void DataConsumerHandleTestUtil::Thread::shutdown()
 {
     m_executionContext = nullptr;
+    if (m_scriptState) {
+        m_scriptState->disposePerContextData();
+    }
     m_scriptState = nullptr;
     m_thread->shutdown();
     if (m_isolateHolder) {
