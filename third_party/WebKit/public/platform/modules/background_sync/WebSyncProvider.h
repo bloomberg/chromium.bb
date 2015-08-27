@@ -7,6 +7,7 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/background_sync/WebSyncError.h"
@@ -16,12 +17,78 @@
 namespace blink {
 
 class WebServiceWorkerRegistration;
+template <>
+class WebCallbacks<WebPassOwnPtr<WebSyncRegistration>, const WebSyncError&> {
+public:
+    virtual ~WebCallbacks() {}
+    void onSuccess(WebSyncRegistration* r) { onSuccess(adoptWebPtr(r)); }
+    void onError(WebSyncError* e)
+    {
+        onError(*e);
+        delete e;
+    }
+    virtual void onSuccess(WebPassOwnPtr<WebSyncRegistration>) = 0;
+    virtual void onError(const WebSyncError&) = 0;
+};
+using WebSyncRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebSyncRegistration>, const WebSyncError&>;
 
-using WebSyncRegistrationCallbacks = WebCallbacks<WebSyncRegistration*, WebSyncError*>;
-using WebSyncNotifyWhenDoneCallbacks = WebCallbacks<bool*, WebSyncError*>;
-using WebSyncUnregistrationCallbacks = WebCallbacks<bool*, WebSyncError*>;
-using WebSyncGetRegistrationsCallbacks = WebCallbacks<WebVector<WebSyncRegistration*>*, WebSyncError*>;
-using WebSyncGetPermissionStatusCallbacks = WebCallbacks<WebSyncPermissionStatus*, WebSyncError*>;
+template <>
+class WebCallbacks<bool, const WebSyncError&> {
+public:
+    virtual ~WebCallbacks() {}
+    void onSuccess(bool* r)
+    {
+        onSuccess(*r);
+        delete r;
+    }
+    void onError(WebSyncError* e)
+    {
+        onError(*e);
+        delete e;
+    }
+    virtual void onSuccess(bool) = 0;
+    virtual void onError(const WebSyncError&) = 0;
+};
+using WebSyncNotifyWhenDoneCallbacks = WebCallbacks<bool, const WebSyncError&>;
+using WebSyncUnregistrationCallbacks = WebCallbacks<bool, const WebSyncError&>;
+
+template <>
+class WebCallbacks<const WebVector<WebSyncRegistration*>&, const WebSyncError&> {
+public:
+    virtual ~WebCallbacks() {}
+    void onSuccess(WebVector<WebSyncRegistration*>* r)
+    {
+        onSuccess(*r);
+        delete r;
+    }
+    void onError(WebSyncError* e)
+    {
+        onError(*e);
+        delete e;
+    }
+    virtual void onSuccess(const WebVector<WebSyncRegistration*>&) = 0;
+    virtual void onError(const WebSyncError&) = 0;
+};
+using WebSyncGetRegistrationsCallbacks = WebCallbacks<const WebVector<WebSyncRegistration*>&, const WebSyncError&>;
+
+template <>
+class WebCallbacks<WebSyncPermissionStatus, const WebSyncError&> {
+public:
+    virtual ~WebCallbacks() {}
+    void onSuccess(WebSyncPermissionStatus* r)
+    {
+        onSuccess(*r);
+        delete r;
+    }
+    void onError(WebSyncError* e)
+    {
+        onError(*e);
+        delete e;
+    }
+    virtual void onSuccess(WebSyncPermissionStatus) = 0;
+    virtual void onError(const WebSyncError&) = 0;
+};
+using WebSyncGetPermissionStatusCallbacks = WebCallbacks<WebSyncPermissionStatus, const WebSyncError&>;
 
 class WebSyncProvider {
 public:
@@ -58,7 +125,7 @@ public:
     virtual void notifyWhenDone(int64_t syncId, WebSyncNotifyWhenDoneCallbacks* callbacks)
     {
         // TODO(jkarlin): After landing both legs of the notifyWhenDone CLs, make this a pure virtual function.
-        callbacks->onError(new WebSyncError(WebSyncError::ErrorTypeAbort, "Function not implemented."));
+        callbacks->onError(WebSyncError(WebSyncError::ErrorTypeAbort, "Function not implemented."));
         delete callbacks;
     }
 

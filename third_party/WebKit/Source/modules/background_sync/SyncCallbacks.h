@@ -31,8 +31,8 @@ public:
     SyncRegistrationCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
     ~SyncRegistrationCallbacks() override;
 
-    void onSuccess(WebSyncRegistration*) override;
-    void onError(WebSyncError*) override;
+    void onSuccess(WebPassOwnPtr<WebSyncRegistration>) override;
+    void onError(const WebSyncError&) override;
 
 private:
     Persistent<ScriptPromiseResolver> m_resolver;
@@ -50,8 +50,8 @@ public:
     SyncNotifyWhenDoneCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
     ~SyncNotifyWhenDoneCallbacks() override;
 
-    void onSuccess(bool*) override;
-    void onError(WebSyncError*) override;
+    void onSuccess(bool) override;
+    void onError(const WebSyncError&) override;
 
 private:
     Persistent<ScriptPromiseResolver> m_resolver;
@@ -69,8 +69,8 @@ public:
     SyncUnregistrationCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
     ~SyncUnregistrationCallbacks() override;
 
-    void onSuccess(bool*) override;
-    void onError(WebSyncError*) override;
+    void onSuccess(bool) override;
+    void onError(const WebSyncError&) override;
 
 private:
     Persistent<ScriptPromiseResolver> m_resolver;
@@ -87,8 +87,8 @@ public:
     SyncGetRegistrationsCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
     ~SyncGetRegistrationsCallbacks() override;
 
-    void onSuccess(WebVector<WebSyncRegistration*>*) override;
-    void onError(WebSyncError*) override;
+    void onSuccess(const WebVector<WebSyncRegistration*>&) override;
+    void onError(const WebSyncError&) override;
 
 private:
     Persistent<ScriptPromiseResolver> m_resolver;
@@ -104,8 +104,8 @@ public:
     SyncGetPermissionStatusCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
     ~SyncGetPermissionStatusCallbacks() override;
 
-    void onSuccess(WebSyncPermissionStatus*) override;
-    void onError(WebSyncError*) override;
+    void onSuccess(WebSyncPermissionStatus) override;
+    void onError(const WebSyncError&) override;
 
 private:
     static String permissionString(WebSyncPermissionStatus);

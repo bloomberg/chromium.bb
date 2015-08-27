@@ -11,26 +11,20 @@
 
 namespace blink {
 
-DOMException* SyncError::take(ScriptPromiseResolver*, WebSyncError* webErrorRaw)
+DOMException* SyncError::take(ScriptPromiseResolver*, const WebSyncError& webError)
 {
-    OwnPtr<WebSyncError> webError = adoptPtr(webErrorRaw);
-    switch (webError->errorType) {
+    switch (webError.errorType) {
     case WebSyncError::ErrorTypeAbort:
-        return DOMException::create(AbortError, webError->message);
+        return DOMException::create(AbortError, webError.message);
     case WebSyncError::ErrorTypeNoPermission:
-        return DOMException::create(InvalidAccessError, webError->message);
+        return DOMException::create(InvalidAccessError, webError.message);
     case WebSyncError::ErrorTypeNotFound:
-        return DOMException::create(NotFoundError, webError->message);
+        return DOMException::create(NotFoundError, webError.message);
     case WebSyncError::ErrorTypeUnknown:
-        return DOMException::create(UnknownError, webError->message);
+        return DOMException::create(UnknownError, webError.message);
     }
     ASSERT_NOT_REACHED();
     return DOMException::create(UnknownError);
-}
-
-void SyncError::dispose(WebSyncError* webErrorRaw)
-{
-    delete webErrorRaw;
 }
 
 } // namespace blink

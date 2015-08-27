@@ -16,8 +16,7 @@ class ScriptPromiseResolver;
 class SyncError {
     WTF_MAKE_NONCOPYABLE(SyncError);
 public:
-    static DOMException* take(ScriptPromiseResolver*, WebSyncError*);
-    static void dispose(WebSyncError*);
+    static DOMException* take(ScriptPromiseResolver*, const WebSyncError&);
 
 private:
     SyncError() = delete;

@@ -20,8 +20,7 @@ struct WebSyncRegistration;
 class PeriodicSyncRegistration final : public GarbageCollectedFinalized<PeriodicSyncRegistration>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PeriodicSyncRegistration* take(ScriptPromiseResolver*, WebSyncRegistration*, ServiceWorkerRegistration*);
-    static void dispose(WebSyncRegistration* registrationRaw);
+    static PeriodicSyncRegistration* take(ScriptPromiseResolver*, PassOwnPtr<WebSyncRegistration>, ServiceWorkerRegistration*);
 
     virtual ~PeriodicSyncRegistration();
 

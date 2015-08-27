@@ -22,8 +22,7 @@ class MODULES_EXPORT SyncRegistration final : public GarbageCollectedFinalized<S
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SyncRegistration* create(const WebSyncRegistration&, ServiceWorkerRegistration*);
-    static SyncRegistration* take(ScriptPromiseResolver*, WebSyncRegistration*, ServiceWorkerRegistration*);
-    static void dispose(WebSyncRegistration* registrationRaw);
+    static SyncRegistration* take(ScriptPromiseResolver*, PassOwnPtr<WebSyncRegistration>, ServiceWorkerRegistration*);
 
     virtual ~SyncRegistration();
 
