@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
-import org.chromium.sync.internal_api.pub.PassphraseType;
+import org.chromium.sync.PassphraseType;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 

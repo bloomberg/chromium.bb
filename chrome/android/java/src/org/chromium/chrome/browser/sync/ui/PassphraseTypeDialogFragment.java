@@ -19,7 +19,7 @@ import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.sync.internal_api.pub.PassphraseType;
+import org.chromium.sync.PassphraseType;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
