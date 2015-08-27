@@ -20,6 +20,7 @@
 #ifndef SVGResourcesCycleSolver_h
 #define SVGResourcesCycleSolver_h
 
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 
@@ -30,6 +31,7 @@ class LayoutSVGResourceContainer;
 class SVGResources;
 
 class SVGResourcesCycleSolver {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SVGResourcesCycleSolver);
 public:
     SVGResourcesCycleSolver(LayoutObject*, SVGResources*);

@@ -28,7 +28,7 @@
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutInline.h"
 #include "core/layout/api/LineLayoutText.h"
-
+#include "wtf/Allocator.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -37,6 +37,7 @@ namespace blink {
 // text children. InlineIterator will use bidiNext to find the next LayoutText
 // optionally notifying a BidiResolver every time it steps into/out of a LayoutInline.
 class InlineIterator {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     enum IncrementRule {
         FastIncrementInIsolatedLayout,
@@ -336,6 +337,7 @@ inline void InlineIterator::fastIncrementInTextNode()
 // FIXME: This is used by LayoutBlockFlow for simplified layout, and has nothing to do with bidi
 // it shouldn't use functions called bidiFirst and bidiNext.
 class InlineWalker {
+    STACK_ALLOCATED();
 public:
     InlineWalker(LayoutBlockFlow* root)
         : m_root(LineLayoutBlockFlow(root))
@@ -572,6 +574,7 @@ enum AppendRunBehavior {
 };
 
 class IsolateTracker {
+    STACK_ALLOCATED();
 public:
     explicit IsolateTracker(BidiRunList<BidiRun>& runs, unsigned nestedIsolateCount)
         : m_nestedIsolateCount(nestedIsolateCount)

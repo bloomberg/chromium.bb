@@ -30,6 +30,7 @@
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -37,6 +38,7 @@ class CompositedDeprecatedPaintLayerMapping;
 class DeprecatedPaintLayer;
 
 class CompositingLayerAssigner {
+    STACK_ALLOCATED();
 public:
     explicit CompositingLayerAssigner(DeprecatedPaintLayerCompositor*);
     ~CompositingLayerAssigner();

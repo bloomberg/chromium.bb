@@ -26,10 +26,12 @@
 
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/LineWidth.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class LineInfo {
+    STACK_ALLOCATED();
 public:
     LineInfo()
         : m_isFirstLine(true)

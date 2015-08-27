@@ -6,12 +6,14 @@
 #define CompositingInputsUpdater_h
 
 #include "core/layout/LayoutGeometryMap.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class DeprecatedPaintLayer;
 
 class CompositingInputsUpdater {
+    STACK_ALLOCATED();
 public:
     explicit CompositingInputsUpdater(DeprecatedPaintLayer* rootLayer);
     ~CompositingInputsUpdater();

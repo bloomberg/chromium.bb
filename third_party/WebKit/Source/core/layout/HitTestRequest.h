@@ -23,11 +23,13 @@
 #ifndef HitTestRequest_h
 #define HitTestRequest_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
 class HitTestRequest {
+    DISALLOW_ALLOCATION();
 public:
     enum RequestType {
         ReadOnly = 1 << 1,

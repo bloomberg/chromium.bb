@@ -28,17 +28,20 @@
 #define GraphicsLayerTreeBuilder_h
 
 #include "platform/graphics/GraphicsLayer.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class DeprecatedPaintLayer;
 
 class GraphicsLayerTreeBuilder {
+    STACK_ALLOCATED();
 public:
     GraphicsLayerTreeBuilder();
     ~GraphicsLayerTreeBuilder();
 
     struct AncestorInfo {
+        STACK_ALLOCATED();
         AncestorInfo()
             : enclosingCompositedLayer(nullptr)
             , childLayersOfEnclosingCompositedLayer(nullptr)

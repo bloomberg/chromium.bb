@@ -25,11 +25,13 @@
 #define WordMeasurement_h
 
 #include "platform/fonts/SimpleFontData.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 
 namespace blink {
 
 class WordMeasurement {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     WordMeasurement()
         : layoutText(nullptr)

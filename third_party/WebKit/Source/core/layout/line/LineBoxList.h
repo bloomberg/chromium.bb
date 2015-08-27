@@ -31,6 +31,7 @@
 #define LineBoxList_h
 
 #include "core/layout/api/HitTestAction.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -47,6 +48,7 @@ class LineLayoutItem;
 struct PaintInfo;
 
 class LineBoxList {
+    DISALLOW_ALLOCATION();
 public:
     LineBoxList()
         : m_firstLineBox(nullptr)

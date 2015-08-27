@@ -20,6 +20,7 @@
 #ifndef SVGTextChunkBuilder_h
 #define SVGTextChunkBuilder_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -35,6 +36,7 @@ struct SVGTextFragment;
 // Phase three performs all modifications that have to be applied to each individual text chunk (text-anchor & textLength).
 
 class SVGTextChunkBuilder {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SVGTextChunkBuilder);
 public:
     SVGTextChunkBuilder();
@@ -53,6 +55,7 @@ private:
 };
 
 class SVGTextPathChunkBuilder final : public SVGTextChunkBuilder {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SVGTextPathChunkBuilder);
 public:
     SVGTextPathChunkBuilder();

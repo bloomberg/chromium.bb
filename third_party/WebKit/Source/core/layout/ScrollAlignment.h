@@ -45,6 +45,7 @@
 #define ScrollAlignment_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -61,6 +62,7 @@ enum ScrollAlignmentBehavior {
 class LayoutRect;
 
 struct CORE_EXPORT ScrollAlignment {
+    STACK_ALLOCATED();
     static ScrollAlignmentBehavior getVisibleBehavior(const ScrollAlignment& s) { return s.m_rectVisible; }
     static ScrollAlignmentBehavior getPartialBehavior(const ScrollAlignment& s) { return s.m_rectPartial; }
     static ScrollAlignmentBehavior getHiddenBehavior(const ScrollAlignment& s) { return s.m_rectHidden; }

@@ -32,6 +32,7 @@
 #define ReferenceFilterBuilder_h
 
 #include "core/fetch/DocumentResourceReference.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 
@@ -44,6 +45,7 @@ class ReferenceFilterOperation;
 class ReferenceFilter;
 
 class ReferenceFilterBuilder {
+    STATIC_ONLY(ReferenceFilterBuilder);
 public:
     static DocumentResourceReference* documentResourceReference(const FilterOperation*);
     static void setDocumentResourceReference(const FilterOperation*, PassOwnPtr<DocumentResourceReference>);

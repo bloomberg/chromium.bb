@@ -29,6 +29,7 @@
 
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -38,6 +39,7 @@ class DeprecatedPaintLayer;
 class LayoutView;
 
 class CompositingRequirementsUpdater {
+    STACK_ALLOCATED();
 public:
     CompositingRequirementsUpdater(LayoutView&, CompositingReasonFinder&);
     ~CompositingRequirementsUpdater();

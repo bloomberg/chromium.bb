@@ -22,6 +22,7 @@
 
 #include "core/layout/svg/SVGTextLayoutAttributes.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 #include "wtf/text/Unicode.h"
 
@@ -41,6 +42,7 @@ class SVGTextPositioningElement;
 // The second layout phase is carried out by SVGTextLayoutEngine.
 
 class SVGTextLayoutAttributesBuilder {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributesBuilder);
 public:
     SVGTextLayoutAttributesBuilder();

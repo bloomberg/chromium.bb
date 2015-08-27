@@ -100,6 +100,7 @@ typedef unsigned MapCoordinatesFlags;
 const LayoutUnit& caretWidth();
 
 struct AnnotatedRegionValue {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     bool operator==(const AnnotatedRegionValue& o) const
     {
         return draggable == o.draggable && bounds == o.bounds;
@@ -820,6 +821,7 @@ public:
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
 
     struct AppliedTextDecoration {
+        STACK_ALLOCATED();
         Color color;
         TextDecorationStyle style;
         AppliedTextDecoration() : color(Color::transparent), style(TextDecorationStyleSolid) { }
@@ -1439,6 +1441,7 @@ private:
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer hit.
 class DeprecatedDisableModifyLayoutTreeStructureAsserts {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(DeprecatedDisableModifyLayoutTreeStructureAsserts);
 public:
     DeprecatedDisableModifyLayoutTreeStructureAsserts();
@@ -1452,6 +1455,7 @@ private:
 // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
 // Remove this once we fix the bug.
 class DisablePaintInvalidationStateAsserts {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(DisablePaintInvalidationStateAsserts);
 public:
     DisablePaintInvalidationStateAsserts();

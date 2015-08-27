@@ -24,10 +24,12 @@
 #define GapRects_h
 
 #include "platform/geometry/LayoutRect.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 struct GapRects {
+    STACK_ALLOCATED();
     const LayoutRect& left() const { return m_left; }
     const LayoutRect& center() const { return m_center; }
     const LayoutRect& right() const { return m_right; }

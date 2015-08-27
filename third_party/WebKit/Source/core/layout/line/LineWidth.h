@@ -32,6 +32,7 @@
 
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "platform/LayoutUnit.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -42,6 +43,7 @@ enum IndentTextOrNot { DoNotIndentText, IndentText };
 enum WhitespaceTreatment { ExcludeWhitespace, IncludeWhitespace };
 
 class LineWidth {
+    STACK_ALLOCATED();
 public:
     LineWidth(LineLayoutBlockFlow, bool isFirstLine, IndentTextOrNot shouldIndentText);
 

@@ -243,6 +243,7 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());
 // containers don't follow the common tree-walk algorithm (e.g. when an absolute positioned descendant
 // is nested under a relatively positioned inline-block child).
 class ForceHorriblySlowRectMapping {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ForceHorriblySlowRectMapping);
 public:
     ForceHorriblySlowRectMapping(const PaintInvalidationState* paintInvalidationState)

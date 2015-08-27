@@ -21,6 +21,7 @@
 #define SVGTextMetrics_h
 
 #include "platform/text/TextDirection.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -28,6 +29,7 @@ class LayoutSVGInlineText;
 class TextRun;
 
 class SVGTextMetrics {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     enum MetricsType {
         SkippedSpaceMetrics

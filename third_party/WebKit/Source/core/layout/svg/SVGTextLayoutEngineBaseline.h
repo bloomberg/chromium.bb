@@ -21,6 +21,7 @@
 #define SVGTextLayoutEngineBaseline_h
 
 #include "core/style/SVGComputedStyleDefs.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/Unicode.h"
 
@@ -34,6 +35,7 @@ class SVGTextMetrics;
 
 // Helper class used by SVGTextLayoutEngine to handle 'alignment-baseline' / 'dominant-baseline' and 'baseline-shift'.
 class SVGTextLayoutEngineBaseline {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutEngineBaseline);
 public:
     SVGTextLayoutEngineBaseline(const Font&, float effectiveZoom);

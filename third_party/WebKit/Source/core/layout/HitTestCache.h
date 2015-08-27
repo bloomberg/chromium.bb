@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/HitTestResult.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -34,6 +35,8 @@ namespace blink {
 #define HIT_TEST_CACHE_SIZE (2)
 
 class CORE_EXPORT HitTestCache final : public NoBaseWillBeGarbageCollectedFinalized<HitTestCache> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HitTestCache);
+    WTF_MAKE_NONCOPYABLE(HitTestCache);
 public:
     static PassOwnPtrWillBeRawPtr<HitTestCache> create()
     {

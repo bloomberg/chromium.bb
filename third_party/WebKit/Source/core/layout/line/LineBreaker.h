@@ -26,6 +26,7 @@
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/LineInfo.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -35,6 +36,7 @@ enum WhitespacePosition { LeadingWhitespace, TrailingWhitespace };
 struct LayoutTextInfo;
 
 class LineBreaker {
+    STACK_ALLOCATED();
 public:
     friend class BreakingContext;
     LineBreaker(LineLayoutBlockFlow block)

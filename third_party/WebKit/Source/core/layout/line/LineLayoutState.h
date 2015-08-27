@@ -26,12 +26,14 @@
 
 #include "core/layout/LayoutBlockFlow.h"
 #include "platform/geometry/LayoutRect.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 // Like LayoutState for layout(), LineLayoutState keeps track of global information
 // during an entire linebox tree layout pass (aka layoutInlineChildren).
 class LineLayoutState {
+    STACK_ALLOCATED();
 public:
     LineLayoutState(bool fullLayout, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutFlowThread* flowThread)
         : m_lastFloat(nullptr)

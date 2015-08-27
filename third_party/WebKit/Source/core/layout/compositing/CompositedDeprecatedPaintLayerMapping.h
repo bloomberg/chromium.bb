@@ -32,6 +32,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -39,6 +40,7 @@ class DeprecatedPaintLayerCompositor;
 
 // A GraphicsLayerPaintInfo contains all the info needed to paint a partial subtree of Layers into a GraphicsLayer.
 struct GraphicsLayerPaintInfo {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     DeprecatedPaintLayer* paintLayer;
 
     LayoutRect compositedBounds;

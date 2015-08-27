@@ -21,11 +21,13 @@
 #define SVGSubpathData_h
 
 #include "platform/graphics/Path.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class SVGSubpathData {
+    STACK_ALLOCATED();
 public:
     SVGSubpathData(Vector<FloatPoint>& zeroLengthSubpathLocations)
         : m_zeroLengthSubpathLocations(zeroLengthSubpathLocations)

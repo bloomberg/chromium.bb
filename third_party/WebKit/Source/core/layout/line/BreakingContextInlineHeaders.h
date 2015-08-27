@@ -42,6 +42,7 @@
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/text/TextBreakIterator.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -50,6 +51,7 @@ namespace blink {
 const unsigned cMaxLineDepth = 200;
 
 class BreakingContext {
+    STACK_ALLOCATED();
 public:
     BreakingContext(InlineBidiResolver& resolver, LineInfo& inLineInfo, LineWidth& lineWidth, LayoutTextInfo& inLayoutTextInfo, FloatingObject* inLastFloatFromPreviousLine, bool appliedStartWidth, LineLayoutBlockFlow block)
         : m_resolver(resolver)

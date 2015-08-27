@@ -29,6 +29,7 @@
 
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -37,6 +38,7 @@ class LayoutObject;
 
 // Stores data about how to map from one layoutObject to its container.
 struct LayoutGeometryMapStep {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     LayoutGeometryMapStep(const LayoutGeometryMapStep& o)
         : m_layoutObject(o.m_layoutObject)
         , m_offset(o.m_offset)

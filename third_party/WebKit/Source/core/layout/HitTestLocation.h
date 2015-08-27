@@ -26,6 +26,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
@@ -36,6 +37,7 @@ namespace blink {
 class FloatRoundedRect;
 
 class CORE_EXPORT HitTestLocation {
+    DISALLOW_ALLOCATION();
 public:
 
     // Note that all points are in contents (aka "page") coordinate space for the

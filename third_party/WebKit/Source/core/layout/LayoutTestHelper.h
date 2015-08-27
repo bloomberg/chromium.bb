@@ -10,12 +10,14 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include <gtest/gtest.h>
 
 namespace blink {
 
 class RenderingTest : public testing::Test {
+    WTF_MAKE_FAST_ALLOCATED(RenderingTest);
 protected:
     void SetUp() override;
 

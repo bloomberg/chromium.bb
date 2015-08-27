@@ -7,6 +7,7 @@
 
 #include "core/layout/compositing/CompositingTriggers.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -17,6 +18,7 @@ class ComputedStyle;
 class LayoutView;
 
 class CompositingReasonFinder {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(CompositingReasonFinder);
 public:
     explicit CompositingReasonFinder(LayoutView&);

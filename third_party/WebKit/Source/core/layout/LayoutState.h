@@ -27,6 +27,7 @@
 #define LayoutState_h
 
 #include "platform/geometry/LayoutRect.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 
@@ -39,6 +40,7 @@ class LayoutObject;
 class LayoutView;
 
 class LayoutState {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(LayoutState);
 public:
     // Constructor for root LayoutState created by LayoutView

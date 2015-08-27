@@ -22,6 +22,7 @@
 
 #include "platform/FloatConversion.h"
 #include "platform/graphics/Path.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -33,6 +34,7 @@ enum SVGMarkerType {
 };
 
 struct MarkerPosition {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     MarkerPosition(SVGMarkerType useType, const FloatPoint& useOrigin, float useAngle)
         : type(useType)
         , origin(useOrigin)
@@ -48,6 +50,7 @@ struct MarkerPosition {
 class LayoutSVGResourceMarker;
 
 class SVGMarkerData {
+    STACK_ALLOCATED();
 public:
     SVGMarkerData(Vector<MarkerPosition>& positions, bool autoStartReverse)
         : m_positions(positions)

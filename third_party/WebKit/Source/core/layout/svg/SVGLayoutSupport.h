@@ -27,6 +27,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/style/SVGComputedStyleDefs.h"
 #include "platform/graphics/DashArray.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -45,6 +46,7 @@ class StrokeData;
 class TransformState;
 
 class SVGLayoutSupport {
+    STATIC_ONLY(SVGLayoutSupport);
 public:
     // Shares child layouting code between LayoutSVGRoot/LayoutSVG(Hidden)Container
     static void layoutChildren(LayoutObject*, bool selfNeedsLayout);
@@ -111,6 +113,7 @@ private:
 };
 
 class SubtreeContentTransformScope {
+    STACK_ALLOCATED();
 public:
     SubtreeContentTransformScope(const AffineTransform&);
     ~SubtreeContentTransformScope();

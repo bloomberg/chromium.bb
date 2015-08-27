@@ -33,10 +33,12 @@
 
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 struct CompositedSelectionBound {
+    STACK_ALLOCATED();
     CompositedSelectionBound()
         : layer(nullptr)
         , isTextDirectionRTL(false)

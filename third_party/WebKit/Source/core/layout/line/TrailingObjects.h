@@ -26,6 +26,7 @@
 
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/LineLayoutText.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -53,6 +54,7 @@ typedef MidpointState<InlineIterator> LineMidpointState;
 // them in the right place when we start ignoring surplus whitespace.
 
 class TrailingObjects {
+    STACK_ALLOCATED();
 public:
     TrailingObjects()
         : m_whitespace(nullptr)

@@ -24,6 +24,7 @@
 
 #include "core/editing/Position.h"
 #include "core/editing/VisibleSelection.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -31,6 +32,7 @@ class Document;
 class FrameSelection;
 
 class PendingSelection final : public NoBaseWillBeGarbageCollected<PendingSelection> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PendingSelection);
 public:
     static PassOwnPtrWillBeRawPtr<PendingSelection> create()
     {

@@ -28,13 +28,14 @@
 #define GraphicsLayerUpdater_h
 
 #include "platform/graphics/GraphicsLayer.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class DeprecatedPaintLayer;
 
 class GraphicsLayerUpdater {
-
+    STACK_ALLOCATED();
 public:
     GraphicsLayerUpdater();
     ~GraphicsLayerUpdater();

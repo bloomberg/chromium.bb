@@ -7,6 +7,7 @@
 
 #include "platform/geometry/LayoutRect.h"
 #include "platform/transforms/AffineTransform.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -17,6 +18,7 @@ class LayoutSVGModelObject;
 class LayoutView;
 
 class PaintInvalidationState {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
     PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& layoutObject, const LayoutBoxModelObject& paintInvalidationContainer);

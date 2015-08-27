@@ -39,6 +39,7 @@
 namespace blink {
 
 class RasterShapeIntervals {
+    WTF_MAKE_FAST_ALLOCATED(RasterShapeIntervals);
 public:
     RasterShapeIntervals(unsigned size, int offset = 0)
         : m_offset(offset)

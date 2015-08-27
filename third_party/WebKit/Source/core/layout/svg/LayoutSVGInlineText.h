@@ -70,6 +70,7 @@ private:
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInlineText, isSVGInlineText());
 
 class SVGInlineTextMetricsIterator {
+    DISALLOW_ALLOCATION();
 public:
     SVGInlineTextMetricsIterator() { reset(nullptr); }
 

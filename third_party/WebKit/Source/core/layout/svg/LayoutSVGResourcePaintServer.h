@@ -24,6 +24,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/Pattern.h"
+#include "wtf/Allocator.h"
 
 class SkPaint;
 
@@ -39,6 +40,7 @@ class LayoutSVGResourcePaintServer;
 class ComputedStyle;
 
 class SVGPaintServer {
+    STACK_ALLOCATED();
 public:
     explicit SVGPaintServer(Color);
     explicit SVGPaintServer(PassRefPtr<Gradient>);
@@ -63,6 +65,7 @@ private:
 
 // If |SVGPaintDescription::hasFallback| is true, |SVGPaintDescription::color| is set to a fallback color.
 struct SVGPaintDescription {
+    STACK_ALLOCATED();
     SVGPaintDescription() : resource(nullptr), isValid(false), hasFallback(false) { }
     SVGPaintDescription(Color color) : resource(nullptr), color(color), isValid(true), hasFallback(false) { }
     SVGPaintDescription(LayoutSVGResourcePaintServer* resource) : resource(resource), isValid(true), hasFallback(false) { ASSERT(resource); }

@@ -37,6 +37,7 @@
 namespace blink {
 
 class OffsetPolygonEdge final : public VertexPair {
+    DISALLOW_ALLOCATION();
 public:
     OffsetPolygonEdge(const FloatPolygonEdge& edge, const FloatSize& offset)
         : m_vertex1(edge.vertex1() + offset)

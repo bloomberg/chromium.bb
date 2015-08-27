@@ -43,6 +43,7 @@ enum CollapsedBorderSide {
 
 // Helper class for paintObject.
 class CellSpan {
+    STACK_ALLOCATED();
 public:
     CellSpan(unsigned start, unsigned end)
         : m_start(start)
@@ -92,6 +93,7 @@ public:
     typedef Vector<LayoutTableCell*, 2> SpanningLayoutTableCells;
 
     struct CellStruct {
+        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         Vector<LayoutTableCell*, 1> cells;
         bool inColSpan; // true for columns after the first in a colspan
@@ -117,6 +119,7 @@ public:
     typedef Vector<CellStruct> Row;
 
     struct RowStruct {
+        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         RowStruct()
             : rowLayoutObject(nullptr)
@@ -131,6 +134,7 @@ public:
     };
 
     struct SpanningRowsHeight {
+        STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(SpanningRowsHeight);
 
     public:

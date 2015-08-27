@@ -34,6 +34,7 @@ class MouseEvent;
 enum FrameEdge { LeftFrameEdge, RightFrameEdge, TopFrameEdge, BottomFrameEdge };
 
 struct FrameEdgeInfo {
+    STACK_ALLOCATED();
     FrameEdgeInfo(bool preventResize = false, bool allowBorder = true)
         : m_preventResize(4)
         , m_allowBorder(4)
@@ -79,6 +80,7 @@ public:
     HTMLFrameSetElement* frameSet() const;
 
     class GridAxis {
+        DISALLOW_ALLOCATION();
         WTF_MAKE_NONCOPYABLE(GridAxis);
     public:
         GridAxis();

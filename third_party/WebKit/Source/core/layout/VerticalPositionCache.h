@@ -27,6 +27,7 @@
 #define VerticalPositionCache_h
 
 #include "platform/fonts/FontBaseline.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -37,6 +38,7 @@ class LayoutObject;
 const int PositionUndefined = 0x80000000;
 
 class VerticalPositionCache {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(VerticalPositionCache);
 public:
     VerticalPositionCache()

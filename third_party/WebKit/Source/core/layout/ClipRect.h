@@ -27,6 +27,7 @@
 #define ClipRect_h
 
 #include "platform/geometry/LayoutRect.h"
+#include "wtf/FastAllocBase.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -35,6 +36,7 @@ class DeprecatedPaintLayer;
 class HitTestLocation;
 
 class ClipRect {
+    WTF_MAKE_FAST_ALLOCATED(ClipRect);
 public:
     static PassOwnPtr<ClipRect> create(const ClipRect& other)
     {

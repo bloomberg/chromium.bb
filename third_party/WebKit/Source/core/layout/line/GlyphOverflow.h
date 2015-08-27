@@ -26,11 +26,13 @@
 #define GlyphOverflow_h
 
 #include "platform/geometry/FloatRect.h"
+#include "wtf/Allocator.h"
 #include <math.h>
 
 namespace blink {
 
 struct GlyphOverflow {
+    STACK_ALLOCATED();
     GlyphOverflow()
         : left(0)
         , right(0)

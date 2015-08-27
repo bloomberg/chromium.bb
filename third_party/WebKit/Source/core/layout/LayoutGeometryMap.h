@@ -33,6 +33,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -44,6 +45,7 @@ class TransformState;
 
 // Can be used while walking the layout tree to cache data about offsets and transforms.
 class CORE_EXPORT LayoutGeometryMap {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(LayoutGeometryMap);
 public:
     LayoutGeometryMap(MapCoordinatesFlags = UseTransforms);

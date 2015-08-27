@@ -9,6 +9,7 @@
 #include "core/layout/LayoutObjectInlines.h"
 
 #include "platform/LayoutUnit.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -24,6 +25,7 @@ class LineLayoutPaintShim;
 enum HitTestFilter;
 
 class LineLayoutItem {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     explicit LineLayoutItem(LayoutObject* layoutObject)
         : m_layoutObject(layoutObject)
