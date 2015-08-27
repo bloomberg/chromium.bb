@@ -95,16 +95,16 @@ are some general rules:
 
 *  If your test code lives under /content, it will probably be built as part of
    the content\_shell\_test\_apk * If your test code lives under /chrome (or
-   higher), it will probably be built as part of the chrome\_shell\_test\_apk *
+   higher), it will probably be built as part of the chrome\_public\_test\_apk *
    (Please fill in more details here if you know them).
 
-   NB: We used to call the chrome\_shell\_test\_apk the
+   NB: We used to call the chrome\_public\_test\_apk the
    chromium\_shell\_test\_apk. There may still be references to this kicking
    around, but wherever you see chromium\_shell\_test you should replace with
-   chrome\_shell\_test.
+   chrome\_public\_test.
 
 Once you know what to build, just do it like you normally would build anything
-else, e.g.: `ninja -C out/Release chrome_shell_test_apk`
+else, e.g.: `ninja -C out/Release chrome_public_test_apk`
 
 ## Running Tests
 
@@ -190,21 +190,21 @@ build/android/test_runner.py instrumentation --test-apk=ContentShellTest \
 --isolate-file-path content/content_shell_test_apk.isolate --release -vv
 ```
 
-ChromeShell tests:
+ChromePublic tests:
 
 ```shell
 # Build the code under test
-ninja -C out/Release chrome_shell_apk
+ninja -C out/Release chrome_public_apk
 
 # Build the tests themselves
-ninja -C out/Release chrome_shell_test_apk
+ninja -C out/Release chrome_public_test_apk
 
 # Install the code under test
-build/android/adb_install_apk.py out/Release/apks/ChromeShell.apk
+build/android/adb_install_apk.py out/Release/apks/ChromePublic.apk
 
 # Run the test (will automagically install the test APK)
-build/android/test_runner.py instrumentation --test-apk=ChromeShellTest \
---isolate-file-path chrome/chrome_shell_test_apk.isolate --release -vv
+build/android/test_runner.py instrumentation --test-apk=ChromePublicTest \
+--isolate-file-path chrome/chrome_public_test_apk.isolate --release -vv
 ```
 
 AndroidWebView tests:
