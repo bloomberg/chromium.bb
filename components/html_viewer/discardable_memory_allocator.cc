@@ -24,6 +24,7 @@ class DiscardableMemoryAllocator::DiscardableMemoryChunkImpl
         allocator_(allocator) {}
 
   ~DiscardableMemoryChunkImpl() override {
+    base::AutoLock lock(allocator_->lock_);
     // Either the memory is discarded or the memory chunk is unlocked.
     DCHECK(data_ || !is_locked_);
     if (!is_locked_ && data_)
@@ -32,6 +33,7 @@ class DiscardableMemoryAllocator::DiscardableMemoryChunkImpl
 
   // Overridden from DiscardableMemoryChunk:
   bool Lock() override {
+    base::AutoLock lock(allocator_->lock_);
     DCHECK(!is_locked_);
     if (!data_)
       return false;
@@ -42,6 +44,7 @@ class DiscardableMemoryAllocator::DiscardableMemoryChunkImpl
   }
 
   void Unlock() override {
+    base::AutoLock lock(allocator_->lock_);
     DCHECK(is_locked_);
     DCHECK(data_);
     is_locked_ = false;
@@ -74,6 +77,7 @@ class DiscardableMemoryAllocator::DiscardableMemoryChunkImpl
   size_t size() const { return size_; }
 
   void Discard() {
+    allocator_->lock_.AssertAcquired();
     DCHECK(!is_locked_);
     data_.reset();
   }
@@ -125,21 +129,21 @@ DiscardableMemoryAllocator::AllocateLockedDiscardableMemory(size_t size) {
 
 std::list<DiscardableMemoryAllocator::DiscardableMemoryChunkImpl*>::iterator
 DiscardableMemoryAllocator::NotifyUnlocked(DiscardableMemoryChunkImpl* chunk) {
-  base::AutoLock lock(lock_);
+  lock_.AssertAcquired();
   locked_chunks_--;
   return live_unlocked_chunks_.insert(live_unlocked_chunks_.end(), chunk);
 }
 
 void DiscardableMemoryAllocator::NotifyLocked(
     std::list<DiscardableMemoryChunkImpl*>::iterator it) {
-  base::AutoLock lock(lock_);
+  lock_.AssertAcquired();
   locked_chunks_++;
   live_unlocked_chunks_.erase(it);
 }
 
 void DiscardableMemoryAllocator::NotifyDestructed(
     std::list<DiscardableMemoryChunkImpl*>::iterator it) {
-  base::AutoLock lock(lock_);
+  lock_.AssertAcquired();
   live_unlocked_chunks_.erase(it);
 }
 
