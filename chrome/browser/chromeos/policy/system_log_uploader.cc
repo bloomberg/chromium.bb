@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
@@ -27,9 +28,8 @@ namespace {
 // The maximum number of successive retries.
 const int kMaxNumRetries = 1;
 
-// String constant defining the url we upload system logs to.
-const char* kSystemLogUploadUrl =
-    "https://m.google.com/devicemanagement/data/api/upload";
+// String constant defining the url tail we upload system logs to.
+const char* kSystemLogUploadUrlTail = "/upload";
 
 // The file names of the system logs to upload.
 // Note: do not add anything to this list without checking for PII in the file.
@@ -153,6 +153,11 @@ base::TimeDelta GetUploadFrequency() {
 void RecordSystemLogPIILeak(policy::SystemLogPIIType type) {
   UMA_HISTOGRAM_ENUMERATION(policy::kMetricSystemLogPII, type,
                             policy::SYSTEM_LOG_PII_TYPE_SIZE);
+}
+
+std::string GetUploadUrl() {
+  return policy::BrowserPolicyConnector::GetDeviceManagementUrl() +
+         kSystemLogUploadUrlTail;
 }
 
 }  // namespace
@@ -302,7 +307,7 @@ void SystemLogUploader::UploadSystemLogs(scoped_ptr<SystemLogs> system_logs) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!upload_job_);
 
-  GURL upload_url(kSystemLogUploadUrl);
+  GURL upload_url(GetUploadUrl());
   DCHECK(upload_url.is_valid());
   upload_job_ = syslog_delegate_->CreateUploadJob(upload_url, this);
 
