@@ -66,7 +66,13 @@ void resetInternalsObject(v8::Local<v8::Context> context)
 
     ScriptState* scriptState = ScriptState::from(context);
     ScriptState::Scope scope(scriptState);
-    Page* page = toDocument(scriptState->executionContext())->frame()->page();
+    Document* document = toDocument(scriptState->executionContext());
+    ASSERT(document);
+    LocalFrame* frame = document->frame();
+    // Should the document have been detached, the page is assumed being destroyed (=> no reset required.)
+    if (!frame)
+        return;
+    Page* page = frame->page();
     ASSERT(page);
     Internals::resetToConsistentState(page);
     InternalSettings::from(*page)->resetToConsistentState();
