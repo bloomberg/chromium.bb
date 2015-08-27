@@ -179,6 +179,36 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
 }
 #endif
 
+void AddOnStartupStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString(
+      "onStartup",
+      IDS_SETTINGS_ON_STARTUP);
+  html_source->AddLocalizedString(
+      "onStartupOpenNewTab",
+      IDS_SETTINGS_ON_STARTUP_OPEN_NEW_TAB);
+  html_source->AddLocalizedString(
+      "onStartupContinue",
+      IDS_SETTINGS_ON_STARTUP_CONTINUE);
+  html_source->AddLocalizedString(
+      "onStartupOpenSpecific",
+      IDS_SETTINGS_ON_STARTUP_OPEN_SPECIFIC);
+  html_source->AddLocalizedString(
+      "onStartupAddPage",
+      IDS_SETTINGS_ON_STARTUP_ADD_PAGE);
+  html_source->AddLocalizedString(
+      "onStartupSetPages",
+      IDS_SETTINGS_ON_STARTUP_SET_PAGES);
+  html_source->AddLocalizedString(
+      "onStartupUseCurrent",
+      IDS_SETTINGS_ON_STARTUP_USE_CURRENT);
+  html_source->AddLocalizedString(
+      "onStartupAddNewPage",
+      IDS_SETTINGS_ON_STARTUP_ADD_NEW_PAGE);
+  html_source->AddLocalizedString(
+      "onStartupEnterUrl",
+      IDS_SETTINGS_ON_STARTUP_ENTER_URL);
+}
+
 void AddPrivacyStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("privacyPageTitle",
                                   IDS_SETTINGS_PRIVACY);
@@ -380,6 +410,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
   AddInternetStrings(html_source);
 #endif
+  AddOnStartupStrings(html_source);
   AddPrivacyStrings(html_source);
   AddSearchStrings(html_source);
   AddSearchEnginesStrings(html_source);

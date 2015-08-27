@@ -182,6 +182,35 @@
     Known Networks
   </message>
 
+  <!-- On Startup Page -->
+  <message name="IDS_SETTINGS_ON_STARTUP" desc="Name of the on startup page.">
+    On Startup
+  </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_OPEN_NEW_TAB" desc="Radio button option to open the new tab page.">
+    Open the New Tab page
+  </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_CONTINUE" desc="Radio button option to continue where you left off.">
+    Continue where you left off
+  </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_OPEN_SPECIFIC" desc="Radio button option to open a specific set of pages.">
+    Open a specific page or set of pages
+  </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_ADD_PAGE" desc="Button to add a page.">
+    Add Page
+  </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_SET_PAGES" desc="Button to set pages.">
+    Set Pages
+  </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_USE_CURRENT" desc="Button to use current pages.">
+    Use Current Pages
+  </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_ADD_NEW_PAGE" desc="Entry prompt to add a new page.">
+    Add a new page
+  </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_ENTER_URL" desc="Example entry prompt to add a new page.">
+    Enter URL...
+  </message>
+
   <!-- Privacy Page -->
   <message name="IDS_SETTINGS_PRIVACY" desc="Name of the settings page which allows users to modify privacy and security settings.">
     Privacy &amp; Security
