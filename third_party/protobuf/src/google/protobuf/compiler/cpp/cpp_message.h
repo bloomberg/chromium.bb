@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -35,12 +35,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
-#include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
-#include <vector>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
 
@@ -61,14 +57,14 @@ class ExtensionGenerator;      // extension.h
 class MessageGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
-  MessageGenerator(const Descriptor* descriptor, const Options& options);
+  explicit MessageGenerator(const Descriptor* descriptor,
+                            const Options& options);
   ~MessageGenerator();
 
   // Header stuff.
 
   // Generate foward declarations for this class and all its nested types.
-  void GenerateMessageForwardDeclaration(io::Printer* printer);
-  void GenerateEnumForwardDeclaration(io::Printer* printer);
+  void GenerateForwardDeclaration(io::Printer* printer);
 
   // Generate definitions of all nested enums (must come before class
   // definitions because those classes use the enums definitions).
@@ -83,10 +79,7 @@ class MessageGenerator {
 
   // Generate definitions of inline methods (placed at the end of the header
   // file).
-  void GenerateInlineMethods(io::Printer* printer, bool is_inline);
-
-  // Dependent methods are always inline.
-  void GenerateDependentInlineMethods(io::Printer* printer);
+  void GenerateInlineMethods(io::Printer* printer);
 
   // Source file stuff.
 
@@ -119,11 +112,8 @@ class MessageGenerator {
 
  private:
   // Generate declarations and definitions of accessors for fields.
-  void GenerateDependentBaseClassDefinition(io::Printer* printer);
-  void GenerateDependentFieldAccessorDeclarations(io::Printer* printer);
   void GenerateFieldAccessorDeclarations(io::Printer* printer);
-  void GenerateDependentFieldAccessorDefinitions(io::Printer* printer);
-  void GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline);
+  void GenerateFieldAccessorDefinitions(io::Printer* printer);
 
   // Generate the field offsets array.
   void GenerateOffsets(io::Printer* printer);
@@ -139,12 +129,9 @@ class MessageGenerator {
   void GenerateSharedConstructorCode(io::Printer* printer);
   // Generate the shared destructor code.
   void GenerateSharedDestructorCode(io::Printer* printer);
-  // Generate the arena-specific destructor code.
-  void GenerateArenaDestructorCode(io::Printer* printer);
 
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
-  void GenerateOneofClear(io::Printer* printer);
   void GenerateMergeFromCodedStream(io::Printer* printer);
   void GenerateSerializeWithCachedSizes(io::Printer* printer);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer);
@@ -165,32 +152,13 @@ class MessageGenerator {
       bool unbounded);
 
 
-  // Generates has_foo() functions and variables for singular field has-bits.
-  void GenerateSingularFieldHasBits(const FieldDescriptor* field,
-                                    map<string, string> vars,
-                                    io::Printer* printer);
-  // Generates has_foo() functions and variables for oneof field has-bits.
-  void GenerateOneofHasBits(io::Printer* printer, bool is_inline);
-  // Generates has_foo_bar() functions for oneof members.
-  void GenerateOneofMemberHasBits(const FieldDescriptor* field,
-                                  const map<string, string>& vars,
-                                  io::Printer* printer);
-  // Generates the clear_foo() method for a field.
-  void GenerateFieldClear(const FieldDescriptor* field,
-                          const map<string, string>& vars,
-                          io::Printer* printer);
-
   const Descriptor* descriptor_;
   string classname_;
   Options options_;
   FieldGeneratorMap field_generators_;
-  vector< vector<string> > runs_of_fields_;  // that might be trivially cleared
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<MessageGenerator> > nested_generators_;
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<EnumGenerator> > enum_generators_;
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<ExtensionGenerator> > extension_generators_;
-  int num_required_fields_;
-  bool uses_string_;
-  bool use_dependent_base_;
+  scoped_array<scoped_ptr<MessageGenerator> > nested_generators_;
+  scoped_array<scoped_ptr<EnumGenerator> > enum_generators_;
+  scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);
 };

@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -48,6 +48,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+
 // Implementation of ExtensionFinder which finds extensions in a given
 // DescriptorPool, using the given MessageFactory to construct sub-objects.
 // This class is implemented in extension_set_heavy.cc.
@@ -67,10 +68,9 @@ class DescriptorPoolExtensionFinder : public ExtensionFinder {
   const Descriptor* containing_type_;
 };
 
-void ExtensionSet::AppendToList(
-    const Descriptor* containing_type,
-    const DescriptorPool* pool,
-    std::vector<const FieldDescriptor*>* output) const {
+void ExtensionSet::AppendToList(const Descriptor* containing_type,
+                                const DescriptorPool* pool,
+                                vector<const FieldDescriptor*>* output) const {
   for (map<int, Extension>::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     bool has = false;
@@ -146,7 +146,7 @@ MessageLite* ExtensionSet::MutableMessage(const FieldDescriptor* descriptor,
     const MessageLite* prototype =
         factory->GetPrototype(descriptor->message_type());
     extension->is_lazy = false;
-    extension->message_value = prototype->New(arena_);
+    extension->message_value = prototype->New();
     extension->is_cleared = false;
     return extension->message_value;
   } else {
@@ -172,17 +172,10 @@ MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
     MessageLite* ret = NULL;
     if (iter->second.is_lazy) {
       ret = iter->second.lazymessage_value->ReleaseMessage(
-          *factory->GetPrototype(descriptor->message_type()));
-      if (arena_ == NULL) {
-        delete iter->second.lazymessage_value;
-      }
+        *factory->GetPrototype(descriptor->message_type()));
+      delete iter->second.lazymessage_value;
     } else {
-      if (arena_ != NULL) {
-        ret = (iter->second.message_value)->New();
-        ret->CheckTypeAndMergeFrom(*(iter->second.message_value));
-      } else {
-        ret = iter->second.message_value;
-      }
+      ret = iter->second.message_value;
     }
     extensions_.erase(descriptor->number());
     return ret;
@@ -197,7 +190,7 @@ MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
     GOOGLE_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
-        ::google::protobuf::Arena::CreateMessage<RepeatedPtrField<MessageLite> >(arena_);
+      new RepeatedPtrField<MessageLite>();
   } else {
     GOOGLE_DCHECK_TYPE(*extension, REPEATED, MESSAGE);
   }
@@ -214,7 +207,7 @@ MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
     } else {
       prototype = &extension->repeated_message_value->Get(0);
     }
-    result = prototype->New(arena_);
+    result = prototype->New();
     extension->repeated_message_value->AddAllocated(result);
   }
   return result;
@@ -517,6 +510,123 @@ uint8* ExtensionSet::Extension::SerializeMessageSetItemWithCachedSizesToArray(
 }
 
 
+bool ExtensionSet::ParseFieldMaybeLazily(
+    uint32 tag, io::CodedInputStream* input,
+    ExtensionFinder* extension_finder,
+    FieldSkipper* field_skipper) {
+  return ParseField(tag, input, extension_finder, field_skipper);
+}
+
+bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
+                                   ExtensionFinder* extension_finder,
+                                   FieldSkipper* field_skipper) {
+  while (true) {
+    uint32 tag = input->ReadTag();
+    switch (tag) {
+      case 0:
+        return true;
+      case WireFormatLite::kMessageSetItemStartTag:
+        if (!ParseMessageSetItem(input, extension_finder, field_skipper)) {
+          return false;
+        }
+        break;
+      default:
+        if (!ParseField(tag, input, extension_finder, field_skipper)) {
+          return false;
+        }
+        break;
+    }
+  }
+}
+
+bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
+                                   const MessageLite* containing_type,
+                                   UnknownFieldSet* unknown_fields) {
+  FieldSkipper skipper(unknown_fields);
+  GeneratedExtensionFinder finder(containing_type);
+  return ParseMessageSet(input, &finder, &skipper);
+}
+
+bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
+                                       ExtensionFinder* extension_finder,
+                                       FieldSkipper* field_skipper) {
+  // TODO(kenton):  It would be nice to share code between this and
+  // WireFormatLite::ParseAndMergeMessageSetItem(), but I think the
+  // differences would be hard to factor out.
+
+  // This method parses a group which should contain two fields:
+  //   required int32 type_id = 2;
+  //   required data message = 3;
+
+  // Once we see a type_id, we'll construct a fake tag for this extension
+  // which is the tag it would have had under the proto2 extensions wire
+  // format.
+  uint32 fake_tag = 0;
+
+  // If we see message data before the type_id, we'll append it to this so
+  // we can parse it later.
+  string message_data;
+
+  while (true) {
+    uint32 tag = input->ReadTag();
+    if (tag == 0) return false;
+
+    switch (tag) {
+      case WireFormatLite::kMessageSetTypeIdTag: {
+        uint32 type_id;
+        if (!input->ReadVarint32(&type_id)) return false;
+        fake_tag = WireFormatLite::MakeTag(type_id,
+            WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+
+        if (!message_data.empty()) {
+          // We saw some message data before the type_id.  Have to parse it
+          // now.
+          io::CodedInputStream sub_input(
+              reinterpret_cast<const uint8*>(message_data.data()),
+              message_data.size());
+          if (!ParseFieldMaybeLazily(fake_tag, &sub_input,
+                                     extension_finder, field_skipper)) {
+            return false;
+          }
+          message_data.clear();
+        }
+
+        break;
+      }
+
+      case WireFormatLite::kMessageSetMessageTag: {
+        if (fake_tag == 0) {
+          // We haven't seen a type_id yet.  Append this data to message_data.
+          string temp;
+          uint32 length;
+          if (!input->ReadVarint32(&length)) return false;
+          if (!input->ReadString(&temp, length)) return false;
+          io::StringOutputStream output_stream(&message_data);
+          io::CodedOutputStream coded_output(&output_stream);
+          coded_output.WriteVarint32(length);
+          coded_output.WriteString(temp);
+        } else {
+          // Already saw type_id, so we can parse this directly.
+          if (!ParseFieldMaybeLazily(fake_tag, input,
+                                     extension_finder, field_skipper)) {
+            return false;
+          }
+        }
+
+        break;
+      }
+
+      case WireFormatLite::kMessageSetItemEndTag: {
+        return true;
+      }
+
+      default: {
+        if (!field_skipper->SkipField(input, tag)) return false;
+      }
+    }
+  }
+}
+
 void ExtensionSet::Extension::SerializeMessageSetItemWithCachedSizes(
     int number,
     io::CodedOutputStream* output) const {
@@ -580,8 +690,8 @@ int ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
 
 void ExtensionSet::SerializeMessageSetWithCachedSizes(
     io::CodedOutputStream* output) const {
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
+  map<int, Extension>::const_iterator iter;
+  for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
     iter->second.SerializeMessageSetItemWithCachedSizes(iter->first, output);
   }
 }

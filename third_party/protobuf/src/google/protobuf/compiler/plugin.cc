@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -95,7 +95,7 @@ class GeneratorResponseContext : public GeneratorContext {
 int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
 
   if (argc > 1) {
-    std::cerr << argv[0] << ": Unknown option: " << argv[1] << std::endl;
+    cerr << argv[0] << ": Unknown option: " << argv[1] << endl;
     return 1;
   }
 
@@ -106,8 +106,7 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
 
   CodeGeneratorRequest request;
   if (!request.ParseFromFileDescriptor(STDIN_FILENO)) {
-    std::cerr << argv[0] << ": protoc sent unparseable request to plugin."
-              << std::endl;
+    cerr << argv[0] << ": protoc sent unparseable request to plugin." << endl;
     return 1;
   }
 
@@ -124,9 +123,9 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
   for (int i = 0; i < request.file_to_generate_size(); i++) {
     parsed_files.push_back(pool.FindFileByName(request.file_to_generate(i)));
     if (parsed_files.back() == NULL) {
-      std::cerr << argv[0] << ": protoc asked plugin to generate a file but "
-                              "did not provide a descriptor for the file: "
-                << request.file_to_generate(i) << std::endl;
+      cerr << argv[0] << ": protoc asked plugin to generate a file but "
+              "did not provide a descriptor for the file: "
+           << request.file_to_generate(i) << endl;
       return 1;
     }
   }
@@ -134,39 +133,25 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
   CodeGeneratorResponse response;
   GeneratorResponseContext context(&response, parsed_files);
 
-  if (generator->HasGenerateAll()) {
+  for (int i = 0; i < parsed_files.size(); i++) {
+    const FileDescriptor* file = parsed_files[i];
+
     string error;
-    bool succeeded = generator->GenerateAll(
-        parsed_files, request.parameter(), &context, &error);
+    bool succeeded = generator->Generate(
+        file, request.parameter(), &context, &error);
 
     if (!succeeded && error.empty()) {
       error = "Code generator returned false but provided no error "
               "description.";
     }
     if (!error.empty()) {
-      response.set_error(error);
-    }
-  } else {
-    for (int i = 0; i < parsed_files.size(); i++) {
-      const FileDescriptor* file = parsed_files[i];
-
-      string error;
-      bool succeeded = generator->Generate(
-          file, request.parameter(), &context, &error);
-
-      if (!succeeded && error.empty()) {
-        error = "Code generator returned false but provided no error "
-                "description.";
-      }
-      if (!error.empty()) {
-        response.set_error(file->name() + ": " + error);
-        break;
-      }
+      response.set_error(file->name() + ": " + error);
+      break;
     }
   }
 
   if (!response.SerializeToFileDescriptor(STDOUT_FILENO)) {
-    std::cerr << argv[0] << ": Error writing to stdout." << std::endl;
+    cerr << argv[0] << ": Error writing to stdout." << endl;
     return 1;
   }
 

@@ -1,8 +1,8 @@
-#! /usr/bin/env python
+#! /usr/bin/python
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
+# http://code.google.com/p/protobuf/
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -118,7 +118,7 @@ class FooUnitTest(unittest.TestCase):
     rpc_controller = 'controller'
     request = 'request'
 
-    # GetDescriptor now static, still works as instance method for compatibility
+    # GetDescriptor now static, still works as instance method for compatability
     self.assertEqual(unittest_pb2.TestService_Stub.GetDescriptor(),
                      stub.GetDescriptor())
 

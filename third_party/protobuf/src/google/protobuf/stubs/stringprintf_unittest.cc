@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2012 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -54,8 +54,8 @@ TEST(StringPrintfTest, Empty) {
 }
 
 TEST(StringPrintfTest, Misc) {
-// MSVC and mingw does not support $ format specifier.
-#if !defined(_MSC_VER) && !defined(__MINGW32__)
+// MSVC does not support $ format specifier.
+#if !defined(_MSC_VER)
   EXPECT_EQ("123hello w", StringPrintf("%3$d%2$s %1$c", 'w', "hello", 123));
 #endif  // !_MSC_VER
 }

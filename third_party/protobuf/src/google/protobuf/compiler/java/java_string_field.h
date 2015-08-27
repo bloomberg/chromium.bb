@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -42,26 +42,16 @@
 
 namespace google {
 namespace protobuf {
-  namespace compiler {
-    namespace java {
-      class Context;           // context.h
-      class ClassNameResolver; // name_resolver.h
-    }
-  }
-}
-
-namespace protobuf {
 namespace compiler {
 namespace java {
 
-class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
+class StringFieldGenerator : public FieldGenerator {
  public:
-  explicit ImmutableStringFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
-  ~ImmutableStringFieldGenerator();
+  explicit StringFieldGenerator(const FieldDescriptor* descriptor,
+      int messageBitIndex, int builderBitIndex);
+  ~StringFieldGenerator();
 
-  // implements ImmutableFieldGenerator ---------------------------------------
+  // implements FieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const;
   int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
@@ -78,49 +68,24 @@ class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
   void GenerateFieldBuilderInitializationCode(io::Printer* printer) const;
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
-
   string GetBoxedType() const;
 
- protected:
+ private:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
-  Context* context_;
-  ClassNameResolver* name_resolver_;
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableStringFieldGenerator);
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringFieldGenerator);
 };
 
-class ImmutableStringOneofFieldGenerator
-    : public ImmutableStringFieldGenerator {
+class RepeatedStringFieldGenerator : public FieldGenerator {
  public:
-  ImmutableStringOneofFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
-  ~ImmutableStringOneofFieldGenerator();
+  explicit RepeatedStringFieldGenerator(const FieldDescriptor* descriptor,
+      int messageBitIndex, int builderBitIndex);
+  ~RepeatedStringFieldGenerator();
 
- private:
-  void GenerateMembers(io::Printer* printer) const;
-  void GenerateBuilderMembers(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
-  void GenerateBuildingCode(io::Printer* printer) const;
-  void GenerateParsingCode(io::Printer* printer) const;
-  void GenerateSerializationCode(io::Printer* printer) const;
-  void GenerateSerializedSizeCode(io::Printer* printer) const;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableStringOneofFieldGenerator);
-};
-
-class RepeatedImmutableStringFieldGenerator : public ImmutableFieldGenerator {
- public:
-  explicit RepeatedImmutableStringFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
-  ~RepeatedImmutableStringFieldGenerator();
-
-  // implements ImmutableFieldGenerator ---------------------------------------
+  // implements FieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const;
   int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
@@ -138,7 +103,6 @@ class RepeatedImmutableStringFieldGenerator : public ImmutableFieldGenerator {
   void GenerateFieldBuilderInitializationCode(io::Printer* printer) const;
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
-
   string GetBoxedType() const;
 
  private:
@@ -146,10 +110,8 @@ class RepeatedImmutableStringFieldGenerator : public ImmutableFieldGenerator {
   map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
-  Context* context_;
-  ClassNameResolver* name_resolver_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutableStringFieldGenerator);
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedStringFieldGenerator);
 };
 
 }  // namespace java

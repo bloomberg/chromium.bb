@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -408,7 +408,7 @@ TEST_P(DescriptorDatabaseTest, FindAllExtensionNumbers) {
     vector<int> numbers;
     EXPECT_TRUE(database_->FindAllExtensionNumbers("Foo", &numbers));
     ASSERT_EQ(2, numbers.size());
-    std::sort(numbers.begin(), numbers.end());
+    sort(numbers.begin(), numbers.end());
     EXPECT_EQ(5, numbers[0]);
     EXPECT_EQ(32, numbers[1]);
   }
@@ -722,7 +722,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
     vector<int> numbers;
     EXPECT_TRUE(forward_merged_.FindAllExtensionNumbers("Baz", &numbers));
     ASSERT_EQ(2, numbers.size());
-    std::sort(numbers.begin(), numbers.end());
+    sort(numbers.begin(), numbers.end());
     EXPECT_EQ(12, numbers[0]);
     EXPECT_EQ(13, numbers[1]);
   }
@@ -731,7 +731,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
     vector<int> numbers;
     EXPECT_TRUE(reverse_merged_.FindAllExtensionNumbers("Baz", &numbers));
     ASSERT_EQ(2, numbers.size());
-    std::sort(numbers.begin(), numbers.end());
+    sort(numbers.begin(), numbers.end());
     EXPECT_EQ(12, numbers[0]);
     EXPECT_EQ(13, numbers[1]);
   }

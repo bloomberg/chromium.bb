@@ -1,8 +1,8 @@
-#! /usr/bin/env python
+#! /usr/bin/python
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
+# http://code.google.com/p/protobuf/
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -34,472 +34,49 @@
 
 __author__ = 'kenton@google.com (Kenton Varda)'
 
+import difflib
 import re
-import unittest
 
 import unittest
-from google.protobuf.internal import _parameterized
-
-from google.protobuf import map_unittest_pb2
-from google.protobuf import unittest_mset_pb2
-from google.protobuf import unittest_pb2
-from google.protobuf import unittest_proto3_arena_pb2
-from google.protobuf.internal import api_implementation
-from google.protobuf.internal import test_util
 from google.protobuf import text_format
+from google.protobuf.internal import test_util
+from google.protobuf import unittest_pb2
+from google.protobuf import unittest_mset_pb2
 
-# Base class with some common functionality.
-class TextFormatBase(unittest.TestCase):
 
+class TextFormatTest(unittest.TestCase):
   def ReadGolden(self, golden_filename):
-    with test_util.GoldenFile(golden_filename) as f:
-      return (f.readlines() if str is bytes else  # PY3
-              [golden_line.decode('utf-8') for golden_line in f])
+    f = test_util.GoldenFile(golden_filename)
+    golden_lines = f.readlines()
+    f.close()
+    return golden_lines
 
   def CompareToGoldenFile(self, text, golden_filename):
     golden_lines = self.ReadGolden(golden_filename)
-    self.assertMultiLineEqual(text, ''.join(golden_lines))
+    self.CompareToGoldenLines(text, golden_lines)
 
   def CompareToGoldenText(self, text, golden_text):
-    self.assertMultiLineEqual(text, golden_text)
+    self.CompareToGoldenLines(text, golden_text.splitlines(1))
 
-  def RemoveRedundantZeros(self, text):
-    # Some platforms print 1e+5 as 1e+005.  This is fine, but we need to remove
-    # these zeros in order to match the golden file.
-    text = text.replace('e+0','e+').replace('e+0','e+') \
-               .replace('e-0','e-').replace('e-0','e-')
-    # Floating point fields are printed with .0 suffix even if they are
-    # actualy integer numbers.
-    text = re.compile('\.0$', re.MULTILINE).sub('', text)
-    return text
-
-
-@_parameterized.Parameters(
-    (unittest_pb2),
-    (unittest_proto3_arena_pb2))
-class TextFormatTest(TextFormatBase):
-
-  def testPrintExotic(self, message_module):
-    message = message_module.TestAllTypes()
-    message.repeated_int64.append(-9223372036854775808)
-    message.repeated_uint64.append(18446744073709551615)
-    message.repeated_double.append(123.456)
-    message.repeated_double.append(1.23e22)
-    message.repeated_double.append(1.23e-18)
-    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
-    message.repeated_string.append(u'\u00fc\ua71f')
-    self.CompareToGoldenText(
-        self.RemoveRedundantZeros(text_format.MessageToString(message)),
-        'repeated_int64: -9223372036854775808\n'
-        'repeated_uint64: 18446744073709551615\n'
-        'repeated_double: 123.456\n'
-        'repeated_double: 1.23e+22\n'
-        'repeated_double: 1.23e-18\n'
-        'repeated_string:'
-        ' "\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
-        'repeated_string: "\\303\\274\\352\\234\\237"\n')
-
-  def testPrintExoticUnicodeSubclass(self, message_module):
-    class UnicodeSub(unicode):
-      pass
-    message = message_module.TestAllTypes()
-    message.repeated_string.append(UnicodeSub(u'\u00fc\ua71f'))
-    self.CompareToGoldenText(
-        text_format.MessageToString(message),
-        'repeated_string: "\\303\\274\\352\\234\\237"\n')
-
-  def testPrintNestedMessageAsOneLine(self, message_module):
-    message = message_module.TestAllTypes()
-    msg = message.repeated_nested_message.add()
-    msg.bb = 42
-    self.CompareToGoldenText(
-        text_format.MessageToString(message, as_one_line=True),
-        'repeated_nested_message { bb: 42 }')
-
-  def testPrintRepeatedFieldsAsOneLine(self, message_module):
-    message = message_module.TestAllTypes()
-    message.repeated_int32.append(1)
-    message.repeated_int32.append(1)
-    message.repeated_int32.append(3)
-    message.repeated_string.append('Google')
-    message.repeated_string.append('Zurich')
-    self.CompareToGoldenText(
-        text_format.MessageToString(message, as_one_line=True),
-        'repeated_int32: 1 repeated_int32: 1 repeated_int32: 3 '
-        'repeated_string: "Google" repeated_string: "Zurich"')
-
-  def testPrintNestedNewLineInStringAsOneLine(self, message_module):
-    message = message_module.TestAllTypes()
-    message.optional_string = 'a\nnew\nline'
-    self.CompareToGoldenText(
-        text_format.MessageToString(message, as_one_line=True),
-        'optional_string: "a\\nnew\\nline"')
-
-  def testPrintExoticAsOneLine(self, message_module):
-    message = message_module.TestAllTypes()
-    message.repeated_int64.append(-9223372036854775808)
-    message.repeated_uint64.append(18446744073709551615)
-    message.repeated_double.append(123.456)
-    message.repeated_double.append(1.23e22)
-    message.repeated_double.append(1.23e-18)
-    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
-    message.repeated_string.append(u'\u00fc\ua71f')
-    self.CompareToGoldenText(
-        self.RemoveRedundantZeros(
-            text_format.MessageToString(message, as_one_line=True)),
-        'repeated_int64: -9223372036854775808'
-        ' repeated_uint64: 18446744073709551615'
-        ' repeated_double: 123.456'
-        ' repeated_double: 1.23e+22'
-        ' repeated_double: 1.23e-18'
-        ' repeated_string: '
-        '"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""'
-        ' repeated_string: "\\303\\274\\352\\234\\237"')
-
-  def testRoundTripExoticAsOneLine(self, message_module):
-    message = message_module.TestAllTypes()
-    message.repeated_int64.append(-9223372036854775808)
-    message.repeated_uint64.append(18446744073709551615)
-    message.repeated_double.append(123.456)
-    message.repeated_double.append(1.23e22)
-    message.repeated_double.append(1.23e-18)
-    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
-    message.repeated_string.append(u'\u00fc\ua71f')
-
-    # Test as_utf8 = False.
-    wire_text = text_format.MessageToString(
-        message, as_one_line=True, as_utf8=False)
-    parsed_message = message_module.TestAllTypes()
-    r = text_format.Parse(wire_text, parsed_message)
-    self.assertIs(r, parsed_message)
-    self.assertEquals(message, parsed_message)
-
-    # Test as_utf8 = True.
-    wire_text = text_format.MessageToString(
-        message, as_one_line=True, as_utf8=True)
-    parsed_message = message_module.TestAllTypes()
-    r = text_format.Parse(wire_text, parsed_message)
-    self.assertIs(r, parsed_message)
-    self.assertEquals(message, parsed_message,
-                      '\n%s != %s' % (message, parsed_message))
-
-  def testPrintRawUtf8String(self, message_module):
-    message = message_module.TestAllTypes()
-    message.repeated_string.append(u'\u00fc\ua71f')
-    text = text_format.MessageToString(message, as_utf8=True)
-    self.CompareToGoldenText(text, 'repeated_string: "\303\274\352\234\237"\n')
-    parsed_message = message_module.TestAllTypes()
-    text_format.Parse(text, parsed_message)
-    self.assertEquals(message, parsed_message,
-                      '\n%s != %s' % (message, parsed_message))
-
-  def testPrintFloatFormat(self, message_module):
-    # Check that float_format argument is passed to sub-message formatting.
-    message = message_module.NestedTestAllTypes()
-    # We use 1.25 as it is a round number in binary.  The proto 32-bit float
-    # will not gain additional imprecise digits as a 64-bit Python float and
-    # show up in its str.  32-bit 1.2 is noisy when extended to 64-bit:
-    #  >>> struct.unpack('f', struct.pack('f', 1.2))[0]
-    #  1.2000000476837158
-    #  >>> struct.unpack('f', struct.pack('f', 1.25))[0]
-    #  1.25
-    message.payload.optional_float = 1.25
-    # Check rounding at 15 significant digits
-    message.payload.optional_double = -.000003456789012345678
-    # Check no decimal point.
-    message.payload.repeated_float.append(-5642)
-    # Check no trailing zeros.
-    message.payload.repeated_double.append(.000078900)
-    formatted_fields = ['optional_float: 1.25',
-                        'optional_double: -3.45678901234568e-6',
-                        'repeated_float: -5642',
-                        'repeated_double: 7.89e-5']
-    text_message = text_format.MessageToString(message, float_format='.15g')
-    self.CompareToGoldenText(
-        self.RemoveRedundantZeros(text_message),
-        'payload {{\n  {}\n  {}\n  {}\n  {}\n}}\n'.format(*formatted_fields))
-    # as_one_line=True is a separate code branch where float_format is passed.
-    text_message = text_format.MessageToString(message, as_one_line=True,
-                                               float_format='.15g')
-    self.CompareToGoldenText(
-        self.RemoveRedundantZeros(text_message),
-        'payload {{ {} {} {} {} }}'.format(*formatted_fields))
-
-  def testMessageToString(self, message_module):
-    message = message_module.ForeignMessage()
-    message.c = 123
-    self.assertEqual('c: 123\n', str(message))
-
-  def testParseAllFields(self, message_module):
-    message = message_module.TestAllTypes()
-    test_util.SetAllFields(message)
-    ascii_text = text_format.MessageToString(message)
-
-    parsed_message = message_module.TestAllTypes()
-    text_format.Parse(ascii_text, parsed_message)
-    self.assertEqual(message, parsed_message)
-    if message_module is unittest_pb2:
-      test_util.ExpectAllFieldsSet(self, message)
-
-  def testParseExotic(self, message_module):
-    message = message_module.TestAllTypes()
-    text = ('repeated_int64: -9223372036854775808\n'
-            'repeated_uint64: 18446744073709551615\n'
-            'repeated_double: 123.456\n'
-            'repeated_double: 1.23e+22\n'
-            'repeated_double: 1.23e-18\n'
-            'repeated_string: \n'
-            '"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
-            'repeated_string: "foo" \'corge\' "grault"\n'
-            'repeated_string: "\\303\\274\\352\\234\\237"\n'
-            'repeated_string: "\\xc3\\xbc"\n'
-            'repeated_string: "\xc3\xbc"\n')
-    text_format.Parse(text, message)
-
-    self.assertEqual(-9223372036854775808, message.repeated_int64[0])
-    self.assertEqual(18446744073709551615, message.repeated_uint64[0])
-    self.assertEqual(123.456, message.repeated_double[0])
-    self.assertEqual(1.23e22, message.repeated_double[1])
-    self.assertEqual(1.23e-18, message.repeated_double[2])
-    self.assertEqual(
-        '\000\001\a\b\f\n\r\t\v\\\'"', message.repeated_string[0])
-    self.assertEqual('foocorgegrault', message.repeated_string[1])
-    self.assertEqual(u'\u00fc\ua71f', message.repeated_string[2])
-    self.assertEqual(u'\u00fc', message.repeated_string[3])
-
-  def testParseTrailingCommas(self, message_module):
-    message = message_module.TestAllTypes()
-    text = ('repeated_int64: 100;\n'
-            'repeated_int64: 200;\n'
-            'repeated_int64: 300,\n'
-            'repeated_string: "one",\n'
-            'repeated_string: "two";\n')
-    text_format.Parse(text, message)
-
-    self.assertEqual(100, message.repeated_int64[0])
-    self.assertEqual(200, message.repeated_int64[1])
-    self.assertEqual(300, message.repeated_int64[2])
-    self.assertEqual(u'one', message.repeated_string[0])
-    self.assertEqual(u'two', message.repeated_string[1])
-
-  def testParseEmptyText(self, message_module):
-    message = message_module.TestAllTypes()
-    text = ''
-    text_format.Parse(text, message)
-    self.assertEquals(message_module.TestAllTypes(), message)
-
-  def testParseInvalidUtf8(self, message_module):
-    message = message_module.TestAllTypes()
-    text = 'repeated_string: "\\xc3\\xc3"'
-    self.assertRaises(text_format.ParseError, text_format.Parse, text, message)
-
-  def testParseSingleWord(self, message_module):
-    message = message_module.TestAllTypes()
-    text = 'foo'
-    self.assertRaisesRegexp(
-        text_format.ParseError,
-        (r'1:1 : Message type "\w+.TestAllTypes" has no field named '
-         r'"foo".'),
-        text_format.Parse, text, message)
-
-  def testParseUnknownField(self, message_module):
-    message = message_module.TestAllTypes()
-    text = 'unknown_field: 8\n'
-    self.assertRaisesRegexp(
-        text_format.ParseError,
-        (r'1:1 : Message type "\w+.TestAllTypes" has no field named '
-         r'"unknown_field".'),
-        text_format.Parse, text, message)
-
-  def testParseBadEnumValue(self, message_module):
-    message = message_module.TestAllTypes()
-    text = 'optional_nested_enum: BARR'
-    self.assertRaisesRegexp(
-        text_format.ParseError,
-        (r'1:23 : Enum type "\w+.TestAllTypes.NestedEnum" '
-         r'has no value named BARR.'),
-        text_format.Parse, text, message)
-
-    message = message_module.TestAllTypes()
-    text = 'optional_nested_enum: 100'
-    self.assertRaisesRegexp(
-        text_format.ParseError,
-        (r'1:23 : Enum type "\w+.TestAllTypes.NestedEnum" '
-         r'has no value with number 100.'),
-        text_format.Parse, text, message)
-
-  def testParseBadIntValue(self, message_module):
-    message = message_module.TestAllTypes()
-    text = 'optional_int32: bork'
-    self.assertRaisesRegexp(
-        text_format.ParseError,
-        ('1:17 : Couldn\'t parse integer: bork'),
-        text_format.Parse, text, message)
-
-  def testParseStringFieldUnescape(self, message_module):
-    message = message_module.TestAllTypes()
-    text = r'''repeated_string: "\xf\x62"
-               repeated_string: "\\xf\\x62"
-               repeated_string: "\\\xf\\\x62"
-               repeated_string: "\\\\xf\\\\x62"
-               repeated_string: "\\\\\xf\\\\\x62"
-               repeated_string: "\x5cx20"'''
-    text_format.Parse(text, message)
-
-    SLASH = '\\'
-    self.assertEqual('\x0fb', message.repeated_string[0])
-    self.assertEqual(SLASH + 'xf' + SLASH + 'x62', message.repeated_string[1])
-    self.assertEqual(SLASH + '\x0f' + SLASH + 'b', message.repeated_string[2])
-    self.assertEqual(SLASH + SLASH + 'xf' + SLASH + SLASH + 'x62',
-                     message.repeated_string[3])
-    self.assertEqual(SLASH + SLASH + '\x0f' + SLASH + SLASH + 'b',
-                     message.repeated_string[4])
-    self.assertEqual(SLASH + 'x20', message.repeated_string[5])
-
-  def testMergeDuplicateScalars(self, message_module):
-    message = message_module.TestAllTypes()
-    text = ('optional_int32: 42 '
-            'optional_int32: 67')
-    r = text_format.Merge(text, message)
-    self.assertIs(r, message)
-    self.assertEqual(67, message.optional_int32)
-
-  def testMergeDuplicateNestedMessageScalars(self, message_module):
-    message = message_module.TestAllTypes()
-    text = ('optional_nested_message { bb: 1 } '
-            'optional_nested_message { bb: 2 }')
-    r = text_format.Merge(text, message)
-    self.assertTrue(r is message)
-    self.assertEqual(2, message.optional_nested_message.bb)
-
-  def testParseOneof(self, message_module):
-    m = message_module.TestAllTypes()
-    m.oneof_uint32 = 11
-    m2 = message_module.TestAllTypes()
-    text_format.Parse(text_format.MessageToString(m), m2)
-    self.assertEqual('oneof_uint32', m2.WhichOneof('oneof_field'))
-
-
-# These are tests that aren't fundamentally specific to proto2, but are at
-# the moment because of differences between the proto2 and proto3 test schemas.
-# Ideally the schemas would be made more similar so these tests could pass.
-class OnlyWorksWithProto2RightNowTests(TextFormatBase):
-
-  def testPrintAllFieldsPointy(self, message_module):
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    self.CompareToGoldenFile(
-        self.RemoveRedundantZeros(
-            text_format.MessageToString(message, pointy_brackets=True)),
-        'text_format_unittest_data_pointy_oneof.txt')
-
-  def testParseGolden(self):
-    golden_text = '\n'.join(self.ReadGolden('text_format_unittest_data.txt'))
-    parsed_message = unittest_pb2.TestAllTypes()
-    r = text_format.Parse(golden_text, parsed_message)
-    self.assertIs(r, parsed_message)
-
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    self.assertEquals(message, parsed_message)
+  def CompareToGoldenLines(self, text, golden_lines):
+    actual_lines = text.splitlines(1)
+    self.assertEqual(golden_lines, actual_lines,
+      "Text doesn't match golden.  Diff:\n" +
+      ''.join(difflib.ndiff(golden_lines, actual_lines)))
 
   def testPrintAllFields(self):
     message = unittest_pb2.TestAllTypes()
     test_util.SetAllFields(message)
     self.CompareToGoldenFile(
-        self.RemoveRedundantZeros(text_format.MessageToString(message)),
-        'text_format_unittest_data_oneof_implemented.txt')
+      self.RemoveRedundantZeros(text_format.MessageToString(message)),
+      'text_format_unittest_data.txt')
 
-  def testPrintAllFieldsPointy(self):
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
+  def testPrintAllExtensions(self):
+    message = unittest_pb2.TestAllExtensions()
+    test_util.SetAllExtensions(message)
     self.CompareToGoldenFile(
-        self.RemoveRedundantZeros(
-            text_format.MessageToString(message, pointy_brackets=True)),
-        'text_format_unittest_data_pointy_oneof.txt')
-
-  def testPrintInIndexOrder(self):
-    message = unittest_pb2.TestFieldOrderings()
-    message.my_string = '115'
-    message.my_int = 101
-    message.my_float = 111
-    message.optional_nested_message.oo = 0
-    message.optional_nested_message.bb = 1
-    self.CompareToGoldenText(
-        self.RemoveRedundantZeros(text_format.MessageToString(
-            message, use_index_order=True)),
-        'my_string: \"115\"\nmy_int: 101\nmy_float: 111\n'
-        'optional_nested_message {\n  oo: 0\n  bb: 1\n}\n')
-    self.CompareToGoldenText(
-        self.RemoveRedundantZeros(text_format.MessageToString(
-            message)),
-        'my_int: 101\nmy_string: \"115\"\nmy_float: 111\n'
-        'optional_nested_message {\n  bb: 1\n  oo: 0\n}\n')
-
-  def testMergeLinesGolden(self):
-    opened = self.ReadGolden('text_format_unittest_data.txt')
-    parsed_message = unittest_pb2.TestAllTypes()
-    r = text_format.MergeLines(opened, parsed_message)
-    self.assertIs(r, parsed_message)
-
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    self.assertEqual(message, parsed_message)
-
-  def testParseLinesGolden(self):
-    opened = self.ReadGolden('text_format_unittest_data.txt')
-    parsed_message = unittest_pb2.TestAllTypes()
-    r = text_format.ParseLines(opened, parsed_message)
-    self.assertIs(r, parsed_message)
-
-    message = unittest_pb2.TestAllTypes()
-    test_util.SetAllFields(message)
-    self.assertEquals(message, parsed_message)
-
-  def testPrintMap(self):
-    message = map_unittest_pb2.TestMap()
-
-    message.map_int32_int32[-123] = -456
-    message.map_int64_int64[-2**33] = -2**34
-    message.map_uint32_uint32[123] = 456
-    message.map_uint64_uint64[2**33] = 2**34
-    message.map_string_string["abc"] = "123"
-    message.map_int32_foreign_message[111].c = 5
-
-    # Maps are serialized to text format using their underlying repeated
-    # representation.
-    self.CompareToGoldenText(
-        text_format.MessageToString(message),
-        'map_int32_int32 {\n'
-        '  key: -123\n'
-        '  value: -456\n'
-        '}\n'
-        'map_int64_int64 {\n'
-        '  key: -8589934592\n'
-        '  value: -17179869184\n'
-        '}\n'
-        'map_uint32_uint32 {\n'
-        '  key: 123\n'
-        '  value: 456\n'
-        '}\n'
-        'map_uint64_uint64 {\n'
-        '  key: 8589934592\n'
-        '  value: 17179869184\n'
-        '}\n'
-        'map_string_string {\n'
-        '  key: "abc"\n'
-        '  value: "123"\n'
-        '}\n'
-        'map_int32_foreign_message {\n'
-        '  key: 111\n'
-        '  value {\n'
-        '    c: 5\n'
-        '  }\n'
-        '}\n')
-
-
-# Tests of proto2-only features (MessageSet, extensions, etc.).
-class Proto2Tests(TextFormatBase):
+      self.RemoveRedundantZeros(text_format.MessageToString(message)),
+      'text_format_unittest_extensions_data.txt')
 
   def testPrintMessageSet(self):
     message = unittest_mset_pb2.TestMessageSetContainer()
@@ -507,16 +84,84 @@ class Proto2Tests(TextFormatBase):
     ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
     message.message_set.Extensions[ext1].i = 23
     message.message_set.Extensions[ext2].str = 'foo'
+    self.CompareToGoldenText(text_format.MessageToString(message),
+      'message_set {\n'
+      '  [protobuf_unittest.TestMessageSetExtension1] {\n'
+      '    i: 23\n'
+      '  }\n'
+      '  [protobuf_unittest.TestMessageSetExtension2] {\n'
+      '    str: \"foo\"\n'
+      '  }\n'
+      '}\n')
+
+  def testPrintBadEnumValue(self):
+    message = unittest_pb2.TestAllTypes()
+    message.optional_nested_enum = 100
+    message.optional_foreign_enum = 101
+    message.optional_import_enum = 102
     self.CompareToGoldenText(
         text_format.MessageToString(message),
-        'message_set {\n'
-        '  [protobuf_unittest.TestMessageSetExtension1] {\n'
-        '    i: 23\n'
-        '  }\n'
-        '  [protobuf_unittest.TestMessageSetExtension2] {\n'
-        '    str: \"foo\"\n'
-        '  }\n'
-        '}\n')
+        'optional_nested_enum: 100\n'
+        'optional_foreign_enum: 101\n'
+        'optional_import_enum: 102\n')
+
+  def testPrintBadEnumValueExtensions(self):
+    message = unittest_pb2.TestAllExtensions()
+    message.Extensions[unittest_pb2.optional_nested_enum_extension] = 100
+    message.Extensions[unittest_pb2.optional_foreign_enum_extension] = 101
+    message.Extensions[unittest_pb2.optional_import_enum_extension] = 102
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        '[protobuf_unittest.optional_nested_enum_extension]: 100\n'
+        '[protobuf_unittest.optional_foreign_enum_extension]: 101\n'
+        '[protobuf_unittest.optional_import_enum_extension]: 102\n')
+
+  def testPrintExotic(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int64.append(-9223372036854775808)
+    message.repeated_uint64.append(18446744073709551615)
+    message.repeated_double.append(123.456)
+    message.repeated_double.append(1.23e22)
+    message.repeated_double.append(1.23e-18)
+    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
+    message.repeated_string.append(u'\u00fc\ua71f')
+    self.CompareToGoldenText(
+      self.RemoveRedundantZeros(text_format.MessageToString(message)),
+      'repeated_int64: -9223372036854775808\n'
+      'repeated_uint64: 18446744073709551615\n'
+      'repeated_double: 123.456\n'
+      'repeated_double: 1.23e+22\n'
+      'repeated_double: 1.23e-18\n'
+      'repeated_string: '
+        '"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
+      'repeated_string: "\\303\\274\\352\\234\\237"\n')
+
+  def testPrintNestedMessageAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    msg = message.repeated_nested_message.add()
+    msg.bb = 42;
+    self.CompareToGoldenText(
+        text_format.MessageToString(message, as_one_line=True),
+        'repeated_nested_message { bb: 42 }')
+
+  def testPrintRepeatedFieldsAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int32.append(1)
+    message.repeated_int32.append(1)
+    message.repeated_int32.append(3)
+    message.repeated_string.append("Google")
+    message.repeated_string.append("Zurich")
+    self.CompareToGoldenText(
+        text_format.MessageToString(message, as_one_line=True),
+        'repeated_int32: 1 repeated_int32: 1 repeated_int32: 3 '
+        'repeated_string: "Google" repeated_string: "Zurich"')
+
+  def testPrintNestedNewLineInStringAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    message.optional_string = "a\nnew\nline"
+    self.CompareToGoldenText(
+        text_format.MessageToString(message, as_one_line=True),
+        'optional_string: "a\\nnew\\nline"')
 
   def testPrintMessageSetAsOneLine(self):
     message = unittest_mset_pb2.TestMessageSetContainer()
@@ -535,11 +180,118 @@ class Proto2Tests(TextFormatBase):
         ' }'
         ' }')
 
-  def testParseMessageSet(self):
+  def testPrintExoticAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int64.append(-9223372036854775808)
+    message.repeated_uint64.append(18446744073709551615)
+    message.repeated_double.append(123.456)
+    message.repeated_double.append(1.23e22)
+    message.repeated_double.append(1.23e-18)
+    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
+    message.repeated_string.append(u'\u00fc\ua71f')
+    self.CompareToGoldenText(
+      self.RemoveRedundantZeros(
+          text_format.MessageToString(message, as_one_line=True)),
+      'repeated_int64: -9223372036854775808'
+      ' repeated_uint64: 18446744073709551615'
+      ' repeated_double: 123.456'
+      ' repeated_double: 1.23e+22'
+      ' repeated_double: 1.23e-18'
+      ' repeated_string: '
+      '"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""'
+      ' repeated_string: "\\303\\274\\352\\234\\237"')
+
+  def testRoundTripExoticAsOneLine(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int64.append(-9223372036854775808)
+    message.repeated_uint64.append(18446744073709551615)
+    message.repeated_double.append(123.456)
+    message.repeated_double.append(1.23e22)
+    message.repeated_double.append(1.23e-18)
+    message.repeated_string.append('\000\001\a\b\f\n\r\t\v\\\'"')
+    message.repeated_string.append(u'\u00fc\ua71f')
+
+    # Test as_utf8 = False.
+    wire_text = text_format.MessageToString(
+        message, as_one_line=True, as_utf8=False)
+    parsed_message = unittest_pb2.TestAllTypes()
+    text_format.Merge(wire_text, parsed_message)
+    self.assertEquals(message, parsed_message)
+
+    # Test as_utf8 = True.
+    wire_text = text_format.MessageToString(
+        message, as_one_line=True, as_utf8=True)
+    parsed_message = unittest_pb2.TestAllTypes()
+    text_format.Merge(wire_text, parsed_message)
+    self.assertEquals(message, parsed_message)
+
+  def testPrintRawUtf8String(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_string.append(u'\u00fc\ua71f')
+    text = text_format.MessageToString(message, as_utf8 = True)
+    self.CompareToGoldenText(text, 'repeated_string: "\303\274\352\234\237"\n')
+    parsed_message = unittest_pb2.TestAllTypes()
+    text_format.Merge(text, parsed_message)
+    self.assertEquals(message, parsed_message)
+
+  def testMessageToString(self):
+    message = unittest_pb2.ForeignMessage()
+    message.c = 123
+    self.assertEqual('c: 123\n', str(message))
+
+  def RemoveRedundantZeros(self, text):
+    # Some platforms print 1e+5 as 1e+005.  This is fine, but we need to remove
+    # these zeros in order to match the golden file.
+    text = text.replace('e+0','e+').replace('e+0','e+') \
+               .replace('e-0','e-').replace('e-0','e-')
+    # Floating point fields are printed with .0 suffix even if they are
+    # actualy integer numbers.
+    text = re.compile('\.0$', re.MULTILINE).sub('', text)
+    return text
+
+  def testMergeGolden(self):
+    golden_text = '\n'.join(self.ReadGolden('text_format_unittest_data.txt'))
+    parsed_message = unittest_pb2.TestAllTypes()
+    text_format.Merge(golden_text, parsed_message)
+
+    message = unittest_pb2.TestAllTypes()
+    test_util.SetAllFields(message)
+    self.assertEquals(message, parsed_message)
+
+  def testMergeGoldenExtensions(self):
+    golden_text = '\n'.join(self.ReadGolden(
+        'text_format_unittest_extensions_data.txt'))
+    parsed_message = unittest_pb2.TestAllExtensions()
+    text_format.Merge(golden_text, parsed_message)
+
+    message = unittest_pb2.TestAllExtensions()
+    test_util.SetAllExtensions(message)
+    self.assertEquals(message, parsed_message)
+
+  def testMergeAllFields(self):
+    message = unittest_pb2.TestAllTypes()
+    test_util.SetAllFields(message)
+    ascii_text = text_format.MessageToString(message)
+
+    parsed_message = unittest_pb2.TestAllTypes()
+    text_format.Merge(ascii_text, parsed_message)
+    self.assertEqual(message, parsed_message)
+    test_util.ExpectAllFieldsSet(self, message)
+
+  def testMergeAllExtensions(self):
+    message = unittest_pb2.TestAllExtensions()
+    test_util.SetAllExtensions(message)
+    ascii_text = text_format.MessageToString(message)
+
+    parsed_message = unittest_pb2.TestAllExtensions()
+    text_format.Merge(ascii_text, parsed_message)
+    self.assertEqual(message, parsed_message)
+
+  def testMergeMessageSet(self):
     message = unittest_pb2.TestAllTypes()
     text = ('repeated_uint64: 1\n'
             'repeated_uint64: 2\n')
-    text_format.Parse(text, message)
+    text_format.Merge(text, message)
     self.assertEqual(1, message.repeated_uint64[0])
     self.assertEqual(2, message.repeated_uint64[1])
 
@@ -552,162 +304,149 @@ class Proto2Tests(TextFormatBase):
             '    str: \"foo\"\n'
             '  }\n'
             '}\n')
-    text_format.Parse(text, message)
+    text_format.Merge(text, message)
     ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
     ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
     self.assertEquals(23, message.message_set.Extensions[ext1].i)
     self.assertEquals('foo', message.message_set.Extensions[ext2].str)
 
-  def testPrintAllExtensions(self):
-    message = unittest_pb2.TestAllExtensions()
-    test_util.SetAllExtensions(message)
-    self.CompareToGoldenFile(
-        self.RemoveRedundantZeros(text_format.MessageToString(message)),
-        'text_format_unittest_extensions_data.txt')
+  def testMergeExotic(self):
+    message = unittest_pb2.TestAllTypes()
+    text = ('repeated_int64: -9223372036854775808\n'
+            'repeated_uint64: 18446744073709551615\n'
+            'repeated_double: 123.456\n'
+            'repeated_double: 1.23e+22\n'
+            'repeated_double: 1.23e-18\n'
+            'repeated_string: \n'
+            '"\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
+            'repeated_string: "foo" \'corge\' "grault"\n'
+            'repeated_string: "\\303\\274\\352\\234\\237"\n'
+            'repeated_string: "\\xc3\\xbc"\n'
+            'repeated_string: "\xc3\xbc"\n')
+    text_format.Merge(text, message)
 
-  def testPrintAllExtensionsPointy(self):
-    message = unittest_pb2.TestAllExtensions()
-    test_util.SetAllExtensions(message)
-    self.CompareToGoldenFile(
-        self.RemoveRedundantZeros(text_format.MessageToString(
-            message, pointy_brackets=True)),
-        'text_format_unittest_extensions_data_pointy.txt')
+    self.assertEqual(-9223372036854775808, message.repeated_int64[0])
+    self.assertEqual(18446744073709551615, message.repeated_uint64[0])
+    self.assertEqual(123.456, message.repeated_double[0])
+    self.assertEqual(1.23e22, message.repeated_double[1])
+    self.assertEqual(1.23e-18, message.repeated_double[2])
+    self.assertEqual(
+        '\000\001\a\b\f\n\r\t\v\\\'"', message.repeated_string[0])
+    self.assertEqual('foocorgegrault', message.repeated_string[1])
+    self.assertEqual(u'\u00fc\ua71f', message.repeated_string[2])
+    self.assertEqual(u'\u00fc', message.repeated_string[3])
 
-  def testParseGoldenExtensions(self):
-    golden_text = '\n'.join(self.ReadGolden(
-        'text_format_unittest_extensions_data.txt'))
-    parsed_message = unittest_pb2.TestAllExtensions()
-    text_format.Parse(golden_text, parsed_message)
+  def testMergeEmptyText(self):
+    message = unittest_pb2.TestAllTypes()
+    text = ''
+    text_format.Merge(text, message)
+    self.assertEquals(unittest_pb2.TestAllTypes(), message)
 
-    message = unittest_pb2.TestAllExtensions()
-    test_util.SetAllExtensions(message)
-    self.assertEquals(message, parsed_message)
+  def testMergeInvalidUtf8(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'repeated_string: "\\xc3\\xc3"'
+    self.assertRaises(text_format.ParseError, text_format.Merge, text, message)
 
-  def testParseAllExtensions(self):
-    message = unittest_pb2.TestAllExtensions()
-    test_util.SetAllExtensions(message)
-    ascii_text = text_format.MessageToString(message)
+  def testMergeSingleWord(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'foo'
+    self.assertRaisesWithMessage(
+        text_format.ParseError,
+        ('1:1 : Message type "protobuf_unittest.TestAllTypes" has no field named '
+         '"foo".'),
+        text_format.Merge, text, message)
 
-    parsed_message = unittest_pb2.TestAllExtensions()
-    text_format.Parse(ascii_text, parsed_message)
-    self.assertEqual(message, parsed_message)
+  def testMergeUnknownField(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'unknown_field: 8\n'
+    self.assertRaisesWithMessage(
+        text_format.ParseError,
+        ('1:1 : Message type "protobuf_unittest.TestAllTypes" has no field named '
+         '"unknown_field".'),
+        text_format.Merge, text, message)
 
-  def testParseBadExtension(self):
+  def testMergeBadExtension(self):
     message = unittest_pb2.TestAllExtensions()
     text = '[unknown_extension]: 8\n'
-    self.assertRaisesRegexp(
+    self.assertRaisesWithMessage(
         text_format.ParseError,
         '1:2 : Extension "unknown_extension" not registered.',
-        text_format.Parse, text, message)
+        text_format.Merge, text, message)
     message = unittest_pb2.TestAllTypes()
-    self.assertRaisesRegexp(
+    self.assertRaisesWithMessage(
         text_format.ParseError,
         ('1:2 : Message type "protobuf_unittest.TestAllTypes" does not have '
          'extensions.'),
-        text_format.Parse, text, message)
+        text_format.Merge, text, message)
 
-  def testMergeDuplicateExtensionScalars(self):
-    message = unittest_pb2.TestAllExtensions()
-    text = ('[protobuf_unittest.optional_int32_extension]: 42 '
-            '[protobuf_unittest.optional_int32_extension]: 67')
-    text_format.Merge(text, message)
-    self.assertEqual(
-        67,
-        message.Extensions[unittest_pb2.optional_int32_extension])
-
-  def testParseDuplicateExtensionScalars(self):
-    message = unittest_pb2.TestAllExtensions()
-    text = ('[protobuf_unittest.optional_int32_extension]: 42 '
-            '[protobuf_unittest.optional_int32_extension]: 67')
-    self.assertRaisesRegexp(
-        text_format.ParseError,
-        ('1:96 : Message type "protobuf_unittest.TestAllExtensions" '
-         'should not have multiple '
-         '"protobuf_unittest.optional_int32_extension" extensions.'),
-        text_format.Parse, text, message)
-
-  def testParseDuplicateNestedMessageScalars(self):
-    message = unittest_pb2.TestAllTypes()
-    text = ('optional_nested_message { bb: 1 } '
-            'optional_nested_message { bb: 2 }')
-    self.assertRaisesRegexp(
-        text_format.ParseError,
-        ('1:65 : Message type "protobuf_unittest.TestAllTypes.NestedMessage" '
-         'should not have multiple "bb" fields.'),
-        text_format.Parse, text, message)
-
-  def testParseDuplicateScalars(self):
-    message = unittest_pb2.TestAllTypes()
-    text = ('optional_int32: 42 '
-            'optional_int32: 67')
-    self.assertRaisesRegexp(
-        text_format.ParseError,
-        ('1:36 : Message type "protobuf_unittest.TestAllTypes" should not '
-         'have multiple "optional_int32" fields.'),
-        text_format.Parse, text, message)
-
-  def testParseGroupNotClosed(self):
+  def testMergeGroupNotClosed(self):
     message = unittest_pb2.TestAllTypes()
     text = 'RepeatedGroup: <'
-    self.assertRaisesRegexp(
+    self.assertRaisesWithMessage(
         text_format.ParseError, '1:16 : Expected ">".',
-        text_format.Parse, text, message)
-    text = 'RepeatedGroup: {'
-    self.assertRaisesRegexp(
-        text_format.ParseError, '1:16 : Expected "}".',
-        text_format.Parse, text, message)
+        text_format.Merge, text, message)
 
-  def testParseEmptyGroup(self):
+    text = 'RepeatedGroup: {'
+    self.assertRaisesWithMessage(
+        text_format.ParseError, '1:16 : Expected "}".',
+        text_format.Merge, text, message)
+
+  def testMergeEmptyGroup(self):
     message = unittest_pb2.TestAllTypes()
     text = 'OptionalGroup: {}'
-    text_format.Parse(text, message)
+    text_format.Merge(text, message)
     self.assertTrue(message.HasField('optionalgroup'))
 
     message.Clear()
 
     message = unittest_pb2.TestAllTypes()
     text = 'OptionalGroup: <>'
-    text_format.Parse(text, message)
+    text_format.Merge(text, message)
     self.assertTrue(message.HasField('optionalgroup'))
 
-  # Maps aren't really proto2-only, but our test schema only has maps for
-  # proto2.
-  def testParseMap(self):
-    text = ('map_int32_int32 {\n'
-            '  key: -123\n'
-            '  value: -456\n'
-            '}\n'
-            'map_int64_int64 {\n'
-            '  key: -8589934592\n'
-            '  value: -17179869184\n'
-            '}\n'
-            'map_uint32_uint32 {\n'
-            '  key: 123\n'
-            '  value: 456\n'
-            '}\n'
-            'map_uint64_uint64 {\n'
-            '  key: 8589934592\n'
-            '  value: 17179869184\n'
-            '}\n'
-            'map_string_string {\n'
-            '  key: "abc"\n'
-            '  value: "123"\n'
-            '}\n'
-            'map_int32_foreign_message {\n'
-            '  key: 111\n'
-            '  value {\n'
-            '    c: 5\n'
-            '  }\n'
-            '}\n')
-    message = map_unittest_pb2.TestMap()
-    text_format.Parse(text, message)
+  def testMergeBadEnumValue(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'optional_nested_enum: BARR'
+    self.assertRaisesWithMessage(
+        text_format.ParseError,
+        ('1:23 : Enum type "protobuf_unittest.TestAllTypes.NestedEnum" '
+         'has no value named BARR.'),
+        text_format.Merge, text, message)
 
-    self.assertEqual(-456, message.map_int32_int32[-123])
-    self.assertEqual(-2**34, message.map_int64_int64[-2**33])
-    self.assertEqual(456, message.map_uint32_uint32[123])
-    self.assertEqual(2**34, message.map_uint64_uint64[2**33])
-    self.assertEqual("123", message.map_string_string["abc"])
-    self.assertEqual(5, message.map_int32_foreign_message[111].c)
+    message = unittest_pb2.TestAllTypes()
+    text = 'optional_nested_enum: 100'
+    self.assertRaisesWithMessage(
+        text_format.ParseError,
+        ('1:23 : Enum type "protobuf_unittest.TestAllTypes.NestedEnum" '
+         'has no value with number 100.'),
+        text_format.Merge, text, message)
+
+  def testMergeBadIntValue(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'optional_int32: bork'
+    self.assertRaisesWithMessage(
+        text_format.ParseError,
+        ('1:17 : Couldn\'t parse integer: bork'),
+        text_format.Merge, text, message)
+
+  def assertRaisesWithMessage(self, e_class, e, func, *args, **kwargs):
+    """Same as assertRaises, but also compares the exception message."""
+    if hasattr(e_class, '__name__'):
+      exc_name = e_class.__name__
+    else:
+      exc_name = str(e_class)
+
+    try:
+      func(*args, **kwargs)
+    except e_class as expr:
+      if str(expr) != e:
+        msg = '%s raised, but with wrong message: "%s" instead of "%s"'
+        raise self.failureException(msg % (exc_name,
+                                           str(expr).encode('string_escape'),
+                                           e.encode('string_escape')))
+      return
+    else:
+      raise self.failureException('%s not raised' % exc_name)
 
 
 class TokenizerTest(unittest.TestCase):
@@ -719,8 +458,8 @@ class TokenizerTest(unittest.TestCase):
             'ID7 : "aa\\"bb"\n\n\n\n ID8: {A:inf B:-inf C:true D:false}\n'
             'ID9: 22 ID10: -111111111111111111 ID11: -22\n'
             'ID12: 2222222222222222222 ID13: 1.23456f ID14: 1.2e+2f '
-            'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f ')
-    tokenizer = text_format._Tokenizer(text.splitlines())
+            'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f ' )
+    tokenizer = text_format._Tokenizer(text)
     methods = [(tokenizer.ConsumeIdentifier, 'identifier1'),
                ':',
                (tokenizer.ConsumeString, 'string1'),
@@ -806,7 +545,7 @@ class TokenizerTest(unittest.TestCase):
     int64_max = (1 << 63) - 1
     uint32_max = (1 << 32) - 1
     text = '-1 %d %d' % (uint32_max + 1, int64_max + 1)
-    tokenizer = text_format._Tokenizer(text.splitlines())
+    tokenizer = text_format._Tokenizer(text)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeUint32)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeUint64)
     self.assertEqual(-1, tokenizer.ConsumeInt32())
@@ -820,7 +559,7 @@ class TokenizerTest(unittest.TestCase):
     self.assertTrue(tokenizer.AtEnd())
 
     text = '-0 -0 0 0'
-    tokenizer = text_format._Tokenizer(text.splitlines())
+    tokenizer = text_format._Tokenizer(text)
     self.assertEqual(0, tokenizer.ConsumeUint32())
     self.assertEqual(0, tokenizer.ConsumeUint64())
     self.assertEqual(0, tokenizer.ConsumeUint32())
@@ -829,28 +568,28 @@ class TokenizerTest(unittest.TestCase):
 
   def testConsumeByteString(self):
     text = '"string1\''
-    tokenizer = text_format._Tokenizer(text.splitlines())
+    tokenizer = text_format._Tokenizer(text)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeByteString)
 
     text = 'string1"'
-    tokenizer = text_format._Tokenizer(text.splitlines())
+    tokenizer = text_format._Tokenizer(text)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeByteString)
 
     text = '\n"\\xt"'
-    tokenizer = text_format._Tokenizer(text.splitlines())
+    tokenizer = text_format._Tokenizer(text)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeByteString)
 
     text = '\n"\\"'
-    tokenizer = text_format._Tokenizer(text.splitlines())
+    tokenizer = text_format._Tokenizer(text)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeByteString)
 
     text = '\n"\\x"'
-    tokenizer = text_format._Tokenizer(text.splitlines())
+    tokenizer = text_format._Tokenizer(text)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeByteString)
 
   def testConsumeBool(self):
     text = 'not-a-bool'
-    tokenizer = text_format._Tokenizer(text.splitlines())
+    tokenizer = text_format._Tokenizer(text)
     self.assertRaises(text_format.ParseError, tokenizer.ConsumeBool)
 
 

@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -41,26 +41,16 @@
 
 namespace google {
 namespace protobuf {
-  namespace compiler {
-    namespace java {
-      class Context;            // context.h
-      class ClassNameResolver;  // name_resolver.h
-    }
-  }
-}
-
-namespace protobuf {
 namespace compiler {
 namespace java {
 
-class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
+class EnumFieldGenerator : public FieldGenerator {
  public:
-  explicit ImmutableEnumFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
-  ~ImmutableEnumFieldGenerator();
+  explicit EnumFieldGenerator(const FieldDescriptor* descriptor,
+      int messageBitIndex, int builderBitIndex);
+  ~EnumFieldGenerator();
 
-  // implements ImmutableFieldGenerator ---------------------------------------
+  // implements FieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const;
   int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
@@ -80,47 +70,22 @@ class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
 
   string GetBoxedType() const;
 
- protected:
+ private:
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
-  Context* context_;
-  ClassNameResolver* name_resolver_;
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableEnumFieldGenerator);
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
 };
 
-class ImmutableEnumOneofFieldGenerator : public ImmutableEnumFieldGenerator {
+class RepeatedEnumFieldGenerator : public FieldGenerator {
  public:
-  ImmutableEnumOneofFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
-  ~ImmutableEnumOneofFieldGenerator();
+  explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
+      int messageBitIndex, int builderBitIndex);
+  ~RepeatedEnumFieldGenerator();
 
-  void GenerateMembers(io::Printer* printer) const;
-  void GenerateBuilderMembers(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
-  void GenerateBuildingCode(io::Printer* printer) const;
-  void GenerateParsingCode(io::Printer* printer) const;
-  void GenerateSerializationCode(io::Printer* printer) const;
-  void GenerateSerializedSizeCode(io::Printer* printer) const;
-  void GenerateEqualsCode(io::Printer* printer) const;
-  void GenerateHashCode(io::Printer* printer) const;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableEnumOneofFieldGenerator);
-};
-
-class RepeatedImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
- public:
-  explicit RepeatedImmutableEnumFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
-  ~RepeatedImmutableEnumFieldGenerator();
-
-  // implements ImmutableFieldGenerator ---------------------------------------
+  // implements FieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const;
   int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
@@ -146,10 +111,8 @@ class RepeatedImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
   map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
-  Context* context_;
-  ClassNameResolver* name_resolver_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutableEnumFieldGenerator);
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedEnumFieldGenerator);
 };
 
 }  // namespace java

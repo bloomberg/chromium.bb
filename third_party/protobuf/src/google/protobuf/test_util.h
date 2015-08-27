@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -54,15 +54,11 @@ class TestUtil {
   static void AddRepeatedFields1(unittest::TestAllTypes* message);
   static void AddRepeatedFields2(unittest::TestAllTypes* message);
   static void SetDefaultFields(unittest::TestAllTypes* message);
-  static void SetOneofFields(unittest::TestAllTypes* message);
   static void SetAllExtensions(unittest::TestAllExtensions* message);
-  static void SetOneofFields(unittest::TestAllExtensions* message);
   static void SetAllFieldsAndExtensions(unittest::TestFieldOrderings* message);
   static void SetPackedFields(unittest::TestPackedTypes* message);
   static void SetPackedExtensions(unittest::TestPackedExtensions* message);
   static void SetUnpackedFields(unittest::TestUnpackedTypes* message);
-  static void SetOneof1(unittest::TestOneof2* message);
-  static void SetOneof2(unittest::TestOneof2* message);
 
   // Use the repeated versions of the set_*() accessors to modify all the
   // repeated fields of the messsage (which should already have been
@@ -83,10 +79,6 @@ class TestUtil {
       const unittest::TestPackedExtensions& message);
   static void ExpectUnpackedFieldsSet(
       const unittest::TestUnpackedTypes& message);
-  static void ExpectUnpackedExtensionsSet(
-      const unittest::TestUnpackedExtensions& message);
-  static void ExpectOneofSet1(const unittest::TestOneof2& message);
-  static void ExpectOneofSet2(const unittest::TestOneof2& message);
 
   // Expect that the message is modified as would be expected from
   // Modify*Fields().
@@ -105,7 +97,6 @@ class TestUtil {
   static void ExpectPackedClear(const unittest::TestPackedTypes& message);
   static void ExpectPackedExtensionsClear(
       const unittest::TestPackedExtensions& message);
-  static void ExpectOneofClear(const unittest::TestOneof2& message);
 
   // Check that the passed-in serialization is the canonical serialization we
   // expect for a TestFieldOrderings message filled in by
@@ -127,9 +118,6 @@ class TestUtil {
   static void ExpectRepeatedsSwapped(const unittest::TestAllTypes& message);
   static void ExpectRepeatedExtensionsSwapped(
       const unittest::TestAllExtensions& message);
-
-  static void ExpectAtMostOneFieldSetInOneof(
-      const unittest::TestOneof2 &message);
 
   // Like above, but use the reflection interface.
   class ReflectionTester {
@@ -155,11 +143,6 @@ class TestUtil {
     void ReleaseLastRepeatedsViaReflection(
         Message* message, bool expect_extensions_notnull);
     void SwapRepeatedsViaReflection(Message* message);
-    void SetAllocatedOptionalMessageFieldsToNullViaReflection(
-        Message* message);
-    static void SetAllocatedOptionalMessageFieldsToMessageViaReflection(
-        Message* from_message,
-        Message* to_message);
 
     enum MessageReleaseState {
       IS_NULL,
@@ -168,11 +151,6 @@ class TestUtil {
     };
     void ExpectMessagesReleasedViaReflection(
         Message* message, MessageReleaseState expected_release_state);
-
-    // Set and check functions for TestOneof2 messages. No need to construct
-    // the ReflectionTester by TestAllTypes nor TestAllExtensions.
-    static void SetOneofViaReflection(Message* message);
-    static void ExpectOneofSetViaReflection(const Message& message);
 
    private:
     const FieldDescriptor* F(const string& name);

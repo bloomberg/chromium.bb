@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -35,10 +35,6 @@
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 
 #include <vector>
-#include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <utility>
 
 #include <google/protobuf/compiler/cpp/cpp_file.h>
@@ -82,7 +78,6 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   //   }
   // FOO_EXPORT is a macro which should expand to __declspec(dllexport) or
   // __declspec(dllimport) depending on what is being compiled.
-  //
   Options file_options;
 
   for (int i = 0; i < options.size(); i++) {
@@ -106,16 +101,16 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   // Generate header.
   {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
-        generator_context->Open(basename + ".h"));
+    scoped_ptr<io::ZeroCopyOutputStream> output(
+      generator_context->Open(basename + ".h"));
     io::Printer printer(output.get(), '$');
     file_generator.GenerateHeader(&printer);
   }
 
   // Generate cc file.
   {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
-        generator_context->Open(basename + ".cc"));
+    scoped_ptr<io::ZeroCopyOutputStream> output(
+      generator_context->Open(basename + ".cc"));
     io::Printer printer(output.get(), '$');
     file_generator.GenerateSource(&printer);
   }

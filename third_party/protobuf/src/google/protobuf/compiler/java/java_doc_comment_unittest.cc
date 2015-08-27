@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -46,7 +46,6 @@ TEST(JavaDocCommentTest, Escaping) {
   EXPECT_EQ("{&#64;foo}", EscapeJavadoc("{@foo}"));
   EXPECT_EQ("&lt;i&gt;&amp;&lt;/i&gt;", EscapeJavadoc("<i>&</i>"));
   EXPECT_EQ("foo&#92;u1234bar", EscapeJavadoc("foo\\u1234bar"));
-  EXPECT_EQ("&#64;deprecated", EscapeJavadoc("@deprecated"));
 }
 
 // TODO(kenton):  It's hard to write a robust test of the doc comments -- we

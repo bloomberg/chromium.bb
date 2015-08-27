@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -33,6 +33,8 @@
 // This file contains the implementation of classes GzipInputStream and
 // GzipOutputStream.
 
+#include "config.h"
+
 #if HAVE_ZLIB
 #include <google/protobuf/io/gzip_stream.h>
 
@@ -46,8 +48,7 @@ static const int kDefaultBufferSize = 65536;
 
 GzipInputStream::GzipInputStream(
     ZeroCopyInputStream* sub_stream, Format format, int buffer_size)
-    : format_(format), sub_stream_(sub_stream), zerror_(Z_OK), byte_count_(0) {
-  zcontext_.state = Z_NULL;
+    : format_(format), sub_stream_(sub_stream), zerror_(Z_OK) {
   zcontext_.zalloc = Z_NULL;
   zcontext_.zfree = Z_NULL;
   zcontext_.opaque = Z_NULL;
@@ -133,7 +134,6 @@ bool GzipInputStream::Next(const void** data, int* size) {
     if (zcontext_.next_out != NULL) {
       // sub_stream_ may have concatenated streams to follow
       zerror_ = inflateEnd(&zcontext_);
-      byte_count_ += zcontext_.total_out;
       if (zerror_ != Z_OK) {
         return false;
       }
@@ -178,12 +178,8 @@ bool GzipInputStream::Skip(int count) {
   return ok;
 }
 int64 GzipInputStream::ByteCount() const {
-  int64 ret = byte_count_ + zcontext_.total_out;
-  if (zcontext_.next_out != NULL && output_position_ != NULL) {
-    ret += reinterpret_cast<uintptr_t>(zcontext_.next_out) -
-           reinterpret_cast<uintptr_t>(output_position_);
-  }
-  return ret;
+  return zcontext_.total_out +
+    (((uintptr_t)zcontext_.next_out) - ((uintptr_t)output_position_));
 }
 
 // =========================================================================

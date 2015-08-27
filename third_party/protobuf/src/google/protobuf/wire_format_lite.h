@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -44,13 +44,12 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/io/coded_stream.h>  // for CodedOutputStream::Varint32Size
-#include <google/protobuf/unknown_field_set.h>
 
 namespace google {
 
 namespace protobuf {
   template <typename T> class RepeatedField;  // repeated_field.h
-  class UnknownFieldSet;         // unknown_field_set.h
+  class UnknownFieldSet;
 }
 
 namespace protobuf {
@@ -164,34 +163,20 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
 
   // Skips a field value with the given tag.  The input should start
   // positioned immediately after the tag.  Skipped values are simply discarded,
-  // not recorded anywhere.
-  static bool SkipField(io::CodedInputStream* input, uint32 tag);
-
-  // Skips a field value with the given tag.  The input should start
-  // positioned immediately after the tag.  If unknown_fields is non-NULL,
-  // the contents of the field will be added to it.
+  // not recorded anywhere.  See WireFormat::SkipField() for a version that
+  // records to an UnknownFieldSet.
   static bool SkipField(io::CodedInputStream* input, uint32 tag,
-                        UnknownFieldSet* unknown_fields);
-
-  // Skips a field value with the given tag.  The input should start
-  // positioned immediately after the tag. Skipped values are recorded to a
-  // CodedOutputStream.
-  static bool SkipField(io::CodedInputStream* input, uint32 tag,
-                        io::CodedOutputStream* output);
+                        UnknownFieldSet *unknown_fields);
 
   // Reads and ignores a message from the input.  If unknown_fields is non-NULL,
   // the contents will be added to it.
   static bool SkipMessage(io::CodedInputStream* input,
                           UnknownFieldSet* unknown_fields);
 
+
   // Reads and ignores a message from the input.  Skipped values may be stored
   // in the UnknownFieldSet if it exists.
   static bool SkipMessage(io::CodedInputStream* input);
-
-  // Reads and ignores a message from the input.  Skipped values are recorded
-  // to a CodedOutputStream.
-  static bool SkipMessage(io::CodedInputStream* input,
-                          io::CodedOutputStream* output);
 
 // This macro does the same thing as WireFormatLite::MakeTag(), but the
 // result is usable as a compile-time constant, which makes it usable
@@ -247,14 +232,6 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static uint64 ZigZagEncode64(int64 n);
   static int64  ZigZagDecode64(uint64 n);
 
-  // Read a packed enum field. If the is_valid function is not NULL, values for
-  // which is_valid(value) returns false are appended to unknown_fields_stream.
-  static bool ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
-                                             uint32 field_number,
-                                             bool (*is_valid)(int),
-                                             UnknownFieldSet* unknown_fields,
-                                             RepeatedField<int>* values);
-
   // Write the contents of an UnknownFieldSet to the output.
   static void SerializeUnknownFields(const UnknownFieldSet& unknown_fields,
                                      io::CodedOutputStream* output);
@@ -295,9 +272,9 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // that file to use these.
 
 // Avoid ugly line wrapping
-#define input  io::CodedInputStream*  input_arg
-#define output io::CodedOutputStream* output_arg
-#define field_number int field_number_arg
+#define input  io::CodedInputStream*  input
+#define output io::CodedOutputStream* output
+#define field_number int field_number
 #define INL GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 
   // Read fields, not including tags.  The assumption is that you already
@@ -347,32 +324,14 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   template <typename CType, enum FieldType DeclaredType>
   static bool ReadPackedPrimitiveNoInline(input, RepeatedField<CType>* value);
 
-  // Read a packed enum field. If the is_valid function is not NULL, values for
-  // which is_valid(value) returns false are silently dropped.
+  // Read a packed enum field. Values for which is_valid() returns false are
+  // dropped.
   static bool ReadPackedEnumNoInline(input,
                                      bool (*is_valid)(int),
-                                     RepeatedField<int>* values);
+                                     RepeatedField<int>* value);
 
-  // Read a packed enum field. If the is_valid function is not NULL, values for
-  // which is_valid(value) returns false are appended to unknown_fields_stream.
-  static bool ReadPackedEnumPreserveUnknowns(
-      input,
-      field_number,
-      bool (*is_valid)(int),
-      io::CodedOutputStream* unknown_fields_stream,
-      RepeatedField<int>* values);
-
-  // Read a string.  ReadString(..., string* value) requires an existing string.
-  static inline bool ReadString(input, string* value);
-  // ReadString(..., string** p) is internal-only, and should only be called
-  // from generated code. It starts by setting *p to "new string"
-  // if *p == &GetEmptyStringAlreadyInited().  It then invokes
-  // ReadString(input, *p).  This is useful for reducing code size.
-  static inline bool ReadString(input, string** p);
-  // Analogous to ReadString().
-  static bool ReadBytes(input, string* value);
-  static bool ReadBytes(input, string** p);
-
+  static bool ReadString(input, string* value);
+  static bool ReadBytes (input, string* value);
 
   static inline bool ReadGroup  (field_number, input, MessageLite* value);
   static inline bool ReadMessage(input, MessageLite* value);
@@ -385,17 +344,6 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
                                         MessageType* value);
   template<typename MessageType>
   static inline bool ReadMessageNoVirtual(input, MessageType* value);
-
-  // The same, but do not modify input's recursion depth.  This is useful
-  // when reading a bunch of groups or messages in a loop, because then the
-  // recursion depth can be incremented before the loop and decremented after.
-  template<typename MessageType>
-  static inline bool ReadGroupNoVirtualNoRecursionDepth(field_number, input,
-                                                        MessageType* value);
-
-  template<typename MessageType>
-  static inline bool ReadMessageNoVirtualNoRecursionDepth(input,
-                                                          MessageType* value);
 
   // Write a tag.  The Write*() functions typically include the tag, so
   // normally there's no need to call this unless using the Write*NoTag()
@@ -436,10 +384,6 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
 
   static void WriteString(field_number, const string& value, output);
   static void WriteBytes (field_number, const string& value, output);
-  static void WriteStringMaybeAliased(
-      field_number, const string& value, output);
-  static void WriteBytesMaybeAliased(
-      field_number, const string& value, output);
 
   static void WriteGroup(
     field_number, const MessageLite& value, output);
@@ -590,12 +534,6 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
       google::protobuf::io::CodedInputStream* input,
       RepeatedField<CType>* value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
 
-  // Like ReadRepeatedFixedSizePrimitive but for packed primitive fields.
-  template <typename CType, enum FieldType DeclaredType>
-  static inline bool ReadPackedFixedSizePrimitive(
-      google::protobuf::io::CodedInputStream* input,
-      RepeatedField<CType>* value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
-
   static const CppType kFieldTypeToCppTypeMap[];
   static const WireFormatLite::WireType kWireTypeForFieldType[];
 
@@ -620,27 +558,9 @@ class LIBPROTOBUF_EXPORT FieldSkipper {
   // saves it as an unknown varint.
   void SkipUnknownEnum(int field_number, int value);
 
- private:
+ protected:
   UnknownFieldSet* unknown_fields_;
 };
-
-// Subclass of FieldSkipper which saves skipped fields to a CodedOutputStream.
-
-class LIBPROTOBUF_EXPORT CodedOutputStreamFieldSkipper : public FieldSkipper {
- public:
-  explicit CodedOutputStreamFieldSkipper(io::CodedOutputStream* unknown_fields)
-      : FieldSkipper(nullptr), unknown_fields_(unknown_fields) {}
-  virtual ~CodedOutputStreamFieldSkipper() {}
-
-  // implements FieldSkipper -----------------------------------------
-  virtual bool SkipField(io::CodedInputStream* input, uint32 tag);
-  virtual bool SkipMessage(io::CodedInputStream* input);
-  virtual void SkipUnknownEnum(int field_number, int value);
-
- protected:
-  io::CodedOutputStream* unknown_fields_;
-};
-
 
 // inline methods ====================================================
 
@@ -723,7 +643,7 @@ inline double WireFormatLite::DecodeDouble(uint64 value) {
 
 inline uint32 WireFormatLite::ZigZagEncode32(int32 n) {
   // Note:  the right-shift must be arithmetic
-  return (static_cast<uint32>(n) << 1) ^ (n >> 31);
+  return (n << 1) ^ (n >> 31);
 }
 
 inline int32 WireFormatLite::ZigZagDecode32(uint32 n) {
@@ -732,24 +652,11 @@ inline int32 WireFormatLite::ZigZagDecode32(uint32 n) {
 
 inline uint64 WireFormatLite::ZigZagEncode64(int64 n) {
   // Note:  the right-shift must be arithmetic
-  return (static_cast<uint64>(n) << 1) ^ (n >> 63);
+  return (n << 1) ^ (n >> 63);
 }
 
 inline int64 WireFormatLite::ZigZagDecode64(uint64 n) {
   return (n >> 1) ^ -static_cast<int64>(n & 1);
-}
-
-// String is for UTF-8 text only, but, even so, ReadString() can simply
-// call ReadBytes().
-
-inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
-                                       string* value) {
-  return ReadBytes(input, value);
-}
-
-inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
-                                       string** p) {
-  return ReadBytes(input, p);
 }
 
 }  // namespace internal

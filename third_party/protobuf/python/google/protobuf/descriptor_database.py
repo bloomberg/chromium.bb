@@ -1,6 +1,6 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
+# http://code.google.com/p/protobuf/
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -33,14 +33,6 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 
-class Error(Exception):
-  pass
-
-
-class DescriptorDatabaseConflictingDefinitionError(Error):
-  """Raised when a proto is added with the same name & different descriptor."""
-
-
 class DescriptorDatabase(object):
   """A container accepting FileDescriptorProtos and maps DescriptorProtos."""
 
@@ -53,18 +45,9 @@ class DescriptorDatabase(object):
 
     Args:
       file_desc_proto: The FileDescriptorProto to add.
-    Raises:
-      DescriptorDatabaseException: if an attempt is made to add a proto
-        with the same name but different definition than an exisiting
-        proto in the database.
     """
-    proto_name = file_desc_proto.name
-    if proto_name not in self._file_desc_protos_by_file:
-      self._file_desc_protos_by_file[proto_name] = file_desc_proto
-    elif self._file_desc_protos_by_file[proto_name] != file_desc_proto:
-      raise DescriptorDatabaseConflictingDefinitionError(
-          '%s already added, but with different descriptor.' % proto_name)
 
+    self._file_desc_protos_by_file[file_desc_proto.name] = file_desc_proto
     package = file_desc_proto.package
     for message in file_desc_proto.message_type:
       self._file_desc_protos_by_symbol.update(
@@ -133,5 +116,5 @@ def _ExtractSymbols(desc_proto, package):
   for nested_type in desc_proto.nested_type:
     for symbol in _ExtractSymbols(nested_type, message_name):
       yield symbol
-  for enum_type in desc_proto.enum_type:
-    yield '.'.join((message_name, enum_type.name))
+    for enum_type in desc_proto.enum_type:
+      yield '.'.join((message_name, enum_type.name))

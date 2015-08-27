@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -35,7 +35,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H__
 
-#include <map>
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
@@ -43,12 +42,6 @@
 namespace google {
 namespace protobuf {
   class FieldDescriptor;       // descriptor.h
-  namespace compiler {
-    namespace java {
-      class Context;           // context.h
-      class ClassNameResolver; // name_resolver.h
-    }
-  }
   namespace io {
     class Printer;             // printer.h
   }
@@ -63,46 +56,17 @@ namespace java {
 // since extensions are just simple identifiers with interesting types.
 class ExtensionGenerator {
  public:
-  explicit ExtensionGenerator() {}
-  virtual ~ExtensionGenerator() {}
+  explicit ExtensionGenerator(const FieldDescriptor* descriptor);
+  ~ExtensionGenerator();
 
-  virtual void Generate(io::Printer* printer) = 0;
-
-  // Returns an estimate of the number of bytes the printed code will compile to
-  virtual int GenerateNonNestedInitializationCode(io::Printer* printer) = 0;
-
-  // Returns an estimate of the number of bytes the printed code will compile to
-  virtual int GenerateRegistrationCode(io::Printer* printer) = 0;
-
- protected:
-  static void InitTemplateVars(const FieldDescriptor* descriptor,
-                               const string& scope,
-                               bool immutable,
-                               ClassNameResolver* name_resolver,
-                               map<string, string>* vars_pointer);
+  void Generate(io::Printer* printer);
+  void GenerateNonNestedInitializationCode(io::Printer* printer);
+  void GenerateRegistrationCode(io::Printer* printer);
 
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
-};
-
-class ImmutableExtensionGenerator : public ExtensionGenerator {
- public:
-  explicit ImmutableExtensionGenerator(const FieldDescriptor* descriptor,
-                                       Context* context);
-  virtual ~ImmutableExtensionGenerator();
-
-  virtual void Generate(io::Printer* printer);
-  virtual int GenerateNonNestedInitializationCode(io::Printer* printer);
-  virtual int GenerateRegistrationCode(io::Printer* printer);
-
- protected:
   const FieldDescriptor* descriptor_;
-  Context* context_;
-  ClassNameResolver* name_resolver_;
   string scope_;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableExtensionGenerator);
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
 };
 
 }  // namespace java
@@ -110,4 +74,4 @@ class ImmutableExtensionGenerator : public ExtensionGenerator {
 }  // namespace protobuf
 
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_H__

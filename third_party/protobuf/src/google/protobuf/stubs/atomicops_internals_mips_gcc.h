@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2012 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -65,7 +65,7 @@ inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
                        "2:\n"
                        ".set pop\n"
                        : "=&r" (prev), "=m" (*ptr), "=&r" (tmp)
-                       : "r" (old_value), "r" (new_value), "m" (*ptr)
+                       : "Ir" (old_value), "r" (new_value), "m" (*ptr)
                        : "memory");
   return prev;
 }
@@ -197,7 +197,7 @@ inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,
                        "2:\n"
                        ".set pop\n"
                        : "=&r" (prev), "=m" (*ptr), "=&r" (tmp)
-                       : "r" (old_value), "r" (new_value), "m" (*ptr)
+                       : "Ir" (old_value), "r" (new_value), "m" (*ptr)
                        : "memory");
   return prev;
 }

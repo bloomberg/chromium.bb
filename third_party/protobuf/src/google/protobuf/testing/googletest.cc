@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -65,15 +65,7 @@ namespace protobuf {
 #endif
 
 string TestSourceDir() {
-#ifndef GOOGLE_THIRD_PARTY_PROTOBUF
-#ifndef _MSC_VER
-  // automake sets the "srcdir" environment variable.
-  char* result = getenv("srcdir");
-  if (result != NULL) {
-    return result;
-  }
-#endif  // _MSC_VER
-
+#ifdef _MSC_VER
   // Look for the "src" directory.
   string prefix = ".";
 
@@ -87,8 +79,15 @@ string TestSourceDir() {
   }
   return prefix + "/src";
 #else
-  return "third_party/protobuf/src";
-#endif  // GOOGLE_THIRD_PARTY_PROTOBUF
+  // automake sets the "srcdir" environment variable.
+  char* result = getenv("srcdir");
+  if (result == NULL) {
+    // Otherwise, the test must be run from the source directory.
+    return ".";
+  } else {
+    return result;
+  }
+#endif
 }
 
 namespace {
@@ -105,10 +104,6 @@ string GetTemporaryDirectoryName() {
   if (HasPrefixString(result, "\\")) {
     result.erase(0, 1);
   }
-  // The Win32 API accepts forward slashes as a path delimiter even though
-  // backslashes are standard.  Let's avoid confusion and use only forward
-  // slashes.
-  result = StringReplace(result, "\\", "/", true);
 #endif  // _WIN32
   return result;
 }

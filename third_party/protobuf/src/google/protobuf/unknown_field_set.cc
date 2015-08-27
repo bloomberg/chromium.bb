@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -35,43 +35,33 @@
 #include <google/protobuf/unknown_field_set.h>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
 
-namespace {
-// This global instance is returned by unknown_fields() on any message class
-// when the object has no unknown fields. This is necessary because we now
-// instantiate the UnknownFieldSet dynamically only when required.
-UnknownFieldSet* default_unknown_field_set_instance_ = NULL;
+namespace internal {
 
-void DeleteDefaultUnknownFieldSet() {
-  delete default_unknown_field_set_instance_;
+int StringSpaceUsedExcludingSelf(const string& str) {
+  const void* start = &str;
+  const void* end = &str + 1;
+
+  if (start <= str.data() && str.data() <= end) {
+    // The string's data is stored inside the string object itself.
+    return 0;
+  } else {
+    return str.capacity();
+  }
 }
 
-void InitDefaultUnknownFieldSet() {
-  default_unknown_field_set_instance_ = new UnknownFieldSet();
-  internal::OnShutdown(&DeleteDefaultUnknownFieldSet);
-}
-
-GOOGLE_PROTOBUF_DECLARE_ONCE(default_unknown_field_set_once_init_);
-}
-
-const UnknownFieldSet* UnknownFieldSet::default_instance() {
-  ::google::protobuf::GoogleOnceInit(&default_unknown_field_set_once_init_,
-                 &InitDefaultUnknownFieldSet);
-  return default_unknown_field_set_instance_;
 }
 
 UnknownFieldSet::UnknownFieldSet()
-    : fields_(NULL) {}
+  : fields_(NULL) {}
 
 UnknownFieldSet::~UnknownFieldSet() {
   Clear();
@@ -79,63 +69,31 @@ UnknownFieldSet::~UnknownFieldSet() {
 }
 
 void UnknownFieldSet::ClearFallback() {
-  if (fields_ != NULL) {
-    for (int i = 0; i < fields_->size(); i++) {
-      (*fields_)[i].Delete();
-    }
-    delete fields_;
-    fields_ = NULL;
+  GOOGLE_DCHECK(fields_ != NULL);
+  for (int i = 0; i < fields_->size(); i++) {
+    (*fields_)[i].Delete();
   }
+  fields_->clear();
 }
 
 void UnknownFieldSet::ClearAndFreeMemory() {
   if (fields_ != NULL) {
     Clear();
-  }
-}
-
-void UnknownFieldSet::InternalMergeFrom(const UnknownFieldSet& other) {
-  int other_field_count = other.field_count();
-  if (other_field_count > 0) {
-    fields_ = new vector<UnknownField>();
-    for (int i = 0; i < other_field_count; i++) {
-      fields_->push_back((*other.fields_)[i]);
-      fields_->back().DeepCopy((*other.fields_)[i]);
-    }
+    delete fields_;
+    fields_ = NULL;
   }
 }
 
 void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
-  int other_field_count = other.field_count();
-  if (other_field_count > 0) {
-    if (fields_ == NULL) fields_ = new vector<UnknownField>();
-    for (int i = 0; i < other_field_count; i++) {
-      fields_->push_back((*other.fields_)[i]);
-      fields_->back().DeepCopy((*other.fields_)[i]);
-    }
+  for (int i = 0; i < other.field_count(); i++) {
+    AddField(other.field(i));
   }
-}
-
-// A specialized MergeFrom for performance when we are merging from an UFS that
-// is temporary and can be destroyed in the process.
-void UnknownFieldSet::MergeFromAndDestroy(UnknownFieldSet* other) {
-  int other_field_count = other->field_count();
-  if (other_field_count > 0) {
-    if (fields_ == NULL) fields_ = new vector<UnknownField>();
-    for (int i = 0; i < other_field_count; i++) {
-      fields_->push_back((*other->fields_)[i]);
-      (*other->fields_)[i].Reset();
-    }
-  }
-  delete other->fields_;
-  other->fields_ = NULL;
 }
 
 int UnknownFieldSet::SpaceUsedExcludingSelf() const {
   if (fields_ == NULL) return 0;
 
   int total_size = sizeof(*fields_) + sizeof(UnknownField) * fields_->size();
-
   for (int i = 0; i < fields_->size(); i++) {
     const UnknownField& field = (*fields_)[i];
     switch (field.type()) {
@@ -159,60 +117,61 @@ int UnknownFieldSet::SpaceUsed() const {
 }
 
 void UnknownFieldSet::AddVarint(int number, uint64 value) {
+  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
-  field.SetType(UnknownField::TYPE_VARINT);
+  field.type_ = UnknownField::TYPE_VARINT;
   field.varint_ = value;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
 }
 
 void UnknownFieldSet::AddFixed32(int number, uint32 value) {
+  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
-  field.SetType(UnknownField::TYPE_FIXED32);
+  field.type_ = UnknownField::TYPE_FIXED32;
   field.fixed32_ = value;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
 }
 
 void UnknownFieldSet::AddFixed64(int number, uint64 value) {
+  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
-  field.SetType(UnknownField::TYPE_FIXED64);
+  field.type_ = UnknownField::TYPE_FIXED64;
   field.fixed64_ = value;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
 }
 
 string* UnknownFieldSet::AddLengthDelimited(int number) {
+  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
-  field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
+  field.type_ = UnknownField::TYPE_LENGTH_DELIMITED;
   field.length_delimited_.string_value_ = new string;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
   return field.length_delimited_.string_value_;
 }
 
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
+  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   UnknownField field;
   field.number_ = number;
-  field.SetType(UnknownField::TYPE_GROUP);
+  field.type_ = UnknownField::TYPE_GROUP;
   field.group_ = new UnknownFieldSet;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
   return field.group_;
 }
 
 void UnknownFieldSet::AddField(const UnknownField& field) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
+  if (fields_ == NULL) fields_ = new vector<UnknownField>;
   fields_->push_back(field);
-  fields_->back().DeepCopy(field);
+  fields_->back().DeepCopy();
 }
 
 void UnknownFieldSet::DeleteSubrange(int start, int num) {
+  GOOGLE_DCHECK(fields_ != NULL);
   // Delete the specified fields.
   for (int i = 0; i < num; ++i) {
     (*fields_)[i + start].Delete();
@@ -224,11 +183,6 @@ void UnknownFieldSet::DeleteSubrange(int start, int num) {
   // Pop off the # of deleted fields.
   for (int i = 0; i < num; ++i) {
     fields_->pop_back();
-  }
-  if (fields_ && fields_->size() == 0) {
-    // maintain invariant: never hold fields_ if empty.
-    delete fields_;
-    fields_ = NULL;
   }
 }
 
@@ -247,18 +201,14 @@ void UnknownFieldSet::DeleteByNumber(int number) {
     }
   }
   fields_->resize(left);
-  if (left == 0) {
-    // maintain invariant: never hold fields_ if empty.
-    delete fields_;
-    fields_ = NULL;
-  }
 }
 
 bool UnknownFieldSet::MergeFromCodedStream(io::CodedInputStream* input) {
+
   UnknownFieldSet other;
   if (internal::WireFormatLite::SkipMessage(input, &other) &&
       input->ConsumedEntireMessage()) {
-    MergeFromAndDestroy(&other);
+    MergeFrom(other);
     return true;
   } else {
     return false;
@@ -272,8 +222,8 @@ bool UnknownFieldSet::ParseFromCodedStream(io::CodedInputStream* input) {
 
 bool UnknownFieldSet::ParseFromZeroCopyStream(io::ZeroCopyInputStream* input) {
   io::CodedInputStream coded_input(input);
-  return (ParseFromCodedStream(&coded_input) &&
-          coded_input.ConsumedEntireMessage());
+  return ParseFromCodedStream(&coded_input) &&
+    coded_input.ConsumedEntireMessage();
 }
 
 bool UnknownFieldSet::ParseFromArray(const void* data, int size) {
@@ -294,31 +244,15 @@ void UnknownField::Delete() {
   }
 }
 
-// Reset all owned ptrs, a special function for performance, to avoid double
-// owning the ptrs, when we merge from a temporary UnknownFieldSet objects.
-void UnknownField::Reset() {
-  switch (type()) {
-    case UnknownField::TYPE_LENGTH_DELIMITED:
-      length_delimited_.string_value_ = NULL;
-      break;
-    case UnknownField::TYPE_GROUP: {
-      group_ = NULL;
-      break;
-    }
-    default:
-      break;
-  }
-}
-
-void UnknownField::DeepCopy(const UnknownField& other) {
+void UnknownField::DeepCopy() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
       length_delimited_.string_value_ = new string(
           *length_delimited_.string_value_);
       break;
     case UnknownField::TYPE_GROUP: {
-      UnknownFieldSet* group = new UnknownFieldSet();
-      group->InternalMergeFrom(*group_);
+      UnknownFieldSet* group = new UnknownFieldSet;
+      group->MergeFrom(*group_);
       group_ = group;
       break;
     }
@@ -330,14 +264,14 @@ void UnknownField::DeepCopy(const UnknownField& other) {
 
 void UnknownField::SerializeLengthDelimitedNoTag(
     io::CodedOutputStream* output) const {
-  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
+  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type_);
   const string& data = *length_delimited_.string_value_;
   output->WriteVarint32(data.size());
-  output->WriteRawMaybeAliased(data.data(), data.size());
+  output->WriteString(data);
 }
 
 uint8* UnknownField::SerializeLengthDelimitedNoTagToArray(uint8* target) const {
-  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
+  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type_);
   const string& data = *length_delimited_.string_value_;
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
   target = io::CodedOutputStream::WriteStringToArray(data, target);

@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -78,18 +78,6 @@ TEST(ReflectionOpsTest, CopyExtensions) {
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
-TEST(ReflectionOpsTest, CopyOneof) {
-  unittest::TestOneof2 message, message2;
-  TestUtil::SetOneof1(&message);
-  ReflectionOps::Copy(message, &message2);
-  TestUtil::ExpectOneofSet1(message2);
-
-  TestUtil::SetOneof2(&message);
-  TestUtil::ExpectOneofSet2(message);
-  ReflectionOps::Copy(message, &message2);
-  TestUtil::ExpectOneofSet2(message2);
-}
-
 TEST(ReflectionOpsTest, Merge) {
   // Note:  Copy is implemented in terms of Merge() so technically the Copy
   //   test already tested most of this.
@@ -164,24 +152,6 @@ TEST(ReflectionOpsTest, MergeUnknown) {
   EXPECT_EQ(2, message1.unknown_fields().field(1).varint());
 }
 
-TEST(ReflectionOpsTest, MergeOneof) {
-  unittest::TestOneof2 message1, message2;
-  TestUtil::SetOneof1(&message1);
-
-  // Merge to empty message
-  ReflectionOps::Merge(message1, &message2);
-  TestUtil::ExpectOneofSet1(message2);
-
-  // Merge with the same oneof fields
-  ReflectionOps::Merge(message1, &message2);
-  TestUtil::ExpectOneofSet1(message2);
-
-  // Merge with different oneof fields
-  TestUtil::SetOneof2(&message1);
-  ReflectionOps::Merge(message1, &message2);
-  TestUtil::ExpectOneofSet2(message2);
-}
-
 #ifdef PROTOBUF_HAS_DEATH_TEST
 
 TEST(ReflectionOpsTest, MergeFromSelf) {
@@ -248,23 +218,6 @@ TEST(ReflectionOpsTest, ClearUnknown) {
   ReflectionOps::Clear(&message);
 
   EXPECT_EQ(0, message.unknown_fields().field_count());
-}
-
-TEST(ReflectionOpsTest, ClearOneof) {
-  unittest::TestOneof2 message;
-
-  TestUtil::ExpectOneofClear(message);
-  TestUtil::SetOneof1(&message);
-  TestUtil::ExpectOneofSet1(message);
-  ReflectionOps::Clear(&message);
-  TestUtil::ExpectOneofClear(message);
-
-  TestUtil::SetOneof1(&message);
-  TestUtil::ExpectOneofSet1(message);
-  TestUtil::SetOneof2(&message);
-  TestUtil::ExpectOneofSet2(message);
-  ReflectionOps::Clear(&message);
-  TestUtil::ExpectOneofClear(message);
 }
 
 TEST(ReflectionOpsTest, DiscardUnknownFields) {
@@ -401,26 +354,10 @@ TEST(ReflectionOpsTest, ExtensionIsInitialized) {
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 }
 
-TEST(ReflectionOpsTest, OneofIsInitialized) {
-  unittest::TestRequiredOneof message;
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-
-  message.mutable_foo_message();
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-
-  message.set_foo_int(1);
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-
-  message.mutable_foo_message();
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  message.mutable_foo_message()->set_required_double(0.1);
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-}
-
 static string FindInitializationErrors(const Message& message) {
   vector<string> errors;
   ReflectionOps::FindInitializationErrors(message, "", &errors);
-  return Join(errors, ",");
+  return JoinStrings(errors, ",");
 }
 
 TEST(ReflectionOpsTest, FindInitializationErrors) {
@@ -459,13 +396,6 @@ TEST(ReflectionOpsTest, FindExtensionInitializationErrors) {
             "(protobuf_unittest.TestRequired.multi)[1].a,"
             "(protobuf_unittest.TestRequired.multi)[1].b,"
             "(protobuf_unittest.TestRequired.multi)[1].c",
-            FindInitializationErrors(message));
-}
-
-TEST(ReflectionOpsTest, FindOneofInitializationErrors) {
-  unittest::TestRequiredOneof message;
-  message.mutable_foo_message();
-  EXPECT_EQ("foo_message.required_double",
             FindInitializationErrors(message));
 }
 
