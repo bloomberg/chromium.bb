@@ -31,6 +31,9 @@ function grabEventAndContinueHandler(e) {
 function executeSoon(f) {
     setTimeout(f, 0);
 }
+function continueToNextStepSync() {
+    testGenerator.next();
+}
 function finishTest() {
     finishJSTest();
 }
