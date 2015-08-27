@@ -51,6 +51,7 @@ crbug.com/364417 editing/selection/selection-in-iframe-removed-crash.html [ Leak
 crbug.com/364417 editing/selection/user-select-js-property.html [ Leak ]
 crbug.com/364417 fast/events/touch/gesture/context-menu-on-long-tap.html [ Leak ]
 crbug.com/364417 fast/repaint/japanese-rl-selection-clear.html [ Leak ]
+crbug.com/364417 virtual/spv2/fast/repaint/japanese-rl-selection-clear.html [ Leak ]
 crbug.com/364417 fast/text/international/hebrew-selection.html [ Leak ]
 
 crbug.com/455369 fast/html/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
