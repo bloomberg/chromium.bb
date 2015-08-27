@@ -31,6 +31,21 @@ TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot)
     EXPECT_EQ(PositionInComposedTree::afterNode(host), firstEditablePositionAfterPositionInRoot(PositionInComposedTree(three, 0), host));
 }
 
+TEST_F(EditingUtilitiesTest, enclosingBlock)
+{
+    const char* bodyContent = "<p id='host'><b id='one'>11</b></p>";
+    const char* shadowContent = "<content select=#two></content><div id='three'><content select=#one></content></div>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    updateLayoutAndStyleForPainting();
+    Node* host = document().getElementById("host");
+    Node* one = document().getElementById("one");
+    Node* three = shadowRoot->getElementById("three");
+
+    EXPECT_EQ(host, enclosingBlock(Position(one, 0), CannotCrossEditingBoundary));
+    EXPECT_EQ(three, enclosingBlock(PositionInComposedTree(one, 0), CannotCrossEditingBoundary));
+}
+
 TEST_F(EditingUtilitiesTest, enclosingNodeOfType)
 {
     const char* bodyContent = "<p id='host'><b id='one'>11</b></p>";

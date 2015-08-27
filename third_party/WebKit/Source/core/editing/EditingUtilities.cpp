@@ -648,10 +648,21 @@ Element* enclosingBlock(Node* node, EditingBoundaryCrossingRule rule)
     return enclosingBlock(firstPositionInOrBeforeNode(node), rule);
 }
 
-Element* enclosingBlock(const Position& position, EditingBoundaryCrossingRule rule)
+template <typename Strategy>
+Element* enclosingBlockAlgorithm(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
 {
     Node* enclosingNode = enclosingNodeOfType(position, isEnclosingBlock, rule);
     return enclosingNode && enclosingNode->isElementNode() ? toElement(enclosingNode) : nullptr;
+}
+
+Element* enclosingBlock(const Position& position, EditingBoundaryCrossingRule rule)
+{
+    return enclosingBlockAlgorithm<EditingStrategy>(position, rule);
+}
+
+Element* enclosingBlock(const PositionInComposedTree& position, EditingBoundaryCrossingRule rule)
+{
+    return enclosingBlockAlgorithm<EditingInComposedTreeStrategy>(position, rule);
 }
 
 Element* enclosingBlockFlowElement(Node& node)
