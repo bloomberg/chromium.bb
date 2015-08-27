@@ -43,11 +43,6 @@ const uint8_t* WebRtcVideoFrameAdapter::data(webrtc::PlaneType type) const {
   return frame_->visible_data(WebRtcToMediaPlaneType(type));
 }
 
-uint8_t* WebRtcVideoFrameAdapter::data(webrtc::PlaneType type) {
-  NOTREACHED();
-  return nullptr;
-}
-
 int WebRtcVideoFrameAdapter::stride(webrtc::PlaneType type) const {
   return frame_->stride(WebRtcToMediaPlaneType(type));
 }
