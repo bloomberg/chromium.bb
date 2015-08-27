@@ -38,6 +38,7 @@ class FakeSyncService : public sync_driver::SyncService {
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
+  void DeactivateDataType(syncer::ModelType type) override;
   void SetSyncSetupCompleted() override;
   bool FirstSetupInProgress() const override;
   void SetSetupInProgress(bool setup_in_progress) override;

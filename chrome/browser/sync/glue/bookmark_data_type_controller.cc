@@ -29,8 +29,8 @@ BookmarkDataTypeController::BookmarkDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
           profile_sync_factory,
-          profile,
           sync_service),
+      profile_(profile),
       history_service_observer_(this),
       bookmark_model_observer_(this) {
 }
@@ -62,9 +62,12 @@ void BookmarkDataTypeController::CleanUpState() {
 }
 
 void BookmarkDataTypeController::CreateSyncComponents() {
+  // This cast is safe since |sync_service_| is the PSS that was passed in to
+  // this object's constructor.
+  // TODO(blundell): Remove this cast once it's no longer needed.
+  ProfileSyncService* pss = static_cast<ProfileSyncService*>(sync_service_);
   ProfileSyncComponentsFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateBookmarkSyncComponents(sync_service_,
-                                                          this);
+      profile_sync_factory_->CreateBookmarkSyncComponents(pss, this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
 }

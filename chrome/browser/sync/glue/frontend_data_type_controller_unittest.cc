@@ -13,13 +13,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
-#include "chrome/browser/sync/glue/frontend_data_type_controller_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/change_processor_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
+#include "components/sync_driver/frontend_data_type_controller.h"
+#include "components/sync_driver/frontend_data_type_controller_mock.h"
 #include "components/sync_driver/model_associator_mock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
@@ -41,22 +41,23 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
  public:
   FrontendDataTypeControllerFake(
       ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile,
       ProfileSyncService* sync_service,
       FrontendDataTypeControllerMock* mock)
       : FrontendDataTypeController(base::ThreadTaskRunnerHandle::Get(),
                                    base::Closure(),
                                    profile_sync_factory,
-                                   profile,
                                    sync_service),
         mock_(mock) {}
   syncer::ModelType type() const override { return syncer::BOOKMARKS; }
 
  private:
   void CreateSyncComponents() override {
+  // This cast is safe since |sync_service_| is the PSS that was passed in to
+  // this object's constructor.
+  // TODO(blundell): Remove this cast once it's no longer needed.
+  ProfileSyncService* pss = static_cast<ProfileSyncService*>(sync_service_);
     ProfileSyncComponentsFactory::SyncComponents sync_components =
-        profile_sync_factory_->
-            CreateBookmarkSyncComponents(sync_service_, this);
+        profile_sync_factory_->CreateBookmarkSyncComponents(pss, this);
     model_associator_.reset(sync_components.model_associator);
     change_processor_.reset(sync_components.change_processor);
   }
@@ -91,7 +92,6 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
     dtc_mock_ = new StrictMock<FrontendDataTypeControllerMock>();
     frontend_dtc_ =
         new FrontendDataTypeControllerFake(profile_sync_factory_.get(),
-                                           &profile_,
                                            &service_,
                                            dtc_mock_.get());
   }

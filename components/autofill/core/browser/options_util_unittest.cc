@@ -36,6 +36,7 @@ class SyncServiceMock : public sync_driver::SyncService {
   MOCK_CONST_METHOD0(GetPreferredDataTypes, syncer::ModelTypeSet());
   MOCK_METHOD2(OnUserChoseDatatypes,
                void(bool sync_everything, syncer::ModelTypeSet chosen_types));
+  MOCK_METHOD1(DeactivateDataType, void(syncer::ModelType type));
   MOCK_METHOD0(SetSyncSetupCompleted, void());
   MOCK_CONST_METHOD0(FirstSetupInProgress, bool());
   MOCK_METHOD1(SetSetupInProgress, void(bool));

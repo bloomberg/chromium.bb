@@ -118,6 +118,10 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual void OnUserChoseDatatypes(bool sync_everything,
                                     syncer::ModelTypeSet chosen_types) = 0;
 
+  // Overridden by tests.
+  // TODO(zea): Remove these and have the dtc's call directly into the SBH.
+  virtual void DeactivateDataType(syncer::ModelType type) = 0;
+
   // Called whe Sync has been setup by the user and can be started.
   virtual void SetSyncSetupCompleted() = 0;
 

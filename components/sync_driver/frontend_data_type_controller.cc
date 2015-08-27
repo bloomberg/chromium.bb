@@ -2,49 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
+#include "components/sync_driver/frontend_data_type_controller.h"
 
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
 #include "components/sync_driver/profile_sync_components_factory.h"
-#include "content/public/browser/browser_thread.h"
+#include "components/sync_driver/sync_service.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/data_type_histogram.h"
 
-using content::BrowserThread;
-
 namespace browser_sync {
 
-// TODO(tim): Legacy controllers are being left behind in componentization
-// effort for now, hence passing null DisableTypeCallback and still having
-// a dependency on ProfileSyncService.  That dep can probably be removed
-// without too much work.
 FrontendDataTypeController::FrontendDataTypeController(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback,
     ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile,
-    ProfileSyncService* sync_service)
+    sync_driver::SyncService* sync_service)
     : DataTypeController(ui_thread, error_callback),
       profile_sync_factory_(profile_sync_factory),
-      profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(profile_sync_factory);
-  DCHECK(profile);
   DCHECK(sync_service);
 }
 
 void FrontendDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   model_load_callback_ = model_load_callback;
 
   if (state_ != NOT_RUNNING) {
@@ -69,7 +57,7 @@ void FrontendDataTypeController::LoadModels(
 }
 
 void FrontendDataTypeController::OnModelLoaded() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, MODEL_STARTING);
 
   state_ = MODEL_LOADED;
@@ -78,7 +66,7 @@ void FrontendDataTypeController::OnModelLoaded() {
 
 void FrontendDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!start_callback.is_null());
   DCHECK_EQ(state_, MODEL_LOADED);
 
@@ -90,7 +78,7 @@ void FrontendDataTypeController::StartAssociating(
 }
 
 void FrontendDataTypeController::Stop() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == NOT_RUNNING)
     return;
@@ -153,13 +141,12 @@ void FrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
 FrontendDataTypeController::FrontendDataTypeController()
     : DataTypeController(base::ThreadTaskRunnerHandle::Get(), base::Closure()),
       profile_sync_factory_(NULL),
-      profile_(NULL),
       sync_service_(NULL),
       state_(NOT_RUNNING) {
 }
 
 FrontendDataTypeController::~FrontendDataTypeController() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 bool FrontendDataTypeController::StartModels() {
@@ -244,7 +231,7 @@ void FrontendDataTypeController::CleanUp() {
 }
 
 void FrontendDataTypeController::AbortModelLoad() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   CleanUp();
   state_ = NOT_RUNNING;
 }
@@ -253,7 +240,7 @@ void FrontendDataTypeController::StartDone(
     ConfigureResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsSuccessfulResult(start_result)) {
     if (IsUnrecoverableResult(start_result))
       RecordUnrecoverableError(FROM_HERE, "StartFailed");
@@ -271,7 +258,7 @@ void FrontendDataTypeController::StartDone(
 }
 
 void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 #define PER_DATA_TYPE_MACRO(type_str) \
     UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
   SYNC_DATA_TYPE_HISTOGRAM(type());
@@ -279,7 +266,7 @@ void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 }
 
 void FrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);

@@ -279,6 +279,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
+  void DeactivateDataType(syncer::ModelType type) override;
   void SetSyncSetupCompleted() override;
   bool FirstSetupInProgress() const override;
   void SetSetupInProgress(bool setup_in_progress) override;
@@ -545,10 +546,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // page.  It returns a ListValue rather than a DictionaryValue in part to make
   // it easier to iterate over its elements when constructing that page.
   base::Value* GetTypeStatusMap() const;
-
-  // Overridden by tests.
-  // TODO(zea): Remove these and have the dtc's call directly into the SBH.
-  virtual void DeactivateDataType(syncer::ModelType type);
 
   // SyncPrefObserver implementation.
   void OnSyncManagedPrefChange(bool is_sync_managed) override;

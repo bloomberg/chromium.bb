@@ -63,6 +63,9 @@ void FakeSyncService::OnUserChoseDatatypes(bool sync_everything,
                                            syncer::ModelTypeSet chosen_types) {
 }
 
+void FakeSyncService::DeactivateDataType(syncer::ModelType type) {
+}
+
 void FakeSyncService::SetSyncSetupCompleted() {
 }
 

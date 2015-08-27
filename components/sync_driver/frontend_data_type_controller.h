@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_FRONTEND_DATA_TYPE_CONTROLLER_H__
-#define CHROME_BROWSER_SYNC_GLUE_FRONTEND_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_H__
+#define COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_H__
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
 
-class Profile;
-class ProfileSyncService;
 class ProfileSyncComponentsFactory;
 
 namespace base {
@@ -29,6 +28,7 @@ class SyncError;
 namespace sync_driver {
 class AssociatorInterface;
 class ChangeProcessor;
+class SyncService;
 }
 
 namespace browser_sync {
@@ -49,8 +49,7 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       const base::Closure& error_callback,
       ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile,
-      ProfileSyncService* sync_service);
+      sync_driver::SyncService* sync_service);
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
@@ -115,8 +114,7 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
       const std::string& message);
 
   ProfileSyncComponentsFactory* const profile_sync_factory_;
-  Profile* const profile_;
-  ProfileSyncService* const sync_service_;
+  sync_driver::SyncService* const sync_service_;
 
   State state_;
 
@@ -138,9 +136,11 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
   // to a failure or abort or stop.
   void CleanUp();
 
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(FrontendDataTypeController);
 };
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_FRONTEND_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_H__

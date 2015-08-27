@@ -9,9 +9,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/sync_driver/frontend_data_type_controller.h"
+
+class Profile;
+class ProfileSyncService;
 
 namespace browser_sync {
 
@@ -50,6 +53,7 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   void HistoryServiceBeingDeleted(
       history::HistoryService* history_service) override;
 
+  Profile* const profile_;
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
   ScopedObserver<bookmarks::BookmarkModel, BaseBookmarkModelObserver>

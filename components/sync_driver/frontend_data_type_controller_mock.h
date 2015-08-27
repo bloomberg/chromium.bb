@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
-#define CHROME_BROWSER_SYNC_GLUE_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
+#ifndef COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
+#define COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
 
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
+#include "components/sync_driver/frontend_data_type_controller.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -55,4 +55,4 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
+#endif  // COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H__
