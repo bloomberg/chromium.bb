@@ -35,13 +35,10 @@ class BrowsingDataAppCacheHelper
   friend class base::RefCountedThreadSafe<BrowsingDataAppCacheHelper>;
   virtual ~BrowsingDataAppCacheHelper();
 
-  FetchCallback completion_callback_;
-  scoped_refptr<content::AppCacheInfoCollection> info_collection_;
-
  private:
-  void OnFetchComplete(int rv);
+  void StartFetchingOnIOThread(const FetchCallback& completion_callback);
+  void DeleteAppCacheGroupOnIOThread(const GURL& manifest_url);
 
-  bool is_fetching_ = false;
   content::AppCacheService* appcache_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataAppCacheHelper);
@@ -77,6 +74,8 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
 
  private:
   ~CannedBrowsingDataAppCacheHelper() override;
+
+  scoped_refptr<content::AppCacheInfoCollection> info_collection_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataAppCacheHelper);
 };

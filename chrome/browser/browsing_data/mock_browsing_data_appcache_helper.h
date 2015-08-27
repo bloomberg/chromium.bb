@@ -20,6 +20,8 @@ class MockBrowsingDataAppCacheHelper
  private:
   ~MockBrowsingDataAppCacheHelper() override;
 
+  FetchCallback completion_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataAppCacheHelper);
 };
 

@@ -16,6 +16,33 @@
 using content::BrowserContext;
 using content::BrowserThread;
 
+namespace {
+
+void OnFetchComplete(
+    const BrowsingDataAppCacheHelper::FetchCallback& callback,
+    scoped_refptr<content::AppCacheInfoCollection> info_collection,
+    int /*rv*/) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!callback.is_null());
+
+  // Filter out appcache info entries for non-websafe schemes. Extension state
+  // and DevTools, for example, are not considered browsing data.
+  typedef std::map<GURL, content::AppCacheInfoVector> InfoByOrigin;
+  InfoByOrigin& origin_map = info_collection->infos_by_origin;
+  for (InfoByOrigin::iterator it = origin_map.begin();
+       it != origin_map.end();) {
+    if (!BrowsingDataHelper::HasWebScheme(it->first))
+      origin_map.erase(it++);
+    else
+      ++it;
+  }
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, info_collection));
+}
+
+}  // namespace
+
 BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(
     BrowserContext* browser_context)
     : appcache_service_(
@@ -23,65 +50,43 @@ BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(
               ->GetAppCacheService()) {}
 
 void BrowsingDataAppCacheHelper::StartFetching(const FetchCallback& callback) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(!is_fetching_);
-    DCHECK(!callback.is_null());
-    is_fetching_ = true;
-    info_collection_ = new content::AppCacheInfoCollection;
-    completion_callback_ = callback;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&BrowsingDataAppCacheHelper::StartFetching, this, callback));
-    return;
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!callback.is_null());
 
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  appcache_service_->GetAllAppCacheInfo(
-      info_collection_.get(),
-      base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete, this));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BrowsingDataAppCacheHelper::StartFetchingOnIOThread, this,
+                 callback));
 }
 
-void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
-    const GURL& manifest_url) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&BrowsingDataAppCacheHelper::DeleteAppCacheGroup, this,
-                   manifest_url));
-    return;
-  }
-
-  appcache_service_->DeleteAppCacheGroup(manifest_url,
-                                         net::CompletionCallback());
+void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(const GURL& manifest_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BrowsingDataAppCacheHelper::DeleteAppCacheGroupOnIOThread,
+                 this, manifest_url));
 }
 
 BrowsingDataAppCacheHelper::~BrowsingDataAppCacheHelper() {}
 
-void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    // Filter out appcache info entries for non-websafe schemes. Extension state
-    // and DevTools, for example, are not considered browsing data.
-    typedef std::map<GURL, content::AppCacheInfoVector> InfoByOrigin;
-    InfoByOrigin& origin_map = info_collection_->infos_by_origin;
-    for (InfoByOrigin::iterator origin = origin_map.begin();
-         origin != origin_map.end();) {
-      InfoByOrigin::iterator current = origin;
-      ++origin;
-      if (!BrowsingDataHelper::HasWebScheme(current->first))
-        origin_map.erase(current);
-    }
+void BrowsingDataAppCacheHelper::StartFetchingOnIOThread(
+    const FetchCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!callback.is_null());
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&BrowsingDataAppCacheHelper::OnFetchComplete, this, rv));
-    return;
-  }
+  scoped_refptr<content::AppCacheInfoCollection> info_collection =
+      new content::AppCacheInfoCollection();
 
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(is_fetching_);
-  is_fetching_ = false;
-  completion_callback_.Run(info_collection_);
-  completion_callback_.Reset();
+  appcache_service_->GetAllAppCacheInfo(
+      info_collection.get(),
+      base::Bind(&OnFetchComplete, callback, info_collection));
+}
+
+void BrowsingDataAppCacheHelper::DeleteAppCacheGroupOnIOThread(
+    const GURL& manifest_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  appcache_service_->DeleteAppCacheGroup(manifest_url,
+                                         net::CompletionCallback());
 }
 
 CannedBrowsingDataAppCacheHelper::CannedBrowsingDataAppCacheHelper(
