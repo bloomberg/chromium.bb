@@ -299,21 +299,6 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   NaClDescUnref(args->nexe_desc);
   args->nexe_desc = NULL;
 
-  if (has_bootstrap_channel) {
-    NACL_FI_FATAL("BeforeSecureCommandChannel");
-    /*
-     * Spawns a thread that uses the command channel.
-     * Hereafter any changes to nap should be done while holding locks.
-     */
-    NaClSecureCommandChannel(nap);
-
-    NaClLog(4, "NaClSecureCommandChannel has spawned channel\n");
-
-    NaClLog(4, "secure service = %"NACL_PRIxPTR"\n",
-            (uintptr_t) nap->secure_service);
-
-  }
-
   NACL_FI_FATAL("BeforeLoadIrt");
 
   /*
