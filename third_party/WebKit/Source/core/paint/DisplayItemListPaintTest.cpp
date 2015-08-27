@@ -247,12 +247,10 @@ TEST_F(DisplayItemListPaintTestForSlimmingPaintV2, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 5,
+    EXPECT_DISPLAY_LIST_WITH_RED_FILL_IN_DEBUG(rootDisplayItemList().displayItems(), 3,
         TestDisplayItem(layoutView, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(divBlock, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
         TestDisplayItem(newFirstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(divBlock, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+        TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
 } // namespace blink

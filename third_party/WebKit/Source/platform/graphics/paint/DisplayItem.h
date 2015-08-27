@@ -164,20 +164,9 @@ public:
         BeginFixedPositionContainer,
         EndFixedPositionContainer,
 
-        CachedSubtreeFirst,
-        CachedSubtreePaintPhaseFirst = CachedSubtreeFirst,
-        CachedSubtreePaintPhaseLast = CachedSubtreePaintPhaseFirst + PaintPhaseMax,
-        CachedSubtreeLast = CachedSubtreePaintPhaseLast,
-
-        BeginSubtreeFirst,
-        BeginSubtreePaintPhaseFirst = BeginSubtreeFirst,
-        BeginSubtreePaintPhaseLast = BeginSubtreePaintPhaseFirst + PaintPhaseMax,
-        BeginSubtreeLast = BeginSubtreePaintPhaseLast,
-
-        EndSubtreeFirst,
-        EndSubtreePaintPhaseFirst = EndSubtreeFirst,
-        EndSubtreePaintPhaseLast = EndSubtreePaintPhaseFirst + PaintPhaseMax,
-        EndSubtreeLast = EndSubtreePaintPhaseLast,
+        BeginSubsequence,
+        EndSubsequence,
+        CachedSubsequence,
 
         UninitializedType,
         TypeLast = UninitializedType
@@ -238,8 +227,8 @@ public:
     {
         if (isCachedDrawingType(type))
             return cachedDrawingTypeToDrawingType(type);
-        if (isCachedSubtreeType(type))
-            return cachedSubtreeTypeToBeginSubtreeType(type);
+        if (type == CachedSubsequence)
+            return BeginSubsequence;
         return type;
     }
 
@@ -319,19 +308,9 @@ public:
 
     DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D);
 
-    DEFINE_CATEGORY_METHODS(CachedSubtree)
-    DEFINE_PAINT_PHASE_CONVERSION_METHOD(CachedSubtree)
-    DEFINE_CATEGORY_METHODS(BeginSubtree)
-    DEFINE_PAINT_PHASE_CONVERSION_METHOD(BeginSubtree)
-    DEFINE_CATEGORY_METHODS(EndSubtree)
-    DEFINE_PAINT_PHASE_CONVERSION_METHOD(EndSubtree)
-    DEFINE_CONVERSION_METHODS(CachedSubtree, cachedSubtree, BeginSubtree, beginSubtree)
-    DEFINE_CONVERSION_METHODS(CachedSubtree, cachedSubtree, EndSubtree, endSubtree)
-    DEFINE_CONVERSION_METHODS(BeginSubtree, beginSubtree, EndSubtree, endSubtree)
-
-    static bool isCachedType(Type type) { return isCachedDrawingType(type) || isCachedSubtreeType(type); }
+    static bool isCachedType(Type type) { return isCachedDrawingType(type) || type == CachedSubsequence; }
     bool isCached() const { return isCachedType(m_type); }
-    static bool isCacheableType(Type type) { return isDrawingType(type) || isBeginSubtreeType(type); }
+    static bool isCacheableType(Type type) { return isDrawingType(type) || type == BeginSubsequence; }
     bool isCacheable() const { return !skippedCache() && isCacheableType(m_type); }
 
     virtual bool isBegin() const { return false; }

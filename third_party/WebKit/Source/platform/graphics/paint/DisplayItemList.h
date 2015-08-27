@@ -135,7 +135,7 @@ private:
     WTF::String displayItemsAsDebugString(const DisplayItems&) const;
 #endif
 
-    // Indices into PaintList of all DrawingDisplayItems and BeginSubtreeDisplayItems of each client.
+    // Indices into PaintList of all DrawingDisplayItems and BeginSubsequenceDisplayItems of each client.
     // Temporarily used during merge to find out-of-order display items.
     using DisplayItemIndicesByClientMap = HashMap<DisplayItemClient, Vector<size_t>>;
 
@@ -144,8 +144,8 @@ private:
 
     struct OutOfOrderIndexContext;
     DisplayItems::iterator findOutOfOrderCachedItem(DisplayItems::iterator currentIt, const DisplayItem::Id&, OutOfOrderIndexContext&);
-    DisplayItems::iterator findOutOfOrderCachedItemForward(const DisplayItem::Id&, OutOfOrderIndexContext&);
-    void copyCachedSubtree(DisplayItems::iterator& currentIt, DisplayItems& updatedList);
+    DisplayItems::iterator findOutOfOrderCachedItemForward(DisplayItems::iterator currentIt, const DisplayItem::Id&, OutOfOrderIndexContext&);
+    void copyCachedSubsequence(DisplayItems::iterator& currentIt, DisplayItems& updatedList);
 
 #if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations

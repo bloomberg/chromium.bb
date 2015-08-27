@@ -23,28 +23,12 @@
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/SubtreeRecorder.h"
 #include "wtf/Optional.h"
 
 namespace blink {
 
-// We need to balance the benefit of subtree optimization and the cost of subtree display items.
-// Only output subtree information if the block has multiple children or multiple line boxes.
-static bool needsSubtreeRecorder(const LayoutBlock& layoutBlock)
-{
-    return (layoutBlock.firstChild() && layoutBlock.firstChild()->nextSibling())
-        || (layoutBlock.isLayoutBlockFlow() && toLayoutBlockFlow(layoutBlock).firstLineBox() && toLayoutBlockFlow(layoutBlock).firstLineBox()->nextLineBox());
-}
-
 void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    Optional<SubtreeRecorder> subtreeRecorder;
-    if (needsSubtreeRecorder(m_layoutBlock)) {
-        subtreeRecorder.emplace(*paintInfo.context, m_layoutBlock, paintInfo.phase);
-        if (subtreeRecorder->canUseCache())
-            return;
-    }
-
     PaintInfo localPaintInfo(paintInfo);
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBlock.location();

@@ -73,7 +73,7 @@ void DisplayItemList::processNewItem(DisplayItem* displayItem)
     // Verify noop begin/end pairs have been removed.
     if (m_newDisplayItems.size() >= 2 && displayItem->isEnd()) {
         const auto& beginDisplayItem = m_newDisplayItems[m_newDisplayItems.size() - 2];
-        if (beginDisplayItem.isBegin() && !beginDisplayItem.drawsContent())
+        if (beginDisplayItem.isBegin() && beginDisplayItem.type() != DisplayItem::BeginSubsequence && !beginDisplayItem.drawsContent())
             ASSERT(!displayItem->isEndAndPairedWith(beginDisplayItem.type()));
     }
 #endif
@@ -178,20 +178,20 @@ DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::i
 {
     ASSERT(clientCacheIsValid(id.client));
 
-    // Skip indexing of copied items.
-    if (currentIt - context.nextItemToIndex > 0)
-        context.nextItemToIndex = currentIt;
-
     size_t foundIndex = findMatchingItemFromIndex(id, context.displayItemIndicesByClient, m_currentDisplayItems);
     if (foundIndex != kNotFound)
         return m_currentDisplayItems.begin() + foundIndex;
 
-    return findOutOfOrderCachedItemForward(id, context);
+    return findOutOfOrderCachedItemForward(currentIt, id, context);
 }
 
 // Find forward for the item and index all skipped indexable items.
-DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
+DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayItems::iterator currentIt, const DisplayItem::Id& id, OutOfOrderIndexContext& context)
 {
+    // Items before currentIt should have been copied. Skip indexing of them.
+    if (currentIt - context.nextItemToIndex > 0)
+        context.nextItemToIndex = currentIt;
+
     DisplayItems::iterator currentEnd = m_currentDisplayItems.end();
     for (; context.nextItemToIndex != currentEnd; ++context.nextItemToIndex) {
         const DisplayItem& item = *context.nextItemToIndex;
@@ -206,30 +206,30 @@ DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(const Di
     return currentEnd;
 }
 
-void DisplayItemList::copyCachedSubtree(DisplayItems::iterator& currentIt, DisplayItems& updatedList)
+void DisplayItemList::copyCachedSubsequence(DisplayItems::iterator& currentIt, DisplayItems& updatedList)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    ASSERT(currentIt->isBeginSubtree());
+    ASSERT(currentIt->type() == DisplayItem::BeginSubsequence);
     ASSERT(!currentIt->scope());
-    DisplayItem::Id endSubtreeId(currentIt->client(), DisplayItem::beginSubtreeTypeToEndSubtreeType(currentIt->type()), 0);
+    DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::EndSubsequence, 0);
     do {
-        // We should always find the EndSubtree display item.
+        // We should always find the EndSubsequence display item.
         ASSERT(currentIt != m_currentDisplayItems.end());
         updatedList.appendByMoving(*currentIt, currentIt->derivedSize());
         ++currentIt;
-    } while (!endSubtreeId.matches(updatedList.last()));
+    } while (!endSubsequenceId.matches(updatedList.last()));
 }
 
 // Update the existing display items by removing invalidated entries, updating
 // repainted ones, and appending new items.
 // - For CachedDisplayItem, copy the corresponding cached DrawingDisplayItem;
-// - For SubtreeCachedDisplayItem, copy the cached display items between the
-//   corresponding BeginSubtreeDisplayItem and EndSubtreeDisplayItem (incl.);
+// - For SubsequenceCachedDisplayItem, copy the cached display items between the
+//   corresponding BeginSubsequenceDisplayItem and EndSubsequenceDisplayItem (incl.);
 // - Otherwise, copy the new display item.
 //
 // The algorithm is O(|m_currentDisplayItems| + |m_newDisplayItems|).
-// Coefficients are related to the ratio of out-of-order [Subtree]CachedDisplayItems
-// and the average number of (Drawing|BeginSubtree)DisplayItems per client.
+// Coefficients are related to the ratio of out-of-order [Subsequence]CachedDisplayItems
+// and the average number of (Drawing|BeginSubsequence)DisplayItems per client.
 //
 // TODO(pdr): Implement the DisplayListDiff algorithm for SlimmingPaintV2.
 void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
@@ -295,32 +295,28 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
             ASSERT(newDisplayItem.isCached());
             ASSERT(clientCacheIsValid(newDisplayItem.client()));
             if (!isSynchronized) {
-                DisplayItems::iterator foundIt = findOutOfOrderCachedItem(currentIt, newDisplayItemId, outOfOrderIndexContext);
+                currentIt = findOutOfOrderCachedItem(currentIt, newDisplayItemId, outOfOrderIndexContext);
 
-                if (foundIt == currentEnd) {
+                if (currentIt == currentEnd) {
 #ifndef NDEBUG
                     showDebugData();
                     WTFLogAlways("%s not found in m_currentDisplayItems\n", newDisplayItem.asDebugString().utf8().data());
 #endif
                     ASSERT_NOT_REACHED();
-
-                    // If foundIt == currentEnd, it means that we did not find the cached display item. This should be impossible, but may occur
-                    // if there is a bug in the system, such as under-invalidation, incorrect cache checking or duplicate display ids. In this case,
-                    // attempt to recover rather than crashing or bailing on display of the rest of the display list.
+                    // We did not find the cached display item. This should be impossible, but may occur if there is a bug
+                    // in the system, such as under-invalidation, incorrect cache checking or duplicate display ids.
+                    // In this case, attempt to recover rather than crashing or bailing on display of the rest of the display list.
                     continue;
                 }
-
-                ASSERT(foundIt != currentIt); // because we are in 'if (!isSynchronized)'
-                currentIt = foundIt;
             }
 
             if (newDisplayItem.isCachedDrawing()) {
                 updatedList.appendByMoving(*currentIt, currentIt->derivedSize());
                 ++currentIt;
             } else {
-                ASSERT(newDisplayItem.isCachedSubtree());
-                copyCachedSubtree(currentIt, updatedList);
-                ASSERT(updatedList.last().isEndSubtree());
+                ASSERT(newDisplayItem.type() == DisplayItem::CachedSubsequence);
+                copyCachedSubsequence(currentIt, updatedList);
+                ASSERT(updatedList.last().type() == DisplayItem::EndSubsequence);
             }
         } else {
 #if ENABLE(ASSERT)

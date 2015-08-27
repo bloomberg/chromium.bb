@@ -180,13 +180,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     if (isEndTransform3DType(type))
         return "End" + transform3DTypeAsDebugString(endTransform3DTypeToTransform3DType(type));
 
-    PAINT_PHASE_BASED_DEBUG_STRINGS(CachedSubtree);
-    PAINT_PHASE_BASED_DEBUG_STRINGS(BeginSubtree);
-    PAINT_PHASE_BASED_DEBUG_STRINGS(EndSubtree);
-
-    if (type == UninitializedType)
-        return "UninitializedType";
-
     switch (type) {
         DEBUG_STRING_CASE(BeginFilter);
         DEBUG_STRING_CASE(EndFilter);
@@ -200,6 +193,10 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
         DEBUG_STRING_CASE(EndFixedPosition);
         DEBUG_STRING_CASE(BeginFixedPositionContainer);
         DEBUG_STRING_CASE(EndFixedPositionContainer);
+        DEBUG_STRING_CASE(BeginSubsequence);
+        DEBUG_STRING_CASE(EndSubsequence);
+        DEBUG_STRING_CASE(CachedSubsequence);
+        DEBUG_STRING_CASE(UninitializedType);
         DEFAULT_CASE;
     }
 }
