@@ -32,12 +32,12 @@
 #include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chromeos/login/login_state.h"
+#include "components/drive/file_system_interface.h"
 #endif
 
 namespace {

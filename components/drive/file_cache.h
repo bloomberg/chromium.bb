@@ -15,6 +15,9 @@
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/resource_metadata_storage.h"
+#if defined(OS_CHROMEOS)
+#include "third_party/cros_system_api/constants/cryptohome.h"
+#endif
 
 namespace base {
 class ScopedClosureRunner;
@@ -24,6 +27,12 @@ class SequencedTaskRunner;
 namespace drive {
 
 namespace internal {
+
+#if defined(OS_CHROMEOS)
+  const int64 kMinFreeSpaceInBytes = cryptohome::kMinFreeSpaceInBytes;
+#else
+  const int64 kMinFreeSpaceInBytes = 512ull * 1024ull * 1024ull;  // 512MB
+#endif
 
 // Interface class used for getting the free disk space. Tests can inject an
 // implementation that reports fake free disk space.
@@ -67,7 +76,7 @@ class FileCache {
   bool IsUnderFileCacheDirectory(const base::FilePath& path) const;
 
   // Frees up disk space to store a file with |num_bytes| size content, while
-  // keeping cryptohome::kMinFreeSpaceInBytes bytes on the disk, if needed.
+  // keeping drive::internal::kMinFreeSpaceInBytes bytes on the disk, if needed.
   // Returns true if we successfully manage to have enough space, otherwise
   // false.
   bool FreeDiskSpaceIfNeededFor(int64 num_bytes);
@@ -157,7 +166,8 @@ class FileCache {
   void DestroyOnBlockingPool();
 
   // Returns true if we have sufficient space to store the given number of
-  // bytes, while keeping cryptohome::kMinFreeSpaceInBytes bytes on the disk.
+  // bytes, while keeping drive::internal::kMinFreeSpaceInBytes bytes on the
+  // disk.
   bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
 
   // Renames cache files from old "prefix:id.md5" format to the new format.

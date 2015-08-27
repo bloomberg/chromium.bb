@@ -7,15 +7,13 @@
 
 #include <string>
 
+#include "components/drive/file_cache.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
-#if defined(OS_CHROMEOS)
-#include "third_party/cros_system_api/constants/cryptohome.h"
-#endif
 
 class PrefRegistrySimple;
 
@@ -28,11 +26,7 @@ namespace drive {
 namespace test_util {
 
 // Disk space size used by FakeFreeDiskSpaceGetter.
-#if defined(OS_CHROMEOS)
-const int64 kLotsOfSpace = cryptohome::kMinFreeSpaceInBytes * 10;
-#else
-const int64 kLotsOfSpace = 5ull * 1024ull * 1024ull * 1024ull;  // 5GB
-#endif
+const int64 kLotsOfSpace = drive::internal::kMinFreeSpaceInBytes * 10;
 
 // Helper to destroy objects which needs Destroy() to be called on destruction.
 // Note: When using this helper, you should destruct objects before

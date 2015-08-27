@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
 
-#include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "components/drive/change_list_processor.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/file_change.h"
+#include "components/drive/file_system/operation_delegate.h"
 #include "components/drive/job_scheduler.h"
 #include "components/drive/resource_entry_conversion.h"
 #include "components/drive/resource_metadata.h"

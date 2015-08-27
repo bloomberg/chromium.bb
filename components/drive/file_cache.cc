@@ -25,9 +25,6 @@
 #include "net/base/filename_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
-#if defined(OS_CHROMEOS)
-#include "third_party/cros_system_api/constants/cryptohome.h"
-#endif
 
 namespace drive {
 namespace internal {
@@ -581,12 +578,7 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
     free_space = base::SysInfo::AmountOfFreeDiskSpace(path);
 
   // Subtract this as if this portion does not exist.
-#if defined(OS_CHROMEOS)
-  const int64 kMinFreeBytes = cryptohome::kMinFreeSpaceInBytes;
-#else
-  const int64 kMinFreeBytes = 512ull * 1024ull * 1024ull;  // 512MB
-#endif
-  free_space -= kMinFreeBytes;
+  free_space -= drive::internal::kMinFreeSpaceInBytes;
   return (free_space >= num_bytes);
 }
 

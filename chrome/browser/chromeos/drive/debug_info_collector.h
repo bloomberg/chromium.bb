@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "components/drive/file_system_interface.h"
 
 namespace drive {
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/sync/remove_performer.h"
 
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "components/drive/file_system/operation_test_base.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
 #include "components/drive/resource_metadata.h"

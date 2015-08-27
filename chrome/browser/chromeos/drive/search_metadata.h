@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "components/drive/file_system_interface.h"
 
 namespace base {
 namespace i18n {
