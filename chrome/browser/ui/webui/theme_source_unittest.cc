@@ -90,7 +90,9 @@ TEST_F(WebUISourcesTest, ThemeSourceCSS) {
   StartDataRequest("css/new_tab_theme.css?pie");
   EXPECT_NE(result_data_size_, empty_size);
 
+#if !DCHECK_IS_ON()
   // Check that we send NULL back when we can't find what we're looking for.
   StartDataRequest("css/WRONGURL");
   EXPECT_EQ(result_data_size_, empty_size);
+#endif
 }

@@ -110,7 +110,12 @@ void ThemeSource::StartDataRequest(
     return;
   }
 
-  // We don't have any data to send back.
+  // We don't have any data to send back. This shouldn't happen normally, as
+  // chrome://theme/ data source is used only by chrome WebUI pages and
+  // component extensions. We don't want to crash in Release build though, as
+  // it is possible that a user has entered an unexisting chrome://theme URL
+  // into the address bar.
+  NOTREACHED() << path << " not found.";
   callback.Run(NULL);
 }
 
