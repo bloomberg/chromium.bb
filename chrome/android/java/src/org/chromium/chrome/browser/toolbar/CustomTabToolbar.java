@@ -216,8 +216,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
         String url = getCurrentTab().getUrl().trim();
 
-        if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())) {
-            // Don't show anything for Chrome URLs.
+        // Don't show anything for Chrome URLs and "about:blank".
+        // If we have taken a pre-initialized WebContents, then the starting URL
+        // is "about:blank". We should not display it.
+        if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
+                || "about:blank".equals(url)) {
             mUrlBar.setUrl("", null);
             return;
         }
