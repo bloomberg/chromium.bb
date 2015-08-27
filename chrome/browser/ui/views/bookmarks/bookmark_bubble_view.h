@@ -36,12 +36,16 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
                            public views::ButtonListener,
                            public views::ComboboxListener {
  public:
+  // If |anchor_view| is null, |anchor_rect| is used to anchor the bubble and
+  // |parent_window| is used to ensure the bubble closes if the parent closes.
   static void ShowBubble(views::View* anchor_view,
+                         const gfx::Rect& anchor_rect,
+                         gfx::NativeView parent_window,
                          bookmarks::BookmarkBubbleObserver* observer,
                          scoped_ptr<BookmarkBubbleDelegate> delegate,
                          Profile* profile,
                          const GURL& url,
-                         bool newly_bookmarked);
+                         bool already_bookmarked);
 
   static void Hide();
 

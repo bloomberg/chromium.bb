@@ -9,9 +9,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_observer.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_sync_promo_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -63,20 +65,23 @@ BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = NULL;
 
 // static
 void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
+                                    const gfx::Rect& anchor_rect,
+                                    gfx::NativeView parent_window,
                                     bookmarks::BookmarkBubbleObserver* observer,
                                     scoped_ptr<BookmarkBubbleDelegate> delegate,
                                     Profile* profile,
                                     const GURL& url,
-                                    bool newly_bookmarked) {
+                                    bool already_bookmarked) {
   if (bookmark_bubble_)
     return;
 
-  bookmark_bubble_ = new BookmarkBubbleView(anchor_view,
-                                            observer,
-                                            delegate.Pass(),
-                                            profile,
-                                            url,
-                                            newly_bookmarked);
+  bookmark_bubble_ =
+      new BookmarkBubbleView(anchor_view, observer, delegate.Pass(), profile,
+                             url, !already_bookmarked);
+  if (!anchor_view) {
+    bookmark_bubble_->SetAnchorRect(anchor_rect);
+    bookmark_bubble_->set_parent_window(parent_window);
+  }
   views::BubbleDelegateView::CreateBubble(bookmark_bubble_)->Show();
   // Select the entire title textfield contents when the bubble is first shown.
   bookmark_bubble_->title_tf_->SelectAll(true);
@@ -346,15 +351,17 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
 void BookmarkBubbleView::ShowEditor() {
   const BookmarkNode* node = BookmarkModelFactory::GetForProfile(
       profile_)->GetMostRecentlyAddedUserNodeForURL(url_);
-  views::Widget* parent = anchor_widget();
-  DCHECK(parent);
+  gfx::NativeWindow native_parent =
+      anchor_widget() ? anchor_widget()->GetNativeWindow()
+                      : platform_util::GetTopLevel(parent_window());
+  DCHECK(native_parent);
 
   Profile* profile = profile_;
   ApplyEdits();
   GetWidget()->Close();
 
-  if (node && parent)
-    BookmarkEditor::Show(parent->GetNativeWindow(), profile,
+  if (node && native_parent)
+    BookmarkEditor::Show(native_parent, profile,
                          BookmarkEditor::EditDetails::EditNode(node),
                          BookmarkEditor::SHOW_TREE);
 }

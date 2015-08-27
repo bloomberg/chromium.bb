@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
@@ -96,6 +97,7 @@
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 
 using bookmarks::BookmarkModel;
@@ -1769,8 +1771,18 @@ using content::WebContents;
 // Show the bookmark bubble (e.g. user just clicked on the STAR).
 - (void)showBookmarkBubbleForURL:(const GURL&)url
                alreadyBookmarked:(BOOL)alreadyMarked {
-  if (!bookmarkBubbleObserver_.get()) {
-    bookmarkBubbleObserver_.reset(new BookmarkBubbleObserverCocoa(self));
+  if (bookmarkBubbleObserver_.get())
+    return;
+
+  bookmarkBubbleObserver_.reset(new BookmarkBubbleObserverCocoa(self));
+
+  if (chrome::ToolkitViewsDialogsEnabled()) {
+    chrome::ShowBookmarkBubbleViewsAtPoint(
+        gfx::ScreenPointFromNSPoint(
+            [[self window] convertBaseToScreen:[self bookmarkBubblePoint]]),
+        [[self window] contentView], bookmarkBubbleObserver_.get(),
+        browser_.get(), url, alreadyMarked);
+  } else {
     BookmarkModel* model =
         BookmarkModelFactory::GetForProfile(browser_->profile());
     bookmarks::ManagedBookmarkService* managed =
@@ -1784,8 +1796,8 @@ using content::WebContents;
                         node:node
            alreadyBookmarked:alreadyMarked];
     [bookmarkBubbleController_ showWindow:self];
-    DCHECK(bookmarkBubbleObserver_);
   }
+  DCHECK(bookmarkBubbleObserver_);
 }
 
 - (void)bookmarkBubbleClosed {

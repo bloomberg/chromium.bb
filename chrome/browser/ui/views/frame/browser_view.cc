@@ -1247,11 +1247,9 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_.get()));
 
   BookmarkBubbleView::ShowBubble(GetToolbarView()->GetBookmarkBubbleAnchor(),
-                                 bookmark_bar_view_.get(),
-                                 delegate.Pass(),
-                                 browser_->profile(),
-                                 url,
-                                 !already_bookmarked);
+                                 gfx::Rect(), nullptr, bookmark_bar_view_.get(),
+                                 delegate.Pass(), browser_->profile(), url,
+                                 already_bookmarked);
 }
 
 void BrowserView::ShowBookmarkAppBubble(

@@ -16,6 +16,10 @@ class LoginHandler;
 class Profile;
 class SkBitmap;
 
+namespace bookmarks {
+class BookmarkBubbleObserver;
+}
+
 namespace content {
 class BrowserContext;
 class ColorChooser;
@@ -94,6 +98,16 @@ void ShowWebsiteSettingsBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                            content::WebContents* web_contents,
                                            const GURL& url,
                                            const content::SSLStatus& ssl);
+
+// Show a Views bookmark bubble at the given point. This occurs when the
+// bookmark star is clicked or "Bookmark This Page..." is selected from a menu
+// or via a key equivalent.
+void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
+                                    gfx::NativeView parent,
+                                    bookmarks::BookmarkBubbleObserver* observer,
+                                    Browser* browser,
+                                    const GURL& url,
+                                    bool newly_bookmarked);
 
 #endif  // OS_MACOSX
 
