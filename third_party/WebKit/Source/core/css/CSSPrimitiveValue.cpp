@@ -467,7 +467,7 @@ void CSSPrimitiveValue::cleanup()
     }
 }
 
-double CSSPrimitiveValue::computeSeconds()
+double CSSPrimitiveValue::computeSeconds() const
 {
     ASSERT(isTime() || (isCalculated() && cssCalcValue()->category() == CalcTime));
     UnitType currentType = isCalculated() ? cssCalcValue()->expressionNode()->typeWithCalcResolved() : type();
@@ -498,42 +498,42 @@ double CSSPrimitiveValue::computeDegrees() const
     }
 }
 
-template<> int CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
+template<> int CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData) const
 {
     return roundForImpreciseConversion<int>(computeLengthDouble(conversionData));
 }
 
-template<> unsigned CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
+template<> unsigned CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData) const
 {
     return roundForImpreciseConversion<unsigned>(computeLengthDouble(conversionData));
 }
 
-template<> Length CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
+template<> Length CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData) const
 {
     return Length(clampToCSSLengthRange(computeLengthDouble(conversionData)), Fixed);
 }
 
-template<> short CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
+template<> short CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData) const
 {
     return roundForImpreciseConversion<short>(computeLengthDouble(conversionData));
 }
 
-template<> unsigned short CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
+template<> unsigned short CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData) const
 {
     return roundForImpreciseConversion<unsigned short>(computeLengthDouble(conversionData));
 }
 
-template<> float CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
+template<> float CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData) const
 {
     return static_cast<float>(computeLengthDouble(conversionData));
 }
 
-template<> double CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
+template<> double CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData) const
 {
     return computeLengthDouble(conversionData);
 }
 
-double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& conversionData)
+double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& conversionData) const
 {
     // The logic in this function is duplicated in MediaValues::computeLength
     // because MediaValues::computeLength needs nearly identical logic, but we haven't found a way to make
@@ -682,7 +682,7 @@ double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(UnitType unitTyp
     return factor;
 }
 
-Length CSSPrimitiveValue::convertToLength(const CSSToLengthConversionData& conversionData)
+Length CSSPrimitiveValue::convertToLength(const CSSToLengthConversionData& conversionData) const
 {
     if (isLength())
         return computeLength<Length>(conversionData);

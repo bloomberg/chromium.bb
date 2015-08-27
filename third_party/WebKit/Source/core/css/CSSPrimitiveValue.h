@@ -254,13 +254,13 @@ public:
     UnitType typeWithCalcResolved() const;
 
     double computeDegrees() const;
-    double computeSeconds();
+    double computeSeconds() const;
 
     // Computes a length in pixels, resolving relative lengths
-    template<typename T> T computeLength(const CSSToLengthConversionData&);
+    template<typename T> T computeLength(const CSSToLengthConversionData&) const;
 
     // Converts to a Length (Fixed, Percent or Calculated)
-    Length convertToLength(const CSSToLengthConversionData&);
+    Length convertToLength(const CSSToLengthConversionData&) const;
 
     double getDoubleValue() const;
     float getFloatValue() const { return getValue<float>(); }
@@ -287,7 +287,7 @@ public:
     static const char* unitTypeToString(UnitType);
     String customCSSText() const;
 
-    bool isQuirkValue() { return m_isQuirkValue; }
+    bool isQuirkValue() const { return m_isQuirkValue; }
 
     bool equals(const CSSPrimitiveValue&) const;
 
@@ -335,7 +335,7 @@ private:
     void init(PassRefPtrWillBeRawPtr<CSSBasicShape>);
     void init(PassRefPtrWillBeRawPtr<CSSCalcValue>);
 
-    double computeLengthDouble(const CSSToLengthConversionData&);
+    double computeLengthDouble(const CSSToLengthConversionData&) const;
 
     inline UnitType type() const { return static_cast<UnitType>(m_primitiveUnitType); }
 
