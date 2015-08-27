@@ -7,7 +7,6 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/IdleRequestCallback.h"
-#include "core/loader/DocumentLoadTiming.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
@@ -45,7 +44,7 @@ public:
     PassRefPtrWillBeRawPtr<ScriptedIdleTaskController> controller() const { return m_controller; }
 
 private:
-    explicit IdleRequestCallbackWrapper(ScriptedIdleTaskController::CallbackId id, PassRefPtrWillBeRawPtr<ScriptedIdleTaskController> controller)
+    IdleRequestCallbackWrapper(ScriptedIdleTaskController::CallbackId id, PassRefPtrWillBeRawPtr<ScriptedIdleTaskController> controller)
         : m_id(id)
         , m_controller(controller)
     {
@@ -57,9 +56,8 @@ private:
 
 } // namespace internal
 
-ScriptedIdleTaskController::ScriptedIdleTaskController(ExecutionContext* context, const DocumentLoadTiming& timing)
+ScriptedIdleTaskController::ScriptedIdleTaskController(ExecutionContext* context)
     : ActiveDOMObject(context)
-    , m_timing(timing)
     , m_scheduler(Platform::current()->currentThread()->scheduler())
     , m_nextCallbackId(0)
     , m_suspended(false)
@@ -111,11 +109,10 @@ void ScriptedIdleTaskController::callbackFired(CallbackId id, double deadlineSec
         return;
     }
 
-    double deadlineMillis = 1000.0 * m_timing.monotonicTimeToZeroBasedDocumentTime(deadlineSeconds);
-    runCallback(id, deadlineMillis, callbackType);
+    runCallback(id, deadlineSeconds, callbackType);
 }
 
-void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineMillis, IdleCallbackDeadline::CallbackType callbackType)
+void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineSeconds, IdleCallbackDeadline::CallbackType callbackType)
 {
     ASSERT(!m_suspended);
     auto callback = m_callbacks.take(id);
@@ -123,7 +120,7 @@ void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineMilli
         return;
 
     // TODO(rmcilroy): Add devtools tracing.
-    callback->handleEvent(IdleCallbackDeadline::create(deadlineMillis, callbackType, m_timing));
+    callback->handleEvent(IdleCallbackDeadline::create(deadlineSeconds, callbackType));
 }
 
 void ScriptedIdleTaskController::stop()

@@ -17,14 +17,13 @@ namespace blink {
 
 class ExecutionContext;
 class IdleRequestCallback;
-class DocumentLoadTiming;
 
 class ScriptedIdleTaskController : public RefCountedWillBeGarbageCollectedFinalized<ScriptedIdleTaskController>, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
 public:
-    static PassRefPtrWillBeRawPtr<ScriptedIdleTaskController> create(ExecutionContext* context, const DocumentLoadTiming& timing)
+    static PassRefPtrWillBeRawPtr<ScriptedIdleTaskController> create(ExecutionContext* context)
     {
-        return adoptRefWillBeNoop(new ScriptedIdleTaskController(context, timing));
+        return adoptRefWillBeNoop(new ScriptedIdleTaskController(context));
     }
     ~ScriptedIdleTaskController();
 
@@ -44,11 +43,10 @@ public:
     void callbackFired(CallbackId, double deadlineSeconds, IdleCallbackDeadline::CallbackType);
 
 private:
-    ScriptedIdleTaskController(ExecutionContext*, const DocumentLoadTiming&);
+    explicit ScriptedIdleTaskController(ExecutionContext*);
 
-    void runCallback(CallbackId, double deadlineMillis, IdleCallbackDeadline::CallbackType);
+    void runCallback(CallbackId, double deadlineSeconds, IdleCallbackDeadline::CallbackType);
 
-    const DocumentLoadTiming& m_timing;
     WebScheduler* m_scheduler; // Not owned.
     PersistentHeapHashMapWillBeHeapHashMap<CallbackId, Member<IdleRequestCallback>> m_callbacks;
     Vector<CallbackId> m_pendingTimeouts;

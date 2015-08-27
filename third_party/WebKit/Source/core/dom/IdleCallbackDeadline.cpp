@@ -5,24 +5,23 @@
 #include "config.h"
 #include "core/dom/IdleCallbackDeadline.h"
 
-#include "core/loader/DocumentLoadTiming.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
 
-IdleCallbackDeadline::IdleCallbackDeadline(double deadlineMillis, CallbackType callbackType, const DocumentLoadTiming& timing)
-    : m_deadlineMillis(deadlineMillis)
+IdleCallbackDeadline::IdleCallbackDeadline(double deadlineSeconds, CallbackType callbackType)
+    : m_deadlineSeconds(deadlineSeconds)
     , m_callbackType(callbackType)
-    , m_timing(timing)
 {
 }
 
 double IdleCallbackDeadline::timeRemaining() const
 {
-    double timeRemaining = m_deadlineMillis - (1000 * m_timing.monotonicTimeToZeroBasedDocumentTime(monotonicallyIncreasingTime()));
+    double timeRemaining = m_deadlineSeconds - monotonicallyIncreasingTime();
     if (timeRemaining < 0)
         timeRemaining = 0;
-    return timeRemaining;
+
+    return timeRemaining * 1000;
 }
 
 } // namespace blink
