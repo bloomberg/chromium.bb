@@ -7,15 +7,12 @@
 
 #include <list>
 #include <set>
-#include <vector>
 
+#include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "url/gurl.h"
 
@@ -58,10 +55,6 @@ class BrowsingDataLocalStorageHelper
   content::DOMStorageContext* dom_storage_context_;  // Owned by the profile
 
  private:
-  void GetUsageInfoCallback(
-      const FetchCallback& callback,
-      const std::vector<content::LocalStorageUsageInfo>& infos);
-
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataLocalStorageHelper);
 };
 

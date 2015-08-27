@@ -9,11 +9,10 @@
 #include <set>
 #include <string>
 
-#include "base/callback.h"
-#include "base/compiler_specific.h"
+#include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
-#include "chrome/common/url_constants.h"
+#include "base/time/time.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/common/database/database_identifier.h"
 #include "url/gurl.h"

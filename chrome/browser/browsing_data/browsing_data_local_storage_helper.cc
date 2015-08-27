@@ -4,7 +4,10 @@
 
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 
+#include <vector>
+
 #include "base/bind.h"
+#include "base/location.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -15,8 +18,32 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
 
+namespace {
+
+void GetUsageInfoCallback(
+    const BrowsingDataLocalStorageHelper::FetchCallback& callback,
+    const std::vector<content::LocalStorageUsageInfo>& infos) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!callback.is_null());
+
+  std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo> result;
+  for (const content::LocalStorageUsageInfo& info : infos) {
+    if (!BrowsingDataHelper::HasWebScheme(info.origin))
+      continue;  // Non-websafe state is not considered browsing data.
+    result.push_back(BrowsingDataLocalStorageHelper::LocalStorageInfo(
+        info.origin, info.data_size, info.last_modified));
+  }
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, result));
+}
+
+}  // namespace
+
 BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo(
-    const GURL& origin_url, int64 size, base::Time last_modified)
+    const GURL& origin_url,
+    int64 size,
+    base::Time last_modified)
     : origin_url(origin_url), size(size), last_modified(last_modified) {}
 
 BrowsingDataLocalStorageHelper::LocalStorageInfo::~LocalStorageInfo() {}
@@ -34,31 +61,13 @@ void BrowsingDataLocalStorageHelper::StartFetching(
     const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
-  dom_storage_context_->GetLocalStorageUsage(base::Bind(
-      &BrowsingDataLocalStorageHelper::GetUsageInfoCallback, this, callback));
+  dom_storage_context_->GetLocalStorageUsage(
+      base::Bind(&GetUsageInfoCallback, callback));
 }
 
 void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   dom_storage_context_->DeleteLocalStorage(origin);
-}
-
-void BrowsingDataLocalStorageHelper::GetUsageInfoCallback(
-    const FetchCallback& callback,
-    const std::vector<content::LocalStorageUsageInfo>& infos) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!callback.is_null());
-
-  std::list<LocalStorageInfo> result;
-  for (const content::LocalStorageUsageInfo& info : infos) {
-    if (!BrowsingDataHelper::HasWebScheme(info.origin))
-      continue;  // Non-websafe state is not considered browsing data.
-    result.push_back(
-        LocalStorageInfo(info.origin, info.data_size, info.last_modified));
-  }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
 }
 
 //---------------------------------------------------------

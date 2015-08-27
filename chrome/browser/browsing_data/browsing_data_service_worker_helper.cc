@@ -7,11 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/location.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context.h"
@@ -20,14 +16,34 @@ using content::BrowserThread;
 using content::ServiceWorkerContext;
 using content::ServiceWorkerUsageInfo;
 
+namespace {
+
+void GetAllOriginsInfoCallback(
+    const BrowsingDataServiceWorkerHelper::FetchCallback& callback,
+    const std::vector<ServiceWorkerUsageInfo>& origins) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!callback.is_null());
+
+  std::list<ServiceWorkerUsageInfo> result;
+  for (const ServiceWorkerUsageInfo& origin : origins) {
+    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
+      continue;  // Non-websafe state is not considered browsing data.
+    result.push_back(origin);
+  }
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, result));
+}
+
+}  // namespace
+
 BrowsingDataServiceWorkerHelper::BrowsingDataServiceWorkerHelper(
     ServiceWorkerContext* service_worker_context)
     : service_worker_context_(service_worker_context) {
   DCHECK(service_worker_context_);
 }
 
-BrowsingDataServiceWorkerHelper::~BrowsingDataServiceWorkerHelper() {
-}
+BrowsingDataServiceWorkerHelper::~BrowsingDataServiceWorkerHelper() {}
 
 void BrowsingDataServiceWorkerHelper::StartFetching(
     const FetchCallback& callback) {
@@ -56,25 +72,7 @@ void BrowsingDataServiceWorkerHelper::FetchServiceWorkerUsageInfoOnIOThread(
   DCHECK(!callback.is_null());
 
   service_worker_context_->GetAllOriginsInfo(
-      base::Bind(&BrowsingDataServiceWorkerHelper::GetAllOriginsInfoCallback,
-                 this, callback));
-}
-
-void BrowsingDataServiceWorkerHelper::GetAllOriginsInfoCallback(
-    const FetchCallback& callback,
-    const std::vector<ServiceWorkerUsageInfo>& origins) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!callback.is_null());
-
-  std::list<ServiceWorkerUsageInfo> result;
-  for (const ServiceWorkerUsageInfo& origin : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
-      continue;  // Non-websafe state is not considered browsing data.
-    result.push_back(origin);
-  }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
+      base::Bind(&GetAllOriginsInfoCallback, callback));
 }
 
 void BrowsingDataServiceWorkerHelper::DeleteServiceWorkersOnIOThread(

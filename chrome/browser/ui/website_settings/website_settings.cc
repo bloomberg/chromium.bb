@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"

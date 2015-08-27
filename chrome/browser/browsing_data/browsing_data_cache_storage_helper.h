@@ -7,7 +7,6 @@
 
 #include <list>
 #include <set>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -52,11 +51,6 @@ class BrowsingDataCacheStorageHelper
 
   // Enumerates all Cache Storage instances on the IO thread.
   void FetchCacheStorageUsageInfoOnIOThread(const FetchCallback& callback);
-
-  // Callback from CacheStorageContext::GetAllOriginsInfo()
-  void GetAllOriginsInfoCallback(
-      const FetchCallback& callback,
-      const std::vector<content::CacheStorageUsageInfo>& origins);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataCacheStorageHelper);
 };

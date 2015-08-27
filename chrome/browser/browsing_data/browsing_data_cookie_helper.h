@@ -54,10 +54,6 @@ class BrowsingDataCookieHelper
   // Fetch the cookies. This must be called in the IO thread.
   void FetchCookiesOnIOThread(const FetchCallback& callback);
 
-  // Callback function for get cookie. This must be called in the IO thread.
-  void OnFetchComplete(const FetchCallback& callback,
-                       const net::CookieList& cookies);
-
   // Delete a single cookie. This must be called in IO thread.
   void DeleteCookieOnIOThread(const net::CanonicalCookie& cookie);
 

@@ -9,7 +9,6 @@
 #include <map>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 
 // Mock for BrowsingDataLocalStorageHelper.

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 
 // Mock for BrowsingDataFileSystemHelper.

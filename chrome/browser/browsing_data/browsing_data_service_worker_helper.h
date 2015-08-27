@@ -7,15 +7,10 @@
 
 #include <list>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
-#include "base/time/time.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_usage_info.h"
 #include "url/gurl.h"
@@ -59,11 +54,6 @@ class BrowsingDataServiceWorkerHelper
 
   // Deletes Service Workers for an origin the IO thread.
   void DeleteServiceWorkersOnIOThread(const GURL& origin);
-
-  // Callback from ServiceWorkerContext::GetAllOriginsInfo()
-  void GetAllOriginsInfoCallback(
-      const FetchCallback& callback,
-      const std::vector<content::ServiceWorkerUsageInfo>& origins);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataServiceWorkerHelper);
 };

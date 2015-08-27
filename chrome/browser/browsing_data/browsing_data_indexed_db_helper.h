@@ -7,15 +7,12 @@
 
 #include <list>
 #include <set>
-#include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
-#include "base/time/time.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/indexed_db_context.h"
+#include "content/public/browser/indexed_db_info.h"
 #include "url/gurl.h"
 
 class Profile;

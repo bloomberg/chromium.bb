@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_context.h"
@@ -14,6 +15,27 @@
 using content::BrowserThread;
 using content::CacheStorageContext;
 using content::CacheStorageUsageInfo;
+
+namespace {
+
+void GetAllOriginsInfoCallback(
+    const BrowsingDataCacheStorageHelper::FetchCallback& callback,
+    const std::vector<CacheStorageUsageInfo>& origins) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!callback.is_null());
+
+  std::list<content::CacheStorageUsageInfo> result;
+  for (const CacheStorageUsageInfo& origin : origins) {
+    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
+      continue;  // Non-websafe state is not considered browsing data.
+    result.push_back(origin);
+  }
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, result));
+}
+
+}  // namespace
 
 BrowsingDataCacheStorageHelper::BrowsingDataCacheStorageHelper(
     CacheStorageContext* cache_storage_context)
@@ -47,24 +69,7 @@ void BrowsingDataCacheStorageHelper::FetchCacheStorageUsageInfoOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
   cache_storage_context_->GetAllOriginsInfo(
-      base::Bind(&BrowsingDataCacheStorageHelper::GetAllOriginsInfoCallback,
-                 this, callback));
-}
-
-void BrowsingDataCacheStorageHelper::GetAllOriginsInfoCallback(
-    const FetchCallback& callback,
-    const std::vector<CacheStorageUsageInfo>& origins) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  std::list<content::CacheStorageUsageInfo> result;
-  for (const CacheStorageUsageInfo& origin : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
-      continue;  // Non-websafe state is not considered browsing data.
-    result.push_back(origin);
-  }
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, result));
+      base::Bind(&GetAllOriginsInfoCallback, callback));
 }
 
 void BrowsingDataCacheStorageHelper::DeleteCacheStorageOnIOThread(
