@@ -59,7 +59,7 @@ class SerializationWarningTest : public testing::Test {
                              mojo::internal::ValidationError expected_warning) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
-    mojo::internal::FixedBuffer buf(GetSerializedSize_(obj));
+    mojo::internal::FixedBufferForTesting buf(GetSerializedSize_(obj));
     typename T::Data_* data;
     Serialize_(obj.Pass(), &buf, &data);
 
@@ -72,7 +72,7 @@ class SerializationWarningTest : public testing::Test {
                         const ArrayValidateParams* validate_params) {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
-    mojo::internal::FixedBuffer buf(GetSerializedSize_(obj));
+    mojo::internal::FixedBufferForTesting buf(GetSerializedSize_(obj));
     typename T::Data_* data;
     SerializeArray_(obj.Pass(), &buf, &data, validate_params);
 

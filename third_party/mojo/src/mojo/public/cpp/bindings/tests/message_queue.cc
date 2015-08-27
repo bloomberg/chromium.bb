@@ -24,12 +24,12 @@ bool MessageQueue::IsEmpty() const {
 
 void MessageQueue::Push(Message* message) {
   queue_.push(new Message());
-  queue_.back()->Swap(message);
+  message->MoveTo(queue_.back());
 }
 
 void MessageQueue::Pop(Message* message) {
   MOJO_DCHECK(!queue_.empty());
-  queue_.front()->Swap(message);
+  queue_.front()->MoveTo(message);
   Pop();
 }
 

@@ -52,7 +52,7 @@ U SerializeAndDeserialize(T input) {
   typedef typename mojo::internal::WrapperTraits<U>::DataType OutputDataType;
 
   size_t size = GetSerializedSize_(input);
-  mojo::internal::FixedBuffer buf(size + 32);
+  mojo::internal::FixedBufferForTesting buf(size + 32);
   InputDataType data;
   Serialize_(input.Pass(), &buf, &data);
 
@@ -141,7 +141,7 @@ TEST_F(StructTest, Serialization_Basic) {
   size_t size = GetSerializedSize_(rect);
   EXPECT_EQ(8U + 16U, size);
 
-  mojo::internal::FixedBuffer buf(size);
+  mojo::internal::FixedBufferForTesting buf(size);
   internal::Rect_Data* data;
   Serialize_(rect.Pass(), &buf, &data);
 
@@ -174,7 +174,7 @@ TEST_F(StructTest, Serialization_StructPointers) {
   size_t size = GetSerializedSize_(pair);
   EXPECT_EQ(8U + 16U + 2 * (8U + 16U), size);
 
-  mojo::internal::FixedBuffer buf(size);
+  mojo::internal::FixedBufferForTesting buf(size);
   internal::RectPair_Data* data;
   Serialize_(pair.Pass(), &buf, &data);
 
@@ -205,7 +205,7 @@ TEST_F(StructTest, Serialization_ArrayPointers) {
                      16U),  // rect payload (four ints)
             size);
 
-  mojo::internal::FixedBuffer buf(size);
+  mojo::internal::FixedBufferForTesting buf(size);
   internal::NamedRegion_Data* data;
   Serialize_(region.Pass(), &buf, &data);
 
@@ -231,7 +231,7 @@ TEST_F(StructTest, Serialization_NullArrayPointers) {
                 8U,   // rects pointer
             size);
 
-  mojo::internal::FixedBuffer buf(size);
+  mojo::internal::FixedBufferForTesting buf(size);
   internal::NamedRegion_Data* data;
   Serialize_(region.Pass(), &buf, &data);
 

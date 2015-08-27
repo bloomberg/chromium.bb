@@ -25,19 +25,6 @@ void DefaultTerminationClosure() {
 
 }  // namespace
 
-// TODO(beng): upstream this into mojo repo, array.h
-template <typename E, typename T>
-struct TypeConverter<std::set<E>, Array<T>> {
-  static std::set<E> Convert(const Array<T>& input) {
-    std::set<E> result;
-    if (!input.is_null()) {
-      for (size_t i = 0; i < input.size(); ++i)
-        result.insert(TypeConverter<E, T>::Convert(input[i]));
-    }
-    return result;
-  }
-};
-
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  InterfaceRequest<Application> request)
     : ApplicationImpl(delegate, request.Pass(),

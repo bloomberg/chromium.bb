@@ -56,10 +56,9 @@ bool ControlMessageHandler::Run(Message* message,
 
   RunResponseMessageParams_Data* response_params = nullptr;
   Serialize_(response_params_ptr.Pass(), builder.buffer(), &response_params);
-  Message response_message;
-  response_params->EncodePointersAndHandles(response_message.mutable_handles());
-  builder.Finish(&response_message);
-  bool ok = responder->Accept(&response_message);
+  response_params->EncodePointersAndHandles(
+      builder.message()->mutable_handles());
+  bool ok = responder->Accept(builder.message());
   MOJO_ALLOW_UNUSED_LOCAL(ok);
   delete responder;
 

@@ -12,18 +12,25 @@
 
 namespace mojo {
 
-Message::Message() : data_num_bytes_(0), data_(nullptr) {
+Message::Message() {
+  Initialize();
 }
 
 Message::~Message() {
-  free(data_);
+  FreeDataAndCloseHandles();
+}
 
-  for (std::vector<Handle>::iterator it = handles_.begin();
-       it != handles_.end();
-       ++it) {
-    if (it->is_valid())
-      CloseRaw(*it);
-  }
+void Message::Reset() {
+  FreeDataAndCloseHandles();
+
+  handles_.clear();
+  Initialize();
+}
+
+void Message::AllocData(uint32_t num_bytes) {
+  MOJO_DCHECK(!data_);
+  data_num_bytes_ = num_bytes;
+  data_ = static_cast<internal::MessageData*>(calloc(num_bytes, 1));
 }
 
 void Message::AllocUninitializedData(uint32_t num_bytes) {
@@ -32,16 +39,33 @@ void Message::AllocUninitializedData(uint32_t num_bytes) {
   data_ = static_cast<internal::MessageData*>(malloc(num_bytes));
 }
 
-void Message::AdoptData(uint32_t num_bytes, internal::MessageData* data) {
-  MOJO_DCHECK(!data_);
-  data_num_bytes_ = num_bytes;
-  data_ = data;
+void Message::MoveTo(Message* destination) {
+  MOJO_DCHECK(this != destination);
+
+  destination->FreeDataAndCloseHandles();
+
+  // No copy needed.
+  destination->data_num_bytes_ = data_num_bytes_;
+  destination->data_ = data_;
+  std::swap(destination->handles_, handles_);
+
+  handles_.clear();
+  Initialize();
 }
 
-void Message::Swap(Message* other) {
-  std::swap(data_num_bytes_, other->data_num_bytes_);
-  std::swap(data_, other->data_);
-  std::swap(handles_, other->handles_);
+void Message::Initialize() {
+  data_num_bytes_ = 0;
+  data_ = nullptr;
+}
+
+void Message::FreeDataAndCloseHandles() {
+  free(data_);
+
+  for (std::vector<Handle>::iterator it = handles_.begin();
+       it != handles_.end(); ++it) {
+    if (it->is_valid())
+      CloseRaw(*it);
+  }
 }
 
 MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,

@@ -8,7 +8,7 @@
         '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/mojom_bindings_generator.py',
     'mojom_bindings_generator_sources': [
       '<(mojom_bindings_generator)',
-      '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/enum_declaration.tmpl',
+      '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/enum_macros.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/interface_declaration.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/interface_definition.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/cpp_templates/interface_macros.tmpl',

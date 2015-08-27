@@ -21,7 +21,8 @@ void AllocRequestMessage(uint32_t name, const char* text, Message* message) {
   size_t payload_size = strlen(text) + 1;  // Plus null terminator.
   internal::RequestMessageBuilder builder(name, payload_size);
   memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
-  builder.Finish(message);
+
+  builder.message()->MoveTo(message);
 }
 
 void AllocResponseMessage(uint32_t name,
@@ -31,7 +32,8 @@ void AllocResponseMessage(uint32_t name,
   size_t payload_size = strlen(text) + 1;  // Plus null terminator.
   internal::ResponseMessageBuilder builder(name, payload_size, request_id);
   memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
-  builder.Finish(message);
+
+  builder.message()->MoveTo(message);
 }
 
 class MessageAccumulator : public MessageReceiver {

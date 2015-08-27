@@ -21,11 +21,10 @@ def IsMojomPath(path):
 def IsMojomDartFile(path):
   return path.endswith('.mojom.dart')
 
-# Strips off mojom/lib/ returning module/interface.mojom.dart
-def MojomDartRelativePath(path):
-  assert IsMojomPath(path)
+# Strips off |package_name|/lib/ returning module/interface.mojom.dart
+def MojomDartRelativePath(package_name, path):
   assert IsMojomDartFile(path)
-  return os.path.relpath(path, 'mojom/lib/')
+  return os.path.relpath(path, package_name + '/lib/')
 
 # Line is a line from pubspec.yaml
 def PackageName(line):
@@ -106,7 +105,14 @@ def DoZip(inputs, zip_inputs, output, base_dir):
           # Copy any direct mojom dependencies into mojom/
           if IsMojomPath(f):
             mojom_dep_copy = os.path.join("lib/mojom/",
-                                          MojomDartRelativePath(f))
+                                          MojomDartRelativePath("mojom", f))
+            if mojom_dep_copy not in files:
+              files.append(mojom_dep_copy)
+              with zf.open(f) as zff:
+                outfile.writestr(mojom_dep_copy, zff.read())
+            # Copy under lib/ as well.
+            mojom_dep_copy = os.path.join("lib/",
+                                          MojomDartRelativePath("mojom", f))
             if mojom_dep_copy not in files:
               files.append(mojom_dep_copy)
               with zf.open(f) as zff:
@@ -115,10 +121,11 @@ def DoZip(inputs, zip_inputs, output, base_dir):
           # Rewrite output file name, if it isn't a packages/ path.
           output_name = None
           if not IsPackagesPath(f):
-            if IsMojomDartFile(f) and IsMojomPath(f):
-              # Place mojom/lib/*.mojom.dart files into packages/mojom/
-              output_name = os.path.join("packages/mojom/",
-                                         MojomDartRelativePath(f))
+            if IsMojomDartFile(f):
+              # Place $package/lib/*.mojom.dart files into packages/$package/
+              package = next(p for p in f.split(os.path.sep) if p)
+              output_name = os.path.join("packages/" + package + "/",
+                                         MojomDartRelativePath(package, f))
             else:
               # We are processing a package, it must have a package name.
               assert not (package_name is None)

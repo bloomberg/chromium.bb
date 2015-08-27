@@ -20,7 +20,7 @@ namespace {
 
 using mojo::internal::Array_Data;
 using mojo::internal::ArrayValidateParams;
-using mojo::internal::FixedBuffer;
+using mojo::internal::FixedBufferForTesting;
 using mojo::internal::Map_Data;
 using mojo::internal::String_Data;
 
@@ -279,7 +279,7 @@ TEST_F(MapTest, ArrayOfMap) {
     array[0].insert(1, 42);
 
     size_t size = GetSerializedSize_(array);
-    FixedBuffer buf(size);
+    FixedBufferForTesting buf(size);
     Array_Data<Map_Data<int32_t, int8_t>*>* data;
     ArrayValidateParams validate_params(
         0, false, new ArrayValidateParams(0, false, nullptr));
@@ -301,7 +301,7 @@ TEST_F(MapTest, ArrayOfMap) {
     array[0].insert("hello world", map_value.Pass());
 
     size_t size = GetSerializedSize_(array);
-    FixedBuffer buf(size);
+    FixedBufferForTesting buf(size);
     Array_Data<Map_Data<String_Data*, Array_Data<bool>*>*>* data;
     ArrayValidateParams validate_params(
         0, false, new ArrayValidateParams(

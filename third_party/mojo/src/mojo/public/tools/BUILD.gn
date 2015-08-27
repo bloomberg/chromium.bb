@@ -28,6 +28,24 @@ if (mojo_use_prebuilt_mojo_shell) {
   }
 }
 
+if (mojo_use_prebuilt_dart_snapshotter) {
+  copy("copy_dart_snapshotter") {
+    if (host_os == "linux") {
+      platform = "linux-x64"
+    } else if (host_os == "mac") {
+      platform = "mac-x64"
+    } else {
+      assert(false, "$host_os not supported")
+    }
+    sources = [
+      "prebuilt/dart_snapshotter/$platform/dart_snapshotter",
+    ]
+    outputs = [
+      "$root_out_dir/dart_snapshotter",
+    ]
+  }
+}
+
 if (mojo_use_prebuilt_network_service) {
   copy("copy_network_service") {
     filename = "network_service.mojo"

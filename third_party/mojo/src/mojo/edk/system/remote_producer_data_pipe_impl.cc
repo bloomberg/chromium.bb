@@ -348,14 +348,19 @@ bool RemoteProducerDataPipeImpl::ConsumerEndSerialize(
 
 bool RemoteProducerDataPipeImpl::OnReadMessage(unsigned /*port*/,
                                                MessageInTransit* message) {
-  // Always take ownership of the message. (This means that we should always
-  // return true.)
-  scoped_ptr<MessageInTransit> msg(message);
-
   if (!producer_open()) {
+    // This will happen only on the rare occasion that the call to
+    // |OnReadMessage()| is racing with us calling
+    // |ChannelEndpoint::ReplaceClient()|, in which case we reject the message,
+    // and the |ChannelEndpoint| can retry (calling the new client's
+    // |OnReadMessage()|).
     DCHECK(!channel_endpoint_);
-    return true;
+    return false;
   }
+
+  // Otherwise, we take ownership of the message. (This means that we should
+  // always return true below.)
+  scoped_ptr<MessageInTransit> msg(message);
 
   if (!ValidateIncomingMessage(element_num_bytes(), capacity_num_bytes(),
                                current_num_bytes_, msg.get())) {

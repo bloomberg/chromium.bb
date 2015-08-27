@@ -53,11 +53,9 @@ void SendRunMessage(MessageReceiverWithResponder* receiver,
 
   RunMessageParams_Data* params = nullptr;
   Serialize_(params_ptr.Pass(), builder.buffer(), &params);
-  Message message;
-  params->EncodePointersAndHandles(message.mutable_handles());
-  builder.Finish(&message);
+  params->EncodePointersAndHandles(builder.message()->mutable_handles());
   MessageReceiver* responder = new RunResponseForwardToCallback(callback);
-  if (!receiver->AcceptWithResponder(&message, responder))
+  if (!receiver->AcceptWithResponder(builder.message(), responder))
     delete responder;
 }
 
@@ -73,10 +71,8 @@ void SendRunOrClosePipeMessage(MessageReceiverWithResponder* receiver,
 
   RunOrClosePipeMessageParams_Data* params = nullptr;
   Serialize_(params_ptr.Pass(), builder.buffer(), &params);
-  Message message;
-  params->EncodePointersAndHandles(message.mutable_handles());
-  builder.Finish(&message);
-  bool ok = receiver->Accept(&message);
+  params->EncodePointersAndHandles(builder.message()->mutable_handles());
+  bool ok = receiver->Accept(builder.message());
   MOJO_ALLOW_UNUSED_LOCAL(ok);
 }
 

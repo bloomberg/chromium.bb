@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 
+#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
@@ -15,8 +16,9 @@ void Allocate(Buffer* buf, Header** header) {
   (*header)->num_bytes = sizeof(Header);
 }
 
-MessageBuilder::MessageBuilder(uint32_t name, size_t payload_size)
-    : buf_(sizeof(MessageHeader) + payload_size) {
+MessageBuilder::MessageBuilder(uint32_t name, size_t payload_size) {
+  Initialize(sizeof(MessageHeader) + payload_size);
+
   MessageHeader* header;
   Allocate(&buf_, &header);
   header->version = 0;
@@ -26,19 +28,18 @@ MessageBuilder::MessageBuilder(uint32_t name, size_t payload_size)
 MessageBuilder::~MessageBuilder() {
 }
 
-void MessageBuilder::Finish(Message* message) {
-  uint32_t num_bytes = static_cast<uint32_t>(buf_.size());
-  message->AdoptData(num_bytes, static_cast<MessageData*>(buf_.Leak()));
-}
+MessageBuilder::MessageBuilder() {}
 
-MessageBuilder::MessageBuilder(size_t size) : buf_(size) {
+void MessageBuilder::Initialize(size_t size) {
+  message_.AllocData(static_cast<uint32_t>(Align(size)));
+  buf_.Initialize(message_.mutable_data(), message_.data_num_bytes());
 }
 
 MessageWithRequestIDBuilder::MessageWithRequestIDBuilder(uint32_t name,
                                                          size_t payload_size,
                                                          uint32_t flags,
-                                                         uint64_t request_id)
-    : MessageBuilder(sizeof(MessageHeaderWithRequestID) + payload_size) {
+                                                         uint64_t request_id) {
+  Initialize(sizeof(MessageHeaderWithRequestID) + payload_size);
   MessageHeaderWithRequestID* header;
   Allocate(&buf_, &header);
   header->version = 1;

@@ -21,12 +21,13 @@ class Message {
   Message();
   ~Message();
 
-  // These may only be called on a newly created Message object.
-  void AllocUninitializedData(uint32_t num_bytes);
-  void AdoptData(uint32_t num_bytes, internal::MessageData* data);
+  void Reset();
 
-  // Swaps data and handles between this Message and another.
-  void Swap(Message* other);
+  void AllocData(uint32_t num_bytes);
+  void AllocUninitializedData(uint32_t num_bytes);
+
+  // Transfers data and handles to |destination|.
+  void MoveTo(Message* destination);
 
   uint32_t data_num_bytes() const { return data_num_bytes_; }
 
@@ -72,8 +73,11 @@ class Message {
   std::vector<Handle>* mutable_handles() { return &handles_; }
 
  private:
+  void Initialize();
+  void FreeDataAndCloseHandles();
+
   uint32_t data_num_bytes_;
-  internal::MessageData* data_;  // Heap-allocated using malloc.
+  internal::MessageData* data_;
   std::vector<Handle> handles_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(Message);

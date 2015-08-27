@@ -34,18 +34,33 @@ namespace internal {
 //
 //     free(data);
 //   }
-//
+
 class FixedBuffer : public Buffer {
  public:
-  explicit FixedBuffer(size_t size);
-  ~FixedBuffer() override;
+  FixedBuffer();
+
+  // |size| should be aligned using internal::Align.
+  void Initialize(void* memory, size_t size);
+
+  size_t size() const { return size_; }
 
   // Grows the buffer by |num_bytes| and returns a pointer to the start of the
   // addition. The resulting address is 8-byte aligned, and the content of the
   // memory is zero-filled.
   void* Allocate(size_t num_bytes) override;
 
-  size_t size() const { return size_; }
+ protected:
+  char* ptr_;
+  size_t cursor_;
+  size_t size_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(FixedBuffer);
+};
+
+class FixedBufferForTesting : public FixedBuffer {
+ public:
+  explicit FixedBufferForTesting(size_t size);
+  ~FixedBufferForTesting() override;
 
   // Returns the internal memory owned by the Buffer to the caller. The Buffer
   // relinquishes its pointer, effectively resetting the state of the Buffer
@@ -54,11 +69,7 @@ class FixedBuffer : public Buffer {
   void* Leak();
 
  private:
-  char* ptr_;
-  size_t cursor_;
-  size_t size_;
-
-  MOJO_DISALLOW_COPY_AND_ASSIGN(FixedBuffer);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(FixedBufferForTesting);
 };
 
 }  // namespace internal

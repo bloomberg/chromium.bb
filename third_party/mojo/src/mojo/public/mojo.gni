@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/module_args/dart.gni")
 import("//build/module_args/mojo.gni")
 
 # If using the prebuilt shell, gate its usage by the platforms for which it is
@@ -10,6 +11,16 @@ mojo_use_prebuilt_mojo_shell = false
 if (!defined(mojo_build_mojo_shell_from_source) ||
     !mojo_build_mojo_shell_from_source) {
   mojo_use_prebuilt_mojo_shell = is_linux || is_android
+}
+
+# If using the prebuilt dart_snapshotter, gate its usage by the platforms for
+# which it is published.
+mojo_use_prebuilt_dart_snapshotter = false
+if (!defined(mojo_build_dart_snapshotter_from_source) ||
+    !mojo_build_dart_snapshotter_from_source) {
+  mojo_use_prebuilt_dart_snapshotter = true
+} else {
+  assert(defined(dart_snapshotter_bin))
 }
 
 # If using the prebuilt network service, gate its usage by the platforms for

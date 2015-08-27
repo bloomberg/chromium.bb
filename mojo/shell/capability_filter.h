@@ -11,33 +11,6 @@
 #include "mojo/public/cpp/bindings/array.h"
 
 namespace mojo {
-// TODO(beng): upstream this into mojo repo, array.h so it can be shared with
-//             application_impl.cc.
-// A |TypeConverter| that will create an |std::set<E>| containing a copy of
-// the contents of an |Array<T>|, using |TypeConverter<E, T>| to copy each
-// element. If the input array is null, the output set will be empty.
-template <typename E, typename T>
-struct TypeConverter <std::set<E>, Array<T>> {
-  static std::set<E> Convert(const Array<T>& input) {
-    std::set<E> result;
-    if (!input.is_null()) {
-      for (size_t i = 0; i < input.size(); ++i)
-        result.insert(TypeConverter<E, T>::Convert(input[i]));
-    }
-    return result;
-  }
-};
-
-template <typename T, typename E>
-struct TypeConverter <Array<T>, std::set<E>> {
-  static Array<T> Convert(const std::set<E>& input) {
-    Array<T> result(0u);
-    for (auto i : input)
-      result.push_back(TypeConverter<T, E>::Convert(i));
-    return result.Pass();
-  }
-};
-
 namespace shell {
 
 // A set of names of interfaces that may be exposed to an application.

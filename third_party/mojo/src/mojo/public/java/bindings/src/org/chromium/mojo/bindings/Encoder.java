@@ -166,7 +166,7 @@ public class Encoder {
     public void encode(boolean v, int offset, int bit) {
         if (v) {
             byte encodedValue = mEncoderState.byteBuffer.get(mBaseOffset + offset);
-            encodedValue |= 1 << bit;
+            encodedValue |= (byte) (1 << bit);
             mEncoderState.byteBuffer.put(mBaseOffset + offset, encodedValue);
         }
     }
@@ -334,7 +334,7 @@ public class Encoder {
             for (int j = 0; j < BindingsHelper.ALIGNMENT; ++j) {
                 int booleanIndex = BindingsHelper.ALIGNMENT * i + j;
                 if (booleanIndex < v.length && v[booleanIndex]) {
-                    bytes[i] |= (1 << j);
+                    bytes[i] |= (byte) (1 << j);
                 }
             }
         }

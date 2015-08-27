@@ -10,6 +10,23 @@ config("gles2_use_mojo") {
   defines = [ "GLES2_USE_MOJO" ]
 }
 
+source_set("headers") {
+  sources = [
+    "command_buffer_client_impl.h",
+    "gles2_context.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/view_manager/public/interfaces",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/common",
+    "//third_party/mojo/src/mojo/public/c/gles2:headers",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+  ]
+}
+
 source_set("gles2") {
   sources = [
     "command_buffer_client_impl.cc",

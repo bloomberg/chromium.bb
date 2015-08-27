@@ -5,6 +5,7 @@
 #include "mojo/cc/context_provider_mojo.h"
 
 #include "base/logging.h"
+#include "mojo/gles2/gles2_context.h"
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
 #include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
 
@@ -36,8 +37,8 @@ gpu::gles2::GLES2Interface* ContextProviderMojo::ContextGL() {
 gpu::ContextSupport* ContextProviderMojo::ContextSupport() {
   if (!context_)
     return NULL;
-  return static_cast<gpu::ContextSupport*>(
-      MojoGLES2GetContextSupport(context_));
+  // TODO(rjkroege): Ensure that UIP does not take this code path.
+  return static_cast<gles2::GLES2Context*>(context_)->context_support();
 }
 
 class GrContext* ContextProviderMojo::GrContext() { return NULL; }

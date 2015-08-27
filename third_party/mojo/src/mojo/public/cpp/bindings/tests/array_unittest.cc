@@ -17,7 +17,7 @@ namespace {
 
 using mojo::internal::Array_Data;
 using mojo::internal::ArrayValidateParams;
-using mojo::internal::FixedBuffer;
+using mojo::internal::FixedBufferForTesting;
 using mojo::internal::String_Data;
 
 class ArrayTest : public testing::Test {
@@ -157,7 +157,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfPOD) {
   size_t size = GetSerializedSize_(array);
   EXPECT_EQ(8U + 4 * 4U, size);
 
-  FixedBuffer buf(size);
+  FixedBufferForTesting buf(size);
   Array_Data<int32_t>* data;
   ArrayValidateParams validate_params(0, false, nullptr);
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
@@ -175,7 +175,7 @@ TEST_F(ArrayTest, Serialization_EmptyArrayOfPOD) {
   size_t size = GetSerializedSize_(array);
   EXPECT_EQ(8U, size);
 
-  FixedBuffer buf(size);
+  FixedBufferForTesting buf(size);
   Array_Data<int32_t>* data;
   ArrayValidateParams validate_params(0, false, nullptr);
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
@@ -197,7 +197,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfArrayOfPOD) {
   size_t size = GetSerializedSize_(array);
   EXPECT_EQ(8U + 2 * 8U + 2 * (8U + 4 * 4U), size);
 
-  FixedBuffer buf(size);
+  FixedBufferForTesting buf(size);
   Array_Data<Array_Data<int32_t>*>* data;
   ArrayValidateParams validate_params(
       0, false, new ArrayValidateParams(0, false, nullptr));
@@ -223,7 +223,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfBool) {
   size_t size = GetSerializedSize_(array);
   EXPECT_EQ(8U + 8U, size);
 
-  FixedBuffer buf(size);
+  FixedBufferForTesting buf(size);
   Array_Data<bool>* data;
   ArrayValidateParams validate_params(0, false, nullptr);
   SerializeArray_(array.Pass(), &buf, &data, &validate_params);
@@ -250,7 +250,7 @@ TEST_F(ArrayTest, Serialization_ArrayOfString) {
                       8U),  // string length of 1 padded to 8
             size);
 
-  FixedBuffer buf(size);
+  FixedBufferForTesting buf(size);
   Array_Data<String_Data*>* data;
   ArrayValidateParams validate_params(
       0, false, new ArrayValidateParams(0, false, nullptr));

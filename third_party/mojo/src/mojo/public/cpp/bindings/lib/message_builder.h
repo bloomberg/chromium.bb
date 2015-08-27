@@ -9,6 +9,7 @@
 
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
+#include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
 class Message;
@@ -21,14 +22,13 @@ class MessageBuilder {
   ~MessageBuilder();
 
   Buffer* buffer() { return &buf_; }
-
-  // Call Finish when done making allocations in |buffer()|. Upon return,
-  // |message| will contain the message data, and |buffer()| will no longer be
-  // valid to reference.
-  void Finish(Message* message);
+  Message* message() { return &message_; }
 
  protected:
-  explicit MessageBuilder(size_t size);
+  MessageBuilder();
+  void Initialize(size_t size);
+
+  Message message_;
   FixedBuffer buf_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(MessageBuilder);

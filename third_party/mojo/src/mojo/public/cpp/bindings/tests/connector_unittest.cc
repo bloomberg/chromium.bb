@@ -85,7 +85,8 @@ class ConnectorTest : public testing::Test {
     size_t payload_size = strlen(text) + 1;  // Plus null terminator.
     internal::MessageBuilder builder(1, payload_size);
     memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
-    builder.Finish(message);
+
+    builder.message()->MoveTo(message);
   }
 
   void PumpMessages() { loop_.RunUntilIdle(); }

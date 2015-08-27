@@ -23,7 +23,7 @@ bool IsZero(void* p_buf, size_t size) {
 
 // Tests that FixedBuffer allocates memory aligned to 8 byte boundaries.
 TEST(FixedBufferTest, Alignment) {
-  internal::FixedBuffer buf(internal::Align(10) * 2);
+  internal::FixedBufferForTesting buf(internal::Align(10) * 2);
   ASSERT_EQ(buf.size(), 16u * 2);
 
   void* a = buf.Allocate(10);
@@ -39,12 +39,12 @@ TEST(FixedBufferTest, Alignment) {
   // Any more allocations would result in an assert, but we can't test that.
 }
 
-// Tests that FixedBuffer::Leak passes ownership to the caller.
+// Tests that FixedBufferForTesting::Leak passes ownership to the caller.
 TEST(FixedBufferTest, Leak) {
   void* ptr = nullptr;
   void* buf_ptr = nullptr;
   {
-    internal::FixedBuffer buf(8);
+    internal::FixedBufferForTesting buf(8);
     ASSERT_EQ(8u, buf.size());
 
     ptr = buf.Allocate(8);
@@ -55,20 +55,20 @@ TEST(FixedBufferTest, Leak) {
     // TODO(mpcomplete): Is this a reasonable expectation?
     EXPECT_EQ(ptr, buf_ptr);
 
-    // The FixedBuffer should be empty now.
+    // The FixedBufferForTesting should be empty now.
     EXPECT_EQ(0u, buf.size());
     EXPECT_FALSE(buf.Leak());
   }
 
-  // Since we called Leak, ptr is still writable after FixedBuffer went out of
-  // scope.
+  // Since we called Leak, ptr is still writable after FixedBufferForTesting
+  // went out of scope.
   memset(ptr, 1, 8);
   free(buf_ptr);
 }
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 TEST(FixedBufferTest, TooBig) {
-  internal::FixedBuffer buf(24);
+  internal::FixedBufferForTesting buf(24);
 
   // A little bit too large.
   EXPECT_EQ(reinterpret_cast<void*>(0), buf.Allocate(32));

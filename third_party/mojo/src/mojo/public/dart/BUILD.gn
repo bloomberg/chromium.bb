@@ -1,10 +1,17 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 import("../mojo_sdk.gni")
 import("rules.gni")
 
-dart_mojo_sdk_sources = [
+dart_mojo_sdk_entrypoints = [
   "lib/application.dart",
   "lib/bindings.dart",
   "lib/core.dart",
+]
+
+dart_mojo_sdk_sources = [
   "lib/src/application_connection.dart",
   "lib/src/application.dart",
   "lib/src/buffer.dart",
@@ -19,12 +26,13 @@ dart_mojo_sdk_sources = [
   "lib/src/proxy.dart",
   "lib/src/struct.dart",
   "lib/src/stub.dart",
-  "lib/src/union.dart",
   "lib/src/types.dart",
+  "lib/src/union.dart",
+  "lib/src/utils.dart",
 ]
 
-dartzip_package("dart") {
-  sources = dart_mojo_sdk_sources + [
+dartzip_package("dart_dartzip") {
+  sources = dart_mojo_sdk_entrypoints + dart_mojo_sdk_sources + [
               "pubspec.yaml",
               "CHANGELOG.md",
               "README.md",
@@ -38,18 +46,26 @@ dartzip_package("dart") {
   ]
 }
 
-dart_pkg("mojo") {
+dart_pkg("dart_pkg") {
+  libs = dart_mojo_sdk_entrypoints
   sources = dart_mojo_sdk_sources + [
+              "lib/_sdkext",
               "pubspec.yaml",
               "CHANGELOG.md",
               "README.md",
             ]
 
   sdk_ext_directory = "sdk_ext"
-  sdk_ext_mappings = [ "dart:mojo.internal,internal.dart" ]
 
   # List of mojom targets that the mojo pkg exports
   deps = [
     "../interfaces",
+  ]
+}
+
+group("dart") {
+  deps = [
+    ":dart_dartzip",
+    ":dart_pkg",
   ]
 }

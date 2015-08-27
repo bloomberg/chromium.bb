@@ -146,7 +146,13 @@ def GetCppResultWrapperType(kind):
     return "mojo::ScopedMessagePipeHandle"
   if mojom.IsSharedBufferKind(kind):
     return "mojo::ScopedSharedBufferHandle"
-  return _kind_to_cpp_type[kind]
+  # TODO(rudominer) After improvements to compiler front end have landed,
+  # revisit strategy used below for emitting a useful error message when an
+  # undefined identifier is referenced.
+  val =  _kind_to_cpp_type.get(kind)
+  if (val is not None):
+    return val
+  raise Exception("Unrecognized kind %s" % kind.spec)
 
 def GetCppWrapperType(kind):
   if mojom.IsEnumKind(kind):

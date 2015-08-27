@@ -338,6 +338,7 @@
           'src/mojo/public/interfaces/bindings/tests/sample_import2.mojom',
           'src/mojo/public/interfaces/bindings/tests/sample_interfaces.mojom',
           'src/mojo/public/interfaces/bindings/tests/sample_service.mojom',
+          'src/mojo/public/interfaces/bindings/tests/scoping.mojom',
           'src/mojo/public/interfaces/bindings/tests/serialization_test_structs.mojom',
           'src/mojo/public/interfaces/bindings/tests/test_structs.mojom',
           'src/mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom',

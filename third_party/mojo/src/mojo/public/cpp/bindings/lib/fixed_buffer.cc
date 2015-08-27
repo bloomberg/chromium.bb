@@ -14,14 +14,14 @@
 namespace mojo {
 namespace internal {
 
-FixedBuffer::FixedBuffer(size_t size)
-    : ptr_(nullptr), cursor_(0), size_(internal::Align(size)) {
-  // calloc() required to zero memory and thus avoid info leaks.
-  ptr_ = static_cast<char*>(calloc(size_, 1));
-}
+FixedBuffer::FixedBuffer() : ptr_(nullptr), cursor_(0), size_(0) {}
 
-FixedBuffer::~FixedBuffer() {
-  free(ptr_);
+void FixedBuffer::Initialize(void* memory, size_t size) {
+  MOJO_DCHECK(size == internal::Align(size));
+
+  ptr_ = static_cast<char*>(memory);
+  cursor_ = 0;
+  size_ = size;
 }
 
 void* FixedBuffer::Allocate(size_t delta) {
@@ -38,7 +38,17 @@ void* FixedBuffer::Allocate(size_t delta) {
   return result;
 }
 
-void* FixedBuffer::Leak() {
+FixedBufferForTesting::FixedBufferForTesting(size_t size) {
+  size_ = internal::Align(size);
+  // Use calloc here to ensure all message memory is zero'd out.
+  ptr_ = static_cast<char*>(calloc(size_, 1));
+}
+
+FixedBufferForTesting::~FixedBufferForTesting() {
+  free(ptr_);
+}
+
+void* FixedBufferForTesting::Leak() {
   char* ptr = ptr_;
   ptr_ = nullptr;
   cursor_ = 0;
