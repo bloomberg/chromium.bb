@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/version.h"
+#include "components/version_info/version_info.h"
 
 namespace base {
 class SequencedWorkerPool;
@@ -46,6 +47,9 @@ class VariationsServiceClient {
 
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual network_time::NetworkTimeTracker* GetNetworkTimeTracker() = 0;
+
+  // Gets the channel of the embedder.
+  virtual version_info::Channel GetChannel() = 0;
 
   // Called from VariationsService::PerformPreMainMessageLoopStartup().
   virtual void OnInitialStartup() {}

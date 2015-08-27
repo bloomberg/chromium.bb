@@ -96,6 +96,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        'version_info',
       ],
       'sources': [
         'variations/service/variations_service_client.h',

@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/metrics/variations/generated_resources_map.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/network_time/network_time_tracker.h"
@@ -59,8 +58,9 @@ const int64 kServerTimeResolutionMs = 1000;
 // that channel value. Otherwise, if the fake channel flag is provided, this
 // will return the fake channel. Failing that, this will return the UNKNOWN
 // channel.
-variations::Study_Channel GetChannelForVariations() {
-  switch (chrome::GetChannel()) {
+variations::Study_Channel GetChannelForVariations(
+    version_info::Channel product_channel) {
+  switch (product_channel) {
     case version_info::Channel::CANARY:
       return variations::Study_Channel_CANARY;
     case version_info::Channel::DEV:
@@ -256,7 +256,8 @@ bool VariationsService::CreateTrialsFromSeed() {
   if (!current_version.IsValid())
     return false;
 
-  variations::Study_Channel channel = GetChannelForVariations();
+  variations::Study_Channel channel =
+      GetChannelForVariations(client_->GetChannel());
   UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.UserChannel", channel);
 
   const std::string latest_country =
@@ -659,8 +660,8 @@ void VariationsService::PerformSimulationWithVersion(
       seed_simulator.SimulateSeedStudies(
           *seed, client_->GetApplicationLocale(),
           GetReferenceDateForExpiryChecks(local_state_), version,
-          GetChannelForVariations(), GetCurrentFormFactor(), GetHardwareClass(),
-          latest_country,
+          GetChannelForVariations(client_->GetChannel()),
+          GetCurrentFormFactor(), GetHardwareClass(), latest_country,
           LoadPermanentConsistencyCountry(version, latest_country));
 
   UMA_HISTOGRAM_COUNTS_100("Variations.SimulateSeed.NormalChanges",

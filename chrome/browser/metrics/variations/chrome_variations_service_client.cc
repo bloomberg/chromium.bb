@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -57,6 +58,10 @@ ChromeVariationsServiceClient::GetURLRequestContext() {
 network_time::NetworkTimeTracker*
 ChromeVariationsServiceClient::GetNetworkTimeTracker() {
   return g_browser_process->network_time_tracker();
+}
+
+version_info::Channel ChromeVariationsServiceClient::GetChannel() {
+  return chrome::GetChannel();
 }
 
 void ChromeVariationsServiceClient::OnInitialStartup() {

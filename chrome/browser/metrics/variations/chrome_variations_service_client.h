@@ -27,6 +27,7 @@ class ChromeVariationsServiceClient
       override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
+  version_info::Channel GetChannel() override;
   void OnInitialStartup() override;
 
  private:

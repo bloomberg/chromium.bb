@@ -9,5 +9,6 @@ source_set("service") {
 
   deps = [
     "//base",
+    "//components/version_info",
   ]
 }
