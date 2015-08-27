@@ -149,25 +149,25 @@ void BackgroundSyncProvider::RegisterCallback(
       if (!options.is_null())
         result =
             mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(options);
-      callbacks->onSuccess(result.release());
+      callbacks->onSuccess(blink::adoptWebPtr(result.release()));
       break;
     case BACKGROUND_SYNC_ERROR_NOT_FOUND:
       NOTREACHED();
       break;
     case BACKGROUND_SYNC_ERROR_STORAGE:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "Background Sync is disabled."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "Background Sync is disabled."));
       break;
     case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
-      callbacks->onError(new blink::WebSyncError(
+      callbacks->onError(blink::WebSyncError(
           blink::WebSyncError::ErrorTypeNoPermission,
           "Cannot register a sync event without a window client."));
       break;
     case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "No service worker is active."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "No service worker is active."));
       break;
   }
 }
@@ -178,15 +178,15 @@ void BackgroundSyncProvider::UnregisterCallback(
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
     case BACKGROUND_SYNC_ERROR_NONE:
-      callbacks->onSuccess(new bool(true));
+      callbacks->onSuccess(true);
       break;
     case BACKGROUND_SYNC_ERROR_NOT_FOUND:
-      callbacks->onSuccess(new bool(false));
+      callbacks->onSuccess(false);
       break;
     case BACKGROUND_SYNC_ERROR_STORAGE:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "Background Sync is disabled."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "Background Sync is disabled."));
       break;
     case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
       // This error should never be returned from
@@ -195,8 +195,8 @@ void BackgroundSyncProvider::UnregisterCallback(
       break;
     case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "No service worker is active."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "No service worker is active."));
       break;
   }
 }
@@ -212,15 +212,15 @@ void BackgroundSyncProvider::GetRegistrationCallback(
       if (!options.is_null())
         result =
             mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(options);
-      callbacks->onSuccess(result.release());
+      callbacks->onSuccess(blink::adoptWebPtr(result.release()));
       break;
     case BACKGROUND_SYNC_ERROR_NOT_FOUND:
       callbacks->onSuccess(nullptr);
       break;
     case BACKGROUND_SYNC_ERROR_STORAGE:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "Background Sync is disabled."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "Background Sync is disabled."));
       break;
     case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
       // This error should never be returned from
@@ -229,8 +229,8 @@ void BackgroundSyncProvider::GetRegistrationCallback(
       break;
     case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "No service worker is active."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "No service worker is active."));
       break;
   }
 }
@@ -240,17 +240,18 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
     BackgroundSyncError error,
     const mojo::Array<SyncRegistrationPtr>& registrations) {
   // TODO(iclelland): Determine the correct error message to return in each case
-  blink::WebVector<blink::WebSyncRegistration*>* results;
   switch (error) {
-    case BACKGROUND_SYNC_ERROR_NONE:
-      results = new blink::WebVector<blink::WebSyncRegistration*>(
+    case BACKGROUND_SYNC_ERROR_NONE: {
+      blink::WebVector<blink::WebSyncRegistration*> results(
           registrations.size());
       for (size_t i = 0; i < registrations.size(); ++i) {
-        (*results)[i] = mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(
-                            registrations[i]).release();
+        results[i] = mojo::ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(
+                         registrations[i])
+                         .release();
       }
       callbacks->onSuccess(results);
       break;
+    }
     case BACKGROUND_SYNC_ERROR_NOT_FOUND:
     case BACKGROUND_SYNC_ERROR_NOT_ALLOWED:
       // These errors should never be returned from
@@ -259,13 +260,13 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
       break;
     case BACKGROUND_SYNC_ERROR_STORAGE:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "Background Sync is disabled."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "Background Sync is disabled."));
       break;
     case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "No service worker is active."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "No service worker is active."));
       break;
   }
 }
@@ -279,16 +280,13 @@ void BackgroundSyncProvider::GetPermissionStatusCallback(
     case BACKGROUND_SYNC_ERROR_NONE:
       switch (status) {
         case PERMISSION_STATUS_GRANTED:
-          callbacks->onSuccess(new blink::WebSyncPermissionStatus(
-              blink::WebSyncPermissionStatusGranted));
+          callbacks->onSuccess(blink::WebSyncPermissionStatusGranted);
           break;
         case PERMISSION_STATUS_DENIED:
-          callbacks->onSuccess(new blink::WebSyncPermissionStatus(
-              blink::WebSyncPermissionStatusDenied));
+          callbacks->onSuccess(blink::WebSyncPermissionStatusDenied);
           break;
         case PERMISSION_STATUS_ASK:
-          callbacks->onSuccess(new blink::WebSyncPermissionStatus(
-              blink::WebSyncPermissionStatusPrompt));
+          callbacks->onSuccess(blink::WebSyncPermissionStatusPrompt);
           break;
       }
       break;
@@ -300,13 +298,13 @@ void BackgroundSyncProvider::GetPermissionStatusCallback(
       break;
     case BACKGROUND_SYNC_ERROR_STORAGE:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "Background Sync is disabled."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "Background Sync is disabled."));
       break;
     case BACKGROUND_SYNC_ERROR_NO_SERVICE_WORKER:
       callbacks->onError(
-          new blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                                  "No service worker is active."));
+          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
+                              "No service worker is active."));
       break;
   }
 }
