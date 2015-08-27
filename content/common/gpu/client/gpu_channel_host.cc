@@ -281,6 +281,7 @@ void GpuChannelHost::DestroyCommandBuffer(
   Send(new GpuChannelMsg_DestroyCommandBuffer(route_id));
   RemoveRoute(route_id);
 
+  AutoLock lock(context_lock_);
   if (stream_flush_info_[stream_id].route_id == route_id)
     stream_flush_info_.erase(stream_id);
 }
