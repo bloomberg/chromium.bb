@@ -56,9 +56,9 @@ ScopedVector<PasswordForm> SyncStoreResultFilter::FilterResults(
   }
 
   const PasswordManagerClient* client = client_;
-  auto begin_of_removed = std::remove_if(
-      results.begin(), results.end(), [client](PasswordForm* form) -> bool {
-        return client->IsSyncAccountCredential(
+  auto begin_of_removed = std::partition(
+      results.begin(), results.end(), [client](PasswordForm* form) {
+        return !client->IsSyncAccountCredential(
             base::UTF16ToUTF8(form->username_value), form->signon_realm);
       });
 

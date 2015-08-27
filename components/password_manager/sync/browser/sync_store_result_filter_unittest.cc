@@ -5,6 +5,7 @@
 #include "components/password_manager/sync/browser/sync_store_result_filter.h"
 
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
@@ -93,6 +94,33 @@ TEST(StoreResultFilterTest, ShouldFilterAutofillResult) {
   command_line->AppendSwitch(switches::kDisallowAutofillSyncCredential);
   SyncStoreResultFilter filter_disallow_sync_cred(&client);
   EXPECT_TRUE(IsFormFiltered(filter_disallow_sync_cred, form));
+}
+
+TEST(StoreResultFilterTest, ShouldFilterOneForm) {
+  // Adding disallow switch should cause sync credential to be filtered.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kDisallowAutofillSyncCredential);
+
+  PasswordForm form;
+  form.username_value = base::ASCIIToUTF16("test1@gmail.com");
+  form.signon_realm = "https://accounts.google.com";
+  ScopedVector<autofill::PasswordForm> results;
+  results.push_back(new PasswordForm(form));
+  form.username_value = base::ASCIIToUTF16("test2@gmail.com");
+  results.push_back(new PasswordForm(form));
+
+  MockPasswordManagerClient client;
+  SyncStoreResultFilter filter(&client);
+  EXPECT_CALL(client,
+              IsSyncAccountCredential("test1@gmail.com", form.signon_realm))
+      .WillOnce(Return(true));
+  EXPECT_CALL(client,
+              IsSyncAccountCredential("test2@gmail.com", form.signon_realm))
+      .WillOnce(Return(false));
+  results = filter.FilterResults(results.Pass());
+
+  ASSERT_EQ(1u, results.size());
+  EXPECT_EQ(form, *results[0]);
 }
 
 }  // namespace password_manager

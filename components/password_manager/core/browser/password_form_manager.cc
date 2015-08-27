@@ -344,9 +344,8 @@ void PasswordFormManager::OnRequestDone(
   // Remove credentials which need to be ignored from |logins_result|.
   if (!observed_form_.ssl_valid) {
     logins_result.erase(
-        std::remove_if(
-            logins_result.begin(), logins_result.end(),
-            [](PasswordForm* form) -> bool { return form->ssl_valid; }),
+        std::partition(logins_result.begin(), logins_result.end(),
+                       [](PasswordForm* form) { return !form->ssl_valid; }),
         logins_result.end());
   }
   logins_result =

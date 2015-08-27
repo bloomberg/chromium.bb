@@ -657,27 +657,28 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
 }
 
 TEST_F(PasswordFormManagerTest, TestIgnoreResult_SSL) {
-  PasswordForm observed(*observed_form());
-  observed.origin = GURL("https://accounts.google.com/a/LoginAuth");
-  observed.action = GURL("https://accounts.google.com/a/Login");
-  observed.signon_realm = "https://accounts.google.com";
   const bool kObservedFormSSLValid = false;
-  observed.ssl_valid = kObservedFormSSLValid;
-
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), observed,
+                                   client()->driver(), *observed_form(),
                                    kObservedFormSSLValid);
 
-  PasswordForm saved_form = observed;
-  saved_form.ssl_valid = true;
+  PasswordForm saved_form = *observed_form();
+  saved_form.ssl_valid = !kObservedFormSSLValid;
+  saved_form.username_value = ASCIIToUTF16("test1@gmail.com");
   ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(saved_form));
+  saved_form.username_value = ASCIIToUTF16("test2@gmail.com");
+  result.push_back(new PasswordForm(saved_form));
+  saved_form.username_value = ASCIIToUTF16("test3@gmail.com");
+  saved_form.ssl_valid = kObservedFormSSLValid;
   result.push_back(new PasswordForm(saved_form));
   form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
   form_manager.OnGetPasswordStoreResults(result.Pass());
 
   // Make sure we don't match a PasswordForm if it was originally saved on
   // an SSL-valid page and we are now on a page with invalid certificate.
-  EXPECT_TRUE(form_manager.best_matches().empty());
+  EXPECT_EQ(1u, form_manager.best_matches().count(saved_form.username_value));
+  EXPECT_EQ(1u, form_manager.best_matches().size());
 }
 
 TEST_F(PasswordFormManagerTest, TestIgnoreResult_Paths) {
