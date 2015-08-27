@@ -142,7 +142,6 @@ extern const char kEnableOfflineAutoReloadVisibleOnly[];
 extern const char kEnablePanels[];
 extern const char kEnablePdfMaterialUI[];
 extern const char kEnablePermissionsBubbles[];
-extern const char kEnablePluginPlaceholderShadowDom[];
 extern const char kEnablePotentiallyAnnoyingSecurityFeatures[];
 extern const char kEnablePowerOverlay[];
 extern const char kEnablePrintPreviewRegisterPromos[];

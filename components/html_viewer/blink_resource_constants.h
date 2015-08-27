@@ -121,8 +121,6 @@ const DataResource kDataResources[] = {
     {"DocumentXMLTreeViewer.css", IDR_PRIVATE_SCRIPT_DOCUMENTXMLTREEVIEWER_CSS},
     {"DocumentXMLTreeViewer.js", IDR_PRIVATE_SCRIPT_DOCUMENTXMLTREEVIEWER_JS},
     {"HTMLMarqueeElement.js", IDR_PRIVATE_SCRIPT_HTMLMARQUEEELEMENT_JS},
-    {"PluginPlaceholderElement.js",
-     IDR_PRIVATE_SCRIPT_PLUGINPLACEHOLDERELEMENT_JS},
     {"PrivateScriptRunner.js", IDR_PRIVATE_SCRIPT_PRIVATESCRIPTRUNNER_JS},
 #ifdef IDR_PICKER_COMMON_JS
     {"pickerCommon.js", IDR_PICKER_COMMON_JS},
