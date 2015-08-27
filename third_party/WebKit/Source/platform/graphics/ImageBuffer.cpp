@@ -341,7 +341,7 @@ void ImageBuffer::putByteArray(Multiply multiplied, const unsigned char* source,
     m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
-static bool encodeImage(const ImageDataBuffer& source, const String& mimeType, const double* quality, Vector<char>* output)
+bool ImageDataBuffer::encodeImage(const String& mimeType, const double* quality, Vector<char>* output) const
 {
     Vector<unsigned char>* encodedImage = reinterpret_cast<Vector<unsigned char>*>(output);
 
@@ -349,16 +349,16 @@ static bool encodeImage(const ImageDataBuffer& source, const String& mimeType, c
         int compressionQuality = JPEGImageEncoder::DefaultCompressionQuality;
         if (quality && *quality >= 0.0 && *quality <= 1.0)
             compressionQuality = static_cast<int>(*quality * 100 + 0.5);
-        if (!JPEGImageEncoder::encode(source, compressionQuality, encodedImage))
+        if (!JPEGImageEncoder::encode(*this, compressionQuality, encodedImage))
             return false;
     } else if (mimeType == "image/webp") {
         int compressionQuality = WEBPImageEncoder::DefaultCompressionQuality;
         if (quality && *quality >= 0.0 && *quality <= 1.0)
             compressionQuality = static_cast<int>(*quality * 100 + 0.5);
-        if (!WEBPImageEncoder::encode(source, compressionQuality, encodedImage))
+        if (!WEBPImageEncoder::encode(*this, compressionQuality, encodedImage))
             return false;
     } else {
-        if (!PNGImageEncoder::encode(source, encodedImage))
+        if (!PNGImageEncoder::encode(*this, encodedImage))
             return false;
         ASSERT(mimeType == "image/png");
     }
@@ -371,7 +371,7 @@ String ImageDataBuffer::toDataURL(const String& mimeType, const double* quality)
     ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
 
     Vector<char> encodedImage;
-    if (!encodeImage(*this, mimeType, quality, &encodedImage))
+    if (!encodeImage(mimeType, quality, &encodedImage))
         return "data:,";
 
     return "data:" + mimeType + ";base64," + base64Encode(encodedImage);

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "modules/filesystem/DOMFileSystem.h"
 
+#include "core/fileapi/FileCallback.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/ErrorCallback.h"
-#include "modules/filesystem/FileCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileWriter.h"

@@ -34,6 +34,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/fileapi/File.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/ImageData.h"
@@ -54,6 +55,8 @@
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTraceLocation.h"
+#include "wtf/Functional.h"
 #include <math.h>
 #include <v8.h>
 
@@ -536,6 +539,40 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& q
         }
     }
     return toDataURLInternal(mimeType, qualityPtr, BackBuffer);
+}
+
+void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState) const
+{
+    if (!originClean()) {
+        exceptionState.throwSecurityError("Tainted canvases may not be exported.");
+        return;
+    }
+
+    File* resultBlob = nullptr;
+    if (!isPaintable()) {
+        // If the canvas element's bitmap has no pixels
+        return;
+    }
+
+    double quality;
+    if (!qualityArgument.isEmpty()) {
+        v8::Local<v8::Value> v8Value = qualityArgument.v8Value();
+        if (v8Value->IsNumber()) {
+            quality = v8Value.As<v8::Number>()->Value();
+        }
+    }
+
+    String encodingMimeType = toEncodingMimeType(mimeType);
+
+    ImageData* imageData = toImageData(BackBuffer);
+    ScopedDisposal<ImageData> disposer(imageData);
+
+    // Perform image encoding
+    Vector<char> encodedImage;
+    ImageDataBuffer(imageData->size(), imageData->data()->data()).encodeImage(encodingMimeType, &quality, &encodedImage);
+    resultBlob = File::create(encodedImage.data(), encodedImage.size(), encodingMimeType);
+
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, resultBlob));
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const

@@ -33,6 +33,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentVisibilityObserver.h"
+#include "core/fileapi/FileCallback.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/geometry/FloatRect.h"
@@ -112,6 +113,9 @@ public:
     static String toEncodingMimeType(const String& mimeType);
     String toDataURL(const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&) const;
     String toDataURL(const String& mimeType, ExceptionState& exceptionState) const { return toDataURL(mimeType, ScriptValue(), exceptionState); }
+
+    void toBlob(FileCallback*, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&) const;
+    void toBlob(FileCallback* callback, const String& mimeType, ExceptionState& exceptionState) { return toBlob(callback, mimeType, ScriptValue(), exceptionState); }
 
     // Used for rendering
     void didDraw(const FloatRect&);

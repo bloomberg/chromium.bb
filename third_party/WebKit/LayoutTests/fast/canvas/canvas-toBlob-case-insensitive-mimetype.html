@@ -1,0 +1,45 @@
+<script src = "../../resources/js-test.js"></script>
+<script type = "text/javascript"> 
+if (window.testRunner)
+{
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+description("Test that toBlob(mimeType) ignores the case of 'mimeType'.");
+
+canvas = document.createElement('canvas');
+var counter;
+
+function tryMimeType(mimeType, expectedMimeType)
+{
+    canvas.toBlob(function(blob) {
+        if (blob.type === expectedMimeType) {
+            testPassed("");
+        }
+        else {
+            testFailed(blob.type + " does not match " + expectedMimeType);
+        }
+        counter = counter - 1;
+        if (window.testRunner) {
+            if (counter == 0) {
+                testRunner.notifyDone();
+            }
+        }
+    }, mimeType);
+}
+
+counter = 4;
+
+//Note that due to the async nature of toBlob, these callbacks may complete
+// at random order but they will all print PASS when they pass.
+tryMimeType("image/PNG", "image/png");
+
+tryMimeType("imaGE/jpEg", "image/jpeg");
+
+tryMimeType("ImAgE/WeBp", "image/webp");
+
+//Unsupported mime type falls back to png
+tryMimeType("image/bmp", "image/png");
+
+</Script>

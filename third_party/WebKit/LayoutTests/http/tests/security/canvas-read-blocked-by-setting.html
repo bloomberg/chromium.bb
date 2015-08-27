@@ -49,4 +49,14 @@ test(function () {
             assert_unreached('toDataURL should throw');
         });
 }, 'toDataURL');
+
+test(function () {
+    assert_throws(
+        "SecurityError",
+        function() {
+            context.drawImage(image, 0, 0, 100, 100);
+            canvas.toBlob(function(blob){});
+            assert_unreached('toBlob should throw');
+        });
+}, 'toBlob');
 </script>

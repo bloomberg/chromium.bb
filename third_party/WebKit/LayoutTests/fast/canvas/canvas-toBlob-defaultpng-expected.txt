@@ -1,0 +1,10 @@
+Test that verifies whether the image data survives the toBlob process
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS ctx.getImageData(0, 0, 150, 75).data[4] is ctx2.getImageData(0, 0, 150, 75).data[4]
+

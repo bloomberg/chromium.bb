@@ -33,6 +33,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
+#include "core/fileapi/FileCallback.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -44,7 +45,6 @@
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
-#include "modules/filesystem/FileCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/FileWriterBase.h"

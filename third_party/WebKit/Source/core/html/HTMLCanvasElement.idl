@@ -26,7 +26,8 @@
 
 // https://html.spec.whatwg.org/#the-canvas-element
 
-interface HTMLCanvasElement : HTMLElement {
+interface HTMLCanvasElement : HTMLElement
+{
     // FIXME: width and height should be unsigned long.
     attribute long width;
     attribute long height;
@@ -51,4 +52,6 @@ interface HTMLCanvasElement : HTMLElement {
     // only one extra argument is actually used.
     // FIXME: type should not have a default value.
     [RaisesException] DOMString toDataURL(optional DOMString type = null, optional any arguments);
+
+    [RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] void toBlob(FileCallback? _callback, optional DOMString type = null, optional any arguments);
 };

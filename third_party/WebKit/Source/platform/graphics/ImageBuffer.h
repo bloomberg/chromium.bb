@@ -43,6 +43,8 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Uint8ClampedArray.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WTF {
 
@@ -152,6 +154,7 @@ private:
 struct ImageDataBuffer {
     ImageDataBuffer(const IntSize& size, unsigned char* data) : m_data(data), m_size(size) { }
     String PLATFORM_EXPORT toDataURL(const String& mimeType, const double* quality) const;
+    bool PLATFORM_EXPORT encodeImage(const String& mimeType, const double* quality, Vector<char>* output) const;
     unsigned char* pixels() const { return m_data; }
     int height() const { return m_size.height(); }
     int width() const { return m_size.width(); }

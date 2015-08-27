@@ -31,6 +31,7 @@
 #include "core/fileapi/FilePropertyBag.h"
 #include "platform/FileMetadata.h"
 #include "platform/MIMETypeRegistry.h"
+#include "platform/blob/BlobData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileUtilities.h"
 #include "wtf/CurrentTime.h"
@@ -101,7 +102,6 @@ File* File::create(const HeapVector<BlobOrStringOrArrayBufferViewOrArrayBuffer>&
         lastModified = static_cast<double>(options.lastModified());
     else
         lastModified = currentTimeMS();
-
     ASSERT(options.hasEndings());
     bool normalizeLineEndingsToNative = options.endings() == "native";
 
@@ -111,6 +111,19 @@ File* File::create(const HeapVector<BlobOrStringOrArrayBufferViewOrArrayBuffer>&
 
     long long fileSize = blobData->length();
     return File::create(fileName, lastModified, BlobDataHandle::create(blobData.release(), fileSize));
+}
+
+File* File::create(char* data, size_t bytes, const String& mimeType)
+{
+    ASSERT(data);
+
+    OwnPtr<BlobData> blobData = BlobData::create();
+    blobData->setContentType(mimeType);
+    blobData->appendBytes(data, bytes);
+    long long blobSize = blobData->length();
+
+    // create blob as the type of file with two additional attributes -- name and lastModificationTime
+    return File::create("", currentTimeMS(), BlobDataHandle::create(blobData.release(), blobSize));
 }
 
 File* File::createWithRelativePath(const String& path, const String& relativePath)
