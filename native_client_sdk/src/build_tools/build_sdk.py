@@ -484,9 +484,12 @@ def GypNinjaBuild_NaCl(rel_out_dir):
   out_dir_clang_64 = MakeNinjaRelPath(rel_out_dir + '-clang-x64')
   out_dir_clang_arm = MakeNinjaRelPath(rel_out_dir + '-clang-arm')
 
-  GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_32)
-  GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_64)
-  GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm)
+  GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_32,
+                gyp_defines=['use_nacl_clang=0'])
+  GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_64,
+                gyp_defines=['use_nacl_clang=0'])
+  GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm,
+                gyp_defines=['use_nacl_clang=0'])
   GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk',
       out_dir_clang_32, gyp_defines=['use_nacl_clang=1'])
   GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk',
@@ -589,11 +592,14 @@ def BuildStepBuildToolchains(pepperdir, toolchains, build, clean):
     GypNinjaBuild_Breakpad(GYPBUILD_DIR + '-x64')
 
     if set(toolchains) & set(['x86_glibc', 'x86_newlib']):
-      GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR + '-ia32')
-      GypNinjaBuild_PPAPI('x64', GYPBUILD_DIR + '-x64')
+      GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR + '-ia32',
+                          ['use_nacl_clang=0'])
+      GypNinjaBuild_PPAPI('x64', GYPBUILD_DIR + '-x64',
+                          ['use_nacl_clang=0'])
 
     if set(toolchains) & set(['arm_glibc', 'arm_newlib']):
-      GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-arm')
+      GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-arm',
+                          ['use_nacl_clang=0'] )
 
     if 'pnacl' in toolchains:
       GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR + '-clang-ia32',
