@@ -6364,12 +6364,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_FIRST_RUN_UI_TRANSITIONS_DESCRIPTION" desc="Description for the flag to enable animated transition in the first-run tutorial.">
           If enabled, transitions during first-run tutorial are animated.
         </message>
-        <message name="IDS_FLAGS_DISABLE_EASY_UNLOCK_NAME" desc="Name of the flag to disable Easy unlock.">
-          Disable Smart Lock
-        </message>
-        <message name="IDS_FLAGS_DISABLE_EASY_UNLOCK_DESCRIPTION" desc="Description of the flag to disable Easy unlock.">
-          Do not use Smart Lock, which allows you to unlock your Chromebook when in proximity to your phone. If you are the owner of the device, this also turns off Smart Lock on sign-in screen.
-        </message>
       </if>
       <message name="IDS_FLAGS_NEW_BOOKMARK_APPS_NAME" desc="Name of the flag to enable the new bookmark app system.">
         Enable the new bookmark app system.

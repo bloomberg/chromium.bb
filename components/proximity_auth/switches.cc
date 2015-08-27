@@ -11,9 +11,6 @@ namespace switches {
 // by CryptAuth.
 const char kCryptAuthHTTPHost[] = "cryptauth-http-host";
 
-// Disable Easy unlock.
-const char kDisableEasyUnlock[] = "disable-easy-unlock";
-
 // Enables discovery of the phone over Bluetooth Low Energy.
 const char kEnableBluetoothLowEnergyDiscovery[] =
     "enable-proximity-auth-bluetooth-low-energy-discovery";

@@ -93,9 +93,6 @@ class EasyUnlockService : public KeyedService,
   // Returns the identifier for the device.
   static std::string GetDeviceId();
 
-  // Returns true if Easy sign-in is enabled.
-  static bool IsSignInEnabled();
-
   // Returns the EasyUnlockService type.
   virtual Type GetType() const = 0;
 

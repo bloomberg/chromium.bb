@@ -88,7 +88,7 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(
           Profile::FromBrowserContext(context))) {
-    if (!EasyUnlockService::IsSignInEnabled() || !context->IsOffTheRecord())
+    if (!context->IsOffTheRecord())
       return NULL;
 
     service = new EasyUnlockServiceSignin(Profile::FromBrowserContext(context));

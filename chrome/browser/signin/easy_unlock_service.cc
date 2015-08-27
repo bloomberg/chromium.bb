@@ -105,12 +105,6 @@ EasyUnlockService* EasyUnlockService::GetForUser(
 #endif
 }
 
-// static
-bool EasyUnlockService::IsSignInEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      proximity_auth::switches::kDisableEasyUnlock);
-}
-
 class EasyUnlockService::BluetoothDetector
     : public device::BluetoothAdapter::Observer,
       public apps::AppLifetimeMonitor::Observer {
@@ -375,11 +369,6 @@ void EasyUnlockService::Initialize(
 bool EasyUnlockService::IsAllowed() const {
   if (shut_down_)
     return false;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableEasyUnlock)) {
-    return false;
-  }
 
   if (!IsAllowedInternal())
     return false;

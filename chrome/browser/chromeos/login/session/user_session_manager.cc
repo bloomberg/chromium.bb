@@ -697,8 +697,7 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
 }
 
 bool UserSessionManager::NeedsToUpdateEasyUnlockKeys() const {
-  return EasyUnlockService::IsSignInEnabled() &&
-         !user_context_.GetUserID().empty() &&
+  return !user_context_.GetUserID().empty() &&
          user_manager::User::TypeHasGaiaAccount(user_context_.GetUserType()) &&
          user_context_.GetKey() && !user_context_.GetKey()->GetSecret().empty();
 }
