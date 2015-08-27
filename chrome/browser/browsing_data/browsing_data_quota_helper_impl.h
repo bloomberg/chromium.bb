@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
@@ -30,38 +31,41 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   void RevokeHostQuota(const std::string& host) override;
 
  private:
-  BrowsingDataQuotaHelperImpl(base::SingleThreadTaskRunner* ui_thread,
-                              base::SingleThreadTaskRunner* io_thread,
-                              storage::QuotaManager* quota_manager);
+  using PendingHosts = std::set<std::pair<std::string, storage::StorageType>>;
+  using QuotaInfoMap = std::map<std::string, QuotaInfo>;
+
+  explicit BrowsingDataQuotaHelperImpl(storage::QuotaManager* quota_manager);
   ~BrowsingDataQuotaHelperImpl() override;
 
-  void FetchQuotaInfo();
+  // Calls QuotaManager::GetOriginModifiedSince for each storage type.
+  void FetchQuotaInfoOnIOThread(const FetchResultCallback& callback);
 
-  // Callback function for GetOriginModifiedSince.
-  void GotOrigins(const std::set<GURL>& origins, storage::StorageType type);
+  // Callback function for QuotaManager::GetOriginModifiedSince.
+  void GotOrigins(PendingHosts* pending_hosts,
+                  const base::Closure& completion,
+                  const std::set<GURL>& origins,
+                  storage::StorageType type);
 
-  void ProcessPendingHosts();
-  void GetHostUsage(const std::string& host, storage::StorageType type);
+  // Calls QuotaManager::GetHostUsage for each (origin, type) pair.
+  void OnGetOriginsComplete(const FetchResultCallback& callback,
+                            PendingHosts* pending_hosts);
 
-  // Callback function for GetHostUsage.
-  void GotHostUsage(const std::string& host,
+  // Callback function for QuotaManager::GetHostUsage.
+  void GotHostUsage(QuotaInfoMap* quota_info,
+                    const base::Closure& completion,
+                    const std::string& host,
                     storage::StorageType type,
                     int64 usage);
 
-  void OnComplete();
+  // Called when all QuotaManager::GetHostUsage requests are complete.
+  void OnGetHostsUsageComplete(const FetchResultCallback& callback,
+                               QuotaInfoMap* quota_info);
+
+  void RevokeHostQuotaOnIOThread(const std::string& host);
   void DidRevokeHostQuota(storage::QuotaStatusCode status, int64 quota);
 
   scoped_refptr<storage::QuotaManager> quota_manager_;
-  FetchResultCallback callback_;
 
-  typedef std::set<std::pair<std::string, storage::StorageType> > PendingHosts;
-  PendingHosts pending_hosts_;
-  std::map<std::string, QuotaInfo> quota_info_;
-
-  bool is_fetching_ = false;
-
-  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
   base::WeakPtrFactory<BrowsingDataQuotaHelperImpl> weak_factory_;
 
   friend class BrowsingDataQuotaHelper;

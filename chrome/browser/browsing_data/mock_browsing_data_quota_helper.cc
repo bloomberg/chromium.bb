@@ -10,8 +10,7 @@
 using content::BrowserThread;
 
 MockBrowsingDataQuotaHelper::MockBrowsingDataQuotaHelper(Profile* profile)
-    : BrowsingDataQuotaHelper(BrowserThread::GetMessageLoopProxyForThread(
-          BrowserThread::IO).get()) {}
+    : BrowsingDataQuotaHelper() {}
 
 MockBrowsingDataQuotaHelper::~MockBrowsingDataQuotaHelper() {}
 

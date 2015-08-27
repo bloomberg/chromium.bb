@@ -5,7 +5,9 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 BrowsingDataQuotaHelper::QuotaInfo::QuotaInfo() {}
 
@@ -26,13 +28,10 @@ BrowsingDataQuotaHelper::QuotaInfo::~QuotaInfo() {}
 // static
 void BrowsingDataQuotaHelperDeleter::Destruct(
     const BrowsingDataQuotaHelper* helper) {
-  helper->io_thread_->DeleteSoon(FROM_HERE, helper);
+  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, helper);
 }
 
-BrowsingDataQuotaHelper::BrowsingDataQuotaHelper(
-    base::SingleThreadTaskRunner* io_thread)
-    : io_thread_(io_thread) {
-}
+BrowsingDataQuotaHelper::BrowsingDataQuotaHelper() {}
 
 BrowsingDataQuotaHelper::~BrowsingDataQuotaHelper() {
 }

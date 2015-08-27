@@ -8,7 +8,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
 #include "content/public/test/mock_storage_client.h"
 #include "content/public/test/test_browser_thread.h"
@@ -36,10 +35,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
         nullptr);
-    helper_ = new BrowsingDataQuotaHelperImpl(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
-        quota_manager_.get());
+    helper_ = new BrowsingDataQuotaHelperImpl(quota_manager_.get());
   }
 
   void TearDown() override {
