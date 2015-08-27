@@ -2357,7 +2357,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
       Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
   EXPECT_TRUE(status_area_widget->IsVisible());
   // Shelf should be in the first display's area.
-  EXPECT_EQ("348,453 152x47",
+  // TODO: make this test more robust against changes in font, font size.
+  EXPECT_EQ("353,453 147x47",
             status_area_widget->GetWindowBoundsInScreen().ToString());
 }
 

@@ -221,7 +221,7 @@
       <if expr="chromeos">
         <!-- The font name like: 'Font Name, 12px' -->
         <message name="IDS_UI_FONT_FAMILY_CROS" use_name_for_id="true">
-          Roboto, 13px
+          Roboto, 12px
         </message>
 
         <!-- The font used in Web UI (e.g. History). -->
@@ -231,7 +231,7 @@
 
         <!-- The relative font size in % used in Web UI (e.g. History).  -->
         <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
-          80%
+          75%
         </message>
       </if>
     </messages>
