@@ -146,8 +146,8 @@ bool ProfileSyncServiceHarness::SetupSync() {
 
 bool ProfileSyncServiceHarness::SetupSync(
     syncer::ModelTypeSet synced_datatypes) {
-  DCHECK(!profile_->IsSupervised())
-      << "SetupSync should not be used for supervised users.";
+  DCHECK(!profile_->IsLegacySupervised())
+      << "SetupSync should not be used for legacy supervised users.";
 
   // Initialize the sync client's profile sync service object.
   if (service() == NULL) {

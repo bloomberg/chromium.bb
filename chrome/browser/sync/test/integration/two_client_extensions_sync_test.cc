@@ -12,6 +12,7 @@ using extensions_helper::AwaitAllProfilesHaveSameExtensions;
 using extensions_helper::AllProfilesHaveSameExtensions;
 using extensions_helper::DisableExtension;
 using extensions_helper::EnableExtension;
+using extensions_helper::GetInstalledExtensions;
 using extensions_helper::HasSameExtensions;
 using extensions_helper::IncognitoDisableExtension;
 using extensions_helper::IncognitoEnableExtension;
@@ -47,60 +48,68 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
+  EXPECT_EQ(kNumExtensions,
+            static_cast<int>(GetInstalledExtensions(GetProfile(0)).size()));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
                        StartWithDifferentExtensions_E2ETest) {
   ASSERT_TRUE(SetupClients());
 
-  int i = 0;
+  int extension_index = 0;
 
   const int kNumCommonExtensions = 5;
-  for (int j = 0; j < kNumCommonExtensions; ++i, ++j) {
-    InstallExtension(GetProfile(0), i);
-    InstallExtension(GetProfile(1), i);
+  for (int i = 0; i < kNumCommonExtensions; ++extension_index, ++i) {
+    InstallExtension(GetProfile(0), extension_index);
+    InstallExtension(GetProfile(1), extension_index);
   }
 
   const int kNumProfile0Extensions = 10;
-  for (int j = 0; j < kNumProfile0Extensions; ++i, ++j) {
-    InstallExtension(GetProfile(0), i);
+  for (int i = 0; i < kNumProfile0Extensions; ++extension_index, ++i) {
+    InstallExtension(GetProfile(0), extension_index);
   }
 
   const int kNumProfile1Extensions = 10;
-  for (int j = 0; j < kNumProfile1Extensions; ++i, ++j) {
-    InstallExtension(GetProfile(1), i);
+  for (int i = 0; i < kNumProfile1Extensions; ++extension_index, ++i) {
+    InstallExtension(GetProfile(1), extension_index);
   }
 
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
+  EXPECT_EQ(
+      kNumCommonExtensions + kNumProfile0Extensions + kNumProfile1Extensions,
+      static_cast<int>(GetInstalledExtensions(GetProfile(0)).size()));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
                        InstallDifferentExtensions_E2ETest) {
   ASSERT_TRUE(SetupClients());
 
-  int i = 0;
+  int extension_index = 0;
 
   const int kNumCommonExtensions = 5;
-  for (int j = 0; j < kNumCommonExtensions; ++i, ++j) {
-    InstallExtension(GetProfile(0), i);
-    InstallExtension(GetProfile(1), i);
+  for (int i = 0; i < kNumCommonExtensions; ++extension_index, ++i) {
+    InstallExtension(GetProfile(0), extension_index);
+    InstallExtension(GetProfile(1), extension_index);
   }
 
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
 
   const int kNumProfile0Extensions = 10;
-  for (int j = 0; j < kNumProfile0Extensions; ++i, ++j) {
-    InstallExtension(GetProfile(0), i);
+  for (int i = 0; i < kNumProfile0Extensions; ++extension_index, ++i) {
+    InstallExtension(GetProfile(0), extension_index);
   }
 
   const int kNumProfile1Extensions = 10;
-  for (int j = 0; j < kNumProfile1Extensions; ++i, ++j) {
-    InstallExtension(GetProfile(1), i);
+  for (int i = 0; i < kNumProfile1Extensions; ++extension_index, ++i) {
+    InstallExtension(GetProfile(1), extension_index);
   }
 
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
+  EXPECT_EQ(
+      kNumCommonExtensions + kNumProfile0Extensions + kNumProfile1Extensions,
+      static_cast<int>(GetInstalledExtensions(GetProfile(0)).size()));
 }
 
 // TCM ID - 3637311.
@@ -111,6 +120,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Add_E2ETest) {
   InstallExtension(GetProfile(0), 0);
 
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
+  EXPECT_EQ(1u, GetInstalledExtensions(GetProfile(0)).size());
 }
 
 // TCM ID - 3724281.
@@ -123,6 +133,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, Uninstall) {
 
   UninstallExtension(GetProfile(0), 0);
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
+  EXPECT_TRUE(GetInstalledExtensions(GetProfile(0)).empty());
 }
 
 // TCM ID - 3605300.
@@ -177,10 +188,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
+  ASSERT_EQ(1u, GetInstalledExtensions(GetProfile(0)).size());
 
   UninstallExtension(GetProfile(0), 0);
 
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
+  EXPECT_TRUE(GetInstalledExtensions(GetProfile(0)).empty());
 }
 
 // TODO(akalin): Add tests exercising:
