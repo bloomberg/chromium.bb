@@ -157,6 +157,7 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   virtual bool CommitProperties(drmModePropertySet* properties,
                                 uint32_t flags,
+                                uint32_t crtc_count,
                                 bool is_sync,
                                 const PageFlipCallback& callback);
 

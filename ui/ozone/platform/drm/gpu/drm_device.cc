@@ -132,6 +132,11 @@ class DrmDevice::PageFlipManager
     }
 
     DrmDevice::PageFlipCallback callback = it->callback;
+    it->pending_calls -= 1;
+
+    if (it->pending_calls)
+      return;
+
     callbacks_.erase(it);
     callback.Run(frame, seconds, useconds);
   }
@@ -139,8 +144,9 @@ class DrmDevice::PageFlipManager
   uint64_t GetNextId() { return next_id_++; }
 
   void RegisterCallback(uint64_t id,
+                        uint64_t pending_calls,
                         const DrmDevice::PageFlipCallback& callback) {
-    callbacks_.push_back({id, callback});
+    callbacks_.push_back({id, pending_calls, callback});
   }
 
  private:
@@ -149,6 +155,7 @@ class DrmDevice::PageFlipManager
 
   struct PageFlip {
     uint64_t id;
+    uint32_t pending_calls;
     DrmDevice::PageFlipCallback callback;
   };
 
@@ -387,7 +394,7 @@ bool DrmDevice::PageFlip(uint32_t crtc_id,
   if (!drmModePageFlip(file_.GetPlatformFile(), crtc_id, framebuffer,
                        DRM_MODE_PAGE_FLIP_EVENT, reinterpret_cast<void*>(id))) {
     // If successful the payload will be removed by a PageFlip event.
-    page_flip_manager_->RegisterCallback(id, callback);
+    page_flip_manager_->RegisterCallback(id, 1, callback);
 
     // If the flip was requested synchronous or if no watcher has been installed
     // yet, then synchronously handle the page flip events.
@@ -542,6 +549,7 @@ bool DrmDevice::CloseBufferHandle(uint32_t handle) {
 
 bool DrmDevice::CommitProperties(drmModePropertySet* properties,
                                  uint32_t flags,
+                                 uint32_t crtc_count,
                                  bool is_sync,
                                  const PageFlipCallback& callback) {
 #if defined(USE_DRM_ATOMIC)
@@ -550,7 +558,7 @@ bool DrmDevice::CommitProperties(drmModePropertySet* properties,
                                 reinterpret_cast<void*>(id), properties)) {
     if (flags & DRM_MODE_ATOMIC_TEST_ONLY)
       return true;
-    page_flip_manager_->RegisterCallback(id, callback);
+    page_flip_manager_->RegisterCallback(id, crtc_count, callback);
 
     if (watcher_)
       watcher_->SetPaused(is_sync);

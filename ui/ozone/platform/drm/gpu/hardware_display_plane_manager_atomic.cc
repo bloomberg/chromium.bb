@@ -73,7 +73,7 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
   }
 
   if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), flags,
-                              is_sync,
+                              crtcs.size(), is_sync,
                               base::Bind(&AtomicPageFlipCallback, crtcs))) {
     PLOG(ERROR) << "Failed to commit properties";
     return false;
