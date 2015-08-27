@@ -482,10 +482,6 @@ const char kEnableUserMediaScreenCapturing[] =
 // pinch gestures.
 const char kEnableViewport[]                = "enable-viewport";
 
-// Enables the viewport meta tag, the de facto way to control layout which works
-// only on mobile browsers.
-const char kEnableViewportMeta[]            = "enable-viewport-meta";
-
 // Enables experiment to scroll the inner viewport first in some situations.
 const char kInvertViewportScrollOrder[] = "invert-viewport-scroll-order";
 

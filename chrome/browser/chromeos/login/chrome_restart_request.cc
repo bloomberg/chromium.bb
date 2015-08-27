@@ -120,7 +120,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableTouchDragDrop,
     ::switches::kEnableTouchEditing,
     ::switches::kEnableViewport,
-    ::switches::kEnableViewportMeta,
     ::switches::kEnableZeroCopy,
 #if defined(USE_OZONE)
     ::switches::kExtraTouchNoiseFiltering,

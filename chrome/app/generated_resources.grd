@@ -5939,12 +5939,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_DESCRIPTION" desc="Description of the flag to turn on experimental pinch virtual viewport.">
         When zoomed in, fixed-position elements and scaled scrollbars attach to this viewport.
       </message>
-      <message name="IDS_FLAGS_ENABLE_VIEWPORT_META_NAME" desc="Name of the flag to turn on viewport meta tag support.">
-        Enable viewport meta tag.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_VIEWPORT_META_DESCRIPTION" desc="Description of the flag to turn on viewport meta tag support.">
-        Enables handling of the viewport meta tag to allow pages to set the layout width and user zoom properties.
-      </message>
       <message name="IDS_FLAGS_CREDENTIAL_MANAGER_API_NAME" desc="Name for the flag to enable 'navigator.credentials'.">
         Enable the experimental Credential Manager API.
       </message>

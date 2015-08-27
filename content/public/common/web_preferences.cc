@@ -157,7 +157,11 @@ WebPreferences::WebPreferences()
 #endif
       supports_multiple_windows(true),
       viewport_enabled(false),
+#if defined(OS_ANDROID)
+      viewport_meta_enabled(true),
+#else
       viewport_meta_enabled(false),
+#endif
       main_frame_resizes_are_orientation_changes(false),
       initialize_at_minimum_page_scale(true),
 #if defined(OS_MACOSX)

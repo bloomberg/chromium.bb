@@ -952,13 +952,6 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePinch, switches::kDisablePinch),
     },
 #endif  // defined(USE_ASH)
-    {
-     "enable-viewport-meta",
-     IDS_FLAGS_ENABLE_VIEWPORT_META_NAME,
-     IDS_FLAGS_ENABLE_VIEWPORT_META_DESCRIPTION,
-     kOsLinux | kOsWin | kOsCrOS | kOsMac,
-     SINGLE_VALUE_TYPE(switches::kEnableViewportMeta),
-    },
 #if defined(OS_CHROMEOS)
     {
      "disable-boot-animation",
