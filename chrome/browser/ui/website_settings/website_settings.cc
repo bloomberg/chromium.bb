@@ -23,6 +23,7 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -147,14 +148,14 @@ WebsiteSettings::WebsiteSettings(
     WebsiteSettingsUI* ui,
     Profile* profile,
     TabSpecificContentSettings* tab_specific_content_settings,
-    InfoBarService* infobar_service,
+    content::WebContents* web_contents,
     const GURL& url,
     const content::SSLStatus& ssl,
     content::CertStore* cert_store)
     : TabSpecificContentSettings::SiteDataObserver(
           tab_specific_content_settings),
       ui_(ui),
-      infobar_service_(infobar_service),
+      web_contents_(web_contents),
       show_info_bar_(false),
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
@@ -322,8 +323,12 @@ void WebsiteSettings::OnSiteDataAccessed() {
 }
 
 void WebsiteSettings::OnUIClosing() {
-  if (show_info_bar_)
-    WebsiteSettingsInfoBarDelegate::Create(infobar_service_);
+  if (show_info_bar_ && web_contents_) {
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents_);
+    if (infobar_service)
+      WebsiteSettingsInfoBarDelegate::Create(infobar_service);
+  }
 
   SSLCertificateDecisionsDidRevoke user_decision =
       did_revoke_user_ssl_decisions_ ? USER_CERT_DECISIONS_REVOKED

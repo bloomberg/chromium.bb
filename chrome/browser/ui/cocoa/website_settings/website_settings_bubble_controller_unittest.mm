@@ -149,7 +149,7 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
   // Creates a new website settings bubble, with the given default width.
   // If |default_width| is 0, the *default* default width will be used.
   void CreateBubbleWithWidth(CGFloat default_width) {
-    bridge_ = new WebsiteSettingsUIBridge();
+    bridge_ = new WebsiteSettingsUIBridge(nullptr);
 
     // The controller cleans up after itself when the window closes.
     controller_ = [WebsiteSettingsBubbleControllerForTesting alloc];

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class WebsiteSettingsUIBridge;
 
@@ -18,8 +19,8 @@ class WebContents;
 // This NSWindowController subclass manages the InfoBubbleWindow and view that
 // are displayed when the user clicks the favicon or security lock icon.
 //
-// TODO(palmer, sashab): Normalize all WebsiteSettings*, SiteSettings*,
-// PageInfo*, et c. to OriginInfo*.
+// TODO(palmer): Normalize all WebsiteSettings*, SiteSettings*, PageInfo*, et c.
+// to OriginInfo*.
 @interface WebsiteSettingsBubbleController : BaseBubbleController {
  @private
   content::WebContents* webContents_;
@@ -99,9 +100,10 @@ class WebContents;
 
 // Provides a bridge between the WebSettingsUI C++ interface and the Cocoa
 // implementation in WebsiteSettingsBubbleController.
-class WebsiteSettingsUIBridge : public WebsiteSettingsUI {
+class WebsiteSettingsUIBridge : public content::WebContentsObserver,
+                                public WebsiteSettingsUI {
  public:
-  WebsiteSettingsUIBridge();
+  explicit WebsiteSettingsUIBridge(content::WebContents* web_contents);
   ~WebsiteSettingsUIBridge() override;
 
   // Creates a |WebsiteSettingsBubbleController| and displays the UI. |parent|
@@ -118,6 +120,9 @@ class WebsiteSettingsUIBridge : public WebsiteSettingsUI {
   void set_bubble_controller(
       WebsiteSettingsBubbleController* bubble_controller);
 
+  // WebContentsObserver implementation.
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+
   // WebsiteSettingsUI implementations.
   void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
   void SetPermissionInfo(
@@ -126,6 +131,9 @@ class WebsiteSettingsUIBridge : public WebsiteSettingsUI {
   void SetSelectedTab(TabId tab_id) override;
 
  private:
+  // The WebContents the bubble UI is attached to.
+  content::WebContents* web_contents_;
+
   // The Cocoa controller for the bubble UI.
   WebsiteSettingsBubbleController* bubble_controller_;
 

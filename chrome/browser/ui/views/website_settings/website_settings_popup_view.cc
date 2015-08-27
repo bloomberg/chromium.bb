@@ -314,7 +314,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     content::WebContents* web_contents,
     const GURL& url,
     const content::SSLStatus& ssl)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
+    : content::WebContentsObserver(web_contents),
+      BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       web_contents_(web_contents),
       header_(nullptr),
       tabbed_pane_(nullptr),
@@ -380,10 +381,15 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   views::BubbleDelegateView::CreateBubble(this);
 
   presenter_.reset(new WebsiteSettings(
-      this, profile,
-      TabSpecificContentSettings::FromWebContents(web_contents),
-      InfoBarService::FromWebContents(web_contents), url, ssl,
-      content::CertStore::GetInstance()));
+      this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
+      web_contents, url, ssl, content::CertStore::GetInstance()));
+}
+
+void WebsiteSettingsPopupView::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host == web_contents_->GetMainFrame()) {
+    GetWidget()->Close();
+  }
 }
 
 void WebsiteSettingsPopupView::OnPermissionChanged(

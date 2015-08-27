@@ -15,10 +15,10 @@
 namespace content {
 class CertStore;
 struct SSLStatus;
+class WebContents;
 }
 
 class ChromeSSLHostStateDelegate;
-class InfoBarService;
 class HostContentSettingsMap;
 class Profile;
 class WebsiteSettingsUI;
@@ -92,7 +92,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   WebsiteSettings(WebsiteSettingsUI* ui,
                   Profile* profile,
                   TabSpecificContentSettings* tab_specific_content_settings,
-                  InfoBarService* infobar_service,
+                  content::WebContents* web_contents,
                   const GURL& url,
                   const content::SSLStatus& ssl,
                   content::CertStore* cert_store);
@@ -152,14 +152,14 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // in the |ui_|.
   void PresentSiteIdentity();
 
-  // The website settings UI displays information and controls for site
-  // specific data (local stored objects like cookies), site specific
-  // permissions (location, popup, plugin, etc.  permissions) and site specific
+  // The website settings UI displays information and controls for site-
+  // specific data (local stored objects like cookies), site-specific
+  // permissions (location, pop-up, plugin, etc. permissions) and site-specific
   // information (identity, connection status, etc.).
   WebsiteSettingsUI* ui_;
 
-  // The infobar service of the active tab.
-  InfoBarService* infobar_service_;
+  // The WebContents of the active tab.
+  content::WebContents* web_contents_;
 
   // The flag that controls whether an infobar is displayed after the website
   // settings UI is closed or not.

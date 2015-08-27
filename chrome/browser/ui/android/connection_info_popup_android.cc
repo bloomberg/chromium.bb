@@ -92,7 +92,7 @@ ConnectionInfoPopupAndroid::ConnectionInfoPopupAndroid(
       this,
       Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents),
-      InfoBarService::FromWebContents(web_contents),
+      web_contents,
       nav_entry->GetURL(),
       nav_entry->GetSSL(),
       content::CertStore::GetInstance()));

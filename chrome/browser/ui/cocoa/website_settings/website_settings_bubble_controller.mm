@@ -1171,9 +1171,11 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
 @end
 
-WebsiteSettingsUIBridge::WebsiteSettingsUIBridge()
-  : bubble_controller_(nil) {
-}
+WebsiteSettingsUIBridge::WebsiteSettingsUIBridge(
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      web_contents_(web_contents),
+      bubble_controller_(nil) {}
 
 WebsiteSettingsUIBridge::~WebsiteSettingsUIBridge() {
 }
@@ -1198,7 +1200,7 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
   bool is_internal_page = InternalChromePage(url);
 
   // Create the bridge. This will be owned by the bubble controller.
-  WebsiteSettingsUIBridge* bridge = new WebsiteSettingsUIBridge();
+  WebsiteSettingsUIBridge* bridge = new WebsiteSettingsUIBridge(web_contents);
 
   // Create the bubble controller. It will dealloc itself when it closes.
   WebsiteSettingsBubbleController* bubble_controller =
@@ -1212,13 +1214,9 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
     // Initialize the presenter, which holds the model and controls the UI.
     // This is also owned by the bubble controller.
     WebsiteSettings* presenter = new WebsiteSettings(
-        bridge,
-        profile,
-        TabSpecificContentSettings::FromWebContents(web_contents),
-        InfoBarService::FromWebContents(web_contents),
-        url,
-        ssl,
-        content::CertStore::GetInstance());
+        bridge, profile,
+        TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
+        url, ssl, content::CertStore::GetInstance());
     [bubble_controller setPresenter:presenter];
   }
 
@@ -1228,6 +1226,13 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
 void WebsiteSettingsUIBridge::SetIdentityInfo(
     const WebsiteSettingsUI::IdentityInfo& identity_info) {
   [bubble_controller_ setIdentityInfo:identity_info];
+}
+
+void WebsiteSettingsUIBridge::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host == web_contents_->GetMainFrame()) {
+    [bubble_controller_ close];
+  }
 }
 
 void WebsiteSettingsUIBridge::SetCookieInfo(

@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -33,13 +34,13 @@ class Widget;
 }
 
 // The views implementation of the website settings UI.
-class WebsiteSettingsPopupView
-    : public PermissionSelectorViewObserver,
-      public views::BubbleDelegateView,
-      public views::ButtonListener,
-      public views::LinkListener,
-      public views::TabbedPaneListener,
-      public WebsiteSettingsUI {
+class WebsiteSettingsPopupView : public content::WebContentsObserver,
+                                 public PermissionSelectorViewObserver,
+                                 public views::BubbleDelegateView,
+                                 public views::ButtonListener,
+                                 public views::LinkListener,
+                                 public views::TabbedPaneListener,
+                                 public WebsiteSettingsUI {
  public:
   ~WebsiteSettingsPopupView() override;
 
@@ -60,6 +61,9 @@ class WebsiteSettingsPopupView
                            content::WebContents* web_contents,
                            const GURL& url,
                            const content::SSLStatus& ssl);
+
+  // WebContentsObserver implementation.
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // PermissionSelectorViewObserver implementation.
   void OnPermissionChanged(

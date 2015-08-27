@@ -151,7 +151,7 @@ class WebsiteSettingsUI {
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;
 
-  // Sets permision information.
+  // Sets permission information.
   virtual void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) = 0;
 
