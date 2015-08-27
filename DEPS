@@ -764,15 +764,6 @@ hooks = [
                 'src/third_party/apache-win32',
     ],
   },
-  # Pull the mojo_shell binary, used for mojo development
-  {
-    'name': 'download_mojo_shell',
-    'pattern': '',
-    'action': [ 'python',
-                'src/third_party/mojo/src/mojo/public/tools/download_shell_binary.py',
-                '--tools-directory=../../../../../../tools',
-              ],
-  },
   {
     # Pull sanitizer-instrumented third-party libraries if requested via
     # GYP_DEFINES.
