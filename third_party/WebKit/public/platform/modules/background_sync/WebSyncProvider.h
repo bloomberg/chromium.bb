@@ -17,77 +17,10 @@
 namespace blink {
 
 class WebServiceWorkerRegistration;
-template <>
-class WebCallbacks<WebPassOwnPtr<WebSyncRegistration>, const WebSyncError&> {
-public:
-    virtual ~WebCallbacks() {}
-    void onSuccess(WebSyncRegistration* r) { onSuccess(adoptWebPtr(r)); }
-    void onError(WebSyncError* e)
-    {
-        onError(*e);
-        delete e;
-    }
-    virtual void onSuccess(WebPassOwnPtr<WebSyncRegistration>) = 0;
-    virtual void onError(const WebSyncError&) = 0;
-};
 using WebSyncRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebSyncRegistration>, const WebSyncError&>;
-
-template <>
-class WebCallbacks<bool, const WebSyncError&> {
-public:
-    virtual ~WebCallbacks() {}
-    void onSuccess(bool* r)
-    {
-        onSuccess(*r);
-        delete r;
-    }
-    void onError(WebSyncError* e)
-    {
-        onError(*e);
-        delete e;
-    }
-    virtual void onSuccess(bool) = 0;
-    virtual void onError(const WebSyncError&) = 0;
-};
 using WebSyncNotifyWhenDoneCallbacks = WebCallbacks<bool, const WebSyncError&>;
 using WebSyncUnregistrationCallbacks = WebCallbacks<bool, const WebSyncError&>;
-
-template <>
-class WebCallbacks<const WebVector<WebSyncRegistration*>&, const WebSyncError&> {
-public:
-    virtual ~WebCallbacks() {}
-    void onSuccess(WebVector<WebSyncRegistration*>* r)
-    {
-        onSuccess(*r);
-        delete r;
-    }
-    void onError(WebSyncError* e)
-    {
-        onError(*e);
-        delete e;
-    }
-    virtual void onSuccess(const WebVector<WebSyncRegistration*>&) = 0;
-    virtual void onError(const WebSyncError&) = 0;
-};
 using WebSyncGetRegistrationsCallbacks = WebCallbacks<const WebVector<WebSyncRegistration*>&, const WebSyncError&>;
-
-template <>
-class WebCallbacks<WebSyncPermissionStatus, const WebSyncError&> {
-public:
-    virtual ~WebCallbacks() {}
-    void onSuccess(WebSyncPermissionStatus* r)
-    {
-        onSuccess(*r);
-        delete r;
-    }
-    void onError(WebSyncError* e)
-    {
-        onError(*e);
-        delete e;
-    }
-    virtual void onSuccess(WebSyncPermissionStatus) = 0;
-    virtual void onError(const WebSyncError&) = 0;
-};
 using WebSyncGetPermissionStatusCallbacks = WebCallbacks<WebSyncPermissionStatus, const WebSyncError&>;
 
 class WebSyncProvider {
