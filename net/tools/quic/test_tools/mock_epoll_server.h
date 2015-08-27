@@ -36,7 +36,7 @@ class FakeTimeEpollServer : public EpollServer {
   // Note that the WaitForEventsAndExecuteCallbacks invocation
   // may cause NowInUs to advance beyond what was specified here.
   // If that is not desired, use the AdvanceByExactly calls.
-  void AdvanceByAndCallCallbacks(int64 advancement_usec) {
+  void AdvanceByAndWaitForEventsAndExecuteCallbacks(int64 advancement_usec) {
     AdvanceBy(advancement_usec);
     WaitForEventsAndExecuteCallbacks();
   }

@@ -63,11 +63,6 @@ bool FLAGS_quic_allow_ip_migration = true;
 // Estimate that only 60% of QUIC's receive buffer is usable as opposed to 95%.
 bool FLAGS_quic_use_conservative_receive_buffer = true;
 
-// If true, default quic_time_wait_list_seconds (time to keep a connection ID on
-// the time-wait list) is 200 seconds rather than 5 seconds and increase the
-// maximum time-wait list size to 600,000.
-bool FLAGS_increase_time_wait_list = true;
-
 // Limits QUIC's max CWND to 200 packets.
 bool FLAGS_quic_limit_max_cwnd = true;
 
@@ -75,10 +70,6 @@ bool FLAGS_quic_limit_max_cwnd = true;
 // client-created stream ID and the next one, calculate the difference based on
 // get_max_open_streams().
 bool FLAGS_exact_stream_id_delta = true;
-
-// Limits the pacing burst out of quiescence to the current congestion window in
-// packets.
-bool FLAGS_quic_limit_pacing_burst = true;
 
 // If true, require handshake confirmation for QUIC connections, functionally
 // disabling 0-rtt handshakes.
@@ -88,3 +79,7 @@ bool FLAGS_quic_require_handshake_confirmation = false;
 // Disables special treatment of truncated acks, since older retransmissions are
 // proactively discarded in QUIC.
 bool FLAGS_quic_disable_truncated_ack_handling = true;
+
+// If true, after a server silo receives a packet from a migrated QUIC
+// client, a GO_AWAY frame is sent to the client.
+bool FLAGS_send_goaway_after_client_migration = true;

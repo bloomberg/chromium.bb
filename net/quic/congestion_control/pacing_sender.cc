@@ -4,8 +4,6 @@
 
 #include "net/quic/congestion_control/pacing_sender.h"
 
-#include "net/quic/quic_flags.h"
-
 using std::min;
 
 namespace net {
@@ -68,13 +66,9 @@ bool PacingSender::OnPacketSent(
     // Add more burst tokens anytime the connection is leaving quiescence, but
     // limit it to the equivalent of a single bulk write, not exceeding the
     // current CWND in packets.
-    if (FLAGS_quic_limit_pacing_burst) {
-      burst_tokens_ = min(
-          initial_packet_burst_,
-          static_cast<uint32>(sender_->GetCongestionWindow() / kDefaultTCPMSS));
-    } else {
-      burst_tokens_ = initial_packet_burst_;
-    }
+    burst_tokens_ = min(
+        initial_packet_burst_,
+        static_cast<uint32>(sender_->GetCongestionWindow() / kDefaultTCPMSS));
   }
   if (burst_tokens_ > 0) {
     --burst_tokens_;

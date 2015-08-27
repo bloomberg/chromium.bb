@@ -14,6 +14,7 @@
 
 using ::testing::_;
 using base::StringPiece;
+using std::string;
 
 namespace net {
 
@@ -247,6 +248,75 @@ TEST_F(QuicFecGroupTest, EffectiveEncryptionLevel) {
   header.packet_sequence_number = 3;
   ASSERT_TRUE(group.Update(ENCRYPTION_NONE, header, kDataSingle));
   EXPECT_EQ(ENCRYPTION_NONE, group.effective_encryption_level());
+}
+
+// Test the code assuming it is going to be operating in 128-bit chunks (which
+// is something that can happen if it is compiled with full vectorization).
+const QuicByteCount kWordSize = 128 / 8;
+
+// A buffer which stores the data with the specified offset with respect to word
+// alignment boundary.
+class MisalignedBuffer {
+ public:
+  MisalignedBuffer(const string& original, size_t offset);
+
+  char* buffer() { return buffer_; }
+  size_t size() { return size_; }
+
+  StringPiece AsStringPiece() { return StringPiece(buffer_, size_); }
+
+ private:
+  char* buffer_;
+  size_t size_;
+
+  scoped_ptr<char[]> allocation_;
+};
+
+MisalignedBuffer::MisalignedBuffer(const string& original, size_t offset) {
+  CHECK_LT(offset, kWordSize);
+  size_ = original.size();
+
+  // Allocate aligned buffer two words larger than needed.
+  const size_t aligned_buffer_size = size_ + 2 * kWordSize;
+  allocation_.reset(new char[aligned_buffer_size]);
+  char* aligned_buffer =
+      allocation_.get() +
+      (kWordSize - reinterpret_cast<uintptr_t>(allocation_.get()) % kWordSize);
+  CHECK_EQ(0u, reinterpret_cast<uintptr_t>(aligned_buffer) % kWordSize);
+
+  buffer_ = aligned_buffer + offset;
+  CHECK_EQ(offset, reinterpret_cast<uintptr_t>(buffer_) % kWordSize);
+  memcpy(buffer_, original.data(), size_);
+}
+
+// Checks whether XorBuffers works correctly with buffers aligned in various
+// ways.
+TEST(XorBuffersTest, XorBuffers) {
+  const string longer_data =
+      "Having to care about memory alignment can be incredibly frustrating.";
+  const string shorter_data = "strict aliasing";
+
+  // Compute the reference XOR using simpler slow way.
+  string output_reference;
+  for (size_t i = 0; i < longer_data.size(); i++) {
+    char shorter_byte = i < shorter_data.size() ? shorter_data[i] : 0;
+    output_reference.push_back(longer_data[i] ^ shorter_byte);
+  }
+
+  // Check whether XorBuffers works correctly for all possible misalignments.
+  for (size_t offset_shorter = 0; offset_shorter < kWordSize;
+       offset_shorter++) {
+    for (size_t offset_longer = 0; offset_longer < kWordSize; offset_longer++) {
+      // Prepare the misaligned buffer.
+      MisalignedBuffer longer(longer_data, offset_longer);
+      MisalignedBuffer shorter(shorter_data, offset_shorter);
+
+      // XOR the buffers and compare the result with the reference.
+      QuicFecGroup::XorBuffers(shorter.buffer(), shorter.size(),
+                               longer.buffer());
+      EXPECT_EQ(output_reference, longer.AsStringPiece());
+    }
+  }
 }
 
 }  // namespace net

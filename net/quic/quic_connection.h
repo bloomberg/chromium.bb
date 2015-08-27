@@ -128,6 +128,9 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when the connection experiences a change in congestion window.
   virtual void OnCongestionWindowChange(QuicTime now) = 0;
 
+  // Called when the connection receives a packet from a migrated client.
+  virtual void OnConnectionMigration() = 0;
+
   // Called to ask if the visitor wants to schedule write resumption as it both
   // has pending data to write, and is able to write (e.g. based on flow control
   // limits).

@@ -882,6 +882,32 @@ TEST_P(EndToEndTest, StatelessRejectWithPacketLoss) {
   ASSERT_EQ(!BothSidesSupportStatelessRejects(), Initialize());
 }
 
+TEST_P(EndToEndTest, SetInitialReceivedConnectionOptions) {
+  QuicTagVector initial_received_options;
+  initial_received_options.push_back(kTBBR);
+  initial_received_options.push_back(kIW10);
+  initial_received_options.push_back(kPRST);
+  EXPECT_TRUE(server_config_.SetInitialReceivedConnectionOptions(
+      initial_received_options));
+
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  EXPECT_FALSE(server_config_.SetInitialReceivedConnectionOptions(
+      initial_received_options));
+
+  // Verify that server's configuration is correct.
+  server_thread_->Pause();
+  EXPECT_TRUE(server_config_.HasReceivedConnectionOptions());
+  EXPECT_TRUE(
+      ContainsQuicTag(server_config_.ReceivedConnectionOptions(), kTBBR));
+  EXPECT_TRUE(
+      ContainsQuicTag(server_config_.ReceivedConnectionOptions(), kIW10));
+  EXPECT_TRUE(
+      ContainsQuicTag(server_config_.ReceivedConnectionOptions(), kPRST));
+}
+
 TEST_P(EndToEndTest, CorrectlyConfiguredFec) {
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();

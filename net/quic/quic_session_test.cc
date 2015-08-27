@@ -357,12 +357,12 @@ TEST_P(QuicSessionTestServer, ManyImplicitlyOpenedStreams) {
 
 TEST_P(QuicSessionTestServer, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
   TestStream* stream2 = session_.CreateOutgoingDynamicStream();
-  QuicStreamId kClosedStreamId = stream2->id();
+  QuicStreamId closed_stream_id = stream2->id();
   // Close the stream.
-  EXPECT_CALL(*connection_, SendRstStream(kClosedStreamId, _, _));
+  EXPECT_CALL(*connection_, SendRstStream(closed_stream_id, _, _));
   stream2->Reset(QUIC_BAD_APPLICATION_PAYLOAD);
   EXPECT_DEBUG_DFATAL(session_.MarkConnectionLevelWriteBlocked(
-                          kClosedStreamId, kSomeMiddlePriority),
+                          closed_stream_id, kSomeMiddlePriority),
                       "Marking unknown stream 2 blocked.");
 }
 

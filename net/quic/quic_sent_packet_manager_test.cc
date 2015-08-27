@@ -1119,10 +1119,8 @@ TEST_F(QuicSentPacketManagerTest, NewRetransmissionTimeout) {
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   EXPECT_CALL(*send_algorithm_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::Zero()));
-  if (FLAGS_quic_limit_pacing_burst) {
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillOnce(Return(10 * kDefaultTCPMSS));
-  }
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(10 * kDefaultTCPMSS));
   manager_.SetFromConfig(client_config);
   EXPECT_TRUE(QuicSentPacketManagerPeer::GetUseNewRto(&manager_));
 
@@ -1625,10 +1623,8 @@ TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
               SetMaxCongestionWindow(kMinSocketReceiveBuffer * 0.95));
   EXPECT_CALL(*send_algorithm_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::Zero()));
-  if (FLAGS_quic_limit_pacing_burst) {
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillOnce(Return(10 * kDefaultTCPMSS));
-  }
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(10 * kDefaultTCPMSS));
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*network_change_visitor_, OnRttChange());
   manager_.SetFromConfig(client_config);
@@ -1670,10 +1666,8 @@ TEST_F(QuicSentPacketManagerTest,
               SetMaxCongestionWindow(kMinSocketReceiveBuffer * 0.6));
   EXPECT_CALL(*send_algorithm_, PacingRate())
       .WillRepeatedly(Return(QuicBandwidth::Zero()));
-  if (FLAGS_quic_limit_pacing_burst) {
-    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-        .WillOnce(Return(10 * kDefaultTCPMSS));
-  }
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(10 * kDefaultTCPMSS));
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*network_change_visitor_, OnRttChange());
   manager_.SetFromConfig(client_config);

@@ -164,13 +164,6 @@ class CryptoTestUtils {
   //       nullptr);
   static CryptoHandshakeMessage Message(const char* message_tag, ...);
 
-  // BuildMessage is the same as |Message|, but takes the variable arguments
-  // explicitly. TODO(rtenneti): Investigate whether it'd be better for
-  // Message() and BuildMessage() to return a CryptoHandshakeMessage* pointer
-  // instead, to avoid copying the return value.
-  static CryptoHandshakeMessage BuildMessage(const char* message_tag,
-                                             va_list ap);
-
   // ChannelIDSourceForTesting returns a ChannelIDSource that generates keys
   // deterministically based on the hostname given in the GetChannelIDKey call.
   // This ChannelIDSource works in synchronous mode, i.e., its GetChannelIDKey

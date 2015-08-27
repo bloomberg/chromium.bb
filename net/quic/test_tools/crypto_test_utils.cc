@@ -560,14 +560,6 @@ CryptoHandshakeMessage CryptoTestUtils::Message(const char* message_tag, ...) {
   va_list ap;
   va_start(ap, message_tag);
 
-  CryptoHandshakeMessage message = BuildMessage(message_tag, ap);
-  va_end(ap);
-  return message;
-}
-
-// static
-CryptoHandshakeMessage CryptoTestUtils::BuildMessage(const char* message_tag,
-                                                     va_list ap) {
   CryptoHandshakeMessage msg;
   msg.set_tag(ParseTag(message_tag));
 
@@ -624,6 +616,7 @@ CryptoHandshakeMessage CryptoTestUtils::BuildMessage(const char* message_tag,
       CryptoFramer::ParseMessage(bytes->AsStringPiece()));
   CHECK(parsed.get());
 
+  va_end(ap);
   return *parsed;
 }
 

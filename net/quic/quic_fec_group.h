@@ -72,6 +72,10 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
     return effective_encryption_level_;
   }
 
+  // An optimized version of running |output| ^= |input|, where ^ is
+  // byte-by-byte XOR and both |output| and |input| are of size |size_in_bytes|.
+  static void XorBuffers(const char* input, size_t size_in_bytes, char* output);
+
  private:
   bool UpdateParity(base::StringPiece payload);
   // Returns the number of missing packets, or QuicPacketCount max

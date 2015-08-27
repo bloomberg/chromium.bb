@@ -83,8 +83,18 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   client_config.ToHandshakeMessage(&msg);
 
   string error_details;
+  QuicTagVector initial_received_options;
+  initial_received_options.push_back(kIW50);
+  EXPECT_TRUE(
+      config_.SetInitialReceivedConnectionOptions(initial_received_options));
+  EXPECT_FALSE(
+      config_.SetInitialReceivedConnectionOptions(initial_received_options))
+      << "You can only set initial options once.";
   const QuicErrorCode error =
       config_.ProcessPeerHello(msg, CLIENT, &error_details);
+  EXPECT_FALSE(
+      config_.SetInitialReceivedConnectionOptions(initial_received_options))
+      << "You cannot set initial options after the hello.";
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_TRUE(config_.negotiated());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs),
@@ -93,9 +103,10 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
             config_.MaxStreamsPerConnection());
   EXPECT_EQ(10 * kNumMicrosPerMilli, config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_TRUE(config_.HasReceivedConnectionOptions());
-  EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
-  EXPECT_EQ(config_.ReceivedConnectionOptions()[0], kTBBR);
-  EXPECT_EQ(config_.ReceivedConnectionOptions()[1], kFHDR);
+  EXPECT_EQ(3u, config_.ReceivedConnectionOptions().size());
+  EXPECT_EQ(config_.ReceivedConnectionOptions()[0], kIW50);
+  EXPECT_EQ(config_.ReceivedConnectionOptions()[1], kTBBR);
+  EXPECT_EQ(config_.ReceivedConnectionOptions()[2], kFHDR);
   EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),
             2 * kInitialStreamFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialSessionFlowControlWindowBytes(),

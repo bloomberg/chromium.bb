@@ -366,6 +366,17 @@ QuicConfig::QuicConfig()
 
 QuicConfig::~QuicConfig() {}
 
+bool QuicConfig::SetInitialReceivedConnectionOptions(
+    const QuicTagVector& tags) {
+  if (HasReceivedConnectionOptions()) {
+    // If we have already received connection options (via handshake or due to a
+    // previous call), don't re-initialize.
+    return false;
+  }
+  connection_options_.SetReceivedValues(tags);
+  return true;
+}
+
 void QuicConfig::SetConnectionOptionsToSend(
     const QuicTagVector& connection_options) {
   connection_options_.SetSendValues(connection_options);

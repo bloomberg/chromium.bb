@@ -83,6 +83,8 @@ class VisitorShim : public QuicConnectionVisitorInterface {
 
   void OnWriteBlocked() override { session_->OnWriteBlocked(); }
 
+  void OnConnectionMigration() override { session_->OnConnectionMigration(); }
+
   bool WillingAndAbleToWrite() const override {
     return session_->WillingAndAbleToWrite();
   }

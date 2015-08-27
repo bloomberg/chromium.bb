@@ -62,7 +62,8 @@ TEST_F(QuicEpollConnectionHelperTest, CreateAlarm) {
   QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
   alarm->Set(start.Add(delta));
 
-  epoll_server_.AdvanceByAndCallCallbacks(delta.ToMicroseconds());
+  epoll_server_.AdvanceByAndWaitForEventsAndExecuteCallbacks(
+      delta.ToMicroseconds());
   EXPECT_EQ(start.Add(delta), clock->Now());
 }
 

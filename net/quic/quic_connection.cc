@@ -1476,6 +1476,10 @@ bool QuicConnection::ProcessValidatedPacket() {
     DVLOG(1) << ENDPOINT << "Peer's ip:port changed from "
              << old_peer_address.ToString() << " to "
              << peer_address_.ToString() << ", migrating connection.";
+
+    if (FLAGS_send_goaway_after_client_migration) {
+      visitor_->OnConnectionMigration();
+    }
   }
 
   time_of_last_received_packet_ = clock_->Now();
