@@ -1002,26 +1002,6 @@ void GLES2InterfaceStub::ReleaseTexImage2DCHROMIUM(GLenum /* target */,
 void GLES2InterfaceStub::TraceBeginCHROMIUM(const char* /* category_name */,
                                             const char* /* trace_name */) {}
 void GLES2InterfaceStub::TraceEndCHROMIUM() {}
-void GLES2InterfaceStub::AsyncTexSubImage2DCHROMIUM(GLenum /* target */,
-                                                    GLint /* level */,
-                                                    GLint /* xoffset */,
-                                                    GLint /* yoffset */,
-                                                    GLsizei /* width */,
-                                                    GLsizei /* height */,
-                                                    GLenum /* format */,
-                                                    GLenum /* type */,
-                                                    const void* /* data */) {}
-void GLES2InterfaceStub::AsyncTexImage2DCHROMIUM(GLenum /* target */,
-                                                 GLint /* level */,
-                                                 GLenum /* internalformat */,
-                                                 GLsizei /* width */,
-                                                 GLsizei /* height */,
-                                                 GLint /* border */,
-                                                 GLenum /* format */,
-                                                 GLenum /* type */,
-                                                 const void* /* pixels */) {}
-void GLES2InterfaceStub::WaitAsyncTexImage2DCHROMIUM(GLenum /* target */) {}
-void GLES2InterfaceStub::WaitAllAsyncTexImage2DCHROMIUM() {}
 void GLES2InterfaceStub::DiscardFramebufferEXT(
     GLenum /* target */,
     GLsizei /* count */,

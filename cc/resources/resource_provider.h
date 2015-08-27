@@ -497,8 +497,6 @@ class CC_EXPORT ResourceProvider
     bool locked_for_write : 1;
     bool lost : 1;
     bool marked_for_deletion : 1;
-    bool pending_set_pixels : 1;
-    bool set_pixels_completion_forced : 1;
     bool allocated : 1;
     bool read_lock_fences_enabled : 1;
     bool has_shared_bitmap_id : 1;

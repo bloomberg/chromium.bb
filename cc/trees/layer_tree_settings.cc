@@ -57,7 +57,6 @@ LayerTreeSettings::LayerTreeSettings()
       skewport_extrapolation_limit_in_content_pixels(2000),
       max_memory_for_prepaint_percentage(100),
       strict_layer_property_change_checking(false),
-      use_one_copy(true),
       use_zero_copy(false),
       use_persistent_map_for_gpu_memory_buffers(false),
       enable_elastic_overscroll(false),

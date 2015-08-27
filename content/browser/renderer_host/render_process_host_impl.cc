@@ -1144,12 +1144,8 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
         base::IntToString(msaa_sample_count));
   }
 
-  DCHECK_IMPLIES(IsZeroCopyUploadEnabled(), !IsOneCopyUploadEnabled());
-  DCHECK_IMPLIES(IsOneCopyUploadEnabled(), !IsZeroCopyUploadEnabled());
   if (IsZeroCopyUploadEnabled())
     command_line->AppendSwitch(switches::kEnableZeroCopy);
-  if (!IsOneCopyUploadEnabled())
-    command_line->AppendSwitch(switches::kDisableOneCopy);
   if (IsPersistentGpuMemoryBufferEnabled())
     command_line->AppendSwitch(switches::kEnablePersistentGpuMemoryBuffer);
 

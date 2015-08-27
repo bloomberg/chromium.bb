@@ -456,14 +456,6 @@ TEST_P(GLES2DecoderTest3, IsValuebufferCHROMIUMInvalidArgsBadSharedMemoryId) {
 // TODO(gman): TraceBeginCHROMIUM
 
 // TODO(gman): TraceEndCHROMIUM
-// TODO(gman): AsyncTexSubImage2DCHROMIUM
-
-// TODO(gman): AsyncTexImage2DCHROMIUM
-
-// TODO(gman): WaitAsyncTexImage2DCHROMIUM
-
-// TODO(gman): WaitAllAsyncTexImage2DCHROMIUM
-
 // TODO(gman): LoseContextCHROMIUM
 // TODO(gman): InsertSyncPointCHROMIUM
 

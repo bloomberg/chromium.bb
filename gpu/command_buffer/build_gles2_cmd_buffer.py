@@ -1260,7 +1260,6 @@ _NAMED_TYPE_INFO = {
       'GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT',
       'GL_COMMANDS_ISSUED_CHROMIUM',
       'GL_LATENCY_QUERY_CHROMIUM',
-      'GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM',
       'GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM',
       'GL_COMMANDS_COMPLETED_CHROMIUM',
     ],
@@ -4031,51 +4030,6 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': True,
     'chromium': True,
-  },
-  'AsyncTexImage2DCHROMIUM': {
-    'type': 'Manual',
-    'data_transfer_methods': ['shm'],
-    'client_test': False,
-    'cmd_args': 'GLenumTextureTarget target, GLint level, '
-        'GLintTextureInternalFormat internalformat, '
-        'GLsizei width, GLsizei height, '
-        'GLintTextureBorder border, '
-        'GLenumTextureFormat format, GLenumPixelType type, '
-        'const void* pixels, '
-        'uint32_t async_upload_token, '
-        'void* sync_data',
-    'extension': True,
-    'chromium': True,
-    'trace_level': 2,
-  },
-  'AsyncTexSubImage2DCHROMIUM': {
-    'type': 'Manual',
-    'data_transfer_methods': ['shm'],
-    'client_test': False,
-    'cmd_args': 'GLenumTextureTarget target, GLint level, '
-        'GLint xoffset, GLint yoffset, '
-        'GLsizei width, GLsizei height, '
-        'GLenumTextureFormat format, GLenumPixelType type, '
-        'const void* data, '
-        'uint32_t async_upload_token, '
-        'void* sync_data',
-    'extension': True,
-    'chromium': True,
-    'trace_level': 2,
-  },
-  'WaitAsyncTexImage2DCHROMIUM': {
-    'type': 'Manual',
-    'client_test': False,
-    'extension': True,
-    'chromium': True,
-    'trace_level': 1,
-  },
-  'WaitAllAsyncTexImage2DCHROMIUM': {
-    'type': 'Manual',
-    'client_test': False,
-    'extension': True,
-    'chromium': True,
-    'trace_level': 1,
   },
   'DiscardFramebufferEXT': {
     'type': 'PUTn',

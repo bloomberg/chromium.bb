@@ -12,7 +12,6 @@
 #include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 #include "cc/raster/one_copy_tile_task_worker_pool.h"
-#include "cc/raster/pixel_buffer_tile_task_worker_pool.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
@@ -114,7 +113,6 @@ class PerfContextProvider : public ContextProvider {
 };
 
 enum TileTaskWorkerPoolType {
-  TILE_TASK_WORKER_POOL_TYPE_PIXEL_BUFFER,
   TILE_TASK_WORKER_POOL_TYPE_ZERO_COPY,
   TILE_TASK_WORKER_POOL_TYPE_ONE_COPY,
   TILE_TASK_WORKER_POOL_TYPE_GPU,
@@ -250,13 +248,6 @@ class TileTaskWorkerPoolPerfTest
   // Overridden from testing::Test:
   void SetUp() override {
     switch (GetParam()) {
-      case TILE_TASK_WORKER_POOL_TYPE_PIXEL_BUFFER:
-        Create3dOutputSurfaceAndResourceProvider();
-        tile_task_worker_pool_ = PixelBufferTileTaskWorkerPool::Create(
-            task_runner_.get(), task_graph_runner_.get(),
-            context_provider_.get(), resource_provider_.get(),
-            std::numeric_limits<size_t>::max());
-        break;
       case TILE_TASK_WORKER_POOL_TYPE_ZERO_COPY:
         Create3dOutputSurfaceAndResourceProvider();
         tile_task_worker_pool_ = ZeroCopyTileTaskWorkerPool::Create(
@@ -414,8 +405,6 @@ class TileTaskWorkerPoolPerfTest
 
   std::string TestModifierString() const {
     switch (GetParam()) {
-      case TILE_TASK_WORKER_POOL_TYPE_PIXEL_BUFFER:
-        return std::string("_pixel_tile_task_worker_pool");
       case TILE_TASK_WORKER_POOL_TYPE_ZERO_COPY:
         return std::string("_zero_copy_tile_task_worker_pool");
       case TILE_TASK_WORKER_POOL_TYPE_ONE_COPY:
@@ -461,14 +450,12 @@ TEST_P(TileTaskWorkerPoolPerfTest, ScheduleAndExecuteTasks) {
   RunScheduleAndExecuteTasksTest("32_4", 32, 4);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    TileTaskWorkerPoolPerfTests,
-    TileTaskWorkerPoolPerfTest,
-    ::testing::Values(TILE_TASK_WORKER_POOL_TYPE_PIXEL_BUFFER,
-                      TILE_TASK_WORKER_POOL_TYPE_ZERO_COPY,
-                      TILE_TASK_WORKER_POOL_TYPE_ONE_COPY,
-                      TILE_TASK_WORKER_POOL_TYPE_GPU,
-                      TILE_TASK_WORKER_POOL_TYPE_BITMAP));
+INSTANTIATE_TEST_CASE_P(TileTaskWorkerPoolPerfTests,
+                        TileTaskWorkerPoolPerfTest,
+                        ::testing::Values(TILE_TASK_WORKER_POOL_TYPE_ZERO_COPY,
+                                          TILE_TASK_WORKER_POOL_TYPE_ONE_COPY,
+                                          TILE_TASK_WORKER_POOL_TYPE_GPU,
+                                          TILE_TASK_WORKER_POOL_TYPE_BITMAP));
 
 class TileTaskWorkerPoolCommonPerfTest : public TileTaskWorkerPoolPerfTestBase,
                                          public testing::Test {

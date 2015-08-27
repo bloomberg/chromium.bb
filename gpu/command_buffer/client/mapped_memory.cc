@@ -27,20 +27,17 @@ base::StaticAtomicSequenceNumber g_next_mapped_memory_manager_tracing_id;
 
 MemoryChunk::MemoryChunk(int32 shm_id,
                          scoped_refptr<gpu::Buffer> shm,
-                         CommandBufferHelper* helper,
-                         const base::Closure& poll_callback)
+                         CommandBufferHelper* helper)
     : shm_id_(shm_id),
       shm_(shm),
-      allocator_(shm->size(), helper, poll_callback, shm->memory()) {}
+      allocator_(shm->size(), helper, shm->memory()) {}
 
 MemoryChunk::~MemoryChunk() {}
 
 MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper,
-                                         const base::Closure& poll_callback,
                                          size_t unused_memory_reclaim_limit)
     : chunk_size_multiple_(FencedAllocator::kAllocAlignment),
       helper_(helper),
-      poll_callback_(poll_callback),
       allocated_memory_(0),
       max_free_bytes_(unused_memory_reclaim_limit),
       max_allocated_bytes_(kNoLimit),
@@ -121,7 +118,7 @@ void* MappedMemoryManager::Alloc(
   if (id  < 0)
     return NULL;
   DCHECK(shm.get());
-  MemoryChunk* mc = new MemoryChunk(id, shm, helper_, poll_callback_);
+  MemoryChunk* mc = new MemoryChunk(id, shm, helper_);
   allocated_memory_ += mc->GetSize();
   chunks_.push_back(mc);
   void* mem = mc->Alloc(size);

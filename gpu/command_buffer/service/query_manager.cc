@@ -12,147 +12,16 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
-#include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gpu_timing.h"
 
 namespace gpu {
 namespace gles2 {
-
-namespace {
-
-class AsyncPixelTransferCompletionObserverImpl
-    : public AsyncPixelTransferCompletionObserver {
- public:
-  AsyncPixelTransferCompletionObserverImpl(base::subtle::Atomic32 submit_count)
-      : submit_count_(submit_count), cancelled_(false) {}
-
-  void Cancel() {
-    base::AutoLock locked(lock_);
-    cancelled_ = true;
-  }
-
-  void DidComplete(const AsyncMemoryParams& mem_params) override {
-    base::AutoLock locked(lock_);
-    if (!cancelled_) {
-      DCHECK(mem_params.buffer().get());
-      void* data = mem_params.GetDataAddress();
-      QuerySync* sync = static_cast<QuerySync*>(data);
-      base::subtle::Release_Store(&sync->process_count, submit_count_);
-    }
-  }
-
- private:
-  ~AsyncPixelTransferCompletionObserverImpl() override {}
-
-  base::subtle::Atomic32 submit_count_;
-
-  base::Lock lock_;
-  bool cancelled_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferCompletionObserverImpl);
-};
-
-class AsyncPixelTransfersCompletedQuery
-    : public QueryManager::Query,
-      public base::SupportsWeakPtr<AsyncPixelTransfersCompletedQuery> {
- public:
-  AsyncPixelTransfersCompletedQuery(
-      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
-
-  bool Begin() override;
-  bool End(base::subtle::Atomic32 submit_count) override;
-  bool QueryCounter(base::subtle::Atomic32 submit_count) override;
-  void Pause() override;
-  void Resume() override;
-  bool Process(bool did_finish) override;
-  void Destroy(bool have_context) override;
-
- protected:
-  ~AsyncPixelTransfersCompletedQuery() override;
-
-  scoped_refptr<AsyncPixelTransferCompletionObserverImpl> observer_;
-};
-
-AsyncPixelTransfersCompletedQuery::AsyncPixelTransfersCompletedQuery(
-    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
-    : Query(manager, target, shm_id, shm_offset) {
-}
-
-bool AsyncPixelTransfersCompletedQuery::Begin() {
-  MarkAsActive();
-  return true;
-}
-
-void AsyncPixelTransfersCompletedQuery::Pause() {
-  MarkAsPaused();
-}
-
-void AsyncPixelTransfersCompletedQuery::Resume() {
-  MarkAsActive();
-}
-
-bool AsyncPixelTransfersCompletedQuery::End(
-    base::subtle::Atomic32 submit_count) {
-  // Get the real shared memory since it might need to be duped to prevent
-  // use-after-free of the memory.
-  scoped_refptr<Buffer> buffer =
-      manager()->decoder()->GetSharedMemoryBuffer(shm_id());
-  if (!buffer.get())
-    return false;
-  AsyncMemoryParams mem_params(buffer, shm_offset(), sizeof(QuerySync));
-  if (!mem_params.GetDataAddress())
-    return false;
-
-  observer_ = new AsyncPixelTransferCompletionObserverImpl(submit_count);
-
-  // Ask AsyncPixelTransferDelegate to run completion callback after all
-  // previous async transfers are done. No guarantee that callback is run
-  // on the current thread.
-  manager()->decoder()->GetAsyncPixelTransferManager()->AsyncNotifyCompletion(
-      mem_params, observer_.get());
-
-  return AddToPendingTransferQueue(submit_count);
-}
-
-bool AsyncPixelTransfersCompletedQuery::QueryCounter(
-    base::subtle::Atomic32 submit_count) {
-  NOTREACHED();
-  return false;
-}
-
-bool AsyncPixelTransfersCompletedQuery::Process(bool did_finish) {
-  QuerySync* sync = manager()->decoder()->GetSharedMemoryAs<QuerySync*>(
-      shm_id(), shm_offset(), sizeof(*sync));
-  if (!sync)
-    return false;
-
-  // Check if completion callback has been run. sync->process_count atomicity
-  // is guaranteed as this is already used to notify client of a completed
-  // query.
-  if (base::subtle::Acquire_Load(&sync->process_count) != submit_count())
-    return true;
-
-  UnmarkAsPending();
-  return true;
-}
-
-void AsyncPixelTransfersCompletedQuery::Destroy(bool /* have_context */) {
-  if (!IsDeleted()) {
-    MarkAsDeleted();
-  }
-}
-
-AsyncPixelTransfersCompletedQuery::~AsyncPixelTransfersCompletedQuery() {
-  if (observer_.get())
-    observer_->Cancel();
-}
-
-}  // namespace
 
 class AllSamplesPassedQuery : public QueryManager::Query {
  public:
@@ -819,11 +688,6 @@ QueryManager::Query* QueryManager::CreateQuery(
       break;
     case GL_LATENCY_QUERY_CHROMIUM:
       query = new CommandLatencyQuery(this, target, shm_id, shm_offset);
-      break;
-    case GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM:
-      // Currently async pixel transfer delegates only support uploads.
-      query = new AsyncPixelTransfersCompletedQuery(
-          this, target, shm_id, shm_offset);
       break;
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
       query = new AsyncReadPixelsCompletedQuery(

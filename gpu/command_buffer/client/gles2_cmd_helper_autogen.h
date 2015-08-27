@@ -2728,65 +2728,6 @@ void TraceEndCHROMIUM() {
   }
 }
 
-void AsyncTexSubImage2DCHROMIUM(GLenum target,
-                                GLint level,
-                                GLint xoffset,
-                                GLint yoffset,
-                                GLsizei width,
-                                GLsizei height,
-                                GLenum format,
-                                GLenum type,
-                                uint32_t data_shm_id,
-                                uint32_t data_shm_offset,
-                                uint32_t async_upload_token,
-                                uint32_t sync_data_shm_id,
-                                uint32_t sync_data_shm_offset) {
-  gles2::cmds::AsyncTexSubImage2DCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::AsyncTexSubImage2DCHROMIUM>();
-  if (c) {
-    c->Init(target, level, xoffset, yoffset, width, height, format, type,
-            data_shm_id, data_shm_offset, async_upload_token, sync_data_shm_id,
-            sync_data_shm_offset);
-  }
-}
-
-void AsyncTexImage2DCHROMIUM(GLenum target,
-                             GLint level,
-                             GLint internalformat,
-                             GLsizei width,
-                             GLsizei height,
-                             GLenum format,
-                             GLenum type,
-                             uint32_t pixels_shm_id,
-                             uint32_t pixels_shm_offset,
-                             uint32_t async_upload_token,
-                             uint32_t sync_data_shm_id,
-                             uint32_t sync_data_shm_offset) {
-  gles2::cmds::AsyncTexImage2DCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::AsyncTexImage2DCHROMIUM>();
-  if (c) {
-    c->Init(target, level, internalformat, width, height, format, type,
-            pixels_shm_id, pixels_shm_offset, async_upload_token,
-            sync_data_shm_id, sync_data_shm_offset);
-  }
-}
-
-void WaitAsyncTexImage2DCHROMIUM(GLenum target) {
-  gles2::cmds::WaitAsyncTexImage2DCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::WaitAsyncTexImage2DCHROMIUM>();
-  if (c) {
-    c->Init(target);
-  }
-}
-
-void WaitAllAsyncTexImage2DCHROMIUM() {
-  gles2::cmds::WaitAllAsyncTexImage2DCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::WaitAllAsyncTexImage2DCHROMIUM>();
-  if (c) {
-    c->Init();
-  }
-}
-
 void DiscardFramebufferEXTImmediate(GLenum target,
                                     GLsizei count,
                                     const GLenum* attachments) {

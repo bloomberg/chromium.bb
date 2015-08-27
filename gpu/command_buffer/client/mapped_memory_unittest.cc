@@ -78,11 +78,6 @@ class MappedMemoryTestBase : public testing::Test {
 const unsigned int MappedMemoryTestBase::kBufferSize;
 #endif
 
-namespace {
-void EmptyPoll() {
-}
-}
-
 // Test fixture for MemoryChunk test - Creates a MemoryChunk, using a
 // CommandBufferHelper with a mock AsyncAPIInterface for its interface (calling
 // it directly, not through the RPC mechanism), making sure Noops are ignored
@@ -95,10 +90,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
     scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     shared_memory->CreateAndMapAnonymous(kBufferSize);
     buffer_ = MakeBufferFromSharedMemory(shared_memory.Pass(), kBufferSize);
-    chunk_.reset(new MemoryChunk(kShmId,
-                                 buffer_,
-                                 helper_.get(),
-                                 base::Bind(&EmptyPoll)));
+    chunk_.reset(new MemoryChunk(kShmId, buffer_, helper_.get()));
   }
 
   void TearDown() override {
@@ -157,8 +149,8 @@ class MappedMemoryManagerTest : public MappedMemoryTestBase {
  protected:
   void SetUp() override {
     MappedMemoryTestBase::SetUp();
-    manager_.reset(new MappedMemoryManager(
-        helper_.get(), base::Bind(&EmptyPoll), MappedMemoryManager::kNoLimit));
+    manager_.reset(
+        new MappedMemoryManager(helper_.get(), MappedMemoryManager::kNoLimit));
   }
 
   void TearDown() override {
@@ -312,8 +304,7 @@ TEST_F(MappedMemoryManagerTest, ChunkSizeMultiple) {
 TEST_F(MappedMemoryManagerTest, UnusedMemoryLimit) {
   const unsigned int kChunkSize = 2048;
   // Reset the manager with a memory limit.
-  manager_.reset(new MappedMemoryManager(
-      helper_.get(), base::Bind(&EmptyPoll), kChunkSize));
+  manager_.reset(new MappedMemoryManager(helper_.get(), kChunkSize));
   manager_->set_chunk_size_multiple(kChunkSize);
 
   // Allocate one chunk worth of memory.
@@ -344,8 +335,7 @@ TEST_F(MappedMemoryManagerTest, UnusedMemoryLimit) {
 TEST_F(MappedMemoryManagerTest, MemoryLimitWithReuse) {
   const unsigned int kSize = 1024;
   // Reset the manager with a memory limit.
-  manager_.reset(new MappedMemoryManager(
-      helper_.get(), base::Bind(&EmptyPoll), kSize));
+  manager_.reset(new MappedMemoryManager(helper_.get(), kSize));
   const unsigned int kChunkSize = 2 * 1024;
   manager_->set_chunk_size_multiple(kChunkSize);
 
@@ -397,8 +387,7 @@ TEST_F(MappedMemoryManagerTest, MemoryLimitWithReuse) {
 TEST_F(MappedMemoryManagerTest, MaxAllocationTest) {
   const unsigned int kSize = 1024;
   // Reset the manager with a memory limit.
-  manager_.reset(new MappedMemoryManager(
-      helper_.get(), base::Bind(&EmptyPoll), kSize));
+  manager_.reset(new MappedMemoryManager(helper_.get(), kSize));
 
   const size_t kLimit = 512;
   manager_->set_chunk_size_multiple(kLimit);
@@ -440,57 +429,6 @@ TEST_F(MappedMemoryManagerTest, MaxAllocationTest) {
 
   manager_->Free(mem1);
   manager_->Free(mem4);
-}
-
-namespace {
-void Poll(MappedMemoryManagerTest *test, std::list<void*>* list) {
-  std::list<void*>::iterator it = list->begin();
-  while (it != list->end()) {
-    void* address = *it;
-    test->manager()->Free(address);
-    it = list->erase(it);
-  }
-}
-}
-
-TEST_F(MappedMemoryManagerTest, Poll) {
-  std::list<void*> unmanaged_memory_list;
-
-  const unsigned int kSize = 1024;
-  // Reset the manager with a memory limit.
-  manager_.reset(new MappedMemoryManager(
-      helper_.get(),
-      base::Bind(&Poll, this, &unmanaged_memory_list),
-      kSize));
-
-  // Allocate kSize bytes. Don't add the address to
-  // the unmanaged memory list, so that it won't be free:ed just yet.
-  int32 id1;
-  unsigned int offset1;
-  void* mem1 = manager_->Alloc(kSize, &id1, &offset1);
-  EXPECT_EQ(manager_->bytes_in_use(), kSize);
-
-  // Allocate kSize more bytes, and make sure we grew.
-  int32 id2;
-  unsigned int offset2;
-  void* mem2 = manager_->Alloc(kSize, &id2, &offset2);
-  EXPECT_EQ(manager_->bytes_in_use(), kSize * 2);
-
-  // Make the unmanaged buffer be released next time FreeUnused() is called
-  // in MappedMemoryManager/FencedAllocator. This happens for example when
-  // allocating new memory.
-  unmanaged_memory_list.push_back(mem1);
-
-  // Allocate kSize more bytes. This should poll unmanaged memory, which now
-  // should free the previously allocated unmanaged memory.
-  int32 id3;
-  unsigned int offset3;
-  void* mem3 = manager_->Alloc(kSize, &id3, &offset3);
-  EXPECT_EQ(manager_->bytes_in_use(), kSize * 2);
-
-  manager_->Free(mem2);
-  manager_->Free(mem3);
-  EXPECT_EQ(manager_->bytes_in_use(), static_cast<size_t>(0));
 }
 
 }  // namespace gpu

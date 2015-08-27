@@ -2646,15 +2646,6 @@ TEST_F(GLES2ImplementationTest, TextureInvalidArguments) {
 
   ClearCommands();
 
-  gl_->AsyncTexImage2DCHROMIUM(
-      kTarget, kLevel, kFormat, kWidth, kHeight, kInvalidBorder, kFormat, kType,
-      NULL);
-
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
-
-  ClearCommands();
-
   // Checking for CompressedTexImage2D argument validation is a bit tricky due
   // to (runtime-detected) compression formats. Try to infer the error with an
   // aux check.

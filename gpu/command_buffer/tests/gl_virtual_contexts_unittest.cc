@@ -304,10 +304,6 @@ TEST_F(GLVirtualContextsTest, VirtualQueries) {
   const GLenum query_targets[] = {
     GL_ANY_SAMPLES_PASSED_EXT,
     GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
-    // TODO(dyen): (http://crbug.com/514124) Figure out a way to test this,
-    // the function AsyncPixelTransferManagerEGL::AsyncNotifyCompletion
-    // completes asynchronously.
-    // GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM,
     GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM,
     GL_COMMANDS_COMPLETED_CHROMIUM,
     GL_COMMANDS_ISSUED_CHROMIUM,

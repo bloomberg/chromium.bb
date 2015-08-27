@@ -600,27 +600,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                                   blink::WGC3Denum access);
   virtual blink::WGC3Dboolean unmapBufferCHROMIUM(blink::WGC3Denum target);
 
-  // Async pixel transfer functions.
-  virtual void asyncTexImage2DCHROMIUM(blink::WGC3Denum target,
-                                       blink::WGC3Dint level,
-                                       blink::WGC3Denum internalformat,
-                                       blink::WGC3Dsizei width,
-                                       blink::WGC3Dsizei height,
-                                       blink::WGC3Dint border,
-                                       blink::WGC3Denum format,
-                                       blink::WGC3Denum type,
-                                       const void* pixels);
-  virtual void asyncTexSubImage2DCHROMIUM(blink::WGC3Denum target,
-                                          blink::WGC3Dint level,
-                                          blink::WGC3Dint xoffset,
-                                          blink::WGC3Dint yoffset,
-                                          blink::WGC3Dsizei width,
-                                          blink::WGC3Dsizei height,
-                                          blink::WGC3Denum format,
-                                          blink::WGC3Denum type,
-                                          const void* pixels);
-  virtual void waitAsyncTexImage2DCHROMIUM(blink::WGC3Denum target);
-
   // GL_EXT_draw_buffers
   virtual void drawBuffersEXT(blink::WGC3Dsizei n,
                               const blink::WGC3Denum* bufs);

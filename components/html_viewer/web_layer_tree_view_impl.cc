@@ -39,7 +39,6 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
 
   settings.use_image_texture_targets = std::vector<unsigned>(
       static_cast<size_t>(gfx::BufferFormat::LAST) + 1, GL_TEXTURE_2D);
-  settings.use_one_copy = true;
   // TODO(jam): use multiple compositor raster threads and set gather_pixel_refs
   // accordingly (see content).
 

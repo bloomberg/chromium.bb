@@ -24,22 +24,6 @@ source_set("service_sources") {
   ]
 
   sources = [
-    "async_pixel_transfer_delegate.cc",
-    "async_pixel_transfer_delegate.h",
-    "async_pixel_transfer_manager.cc",
-    "async_pixel_transfer_manager.h",
-    "async_pixel_transfer_manager_android.cc",
-    "async_pixel_transfer_manager_idle.cc",
-    "async_pixel_transfer_manager_idle.h",
-    "async_pixel_transfer_manager_linux.cc",
-    "async_pixel_transfer_manager_mac.cc",
-    "async_pixel_transfer_manager_share_group.cc",
-    "async_pixel_transfer_manager_share_group.h",
-    "async_pixel_transfer_manager_stub.cc",
-    "async_pixel_transfer_manager_stub.h",
-    "async_pixel_transfer_manager_sync.cc",
-    "async_pixel_transfer_manager_sync.h",
-    "async_pixel_transfer_manager_win.cc",
     "buffer_manager.cc",
     "buffer_manager.h",
     "cmd_buffer_engine.h",
@@ -166,13 +150,6 @@ source_set("service_sources") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
-
-  if (is_win || is_android || (is_linux && use_x11)) {
-    sources += [
-      "async_pixel_transfer_manager_egl.cc",
-      "async_pixel_transfer_manager_egl.h",
-    ]
-  }
 
   if (is_mac) {
     # Required by gles2_cmd_decoder.cc on Mac.

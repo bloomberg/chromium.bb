@@ -136,7 +136,6 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   settings.use_display_lists = true;
 
   settings.use_zero_copy = IsUIZeroCopyEnabled();
-  settings.use_one_copy = IsUIOneCopyEnabled();
 
   settings.renderer_settings.use_rgba_4444_textures =
       command_line->HasSwitch(switches::kUIEnableRGBA4444Textures);

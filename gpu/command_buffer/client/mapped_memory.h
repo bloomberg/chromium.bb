@@ -24,8 +24,7 @@ class GPU_EXPORT MemoryChunk {
  public:
   MemoryChunk(int32_t shm_id,
               scoped_refptr<gpu::Buffer> shm,
-              CommandBufferHelper* helper,
-              const base::Closure& poll_callback);
+              CommandBufferHelper* helper);
   ~MemoryChunk();
 
   // Gets the size of the largest free block that is available without waiting.
@@ -130,7 +129,6 @@ class GPU_EXPORT MappedMemoryManager
   // |unused_memory_reclaim_limit|: When exceeded this causes pending memory
   // to be reclaimed before allocating more memory.
   MappedMemoryManager(CommandBufferHelper* helper,
-                      const base::Closure& poll_callback,
                       size_t unused_memory_reclaim_limit);
 
   ~MappedMemoryManager() override;
@@ -208,7 +206,6 @@ class GPU_EXPORT MappedMemoryManager
   // size a chunk is rounded up to.
   unsigned int chunk_size_multiple_;
   CommandBufferHelper* helper_;
-  base::Closure poll_callback_;
   MemoryChunkVector chunks_;
   size_t allocated_memory_;
   size_t max_free_bytes_;

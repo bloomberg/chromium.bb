@@ -1019,30 +1019,6 @@ void TraceBeginCHROMIUM(const char* category_name,
 
 void TraceEndCHROMIUM() override;
 
-void AsyncTexSubImage2DCHROMIUM(GLenum target,
-                                GLint level,
-                                GLint xoffset,
-                                GLint yoffset,
-                                GLsizei width,
-                                GLsizei height,
-                                GLenum format,
-                                GLenum type,
-                                const void* data) override;
-
-void AsyncTexImage2DCHROMIUM(GLenum target,
-                             GLint level,
-                             GLenum internalformat,
-                             GLsizei width,
-                             GLsizei height,
-                             GLint border,
-                             GLenum format,
-                             GLenum type,
-                             const void* pixels) override;
-
-void WaitAsyncTexImage2DCHROMIUM(GLenum target) override;
-
-void WaitAllAsyncTexImage2DCHROMIUM() override;
-
 void DiscardFramebufferEXT(GLenum target,
                            GLsizei count,
                            const GLenum* attachments) override;

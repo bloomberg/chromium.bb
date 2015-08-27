@@ -58,7 +58,6 @@
 #include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 #include "cc/raster/one_copy_tile_task_worker_pool.h"
-#include "cc/raster/pixel_buffer_tile_task_worker_pool.h"
 #include "cc/raster/tile_task_worker_pool.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 #include "cc/resources/memory_history.h"
@@ -128,29 +127,6 @@ void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
   }
 
   TRACE_EVENT_ASYNC_END0("cc", "LayerTreeHostImpl::SetVisible", id);
-}
-
-size_t GetMaxTransferBufferUsageBytes(
-    const ContextProvider::Capabilities& context_capabilities,
-    double refresh_rate) {
-  // We want to make sure the default transfer buffer size is equal to the
-  // amount of data that can be uploaded by the compositor to avoid stalling
-  // the pipeline.
-  // For reference Chromebook Pixel can upload 1MB in about 0.5ms.
-  const size_t kMaxBytesUploadedPerMs = 1024 * 1024 * 2;
-
-  // We need to upload at least enough work to keep the GPU process busy until
-  // the next time it can handle a request to start more uploads from the
-  // compositor. We assume that it will pick up any sent upload requests within
-  // the time of a vsync, since the browser will want to swap a frame within
-  // that time interval, and then uploads should have a chance to be processed.
-  size_t ms_per_frame = std::floor(1000.0 / refresh_rate);
-  size_t max_transfer_buffer_usage_bytes =
-      ms_per_frame * kMaxBytesUploadedPerMs;
-
-  // The context may request a lower limit based on the device capabilities.
-  return std::min(context_capabilities.max_transfer_buffer_usage_bytes,
-                  max_transfer_buffer_usage_bytes);
 }
 
 size_t GetDefaultMemoryAllocationLimit() {
@@ -259,8 +235,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   }
 
   DCHECK(proxy_->IsImplThread());
-  DCHECK_IMPLIES(settings.use_one_copy, !settings.use_zero_copy);
-  DCHECK_IMPLIES(settings.use_zero_copy, !settings.use_one_copy);
   DidVisibilityChange(this, visible_);
 
   SetDebugState(settings.initial_debug_state);
@@ -2134,35 +2108,17 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     return;
   }
 
-  if (settings_.use_one_copy) {
-    *resource_pool = ResourcePool::Create(resource_provider_.get(),
-                                          GetTaskRunner(), GL_TEXTURE_2D);
-
-    int max_copy_texture_chromium_size =
-        context_provider->ContextCapabilities()
-            .gpu.max_copy_texture_chromium_size;
-
-    *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
-        GetTaskRunner(), task_graph_runner, context_provider,
-        resource_provider_.get(), max_copy_texture_chromium_size,
-        settings_.use_persistent_map_for_gpu_memory_buffers,
-        settings_.max_staging_buffers);
-    return;
-  }
-
-  // Synchronous single-threaded mode depends on tiles being ready to
-  // draw when raster is complete.  Therefore, it must use one of zero
-  // copy, software raster, or GPU raster (in the branches above).
-  DCHECK(!is_synchronous_single_threaded_);
-
   *resource_pool = ResourcePool::Create(resource_provider_.get(),
                                         GetTaskRunner(), GL_TEXTURE_2D);
 
-  *tile_task_worker_pool = PixelBufferTileTaskWorkerPool::Create(
-      GetTaskRunner(), task_graph_runner_, context_provider,
-      resource_provider_.get(),
-      GetMaxTransferBufferUsageBytes(context_provider->ContextCapabilities(),
-                                     settings_.renderer_settings.refresh_rate));
+  int max_copy_texture_chromium_size = context_provider->ContextCapabilities()
+                                           .gpu.max_copy_texture_chromium_size;
+
+  *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
+      GetTaskRunner(), task_graph_runner, context_provider,
+      resource_provider_.get(), max_copy_texture_chromium_size,
+      settings_.use_persistent_map_for_gpu_memory_buffers,
+      settings_.max_staging_buffers);
 }
 
 void LayerTreeHostImpl::RecordMainFrameTiming(

@@ -1470,37 +1470,6 @@ void GL_APIENTRY GLES2TraceBeginCHROMIUM(const char* category_name,
 void GL_APIENTRY GLES2TraceEndCHROMIUM() {
   gles2::GetGLContext()->TraceEndCHROMIUM();
 }
-void GL_APIENTRY GLES2AsyncTexSubImage2DCHROMIUM(GLenum target,
-                                                 GLint level,
-                                                 GLint xoffset,
-                                                 GLint yoffset,
-                                                 GLsizei width,
-                                                 GLsizei height,
-                                                 GLenum format,
-                                                 GLenum type,
-                                                 const void* data) {
-  gles2::GetGLContext()->AsyncTexSubImage2DCHROMIUM(
-      target, level, xoffset, yoffset, width, height, format, type, data);
-}
-void GL_APIENTRY GLES2AsyncTexImage2DCHROMIUM(GLenum target,
-                                              GLint level,
-                                              GLenum internalformat,
-                                              GLsizei width,
-                                              GLsizei height,
-                                              GLint border,
-                                              GLenum format,
-                                              GLenum type,
-                                              const void* pixels) {
-  gles2::GetGLContext()->AsyncTexImage2DCHROMIUM(target, level, internalformat,
-                                                 width, height, border, format,
-                                                 type, pixels);
-}
-void GL_APIENTRY GLES2WaitAsyncTexImage2DCHROMIUM(GLenum target) {
-  gles2::GetGLContext()->WaitAsyncTexImage2DCHROMIUM(target);
-}
-void GL_APIENTRY GLES2WaitAllAsyncTexImage2DCHROMIUM() {
-  gles2::GetGLContext()->WaitAllAsyncTexImage2DCHROMIUM();
-}
 void GL_APIENTRY GLES2DiscardFramebufferEXT(GLenum target,
                                             GLsizei count,
                                             const GLenum* attachments) {
@@ -2738,23 +2707,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glTraceEndCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glTraceEndCHROMIUM),
-    },
-    {
-        "glAsyncTexSubImage2DCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glAsyncTexSubImage2DCHROMIUM),
-    },
-    {
-        "glAsyncTexImage2DCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glAsyncTexImage2DCHROMIUM),
-    },
-    {
-        "glWaitAsyncTexImage2DCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glWaitAsyncTexImage2DCHROMIUM),
-    },
-    {
-        "glWaitAllAsyncTexImage2DCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glWaitAllAsyncTexImage2DCHROMIUM),
     },
     {
         "glDiscardFramebufferEXT",

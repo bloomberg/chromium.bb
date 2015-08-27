@@ -371,8 +371,7 @@ INSTANTIATE_TEST_CASE_P(PixelResourceTest,
                                           GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW,
                                           GL_ZERO_COPY_2D_DRAW,
                                           GL_ZERO_COPY_RECT_DRAW,
-                                          GL_ZERO_COPY_EXTERNAL_DRAW,
-                                          GL_ASYNC_UPLOAD_2D_DRAW));
+                                          GL_ZERO_COPY_EXTERNAL_DRAW));
 
 TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
        MaskOfLayerWithBackgroundFilter) {

@@ -9,7 +9,6 @@
 #include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/gpu_tile_task_worker_pool.h"
 #include "cc/raster/one_copy_tile_task_worker_pool.h"
-#include "cc/raster/pixel_buffer_tile_task_worker_pool.h"
 #include "cc/raster/tile_task_worker_pool.h"
 #include "cc/raster/zero_copy_tile_task_worker_pool.h"
 #include "cc/resources/resource_pool.h"
@@ -28,7 +27,6 @@ bool IsTestCaseSupported(PixelResourceTestCase test_case) {
     case GL_ZERO_COPY_RECT_DRAW:
     case GL_ONE_COPY_2D_STAGING_2D_DRAW:
     case GL_ONE_COPY_RECT_STAGING_2D_DRAW:
-    case GL_ASYNC_UPLOAD_2D_DRAW:
       return true;
     case GL_ZERO_COPY_EXTERNAL_DRAW:
     case GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW:
@@ -103,11 +101,6 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
       draw_texture_target_ = GL_TEXTURE_EXTERNAL_OES;
       resource_pool_option_ = ZERO_COPY_TILE_TASK_WORKER_POOL;
       return;
-    case GL_ASYNC_UPLOAD_2D_DRAW:
-      test_type_ = PIXEL_TEST_GL;
-      draw_texture_target_ = GL_TEXTURE_2D;
-      resource_pool_option_ = PIXEL_BUFFER_TILE_TASK_WORKER_POOL;
-      return;
   }
   NOTREACHED();
 }
@@ -125,7 +118,6 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
   ContextProvider* context_provider =
       host_impl->output_surface()->context_provider();
   ResourceProvider* resource_provider = host_impl->resource_provider();
-  size_t max_transfer_buffer_usage_bytes = 1024u * 1024u * 60u;
   int max_bytes_per_copy_operation = 1024 * 1024;
   int max_staging_buffers = 32;
 
@@ -169,16 +161,6 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
       *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
           task_runner, task_graph_runner(), context_provider, resource_provider,
           max_bytes_per_copy_operation, false, max_staging_buffers);
-      break;
-    case PIXEL_BUFFER_TILE_TASK_WORKER_POOL:
-      EXPECT_TRUE(context_provider);
-      EXPECT_EQ(PIXEL_TEST_GL, test_type_);
-      *resource_pool = ResourcePool::Create(resource_provider, task_runner,
-                                            draw_texture_target_);
-
-      *tile_task_worker_pool = PixelBufferTileTaskWorkerPool::Create(
-          task_runner, task_graph_runner(), context_provider, resource_provider,
-          max_transfer_buffer_usage_bytes);
       break;
   }
 }

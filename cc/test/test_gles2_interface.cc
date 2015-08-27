@@ -266,39 +266,6 @@ void TestGLES2Interface::RenderbufferStorage(GLenum target,
   test_context_->renderbufferStorage(target, internalformat, width, height);
 }
 
-void TestGLES2Interface::AsyncTexImage2DCHROMIUM(GLenum target,
-                                                 GLint level,
-                                                 GLenum internalformat,
-                                                 GLsizei width,
-                                                 GLsizei height,
-                                                 GLint border,
-                                                 GLenum format,
-                                                 GLenum type,
-                                                 const void* pixels) {
-  test_context_->asyncTexImage2DCHROMIUM(target,
-                                         level,
-                                         internalformat,
-                                         width,
-                                         height,
-                                         border,
-                                         format,
-                                         type,
-                                         pixels);
-}
-
-void TestGLES2Interface::AsyncTexSubImage2DCHROMIUM(GLenum target,
-                                                    GLint level,
-                                                    GLint xoffset,
-                                                    GLint yoffset,
-                                                    GLsizei width,
-                                                    GLsizei height,
-                                                    GLenum format,
-                                                    GLenum type,
-                                                    const void* pixels) {
-  test_context_->asyncTexSubImage2DCHROMIUM(
-      target, level, xoffset, yoffset, width, height, format, type, pixels);
-}
-
 void TestGLES2Interface::CompressedTexImage2D(GLenum target,
                                               GLint level,
                                               GLenum internalformat,
@@ -309,10 +276,6 @@ void TestGLES2Interface::CompressedTexImage2D(GLenum target,
                                               const void* data) {
   test_context_->compressedTexImage2D(
       target, level, internalformat, width, height, border, image_size, data);
-}
-
-void TestGLES2Interface::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
-  test_context_->waitAsyncTexImage2DCHROMIUM(target);
 }
 
 GLuint TestGLES2Interface::CreateImageCHROMIUM(ClientBuffer buffer,

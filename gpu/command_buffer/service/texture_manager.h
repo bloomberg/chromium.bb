@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
@@ -678,15 +677,6 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                     GLenum format,
                     GLenum type,
                     const gfx::Rect& cleared_rect);
-
-  // Adapter to call above function.
-  void SetLevelInfoFromParams(TextureRef* ref,
-                              const gpu::AsyncTexImage2DParams& params) {
-    SetLevelInfo(ref, params.target, params.level, params.internal_format,
-                 params.width, params.height, 1 /* depth */, params.border,
-                 params.format, params.type,
-                 gfx::Rect(params.width, params.height) /* cleared_rect */);
-  }
 
   Texture* Produce(TextureRef* ref);
 

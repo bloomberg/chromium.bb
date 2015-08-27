@@ -31,12 +31,10 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
     settings->use_display_lists = true;
     switch (raster_mode_) {
       case PARTIAL_ONE_COPY:
-        settings->use_one_copy = true;
         settings->use_zero_copy = false;
         settings->use_persistent_map_for_gpu_memory_buffers = true;
         break;
       case FULL_ONE_COPY:
-        settings->use_one_copy = true;
         settings->use_zero_copy = false;
         settings->use_persistent_map_for_gpu_memory_buffers = false;
         break;

@@ -418,8 +418,6 @@
         'raster/gpu_tile_task_worker_pool.h',
         'raster/one_copy_tile_task_worker_pool.cc',
         'raster/one_copy_tile_task_worker_pool.h',
-        'raster/pixel_buffer_tile_task_worker_pool.cc',
-        'raster/pixel_buffer_tile_task_worker_pool.h',
         'raster/raster_buffer.cc',
         'raster/raster_buffer.h',
         'raster/scoped_gpu_raster.cc',

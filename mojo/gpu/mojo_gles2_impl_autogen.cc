@@ -1605,34 +1605,6 @@ void MojoGLES2Impl::TraceBeginCHROMIUM(const char* category_name,
 void MojoGLES2Impl::TraceEndCHROMIUM() {
   NOTREACHED() << "Unimplemented TraceEndCHROMIUM.";
 }
-void MojoGLES2Impl::AsyncTexSubImage2DCHROMIUM(GLenum target,
-                                               GLint level,
-                                               GLint xoffset,
-                                               GLint yoffset,
-                                               GLsizei width,
-                                               GLsizei height,
-                                               GLenum format,
-                                               GLenum type,
-                                               const void* data) {
-  NOTREACHED() << "Unimplemented AsyncTexSubImage2DCHROMIUM.";
-}
-void MojoGLES2Impl::AsyncTexImage2DCHROMIUM(GLenum target,
-                                            GLint level,
-                                            GLenum internalformat,
-                                            GLsizei width,
-                                            GLsizei height,
-                                            GLint border,
-                                            GLenum format,
-                                            GLenum type,
-                                            const void* pixels) {
-  NOTREACHED() << "Unimplemented AsyncTexImage2DCHROMIUM.";
-}
-void MojoGLES2Impl::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
-  NOTREACHED() << "Unimplemented WaitAsyncTexImage2DCHROMIUM.";
-}
-void MojoGLES2Impl::WaitAllAsyncTexImage2DCHROMIUM() {
-  NOTREACHED() << "Unimplemented WaitAllAsyncTexImage2DCHROMIUM.";
-}
 void MojoGLES2Impl::DiscardFramebufferEXT(GLenum target,
                                           GLsizei count,
                                           const GLenum* attachments) {

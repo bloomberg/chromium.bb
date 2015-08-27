@@ -1774,7 +1774,6 @@ class LayerTreeHostTestCompositeImmediatelyStateTransitions
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
     settings->use_zero_copy = true;
-    settings->use_one_copy = false;
   }
 
   void BeginTest() override {
@@ -3760,55 +3759,6 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayerInEmptyViewport);
 
-class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
- protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // Testing async uploads.
-    settings->use_zero_copy = false;
-    settings->use_one_copy = false;
-  }
-
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
-    scoped_refptr<TestContextProvider> context_provider =
-        TestContextProvider::Create();
-    context_provider->SetMaxTransferBufferUsageBytes(512 * 512);
-    if (delegating_renderer())
-      return FakeOutputSurface::CreateDelegating3d(context_provider);
-    else
-      return FakeOutputSurface::Create3d(context_provider);
-  }
-
-  void SetupTree() override {
-    client_.set_fill_with_nonsolid_color(true);
-    scoped_refptr<FakePictureLayer> root_layer =
-        FakePictureLayer::Create(layer_settings(), &client_);
-    root_layer->SetBounds(gfx::Size(1024, 1024));
-    root_layer->SetIsDrawable(true);
-
-    layer_tree_host()->SetRootLayer(root_layer);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    TestWebGraphicsContext3D* context = TestContext();
-
-    // Expect that the transfer buffer memory used is equal to the
-    // MaxTransferBufferUsageBytes value set in CreateOutputSurface.
-    EXPECT_EQ(512 * 512u, context->max_used_transfer_buffer_usage_bytes());
-    EndTest();
-  }
-
-  void AfterTest() override {}
-
- private:
-  FakeContentLayerClient client_;
-};
-
-// Impl-side painting is a multi-threaded compositor feature.
-MULTI_THREAD_TEST_F(LayerTreeHostTestMaxTransferBufferUsageBytes);
-
 class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
     : public LayerTreeHostTest {
  protected:
@@ -4799,7 +4749,6 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->single_thread_proxy_scheduler = false;
     settings->use_zero_copy = true;
-    settings->use_one_copy = false;
   }
 
   void BeginTest() override {
@@ -5103,10 +5052,6 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
 class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
     : public LayerTreeHostTestCrispUpAfterPinchEnds {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->use_one_copy = true;
-  }
-
   scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
     scoped_ptr<TestWebGraphicsContext3D> context3d =
         TestWebGraphicsContext3D::Create();

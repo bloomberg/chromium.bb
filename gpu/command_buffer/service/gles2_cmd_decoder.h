@@ -30,7 +30,6 @@ class Size;
 
 namespace gpu {
 
-class AsyncPixelTransferManager;
 struct Mailbox;
 
 namespace gles2 {
@@ -200,12 +199,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // is processed.
   virtual void SetResizeCallback(
       const base::Callback<void(gfx::Size, float)>& callback) = 0;
-
-  // Interface to performing async pixel transfers.
-  virtual AsyncPixelTransferManager* GetAsyncPixelTransferManager() = 0;
-  virtual void ResetAsyncPixelTransferManagerForTest() = 0;
-  virtual void SetAsyncPixelTransferManagerForTest(
-      AsyncPixelTransferManager* manager) = 0;
 
   // Get the service texture ID corresponding to a client texture ID.
   // If no such record is found then return false.

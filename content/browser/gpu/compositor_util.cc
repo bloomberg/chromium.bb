@@ -191,14 +191,6 @@ int NumberOfRendererRasterThreads() {
 
   int num_raster_threads = num_processors / 2;
 
-  // Async uploads is used when neither zero-copy nor one-copy is enabled and
-  // it uses its own thread, so reduce the number of raster threads when async
-  // uploads is in use.
-  bool async_uploads_is_used =
-      !IsZeroCopyUploadEnabled() && !IsOneCopyUploadEnabled();
-  if (async_uploads_is_used)
-    --num_raster_threads;
-
 #if defined(OS_ANDROID)
   // Limit the number of raster threads to 1 on Android.
   // TODO(reveman): Remove this when we have a better mechanims to prevent
@@ -220,15 +212,6 @@ int NumberOfRendererRasterThreads() {
 
   return cc::MathUtil::ClampToRange(num_raster_threads, kMinRasterThreads,
                                     kMaxRasterThreads);
-}
-
-bool IsOneCopyUploadEnabled() {
-  if (IsZeroCopyUploadEnabled())
-    return false;
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return !command_line.HasSwitch(switches::kDisableOneCopy);
 }
 
 bool IsZeroCopyUploadEnabled() {

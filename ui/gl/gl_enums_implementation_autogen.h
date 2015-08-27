@@ -1027,9 +1027,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x8E7D, "GL_MAX_PATCH_VERTICES_EXT",
     },
     {
-        0x6005, "GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM",
-    },
-    {
         0x9105, "GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY_OES",
     },
     {

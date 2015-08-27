@@ -195,9 +195,6 @@ const char kDisableNativeGpuMemoryBuffers[] =
 // Disables the Web Notification and the Push APIs.
 const char kDisableNotifications[]          = "disable-notifications";
 
-// Disable rasterizer that writes directly to GPU memory.
-const char kDisableOneCopy[]                = "disable-one-copy";
-
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 

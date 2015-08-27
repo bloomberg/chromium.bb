@@ -652,7 +652,6 @@ void RenderThreadImpl::Init() {
       !command_line.HasSwitch(cc::switches::kDisableThreadedAnimation);
 
   is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
-  is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);
   is_persistent_gpu_memory_buffer_enabled_ =
       command_line.HasSwitch(switches::kEnablePersistentGpuMemoryBuffer);
 
@@ -1481,10 +1480,6 @@ bool RenderThreadImpl::IsDistanceFieldTextEnabled() {
 
 bool RenderThreadImpl::IsZeroCopyEnabled() {
   return is_zero_copy_enabled_;
-}
-
-bool RenderThreadImpl::IsOneCopyEnabled() {
-  return is_one_copy_enabled_;
 }
 
 bool RenderThreadImpl::IsPersistentGpuMemoryBufferEnabled() {

@@ -21,7 +21,6 @@ COMPOSITOR_EXPORT extern const char kUIShowPaintRects[];
 namespace ui {
 
 bool IsUIZeroCopyEnabled();
-bool IsUIOneCopyEnabled();
 
 }  // namespace ui
 

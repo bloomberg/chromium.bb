@@ -292,35 +292,31 @@
   OP(ReleaseTexImage2DCHROMIUM)                /* 533 */ \
   OP(TraceBeginCHROMIUM)                       /* 534 */ \
   OP(TraceEndCHROMIUM)                         /* 535 */ \
-  OP(AsyncTexSubImage2DCHROMIUM)               /* 536 */ \
-  OP(AsyncTexImage2DCHROMIUM)                  /* 537 */ \
-  OP(WaitAsyncTexImage2DCHROMIUM)              /* 538 */ \
-  OP(WaitAllAsyncTexImage2DCHROMIUM)           /* 539 */ \
-  OP(DiscardFramebufferEXTImmediate)           /* 540 */ \
-  OP(LoseContextCHROMIUM)                      /* 541 */ \
-  OP(InsertSyncPointCHROMIUM)                  /* 542 */ \
-  OP(WaitSyncPointCHROMIUM)                    /* 543 */ \
-  OP(DrawBuffersEXTImmediate)                  /* 544 */ \
-  OP(DiscardBackbufferCHROMIUM)                /* 545 */ \
-  OP(ScheduleOverlayPlaneCHROMIUM)             /* 546 */ \
-  OP(SwapInterval)                             /* 547 */ \
-  OP(FlushDriverCachesCHROMIUM)                /* 548 */ \
-  OP(MatrixLoadfCHROMIUMImmediate)             /* 549 */ \
-  OP(MatrixLoadIdentityCHROMIUM)               /* 550 */ \
-  OP(GenPathsCHROMIUM)                         /* 551 */ \
-  OP(DeletePathsCHROMIUM)                      /* 552 */ \
-  OP(IsPathCHROMIUM)                           /* 553 */ \
-  OP(PathCommandsCHROMIUM)                     /* 554 */ \
-  OP(PathParameterfCHROMIUM)                   /* 555 */ \
-  OP(PathParameteriCHROMIUM)                   /* 556 */ \
-  OP(PathStencilFuncCHROMIUM)                  /* 557 */ \
-  OP(StencilFillPathCHROMIUM)                  /* 558 */ \
-  OP(StencilStrokePathCHROMIUM)                /* 559 */ \
-  OP(CoverFillPathCHROMIUM)                    /* 560 */ \
-  OP(CoverStrokePathCHROMIUM)                  /* 561 */ \
-  OP(StencilThenCoverFillPathCHROMIUM)         /* 562 */ \
-  OP(StencilThenCoverStrokePathCHROMIUM)       /* 563 */ \
-  OP(BlendBarrierKHR)                          /* 564 */
+  OP(DiscardFramebufferEXTImmediate)           /* 536 */ \
+  OP(LoseContextCHROMIUM)                      /* 537 */ \
+  OP(InsertSyncPointCHROMIUM)                  /* 538 */ \
+  OP(WaitSyncPointCHROMIUM)                    /* 539 */ \
+  OP(DrawBuffersEXTImmediate)                  /* 540 */ \
+  OP(DiscardBackbufferCHROMIUM)                /* 541 */ \
+  OP(ScheduleOverlayPlaneCHROMIUM)             /* 542 */ \
+  OP(SwapInterval)                             /* 543 */ \
+  OP(FlushDriverCachesCHROMIUM)                /* 544 */ \
+  OP(MatrixLoadfCHROMIUMImmediate)             /* 545 */ \
+  OP(MatrixLoadIdentityCHROMIUM)               /* 546 */ \
+  OP(GenPathsCHROMIUM)                         /* 547 */ \
+  OP(DeletePathsCHROMIUM)                      /* 548 */ \
+  OP(IsPathCHROMIUM)                           /* 549 */ \
+  OP(PathCommandsCHROMIUM)                     /* 550 */ \
+  OP(PathParameterfCHROMIUM)                   /* 551 */ \
+  OP(PathParameteriCHROMIUM)                   /* 552 */ \
+  OP(PathStencilFuncCHROMIUM)                  /* 553 */ \
+  OP(StencilFillPathCHROMIUM)                  /* 554 */ \
+  OP(StencilStrokePathCHROMIUM)                /* 555 */ \
+  OP(CoverFillPathCHROMIUM)                    /* 556 */ \
+  OP(CoverStrokePathCHROMIUM)                  /* 557 */ \
+  OP(StencilThenCoverFillPathCHROMIUM)         /* 558 */ \
+  OP(StencilThenCoverStrokePathCHROMIUM)       /* 559 */ \
+  OP(BlendBarrierKHR)                          /* 560 */
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

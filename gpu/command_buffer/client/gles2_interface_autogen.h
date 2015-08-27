@@ -757,26 +757,6 @@ virtual void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) = 0;
 virtual void TraceBeginCHROMIUM(const char* category_name,
                                 const char* trace_name) = 0;
 virtual void TraceEndCHROMIUM() = 0;
-virtual void AsyncTexSubImage2DCHROMIUM(GLenum target,
-                                        GLint level,
-                                        GLint xoffset,
-                                        GLint yoffset,
-                                        GLsizei width,
-                                        GLsizei height,
-                                        GLenum format,
-                                        GLenum type,
-                                        const void* data) = 0;
-virtual void AsyncTexImage2DCHROMIUM(GLenum target,
-                                     GLint level,
-                                     GLenum internalformat,
-                                     GLsizei width,
-                                     GLsizei height,
-                                     GLint border,
-                                     GLenum format,
-                                     GLenum type,
-                                     const void* pixels) = 0;
-virtual void WaitAsyncTexImage2DCHROMIUM(GLenum target) = 0;
-virtual void WaitAllAsyncTexImage2DCHROMIUM() = 0;
 virtual void DiscardFramebufferEXT(GLenum target,
                                    GLsizei count,
                                    const GLenum* attachments) = 0;

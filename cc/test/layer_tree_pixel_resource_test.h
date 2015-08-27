@@ -27,7 +27,6 @@ enum PixelResourceTestCase {
   GL_ZERO_COPY_2D_DRAW,
   GL_ZERO_COPY_RECT_DRAW,
   GL_ZERO_COPY_EXTERNAL_DRAW,
-  GL_ASYNC_UPLOAD_2D_DRAW,
 };
 
 class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
@@ -47,8 +46,7 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
     BITMAP_TILE_TASK_WORKER_POOL,
     GPU_TILE_TASK_WORKER_POOL,
     ZERO_COPY_TILE_TASK_WORKER_POOL,
-    ONE_COPY_TILE_TASK_WORKER_POOL,
-    PIXEL_BUFFER_TILE_TASK_WORKER_POOL,
+    ONE_COPY_TILE_TASK_WORKER_POOL
   };
 
  protected:
@@ -62,19 +60,14 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   PixelResourceTestCase test_case_;
 };
 
-#define INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(framework_name) \
-  INSTANTIATE_TEST_CASE_P(                                     \
-      PixelResourceTest,                                       \
-      framework_name,                                          \
-      ::testing::Values(SOFTWARE,                              \
-                        GL_GPU_RASTER_2D_DRAW,                 \
-                        GL_ONE_COPY_2D_STAGING_2D_DRAW,        \
-                        GL_ONE_COPY_RECT_STAGING_2D_DRAW,      \
-                        GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW,  \
-                        GL_ZERO_COPY_2D_DRAW,                  \
-                        GL_ZERO_COPY_RECT_DRAW,                \
-                        GL_ZERO_COPY_EXTERNAL_DRAW,            \
-                        GL_ASYNC_UPLOAD_2D_DRAW))
+#define INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(framework_name)             \
+  INSTANTIATE_TEST_CASE_P(                                                 \
+      PixelResourceTest, framework_name,                                   \
+      ::testing::Values(                                                   \
+          SOFTWARE, GL_GPU_RASTER_2D_DRAW, GL_ONE_COPY_2D_STAGING_2D_DRAW, \
+          GL_ONE_COPY_RECT_STAGING_2D_DRAW,                                \
+          GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW, GL_ZERO_COPY_2D_DRAW,      \
+          GL_ZERO_COPY_RECT_DRAW, GL_ZERO_COPY_EXTERNAL_DRAW))
 
 class ParameterizedPixelResourceTest
     : public LayerTreeHostPixelResourceTest,
