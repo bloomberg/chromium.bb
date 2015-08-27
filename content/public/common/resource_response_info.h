@@ -69,8 +69,8 @@ struct ResourceResponseInfo {
   net::LoadTimingInfo load_timing;
 
   // Actual request and response headers, as obtained from the network stack.
-  // Only present if request had LOAD_REPORT_RAW_HEADERS in load_flags, and
-  // requesting renderer had CanReadRowCookies permission.
+  // Only present if the renderer set report_raw_headers to true and had the
+  // CanReadRawCookies permission.
   scoped_refptr<ResourceDevToolsInfo> devtools_info;
 
   // The path to a file that will contain the response body.  It may only

@@ -27,15 +27,4 @@ scoped_ptr<base::Value> NetLogURLRequestStartCallback(
   return dict.Pass();
 }
 
-bool StartEventLoadFlagsFromEventParams(const base::Value* event_params,
-                                        int* load_flags) {
-  const base::DictionaryValue* dict;
-  if (!event_params->GetAsDictionary(&dict) ||
-      !dict->GetInteger("load_flags", load_flags)) {
-    *load_flags = 0;
-    return false;
-  }
-  return true;
-}
-
 }  // namespace net

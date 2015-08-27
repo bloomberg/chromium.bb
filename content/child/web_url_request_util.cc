@@ -205,9 +205,6 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
       NOTREACHED();
   }
 
-  if (request.reportRawHeaders())
-    load_flags |= net::LOAD_REPORT_RAW_HEADERS;
-
   if (!request.allowStoredCredentials()) {
     load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
     load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;

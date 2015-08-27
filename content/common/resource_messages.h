@@ -267,6 +267,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
 
   // Whether or not we should allow the URL to download.
   IPC_STRUCT_MEMBER(bool, allow_download)
+
+  // Whether to intercept headers to pass back to the renderer.
+  IPC_STRUCT_MEMBER(bool, report_raw_headers)
 IPC_STRUCT_END()
 
 // Parameters for a ResourceMsg_RequestComplete

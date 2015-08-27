@@ -67,6 +67,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           blink::WebPageVisibilityStateVisible,  // visibility_state
           context,                           // context
           base::WeakPtr<ResourceMessageFilter>(),  // filter
+          false,                             // report_raw_headers
           is_async);                         // is_async
   info->AssociateWithRequest(request);
 }
@@ -125,6 +126,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     blink::WebPageVisibilityState visibility_state,
     ResourceContext* context,
     base::WeakPtr<ResourceMessageFilter> filter,
+    bool report_raw_headers,
     bool is_async)
     : cross_site_handler_(NULL),
       detachable_handler_(NULL),
@@ -155,6 +157,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       visibility_state_(visibility_state),
       context_(context),
       filter_(filter),
+      report_raw_headers_(report_raw_headers),
       is_async_(is_async) {
 }
 
@@ -245,6 +248,10 @@ bool ResourceRequestInfoImpl::IsAsync() const {
 
 bool ResourceRequestInfoImpl::IsDownload() const {
   return is_download_;
+}
+
+bool ResourceRequestInfoImpl::ShouldReportRawHeaders() const {
+  return report_raw_headers_;
 }
 
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {

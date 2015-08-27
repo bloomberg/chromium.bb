@@ -1271,6 +1271,17 @@ void ResourceDispatcherHostImpl::BeginRequest(
       IsResourceTypeFrame(request_data.resource_type);
   bool do_not_prompt_for_login = request_data.do_not_prompt_for_login;
   bool is_sync_load = sync_result != NULL;
+
+  // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
+  // allow requesting them if requester has ReadRawCookies permission.
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  bool report_raw_headers = request_data.report_raw_headers;
+  if (report_raw_headers && !policy->CanReadRawCookies(child_id)) {
+    // TODO: crbug.com/523063 can we call bad_message::ReceivedBadMessage here?
+    VLOG(1) << "Denied unauthorized request for raw headers";
+    report_raw_headers = false;
+  }
   int load_flags =
       BuildLoadFlagsForRequest(request_data, child_id, is_sync_load);
   if (request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
@@ -1326,6 +1337,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
       request_data.referrer_policy,
       request_data.visiblity_state,
       resource_context, filter_->GetWeakPtr(),
+      report_raw_headers,
       !is_sync_load);
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
@@ -1598,6 +1610,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       blink::WebPageVisibilityStateVisible,
       context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
+      false,                                   // report_raw_headers
       true);                                   // is_async
 }
 
@@ -2043,6 +2056,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       blink::WebPageVisibilityStateVisible,
       resource_context,
       base::WeakPtr<ResourceMessageFilter>(),  // filter
+      false,  // request_data.report_raw_headers
       true);
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
@@ -2394,17 +2408,6 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
 
   if (is_sync_load)
     load_flags |= net::LOAD_IGNORE_LIMITS;
-
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
-  // allow requesting them if requester has ReadRawCookies permission.
-  if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)
-      && !policy->CanReadRawCookies(child_id)) {
-    VLOG(1) << "Denied unauthorized request for raw headers";
-    load_flags &= ~net::LOAD_REPORT_RAW_HEADERS;
-  }
 
   return load_flags;
 }

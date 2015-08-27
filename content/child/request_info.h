@@ -103,6 +103,10 @@ struct CONTENT_EXPORT RequestInfo {
   // credentials or default credentials may still be used for authentication.
   bool do_not_prompt_for_login;
 
+  // True if the actual headers from the network stack should be reported
+  // to the renderer
+  bool report_raw_headers;
+
   // Extra data associated with this request.  We do not own this pointer.
   blink::WebURLRequest::ExtraData* extra_data;
 

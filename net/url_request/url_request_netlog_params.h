@@ -28,13 +28,6 @@ NET_EXPORT scoped_ptr<base::Value> NetLogURLRequestStartCallback(
     int64 upload_id,
     NetLogCaptureMode /* capture_mode */);
 
-// Attempts to extract the load flags from a Value created by the above
-// function.  On success, sets |load_flags| accordingly and returns true.
-// On failure, sets |load_flags| to 0.
-NET_EXPORT bool StartEventLoadFlagsFromEventParams(
-    const base::Value* event_params,
-    int* load_flags);
-
 }  // namespace net
 
 #endif  // NET_URL_REQUEST_URL_REQUEST_NETLOG_PARAMS_H_

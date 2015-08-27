@@ -59,30 +59,24 @@ LOAD_FLAG(IGNORE_ALL_CERT_ERRORS, 1 << 11)
 // page is loaded.
 LOAD_FLAG(MAIN_FRAME, 1 << 12)
 
-// If present, intercept actual request/response headers from network stack
-// and report them to renderer. This includes cookies, so the flag is only
-// respected if renderer has CanReadRawCookies capability in the security
-// policy.
-LOAD_FLAG(REPORT_RAW_HEADERS, 1 << 13)
-
 // Indicates that this load was motivated by the rel=prefetch feature,
 // and is (in theory) not intended for the current frame.
-LOAD_FLAG(PREFETCH, 1 << 14)
+LOAD_FLAG(PREFETCH, 1 << 13)
 
 // Indicates that this is a load that ignores limits and should complete
 // immediately.
-LOAD_FLAG(IGNORE_LIMITS, 1 << 15)
+LOAD_FLAG(IGNORE_LIMITS, 1 << 14)
 
 // Indicates that the operation is somewhat likely to be due to an
 // explicit user action. This can be used as a hint to treat the
 // request with higher priority.
-LOAD_FLAG(MAYBE_USER_GESTURE, 1 << 16)
+LOAD_FLAG(MAYBE_USER_GESTURE, 1 << 15)
 
 // Indicates that the username:password portion of the URL should not
 // be honored, but that other forms of authority may be used.
-LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 17)
+LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 16)
 
 // The creator of this URLRequest wishes to receive stale responses when allowed
 // by the "Cache-Control: stale-while-revalidate" directive and is able to issue
 // an async revalidation to update the cache.
-LOAD_FLAG(SUPPORT_ASYNC_REVALIDATION, 1 << 18)
+LOAD_FLAG(SUPPORT_ASYNC_REVALIDATION, 1 << 17)

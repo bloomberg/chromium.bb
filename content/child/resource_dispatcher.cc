@@ -756,6 +756,7 @@ scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
   request->enable_load_timing = request_info.enable_load_timing;
   request->enable_upload_progress = request_info.enable_upload_progress;
   request->do_not_prompt_for_login = request_info.do_not_prompt_for_login;
+  request->report_raw_headers = request_info.report_raw_headers;
 
   if ((request_info.referrer.policy == blink::WebReferrerPolicyDefault ||
        request_info.referrer.policy ==

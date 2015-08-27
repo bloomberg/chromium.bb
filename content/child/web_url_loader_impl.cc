@@ -605,6 +605,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.fetch_request_context_type = GetRequestContextType(request);
   request_info.fetch_frame_type = GetRequestContextFrameType(request);
   request_info.extra_data = request.extraData();
+  request_info.report_raw_headers = request.reportRawHeaders();
 
   scoped_refptr<ResourceRequestBody> request_body =
       GetRequestBodyForWebURLRequest(request).get();
