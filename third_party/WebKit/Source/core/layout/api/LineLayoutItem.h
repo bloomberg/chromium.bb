@@ -19,6 +19,7 @@ class HitTestLocation;
 class LayoutObject;
 class LineLayoutBox;
 class LineLayoutBoxModel;
+class LineLayoutPaintShim;
 
 enum HitTestFilter;
 
@@ -323,6 +324,8 @@ protected:
 
 private:
     LayoutObject* m_layoutObject;
+
+    friend class LineLayoutPaintShim;
 };
 
 } // namespace blink

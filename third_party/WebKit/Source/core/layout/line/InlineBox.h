@@ -271,14 +271,6 @@ public:
 
     EVerticalAlign verticalAlign() const { return lineLayoutItem().isText() ? ComputedStyle::initialVerticalAlign() : lineLayoutItem().style(m_bitfields.firstLine())->verticalAlign(); }
 
-    // TODO(pilgrim) remove this
-    LayoutBoxModelObject* deprecatedBoxModelObject() const
-    {
-        if (!lineLayoutItem().isText())
-            return toLayoutBoxModelObject(&layoutObject());
-        return 0;
-    }
-
     // Use with caution! The type is not checked!
     LineLayoutBoxModel boxModelObject() const
     {

@@ -1928,6 +1928,7 @@
             'paint/LayoutObjectDrawingRecorder.h',
             'paint/LineBoxListPainter.cpp',
             'paint/LineBoxListPainter.h',
+            'paint/LineLayoutPaintShim.h',
             'paint/ListItemPainter.cpp',
             'paint/ListItemPainter.h',
             'paint/ListMarkerPainter.cpp',

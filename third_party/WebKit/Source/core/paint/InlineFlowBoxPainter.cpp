@@ -13,6 +13,7 @@
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -102,15 +103,16 @@ void InlineFlowBoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Col
 
 void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect, SkXfermode::Mode op)
 {
+    LayoutBoxModelObject* boxModel = toLayoutBoxModelObject(LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.boxModelObject()));
     StyleImage* img = fillLayer.image();
     bool hasFillImage = img && img->canRender(m_inlineFlowBox.layoutObject(), m_inlineFlowBox.layoutObject().style()->effectiveZoom());
     if ((!hasFillImage && !m_inlineFlowBox.layoutObject().style()->hasBorderRadius()) || (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()) || !m_inlineFlowBox.parent()) {
-        BoxPainter::paintFillLayerExtended(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
+        BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     } else if (m_inlineFlowBox.layoutObject().style()->boxDecorationBreak() == DCLONE) {
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         // TODO(chrishtr): this should be pixel-snapped.
         paintInfo.context->clip(FloatRect(LayoutRect(rect.x(), rect.y(), m_inlineFlowBox.width(), m_inlineFlowBox.height())));
-        BoxPainter::paintFillLayerExtended(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
+        BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     } else {
         // We have a fill image that spans multiple lines.
         // FIXME: frameSize ought to be the same as rect.size().
@@ -118,7 +120,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
         LayoutRect imageStripPaintRect = paintRectForImageStrip(rect.location(), frameSize, m_inlineFlowBox.layoutObject().style()->direction());
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         paintInfo.context->clip(LayoutRect(rect.x(), rect.y(), m_inlineFlowBox.width(), m_inlineFlowBox.height()));
-        BoxPainter::paintFillLayerExtended(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo, c, fillLayer, imageStripPaintRect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
+        BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, imageStripPaintRect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     }
 }
 
@@ -262,8 +264,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
     case DontPaintBorders:
         break;
     case PaintBordersWithoutClip:
-        BoxPainter::paintBorder(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo, adjustedFrameRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()),
-            BackgroundBleedNone, m_inlineFlowBox.includeLogicalLeftEdge(), m_inlineFlowBox.includeLogicalRightEdge());
+        BoxPainter::paintBorder(*toLayoutBoxModelObject(LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.boxModelObject())), paintInfo, adjustedFrameRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()), BackgroundBleedNone, m_inlineFlowBox.includeLogicalLeftEdge(), m_inlineFlowBox.includeLogicalRightEdge());
         break;
     case PaintBordersWithClip:
         // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
@@ -272,7 +273,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         // TODO(chrishtr): this should be pixel-snapped.
         paintInfo.context->clip(FloatRect(adjustedClipRect));
-        BoxPainter::paintBorder(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()));
+        BoxPainter::paintBorder(*toLayoutBoxModelObject(LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.boxModelObject())), paintInfo, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()));
         break;
     }
 }
@@ -321,10 +322,11 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
         return; // Don't paint anything while we wait for the image to load.
     }
 
+    LayoutBoxModelObject* boxModel = toLayoutBoxModelObject(LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.boxModelObject()));
     // The simple case is where we are the only box for this object. In those
     // cases only a single call to draw is required.
     if (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()) {
-        BoxPainter::paintNinePieceImage(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo.context, paintRect, m_inlineFlowBox.layoutObject().styleRef(), maskNinePieceImage, compositeOp);
+        BoxPainter::paintNinePieceImage(*boxModel, paintInfo.context, paintRect, m_inlineFlowBox.layoutObject().styleRef(), maskNinePieceImage, compositeOp);
     } else {
         // We have a mask image that spans multiple lines.
         // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
@@ -334,7 +336,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
         // TODO(chrishtr): this should be pixel-snapped.
         paintInfo.context->clip(clipRect);
-        BoxPainter::paintNinePieceImage(*m_inlineFlowBox.deprecatedBoxModelObject(), paintInfo.context, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(), maskNinePieceImage, compositeOp);
+        BoxPainter::paintNinePieceImage(*boxModel, paintInfo.context, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(), maskNinePieceImage, compositeOp);
     }
 
     if (pushTransparencyLayer)
