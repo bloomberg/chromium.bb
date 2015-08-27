@@ -127,12 +127,6 @@ skia::RefPtr<SkImage> NewSkImageFromVideoFrameYUVTextures(
   return skia::AdoptRef(img);
 }
 
-bool ShouldCacheVideoFrameSkImage(const VideoFrame* video_frame) {
-  return !video_frame->HasTextures() ||
-         media::VideoFrame::NumPlanes(video_frame->format()) != 1 ||
-         video_frame->mailbox_holder(0).texture_target != GL_TEXTURE_2D;
-}
-
 // Creates a SkImage from a |video_frame| backed by native resources.
 // The SkImage will take ownership of the underlying resource.
 skia::RefPtr<SkImage> NewSkImageFromVideoFrameNative(
@@ -387,9 +381,6 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     canvas->restore();
   // Make sure to flush so we can remove the videoframe from the generator.
   canvas->flush();
-
-  if (!ShouldCacheVideoFrameSkImage(video_frame.get()))
-    ResetCache();
 
   if (video_frame->HasTextures()) {
     DCHECK(gl);
