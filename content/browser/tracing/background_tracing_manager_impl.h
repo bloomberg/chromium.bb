@@ -70,7 +70,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
     explicit TracingTimer(StartedFinalizingCallback);
     ~TracingTimer();
 
-    void StartTimer();
+    void StartTimer(int seconds);
     void CancelTimer();
 
     void FireTimerForTesting();
@@ -92,6 +92,8 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   bool is_tracing_;
   bool requires_anonymized_data_;
   int trigger_handle_ids_;
+
+  TriggerHandle reactive_triggered_handle_;
 
   IdleCallback idle_callback_;
   base::Closure tracing_enabled_callback_for_testing_;

@@ -657,6 +657,73 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   }
 }
 
+// This tests that reactive mode only terminates with the same trigger.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       ReactiveSecondTriggerMustMatchForTermination) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    base::DictionaryValue dict;
+    dict.SetString("mode", "REACTIVE_TRACING_MODE");
+
+    scoped_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString("rule",
+                            "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
+      rules_dict->SetString("trigger_name", "reactive_test1");
+      rules_dict->SetString("category", "BENCHMARK");
+      rules_list->Append(rules_dict.Pass());
+    }
+    {
+      scoped_ptr<base::DictionaryValue> rules_dict(new base::DictionaryValue());
+      rules_dict->SetString("rule",
+                            "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
+      rules_dict->SetString("trigger_name", "reactive_test2");
+      rules_dict->SetString("category", "BENCHMARK");
+      rules_list->Append(rules_dict.Pass());
+    }
+    dict.Set("configs", rules_list.Pass());
+
+    scoped_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+
+    BackgroundTracingManager::TriggerHandle handle1 =
+        BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+            "reactive_test1");
+    BackgroundTracingManager::TriggerHandle handle2 =
+        BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+            "reactive_test2");
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        config.Pass(), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING);
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
+
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle1, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+
+    // This is expected to fail since we triggered with handle1.
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle2,
+        base::Bind(&StartedFinalizingCallback, base::Closure(), false));
+
+    // second trigger to terminate.
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle1, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  }
+}
+
 // This tests a third trigger in reactive more does not start another trace.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        ReactiveThirdTriggerTimeout) {

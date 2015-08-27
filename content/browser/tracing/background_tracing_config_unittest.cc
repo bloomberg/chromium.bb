@@ -256,6 +256,16 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
             "{\"category\":\"BENCHMARK_DEEP\","
             "\"rule\":\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\","
             "\"trigger_name\":\"foo2\"}");
+  config = ReadFromJSONString(
+      "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
+      "\"TRACE_AT_RANDOM_INTERVALS\",\"category\": \"BENCHMARK_DEEP\","
+      "\"timeout_min\":10, \"timeout_max\":20}]}");
+  EXPECT_TRUE(config);
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
+  EXPECT_EQ(config->rules().size(), 1u);
+  EXPECT_EQ(RuleToString(config->rules()[0]),
+            "{\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_AT_RANDOM_"
+            "INTERVALS\",\"timeout_max\":20,\"timeout_min\":10}");
 }
 
 TEST_F(BackgroundTracingConfigTest, ValidPreemptiveConfigToString) {

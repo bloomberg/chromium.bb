@@ -77,10 +77,10 @@ BackgroundTracingManagerImpl::TracingTimer::TracingTimer(
 BackgroundTracingManagerImpl::TracingTimer::~TracingTimer() {
 }
 
-void BackgroundTracingManagerImpl::TracingTimer::StartTimer() {
-  const int kTimeoutSecs = 10;
-  tracing_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutSecs),
-      this, &BackgroundTracingManagerImpl::TracingTimer::TracingTimerFired);
+void BackgroundTracingManagerImpl::TracingTimer::StartTimer(int seconds) {
+  tracing_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(seconds), this,
+      &BackgroundTracingManagerImpl::TracingTimer::TracingTimerFired);
 }
 
 void BackgroundTracingManagerImpl::TracingTimer::CancelTimer() {
@@ -109,8 +109,8 @@ BackgroundTracingManagerImpl::BackgroundTracingManagerImpl()
       is_gathering_(false),
       is_tracing_(false),
       requires_anonymized_data_(true),
-      trigger_handle_ids_(0) {
-}
+      trigger_handle_ids_(0),
+      reactive_triggered_handle_(-1) {}
 
 BackgroundTracingManagerImpl::~BackgroundTracingManagerImpl() {
   NOTREACHED();
@@ -262,6 +262,13 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
     RecordBackgroundTracingMetric(PREEMPTIVE_TRIGGERED);
     BeginFinalizing(callback);
   } else {
+    // A different reactive config tried to trigger.
+    if (is_tracing_ && handle != reactive_triggered_handle_) {
+      if (!callback.is_null())
+        callback.Run(false);
+      return;
+    }
+
     RecordBackgroundTracingMetric(REACTIVE_TRIGGERED);
     if (is_tracing_) {
       tracing_timer_->CancelTimer();
@@ -273,8 +280,9 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
     EnableRecording(GetCategoryFilterStringForCategoryPreset(
                         triggered_rule->GetCategoryPreset()),
                     base::trace_event::RECORD_UNTIL_FULL);
-        tracing_timer_.reset(new TracingTimer(callback));
-        tracing_timer_->StartTimer();
+    tracing_timer_.reset(new TracingTimer(callback));
+    tracing_timer_->StartTimer(triggered_rule->GetReactiveTimeout());
+    reactive_triggered_handle_ = handle;
   }
 }
 
@@ -439,6 +447,7 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
     StartedFinalizingCallback callback) {
   is_gathering_ = true;
   is_tracing_ = false;
+  reactive_triggered_handle_ = -1;
 
   bool is_allowed_finalization =
       !delegate_ || (config_ &&
@@ -470,6 +479,7 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
 
 void BackgroundTracingManagerImpl::AbortScenario() {
   is_tracing_ = false;
+  reactive_triggered_handle_ = -1;
   config_.reset();
 
   content::TracingController::GetInstance()->DisableRecording(nullptr);
