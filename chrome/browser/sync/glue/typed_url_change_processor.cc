@@ -71,8 +71,11 @@ void TypedUrlChangeProcessor::OnURLVisited(
 
   DVLOG(1) << "Observed typed_url change.";
   if (ShouldSyncVisit(row.typed_count(), transition)) {
-    syncer::WriteTransaction trans(FROM_HERE, share_handle());
-    CreateOrUpdateSyncNode(row, &trans);
+    VisitsToSync visits_to_sync;
+    if (FixupURLAndGetVisitsToSync(row, &visits_to_sync)) {
+      syncer::WriteTransaction trans(FROM_HERE, share_handle());
+      CreateOrUpdateSyncNode(&trans, visits_to_sync.row, visits_to_sync.visits);
+    }
   }
   UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlChangeProcessorErrors",
                            model_associator_->GetErrorPercentage());
@@ -87,15 +90,27 @@ void TypedUrlChangeProcessor::OnURLsModified(
   if (disconnected_)
     return;
 
+  std::vector<VisitsToSync> visits_to_sync_vector;
+
   DVLOG(1) << "Observed typed_url change.";
-  syncer::WriteTransaction trans(FROM_HERE, share_handle());
   for (const auto& row : changed_urls) {
     if (row.typed_count() >= 0) {
-      // If there were any errors updating the sync node, just ignore them and
-      // continue on to process the next URL.
-      CreateOrUpdateSyncNode(row, &trans);
+      VisitsToSync visits_to_sync;
+      if (FixupURLAndGetVisitsToSync(row, &visits_to_sync)) {
+        visits_to_sync_vector.push_back(visits_to_sync);
+      }
     }
   }
+
+  if (!visits_to_sync_vector.empty()) {
+    syncer::WriteTransaction trans(FROM_HERE, share_handle());
+    for (const auto& visits_to_sync : visits_to_sync_vector) {
+      // If there were any errors updating the sync node, just ignore them and
+      // continue on to process the next URL.
+      CreateOrUpdateSyncNode(&trans, visits_to_sync.row, visits_to_sync.visits);
+    }
+  }
+
   UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlChangeProcessorErrors",
                            model_associator_->GetErrorPercentage());
 }
@@ -148,28 +163,45 @@ void TypedUrlChangeProcessor::OnURLsDeleted(
                            model_associator_->GetErrorPercentage());
 }
 
-bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
-    history::URLRow url, syncer::WriteTransaction* trans) {
+TypedUrlChangeProcessor::VisitsToSync::VisitsToSync() {}
+
+TypedUrlChangeProcessor::VisitsToSync::~VisitsToSync() {}
+
+bool TypedUrlChangeProcessor::FixupURLAndGetVisitsToSync(
+    const history::URLRow& url,
+    VisitsToSync* visits_to_sync) {
   DCHECK_GE(url.typed_count(), 0);
+
   // Get the visits for this node.
-  history::VisitVector visit_vector;
-  if (!model_associator_->FixupURLAndGetVisits(&url, &visit_vector)) {
+  visits_to_sync->row = url;
+  if (!model_associator_->FixupURLAndGetVisits(&visits_to_sync->row,
+                                               &visits_to_sync->visits)) {
     DLOG(ERROR) << "Could not load visits for url: " << url.url();
     return false;
   }
 
-  if (std::find_if(visit_vector.begin(), visit_vector.end(),
+  if (std::find_if(visits_to_sync->visits.begin(), visits_to_sync->visits.end(),
                    [](const history::VisitRow& visit) {
                      return ui::PageTransitionCoreTypeIs(
                          visit.transition, ui::PAGE_TRANSITION_TYPED);
-                   }) == visit_vector.end())
+                   }) == visits_to_sync->visits.end()) {
     // This URL has no TYPED visits, don't sync it.
     return false;
+  }
 
-  if (model_associator_->ShouldIgnoreUrl(url.url()))
-    return true;
+  if (model_associator_->ShouldIgnoreUrl(visits_to_sync->row.url()))
+    return false;
 
+  return true;
+}
+
+void TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
+    syncer::WriteTransaction* trans,
+    const history::URLRow& url,
+    const history::VisitVector& visit_vector) {
+  DCHECK_GE(url.typed_count(), 0);
   DCHECK(!visit_vector.empty());
+
   std::string tag = url.url().spec();
   syncer::WriteNode update_node(trans);
   syncer::BaseNode::InitByLookupResult result =
@@ -182,7 +214,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
                             "Failed to decrypt.",
                             syncer::TYPED_URLS);
     error_handler()->OnSingleDataTypeUnrecoverableError(error);
-    return false;
+    return;
   } else {
     syncer::WriteNode create_node(trans);
     syncer::WriteNode::InitUniqueByCreationResult result =
@@ -194,13 +226,12 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
                               "Failed to create sync node",
                               syncer::TYPED_URLS);
       error_handler()->OnSingleDataTypeUnrecoverableError(error);
-      return false;
+      return;
     }
 
     create_node.SetTitle(tag);
     model_associator_->WriteToSyncNode(url, visit_vector, &create_node);
   }
-  return true;
 }
 
 bool TypedUrlChangeProcessor::ShouldSyncVisit(int typed_count,

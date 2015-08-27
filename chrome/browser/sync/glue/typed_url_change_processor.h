@@ -84,11 +84,28 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
   // single typed URL visit.
   bool ShouldSyncVisit(int typed_count, ui::PageTransition transition);
 
+  // This struct is used to return result from FixupURLAndGetVisitsToSync
+  // function below.
+  struct VisitsToSync {
+    VisitsToSync();
+    ~VisitsToSync();
+
+    history::URLRow row;
+    history::VisitVector visits;
+  };
+
+  // Utility function that fixes the URL and retrieves visits to be used to
+  // update sync node for the given |url|. Returns false if the data can't be
+  // retrieved from History backend or if there are no typed visits to sync.
+  bool FixupURLAndGetVisitsToSync(const history::URLRow& row,
+                                  VisitsToSync* visits_to_sync);
+
   // Utility routine that either updates an existing sync node or creates a
   // new one for the passed |typed_url| if one does not already exist. Returns
   // false and sets an unrecoverable error if the operation failed.
-  bool CreateOrUpdateSyncNode(history::URLRow typed_url,
-                              syncer::WriteTransaction* transaction);
+  void CreateOrUpdateSyncNode(syncer::WriteTransaction* transaction,
+                              const history::URLRow& typed_url,
+                              const history::VisitVector& visit_vector);
 
   // The profile with which we are associated.
   Profile* profile_;
