@@ -417,7 +417,7 @@ template("process_java_prebuilt") {
   assert(invoker.build_config != "")
 
   if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
-    _proguard_jar_path = "$android_sdk_root/tools/proguard/lib/proguard.jar"
+    _proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
     _proguard_config_path = invoker.proguard_config
     _build_config = invoker.build_config
     _rebased_build_config = rebase_path(_build_config, root_build_dir)

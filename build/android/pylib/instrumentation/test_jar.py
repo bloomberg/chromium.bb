@@ -45,8 +45,8 @@ class TestJar(object):
     if not os.path.exists(jar_path):
       raise Exception('%s not found, please build it' % jar_path)
 
-    self._PROGUARD_PATH = os.path.join(constants.ANDROID_SDK_ROOT,
-                                       'tools/proguard/lib/proguard.jar')
+    self._PROGUARD_PATH = os.path.join(constants.PROGUARD_ROOT,
+                                       'lib', 'proguard.jar')
     if not os.path.exists(self._PROGUARD_PATH):
       self._PROGUARD_PATH = os.path.join(os.environ['ANDROID_BUILD_TOP'],
                                          'external/proguard/lib/proguard.jar')

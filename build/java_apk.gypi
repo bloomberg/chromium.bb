@@ -1018,7 +1018,7 @@
         '--test-jar-path', '<(test_jar_path)',
         '--obfuscated-jar-path', '<(obfuscated_jar_path)',
 
-        '--proguard-jar-path', '<(android_sdk_root)/tools/proguard/lib/proguard.jar',
+        '--proguard-jar-path', '<(DEPTH)/third_party/proguard/lib/proguard.jar',
 
         '--stamp', '<(obfuscate_stamp)',
 

@@ -22,7 +22,7 @@ _PROGUARD_ANNOTATION_CONST_RE = (
 _PROGUARD_ANNOTATION_VALUE_RE = re.compile(r'\s*?- \S+? \[(.*)\]$')
 
 _PROGUARD_PATH_SDK = os.path.join(
-    constants.ANDROID_SDK_ROOT, 'tools', 'proguard', 'lib', 'proguard.jar')
+    constants.PROGUARD_ROOT, 'lib', 'proguard.jar')
 _PROGUARD_PATH_BUILT = (
     os.path.join(os.environ['ANDROID_BUILD_TOP'], 'external', 'proguard',
                  'lib', 'proguard.jar')
