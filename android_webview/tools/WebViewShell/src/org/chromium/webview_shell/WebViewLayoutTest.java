@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.test.ActivityInstrumentationTestCase2;
 
 import org.chromium.base.Log;
+import org.chromium.base.test.util.DisabledTest;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -104,6 +105,10 @@ public class WebViewLayoutTest
         assertEquals("Unexpected webview interfaces found", "", unexpected.toString());
     }
 
+    /**
+     * Bug http://crbug.com/525202
+     */
+    @DisabledTest
     public void testWebViewIncludedStableInterfaces() throws Exception {
         ensureJsTestCopied();
         loadUrlWebViewAsync("file://" + PATH_BLINK_PREFIX
