@@ -58,6 +58,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["spellcheck.use_spelling_service"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["session.restore_on_startup"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["session.startup_urls"] =
+      settings_private::PrefType::PREF_TYPE_LIST;
 
 #if defined(OS_CHROMEOS)
   (*s_whitelist)["cros.accounts.allowBWSI"] =
