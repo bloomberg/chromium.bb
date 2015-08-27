@@ -1718,6 +1718,13 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
             diff.setNeedsPaintInvalidationLayer();
     }
 
+    // If backdrop filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
+    if (diff.backdropFilterChanged() && hasLayer()) {
+        DeprecatedPaintLayer* layer = toLayoutBoxModelObject(this)->layer();
+        if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithBackdropFilters())
+            diff.setNeedsPaintInvalidationLayer();
+    }
+
     if (diff.textOrColorChanged() && !diff.needsPaintInvalidation()) {
         if (style()->hasBorder() || style()->hasOutline()
             || (isText() && !toLayoutText(this)->isAllCollapsibleWhitespace()))

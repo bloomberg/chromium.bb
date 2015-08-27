@@ -112,6 +112,9 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
     if (style.hasFilter())
         reasons |= CompositingReasonFilterWithCompositedDescendants;
 
+    if (style.hasBackdropFilter())
+        reasons |= CompositingReasonBackdropFilter;
+
     // See Layer::updateTransform for an explanation of why we check both.
     if (layoutObject->hasTransformRelatedProperty() && style.hasTransform())
         reasons |= CompositingReasonTransformWithCompositedDescendants;

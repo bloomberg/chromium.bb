@@ -90,4 +90,20 @@ TEST_F(AnimationDeferredLegacyStyleInterpolationTest, Filter)
     EXPECT_TRUE(test(CSSPropertyWebkitFilter, "url(#svgfilter)"));
 }
 
+TEST_F(AnimationDeferredLegacyStyleInterpolationTest, BackdropFilter)
+{
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "hue-rotate(180deg) blur(6px)"));
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "grayscale(0) blur(0px)"));
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "none"));
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "brightness(0) contrast(0)"));
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "drop-shadow(20px 10px green)"));
+    EXPECT_TRUE(test(CSSPropertyBackdropFilter, "drop-shadow(20px 10vw green)"));
+    EXPECT_TRUE(test(CSSPropertyBackdropFilter, "drop-shadow(0px 0px 0px currentcolor)"));
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "opacity(1)"));
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "saturate(0)"));
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "grayscale(1)"));
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "invert(1)"));
+    EXPECT_FALSE(test(CSSPropertyBackdropFilter, "sepia(1)"));
+    EXPECT_TRUE(test(CSSPropertyBackdropFilter, "url(#svgfilter)"));
+}
 }

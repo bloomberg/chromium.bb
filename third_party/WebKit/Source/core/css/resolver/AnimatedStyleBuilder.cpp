@@ -556,6 +556,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitFilter:
         style->setFilter(toAnimatableFilterOperations(value)->operations());
         return;
+    case CSSPropertyBackdropFilter:
+        style->setBackdropFilter(toAnimatableFilterOperations(value)->operations());
+        return;
     case CSSPropertyWebkitMaskBoxImageOutset:
         style->setMaskBoxImageOutset(animatableValueToBorderImageLengthBox(value, state));
         return;

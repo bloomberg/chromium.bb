@@ -1224,16 +1224,16 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForShadowLis
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForFilter(const ComputedStyle& style)
+PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForFilter(const ComputedStyle& style, const FilterOperations& filterOperations)
 {
-    if (style.filter().operations().isEmpty())
+    if (filterOperations.operations().isEmpty())
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
     RefPtrWillBeRawPtr<CSSFunctionValue> filterValue = nullptr;
 
-    for (const auto& operation : style.filter().operations()) {
+    for (const auto& operation : filterOperations.operations()) {
         FilterOperation* filterOperation = operation.get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE:
@@ -2335,7 +2335,9 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyShapeOutside:
         return valueForShape(style, style.shapeOutside());
     case CSSPropertyWebkitFilter:
-        return valueForFilter(style);
+        return valueForFilter(style, style.filter());
+    case CSSPropertyBackdropFilter:
+        return valueForFilter(style, style.backdropFilter());
     case CSSPropertyMixBlendMode:
         return cssValuePool().createValue(style.blendMode());
 

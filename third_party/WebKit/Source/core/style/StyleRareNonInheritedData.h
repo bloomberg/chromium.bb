@@ -93,6 +93,7 @@ public:
     bool shapeOutsideDataEquivalent(const StyleRareNonInheritedData&) const;
     bool clipPathDataEquivalent(const StyleRareNonInheritedData&) const;
     bool hasFilters() const;
+    bool hasBackdropFilters() const;
     bool hasOpacity() const { return opacity < 1; }
 
     float opacity; // Whether or not we're transparent.
@@ -115,6 +116,7 @@ public:
     DataRef<StyleWillChangeData> m_willChange; // CSS Will Change
 
     DataRef<StyleFilterData> m_filter; // Filter operations (url, sepia, blur, etc.)
+    DataRef<StyleFilterData> m_backdropFilter; // Backdrop filter operations (url, sepia, blur, etc.)
 
     DataRef<StyleGridData> m_grid;
     DataRef<StyleGridItemData> m_gridItem;
@@ -173,9 +175,11 @@ public:
     unsigned m_hasCurrentOpacityAnimation : 1;
     unsigned m_hasCurrentTransformAnimation : 1;
     unsigned m_hasCurrentFilterAnimation : 1;
+    unsigned m_hasCurrentBackdropFilterAnimation : 1;
     unsigned m_runningOpacityAnimationOnCompositor : 1;
     unsigned m_runningTransformAnimationOnCompositor : 1;
     unsigned m_runningFilterAnimationOnCompositor : 1;
+    unsigned m_runningBackdropFilterAnimationOnCompositor : 1;
 
     unsigned m_effectiveBlendMode: 5; // EBlendMode
 

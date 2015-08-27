@@ -1035,6 +1035,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = validUnit(value, FInteger | FNonNeg) && value->fValue;
         break;
     case CSSPropertyWebkitFilter:
+    case CSSPropertyBackdropFilter:
         if (id == CSSValueNone)
             validPrimitive = true;
         else {

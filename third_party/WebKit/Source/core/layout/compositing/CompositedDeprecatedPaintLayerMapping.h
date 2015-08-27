@@ -172,6 +172,7 @@ public:
     GraphicsLayer* detachLayerForOverflowControls(const DeprecatedPaintLayer& enclosingLayer);
 
     void updateFilters(const ComputedStyle&);
+    void updateBackdropFilters(const ComputedStyle&);
 
     void setBlendMode(WebBlendMode);
 

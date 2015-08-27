@@ -440,7 +440,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
         break;
     }
 
-    case CSSPropertyWebkitFilter: {
+    case CSSPropertyWebkitFilter:
+    case CSSPropertyBackdropFilter: {
         RefPtrWillBeRawPtr<Interpolation> interpolation = FilterStyleInterpolation::maybeCreateList(*fromCSSValue, *toCSSValue, property);
         if (interpolation)
             return interpolation.release();

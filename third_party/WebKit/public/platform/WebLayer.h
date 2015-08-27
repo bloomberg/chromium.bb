@@ -128,6 +128,10 @@ public:
     // WebFilterOperations object.
     virtual void setFilters(const WebFilterOperations&) = 0;
 
+    // Clear the background filters in use by passing in a newly instantiated
+    // WebFilterOperations object.
+    virtual void setBackgroundFilters(const WebFilterOperations&) = 0;
+
     // An animation delegate is notified when animations are started and
     // stopped. The WebLayer does not take ownership of the delegate, and it is
     // the responsibility of the client to reset the layer's delegate before

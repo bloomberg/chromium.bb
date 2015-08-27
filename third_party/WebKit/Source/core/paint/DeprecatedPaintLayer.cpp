@@ -223,6 +223,16 @@ bool DeprecatedPaintLayer::paintsWithFilters() const
     return !m_compositedDeprecatedPaintLayerMapping || compositingState() != PaintsIntoOwnBacking;
 }
 
+bool DeprecatedPaintLayer::paintsWithBackdropFilters() const
+{
+    if (!layoutObject()->hasBackdropFilter())
+        return false;
+
+    // https://code.google.com/p/chromium/issues/detail?id=343759
+    DisableCompositingQueryAsserts disabler;
+    return !m_compositedDeprecatedPaintLayerMapping || compositingState() != PaintsIntoOwnBacking;
+}
+
 LayoutSize DeprecatedPaintLayer::subpixelAccumulation() const
 {
     return m_subpixelAccumulation;
@@ -2553,9 +2563,10 @@ bool DeprecatedPaintLayer::scrollsOverflow() const
     return false;
 }
 
-FilterOperations DeprecatedPaintLayer::computeFilterOperations(const ComputedStyle& style)
+namespace {
+
+FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOperations& filters, float effectiveZoom, Node* enclosingElement)
 {
-    const FilterOperations& filters = style.filter();
     if (filters.hasReferenceFilter()) {
         for (size_t i = 0; i < filters.size(); ++i) {
             FilterOperation* filterOperation = filters.operations().at(i).get();
@@ -2563,12 +2574,24 @@ FilterOperations DeprecatedPaintLayer::computeFilterOperations(const ComputedSty
                 continue;
             ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
             // FIXME: Cache the ReferenceFilter if it didn't change.
-            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilterBuilder::build(style.effectiveZoom(), toElement(enclosingElement()), nullptr, referenceOperation);
+            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingElement), nullptr, referenceOperation);
             referenceOperation.setFilter(referenceFilter.release());
         }
     }
 
     return filters;
+}
+
+} // unnamed namespace
+
+FilterOperations DeprecatedPaintLayer::computeFilterOperations(const ComputedStyle& style)
+{
+    return computeFilterOperationsHandleReferenceFilters(style.filter(), style.effectiveZoom(), enclosingElement());
+}
+
+FilterOperations DeprecatedPaintLayer::computeBackdropFilterOperations(const ComputedStyle& style)
+{
+    return computeFilterOperationsHandleReferenceFilters(style.backdropFilter(), style.effectiveZoom(), enclosingElement());
 }
 
 void DeprecatedPaintLayer::updateOrRemoveFilterClients()

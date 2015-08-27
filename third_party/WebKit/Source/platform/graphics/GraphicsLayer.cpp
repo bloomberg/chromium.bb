@@ -1057,6 +1057,16 @@ void GraphicsLayer::setFilters(const FilterOperations& filters)
     m_layer->layer()->setFilters(*webFilters);
 }
 
+void GraphicsLayer::setBackdropFilters(const FilterOperations& filters)
+{
+    SkiaImageFilterBuilder builder;
+    OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+    FilterOutsets outsets = filters.outsets();
+    builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
+    builder.buildFilterOperations(filters, webFilters.get());
+    m_layer->layer()->setBackgroundFilters(*webFilters);
+}
+
 void GraphicsLayer::setFilterQuality(SkFilterQuality filterQuality)
 {
     if (m_imageLayer)

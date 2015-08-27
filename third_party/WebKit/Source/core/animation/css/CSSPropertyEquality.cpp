@@ -264,6 +264,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
         return a.columnWidth() == b.columnWidth();
     case CSSPropertyWebkitFilter:
         return a.filter() == b.filter();
+    case CSSPropertyBackdropFilter:
+        return a.backdropFilter() == b.backdropFilter();
     case CSSPropertyWebkitMaskBoxImageOutset:
         return a.maskBoxImageOutset() == b.maskBoxImageOutset();
     case CSSPropertyWebkitMaskBoxImageSlice:

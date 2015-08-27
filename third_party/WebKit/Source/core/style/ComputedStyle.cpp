@@ -128,6 +128,7 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
     rareNonInheritedData.access()->m_transform.init();
     rareNonInheritedData.access()->m_willChange.init();
     rareNonInheritedData.access()->m_filter.init();
+    rareNonInheritedData.access()->m_backdropFilter.init();
     rareNonInheritedData.access()->m_grid.init();
     rareNonInheritedData.access()->m_gridItem.init();
     rareNonInheritedData.access()->m_scrollSnap.init();
@@ -734,6 +735,9 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
 
         if (rareNonInheritedData->m_filter != other.rareNonInheritedData->m_filter)
             diff.setFilterChanged();
+
+        if (rareNonInheritedData->m_backdropFilter != other.rareNonInheritedData->m_backdropFilter)
+            diff.setBackdropFilterChanged();
     }
 
     if (!diff.needsPaintInvalidation()) {
@@ -1678,6 +1682,12 @@ Color ComputedStyle::initialTapHighlightColor()
 
 #if ENABLE(OILPAN)
 const FilterOperations& ComputedStyle::initialFilter()
+{
+    DEFINE_STATIC_LOCAL(Persistent<FilterOperationsWrapper>, ops, (FilterOperationsWrapper::create()));
+    return ops->operations();
+}
+
+const FilterOperations& ComputedStyle::initialBackdropFilter()
 {
     DEFINE_STATIC_LOCAL(Persistent<FilterOperationsWrapper>, ops, (FilterOperationsWrapper::create()));
     return ops->operations();

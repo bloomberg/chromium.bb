@@ -14,6 +14,7 @@ namespace blink {
 class CSSPrimitiveValue;
 class LayoutObject;
 class ComputedStyle;
+class FilterOperations;
 class ShadowData;
 class ShadowList;
 class StyleColor;
@@ -28,7 +29,7 @@ private:
     static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> currentColorOrValidColor(const ComputedStyle&, const StyleColor&);
     static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowData(const ShadowData&, const ComputedStyle&, bool useSpread);
     static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowList(const ShadowList*, const ComputedStyle&, bool useSpread);
-    static PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const ComputedStyle&);
+    static PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const ComputedStyle&, const FilterOperations&);
     static PassRefPtrWillBeRawPtr<CSSValue> valueForFont(const ComputedStyle&);
 };
 

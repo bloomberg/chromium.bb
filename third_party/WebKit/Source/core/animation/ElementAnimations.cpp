@@ -67,6 +67,8 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
                 style.setHasCurrentTransformAnimation(true);
             if (effect.affects(PropertyHandle(CSSPropertyWebkitFilter)))
                 style.setHasCurrentFilterAnimation(true);
+            if (effect.affects(PropertyHandle(CSSPropertyBackdropFilter)))
+                style.setHasCurrentBackdropFilterAnimation(true);
         }
     }
 
@@ -76,6 +78,8 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
         style.setIsRunningTransformAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyTransform));
     if (style.hasCurrentFilterAnimation())
         style.setIsRunningFilterAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyWebkitFilter));
+    if (style.hasCurrentBackdropFilterAnimation())
+        style.setIsRunningBackdropFilterAnimationOnCompositor(m_defaultStack.hasActiveAnimationsOnCompositor(CSSPropertyBackdropFilter));
 }
 
 void ElementAnimations::restartAnimationOnCompositor()

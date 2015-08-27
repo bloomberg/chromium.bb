@@ -353,7 +353,9 @@ public:
     void setContainsDirtyOverlayScrollbars(bool dirtyScrollbars) { m_containsDirtyOverlayScrollbars = dirtyScrollbars; }
 
     FilterOperations computeFilterOperations(const ComputedStyle&);
+    FilterOperations computeBackdropFilterOperations(const ComputedStyle&);
     bool paintsWithFilters() const;
+    bool paintsWithBackdropFilters() const;
     FilterEffectBuilder* filterEffectBuilder() const
     {
         DeprecatedPaintLayerFilterInfo* filterInfo = this->filterInfo();

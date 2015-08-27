@@ -41,7 +41,7 @@ public:
     LineClampValue lineClamps;
     DraggableRegionMode draggableRegions;
 
-    void* dataRefs[9];
+    void* dataRefs[10];
     void* ownPtrs[4];
 #if ENABLE(OILPAN)
     Persistent<void*> persistentHandles[2];
@@ -109,9 +109,11 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_hasCurrentOpacityAnimation(false)
     , m_hasCurrentTransformAnimation(false)
     , m_hasCurrentFilterAnimation(false)
+    , m_hasCurrentBackdropFilterAnimation(false)
     , m_runningOpacityAnimationOnCompositor(false)
     , m_runningTransformAnimationOnCompositor(false)
     , m_runningFilterAnimationOnCompositor(false)
+    , m_runningBackdropFilterAnimationOnCompositor(false)
     , m_effectiveBlendMode(ComputedStyle::initialBlendMode())
     , m_touchAction(ComputedStyle::initialTouchAction())
     , m_objectFit(ComputedStyle::initialObjectFit())
@@ -144,6 +146,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_transform(o.m_transform)
     , m_willChange(o.m_willChange)
     , m_filter(o.m_filter)
+    , m_backdropFilter(o.m_backdropFilter)
     , m_grid(o.m_grid)
     , m_gridItem(o.m_gridItem)
     , m_scrollSnap(o.m_scrollSnap)
@@ -187,9 +190,11 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_hasCurrentOpacityAnimation(o.m_hasCurrentOpacityAnimation)
     , m_hasCurrentTransformAnimation(o.m_hasCurrentTransformAnimation)
     , m_hasCurrentFilterAnimation(o.m_hasCurrentFilterAnimation)
+    , m_hasCurrentBackdropFilterAnimation(o.m_hasCurrentBackdropFilterAnimation)
     , m_runningOpacityAnimationOnCompositor(o.m_runningOpacityAnimationOnCompositor)
     , m_runningTransformAnimationOnCompositor(o.m_runningTransformAnimationOnCompositor)
     , m_runningFilterAnimationOnCompositor(o.m_runningFilterAnimationOnCompositor)
+    , m_runningBackdropFilterAnimationOnCompositor(o.m_runningBackdropFilterAnimationOnCompositor)
     , m_effectiveBlendMode(o.m_effectiveBlendMode)
     , m_touchAction(o.m_touchAction)
     , m_objectFit(o.m_objectFit)
@@ -210,6 +215,10 @@ StyleRareNonInheritedData::~StyleRareNonInheritedData()
     const FilterOperations& filterOperations = m_filter->m_operations;
     for (unsigned i = 0; i < filterOperations.size(); ++i)
         ReferenceFilterBuilder::clearDocumentResourceReference(filterOperations.at(i));
+
+    const FilterOperations& backdropFilterOperations = m_backdropFilter->m_operations;
+    for (unsigned i = 0; i < backdropFilterOperations.size(); ++i)
+        ReferenceFilterBuilder::clearDocumentResourceReference(backdropFilterOperations.at(i));
 }
 
 bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) const
@@ -228,6 +237,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_transform == o.m_transform
         && m_willChange == o.m_willChange
         && m_filter == o.m_filter
+        && m_backdropFilter == o.m_backdropFilter
         && m_grid == o.m_grid
         && m_gridItem == o.m_gridItem
         && m_scrollSnap == o.m_scrollSnap
@@ -272,6 +282,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_hasCurrentOpacityAnimation == o.m_hasCurrentOpacityAnimation
         && m_hasCurrentTransformAnimation == o.m_hasCurrentTransformAnimation
         && m_hasCurrentFilterAnimation == o.m_hasCurrentFilterAnimation
+        && m_hasCurrentBackdropFilterAnimation == o.m_hasCurrentBackdropFilterAnimation
         && m_effectiveBlendMode == o.m_effectiveBlendMode
         && m_touchAction == o.m_touchAction
         && m_objectFit == o.m_objectFit
@@ -335,6 +346,11 @@ bool StyleRareNonInheritedData::transitionDataEquivalent(const StyleRareNonInher
 bool StyleRareNonInheritedData::hasFilters() const
 {
     return m_filter.get() && !m_filter->m_operations.isEmpty();
+}
+
+bool StyleRareNonInheritedData::hasBackdropFilters() const
+{
+    return m_backdropFilter.get() && !m_backdropFilter->m_operations.isEmpty();
 }
 
 bool StyleRareNonInheritedData::shapeOutsideDataEquivalent(const StyleRareNonInheritedData& o) const

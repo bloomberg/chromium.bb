@@ -142,6 +142,7 @@ static bool hasWillChangeThatCreatesStackingContext(const ComputedStyle& style)
         case CSSPropertyWebkitClipPath:
         case CSSPropertyWebkitBoxReflect:
         case CSSPropertyWebkitFilter:
+        case CSSPropertyBackdropFilter:
         case CSSPropertyZIndex:
         case CSSPropertyPosition:
             return true;

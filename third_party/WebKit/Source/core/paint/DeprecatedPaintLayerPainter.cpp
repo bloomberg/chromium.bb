@@ -75,7 +75,7 @@ void DeprecatedPaintLayerPainter::paintLayer(GraphicsContext* context, const Dep
         return;
 
     // If this layer is totally invisible then there is nothing to paint.
-    if (!m_paintLayer.layoutObject()->opacity())
+    if (!m_paintLayer.layoutObject()->opacity() && !m_paintLayer.layoutObject()->hasBackdropFilter())
         return;
 
     if (m_paintLayer.paintsWithTransparency(paintingInfo.globalPaintFlags()))

@@ -219,6 +219,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitColumnSpan,
     CSSPropertyWebkitColumnWidth,
     CSSPropertyWebkitFilter,
+    CSSPropertyBackdropFilter,
     CSSPropertyAlignContent,
     CSSPropertyAlignItems,
     CSSPropertyAlignSelf,
@@ -478,6 +479,7 @@ static bool isLayoutDependent(CSSPropertyID propertyID, const ComputedStyle* sty
     case CSSPropertyMotionRotation:
     case CSSPropertyWidth:
     case CSSPropertyWebkitFilter:
+    case CSSPropertyBackdropFilter:
     case CSSPropertyX:
     case CSSPropertyY:
     case CSSPropertyRx:

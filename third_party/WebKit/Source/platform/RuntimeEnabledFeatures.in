@@ -42,6 +42,7 @@ CredentialManager status=test
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
 CSSAttributeCaseSensitivity status=experimental
+CSSBackdropFilter status=experimental
 CSSCompositing status=stable
 CSSFontSizeAdjust status=experimental
 CSSGridLayout status=experimental

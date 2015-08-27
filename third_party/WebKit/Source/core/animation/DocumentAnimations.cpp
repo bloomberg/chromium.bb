@@ -76,7 +76,8 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
             || property == CSSPropertyTranslate;
         if ((property == CSSPropertyOpacity && style->isRunningOpacityAnimationOnCompositor())
             || (isTransformProperty && style->isRunningTransformAnimationOnCompositor())
-            || (property == CSSPropertyWebkitFilter && style->isRunningFilterAnimationOnCompositor())) {
+            || (property == CSSPropertyWebkitFilter && style->isRunningFilterAnimationOnCompositor())
+            || (property == CSSPropertyBackdropFilter && style->isRunningBackdropFilterAnimationOnCompositor())) {
             updateAnimationTiming(element.document(), TimingUpdateOnDemand);
         }
     }

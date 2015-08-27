@@ -85,6 +85,7 @@ animation-iteration-count: 1
 animation-name: none
 animation-play-state: running
 animation-timing-function: ease
+backdrop-filter: none
 backface-visibility: visible
 background-attachment: scroll
 background-blend-mode: normal

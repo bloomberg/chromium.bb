@@ -176,6 +176,7 @@ public:
     void setIsRootForIsolatedGroup(bool);
 
     void setFilters(const FilterOperations&);
+    void setBackdropFilters(const FilterOperations&);
 
     void setFilterQuality(SkFilterQuality);
 

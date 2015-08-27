@@ -101,12 +101,14 @@ public:
             RefPtrWillBeMember<AnimatableValue> opacity;
             RefPtrWillBeMember<AnimatableValue> transform;
             RefPtrWillBeMember<AnimatableValue> webkitFilter;
+            RefPtrWillBeMember<AnimatableValue> backdropFilter;
 
             DEFINE_INLINE_TRACE()
             {
                 visitor->trace(opacity);
                 visitor->trace(transform);
                 visitor->trace(webkitFilter);
+                visitor->trace(backdropFilter);
             }
         };
 
@@ -208,6 +210,8 @@ public:
                 snapshot.transform = CSSAnimatableValueFactory::create(CSSPropertyTransform, newStyle);
             if (!CSSPropertyEquality::propertiesEqual(CSSPropertyWebkitFilter, oldStyle, newStyle) && model->affects(PropertyHandle(CSSPropertyWebkitFilter)))
                 snapshot.webkitFilter = CSSAnimatableValueFactory::create(CSSPropertyWebkitFilter, newStyle);
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyBackdropFilter, oldStyle, newStyle) && model->affects(PropertyHandle(CSSPropertyBackdropFilter)))
+                snapshot.backdropFilter = CSSAnimatableValueFactory::create(CSSPropertyBackdropFilter, newStyle);
         }
 
         m_animationsWithStyleUpdates.append(UpdatedAnimationStyle(animation, model, snapshot));

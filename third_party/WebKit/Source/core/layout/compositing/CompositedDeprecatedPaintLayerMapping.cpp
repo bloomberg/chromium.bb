@@ -228,6 +228,7 @@ void CompositedDeprecatedPaintLayerMapping::createPrimaryGraphicsLayer()
     updateOpacity(layoutObject()->styleRef());
     updateTransform(layoutObject()->styleRef());
     updateFilters(layoutObject()->styleRef());
+    updateBackdropFilters(layoutObject()->styleRef());
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
         updateLayerBlendMode(layoutObject()->styleRef());
@@ -275,6 +276,11 @@ void CompositedDeprecatedPaintLayerMapping::updateTransform(const ComputedStyle&
 void CompositedDeprecatedPaintLayerMapping::updateFilters(const ComputedStyle& style)
 {
     m_graphicsLayer->setFilters(owningLayer().computeFilterOperations(style));
+}
+
+void CompositedDeprecatedPaintLayerMapping::updateBackdropFilters(const ComputedStyle& style)
+{
+    m_graphicsLayer->setBackdropFilters(owningLayer().computeBackdropFilterOperations(style));
 }
 
 void CompositedDeprecatedPaintLayerMapping::updateLayerBlendMode(const ComputedStyle& style)
@@ -660,6 +666,9 @@ void CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerGeometry(const De
 
     if (!layoutObject()->style()->isRunningFilterAnimationOnCompositor())
         updateFilters(layoutObject()->styleRef());
+
+    if (!layoutObject()->style()->isRunningBackdropFilterAnimationOnCompositor())
+        updateBackdropFilters(layoutObject()->styleRef());
 
     // We compute everything relative to the enclosing compositing layer.
     IntRect ancestorCompositingBounds;

@@ -55,6 +55,9 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
     { CompositingReasonWillChangeCompositingHint,
         "willChange",
         "Has a will-change compositing hint" },
+    { CompositingReasonBackdropFilter,
+        "backdropFilter"
+        "Has a backdrop filter" },
     { CompositingReasonCompositorProxy,
         "compositorProxy",
         "Has a CompositorProxy object" },

@@ -112,6 +112,7 @@ animation-iteration-count custom_all
 animation-name custom_all
 animation-play-state custom_all
 animation-timing-function custom_all
+backdrop-filter interpolable, custom_value, runtime_flag=CSSBackdropFilter
 backface-visibility
 background-attachment custom_all
 background-blend-mode custom_all

@@ -337,6 +337,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             updated |= styleUpdate.model->updateNeutralKeyframeAnimatableValues(CSSPropertyTransform, styleUpdate.snapshot.transform);
         if (styleUpdate.snapshot.webkitFilter)
             updated |= styleUpdate.model->updateNeutralKeyframeAnimatableValues(CSSPropertyWebkitFilter, styleUpdate.snapshot.webkitFilter);
+        if (styleUpdate.snapshot.backdropFilter)
+            updated |= styleUpdate.model->updateNeutralKeyframeAnimatableValues(CSSPropertyBackdropFilter, styleUpdate.snapshot.backdropFilter);
         if (updated) {
             styleUpdate.animation->setOutdated();
             styleUpdate.animation->setCompositorPending(true);

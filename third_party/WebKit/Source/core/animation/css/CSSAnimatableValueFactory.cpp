@@ -501,6 +501,8 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromDouble(style.columnWidth());
     case CSSPropertyWebkitFilter:
         return AnimatableFilterOperations::create(style.filter());
+    case CSSPropertyBackdropFilter:
+        return AnimatableFilterOperations::create(style.backdropFilter());
     case CSSPropertyWebkitMaskBoxImageOutset:
         return createFromBorderImageLengthBox(style.maskBoxImageOutset(), style);
     case CSSPropertyWebkitMaskBoxImageSlice:

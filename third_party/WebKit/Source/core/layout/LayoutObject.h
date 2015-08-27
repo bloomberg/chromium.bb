@@ -568,6 +568,7 @@ public:
     bool hasHiddenBackface() const { return style() && style()->backfaceVisibility() == BackfaceVisibilityHidden; }
 
     bool hasFilter() const { return style() && style()->hasFilter(); }
+    bool hasBackdropFilter() const { return style() && style()->hasBackdropFilter(); }
 
     bool hasShapeOutside() const { return style() && style()->shapeOutside(); }
 
