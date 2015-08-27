@@ -11,8 +11,6 @@
 
 namespace IPC {
 
-HandleWin::HandleWin() : handle_(nullptr), permissions_(INVALID) {}
-
 HandleWin::HandleWin(const HANDLE& handle, Permissions permissions)
     : handle_(handle), permissions_(permissions) {}
 

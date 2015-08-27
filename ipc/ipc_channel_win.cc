@@ -53,7 +53,6 @@ ChannelWin::ChannelWin(const IPC::ChannelHandle& channel_handle,
 }
 
 ChannelWin::~ChannelWin() {
-  CleanUp();
   Close();
 }
 
@@ -75,9 +74,9 @@ void ChannelWin::Close() {
   }
 
   while (!output_queue_.empty()) {
-    OutputElement* element = output_queue_.front();
+    Message* m = output_queue_.front();
     output_queue_.pop();
-    delete element;
+    delete m;
   }
 }
 
@@ -127,19 +126,7 @@ bool ChannelWin::ProcessMessageForDelivery(Message* message) {
                          TRACE_EVENT_FLAG_FLOW_OUT);
 
   // |output_queue_| takes ownership of |message|.
-  OutputElement* element = new OutputElement(message);
-  output_queue_.push(element);
-
-#if USE_ATTACHMENT_BROKER
-  if (message->HasBrokerableAttachments()) {
-    // |output_queue_| takes ownership of |ids.buffer|.
-    Message::SerializedAttachmentIds ids =
-        message->SerializedIdsOfBrokerableAttachments();
-    OutputElement* new_element = new OutputElement(ids.buffer, ids.size);
-    output_queue_.push(new_element);
-  }
-#endif
-
+  output_queue_.push(message);
   // ensure waiting to write
   if (!waiting_connect_) {
     if (!output_state_.is_pending) {
@@ -376,8 +363,7 @@ bool ChannelWin::CreatePipe(const IPC::ChannelHandle &channel_handle,
     return false;
   }
 
-  OutputElement* element = new OutputElement(m.release());
-  output_queue_.push(element);
+  output_queue_.push(m.release());
   return true;
 }
 
@@ -467,9 +453,9 @@ bool ChannelWin::ProcessOutgoingMessages(
     }
     // Message was sent.
     CHECK(!output_queue_.empty());
-    OutputElement* element = output_queue_.front();
+    Message* m = output_queue_.front();
     output_queue_.pop();
-    delete element;
+    delete m;
   }
 
   if (output_queue_.empty())
@@ -479,21 +465,20 @@ bool ChannelWin::ProcessOutgoingMessages(
     return false;
 
   // Write to pipe...
-  OutputElement* element = output_queue_.front();
-  DCHECK(element->size() <= INT_MAX);
-  BOOL ok = WriteFile(pipe_.Get(), element->data(),
-                      static_cast<uint32>(element->size()), NULL,
+  Message* m = output_queue_.front();
+  DCHECK(m->size() <= INT_MAX);
+  BOOL ok = WriteFile(pipe_.Get(),
+                      m->data(),
+                      static_cast<uint32>(m->size()),
+                      NULL,
                       &output_state_.context.overlapped);
   if (!ok) {
     DWORD write_error = GetLastError();
     if (write_error == ERROR_IO_PENDING) {
       output_state_.is_pending = true;
 
-      const Message* m = element->get_message();
-      if (m) {
-        DVLOG(2) << "sent pending message @" << m << " on channel @" << this
-                 << " with type " << m->type();
-      }
+      DVLOG(2) << "sent pending message @" << m << " on channel @" << this
+               << " with type " << m->type();
 
       return true;
     }
@@ -501,11 +486,8 @@ bool ChannelWin::ProcessOutgoingMessages(
     return false;
   }
 
-  const Message* m = element->get_message();
-  if (m) {
-    DVLOG(2) << "sent message @" << m << " on channel @" << this
-             << " with type " << m->type();
-  }
+  DVLOG(2) << "sent message @" << m << " on channel @" << this
+           << " with type " << m->type();
 
   output_state_.is_pending = true;
   return true;

@@ -124,7 +124,6 @@ enum IPCMessageStart {
   ChromeAppBannerMsgStart,
   SafeJsonParserMsgStart,
   AttachmentBrokerMsgStart,
-  IPCTestMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

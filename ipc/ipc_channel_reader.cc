@@ -20,7 +20,8 @@ ChannelReader::ChannelReader(Listener* listener) : listener_(listener) {
 }
 
 ChannelReader::~ChannelReader() {
-  DCHECK(blocked_ids_.empty());
+  if (!blocked_ids_.empty())
+    StopObservingAttachmentBroker();
 }
 
 ChannelReader::DispatchState ChannelReader::ProcessIncomingMessages() {
@@ -84,14 +85,11 @@ bool ChannelReader::TranslateInputData(const char* input_data,
 
   // Dispatch all complete messages in the data buffer.
   while (p < end) {
-    Message::NextMessageInfo info = Message::FindNext(p, end);
-    if (info.message_found) {
-      int pickle_len = static_cast<int>(info.pickle_end - p);
-      Message translated_message(p, pickle_len);
+    const char* message_tail = Message::FindNext(p, end);
+    if (message_tail) {
+      int len = static_cast<int>(message_tail - p);
 
-      for (const auto& id : info.attachment_ids)
-        translated_message.AddPlaceholderBrokerableAttachmentWithId(id);
-
+      Message translated_message(p, len);
       if (!GetNonBrokeredAttachments(&translated_message))
         return false;
 
@@ -105,7 +103,7 @@ bool ChannelReader::TranslateInputData(const char* input_data,
         if (blocked_ids.empty()) {
           // Dispatch the message and continue the loop.
           DispatchMessage(&translated_message);
-          p = info.message_end;
+          p = message_tail;
           continue;
         }
 
@@ -116,7 +114,7 @@ bool ChannelReader::TranslateInputData(const char* input_data,
       // Make a deep copy of |translated_message| to add to the queue.
       scoped_ptr<Message> m(new Message(translated_message));
       queued_messages_.push_back(m.release());
-      p = info.message_end;
+      p = message_tail;
     } else {
       // Last message is partial.
       break;
@@ -149,13 +147,6 @@ ChannelReader::DispatchState ChannelReader::DispatchMessages() {
     queued_messages_.erase(queued_messages_.begin());
   }
   return DISPATCH_FINISHED;
-}
-
-void ChannelReader::CleanUp() {
-  if (!blocked_ids_.empty()) {
-    StopObservingAttachmentBroker();
-    blocked_ids_.clear();
-  }
 }
 
 void ChannelReader::DispatchMessage(Message* m) {
@@ -200,9 +191,8 @@ ChannelReader::AttachmentIdSet ChannelReader::GetBrokeredAttachments(
 
 #if USE_ATTACHMENT_BROKER
   MessageAttachmentSet* set = msg->attachment_set();
-  std::vector<const BrokerableAttachment*> brokerable_attachments_copy =
-      set->PeekBrokerableAttachments();
-  for (const BrokerableAttachment* attachment : brokerable_attachments_copy) {
+  for (const scoped_refptr<BrokerableAttachment>& attachment :
+       set->GetBrokerableAttachmentsForUpdating()) {
     if (attachment->NeedsBrokering()) {
       AttachmentBroker* broker = GetAttachmentBroker();
       scoped_refptr<BrokerableAttachment> brokered_attachment;
@@ -213,7 +203,7 @@ ChannelReader::AttachmentIdSet ChannelReader::GetBrokeredAttachments(
         continue;
       }
 
-      set->ReplacePlaceholderWithAttachment(brokered_attachment);
+      attachment->PopulateWithAttachment(brokered_attachment.get());
     }
   }
 #endif  // USE_ATTACHMENT_BROKER
