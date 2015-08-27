@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var DIGIT_LENGTH = 0.6;
-
 Polymer({
   is: 'viewer-page-selector',
 
@@ -36,7 +34,10 @@ Polymer({
 
   docLengthChanged: function() {
     var numDigits = this.docLength.toString().length;
-    this.$.pageselector.style.width = (numDigits * DIGIT_LENGTH) + 'em';
+    this.$.pageselector.style.width = numDigits + 'ch';
+    // Set both sides of the slash to the same width, so that the layout is
+    // exactly centered.
+    this.$['pagelength-spacer'].style.width = numDigits + 'ch';
   },
 
   select: function() {

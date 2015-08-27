@@ -49,8 +49,8 @@ var tests = [
   function testPageSelectorDocLength() {
     var selector =
         Polymer.Base.create('viewer-page-selector', {docLength: 1234});
-    chrome.test.assertEq('/ 1234', selector.$.pagelength.textContent);
-    chrome.test.assertEq('2.4em', selector.$.pageselector.style.width);
+    chrome.test.assertEq('1234', selector.$.pagelength.textContent);
+    chrome.test.assertEq('4ch', selector.$.pageselector.style.width);
     chrome.test.succeed();
   },
 

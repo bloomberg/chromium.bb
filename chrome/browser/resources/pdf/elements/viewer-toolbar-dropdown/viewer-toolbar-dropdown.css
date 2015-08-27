@@ -36,14 +36,15 @@ paper-material {
 }
 
 #arrow {
-  margin-left: -18px;
+  margin-left: -12px;
   padding-right: 4px;
 }
 
 h1 {
   border-bottom: 1px solid rgb(219, 219, 219);
   color: rgb(33, 33, 33);
+  font-size: 77.8%;
+  font-weight: 500;
   margin: 0;
-  padding: 16px;
-  @apply(--paper-font-title);
+  padding: 14px 28px;
 }

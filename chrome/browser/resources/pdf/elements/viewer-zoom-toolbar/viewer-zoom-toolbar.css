@@ -3,6 +3,7 @@
  * found in the LICENSE file. */
 
 :host {
+  -webkit-user-select: none;
   bottom: 0;
   padding: 48px 0;
   position: fixed;
@@ -16,10 +17,10 @@ viewer-zoom-button {
 
 /* A small gap between the zoom in/zoom out buttons. */
 #zoom-out-button {
-  margin-top: 1em;
+  margin-top: 10px;
 }
 
 /* A larger gap between the fit button and bottom two buttons. */
 #zoom-in-button {
-  margin-top: 2em;
+  margin-top: 24px;
 }

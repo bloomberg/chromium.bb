@@ -2,27 +2,27 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+:host {
+  color: #fff;
+  font-size: 88.8%;
+}
+
 #pageselector {
+  --paper-input-container-underline: {
+    visibility: hidden;
+  };
+  --paper-input-container-underline-focus: {
+    visibility: hidden;
+  };
   display: inline-block;
-  width: 0.6em;
-}
-
-paper-input-container /deep/ .focused-line {
-  visibility: hidden;
-}
-
-paper-input-container /deep/ .unfocused-line {
-  visibility: hidden;
-}
-
-paper-input-container {
   padding: 0;
+  width: 1ch;
 }
 
 input#input {
   color: #fff;
-  font-size: 1em;
-  line-height: 20px;
+  line-height: 18px;
+  margin-left: -3px;
   padding: 3px;
   text-align: right;
 }
@@ -33,9 +33,16 @@ input#input:hover {
   border-radius: 2px;
 }
 
+#slash {
+  padding: 0 3px;
+}
+
+#pagelength-spacer {
+  display: inline-block;
+  text-align: left;
+}
+
+#slash,
 #pagelength {
-  color: #fff;
-  font-size: 0.7em;
-  font-weight: 400;
-  padding-left: 3px;
+  font-size: 81.25%;
 }

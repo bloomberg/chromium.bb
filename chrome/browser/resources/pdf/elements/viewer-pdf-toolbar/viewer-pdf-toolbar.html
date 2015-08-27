@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-up-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../viewer-bookmarks-content/viewer-bookmarks-content.html">
@@ -14,10 +13,9 @@
 <link rel="import" href="../viewer-toolbar-dropdown/viewer-toolbar-dropdown.html">
 
 <dom-module id="viewer-pdf-toolbar">
+  <link rel="import" type="css" href="../shared-icon-style.css">
   <link rel="import" type="css" href="viewer-pdf-toolbar.css">
   <template>
-    <paper-material class="fit"></paper-material>
-
     <paper-progress value="{{loadProgress}}"></paper-progress>
 
     <paper-toolbar>

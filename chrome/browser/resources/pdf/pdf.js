@@ -85,7 +85,7 @@ PDFViewer.MIN_TOOLBAR_OFFSET = 15;
  * The height of the toolbar along the top of the page. The document will be
  * shifted down by this much in the viewport.
  */
-PDFViewer.MATERIAL_TOOLBAR_HEIGHT = 64;
+PDFViewer.MATERIAL_TOOLBAR_HEIGHT = 56;
 
 /**
  * Creates a new PDFViewer. There should only be one of these objects per

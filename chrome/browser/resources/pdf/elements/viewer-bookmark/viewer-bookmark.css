@@ -3,16 +3,15 @@
  * found in the LICENSE file. */
 
 #item {
-  -webkit-user-select: none;
+  @apply(--layout-center);
+  @apply(--layout-horizontal);
   color: rgb(80, 80, 80);
   cursor: pointer;
-  min-height: 40px;
+  font-size: 77.8%;
+  height: 30px;
   overflow: hidden;
   position: relative;
   white-space: nowrap;
-  @apply(--layout-horizontal);
-  @apply(--layout-center);
-  @apply(--paper-font-subhead);
 }
 
 #item:hover {
@@ -21,11 +20,13 @@
 }
 
 #expand {
-  height: 20px;
-  min-width: 20px;
+  --iron-icon-height: 16px;
+  --iron-icon-width: 16px;
+  height: 16px;
+  min-width: 16px;
   padding: 6px;
   transition: transform 150ms;
-  width: 20px;
+  width: 16px;
 }
 
 #expand.open {

@@ -9,7 +9,10 @@
       <input id="input" is="iron-input" bind-value="{{pageNo}}" on-mouseup="select"
           on-change="pageNoCommitted">
     </paper-input-container>
-    <span id="pagelength">/ <span>{{docLength}}</span></span>
+    <span id="slash"> / </span>
+    <span id="pagelength-spacer">
+      <span id="pagelength">{{docLength}}</span>
+    </span>
   </template>
 </dom-module>
 <script src="viewer-page-selector.js"></script>

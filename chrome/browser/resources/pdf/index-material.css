@@ -25,18 +25,3 @@ viewer-pdf-toolbar {
   position: absolute;
   z-index: 0;
 }
-
-bookmarks-pane {
-  z-index: 2;
-}
-
-viewer-toolbar {
-  visibility: hidden;
-  white-space: nowrap;
-  z-index: 3;
-}
-
-viewer-page-indicator {
-  visibility: hidden;
-  z-index: 3;
-}
