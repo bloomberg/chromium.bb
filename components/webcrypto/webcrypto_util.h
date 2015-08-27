@@ -45,9 +45,6 @@ blink::WebCryptoAlgorithm CreateEcImportAlgorithm(
 bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
                        blink::WebCryptoKeyUsageMask b);
 
-bool KeyUsageAllows(const blink::WebCryptoKey& key,
-                    const blink::WebCryptoKeyUsage usage);
-
 Status GetAesGcmTagLengthInBits(const blink::WebCryptoAesGcmParams* params,
                                 unsigned int* tag_length_bits);
 

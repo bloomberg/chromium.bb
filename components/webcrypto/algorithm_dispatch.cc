@@ -65,7 +65,7 @@ Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
                const CryptoData& data,
                std::vector<uint8_t>* buffer) {
-  if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageEncrypt))
+  if (!key.keyUsageAllows(blink::WebCryptoKeyUsageEncrypt))
     return Status::ErrorUnexpected();
   return EncryptDontCheckUsage(algorithm, key, data, buffer);
 }
@@ -74,7 +74,7 @@ Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
                const CryptoData& data,
                std::vector<uint8_t>* buffer) {
-  if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageDecrypt))
+  if (!key.keyUsageAllows(blink::WebCryptoKeyUsageDecrypt))
     return Status::ErrorUnexpected();
   return DecryptDontCheckKeyUsage(algorithm, key, data, buffer);
 }
@@ -150,7 +150,7 @@ Status Sign(const blink::WebCryptoAlgorithm& algorithm,
             const blink::WebCryptoKey& key,
             const CryptoData& data,
             std::vector<uint8_t>* buffer) {
-  if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageSign))
+  if (!key.keyUsageAllows(blink::WebCryptoKeyUsageSign))
     return Status::ErrorUnexpected();
   if (algorithm.id() != key.algorithm().id())
     return Status::ErrorUnexpected();
@@ -168,7 +168,7 @@ Status Verify(const blink::WebCryptoAlgorithm& algorithm,
               const CryptoData& signature,
               const CryptoData& data,
               bool* signature_match) {
-  if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageVerify))
+  if (!key.keyUsageAllows(blink::WebCryptoKeyUsageVerify))
     return Status::ErrorUnexpected();
   if (algorithm.id() != key.algorithm().id())
     return Status::ErrorUnexpected();
@@ -186,7 +186,7 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
                const blink::WebCryptoKey& wrapping_key,
                const blink::WebCryptoAlgorithm& wrapping_algorithm,
                std::vector<uint8_t>* buffer) {
-  if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageWrapKey))
+  if (!wrapping_key.keyUsageAllows(blink::WebCryptoKeyUsageWrapKey))
     return Status::ErrorUnexpected();
 
   std::vector<uint8_t> exported_data;
@@ -205,7 +205,7 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
                  bool extractable,
                  blink::WebCryptoKeyUsageMask usages,
                  blink::WebCryptoKey* key) {
-  if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageUnwrapKey))
+  if (!wrapping_key.keyUsageAllows(blink::WebCryptoKeyUsageUnwrapKey))
     return Status::ErrorUnexpected();
   if (wrapping_algorithm.id() != wrapping_key.algorithm().id())
     return Status::ErrorUnexpected();
@@ -239,7 +239,7 @@ Status DeriveBits(const blink::WebCryptoAlgorithm& algorithm,
                   const blink::WebCryptoKey& base_key,
                   unsigned int length_bits,
                   std::vector<uint8_t>* derived_bytes) {
-  if (!KeyUsageAllows(base_key, blink::WebCryptoKeyUsageDeriveBits))
+  if (!base_key.keyUsageAllows(blink::WebCryptoKeyUsageDeriveBits))
     return Status::ErrorUnexpected();
 
   if (algorithm.id() != base_key.algorithm().id())
@@ -261,7 +261,7 @@ Status DeriveKey(const blink::WebCryptoAlgorithm& algorithm,
                  bool extractable,
                  blink::WebCryptoKeyUsageMask usages,
                  blink::WebCryptoKey* derived_key) {
-  if (!KeyUsageAllows(base_key, blink::WebCryptoKeyUsageDeriveKey))
+  if (!base_key.keyUsageAllows(blink::WebCryptoKeyUsageDeriveKey))
     return Status::ErrorUnexpected();
 
   if (algorithm.id() != base_key.algorithm().id())

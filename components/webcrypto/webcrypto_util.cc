@@ -95,12 +95,6 @@ bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
   return (a & b) == b;
 }
 
-// TODO(eroman): Move this helper to WebCryptoKey.
-bool KeyUsageAllows(const blink::WebCryptoKey& key,
-                    const blink::WebCryptoKeyUsage usage) {
-  return ((key.usages() & usage) != 0);
-}
-
 // The WebCrypto spec defines the default value for the tag length, as well as
 // the allowed values for tag length.
 Status GetAesGcmTagLengthInBits(const blink::WebCryptoAesGcmParams* params,
