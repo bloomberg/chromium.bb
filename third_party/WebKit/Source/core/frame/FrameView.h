@@ -104,7 +104,6 @@ public:
     PassRefPtrWillBeRawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
 
     void setContentsSize(const IntSize&);
-    IntPoint clampOffsetAtScale(const IntPoint& offset, float scale) const;
 
     void layout();
     bool didFirstLayout() const;

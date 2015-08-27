@@ -1114,7 +1114,7 @@ FrameLoadType FrameLoader::loadType() const
 void FrameLoader::restoreScrollPositionAndViewState()
 {
     FrameView* view = m_frame->view();
-    if (!m_frame->page() || !view || !m_currentItem || !m_stateMachine.committedFirstRealDocumentLoad())
+    if (!m_frame->page() || !view || !view->layoutViewportScrollableArea() || !m_currentItem || !m_stateMachine.committedFirstRealDocumentLoad())
         return;
 
     if (!needsHistoryItemRestore(m_loadType))
@@ -1131,7 +1131,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
     //   4. ignore clamp detection if we are not restoring scroll or after load
     //      completes because that may be because the page will never reach its
     //      previous height
-    bool canRestoreWithoutClamping = view->clampOffsetAtScale(m_currentItem->scrollPoint(), 1) == m_currentItem->scrollPoint();
+    bool canRestoreWithoutClamping = view->layoutViewportScrollableArea()->clampScrollPosition(m_currentItem->scrollPoint()) == m_currentItem->scrollPoint();
     bool canRestoreWithoutAnnoyingUser = !documentLoader()->initialScrollState().wasScrolledByUser
         && (canRestoreWithoutClamping || !m_frame->isLoading() || !shouldRestoreScroll);
     if (!canRestoreWithoutAnnoyingUser)

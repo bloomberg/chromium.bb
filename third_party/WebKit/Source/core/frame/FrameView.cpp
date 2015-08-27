@@ -405,8 +405,11 @@ void FrameView::setFrameRect(const IntRect& newRect)
 
     viewportSizeChanged(newRect.width() != oldRect.width(), newRect.height() != oldRect.height());
 
-    if (oldRect.size() != newRect.size() && m_frame->isMainFrame())
-        page()->frameHost().visualViewport().mainFrameDidChangeSize();
+    if (oldRect.size() != newRect.size()) {
+        if (m_frame->isMainFrame())
+            m_frame->host()->visualViewport().mainFrameDidChangeSize();
+        frame().loader().restoreScrollPositionAndViewState();
+    }
 }
 
 Page* FrameView::page() const
@@ -508,20 +511,7 @@ void FrameView::setContentsSize(const IntSize& size)
     updateScrollableAreaSet();
 
     page->chromeClient().contentsSizeChanged(m_frame.get(), size);
-}
-
-IntPoint FrameView::clampOffsetAtScale(const IntPoint& offset, float scale) const
-{
-    IntPoint maxScrollExtent(contentsSize().width() - scrollOrigin().x(), contentsSize().height() - scrollOrigin().y());
-    FloatSize scaledSize = visibleContentSize();
-    if (scale)
-        scaledSize.scale(1 / scale);
-
-    IntPoint clampedOffset = offset;
-    clampedOffset = clampedOffset.shrunkTo(maxScrollExtent - expandedIntSize(scaledSize));
-    clampedOffset = clampedOffset.expandedTo(-scrollOrigin());
-
-    return clampedOffset;
+    frame().loader().restoreScrollPositionAndViewState();
 }
 
 void FrameView::adjustViewSize()
@@ -796,7 +786,7 @@ void FrameView::performPreLayoutTasks()
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 
     if (m_frame->isMainFrame() && !m_viewportScrollableArea) {
-        ScrollableArea& visualViewport = page()->frameHost().visualViewport();
+        ScrollableArea& visualViewport = m_frame->host()->visualViewport();
         ScrollableArea* layoutViewport = layoutViewportScrollableArea();
         bool invertScrollOrder = m_frame->settings()->invertViewportScrollOrder();
         ASSERT(layoutViewport);
@@ -2193,7 +2183,7 @@ IntSize FrameView::inputEventsOffsetForEmulation() const
 
 float FrameView::inputEventsScaleFactor() const
 {
-    float pageScale = m_frame->page()->frameHost().visualViewport().scale();
+    float pageScale = m_frame->host()->visualViewport().scale();
     return pageScale * m_inputEventsScaleFactorForEmulation;
 }
 
@@ -3547,14 +3537,14 @@ FloatPoint FrameView::rootFrameToContents(const FloatPoint& windowPoint) const
 
 IntRect FrameView::viewportToContents(const IntRect& rectInViewport) const
 {
-    IntRect rectInRootFrame = page()->frameHost().visualViewport().viewportToRootFrame(rectInViewport);
+    IntRect rectInRootFrame = m_frame->host()->visualViewport().viewportToRootFrame(rectInViewport);
     IntRect frameRect = convertFromContainingWindow(rectInRootFrame);
     return frameToContents(frameRect);
 }
 
 IntPoint FrameView::viewportToContents(const IntPoint& pointInViewport) const
 {
-    IntPoint pointInRootFrame = page()->frameHost().visualViewport().viewportToRootFrame(pointInViewport);
+    IntPoint pointInRootFrame = m_frame->host()->visualViewport().viewportToRootFrame(pointInViewport);
     IntPoint pointInFrame = convertFromContainingWindow(pointInRootFrame);
     return frameToContents(pointInFrame);
 }
@@ -3563,14 +3553,14 @@ IntRect FrameView::contentsToViewport(const IntRect& rectInContents) const
 {
     IntRect rectInFrame = contentsToFrame(rectInContents);
     IntRect rectInRootFrame = convertToContainingWindow(rectInFrame);
-    return page()->frameHost().visualViewport().rootFrameToViewport(rectInRootFrame);
+    return m_frame->host()->visualViewport().rootFrameToViewport(rectInRootFrame);
 }
 
 IntPoint FrameView::contentsToViewport(const IntPoint& pointInContents) const
 {
     IntPoint pointInFrame = contentsToFrame(pointInContents);
     IntPoint pointInRootFrame = convertToContainingWindow(pointInFrame);
-    return page()->frameHost().visualViewport().rootFrameToViewport(pointInRootFrame);
+    return m_frame->host()->visualViewport().rootFrameToViewport(pointInRootFrame);
 }
 
 IntRect FrameView::contentsToScreen(const IntRect& rect) const
@@ -3585,12 +3575,12 @@ IntRect FrameView::soonToBeRemovedContentsToUnscaledViewport(const IntRect& rect
 {
     IntRect rectInFrame = contentsToFrame(rectInContents);
     IntRect rectInRootFrame = convertToContainingWindow(rectInFrame);
-    return enclosingIntRect(page()->frameHost().visualViewport().mainViewToViewportCSSPixels(rectInRootFrame));
+    return enclosingIntRect(m_frame->host()->visualViewport().mainViewToViewportCSSPixels(rectInRootFrame));
 }
 
 IntPoint FrameView::soonToBeRemovedUnscaledViewportToContents(const IntPoint& pointInViewport) const
 {
-    IntPoint pointInRootFrame = flooredIntPoint(page()->frameHost().visualViewport().viewportCSSPixelsToRootFrame(pointInViewport));
+    IntPoint pointInRootFrame = flooredIntPoint(m_frame->host()->visualViewport().viewportCSSPixelsToRootFrame(pointInViewport));
     IntPoint pointInThisFrame = convertFromContainingWindow(pointInRootFrame);
     return frameToContents(pointInThisFrame);
 }
