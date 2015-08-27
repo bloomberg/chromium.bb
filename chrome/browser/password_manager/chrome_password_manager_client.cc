@@ -518,13 +518,11 @@ bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {
 }
 
 bool ChromePasswordManagerClient::IsUpdatePasswordUIEnabled() const {
-  if (!ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    // Currently Password update UI is implemented only for Bubble UI.
-    return false;
-  }
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(
-      password_manager::switches::kEnablePasswordChangeSupport);
+#if defined(OS_MACOSX)
+  return false;
+#else
+  return IsTheHotNewBubbleUIEnabled();
+#endif
 }
 
 bool ChromePasswordManagerClient::EnabledForSyncSignin() {

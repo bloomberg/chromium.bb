@@ -117,6 +117,9 @@ class ObservingAutofillClient : public autofill::TestAutofillClient {
   DISALLOW_COPY_AND_ASSIGN(ObservingAutofillClient);
 };
 
+// TODO(dvadym): This is for avoiding unused function compilation error. Remove
+// it when http://crbug.com/359315 is implemented for Mac.
+#if !defined(OS_MACOSX)
 // For simplicity we assume that password store contains only 1 credentials.
 void CheckThatCredentialsStored(
     password_manager::TestPasswordStore* password_store,
@@ -130,6 +133,7 @@ void CheckThatCredentialsStored(
   EXPECT_EQ(username, form.username_value);
   EXPECT_EQ(password, form.password_value);
 }
+#endif
 
 }  // namespace
 
@@ -1529,46 +1533,32 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   observing_autofill_client.Wait();
 }
 
-// Passwords from change password forms should only be offered for saving when
-// it is certain that the username is correct.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, ChangePwdCorrect) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       ChangePwdFormBubbleShown) {
   NavigateToFile("/password/password_form.html");
 
   NavigationObserver observer(WebContents());
   scoped_ptr<PromptObserver> prompt_observer(
       PromptObserver::Create(WebContents()));
   std::string fill_and_submit =
-      "document.getElementById('mark_chg_username_field').value = 'temp';"
-      "document.getElementById('mark_chg_password_field').value = 'random';"
-      "document.getElementById('mark_chg_new_password_1').value = 'random1';"
-      "document.getElementById('mark_chg_new_password_2').value = 'random1';"
-      "document.getElementById('mark_chg_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
-  observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, ChangePwdIncorrect) {
-  NavigateToFile("/password/password_form.html");
-
-  NavigationObserver observer(WebContents());
-  scoped_ptr<PromptObserver> prompt_observer(
-      PromptObserver::Create(WebContents()));
-  std::string fill_and_submit =
-      "document.getElementById('chg_not_username_field').value = 'temp';"
+      "document.getElementById('chg_username_field').value = 'temp';"
       "document.getElementById('chg_password_field').value = 'random';"
       "document.getElementById('chg_new_password_1').value = 'random1';"
       "document.getElementById('chg_new_password_2').value = 'random1';"
       "document.getElementById('chg_submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
+// TODO(dvadym): Turn on this test when Change password UI will be implemented
+// for Mac. http://crbug.com/359315
+#if defined(OS_MACOSX)
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+#else
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+#endif
 }
 
-// As the two ChangePwd* tests above, only with submitting through
-// history.pushState().
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       ChangePwdPushStateCorrect) {
+                       ChangePwdFormPushStateBubbleShown) {
   NavigateToFile("/password/password_push_state.html");
 
   NavigationObserver observer(WebContents());
@@ -1576,33 +1566,20 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   scoped_ptr<PromptObserver> prompt_observer(
       PromptObserver::Create(WebContents()));
   std::string fill_and_submit =
-      "document.getElementById('mark_chg_username_field').value = 'temp';"
-      "document.getElementById('mark_chg_password_field').value = 'random';"
-      "document.getElementById('mark_chg_new_password_1').value = 'random1';"
-      "document.getElementById('mark_chg_new_password_2').value = 'random1';"
-      "document.getElementById('mark_chg_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
-  observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       ChangePwdPushStateIncorrect) {
-  NavigateToFile("/password/password_push_state.html");
-
-  NavigationObserver observer(WebContents());
-  observer.set_quit_on_entry_committed(true);
-  scoped_ptr<PromptObserver> prompt_observer(
-      PromptObserver::Create(WebContents()));
-  std::string fill_and_submit =
-      "document.getElementById('chg_not_username_field').value = 'temp';"
+      "document.getElementById('chg_username_field').value = 'temp';"
       "document.getElementById('chg_password_field').value = 'random';"
       "document.getElementById('chg_new_password_1').value = 'random1';"
       "document.getElementById('chg_new_password_2').value = 'random1';"
       "document.getElementById('chg_submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
+// TODO(dvadym): Turn on this test when Change password UI will be implemented
+// for Mac. http://crbug.com/359315
+#if defined(OS_MACOSX)
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+#else
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoPromptOnBack) {
@@ -1950,13 +1927,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   iframe_killed.Wait();
 }
 
+// TODO(dvadym): Turn on this test when Change password UI will be implemented
+// for Mac. http://crbug.com/359315
+#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwdNoAccountStored) {
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   NavigateToFile("/password/password_form.html");
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      password_manager::switches::kEnablePasswordChangeSupport);
 
   // Fill a form and submit through a <input type="submit"> button.
   NavigationObserver observer(WebContents());
@@ -1990,6 +1967,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16(""),
                              base::ASCIIToUTF16("new_pw"));
 }
+#endif
 
 // TODO(dvadym): Turn on this test when Change password UI will be implemented
 // for Mac. http://crbug.com/359315
@@ -1997,8 +1975,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwd1AccountStored) {
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      password_manager::switches::kEnablePasswordChangeSupport);
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2047,8 +2023,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PasswordOverridenUpdateBubbleShown) {
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      password_manager::switches::kEnablePasswordChangeSupport);
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2094,8 +2068,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PasswordNotOverridenUpdateBubbleNotShown) {
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      password_manager::switches::kEnablePasswordChangeSupport);
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(

@@ -1092,7 +1092,7 @@ const Experiment kExperiments[] = {
     {"enable-password-change-support",
      IDS_FLAGS_ENABLE_PASSWORD_CHANGE_SUPPORT_NAME,
      IDS_FLAGS_ENABLE_PASSWORD_CHANGE_SUPPORT_DESCRIPTION,
-     kOsWin | kOsLinux | kOsCrOS,
+     kOsMac,
      SINGLE_VALUE_TYPE(
          password_manager::switches::kEnablePasswordChangeSupport)},
     {"enable-password-force-saving",

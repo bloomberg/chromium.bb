@@ -790,7 +790,7 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
   // Button row.
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
   layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
-                              views::kRelatedControlVerticalSpacing);
+                              views::kUnrelatedControlVerticalSpacing);
   layout->AddView(update_button_);
   layout->AddView(nope_button_);
 
