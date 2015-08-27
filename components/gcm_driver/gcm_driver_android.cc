@@ -196,10 +196,9 @@ void GCMDriverAndroid::RegisterImpl(
     const std::string& app_id, const std::vector<std::string>& sender_ids) {
   DCHECK_EQ(1u, sender_ids.size());
   JNIEnv* env = AttachCurrentThread();
-  Java_GCMDriver_register(
-      env, java_ref_.obj(),
-      ConvertUTF8ToJavaString(env, app_id).Release(),
-      ConvertUTF8ToJavaString(env, sender_ids[0]).Release());
+  Java_GCMDriver_register(env, java_ref_.obj(),
+                          ConvertUTF8ToJavaString(env, app_id).obj(),
+                          ConvertUTF8ToJavaString(env, sender_ids[0]).obj());
 }
 
 void GCMDriverAndroid::UnregisterImpl(const std::string& app_id) {
@@ -209,10 +208,9 @@ void GCMDriverAndroid::UnregisterImpl(const std::string& app_id) {
 void GCMDriverAndroid::UnregisterWithSenderIdImpl(
     const std::string& app_id, const std::string& sender_id) {
   JNIEnv* env = AttachCurrentThread();
-  Java_GCMDriver_unregister(
-      env, java_ref_.obj(),
-      ConvertUTF8ToJavaString(env, app_id).Release(),
-      ConvertUTF8ToJavaString(env, sender_id).Release());
+  Java_GCMDriver_unregister(env, java_ref_.obj(),
+                            ConvertUTF8ToJavaString(env, app_id).obj(),
+                            ConvertUTF8ToJavaString(env, sender_id).obj());
 }
 
 void GCMDriverAndroid::SendImpl(const std::string& app_id,

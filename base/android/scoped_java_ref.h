@@ -162,7 +162,8 @@ class ScopedJavaLocalRef : public JavaRef<T> {
   }
 
   // Releases the local reference to the caller. The caller *must* delete the
-  // local reference when it is done with it.
+  // local reference when it is done with it. Note that calling a Java method
+  // is *not* a transfer of ownership and Release() should not be used.
   T Release() {
     return static_cast<T>(this->ReleaseInternal());
   }
@@ -213,7 +214,8 @@ class ScopedJavaGlobalRef : public JavaRef<T> {
   }
 
   // Releases the global reference to the caller. The caller *must* delete the
-  // global reference when it is done with it.
+  // global reference when it is done with it. Note that calling a Java method
+  // is *not* a transfer of ownership and Release() should not be used.
   T Release() {
     return static_cast<T>(this->ReleaseInternal());
   }

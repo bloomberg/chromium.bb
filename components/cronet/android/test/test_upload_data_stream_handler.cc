@@ -164,7 +164,7 @@ void TestUploadDataStreamHandler::NotifyJavaReadCompleted() {
     data_read = std::string(read_buffer_->data(), bytes_read_);
   cronet::Java_TestUploadDataStreamHandler_onReadCompleted(
       env, jtest_upload_data_stream_handler_.obj(), bytes_read_,
-      base::android::ConvertUTF8ToJavaString(env, data_read).Release());
+      base::android::ConvertUTF8ToJavaString(env, data_read).obj());
 }
 
 static jlong CreateTestUploadDataStreamHandler(

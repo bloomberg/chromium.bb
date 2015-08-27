@@ -30,9 +30,9 @@ void AddTabToList(JNIEnv* env,
       tab->navigations.at(tab->current_navigation_index);
   Java_RecentlyClosedBridge_pushTab(
       env, jtabs_list, entry->id,
-      ConvertUTF16ToJavaString(env, current_navigation.title()).Release(),
+      ConvertUTF16ToJavaString(env, current_navigation.title()).obj(),
       ConvertUTF8ToJavaString(env, current_navigation.virtual_url().spec())
-          .Release());
+          .obj());
 }
 
 void AddTabsToList(JNIEnv* env,

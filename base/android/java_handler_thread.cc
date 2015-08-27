@@ -21,7 +21,7 @@ JavaHandlerThread::JavaHandlerThread(const char* name) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   java_thread_.Reset(Java_JavaHandlerThread_create(
-      env, ConvertUTF8ToJavaString(env, name).Release()));
+      env, ConvertUTF8ToJavaString(env, name).obj()));
 }
 
 JavaHandlerThread::~JavaHandlerThread() {

@@ -45,11 +45,10 @@ bool TtsPlatformImplAndroid::Speak(
     const UtteranceContinuousParameters& params) {
   JNIEnv* env = AttachCurrentThread();
   jboolean success = Java_TtsPlatformImpl_speak(
-      env, java_ref_.obj(),
-      utterance_id,
-      base::android::ConvertUTF8ToJavaString(env, utterance).Release(),
-      base::android::ConvertUTF8ToJavaString(env, lang).Release(),
-      params.rate, params.pitch, params.volume);
+      env, java_ref_.obj(), utterance_id,
+      base::android::ConvertUTF8ToJavaString(env, utterance).obj(),
+      base::android::ConvertUTF8ToJavaString(env, lang).obj(), params.rate,
+      params.pitch, params.volume);
   if (!success)
     return false;
 

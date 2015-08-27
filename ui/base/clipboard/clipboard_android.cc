@@ -72,10 +72,8 @@ ClipboardMap::ClipboardMap() {
   jobject context = base::android::GetApplicationContext();
   DCHECK(context);
 
-  ScopedJavaLocalRef<jobject> local_ref =
-      Java_Clipboard_create(env, context);
-  DCHECK(local_ref.obj());
-  clipboard_manager_.Reset(env, local_ref.Release());
+  clipboard_manager_.Reset(Java_Clipboard_create(env, context));
+  DCHECK(clipboard_manager_.obj());
 }
 
 std::string ClipboardMap::Get(const std::string& format) {

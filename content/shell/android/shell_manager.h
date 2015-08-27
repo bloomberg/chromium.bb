@@ -22,7 +22,7 @@ namespace content {
 // window.  This view holds the controls and content views necessary to
 // render a shell window.  Returns the java object representing the shell view.
 // object.
-jobject CreateShellView(Shell* shell);
+base::android::ScopedJavaLocalRef<jobject> CreateShellView(Shell* shell);
 
 // Removes a previously created shell view.
 void RemoveShellView(jobject shell_view);

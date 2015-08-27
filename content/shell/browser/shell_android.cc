@@ -53,7 +53,7 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
-  java_object_.Reset(AttachCurrentThread(), CreateShellView(this));
+  java_object_.Reset(CreateShellView(this));
 }
 
 void Shell::PlatformSetContents() {
