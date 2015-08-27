@@ -25,10 +25,6 @@ struct ReturnedResource {
   bool lost;
 };
 
-interface ResourceReturner {
-  ReturnResources(array<ReturnedResource> resources);
-};
-
 // See src/gpu/command_buffer/common/mailbox.h.
 struct Mailbox {
   array<int8, 64> name;
@@ -61,4 +57,18 @@ struct TransferableResource {
 struct CompositorFrame {
   array<TransferableResource> resources;
   array<Pass> passes;
+};
+
+// A Surface is an interface for receiving CompositorFrame structs. This is a
+// separate interface to allow CompositorFrames to be delivered from
+// supplementary (not main) threads of a mojo app.
+interface Surface {
+  // After the submitted frame is drawn for the first time, the receiver will
+  // respond to the SubmitFrame message. Clients should use this acknowledgement
+  // to ratelimit frame submissions.
+  SubmitCompositorFrame(CompositorFrame frame) => ();
+};
+
+interface SurfaceClient {
+  ReturnResources(array<ReturnedResource> resources);
 };

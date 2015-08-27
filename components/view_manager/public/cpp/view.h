@@ -23,6 +23,7 @@ namespace mojo {
 class ServiceProviderImpl;
 class View;
 class ViewObserver;
+class ViewSurface;
 class ViewTreeConnection;
 
 // Defined in view_property.h (which we do not include)
@@ -60,6 +61,8 @@ class View {
   void SetVisible(bool value);
 
   const ViewportMetrics& viewport_metrics() { return *viewport_metrics_; }
+
+  scoped_ptr<ViewSurface> RequestSurface();
 
   // Returns the set of string to bag of byte properties. These properties are
   // shared with the view manager.
@@ -122,8 +125,6 @@ class View {
   bool Contains(View* child) const;
 
   View* GetChildById(Id id);
-
-  void SetSurfaceId(SurfaceIdPtr id);
 
   void SetTextInputState(TextInputStatePtr state);
   void SetImeVisibility(bool visible, TextInputStatePtr state);

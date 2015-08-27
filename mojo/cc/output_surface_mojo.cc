@@ -8,21 +8,16 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "components/view_manager/public/cpp/view_surface.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mojo {
 
 OutputSurfaceMojo::OutputSurfaceMojo(
-    OutputSurfaceMojoClient* client,
     const scoped_refptr<cc::ContextProvider>& context_provider,
-    ScopedMessagePipeHandle surface_handle)
+    scoped_ptr<mojo::ViewSurface> surface)
     : cc::OutputSurface(context_provider),
-      output_surface_mojo_client_(client),
-      surface_handle_(surface_handle.Pass()),
-      id_namespace_(0u),
-      local_id_(0u),
-      binding_(this) {
+      surface_(surface.Pass()) {
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
 }
@@ -30,53 +25,22 @@ OutputSurfaceMojo::OutputSurfaceMojo(
 OutputSurfaceMojo::~OutputSurfaceMojo() {
 }
 
-void OutputSurfaceMojo::SetIdNamespace(uint32_t id_namespace) {
-  id_namespace_ = id_namespace;
-  if (local_id_) {
-    cc::SurfaceId qualified_id(static_cast<uint64_t>(id_namespace_) << 32 |
-                               local_id_);
-    output_surface_mojo_client_->DidCreateSurface(qualified_id);
-  }
-}
-
 bool OutputSurfaceMojo::BindToClient(cc::OutputSurfaceClient* client) {
-  surface_.Bind(InterfacePtrInfo<Surface>(surface_handle_.Pass(), 0u));
-  surface_->GetIdNamespace(
-      base::Bind(&OutputSurfaceMojo::SetIdNamespace, base::Unretained(this)));
-
-  // Wire up mojo binding.
-  mojo::ResourceReturnerPtr returner_ptr;
-  binding_.Bind(mojo::GetProxy(&returner_ptr).Pass());
-  surface_->SetResourceReturner(returner_ptr.Pass());
-
+  surface_->BindToThread();
+  surface_->set_client(this);
   return cc::OutputSurface::BindToClient(client);
 }
 
 void OutputSurfaceMojo::SwapBuffers(cc::CompositorFrame* frame) {
-  gfx::Size frame_size =
-      frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
-  if (frame_size != surface_size_) {
-    if (local_id_ != 0u) {
-      surface_->DestroySurface(local_id_);
-    }
-    local_id_++;
-    surface_->CreateSurface(local_id_);
-    if (id_namespace_) {
-      cc::SurfaceId qualified_id(static_cast<uint64_t>(id_namespace_) << 32 |
-                                 local_id_);
-      output_surface_mojo_client_->DidCreateSurface(qualified_id);
-    }
-    surface_size_ = frame_size;
-  }
-
-  surface_->SubmitCompositorFrame(local_id_, CompositorFrame::From(*frame),
-                                  mojo::Closure());
+  // TODO(fsamuel, rjkroege): We should probably throttle compositor frames.
+  surface_->SubmitCompositorFrame(mojo::CompositorFrame::From(*frame));
 
   client_->DidSwapBuffers();
   client_->DidSwapBuffersComplete();
 }
 
-void OutputSurfaceMojo::ReturnResources(
+void OutputSurfaceMojo::OnResourcesReturned(
+    mojo::ViewSurface* surface,
     mojo::Array<mojo::ReturnedResourcePtr> resources) {
   cc::CompositorFrameAck cfa;
   cfa.resources = resources.To<cc::ReturnedResourceArray>();

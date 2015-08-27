@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "cc/output/compositor_frame.h"
 #include "components/view_manager/client_connection.h"
 #include "components/view_manager/connection_manager_delegate.h"
 #include "components/view_manager/focus_controller.h"
@@ -110,8 +111,11 @@ ConnectionManager::ScopedChange::~ScopedChange() {
   connection_manager_->FinishChange();
 }
 
-ConnectionManager::ConnectionManager(ConnectionManagerDelegate* delegate)
+ConnectionManager::ConnectionManager(
+    ConnectionManagerDelegate* delegate,
+    const scoped_refptr<surfaces::SurfacesState>& surfaces_state)
     : delegate_(delegate),
+      surfaces_state_(surfaces_state),
       next_connection_id_(1),
       next_host_id_(0),
       event_dispatcher_(this),
@@ -492,6 +496,10 @@ ViewTreeHostImpl* ConnectionManager::GetViewTreeHostByView(
       return pair.first;
   }
   return nullptr;
+}
+
+surfaces::SurfacesState* ConnectionManager::GetSurfacesState() {
+  return surfaces_state_.get();
 }
 
 void ConnectionManager::PrepareToDestroyView(ServerView* view) {

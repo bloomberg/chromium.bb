@@ -13,7 +13,6 @@ mojom("interfaces") {
     "gpu_capabilities.mojom",
     "quads.mojom",
     "surface_id.mojom",
-    "surfaces.mojom",
     "view_manager_constants.mojom",
     "view_tree.mojom",
     "view_tree_host.mojom",

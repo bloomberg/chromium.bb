@@ -296,7 +296,9 @@ class ViewTreeTest : public testing::Test {
   void SetUp() override {
     DisplayManager::set_factory_for_testing(&display_manager_factory_);
     // TODO(fsamuel): This is probably broken. We need a root.
-    connection_manager_.reset(new ConnectionManager(&delegate_));
+    connection_manager_.reset(
+        new ConnectionManager(&delegate_,
+                              scoped_refptr<surfaces::SurfacesState>()));
     ViewTreeHostImpl* host = new ViewTreeHostImpl(
         mojo::ViewTreeHostClientPtr(),
         connection_manager_.get(), true /* is_headless */, nullptr,

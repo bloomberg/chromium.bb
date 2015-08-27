@@ -10,7 +10,6 @@
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/gles2/gpu_impl.h"
 #include "components/view_manager/public/cpp/args.h"
-#include "components/view_manager/surfaces/surfaces_impl.h"
 #include "components/view_manager/surfaces/surfaces_scheduler.h"
 #include "components/view_manager/view_tree_host_connection.h"
 #include "components/view_manager/view_tree_host_impl.h"
@@ -41,10 +40,6 @@ ViewManagerApp::ViewManagerApp()
 ViewManagerApp::~ViewManagerApp() {
   if (gpu_state_)
     gpu_state_->StopControlThread();
-
-  auto surfaces = surfaces_;
-  for (auto& surface : surfaces)
-    surface->CloseConnection();
 }
 
 void ViewManagerApp::Initialize(ApplicationImpl* app) {
@@ -66,16 +61,13 @@ void ViewManagerApp::Initialize(ApplicationImpl* app) {
 
   if (!gpu_state_.get())
     gpu_state_ = new gles2::GpuState;
-  connection_manager_.reset(new ConnectionManager(this));
+  connection_manager_.reset(new ConnectionManager(this, surfaces_state_));
 }
 
 bool ViewManagerApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
   // ViewManager
   connection->AddService<ViewTreeHostFactory>(this);
-  // Surfaces
-  // TODO(fsamuel): This should go away soon.
-  connection->AddService<mojo::Surface>(this);
   // GPU
   connection->AddService<Gpu>(this);
   return true;
@@ -124,18 +116,6 @@ void ViewManagerApp::Create(
   if (!gpu_state_.get())
     gpu_state_ = new gles2::GpuState;
   new gles2::GpuImpl(request.Pass(), gpu_state_);
-}
-
-void ViewManagerApp::Create(
-    mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::Surface> request) {
-  surfaces_.insert(
-      new surfaces::SurfacesImpl(this, surfaces_state_, request.Pass()));
-}
-
-void ViewManagerApp::OnSurfaceConnectionClosed(
-    surfaces::SurfacesImpl* surface) {
-  surfaces_.erase(surface);
 }
 
 void ViewManagerApp::CreateViewTreeHost(

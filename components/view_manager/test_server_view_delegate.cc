@@ -13,6 +13,10 @@ TestServerViewDelegate::TestServerViewDelegate() : root_view_(nullptr) {
 TestServerViewDelegate::~TestServerViewDelegate() {
 }
 
+surfaces::SurfacesState* TestServerViewDelegate::GetSurfacesState() {
+  return nullptr;
+}
+
 void TestServerViewDelegate::PrepareToDestroyView(ServerView* view) {
 }
 

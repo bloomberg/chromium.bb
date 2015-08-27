@@ -9,11 +9,12 @@
 #include "components/view_manager/public/cpp/types.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_surface.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
+#include "components/view_manager/public/interfaces/compositor_frame.mojom.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/surface_id.mojom.h"
-#include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -28,6 +29,7 @@
 #include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_utils.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/public/c/system/main.h"
@@ -52,7 +54,7 @@ void LostContext(void*) {
 }
 
 // BitmapUploader is useful if you want to draw a bitmap or color in a View.
-class BitmapUploader : public mojo::ResourceReturner {
+class BitmapUploader : public mojo::SurfaceClient {
  public:
   explicit BitmapUploader(mojo::View* view)
       : view_(view),
@@ -70,18 +72,7 @@ class BitmapUploader : public mojo::ResourceReturner {
   }
 
   void Init(mojo::Shell* shell) {
-    mojo::ServiceProviderPtr surfaces_service_provider;
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:view_manager");
-    shell->ConnectToApplication(request.Pass(),
-                                mojo::GetProxy(&surfaces_service_provider),
-                                nullptr, nullptr);
-    ConnectToService(surfaces_service_provider.get(), &surface_);
-    surface_->GetIdNamespace(
-        base::Bind(&BitmapUploader::SetIdNamespace, base::Unretained(this)));
-    mojo::ResourceReturnerPtr returner_ptr;
-    returner_binding_.Bind(GetProxy(&returner_ptr));
-    surface_->SetResourceReturner(returner_ptr.Pass());
+    surface_ = view_->RequestSurface();
 
     mojo::ServiceProviderPtr gpu_service_provider;
     mojo::URLRequestPtr request2(mojo::URLRequest::New());
@@ -128,38 +119,14 @@ class BitmapUploader : public mojo::ResourceReturner {
 
  private:
   void Upload() {
-    mojo::Size size;
-    size.width = view_->bounds().width;
-    size.height = view_->bounds().height;
-    if (!size.width || !size.height) {
-      view_->SetSurfaceId(mojo::SurfaceId::New());
-      return;
-    }
-
-    if (id_namespace_ == 0u)  // Can't generate a qualified ID yet.
-      return;
-
-    if (size != surface_size_) {
-      if (local_id_ != 0u) {
-        surface_->DestroySurface(local_id_);
-      }
-      local_id_++;
-      surface_->CreateSurface(local_id_);
-      surface_size_ = size;
-      auto qualified_id = mojo::SurfaceId::New();
-      qualified_id->id_namespace = id_namespace_;
-      qualified_id->local = local_id_;
-      view_->SetSurfaceId(qualified_id.Pass());
-    }
-
-    gfx::Rect bounds(size.width, size.height);
+    gfx::Rect bounds(view_->bounds().To<gfx::Rect>());
     mojo::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
     mojo::CompositorFramePtr frame = mojo::CompositorFrame::New();
     frame->resources.resize(0u);
 
     pass->quads.resize(0u);
     pass->shared_quad_states.push_back(
-        mojo::CreateDefaultSQS(size.To<gfx::Size>()));
+        mojo::CreateDefaultSQS(bounds.size()));
 
     MojoGLES2MakeCurrent(gles2_context_);
     if (bitmap_.get()) {
@@ -203,19 +170,19 @@ class BitmapUploader : public mojo::ResourceReturner {
       quad->material = mojo::MATERIAL_TEXTURE_CONTENT;
 
       mojo::RectPtr rect = mojo::Rect::New();
-      if (width_ <= size.width && height_ <= size.height) {
+      if (width_ <= bounds.width() && height_ <= bounds.height()) {
         rect->width = width_;
         rect->height = height_;
       } else {
         // The source bitmap is larger than the viewport. Resize it while
         // maintaining the aspect ratio.
-        float width_ratio = static_cast<float>(width_) / size.width;
-        float height_ratio = static_cast<float>(height_) / size.height;
+        float width_ratio = static_cast<float>(width_) / bounds.width();
+        float height_ratio = static_cast<float>(height_) / bounds.height();
         if (width_ratio > height_ratio) {
-          rect->width = size.width;
+          rect->width = bounds.width();
           rect->height = height_ / width_ratio;
         } else {
-          rect->height = size.height;
+          rect->height = bounds.height();
           rect->width = width_ / height_ratio;
         }
       }
@@ -264,7 +231,8 @@ class BitmapUploader : public mojo::ResourceReturner {
 
     frame->passes.push_back(pass.Pass());
 
-    surface_->SubmitCompositorFrame(local_id_, frame.Pass(), mojo::Closure());
+    // TODO(rjkroege, fsamuel): We should throttle frames.
+    surface_->SubmitCompositorFrame(frame.Pass());
   }
 
   uint32_t BindTextureForSize(const mojo::Size size) {
@@ -295,7 +263,7 @@ class BitmapUploader : public mojo::ResourceReturner {
       Upload();
   }
 
-  // ResourceReturner implementation.
+  // SurfaceClient implementation.
   void ReturnResources(
       mojo::Array<mojo::ReturnedResourcePtr> resources) override {
     MojoGLES2MakeCurrent(gles2_context_);
@@ -313,6 +281,7 @@ class BitmapUploader : public mojo::ResourceReturner {
 
   mojo::View* view_;
   mojo::GpuPtr gpu_service_;
+  scoped_ptr<mojo::ViewSurface> surface_;
   MojoGLES2Context gles2_context_;
 
   mojo::Size size_;
@@ -321,13 +290,11 @@ class BitmapUploader : public mojo::ResourceReturner {
   int height_;
   Format format_;
   scoped_ptr<std::vector<unsigned char>> bitmap_;
-  mojo::SurfacePtr surface_;
-  mojo::Size surface_size_;
   uint32_t next_resource_id_;
   uint32_t id_namespace_;
   uint32_t local_id_;
   base::hash_map<uint32_t, uint32_t> resource_to_texture_id_map_;
-  mojo::Binding<mojo::ResourceReturner> returner_binding_;
+  mojo::Binding<mojo::SurfaceClient> returner_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapUploader);
 };

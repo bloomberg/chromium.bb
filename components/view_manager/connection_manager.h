@@ -19,6 +19,7 @@
 #include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "components/view_manager/server_view_delegate.h"
 #include "components/view_manager/server_view_observer.h"
+#include "components/view_manager/surfaces/surfaces_state.h"
 #include "components/view_manager/view_tree_host_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -71,7 +72,9 @@ class ConnectionManager : public ServerViewDelegate,
     DISALLOW_COPY_AND_ASSIGN(ScopedChange);
   };
 
-  explicit ConnectionManager(ConnectionManagerDelegate* delegate);
+  ConnectionManager(
+      ConnectionManagerDelegate* delegate,
+      const scoped_refptr<surfaces::SurfacesState>& surfaces_state);
   ~ConnectionManager() override;
 
   // Adds a ViewTreeHost.
@@ -223,6 +226,7 @@ class ConnectionManager : public ServerViewDelegate,
   ViewTreeHostImpl* GetViewTreeHostByView(const ServerView* view) const;
 
   // Overridden from ServerViewDelegate:
+  surfaces::SurfacesState* GetSurfacesState() override;
   void PrepareToDestroyView(ServerView* view) override;
   void PrepareToChangeViewHierarchy(ServerView* view,
                                     ServerView* new_parent,
@@ -260,6 +264,9 @@ class ConnectionManager : public ServerViewDelegate,
                       ServerView* new_focused_view) override;
 
   ConnectionManagerDelegate* delegate_;
+
+  // State for rendering into a Surface.
+  scoped_refptr<surfaces::SurfacesState> surfaces_state_;
 
   // ID to use for next ViewTreeImpl.
   mojo::ConnectionSpecificId next_connection_id_;

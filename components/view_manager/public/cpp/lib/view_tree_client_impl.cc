@@ -146,14 +146,6 @@ void ViewTreeClientImpl::SetBounds(Id view_id, const Rect& bounds) {
   tree_->SetViewBounds(view_id, bounds.Clone(), ActionCompletedCallback());
 }
 
-void ViewTreeClientImpl::SetSurfaceId(Id view_id, SurfaceIdPtr surface_id) {
-  DCHECK(tree_);
-  if (surface_id.is_null())
-    return;
-  tree_->SetViewSurfaceId(
-      view_id, surface_id.Pass(), ActionCompletedCallback());
-}
-
 void ViewTreeClientImpl::SetFocus(Id view_id) {
   // In order for us to get here we had to have exposed a view, which implies we
   // got a connection.
@@ -193,6 +185,13 @@ void ViewTreeClientImpl::SetImeVisibility(Id view_id,
 void ViewTreeClientImpl::Embed(Id view_id, ViewTreeClientPtr client) {
   DCHECK(tree_);
   tree_->Embed(view_id, client.Pass(), ActionCompletedCallback());
+}
+
+void ViewTreeClientImpl::RequestSurface(Id view_id,
+                                        InterfaceRequest<Surface> surface,
+                                        SurfaceClientPtr client) {
+  DCHECK(tree_);
+  tree_->RequestSurface(view_id, surface.Pass(), client.Pass());
 }
 
 void ViewTreeClientImpl::AddView(View* view) {

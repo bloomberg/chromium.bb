@@ -41,7 +41,6 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
   bool OwnsView(Id id) const;
 
   void SetBounds(Id view_id, const Rect& bounds);
-  void SetSurfaceId(Id view_id, SurfaceIdPtr surface_id);
   void SetFocus(Id view_id);
   void SetVisible(Id view_id, bool visible);
   void SetProperty(Id view_id,
@@ -56,6 +55,10 @@ class ViewTreeClientImpl : public ViewTreeConnection, public ViewTreeClient {
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_services);
   void Embed(Id view_id, ViewTreeClientPtr client);
+
+  void RequestSurface(Id view_id,
+                      InterfaceRequest<Surface> surface,
+                      SurfaceClientPtr client);
 
   void set_change_acked_callback(const Callback<void(void)>& callback) {
     change_acked_callback_ = callback;

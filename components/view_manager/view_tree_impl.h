@@ -180,9 +180,6 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
   void GetViewTree(mojo::Id view_id,
                    const mojo::Callback<void(mojo::Array<mojo::ViewDataPtr>)>&
                        callback) override;
-  void SetViewSurfaceId(mojo::Id view_id,
-                        mojo::SurfaceIdPtr surface_id,
-                        const mojo::Callback<void(bool)>& callback) override;
   void SetViewBounds(mojo::Id view_id,
                      mojo::RectPtr bounds,
                      const mojo::Callback<void(bool)>& callback) override;
@@ -193,6 +190,10 @@ class ViewTreeImpl : public mojo::ViewTree, public AccessPolicyDelegate {
                        const mojo::String& name,
                        mojo::Array<uint8_t> value,
                        const mojo::Callback<void(bool)>& callback) override;
+  void RequestSurface(
+      mojo::Id view_id,
+      mojo::InterfaceRequest<mojo::Surface> surface,
+      mojo::SurfaceClientPtr client) override;
   void SetEmbedRoot() override;
   void Embed(mojo::Id transport_view_id,
              mojo::ViewTreeClientPtr client,

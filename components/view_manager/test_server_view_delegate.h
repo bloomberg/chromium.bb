@@ -18,6 +18,7 @@ class TestServerViewDelegate : public ServerViewDelegate {
   void set_root_view(const ServerView* view) { root_view_ = view; }
  private:
   // ServerViewDelegate:
+  surfaces::SurfacesState* GetSurfacesState() override;
   void PrepareToDestroyView(ServerView* view) override;
   void PrepareToChangeViewHierarchy(ServerView* view,
                                     ServerView* new_parent,

@@ -8,45 +8,30 @@
 #include "base/macros.h"
 #include "cc/output/output_surface.h"
 #include "cc/surfaces/surface_id.h"
-#include "components/view_manager/public/interfaces/surfaces.mojom.h"
+#include "components/view_manager/public/cpp/view_surface.h"
+#include "components/view_manager/public/cpp/view_surface_client.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
 
-class OutputSurfaceMojoClient {
- public:
-  virtual ~OutputSurfaceMojoClient() {}
-
-  virtual void DidCreateSurface(cc::SurfaceId id) = 0;
-};
-
 class OutputSurfaceMojo : public cc::OutputSurface,
-                          public mojo::ResourceReturner {
+                          public mojo::ViewSurfaceClient {
  public:
-  OutputSurfaceMojo(OutputSurfaceMojoClient* client,
-                    const scoped_refptr<cc::ContextProvider>& context_provider,
-                    ScopedMessagePipeHandle surface_handle);
-
-  // mojo::ResourceReturner implementation.
-  void ReturnResources(mojo::Array<ReturnedResourcePtr>) override;
+  OutputSurfaceMojo(const scoped_refptr<cc::ContextProvider>& context_provider,
+                    scoped_ptr<mojo::ViewSurface> surface);
+  ~OutputSurfaceMojo() override;
 
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
   bool BindToClient(cc::OutputSurfaceClient* client) override;
 
- protected:
-  ~OutputSurfaceMojo() override;
-
  private:
-  void SetIdNamespace(uint32_t id_namespace);
+  // uip::SurfaceObserver implementation:
+  void OnResourcesReturned(
+      mojo::ViewSurface* surface,
+      mojo::Array<mojo::ReturnedResourcePtr> resources) override;
 
-  OutputSurfaceMojoClient* output_surface_mojo_client_;
-  ScopedMessagePipeHandle surface_handle_;
-  SurfacePtr surface_;
-  uint32_t id_namespace_;
-  uint32_t local_id_;
-  gfx::Size surface_size_;
-  mojo::Binding<mojo::ResourceReturner> binding_;
+  scoped_ptr<mojo::ViewSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurfaceMojo);
 };

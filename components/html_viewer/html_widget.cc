@@ -10,7 +10,6 @@
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -22,22 +21,23 @@ namespace html_viewer {
 namespace {
 
 scoped_ptr<WebLayerTreeViewImpl> CreateWebLayerTreeView(
-    mojo::ApplicationImpl* app,
     GlobalState* global_state) {
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:view_manager");
-  mojo::SurfacePtr surface;
-  app->ConnectToService(request.Pass(), &surface);
-
-  mojo::URLRequestPtr request2(mojo::URLRequest::New());
-  request2->url = mojo::String::From("mojo:view_manager");
-  mojo::GpuPtr gpu_service;
-  app->ConnectToService(request2.Pass(), &gpu_service);
   return make_scoped_ptr(new WebLayerTreeViewImpl(
       global_state->compositor_thread(),
       global_state->gpu_memory_buffer_manager(),
-      global_state->raster_thread_helper()->task_graph_runner(), surface.Pass(),
-      gpu_service.Pass()));
+      global_state->raster_thread_helper()->task_graph_runner()));
+}
+
+void InitializeWebLayerTreeView(WebLayerTreeViewImpl* web_layer_tree_view,
+                                mojo::ApplicationImpl* app,
+                                mojo::View* view,
+                                blink::WebWidget* widget) {
+  DCHECK(view);
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:view_manager");
+  mojo::GpuPtr gpu_service;
+  app->ConnectToService(request.Pass(), &gpu_service);
+  web_layer_tree_view->Initialize(gpu_service.Pass(), view, widget);
 }
 
 void UpdateWebViewSizeFromViewSize(mojo::View* view,
@@ -95,8 +95,8 @@ HTMLWidgetRootLocal::HTMLWidgetRootLocal(CreateParams* create_params)
   // |web_layer_tree_view_impl_|. As we haven't yet assigned the |web_view_|
   // we have to set it here.
   if (web_layer_tree_view_impl_) {
-    web_layer_tree_view_impl_->set_widget(web_view_);
-    web_layer_tree_view_impl_->set_view(create_params->view);
+    InitializeWebLayerTreeView(web_layer_tree_view_impl_.get(), app_, view_,
+                               web_view_);
     UpdateWebViewSizeFromViewSize(view_, web_view_,
                                   web_layer_tree_view_impl_.get());
   }
@@ -119,7 +119,7 @@ void HTMLWidgetRootLocal::didChangeContents() {
 }
 
 void HTMLWidgetRootLocal::initializeLayerTreeView() {
-  web_layer_tree_view_impl_ = CreateWebLayerTreeView(app_, global_state_);
+  web_layer_tree_view_impl_ = CreateWebLayerTreeView(global_state_);
 }
 
 blink::WebLayerTreeView* HTMLWidgetRootLocal::layerTreeView() {
@@ -205,8 +205,8 @@ HTMLWidgetLocalRoot::HTMLWidgetLocalRoot(mojo::ApplicationImpl* app,
   // |web_frame_widget_|
   // we have to set it here.
   if (web_layer_tree_view_impl_) {
-    web_layer_tree_view_impl_->set_widget(web_frame_widget_);
-    web_layer_tree_view_impl_->set_view(view);
+    InitializeWebLayerTreeView(web_layer_tree_view_impl_.get(), app_, view,
+                               web_frame_widget_);
     UpdateWebViewSizeFromViewSize(view, web_frame_widget_,
                                   web_layer_tree_view_impl_.get());
   }
@@ -224,7 +224,7 @@ void HTMLWidgetLocalRoot::OnViewBoundsChanged(mojo::View* view) {
 }
 
 void HTMLWidgetLocalRoot::initializeLayerTreeView() {
-  web_layer_tree_view_impl_ = CreateWebLayerTreeView(app_, global_state_);
+  web_layer_tree_view_impl_ = CreateWebLayerTreeView(global_state_);
 }
 
 blink::WebLayerTreeView* HTMLWidgetLocalRoot::layerTreeView() {

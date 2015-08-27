@@ -557,20 +557,6 @@ void ViewTreeImpl::GetViewTree(
   callback.Run(ViewsToViewDatas(views));
 }
 
-void ViewTreeImpl::SetViewSurfaceId(
-    Id view_id,
-    mojo::SurfaceIdPtr surface_id,
-    const Callback<void(bool)>& callback) {
-  // TODO(sky): add coverage of not being able to set for random node.
-  ServerView* view = GetView(ViewIdFromTransportId(view_id));
-  if (!view || !access_policy_->CanSetViewSurfaceId(view)) {
-    callback.Run(false);
-    return;
-  }
-  view->SetSurfaceId(surface_id.To<cc::SurfaceId>());
-  callback.Run(true);
-}
-
 void ViewTreeImpl::SetViewBounds(
     Id view_id,
     mojo::RectPtr bounds,
@@ -610,6 +596,17 @@ void ViewTreeImpl::SetViewProperty(
     }
   }
   callback.Run(success);
+}
+
+void ViewTreeImpl::RequestSurface(
+    mojo::Id view_id,
+    mojo::InterfaceRequest<mojo::Surface> surface,
+    mojo::SurfaceClientPtr client) {
+  ServerView* view = GetView(ViewIdFromTransportId(view_id));
+  const bool success = view && access_policy_->CanSetViewSurfaceId(view);
+  if (!success)
+    return;
+  view->Bind(surface.Pass(), client.Pass());
 }
 
 void ViewTreeImpl::SetViewTextInputState(

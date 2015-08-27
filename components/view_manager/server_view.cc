@@ -9,10 +9,22 @@
 #include "base/strings/stringprintf.h"
 #include "components/view_manager/server_view_delegate.h"
 #include "components/view_manager/server_view_observer.h"
+#include "components/view_manager/surfaces/surfaces_state.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace view_manager {
 
-ServerView::ServerView(ServerViewDelegate* delegate, const ViewId& id)
+namespace {
+
+void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
+  callback.Run();
+}
+
+}  // namespace
+
+ServerView::ServerView(ServerViewDelegate* delegate,
+                       const ViewId& id)
     : delegate_(delegate),
       id_(id),
       parent_(nullptr),
@@ -22,7 +34,8 @@ ServerView::ServerView(ServerViewDelegate* delegate, const ViewId& id)
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as ServerViewDrawTracker).
-      observers_(base::ObserverList<ServerViewObserver>::NOTIFY_EXISTING_ONLY) {
+      observers_(base::ObserverList<ServerViewObserver>::NOTIFY_EXISTING_ONLY),
+      binding_(this) {
   DCHECK(delegate);  // Must provide a delegate.
 }
 
@@ -37,6 +50,11 @@ ServerView::~ServerView() {
     parent_->Remove(this);
 
   FOR_EACH_OBSERVER(ServerViewObserver, observers_, OnViewDestroyed(this));
+
+  // SurfaceFactory's destructor will attempt to return resources which will
+  // call back into here and access |client_| so we should destroy
+  // |surface_factory_| early on.
+  surface_factory_.reset();
 }
 
 void ServerView::AddObserver(ServerViewObserver* observer) {
@@ -45,6 +63,16 @@ void ServerView::AddObserver(ServerViewObserver* observer) {
 
 void ServerView::RemoveObserver(ServerViewObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void ServerView::Bind(mojo::InterfaceRequest<Surface> request,
+                      mojo::SurfaceClientPtr client) {
+  if (binding_.is_bound()) {
+    binding_.Close();
+    client_ = nullptr;
+  }
+  binding_.Bind(request.Pass());
+  client_ = client.Pass();
 }
 
 void ServerView::Add(ServerView* child) {
@@ -217,6 +245,43 @@ void ServerView::SetSurfaceId(cc::SurfaceId surface_id) {
   delegate_->OnScheduleViewPaint(this);
 }
 
+void ServerView::SubmitCompositorFrame(
+    mojo::CompositorFramePtr frame,
+    const SubmitCompositorFrameCallback& callback) {
+  gfx::Size frame_size = frame->passes[0]->output_rect.To<gfx::Rect>().size();
+  // Create Surfaces state on demand.
+  if (!surface_factory_) {
+    surface_factory_.reset(
+        new cc::SurfaceFactory(delegate_->GetSurfacesState()->manager(), this));
+  }
+  if (!surface_id_allocator_) {
+    surface_id_allocator_.reset(
+        new cc::SurfaceIdAllocator(
+            delegate_->GetSurfacesState()->next_id_namespace()));
+  }
+  if (surface_id().is_null()) {
+    // Create a Surface ID for the first time for this view.
+    cc::SurfaceId surface_id(surface_id_allocator_->GenerateId());
+    surface_factory_->Create(surface_id);
+    SetSurfaceId(surface_id);
+  } else {
+    // If the size of the CompostiorFrame has changed then destroy the existing
+    // Surface and create a new one of the appropriate size.
+    if (frame_size != last_submitted_frame_size()) {
+      surface_factory_->Destroy(surface_id());
+      cc::SurfaceId surface_id(surface_id_allocator_->GenerateId());
+      surface_factory_->Create(surface_id);
+      SetSurfaceId(surface_id);
+    }
+  }
+  surface_factory_->SubmitCompositorFrame(
+      surface_id(),
+      frame.To<scoped_ptr<cc::CompositorFrame>>(),
+      base::Bind(&CallCallback, callback));
+  delegate_->GetSurfacesState()->scheduler()->SetNeedsDraw();
+  last_submitted_frame_size_ = frame_size;
+}
+
 #if !defined(NDEBUG)
 std::string ServerView::GetDebugWindowHierarchy() const {
   std::string result;
@@ -235,6 +300,14 @@ void ServerView::BuildDebugInfo(const std::string& depth,
     child->BuildDebugInfo(depth + "  ", result);
 }
 #endif
+
+void ServerView::ReturnResources(
+    const cc::ReturnedResourceArray& resources) {
+  if (!client_)
+    return;
+  client_->ReturnResources(
+      mojo::Array<mojo::ReturnedResourcePtr>::From(resources));
+}
 
 void ServerView::RemoveImpl(ServerView* view) {
   view->parent_ = NULL;

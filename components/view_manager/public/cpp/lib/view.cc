@@ -10,6 +10,7 @@
 #include "components/view_manager/public/cpp/lib/view_private.h"
 #include "components/view_manager/public/cpp/lib/view_tree_client_impl.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_surface.h"
 #include "components/view_manager/public/cpp/view_tracker.h"
 #include "mojo/application/public/cpp/service_provider_impl.h"
 
@@ -223,6 +224,16 @@ void View::SetVisible(bool value) {
   LocalSetVisible(value);
 }
 
+scoped_ptr<mojo::ViewSurface> View::RequestSurface() {
+  mojo::SurfacePtr surface;
+  mojo::SurfaceClientPtr client;
+  mojo::InterfaceRequest<SurfaceClient> client_request = GetProxy(&client);
+  static_cast<ViewTreeClientImpl*>(connection_)->RequestSurface(
+      id_, GetProxy(&surface), client.Pass());
+  return make_scoped_ptr(new mojo::ViewSurface(surface.PassInterface(),
+                                               client_request.Pass()));
+}
+
 void View::SetSharedProperty(const std::string& name,
                              const std::vector<uint8_t>* value) {
   std::vector<uint8_t> old_value;
@@ -352,12 +363,6 @@ View* View::GetChildById(Id id) {
       return view;
   }
   return NULL;
-}
-
-void View::SetSurfaceId(SurfaceIdPtr id) {
-  if (connection_) {
-    static_cast<ViewTreeClientImpl*>(connection_)->SetSurfaceId(id_, id.Pass());
-  }
 }
 
 void View::SetTextInputState(TextInputStatePtr state) {

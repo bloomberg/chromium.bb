@@ -9,9 +9,13 @@
 
 #include "base/logging.h"
 #include "base/observer_list.h"
+#include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/platform_window/text_input_state.h"
@@ -31,13 +35,19 @@ class ServerViewObserver;
 // ServerViews do not own their children. If you delete a view that has children
 // the children are implicitly removed. Similarly if a view has a parent and the
 // view is deleted the deleted view is implicitly removed from the parent.
-class ServerView {
+class ServerView : public mojo::Surface,
+                   public cc::SurfaceFactoryClient {
  public:
   ServerView(ServerViewDelegate* delegate, const ViewId& id);
-  virtual ~ServerView();
+  ~ServerView() override;
 
   void AddObserver(ServerViewObserver* observer);
   void RemoveObserver(ServerViewObserver* observer);
+
+  // Binds the provided |request| to |this| object. If an interface is already
+  // bound to this ServerView then the old connection is closed first.
+  void Bind(mojo::InterfaceRequest<Surface> request,
+            mojo::SurfaceClientPtr client);
 
   const ViewId& id() const { return id_; }
 
@@ -93,9 +103,18 @@ class ServerView {
   void SetSurfaceId(cc::SurfaceId surface_id);
   const cc::SurfaceId& surface_id() const { return surface_id_; }
 
+  const gfx::Size& last_submitted_frame_size() {
+    return last_submitted_frame_size_;
+  }
+
   // See mojom for for details.
   void set_allows_reembed(bool value) { allows_reembed_ = value; }
   bool allows_reembed() const { return allows_reembed_; }
+
+  // mojo::Surface:
+  void SubmitCompositorFrame(
+      mojo::CompositorFramePtr frame,
+      const SubmitCompositorFrameCallback& callback) override;
 
 #if !defined(NDEBUG)
   std::string GetDebugWindowHierarchy() const;
@@ -104,6 +123,9 @@ class ServerView {
 
  private:
   typedef std::vector<ServerView*> Views;
+
+  // SurfaceFactoryClient implementation.
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
   // Implementation of removing a view. Doesn't send any notification.
   void RemoveImpl(ServerView* view);
@@ -115,14 +137,19 @@ class ServerView {
   bool visible_;
   gfx::Rect bounds_;
   cc::SurfaceId surface_id_;
+  scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  scoped_ptr<cc::SurfaceFactory> surface_factory_;
   float opacity_;
   gfx::Transform transform_;
   bool allows_reembed_;
   ui::TextInputState text_input_state_;
+  gfx::Size last_submitted_frame_size_;
 
   std::map<std::string, std::vector<uint8_t>> properties_;
 
   base::ObserverList<ServerViewObserver> observers_;
+  mojo::SurfaceClientPtr client_;
+  mojo::Binding<Surface> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerView);
 };

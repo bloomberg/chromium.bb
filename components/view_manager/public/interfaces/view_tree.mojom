@@ -4,6 +4,7 @@
 
 module mojo;
 
+import "components/view_manager/public/interfaces/compositor_frame.mojom";
 import "components/view_manager/public/interfaces/surface_id.mojom";
 import "components/view_manager/public/interfaces/view_manager_constants.mojom";
 import "mojo/application/public/interfaces/service_provider.mojom";
@@ -75,6 +76,9 @@ interface ViewTree {
                   string name,
                   array<uint8>? value) => (bool success);
 
+  // Requests a Surface for a particular view.
+  RequestSurface(uint32 view_id, Surface& surface, SurfaceClient client);
+
   // Reparents a view.
   // This fails for any of the following reasons:
   // . |parent| or |child| does not identify a valid view.
@@ -108,9 +112,6 @@ interface ViewTree {
   // case an empty vector is returned. The views are visited using a depth first
   // search (pre-order).
   GetViewTree(uint32 view_id) => (array<ViewData> views);
-
-  // Shows the surface in the specified view.
-  SetViewSurfaceId(uint32 view_id, SurfaceId surface_id) => (bool success);
 
   // TODO(sky): rename this and clarify what it does.
   SetEmbedRoot();

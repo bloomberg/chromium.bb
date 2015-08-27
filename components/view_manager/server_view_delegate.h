@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIEW_MANAGER_SERVER_VIEW_DELEGATE_H_
 #define COMPONENTS_VIEW_MANAGER_SERVER_VIEW_DELEGATE_H_
 
+#include "components/view_manager/public/interfaces/compositor_frame.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_constants.mojom.h"
 
 namespace gfx {
@@ -13,6 +14,10 @@ class Rect;
 
 namespace mojo {
 class ViewportMetrics;
+}
+
+namespace surfaces {
+class SurfacesState;
 }
 
 namespace view_manager {
@@ -27,6 +32,8 @@ class ServerView;
 // ServerViewDelegate gets non-const arguments.
 class ServerViewDelegate {
  public:
+  virtual surfaces::SurfacesState* GetSurfacesState() = 0;
+
   // Invoked when a view is about to be destroyed; before any of the children
   // have been removed and before the view has been removed from its parent.
   virtual void PrepareToDestroyView(ServerView* view) = 0;
