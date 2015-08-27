@@ -219,12 +219,7 @@ public:
         if (m_fastPathFlags & Use8BitAdvance) {
             ASSERT(!m_pushedChar1);
             m_currentChar = m_currentString.incrementAndGetCurrentChar8();
-            m_currentString.decrementLength();
-            if (!m_currentString.haveOneCharacterLeft())
-                return;
-
-            updateSlowCaseFunctionPointers();
-
+            decrementAndCheckLength();
             return;
         }
 
@@ -238,16 +233,12 @@ public:
 
             bool haveNewLine = (m_currentChar == '\n') & !!(m_fastPathFlags & Use8BitAdvanceAndUpdateLineNumbers);
             m_currentChar = m_currentString.incrementAndGetCurrentChar8();
-            m_currentString.decrementLength();
-            bool haveOneCharacterLeft = m_currentString.haveOneCharacterLeft();
+            decrementAndCheckLength();
 
             if (haveNewLine) {
                 ++m_currentLine;
                 m_numberOfCharactersConsumedPriorToCurrentLine =  m_numberOfCharactersConsumedPriorToCurrentString + m_currentString.numberOfCharactersConsumed();
             }
-
-            if (haveOneCharacterLeft)
-                updateSlowCaseFunctionPointers();
 
             return;
         }
