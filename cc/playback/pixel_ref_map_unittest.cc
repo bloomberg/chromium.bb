@@ -338,5 +338,28 @@ TEST(PixelRefMapTest, PixelRefMapIteratorOnePixelQuery) {
   }
 }
 
+TEST(PixelRefMapTest, PixelRefMapIteratorMassiveImage) {
+  gfx::Rect layer_rect(2048, 2048);
+  gfx::Size tile_grid_size(512, 512);
+  FakeContentLayerClient content_layer_client;
+
+  SkBitmap discardable_bitmap;
+  CreateDiscardableBitmap(gfx::Size(1 << 25, 1 << 25), &discardable_bitmap);
+  SkPaint paint;
+  content_layer_client.add_draw_bitmap(discardable_bitmap, gfx::Point(0, 0),
+                                       paint);
+
+  scoped_refptr<Picture> picture =
+      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, true,
+                      RecordingSource::RECORD_NORMALLY);
+
+  PixelRefMap::Iterator iterator(gfx::Rect(0, 0, 1, 1), picture.get());
+  EXPECT_TRUE(iterator);
+  EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap.pixelRef());
+  EXPECT_EQ(gfx::RectF(0, 0, 1 << 25, 1 << 25).ToString(),
+            gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
+  EXPECT_FALSE(++iterator);
+}
+
 }  // namespace
 }  // namespace cc

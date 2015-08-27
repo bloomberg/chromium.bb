@@ -11,6 +11,7 @@
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/picture.h"
 #include "skia/ext/pixel_ref_utils.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
 
@@ -34,17 +35,23 @@ void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture,
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture, &pixel_refs);
   for (skia::DiscardablePixelRefList::const_iterator it = pixel_refs.begin();
        it != pixel_refs.end(); ++it) {
-    gfx::Point min(
-        MathUtil::UncheckedRoundDown(static_cast<int>(it->pixel_ref_rect.x()),
-                                     cell_size_.width()),
-        MathUtil::UncheckedRoundDown(static_cast<int>(it->pixel_ref_rect.y()),
-                                     cell_size_.height()));
-    gfx::Point max(MathUtil::UncheckedRoundDown(
-                       static_cast<int>(std::ceil(it->pixel_ref_rect.right())),
-                       cell_size_.width()),
+    // The image rect is in space relative to the picture, but it can extend far
+    // beyond the picture itself (since it represents the rect of actual image
+    // contained within the picture, not clipped to picture bounds). We only
+    // care about image queries that intersect the picture, so insert only into
+    // the intersection of the two rects.
+    gfx::Rect rect_clipped_to_picture = gfx::IntersectRects(
+        gfx::ToEnclosingRect(gfx::SkRectToRectF(it->pixel_ref_rect)),
+        gfx::Rect(layer_rect.size()));
+
+    gfx::Point min(MathUtil::UncheckedRoundDown(rect_clipped_to_picture.x(),
+                                                cell_size_.width()),
+                   MathUtil::UncheckedRoundDown(rect_clipped_to_picture.y(),
+                                                cell_size_.height()));
+    gfx::Point max(MathUtil::UncheckedRoundDown(rect_clipped_to_picture.right(),
+                                                cell_size_.width()),
                    MathUtil::UncheckedRoundDown(
-                       static_cast<int>(std::ceil(it->pixel_ref_rect.bottom())),
-                       cell_size_.height()));
+                       rect_clipped_to_picture.bottom(), cell_size_.height()));
 
     // We recorded the picture as if it was at (0, 0) by translating by layer
     // rect origin. Add the rect origin back here. It really doesn't make much
