@@ -1168,11 +1168,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_TOUCH_SELECTION_STRATEGY_DESCRIPTION,
      kOsAndroid,  // TODO(mfomitchev): Add CrOS/Win/Linux support soon.
      MULTI_VALUE_TYPE(kTouchTextSelectionStrategyChoices)},
-    {"enable-stale-while-revalidate",
-     IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_NAME,
-     IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableStaleWhileRevalidate)},
     {"enable-suggestions-service",
      IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_NAME,
      IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_DESCRIPTION,

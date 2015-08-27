@@ -1313,7 +1313,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSlimmingPaint,
     switches::kEnableSlimmingPaintV2,
     switches::kEnableSmoothScrolling,
-    switches::kEnableStaleWhileRevalidate,
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
     switches::kEnableTouchDragDrop,
