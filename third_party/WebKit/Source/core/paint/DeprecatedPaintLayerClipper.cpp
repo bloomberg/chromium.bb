@@ -95,7 +95,8 @@ LayoutRect DeprecatedPaintLayerClipper::localClipRect() const
     calculateRects(context, LayoutRect(LayoutRect::infiniteIntRect()), layerBounds, backgroundRect, foregroundRect, outlineRect);
 
     LayoutRect clipRect = backgroundRect.rect();
-    if (IntRect(clipRect) == LayoutRect::infiniteIntRect())
+    // TODO(chrishtr): avoid converting to IntRect and back.
+    if (clipRect == LayoutRect(LayoutRect::infiniteIntRect()))
         return clipRect;
 
     LayoutPoint clippingRootOffset;

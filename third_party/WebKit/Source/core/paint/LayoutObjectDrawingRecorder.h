@@ -38,9 +38,17 @@ public:
             m_cacheSkipper.emplace(context);
         m_drawingRecorder.emplace(context, layoutObject, displayItemType, clip);
     }
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip)
+        : LayoutObjectDrawingRecorder(context, layoutObject, displayItemType, FloatRect(clip)) { }
 
     LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip)
         : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip) { }
+
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const LayoutRect& clip)
+        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip)) { }
+
+    LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const IntRect& clip)
+        : LayoutObjectDrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), FloatRect(clip)) { }
 
 #if ENABLE(ASSERT)
     void setUnderInvalidationCheckingMode(DrawingDisplayItem::UnderInvalidationCheckingMode mode) { m_drawingRecorder->setUnderInvalidationCheckingMode(mode); }

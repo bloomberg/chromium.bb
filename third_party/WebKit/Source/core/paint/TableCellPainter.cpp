@@ -167,7 +167,8 @@ void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, co
         if (shouldClip) {
             LayoutRect clipRect(paintRect.location(), m_layoutTableCell.size());
             clipRect.expand(m_layoutTableCell.borderInsets());
-            paintInfo.context->clip(clipRect);
+            // TODO(chrishtr): should this be pixel-snapped?
+            paintInfo.context->clip(FloatRect(clipRect));
         }
         BoxPainter(m_layoutTableCell).paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone, SkXfermode::kSrcOver_Mode, backgroundObject);
     }
@@ -191,6 +192,7 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
 
     LayoutRect visualOverflowRect = m_layoutTableCell.visualOverflowRect();
     visualOverflowRect.moveBy(paintOffset);
+    // TODO(chrishtr): the pixel-snapping here is likely incorrect.
     LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(visualOverflowRect));
 
     LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);

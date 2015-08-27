@@ -421,7 +421,7 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
     // The caret rect needs to be invalidated after scrolling
     frame->selection().setCaretRectNeedsUpdate();
 
-    FloatQuad quadForFakeMouseMoveEvent = FloatQuad(layer()->layoutObject()->previousPaintInvalidationRectIncludingCompositedScrolling(*paintInvalidationContainer));
+    FloatQuad quadForFakeMouseMoveEvent = FloatQuad(FloatRect(layer()->layoutObject()->previousPaintInvalidationRectIncludingCompositedScrolling(*paintInvalidationContainer)));
 
     quadForFakeMouseMoveEvent = paintInvalidationContainer->localToAbsoluteQuad(quadForFakeMouseMoveEvent);
     frame->eventHandler().dispatchFakeMouseMoveEventSoonInQuad(quadForFakeMouseMoveEvent);

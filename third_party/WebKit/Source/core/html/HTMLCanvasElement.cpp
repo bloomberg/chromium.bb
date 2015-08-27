@@ -298,7 +298,7 @@ void HTMLCanvasElement::didFinalizeFrame()
     // paint invalidations if the canvas is accelerated, since
     // the canvas contents are sent separately through a texture layer.
     if (ro && (!m_context || !m_context->isAccelerated())) {
-        LayoutRect mappedDirtyRect(enclosingIntRect(mapRect(m_dirtyRect, srcRect, ro->contentBoxRect())));
+        LayoutRect mappedDirtyRect(enclosingIntRect(mapRect(m_dirtyRect, srcRect, FloatRect(ro->contentBoxRect()))));
         // For querying DeprecatedPaintLayer::compositingState()
         // FIXME: is this invalidation using the correct compositing state?
         DisableCompositingQueryAsserts disabler;
@@ -324,7 +324,7 @@ void HTMLCanvasElement::doDeferredPaintInvalidation()
         m_dirtyRect.intersect(srcRect);
         LayoutBox* lb = layoutBox();
         if (lb) {
-            FloatRect mappedDirtyRect = mapRect(m_dirtyRect, srcRect, lb->contentBoxRect());
+            FloatRect mappedDirtyRect = mapRect(m_dirtyRect, srcRect, FloatRect(lb->contentBoxRect()));
             if (m_context->isAccelerated()) {
                 // Accelerated 2D canvases need the dirty rect to be expressed relative to the
                 // content box, as opposed to the layout box.

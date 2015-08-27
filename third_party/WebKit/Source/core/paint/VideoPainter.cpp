@@ -39,7 +39,8 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     bool clip = !contentRect.contains(rect);
     if (clip) {
         context->save();
-        context->clip(contentRect);
+        // TODO(chrishtr): this should be pixel-snapped.
+        context->clip(FloatRect(contentRect));
     }
 
     if (displayingPoster) {

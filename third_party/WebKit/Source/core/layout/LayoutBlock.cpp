@@ -1674,7 +1674,7 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
             Element* element = document().getElementById(referenceClipPathOperation->fragment());
             if (isSVGClipPathElement(element) && element->layoutObject()) {
                 LayoutSVGResourceClipper* clipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
-                if (!clipper->hitTestClipContent(borderBoxRect(), FloatPoint(locationInContainer.point() - localOffset)))
+                if (!clipper->hitTestClipContent(FloatRect(borderBoxRect()), FloatPoint(locationInContainer.point() - localOffset)))
                     return false;
             }
             break;

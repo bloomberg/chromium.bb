@@ -119,7 +119,8 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
         LayoutSize frameSize(m_inlineFlowBox.width(), m_inlineFlowBox.height());
         LayoutRect imageStripPaintRect = paintRectForImageStrip(rect.location(), frameSize, m_inlineFlowBox.layoutObject().style()->direction());
         GraphicsContextStateSaver stateSaver(*paintInfo.context);
-        paintInfo.context->clip(LayoutRect(rect.x(), rect.y(), m_inlineFlowBox.width(), m_inlineFlowBox.height()));
+        // TODO(chrishtr): this should likely be pixel-snapped.
+        paintInfo.context->clip(FloatRect(LayoutRect(rect.x(), rect.y(), m_inlineFlowBox.width(), m_inlineFlowBox.height())));
         BoxPainter::paintFillLayerExtended(*boxModel, paintInfo, c, fillLayer, imageStripPaintRect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
     }
 }
@@ -134,7 +135,6 @@ void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info, const ComputedS
         BoxPainter::paintBoxShadow(info, paintRect, s, shadowStyle, m_inlineFlowBox.includeLogicalLeftEdge(), m_inlineFlowBox.includeLogicalRightEdge());
     }
 }
-
 
 static LayoutRect clipRectForNinePieceImageStrip(InlineFlowBox* box, const NinePieceImage& image, const LayoutRect& paintRect)
 {

@@ -132,7 +132,7 @@ public:
                     rootRelativeBounds = paintLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
                 }
-                m_clipPathRecorder.emplace(*context, *paintLayer.layoutObject(), clipPath->path(rootRelativeBounds));
+                m_clipPathRecorder.emplace(*context, *paintLayer.layoutObject(), clipPath->path(FloatRect(rootRelativeBounds)));
             }
         } else if (style.clipPath()->type() == ClipPathOperation::REFERENCE) {
             ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style.clipPath());
@@ -146,8 +146,8 @@ public:
                 }
 
                 m_resourceClipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
-                if (!SVGClipPainter(*m_resourceClipper).prepareEffect(*paintLayer.layoutObject(), rootRelativeBounds,
-                    paintingInfo.paintDirtyRect, context, m_clipperState)) {
+                if (!SVGClipPainter(*m_resourceClipper).prepareEffect(*paintLayer.layoutObject(), FloatRect(rootRelativeBounds),
+                    FloatRect(paintingInfo.paintDirtyRect), context, m_clipperState)) {
                     // No need to post-apply the clipper if this failed.
                     m_resourceClipper = 0;
                 }

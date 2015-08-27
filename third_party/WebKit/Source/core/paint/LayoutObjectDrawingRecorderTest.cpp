@@ -50,7 +50,7 @@ private:
 
 namespace {
 
-void drawNothing(GraphicsContext& context, const LayoutView& layoutView, PaintPhase phase, const FloatRect& bound)
+void drawNothing(GraphicsContext& context, const LayoutView& layoutView, PaintPhase phase, const LayoutRect& bound)
 {
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase))
         return;
@@ -58,7 +58,7 @@ void drawNothing(GraphicsContext& context, const LayoutView& layoutView, PaintPh
     LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound);
 }
 
-void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase, const FloatRect& bound)
+void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase, const LayoutRect& bound)
 {
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase))
         return;
@@ -80,7 +80,7 @@ bool isCached(const DisplayItem& item)
 TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 {
     GraphicsContext context(&rootDisplayItemList());
-    FloatRect bound = layoutView().viewRect();
+    LayoutRect bound = layoutView().viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
@@ -94,7 +94,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 {
     GraphicsContext context(&rootDisplayItemList());
-    FloatRect bound = layoutView().viewRect();
+    LayoutRect bound = layoutView().viewRect();
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
@@ -104,7 +104,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
 {
     GraphicsContext context(&rootDisplayItemList());
-    FloatRect bound = layoutView().viewRect();
+    LayoutRect bound = layoutView().viewRect();
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
@@ -132,7 +132,7 @@ FloatRect drawAndGetCullRect(DisplayItemList& list, const LayoutObject& layoutOb
         GraphicsContext context(&list);
         LayoutObjectDrawingRecorder recorder(
             context, layoutObject, DisplayItem::BoxDecorationBackground, bounds);
-        context.drawRect(enclosedIntRect(bounds));
+        context.drawRect(enclosedIntRect(FloatRect(bounds)));
     }
     list.commitNewDisplayItems();
     const auto& drawing = static_cast<const DrawingDisplayItem&>(list.displayItems()[0]);

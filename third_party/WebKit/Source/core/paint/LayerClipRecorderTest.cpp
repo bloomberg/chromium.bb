@@ -48,14 +48,14 @@ private:
     bool m_originalSlimmingPaintEnabled;
 };
 
-void drawEmptyClip(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase, const FloatRect& bound)
+void drawEmptyClip(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase)
 {
     LayoutRect rect(1, 1, 9, 9);
     ClipRect clipRect(rect);
     LayerClipRecorder LayerClipRecorder(context, *layoutView.compositor()->rootLayer()->layoutObject(), DisplayItem::ClipLayerForeground, clipRect, 0, LayoutPoint(), PaintLayerFlags());
 }
 
-void drawRectInClip(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase, const FloatRect& bound)
+void drawRectInClip(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase, const LayoutRect& bound)
 {
     IntRect rect(1, 1, 9, 9);
     ClipRect clipRect((LayoutRect(rect)));
@@ -69,7 +69,7 @@ void drawRectInClip(GraphicsContext& context, LayoutView& layoutView, PaintPhase
 TEST_F(LayerClipRecorderTest, Single)
 {
     GraphicsContext context(&rootDisplayItemList());
-    FloatRect bound = layoutView().viewRect();
+    LayoutRect bound = layoutView().viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 
     drawRectInClip(context, layoutView(), PaintPhaseForeground, bound);
@@ -83,10 +83,9 @@ TEST_F(LayerClipRecorderTest, Single)
 TEST_F(LayerClipRecorderTest, Empty)
 {
     GraphicsContext context(&rootDisplayItemList());
-    FloatRect bound = layoutView().viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 
-    drawEmptyClip(context, layoutView(), PaintPhaseForeground, bound);
+    drawEmptyClip(context, layoutView(), PaintPhaseForeground);
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 }

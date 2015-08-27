@@ -1569,7 +1569,7 @@ PassRefPtr<HitTestingTransformState> DeprecatedPaintLayer::createLocalTransformS
     } else {
         // If this is the first time we need to make transform state, then base it off of hitTestLocation,
         // which is relative to rootLayer.
-        transformState = HitTestingTransformState::create(hitTestLocation.transformedPoint(), hitTestLocation.transformedRect(), FloatQuad(hitTestRect));
+        transformState = HitTestingTransformState::create(hitTestLocation.transformedPoint(), hitTestLocation.transformedRect(), FloatQuad(FloatRect(hitTestRect)));
         convertToLayerCoords(rootLayer, offset);
     }
     offset.moveBy(translationOffset);
@@ -2176,7 +2176,8 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
         return LayoutRect();
 
     LayoutRect result = clipper().localClipRect();
-    if (result == LayoutRect::infiniteIntRect()) {
+    // TODO(chrishtr): avoid converting to IntRect and back.
+    if (result == LayoutRect(LayoutRect::infiniteIntRect())) {
         LayoutPoint origin;
         result = physicalBoundingBox(ancestorLayer, &origin);
 

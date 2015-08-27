@@ -47,10 +47,11 @@ void EmbeddedObjectPainter::paintReplaced(const PaintInfo& paintInfo, const Layo
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutEmbeddedObject, paintInfo.phase))
         return;
 
-    FloatRect contentRect = m_layoutEmbeddedObject.contentBoxRect();
+    FloatRect contentRect(m_layoutEmbeddedObject.contentBoxRect());
     contentRect.moveBy(roundedIntPoint(paintOffset));
     LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutEmbeddedObject, paintInfo.phase, contentRect);
     GraphicsContextStateSaver stateSaver(*context);
+    // TODO(chrishtr): this should be pixel-snapped.
     context->clip(contentRect);
 
     Font font = replacementTextFont();

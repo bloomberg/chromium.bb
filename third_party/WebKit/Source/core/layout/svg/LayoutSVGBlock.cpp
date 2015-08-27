@@ -99,7 +99,7 @@ LayoutRect LayoutSVGBlock::clippedOverflowRectForPaintInvalidation(const LayoutB
 
 void LayoutSVGBlock::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
-    FloatRect paintInvalidationRect = rect;
+    FloatRect paintInvalidationRect(rect);
     const LayoutSVGRoot& svgRoot = SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(*this, paintInvalidationRect, rect);
     svgRoot.mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }

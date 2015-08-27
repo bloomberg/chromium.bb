@@ -682,6 +682,10 @@ public:
     {
         m_quads.append(m_geometryMap.absoluteRect(rect));
     }
+    void operator()(const LayoutRect& rect)
+    {
+        operator()(FloatRect(rect));
+    }
 private:
     Vector<FloatQuad>& m_quads;
     LayoutGeometryMap m_geometryMap;
@@ -786,6 +790,11 @@ public:
         m_intersected = m_intersected || m_location.intersects(rect);
         m_region.unite(enclosingIntRect(rect));
     }
+    void operator()(const LayoutRect& rect)
+    {
+        m_intersected = m_intersected || m_location.intersects(rect);
+        m_region.unite(enclosingIntRect(rect));
+    }
     bool intersected() const { return m_intersected; }
 private:
     bool m_intersected;
@@ -848,6 +857,10 @@ public:
     void operator()(const FloatRect& rect)
     {
         m_rect.uniteIfNonZero(rect);
+    }
+    void operator()(const LayoutRect& rect)
+    {
+        operator()(FloatRect(rect));
     }
 private:
     FloatRect& m_rect;
@@ -1353,8 +1366,12 @@ public:
 
     void operator()(const FloatRect& rect)
     {
+        operator()(LayoutRect(rect));
+    }
+    void operator()(const LayoutRect& rect)
+    {
         LayoutRect layoutRect(rect);
-        layoutRect.move(m_accumulatedOffset.x(), m_accumulatedOffset.y());
+        layoutRect.moveBy(m_accumulatedOffset);
         m_rects.append(layoutRect);
     }
 private:
@@ -1371,6 +1388,11 @@ public:
     {
         if (!rect.isEmpty())
             AbsoluteLayoutRectsGeneratorContext::operator()(rect);
+    }
+    void operator()(const LayoutRect& rect)
+    {
+        if (!rect.isEmpty())
+            AbsoluteLayoutRectsGeneratorContext::operator()(FloatRect(rect));
     }
 };
 

@@ -69,10 +69,10 @@ FilterPainter::FilterPainter(DeprecatedPaintLayer& layer, GraphicsContext* conte
             // the layer's filter. See crbug.com/502026.
             if (webFilterOperations->isEmpty())
                 return;
-            context->displayItemList()->createAndAppend<BeginFilterDisplayItem>(*m_layoutObject, imageFilter, rootRelativeBounds, webFilterOperations.release());
+            context->displayItemList()->createAndAppend<BeginFilterDisplayItem>(*m_layoutObject, imageFilter, FloatRect(rootRelativeBounds), webFilterOperations.release());
         }
     } else {
-        BeginFilterDisplayItem filterDisplayItem(*m_layoutObject, imageFilter, rootRelativeBounds);
+        BeginFilterDisplayItem filterDisplayItem(*m_layoutObject, imageFilter, FloatRect(rootRelativeBounds));
         filterDisplayItem.replay(*context);
     }
 
