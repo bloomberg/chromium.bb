@@ -3513,8 +3513,8 @@ Even if you have downloaded files from this website before, the website might ha
       </if>
 
       <!-- DevTools attached infobar -->
-      <message name="IDS_DEV_TOOLS_INFOBAR_LABEL" desc="Label displayed in an infobar when external debugger is attached to the page">
-        "<ph name="CLIENT_NAME">$1<ex>Extension Foo</ex></ph>" is debugging this tab.
+      <message name="IDS_DEV_TOOLS_INFOBAR_LABEL" desc="Label displayed in an infobar when external debugger is attached to the browser">
+        "<ph name="CLIENT_NAME">$1<ex>Extension Foo</ex></ph>" is debugging this browser.
       </message>
 
       <!-- DevTools file system access -->

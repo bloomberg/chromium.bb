@@ -121,9 +121,8 @@ chrome.test.runTests([
 
   function attachToOwnBackgroundPageWithNoSilentFlag() {
     var ownExtensionId = chrome.extension.getURL('').split('/')[2];
-    var debuggeeExtension = {extensionId: ownExtensionId};
-    chrome.debugger.attach(debuggeeExtension, protocolVersion,
-        fail(SILENT_FLAG_REQUIRED));
+    debuggee = {extensionId: ownExtensionId};
+    chrome.debugger.attach(debuggee, protocolVersion, pass());
   },
 
   function discoverOwnBackgroundPageWithNoSilentFlag() {
@@ -131,12 +130,17 @@ chrome.test.runTests([
       var target = targets.filter(
           function(target) { return target.type == 'background_page'})[0];
       if (target) {
-        chrome.debugger.attach({targetId: target.id}, protocolVersion,
-            fail(SILENT_FLAG_REQUIRED));
+        chrome.debugger.attach({targetId: target.id}, protocolVersion, fail(
+            "Another debugger is already attached to the target with id: " +
+            target.id + "."));
       } else {
         chrome.test.succeed();
       }
     });
+  },
+
+  function detachFromOwnBackgroundPage() {
+    chrome.debugger.detach(debuggee, pass());
   },
 
   function createAndDiscoverTab() {
@@ -170,14 +174,18 @@ chrome.test.runTests([
         var page = targets.filter(
             function(t) { return t.type == 'worker' })[0];
         if (page) {
-          chrome.debugger.attach({targetId: page.id}, protocolVersion,
-              fail(SILENT_FLAG_REQUIRED));
+          debuggee = {targetId: page.id};
+          chrome.debugger.attach(debuggee, protocolVersion, pass());
         } else {
           chrome.test.fail("Cannot discover a newly created worker");
         }
       });
     };
     workerPort.start();
+  },
+
+  function detachFromWorker() {
+    chrome.debugger.detach(debuggee, pass());
   },
 
   function sendCommandDuringNavigation() {

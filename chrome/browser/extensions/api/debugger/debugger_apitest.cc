@@ -11,11 +11,14 @@
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -178,6 +181,100 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
   // to debug any extension.
   command_line()->AppendSwitch(switches::kExtensionsOnChromeURLs);
   EXPECT_TRUE(RunAttachFunction(other_ext_url, std::string()));
+}
+
+IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
+  int tab_id = SessionTabHelper::IdForTab(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  scoped_refptr<DebuggerAttachFunction> attach_function;
+  scoped_refptr<DebuggerDetachFunction> detach_function;
+
+  Browser* another_browser =
+      new Browser(Browser::CreateParams(profile(), chrome::GetActiveDesktop()));
+  AddBlankTabAndShow(another_browser);
+  AddBlankTabAndShow(another_browser);
+
+  InfoBarService* service1 = InfoBarService::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  InfoBarService* service2 = InfoBarService::FromWebContents(
+      another_browser->tab_strip_model()->GetWebContentsAt(0));
+  InfoBarService* service3 = InfoBarService::FromWebContents(
+      another_browser->tab_strip_model()->GetWebContentsAt(1));
+
+  // Attach should create infobars in both browsers.
+  attach_function = new DebuggerAttachFunction();
+  attach_function->set_extension(extension());
+  ASSERT_TRUE(
+      RunFunction(attach_function.get(),
+                  base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id),
+                  browser(), extension_function_test_utils::NONE));
+  EXPECT_EQ(1u, service1->infobar_count());
+  EXPECT_EQ(1u, service2->infobar_count());
+  EXPECT_EQ(1u, service3->infobar_count());
+
+  // Detach should remove all infobars.
+  detach_function = new DebuggerDetachFunction();
+  detach_function->set_extension(extension());
+  ASSERT_TRUE(RunFunction(detach_function.get(),
+                          base::StringPrintf("[{\"tabId\": %d}]", tab_id),
+                          browser(), extension_function_test_utils::NONE));
+  EXPECT_EQ(0u, service1->infobar_count());
+  EXPECT_EQ(0u, service2->infobar_count());
+  EXPECT_EQ(0u, service3->infobar_count());
+
+  // Attach again.
+  attach_function = new DebuggerAttachFunction();
+  attach_function->set_extension(extension());
+  ASSERT_TRUE(
+      RunFunction(attach_function.get(),
+                  base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id),
+                  browser(), extension_function_test_utils::NONE));
+  EXPECT_EQ(1u, service1->infobar_count());
+  EXPECT_EQ(1u, service2->infobar_count());
+  EXPECT_EQ(1u, service3->infobar_count());
+
+  // Closing infobar should cause detach and remove all infobars.
+  service2->infobar_at(0)->delegate()->InfoBarDismissed();
+  EXPECT_EQ(0u, service1->infobar_count());
+  EXPECT_EQ(0u, service2->infobar_count());
+  EXPECT_EQ(0u, service3->infobar_count());
+  detach_function = new DebuggerDetachFunction();
+  detach_function->set_extension(extension());
+  // Cannot detach again.
+  ASSERT_FALSE(RunFunction(detach_function.get(),
+                           base::StringPrintf("[{\"tabId\": %d}]", tab_id),
+                           browser(), extension_function_test_utils::NONE));
+
+  // And again...
+  attach_function = new DebuggerAttachFunction();
+  attach_function->set_extension(extension());
+  ASSERT_TRUE(
+      RunFunction(attach_function.get(),
+                  base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id),
+                  browser(), extension_function_test_utils::NONE));
+  EXPECT_EQ(1u, service1->infobar_count());
+  EXPECT_EQ(1u, service2->infobar_count());
+  EXPECT_EQ(1u, service3->infobar_count());
+
+  // Closing tab should not affect anything.
+  ASSERT_TRUE(another_browser->tab_strip_model()->CloseWebContentsAt(1, 0));
+  service3 = nullptr;
+  EXPECT_EQ(1u, service1->infobar_count());
+  EXPECT_EQ(1u, service2->infobar_count());
+
+  // Closing browser should not affect anything.
+  CloseBrowserSynchronously(another_browser);
+  service2 = nullptr;
+  another_browser = nullptr;
+  EXPECT_EQ(1u, service1->infobar_count());
+
+  // Detach should remove the remaining infobar.
+  detach_function = new DebuggerDetachFunction();
+  detach_function->set_extension(extension());
+  ASSERT_TRUE(RunFunction(detach_function.get(),
+                          base::StringPrintf("[{\"tabId\": %d}]", tab_id),
+                          browser(), extension_function_test_utils::NONE));
+  EXPECT_EQ(0u, service1->infobar_count());
 }
 
 }  // namespace extensions
