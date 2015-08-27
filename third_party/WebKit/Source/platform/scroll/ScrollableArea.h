@@ -259,6 +259,7 @@ public:
     }
 
     virtual GraphicsLayer* layerForContainer() const;
+    virtual GraphicsLayer* layerForScrollbarContainer() const { return layerForContainer(); }
     virtual GraphicsLayer* layerForScrolling() const { return 0; }
     virtual GraphicsLayer* layerForHorizontalScrollbar() const { return 0; }
     virtual GraphicsLayer* layerForVerticalScrollbar() const { return 0; }

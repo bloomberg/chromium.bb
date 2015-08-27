@@ -170,4 +170,10 @@ ScrollbarPart ScrollbarThemeOverlay::hitTest(ScrollbarThemeClient* scrollbar, co
     return ScrollbarTheme::hitTest(scrollbar, position);
 }
 
+ScrollbarTheme* ScrollbarThemeOverlay::mobileTheme()
+{
+    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, (3, 3, ScrollbarThemeOverlay::DisallowHitTest, Color(128, 128, 128, 128)));
+    return &theme;
+}
+
 } // namespace blink

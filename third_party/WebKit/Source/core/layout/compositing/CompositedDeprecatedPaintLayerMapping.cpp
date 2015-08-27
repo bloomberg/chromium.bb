@@ -30,6 +30,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -1070,6 +1071,8 @@ void CompositedDeprecatedPaintLayerMapping::updateInternalHierarchy()
 
     // Now constructing the subtree for the overflow controls.
     bottomLayer = m_graphicsLayer.get();
+    if (m_isMainFrameLayoutViewLayer)
+        bottomLayer = layoutObject()->frame()->page()->frameHost().visualViewport().containerLayer();
     updateBottomLayer(m_overflowControlsClippingLayer.get());
     updateBottomLayer(m_overflowControlsHostLayer.get());
     if (m_layerForHorizontalScrollbar)

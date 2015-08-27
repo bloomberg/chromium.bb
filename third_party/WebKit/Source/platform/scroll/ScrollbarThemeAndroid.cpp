@@ -32,8 +32,7 @@ namespace blink {
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
-    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, (3, 3, ScrollbarThemeOverlay::DisallowHitTest, Color(128, 128, 128, 128)));
-    return &theme;
+    return ScrollbarThemeOverlay::mobileTheme();
 }
 
 } // namespace blink

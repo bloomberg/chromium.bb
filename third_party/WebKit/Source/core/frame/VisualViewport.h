@@ -87,6 +87,8 @@ public:
         return m_innerViewportScrollLayer.get();
     }
 
+    void initializeScrollbars();
+
     // Sets the location of the visual viewport relative to the outer viewport. The
     // coordinates are in partial CSS pixels.
     void setLocation(const FloatPoint&);
@@ -194,6 +196,8 @@ public:
 
 private:
     explicit VisualViewport(FrameHost&);
+
+    bool visualViewportSuppliesScrollbars() const;
 
     // GraphicsLayerClient implementation.
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;
