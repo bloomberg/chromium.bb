@@ -1312,23 +1312,29 @@ void EventSender::KeyDown(const std::string& code_str,
     code = ui::VKEY_APPS;
     domString.assign("ContextMenu");
   } else if ("leftControl" == code_str) {
-    code = ui::VKEY_LCONTROL;
+    code = ui::VKEY_CONTROL;
     domString.assign("ControlLeft");
+    location = DOMKeyLocationLeft;
   } else if ("rightControl" == code_str) {
-    code = ui::VKEY_RCONTROL;
+    code = ui::VKEY_CONTROL;
     domString.assign("ControlRight");
+    location = DOMKeyLocationRight;
   } else if ("leftShift" == code_str) {
-    code = ui::VKEY_LSHIFT;
+    code = ui::VKEY_SHIFT;
     domString.assign("ShiftLeft");
+    location = DOMKeyLocationLeft;
   } else if ("rightShift" == code_str) {
-    code = ui::VKEY_RSHIFT;
+    code = ui::VKEY_SHIFT;
     domString.assign("ShiftRight");
+    location = DOMKeyLocationRight;
   } else if ("leftAlt" == code_str) {
-    code = ui::VKEY_LMENU;
+    code = ui::VKEY_MENU;
     domString.assign("AltLeft");
+    location = DOMKeyLocationLeft;
   } else if ("rightAlt" == code_str) {
-    code = ui::VKEY_RMENU;
+    code = ui::VKEY_MENU;
     domString.assign("AltRight");
+    location = DOMKeyLocationRight;
   } else if ("numLock" == code_str) {
     code = ui::VKEY_NUMLOCK;
     domString.assign("NumLock");
@@ -1410,8 +1416,19 @@ void EventSender::KeyDown(const std::string& code_str,
     event_down.modifiers |= WebInputEvent::ShiftKey;
 
   // See if KeyLocation argument is given.
-  if (location == DOMKeyLocationNumpad)
+  switch(location) {
+  case DOMKeyLocationStandard:
+    break;
+  case DOMKeyLocationLeft:
+    event_down.modifiers |= WebInputEvent::IsLeft;
+    break;
+  case DOMKeyLocationRight:
+    event_down.modifiers |= WebInputEvent::IsRight;
+    break;
+  case DOMKeyLocationNumpad:
     event_down.modifiers |= WebInputEvent::IsKeyPad;
+    break;
+  }
 
   WebKeyboardEvent event_up;
   event_up = event_down;
