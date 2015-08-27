@@ -19,14 +19,13 @@ namespace content {
 
 static const char kTestStreamLabel[] = "stream_label";
 
-MockMediaStreamRegistry::MockMediaStreamRegistry() {
-}
+MockMediaStreamRegistry::MockMediaStreamRegistry() {}
 
 void MockMediaStreamRegistry::Init(const std::string& stream_url) {
   stream_url_ = stream_url;
-  blink::WebVector<blink::WebMediaStreamTrack> webkit_audio_tracks;
-  blink::WebVector<blink::WebMediaStreamTrack> webkit_video_tracks;
-  blink::WebString label(kTestStreamLabel);
+  const blink::WebVector<blink::WebMediaStreamTrack> webkit_audio_tracks;
+  const blink::WebVector<blink::WebMediaStreamTrack> webkit_video_tracks;
+  const blink::WebString label(kTestStreamLabel);
   test_stream_.initialize(label, webkit_audio_tracks, webkit_video_tracks);
   test_stream_.setExtraData(new MediaStream(test_stream_));
 }
@@ -56,14 +55,7 @@ void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
 
 blink::WebMediaStream MockMediaStreamRegistry::GetMediaStream(
     const std::string& url) {
-  if (url != stream_url_) {
-    return blink::WebMediaStream();
-  }
-  return test_stream_;
-}
-
-const blink::WebMediaStream MockMediaStreamRegistry::test_stream() const {
-  return test_stream_;
+  return (url != stream_url_) ? blink::WebMediaStream() : test_stream_;
 }
 
 }  // namespace content

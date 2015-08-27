@@ -5,18 +5,13 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
-#include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_registry_interface.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
 #include "content/renderer/media/video_source_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 
 namespace content {
@@ -25,29 +20,17 @@ static const std::string kTestStreamUrl = "stream_url";
 static const std::string kTestVideoTrackId = "video_track_id";
 static const std::string kUnknownStreamUrl = "unknown_stream_url";
 
-class FakeFrameReader : public FrameReaderInterface {
+class VideoSourceHandlerTest : public ::testing::Test,
+                               public FrameReaderInterface {
  public:
-  void GotFrame(const scoped_refptr<media::VideoFrame>& frame) override {
-    last_frame_ = frame;
-  }
-
-  const media::VideoFrame* last_frame() {
-    return last_frame_.get();
-  }
-
- private:
-  scoped_refptr<media::VideoFrame> last_frame_;
-};
-
-class VideoSourceHandlerTest : public ::testing::Test {
- public:
-  VideoSourceHandlerTest()
-       : child_process_(new ChildProcess()),
-         registry_(new MockMediaStreamRegistry()) {
+  VideoSourceHandlerTest() : registry_(new MockMediaStreamRegistry()) {
     handler_.reset(new VideoSourceHandler(registry_.get()));
     registry_->Init(kTestStreamUrl);
     registry_->AddVideoTrack(kTestVideoTrackId);
+    EXPECT_FALSE(handler_->GetFirstVideoTrack(kTestStreamUrl).isNull());
   }
+
+  MOCK_METHOD1(GotFrame, void(const scoped_refptr<media::VideoFrame>&));
 
   void TearDown() override {
     registry_.reset();
@@ -55,47 +38,39 @@ class VideoSourceHandlerTest : public ::testing::Test {
     blink::WebHeap::collectAllGarbageForTesting();
   }
 
+  void DeliverFrameForTesting(const scoped_refptr<media::VideoFrame>& frame) {
+    handler_->DeliverFrameForTesting(this, frame);
+  }
+
  protected:
-  base::MessageLoop message_loop_;
-  scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<VideoSourceHandler> handler_;
+  // A ChildProcess and a MessageLoop are both needed to fool the Tracks and
+  // Sources inside |registry_| into believing they are on the right threads.
+  const ChildProcess child_process_;
+  const base::MessageLoop message_loop_;
   scoped_ptr<MockMediaStreamRegistry> registry_;
 };
 
+// Open |handler_| and send a VideoFrame to be received at the other side.
 TEST_F(VideoSourceHandlerTest, OpenClose) {
-  FakeFrameReader reader;
   // Unknow url will return false.
-  EXPECT_FALSE(handler_->Open(kUnknownStreamUrl, &reader));
-  EXPECT_TRUE(handler_->Open(kTestStreamUrl, &reader));
+  EXPECT_FALSE(handler_->Open(kUnknownStreamUrl, this));
+  EXPECT_TRUE(handler_->Open(kTestStreamUrl, this));
 
-  int width = 640;
-  int height = 360;
-  base::TimeDelta ts = base::TimeDelta::FromInternalValue(789012);
-
-  // A new frame is captured.
-  scoped_refptr<media::VideoFrame> captured_frame =
-      media::VideoFrame::CreateBlackFrame(gfx::Size(width, height));
+  const base::TimeDelta ts = base::TimeDelta::FromMilliseconds(789012);
+  const scoped_refptr<media::VideoFrame> captured_frame =
+      media::VideoFrame::CreateBlackFrame(gfx::Size(640, 360));
   captured_frame->set_timestamp(ts);
 
-  // The frame is delivered to VideoSourceHandler.
-  handler_->DeliverFrameForTesting(&reader, captured_frame);
-
-  // Compare |frame| to |captured_frame|.
-  const media::VideoFrame* frame = reader.last_frame();
-  ASSERT_TRUE(frame != NULL);
-  EXPECT_EQ(width, frame->coded_size().width());
-  EXPECT_EQ(height, frame->coded_size().height());
-  EXPECT_EQ(ts, frame->timestamp());
-  EXPECT_EQ(captured_frame->data(media::VideoFrame::kYPlane),
-            frame->data(media::VideoFrame::kYPlane));
+  EXPECT_CALL(*this, GotFrame(captured_frame));
+  DeliverFrameForTesting(captured_frame);
 
   EXPECT_FALSE(handler_->Close(NULL));
-  EXPECT_TRUE(handler_->Close(&reader));
+  EXPECT_TRUE(handler_->Close(this));
 }
 
 TEST_F(VideoSourceHandlerTest, OpenWithoutClose) {
-  FakeFrameReader reader;
-  EXPECT_TRUE(handler_->Open(kTestStreamUrl, &reader));
+  EXPECT_TRUE(handler_->Open(kTestStreamUrl, this));
 }
 
 }  // namespace content

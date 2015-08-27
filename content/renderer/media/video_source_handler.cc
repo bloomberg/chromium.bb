@@ -97,6 +97,7 @@ bool VideoSourceHandler::Close(FrameReaderInterface* reader) {
 
 blink::WebMediaStreamTrack VideoSourceHandler::GetFirstVideoTrack(
     const std::string& url) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   const blink::WebMediaStream stream = registry_
       ? registry_->GetMediaStream(url)
       : blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));

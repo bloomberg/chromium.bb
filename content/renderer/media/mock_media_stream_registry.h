@@ -7,20 +7,22 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
 
 namespace content {
 
-class MockMediaStreamRegistry : public MediaStreamRegistryInterface {
+// This class encapsulates creation of a Blink MediaStream having inside the
+// necessary Blink and Chromium, track and source. The Chrome Video source is
+// a mock.
+class MockMediaStreamRegistry final : public MediaStreamRegistryInterface {
  public:
   MockMediaStreamRegistry();
 
-  void Init(const std::string& stream_label);
+  void Init(const std::string& stream_url);
   void AddVideoTrack(const std::string& track_id);
   blink::WebMediaStream GetMediaStream(const std::string& url) override;
 
-  const blink::WebMediaStream test_stream() const;
+  const blink::WebMediaStream test_stream() const { return test_stream_; }
 
  private:
   blink::WebMediaStream test_stream_;

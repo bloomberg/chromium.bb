@@ -4,9 +4,7 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/media_stream.h"
@@ -36,10 +34,7 @@ static const std::string kUnknownStreamUrl = "unknown_stream_url";
 
 class VideoDestinationHandlerTest : public PpapiUnittest {
  public:
-  VideoDestinationHandlerTest()
-     : child_process_(new ChildProcess()),
-       render_thread_(new MockRenderThread),
-       registry_(new MockMediaStreamRegistry()) {
+  VideoDestinationHandlerTest() : registry_(new MockMediaStreamRegistry()) {
     registry_->Init(kTestStreamUrl);
   }
 
@@ -49,24 +44,22 @@ class VideoDestinationHandlerTest : public PpapiUnittest {
     PpapiUnittest::TearDown();
   }
 
-  base::MessageLoop* io_message_loop() const {
-    return child_process_->io_message_loop();
-  }
-
  protected:
-  scoped_ptr<ChildProcess> child_process_;
-  scoped_ptr<MockRenderThread> render_thread_;
+  // A ChildProcess and a MessageLoop are both needed to fool the Tracks and
+  // Sources inside |registry_| into believing they are on the right threads.
+  const ChildProcess child_process_;
+  const MockRenderThread render_thread_;
   scoped_ptr<MockMediaStreamRegistry> registry_;
 };
 
 TEST_F(VideoDestinationHandlerTest, Open) {
-  FrameWriterInterface* frame_writer = NULL;
+  // |frame_writer| is a proxy and is owned by whoever call Open.
+  FrameWriterInterface* frame_writer = nullptr;
   // Unknow url will return false.
   EXPECT_FALSE(VideoDestinationHandler::Open(registry_.get(),
                                              kUnknownStreamUrl, &frame_writer));
   EXPECT_TRUE(VideoDestinationHandler::Open(registry_.get(),
                                             kTestStreamUrl, &frame_writer));
-  // The |frame_writer| is a proxy and is owned by whoever call Open.
   delete frame_writer;
 }
 
@@ -97,8 +90,7 @@ TEST_F(VideoDestinationHandlerTest, PutFrame) {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
 
-    EXPECT_CALL(sink, OnVideoFrame()).WillOnce(
-        RunClosure(quit_closure));
+    EXPECT_CALL(sink, OnVideoFrame()).WillOnce(RunClosure(quit_closure));
     frame_writer->PutFrame(image.get(), 10);
     run_loop.Run();
     // Run all pending tasks to let the the test clean up before the test ends.

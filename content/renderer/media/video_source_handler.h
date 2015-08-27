@@ -8,8 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -20,7 +18,6 @@
 namespace content {
 
 class MediaStreamRegistryInterface;
-class MediaStreamVideoSink;
 class PpFrameReceiver;
 
 // Interface used by the effects pepper plugin to get captured frames
@@ -52,7 +49,7 @@ class CONTENT_EXPORT VideoSourceHandler {
   bool Close(FrameReaderInterface* reader);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(VideoSourceHandlerTest, OpenClose);
+  friend class VideoSourceHandlerTest;
 
   struct SourceInfo {
     SourceInfo(const blink::WebMediaStreamTrack& blink_track,
