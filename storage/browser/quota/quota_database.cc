@@ -491,16 +491,11 @@ bool QuotaDatabase::LazyOpen(bool create_if_needed) {
   }
 
   if (!opened || !EnsureDatabaseVersion()) {
-    LOG(ERROR) << "Could not open the quota database: "
-               << "probably database is currupted. "
-               << "Trying to reset...";
-    if (!ResetSchema()) {
-      LOG(ERROR) << "Failed to reset the quota database.";
-      is_disabled_ = true;
-      db_.reset();
-      meta_table_.reset();
-      return false;
-    }
+    LOG(ERROR) << "Failed to open the quota database.";
+    is_disabled_ = true;
+    db_.reset();
+    meta_table_.reset();
+    return false;
   }
 
   // Start a long-running transaction.
