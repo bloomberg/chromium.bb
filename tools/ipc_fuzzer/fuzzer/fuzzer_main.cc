@@ -32,7 +32,7 @@ const char kFrequencySwitchHelp[] =
 
 const char kFuzzerNameSwitch[] = "fuzzer-name";
 const char kFuzzerNameSwitchHelp[] =
-    "Select generator, mutator, or no-op fuzzer. Default: generator";
+    "Select from generate, mutate, or no-op. Default: generate";
 
 const char kHelpSwitch[] = "help";
 const char kHelpSwitchHelp[] =
