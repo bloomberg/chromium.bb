@@ -22,6 +22,7 @@ import android.util.Log;
 import android.util.LongSparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.URLUtil;
 import android.widget.TextView;
 
 import org.chromium.base.ApplicationStatus;
@@ -584,9 +585,14 @@ public class OMADownloadHandler {
         if (mimeType == null) {
             mimeType = getOpennableType(mContext.getPackageManager(), omaInfo);
         }
+        String fileName = omaInfo.getValue(OMA_NAME);
+        String url = omaInfo.getValue(OMA_OBJECT_URI);
+        if (TextUtils.isEmpty(fileName)) {
+            fileName = URLUtil.guessFileName(url, null, mimeType);
+        }
         DownloadInfo newInfo = DownloadInfo.Builder.fromDownloadInfo(downloadInfo)
-                .setFileName(omaInfo.getValue(OMA_NAME))
-                .setUrl(omaInfo.getValue(OMA_OBJECT_URI))
+                .setFileName(fileName)
+                .setUrl(url)
                 .setMimeType(mimeType)
                 .setDownloadId((int) downloadId)
                 .setDescription(omaInfo.getValue(OMA_DESCRIPTION))
