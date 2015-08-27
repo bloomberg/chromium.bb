@@ -459,8 +459,9 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
             current_author,
             change_number,
         ]
+        # TODO(phobbs) verify the domain of the email address as well.
         if current_committer not in ('chrome-bot', 'chrome-internal-fetch',
-                                     'chromeos-commit-bot'):
+                                     'chromeos-commit-bot', '3su6n15k.default'):
           items.insert(0, 'CHUMP')
         elif only_print_chumps:
           continue
