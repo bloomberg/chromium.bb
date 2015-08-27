@@ -115,8 +115,7 @@ public:
         ConstantTypeUnsignedShort,
         ConstantTypeUnsignedLong,
         ConstantTypeFloat,
-        ConstantTypeDouble,
-        ConstantTypeString
+        ConstantTypeDouble
     };
 
     // ConstantConfiguration translates into calls to Set() for setting up an
@@ -128,7 +127,6 @@ public:
         const char* const name;
         int ivalue;
         double dvalue;
-        const char* const svalue;
         ConstantType type;
     };
 
