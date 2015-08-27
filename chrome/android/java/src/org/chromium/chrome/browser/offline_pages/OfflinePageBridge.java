@@ -187,10 +187,37 @@ public final class OfflinePageBridge {
     }
 
     /**
+     * Deletes offline pages based on the list of provided bookamrk IDs. Calls the callback
+     * when operation is complete. Requires that the model is already loaded.
+     *
+     * @param bookmarkIds A list of bookmark IDs for which the offline pages will be deleted.
+     * @param callback A callback that will be called once operation is completed.
+     */
+    public void deletePages(List<BookmarkId> bookmarkIds, DeletePageCallback callback) {
+        assert mIsNativeOfflinePageModelLoaded;
+        long[] ids = new long[bookmarkIds.size()];
+        for (int i = 0; i < ids.length; i++) {
+            ids[i] = bookmarkIds.get(i).getId();
+        }
+        nativeDeletePages(mNativeOfflinePageBridge, callback, ids);
+    }
+
+    /**
      * Whether or not the underlying offline page model is loaded.
      */
     public boolean isOfflinePageModelLoaded() {
         return mIsNativeOfflinePageModelLoaded;
+    }
+
+    /**
+     * @return Gets a list of pages that will be removed to clean up storage.  Requires that the
+     *     model is already loaded.
+     */
+    public List<OfflinePageItem> getPagesToCleanUp() {
+        assert mIsNativeOfflinePageModelLoaded;
+        List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
+        nativeGetPagesToCleanUp(mNativeOfflinePageBridge, result);
+        return result;
     }
 
     @CalledByNative
@@ -225,4 +252,8 @@ public final class OfflinePageBridge {
             WebContents webContents, long bookmarkId);
     private native void nativeDeletePage(long nativeOfflinePageBridge,
             DeletePageCallback callback, long bookmarkId);
+    private native void nativeDeletePages(
+            long nativeOfflinePageBridge, DeletePageCallback callback, long[] bookmarkIds);
+    private native void nativeGetPagesToCleanUp(
+            long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
 }

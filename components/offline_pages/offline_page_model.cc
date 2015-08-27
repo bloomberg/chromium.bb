@@ -24,6 +24,10 @@ namespace offline_pages {
 
 namespace {
 
+// Threshold for how old offline copy of a page should be before we offer to
+// delete it to free up space.
+const base::TimeDelta kPageCleanUpThreshold = base::TimeDelta::FromDays(30);
+
 SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
   SavePageResult result;
   switch (archiver_result) {
@@ -149,6 +153,17 @@ const std::vector<OfflinePageItem> OfflinePageModel::GetAllPages() const {
   std::vector<OfflinePageItem> offline_pages;
   for (const auto& id_page_pair : offline_pages_)
     offline_pages.push_back(id_page_pair.second);
+  return offline_pages;
+}
+
+const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
+  DCHECK(is_loaded_);
+  std::vector<OfflinePageItem> offline_pages;
+  base::Time now = base::Time::Now();
+  for (const auto& id_page_pair : offline_pages_) {
+    if (now - id_page_pair.second.creation_time > kPageCleanUpThreshold)
+      offline_pages.push_back(id_page_pair.second);
+  }
   return offline_pages;
 }
 

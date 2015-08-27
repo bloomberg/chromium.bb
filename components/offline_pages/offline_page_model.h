@@ -137,6 +137,10 @@ class OfflinePageModel : public KeyedService,
   // Gets all available offline pages. Requires that the model is loaded.
   const std::vector<OfflinePageItem> GetAllPages() const;
 
+  // Gets pages that should be removed to clean up storage. Requires that the
+  // model is loaded.
+  const std::vector<OfflinePageItem> GetPagesToCleanUp() const;
+
   // Gets an offline page associated with a specified |bookmark_id|. Returns
   // true if a matching offline page exists, and |offline_page| will be updated
   // with corresponding value, or false, if no offline page was found.

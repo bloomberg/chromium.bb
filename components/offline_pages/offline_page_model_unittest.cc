@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,6 +43,7 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
 
   explicit OfflinePageTestStore(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  explicit OfflinePageTestStore(const OfflinePageTestStore& other_store);
   ~OfflinePageTestStore() override;
 
   // OfflinePageMetadataStore overrides:
@@ -65,7 +67,7 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
 
   std::vector<OfflinePageItem> offline_pages_;
 
-  DISALLOW_COPY_AND_ASSIGN(OfflinePageTestStore);
+  DISALLOW_ASSIGN(OfflinePageTestStore);
 };
 
 OfflinePageTestStore::OfflinePageTestStore(
@@ -73,6 +75,12 @@ OfflinePageTestStore::OfflinePageTestStore(
     : task_runner_(task_runner),
       scenario_(TestScenario::SUCCESSFUL) {
 }
+
+OfflinePageTestStore::OfflinePageTestStore(
+    const OfflinePageTestStore& other_store)
+    : task_runner_(other_store.task_runner_),
+      scenario_(other_store.scenario_),
+      offline_pages_(other_store.offline_pages_) {}
 
 OfflinePageTestStore::~OfflinePageTestStore() {
 }
@@ -169,11 +177,16 @@ class OfflinePageModelTest
   void OnSavePageDone(SavePageResult result);
   void OnDeletePageDone(DeletePageResult result);
 
+  // OfflinePageMetadataStore callbacks.
+  void OnStoreUpdateDone(bool /* success */);
+
   scoped_ptr<OfflinePageTestArchiver> BuildArchiver(
       const GURL& url,
       OfflinePageArchiver::ArchiverResult result);
   scoped_ptr<OfflinePageMetadataStore> BuildStore();
-  scoped_ptr<OfflinePageModel> BuildModel();
+  scoped_ptr<OfflinePageModel> BuildModel(
+      scoped_ptr<OfflinePageMetadataStore> store);
+  void ResetModel();
 
   // Utility methods.
   void PumpLoop();
@@ -257,7 +270,7 @@ OfflinePageModelTest::~OfflinePageModelTest() {
 
 void OfflinePageModelTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  model_ = BuildModel().Pass();
+  model_ = BuildModel(BuildStore().Pass()).Pass();
   model_->AddObserver(this);
   PumpLoop();
 }
@@ -282,6 +295,10 @@ void OfflinePageModelTest::OnDeletePageDone(DeletePageResult result) {
   last_delete_result_ = result;
 }
 
+void OfflinePageModelTest::OnStoreUpdateDone(bool /* success - ignored */) {
+  run_loop_->Quit();
+}
+
 scoped_ptr<OfflinePageTestArchiver> OfflinePageModelTest::BuildArchiver(
     const GURL& url,
     OfflinePageArchiver::ArchiverResult result) {
@@ -294,9 +311,20 @@ scoped_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
       new OfflinePageTestStore(task_runner()));
 }
 
-scoped_ptr<OfflinePageModel> OfflinePageModelTest::BuildModel() {
+scoped_ptr<OfflinePageModel> OfflinePageModelTest::BuildModel(
+    scoped_ptr<OfflinePageMetadataStore> store) {
   return scoped_ptr<OfflinePageModel>(
-      new OfflinePageModel(BuildStore().Pass(), task_runner()));
+      new OfflinePageModel(store.Pass(), task_runner()));
+}
+
+void OfflinePageModelTest::ResetModel() {
+  model_->RemoveObserver(this);
+  OfflinePageTestStore* old_store = GetStore();
+  scoped_ptr<OfflinePageMetadataStore> new_store(
+      new OfflinePageTestStore(*old_store));
+  model_ = BuildModel(new_store.Pass()).Pass();
+  model_->AddObserver(this);
+  PumpLoop();
 }
 
 void OfflinePageModelTest::PumpLoop() {
@@ -651,6 +679,49 @@ TEST_F(OfflinePageModelTest, GetPageByOfflineURL) {
 
   page = model()->GetPageByOfflineURL(GURL("http://foo"));
   EXPECT_FALSE(page);
+}
+
+// Test that model returns pages that are older than 30 days as candidates for
+// clean up, hence the numbers in time delta.
+TEST_F(OfflinePageModelTest, GetPagesToCleanUp) {
+  base::Time now = base::Time::Now();
+  OfflinePageItem page_1(
+      GURL(kTestUrl), kTestPageBookmarkId1,
+      base::FilePath(FILE_PATH_LITERAL("/test/location/page1.mhtml")),
+      kTestFileSize, now - base::TimeDelta::FromDays(40));
+  GetStore()->AddOfflinePage(
+      page_1,
+      base::Bind(&OfflinePageModelTest::OnStoreUpdateDone, AsWeakPtr()));
+  PumpLoop();
+
+  OfflinePageItem page_2(
+      GURL(kTestUrl2), kTestPageBookmarkId2,
+      base::FilePath(FILE_PATH_LITERAL("/test/location/page2.mhtml")),
+      kTestFileSize, now - base::TimeDelta::FromDays(31));
+  GetStore()->AddOfflinePage(
+      page_2,
+      base::Bind(&OfflinePageModelTest::OnStoreUpdateDone, AsWeakPtr()));
+  PumpLoop();
+
+  OfflinePageItem page_3(
+      GURL("http://test.xyz"), 42,
+      base::FilePath(FILE_PATH_LITERAL("/test/location/page3.mhtml")),
+      kTestFileSize, now - base::TimeDelta::FromDays(29));
+  GetStore()->AddOfflinePage(
+      page_3,
+      base::Bind(&OfflinePageModelTest::OnStoreUpdateDone, AsWeakPtr()));
+  PumpLoop();
+
+  ResetModel();
+
+  // Only page_1 and page_2 are expected to be picked up by the model as page_3
+  // has not been in the store long enough.
+  std::vector<OfflinePageItem> pages_to_clean_up = model()->GetPagesToCleanUp();
+  EXPECT_EQ(2UL, pages_to_clean_up.size());
+  EXPECT_EQ(kTestUrl, pages_to_clean_up[0].url);
+  EXPECT_EQ(kTestPageBookmarkId1, pages_to_clean_up[0].bookmark_id);
+  EXPECT_EQ(kTestUrl2, pages_to_clean_up[1].url);
+  EXPECT_EQ(kTestPageBookmarkId2, pages_to_clean_up[1].bookmark_id);
 }
 
 }  // namespace offline_pages

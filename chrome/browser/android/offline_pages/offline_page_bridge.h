@@ -26,6 +26,9 @@ namespace android {
  */
 class OfflinePageBridge : public OfflinePageModel::Observer {
  public:
+  // Returns true if |url| might points to an offline page.
+  static bool MightBeOfflineURL(const GURL& url);
+
   OfflinePageBridge(JNIEnv* env,
                     jobject obj,
                     content::BrowserContext* browser_context);
@@ -37,6 +40,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
   void GetAllPages(JNIEnv* env,
                    jobject obj,
                    jobject j_result_obj);
+  void GetPagesToCleanUp(JNIEnv* env, jobject obj, jobject j_result_obj);
 
   base::android::ScopedJavaLocalRef<jobject>
   GetPageByBookmarkId(JNIEnv* env, jobject obj, jlong bookmark_id);
@@ -52,8 +56,10 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
                   jobject j_callback_obj,
                   jlong bookmark_id);
 
-  // Returns true if |url| might points to an offline page.
-  static bool MightBeOfflineURL(const GURL& url);
+  void DeletePages(JNIEnv* env,
+                   jobject obj,
+                   jobject j_callback_obj,
+                   jlongArray bookmark_ids_array);
 
  private:
   void NotifyIfDoneLoading() const;
