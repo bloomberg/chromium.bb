@@ -69,20 +69,32 @@ struct STORAGE_EXPORT UsageAndQuota {
                 int64 available_disk_space);
 };
 
+// TODO(calamity): Use this in the temporary storage eviction path.
+// An interface for deciding which origin's temporary storage should be evicted
+// when the quota is exceeded.
+class STORAGE_EXPORT QuotaEvictionPolicy {
+ public:
+  // Returns the next origin to evict.  It might return an empty GURL when there
+  // are no evictable origins.
+  virtual void GetEvictionOrigin(
+      const scoped_refptr<SpecialStoragePolicy>& special_storage_policy,
+      const std::map<GURL, int64>& usage_map,
+      int64 global_quota,
+      const GetOriginCallback& callback) = 0;
+};
+
 // An interface called by QuotaTemporaryStorageEvictor.
 class STORAGE_EXPORT QuotaEvictionHandler {
  public:
-  typedef base::Callback<void(const GURL&)> GetLRUOriginCallback;
   typedef StatusCallback EvictOriginDataCallback;
   typedef base::Callback<void(QuotaStatusCode status,
                               const UsageAndQuota& usage_and_quota)>
       UsageAndQuotaCallback;
 
-  // Returns the least recently used origin.  It might return empty
-  // GURL when there are no evictable origins.
-  virtual void GetLRUOrigin(
-      StorageType type,
-      const GetLRUOriginCallback& callback) = 0;
+  // Returns next origin to evict.  It might return an empty GURL when there are
+  // no evictable origins.
+  virtual void GetEvictionOrigin(StorageType type,
+                                 const GetOriginCallback& callback) = 0;
 
   virtual void EvictOriginData(
       const GURL& origin,
@@ -362,13 +374,15 @@ class STORAGE_EXPORT QuotaManager
                                                int64 unlimited_usage);
 
   // QuotaEvictionHandler.
-  void GetLRUOrigin(StorageType type,
-                    const GetLRUOriginCallback& callback) override;
+  void GetEvictionOrigin(StorageType type,
+                         const GetOriginCallback& callback) override;
   void EvictOriginData(const GURL& origin,
                        StorageType type,
                        const EvictOriginDataCallback& callback) override;
   void GetUsageAndQuotaForEviction(
       const UsageAndQuotaCallback& callback) override;
+
+  void GetLRUOrigin(StorageType type, const GetOriginCallback& callback);
 
   void DidSetTemporaryGlobalOverrideQuota(const QuotaCallback& callback,
                                           const int64* new_quota,
@@ -408,7 +422,7 @@ class STORAGE_EXPORT QuotaManager
   scoped_refptr<base::SequencedTaskRunner> db_thread_;
   mutable scoped_ptr<QuotaDatabase> database_;
 
-  GetLRUOriginCallback lru_origin_callback_;
+  GetOriginCallback lru_origin_callback_;
   std::set<GURL> access_notified_origins_;
 
   QuotaClientList clients_;

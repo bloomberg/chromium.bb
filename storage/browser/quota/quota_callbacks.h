@@ -31,6 +31,7 @@ typedef base::Callback<void(QuotaStatusCode)> StatusCallback;
 typedef base::Callback<void(const std::set<GURL>& origins,
                             StorageType type)> GetOriginsCallback;
 typedef base::Callback<void(const UsageInfoEntries&)> GetUsageInfoCallback;
+typedef base::Callback<void(const GURL&)> GetOriginCallback;
 
 // Simple template wrapper for a callback queue.
 template <typename CallbackType, typename... Args>

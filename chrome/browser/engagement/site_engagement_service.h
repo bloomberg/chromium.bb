@@ -7,7 +7,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -84,6 +83,16 @@ class SiteEngagementScore {
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementScore);
 };
 
+class SiteEngagementScoreProvider {
+ public:
+  // Returns a non-negative integer representing the engagement score of the
+  // origin for this URL.
+  virtual int GetScore(const GURL& url) = 0;
+
+  // Returns the sum of engagement points awarded to all sites.
+  virtual int GetTotalEngagementPoints() = 0;
+};
+
 // Stores and retrieves the engagement score of an origin.
 //
 // An engagement score is a positive integer that represents how much a user has
@@ -94,7 +103,8 @@ class SiteEngagementScore {
 // the homescreen, will increase the site engagement score. Negative activity,
 // such as rejecting permission prompts or not responding to notifications, will
 // decrease the site engagement score.
-class SiteEngagementService : public KeyedService {
+class SiteEngagementService : public KeyedService,
+                              public SiteEngagementScoreProvider {
  public:
   static SiteEngagementService* Get(Profile* profile);
 
@@ -107,12 +117,9 @@ class SiteEngagementService : public KeyedService {
   // Update the karma score of the origin matching |url| for user navigation.
   void HandleNavigation(const GURL& url);
 
-  // Returns a non-negative integer representing the engagement score of the
-  // origin for this URL.
-  int GetScore(const GURL& url);
-
-  // Returns the sum of engagement points awarded to all sites.
-  int GetTotalEngagementPoints();
+  // Overridden from SiteEngagementScoreProvider:
+  int GetScore(const GURL& url) override;
+  int GetTotalEngagementPoints() override;
 
  private:
   Profile* profile_;

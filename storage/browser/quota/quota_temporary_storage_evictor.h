@@ -95,7 +95,7 @@ class STORAGE_EXPORT_PRIVATE QuotaTemporaryStorageEvictor
   void OnGotUsageAndQuotaForEviction(
       QuotaStatusCode status,
       const UsageAndQuota& quota_and_usage);
-  void OnGotLRUOrigin(const GURL& origin);
+  void OnGotEvictionOrigin(const GURL& origin);
   void OnEvictionComplete(QuotaStatusCode status);
 
   void OnEvictionRoundStarted();

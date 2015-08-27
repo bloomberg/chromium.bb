@@ -1426,6 +1426,8 @@
       'browser/content_settings/web_site_settings_uma_util.h',
     ],
     'chrome_browser_engagement_sources': [
+      'browser/engagement/site_engagement_eviction_policy.cc',
+      'browser/engagement/site_engagement_eviction_policy.h',
       'browser/engagement/site_engagement_helper.cc',
       'browser/engagement/site_engagement_helper.h',
       'browser/engagement/site_engagement_service.cc',

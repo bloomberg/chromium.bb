@@ -59,8 +59,8 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
     callback.Run(storage::kQuotaStatusOk, quota_and_usage);
   }
 
-  void GetLRUOrigin(StorageType type,
-                    const GetLRUOriginCallback& callback) override {
+  void GetEvictionOrigin(StorageType type,
+                         const storage::GetOriginCallback& callback) override {
     if (origin_order_.empty())
       callback.Run(GURL());
     else

@@ -1440,9 +1440,42 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
                        unlimited_origins);
 }
 
-void QuotaManager::GetLRUOrigin(
-    StorageType type,
-    const GetLRUOriginCallback& callback) {
+void QuotaManager::GetEvictionOrigin(StorageType type,
+                                     const GetOriginCallback& callback) {
+  GetLRUOrigin(type, callback);
+}
+
+void QuotaManager::EvictOriginData(const GURL& origin,
+                                   StorageType type,
+                                   const EvictOriginDataCallback& callback) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  DCHECK_EQ(type, kStorageTypeTemporary);
+
+  eviction_context_.evicted_origin = origin;
+  eviction_context_.evicted_type = type;
+  eviction_context_.evict_origin_data_callback = callback;
+
+  DeleteOriginData(origin, type, QuotaClient::kAllClientsMask,
+                   base::Bind(&QuotaManager::DidOriginDataEvicted,
+                              weak_factory_.GetWeakPtr()));
+}
+
+void QuotaManager::GetUsageAndQuotaForEviction(
+    const UsageAndQuotaCallback& callback) {
+  DCHECK(io_thread_->BelongsToCurrentThread());
+  LazyInitialize();
+
+  UsageAndQuotaCallbackDispatcher* dispatcher =
+      new UsageAndQuotaCallbackDispatcher(this);
+  GetUsageTracker(kStorageTypeTemporary)
+      ->GetGlobalLimitedUsage(dispatcher->GetGlobalLimitedUsageCallback());
+  GetTemporaryGlobalQuota(dispatcher->GetQuotaCallback());
+  GetAvailableSpace(dispatcher->GetAvailableSpaceCallback());
+  dispatcher->WaitForResults(callback);
+}
+
+void QuotaManager::GetLRUOrigin(StorageType type,
+                                const GetOriginCallback& callback) {
   LazyInitialize();
   // This must not be called while there's an in-flight task.
   DCHECK(lru_origin_callback_.is_null());
@@ -1478,36 +1511,6 @@ void QuotaManager::GetLRUOrigin(
       base::Bind(&QuotaManager::DidGetLRUOrigin,
                  weak_factory_.GetWeakPtr(),
                  base::Owned(url)));
-}
-
-void QuotaManager::EvictOriginData(
-    const GURL& origin,
-    StorageType type,
-    const EvictOriginDataCallback& callback) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
-  DCHECK_EQ(type, kStorageTypeTemporary);
-
-  eviction_context_.evicted_origin = origin;
-  eviction_context_.evicted_type = type;
-  eviction_context_.evict_origin_data_callback = callback;
-
-  DeleteOriginData(origin, type, QuotaClient::kAllClientsMask,
-      base::Bind(&QuotaManager::DidOriginDataEvicted,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void QuotaManager::GetUsageAndQuotaForEviction(
-    const UsageAndQuotaCallback& callback) {
-  DCHECK(io_thread_->BelongsToCurrentThread());
-  LazyInitialize();
-
-  UsageAndQuotaCallbackDispatcher* dispatcher =
-      new UsageAndQuotaCallbackDispatcher(this);
-  GetUsageTracker(kStorageTypeTemporary)->
-      GetGlobalLimitedUsage(dispatcher->GetGlobalLimitedUsageCallback());
-  GetTemporaryGlobalQuota(dispatcher->GetQuotaCallback());
-  GetAvailableSpace(dispatcher->GetAvailableSpaceCallback());
-  dispatcher->WaitForResults(callback);
 }
 
 void QuotaManager::DidSetTemporaryGlobalOverrideQuota(
