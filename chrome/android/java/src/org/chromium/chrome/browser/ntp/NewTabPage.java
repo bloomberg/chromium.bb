@@ -193,6 +193,8 @@ public class NewTabPage
                     item.getUrl(), NewTabPageUma.RAPPOR_ACTION_VISITED_SUGGESTED_TILE);
             RecordHistogram.recordEnumeratedHistogram("NewTabPage.MostVisited", item.getIndex(),
                     NewTabPageView.MAX_MOST_VISITED_SITES);
+            RecordHistogram.recordMediumTimesHistogram("NewTabPage.MostVisitedTime",
+                    System.nanoTime() - mConstructedTimeNs, TimeUnit.NANOSECONDS);
             mMostVisitedSites.recordOpenedMostVisitedItem(item.getIndex());
         }
 

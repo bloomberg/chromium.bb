@@ -27561,6 +27561,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.MostVisitedTime" units="milliseconds">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    The time from the New Tab page being shown until the user to clicked on a
+    most visited tile. Only recorded if the user clicked on a tile, as opposed
+    to e.g. searching via the omnibox.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.NonVisibleScreenshots">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -46593,7 +46602,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>lliabraa@chromium.org</owner>
   <owner>beaudoin@chromium.org</owner>
   <summary>
-    The time for the new tab page to fire the &quot;load&quot; event.
+    The time for the new tab page to fire the &quot;load&quot; event. Note: This
+    is usually recorded with a suffix (.Local/Google/Other). The base version is
+    recorded only on Android, as well as for the old NTP (&quot;NTP4&quot;) on
+    other platforms.
   </summary>
 </histogram>
 
