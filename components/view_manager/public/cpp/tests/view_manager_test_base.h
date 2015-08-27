@@ -14,7 +14,7 @@
 
 namespace mojo {
 
-class ViewManagerInit;
+class ViewTreeHostConnection;
 
 // ViewManagerTestBase is a base class for use with app tests that use
 // ViewManager. SetUp() connects to the ViewManager and blocks until OnEmbed()
@@ -72,7 +72,7 @@ class ViewManagerTestBase : public test::ApplicationTestBase,
   ViewTreeConnection* most_recent_connection_;
 
  private:
-  scoped_ptr<ViewManagerInit> view_manager_init_;
+  scoped_ptr<ViewTreeHostConnection> host_connection_;
 
   // The View Manager connection held by the window manager (app running at the
   // root view).

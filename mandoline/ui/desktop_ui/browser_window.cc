@@ -66,7 +66,7 @@ class ProgressView : public views::View {
 BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
                              BrowserManager* manager)
     : app_(app),
-      view_manager_init_(app, this, this),
+      host_connection_(app, this, this),
       manager_(manager),
       omnibox_launcher_(nullptr),
       progress_bar_(nullptr),
@@ -109,16 +109,15 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
   content_ = root_->connection()->CreateView();
   Init(root_);
 
-  view_manager_init_.view_manager_root()->SetViewportSize(
-      mojo::Size::From(gfx::Size(1280, 800)));
+  host_connection_.host()->SetSize(mojo::Size::From(gfx::Size(1280, 800)));
 
   root_->AddChild(content_);
   content_->SetVisible(true);
 
   web_view_.Init(app_, content_);
 
-  view_manager_init_.view_manager_root()->AddAccelerator(
-      mojo::KEYBOARD_CODE_BROWSER_BACK, mojo::EVENT_FLAGS_NONE);
+  host_connection_.host()->AddAccelerator(mojo::KEYBOARD_CODE_BROWSER_BACK,
+                                          mojo::EVENT_FLAGS_NONE);
 
   // Now that we're ready, load the default url.
   if (default_url_.is_valid()) {
@@ -153,7 +152,7 @@ void BrowserWindow::OnConnectionLost(mojo::ViewTreeConnection* connection) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserWindow, mojo::ViewManagerRootClient implementation:
+// BrowserWindow, mojo::ViewTreeHostClient implementation:
 
 void BrowserWindow::OnAccelerator(mojo::EventPtr event) {
   DCHECK_EQ(mojo::KEYBOARD_CODE_BROWSER_BACK,

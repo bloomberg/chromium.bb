@@ -4,7 +4,6 @@
 
 #include "base/logging.h"
 #include "components/view_manager/public/cpp/tests/view_manager_test_base.h"
-#include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"

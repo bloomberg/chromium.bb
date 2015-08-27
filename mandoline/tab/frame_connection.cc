@@ -8,7 +8,7 @@
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
-#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
@@ -57,7 +57,7 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
 
   mojo::Array<mojo::String> view_manager_interfaces;
   view_manager_interfaces.push_back(mojo::Gpu::Name_);
-  view_manager_interfaces.push_back(mojo::ViewManagerRoot::Name_);
+  view_manager_interfaces.push_back(mojo::ViewTreeHostFactory::Name_);
   view_manager_interfaces.push_back(mojo::Surface::Name_);
   filter->filter.insert("mojo:view_manager", view_manager_interfaces.Pass());
 

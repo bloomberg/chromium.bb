@@ -7,8 +7,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/view_manager/ids.h"
-#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "components/view_manager/test_change_tracker.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -518,14 +518,21 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
     client_factory_.reset(new ViewTreeClientFactory(application_impl()));
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:view_manager");
-    scoped_ptr<ApplicationConnection> vm_connection =
-        application_impl()->ConnectToApplication(request.Pass());
-    vm_connection->AddService(client_factory_.get());
-    vm_connection->ConnectToService(&view_manager_root_);
-    vm_client1_ = client_factory_->WaitForInstance();
-    ASSERT_TRUE(vm_client1_);
+
+    mojo::ViewTreeHostFactoryPtr factory;
+    application_impl()->ConnectToService(request.Pass(), &factory);
+
+    mojo::ViewTreeClientPtr tree_client_ptr;
+    vm_client1_.reset(new ViewTreeClientImpl(application_impl()));
+    vm_client1_->Bind(GetProxy(&tree_client_ptr));
+
+    factory->CreateViewTreeHost(GetProxy(&host_),
+                                mojo::ViewTreeHostClientPtr(),
+                                tree_client_ptr.Pass());
+
     // Next we should get an embed call on the "window manager" client.
     vm_client1_->WaitForIncomingMethodCall();
+
     ASSERT_EQ(1u, changes1()->size());
     EXPECT_EQ(CHANGE_TYPE_EMBED, (*changes1())[0].type);
     // All these tests assume 1 for the client id. The only real assertion here
@@ -549,10 +556,10 @@ class ViewTreeAppTest : public mojo::test::ApplicationTestBase,
   scoped_ptr<ViewTreeClientImpl> vm_client2_;
   scoped_ptr<ViewTreeClientImpl> vm_client3_;
 
-  mojo::ViewManagerRootPtr view_manager_root_;
+  mojo::ViewTreeHostPtr host_;
 
  private:
-   scoped_ptr<ViewTreeClientFactory> client_factory_;
+  scoped_ptr<ViewTreeClientFactory> client_factory_;
   int connection_id_1_;
   int connection_id_2_;
   Id root_view_id_;
@@ -1561,42 +1568,6 @@ TEST_F(ViewTreeAppTest, DontCleanMapOnDestroy) {
   std::vector<TestView> views;
   GetViewTree(vm1(), view_1_1, &views);
   EXPECT_FALSE(views.empty());
-}
-
-TEST_F(ViewTreeAppTest, CloneAndAnimate) {
-  // Create connection 2 and 3.
-  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  Id view_1_1 = BuildViewId(connection_id_1(), 1);
-  ASSERT_TRUE(AddView(vm1(), root_view_id(), view_1_1));
-  Id view_2_2 = vm_client2()->CreateView(2);
-  Id view_2_3 = vm_client2()->CreateView(3);
-  ASSERT_TRUE(view_2_2);
-  ASSERT_TRUE(view_2_3);
-  ASSERT_TRUE(AddView(vm2(), view_1_1, view_2_2));
-  ASSERT_TRUE(AddView(vm2(), view_2_2, view_2_3));
-  changes2()->clear();
-
-  ASSERT_TRUE(WaitForAllMessages(vm1()));
-  changes1()->clear();
-
-  view_manager_root_->CloneAndAnimate(view_2_3);
-  ASSERT_TRUE(WaitForAllMessages(vm1()));
-
-  ASSERT_TRUE(WaitForAllMessages(vm1()));
-  ASSERT_TRUE(WaitForAllMessages(vm2()));
-
-  // No messages should have been received.
-  EXPECT_TRUE(changes1()->empty());
-  EXPECT_TRUE(changes2()->empty());
-
-  // No one should be able to see the cloned tree.
-  std::vector<TestView> views;
-  GetViewTree(vm1(), view_1_1, &views);
-  EXPECT_FALSE(HasClonedView(views));
-  views.clear();
-
-  GetViewTree(vm2(), view_1_1, &views);
-  EXPECT_FALSE(HasClonedView(views));
 }
 
 // Verifies Embed() works when supplying a ViewTreeClient.

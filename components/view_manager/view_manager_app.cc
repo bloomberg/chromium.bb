@@ -12,8 +12,8 @@
 #include "components/view_manager/public/cpp/args.h"
 #include "components/view_manager/surfaces/surfaces_impl.h"
 #include "components/view_manager/surfaces/surfaces_scheduler.h"
-#include "components/view_manager/view_manager_root_connection.h"
-#include "components/view_manager/view_manager_root_impl.h"
+#include "components/view_manager/view_tree_host_connection.h"
+#include "components/view_manager/view_tree_host_impl.h"
 #include "components/view_manager/view_tree_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -29,7 +29,7 @@ using mojo::ApplicationConnection;
 using mojo::ApplicationImpl;
 using mojo::Gpu;
 using mojo::InterfaceRequest;
-using mojo::ViewManagerRoot;
+using mojo::ViewTreeHostFactory;
 
 namespace view_manager {
 
@@ -72,7 +72,7 @@ void ViewManagerApp::Initialize(ApplicationImpl* app) {
 bool ViewManagerApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
   // ViewManager
-  connection->AddService<ViewManagerRoot>(this);
+  connection->AddService<ViewTreeHostFactory>(this);
   // Surfaces
   // TODO(fsamuel): This should go away soon.
   connection->AddService<mojo::Surface>(this);
@@ -114,21 +114,8 @@ ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
 }
 
 void ViewManagerApp::Create(ApplicationConnection* connection,
-                            InterfaceRequest<ViewManagerRoot> request) {
-  DCHECK(connection_manager_.get());
-  // TODO(fsamuel): We need to make sure that only the window manager can create
-  // new roots.
-  ViewManagerRootImpl* view_manager_root = new ViewManagerRootImpl(
-      connection_manager_.get(), is_headless_, app_impl_, gpu_state_,
-      surfaces_state_);
-
-  mojo::ViewTreeClientPtr client;
-  connection->ConnectToService(&client);
-
-  // ViewManagerRootConnection manages its own lifetime.
-  view_manager_root->Init(new ViewManagerRootConnectionImpl(
-      request.Pass(), make_scoped_ptr(view_manager_root), client.Pass(),
-      connection_manager_.get()));
+                            InterfaceRequest<ViewTreeHostFactory> request) {
+  factory_bindings_.AddBinding(this, request.Pass());
 }
 
 void ViewManagerApp::Create(
@@ -149,6 +136,24 @@ void ViewManagerApp::Create(
 void ViewManagerApp::OnSurfaceConnectionClosed(
     surfaces::SurfacesImpl* surface) {
   surfaces_.erase(surface);
+}
+
+void ViewManagerApp::CreateViewTreeHost(
+    mojo::InterfaceRequest<mojo::ViewTreeHost> host,
+    mojo::ViewTreeHostClientPtr host_client,
+    mojo::ViewTreeClientPtr tree_client) {
+  DCHECK(connection_manager_.get());
+
+  // TODO(fsamuel): We need to make sure that only the window manager can create
+  // new roots.
+  ViewTreeHostImpl* host_impl = new ViewTreeHostImpl(
+      host_client.Pass(), connection_manager_.get(), is_headless_, app_impl_,
+      gpu_state_, surfaces_state_);
+
+  // ViewTreeHostConnection manages its own lifetime.
+  host_impl->Init(new ViewTreeHostConnectionImpl(
+      host.Pass(), make_scoped_ptr(host_impl), tree_client.Pass(),
+      connection_manager_.get()));
 }
 
 }  // namespace view_manager

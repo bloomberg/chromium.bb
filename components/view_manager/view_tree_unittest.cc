@@ -18,7 +18,7 @@
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/surfaces/surfaces_state.h"
 #include "components/view_manager/test_change_tracker.h"
-#include "components/view_manager/view_manager_root_connection.h"
+#include "components/view_manager/view_tree_host_connection.h"
 #include "components/view_manager/view_tree_impl.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -175,23 +175,23 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
 
 // -----------------------------------------------------------------------------
 
-class TestViewManagerRootConnection : public ViewManagerRootConnection {
+class TestViewTreeHostConnection : public ViewTreeHostConnection {
  public:
-  TestViewManagerRootConnection(scoped_ptr<ViewManagerRootImpl> root,
-                                ConnectionManager* manager)
-      : ViewManagerRootConnection(root.Pass(), manager) {}
-  ~TestViewManagerRootConnection() override {}
+   TestViewTreeHostConnection(scoped_ptr<ViewTreeHostImpl> host_impl,
+                              ConnectionManager* manager)
+        : ViewTreeHostConnection(host_impl.Pass(), manager) {}
+   ~TestViewTreeHostConnection() override {}
 
  private:
-  // ViewManagerRootDelegate:
+  // ViewTreeHostDelegate:
   void OnDisplayInitialized() override {
-    connection_manager()->AddRoot(this);
+    connection_manager()->AddHost(this);
     set_view_tree(connection_manager()->EmbedAtView(
         kInvalidConnectionId,
-        view_manager_root()->root_view()->id(),
+        view_tree_host()->root_view()->id(),
         mojo::ViewTreeClientPtr()));
   }
-  DISALLOW_COPY_AND_ASSIGN(TestViewManagerRootConnection);
+  DISALLOW_COPY_AND_ASSIGN(TestViewTreeHostConnection);
 };
 
 // -----------------------------------------------------------------------------
@@ -204,7 +204,7 @@ class TestDisplayManager : public DisplayManager {
   // DisplayManager:
   void Init(DisplayManagerDelegate* delegate) override {
     // It is necessary to tell the delegate about the ViewportMetrics to make
-    // sure that the ViewManagerRootConnection is correctly initialized (and a
+    // sure that the ViewTreeHostConnection is correctly initialized (and a
     // root-view is created).
     mojo::ViewportMetrics metrics;
     metrics.size_in_pixels = mojo::Size::From(gfx::Size(400, 300));
@@ -289,7 +289,7 @@ class ViewTreeTest : public testing::Test {
 
   TestViewTreeClient* wm_client() { return wm_client_; }
 
-  TestViewManagerRootConnection* root_connection() { return root_connection_; }
+  TestViewTreeHostConnection* host_connection() { return host_connection_; }
 
  protected:
   // testing::Test:
@@ -297,15 +297,16 @@ class ViewTreeTest : public testing::Test {
     DisplayManager::set_factory_for_testing(&display_manager_factory_);
     // TODO(fsamuel): This is probably broken. We need a root.
     connection_manager_.reset(new ConnectionManager(&delegate_));
-    ViewManagerRootImpl* root = new ViewManagerRootImpl(
+    ViewTreeHostImpl* host = new ViewTreeHostImpl(
+        mojo::ViewTreeHostClientPtr(),
         connection_manager_.get(), true /* is_headless */, nullptr,
         scoped_refptr<gles2::GpuState>(),
         scoped_refptr<surfaces::SurfacesState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.
-    root_connection_ = new TestViewManagerRootConnection(
-        make_scoped_ptr(root), connection_manager_.get());
-    root->Init(root_connection_);
+    host_connection_ = new TestViewTreeHostConnection(
+        make_scoped_ptr(host), connection_manager_.get());
+    host->Init(host_connection_);
     wm_client_ = delegate_.last_client();
   }
 
@@ -314,7 +315,7 @@ class ViewTreeTest : public testing::Test {
   TestViewTreeClient* wm_client_;
   TestDisplayManagerFactory display_manager_factory_;
   TestConnectionManagerDelegate delegate_;
-  TestViewManagerRootConnection* root_connection_;
+  TestViewTreeHostConnection* host_connection_;
   scoped_ptr<ConnectionManager> connection_manager_;
   base::MessageLoop message_loop_;
 
@@ -528,7 +529,7 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
   EXPECT_TRUE(wm_connection()->SetViewVisibility(embed_view_id, true));
   EXPECT_TRUE(
       wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
-  root_connection()->view_manager_root()->root_view()->
+  host_connection()->view_tree_host()->root_view()->
       SetBounds(gfx::Rect(0, 0, 100, 100));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   wm_connection()->Embed(embed_view_id, request.Pass());
@@ -552,7 +553,7 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
-  connection_manager()->OnEvent(root_connection()->view_manager_root(),
+  connection_manager()->OnEvent(host_connection()->view_tree_host(),
                                 CreatePointerDownEvent(21, 22));
   // Focus should go to child1. This results in notifying both the window
   // manager and client connection being notified.
@@ -565,7 +566,7 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
       "Focused id=2,1",
       ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
 
-  connection_manager()->OnEvent(root_connection()->view_manager_root(),
+  connection_manager()->OnEvent(host_connection()->view_tree_host(),
                                 CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
@@ -573,9 +574,9 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
   // Press outside of the embedded view. Focus should go to the root. Notice
   // the client1 doesn't see who has focus as the focused view (root) isn't
   // visible to it.
-  connection_manager()->OnEvent(root_connection()->view_manager_root(),
+  connection_manager()->OnEvent(host_connection()->view_tree_host(),
                                 CreatePointerDownEvent(61, 22));
-  EXPECT_EQ(root_connection()->view_manager_root()->root_view(),
+  EXPECT_EQ(host_connection()->view_tree_host()->root_view(),
             connection_manager()->GetFocusedView());
   ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
   EXPECT_EQ("Focused id=0,2",
@@ -585,16 +586,16 @@ TEST_F(ViewTreeTest, FocusOnPointer) {
       "Focused id=null",
       ChangesToDescription1(*connection1_client->tracker()->changes())[0]);
 
-  connection_manager()->OnEvent(root_connection()->view_manager_root(),
+  connection_manager()->OnEvent(host_connection()->view_tree_host(),
                                 CreatePointerUpEvent(21, 22));
   wm_client()->tracker()->changes()->clear();
   connection1_client->tracker()->changes()->clear();
 
   // Press in the same location. Should not get a focus change event (only input
   // event).
-  connection_manager()->OnEvent(root_connection()->view_manager_root(),
+  connection_manager()->OnEvent(host_connection()->view_tree_host(),
                                 CreatePointerDownEvent(61, 22));
-  EXPECT_EQ(root_connection()->view_manager_root()->root_view(),
+  EXPECT_EQ(host_connection()->view_tree_host()->root_view(),
             connection_manager()->GetFocusedView());
   ASSERT_EQ(wm_client()->tracker()->changes()->size(), 1u);
   EXPECT_EQ("InputEvent view=0,2 event_action=4",

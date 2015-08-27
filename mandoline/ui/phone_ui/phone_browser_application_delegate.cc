@@ -5,8 +5,8 @@
 #include "mandoline/ui/phone_ui/phone_browser_application_delegate.h"
 
 #include "components/view_manager/public/cpp/view.h"
-#include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/view_manager/public/cpp/view_tree_host_connection.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
@@ -34,7 +34,7 @@ void PhoneBrowserApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
 
   // This results in this application being embedded at the root view.
   // Initialization continues below in OnEmbed()...
-  init_.reset(new mojo::ViewManagerInit(app, this, nullptr));
+  host_connection_.reset(new mojo::ViewTreeHostConnection(app, this, nullptr));
 }
 
 bool PhoneBrowserApplicationDelegate::ConfigureIncomingConnection(
@@ -62,8 +62,7 @@ void PhoneBrowserApplicationDelegate::OnEmbed(mojo::View* root) {
   content_->SetBounds(root->bounds());
   content_->SetVisible(true);
 
-  init_->view_manager_root()->SetViewportSize(
-      mojo::Size::From(gfx::Size(320, 640)));
+  host_connection_->host()->SetSize(mojo::Size::From(gfx::Size(320, 640)));
   web_view_.Init(app_, content_);
   LaunchURL("http://www.google.com/");
 }

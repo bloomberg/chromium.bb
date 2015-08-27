@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIEW_MANAGER_VIEW_MANAGER_ROOT_DELEGATE_H_
-#define COMPONENTS_VIEW_MANAGER_VIEW_MANAGER_ROOT_DELEGATE_H_
+#ifndef COMPONENTS_VIEW_MANAGER_VIEW_TREE_HOST_DELEGATE_H_
+#define COMPONENTS_VIEW_MANAGER_VIEW_TREE_HOST_DELEGATE_H_
 
 namespace view_manager {
 
 class ViewTreeImpl;
 
-// A ViewManagerRootDelegate interface is implemented by an object that
-// has the ViewManagerServiceImpl that is associated with the
-// ViewManagerRootImpl that holds a pointer to this object. Typically, a
-// ViewManagerRootDelegate will also manage the lifetime of the
-// ViewManagerRootImpl and will delete the object when it gets informed of
-// when the Display of the root is closed.
-class ViewManagerRootDelegate {
+// A ViewTreeHostDelegate interface is implemented by an object that
+// has the ViewTreeImpl that is associated with the ViewTreeHostImpl that holds
+// a pointer to this object. Typically, a ViewTreeHostDelegate will also manage
+// the lifetime of the ViewTreeHostImpl and will delete the object when it gets
+// informed of when the Display of the root is closed.
+class ViewTreeHostDelegate {
  public:
   // Called when the window associated with the root is completely initialized
   // (i.e. the ViewportMetrics for the display is known).
@@ -28,9 +27,9 @@ class ViewManagerRootDelegate {
   virtual ViewTreeImpl* GetViewTree() = 0;
 
  protected:
-  virtual ~ViewManagerRootDelegate() {}
+  virtual ~ViewTreeHostDelegate() {}
 };
 
 }  // namespace view_manager
 
-#endif  // COMPONENTS_VIEW_MANAGER_VIEW_MANAGER_ROOT_DELEGATE_H_
+#endif  // COMPONENTS_VIEW_MANAGER_VIEW_TREE_HOST_DELEGATE_H_

@@ -15,11 +15,11 @@
 #include "components/view_manager/event_dispatcher.h"
 #include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/ids.h"
-#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "components/view_manager/server_view_delegate.h"
 #include "components/view_manager/server_view_observer.h"
-#include "components/view_manager/view_manager_root_impl.h"
+#include "components/view_manager/view_tree_host_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
@@ -29,7 +29,7 @@ class ClientConnection;
 class ConnectionManagerDelegate;
 class FocusController;
 class ServerView;
-class ViewManagerRootConnection;
+class ViewTreeHostConnection;
 class ViewTreeImpl;
 
 // ConnectionManager manages the set of connections to the ViewManager (all the
@@ -74,8 +74,8 @@ class ConnectionManager : public ServerViewDelegate,
   explicit ConnectionManager(ConnectionManagerDelegate* delegate);
   ~ConnectionManager() override;
 
-  // Adds a ViewManagerRoot.
-  void AddRoot(ViewManagerRootConnection* root_connection);
+  // Adds a ViewTreeHost.
+  void AddHost(ViewTreeHostConnection* connection);
 
   // Creates a new ServerView. The return value is owned by the caller, but must
   // be destroyed before ConnectionManager.
@@ -84,15 +84,15 @@ class ConnectionManager : public ServerViewDelegate,
   // Returns the id for the next ViewTreeImpl.
   mojo::ConnectionSpecificId GetAndAdvanceNextConnectionId();
 
-  // Returns the id for the next ViewManagerRootImpl.
-  uint16_t GetAndAdvanceNextRootId();
+  // Returns the id for the next ViewTreeHostImpl.
+  uint16_t GetAndAdvanceNextHostId();
 
   // Invoked when a ViewTreeImpl's connection encounters an error.
   void OnConnectionError(ClientConnection* connection);
 
-  // Invoked when a ViewManagerRootBindingOwnerBase's connection encounters an
+  // Invoked when a ViewTreeHostBindingOwnerBase's connection encounters an
   // error or the associated Display window is closed.
-  void OnRootConnectionClosed(ViewManagerRootConnection* connection);
+  void OnHostConnectionClosed(ViewTreeHostConnection* connection);
 
   // See description of ViewTree::Embed() for details. This assumes
   // |transport_view_id| is valid.
@@ -130,7 +130,7 @@ class ConnectionManager : public ServerViewDelegate,
     return current_change_ && current_change_->is_delete_view();
   }
 
-  // Invoked when the ViewManagerRootImpl's display is closed.
+  // Invoked when the ViewTreeHostImpl's display is closed.
   void OnDisplayClosed();
 
   // Invoked when a connection messages a client about the change. This is used
@@ -153,19 +153,19 @@ class ConnectionManager : public ServerViewDelegate,
   // Returns the first ancestor of |service| that is marked as an embed root.
   ViewTreeImpl* GetEmbedRoot(ViewTreeImpl* service);
 
-  // ViewManagerRoot implementation helper; see mojom for details.
+  // ViewTreeHost implementation helper; see mojom for details.
   bool CloneAndAnimate(const ViewId& view_id);
 
   // Dispatches |event| directly to the appropriate connection for |view|.
   void DispatchInputEventToView(const ServerView* view, mojo::EventPtr event);
 
-  void OnEvent(ViewManagerRootImpl* root, mojo::EventPtr event);
+  void OnEvent(ViewTreeHostImpl* host, mojo::EventPtr event);
 
-  void AddAccelerator(ViewManagerRootImpl* root,
+  void AddAccelerator(ViewTreeHostImpl* host,
                       mojo::KeyboardCode keyboard_code,
                       mojo::EventFlags flags);
 
-  void RemoveAccelerator(ViewManagerRootImpl* root,
+  void RemoveAccelerator(ViewTreeHostImpl* host,
                          mojo::KeyboardCode keyboard_code,
                          mojo::EventFlags flags);
 
@@ -194,8 +194,8 @@ class ConnectionManager : public ServerViewDelegate,
 
  private:
   using ConnectionMap = std::map<mojo::ConnectionSpecificId, ClientConnection*>;
-  using RootConnectionMap =
-      std::map<ViewManagerRootImpl*, ViewManagerRootConnection*>;
+  using HostConnectionMap =
+      std::map<ViewTreeHostImpl*, ViewTreeHostConnection*>;
 
   // Invoked when a connection is about to make a change.  Subsequently followed
   // by FinishChange() once the change is done.
@@ -220,7 +220,7 @@ class ConnectionManager : public ServerViewDelegate,
   // Adds |connection| to internal maps.
   void AddConnection(ClientConnection* connection);
 
-  ViewManagerRootImpl* GetViewManagerRootByView(const ServerView* view) const;
+  ViewTreeHostImpl* GetViewTreeHostByView(const ServerView* view) const;
 
   // Overridden from ServerViewDelegate:
   void PrepareToDestroyView(ServerView* view) override;
@@ -264,16 +264,16 @@ class ConnectionManager : public ServerViewDelegate,
   // ID to use for next ViewTreeImpl.
   mojo::ConnectionSpecificId next_connection_id_;
 
-  // ID to use for next ViewManagerRootImpl.
-  uint16_t next_root_id_;
+  // ID to use for next ViewTreeHostImpl.
+  uint16_t next_host_id_;
 
   EventDispatcher event_dispatcher_;
 
   // Set of ViewTreeImpls.
   ConnectionMap connection_map_;
 
-  // Set of ViewManagerRootImpls.
-  RootConnectionMap root_connection_map_;
+  // Set of ViewTreeHostImpls.
+  HostConnectionMap host_connection_map_;
 
   // If non-null we're processing a change. The ScopedChange is not owned by us
   // (it's created on the stack by ViewTreeImpl).

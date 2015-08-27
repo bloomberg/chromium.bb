@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/view_manager/view_manager_root_impl.h"
+#include "components/view_manager/view_tree_host_impl.h"
 
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/display_manager.h"
 #include "components/view_manager/public/cpp/types.h"
-#include "components/view_manager/view_manager_root_delegate.h"
+#include "components/view_manager/view_tree_host_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace view_manager {
 
-ViewManagerRootImpl::ViewManagerRootImpl(
+ViewTreeHostImpl::ViewTreeHostImpl(
+    mojo::ViewTreeHostClientPtr client,
     ConnectionManager* connection_manager,
     bool is_headless,
     mojo::ApplicationImpl* app_impl,
@@ -20,6 +21,7 @@ ViewManagerRootImpl::ViewManagerRootImpl(
     const scoped_refptr<surfaces::SurfacesState>& surfaces_state)
     : delegate_(nullptr),
       connection_manager_(connection_manager),
+      client_(client.Pass()),
       display_manager_(
           DisplayManager::Create(is_headless,
                                  app_impl,
@@ -28,25 +30,25 @@ ViewManagerRootImpl::ViewManagerRootImpl(
   display_manager_->Init(this);
 }
 
-ViewManagerRootImpl::~ViewManagerRootImpl() {
+ViewTreeHostImpl::~ViewTreeHostImpl() {
 }
 
-void ViewManagerRootImpl::Init(ViewManagerRootDelegate* delegate) {
+void ViewTreeHostImpl::Init(ViewTreeHostDelegate* delegate) {
   delegate_ = delegate;
   if (delegate_ && root_)
     delegate_->OnDisplayInitialized();
 }
 
-ViewTreeImpl* ViewManagerRootImpl::GetViewTree() {
+ViewTreeImpl* ViewTreeHostImpl::GetViewTree() {
   return delegate_ ? delegate_->GetViewTree() : nullptr;
 }
 
-bool ViewManagerRootImpl::IsViewAttachedToRoot(const ServerView* view) const {
+bool ViewTreeHostImpl::IsViewAttachedToRoot(const ServerView* view) const {
   return root_->Contains(view) && view != root_.get();
 }
 
-bool ViewManagerRootImpl::SchedulePaintIfInViewport(const ServerView* view,
-                                                    const gfx::Rect& bounds) {
+bool ViewTreeHostImpl::SchedulePaintIfInViewport(const ServerView* view,
+                                                 const gfx::Rect& bounds) {
   if (root_->Contains(view)) {
     display_manager_->SchedulePaint(view, bounds);
     return true;
@@ -54,62 +56,51 @@ bool ViewManagerRootImpl::SchedulePaintIfInViewport(const ServerView* view,
   return false;
 }
 
-const mojo::ViewportMetrics& ViewManagerRootImpl::GetViewportMetrics() const {
+const mojo::ViewportMetrics& ViewTreeHostImpl::GetViewportMetrics() const {
   return display_manager_->GetViewportMetrics();
 }
 
-void ViewManagerRootImpl::UpdateTextInputState(
-    const ui::TextInputState& state) {
+void ViewTreeHostImpl::UpdateTextInputState(const ui::TextInputState& state) {
   display_manager_->UpdateTextInputState(state);
 }
 
-void ViewManagerRootImpl::SetImeVisibility(bool visible) {
+void ViewTreeHostImpl::SetImeVisibility(bool visible) {
   display_manager_->SetImeVisibility(visible);
 }
 
-void ViewManagerRootImpl::SetViewManagerRootClient(
-    mojo::ViewManagerRootClientPtr client) {
-  client_ = client.Pass();
-}
-
-void ViewManagerRootImpl::SetViewportSize(mojo::SizePtr size) {
+void ViewTreeHostImpl::SetSize(mojo::SizePtr size) {
   display_manager_->SetViewportSize(size.To<gfx::Size>());
 }
 
-void ViewManagerRootImpl::CloneAndAnimate(mojo::Id transport_view_id) {
-  connection_manager_->CloneAndAnimate(
-      ViewIdFromTransportId(transport_view_id));
-}
-
-void ViewManagerRootImpl::AddAccelerator(mojo::KeyboardCode keyboard_code,
-                                         mojo::EventFlags flags) {
+void ViewTreeHostImpl::AddAccelerator(mojo::KeyboardCode keyboard_code,
+                                      mojo::EventFlags flags) {
   connection_manager_->AddAccelerator(this, keyboard_code, flags);
 }
 
-void ViewManagerRootImpl::RemoveAccelerator(mojo::KeyboardCode keyboard_code,
-                                            mojo::EventFlags flags) {
+void ViewTreeHostImpl::RemoveAccelerator(mojo::KeyboardCode keyboard_code,
+                                         mojo::EventFlags flags) {
   connection_manager_->RemoveAccelerator(this, keyboard_code, flags);
 }
 
-ServerView* ViewManagerRootImpl::GetRootView() {
+ServerView* ViewTreeHostImpl::GetRootView() {
   return root_.get();
 }
 
-void ViewManagerRootImpl::OnEvent(mojo::EventPtr event) {
+void ViewTreeHostImpl::OnEvent(mojo::EventPtr event) {
   connection_manager_->OnEvent(this, event.Pass());
 }
 
-void ViewManagerRootImpl::OnDisplayClosed() {
+void ViewTreeHostImpl::OnDisplayClosed() {
   if (delegate_)
     delegate_->OnDisplayClosed();
 }
 
-void ViewManagerRootImpl::OnViewportMetricsChanged(
+void ViewTreeHostImpl::OnViewportMetricsChanged(
     const mojo::ViewportMetrics& old_metrics,
     const mojo::ViewportMetrics& new_metrics) {
   if (!root_) {
     root_.reset(connection_manager_->CreateServerView(
-        RootViewId(connection_manager_->GetAndAdvanceNextRootId())));
+        RootViewId(connection_manager_->GetAndAdvanceNextHostId())));
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
     root_->SetVisible(true);
     if (delegate_)

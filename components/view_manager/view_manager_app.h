@@ -12,13 +12,14 @@
 #include "components/view_manager/connection_manager_delegate.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
-#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "components/view_manager/public/interfaces/view_tree.mojom.h"
+#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "components/view_manager/surfaces/surfaces_delegate.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/tracing_impl.h"
+#include "mojo/common/weak_binding_set.h"
 
 namespace gles2 {
 class GpuState;
@@ -46,9 +47,10 @@ class ConnectionManager;
 class ViewManagerApp : public mojo::ApplicationDelegate,
                        public ConnectionManagerDelegate,
                        public mojo::InterfaceFactory<mojo::Surface>,
-                       public mojo::InterfaceFactory<mojo::ViewManagerRoot>,
+                       public mojo::InterfaceFactory<mojo::ViewTreeHostFactory>,
                        public mojo::InterfaceFactory<mojo::Gpu>,
-                       public surfaces::SurfacesDelegate {
+                       public surfaces::SurfacesDelegate,
+                       public mojo::ViewTreeHostFactory {
  public:
   ViewManagerApp();
   ~ViewManagerApp() override;
@@ -74,9 +76,10 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
       const ViewId& root_id,
       mojo::ViewTreeClientPtr client) override;
 
-  // mojo::InterfaceFactory<mojo::ViewManagerRoot>:
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::ViewManagerRoot> request) override;
+  // mojo::InterfaceFactory<mojo::ViewTreeHostFactory>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mojo::ViewTreeHostFactory> request) override;
 
   // mojo::InterfaceFactory<mojo::Gpu> implementation.
   void Create(mojo::ApplicationConnection* connection,
@@ -89,7 +92,12 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
   // SurfacesDelegat implementation.
   void OnSurfaceConnectionClosed(surfaces::SurfacesImpl* surface) override;
 
-  // ViewManager
+  // mojo::ViewTreeHostFactory implementation.
+  void CreateViewTreeHost(mojo::InterfaceRequest<mojo::ViewTreeHost> host,
+                          mojo::ViewTreeHostClientPtr host_client,
+                          mojo::ViewTreeClientPtr tree_client) override;
+
+  mojo::WeakBindingSet<mojo::ViewTreeHostFactory> factory_bindings_;
   mojo::ApplicationImpl* app_impl_;
   scoped_ptr<ConnectionManager> connection_manager_;
   mojo::TracingImpl tracing_;

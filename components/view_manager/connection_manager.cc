@@ -11,7 +11,7 @@
 #include "components/view_manager/focus_controller.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
-#include "components/view_manager/view_manager_root_connection.h"
+#include "components/view_manager/view_tree_host_connection.h"
 #include "components/view_manager/view_tree_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -113,7 +113,7 @@ ConnectionManager::ScopedChange::~ScopedChange() {
 ConnectionManager::ConnectionManager(ConnectionManagerDelegate* delegate)
     : delegate_(delegate),
       next_connection_id_(1),
-      next_root_id_(0),
+      next_host_id_(0),
       event_dispatcher_(this),
       current_change_(nullptr),
       in_destructor_(false),
@@ -126,26 +126,25 @@ ConnectionManager::~ConnectionManager() {
 
   // Deleting views will attempt to advance focus. When we're being destroyed
   // that is not necessary. Additionally |focus_controller_| needs to be
-  // destroyed before |root_|.
+  // destroyed before |host_|.
   focus_controller_.reset();
 
-  // Copy the RootConnectionMap because it will be mutated as the connections
+  // Copy the HostConnectionMap because it will be mutated as the connections
   // are closed.
-  RootConnectionMap root_connection_map(root_connection_map_);
-  for (auto& pair : root_connection_map)
+  HostConnectionMap host_connection_map(host_connection_map_);
+  for (auto& pair : host_connection_map)
     pair.second->CloseConnection();
 
   STLDeleteValues(&connection_map_);
   // All the connections should have been destroyed.
-  DCHECK(root_connection_map_.empty());
+  DCHECK(host_connection_map_.empty());
   DCHECK(connection_map_.empty());
 }
 
-void ConnectionManager::AddRoot(
-    ViewManagerRootConnection* root_connection) {
-  DCHECK_EQ(0u, root_connection_map_.count(
-      root_connection->view_manager_root()));
-  root_connection_map_[root_connection->view_manager_root()] = root_connection;
+void ConnectionManager::AddHost(
+    ViewTreeHostConnection* host_connection) {
+  DCHECK_EQ(0u, host_connection_map_.count(host_connection->view_tree_host()));
+  host_connection_map_[host_connection->view_tree_host()] = host_connection;
 }
 
 ServerView* ConnectionManager::CreateServerView(const ViewId& id) {
@@ -160,9 +159,9 @@ ConnectionSpecificId ConnectionManager::GetAndAdvanceNextConnectionId() {
   return id;
 }
 
-uint16_t ConnectionManager::GetAndAdvanceNextRootId() {
-  const uint16_t id = next_root_id_++;
-  DCHECK_LT(id, next_root_id_);
+uint16_t ConnectionManager::GetAndAdvanceNextHostId() {
+  const uint16_t id = next_host_id_++;
+  DCHECK_LT(id, next_host_id_);
   return id;
 }
 
@@ -190,10 +189,10 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
   }
 }
 
-void ConnectionManager::OnRootConnectionClosed(
-    ViewManagerRootConnection* connection) {
-  auto it = root_connection_map_.find(connection->view_manager_root());
-  DCHECK(it != root_connection_map_.end());
+void ConnectionManager::OnHostConnectionClosed(
+  ViewTreeHostConnection* connection) {
+  auto it = host_connection_map_.find(connection->view_tree_host());
+  DCHECK(it != host_connection_map_.end());
 
   // Clear focus if the focused view is in this viewport.
   if (GetRootView(GetFocusedView()) == it->first->root_view())
@@ -209,11 +208,11 @@ void ConnectionManager::OnRootConnectionClosed(
   // connections within the root's viewport. We should probably employ an
   // observer pattern to do this. Each ViewTreeImpl should track its
   // parent's lifetime.
-  root_connection_map_.erase(it);
+  host_connection_map_.erase(it);
   OnConnectionError(service_connection_it->second);
 
   // If we have no more roots left, let the app know so it can terminate.
-  if (!root_connection_map_.size())
+  if (!host_connection_map_.size())
     delegate_->OnNoMoreRootConnections();
 }
 
@@ -247,7 +246,7 @@ ViewTreeImpl* ConnectionManager::EmbedAtView(
 }
 
 void ConnectionManager::OnAccelerator(ServerView* root, mojo::EventPtr event) {
-  for (auto& pair : root_connection_map_) {
+  for (auto& pair : host_connection_map_) {
     if (root == pair.first->root_view()) {
       pair.first->client()->OnAccelerator(event.Pass());
       return;
@@ -262,7 +261,7 @@ ViewTreeImpl* ConnectionManager::GetConnection(
 }
 
 ServerView* ConnectionManager::GetView(const ViewId& id) {
-  for (auto& pair : root_connection_map_) {
+  for (auto& pair : host_connection_map_) {
     if (pair.first->root_view()->id() == id)
       return pair.first->root_view();
   }
@@ -287,7 +286,7 @@ ServerView* ConnectionManager::GetFocusedView() {
 }
 
 bool ConnectionManager::IsViewAttachedToRoot(const ServerView* view) const {
-  for (auto& pair : root_connection_map_) {
+  for (auto& pair : host_connection_map_) {
     if (pair.first->IsViewAttachedToRoot(view))
       return true;
   }
@@ -296,7 +295,7 @@ bool ConnectionManager::IsViewAttachedToRoot(const ServerView* view) const {
 
 void ConnectionManager::SchedulePaint(const ServerView* view,
                                       const gfx::Rect& bounds) {
-  for (auto& pair : root_connection_map_) {
+  for (auto& pair : host_connection_map_) {
     if (pair.first->SchedulePaintIfInViewport(view, bounds))
       return;
   }
@@ -314,12 +313,12 @@ bool ConnectionManager::DidConnectionMessageClient(
 
 mojo::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
     const ServerView* view) {
-  ViewManagerRootImpl* view_manager_root = GetViewManagerRootByView(view);
-  if (view_manager_root)
-    return view_manager_root->GetViewportMetrics().Clone();
+  ViewTreeHostImpl* host = GetViewTreeHostByView(view);
+  if (host)
+    return host->GetViewportMetrics().Clone();
 
-  if (!root_connection_map_.empty())
-    return root_connection_map_.begin()->first->GetViewportMetrics().Clone();
+  if (!host_connection_map_.empty())
+    return host_connection_map_.begin()->first->GetViewportMetrics().Clone();
 
   mojo::ViewportMetricsPtr metrics = mojo::ViewportMetrics::New();
   metrics->size_in_pixels = mojo::Size::New();
@@ -376,18 +375,18 @@ void ConnectionManager::DispatchInputEventToView(const ServerView* view,
                                          base::Bind(&base::DoNothing));
 }
 
-void ConnectionManager::OnEvent(ViewManagerRootImpl* root,
+void ConnectionManager::OnEvent(ViewTreeHostImpl* host,
                                 mojo::EventPtr event) {
-  event_dispatcher_.OnEvent(root->root_view(), event.Pass());
+  event_dispatcher_.OnEvent(host->root_view(), event.Pass());
 }
 
-void ConnectionManager::AddAccelerator(ViewManagerRootImpl* root,
+void ConnectionManager::AddAccelerator(ViewTreeHostImpl* host,
                                        mojo::KeyboardCode keyboard_code,
                                        mojo::EventFlags flags) {
   event_dispatcher_.AddAccelerator(keyboard_code, flags);
 }
 
-void ConnectionManager::RemoveAccelerator(ViewManagerRootImpl* root,
+void ConnectionManager::RemoveAccelerator(ViewTreeHostImpl* host,
                                           mojo::KeyboardCode keyboard_code,
                                           mojo::EventFlags flags) {
   event_dispatcher_.RemoveAccelerator(keyboard_code, flags);
@@ -398,8 +397,8 @@ void ConnectionManager::SetImeVisibility(ServerView* view, bool visible) {
   if (focus_controller_->GetFocusedView() != view)
     return;
 
-  ViewManagerRootImpl* view_manager_root = GetViewManagerRootByView(view);
-  view_manager_root->SetImeVisibility(visible);
+  ViewTreeHostImpl* host = GetViewTreeHostByView(view);
+  host->SetImeVisibility(visible);
 }
 
 void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
@@ -473,7 +472,7 @@ void ConnectionManager::DoAnimation() {
   // TODO(fsamuel): This is probably not right. We probably want a per-root
   // animation.
   bool animating = false;
-  for (auto& pair : root_connection_map_)
+  for (auto& pair : host_connection_map_)
     animating |= DecrementAnimatingViewsOpacity(pair.first->root_view());
   if (!animating)
     animation_timer_.Stop();
@@ -484,11 +483,11 @@ void ConnectionManager::AddConnection(ClientConnection* connection) {
   connection_map_[connection->service()->id()] = connection;
 }
 
-ViewManagerRootImpl* ConnectionManager::GetViewManagerRootByView(
+ViewTreeHostImpl* ConnectionManager::GetViewTreeHostByView(
     const ServerView* view) const {
   while (view && view->parent())
     view = view->parent();
-  for (auto& pair : root_connection_map_) {
+  for (auto& pair : host_connection_map_) {
     if (view == pair.first->root_view())
       return pair.first;
   }
@@ -549,8 +548,8 @@ void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
 }
 
 const ServerView* ConnectionManager::GetRootView(const ServerView* view) const {
-  ViewManagerRootImpl* view_manager_root = GetViewManagerRootByView(view);
-  return view_manager_root ? view_manager_root->root_view() : nullptr;
+  ViewTreeHostImpl* host = GetViewTreeHostByView(view);
+  return host ? host->root_view() : nullptr;
 }
 
 void ConnectionManager::OnViewDestroyed(ServerView* view) {
@@ -638,8 +637,8 @@ void ConnectionManager::OnViewTextInputStateChanged(
   if (focus_controller_->GetFocusedView() != view)
     return;
 
-  ViewManagerRootImpl* view_manager_root = GetViewManagerRootByView(view);
-  view_manager_root->UpdateTextInputState(state);
+  ViewTreeHostImpl* host = GetViewTreeHostByView(view);
+  host->UpdateTextInputState(state);
 }
 
 void ConnectionManager::CloneAndAnimate(mojo::Id transport_view_id) {
@@ -691,7 +690,7 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
     }
   }
 
-  for (auto& pair : root_connection_map_) {
+  for (auto& pair : host_connection_map_) {
     ViewTreeImpl* service = pair.first->GetViewTree();
     if (service != owning_connection_old &&
         service != embedded_connection_old &&
@@ -701,18 +700,16 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
     }
   }
 
-  ViewManagerRootImpl* old_view_manager_root =
-      old_focused_view ? GetViewManagerRootByView(old_focused_view) : nullptr;
+  ViewTreeHostImpl* old_host =
+      old_focused_view ? GetViewTreeHostByView(old_focused_view) : nullptr;
 
-  ViewManagerRootImpl* new_view_manager_root =
-      new_focused_view ? GetViewManagerRootByView(new_focused_view) : nullptr;
+  ViewTreeHostImpl* new_host =
+      new_focused_view ? GetViewTreeHostByView(new_focused_view) : nullptr;
 
-  if (new_view_manager_root) {
-    new_view_manager_root->UpdateTextInputState(
-        new_focused_view->text_input_state());
-  } else if (old_view_manager_root) {
-    old_view_manager_root->UpdateTextInputState(ui::TextInputState());
-  }
+  if (new_host)
+    new_host->UpdateTextInputState(new_focused_view->text_input_state());
+  else if (old_host)
+    old_host->UpdateTextInputState(ui::TextInputState());
 }
 
 }  // namespace view_manager

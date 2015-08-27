@@ -19,7 +19,7 @@
 
 namespace mojo {
 class View;
-class ViewManagerInit;
+class ViewTreeHostConnection;
 }
 
 namespace mandoline {
@@ -63,7 +63,7 @@ class PhoneBrowserApplicationDelegate :
               mojo::InterfaceRequest<LaunchHandler> request) override;
 
   mojo::ApplicationImpl* app_;
-  scoped_ptr<mojo::ViewManagerInit> init_;
+  scoped_ptr<mojo::ViewTreeHostConnection> host_connection_;
 
   mojo::View* content_;
   web_view::WebView web_view_;

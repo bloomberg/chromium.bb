@@ -5,10 +5,10 @@
 #ifndef MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 #define MANDOLINE_UI_DESKTOP_UI_BROWSER_WINDOW_H_
 
-#include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
-#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
+#include "components/view_manager/public/cpp/view_tree_host_connection.h"
+#include "components/view_manager/public/interfaces/view_tree_host.mojom.h"
 #include "mandoline/tab/public/cpp/web_view.h"
 #include "mandoline/tab/public/interfaces/web_view.mojom.h"
 #include "mandoline/ui/aura/aura_init.h"
@@ -36,7 +36,7 @@ class BrowserManager;
 class ProgressView;
 
 class BrowserWindow : public mojo::ViewTreeDelegate,
-                      public mojo::ViewManagerRootClient,
+                      public mojo::ViewTreeHostClient,
                       public web_view::mojom::WebViewClient,
                       public ViewEmbedder,
                       public mojo::InterfaceFactory<ViewEmbedder>,
@@ -53,7 +53,7 @@ class BrowserWindow : public mojo::ViewTreeDelegate,
   void OnEmbed(mojo::View* root) override;
   void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
 
-  // Overridden from ViewManagerRootClient:
+  // Overridden from ViewTreeHostClient:
   void OnAccelerator(mojo::EventPtr event) override;
 
   // Overridden from web_view::mojom::WebViewClient:
@@ -82,7 +82,7 @@ class BrowserWindow : public mojo::ViewTreeDelegate,
 
   mojo::ApplicationImpl* app_;
   scoped_ptr<AuraInit> aura_init_;
-  mojo::ViewManagerInit view_manager_init_;
+  mojo::ViewTreeHostConnection host_connection_;
   BrowserManager* manager_;
   views::LabelButton* omnibox_launcher_;
   ProgressView* progress_bar_;

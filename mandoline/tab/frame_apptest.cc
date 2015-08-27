@@ -10,10 +10,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
-#include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
+#include "components/view_manager/public/cpp/view_tree_host_connection.h"
 #include "mandoline/tab/frame.h"
 #include "mandoline/tab/frame_tree.h"
 #include "mandoline/tab/frame_tree_delegate.h"
@@ -98,15 +98,15 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    view_manager_init_.reset(
-        new mojo::ViewManagerInit(application_impl(), this, nullptr));
+    host_connection_.reset(
+        new mojo::ViewTreeHostConnection(application_impl(), this, nullptr));
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_connection_);
   }
 
   // Overridden from testing::Test:
   void TearDown() override {
-    view_manager_init_.reset();  // Uses application_impl() from base class.
+    host_connection_.reset();  // Uses application_impl() from base class.
     ApplicationTestBase::TearDown();
   }
 
@@ -117,7 +117,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     mojo::ViewTreeConnection::Create(this, request.Pass());
   }
 
-  scoped_ptr<mojo::ViewManagerInit> view_manager_init_;
+  scoped_ptr<mojo::ViewTreeHostConnection> host_connection_;
 
   // Used to receive the most recent view manager loaded by an embed action.
   ViewTreeConnection* most_recent_connection_;
