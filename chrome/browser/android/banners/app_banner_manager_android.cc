@@ -190,12 +190,12 @@ void DisableSecureSchemeCheckForTesting(JNIEnv* env, jclass clazz) {
   AppBannerManager::DisableSecureSchemeCheckForTesting();
 }
 
-void SetEngagementWeights(JNIEnv* env,
-                          jclass clazz,
-                          jdouble direct_engagement,
-                          jdouble indirect_engagement) {
-  AppBannerManager::SetEngagementWeights(direct_engagement,
-                                         indirect_engagement);
+void ForceEngagementWeightsForTesting(JNIEnv* env,
+                                      jclass clazz,
+                                      jdouble direct_engagement,
+                                      jdouble indirect_engagement) {
+  AppBannerManager::ForceEngagementWeightsForTesting(direct_engagement,
+                                                     indirect_engagement);
 }
 
 jboolean IsEnabled(JNIEnv* env, jclass clazz) {

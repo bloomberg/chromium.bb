@@ -154,7 +154,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
         // Navigations in this test are all of type ui::PAGE_TRANSITION_LINK, i.e. indirect.
         // Force indirect navigations to be worth the same as direct for testing.
-        AppBannerManager.setEngagementWeights(1, 1);
+        AppBannerManager.forceEngagementWeightsForTesting(1, 1);
     }
 
     private boolean waitUntilNoInfoBarsExist() throws Exception {
