@@ -49,7 +49,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/scroll/Scrollbar.h"
-#include "platform/scroll/ScrollbarThemeOverlay.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
@@ -106,7 +106,8 @@ void VisualViewport::setSize(const IntSize& size)
         m_innerViewportContainerLayer->setSize(m_size);
 
         // Need to re-compute sizes for the overlay scrollbars.
-        initializeScrollbars();
+        setupScrollbar(WebScrollbar::Horizontal);
+        setupScrollbar(WebScrollbar::Vertical);
     }
 
     if (autosizerNeedsUpdating) {
@@ -272,9 +273,11 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoi
 //  |                   +-- outerViewportContainerLayer (fixed pos container) [frame container layer in DeprecatedPaintLayerCompositor]
 //  |                   |   +-- outerViewportScrollLayer [frame scroll layer in DeprecatedPaintLayerCompositor]
 //  |                   |       +-- content layers ...
-//  +- horizontalScrollbarLayer
-//  +- verticalScrollbarLayer
-//  +- scroll corner (non-overlay only)
+//  |                   +-- horizontal ScrollbarLayer (non-overlay)
+//  |                   +-- verticalScrollbarLayer (non-overlay)
+//  |                   +-- scroll corner (non-overlay)
+//  +- *horizontalScrollbarLayer (overlay)
+//  +- *verticalScrollbarLayer (overlay)
 //
 void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, GraphicsLayerFactory* graphicsLayerFactory)
 {
@@ -321,31 +324,19 @@ void VisualViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Grap
         m_innerViewportContainerLayer->addChild(m_overscrollElasticityLayer.get());
         m_overscrollElasticityLayer->addChild(m_pageScaleLayer.get());
         m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());
+        m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
+        m_innerViewportContainerLayer->addChild(m_overlayScrollbarVertical.get());
 
         // Ensure this class is set as the scroll layer's ScrollableArea.
         coordinator->scrollableAreaScrollLayerDidChange(this);
 
-        initializeScrollbars();
+        // Setup the inner viewport overlay scrollbars.
+        setupScrollbar(WebScrollbar::Horizontal);
+        setupScrollbar(WebScrollbar::Vertical);
     }
 
     m_innerViewportScrollLayer->removeAllChildren();
     m_innerViewportScrollLayer->addChild(currentLayerTreeRoot);
-}
-
-void VisualViewport::initializeScrollbars()
-{
-    if (visualViewportSuppliesScrollbars()) {
-        if (!m_overlayScrollbarHorizontal->parent())
-            m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
-        if (!m_overlayScrollbarVertical->parent())
-            m_innerViewportContainerLayer->addChild(m_overlayScrollbarVertical.get());
-    } else {
-        m_overlayScrollbarHorizontal->removeFromParent();
-        m_overlayScrollbarVertical->removeFromParent();
-    }
-
-    setupScrollbar(WebScrollbar::Horizontal);
-    setupScrollbar(WebScrollbar::Vertical);
 }
 
 void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation)
@@ -356,10 +347,17 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation)
     OwnPtr<WebScrollbarLayer>& webScrollbarLayer = isHorizontal ?
         m_webOverlayScrollbarHorizontal : m_webOverlayScrollbarVertical;
 
-    ScrollbarTheme* theme = ScrollbarThemeOverlay::mobileTheme();
-    int thumbThickness = theme->thumbThickness(0);
-    int scrollbarThickness = theme->scrollbarThickness(RegularScrollbar);
-    int scrollbarMargin = theme->scrollbarMargin();
+    int thumbThickness = frameHost().settings().pinchOverlayScrollbarThickness();
+    int scrollbarThickness = thumbThickness;
+    int scrollbarMargin = scrollbarThickness;
+
+    // FIXME: Rather than manually creating scrollbar layers, we should create
+    // real scrollbars so we can reuse all the machinery from ScrollbarTheme.
+#if OS(ANDROID)
+    thumbThickness = ScrollbarTheme::theme()->thumbThickness(0);
+    scrollbarThickness = ScrollbarTheme::theme()->scrollbarThickness(RegularScrollbar);
+    scrollbarMargin = ScrollbarTheme::theme()->scrollbarMargin();
+#endif
 
     if (!webScrollbarLayer) {
         ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
@@ -372,6 +370,7 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation)
         // The compositor will control the scrollbar's visibility. Set to invisible by defualt
         // so scrollbars don't show up in layout tests.
         webScrollbarLayer->layer()->setOpacity(0);
+
         scrollbarGraphicsLayer->setContentsToPlatformLayer(webScrollbarLayer->layer());
         scrollbarGraphicsLayer->setDrawsContent(false);
     }
@@ -410,14 +409,6 @@ void VisualViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView)
         m_pageScaleLayer->platformLayer(),
         m_innerViewportScrollLayer->platformLayer(),
         scrollLayer);
-
-    // TODO(aelias): Remove this call after this setting is deleted.
-    layerTreeView->setHidePinchScrollbarsNearMinScale(false);
-}
-
-bool VisualViewport::visualViewportSuppliesScrollbars() const
-{
-    return frameHost().settings().viewportMetaEnabled();
 }
 
 void VisualViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) const

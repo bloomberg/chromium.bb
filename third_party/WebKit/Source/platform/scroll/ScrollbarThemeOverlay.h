@@ -59,8 +59,6 @@ public:
     void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
     ScrollbarPart hitTest(ScrollbarThemeClient*, const IntPoint&) override;
 
-    static ScrollbarTheme* mobileTheme();
-
 private:
     int m_thumbThickness;
     int m_scrollbarMargin;

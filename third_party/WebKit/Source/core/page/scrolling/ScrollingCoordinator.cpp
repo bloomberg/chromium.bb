@@ -381,8 +381,8 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
         }
 
         WebLayer* scrollLayer = toWebLayer(scrollableArea->layerForScrolling());
-        WebLayer* scrollbarContainerLayer = toWebLayer(scrollableArea->layerForScrollbarContainer());
-        setupScrollbarLayer(scrollbarGraphicsLayer, scrollbarLayer, scrollLayer, scrollbarContainerLayer);
+        WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
+        setupScrollbarLayer(scrollbarGraphicsLayer, scrollbarLayer, scrollLayer, containerLayer);
 
         // Root layer non-overlay scrollbars should be marked opaque to disable
         // blending.
@@ -403,7 +403,6 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
 
     WebLayer* webLayer = toWebLayer(scrollableArea->layerForScrolling());
     WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
-    WebLayer* scrollbarContainerLayer = toWebLayer(scrollableArea->layerForScrollbarContainer());
     if (webLayer) {
         webLayer->setScrollClipLayer(containerLayer);
         // Non-layered Viewport constrained objects, e.g. fixed position elements, are
@@ -432,13 +431,12 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     if (WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, HorizontalScrollbar)) {
         GraphicsLayer* horizontalScrollbarLayer = scrollableArea->layerForHorizontalScrollbar();
         if (horizontalScrollbarLayer)
-            setupScrollbarLayer(horizontalScrollbarLayer, scrollbarLayer, webLayer, scrollbarContainerLayer);
+            setupScrollbarLayer(horizontalScrollbarLayer, scrollbarLayer, webLayer, containerLayer);
     }
     if (WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, VerticalScrollbar)) {
         GraphicsLayer* verticalScrollbarLayer = scrollableArea->layerForVerticalScrollbar();
-
         if (verticalScrollbarLayer)
-            setupScrollbarLayer(verticalScrollbarLayer, scrollbarLayer, webLayer, scrollbarContainerLayer);
+            setupScrollbarLayer(verticalScrollbarLayer, scrollbarLayer, webLayer, containerLayer);
     }
 
     // Update the viewport layer registration if the outer viewport may have changed.

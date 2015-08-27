@@ -49,7 +49,6 @@
 #include "core/dom/Node.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -169,13 +168,6 @@ HostWindow* DeprecatedPaintLayerScrollableArea::hostWindow() const
     if (Page* page = box().frame()->page())
         return &page->chromeClient();
     return nullptr;
-}
-
-GraphicsLayer* DeprecatedPaintLayerScrollableArea::layerForScrollbarContainer() const
-{
-    if (layer()->isRootLayer())
-        return box().frame()->host()->visualViewport().layerForScrollbarContainer();
-    return layerForContainer();
 }
 
 GraphicsLayer* DeprecatedPaintLayerScrollableArea::layerForScrolling() const

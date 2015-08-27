@@ -914,12 +914,14 @@ bool DeprecatedPaintLayerCompositor::requiresScrollCornerLayer() const
 void DeprecatedPaintLayerCompositor::updateOverflowControlsLayers()
 {
     GraphicsLayer* controlsParent = m_rootTransformLayer.get() ? m_rootTransformLayer.get() : m_overflowControlsHostLayer.get();
-    // Main frame scrollbars should always be stuck to the sides of the screen (in overscroll and in pinch-zoom), so
+    // On Mac, main frame scrollbars should always be stuck to the sides of the screen (in overscroll and in pinch-zoom), so
     // make the parent for the scrollbars be the viewport container layer.
+#if OS(MACOSX)
     if (m_layoutView.frame()->isMainFrame()) {
         VisualViewport& visualViewport = m_layoutView.frameView()->page()->frameHost().visualViewport();
         controlsParent = visualViewport.containerLayer();
     }
+#endif
 
     if (requiresHorizontalScrollbarLayer()) {
         if (!m_layerForHorizontalScrollbar) {
