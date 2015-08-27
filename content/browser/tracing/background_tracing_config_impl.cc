@@ -22,6 +22,7 @@ const char kConfigCategoryBenchmark[] = "BENCHMARK";
 const char kConfigCategoryBenchmarkDeep[] = "BENCHMARK_DEEP";
 const char kConfigCategoryBenchmarkGPU[] = "BENCHMARK_GPU";
 const char kConfigCategoryBenchmarkIPC[] = "BENCHMARK_IPC";
+const char kConfigCategoryBenchmarkStartup[] = "BENCHMARK_STARTUP";
 
 }  // namespace
 
@@ -43,6 +44,8 @@ std::string BackgroundTracingConfigImpl::CategoryPresetToString(
       return kConfigCategoryBenchmarkGPU;
     case BackgroundTracingConfigImpl::BENCHMARK_IPC:
       return kConfigCategoryBenchmarkIPC;
+    case BackgroundTracingConfigImpl::BENCHMARK_STARTUP:
+      return kConfigCategoryBenchmarkStartup;
   }
   NOTREACHED();
   return "";
@@ -68,6 +71,11 @@ bool BackgroundTracingConfigImpl::StringToCategoryPreset(
 
   if (category_preset_string == kConfigCategoryBenchmarkIPC) {
     *category_preset = BackgroundTracingConfigImpl::BENCHMARK_IPC;
+    return true;
+  }
+
+  if (category_preset_string == kConfigCategoryBenchmarkStartup) {
+    *category_preset = BackgroundTracingConfigImpl::BENCHMARK_STARTUP;
     return true;
   }
 

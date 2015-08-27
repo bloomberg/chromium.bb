@@ -26,7 +26,8 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
     BENCHMARK,
     BENCHMARK_DEEP,
     BENCHMARK_GPU,
-    BENCHMARK_IPC
+    BENCHMARK_IPC,
+    BENCHMARK_STARTUP,
   };
 
   CategoryPreset category_preset() const { return category_preset_; }

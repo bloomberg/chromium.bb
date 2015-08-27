@@ -497,6 +497,8 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
       return "benchmark,toplevel,gpu";
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_IPC:
       return "benchmark,toplevel,ipc";
+    case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_STARTUP:
+      return "benchmark,toplevel,startup,disabled-by-default-file";
   }
   NOTREACHED();
   return "";
