@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/crypto/crypto_framer.h"
@@ -550,7 +551,12 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   } else if (public_header.reset_flag) {
     rv = ProcessPublicResetPacket(&reader, public_header);
   } else if (packet.length() <= kMaxPacketSize) {
-    char buffer[kMaxPacketSize];
+    // The optimized decryption algorithm implementations run faster when
+    // operating on aligned memory.
+    //
+    // TODO(rtenneti): Change the default 64 alignas value (used the default
+    // value from CACHELINE_SIZE).
+    ALIGNAS(64) char buffer[kMaxPacketSize];
     rv = ProcessDataPacket(&reader, public_header, packet, buffer,
                            kMaxPacketSize);
   } else {
