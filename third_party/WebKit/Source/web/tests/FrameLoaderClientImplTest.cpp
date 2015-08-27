@@ -34,11 +34,8 @@
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebPluginParams.h"
-#include "public/web/WebPluginPlaceholder.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
-#include "web/PluginPlaceholderImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/text/CString.h"
@@ -58,7 +55,6 @@ public:
     ~MockWebFrameClient() override { }
 
     MOCK_METHOD2(userAgentOverride, WebString(WebLocalFrame*, const WebURL&));
-    MOCK_METHOD2(createPluginPlaceholder, WebPluginPlaceholder*(WebLocalFrame*, const WebPluginParams&));
 };
 
 class FrameLoaderClientImplTest : public ::testing::Test {
@@ -114,35 +110,6 @@ TEST_F(FrameLoaderClientImplTest, UserAgentOverride)
     // Remove the override and make sure we get the original back.
     EXPECT_CALL(webFrameClient(), userAgentOverride(_, _)).WillOnce(Return(WebString()));
     EXPECT_TRUE(defaultUserAgent.equals(userAgent()));
-}
-
-TEST_F(FrameLoaderClientImplTest, CreatePluginPlaceholderForwardsToWebFrameClient)
-{
-    KURL url(ParsedURLString, "http://www.example.com/plugin.swf");
-    Vector<String> paramNames(1, "param");
-    Vector<String> paramValues(1, "value");
-    String mimeType = "application/x-shockwave-flash";
-    bool loadManually = false;
-
-    // Test with a valid WebPluginPlaceholder.
-    {
-        WebPluginPlaceholder* webPluginPlaceholder = new WebPluginPlaceholder;
-        EXPECT_CALL(webFrameClient(), createPluginPlaceholder(mainFrame(), _))
-            .WillOnce(Return(webPluginPlaceholder));
-        OwnPtrWillBeRawPtr<PluginPlaceholder> pluginPlaceholder = frameLoaderClient().createPluginPlaceholder(
-            document(), url, paramNames, paramValues, mimeType, loadManually);
-        ASSERT_TRUE(pluginPlaceholder);
-        EXPECT_EQ(webPluginPlaceholder, static_cast<PluginPlaceholderImpl*>(pluginPlaceholder.get())->webPluginPlaceholder());
-    }
-
-    // Test with no WebPluginPlaceholder.
-    {
-        EXPECT_CALL(webFrameClient(), createPluginPlaceholder(mainFrame(), _))
-            .WillOnce(Return(nullptr));
-        OwnPtrWillBeRawPtr<PluginPlaceholder> pluginPlaceholder = frameLoaderClient().createPluginPlaceholder(
-            document(), url, paramNames, paramValues, mimeType, loadManually);
-        ASSERT_FALSE(pluginPlaceholder);
-    }
 }
 
 } // namespace

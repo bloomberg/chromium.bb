@@ -259,7 +259,6 @@
       'ExternalPopupMenuTest.cpp',
       'LinkHighlightImplTest.cpp',
       'PageOverlayTest.cpp',
-      'PluginPlaceholderImplTest.cpp',
       'WebDragDataTest.cpp',
       'WebEmbeddedWorkerImplTest.cpp',
       'WebNodeTest.cpp',
