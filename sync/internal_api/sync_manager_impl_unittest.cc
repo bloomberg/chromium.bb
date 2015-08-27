@@ -209,6 +209,13 @@ int64 MakeServerNode(UserShare* share, ModelType model_type,
   return entry.GetMetahandle();
 }
 
+int GetTotalNodeCount(UserShare* share, int64 root) {
+  ReadTransaction trans(FROM_HERE, share);
+  ReadNode node(&trans);
+  EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(root));
+  return node.GetTotalNodeCount();
+}
+
 }  // namespace
 
 class SyncApiTest : public testing::Test {
@@ -645,30 +652,15 @@ TEST_F(SyncApiTest, EmptyTags) {
 // Test counting nodes when the type's root node has no children.
 TEST_F(SyncApiTest, GetTotalNodeCountEmpty) {
   int64 type_root = MakeTypeRoot(user_share(), BOOKMARKS);
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    ReadNode type_root_node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
-              type_root_node.InitByIdLookup(type_root));
-    EXPECT_EQ(1, type_root_node.GetTotalNodeCount());
-  }
+  EXPECT_EQ(1, GetTotalNodeCount(user_share(), type_root));
 }
 
 // Test counting nodes when there is one child beneath the type's root.
 TEST_F(SyncApiTest, GetTotalNodeCountOneChild) {
   int64 type_root = MakeTypeRoot(user_share(), BOOKMARKS);
   int64 parent = MakeFolderWithParent(user_share(), BOOKMARKS, type_root, NULL);
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    ReadNode type_root_node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
-              type_root_node.InitByIdLookup(type_root));
-    EXPECT_EQ(2, type_root_node.GetTotalNodeCount());
-    ReadNode parent_node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
-              parent_node.InitByIdLookup(parent));
-    EXPECT_EQ(1, parent_node.GetTotalNodeCount());
-  }
+  EXPECT_EQ(2, GetTotalNodeCount(user_share(), type_root));
+  EXPECT_EQ(1, GetTotalNodeCount(user_share(), parent));
 }
 
 // Test counting nodes when there are multiple children beneath the type root,
@@ -680,18 +672,8 @@ TEST_F(SyncApiTest, GetTotalNodeCountMultipleChildren) {
   int64 child1 = MakeFolderWithParent(user_share(), BOOKMARKS, parent, NULL);
   ignore_result(MakeBookmarkWithParent(user_share(), parent, NULL));
   ignore_result(MakeBookmarkWithParent(user_share(), child1, NULL));
-
-  {
-    ReadTransaction trans(FROM_HERE, user_share());
-    ReadNode type_root_node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
-              type_root_node.InitByIdLookup(type_root));
-    EXPECT_EQ(6, type_root_node.GetTotalNodeCount());
-    ReadNode node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
-              node.InitByIdLookup(parent));
-    EXPECT_EQ(4, node.GetTotalNodeCount());
-  }
+  EXPECT_EQ(6, GetTotalNodeCount(user_share(), type_root));
+  EXPECT_EQ(4, GetTotalNodeCount(user_share(), parent));
 }
 
 // Verify that Directory keeps track of which attachments are referenced by
@@ -743,6 +725,54 @@ TEST_F(SyncApiTest, AttachmentLinking) {
 
   // Finally, the attachment is no longer linked.
   ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id.GetProto()));
+}
+
+// This tests directory integrity in the case of creating a new unique node
+// with client tag matching that of an existing unapplied node with server only
+// data. See crbug.com/505761.
+TEST_F(SyncApiTest, WriteNode_UniqueByCreation_UndeleteCase) {
+  int64 preferences_root = MakeTypeRoot(user_share(), PREFERENCES);
+
+  // Create a node with server only data.
+  int64 item1 = 0;
+  {
+    syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST,
+                                     user_share()->directory.get());
+    syncable::MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
+                                 syncable::Id::CreateFromServerId("foo1"));
+    DCHECK(entry.good());
+    entry.PutServerVersion(10);
+    entry.PutIsUnappliedUpdate(true);
+    sync_pb::EntitySpecifics specifics;
+    AddDefaultFieldValue(PREFERENCES, &specifics);
+    entry.PutServerSpecifics(specifics);
+    const std::string hash = syncable::GenerateSyncableHash(PREFERENCES, "foo");
+    entry.PutUniqueClientTag(hash);
+    item1 = entry.GetMetahandle();
+  }
+
+  // Verify that the server-only item is invisible as a child of
+  // of |preferences_root| because at this point it should have the
+  // "deleted" flag set.
+  EXPECT_EQ(1, GetTotalNodeCount(user_share(), preferences_root));
+
+  // Create a client node with the same tag as the node above.
+  int64 item2 = MakeNode(user_share(), PREFERENCES, "foo");
+  // Expect this to be the same directory entry as |item1|.
+  EXPECT_EQ(item1, item2);
+  // Expect it to be visible as a child of |preferences_root|.
+  EXPECT_EQ(2, GetTotalNodeCount(user_share(), preferences_root));
+
+  // Tombstone the new item
+  {
+    WriteTransaction trans(FROM_HERE, user_share());
+    WriteNode node(&trans);
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(item1));
+    node.Tombstone();
+  }
+
+  // Verify that it is gone from the index.
+  EXPECT_EQ(1, GetTotalNodeCount(user_share(), preferences_root));
 }
 
 namespace {

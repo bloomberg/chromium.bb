@@ -64,13 +64,7 @@ ParentChildIndex::~ParentChildIndex() {
 bool ParentChildIndex::ShouldInclude(const EntryKernel* entry) {
   // This index excludes deleted items and the root item.  The root
   // item is excluded so that it doesn't show up as a child of itself.
-  // The index also excludes items without client data e.g. the items that
-  // don't have client SPECIFICS or PARENT_ID. There is no need to include
-  // server-only entries because they shouldn't show up on the client until
-  // they're applied.
-  return !entry->ref(IS_DEL) && !entry->ref(ID).IsRoot() &&
-         (entry->GetModelType() != UNSPECIFIED ||
-          !entry->ref(PARENT_ID).IsNull());
+  return !entry->ref(IS_DEL) && !entry->ref(ID).IsRoot();
 }
 
 bool ParentChildIndex::Insert(EntryKernel* entry) {

@@ -350,6 +350,16 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
       // IS_DIR: We'll leave it the same.
       // SPECIFICS: Reset it.
 
+      // Put specifics to define the entry's model type to handle the case
+      // where this is not actually an undeletion, but instead a collision
+      // with a newly downloaded, processed, and unapplied server update.
+      // This should be done first before inserting the entry into the
+      // directory's ParentChildIndex by clearing its "deleted" flag below.
+      // This is a fix for http://crbug.com/505761.
+      sync_pb::EntitySpecifics specifics;
+      AddDefaultFieldValue(model_type, &specifics);
+      existing_entry->PutSpecifics(specifics);
+
       existing_entry->PutIsDel(false);
 
       // Client tags are immutable and must be paired with the ID.
@@ -360,14 +370,6 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
 
       existing_entry->PutNonUniqueName(dummy);
       existing_entry->PutParentId(parent_id);
-
-      // Put specifics to handle the case where this is not actually an
-      // undeletion, but instead a collision with a newly downloaded,
-      // processed, and unapplied server update.  This is a fix for
-      // http://crbug.com/397766.
-      sync_pb::EntitySpecifics specifics;
-      AddDefaultFieldValue(model_type, &specifics);
-      existing_entry->PutSpecifics(specifics);
     }  // Else just reuse the existing entry.
     entry_ = existing_entry.release();
   } else {
