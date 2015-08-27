@@ -136,7 +136,7 @@ class CommitLaterTask : public base::RefCounted<CommitLaterTask> {
   void Cancel() { history_backend_ = nullptr; }
 
   void RunCommit() {
-    if (history_backend_.get())
+    if (history_backend_)
       history_backend_->Commit();
   }
 
@@ -154,7 +154,7 @@ QueuedHistoryDBTask::QueuedHistoryDBTask(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled)
     : task_(task.Pass()), origin_loop_(origin_loop), is_canceled_(is_canceled) {
   DCHECK(task_);
-  DCHECK(origin_loop_.get());
+  DCHECK(origin_loop_);
   DCHECK(!is_canceled_.is_null());
 }
 
@@ -213,7 +213,7 @@ HistoryBackend::HistoryBackend(
 }
 
 HistoryBackend::~HistoryBackend() {
-  DCHECK(!scheduled_commit_.get()) << "Deleting without cleanup";
+  DCHECK(!scheduled_commit_) << "Deleting without cleanup";
   STLDeleteContainerPointers(queued_history_db_tasks_.begin(),
                              queued_history_db_tasks_.end());
   queued_history_db_tasks_.clear();
@@ -534,7 +534,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       // case we don't need to reconnect the new redirect with the existing
       // chain.
       if (request.referrer.is_valid()) {
-        DCHECK(request.referrer == redirects[0]);
+        DCHECK_EQ(request.referrer, redirects[0]);
         redirects.erase(redirects.begin());
 
         // If the navigation entry for this visit has replaced that for the
@@ -906,7 +906,7 @@ void HistoryBackend::SetPageTitle(const GURL& url,
 
     // This redirect chain should have the destination URL as the last item.
     DCHECK(!redirects->empty());
-    DCHECK(redirects->back() == url);
+    DCHECK_EQ(redirects->back(), url);
   } else {
     // No redirect chain stored, make up one containing the URL we want so we
     // can use the same logic below.
@@ -1215,7 +1215,7 @@ void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
   // First get all visits.
   VisitVector visits;
   bool has_more_results = db_->GetVisibleVisitsInRange(options, &visits);
-  DCHECK(static_cast<int>(visits.size()) <= options.EffectiveMaxCount());
+  DCHECK_LE(static_cast<int>(visits.size()), options.EffectiveMaxCount());
 
   // Now add them and the URL rows to the results.
   URLResult url_result;
@@ -1318,7 +1318,7 @@ void HistoryBackend::GetVisibleVisitCountToHost(
     const GURL& url,
     VisibleVisitCountToHostResult* result) {
   result->count = 0;
-  result->success = db_.get() &&
+  result->success = db_ &&
                     db_->GetVisibleVisitCountToHost(url, &result->count,
                                                     &result->first_visit);
 }
@@ -2008,7 +2008,7 @@ bool HistoryBackend::SetFaviconBitmaps(favicon_base::FaviconID icon_id,
 bool HistoryBackend::IsFaviconBitmapDataEqual(
     FaviconBitmapID bitmap_id,
     const scoped_refptr<base::RefCountedMemory>& new_bitmap_data) {
-  if (!new_bitmap_data.get())
+  if (!new_bitmap_data)
     return false;
 
   scoped_refptr<base::RefCountedMemory> original_bitmap_data;
@@ -2218,7 +2218,7 @@ void HistoryBackend::GetCachedRecentRedirects(const GURL& page_url,
 
     // The redirect chain should have the destination URL as the last item.
     DCHECK(!redirect_list->empty());
-    DCHECK(redirect_list->back() == page_url);
+    DCHECK_EQ(redirect_list->back(), page_url);
   } else {
     // No known redirects, construct mock redirect chain containing |page_url|.
     redirect_list->push_back(page_url);
@@ -2260,19 +2260,20 @@ void HistoryBackend::Commit() {
   CancelScheduledCommit();
 
   db_->CommitTransaction();
-  DCHECK(db_->transaction_nesting() == 0) << "Somebody left a transaction open";
+  DCHECK_EQ(db_->transaction_nesting(), 0)
+      << "Somebody left a transaction open";
   db_->BeginTransaction();
 
   if (thumbnail_db_) {
     thumbnail_db_->CommitTransaction();
-    DCHECK(thumbnail_db_->transaction_nesting() == 0)
+    DCHECK_EQ(thumbnail_db_->transaction_nesting(), 0)
         << "Somebody left a transaction open";
     thumbnail_db_->BeginTransaction();
   }
 }
 
 void HistoryBackend::ScheduleCommit() {
-  if (scheduled_commit_.get())
+  if (scheduled_commit_)
     return;
   scheduled_commit_ = new CommitLaterTask(this);
   task_runner_->PostDelayedTask(
@@ -2282,7 +2283,7 @@ void HistoryBackend::ScheduleCommit() {
 }
 
 void HistoryBackend::CancelScheduledCommit() {
-  if (scheduled_commit_.get()) {
+  if (scheduled_commit_) {
     scheduled_commit_->Cancel();
     scheduled_commit_ = nullptr;
   }
@@ -2378,10 +2379,10 @@ void HistoryBackend::ExpireHistoryForTimes(const std::set<base::Time>& times,
   if (times.empty() || !db_)
     return;
 
-  DCHECK(*times.begin() >= begin_time)
+  DCHECK_GE(*times.begin(), begin_time)
       << "Min time is before begin time: " << times.begin()->ToJsTime()
       << " v.s. " << begin_time.ToJsTime();
-  DCHECK(*times.rbegin() < end_time)
+  DCHECK_LT(*times.rbegin(), end_time)
       << "Max time is after end time: " << times.rbegin()->ToJsTime()
       << " v.s. " << end_time.ToJsTime();
 
@@ -2421,7 +2422,7 @@ void HistoryBackend::ExpireHistoryForTimes(const std::set<base::Time>& times,
   expirer_.ExpireHistoryForTimes(times_to_expire);
   Commit();
 
-  DCHECK(times_to_expire.back() >= first_recorded_time_);
+  DCHECK_GE(times_to_expire.back(), first_recorded_time_);
   // Update |first_recorded_time_| if we expired it.
   if (times_to_expire.back() == first_recorded_time_)
     db_->GetStartDate(&first_recorded_time_);
@@ -2534,7 +2535,7 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
                                       const RedirectList& redirects,
                                       base::Time visit_time) {
   URLRow url_info(row);
-  if (typed_url_syncable_service_.get())
+  if (typed_url_syncable_service_)
     typed_url_syncable_service_->OnUrlVisited(transition, &url_info);
 
   FOR_EACH_OBSERVER(
@@ -2550,7 +2551,7 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
 
 void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
   URLRows changed_urls(rows);
-  if (typed_url_syncable_service_.get())
+  if (typed_url_syncable_service_)
     typed_url_syncable_service_->OnUrlsModified(&changed_urls);
 
   FOR_EACH_OBSERVER(HistoryBackendObserver, observers_,
@@ -2568,7 +2569,7 @@ void HistoryBackend::NotifyURLsDeleted(bool all_history,
                                        const URLRows& rows,
                                        const std::set<GURL>& favicon_urls) {
   URLRows copied_rows(rows);
-  if (typed_url_syncable_service_.get()) {
+  if (typed_url_syncable_service_) {
     typed_url_syncable_service_->OnUrlsDeleted(all_history, expired,
                                                &copied_rows);
   }
@@ -2677,7 +2678,7 @@ bool HistoryBackend::ClearAllThumbnailHistory(
   // Vacuum to remove all the pages associated with the dropped tables. There
   // must be no transaction open on the table when we do this. We assume that
   // our long-running transaction is open, so we complete it and start it again.
-  DCHECK(thumbnail_db_->transaction_nesting() == 1);
+  DCHECK_EQ(thumbnail_db_->transaction_nesting(), 1);
   thumbnail_db_->CommitTransaction();
   thumbnail_db_->Vacuum();
   thumbnail_db_->BeginTransaction();
