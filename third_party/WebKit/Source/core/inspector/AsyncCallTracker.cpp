@@ -310,6 +310,9 @@ void AsyncCallTracker::didEnqueueMutationRecord(ExecutionContext* context, Mutat
     ExecutionContextData* data = createContextDataIfNeeded(context);
     if (data->m_mutationObserverCallChains.contains(observer))
         return;
+    Optional<ScriptForbiddenScope::AllowUserAgentScript> allowScripting;
+    if (isMainThread())
+        allowScripting.emplace();
     int operationId = m_debuggerAgent->traceAsyncOperationStarting(enqueueMutationRecordName);
     data->m_mutationObserverCallChains.set(observer, operationId);
 }
