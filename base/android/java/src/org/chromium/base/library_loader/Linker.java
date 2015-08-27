@@ -4,6 +4,7 @@
 
 package org.chromium.base.library_loader;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
@@ -223,15 +224,22 @@ public abstract class Linker {
     /**
      * Get singleton instance. Returns either a LegacyLinker or a ModernLinker.
      *
+     * Returns a ModernLinker if running on Android M or later, otherwise returns
+     * a LegacyLinker.
+     *
+     * ModernLinker requires OS features from Android M and later: a system linker
+     * that handles packed relocations and load from APK, and android_dlopen_ext()
+     * for shared RELRO support. It cannot run on Android releases earlier than M.
+     *
+     * LegacyLinker runs on all Android releases but it is slower and more complex
+     * than ModernLinker, so ModernLinker is preferred for Android M and later.
+     *
      * @return the Linker implementation instance.
      */
     public static final Linker getInstance() {
         synchronized (sSingletonLock) {
             if (sSingleton == null) {
-                // TODO(simonb): Check version once the Android M build version
-                // code becomes available.
-                // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.<ANDROID-M>) {
-                if (false) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     sSingleton = ModernLinker.create();
                 } else {
                     sSingleton = LegacyLinker.create();
