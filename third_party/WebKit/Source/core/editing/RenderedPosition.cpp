@@ -67,21 +67,8 @@ static inline LayoutObject* layoutObjectFromPosition(const Position& position)
 }
 
 RenderedPosition::RenderedPosition(const VisiblePosition& position)
-    : m_layoutObject(nullptr)
-    , m_inlineBox(nullptr)
-    , m_offset(0)
-    , m_prevLeafChild(uncachedInlineBox())
-    , m_nextLeafChild(uncachedInlineBox())
+    : RenderedPosition(position.deepEquivalent(), position.affinity())
 {
-    if (position.isNull())
-        return;
-    InlineBoxPosition boxPosition = computeInlineBoxPosition(position);
-    m_inlineBox = boxPosition.inlineBox;
-    m_offset = boxPosition.offsetInBox;
-    if (m_inlineBox)
-        m_layoutObject = &m_inlineBox->layoutObject();
-    else
-        m_layoutObject = layoutObjectFromPosition(position.deepEquivalent());
 }
 
 RenderedPosition::RenderedPosition(const Position& position, TextAffinity affinity)
