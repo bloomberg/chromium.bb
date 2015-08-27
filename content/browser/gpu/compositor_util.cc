@@ -74,7 +74,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           kWebGLFeatureName,
           manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL),
           command_line.HasSwitch(switches::kDisableExperimentalWebGL),
-          "WebGL has been disabled, either via about:flags or command line.",
+          "WebGL has been disabled via the command line.",
           false
       },
       {

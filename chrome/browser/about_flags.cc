@@ -629,11 +629,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_SHOW_FPS_COUNTER_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(cc::switches::kShowFPSCounter)},
-    {"disable-webgl",
-     IDS_FLAGS_DISABLE_WEBGL_NAME,
-     IDS_FLAGS_DISABLE_WEBGL_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kDisableExperimentalWebGL)},
 #if defined(ENABLE_WEBRTC)
     {"disable-webrtc-hw-decoding",
      IDS_FLAGS_DISABLE_WEBRTC_HW_DECODING_NAME,
