@@ -328,7 +328,9 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
         switch (item.mType) {
             case TYPE_ALL_ITEMS:
                 title = listItemView.getContext().getResources()
-                        .getString(R.string.enhanced_bookmark_drawer_all_items);
+                        .getString(OfflinePageBridge.isEnabled()
+                                ? R.string.offline_pages_all_items
+                                : R.string.enhanced_bookmark_drawer_all_items);
                 iconDrawableId = R.drawable.btn_star;
                 break;
             case TYPE_FOLDER:

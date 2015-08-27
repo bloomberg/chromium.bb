@@ -284,7 +284,7 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
 
     private int getTitleForAllItems() {
         return OfflinePageBridge.isEnabled()
-                ? R.string.enhanced_bookmark_title_bar_all_items_offline_pages
+                ? R.string.offline_pages_all_items
                 : R.string.enhanced_bookmark_title_bar_all_items;
     }
 }
