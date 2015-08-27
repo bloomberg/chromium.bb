@@ -1300,6 +1300,14 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
 
     LayoutRect oldSelectionRect = previousSelectionRectForPaintInvalidation();
     LayoutRect newSelectionRect = selectionRectForPaintInvalidation(&paintInvalidationContainer);
+
+    // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
+    // does not move on scroll.
+    if (paintInvalidationContainer.usesCompositedScrolling() && &paintInvalidationContainer != this) {
+        LayoutSize inverseOffset(toLayoutBox(&paintInvalidationContainer)->scrolledContentOffset());
+        newSelectionRect.move(inverseOffset);
+    }
+
     setPreviousSelectionRectForPaintInvalidation(newSelectionRect);
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled() && shouldInvalidateSelection())
@@ -1378,6 +1386,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
     }
 
     fullyInvalidatePaint(paintInvalidationContainer, invalidationReason, oldBounds, newBounds);
+
     return invalidationReason;
 }
 
