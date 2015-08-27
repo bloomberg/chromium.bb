@@ -88,10 +88,10 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
         "PasswordManager.SavePasswordPromptDisplayed_" + uma_histogram_suffix_,
         true);
   }
-  title_link_range_ = gfx::Range();
+  message_link_range_ = gfx::Range();
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents->GetVisibleURL(), form_to_save_->observed_form().origin,
-      is_smartlock_branding_enabled, false, &title_, &title_link_range_);
+      is_smartlock_branding_enabled, false, &message_, &message_link_range_);
 }
 
 infobars::InfoBarDelegate::Type
@@ -119,7 +119,7 @@ void SavePasswordInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetMessageText() const {
-  return title_;
+  return message_;
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(

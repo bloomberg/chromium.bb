@@ -20,7 +20,7 @@
   // Set the link inside the message.
   SavePasswordInfoBarDelegate* delegate =
       static_cast<SavePasswordInfoBarDelegate*>([self delegate]);
-  gfx::Range linkRange = delegate->title_link_range();
+  gfx::Range linkRange = delegate->message_link_range();
   if (!linkRange.is_empty()) {
     NSColor* linkColor =
         gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());

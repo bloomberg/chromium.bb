@@ -43,7 +43,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   ~SavePasswordInfoBarDelegate() override;
 
-  const gfx::Range& title_link_range() const { return title_link_range_; }
+  const gfx::Range& message_link_range() const { return message_link_range_; }
 
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
@@ -83,16 +83,15 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   const std::string uma_histogram_suffix_;
 
   // Records source from where infobar was triggered.
-  // Infobar appearance (title, buttons) depends on value of this parameter.
+  // Infobar appearance (message, buttons) depends on value of this parameter.
   password_manager::CredentialSourceType source_type_;
 
-  // Title for the infobar: branded as a part of Google Smart Lock for signed
-  // users.
-  base::string16 title_;
+  // Infobar message: branded as a part of Google Smart Lock for signed users.
+  base::string16 message_;
 
   // If set, describes the location of the link to the help center article for
   // Smart Lock.
-  gfx::Range title_link_range_;
+  gfx::Range message_link_range_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
 };
