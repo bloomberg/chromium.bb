@@ -9,8 +9,10 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enroller.h"
 #include "components/proximity_auth/cryptauth/fake_cryptauth_gcm_manager.h"
+#include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/cryptauth/mock_sync_scheduler.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,9 +30,8 @@ namespace {
 // The GCM registration id from a successful registration.
 const char kGCMRegistrationId[] = "new gcm registration id";
 
-// The user's persistent key pair identifying the local device.
+// The user's persistent public key identifying the local device.
 const char kUserPublicKey[] = "user public key";
-const char kUserPrivateKey[] = "user private key";
 
 // The initial "Now" time for testing.
 const double kInitialTimeNowSeconds = 20000000;
@@ -96,13 +97,13 @@ class TestCryptAuthEnrollmentManager : public CryptAuthEnrollmentManager {
   TestCryptAuthEnrollmentManager(
       scoped_ptr<base::Clock> clock,
       scoped_ptr<CryptAuthEnrollerFactory> enroller_factory,
+      scoped_ptr<SecureMessageDelegate> secure_message_delegate,
       const cryptauth::GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service)
       : CryptAuthEnrollmentManager(clock.Pass(),
                                    enroller_factory.Pass(),
-                                   kUserPublicKey,
-                                   kUserPrivateKey,
+                                   secure_message_delegate.Pass(),
                                    device_info,
                                    gcm_manager,
                                    pref_service),
@@ -141,11 +142,14 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
       public CryptAuthEnrollmentManager::Observer {
  protected:
   ProximityAuthCryptAuthEnrollmentManagerTest()
-      : clock_(new base::SimpleTestClock()),
+      : public_key_(kUserPublicKey),
+        clock_(new base::SimpleTestClock()),
         enroller_factory_(new MockCryptAuthEnrollerFactory()),
+        secure_message_delegate_(new FakeSecureMessageDelegate()),
         gcm_manager_(kGCMRegistrationId),
         enrollment_manager_(make_scoped_ptr(clock_),
                             make_scoped_ptr(enroller_factory_),
+                            make_scoped_ptr(secure_message_delegate_),
                             device_info_,
                             &gcm_manager_,
                             &pref_service_) {}
@@ -154,6 +158,10 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
   void SetUp() override {
     clock_->SetNow(base::Time::FromDoubleT(kInitialTimeNowSeconds));
     enrollment_manager_.AddObserver(this);
+
+    private_key_ =
+        secure_message_delegate_->GetPrivateKeyForPublicKey(public_key_);
+    secure_message_delegate_->set_next_public_key(public_key_);
 
     CryptAuthEnrollmentManager::RegisterPrefs(pref_service_.registry());
     pref_service_.SetUserPref(
@@ -165,6 +173,14 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
     pref_service_.SetUserPref(
         prefs::kCryptAuthEnrollmentReason,
         new base::FundamentalValue(cryptauth::INVOCATION_REASON_UNKNOWN));
+
+    std::string public_key_b64, private_key_b64;
+    Base64UrlEncode(public_key_, &public_key_b64);
+    Base64UrlEncode(private_key_, &private_key_b64);
+    pref_service_.SetString(prefs::kCryptAuthEnrollmentUserPublicKey,
+                            public_key_b64);
+    pref_service_.SetString(prefs::kCryptAuthEnrollmentUserPrivateKey,
+                            private_key_b64);
 
     ON_CALL(*sync_scheduler(), GetStrategy())
         .WillByDefault(Return(SyncScheduler::Strategy::PERIODIC_REFRESH));
@@ -192,9 +208,9 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
   CryptAuthEnroller::EnrollmentFinishedCallback FireSchedulerForEnrollment(
       cryptauth::InvocationReason expected_invocation_reason) {
     CryptAuthEnroller::EnrollmentFinishedCallback completion_callback;
-    EXPECT_CALL(*next_cryptauth_enroller(),
-                Enroll(kUserPublicKey, kUserPrivateKey, _,
-                       expected_invocation_reason, _))
+    EXPECT_CALL(
+        *next_cryptauth_enroller(),
+        Enroll(public_key_, private_key_, _, expected_invocation_reason, _))
         .WillOnce(SaveArg<4>(&completion_callback));
 
     auto sync_request = make_scoped_ptr(
@@ -216,11 +232,18 @@ class ProximityAuthCryptAuthEnrollmentManagerTest
     return enroller_factory_->next_cryptauth_enroller();
   }
 
+  // The expected persistent keypair.
+  std::string public_key_;
+  std::string private_key_;
+
   // Owned by |enrollment_manager_|.
   base::SimpleTestClock* clock_;
 
   // Owned by |enrollment_manager_|.
   MockCryptAuthEnrollerFactory* enroller_factory_;
+
+  // Ownered by |enrollment_manager_|.
+  FakeSecureMessageDelegate* secure_message_delegate_;
 
   cryptauth::GcmDeviceInfo device_info_;
 
@@ -278,7 +301,8 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithDefaultPrefs) {
 
   TestCryptAuthEnrollmentManager enrollment_manager(
       clock.Pass(), make_scoped_ptr(new MockCryptAuthEnrollerFactory()),
-      device_info_, &gcm_manager_, &pref_service);
+      make_scoped_ptr(new FakeSecureMessageDelegate()), device_info_,
+      &gcm_manager_, &pref_service);
 
   EXPECT_CALL(
       *enrollment_manager.GetSyncScheduler(),
@@ -315,24 +339,6 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, InitWithExpiredEnrollment) {
   EXPECT_FALSE(enrollment_manager_.IsEnrollmentValid());
   EXPECT_EQ(base::Time::FromDoubleT(kLastExpiredEnrollmentTimeSeconds),
             enrollment_manager_.GetLastEnrollmentTime());
-}
-
-TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
-       EnrollmentSucceedsForFirstTime) {
-  pref_service_.ClearPref(prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds);
-  enrollment_manager_.Start();
-  EXPECT_FALSE(enrollment_manager_.IsEnrollmentValid());
-
-  auto completion_callback =
-      FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_INITIALIZATION);
-  ASSERT_FALSE(completion_callback.is_null());
-
-  clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow));
-  EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
-  completion_callback.Run(true);
-
-  EXPECT_EQ(clock_->Now(), enrollment_manager_.GetLastEnrollmentTime());
-  EXPECT_TRUE(enrollment_manager_.IsEnrollmentValid());
 }
 
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, ForceEnrollment) {
@@ -382,12 +388,16 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
 }
 
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
-       EnrollWithoutGCMRegistrationId) {
+       EnrollmentSucceedsForFirstTime) {
   // Initialize |enrollment_manager_|.
   ON_CALL(*sync_scheduler(), GetStrategy())
       .WillByDefault(Return(SyncScheduler::Strategy::PERIODIC_REFRESH));
   gcm_manager_.set_registration_id(std::string());
+  pref_service_.ClearPref(prefs::kCryptAuthEnrollmentUserPublicKey);
+  pref_service_.ClearPref(prefs::kCryptAuthEnrollmentUserPrivateKey);
+  pref_service_.ClearPref(prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds);
   enrollment_manager_.Start();
+  EXPECT_FALSE(enrollment_manager_.IsEnrollmentValid());
 
   // Trigger a sync request.
   EXPECT_CALL(*this, OnEnrollmentStartedProxy());
@@ -396,19 +406,26 @@ TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest,
   static_cast<SyncScheduler::Delegate*>(&enrollment_manager_)
       ->OnSyncRequested(sync_request.Pass());
 
-  // Complete GCM registration successfully.
+  // Complete GCM registration successfully, and expect an enrollment.
   CryptAuthEnroller::EnrollmentFinishedCallback enrollment_callback;
   EXPECT_CALL(*next_cryptauth_enroller(),
-              Enroll(kUserPublicKey, kUserPrivateKey, _,
-                     cryptauth::INVOCATION_REASON_PERIODIC, _))
+              Enroll(public_key_, private_key_, _,
+                     cryptauth::INVOCATION_REASON_INITIALIZATION, _))
       .WillOnce(SaveArg<4>(&enrollment_callback));
   ASSERT_TRUE(gcm_manager_.registration_in_progress());
   gcm_manager_.CompleteRegistration(kGCMRegistrationId);
 
   // Complete CryptAuth enrollment.
   ASSERT_FALSE(enrollment_callback.is_null());
+  clock_->SetNow(base::Time::FromDoubleT(kLaterTimeNow));
   EXPECT_CALL(*this, OnEnrollmentFinishedProxy(true));
   enrollment_callback.Run(true);
+  EXPECT_EQ(clock_->Now(), enrollment_manager_.GetLastEnrollmentTime());
+  EXPECT_TRUE(enrollment_manager_.IsEnrollmentValid());
+
+  // Check that CryptAuthEnrollmentManager returns the expected key-pair.
+  EXPECT_EQ(public_key_, enrollment_manager_.GetUserPublicKey());
+  EXPECT_EQ(private_key_, enrollment_manager_.GetUserPrivateKey());
 }
 
 TEST_F(ProximityAuthCryptAuthEnrollmentManagerTest, GCMRegistrationFails) {

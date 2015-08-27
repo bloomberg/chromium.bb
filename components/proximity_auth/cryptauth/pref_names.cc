@@ -41,6 +41,14 @@ const char kCryptAuthEnrollmentLastEnrollmentTimeSeconds[] =
 // components/proximity_auth/cryptauth/proto/cryptauth_api.proto.
 extern const char kCryptAuthEnrollmentReason[] = "cryptauth.enrollment.reason";
 
+// The public key of the user and device enrolled with CryptAuth.
+extern const char kCryptAuthEnrollmentUserPublicKey[] =
+    "cryptauth.enrollment.user_public_key";
+
+// The private key of the user and device enrolled with CryptAuth.
+extern const char kCryptAuthEnrollmentUserPrivateKey[] =
+    "cryptauth.enrollment.user_private_key";
+
 // The GCM registration id used for receiving push messages from CryptAuth.
 extern const char kCryptAuthGCMRegistrationId[] =
     "cryptauth.gcm_registration_id";

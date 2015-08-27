@@ -44,15 +44,13 @@ const char kDeviceSoftwarePackage[] = "com.google.chrome.cryptauth";
 CryptAuthEnrollmentManager::CryptAuthEnrollmentManager(
     scoped_ptr<base::Clock> clock,
     scoped_ptr<CryptAuthEnrollerFactory> enroller_factory,
-    const std::string& user_public_key,
-    const std::string& user_private_key,
+    scoped_ptr<SecureMessageDelegate> secure_message_delegate,
     const cryptauth::GcmDeviceInfo& device_info,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)
     : clock_(clock.Pass()),
       enroller_factory_(enroller_factory.Pass()),
-      user_public_key_(user_public_key),
-      user_private_key_(user_private_key),
+      secure_message_delegate_(secure_message_delegate.Pass()),
       device_info_(device_info),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),
@@ -70,6 +68,10 @@ void CryptAuthEnrollmentManager::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kCryptAuthEnrollmentLastEnrollmentTimeSeconds, 0.0);
   registry->RegisterIntegerPref(prefs::kCryptAuthEnrollmentReason,
                                 cryptauth::INVOCATION_REASON_UNKNOWN);
+  registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPublicKey,
+                               std::string());
+  registry->RegisterStringPref(prefs::kCryptAuthEnrollmentUserPrivateKey,
+                               std::string());
 }
 
 void CryptAuthEnrollmentManager::Start() {
@@ -160,6 +162,28 @@ scoped_ptr<SyncScheduler> CryptAuthEnrollmentManager::CreateSyncScheduler() {
       kEnrollmentMaxJitterRatio, "CryptAuth Enrollment"));
 }
 
+std::string CryptAuthEnrollmentManager::GetUserPublicKey() {
+  std::string public_key;
+  if (!Base64UrlDecode(
+          pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPublicKey),
+          &public_key)) {
+    PA_LOG(ERROR) << "Invalid public key stored in user prefs.";
+    return std::string();
+  }
+  return public_key;
+}
+
+std::string CryptAuthEnrollmentManager::GetUserPrivateKey() {
+  std::string private_key;
+  if (!Base64UrlDecode(
+          pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPrivateKey),
+          &private_key)) {
+    PA_LOG(ERROR) << "Invalid private key stored in user prefs.";
+    return std::string();
+  }
+  return private_key;
+}
+
 void CryptAuthEnrollmentManager::OnGCMRegistrationResult(bool success) {
   if (!sync_request_)
     return;
@@ -172,6 +196,26 @@ void CryptAuthEnrollmentManager::OnGCMRegistrationResult(bool success) {
     OnEnrollmentFinished(false);
 }
 
+void CryptAuthEnrollmentManager::OnKeyPairGenerated(
+    const std::string& public_key,
+    const std::string& private_key) {
+  if (!public_key.empty() && !private_key.empty()) {
+    PA_LOG(INFO) << "Key pair generated for CryptAuth enrollment";
+    // Store the keypair in Base64 format because pref values require readable
+    // string values.
+    std::string public_key_b64, private_key_b64;
+    Base64UrlEncode(public_key, &public_key_b64);
+    Base64UrlEncode(private_key, &private_key_b64);
+    pref_service_->SetString(prefs::kCryptAuthEnrollmentUserPublicKey,
+                             public_key_b64);
+    pref_service_->SetString(prefs::kCryptAuthEnrollmentUserPrivateKey,
+                             private_key_b64);
+    DoCryptAuthEnrollment();
+  } else {
+    OnEnrollmentFinished(false);
+  }
+}
+
 void CryptAuthEnrollmentManager::OnReenrollMessage() {
   ForceEnrollmentNow(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
 }
@@ -181,7 +225,6 @@ void CryptAuthEnrollmentManager::OnSyncRequested(
   FOR_EACH_OBSERVER(Observer, observers_, OnEnrollmentStarted());
 
   sync_request_ = sync_request.Pass();
-
   if (gcm_manager_->GetRegistrationId().empty() ||
       pref_service_->GetInteger(prefs::kCryptAuthEnrollmentReason) ==
           cryptauth::INVOCATION_REASON_MANUAL) {
@@ -192,6 +235,16 @@ void CryptAuthEnrollmentManager::OnSyncRequested(
 }
 
 void CryptAuthEnrollmentManager::DoCryptAuthEnrollment() {
+  if (GetUserPublicKey().empty() || GetUserPrivateKey().empty()) {
+    secure_message_delegate_->GenerateKeyPair(
+        base::Bind(&CryptAuthEnrollmentManager::OnKeyPairGenerated,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    DoCryptAuthEnrollmentWithKeys();
+  }
+}
+
+void CryptAuthEnrollmentManager::DoCryptAuthEnrollmentWithKeys() {
   DCHECK(sync_request_);
   cryptauth::InvocationReason invocation_reason =
       cryptauth::INVOCATION_REASON_UNKNOWN;
@@ -222,7 +275,7 @@ void CryptAuthEnrollmentManager::DoCryptAuthEnrollment() {
   device_info.set_device_software_package(kDeviceSoftwarePackage);
 
   std::string public_key_b64;
-  Base64UrlEncode(user_public_key_, &public_key_b64);
+  Base64UrlEncode(GetUserPublicKey(), &public_key_b64);
   PA_LOG(INFO) << "Making enrollment:\n"
                << "  public_key: " << public_key_b64 << "\n"
                << "  invocation_reason: " << invocation_reason << "\n"
@@ -231,7 +284,7 @@ void CryptAuthEnrollmentManager::DoCryptAuthEnrollment() {
 
   cryptauth_enroller_ = enroller_factory_->CreateInstance();
   cryptauth_enroller_->Enroll(
-      user_public_key_, user_private_key_, device_info, invocation_reason,
+      GetUserPublicKey(), GetUserPrivateKey(), device_info, invocation_reason,
       base::Bind(&CryptAuthEnrollmentManager::OnEnrollmentFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 }

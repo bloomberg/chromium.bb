@@ -170,8 +170,6 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   scoped_ptr<CryptAuthGCMManager> gcm_manager_;
   scoped_ptr<CryptAuthEnrollmentManager> enrollment_manager_;
   scoped_ptr<CryptAuthDeviceManager> device_manager_;
-  std::string user_public_key_;
-  std::string user_private_key_;
 
   // Member variables for connecting to and authenticating the remote device.
   // TODO(tengs): Support multiple simultaenous connections.

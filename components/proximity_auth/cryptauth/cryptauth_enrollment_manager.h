@@ -25,6 +25,7 @@ namespace proximity_auth {
 
 class CryptAuthEnroller;
 class CryptAuthEnrollerFactory;
+class SecureMessageDelegate;
 
 // This class manages the device's enrollment with CryptAuth, periodically
 // re-enrolling to keep the state on the server fresh. If an enrollment fails,
@@ -49,8 +50,8 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   // |clock|: Used to determine the time between sync attempts.
   // |enroller_factory|: Creates CryptAuthEnroller instances to perform each
   //                     enrollment attempt.
-  // |user_public_key|: The user's persistent public key identifying the device.
-  // |user_private_key|: The corresponding private key to |user_public_key|.
+  // |secure_message_delegate|: Used to generate the user's keypair if it does
+  //                            not exist.
   // |device_info|: Contains information about the local device that will be
   //                uploaded to CryptAuth with each enrollment request.
   // |gcm_manager|: Used to perform GCM registrations and also notifies when GCM
@@ -61,8 +62,7 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   CryptAuthEnrollmentManager(
       scoped_ptr<base::Clock> clock,
       scoped_ptr<CryptAuthEnrollerFactory> enroller_factory,
-      const std::string& user_public_key,
-      const std::string& user_private_key,
+      scoped_ptr<SecureMessageDelegate> secure_message_delegate,
       const cryptauth::GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service);
@@ -106,6 +106,13 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   // ever been recorded, then this function will also return true.
   bool IsRecoveringFromFailure() const;
 
+  // Returns the keypair used to enroll with CryptAuth. If no enrollment has
+  // been completed, then an empty string will be returned.
+  // Note: These keys are really serialized protocol buffer messages, and should
+  // only be used by passing to SecureMessageDelegate.
+  std::string GetUserPublicKey();
+  std::string GetUserPrivateKey();
+
  protected:
   // Creates a new SyncScheduler instance. Exposed for testing.
   virtual scoped_ptr<SyncScheduler> CreateSyncScheduler();
@@ -115,12 +122,21 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   void OnGCMRegistrationResult(bool success) override;
   void OnReenrollMessage() override;
 
+  // Callback when a new keypair is generated.
+  void OnKeyPairGenerated(const std::string& public_key,
+                          const std::string& private_key);
+
   // SyncScheduler::Delegate:
   void OnSyncRequested(
       scoped_ptr<SyncScheduler::SyncRequest> sync_request) override;
 
-  // Starts a CryptAuth enrollment attempt.
+  // Starts a CryptAuth enrollment attempt, generating a new keypair if one is
+  // not already stored in the user prefs.
   void DoCryptAuthEnrollment();
+
+  // Starts a CryptAuth enrollment attempt, after a key-pair is stored in the
+  // user prefs.
+  void DoCryptAuthEnrollmentWithKeys();
 
   // Callback when |cryptauth_enroller_| completes.
   void OnEnrollmentFinished(bool success);
@@ -131,9 +147,9 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate,
   // Creates CryptAuthEnroller instances for each enrollment attempt.
   scoped_ptr<CryptAuthEnrollerFactory> enroller_factory_;
 
-  // The user's persistent key-pair identifying the local device.
-  std::string user_public_key_;
-  std::string user_private_key_;
+  // The SecureMessageDelegate used to generate the user's keypair if it does
+  // not already exist.
+  scoped_ptr<SecureMessageDelegate> secure_message_delegate_;
 
   // The local device information to upload to CryptAuth.
   const cryptauth::GcmDeviceInfo device_info_;

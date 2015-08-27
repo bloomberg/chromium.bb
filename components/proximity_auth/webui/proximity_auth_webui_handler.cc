@@ -322,7 +322,7 @@ void ProximityAuthWebUIHandler::ForceDeviceSync(const base::ListValue* args) {
 void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
   std::string b64_public_key;
   std::string public_key;
-  if (!device_manager_ || !args->GetSize() ||
+  if (!enrollment_manager_ || !device_manager_ || !args->GetSize() ||
       !args->GetString(0, &b64_public_key) ||
       !Base64UrlDecode(b64_public_key, &public_key)) {
     return;
@@ -346,7 +346,7 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
                    << unlock_key.friendly_device_name();
       secure_message_delegate_ = delegate_->CreateSecureMessageDelegate();
       secure_message_delegate_->DeriveKey(
-          user_private_key_, unlock_key.public_key(),
+          enrollment_manager_->GetUserPrivateKey(), unlock_key.public_key(),
           base::Bind(&ProximityAuthWebUIHandler::OnPSKDerived,
                      weak_ptr_factory_.GetWeakPtr(), unlock_key));
 
@@ -369,22 +369,6 @@ void ProximityAuthWebUIHandler::InitEnrollmentManager() {
   // development and testing purposes until it is ready to be moved into Chrome.
   // The public/private key pair has been generated and serialized in a previous
   // session.
-  Base64UrlDecode(
-      "CAESRgohAD1lP_wgQ8XqVVwz4aK_89SqdvAQG5L_NZH5zXxwg5UbEiEAZFMlgCZ9h8OlyE4"
-      "QYKY5oiOBu0FmLSKeTAXEq2jnVJI=",
-      &user_public_key_);
-
-  Base64UrlDecode(
-      "MIIBeQIBADCCAQMGByqGSM49AgEwgfcCAQEwLAYHKoZIzj0BAQIhAP____8AAAABAAAAAAA"
-      "AAAAAAAAA________________MFsEIP____8AAAABAAAAAAAAAAAAAAAA______________"
-      "_8BCBaxjXYqjqT57PrvVV2mIa8ZR0GsMxTsPY7zjw-J9JgSwMVAMSdNgiG5wSTamZ44ROdJ"
-      "reBn36QBEEEaxfR8uEsQkf4vOblY6RA8ncDfYEt6zOg9KE5RdiYwpZP40Li_hp_m47n60p8"
-      "D54WK84zV2sxXs7LtkBoN79R9QIhAP____8AAAAA__________-85vqtpxeehPO5ysL8YyV"
-      "RAgEBBG0wawIBAQQgKZ4Dsm5xe4p5U2XPGxjrG376ZWWIa9E6r0y1BdjIntyhRANCAAQ9ZT"
-      "_8IEPF6lVcM-Giv_PUqnbwEBuS_zWR-c18cIOVG2RTJYAmfYfDpchOEGCmOaIjgbtBZi0in"
-      "kwFxKto51SS",
-      &user_private_key_);
-
   // This serialized DeviceInfo proto was previously captured from a real
   // CryptAuth enrollment, and is replayed here for testing purposes.
   std::string serialized_device_info;
@@ -415,7 +399,7 @@ void ProximityAuthWebUIHandler::InitEnrollmentManager() {
   enrollment_manager_.reset(new CryptAuthEnrollmentManager(
       make_scoped_ptr(new base::DefaultClock()),
       make_scoped_ptr(new CryptAuthEnrollerFactoryImpl(delegate_)),
-      user_public_key_, user_private_key_, device_info, gcm_manager_.get(),
+      delegate_->CreateSecureMessageDelegate(), device_info, gcm_manager_.get(),
       delegate_->GetPrefService()));
   enrollment_manager_->AddObserver(this);
   enrollment_manager_->Start();
