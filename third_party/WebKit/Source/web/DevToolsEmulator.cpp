@@ -5,6 +5,7 @@
 #include "config.h"
 #include "web/DevToolsEmulator.h"
 
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
@@ -213,6 +214,7 @@ void DevToolsEmulator::enableMobileEmulation()
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
     m_webViewImpl->enableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(true);
+    m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();
     m_webViewImpl->settings()->setShrinksViewportContentToFit(true);
     m_webViewImpl->page()->settings().setTextAutosizingEnabled(true);
     m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(true);
@@ -223,8 +225,6 @@ void DevToolsEmulator::enableMobileEmulation()
     m_originalDefaultMinimumPageScaleFactor = m_webViewImpl->defaultMinimumPageScaleFactor();
     m_originalDefaultMaximumPageScaleFactor = m_webViewImpl->defaultMaximumPageScaleFactor();
     m_webViewImpl->setDefaultPageScaleLimits(0.25f, 5);
-    if (m_webViewImpl->layerTreeView())
-        m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(false);
 }
 
 void DevToolsEmulator::disableMobileEmulation()
@@ -234,6 +234,7 @@ void DevToolsEmulator::disableMobileEmulation()
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
     m_webViewImpl->disableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(false);
+    m_webViewImpl->page()->frameHost().visualViewport().initializeScrollbars();
     m_webViewImpl->settings()->setShrinksViewportContentToFit(false);
     m_webViewImpl->page()->settings().setTextAutosizingEnabled(m_embedderTextAutosizingEnabled);
     m_webViewImpl->page()->settings().setPreferCompositingToLCDTextEnabled(m_embedderPreferCompositingToLCDTextEnabled);
@@ -244,10 +245,6 @@ void DevToolsEmulator::disableMobileEmulation()
     m_webViewImpl->setDefaultPageScaleLimits(
         m_originalDefaultMinimumPageScaleFactor,
         m_originalDefaultMaximumPageScaleFactor);
-    if (m_webViewImpl->layerTreeView()) {
-        m_webViewImpl->layerTreeView()->setHidePinchScrollbarsNearMinScale(
-            m_hidePinchScrollbarsNearMinScale);
-    }
 }
 
 void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled)
