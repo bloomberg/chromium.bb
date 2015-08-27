@@ -46,6 +46,7 @@
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
@@ -129,6 +130,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSPathValue>(*this, other);
         case PrimitiveClass:
             return compareCSSValues<CSSPrimitiveValue>(*this, other);
+        case QuadClass:
+            return compareCSSValues<CSSQuadValue>(*this, other);
         case ReflectClass:
             return compareCSSValues<CSSReflectValue>(*this, other);
         case ShadowClass:
@@ -195,6 +198,8 @@ String CSSValue::cssText() const
         return toCSSPathValue(this)->customCSSText();
     case PrimitiveClass:
         return toCSSPrimitiveValue(this)->customCSSText();
+    case QuadClass:
+        return toCSSQuadValue(this)->customCSSText();
     case ReflectClass:
         return toCSSReflectValue(this)->customCSSText();
     case ShadowClass:
@@ -276,6 +281,9 @@ void CSSValue::destroy()
         return;
     case PrimitiveClass:
         delete toCSSPrimitiveValue(this);
+        return;
+    case QuadClass:
+        delete toCSSQuadValue(this);
         return;
     case ReflectClass:
         delete toCSSReflectValue(this);
@@ -368,6 +376,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case PrimitiveClass:
         toCSSPrimitiveValue(this)->~CSSPrimitiveValue();
         return;
+    case QuadClass:
+        toCSSQuadValue(this)->~CSSQuadValue();
+        return;
     case ReflectClass:
         toCSSReflectValue(this)->~CSSReflectValue();
         return;
@@ -458,6 +469,9 @@ DEFINE_TRACE(CSSValue)
         return;
     case PrimitiveClass:
         toCSSPrimitiveValue(this)->traceAfterDispatch(visitor);
+        return;
+    case QuadClass:
+        toCSSQuadValue(this)->traceAfterDispatch(visitor);
         return;
     case ReflectClass:
         toCSSReflectValue(this)->traceAfterDispatch(visitor);

@@ -43,6 +43,7 @@ struct CSSParserValue;
 class CSSParserValueList;
 class CSSPrimitiveValue;
 class CSSProperty;
+class CSSQuadValue;
 class CSSValue;
 class CSSValueList;
 class StylePropertyShorthand;
@@ -165,7 +166,7 @@ private:
     bool parseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = nullptr);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridAutoFlow(CSSParserValueList&);
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseClipShape();
+    PassRefPtrWillBeRawPtr<CSSQuadValue> parseClipShape();
 
     bool parseLegacyPosition(CSSPropertyID, bool important);
     bool parseItemPositionOverflowPosition(CSSPropertyID, bool important);
@@ -213,8 +214,8 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseBorderImage(CSSPropertyID);
     bool parseBorderImageRepeat(RefPtrWillBeRawPtr<CSSValue>&);
     bool parseBorderImageSlice(CSSPropertyID, RefPtrWillBeRawPtr<CSSBorderImageSliceValue>&);
-    bool parseBorderImageWidth(RefPtrWillBeRawPtr<CSSPrimitiveValue>&);
-    bool parseBorderImageOutset(RefPtrWillBeRawPtr<CSSPrimitiveValue>&);
+    bool parseBorderImageWidth(RefPtrWillBeRawPtr<CSSQuadValue>&);
+    bool parseBorderImageOutset(RefPtrWillBeRawPtr<CSSQuadValue>&);
     bool parseBorderRadius(CSSPropertyID, bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseReflect();
@@ -347,7 +348,7 @@ private:
     inline bool validUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue) { return validUnit(value, unitflags, m_context.mode(), releaseCalc); }
     bool validUnit(CSSParserValue*, Units, CSSParserMode, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
 
-    bool parseBorderImageQuad(Units, RefPtrWillBeRawPtr<CSSPrimitiveValue>&);
+    bool parseBorderImageQuad(Units, RefPtrWillBeRawPtr<CSSQuadValue>&);
     int colorIntFromValue(CSSParserValue*);
 
     bool buildBorderImageParseContext(CSSPropertyID, BorderImageParseContext&);

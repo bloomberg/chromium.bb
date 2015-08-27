@@ -15,6 +15,7 @@ namespace blink {
 class CSSBasicShape;
 class CSSImageValue;
 class CSSPrimitiveValue;
+class CSSQuadValue;
 class CSSShadowValue;
 class CSSSVGDocumentValue;
 class CSSValueList;
@@ -37,6 +38,7 @@ public:
     static bool interpolationRequiresStyleResolve(const CSSSVGDocumentValue&);
     static bool interpolationRequiresStyleResolve(const CSSValueList&);
     static bool interpolationRequiresStyleResolve(const CSSBasicShape&);
+    static bool interpolationRequiresStyleResolve(const CSSQuadValue&);
 
     void underlyingStyleChanged() { m_outdated = true; }
 

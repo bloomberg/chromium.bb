@@ -8,7 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/css/CSSBorderImageSliceValue.h"
-#include "core/css/Rect.h"
 
 namespace blink {
 

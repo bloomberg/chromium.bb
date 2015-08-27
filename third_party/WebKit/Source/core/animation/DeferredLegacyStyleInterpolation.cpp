@@ -10,11 +10,11 @@
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSQuadValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/Pair.h"
-#include "core/css/Rect.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverState.h"
 
@@ -50,6 +50,8 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
         return true;
     if (value.isPrimitiveValue())
         return interpolationRequiresStyleResolve(toCSSPrimitiveValue(value));
+    if (value.isQuadValue())
+        return interpolationRequiresStyleResolve(toCSSQuadValue(value));
     if (value.isValueList())
         return interpolationRequiresStyleResolve(toCSSValueList(value));
     if (value.isImageValue())
@@ -87,22 +89,6 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
     if (Pair* pair = primitiveValue.getPairValue()) {
         return interpolationRequiresStyleResolve(*pair->first())
             || interpolationRequiresStyleResolve(*pair->second());
-    }
-
-    if (primitiveValue.isRect()) {
-        Rect* rect = primitiveValue.getRectValue();
-        return interpolationRequiresStyleResolve(*rect->top())
-            || interpolationRequiresStyleResolve(*rect->right())
-            || interpolationRequiresStyleResolve(*rect->bottom())
-            || interpolationRequiresStyleResolve(*rect->left());
-    }
-
-    if (primitiveValue.isQuad()) {
-        Quad* quad = primitiveValue.getQuadValue();
-        return interpolationRequiresStyleResolve(*quad->top())
-            || interpolationRequiresStyleResolve(*quad->right())
-            || interpolationRequiresStyleResolve(*quad->bottom())
-            || interpolationRequiresStyleResolve(*quad->left());
     }
 
     if (primitiveValue.isShape())
@@ -150,6 +136,15 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
     // FIXME: Should determine the specific shape, and inspect the members.
     return false;
 }
+
+bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSQuadValue& quad)
+{
+    return interpolationRequiresStyleResolve(*quad.top())
+        || interpolationRequiresStyleResolve(*quad.right())
+        || interpolationRequiresStyleResolve(*quad.bottom())
+        || interpolationRequiresStyleResolve(*quad.left());
+}
+
 
 DEFINE_TRACE(DeferredLegacyStyleInterpolation)
 {

@@ -82,6 +82,7 @@ public:
     bool isCSSWideKeyword() const { return m_classType >= InheritedClass && m_classType <= UnsetClass; }
     bool isLinearGradientValue() const { return m_classType == LinearGradientClass; }
     bool isPathValue() const { return m_classType == PathClass; }
+    bool isQuadValue() const { return m_classType == QuadClass; }
     bool isRadialGradientValue() const { return m_classType == RadialGradientClass; }
     bool isReflectValue() const { return m_classType == ReflectClass; }
     bool isShadowValue() const { return m_classType == ShadowClass; }
@@ -114,6 +115,7 @@ protected:
     enum ClassType {
         PrimitiveClass,
         CounterClass,
+        QuadClass,
 
         // Image classes.
         ImageClass,

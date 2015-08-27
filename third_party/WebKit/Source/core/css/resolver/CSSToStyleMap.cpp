@@ -33,9 +33,9 @@
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSQuadValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/Pair.h"
-#include "core/css/Rect.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/BorderImageLengthBox.h"
@@ -492,7 +492,7 @@ void CSSToStyleMap::mapNinePieceImageSlice(StyleResolverState&, CSSValue* value,
 
     // Set up a length box to represent our image slices.
     LengthBox box;
-    Quad* slices = borderImageSlice->slices();
+    CSSQuadValue* slices = borderImageSlice->slices();
     if (slices->top()->isPercentage())
         box.m_top = Length(slices->top()->getDoubleValue(), Percent);
     else
@@ -528,10 +528,10 @@ static BorderImageLength toBorderImageLength(CSSPrimitiveValue& value, const CSS
 
 BorderImageLengthBox CSSToStyleMap::mapNinePieceImageQuad(StyleResolverState& state, CSSValue* value)
 {
-    if (!value || !value->isPrimitiveValue())
+    if (!value || !value->isQuadValue())
         return BorderImageLengthBox(Length(Auto));
 
-    Quad* slices = toCSSPrimitiveValue(value)->getQuadValue();
+    RefPtrWillBeRawPtr<CSSQuadValue> slices = toCSSQuadValue(value);
 
     // Set up a border image length box to represent our image slices.
     return BorderImageLengthBox(

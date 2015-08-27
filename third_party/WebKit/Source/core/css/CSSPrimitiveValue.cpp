@@ -27,7 +27,6 @@
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/Pair.h"
-#include "core/css/Rect.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Node.h"
 #include "core/style/ComputedStyle.h"
@@ -341,20 +340,6 @@ void CSSPrimitiveValue::init(const LengthSize& lengthSize, const ComputedStyle& 
     m_value.pair = Pair::create(create(lengthSize.width(), style.effectiveZoom()), create(lengthSize.height(), style.effectiveZoom()), Pair::KeepIdenticalValues).leakRef();
 }
 
-void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Rect> r)
-{
-    init(UnitType::Rect);
-    m_hasCachedCSSText = false;
-    m_value.rect = r.leakRef();
-}
-
-void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Quad> quad)
-{
-    init(UnitType::Quad);
-    m_hasCachedCSSText = false;
-    m_value.quad = quad.leakRef();
-}
-
 void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Pair> p)
 {
     init(UnitType::Pair);
@@ -390,18 +375,6 @@ void CSSPrimitiveValue::cleanup()
     case UnitType::Attribute:
         if (m_value.string)
             m_value.string->deref();
-        break;
-    case UnitType::Rect:
-        // We must not call deref() when oilpan is enabled because m_value.rect is traced.
-#if !ENABLE(OILPAN)
-        m_value.rect->deref();
-#endif
-        break;
-    case UnitType::Quad:
-        // We must not call deref() when oilpan is enabled because m_value.quad is traced.
-#if !ENABLE(OILPAN)
-        m_value.quad->deref();
-#endif
         break;
     case UnitType::Pair:
         // We must not call deref() when oilpan is enabled because m_value.pair is traced.
@@ -904,8 +877,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::ValueID:
     case UnitType::PropertyID:
     case UnitType::Attribute:
-    case UnitType::Rect:
-    case UnitType::Quad:
     case UnitType::RGBColor:
     case UnitType::Pair:
     case UnitType::Calc:
@@ -990,12 +961,6 @@ String CSSPrimitiveValue::customCSSText() const
         text = result.toString();
         break;
     }
-    case UnitType::Rect:
-        text = getRectValue()->cssText();
-        break;
-    case UnitType::Quad:
-        text = getQuadValue()->cssText();
-        break;
     case UnitType::RGBColor: {
         text = Color(m_value.rgbcolor).serializedAsCSSComponentValue();
         break;
@@ -1067,10 +1032,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case UnitType::URI:
     case UnitType::Attribute:
         return equal(m_value.string, other.m_value.string);
-    case UnitType::Rect:
-        return m_value.rect && other.m_value.rect && m_value.rect->equals(*other.m_value.rect);
-    case UnitType::Quad:
-        return m_value.quad && other.m_value.quad && m_value.quad->equals(*other.m_value.quad);
     case UnitType::RGBColor:
         return m_value.rgbcolor == other.m_value.rgbcolor;
     case UnitType::Pair:
@@ -1093,12 +1054,6 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSPrimitiveValue)
 {
 #if ENABLE(OILPAN)
     switch (type()) {
-    case UnitType::Rect:
-        visitor->trace(m_value.rect);
-        break;
-    case UnitType::Quad:
-        visitor->trace(m_value.quad);
-        break;
     case UnitType::Pair:
         visitor->trace(m_value.pair);
         break;

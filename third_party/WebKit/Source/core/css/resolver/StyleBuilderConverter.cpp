@@ -33,10 +33,10 @@
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/Pair.h"
-#include "core/css/Rect.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/transforms/RotateTransformOperation.h"
@@ -100,7 +100,7 @@ AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState
 
 LengthBox StyleBuilderConverter::convertClip(StyleResolverState& state, CSSValue* value)
 {
-    Rect* rect = toCSSPrimitiveValue(value)->getRectValue();
+    RefPtrWillBeRawPtr<CSSQuadValue> rect = toCSSQuadValue(value);
 
     return LengthBox(convertLengthOrAuto(state, rect->top()),
         convertLengthOrAuto(state, rect->right()),

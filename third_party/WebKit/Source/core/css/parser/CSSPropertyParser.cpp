@@ -46,6 +46,7 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertyMetadata.h"
+#include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShadowValue.h"
@@ -54,7 +55,6 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/HashTools.h"
 #include "core/css/Pair.h"
-#include "core/css/Rect.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/frame/UseCounter.h"
@@ -933,7 +933,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
     case CSSPropertyBorderImageOutset:
     case CSSPropertyWebkitMaskBoxImageOutset: {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> result = nullptr;
+        RefPtrWillBeRawPtr<CSSQuadValue> result = nullptr;
         if (parseBorderImageOutset(result)) {
             addProperty(propId, result, important);
             return true;
@@ -960,7 +960,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     }
     case CSSPropertyBorderImageWidth:
     case CSSPropertyWebkitMaskBoxImageWidth: {
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> result = nullptr;
+        RefPtrWillBeRawPtr<CSSQuadValue> result = nullptr;
         if (parseBorderImageWidth(result)) {
             addProperty(propId, result, important);
             return true;
@@ -3980,7 +3980,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParse
     return CSSCounterValue::create(identifier.release(), listStyle.release(), separator.release());
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseClipShape()
+PassRefPtrWillBeRawPtr<CSSQuadValue> CSSPropertyParser::parseClipShape()
 {
     CSSParserValue* value = m_valueList->current();
     CSSParserValueList* args = value->function->args.get();
@@ -3991,9 +3991,13 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseClipShape()
     // rect(t, r, b, l) || rect(t r b l)
     if (args->size() != 4 && args->size() != 7)
         return nullptr;
-    RefPtrWillBeRawPtr<Rect> rect = Rect::create();
     int i = 0;
     CSSParserValue* a = args->current();
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> top = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> right = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom = nullptr;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> left = nullptr;
     while (a) {
         if (a->id != CSSValueAuto && !validUnit(a, FLength | FUnitlessQuirk))
             return nullptr;
@@ -4001,13 +4005,13 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseClipShape()
             cssValuePool().createIdentifierValue(CSSValueAuto) :
             createPrimitiveNumericValue(a);
         if (i == 0)
-            rect->setTop(length);
+            top = length;
         else if (i == 1)
-            rect->setRight(length);
+            right = length;
         else if (i == 2)
-            rect->setBottom(length);
+            bottom = length;
         else
-            rect->setLeft(length);
+            left = length;
         a = args->next();
         if (a && args->size() == 7) {
             if (!consumeComma(args))
@@ -4017,7 +4021,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseClipShape()
         i++;
     }
     m_valueList->next();
-    return cssValuePool().createValue(rect.release());
+    return CSSQuadValue::create(top.release(), right.release(), bottom.release(), left.release(), CSSQuadValue::SerializeAsRect);
 }
 
 static void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])
@@ -5497,7 +5501,7 @@ public:
             m_allowWidth = false;
         }
     }
-    void commitBorderWidth(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> width)
+    void commitBorderWidth(PassRefPtrWillBeRawPtr<CSSQuadValue> width)
     {
         m_borderWidth = width;
         m_canAdvance = true;
@@ -5509,7 +5513,7 @@ public:
         m_allowImage = !m_image;
         m_allowRepeat = !m_repeat;
     }
-    void commitBorderOutset(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> outset)
+    void commitBorderOutset(PassRefPtrWillBeRawPtr<CSSQuadValue> outset)
     {
         m_outset = outset;
         m_canAdvance = true;
@@ -5552,8 +5556,8 @@ public:
 
     RefPtrWillBeMember<CSSValue> m_image;
     RefPtrWillBeMember<CSSBorderImageSliceValue> m_imageSlice;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_borderWidth;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_outset;
+    RefPtrWillBeMember<CSSQuadValue> m_borderWidth;
+    RefPtrWillBeMember<CSSQuadValue> m_outset;
 
     RefPtrWillBeMember<CSSValue> m_repeat;
 };
@@ -5599,13 +5603,13 @@ bool CSSPropertyParser::buildBorderImageParseContext(CSSPropertyID propId, Borde
         }
 
         if (!context.canAdvance() && context.allowWidth()) {
-            RefPtrWillBeRawPtr<CSSPrimitiveValue> borderWidth = nullptr;
+            RefPtrWillBeRawPtr<CSSQuadValue> borderWidth = nullptr;
             if (parseBorderImageWidth(borderWidth))
                 context.commitBorderWidth(borderWidth.release());
         }
 
         if (!context.canAdvance() && context.requireOutset()) {
-            RefPtrWillBeRawPtr<CSSPrimitiveValue> borderOutset = nullptr;
+            RefPtrWillBeRawPtr<CSSQuadValue> borderOutset = nullptr;
             if (parseBorderImageOutset(borderOutset))
                 context.commitBorderOutset(borderOutset.release());
         }
@@ -5750,15 +5754,7 @@ public:
         if (!m_left)
             m_left = m_right;
 
-        // Now build a rect value to hold all four of our primitive values.
-        RefPtrWillBeRawPtr<Quad> quad = Quad::create();
-        quad->setTop(m_top);
-        quad->setRight(m_right);
-        quad->setBottom(m_bottom);
-        quad->setLeft(m_left);
-
-        // Make our new border image value now.
-        return CSSBorderImageSliceValue::create(cssValuePool().createValue(quad.release()), m_fill);
+        return CSSBorderImageSliceValue::create(CSSQuadValue::create(m_top.release(), m_right.release(), m_bottom.release(), m_left.release(), CSSQuadValue::SerializeAsQuad), m_fill);
     }
 
 private:
@@ -5840,7 +5836,7 @@ public:
 
     void setTop(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_top = val; }
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> commitBorderImageQuad()
+    PassRefPtrWillBeRawPtr<CSSQuadValue> commitBorderImageQuad()
     {
         // We need to clone and repeat values for any omissions.
         ASSERT(m_top);
@@ -5856,15 +5852,7 @@ public:
         if (!m_left)
             m_left = m_right;
 
-        // Now build a quad value to hold all four of our primitive values.
-        RefPtrWillBeRawPtr<Quad> quad = Quad::create();
-        quad->setTop(m_top);
-        quad->setRight(m_right);
-        quad->setBottom(m_bottom);
-        quad->setLeft(m_left);
-
-        // Make our new value now.
-        return cssValuePool().createValue(quad.release());
+        return CSSQuadValue::create(m_top.release(), m_right.release(), m_bottom.release(), m_left.release(), CSSQuadValue::SerializeAsQuad);
     }
 
 private:
@@ -5877,7 +5865,7 @@ private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_left;
 };
 
-bool CSSPropertyParser::parseBorderImageQuad(Units validUnits, RefPtrWillBeRawPtr<CSSPrimitiveValue>& result)
+bool CSSPropertyParser::parseBorderImageQuad(Units validUnits, RefPtrWillBeRawPtr<CSSQuadValue>& result)
 {
     BorderImageQuadParseContext context;
     for (CSSParserValue* val = m_valueList->current(); val; val = m_valueList->next()) {
@@ -5904,12 +5892,12 @@ bool CSSPropertyParser::parseBorderImageQuad(Units validUnits, RefPtrWillBeRawPt
     return false;
 }
 
-bool CSSPropertyParser::parseBorderImageWidth(RefPtrWillBeRawPtr<CSSPrimitiveValue>& result)
+bool CSSPropertyParser::parseBorderImageWidth(RefPtrWillBeRawPtr<CSSQuadValue>& result)
 {
     return parseBorderImageQuad(FLength | FNumber | FNonNeg | FPercent, result);
 }
 
-bool CSSPropertyParser::parseBorderImageOutset(RefPtrWillBeRawPtr<CSSPrimitiveValue>& result)
+bool CSSPropertyParser::parseBorderImageOutset(RefPtrWillBeRawPtr<CSSQuadValue>& result)
 {
     return parseBorderImageQuad(FLength | FNumber | FNonNeg, result);
 }

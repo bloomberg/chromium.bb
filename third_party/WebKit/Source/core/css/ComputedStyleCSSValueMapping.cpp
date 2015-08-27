@@ -36,13 +36,13 @@
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/Pair.h"
-#include "core/css/Rect.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
@@ -238,16 +238,10 @@ static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSl
         }
     }
 
-    RefPtrWillBeRawPtr<Quad> quad = Quad::create();
-    quad->setTop(top);
-    quad->setRight(right);
-    quad->setBottom(bottom);
-    quad->setLeft(left);
-
-    return CSSBorderImageSliceValue::create(cssValuePool().createValue(quad.release()), image.fill());
+    return CSSBorderImageSliceValue::create(CSSQuadValue::create(top.release(), right.release(), bottom.release(), left.release(), CSSQuadValue::SerializeAsQuad), image.fill());
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(const BorderImageLengthBox& box, const ComputedStyle& style)
+static PassRefPtrWillBeRawPtr<CSSQuadValue> valueForNinePieceImageQuad(const BorderImageLengthBox& box, const ComputedStyle& style)
 {
     // Create the slices.
     RefPtrWillBeRawPtr<CSSPrimitiveValue> top = nullptr;
@@ -290,13 +284,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForNinePieceImageQuad(cons
         }
     }
 
-    RefPtrWillBeRawPtr<Quad> quad = Quad::create();
-    quad->setTop(top);
-    quad->setRight(right);
-    quad->setBottom(bottom);
-    quad->setLeft(left);
-
-    return cssValuePool().createValue(quad.release());
+    return CSSQuadValue::create(top.release(), right.release(), bottom.release(), left.release(), CSSQuadValue::SerializeAsQuad);
 }
 
 static CSSValueID valueForRepeatRule(int rule)
@@ -2254,12 +2242,11 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyClip: {
         if (style.hasAutoClip())
             return cssValuePool().createIdentifierValue(CSSValueAuto);
-        RefPtrWillBeRawPtr<Rect> rect = Rect::create();
-        rect->setTop(zoomAdjustedPixelValue(style.clip().top().value(), style));
-        rect->setRight(zoomAdjustedPixelValue(style.clip().right().value(), style));
-        rect->setBottom(zoomAdjustedPixelValue(style.clip().bottom().value(), style));
-        rect->setLeft(zoomAdjustedPixelValue(style.clip().left().value(), style));
-        return cssValuePool().createValue(rect.release());
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> top = zoomAdjustedPixelValue(style.clip().top().value(), style);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> right = zoomAdjustedPixelValue(style.clip().right().value(), style);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom = zoomAdjustedPixelValue(style.clip().bottom().value(), style);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> left = zoomAdjustedPixelValue(style.clip().left().value(), style);
+        return CSSQuadValue::create(top.release(), right.release(), bottom.release(), left.release(), CSSQuadValue::SerializeAsRect);
     }
     case CSSPropertySpeak:
         return cssValuePool().createValue(style.speak());

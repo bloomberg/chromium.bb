@@ -5,13 +5,14 @@
 #include "config.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
 
+#include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleBuilder.h"
 
 namespace blink {
 
 namespace {
 
-bool onlyInterpolateBetweenLengthAndCSSValueAuto(Rect& startRect, Rect& endRect)
+bool onlyInterpolateBetweenLengthAndCSSValueAuto(const CSSQuadValue& startRect, const CSSQuadValue& endRect)
 {
     return startRect.left()->isLength() != endRect.left()->isLength()
         && startRect.right()->isLength() != endRect.right()->isLength()
@@ -23,8 +24,8 @@ bool onlyInterpolateBetweenLengthAndCSSValueAuto(Rect& startRect, Rect& endRect)
 
 PassRefPtrWillBeRawPtr<LengthBoxStyleInterpolation> LengthBoxStyleInterpolation::maybeCreateFrom(CSSValue& start, CSSValue& end, CSSPropertyID id)
 {
-    bool startRect = start.isPrimitiveValue() && toCSSPrimitiveValue(start).isRect();
-    bool endRect = end.isPrimitiveValue() && toCSSPrimitiveValue(end).isRect();
+    bool startRect = start.isQuadValue() && toCSSQuadValue(start).serializationType() == CSSQuadValue::SerializationType::SerializeAsRect;
+    bool endRect = end.isQuadValue() && toCSSQuadValue(end).serializationType() == CSSQuadValue::SerializationType::SerializeAsRect;
 
     if (startRect && endRect)
         return adoptRefWillBeNoop(new LengthBoxStyleInterpolation(lengthBoxtoInterpolableValue(start, end, false), lengthBoxtoInterpolableValue(end, start, true), id, &start, &end));
@@ -35,10 +36,10 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::lengthBox
 {
     const int numberOfSides = 4;
     OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(numberOfSides);
-    Rect* rect = toCSSPrimitiveValue(lengthBox).getRectValue();
-    Rect* matchingRect = toCSSPrimitiveValue(matchingValue).getRectValue();
-    CSSPrimitiveValue* side[numberOfSides] = { rect->left(), rect->right(), rect->top(), rect->bottom() };
-    CSSPrimitiveValue* matchingSide[numberOfSides] = { matchingRect->left(), matchingRect->right(), matchingRect->top(), matchingRect->bottom() };
+    const CSSQuadValue& rect = toCSSQuadValue(lengthBox);
+    const CSSQuadValue& matchingRect = toCSSQuadValue(matchingValue);
+    CSSPrimitiveValue* side[numberOfSides] = { rect.left(), rect.right(), rect.top(), rect.bottom() };
+    CSSPrimitiveValue* matchingSide[numberOfSides] = { matchingRect.left(), matchingRect.right(), matchingRect.top(), matchingRect.bottom() };
 
     for (size_t i = 0; i < numberOfSides; i++) {
         if (side[i]->isValueID() || matchingSide[i]->isValueID()) {
@@ -53,14 +54,19 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthBoxStyleInterpolation::lengthBox
 
 bool LengthBoxStyleInterpolation::usesDefaultInterpolation(const CSSValue& start, const CSSValue& end)
 {
-    if (!start.isPrimitiveValue() || !end.isPrimitiveValue())
+    if (start.isPrimitiveValue() && end.isPrimitiveValue()) {
+        const CSSPrimitiveValue& startValue = toCSSPrimitiveValue(start);
+        const CSSPrimitiveValue& endValue = toCSSPrimitiveValue(end);
+        return (startValue.isValueID() && startValue.getValueID() == CSSValueAuto)
+            || (endValue.isValueID() && endValue.getValueID() == CSSValueAuto);
+    }
+
+    if (!start.isQuadValue() || !end.isQuadValue())
         return false;
-    const CSSPrimitiveValue& startValue = toCSSPrimitiveValue(start);
-    const CSSPrimitiveValue& endValue = toCSSPrimitiveValue(end);
-    if ((startValue.isValueID() && startValue.getValueID() == CSSValueAuto)
-        || (endValue.isValueID() && endValue.getValueID() == CSSValueAuto))
-        return true;
-    return onlyInterpolateBetweenLengthAndCSSValueAuto(*startValue.getRectValue(), *endValue.getRectValue());
+
+    const CSSQuadValue& startValue = toCSSQuadValue(start);
+    const CSSQuadValue& endValue = toCSSQuadValue(end);
+    return onlyInterpolateBetweenLengthAndCSSValueAuto(startValue, endValue);
 }
 
 namespace {
@@ -80,18 +86,17 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> indexedValueToLength(InterpolableList&
 PassRefPtrWillBeRawPtr<CSSValue> LengthBoxStyleInterpolation::interpolableValueToLengthBox(InterpolableValue* value, const CSSValue& originalStart, const CSSValue& originalEnd)
 {
     InterpolableList* lengthBox = toInterpolableList(value);
-    Rect* startRect = toCSSPrimitiveValue(originalStart).getRectValue();
-    Rect* endRect = toCSSPrimitiveValue(originalEnd).getRectValue();
-    CSSPrimitiveValue* startSides[4] = { startRect->left(), startRect->right(), startRect->top(), startRect->bottom() };
-    CSSPrimitiveValue* endSides[4] = { endRect->left(), endRect->right(), endRect->top(), endRect->bottom() };
-    RefPtrWillBeRawPtr<Rect> result = Rect::create();
+    const CSSQuadValue& startRect = toCSSQuadValue(originalStart);
+    const CSSQuadValue& endRect = toCSSQuadValue(originalEnd);
+    CSSPrimitiveValue* startSides[4] = { startRect.left(), startRect.right(), startRect.top(), startRect.bottom() };
+    CSSPrimitiveValue* endSides[4] = { endRect.left(), endRect.right(), endRect.top(), endRect.bottom() };
 
-    result->setLeft(indexedValueToLength(*lengthBox, 0, startSides, endSides));
-    result->setRight(indexedValueToLength(*lengthBox, 1, startSides, endSides));
-    result->setTop(indexedValueToLength(*lengthBox, 2, startSides, endSides));
-    result->setBottom(indexedValueToLength(*lengthBox, 3, startSides, endSides));
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> left = indexedValueToLength(*lengthBox, 0, startSides, endSides);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> right = indexedValueToLength(*lengthBox, 1, startSides, endSides);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> top = indexedValueToLength(*lengthBox, 2, startSides, endSides);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom = indexedValueToLength(*lengthBox, 3, startSides, endSides);
 
-    return CSSPrimitiveValue::create(result.release());
+    return CSSQuadValue::create(top.release(), right.release(), bottom.release(), left.release(), CSSQuadValue::SerializeAsRect);
 }
 
 void LengthBoxStyleInterpolation::apply(StyleResolverState& state) const

@@ -41,9 +41,7 @@ class CSSToLengthConversionData;
 class Length;
 class LengthSize;
 class Pair;
-class Quad;
 class RGBColor;
-class Rect;
 class ComputedStyle;
 
 // Dimension calculations are imprecise, often resulting in values of e.g.
@@ -94,7 +92,6 @@ public:
         CustomIdentifier,
         URI,
         Attribute,
-        Rect,
         RGBColor,
         ViewportWidth,
         ViewportHeight,
@@ -109,7 +106,6 @@ public:
         Rems,
         Chs,
         Shape,
-        Quad,
         Calc,
         CalcPercentageWithNumber,
         CalcPercentageWithLength,
@@ -185,8 +181,6 @@ public:
     bool isPercentage() const { return typeWithCalcResolved() == UnitType::Percentage; }
     bool isPropertyID() const { return type() == UnitType::PropertyID; }
     bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
-    bool isQuad() const { return type() == UnitType::Quad; }
-    bool isRect() const { return type() == UnitType::Rect; }
     bool isRGBColor() const { return type() == UnitType::RGBColor; }
     bool isShape() const { return type() == UnitType::Shape; }
     bool isString() const { return type() == UnitType::String; }
@@ -268,9 +262,6 @@ public:
     template<typename T> inline T getValue() const { return clampTo<T>(getDoubleValue()); }
 
     String getStringValue() const;
-
-    Rect* getRectValue() const { ASSERT(isRect()); return m_value.rect; }
-    Quad* getQuadValue() const { ASSERT(isQuad()); return m_value.quad; }
     RGBA32 getRGBA32Value() const { ASSERT(isRGBColor()); return m_value.rgbcolor; }
 
     // TODO(timloh): Add isPair() and update callers so we can ASSERT(isPair())
@@ -329,9 +320,7 @@ private:
     void init(UnitType);
     void init(const Length&);
     void init(const LengthSize&, const ComputedStyle&);
-    void init(PassRefPtrWillBeRawPtr<Rect>);
     void init(PassRefPtrWillBeRawPtr<Pair>);
-    void init(PassRefPtrWillBeRawPtr<Quad>);
     void init(PassRefPtrWillBeRawPtr<CSSBasicShape>);
     void init(PassRefPtrWillBeRawPtr<CSSCalcValue>);
 
@@ -349,8 +338,6 @@ private:
         CSSBasicShape* shape;
         CSSCalcValue* calc;
         Pair* pair;
-        Rect* rect;
-        Quad* quad;
     } m_value;
 };
 
