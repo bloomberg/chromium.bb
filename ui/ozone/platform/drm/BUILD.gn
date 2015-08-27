@@ -198,6 +198,8 @@ if (ozone_platform_gbm) {
       "//third_party/khronos:khronos_headers",
     ]
 
+    defines = []
+
     if (use_mesa_platform_null) {
       defines += [ "USE_MESA_PLATFORM_NULL" ]
     }
@@ -205,7 +207,7 @@ if (ozone_platform_gbm) {
     if (use_vgem_map) {
       defines += [ "USE_VGEM_MAP" ]
 
-      sources = [
+      sources += [
         "gpu/client_native_pixmap_vgem.cc",
         "gpu/client_native_pixmap_vgem.h",
       ]
