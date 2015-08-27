@@ -266,6 +266,9 @@
                   '|Source/web/.*Geolocation' \
                   '|public/web/.*Geolocation'
     },
+    'htmlparser': {
+      'filepath': 'Source/core/html/parser/'
+    },
     'screen_orientation': {
       'filepath': 'Source/modules/screen_orientation/' \
                   '|public/platform/modules/screen_orientation',
@@ -403,7 +406,8 @@
                 'blink-reviews-events@chromium.org' ],
     'fetch': [ 'japhet@chromium.org',
                'gavinp+loader@chromium.org',
-               'tyoshino+watch@chromium.org' ],
+               'tyoshino+watch@chromium.org',
+               'kinuko+watch@chromium.org' ],
     'layers': [ 'blink-layers+watch@chromium.org' ],
     'loader': [ 'japhet@chromium.org',
                 'gavinp+loader@chromium.org',
@@ -478,6 +482,7 @@
     'geolocation': [ 'mvanouwerkerk+watch@chromium.org',
                      'timvolodine@chromium.org',
                      'mlamouri+watch-blink@chromium.org' ],
+    'htmlparser': [ 'kinuko+watch@chromium.org' ],
     'vibration': [ 'mvanouwerkerk+watch@chromium.org',
                    'mlamouri+watch-blink@chromium.org' ],
     'serviceworkers': [ 'jsbell+serviceworker@chromium.org',
