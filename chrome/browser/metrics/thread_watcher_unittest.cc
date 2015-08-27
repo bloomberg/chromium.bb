@@ -17,6 +17,8 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/spin_wait.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -304,12 +306,12 @@ class ThreadWatcherTest : public ::testing::Test {
 
   ~ThreadWatcherTest() override {
     ThreadWatcherList::DeleteAll();
-    io_watcher_ = NULL;
-    db_watcher_ = NULL;
+    io_watcher_ = nullptr;
+    db_watcher_ = nullptr;
     io_thread_.reset();
     db_thread_.reset();
     watchdog_thread_.reset();
-    thread_watcher_list_ = NULL;
+    thread_watcher_list_ = nullptr;
   }
 
  private:
@@ -644,7 +646,7 @@ class ThreadWatcherListTest : public ::testing::Test {
     {
       base::AutoLock auto_lock(lock_);
       has_thread_watcher_list_ =
-          ThreadWatcherList::g_thread_watcher_list_ != NULL;
+          ThreadWatcherList::g_thread_watcher_list_ != nullptr;
       stopped_ = ThreadWatcherList::g_stopped_;
       state_available_ = true;
     }
@@ -731,4 +733,84 @@ TEST_F(ThreadWatcherListTest, Restart) {
   CheckState(false /* has_thread_watcher_list */,
              true /* stopped */,
              "Stopped");
+}
+
+class TestingJankTimeBomb : public JankTimeBomb {
+ public:
+  explicit TestingJankTimeBomb(base::TimeDelta duration)
+      : JankTimeBomb(duration),
+        thread_id_(base::PlatformThread::CurrentId()),
+        alarm_invoked_(false) {
+  }
+
+  ~TestingJankTimeBomb() override {}
+
+  void Alarm(base::PlatformThreadId thread_id) override {
+    EXPECT_EQ(thread_id_, thread_id);
+    alarm_invoked_ = true;
+  }
+
+  bool alarm_invoked() const { return alarm_invoked_; }
+
+ private:
+  const base::PlatformThreadId thread_id_;
+  bool alarm_invoked_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingJankTimeBomb);
+};
+
+class JankTimeBombTest : public ::testing::Test {
+ public:
+  JankTimeBombTest() {
+    watchdog_thread_.reset(new WatchDogThread());
+    watchdog_thread_->Start();
+    EXPECT_TRUE(watchdog_thread_->IsRunning());
+    SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(1),
+                                     watchdog_thread_->Started());
+    WaitForWatchDogThreadPostTask();
+  }
+
+  ~JankTimeBombTest() override {
+    watchdog_thread_.reset();
+  }
+
+  static void WaitForWatchDogThreadPostTask() {
+    base::WaitableEvent watchdog_thread_event(false, false);
+    PostAndWaitForWatchdogThread(&watchdog_thread_event);
+  }
+
+ private:
+  static void OnJankTimeBombTask(base::WaitableEvent* event) {
+    event->Signal();
+  }
+
+  static void PostAndWaitForWatchdogThread(base::WaitableEvent* event) {
+    WatchDogThread::PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&JankTimeBombTest::OnJankTimeBombTask, event),
+        base::TimeDelta::FromSeconds(0));
+
+    event->Wait();
+  }
+
+  scoped_ptr<WatchDogThread> watchdog_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(JankTimeBombTest);
+};
+
+// JankTimeBomb minimal constructor/destructor test..
+TEST_F(JankTimeBombTest, StartShutdownTest) {
+  // Disarm's itself when it goes out of scope.
+  TestingJankTimeBomb timebomb1(TimeDelta::FromMinutes(5));
+  TestingJankTimeBomb timebomb2(TimeDelta::FromMinutes(5));
+  WaitForWatchDogThreadPostTask();
+  EXPECT_FALSE(timebomb1.alarm_invoked());
+  EXPECT_FALSE(timebomb2.alarm_invoked());
+}
+
+TEST_F(JankTimeBombTest, ArmTest) {
+  // Test firing of Alarm by passing empty delay.
+  TestingJankTimeBomb timebomb((base::TimeDelta()));
+  WaitForWatchDogThreadPostTask();
+  EXPECT_TRUE(timebomb.alarm_invoked());
 }
