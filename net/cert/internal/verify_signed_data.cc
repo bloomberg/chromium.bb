@@ -91,6 +91,7 @@ WARN_UNUSED_RESULT bool ApplyRsaPssOptions(const RsaPssParameters* params,
 
 // TODO(eroman): This function is not strict enough. It accepts BER, other RSA
 // OIDs, and does not check id-rsaEncryption parameters.
+// See https://crbug.com/522228 and https://crbug.com/522232
 WARN_UNUSED_RESULT bool ImportPkeyFromSpki(const der::Input& spki,
                                            int expected_pkey_id,
                                            crypto::ScopedEVP_PKEY* pkey) {
@@ -114,7 +115,8 @@ WARN_UNUSED_RESULT bool ImportPkeyFromSpki(const der::Input& spki,
 // There are two flavors of RSA public key that this function should recognize
 // from RFC 5912 (however note that pk-rsaSSA-PSS is not supported in the
 // current implementation).
-// TODO(eroman): Support id-RSASSA-PSS and its associated parameters.
+// TODO(eroman): Support id-RSASSA-PSS and its associated parameters. See
+// https://crbug.com/522232
 //
 //     pk-rsa PUBLIC-KEY ::= {
 //      IDENTIFIER rsaEncryption

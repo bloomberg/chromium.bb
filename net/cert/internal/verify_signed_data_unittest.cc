@@ -102,7 +102,8 @@ TEST(VerifySignedDataTest, Rsa2048Pkcs1Sha512) {
 }
 
 TEST(VerifySignedDataTest, RsaPkcs1Sha256KeyEncodedBer) {
-  // TODO(eroman): This should fail! (SPKI should be DER-encoded).
+  // TODO(eroman): This should fail! (SPKI should be DER-encoded). See
+  // https://crbug.com/522228
   RunTestCase(SUCCESS, "rsa-pkcs1-sha256-key-encoded-ber.pem");
 }
 
@@ -176,12 +177,13 @@ TEST(VerifySignedDataTest, EcdsaPrime256v1Sha512UsingEcmqvKey) {
 
 TEST(VerifySignedDataTest, RsaPkcs1Sha1KeyParamsAbsent) {
   // TODO(eroman): This should fail! (key algoritm parsing is too permissive)
+  // See https://crbug.com/522228
   RunTestCase(SUCCESS, "rsa-pkcs1-sha1-key-params-absent.pem");
 }
 
 TEST(VerifySignedDataTest, RsaPssSha1Salt20UsingPssKeyNoParams) {
   // TODO(eroman): This should pass! (rsaPss not currently supported in key
-  // algorithm).
+  // algorithm). See https://crbug.com/522232
   RunTestCase(FAILURE, "rsa-pss-sha1-salt20-using-pss-key-no-params.pem");
 }
 
@@ -191,7 +193,7 @@ TEST(VerifySignedDataTest, RsaPkcs1Sha1UsingPssKeyNoParams) {
 
 TEST(VerifySignedDataTest, RsaPssSha256Salt10UsingPssKeyWithParams) {
   // TODO(eroman): This should pass! (rsaPss not currently supported in key
-  // algorithm).
+  // algorithm). See https://crbug.com/522232
   RunTestCase(FAILURE, "rsa-pss-sha256-salt10-using-pss-key-with-params.pem");
 }
 
@@ -211,12 +213,13 @@ TEST(VerifySignedDataTest, EcdsaPrime256v1Sha512SpkiParamsNull) {
 
 TEST(VerifySignedDataTest, RsaPkcs1Sha256UsingIdEaRsa) {
   // TODO(eroman): This should fail! (shouldn't recognize this weird OID).
+  // See https://crbug.com/522228
   RunTestCase(SUCCESS, "rsa-pkcs1-sha256-using-id-ea-rsa.pem");
 }
 
 TEST(VerifySignedDataTest, RsaPkcs1Sha256SpkiNonNullParams) {
   // TODO(eroman): This should fail! (shouldn't recognize bogus params in rsa
-  // SPKI).
+  // SPKI). See https://crbug.com/522228
   RunTestCase(SUCCESS, "rsa-pkcs1-sha256-spki-non-null-params.pem");
 }
 
