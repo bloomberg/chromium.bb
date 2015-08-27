@@ -55,9 +55,8 @@ if (is_android) {
       "offline_page_model.h",
     ]
     outputs = [
-      "org/chromium/components/offline_pages/DeletePageResult.java",
-      "org/chromium/components/offline_pages/LoadResult.java",
-      "org/chromium/components/offline_pages/SavePageResult.java",
+      "org/chromium/components/offlinepages/DeletePageResult.java",
+      "org/chromium/components/offlinepages/SavePageResult.java",
     ]
   }
 }

@@ -18,8 +18,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
-import org.chromium.chrome.browser.offline_pages.OfflinePageItem;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.bookmarks.BookmarkId;
 

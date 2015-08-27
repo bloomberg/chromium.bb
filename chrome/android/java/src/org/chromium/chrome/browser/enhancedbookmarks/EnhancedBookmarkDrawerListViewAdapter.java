@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
-import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;

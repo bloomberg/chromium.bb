@@ -1766,7 +1766,7 @@
       'android/java/src/org/chromium/chrome/browser/infobar/TranslateInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/net/qualityprovider/ExternalEstimateProviderAndroid.java',
       'android/java/src/org/chromium/chrome/browser/notifications/NotificationUIManager.java',
-      'android/java/src/org/chromium/chrome/browser/offline_pages/OfflinePageBridge.java',
+      'android/java/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridge.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AnswersImage.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AutocompleteController.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxPrerender.java',
