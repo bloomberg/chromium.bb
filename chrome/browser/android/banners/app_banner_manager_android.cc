@@ -25,7 +25,6 @@ namespace {
 const char kPlayPlatform[] = "play";
 const char kReferrerName[] = "referrer";
 const char kIdName[] = "id";
-const char kPlayInlineReferrer[] = "playinline=chrome_inline";
 
 }  // anonymous namespace
 
@@ -74,15 +73,7 @@ bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
     return false;
   }
 
-  std::string referrer =
-      ExtractQueryValueForName(url, kReferrerName);
-
-  // Attach the chrome_inline referrer value, prefixed with "&" if the referrer
-  // is non empty.
-  if (referrer.empty())
-    referrer = kPlayInlineReferrer;
-  else
-    referrer.append("&").append(kPlayInlineReferrer);
+  std::string referrer = ExtractQueryValueForName(url, kReferrerName);
 
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, data_fetcher()->validated_url().spec()));
