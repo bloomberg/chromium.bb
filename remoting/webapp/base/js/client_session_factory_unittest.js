@@ -79,8 +79,10 @@ QUnit.test('createSession() should reject on signal strategy failure',
 QUnit.test('createSession() should reject on plugin initialization failure',
     function(assert) {
   var mockSignalStrategy = mockConnection.signalStrategy();
-  var plugin = mockConnection.plugin();
-  plugin.mock$initializationResult = false;
+  function onPluginCreated(/** remoting.MockClientPlugin */ plugin) {
+     plugin.mock$initializationResult = false;
+  }
+  mockConnection.pluginFactory().mock$setPluginCreated(onPluginCreated);
 
   var signalStrategyDispose = sinon.stub(mockSignalStrategy, 'dispose');
 

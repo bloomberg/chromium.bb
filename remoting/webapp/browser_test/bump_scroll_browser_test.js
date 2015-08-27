@@ -89,8 +89,12 @@ browserTest.Bump_Scroll.prototype.run = function(data) {
   }
 
   var mockConnection = new remoting.MockConnection();
-  mockConnection.plugin().mock$useDefaultBehavior(
-      remoting.MockClientPlugin.AuthMethod.PIN);
+
+  function onPluginCreated(/** remoting.MockClientPlugin */ plugin) {
+    plugin.mock$useDefaultBehavior(remoting.MockClientPlugin.AuthMethod.PIN);
+  }
+  mockConnection.pluginFactory().mock$setPluginCreated(onPluginCreated);
+
 
   function cleanup() {
     mockConnection.restore();

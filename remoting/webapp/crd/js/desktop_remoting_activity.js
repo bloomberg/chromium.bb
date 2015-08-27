@@ -33,8 +33,8 @@ remoting.DesktopRemotingActivity = function(parentActivity) {
   /** @private {remoting.ClientSession} */
   this.session_ = null;
   /** @private {remoting.ConnectingDialog} */
-  this.connectingDialog_ =
-      new remoting.ConnectingDialog(parentActivity.stop.bind(parentActivity));
+  this.connectingDialog_ = remoting.modalDialogFactory.createConnectingDialog(
+      parentActivity.stop.bind(parentActivity));
 };
 
 /**
@@ -90,7 +90,7 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
     remoting.toolbar.preview();
   }
 
-  this.connectedView_ = new remoting.DesktopConnectedView(
+  this.connectedView_ = remoting.DesktopConnectedView.create(
       document.getElementById('client-container'), connectionInfo);
 
   // Apply the default or previously-specified keyboard remapping.

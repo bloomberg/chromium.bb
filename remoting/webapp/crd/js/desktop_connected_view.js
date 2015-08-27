@@ -330,3 +330,15 @@ remoting.DesktopConnectedView.prototype.startStopRecording = function() {
     this.videoFrameRecorder_.startStopRecording();
   }
 };
+
+/**
+ * Factory function so that it can be overwritten in unit test to avoid
+ * UI dependencies.
+ *
+ * @param {HTMLElement} container
+ * @param {remoting.ConnectionInfo} connectionInfo
+ * @return  {remoting.DesktopConnectedView}
+ */
+remoting.DesktopConnectedView.create = function(container, connectionInfo) {
+  return new remoting.DesktopConnectedView(container, connectionInfo);
+};

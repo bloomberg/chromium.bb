@@ -195,15 +195,15 @@ remoting.Me2MeActivity.prototype.reconnectOnHostOffline_ = function(error) {
  * @param {!remoting.Error} error
  */
 remoting.Me2MeActivity.prototype.onConnectionFailed = function(error) {
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = null;
+
   if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
       this.retryOnHostOffline_) {
     this.reconnectOnHostOffline_(error);
   } else if (!error.isNone()) {
     this.showErrorMessage_(error);
   }
-
-  base.dispose(this.desktopActivity_);
-  this.desktopActivity_ = null;
 };
 
 /**
@@ -257,7 +257,7 @@ remoting.Me2MeActivity.prototype.showErrorMessage_ = function(error) {
  * @private
  */
 remoting.Me2MeActivity.prototype.showFinishDialog_ = function(mode) {
-  var dialog = new remoting.MessageDialog(
+  var dialog = remoting.modalDialogFactory.createMessageDialog(
       mode,
       document.getElementById('client-finished-me2me-button'),
       document.getElementById('client-reconnect-button'));
@@ -285,7 +285,7 @@ remoting.HostNeedsUpdateDialog = function(rootElement, host) {
   /** @private */
   this.host_ = host;
   /** @private */
-  this.dialog_ = new remoting.MessageDialog(
+  this.dialog_ = remoting.modalDialogFactory.createMessageDialog(
       remoting.AppMode.CLIENT_HOST_NEEDS_UPGRADE,
       rootElement.querySelector('.connect-button'),
       rootElement.querySelector('.cancel-button'));
@@ -333,7 +333,7 @@ remoting.PinDialog = function(rootElement, host) {
   /** @private */
   this.host_ = host;
   /** @private */
-  this.dialog_ = new remoting.InputDialog(
+  this.dialog_ = remoting.modalDialogFactory.createInputDialog(
     remoting.AppMode.CLIENT_PIN_PROMPT,
     this.rootElement_.querySelector('form'),
     this.pinInput_,

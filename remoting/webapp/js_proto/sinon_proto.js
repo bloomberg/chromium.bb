@@ -24,6 +24,11 @@ sinon.assert.calledOnce = function(f) {};
 sinon.assert.calledWith = function(f, data) {};
 
 /**
+ * @param {*} value
+ * @return {Object}
+ */
+sinon.match = function(value) {};
+/**
  * @param {(sinon.Spy|Function)} f
  */
 sinon.assert.notCalled = function(f) {};

@@ -288,6 +288,58 @@ remoting.ConnectingDialog.prototype.hide = function() {
   this.dialog_.dispose();
 };
 
+/**
+ * A factory object for the modal dialogs.  The factory will be stubbed out in
+ * unit test to avoid UI dependencies on remoting.setMode().
+ *
+ * @constructor
+ */
+remoting.ModalDialogFactory = function() {};
+
+/**
+ * @param {Function} cancelCallback
+ * @return {remoting.ConnectingDialog}
+ */
+remoting.ModalDialogFactory.prototype.createConnectingDialog =
+    function(cancelCallback) {
+  return new remoting.ConnectingDialog(cancelCallback);
+};
+
+/**
+ * @param {remoting.Html5ModalDialog.Params} params
+ * @return {remoting.Html5ModalDialog}
+ */
+remoting.ModalDialogFactory.prototype.createHtml5ModalDialog =
+    function(params) {
+  return new remoting.Html5ModalDialog(params);
+};
+
+/**
+ * @param {remoting.AppMode} mode
+ * @param {HTMLElement} primaryButton
+ * @param {HTMLElement=} opt_secondaryButton
+ * @return {remoting.MessageDialog}
+ */
+remoting.ModalDialogFactory.prototype.createMessageDialog =
+    function(mode, primaryButton, opt_secondaryButton) {
+  return new remoting.MessageDialog(mode, primaryButton, opt_secondaryButton);
+};
+
+/**
+ * @param {remoting.AppMode} mode
+ * @param {HTMLElement} formElement
+ * @param {HTMLElement} inputField
+ * @param {HTMLElement} cancelButton
+ * @return {remoting.InputDialog}
+ */
+remoting.ModalDialogFactory.prototype.createInputDialog =
+    function(mode, formElement, inputField, cancelButton) {
+  return new remoting.InputDialog(mode, formElement, inputField, cancelButton);
+};
+
+/** @type {remoting.ModalDialogFactory} */
+remoting.modalDialogFactory = new remoting.ModalDialogFactory();
+
 })();
 
 /**

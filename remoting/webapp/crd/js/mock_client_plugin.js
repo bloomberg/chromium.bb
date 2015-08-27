@@ -47,12 +47,22 @@ remoting.MockClientPlugin = function() {
 
   /** @private */
   this.onConnectDeferred_ = new base.Deferred();
+
+  /** @private */
+  this.onDisposedDeferred_ = new base.Deferred();
+
+  /**
+   * @private {?function(remoting.MockClientPlugin,
+   *                     remoting.ClientSession.State)}
+   */
+  this.mock$onPluginStatusChanged_ = null;
 };
 
 remoting.MockClientPlugin.prototype.dispose = function() {
   this.container_.removeChild(this.element_);
   this.element_ = null;
   this.connectionStatusUpdateHandler_ = null;
+  this.onDisposedDeferred_.resolve();
 };
 
 remoting.MockClientPlugin.prototype.extensions = function() {
@@ -159,6 +169,15 @@ remoting.MockClientPlugin.prototype.mock$onConnect = function() {
 };
 
 /**
+ * @return {Promise} Returns a promise that will resolve when the plugin is
+ *     disposed.
+ */
+remoting.MockClientPlugin.prototype.mock$onDisposed = function() {
+  this.onDisposedDeferred_ = new base.Deferred();
+  return this.onDisposedDeferred_.promise();
+};
+
+/**
  * @param {remoting.ClientSession.State} status
  * @param {remoting.ClientSession.ConnectionError=} opt_error
  */
@@ -169,6 +188,9 @@ remoting.MockClientPlugin.prototype.mock$setConnectionStatus = function(
   var PluginError = remoting.ClientSession.ConnectionError;
   var error = opt_error ? opt_error : PluginError.NONE;
   this.connectionEventHandler_.onConnectionStatusUpdate(status, error);
+  if (this.mock$onPluginStatusChanged_) {
+    this.mock$onPluginStatusChanged_(this, status);
+  }
 };
 
 /**
@@ -201,6 +223,15 @@ remoting.MockClientPlugin.prototype.mock$authenticate = function(authMethod) {
 };
 
 /**
+ * @param {?function(remoting.MockClientPlugin, remoting.ClientSession.State)}
+ *    callback
+ */
+remoting.MockClientPlugin.prototype.mock$setPluginStatusChanged =
+    function(callback) {
+  this.mock$onPluginStatusChanged_ = callback;
+};
+
+/**
  * @param {remoting.MockClientPlugin.AuthMethod} authMethod
  */
 remoting.MockClientPlugin.prototype.mock$useDefaultBehavior =
@@ -211,7 +242,22 @@ remoting.MockClientPlugin.prototype.mock$useDefaultBehavior =
     that.mock$setConnectionStatus(State.CONNECTING);
     return that.mock$authenticate(authMethod);
   }).then(function() {
+    that.mock$setConnectionStatus(State.AUTHENTICATED);
+  }).then(function() {
     that.mock$setConnectionStatus(State.CONNECTED);
+  });
+};
+
+/**
+ * @param {remoting.ClientSession.ConnectionError} error
+ */
+remoting.MockClientPlugin.prototype.mock$returnErrorOnConnect = function(error){
+  var that = this;
+  var State = remoting.ClientSession.State;
+  this.mock$onConnect().then(function() {
+    that.mock$setConnectionStatus(State.CONNECTING);
+  }).then(function() {
+    that.mock$setConnectionStatus(State.FAILED, error);
   });
 };
 
@@ -220,16 +266,62 @@ remoting.MockClientPlugin.prototype.mock$useDefaultBehavior =
  * @implements {remoting.ClientPluginFactory}
  */
 remoting.MockClientPluginFactory = function() {
-  /** @private */
-  this.plugin_ = new remoting.MockClientPlugin();
+  /** @private {?remoting.MockClientPlugin} */
+  this.plugin_ = null;
+
+  /**
+   * @private {?function(remoting.MockClientPlugin)}
+   */
+  this.onPluginCreated_ = null;
+
+  /**
+   * @private {?function(remoting.MockClientPlugin,
+   *                     remoting.ClientSession.State)}
+   */
+  this.onPluginStatusChanged_ = null;
 };
 
 remoting.MockClientPluginFactory.prototype.createPlugin =
     function(container, capabilities) {
+  this.plugin_ = new remoting.MockClientPlugin();
   this.plugin_.mock$setContainer(container);
   this.plugin_.mock$capabilities = capabilities;
+
+  // Notify the listeners on plugin creation.
+  if (Boolean(this.onPluginCreated_)) {
+    this.onPluginCreated_(this.plugin_);
+  } else {
+    this.plugin_.mock$useDefaultBehavior(
+        remoting.MockClientPlugin.AuthMethod.PIN);
+  }
+
+  // Listens for plugin status changed.
+  if (this.onPluginStatusChanged_) {
+    this.plugin_.mock$setPluginStatusChanged(this.onPluginStatusChanged_);
+  }
   return this.plugin_;
 };
+
+/**
+ * Register a callback to configure the plugin before it returning to the
+ * caller.
+ *
+ * @param {function(remoting.MockClientPlugin)} callback
+ */
+remoting.MockClientPluginFactory.prototype.mock$setPluginCreated =
+    function(callback) {
+  this.onPluginCreated_ = callback;
+};
+
+/**
+ * @param {?function(remoting.MockClientPlugin, remoting.ClientSession.State)}
+ *    callback
+ */
+remoting.MockClientPluginFactory.prototype.mock$setPluginStatusChanged =
+    function(callback) {
+  this.onPluginStatusChanged_ = callback;
+};
+
 
 /** @return {remoting.MockClientPlugin} */
 remoting.MockClientPluginFactory.prototype.plugin = function() {
@@ -269,6 +361,11 @@ remoting.MockConnection = function() {
   /** @private */
   this.originalSettings_ = remoting.settings;
   remoting.settings = new remoting.Settings();
+};
+
+/** @return {remoting.MockClientPluginFactory} */
+remoting.MockConnection.prototype.pluginFactory = function() {
+  return this.pluginFactory_;
 };
 
 /** @return {remoting.MockClientPlugin} */

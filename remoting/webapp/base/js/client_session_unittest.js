@@ -35,19 +35,27 @@ function connect(opt_error) {
   var host = new remoting.Host('fake_hostId');
   host.jabberId = 'fake_jid';
 
-  var plugin = mockConnection.plugin();
-  var State = remoting.ClientSession.State;
+  function onPluginCreated(/** remoting.MockClientPlugin */ plugin) {
+    var State = remoting.ClientSession.State;
+    plugin.mock$onConnect().then(function() {
+      plugin.mock$setConnectionStatus(State.CONNECTING);
+    }).then(function() {
+      var status = (opt_error) ? State.FAILED : State.CONNECTED;
+      plugin.mock$setConnectionStatus(status, opt_error);
+    });
+  }
+  mockConnection.pluginFactory().mock$setPluginCreated(onPluginCreated);
 
-  plugin.mock$onConnect().then(function() {
-    plugin.mock$setConnectionStatus(State.CONNECTING);
-  }).then(function() {
-    var status = (opt_error) ? State.FAILED : State.CONNECTED;
-    plugin.mock$setConnectionStatus(status, opt_error);
+  var sessionFactory = new remoting.ClientSessionFactory(
+    document.createElement('div'), ['fake_capability']);
+
+  sessionFactory.createSession(listener, logger, true).then(
+      function(clientSession) {
+    session = clientSession;
+    clientSession.connect(host, new remoting.CredentialsProvider({
+      pairingInfo: { clientId: 'fake_clientId', sharedSecret: 'fake_secret' }
+    }));
   });
-
-  session.connect(host, new remoting.CredentialsProvider({
-    pairingInfo: { clientId: 'fake_clientId', sharedSecret: 'fake_secret' }
-  }));
 
   listener.onConnected = function() {
     deferred.resolve();
@@ -69,14 +77,6 @@ QUnit.module('ClientSession', {
     logger = new remoting.SessionLogger(remoting.ChromotingEvent.Role.CLIENT,
                                         base.doNothing);
     logToServerStub = sinon.stub(logger, 'logClientSessionStateChange');
-
-
-    var sessionFactory = new remoting.ClientSessionFactory(
-      document.createElement('div'), ['fake_capability']);
-    return sessionFactory.createSession(listener, logger, true).then(
-        function(clientSession) {
-       session = clientSession;
-    });
   },
   afterEach: function() {
     session.dispose();
@@ -99,8 +99,8 @@ QUnit.test('onOutgoingIq() should send Iq to signalStrategy', function(assert) {
 });
 
 QUnit.test('should foward Iq from signalStrategy to plugin', function(assert) {
-  var onIncomingIq = sinon.stub(mockConnection.plugin(), 'onIncomingIq');
   return connect().then(function() {
+    var onIncomingIq = sinon.stub(mockConnection.plugin(), 'onIncomingIq');
     var stanza = new DOMParser()
                      .parseFromString('<iq>sample</iq>', 'text/xml')
                      .firstElementChild;
@@ -146,12 +146,6 @@ QUnit.test(
     var errorLogged = /** @type {remoting.Error} */(logToServerStub.args[1][1]);
     assert.equal(errorLogged.getTag(), remoting.Error.Tag.INVALID_ACCESS_CODE);
   });
-});
-
-QUnit.test('dispose() should dispose the plugin', function(assert) {
-  var pluginDispose = sinon.stub(mockConnection.plugin(), 'dispose');
-  session.dispose();
-  assert.equal(pluginDispose.callCount, 1);
 });
 
 })();

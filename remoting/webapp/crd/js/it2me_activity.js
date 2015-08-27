@@ -26,7 +26,7 @@ remoting.It2MeActivity = function() {
 
   var form = document.getElementById('access-code-form');
   /** @private */
-  this.accessCodeDialog_ = new remoting.InputDialog(
+  this.accessCodeDialog_ = remoting.modalDialogFactory.createInputDialog(
     remoting.AppMode.CLIENT_UNCONNECTED,
     form,
     form.querySelector('#access-code-entry'),
