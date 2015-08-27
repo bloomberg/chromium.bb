@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "sync/engine/model_type_sync_proxy_impl.h"
 
-namespace sync_driver {
+namespace sync_driver_v2 {
 
 NonBlockingDataTypeController::NonBlockingDataTypeController(
     syncer::ModelType type, bool is_preferred)
@@ -133,4 +133,4 @@ NonBlockingDataTypeController::GetDesiredState() const {
   }
 }
 
-}  // namespace sync_driver
+}  // namespace sync_driver_v2

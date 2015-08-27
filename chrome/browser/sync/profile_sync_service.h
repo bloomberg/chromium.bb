@@ -932,7 +932,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   scoped_ptr<sync_driver::DataTypeManager> directory_data_type_manager_;
 
   // Manager for the non-blocking data types.
-  sync_driver::NonBlockingDataTypeManager non_blocking_data_type_manager_;
+  sync_driver_v2::NonBlockingDataTypeManager non_blocking_data_type_manager_;
 
   base::ObserverList<sync_driver::SyncServiceObserver> observers_;
   base::ObserverList<browser_sync::ProtocolEventObserver>

@@ -20,7 +20,7 @@ class ModelTypeSyncProxyImpl;
 class SyncContextProxy;
 }  // namespace syncer_v2
 
-namespace sync_driver {
+namespace sync_driver_v2 {
 
 class NonBlockingDataTypeController;
 
@@ -72,6 +72,6 @@ class NonBlockingDataTypeManager {
   NonBlockingDataTypeControllerMap non_blocking_data_type_controllers_;
 };
 
-}  // namespace sync_driver
+}  // namespace sync_driver_v2
 
 #endif  // COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_MANAGER_H_

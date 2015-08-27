@@ -8,7 +8,7 @@
 #include "components/sync_driver/non_blocking_data_type_controller.h"
 #include "sync/engine/model_type_sync_proxy_impl.h"
 
-namespace sync_driver {
+namespace sync_driver_v2 {
 
 NonBlockingDataTypeManager::NonBlockingDataTypeManager() {
 }
@@ -72,4 +72,4 @@ syncer::ModelTypeSet NonBlockingDataTypeManager::GetRegisteredTypes() const {
   return result;
 }
 
-}  // namespace sync_driver
+}  // namespace sync_driver_v2

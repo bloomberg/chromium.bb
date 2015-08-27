@@ -17,7 +17,7 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_driver {
+namespace sync_driver_v2 {
 
 namespace {
 
@@ -436,4 +436,4 @@ TEST_F(NonBlockingDataTypeControllerTest, EnableDisableEnableRace) {
   EXPECT_TRUE(type_sync_proxy_.IsConnected());
 }
 
-}  // namespace sync_driver
+}  // namespace sync_driver_v2

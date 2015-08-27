@@ -15,7 +15,7 @@ namespace syncer {
 class ModelTypeSyncProxy;
 }
 
-namespace sync_driver {
+namespace sync_driver_v2 {
 
 // Lives on the UI thread and manages the interactions between many sync
 // components.
@@ -134,6 +134,6 @@ class NonBlockingDataTypeController {
   DISALLOW_COPY_AND_ASSIGN(NonBlockingDataTypeController);
 };
 
-}  // namespace sync_driver
+}  // namespace sync_driver_v2
 
 #endif  // COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
