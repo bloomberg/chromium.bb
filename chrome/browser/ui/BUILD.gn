@@ -241,7 +241,7 @@ source_set("ui") {
   }
   if (use_aura && !use_ozone && is_desktop_linux) {
     deps += [
-      "//build/config/linux:gio",
+      "//build/linux:gio",
 
       # gtk2 is the only component that can interact with gtk2 in our new
       # world.

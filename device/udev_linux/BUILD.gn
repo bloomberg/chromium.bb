@@ -20,7 +20,7 @@ if (use_udev) {
 
     deps = [
       "//base",
-      "//build/config/linux:udev",
+      "//build/linux:udev",
     ]
   }
 }

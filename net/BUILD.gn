@@ -308,7 +308,7 @@ component("net") {
 
   if (use_glib && !is_chromeos) {
     configs += [ "//build/config/linux:gconf" ]
-    deps += [ "//build/config/linux:gio" ]
+    deps += [ "//build/linux:gio" ]
   }
 
   if (is_linux) {
@@ -1011,7 +1011,7 @@ if (!is_ios && !is_android) {
       ]
 
       if (is_desktop_linux) {
-        deps += [ "//build/config/linux:gio" ]
+        deps += [ "//build/linux:gio" ]
       }
 
       if (use_gconf) {
