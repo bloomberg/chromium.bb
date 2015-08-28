@@ -251,21 +251,6 @@ is_surface_in_layer(struct ivi_layout_surface *ivisurf,
 	return 0;
 }
 
-static int
-is_layer_in_screen(struct ivi_layout_layer *ivilayer,
-		   struct ivi_layout_screen *iviscrn)
-{
-	struct ivi_layout_layer *layer = NULL;
-
-	wl_list_for_each(layer, &iviscrn->pending.layer_list, pending.link) {
-		if (layer->id_layer == ivilayer->id_layer) {
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
 /**
  * Internal API to initialize ivi_screens found from output_list of weston_compositor.
  * Called by ivi_layout_init_with_compositor.
@@ -2245,15 +2230,13 @@ ivi_layout_screen_add_layer(struct ivi_layout_screen *iviscrn,
 	struct ivi_layout *layout = get_instance();
 	struct ivi_layout_layer *ivilayer = NULL;
 	struct ivi_layout_layer *next = NULL;
-	int is_layer_in_scrn = 0;
 
 	if (iviscrn == NULL || addlayer == NULL) {
 		weston_log("ivi_layout_screen_add_layer: invalid argument\n");
 		return IVI_FAILED;
 	}
 
-	is_layer_in_scrn = is_layer_in_screen(addlayer, iviscrn);
-	if (is_layer_in_scrn == 1) {
+	if (addlayer->on_screen == iviscrn) {
 		weston_log("ivi_layout_screen_add_layer: addlayer is already available\n");
 		return IVI_SUCCEEDED;
 	}
