@@ -124,6 +124,9 @@ void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunne
 void MainThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context> context)
 {
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
+    // Do not pause in Context of detached frame.
+    if (!frame)
+        return;
     LocalFrame* pausedFrame = frame->localFrameRoot();
     // Wait for continue or step command.
     m_clientMessageLoop->run(pausedFrame);
