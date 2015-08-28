@@ -1933,6 +1933,9 @@ edid_parse_string(const uint8_t *data, char text[])
 	 * terminated or not junk. */
 	strncpy(text, (const char *) data, 12);
 
+	/* guarantee our new string is null-terminated */
+	text[12] = '\0';
+
 	/* remove insane chars */
 	for (i = 0; text[i] != '\0'; i++) {
 		if (text[i] == '\n' ||
