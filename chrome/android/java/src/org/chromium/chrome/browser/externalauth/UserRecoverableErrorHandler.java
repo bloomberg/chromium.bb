@@ -8,7 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
 
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -94,7 +94,7 @@ public abstract class UserRecoverableErrorHandler {
      * nagging the user, this is done at most one time per application
      * lifecycle. The system notification is shown by calling
      * {@link ExternalAuthUtils#showErrorNotification(int, Context)}.
-     * @see GooglePlayServicesUtil#showErrorNotification(int, Context)
+     * @see GoogleApiAvailability#showErrorNotification(Context, int)
      */
     public static final class SystemNotification extends UserRecoverableErrorHandler {
         /**
@@ -127,7 +127,7 @@ public abstract class UserRecoverableErrorHandler {
      * {@link ModalDialog#getRequestCode()} and
      * {@link ModalDialog#getOnCancelListener()} to provide custom handling of
      * the user response.
-     * @see GooglePlayServicesUtil#getErrorDialog(int, Activity, int,
+     * @see GoogleApiAvailability#getErrorDialog(Activity, int, int,
      * android.content.DialogInterface.OnCancelListener)
      */
     public static class ModalDialog extends UserRecoverableErrorHandler {

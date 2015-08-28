@@ -7,11 +7,12 @@ package org.chromium.chrome.browser.gcore;
 import android.content.Context;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 
 import java.util.concurrent.TimeUnit;
 
@@ -43,8 +44,8 @@ public class ChromeGoogleApiClientImpl implements ChromeGoogleApiClient {
     public boolean isGooglePlayServicesAvailable() {
         TraceEvent.begin("ChromeGoogleApiClientImpl:isGooglePlayServicesAvailable");
         try {
-            int result = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mApplicationContext);
-            return result == ConnectionResult.SUCCESS;
+            return ExternalAuthUtils.getInstance().canUseGooglePlayServices(
+                    mApplicationContext, new UserRecoverableErrorHandler.Silent());
         } finally {
             TraceEvent.end("ChromeGoogleApiClientImpl:isGooglePlayServicesAvailable");
         }

@@ -5,9 +5,6 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
-import android.app.Dialog;
-
-import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import org.chromium.chrome.browser.infobar.MessageInfoBar;
 import org.chromium.chrome.browser.tab.Tab;
@@ -24,13 +21,6 @@ public class ChromeWindow extends ActivityWindowAndroid {
      */
     public ChromeWindow(ChromeActivity activity) {
         super(activity);
-    }
-
-    /**
-     * @see GooglePlayServicesUtil#getErrorDialog(int, Activity, int)
-     */
-    public Dialog getGooglePlayServicesErrorDialog(int errorCode, int requestCode) {
-        return GooglePlayServicesUtil.getErrorDialog(errorCode, getActivity().get(), requestCode);
     }
 
     /**
