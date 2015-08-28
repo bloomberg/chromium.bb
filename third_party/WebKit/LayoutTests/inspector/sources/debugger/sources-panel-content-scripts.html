@@ -1,0 +1,33 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+function createContentScript()
+{
+    testRunner.evaluateScriptInIsolatedWorld(239, "42\n//# sourceURL=239.js");
+    testRunner.evaluateScriptInIsolatedWorld(42, "239\n//# sourceURL=42.js");
+}
+function test()
+{
+    InspectorTest.evaluateInPage("createContentScript()", step1);
+    function step1()
+    {
+        var scripts = InspectorTest.queryScripts(function(script) { return script._isContentScript; });
+        InspectorTest.addResult("Content Scripts:");
+        for (var i = 0; i < scripts.length; ++i) {
+            InspectorTest.addResult("#" + (i + 1) + ":");
+            InspectorTest.addResult("  sourceURL:" + scripts[i].sourceURL);
+            InspectorTest.addResult("  endColumn:" + scripts[i].endColumn);
+        }
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that content scripts are reported.
+</p>
+</body>
+</html>
