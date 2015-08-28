@@ -128,7 +128,11 @@ class MediaCodecDecoder {
   // playback the subsequent intervals overlap.
   // For video both values are PTS of the corresponding frame, i.e. the interval
   // has zero width.
-  typedef base::Callback<void(base::TimeDelta, base::TimeDelta)>
+  // The third parameter means "postpone", it is set to true if the actual
+  // rendering will start in a later point in time. This only happens with
+  // audio after preroll. The MediaCodecPlayer might decide to update the
+  // current time but not pass it to the upper layer.
+  typedef base::Callback<void(base::TimeDelta, base::TimeDelta, bool)>
       SetTimeCallback;
 
   // MediaCodecDecoder constructor.

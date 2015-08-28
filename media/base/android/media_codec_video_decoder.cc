@@ -317,8 +317,8 @@ void MediaCodecVideoDecoder::ReleaseOutputBuffer(int buffer_index,
   // |update_current_time_cb_| might be null if there is audio stream.
   // Do not update current time for stand-alone EOS frames.
   if (!update_current_time_cb_.is_null() && update_time) {
-    media_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(update_current_time_cb_, pts, pts));
+    media_task_runner_->PostTask(
+        FROM_HERE, base::Bind(update_current_time_cb_, pts, pts, false));
   }
 }
 

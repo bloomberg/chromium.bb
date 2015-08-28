@@ -587,9 +587,7 @@ void MediaCodecPlayer::OnPrerollDone() {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
 
-  DCHECK(interpolator_.interpolating());
-
-  StartStatus status = StartDecoders(interpolator_.GetInterpolatedTime());
+  StartStatus status = StartDecoders();
   if (status != kStartOk)
     GetMediaTaskRunner()->PostTask(FROM_HERE, internal_error_cb_);
 }
@@ -672,15 +670,19 @@ void MediaCodecPlayer::OnStarvation(DemuxerStream::Type type) {
 
 void MediaCodecPlayer::OnTimeIntervalUpdate(DemuxerStream::Type type,
                                             base::TimeDelta now_playing,
-                                            base::TimeDelta last_buffered) {
+                                            base::TimeDelta last_buffered,
+                                            bool postpone) {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
 
   DVLOG(2) << __FUNCTION__ << ": stream type:" << type << " [" << now_playing
-           << "," << last_buffered << "]";
+           << "," << last_buffered << "]" << (postpone ? " postpone" : "");
 
   // For testing only: report time interval as we receive it from decoders
-  // as an indication of what is being rendered.
-  if (!decoders_time_cb_.is_null()) {
+  // as an indication of what is being rendered. Do not post this callback
+  // for postponed frames: although the PTS is correct, the tests also care
+  // about the wall clock time this callback arrives and deduce the rendering
+  // moment from it.
+  if (!decoders_time_cb_.is_null() && !postpone) {
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(decoders_time_cb_, type, now_playing, last_buffered));
@@ -700,9 +702,11 @@ void MediaCodecPlayer::OnTimeIntervalUpdate(DemuxerStream::Type type,
   interpolator_.SetBounds(now_playing, last_buffered);
 
   // Post to UI thread
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(time_update_cb_, GetInterpolatedTime(),
-                                       base::TimeTicks::Now()));
+  if (!postpone) {
+    ui_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(time_update_cb_, GetInterpolatedTime(),
+                                         base::TimeTicks::Now()));
+  }
 }
 
 void MediaCodecPlayer::OnVideoCodecCreated() {
@@ -849,18 +853,12 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::StartPlaybackDecoders() {
   if (status != kStartOk)
     return status;
 
-  // At this point decoder threads should not be running.
-  if (!interpolator_.interpolating())
-    interpolator_.StartInterpolating();
-
-  base::TimeDelta current_time = GetInterpolatedTime();
-
   bool preroll_required = false;
-  status = MaybePrerollDecoders(current_time, &preroll_required);
+  status = MaybePrerollDecoders(&preroll_required);
   if (preroll_required)
     return status;
 
-  return StartDecoders(current_time);
+  return StartDecoders();
 }
 
 MediaCodecPlayer::StartStatus MediaCodecPlayer::ConfigureDecoders() {
@@ -901,9 +899,11 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::ConfigureDecoders() {
 }
 
 MediaCodecPlayer::StartStatus MediaCodecPlayer::MaybePrerollDecoders(
-    base::TimeDelta current_time,
     bool* preroll_required) {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+
+  base::TimeDelta current_time = GetInterpolatedTime();
+
   DVLOG(1) << __FUNCTION__ << " current_time:" << current_time;
 
   // If requested, preroll is always done in the beginning of the playback,
@@ -913,6 +913,8 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::MaybePrerollDecoders(
   // but not making output) can take time, and after the seek because there
   // could be some data to be skipped and there is again initialization after
   // the flush.
+
+  *preroll_required = false;
 
   int count = 0;
   const bool do_audio_preroll = audio_decoder_->NotCompletedAndNeedsPreroll();
@@ -925,7 +927,6 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::MaybePrerollDecoders(
 
   if (count == 0) {
     DVLOG(1) << __FUNCTION__ << ": preroll is not required, skipping";
-    *preroll_required = false;
     return kStartOk;
   }
 
@@ -952,9 +953,14 @@ MediaCodecPlayer::StartStatus MediaCodecPlayer::MaybePrerollDecoders(
   return kStartOk;
 }
 
-MediaCodecPlayer::StartStatus MediaCodecPlayer::StartDecoders(
-    base::TimeDelta current_time) {
+MediaCodecPlayer::StartStatus MediaCodecPlayer::StartDecoders() {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+
+  if (!interpolator_.interpolating())
+    interpolator_.StartInterpolating();
+
+  base::TimeDelta current_time = GetInterpolatedTime();
+
   DVLOG(1) << __FUNCTION__ << " current_time:" << current_time;
 
   if (!AudioFinished()) {

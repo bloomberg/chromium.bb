@@ -152,10 +152,14 @@ class MediaCodecDecoderTest : public testing::Test {
   void OnStopDone() { is_stopped_ = true; }
   void OnError() { DVLOG(0) << "MediaCodecDecoderTest::" << __FUNCTION__; }
   void OnUpdateCurrentTime(base::TimeDelta now_playing,
-                           base::TimeDelta last_buffered) {
+                           base::TimeDelta last_buffered,
+                           bool postpone) {
     // Add the |last_buffered| value for PTS. For video it is the same as
     // |now_playing| and is equal to PTS, for audio |last_buffered| should
     // exceed PTS.
+    if (postpone)
+      return;
+
     pts_stat_.AddValue(last_buffered);
 
     if (stop_request_time_ != kNoTimestamp() &&

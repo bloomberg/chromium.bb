@@ -831,7 +831,7 @@ TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
-  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1500);
+  base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(2000);
 
   ASSERT_TRUE(StartVideoPlayback(duration, "VideoPlayTillCompletion"));
 
@@ -845,7 +845,7 @@ TEST_F(MediaCodecPlayerTest, VideoPlayTillCompletion) {
 }
 
 // http://crbug.com/518900
-TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekAfterStop) {
+TEST_F(MediaCodecPlayerTest, AudioSeekAfterStop) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Play for 300 ms, then Pause, then Seek to beginning. The playback should
@@ -931,7 +931,7 @@ TEST_F(MediaCodecPlayerTest, AudioSeekThenPlay) {
                                   base::Unretained(&manager_))));
 
   // The playback should start at |seek_position|
-  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 25));
 
   // The player should have reported the seek completion to the manager.
   EXPECT_TRUE(WaitForCondition(base::Bind(
@@ -970,7 +970,7 @@ TEST_F(MediaCodecPlayerTest, AudioSeekThenPlayThenConfig) {
                                   base::Unretained(&manager_))));
 
   // The playback should start at |seek_position|
-  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 25));
 
   // The player should have reported the seek completion to the manager.
   EXPECT_TRUE(WaitForCondition(base::Bind(
@@ -978,7 +978,7 @@ TEST_F(MediaCodecPlayerTest, AudioSeekThenPlayThenConfig) {
 }
 
 // http://crbug.com/518900
-TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekWhilePlaying) {
+TEST_F(MediaCodecPlayerTest, AudioSeekWhilePlaying) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Play for 300 ms, then issue several Seek commands in the row.
@@ -1107,7 +1107,7 @@ TEST_F(MediaCodecPlayerTest, VideoRemoveAndSetSurface) {
 }
 
 // http://crbug.com/518900
-TEST_F(MediaCodecPlayerTest, DISABLED_VideoReleaseAndStart) {
+TEST_F(MediaCodecPlayerTest, VideoReleaseAndStart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
@@ -1354,13 +1354,13 @@ TEST_F(MediaCodecPlayerTest, AVPrerollAudioWaitsForVideo) {
                  base::Unretained(&manager_), DemuxerStream::VIDEO)));
 
   EXPECT_TRUE(AlmostEqual(manager_.FirstFramePTS(DemuxerStream::AUDIO),
-                          manager_.FirstFramePTS(DemuxerStream::VIDEO), 10));
+                          manager_.FirstFramePTS(DemuxerStream::VIDEO), 25));
 
   EXPECT_TRUE(AlmostEqual(manager_.FirstFrameTime(DemuxerStream::AUDIO),
                           manager_.FirstFrameTime(DemuxerStream::VIDEO), 50));
 
   // The playback should start at |seek_position|
-  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 25));
 }
 
 TEST_F(MediaCodecPlayerTest, AVPrerollReleaseAndRestart) {
@@ -1419,14 +1419,16 @@ TEST_F(MediaCodecPlayerTest, AVPrerollReleaseAndRestart) {
       base::Bind(&MockMediaPlayerManager::HasFirstFrame,
                  base::Unretained(&manager_), DemuxerStream::VIDEO)));
 
+  // Release() might disacrd first audio frame.
   EXPECT_TRUE(AlmostEqual(manager_.FirstFramePTS(DemuxerStream::AUDIO),
-                          manager_.FirstFramePTS(DemuxerStream::VIDEO), 10));
+                          manager_.FirstFramePTS(DemuxerStream::VIDEO), 50));
 
   EXPECT_TRUE(AlmostEqual(manager_.FirstFrameTime(DemuxerStream::AUDIO),
                           manager_.FirstFrameTime(DemuxerStream::VIDEO), 50));
 
-  // The playback should start at |seek_position|
-  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+  // The playback should start at |seek_position|, but Release() might discard
+  // the first audio frame.
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 50));
 }
 
 TEST_F(MediaCodecPlayerTest, AVPrerollStopAndRestart) {
@@ -1506,13 +1508,13 @@ TEST_F(MediaCodecPlayerTest, AVPrerollStopAndRestart) {
                  base::Unretained(&manager_), DemuxerStream::VIDEO)));
 
   EXPECT_TRUE(AlmostEqual(manager_.FirstFramePTS(DemuxerStream::AUDIO),
-                          manager_.FirstFramePTS(DemuxerStream::VIDEO), 10));
+                          manager_.FirstFramePTS(DemuxerStream::VIDEO), 25));
 
   EXPECT_TRUE(AlmostEqual(manager_.FirstFrameTime(DemuxerStream::AUDIO),
                           manager_.FirstFrameTime(DemuxerStream::VIDEO), 50));
 
   // The playback should start at |seek_position|
-  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 1));
+  EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 25));
 }
 
 TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {

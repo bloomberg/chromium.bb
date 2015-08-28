@@ -390,9 +390,11 @@ void MediaCodecDecoder::OnPrerollDone() {
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__;
 
+  needs_preroll_ = false;
+
+  // The state might be kStopping.
   if (GetState() == kPrerolling) {
     SetState(kPrerolled);
-    needs_preroll_ = false;
     media_task_runner_->PostTask(FROM_HERE,
                                  base::ResetAndReturn(&preroll_done_cb_));
   }

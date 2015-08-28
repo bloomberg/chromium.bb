@@ -254,7 +254,8 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   void OnStarvation(DemuxerStream::Type stream_type);
   void OnTimeIntervalUpdate(DemuxerStream::Type stream_type,
                             base::TimeDelta now_playing,
-                            base::TimeDelta last_buffered);
+                            base::TimeDelta last_buffered,
+                            bool postpone);
 
   // Callbacks from video decoder
   void OnVideoCodecCreated();
@@ -273,9 +274,8 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   void StartPlaybackOrBrowserSeek();
   StartStatus StartPlaybackDecoders();
   StartStatus ConfigureDecoders();
-  StartStatus MaybePrerollDecoders(base::TimeDelta current_time,
-                                   bool* preroll_required);
-  StartStatus StartDecoders(base::TimeDelta current_time);
+  StartStatus MaybePrerollDecoders(bool* preroll_required);
+  StartStatus StartDecoders();
   void StopDecoders();
   void RequestToStopDecoders();
   void RequestDemuxerSeek(base::TimeDelta seek_time,

@@ -91,7 +91,8 @@ void MediaCodecAudioDecoder::SetVolume(double volume) {
 }
 
 void MediaCodecAudioDecoder::SetBaseTimestamp(base::TimeDelta base_timestamp) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  // Called from Media thread and Decoder thread. When called from Media thread
+  // Decoder thread should not be running.
 
   DVLOG(1) << __FUNCTION__ << " " << base_timestamp;
 
@@ -195,11 +196,21 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
              << (postpone ? " POSTPONE" : "")
              << " head_position:" << head_position;
 
+    // Reset the base timestamp if we have not started playing.
+    // SetBaseTimestamp() must be called before AddFrames() since it resets the
+    // internal frame count.
+    if (postpone && !frame_count_)
+      SetBaseTimestamp(pts);
+
     size_t new_frames_count = size / bytes_per_frame_;
     frame_count_ += new_frames_count;
     audio_timestamp_helper_->AddFrames(new_frames_count);
 
-    if (!postpone) {
+    if (postpone) {
+      // Let the player adjust the start time.
+      media_task_runner_->PostTask(
+          FROM_HERE, base::Bind(update_current_time_cb_, pts, pts, true));
+    } else {
       int64 frames_to_play = frame_count_ - head_position;
 
       DCHECK_GE(frames_to_play, 0) << class_name() << "::" << __FUNCTION__
@@ -216,8 +227,8 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
                << " will play: [" << now_playing << "," << last_buffered << "]";
 
       media_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(update_current_time_cb_, now_playing, last_buffered));
+          FROM_HERE, base::Bind(update_current_time_cb_, now_playing,
+                                last_buffered, false));
     }
   }
 
