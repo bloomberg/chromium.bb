@@ -21,8 +21,6 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/services/gcm/gcm_profile_service.h"
-#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
@@ -642,61 +640,6 @@ void EasyUnlockService::RemoveObserver(EasyUnlockServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-PrefService* EasyUnlockService::GetPrefService() {
-  return profile()->GetPrefs();
-}
-
-scoped_ptr<proximity_auth::SecureMessageDelegate>
-EasyUnlockService::CreateSecureMessageDelegate() {
-#if defined(OS_CHROMEOS)
-  return make_scoped_ptr(new chromeos::SecureMessageDelegateChromeOS());
-#else
-  return nullptr;
-#endif
-}
-
-scoped_ptr<proximity_auth::CryptAuthClientFactory>
-EasyUnlockService::CreateCryptAuthClientFactory() {
-  return make_scoped_ptr(new proximity_auth::CryptAuthClientFactoryImpl(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
-      SigninManagerFactory::GetForProfile(profile())
-          ->GetAuthenticatedAccountId(),
-      profile()->GetRequestContext(), GetDeviceClassifier()));
-}
-
-cryptauth::DeviceClassifier EasyUnlockService::GetDeviceClassifier() {
-  cryptauth::DeviceClassifier device_classifier;
-
-#if defined(OS_CHROMEOS)
-  int32 major_version, minor_version, bugfix_version;
-  // TODO(tengs): base::OperatingSystemVersionNumbers only works for ChromeOS.
-  // We need to get different numbers for other platforms.
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                               &bugfix_version);
-  device_classifier.set_device_os_version_code(major_version);
-  device_classifier.set_device_type(cryptauth::CHROME);
-#endif
-
-  const std::vector<uint32_t>& version_components =
-      base::Version(version_info::GetVersionNumber()).components();
-  if (version_components.size() > 0)
-    device_classifier.set_device_software_version_code(version_components[0]);
-
-  device_classifier.set_device_software_package(version_info::GetProductName());
-  return device_classifier;
-}
-
-std::string EasyUnlockService::GetAccountId() {
-  return SigninManagerFactory::GetForProfile(profile())
-      ->GetAuthenticatedAccountId();
-}
-
-gcm::GCMDriver* EasyUnlockService::GetGCMDriver() {
-  gcm::GCMProfileService* gcm_profile_service =
-      gcm::GCMProfileServiceFactory::GetForProfile(profile_);
-  return gcm_profile_service->driver();
-}
-
 void EasyUnlockService::Shutdown() {
   if (shut_down_)
     return;
@@ -733,7 +676,8 @@ void EasyUnlockService::UpdateAppState() {
       proximity_auth_ble_system_.reset(
           new proximity_auth::ProximityAuthBleSystem(
               proximity_auth::ScreenlockBridge::Get(), &proximity_auth_client_,
-              CreateCryptAuthClientFactory(), profile_->GetPrefs()));
+              proximity_auth_client_.CreateCryptAuthClientFactory(),
+              profile_->GetPrefs()));
     }
 
 #if defined(OS_CHROMEOS)

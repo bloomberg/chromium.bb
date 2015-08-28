@@ -22,15 +22,12 @@
 #include "components/proximity_auth/client_impl.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/proximity_auth/cryptauth/cryptauth_gcm_manager_impl.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/device_to_device_authenticator.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/secure_context.h"
-#include "components/proximity_auth/webui/cryptauth_enroller_factory_impl.h"
-#include "components/proximity_auth/webui/proximity_auth_ui_delegate.h"
 #include "components/proximity_auth/webui/reachable_phone_flow.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -119,10 +116,12 @@ scoped_ptr<base::DictionaryValue> CreateSyncStateDictionary(
 }  // namespace
 
 ProximityAuthWebUIHandler::ProximityAuthWebUIHandler(
-    ProximityAuthUIDelegate* delegate)
-    : delegate_(delegate),
+    ProximityAuthClient* proximity_auth_client)
+    : proximity_auth_client_(proximity_auth_client),
+      web_contents_initialized_(false),
       weak_ptr_factory_(this) {
-  cryptauth_client_factory_ = delegate_->CreateCryptAuthClientFactory();
+  cryptauth_client_factory_ =
+      proximity_auth_client_->CreateCryptAuthClientFactory();
 }
 
 ProximityAuthWebUIHandler::~ProximityAuthWebUIHandler() {
@@ -230,11 +229,20 @@ void ProximityAuthWebUIHandler::OnSyncFinished(
 
 void ProximityAuthWebUIHandler::OnWebContentsInitialized(
     const base::ListValue* args) {
-  if (!gcm_manager_ || !enrollment_manager_ || !device_manager_) {
-    InitGCMManager();
-    InitEnrollmentManager();
-    InitDeviceManager();
+  if (!web_contents_initialized_) {
+    CryptAuthEnrollmentManager* enrollment_manager =
+        proximity_auth_client_->GetCryptAuthEnrollmentManager();
+    if (enrollment_manager)
+      enrollment_manager->AddObserver(this);
+
+    CryptAuthDeviceManager* device_manager =
+        proximity_auth_client_->GetCryptAuthDeviceManager();
+    if (device_manager)
+      device_manager->AddObserver(this);
+
     LogBuffer::GetInstance()->AddObserver(this);
+
+    web_contents_initialized_ = true;
   }
 }
 
@@ -266,7 +274,8 @@ void ProximityAuthWebUIHandler::ToggleUnlockKey(const base::ListValue* args) {
   cryptauth::ToggleEasyUnlockRequest request;
   request.set_enable(make_unlock_key);
   request.set_public_key(public_key);
-  *(request.mutable_device_classifier()) = delegate_->GetDeviceClassifier();
+  *(request.mutable_device_classifier()) =
+      proximity_auth_client_->GetDeviceClassifier();
 
   PA_LOG(INFO) << "Toggling unlock key:\n"
                << "    public_key: " << public_key_b64 << "\n"
@@ -284,7 +293,8 @@ void ProximityAuthWebUIHandler::FindEligibleUnlockDevices(
   cryptauth_client_ = cryptauth_client_factory_->CreateInstance();
 
   cryptauth::FindEligibleUnlockDevicesRequest request;
-  *(request.mutable_device_classifier()) = delegate_->GetDeviceClassifier();
+  *(request.mutable_device_classifier()) =
+      proximity_auth_client_->GetDeviceClassifier();
   cryptauth_client_->FindEligibleUnlockDevices(
       request,
       base::Bind(&ProximityAuthWebUIHandler::OnFoundEligibleUnlockDevices,
@@ -308,28 +318,38 @@ void ProximityAuthWebUIHandler::FindReachableDevices(
 }
 
 void ProximityAuthWebUIHandler::ForceEnrollment(const base::ListValue* args) {
-  if (enrollment_manager_) {
-    enrollment_manager_->ForceEnrollmentNow(
-        cryptauth::INVOCATION_REASON_MANUAL);
+  CryptAuthEnrollmentManager* enrollment_manager =
+      proximity_auth_client_->GetCryptAuthEnrollmentManager();
+  if (enrollment_manager) {
+    enrollment_manager->ForceEnrollmentNow(cryptauth::INVOCATION_REASON_MANUAL);
   }
 }
 
 void ProximityAuthWebUIHandler::ForceDeviceSync(const base::ListValue* args) {
-  if (device_manager_)
-    device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
+  CryptAuthDeviceManager* device_manager =
+      proximity_auth_client_->GetCryptAuthDeviceManager();
+  if (device_manager)
+    device_manager->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
 }
 
 void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
+  CryptAuthEnrollmentManager* enrollment_manager =
+      proximity_auth_client_->GetCryptAuthEnrollmentManager();
+  CryptAuthDeviceManager* device_manager =
+      proximity_auth_client_->GetCryptAuthDeviceManager();
+  if (!enrollment_manager || !device_manager)
+    return;
+
   std::string b64_public_key;
   std::string public_key;
-  if (!enrollment_manager_ || !device_manager_ || !args->GetSize() ||
+  if (!enrollment_manager || !device_manager || !args->GetSize() ||
       !args->GetString(0, &b64_public_key) ||
       !Base64UrlDecode(b64_public_key, &public_key)) {
     return;
   }
 
   Connection* connection = GetConnection();
-  for (const auto& unlock_key : device_manager_->unlock_keys()) {
+  for (const auto& unlock_key : device_manager->unlock_keys()) {
     if (unlock_key.public_key() == public_key) {
       // Check if there is an existing connection to disconnect from first.
       if (connection && connection->IsConnected() &&
@@ -344,9 +364,10 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
       // Derive the PSK before connecting to the device.
       PA_LOG(INFO) << "Deriving PSK before connecting to "
                    << unlock_key.friendly_device_name();
-      secure_message_delegate_ = delegate_->CreateSecureMessageDelegate();
+      secure_message_delegate_ =
+          proximity_auth_client_->CreateSecureMessageDelegate();
       secure_message_delegate_->DeriveKey(
-          enrollment_manager_->GetUserPrivateKey(), unlock_key.public_key(),
+          enrollment_manager->GetUserPrivateKey(), unlock_key.public_key(),
           base::Bind(&ProximityAuthWebUIHandler::OnPSKDerived,
                      weak_ptr_factory_.GetWeakPtr(), unlock_key));
 
@@ -355,66 +376,6 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
   }
 
   PA_LOG(ERROR) << "Unlock key (" << b64_public_key << ") not found";
-}
-
-void ProximityAuthWebUIHandler::InitGCMManager() {
-  gcm_manager_.reset(new CryptAuthGCMManagerImpl(delegate_->GetGCMDriver(),
-                                                 delegate_->GetPrefService()));
-  gcm_manager_->StartListening();
-}
-
-void ProximityAuthWebUIHandler::InitEnrollmentManager() {
-#if defined(OS_CHROMEOS)
-  // TODO(tengs): We initialize a CryptAuthEnrollmentManager here for
-  // development and testing purposes until it is ready to be moved into Chrome.
-  // The public/private key pair has been generated and serialized in a previous
-  // session.
-  // This serialized DeviceInfo proto was previously captured from a real
-  // CryptAuth enrollment, and is replayed here for testing purposes.
-  std::string serialized_device_info;
-  Base64UrlDecode(
-      "IkoIARJGCiEAX_ZjLSq73EVcrarX-7l7No7nSP86GEC322ocSZKqUKwSIQDbEDu9KN7AgLM"
-      "v_lzZZNui9zSOgXCeDpLhS2tgrYVXijoEbGlua0IFZW4tVVNKSggBEkYKIQBf9mMtKrvcRV"
-      "ytqtf7uXs2judI_zoYQLfbahxJkqpQrBIhANsQO70o3sCAsy_-XNlk26L3NI6BcJ4OkuFLa"
-      "2CthVeKam9Nb3ppbGxhLzUuMCAoWDExOyBDck9TIHg4Nl82NCA3MTM0LjAuMCkgQXBwbGVX"
-      "ZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzQ1LjAuMjQyMi4wIFN"
-      "hZmFyaS81MzcuMzZwLYoBAzEuMJABAZoBIG1rYWVtaWdob2xlYmNnY2hsa2JhbmttaWhrbm"
-      "9qZWFrsAHDPuoBHEJLZEluZWxFZk05VG1adGV3eTRGb19RV1Vicz2AAgKyBqIBQVBBOTFiS"
-      "FZDdlJJNGJFSXppMmFXOTBlZ044eHFBYkhWYnJwSVFuMTk3bWltd3RWWTZYN0JEcEI4Szg3"
-      "RjRubkJnejdLX1BQV2xkcUtDRVhiZkFiMGwyN1VaQXgtVjBWbEE4WlFwdkhETmpHVlh4RlV"
-      "WRDFNY1AzNTgtYTZ3eHRpVG5LQnpMTEVIT1F6Ujdpb0lUMzRtWWY1VmNhbmhPZDh3ugYgs9"
-      "7-c7qNUzzLeEqVCDXb_EaJ8wC3iie_Lpid44iuAh3CPo0CCugBCiMIARACGgi5wHHa82avM"
-      "ioQ7y8xhiUBs7Um73ZC1vQlzzIBABLAAeCqGnWF7RwtnmdfIQJoEqXoXrH1qLw4yqUAA1TW"
-      "M1qxTepJOdDHrh54eiejobW0SKpHqTlZIyiK3ObHAPdfzFum1l640RFdFGZTTTksZFqfD9O"
-      "dftoi0pMrApob4gXj8Pv2g22ArX55BiH56TkTIcDcEE3KKnA_2G0INT1y_clZvZfDw1n0WP"
-      "0Xdg1PLLCOb46WfDWUhHvUk3GzUce8xyxsjOkiZUNh8yvhFXaP2wJgVKVWInf0inuofo9Za"
-      "7p44hIgHgKJIr_4fuVs9Ojf0KcMzxoJTbFUGg58jglUAKFfJBLKPpMBeWEyOS5pQUdTNFZ1"
-      "bF9JVWY4YTJDSmJNbXFqaWpYUFYzaVV5dmJXSVRrR3d1bFRaVUs3RGVZczJtT0h5ZkQ1NWR"
-      "HRXEtdnJTdVc4VEZ2Z1haa2xhVEZTN0dqM2xCVUktSHd5Z0h6bHZHX2NGLWtzQmw0dXdveG"
-      "VPWE1hRlJ3WGJHVUU1Tm9sLS1mdkRIcGVZVnJR",
-      &serialized_device_info);
-  cryptauth::GcmDeviceInfo device_info;
-  device_info.ParseFromString(serialized_device_info);
-
-  enrollment_manager_.reset(new CryptAuthEnrollmentManager(
-      make_scoped_ptr(new base::DefaultClock()),
-      make_scoped_ptr(new CryptAuthEnrollerFactoryImpl(delegate_)),
-      delegate_->CreateSecureMessageDelegate(), device_info, gcm_manager_.get(),
-      delegate_->GetPrefService()));
-  enrollment_manager_->AddObserver(this);
-  enrollment_manager_->Start();
-#endif
-}
-
-void ProximityAuthWebUIHandler::InitDeviceManager() {
-  // TODO(tengs): We initialize a CryptAuthDeviceManager here for
-  // development and testing purposes until it is ready to be moved into Chrome.
-  device_manager_.reset(new CryptAuthDeviceManager(
-      make_scoped_ptr(new base::DefaultClock()),
-      delegate_->CreateCryptAuthClientFactory(), gcm_manager_.get(),
-      delegate_->GetPrefService()));
-  device_manager_->AddObserver(this);
-  device_manager_->Start();
 }
 
 void ProximityAuthWebUIHandler::OnCryptAuthClientError(
@@ -478,34 +439,40 @@ void ProximityAuthWebUIHandler::GetLocalState(const base::ListValue* args) {
 
 scoped_ptr<base::DictionaryValue>
 ProximityAuthWebUIHandler::GetEnrollmentStateDictionary() {
-  if (!enrollment_manager_)
+  CryptAuthEnrollmentManager* enrollment_manager =
+      proximity_auth_client_->GetCryptAuthEnrollmentManager();
+  if (!enrollment_manager)
     return make_scoped_ptr(new base::DictionaryValue());
 
   return CreateSyncStateDictionary(
-      enrollment_manager_->GetLastEnrollmentTime().ToJsTime(),
-      enrollment_manager_->GetTimeToNextAttempt().InMillisecondsF(),
-      enrollment_manager_->IsRecoveringFromFailure(),
-      enrollment_manager_->IsEnrollmentInProgress());
+      enrollment_manager->GetLastEnrollmentTime().ToJsTime(),
+      enrollment_manager->GetTimeToNextAttempt().InMillisecondsF(),
+      enrollment_manager->IsRecoveringFromFailure(),
+      enrollment_manager->IsEnrollmentInProgress());
 }
 
 scoped_ptr<base::DictionaryValue>
 ProximityAuthWebUIHandler::GetDeviceSyncStateDictionary() {
-  if (!device_manager_)
+  CryptAuthDeviceManager* device_manager =
+      proximity_auth_client_->GetCryptAuthDeviceManager();
+  if (!device_manager)
     return make_scoped_ptr(new base::DictionaryValue());
 
   return CreateSyncStateDictionary(
-      device_manager_->GetLastSyncTime().ToJsTime(),
-      device_manager_->GetTimeToNextAttempt().InMillisecondsF(),
-      device_manager_->IsRecoveringFromFailure(),
-      device_manager_->IsSyncInProgress());
+      device_manager->GetLastSyncTime().ToJsTime(),
+      device_manager->GetTimeToNextAttempt().InMillisecondsF(),
+      device_manager->IsRecoveringFromFailure(),
+      device_manager->IsSyncInProgress());
 }
 
 scoped_ptr<base::ListValue> ProximityAuthWebUIHandler::GetUnlockKeysList() {
   scoped_ptr<base::ListValue> unlock_keys(new base::ListValue());
-  if (!device_manager_)
+  CryptAuthDeviceManager* device_manager =
+      proximity_auth_client_->GetCryptAuthDeviceManager();
+  if (!device_manager)
     return unlock_keys;
 
-  for (const auto& unlock_key : device_manager_->unlock_keys()) {
+  for (const auto& unlock_key : device_manager->unlock_keys()) {
     unlock_keys->Append(ExternalDeviceInfoToDictionary(unlock_key));
   }
 
@@ -561,7 +528,7 @@ void ProximityAuthWebUIHandler::FindBluetoothClassicConnection(
 
 void ProximityAuthWebUIHandler::FindBluetoothLowEnergyConnection(
     const RemoteDevice& remote_device) {
-  PrefService* pref_service = delegate_->GetPrefService();
+  PrefService* pref_service = proximity_auth_client_->GetPrefService();
   if (!pref_service->FindPreference(
           prefs::kBluetoothLowEnergyDeviceWhitelist)) {
     PA_LOG(ERROR) << "Please enable the BLE experiment in chrome://flags.";
@@ -574,8 +541,8 @@ void ProximityAuthWebUIHandler::FindBluetoothLowEnergyConnection(
         make_scoped_ptr(new base::DefaultTickClock())));
   }
 
-  ble_device_whitelist_.reset(
-      new BluetoothLowEnergyDeviceWhitelist(delegate_->GetPrefService()));
+  ble_device_whitelist_.reset(new BluetoothLowEnergyDeviceWhitelist(
+      proximity_auth_client_->GetPrefService()));
 
   // TODO(tengs): Set a timeout to stop the connection finder eventually.
   connection_finder_.reset(new BluetoothLowEnergyConnectionFinder(
@@ -618,8 +585,8 @@ void ProximityAuthWebUIHandler::OnConnectionFound(
     return;
 
   authenticator_.reset(new DeviceToDeviceAuthenticator(
-      connection_.get(), delegate_->GetAccountId(),
-      delegate_->CreateSecureMessageDelegate()));
+      connection_.get(), proximity_auth_client_->GetAccountId(),
+      proximity_auth_client_->CreateSecureMessageDelegate()));
   authenticator_->Authenticate(
       base::Bind(&ProximityAuthWebUIHandler::OnAuthenticationResult,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -647,7 +614,9 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
   dictionary->SetString(kExternalDeviceConnectionStatus,
                         kExternalDeviceDisconnected);
 
-  if (!device_manager_)
+  CryptAuthDeviceManager* device_manager =
+      proximity_auth_client_->GetCryptAuthDeviceManager();
+  if (!device_manager)
     return dictionary;
 
   // If |device_info| is a known unlock key, then combine the proto data with
@@ -655,13 +624,13 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
   // status updates).
   std::string public_key = device_info.public_key();
   auto iterator = std::find_if(
-      device_manager_->unlock_keys().begin(),
-      device_manager_->unlock_keys().end(),
+      device_manager->unlock_keys().begin(),
+      device_manager->unlock_keys().end(),
       [&public_key](const cryptauth::ExternalDeviceInfo& unlock_key) {
         return unlock_key.public_key() == public_key;
       });
 
-  if (iterator == device_manager_->unlock_keys().end() ||
+  if (iterator == device_manager->unlock_keys().end() ||
       selected_remote_device_.public_key != device_info.public_key())
     return dictionary;
 

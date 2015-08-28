@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_proximity_auth_client.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -200,7 +201,7 @@ void EasyUnlockServiceRegular::RunTurnOffFlow() {
   SetTurnOffFlowStatus(PENDING);
 
   scoped_ptr<proximity_auth::CryptAuthClientFactory> factory =
-      CreateCryptAuthClientFactory();
+      proximity_auth_client()->CreateCryptAuthClientFactory();
   cryptauth_client_ = factory->CreateInstance();
 
   cryptauth::ToggleEasyUnlockRequest request;

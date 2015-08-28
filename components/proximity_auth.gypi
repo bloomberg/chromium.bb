@@ -235,11 +235,8 @@
         '..',
       ],
       'sources': [
-        'proximity_auth/webui/cryptauth_enroller_factory_impl.cc',
-        'proximity_auth/webui/cryptauth_enroller_factory_impl.h',
         'proximity_auth/webui/proximity_auth_ui.cc',
         'proximity_auth/webui/proximity_auth_ui.h',
-        'proximity_auth/webui/proximity_auth_ui_delegate.h',
         'proximity_auth/webui/proximity_auth_webui_handler.cc',
         'proximity_auth/webui/proximity_auth_webui_handler.h',
         'proximity_auth/webui/reachable_phone_flow.cc',

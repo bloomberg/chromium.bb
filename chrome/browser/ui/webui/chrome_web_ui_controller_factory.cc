@@ -228,7 +228,8 @@ WebUIController* NewWebUI<proximity_auth::ProximityAuthUI>(WebUI* web_ui,
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   return new proximity_auth::ProximityAuthUI(
-      web_ui, EasyUnlockServiceFactory::GetForBrowserContext(browser_context));
+      web_ui, EasyUnlockServiceFactory::GetForBrowserContext(browser_context)
+                  ->proximity_auth_client());
 }
 #endif
 

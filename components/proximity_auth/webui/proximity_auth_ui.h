@@ -11,14 +11,14 @@
 
 namespace proximity_auth {
 
-class ProximityAuthUIDelegate;
+class ProximityAuthClient;
 
 // The WebUI controller for chrome://proximity-auth.
 class ProximityAuthUI : public content::WebUIController {
  public:
   // Note: |web_ui| and |delegate| are not owned by this instance and must
   // outlive this instance.
-  ProximityAuthUI(content::WebUI* web_ui, ProximityAuthUIDelegate* delegate);
+  ProximityAuthUI(content::WebUI* web_ui, ProximityAuthClient* delegate);
   ~ProximityAuthUI() override;
 
  private:

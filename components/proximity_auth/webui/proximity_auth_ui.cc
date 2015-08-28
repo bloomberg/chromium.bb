@@ -16,7 +16,7 @@
 namespace proximity_auth {
 
 ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
-                                 ProximityAuthUIDelegate* delegate)
+                                 ProximityAuthClient* delegate)
     : content::WebUIController(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIProximityAuthHost);

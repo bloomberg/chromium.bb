@@ -15,7 +15,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_gcm_manager.h"
 #include "components/proximity_auth/logging/log_buffer.h"
-#include "components/proximity_auth/webui/proximity_auth_ui_delegate.h"
+#include "components/proximity_auth/proximity_auth_client.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -47,8 +47,9 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
                                   public ConnectionObserver,
                                   public ClientObserver {
  public:
-  // |delegate| is not owned and must outlive this instance.
-  explicit ProximityAuthWebUIHandler(ProximityAuthUIDelegate* delegate);
+  // |client_| is not owned and must outlive this instance.
+  explicit ProximityAuthWebUIHandler(
+      ProximityAuthClient* proximity_auth_client);
   ~ProximityAuthWebUIHandler() override;
 
   // content::WebUIMessageHandler:
@@ -153,7 +154,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   scoped_ptr<base::ListValue> GetUnlockKeysList();
 
   // The delegate used to fetch dependencies. Must outlive this instance.
-  ProximityAuthUIDelegate* delegate_;
+  ProximityAuthClient* proximity_auth_client_;
 
   // Creates CryptAuth client instances to make API calls.
   scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory_;
@@ -164,12 +165,9 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   // The flow for getting a list of reachable phones.
   scoped_ptr<ReachablePhoneFlow> reachable_phone_flow_;
 
-  // Member variables related to CryptAuth debugging.
-  // TODO(tengs): These members are temporarily used for development.
-  scoped_ptr<PrefService> pref_service;
-  scoped_ptr<CryptAuthGCMManager> gcm_manager_;
-  scoped_ptr<CryptAuthEnrollmentManager> enrollment_manager_;
-  scoped_ptr<CryptAuthDeviceManager> device_manager_;
+  // True if we get a message from the loaded WebContents to know that it is
+  // initialized, and we can inject JavaScript.
+  bool web_contents_initialized_;
 
   // Member variables for connecting to and authenticating the remote device.
   // TODO(tengs): Support multiple simultaenous connections.
