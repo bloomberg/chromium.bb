@@ -116,7 +116,7 @@
           ],
         }, { # !use_system_sqlite
           'product_name': 'sqlite3',
-          'type': 'static_library',
+          'type': '<(component)',
           'sources': [
             'amalgamation/sqlite3.h',
             'amalgamation/sqlite3.c',
@@ -148,6 +148,15 @@
             4244, 4267,
           ],
           'conditions': [
+            ['OS == "win" and component == "shared_library"', {
+              'defines': ['SQLITE_API=__declspec(dllexport)'],
+              'direct_dependent_settings': {
+                'defines': ['SQLITE_API=__declspec(dllimport)'],
+              },
+            }],
+            ['OS != "win" and component == "shared_library"', {
+              'defines': ['SQLITE_API=__attribute__((visibility("default")))'],
+            }],
             ['OS=="linux"', {
               'link_settings': {
                 'libraries': [
@@ -159,6 +168,7 @@
               'link_settings': {
                 'libraries': [
                   '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+                  '$(SDKROOT)/System/Library/Frameworks/CoreServices.framework',
                 ],
               },
             }],
