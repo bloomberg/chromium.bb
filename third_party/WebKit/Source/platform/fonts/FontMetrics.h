@@ -173,11 +173,6 @@ private:
     bool m_hasZeroWidth;
 };
 
-inline float scaleEmToUnits(float x, unsigned unitsPerEm)
-{
-    return unitsPerEm ? x / unitsPerEm : x;
-}
-
 } // namespace blink
 
 #endif // FontMetrics_h
