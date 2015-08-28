@@ -50,6 +50,11 @@ if [[ "${new_compiler_version}" != "${previous_compiler_version}" ]]; then
 
   echo "Compiler version changed; re-building runner.jar"
   "${SCRIPT_DIR}/runner/build_runner_jar.py"
+  if [[ "$?" -ne 0 ]]; then
+    echo "Failed to build runner.jar, roll unsuccessful"
+    cleanup
+    exit 1
+  fi
 
   compiler_jar_range="compiler.jar: ${previous_compiler_version} -> ${new_compiler_version}"
 fi
