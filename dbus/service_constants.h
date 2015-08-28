@@ -866,6 +866,7 @@ const char kNameProperty[] = "Name";
 const char kDeviceNameProperty[] = "DeviceName";
 const char kActiveProperty[] = "Active";
 const char kPluggedTimeProperty[] = "PluggedTime";
+const char kMicPositionsProperty[] = "MicPositions";
 
 // Signals.
 const char kOutputVolumeChanged[] = "OutputVolumeChanged";
