@@ -995,16 +995,8 @@ DeprecatedPaintLayerCompositor* WebFrameWidgetImpl::compositor() const
     return frame->document()->layoutView()->compositor();
 }
 
-void WebFrameWidgetImpl::suppressInvalidations(bool enable)
-{
-    if (m_client)
-        m_client->suppressCompositorScheduling(enable);
-}
-
 void WebFrameWidgetImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
-    suppressInvalidations(true);
-
     m_rootGraphicsLayer = layer;
     m_rootLayer = layer ? layer->platformLayer() : nullptr;
 
@@ -1024,8 +1016,6 @@ void WebFrameWidgetImpl::setRootGraphicsLayer(GraphicsLayer* layer)
             m_layerTreeView->clearViewportLayers();
         }
     }
-
-    suppressInvalidations(false);
 }
 
 void WebFrameWidgetImpl::attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline)

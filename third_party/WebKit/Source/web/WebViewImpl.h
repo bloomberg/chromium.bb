@@ -286,7 +286,6 @@ public:
     void resetScrollAndScaleStateImmediately();
 
     HitTestResult coreHitTestResultAt(const WebPoint&);
-    void suppressInvalidations(bool enable);
     void invalidateRect(const IntRect&);
 
     void setIgnoreInputEvents(bool newValue);

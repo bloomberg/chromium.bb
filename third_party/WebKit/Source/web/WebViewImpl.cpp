@@ -4084,18 +4084,10 @@ bool WebViewImpl::tabsToLinks() const
     return m_tabsToLinks;
 }
 
-void WebViewImpl::suppressInvalidations(bool enable)
-{
-    if (m_client)
-        m_client->suppressCompositorScheduling(enable);
-}
-
 void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
     if (!m_layerTreeView)
         return;
-
-    suppressInvalidations(true);
 
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
     visualViewport.attachToLayerTree(layer, graphicsLayerFactory());
@@ -4128,8 +4120,6 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_shouldDispatchFirstLayoutAfterFinishedParsing = true;
         page()->frameHost().visualViewport().clearLayersForTreeView(m_layerTreeView);
     }
-
-    suppressInvalidations(false);
 }
 
 void WebViewImpl::invalidateRect(const IntRect& rect)

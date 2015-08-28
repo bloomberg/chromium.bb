@@ -75,12 +75,6 @@ public:
     // FIXME: Remove all overrides of this and change layerTreeView() above to ASSERT_NOT_REACHED.
     virtual bool allowsBrokenNullLayerTreeView() const { return false; }
 
-    // Sometimes the WebWidget enters a state where it will generate a sequence
-    // of invalidations that should not, by themselves, trigger the compositor
-    // to schedule a new frame. This call indicates to the embedder that it
-    // should suppress compositor scheduling temporarily.
-    virtual void suppressCompositorScheduling(bool enable) { }
-
     // Called when a call to WebWidget::animate is required
     virtual void scheduleAnimation() { }
 

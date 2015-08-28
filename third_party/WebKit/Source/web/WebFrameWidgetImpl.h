@@ -122,7 +122,6 @@ public:
     void scheduleAnimation();
 
     DeprecatedPaintLayerCompositor* compositor() const;
-    void suppressInvalidations(bool enable);
     void setRootGraphicsLayer(GraphicsLayer*);
     void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);
     void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);
