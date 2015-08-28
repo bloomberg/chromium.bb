@@ -415,6 +415,8 @@ public:
 
     bool hasAppearance() const { return appearance() != NoControlPart; }
 
+    bool isBackgroundColorCurrentColor() const { return backgroundColor().isCurrentColor() || visitedLinkBackgroundColor().isCurrentColor(); }
+
     bool hasBackground() const
     {
         Color color = visitedDependentColor(CSSPropertyBackgroundColor);

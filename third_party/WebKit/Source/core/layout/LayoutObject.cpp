@@ -1727,6 +1727,7 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
 
     if (diff.textOrColorChanged() && !diff.needsPaintInvalidation()) {
         if (style()->hasBorder() || style()->hasOutline()
+            || style()->isBackgroundColorCurrentColor()
             || (isText() && !toLayoutText(this)->isAllCollapsibleWhitespace()))
             diff.setNeedsPaintInvalidationObject();
     }
