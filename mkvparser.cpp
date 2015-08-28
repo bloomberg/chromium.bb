@@ -19,11 +19,12 @@
 #pragma warning(disable : 4996)
 #endif
 
-mkvparser::IMkvReader::~IMkvReader() {}
+namespace mkvparser {
 
-template<typename Type> Type* mkvparser::SafeArrayAlloc(
-    unsigned long long num_elements,
-    unsigned long long element_size) {
+IMkvReader::~IMkvReader() {}
+
+template<typename Type> Type* SafeArrayAlloc(unsigned long long num_elements,
+                                             unsigned long long element_size) {
   if (num_elements == 0 || element_size == 0)
     return NULL;
 
@@ -35,14 +36,14 @@ template<typename Type> Type* mkvparser::SafeArrayAlloc(
   return new (std::nothrow) Type[num_bytes];
 }
 
-void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision) {
+void GetVersion(int& major, int& minor, int& build, int& revision) {
   major = 1;
   minor = 0;
   build = 0;
   revision = 30;
 }
 
-long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len) {
+long long ReadUInt(IMkvReader* pReader, long long pos, long& len) {
   if (!pReader || pos < 0)
     return E_FILE_FORMAT_INVALID;
 
@@ -91,8 +92,7 @@ long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len) {
   return result;
 }
 
-long long mkvparser::ReadID(mkvparser::IMkvReader* pReader,
-                            long long pos, long& len) {
+long long ReadID(IMkvReader* pReader, long long pos, long& len) {
   const long long id = ReadUInt(pReader, pos, len);
   if (id < 0 || len < 1 || len > 4) {
     // An ID must be at least 1 byte long, and cannot exceed 4.
@@ -102,8 +102,7 @@ long long mkvparser::ReadID(mkvparser::IMkvReader* pReader,
   return id;
 }
 
-long long mkvparser::GetUIntLength(IMkvReader* pReader, long long pos,
-                                   long& len) {
+long long GetUIntLength(IMkvReader* pReader, long long pos, long& len) {
   if (!pReader || pos < 0)
     return E_FILE_FORMAT_INVALID;
 
@@ -140,8 +139,7 @@ long long mkvparser::GetUIntLength(IMkvReader* pReader, long long pos,
 
 // TODO(vigneshv): This function assumes that unsigned values never have their
 // high bit set.
-long long mkvparser::UnserializeUInt(IMkvReader* pReader, long long pos,
-                                     long long size) {
+long long UnserializeUInt(IMkvReader* pReader, long long pos, long long size) {
   if (!pReader || pos < 0 || (size <= 0) || (size > 8))
     return E_FILE_FORMAT_INVALID;
 
@@ -164,8 +162,8 @@ long long mkvparser::UnserializeUInt(IMkvReader* pReader, long long pos,
   return result;
 }
 
-long mkvparser::UnserializeFloat(IMkvReader* pReader, long long pos,
-                                 long long size_, double& result) {
+long UnserializeFloat(IMkvReader* pReader, long long pos, long long size_,
+                      double& result) {
   if (!pReader || pos < 0 || ((size_ != 4) && (size_ != 8)))
     return E_FILE_FORMAT_INVALID;
 
@@ -222,8 +220,8 @@ long mkvparser::UnserializeFloat(IMkvReader* pReader, long long pos,
   return 0;
 }
 
-long mkvparser::UnserializeInt(IMkvReader* pReader, long long pos,
-                               long long size, long long& result_ref) {
+long UnserializeInt(IMkvReader* pReader, long long pos, long long size,
+                    long long& result_ref) {
   if (!pReader || pos < 0 || size < 1 || size > 8)
     return E_FILE_FORMAT_INVALID;
 
@@ -254,8 +252,8 @@ long mkvparser::UnserializeInt(IMkvReader* pReader, long long pos,
   return 0;
 }
 
-long mkvparser::UnserializeString(IMkvReader* pReader, long long pos,
-                                  long long size, char*& str) {
+long UnserializeString(IMkvReader* pReader, long long pos, long long size,
+                       char*& str) {
   delete[] str;
   str = NULL;
 
@@ -284,9 +282,9 @@ long mkvparser::UnserializeString(IMkvReader* pReader, long long pos,
   return 0;
 }
 
-long mkvparser::ParseElementHeader(IMkvReader* pReader, long long& pos,
-                                   long long stop, long long& id,
-                                   long long& size) {
+long ParseElementHeader(IMkvReader* pReader, long long& pos,
+                        long long stop, long long& id,
+                        long long& size) {
   if (stop >= 0 && pos >= stop)
     return E_FILE_FORMAT_INVALID;
 
@@ -326,8 +324,8 @@ long mkvparser::ParseElementHeader(IMkvReader* pReader, long long& pos,
   return 0;  // success
 }
 
-bool mkvparser::Match(IMkvReader* pReader, long long& pos,
-                      unsigned long expected_id, long long& val) {
+bool Match(IMkvReader* pReader, long long& pos, unsigned long expected_id,
+           long long& val) {
   if (!pReader || pos < 0)
     return false;
 
@@ -364,9 +362,8 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
   return true;
 }
 
-bool mkvparser::Match(IMkvReader* pReader, long long& pos,
-                      unsigned long expected_id,
-                      unsigned char*& buf, size_t& buflen) {
+bool Match(IMkvReader* pReader, long long& pos, unsigned long expected_id,
+           unsigned char*& buf, size_t& buflen) {
   if (!pReader || pos < 0)
     return false;
 
@@ -423,8 +420,6 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos,
   pos += size;  // consume size of payload
   return true;
 }
-
-namespace mkvparser {
 
 EBMLHeader::EBMLHeader() : m_docType(NULL) { Init(); }
 
