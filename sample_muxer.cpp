@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <list>
 #include <string>
 
@@ -249,14 +250,15 @@ int main(int argc, char* argv[]) {
   mkvparser::EBMLHeader ebml_header;
   ebml_header.Parse(&reader, pos);
 
-  mkvparser::Segment* parser_segment;
+  mkvparser::Segment* parser_segment_;
   long long ret =
-      mkvparser::Segment::CreateInstance(&reader, pos, parser_segment);
+      mkvparser::Segment::CreateInstance(&reader, pos, parser_segment_);
   if (ret) {
     printf("\n Segment::CreateInstance() failed.");
     return EXIT_FAILURE;
   }
 
+  const std::auto_ptr<mkvparser::Segment> parser_segment(parser_segment_);
   ret = parser_segment->Load();
   if (ret < 0) {
     printf("\n Segment::Load() failed.");
@@ -573,7 +575,6 @@ int main(int argc, char* argv[]) {
   }
 
   delete[] data;
-  delete parser_segment;
 
   return EXIT_SUCCESS;
 }
