@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -290,7 +291,16 @@ UniquePosition GetUpdatePosition(const sync_pb::SyncEntity& update,
   if (!(SyncerProtoUtil::ShouldMaintainPosition(update))) {
     return UniquePosition::CreateInvalid();
   } else if (update.has_unique_position()) {
-    return UniquePosition::FromProto(update.unique_position());
+    UniquePosition proto_position =
+        UniquePosition::FromProto(update.unique_position());
+    if (!proto_position.IsValid()) {
+      // If download a bookmark with an invalid unique position, creating valid
+      // one for the bookmark. crbug.com/332371: This is a server bug, but for
+      // avoid crash, we made this fix.
+      base::debug::DumpWithoutCrashing();
+      return UniquePosition::FromInt64(0, suffix);
+    }
+    return proto_position;
   } else if (update.has_position_in_parent()) {
     return UniquePosition::FromInt64(update.position_in_parent(), suffix);
   } else {

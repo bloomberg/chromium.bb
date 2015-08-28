@@ -201,4 +201,30 @@ TEST_F(GetUpdatePositionTest, UpdateServerFieldsFromInvalidUpdateTest) {
   EXPECT_TRUE(target.GetServerUniquePosition().IsValid());
 }
 
+TEST_F(GetUpdatePositionTest, UpdateServerFieldsFromInvalidUniquePositionTest) {
+  InitSuffixIngredients();  // Initialize update with valid data.
+  sync_pb::SyncEntity invalid_update(update);
+
+  // Create and Setup an invalid position
+  sync_pb::UniquePosition* invalid_position = new sync_pb::UniquePosition();
+  invalid_position->set_value("");
+  invalid_update.set_allocated_unique_position(invalid_position);
+
+  std::string root_server_id = syncable::Id::GetRoot().GetServerId();
+  int64 handle = entry_factory()->CreateUnappliedNewBookmarkItemWithParent(
+      "I", DefaultBookmarkSpecifics(), root_server_id);
+
+  syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, directory());
+  syncable::MutableEntry target(&trans, syncable::GET_BY_HANDLE, handle);
+
+  // Before update, target has invalid bookmark tag and unique position.
+  EXPECT_FALSE(UniquePosition::IsValidSuffix(target.GetUniqueBookmarkTag()));
+  EXPECT_FALSE(target.GetServerUniquePosition().IsValid());
+  UpdateServerFieldsFromUpdate(&target, invalid_update, "name");
+
+  // After update, target has valid bookmark tag and unique position.
+  EXPECT_TRUE(UniquePosition::IsValidSuffix(target.GetUniqueBookmarkTag()));
+  EXPECT_TRUE(target.GetServerUniquePosition().IsValid());
+}
+
 }  // namespace syncer
