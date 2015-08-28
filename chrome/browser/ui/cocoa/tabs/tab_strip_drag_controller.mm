@@ -272,6 +272,7 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
     [dragWindow_ makeMainWindow];
     [draggedController_ showOverlay];
     dragOverlay_ = [draggedController_ overlayWindow];
+    [dragOverlay_ setHasShadow:YES];
     // Force the new tab button to be hidden. We'll reset it on mouse up.
     [draggedController_ showNewTabButton:NO];
     tearTime_ = [NSDate timeIntervalSinceReferenceDate];
