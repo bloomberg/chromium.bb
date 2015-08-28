@@ -260,6 +260,11 @@ void FrameSender::SendEncodedFrame(
     encoded_frame->new_playout_delay_ms =
         target_playout_delay_.InMilliseconds();
   }
+
+  TRACE_EVENT_ASYNC_BEGIN1("cast.stream",
+      is_audio_ ? "Audio Transport" : "Video Transport",
+      frame_id,
+      "rtp_timestamp", encoded_frame->rtp_timestamp);
   transport_sender_->InsertFrame(ssrc_, *encoded_frame);
 }
 
@@ -288,6 +293,14 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   if (cast_feedback.missing_frames_and_packets.empty()) {
     OnAck(cast_feedback.ack_frame_id);
 
+    if (latest_acked_frame_id_ == cast_feedback.ack_frame_id) {
+      VLOG(1) << SENDER_SSRC << "Received duplicate ACK for frame "
+              << latest_acked_frame_id_;
+      TRACE_EVENT_INSTANT2(
+        "cast.stream", "Duplicate ACK", TRACE_EVENT_SCOPE_THREAD,
+        "ack_frame_id", cast_feedback.ack_frame_id,
+        "last_sent_frame_id", last_sent_frame_id_);
+    }
     // We only count duplicate ACKs when we have sent newer frames.
     if (latest_acked_frame_id_ == cast_feedback.ack_frame_id &&
         latest_acked_frame_id_ != last_sent_frame_id_) {
@@ -297,8 +310,6 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     }
     // TODO(miu): The values "2" and "3" should be derived from configuration.
     if (duplicate_ack_counter_ >= 2 && duplicate_ack_counter_ % 3 == 2) {
-      VLOG(1) << SENDER_SSRC << "Received duplicate ACK for frame "
-              << latest_acked_frame_id_;
       ResendForKickstart();
     }
   } else {
@@ -323,12 +334,24 @@ void FrameSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   VLOG(2) << SENDER_SSRC
           << "Received ACK" << (is_acked_out_of_order ? " out-of-order" : "")
           << " for frame " << cast_feedback.ack_frame_id;
-  if (!is_acked_out_of_order) {
+  if (is_acked_out_of_order) {
+    TRACE_EVENT_INSTANT2(
+        "cast.stream", "ACK out of order", TRACE_EVENT_SCOPE_THREAD,
+        "ack_frame_id", cast_feedback.ack_frame_id,
+        "latest_acked_frame_id", latest_acked_frame_id_);
+  } else {
     // Cancel resends of acked frames.
     std::vector<uint32> cancel_sending_frames;
     while (latest_acked_frame_id_ != cast_feedback.ack_frame_id) {
       latest_acked_frame_id_++;
       cancel_sending_frames.push_back(latest_acked_frame_id_);
+      // This is a good place to match the trace for frame ids
+      // since this ensures we not only track frame ids that are
+      // implicitly ACKed, but also handles duplicate ACKs
+      TRACE_EVENT_ASYNC_END1("cast.stream",
+          is_audio_ ? "Audio Transport" : "Video Transport",
+          cast_feedback.ack_frame_id,
+          "RTT_usecs", current_round_trip_time_.InMicroseconds());
     }
     transport_sender_->CancelSendingFrames(ssrc_, cancel_sending_frames);
     latest_acked_frame_id_ = cast_feedback.ack_frame_id;

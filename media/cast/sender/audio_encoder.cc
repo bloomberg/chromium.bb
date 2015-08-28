@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "media/cast/cast_defines.h"
 
 #if !defined(OS_IOS)
@@ -107,6 +108,10 @@ class AudioEncoder::ImplBase
         DVLOG(1) << "Skipping RTP timestamp ahead to account for "
                  << num_frames_missed * samples_per_frame_
                  << " samples' worth of underrun.";
+        TRACE_EVENT_INSTANT2("cast.stream", "Audio Skip",
+                             TRACE_EVENT_SCOPE_THREAD,
+                             "frames missed", num_frames_missed,
+                             "samples dropped", samples_dropped_from_buffer_);
       }
     }
     frame_capture_time_ = recorded_time - buffer_fill_duration;
@@ -138,6 +143,9 @@ class AudioEncoder::ImplBase
       audio_frame->rtp_timestamp = frame_rtp_timestamp_;
       audio_frame->reference_time = frame_capture_time_;
 
+      TRACE_EVENT_ASYNC_BEGIN2("cast.stream", "Audio Encode", audio_frame.get(),
+                               "frame_id", frame_id_,
+                               "rtp_timestamp", frame_rtp_timestamp_);
       if (EncodeFromFilledBuffer(&audio_frame->data)) {
         // Compute deadline utilization as the real-world time elapsed divided
         // by the signal duration.
@@ -145,6 +153,9 @@ class AudioEncoder::ImplBase
             (base::TimeTicks::Now() - start_time).InSecondsF() /
                 frame_duration_.InSecondsF();
 
+        TRACE_EVENT_ASYNC_END1("cast.stream", "Audio Encode", audio_frame.get(),
+                               "Deadline utilization",
+                               audio_frame->deadline_utilization);
         cast_environment_->PostTask(
             CastEnvironment::MAIN,
             FROM_HERE,

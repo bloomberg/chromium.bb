@@ -18,6 +18,7 @@
 #include <deque>
 
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 
@@ -360,6 +361,8 @@ int AdaptiveCongestionControl::GetBitrate(base::TimeTicks playout_time,
   VLOG(3) << " FBR:" << (bits_per_second / 1E6)
           << " EBF:" << empty_buffer_fraction
           << " SBR:" << (safe_bitrate / 1E6);
+  TRACE_COUNTER_ID1("cast.stream", "Empty Buffer Fraction", this,
+                    empty_buffer_fraction);
   bits_per_second = std::min(bits_per_second, soft_max_bitrate);
   bits_per_second = std::max(bits_per_second, min_bitrate_configured_);
   bits_per_second = std::min(bits_per_second, max_bitrate_configured_);

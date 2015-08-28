@@ -161,6 +161,10 @@ void VideoSender::InsertRawVideoFrame(
                             last_enqueued_frame_rtp_timestamp_) ||
        reference_time <= last_enqueued_frame_reference_time_)) {
     VLOG(1) << "Dropping video frame: RTP or reference time did not increase.";
+    TRACE_EVENT_INSTANT2("cast.stream", "Video Frame Drop",
+                        TRACE_EVENT_SCOPE_THREAD,
+                        "rtp_timestamp", rtp_timestamp,
+                        "reason", "time did not increase");
     return;
   }
 
@@ -190,6 +194,10 @@ void VideoSender::InsertRawVideoFrame(
     // drop every subsequent frame for the rest of the session.
     video_encoder_->EmitFrames();
 
+    TRACE_EVENT_INSTANT2("cast.stream", "Video Frame Drop",
+                        TRACE_EVENT_SCOPE_THREAD,
+                        "rtp_timestamp", rtp_timestamp,
+                        "reason", "too much in flight");
     return;
   }
 
@@ -206,6 +214,8 @@ void VideoSender::InsertRawVideoFrame(
     last_bitrate_ = bitrate;
   }
 
+  TRACE_COUNTER_ID1("cast.stream", "Video Target Bitrate", this, bitrate);
+
   MaybeRenderPerformanceMetricsOverlay(bitrate,
                                        frames_in_encoder_ + 1,
                                        last_reported_deadline_utilization_,
@@ -219,12 +229,17 @@ void VideoSender::InsertRawVideoFrame(
                      weak_factory_.GetWeakPtr(),
                      video_frame,
                      bitrate))) {
+    TRACE_EVENT_ASYNC_BEGIN1("cast.stream", "Video Encode", video_frame.get(),
+                             "rtp_timestamp", rtp_timestamp);
     frames_in_encoder_++;
     duration_in_encoder_ += duration_added_by_next_frame;
     last_enqueued_frame_rtp_timestamp_ = rtp_timestamp;
     last_enqueued_frame_reference_time_ = reference_time;
   } else {
     VLOG(1) << "Encoder rejected a frame.  Skipping...";
+    TRACE_EVENT_INSTANT1("cast.stream", "Video Encode Reject",
+                        TRACE_EVENT_SCOPE_THREAD,
+                        "rtp_timestamp", rtp_timestamp);
   }
 }
 
@@ -315,6 +330,10 @@ void VideoSender::OnEncodedVideoFrame(
 
   last_reported_deadline_utilization_ = encoded_frame->deadline_utilization;
   last_reported_lossy_utilization_ = encoded_frame->lossy_utilization;
+
+  TRACE_EVENT_ASYNC_END2("cast.stream", "Video Encode", video_frame.get(),
+      "deadline_utilization", last_reported_deadline_utilization_,
+      "lossy_utilization", last_reported_lossy_utilization_);
 
   // Report the resource utilization for processing this frame.  Take the
   // greater of the two utilization values and attenuate them such that the
