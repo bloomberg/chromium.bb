@@ -115,15 +115,11 @@ def GetCommands(options, bot_config):
 
 def GetBotStepMap():
   compile_step = ['compile']
-  chrome_proxy_tests = ['chrome_proxy']
   python_unittests = ['python_unittests']
   std_host_tests = ['check_webview_licenses']
   std_build_steps = ['compile', 'zip_build']
   std_test_steps = ['extract_build']
   std_tests = ['ui', 'unit']
-  telemetry_tests = ['telemetry_perf_unittests']
-  telemetry_tests_user_build = ['telemetry_unittests',
-                                'telemetry_perf_unittests']
   trial_tests = [
       'base_junit_tests',
       'components_browsertests',
@@ -152,8 +148,7 @@ def GetBotStepMap():
         H(compile_step, extra_gyp='clang=1 component=shared_library')),
       B('main-clobber', H(compile_step)),
       B('main-tests-rel', H(std_test_steps),
-        T(std_tests + telemetry_tests + chrome_proxy_tests,
-          ['--cleanup', flakiness_server])),
+        T(std_tests, ['--cleanup', flakiness_server])),
       B('main-tests', H(std_test_steps),
         T(std_tests, ['--cleanup', flakiness_server])),
 
@@ -180,7 +175,7 @@ def GetBotStepMap():
                       '--coverage-bucket', CHROMIUM_COVERAGE_BUCKET,
                       '--cleanup'])),
       B('user-build-fyi-tests-dbg', H(std_test_steps),
-        T(sorted(telemetry_tests_user_build + trial_tests))),
+        T(sorted(trial_tests))),
       B('fyi-component-builder-tests-dbg',
         H(compile_step, extra_gyp='component=shared_library'),
         T(std_tests, ['--experimental', flakiness_server])),
@@ -192,7 +187,7 @@ def GetBotStepMap():
         H(['bisect_perf_regression']),
         T([], ['--chrome-output-dir', bisect_chrome_output_dir])),
       B('perf-tests-rel', H(std_test_steps),
-        T([], ['--install=ChromeShell', '--cleanup'])),
+        T([], ['--cleanup'])),
       B('webkit-latest-webkit-tests', H(std_test_steps),
         T(['webkit_layout', 'webkit'], ['--cleanup', '--auto-reconnect'])),
       B('webkit-latest-contentshell', H(compile_step),
