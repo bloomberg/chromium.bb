@@ -21,11 +21,6 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
   SitePerProcessBrowserTest();
 
  protected:
-  // Start at a data URL so each extra navigation creates a navigation entry.
-  // (The first navigation will silently be classified as AUTO_SUBFRAME.)
-  // TODO(creis): This won't be necessary when we can wait for LOAD_STOP.
-  void StartFrameAtDataURL();
-
   std::string DepictFrameTree(FrameTreeNode* node);
 
   void SetUpCommandLine(base::CommandLine* command_line) override;

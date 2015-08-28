@@ -157,6 +157,7 @@ function main() {
     // Add the iframe to the document.
     var iframe = document.createElement('iframe');
     iframe.src = url;
+    iframe.id = "child-" + i;
     iframe.style.borderColor = borderColorForSite(site);
     iframe.width = frameTree.children[i].layoutX;
     iframe.height = frameTree.children[i].layoutY;
