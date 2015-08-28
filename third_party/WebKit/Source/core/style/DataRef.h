@@ -24,11 +24,13 @@
 #ifndef DataRef_h
 #define DataRef_h
 
+#include "wtf/FastAllocBase.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 template <typename T> class DataRef {
+    WTF_MAKE_FAST_ALLOCATED(DataRef);
 public:
     const T* get() const { return m_data.get(); }
 

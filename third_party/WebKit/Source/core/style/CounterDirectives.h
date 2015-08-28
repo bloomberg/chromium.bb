@@ -25,6 +25,7 @@
 #ifndef CounterDirectives_h
 #define CounterDirectives_h
 
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"
 #include "wtf/RefPtr.h"
@@ -34,6 +35,7 @@
 namespace blink {
 
 class CounterDirectives {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     CounterDirectives()
         : m_isResetSet(false)

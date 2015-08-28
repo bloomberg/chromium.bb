@@ -6,10 +6,12 @@
 #define StyleContentAlignmentData_h
 
 #include "core/style/ComputedStyleConstants.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class StyleContentAlignmentData {
+    DISALLOW_ALLOCATION();
 public:
     // Style data for Content-Distribution properties: align-content, justify-content.
     // <content-distribution> || [ <overflow-position>? && <content-position> ]

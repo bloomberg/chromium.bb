@@ -30,6 +30,7 @@
 #include "core/style/StyleImage.h"
 #include "platform/LayoutUnit.h"
 #include "platform/LengthBox.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -59,6 +60,7 @@ private:
 };
 
 class CORE_EXPORT NinePieceImage {
+    DISALLOW_ALLOCATION();
 public:
     NinePieceImage();
     NinePieceImage(PassRefPtrWillBeRawPtr<StyleImage>, LengthBox imageSlices, bool fill, const BorderImageLengthBox& borderSlices,

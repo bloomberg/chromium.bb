@@ -32,6 +32,7 @@
 #define GridCoordinate_h
 
 #include "core/style/GridResolvedPosition.h"
+#include "wtf/FastAllocBase.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -46,6 +47,8 @@ const size_t kGridMaxTracks = 1000000;
 // and |resolvedFinalPosition| are grid areas' indexes, NOT grid lines'. Iterating over the
 // span should include both |resolvedInitialPosition| and |resolvedFinalPosition| to be correct.
 struct GridSpan {
+    WTF_MAKE_FAST_ALLOCATED(GridSpan);
+public:
     static PassOwnPtr<GridSpan> create(const GridResolvedPosition& resolvedInitialPosition, const GridResolvedPosition& resolvedFinalPosition)
     {
         return adoptPtr(new GridSpan(resolvedInitialPosition, resolvedFinalPosition));
@@ -141,6 +144,8 @@ struct GridSpan {
 
 // This represents a grid area that spans in both rows' and columns' direction.
 struct GridCoordinate {
+    WTF_MAKE_FAST_ALLOCATED(GridCoordinate);
+public:
     // HashMap requires a default constuctor.
     GridCoordinate()
         : columns(0, 0)

@@ -14,8 +14,9 @@ namespace blink {
 
 // Manipulates a plugin placeholder element based on a fixed dictionary given.
 // Used for layout tests that examine the formatting of structured placeholders.
-class DictionaryPluginPlaceholder : public NoBaseWillBeGarbageCollected<DictionaryPluginPlaceholder>, public PluginPlaceholder {
+class DictionaryPluginPlaceholder final : public NoBaseWillBeGarbageCollected<DictionaryPluginPlaceholder>, public PluginPlaceholder {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DictionaryPluginPlaceholder);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DictionaryPluginPlaceholder);
 public:
     static PassOwnPtrWillBeRawPtr<DictionaryPluginPlaceholder> create(Document& document, const PluginPlaceholderOptions& options)
     {

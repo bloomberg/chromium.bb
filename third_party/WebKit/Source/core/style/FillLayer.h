@@ -31,11 +31,13 @@
 #include "platform/Length.h"
 #include "platform/LengthSize.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 struct FillSize {
+    STACK_ALLOCATED();
     FillSize()
         : type(SizeLength)
     {

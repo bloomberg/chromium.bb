@@ -6,10 +6,12 @@
 #define TransformOrigin_h
 
 #include "platform/Length.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class TransformOrigin {
+    DISALLOW_ALLOCATION();
 public:
     TransformOrigin(const Length& x, const Length& y, float z) : m_x(x), m_y(y), m_z(z) { }
     bool operator==(const TransformOrigin& o) const { return m_x == o.m_x && m_y == o.m_y && m_z == o.m_z; }

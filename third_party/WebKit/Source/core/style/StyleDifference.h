@@ -5,11 +5,13 @@
 #ifndef StyleDifference_h
 #define StyleDifference_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
 class StyleDifference {
+    STACK_ALLOCATED();
 public:
     enum PropertyDifference {
         TransformChanged = 1 << 0,

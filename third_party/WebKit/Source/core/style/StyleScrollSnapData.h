@@ -27,12 +27,14 @@
 #define StyleScrollSnapData_h
 
 #include "platform/LengthPoint.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 struct ScrollSnapPoints {
+    DISALLOW_ALLOCATION();
     Length repeatOffset;
     bool hasRepeat;
     bool usesElements;

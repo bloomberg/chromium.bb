@@ -26,7 +26,9 @@ namespace blink {
 
 // We define the default ChunkTypeTraits for frequently used types.
 template<typename ChunkType>
-class ReadableStreamChunkTypeTraits { };
+class ReadableStreamChunkTypeTraits {
+    STATIC_ONLY(ReadableStreamChunkTypeTraits);
+};
 
 template<>
 class ReadableStreamChunkTypeTraits<String> {

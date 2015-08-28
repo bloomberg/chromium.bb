@@ -29,10 +29,12 @@
 #include "core/style/NinePieceImage.h"
 #include "platform/LengthSize.h"
 #include "platform/geometry/IntRect.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class BorderData {
+    DISALLOW_ALLOCATION();
 friend class ComputedStyle;
 public:
     BorderData() : m_topLeft(Length(0, Fixed), Length(0, Fixed))

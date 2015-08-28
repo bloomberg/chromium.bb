@@ -26,10 +26,12 @@
 #define LineClampValue_h
 
 #include "core/style/ComputedStyleConstants.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class LineClampValue {
+    DISALLOW_ALLOCATION();
 public:
     LineClampValue()
         : m_type(LineClampLineCount)

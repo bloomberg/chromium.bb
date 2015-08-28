@@ -31,6 +31,7 @@
 #include "core/CoreExport.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -150,6 +151,7 @@ private:
 };
 
 class UnzoomedLength {
+    DISALLOW_ALLOCATION();
 public:
     explicit UnzoomedLength(const Length& length) : m_length(length) { }
 

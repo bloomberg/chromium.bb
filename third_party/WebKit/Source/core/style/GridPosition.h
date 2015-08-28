@@ -31,6 +31,7 @@
 #ifndef GridPosition_h
 #define GridPosition_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -43,6 +44,7 @@ enum GridPositionType {
 };
 
 class GridPosition {
+    DISALLOW_ALLOCATION();
 public:
     GridPosition()
         : m_type(AutoPosition)

@@ -23,6 +23,8 @@
 #define CachedUAStyle_h
 
 #include "core/style/ComputedStyle.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -31,6 +33,8 @@ namespace blink {
 // We use this class to cache those values during
 // applyMatchedProperties for later use during adjustComputedStyle.
 class CachedUAStyle {
+    WTF_MAKE_FAST_ALLOCATED(CachedUAStyle);
+    WTF_MAKE_NONCOPYABLE(CachedUAStyle);
 public:
     static PassOwnPtr<CachedUAStyle> create(const ComputedStyle* style)
     {

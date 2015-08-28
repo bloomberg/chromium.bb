@@ -13,8 +13,9 @@ namespace blink {
 
 // Populates plugin placeholder content with a document fragment.
 // Used for layout tests that contain a <template>.
-class DocumentFragmentPluginPlaceholder : public NoBaseWillBeGarbageCollected<DocumentFragmentPluginPlaceholder>, public PluginPlaceholder {
+class DocumentFragmentPluginPlaceholder final : public NoBaseWillBeGarbageCollected<DocumentFragmentPluginPlaceholder>, public PluginPlaceholder {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DocumentFragmentPluginPlaceholder);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DocumentFragmentPluginPlaceholder);
 public:
     static PassOwnPtrWillBeRawPtr<DocumentFragmentPluginPlaceholder> create(PassRefPtrWillBeRawPtr<DocumentFragment> fragment)
     {

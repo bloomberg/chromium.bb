@@ -32,6 +32,7 @@
 #define GridTrackSize_h
 
 #include "core/style/GridLength.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -41,6 +42,7 @@ enum GridTrackSizeType {
 };
 
 class GridTrackSize {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     GridTrackSize(const GridLength& length)
         : m_type(LengthTrackSizing)

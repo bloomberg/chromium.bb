@@ -35,6 +35,7 @@
 #include "platform/Length.h"
 #include "platform/LengthSize.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -77,6 +78,7 @@ protected:
     DEFINE_TYPE_CASTS(thisType, BasicShape, value, value->type() == BasicShape::thisType##Type, value.type() == BasicShape::thisType##Type)
 
 class BasicShapeCenterCoordinate {
+    DISALLOW_ALLOCATION();
 public:
     enum Direction {
         TopLeft,
@@ -115,6 +117,7 @@ private:
 };
 
 class BasicShapeRadius {
+    DISALLOW_ALLOCATION();
 public:
     enum Type {
         Value,

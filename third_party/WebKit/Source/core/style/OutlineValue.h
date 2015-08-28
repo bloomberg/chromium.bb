@@ -26,10 +26,12 @@
 #define OutlineValue_h
 
 #include "core/style/BorderValue.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
-class OutlineValue : public BorderValue {
+class OutlineValue final : public BorderValue {
+    DISALLOW_ALLOCATION();
 friend class ComputedStyle;
 public:
     OutlineValue()

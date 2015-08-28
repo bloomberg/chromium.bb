@@ -6,6 +6,7 @@
 #define GridResolvedPosition_h
 
 #include "core/style/GridPosition.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -28,6 +29,7 @@ enum GridTrackSizingDirection {
 // This class represents an index into one of the dimensions of the grid array.
 // Wraps a size_t integer just for the purpose of knowing what we manipulate in the grid code.
 class GridResolvedPosition {
+    DISALLOW_ALLOCATION();
 public:
     static GridResolvedPosition adjustGridPositionForAfterEndSide(size_t resolvedPosition)
     {

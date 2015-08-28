@@ -7,10 +7,13 @@
 
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/graphics/Color.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 struct BorderEdge {
+    STACK_ALLOCATED();
+public:
     BorderEdge(int edgeWidth, const Color& edgeColor, EBorderStyle edgeStyle, bool edgeIsPresent = true);
     BorderEdge();
 

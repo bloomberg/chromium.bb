@@ -8,10 +8,12 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/StyleMotionPath.h"
 #include "platform/Length.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class StyleMotionData {
+    DISALLOW_ALLOCATION();
 public:
     StyleMotionData(StyleMotionPath* path, const Length& offset, float rotation, MotionRotationType rotationType)
         : m_path(path)

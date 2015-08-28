@@ -28,10 +28,12 @@
 #include "core/css/StyleColor.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/graphics/Color.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class BorderValue {
+    DISALLOW_ALLOCATION();
 friend class ComputedStyle;
 public:
     BorderValue()
