@@ -757,7 +757,9 @@ public class DocumentActivity extends ChromeActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!getToolbarManager().isInitialized()) return false;
+        if (!getToolbarManager().isInitialized()) {
+            return super.onKeyDown(keyCode, event);
+        }
         return KeyboardShortcuts.onKeyDown(event, this, true, false)
                 || super.onKeyDown(keyCode, event);
     }

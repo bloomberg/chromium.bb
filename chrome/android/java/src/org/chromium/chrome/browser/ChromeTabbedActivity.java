@@ -1170,7 +1170,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!mUIInitialized) return false;
+        if (!mUIInitialized) {
+            return super.onKeyDown(keyCode, event);
+        }
         boolean isCurrentTabVisible = !mLayoutManager.overviewVisible()
                 && (!isTablet() || getCurrentTabModel().getCount() != 0);
         return KeyboardShortcuts.onKeyDown(event, this, isCurrentTabVisible, true)
