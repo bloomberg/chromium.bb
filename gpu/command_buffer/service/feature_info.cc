@@ -146,6 +146,7 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       use_arb_occlusion_query2_for_occlusion_query_boolean(false),
       use_arb_occlusion_query_for_occlusion_query_boolean(false),
       native_vertex_array_object(false),
+      ext_texture_format_astc(false),
       ext_texture_format_atc(false),
       ext_texture_format_bgra8888(false),
       ext_texture_format_dxt1(false),
@@ -368,6 +369,24 @@ void FeatureInfo::InitializeFeatures() {
         GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
     validators_.texture_internal_format_storage.AddValue(
         GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
+  }
+
+  bool have_astc = extensions.Contains("GL_KHR_texture_compression_astc_ldr");
+  if (have_astc) {
+    feature_flags_.ext_texture_format_astc = true;
+    AddExtensionString("GL_KHR_texture_compression_astc_ldr");
+
+    // GL_COMPRESSED_RGBA_ASTC(0x93B0 ~ 0x93BD)
+    GLint astc_format_it = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
+    GLint astc_format_max = GL_COMPRESSED_RGBA_ASTC_12x12_KHR;
+    for (; astc_format_it <= astc_format_max; astc_format_it++)
+        validators_.compressed_texture_format.AddValue(astc_format_it);
+
+    // GL_COMPRESSED_SRGB8_ALPHA8_ASTC(0x93D0 ~ 0x93DD)
+    astc_format_it = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+    astc_format_max = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
+    for (; astc_format_it <= astc_format_max; astc_format_it++)
+        validators_.compressed_texture_format.AddValue(astc_format_it);
   }
 
   bool have_atc = extensions.Contains("GL_AMD_compressed_ATC_texture") ||

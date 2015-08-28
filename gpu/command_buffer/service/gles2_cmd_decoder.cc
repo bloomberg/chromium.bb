@@ -3137,6 +3137,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 
   caps.egl_image_external =
       feature_info_->feature_flags().oes_egl_image_external;
+  caps.texture_format_astc =
+      feature_info_->feature_flags().ext_texture_format_astc;
   caps.texture_format_atc =
       feature_info_->feature_flags().ext_texture_format_atc;
   caps.texture_format_bgra8888 =
@@ -7134,7 +7136,6 @@ bool GLES2DecoderImpl::PrepareTexturesForRender() {
       !texture_manager()->HaveImages()) {
     return true;
   }
-
   bool textures_set = false;
   const Program::SamplerIndices& sampler_indices =
      state_.current_program->sampler_indices();
@@ -9420,11 +9421,33 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
 
 namespace {
 
+const int kASTCBlockSize = 16;
 const int kS3TCBlockWidth = 4;
 const int kS3TCBlockHeight = 4;
 const int kS3TCDXT1BlockSize = 8;
 const int kS3TCDXT3AndDXT5BlockSize = 16;
 const int kEACAndETC2BlockSize = 4;
+
+typedef struct {
+  int blockWidth;
+  int blockHeight;
+} ASTCBlockArray;
+
+const ASTCBlockArray kASTCBlockArray[] = {
+    {4, 4},   /* GL_COMPRESSED_RGBA_ASTC_4x4_KHR */
+    {5, 4},   /* and GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR */
+    {5, 5},
+    {6, 5},
+    {6, 6},
+    {8, 5},
+    {8, 6},
+    {8, 8},
+    {10, 5},
+    {10, 6},
+    {10, 8},
+    {10, 10},
+    {12, 10},
+    {12, 12}};
 
 bool IsValidDXTSize(GLint level, GLsizei size) {
   return (size == 1) ||
@@ -9453,6 +9476,49 @@ bool GLES2DecoderImpl::GetCompressedTexSizeInBytes(
           (height + kS3TCBlockHeight - 1) / kS3TCBlockHeight;
       bytes_required *= kS3TCDXT1BlockSize;
       break;
+    case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR: {
+      const int index = (format < GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR) ?
+          static_cast<int>(format - GL_COMPRESSED_RGBA_ASTC_4x4_KHR) :
+          static_cast<int>(format - GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR);
+
+      const int kBlockWidth = kASTCBlockArray[index].blockWidth;
+      const int kBlockHeight = kASTCBlockArray[index].blockHeight;
+
+      bytes_required =
+          (width + kBlockWidth - 1) / kBlockWidth;
+      bytes_required *=
+          (height + kBlockHeight - 1) / kBlockHeight;
+
+      bytes_required *= kASTCBlockSize;
+      break;
+    }
     case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
     case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
     case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
@@ -9553,6 +9619,34 @@ bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
         return false;
       }
       return true;
+    case GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
+    case GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR:
     case GL_ATC_RGB_AMD:
     case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
     case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
@@ -9758,7 +9852,6 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
         "glCompressedTexImage2D", "texture is immutable");
     return error::kNoError;
   }
-
   if (!ValidateCompressedTexDimensions("glCompressedTexImage2D", target, level,
                                        width, height, 1, internal_format) ||
       !ValidateCompressedTexFuncData("glCompressedTexImage2D", width, height,

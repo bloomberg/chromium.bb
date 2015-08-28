@@ -115,6 +115,7 @@ struct GPU_EXPORT Capabilities {
 
   bool post_sub_buffer;
   bool egl_image_external;
+  bool texture_format_astc;
   bool texture_format_atc;
   bool texture_format_bgra8888;
   bool texture_format_dxt1;

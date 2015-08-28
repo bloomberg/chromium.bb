@@ -56,6 +56,7 @@ Capabilities::Capabilities()
       uniform_buffer_offset_alignment(1),
       post_sub_buffer(false),
       egl_image_external(false),
+      texture_format_astc(false),
       texture_format_atc(false),
       texture_format_bgra8888(false),
       texture_format_dxt1(false),
