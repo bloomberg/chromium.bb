@@ -5,6 +5,7 @@
 #include "media/formats/mp4/track_run_iterator.h"
 
 #include <algorithm>
+#include <iomanip>
 
 #include "media/base/buffers.h"
 #include "media/formats/mp4/rcheck.h"
@@ -18,7 +19,6 @@ struct SampleInfo {
   int duration;
   int cts_offset;
   bool is_keyframe;
-  bool is_random_access_point;
   uint32 cenc_group_description_index;
 };
 
@@ -89,6 +89,13 @@ TrackRunIterator::TrackRunIterator(const Movie* moov,
 
 TrackRunIterator::~TrackRunIterator() {}
 
+static std::string HexFlags(uint32 flags) {
+  std::stringstream stream;
+  stream << std::setfill('0') << std::setw(sizeof(flags)*2) << std::hex
+         << flags;
+  return stream.str();
+}
+
 static bool PopulateSampleInfo(const TrackExtends& trex,
                                const TrackFragmentHeader& tfhd,
                                const TrackFragmentRun& trun,
@@ -96,6 +103,7 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
                                const uint32 i,
                                SampleInfo* sample_info,
                                const SampleDependsOn sdtp_sample_depends_on,
+                               bool is_audio,
                                const scoped_refptr<MediaLog>& media_log) {
   if (i < trun.sample_sizes.size()) {
     sample_info->size = trun.sample_sizes[i];
@@ -123,45 +131,47 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
   uint32 flags;
   if (i < trun.sample_flags.size()) {
     flags = trun.sample_flags[i];
+    DVLOG(4) << __FUNCTION__ << " trun sample flags "  << HexFlags(flags);
   } else if (tfhd.has_default_sample_flags) {
     flags = tfhd.default_sample_flags;
+    DVLOG(4) << __FUNCTION__ << " tfhd sample flags "  << HexFlags(flags);
   } else {
     flags = trex.default_sample_flags;
+    DVLOG(4) << __FUNCTION__ << " trex sample flags "  << HexFlags(flags);
   }
 
   SampleDependsOn sample_depends_on =
       static_cast<SampleDependsOn>((flags >> 24) & 0x3);
-
-  if (sample_depends_on == kSampleDependsOnUnknown)
+  if (sample_depends_on == kSampleDependsOnUnknown) {
     sample_depends_on = sdtp_sample_depends_on;
-
-  // ISO/IEC 14496-12  Section 8.8.3.1 : The negation of |sample_is_sync_sample|
-  // provides the same information as the sync sample table [8.6.2]. When
-  // |sample_is_sync_sample| is true for a sample, it is the same as if the
-  // sample were not in a movie fragment and marked with an entry in the sync
-  // sample table (or, if all samples are sync samples, the sync sample table
-  // were absent).
-  bool sample_is_sync_sample = !(flags & kSampleIsNonSyncSample);
-  sample_info->is_random_access_point = sample_is_sync_sample;
-
-  switch (sample_depends_on) {
-    case kSampleDependsOnUnknown:
-      sample_info->is_keyframe = sample_is_sync_sample;
-      break;
-
-    case kSampleDependsOnOthers:
-      sample_info->is_keyframe = false;
-      break;
-
-    case kSampleDependsOnNoOther:
-      sample_info->is_keyframe = true;
-      break;
-
-    case kSampleDependsOnReserved:
-      MEDIA_LOG(ERROR, media_log) << "Reserved value used in sample dependency"
-                                     " info.";
-      return false;
   }
+  DVLOG(4) << __FUNCTION__ << " sample_depends_on "  << sample_depends_on;
+  if (sample_depends_on == kSampleDependsOnReserved) {
+    MEDIA_LOG(ERROR, media_log) << "Reserved value used in sample dependency"
+                                   " info.";
+    return false;
+  }
+
+  // Per spec (ISO 14496-12:2012), the definition for a "sync sample" is
+  // equivalent to the downstream code's "is keyframe" concept. But media exists
+  // that marks non-key video frames as sync samples (http://crbug.com/507916
+  // and http://crbug.com/310712). Hence, for video we additionally check that
+  // the sample does not depend on others (FFmpeg does too, see mov_read_trun).
+  // Sample dependency is not ignored for audio because encoded audio samples
+  // can depend on other samples and still be used for random access. Generally
+  // all audio samples are expected to be sync samples, but we  prefer to check
+  // the flags to catch badly muxed audio (for now anyway ;P). History of
+  // attempts to get this right discussed in http://crrev.com/1319813002
+  bool sample_is_sync_sample = !(flags & kSampleIsNonSyncSample);
+  bool sample_depends_on_others = sample_depends_on == kSampleDependsOnOthers;
+  sample_info->is_keyframe = sample_is_sync_sample &&
+                             (!sample_depends_on_others || is_audio);
+
+  DVLOG(4) << __FUNCTION__ << " is_kf:" << sample_info->is_keyframe
+           << " is_sync:" << sample_is_sync_sample
+           << " deps:" << sample_depends_on_others
+           << " audio:" << is_audio;
+
   return true;
 }
 
@@ -342,7 +352,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       for (size_t k = 0; k < trun.sample_count; k++) {
         if (!PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset, k,
                                 &tri.samples[k], traf.sdtp.sample_depends_on(k),
-                                media_log_)) {
+                                tri.is_audio, media_log_)) {
           return false;
         }
 
@@ -521,11 +531,6 @@ base::TimeDelta TrackRunIterator::duration() const {
 bool TrackRunIterator::is_keyframe() const {
   DCHECK(IsSampleValid());
   return sample_itr_->is_keyframe;
-}
-
-bool TrackRunIterator::is_random_access_point() const {
-  DCHECK(IsSampleValid());
-  return sample_itr_->is_random_access_point;
 }
 
 const TrackEncryption& TrackRunIterator::track_encryption() const {

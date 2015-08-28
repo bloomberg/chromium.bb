@@ -83,8 +83,6 @@ class TrackRunIteratorTest : public testing::Test {
     desc1.audio_entries.push_back(aud_desc);
     moov_.extends.tracks[0].track_id = 1;
     moov_.extends.tracks[0].default_sample_description_index = 1;
-    moov_.tracks[0].media.information.sample_table.sync_sample.is_present =
-        false;
     moov_.tracks[1].header.track_id = 2;
     moov_.tracks[1].media.header.timescale = kVideoScale;
     SampleDescription& desc2 =
@@ -96,11 +94,6 @@ class TrackRunIteratorTest : public testing::Test {
     desc2.video_entries.push_back(vid_desc);
     moov_.extends.tracks[1].track_id = 2;
     moov_.extends.tracks[1].default_sample_description_index = 1;
-    SyncSample& video_sync_sample =
-        moov_.tracks[1].media.information.sample_table.sync_sample;
-    video_sync_sample.is_present = true;
-    video_sync_sample.entries.resize(1);
-    video_sync_sample.entries[0] = 0;
 
     moov_.tracks[2].header.track_id = 3;
     moov_.tracks[2].media.information.sample_table.description.type = kHint;
@@ -180,8 +173,6 @@ class TrackRunIteratorTest : public testing::Test {
 
     while (iter->IsSampleValid()) {
       ss << " " << (iter->is_keyframe() ? "K" : "P");
-      if (iter->is_random_access_point())
-        ss << "R";
       iter->AdvanceSample();
     }
 
@@ -391,10 +382,10 @@ TEST_F(TrackRunIteratorTest, FirstSampleFlagTest) {
   SetFlagsOnSamples("US", &moof.tracks[1].runs[0]);
 
   ASSERT_TRUE(iter_->Init(moof));
-  EXPECT_EQ("1 KR KR KR KR KR KR KR KR KR KR", KeyframeAndRAPInfo(iter_.get()));
+  EXPECT_EQ("1 K K K K K K K K K K", KeyframeAndRAPInfo(iter_.get()));
 
   iter_->AdvanceRun();
-  EXPECT_EQ("2 KR P P P P P P P P P", KeyframeAndRAPInfo(iter_.get()));
+  EXPECT_EQ("2 K P P P P P P P P P", KeyframeAndRAPInfo(iter_.get()));
 }
 
 // Verify that parsing fails if a reserved value is in the sample flags.
@@ -684,45 +675,43 @@ TEST_F(TrackRunIteratorTest, UnexpectedOrderingTest) {
   EXPECT_EQ(iter_->GetMaxClearOffset(), 10000);
 }
 
-TEST_F(TrackRunIteratorTest, MissingAndEmptyStss) {
+TEST_F(TrackRunIteratorTest, KeyFrameFlagCombinations) {
+  // Setup both audio and video tracks to each have 6 samples covering all the
+  // combinations of mp4 "sync sample" and "depends on" relationships.
   MovieFragment moof = CreateFragment();
-
-  // Setup track 0 to not have an stss box, which means that all samples should
-  // be marked as random access points unless the kSampleIsNonSyncSample flag is
-  // set in the sample flags.
-  moov_.tracks[0].media.information.sample_table.sync_sample.is_present = false;
-  moov_.tracks[0].media.information.sample_table.sync_sample.entries.resize(0);
   moof.tracks[0].runs.resize(1);
-  moof.tracks[0].runs[0].sample_count = 6;
-  moof.tracks[0].runs[0].data_offset = 100;
-  SetFlagsOnSamples("US UN OS ON NS NN", &moof.tracks[0].runs[0]);
-
-  // Setup track 1 to have an stss box with no entries, which normally means
-  // that none of the samples should be random access points. If the
-  // kSampleIsNonSyncSample flag is NOT set though, the sample should be
-  // considered a random access point.
-  moov_.tracks[1].media.information.sample_table.sync_sample.is_present = true;
-  moov_.tracks[1].media.information.sample_table.sync_sample.entries.resize(0);
   moof.tracks[1].runs.resize(1);
+  moof.tracks[0].runs[0].sample_count = 6;
   moof.tracks[1].runs[0].sample_count = 6;
-  moof.tracks[1].runs[0].data_offset = 200;
+  SetFlagsOnSamples("US UN OS ON NS NN", &moof.tracks[0].runs[0]);
   SetFlagsOnSamples("US UN OS ON NS NN", &moof.tracks[1].runs[0]);
-
   iter_.reset(new TrackRunIterator(&moov_, media_log_));
 
   ASSERT_TRUE(iter_->Init(moof));
   EXPECT_TRUE(iter_->IsRunValid());
 
-  // Verify that all samples except for the ones that have the
-  // kSampleIsNonSyncSample flag set are marked as random access points.
-  EXPECT_EQ("1 KR P PR P KR K", KeyframeAndRAPInfo(iter_.get()));
+  // Keyframes should be marked according to downstream's expectations that
+  // keyframes serve as points of random access for seeking.
+
+  // For audio, any sync sample should be marked as a key frame. Whether a
+  // sample "depends on" other samples is not considered. Unlike video samples,
+  // audio samples are often marked as depending on other samples but are still
+  // workable for random access. While we allow for parsing of audio samples
+  // that are non-sync samples, we generally expect all audio samples to be sync
+  // samples and downstream will log and discard any non-sync audio samples.
+  EXPECT_EQ("1 K P K P K P", KeyframeAndRAPInfo(iter_.get()));
 
   iter_->AdvanceRun();
 
-  // Verify that nothing is marked as a random access point.
-  EXPECT_EQ("2 KR P PR P KR K", KeyframeAndRAPInfo(iter_.get()));
+  // For video, any key frame should be both a sync sample and have no known
+  // dependents. Ideally, a video sync sample should always be marked as having
+  // no dependents, but we occasionally encounter media where all samples are
+  // marked "sync" and we must rely on combining the two flags to pick out the
+  // true key frames. See http://crbug.com/310712 and http://crbug.com/507916.
+  // Realiably knowing the keyframes for video is also critical to SPS PPS
+  // insertion.
+  EXPECT_EQ("2 K P P P K P", KeyframeAndRAPInfo(iter_.get()));
 }
-
 
 }  // namespace mp4
 }  // namespace media

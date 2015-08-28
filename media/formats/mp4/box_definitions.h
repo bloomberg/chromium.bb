@@ -240,17 +240,6 @@ struct MEDIA_EXPORT SampleDescription : Box {
   std::vector<AudioSampleEntry> audio_entries;
 };
 
-struct MEDIA_EXPORT SyncSample : Box {
-  DECLARE_BOX_METHODS(SyncSample);
-
-  // Returns true if the |k|th sample is a sync sample (aka a random
-  // access point). Returns false if sample |k| is not a sync sample.
-  bool IsSyncSample(size_t k) const;
-
-  bool is_present;
-  std::vector<uint32> entries;
-};
-
 struct MEDIA_EXPORT CencSampleEncryptionInfoEntry {
   CencSampleEncryptionInfoEntry();
   ~CencSampleEncryptionInfoEntry();
@@ -275,7 +264,6 @@ struct MEDIA_EXPORT SampleTable : Box {
   // includes the 'stts', 'stsc', and 'stco' boxes, which must contain no
   // samples in order to be compliant files.
   SampleDescription description;
-  SyncSample sync_sample;
   SampleGroupDescription sample_group_description;
 };
 

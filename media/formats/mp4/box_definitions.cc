@@ -300,55 +300,13 @@ bool SampleDescription::Parse(BoxReader* reader) {
   return true;
 }
 
-SyncSample::SyncSample() : is_present(false) {}
-SyncSample::~SyncSample() {}
-FourCC SyncSample::BoxType() const { return FOURCC_STSS; }
-
-bool SyncSample::Parse(BoxReader* reader) {
-  uint32 entry_count;
-  RCHECK(reader->ReadFullBoxHeader() &&
-         reader->Read4(&entry_count));
-
-  is_present = true;
-
-  entries.resize(entry_count);
-
-  if (entry_count == 0)
-    return true;
-
-  for (size_t i = 0; i < entry_count; ++i)
-    RCHECK(reader->Read4(&entries[i]));
-
-  return true;
-}
-
-bool SyncSample::IsSyncSample(size_t k) const {
-  // ISO/IEC 14496-12 Section 8.6.2.1 : If the sync sample box is not present,
-  // every sample is a sync sample.
-  if (!is_present)
-    return true;
-
-  // ISO/IEC 14496-12  Section 8.6.2.3 : If entry_count is zero, there are no
-  // sync samples within the stream.
-  if (entries.size() == 0u)
-    return false;
-
-  for (size_t i = 0; i < entries.size(); ++i) {
-    if (entries[i] == k)
-      return true;
-  }
-
-  return false;
-}
-
 SampleTable::SampleTable() {}
 SampleTable::~SampleTable() {}
 FourCC SampleTable::BoxType() const { return FOURCC_STBL; }
 
 bool SampleTable::Parse(BoxReader* reader) {
   RCHECK(reader->ScanChildren() &&
-         reader->ReadChild(&description) &&
-         reader->MaybeReadChild(&sync_sample));
+         reader->ReadChild(&description));
   // There could be multiple SampleGroupDescription boxes with different
   // grouping types. For common encryption, the relevant grouping type is
   // 'seig'. Continue reading until 'seig' is found, or until running out of
