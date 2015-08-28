@@ -23,6 +23,7 @@ import android.util.Log;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -183,6 +184,9 @@ public class NotificationUIManager {
 
         Bundle fragmentArguments;
         if (launchSingleWebsitePreferences) {
+            // Record that the user has clicked on the [Site Settings] button.
+            RecordUserAction.record("Notifications.ShowSiteSettings");
+
             // All preferences for a specific origin.
             fragmentArguments = SingleWebsitePreferences.createFragmentArgsForSite(origin);
         } else {

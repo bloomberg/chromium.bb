@@ -8590,6 +8590,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Notifications.ShowSiteSettings">
+  <owner>peter@chromium.org</owner>
+  <description>
+    Counts the number of times users click on the Site Settings button included
+    with Web Notifications.
+  </description>
+</action>
+
 <action name="Notifications.Unmute">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
