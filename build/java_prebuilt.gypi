@@ -24,7 +24,6 @@
   ],
   'variables': {
     'dex_path': '<(PRODUCT_DIR)/lib.java/<(_target_name).dex.jar',
-    'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
     'android_jar': '<(android_sdk)/android.jar',
     'input_jars_paths': [ '<(android_jar)' ],
     'neverlink%': 0,
@@ -36,9 +35,9 @@
       },
       'conditions': [
         ['proguard_preprocess == 1', {
-          'dex_input_jar_path': '<(intermediate_dir)/<(_target_name).pre.jar'
+          'dex_input_jar_path': '<(PRODUCT_DIR)/lib.java/<(_target_name).pre.jar',
         }, {
-          'dex_input_jar_path': '<(jar_path)'
+          'dex_input_jar_path': '<(jar_path)',
         }],
       ],
     },
