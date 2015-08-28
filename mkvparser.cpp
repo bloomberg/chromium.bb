@@ -7,11 +7,12 @@
 // be found in the AUTHORS file in the root of the source tree.
 
 #include "mkvparser.hpp"
+
 #include <cassert>
-#include <cstring>
-#include <new>
 #include <climits>
 #include <cmath>
+#include <cstring>
+#include <new>
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
