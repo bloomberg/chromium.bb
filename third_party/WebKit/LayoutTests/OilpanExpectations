@@ -55,3 +55,4 @@ crbug.com/356742 [ Win ] svg/as-image/animated-svg-animation-control.html
 crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
 
 crbug.com/506186 accessibility/axobjectcache-leaks-node.html [ Failure ]
+crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
