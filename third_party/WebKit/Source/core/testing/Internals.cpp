@@ -2179,6 +2179,12 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
     return itemStyle ? itemStyle->font().fontMetrics().height() : 0;
 }
 
+void Internals::resetTypeAheadSession(HTMLSelectElement* select)
+{
+    ASSERT(select);
+    select->resetTypeAheadSessionForTesting();
+}
+
 bool Internals::loseSharedGraphicsContext3D()
 {
     OwnPtr<WebGraphicsContext3DProvider> sharedProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());

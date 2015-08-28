@@ -264,6 +264,7 @@
     [TypeChecking=Interface] boolean isSelectPopupVisible(Node node);
     boolean selectPopupItemStyleIsRtl(Node select, long itemIndex);
     long selectPopupItemStyleFontHeight(Node select, long itemIndex);
+    [TypeChecking=Interface] void resetTypeAheadSession(HTMLSelectElement select);
 
     [RaisesException] ClientRect selectionBounds();
 

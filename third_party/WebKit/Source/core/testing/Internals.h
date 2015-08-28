@@ -305,6 +305,7 @@ public:
     bool isSelectPopupVisible(Node*);
     bool selectPopupItemStyleIsRtl(Node*, int);
     int selectPopupItemStyleFontHeight(Node*, int);
+    void resetTypeAheadSession(HTMLSelectElement*);
 
     ClientRect* selectionBounds(ExceptionState&);
 

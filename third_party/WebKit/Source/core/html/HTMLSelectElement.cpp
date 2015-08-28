@@ -1052,6 +1052,7 @@ void HTMLSelectElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusT
 
 void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
+    m_typeAhead.resetSession();
     // We only need to fire change events here for menu lists, because we fire
     // change events for list boxes whenever the selection change is actually made.
     // This matches other browsers' behavior.
@@ -1949,6 +1950,11 @@ void HTMLSelectElement::detach(const AttachContext& context)
         m_popup->disconnectClient();
     m_popupIsVisible = false;
     m_popup = nullptr;
+}
+
+void HTMLSelectElement::resetTypeAheadSessionForTesting()
+{
+    m_typeAhead.resetSession();
 }
 
 } // namespace blink

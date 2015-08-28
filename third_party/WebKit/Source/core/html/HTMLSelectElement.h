@@ -153,6 +153,8 @@ public:
     void hidePopup();
     PopupMenu* popup() const { return m_popup.get(); }
 
+    void resetTypeAheadSessionForTesting();
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

@@ -126,4 +126,10 @@ bool TypeAhead::hasActiveSession(KeyboardEvent* event)
     return delta <= typeAheadTimeout;
 }
 
+void TypeAhead::resetSession()
+{
+    m_lastTypeTime = 0;
+    m_buffer.clear();
+}
+
 } // namespace blink
