@@ -458,10 +458,18 @@ bool LayoutThemeMac::isControlStyled(const ComputedStyle& style) const
     // like the control is styled.
     if (style.appearance() == MenulistPart && style.effectiveZoom() != 1.0f)
         return true;
-    // FIXME: NSSearchFieldCell doesn't work well when scaled.
-    if (style.appearance() == SearchFieldPart && style.effectiveZoom() != 1)
-        return true;
-
+    // Some other cells don't work well when scaled.
+    if (style.effectiveZoom() != 1) {
+        switch (style.appearance()) {
+        case ButtonPart:
+        case PushButtonPart:
+        case SearchFieldPart:
+        case SquareButtonPart:
+            return true;
+        default:
+            break;
+        }
+    }
     return LayoutTheme::isControlStyled(style);
 }
 

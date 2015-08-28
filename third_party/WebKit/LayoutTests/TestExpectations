@@ -1093,8 +1093,8 @@ crbug.com/509025 [ Yosemite ] virtual/threaded/printing/return-from-printing-mod
 crbug.com/509025 [ Yosemite ] paint/inline/outline-offset.html [ Missing ]
 crbug.com/509025 [ Yosemite ] virtual/spv2/paint/inline/outline-offset.html [ Missing ]
 crbug.com/509025 [ Yosemite ] fast/block/lineboxcontain/block-with-ideographs.xhtml [ Failure ]
-# TODO(tkent): zoom:1.5 looks to have a real problem.
-crbug.com/509025 [ Yosemite ] fast/forms/submit/submit-appearance-basic.html [ Failure ]
+crbug.com/525884 [ Mac ] fast/forms/submit/submit-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/525884 [ Mac ] fast/forms/color/input-appearance-color.html [ NeedsRebaseline ]
 crbug.com/509025 [ Yosemite ] fast/overflow/scrollRevealButton.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/ruby/nested-ruby.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/text/drawBidiText.html [ Failure ]
