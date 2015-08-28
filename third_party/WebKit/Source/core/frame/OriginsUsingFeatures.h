@@ -23,6 +23,7 @@ class CORE_EXPORT OriginsUsingFeatures {
 public:
     ~OriginsUsingFeatures();
 
+    // Features for RAPPOR. Do not reorder or remove!
     enum class Feature {
         ElementCreateShadowRoot,
         DocumentRegisterElement,
@@ -32,6 +33,7 @@ public:
         FullscreenInsecureOrigin,
         GeolocationInsecureOrigin,
         GetUserMediaInsecureOrigin,
+        GetUserMediaSecureOrigin,
 
         NumberOfFeatures // This must be the last item.
     };

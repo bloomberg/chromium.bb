@@ -29,9 +29,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
-#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
@@ -39,7 +37,6 @@
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/mediastream/UserMediaRequest.h"
-#include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
 
@@ -69,11 +66,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const MediaS
     }
 
     String errorMessage;
-    if (navigator.frame()->document()->isPrivilegedContext(errorMessage)) {
-        UseCounter::count(navigator.frame(), UseCounter::GetUserMediaSecureOrigin);
-    } else {
-        UseCounter::countDeprecation(navigator.frame(), UseCounter::GetUserMediaInsecureOrigin);
-        OriginsUsingFeatures::countAnyWorld(*navigator.frame()->document(), OriginsUsingFeatures::Feature::GetUserMediaInsecureOrigin);
+    if (!request->isPrivilegedContextUse(errorMessage)) {
         request->failPermissionDenied(errorMessage);
         return;
     }

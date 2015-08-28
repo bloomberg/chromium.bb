@@ -39,6 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/SpaceSplitString.h"
+#include "core/frame/UseCounter.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamConstraints.h"
@@ -114,6 +115,23 @@ WebMediaConstraints UserMediaRequest::audioConstraints() const
 WebMediaConstraints UserMediaRequest::videoConstraints() const
 {
     return m_video;
+}
+
+bool UserMediaRequest::isPrivilegedContextUse(String& errorMessage)
+{
+    Document* document = ownerDocument();
+
+    if (document->isPrivilegedContext(errorMessage)) {
+        UseCounter::count(document->frame(), UseCounter::GetUserMediaSecureOrigin);
+        OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GetUserMediaSecureOrigin);
+        return true;
+    }
+
+    // While getUserMedia is blocked on insecure origins, we still want to
+    // count attempts to use it.
+    UseCounter::countDeprecation(document->frame(), UseCounter::GetUserMediaInsecureOrigin);
+    OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GetUserMediaInsecureOrigin);
+    return false;
 }
 
 Document* UserMediaRequest::ownerDocument()

@@ -155,6 +155,8 @@ void OriginsUsingFeatures::Value::recordOriginToRappor(const String& origin)
         Platform::current()->recordRappor("PowerfulFeatureUse.Host.Geolocation.Insecure", origin);
     if (get(Feature::GetUserMediaInsecureOrigin))
         Platform::current()->recordRappor("PowerfulFeatureUse.Host.GetUserMedia.Insecure", origin);
+    if (get(Feature::GetUserMediaSecureOrigin))
+        Platform::current()->recordRappor("PowerfulFeatureUse.Host.GetUserMedia.Secure", origin);
 }
 
 void OriginsUsingFeatures::Value::recordNameToRappor(const String& name)

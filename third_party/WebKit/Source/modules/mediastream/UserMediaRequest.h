@@ -32,6 +32,7 @@
 #define UserMediaRequest_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
@@ -70,6 +71,10 @@ public:
     bool video() const;
     WebMediaConstraints audioConstraints() const;
     WebMediaConstraints videoConstraints() const;
+
+    // errorMessage is only set if requestIsPrivilegedContext() returns |false|.
+    // Caller is responsible for properly setting errors and canceling request.
+    bool isPrivilegedContextUse(String& errorMessage);
 
     // ContextLifecycleObserver
     void contextDestroyed() override;
