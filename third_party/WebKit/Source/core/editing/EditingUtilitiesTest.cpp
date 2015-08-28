@@ -12,6 +12,19 @@ namespace blink {
 class EditingUtilitiesTest : public EditingTestBase {
 };
 
+TEST_F(EditingUtilitiesTest, directionOfEnclosingBlock)
+{
+    const char* bodyContent = "<p id='host'><b id='one'></b><b id='two'>22</b></p>";
+    const char* shadowContent = "<content select=#two></content><p dir=rtl><content select=#one></content><p>";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent);
+    updateLayoutAndStyleForPainting();
+    Node* one = document().getElementById("one");
+
+    EXPECT_EQ(LTR, directionOfEnclosingBlock(Position(one, 0)));
+    EXPECT_EQ(RTL, directionOfEnclosingBlock(PositionInComposedTree(one, 0)));
+}
+
 TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot)
 {
     const char* bodyContent = "<p id='host' contenteditable><b id='one'></b><b id='two'>22</b></p>";

@@ -693,13 +693,24 @@ bool nodeIsUserSelectNone(Node* node)
     return node && node->layoutObject() && !node->layoutObject()->isSelectable();
 }
 
-TextDirection directionOfEnclosingBlock(const Position& position)
+template <typename Strategy>
+TextDirection directionOfEnclosingBlockAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
-    Element* enclosingBlockElement = enclosingBlock(position.computeContainerNode());
+    Element* enclosingBlockElement = enclosingBlock(PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(position.computeContainerNode()), CannotCrossEditingBoundary);
     if (!enclosingBlockElement)
         return LTR;
     LayoutObject* layoutObject = enclosingBlockElement->layoutObject();
     return layoutObject ? layoutObject->style()->direction() : LTR;
+}
+
+TextDirection directionOfEnclosingBlock(const Position& position)
+{
+    return directionOfEnclosingBlockAlgorithm<EditingStrategy>(position);
+}
+
+TextDirection directionOfEnclosingBlock(const PositionInComposedTree& position)
+{
+    return directionOfEnclosingBlockAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
 TextDirection primaryDirectionOf(const Node& node)
