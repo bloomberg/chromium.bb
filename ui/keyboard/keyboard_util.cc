@@ -38,7 +38,7 @@ const char kKeyUp[] = "keyup";
 void SendProcessKeyEvent(ui::EventType type,
                          aura::WindowTreeHost* host) {
   ui::KeyEvent event(type, ui::VKEY_PROCESSKEY, ui::DomCode::NONE,
-                     ui::EF_IS_SYNTHESIZED, ui::DomKey::PROCESS, 0,
+                     ui::EF_IS_SYNTHESIZED, ui::DomKey::PROCESS,
                      ui::EventTimeForNow());
   ui::EventDispatchDetails details =
       host->event_processor()->OnEventFromSource(&event);
@@ -253,17 +253,16 @@ bool MoveCursor(int swipe_direction,
   if (domcodex != ui::DomCode::NONE) {
     ui::KeyboardCode codex = ui::VKEY_UNKNOWN;
     ui::DomKey domkeyx = ui::DomKey::NONE;
-    base::char16 cx;
-    ignore_result(DomCodeToUsLayoutMeaning(domcodex, ui::EF_NONE, &domkeyx,
-                                           &cx, &codex));
+    ignore_result(DomCodeToUsLayoutDomKey(domcodex, ui::EF_NONE, &domkeyx,
+                                          &codex));
     ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codex, domcodex,
-                             modifier_flags, domkeyx, cx,
+                             modifier_flags, domkeyx,
                              ui::EventTimeForNow());
     ui::EventDispatchDetails details =
         host->event_processor()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, domcodex,
-                               modifier_flags, domkeyx, cx,
+                               modifier_flags, domkeyx,
                                ui::EventTimeForNow());
     details = host->event_processor()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);
@@ -273,17 +272,16 @@ bool MoveCursor(int swipe_direction,
   if (domcodey != ui::DomCode::NONE) {
     ui::KeyboardCode codey = ui::VKEY_UNKNOWN;
     ui::DomKey domkeyy = ui::DomKey::NONE;
-    base::char16 cy;
-    ignore_result(DomCodeToUsLayoutMeaning(domcodey, ui::EF_NONE, &domkeyy,
-                                           &cy, &codey));
+    ignore_result(DomCodeToUsLayoutDomKey(domcodey, ui::EF_NONE, &domkeyy,
+                                          &codey));
     ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codey, domcodey,
-                             modifier_flags, domkeyy, cy,
+                             modifier_flags, domkeyy,
                              ui::EventTimeForNow());
     ui::EventDispatchDetails details =
         host->event_processor()->OnEventFromSource(&press_event);
     CHECK(!details.dispatcher_destroyed);
     ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, domcodey,
-                               modifier_flags, domkeyy, cy,
+                               modifier_flags, domkeyy,
                                ui::EventTimeForNow());
     details = host->event_processor()->OnEventFromSource(&release_event);
     CHECK(!details.dispatcher_destroyed);

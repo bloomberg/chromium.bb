@@ -9,21 +9,16 @@
 
 #include "base/strings/string_util.h"
 #include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 namespace ui {
 class KeyEvent;
-enum class DomKey;
 
 // A class to recognize compose and dead key sequence.
 // Outputs composed character.
 class UI_BASE_IME_EXPORT CharacterComposer {
  public:
-  struct KeystrokeMeaning {
-    KeystrokeMeaning(DomKey k, base::char16 c) : key(k), character(c) {}
-    DomKey key;
-    base::char16 character;
-  };
-  using ComposeBuffer = std::vector<KeystrokeMeaning>;
+  using ComposeBuffer = std::vector<DomKey>;
 
   CharacterComposer();
   ~CharacterComposer();
@@ -68,7 +63,7 @@ class UI_BASE_IME_EXPORT CharacterComposer {
   void UpdatePreeditStringHexMode();
 
   // Remembers keypresses previously filtered.
-  std::vector<KeystrokeMeaning> compose_buffer_;
+  std::vector<DomKey> compose_buffer_;
 
   // Records hexadecimal digits previously filtered.
   std::vector<unsigned int> hex_buffer_;

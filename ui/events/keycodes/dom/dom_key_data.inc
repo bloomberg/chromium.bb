@@ -21,17 +21,20 @@
 
 DOM_KEY_MAP_DECLARATION {
 
-  // The first entry, whose enum value will be zero, is reserved to mean
-  // no value; there is no corresponding DOM string. (This is not the same
-  // as the valid DOM .key value 'Unidentified'.)
+  // To avoid ambiguities, a small number of .key values that do have
+  // standard names are encoded identical to corresponding Unicode characters;
+  // for example, DomKey('\t') == DomKey::TAB.
+  //
+  //          Key                     Enum        Unicode code point
+  DOM_KEY_UNI("Backspace",            BACKSPACE,  0x0008),
+  DOM_KEY_UNI("Tab",                  TAB,        0x0009),
+  DOM_KEY_UNI("Enter",                ENTER,      0x000D),
+  DOM_KEY_UNI("Escape",               ESCAPE,     0x001B),
+  // The enum constant for 'Delete' (Forward Delete) is named DEL because
+  // DELETE conflicts with an unscoped declaration in Windows' <windows.h>.
+  DOM_KEY_UNI("Delete",               DEL,        0x007F),
 
-  //          Key                     Enum
-  DOM_KEY_MAP(nullptr,                NONE),  // No value
-
-  // A value of DomKey::CHARACTER indicates that the KeyboardEvent |key|
-  // string is determined by the Unicode character interpretation and is
-  // not one of the fixed string values.
-  DOM_KEY_MAP(nullptr,                CHARACTER),
+  DOM_KEY_MAP_BEGIN
 
   // =========================================================
   // Special Key Values
@@ -84,9 +87,9 @@ DOM_KEY_MAP_DECLARATION {
   // ============================================================
 
   //          Key                     Enum
-  DOM_KEY_MAP("Enter",                ENTER),  // Enter, Return
+  //          "Enter" is encoded in the Unicode space (at the end of this list).
   DOM_KEY_MAP("Separator",            SEPARATOR),
-  DOM_KEY_MAP("Tab",                  TAB),
+  //          "Tab" is encoded in the Unicode space.
 
   // ============================================================
   // Navigation Keys
@@ -109,13 +112,12 @@ DOM_KEY_MAP_DECLARATION {
   // =========================================================
 
   //          Key                     Enum
-  DOM_KEY_MAP("Backspace",            BACKSPACE),
+  //          "Backspace" is encoded in the Unicode space.
   DOM_KEY_MAP("Clear",                CLEAR),
   DOM_KEY_MAP("Copy",                 COPY),
   DOM_KEY_MAP("CrSel",                CR_SEL),     // Cursor Select
   DOM_KEY_MAP("Cut",                  CUT),
-  // Delete (Forward Delete) named DEL because DELETE conflicts with <windows.h>
-  DOM_KEY_MAP("Delete",               DEL),
+  //          "Delete" is encoded in the Unicode space.
   DOM_KEY_MAP("EraseEof",             ERASE_EOF),  // Erase to End of Field
   DOM_KEY_MAP("ExSel",                EX_SEL),     // Extend Selection
   DOM_KEY_MAP("Insert",               INSERT),
@@ -134,7 +136,7 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("Attn",                 ATTN),    // Attention
   DOM_KEY_MAP("Cancel",               CANCEL),
   DOM_KEY_MAP("ContextMenu",          CONTEXT_MENU),
-  DOM_KEY_MAP("Escape",               ESCAPE),
+  //          "Escape" is encoded in the Unicode space.
   DOM_KEY_MAP("Execute",              EXECUTE),
   DOM_KEY_MAP("Find",                 FIND),
   DOM_KEY_MAP("Help",                 HELP),
@@ -174,7 +176,7 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("CodeInput",            CODE_INPUT),
   DOM_KEY_MAP("Compose",              COMPOSE),
   DOM_KEY_MAP("Convert",              CONVERT),
-  DOM_KEY_MAP("Dead",                 DEAD),
+  //          "Dead" is represented as a flag plus combining character.
   DOM_KEY_MAP("FinalMode",            FINAL_MODE),
   DOM_KEY_MAP("GroupFirst",           GROUP_FIRST),
   DOM_KEY_MAP("GroupLast",            GROUP_LAST),
@@ -387,4 +389,6 @@ DOM_KEY_MAP_DECLARATION {
   DOM_KEY_MAP("VideoModeNext",        VIDEO_MODE_NEXT),
   DOM_KEY_MAP("Wink",                 WINK),
   DOM_KEY_MAP("ZoomToggle",           ZOOM_TOGGLE),
+
+  DOM_KEY_MAP_END
 };

@@ -212,9 +212,8 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
   int flags = modifiers_->GetModifierFlags();
   DomKey dom_key;
   KeyboardCode key_code;
-  uint16 character;
   uint32 platform_keycode = 0;
-  if (!keyboard_layout_engine_->Lookup(dom_code, flags, &dom_key, &character,
+  if (!keyboard_layout_engine_->Lookup(dom_code, flags, &dom_key,
                                        &key_code, &platform_keycode)) {
     return;
   }
@@ -224,7 +223,7 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
   }
 
   KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
-                 modifiers_->GetModifierFlags(), dom_key, character, timestamp);
+                 modifiers_->GetModifierFlags(), dom_key, timestamp);
   event.set_source_device_id(device_id);
   if (platform_keycode)
     event.set_platform_keycode(platform_keycode);

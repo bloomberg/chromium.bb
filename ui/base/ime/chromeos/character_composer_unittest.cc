@@ -34,7 +34,8 @@ class CharacterComposerTest : public testing::Test {
   KeyEvent* DeadKeyPress(base::char16 combining_character) const {
     KeyEvent* event =
         new KeyEvent(ET_KEY_PRESSED, VKEY_UNKNOWN, DomCode::NONE, EF_NONE,
-                     DomKey::DEAD, combining_character, EventTimeForNow());
+                     DomKey::DeadKeyFromCombiningCharacter(combining_character),
+                     EventTimeForNow());
     return event;
   }
 
@@ -59,7 +60,7 @@ class CharacterComposerTest : public testing::Test {
                             int flags,
                             base::char16 character) const {
     KeyEvent* event = new KeyEvent(ET_KEY_PRESSED, vkey, code, flags,
-                                   CharacterToDomKey(character), character,
+                                   DomKey::FromCharacter(character),
                                    EventTimeForNow());
     return event;
   }

@@ -110,8 +110,7 @@ bool CharacterComposer::FilterKeyPress(const ui::KeyEvent& event) {
 
 bool CharacterComposer::FilterKeyPressSequenceMode(const KeyEvent& event) {
   DCHECK(composition_mode_ == KEY_SEQUENCE_MODE);
-  compose_buffer_.push_back(
-      KeystrokeMeaning(event.GetDomKey(), event.GetCharacter()));
+  compose_buffer_.push_back(event.GetDomKey());
 
   // Check compose table.
   uint32 composed_character_utf32 = 0;
@@ -214,17 +213,22 @@ ComposeChecker::CheckSequenceResult TreeComposeChecker::CheckSequence(
     DCHECK(tree_index < data_.tree_entries);
 
     // If we are looking up a dead key, skip over the character tables.
-    if (keystroke.key == ui::DomKey::DEAD) {
+    int32_t character = -1;
+    if (keystroke.IsDeadKey()) {
       tree_index += 2 * data_.tree[tree_index] + 1;  // internal unicode table
       tree_index += 2 * data_.tree[tree_index] + 1;  // leaf unicode table
-    } else if (keystroke.key != ui::DomKey::CHARACTER) {
-      return CheckSequenceResult::NO_MATCH;
+      character = keystroke.ToDeadKeyCombiningCharacter();
+    } else if (keystroke.IsCharacter()) {
+      character = keystroke.ToCharacter();
     }
+    if (character < 0 || character > 0xFFFF)
+      return CheckSequenceResult::NO_MATCH;
 
     // Check the internal subtree table.
     uint16_t result = 0;
     uint16_t entries = data_.tree[tree_index++];
-    if (entries && Find(tree_index, entries, keystroke.character, &result)) {
+    if (entries &&
+        Find(tree_index, entries, static_cast<uint16_t>(character), &result)) {
       tree_index = result;
       continue;
     }
@@ -232,7 +236,8 @@ ComposeChecker::CheckSequenceResult TreeComposeChecker::CheckSequence(
     // Skip over the internal subtree table and check the leaf table.
     tree_index += 2 * entries;
     entries = data_.tree[tree_index++];
-    if (entries && Find(tree_index, entries, keystroke.character, &result)) {
+    if (entries &&
+        Find(tree_index, entries, static_cast<uint16_t>(character), &result)) {
       *composed_character = result;
       return CheckSequenceResult::FULL_MATCH;
     }

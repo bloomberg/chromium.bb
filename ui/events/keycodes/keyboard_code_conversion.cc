@@ -16,115 +16,126 @@ namespace ui {
 namespace {
 
 // This table maps a subset of |KeyboardCode| (VKEYs) to DomKey and character.
-// Only values not otherwise handled by GetMeaningFromKeyCode() are here.
-const struct KeyboardCodeToMeaning {
+// Only values not otherwise handled by GetDomKeyFromKeyCode() are here.
+const struct KeyboardCodeToDomKey {
   KeyboardCode key_code;
-  DomKey key;
-  base::char16 plain_character;
-  base::char16 shift_character;
-} kKeyboardCodeToMeaning[] = {
-    {VKEY_BACK, DomKey::BACKSPACE, '\b', 0},
-    {VKEY_TAB, DomKey::TAB, '\t', 0},
-    {VKEY_RETURN, DomKey::ENTER, '\r', 0},
-    {VKEY_ESCAPE, DomKey::ESCAPE, 0x1B, 0},
-    {VKEY_SPACE, DomKey::CHARACTER, ' ', 0},
-    {VKEY_MULTIPLY, DomKey::CHARACTER, '*', 0},
-    {VKEY_ADD, DomKey::CHARACTER, '+', 0},
-    {VKEY_SEPARATOR, DomKey::CHARACTER, ',', 0},
-    {VKEY_SUBTRACT, DomKey::CHARACTER, '-', 0},
-    {VKEY_DECIMAL, DomKey::CHARACTER, '.', 0},
-    {VKEY_DIVIDE, DomKey::CHARACTER, '/', 0},
-    {VKEY_OEM_1, DomKey::CHARACTER, ';', ':'},
-    {VKEY_OEM_PLUS, DomKey::CHARACTER, '=', '+'},
-    {VKEY_OEM_COMMA, DomKey::CHARACTER, ',', '<'},
-    {VKEY_OEM_MINUS, DomKey::CHARACTER, '-', '_'},
-    {VKEY_OEM_PERIOD, DomKey::CHARACTER, '.', '>'},
-    {VKEY_OEM_2, DomKey::CHARACTER, '/', '?'},
-    {VKEY_OEM_3, DomKey::CHARACTER, '`', '~'},
-    {VKEY_OEM_4, DomKey::CHARACTER, '[', '{'},
-    {VKEY_OEM_5, DomKey::CHARACTER, '\\', '|'},
-    {VKEY_OEM_6, DomKey::CHARACTER, ']', '}'},
-    {VKEY_OEM_7, DomKey::CHARACTER, '\'', '"'},
-    {VKEY_OEM_102, DomKey::CHARACTER, '<', '>'},
-    {VKEY_CLEAR, DomKey::CLEAR, 0, 0},
-    {VKEY_SHIFT, DomKey::SHIFT, 0, 0},
-    {VKEY_CONTROL, DomKey::CONTROL, 0, 0},
-    {VKEY_MENU, DomKey::ALT, 0, 0},
-    {VKEY_PAUSE, DomKey::PAUSE, 0, 0},
-    {VKEY_CAPITAL, DomKey::CAPS_LOCK, 0, 0},
+  DomKey::Base plain;
+  DomKey::Base shift;
+} kKeyboardCodeToDomKey[] = {
+    {VKEY_BACK, DomKey::BACKSPACE},
+    {VKEY_TAB, DomKey::TAB},
+    {VKEY_RETURN, DomKey::ENTER},
+    {VKEY_ESCAPE, DomKey::ESCAPE},
+    {VKEY_SPACE, DomKey::Constant<' '>::Character},
+    {VKEY_MULTIPLY, DomKey::Constant<'*'>::Character},
+    {VKEY_ADD, DomKey::Constant<'+'>::Character},
+    {VKEY_SEPARATOR, DomKey::Constant<','>::Character},
+    {VKEY_SUBTRACT, DomKey::Constant<'-'>::Character},
+    {VKEY_DECIMAL, DomKey::Constant<'.'>::Character},
+    {VKEY_DIVIDE, DomKey::Constant<'/'>::Character},
+    {VKEY_OEM_1, DomKey::Constant<';'>::Character,
+     DomKey::Constant<':'>::Character},
+    {VKEY_OEM_PLUS, DomKey::Constant<'='>::Character,
+     DomKey::Constant<'+'>::Character},
+    {VKEY_OEM_COMMA, DomKey::Constant<','>::Character,
+     DomKey::Constant<'<'>::Character},
+    {VKEY_OEM_MINUS, DomKey::Constant<'-'>::Character,
+     DomKey::Constant<'_'>::Character},
+    {VKEY_OEM_PERIOD, DomKey::Constant<'.'>::Character,
+     DomKey::Constant<'>'>::Character},
+    {VKEY_OEM_2, DomKey::Constant<'/'>::Character,
+     DomKey::Constant<'?'>::Character},
+    {VKEY_OEM_3, DomKey::Constant<'`'>::Character,
+     DomKey::Constant<'~'>::Character},
+    {VKEY_OEM_4, DomKey::Constant<'['>::Character,
+     DomKey::Constant<'{'>::Character},
+    {VKEY_OEM_5, DomKey::Constant<'\\'>::Character,
+     DomKey::Constant<'|'>::Character},
+    {VKEY_OEM_6, DomKey::Constant<']'>::Character,
+     DomKey::Constant<'}'>::Character},
+    {VKEY_OEM_7, DomKey::Constant<'\''>::Character,
+     DomKey::Constant<'"'>::Character},
+    {VKEY_OEM_102, DomKey::Constant<'<'>::Character,
+     DomKey::Constant<'>'>::Character},
+    {VKEY_CLEAR, DomKey::CLEAR},
+    {VKEY_SHIFT, DomKey::SHIFT},
+    {VKEY_CONTROL, DomKey::CONTROL},
+    {VKEY_MENU, DomKey::ALT},
+    {VKEY_PAUSE, DomKey::PAUSE},
+    {VKEY_CAPITAL, DomKey::CAPS_LOCK},
     // Windows conflates 'KanaMode' and 'HangulMode'.
-    {VKEY_KANA, DomKey::KANA_MODE, 0, 0},
-    {VKEY_JUNJA, DomKey::JUNJA_MODE, 0, 0},
-    {VKEY_FINAL, DomKey::FINAL_MODE, 0, 0},
+    {VKEY_KANA, DomKey::KANA_MODE},
+    {VKEY_JUNJA, DomKey::JUNJA_MODE},
+    {VKEY_FINAL, DomKey::FINAL_MODE},
     // Windows conflates 'HanjaMode' and 'KanjiMode'.
-    {VKEY_HANJA, DomKey::HANJA_MODE, 0, 0},
-    {VKEY_CONVERT, DomKey::CONVERT, 0, 0},
-    {VKEY_NONCONVERT, DomKey::NON_CONVERT, 0, 0},
-    {VKEY_ACCEPT, DomKey::ACCEPT, 0, 0},
-    {VKEY_MODECHANGE, DomKey::MODE_CHANGE, 0, 0},
-    {VKEY_PRIOR, DomKey::PAGE_UP, 0, 0},
-    {VKEY_NEXT, DomKey::PAGE_DOWN, 0, 0},
-    {VKEY_END, DomKey::END, 0, 0},
-    {VKEY_HOME, DomKey::HOME, 0, 0},
-    {VKEY_LEFT, DomKey::ARROW_LEFT, 0, 0},
-    {VKEY_UP, DomKey::ARROW_UP, 0, 0},
-    {VKEY_RIGHT, DomKey::ARROW_RIGHT, 0, 0},
-    {VKEY_DOWN, DomKey::ARROW_DOWN, 0, 0},
-    {VKEY_SELECT, DomKey::SELECT, 0, 0},
-    {VKEY_PRINT, DomKey::PRINT, 0, 0},
-    {VKEY_EXECUTE, DomKey::EXECUTE, 0, 0},
-    {VKEY_SNAPSHOT, DomKey::PRINT_SCREEN, 0, 0},
-    {VKEY_INSERT, DomKey::INSERT, 0, 0},
-    {VKEY_DELETE, DomKey::DEL, 0, 0},
-    {VKEY_HELP, DomKey::HELP, 0, 0},
-    {VKEY_LWIN, DomKey::OS, 0, 0},
-    {VKEY_RWIN, DomKey::OS, 0, 0},
-    {VKEY_APPS, DomKey::MEDIA_APPS, 0, 0},
-    {VKEY_NUMLOCK, DomKey::NUM_LOCK, 0, 0},
-    {VKEY_SCROLL, DomKey::SCROLL_LOCK, 0, 0},
-    {VKEY_LSHIFT, DomKey::SHIFT, 0, 0},
-    {VKEY_RSHIFT, DomKey::SHIFT, 0, 0},
-    {VKEY_LCONTROL, DomKey::CONTROL, 0, 0},
-    {VKEY_RCONTROL, DomKey::CONTROL, 0, 0},
-    {VKEY_LMENU, DomKey::ALT, 0, 0},
-    {VKEY_RMENU, DomKey::ALT, 0, 0},
-    {VKEY_BROWSER_BACK, DomKey::BROWSER_BACK, 0, 0},
-    {VKEY_BROWSER_FORWARD, DomKey::BROWSER_FORWARD, 0, 0},
-    {VKEY_BROWSER_REFRESH, DomKey::BROWSER_REFRESH, 0, 0},
-    {VKEY_BROWSER_STOP, DomKey::BROWSER_STOP, 0, 0},
-    {VKEY_BROWSER_SEARCH, DomKey::BROWSER_SEARCH, 0, 0},
-    {VKEY_BROWSER_FAVORITES, DomKey::BROWSER_FAVORITES, 0, 0},
-    {VKEY_BROWSER_HOME, DomKey::BROWSER_HOME, 0, 0},
-    {VKEY_VOLUME_MUTE, DomKey::VOLUME_MUTE, 0, 0},
-    {VKEY_VOLUME_DOWN, DomKey::VOLUME_DOWN, 0, 0},
-    {VKEY_VOLUME_UP, DomKey::VOLUME_UP, 0, 0},
-    {VKEY_MEDIA_NEXT_TRACK, DomKey::MEDIA_TRACK_NEXT, 0, 0},
-    {VKEY_MEDIA_PREV_TRACK, DomKey::MEDIA_TRACK_PREVIOUS, 0, 0},
-    {VKEY_MEDIA_STOP, DomKey::MEDIA_STOP, 0, 0},
-    {VKEY_MEDIA_PLAY_PAUSE, DomKey::MEDIA_PLAY_PAUSE, 0, 0},
-    {VKEY_MEDIA_LAUNCH_MAIL, DomKey::LAUNCH_MAIL, 0, 0},
-    {VKEY_MEDIA_LAUNCH_MEDIA_SELECT, DomKey::LAUNCH_MEDIA_PLAYER, 0, 0},
-    {VKEY_MEDIA_LAUNCH_APP1, DomKey::LAUNCH_MY_COMPUTER, 0, 0},
-    {VKEY_MEDIA_LAUNCH_APP2, DomKey::LAUNCH_CALCULATOR, 0, 0},
-    {VKEY_OEM_8, DomKey::SUPER, 0, 0},  // ISO Level 5 Shift in ChromeOS
-    {VKEY_PROCESSKEY, DomKey::PROCESS, 0, 0},
-    {VKEY_DBE_SBCSCHAR, DomKey::HANKAKU, 0, 0},
-    {VKEY_DBE_DBCSCHAR, DomKey::ZENKAKU, 0, 0},
-    {VKEY_ATTN, DomKey::ATTN, 0, 0},
-    {VKEY_CRSEL, DomKey::CR_SEL, 0, 0},
-    {VKEY_EXSEL, DomKey::EX_SEL, 0, 0},
-    {VKEY_EREOF, DomKey::ERASE_EOF, 0, 0},
-    {VKEY_PLAY, DomKey::MEDIA_PLAY, 0, 0},
-    {VKEY_ZOOM, DomKey::ZOOM_TOGGLE, 0, 0},
-    {VKEY_OEM_CLEAR, DomKey::CLEAR, 0, 0},
-    {VKEY_ALTGR, DomKey::ALT_GRAPH, 0, 0},
+    {VKEY_HANJA, DomKey::HANJA_MODE},
+    {VKEY_CONVERT, DomKey::CONVERT},
+    {VKEY_NONCONVERT, DomKey::NON_CONVERT},
+    {VKEY_ACCEPT, DomKey::ACCEPT},
+    {VKEY_MODECHANGE, DomKey::MODE_CHANGE},
+    {VKEY_PRIOR, DomKey::PAGE_UP},
+    {VKEY_NEXT, DomKey::PAGE_DOWN},
+    {VKEY_END, DomKey::END},
+    {VKEY_HOME, DomKey::HOME},
+    {VKEY_LEFT, DomKey::ARROW_LEFT},
+    {VKEY_UP, DomKey::ARROW_UP},
+    {VKEY_RIGHT, DomKey::ARROW_RIGHT},
+    {VKEY_DOWN, DomKey::ARROW_DOWN},
+    {VKEY_SELECT, DomKey::SELECT},
+    {VKEY_PRINT, DomKey::PRINT},
+    {VKEY_EXECUTE, DomKey::EXECUTE},
+    {VKEY_SNAPSHOT, DomKey::PRINT_SCREEN},
+    {VKEY_INSERT, DomKey::INSERT},
+    {VKEY_DELETE, DomKey::DEL},
+    {VKEY_HELP, DomKey::HELP},
+    {VKEY_LWIN, DomKey::OS},
+    {VKEY_RWIN, DomKey::OS},
+    {VKEY_APPS, DomKey::MEDIA_APPS},
+    {VKEY_NUMLOCK, DomKey::NUM_LOCK},
+    {VKEY_SCROLL, DomKey::SCROLL_LOCK},
+    {VKEY_LSHIFT, DomKey::SHIFT},
+    {VKEY_RSHIFT, DomKey::SHIFT},
+    {VKEY_LCONTROL, DomKey::CONTROL},
+    {VKEY_RCONTROL, DomKey::CONTROL},
+    {VKEY_LMENU, DomKey::ALT},
+    {VKEY_RMENU, DomKey::ALT},
+    {VKEY_BROWSER_BACK, DomKey::BROWSER_BACK},
+    {VKEY_BROWSER_FORWARD, DomKey::BROWSER_FORWARD},
+    {VKEY_BROWSER_REFRESH, DomKey::BROWSER_REFRESH},
+    {VKEY_BROWSER_STOP, DomKey::BROWSER_STOP},
+    {VKEY_BROWSER_SEARCH, DomKey::BROWSER_SEARCH},
+    {VKEY_BROWSER_FAVORITES, DomKey::BROWSER_FAVORITES},
+    {VKEY_BROWSER_HOME, DomKey::BROWSER_HOME},
+    {VKEY_VOLUME_MUTE, DomKey::VOLUME_MUTE},
+    {VKEY_VOLUME_DOWN, DomKey::VOLUME_DOWN},
+    {VKEY_VOLUME_UP, DomKey::VOLUME_UP},
+    {VKEY_MEDIA_NEXT_TRACK, DomKey::MEDIA_TRACK_NEXT},
+    {VKEY_MEDIA_PREV_TRACK, DomKey::MEDIA_TRACK_PREVIOUS},
+    {VKEY_MEDIA_STOP, DomKey::MEDIA_STOP},
+    {VKEY_MEDIA_PLAY_PAUSE, DomKey::MEDIA_PLAY_PAUSE},
+    {VKEY_MEDIA_LAUNCH_MAIL, DomKey::LAUNCH_MAIL},
+    {VKEY_MEDIA_LAUNCH_MEDIA_SELECT, DomKey::LAUNCH_MEDIA_PLAYER},
+    {VKEY_MEDIA_LAUNCH_APP1, DomKey::LAUNCH_MY_COMPUTER},
+    {VKEY_MEDIA_LAUNCH_APP2, DomKey::LAUNCH_CALCULATOR},
+    {VKEY_OEM_8, DomKey::SUPER},  // ISO Level 5 Shift in ChromeOS
+    {VKEY_PROCESSKEY, DomKey::PROCESS},
+    {VKEY_DBE_SBCSCHAR, DomKey::HANKAKU},
+    {VKEY_DBE_DBCSCHAR, DomKey::ZENKAKU},
+    {VKEY_ATTN, DomKey::ATTN},
+    {VKEY_CRSEL, DomKey::CR_SEL},
+    {VKEY_EXSEL, DomKey::EX_SEL},
+    {VKEY_EREOF, DomKey::ERASE_EOF},
+    {VKEY_PLAY, DomKey::MEDIA_PLAY},
+    {VKEY_ZOOM, DomKey::ZOOM_TOGGLE},
+    {VKEY_OEM_CLEAR, DomKey::CLEAR},
+    {VKEY_ALTGR, DomKey::ALT_GRAPH},
 #if defined(OS_POSIX)
-    {VKEY_POWER, DomKey::POWER, 0, 0},
-    {VKEY_BRIGHTNESS_DOWN, DomKey::BRIGHTNESS_DOWN, 0, 0},
-    {VKEY_BRIGHTNESS_UP, DomKey::BRIGHTNESS_UP, 0, 0},
-    {VKEY_COMPOSE, DomKey::COMPOSE, 0, 0},
-    {VKEY_OEM_103, DomKey::MEDIA_REWIND, 0, 0},
-    {VKEY_OEM_104, DomKey::MEDIA_FAST_FORWARD, 0, 0},
+    {VKEY_POWER, DomKey::POWER},
+    {VKEY_BRIGHTNESS_DOWN, DomKey::BRIGHTNESS_DOWN},
+    {VKEY_BRIGHTNESS_UP, DomKey::BRIGHTNESS_UP},
+    {VKEY_COMPOSE, DomKey::COMPOSE},
+    {VKEY_OEM_103, DomKey::MEDIA_REWIND},
+    {VKEY_OEM_104, DomKey::MEDIA_FAST_FORWARD},
 #endif
 };
 
@@ -143,17 +154,13 @@ bool IsModifierDomCode(DomCode code) {
 }  // anonymous namespace
 
 base::char16 GetCharacterFromKeyCode(KeyboardCode key_code, int flags) {
-  ui::DomKey dom_key;
-  base::char16 character;
-  if (GetMeaningFromKeyCode(key_code, flags, &dom_key, &character))
-    return character;
+  DomKey key = GetDomKeyFromKeyCode(key_code, flags);
+  if (key.IsCharacter())
+    return key.ToCharacter();
   return 0;
 }
 
-bool GetMeaningFromKeyCode(KeyboardCode key_code,
-                           int flags,
-                           DomKey* dom_key,
-                           base::char16* character) {
+DomKey GetDomKeyFromKeyCode(KeyboardCode key_code, int flags) {
   const bool ctrl = (flags & EF_CONTROL_DOWN) != 0;
   const bool shift = (flags & EF_SHIFT_DOWN) != 0;
   const bool upper = shift ^ ((flags & EF_CAPS_LOCK_DOWN) != 0);
@@ -161,135 +168,80 @@ bool GetMeaningFromKeyCode(KeyboardCode key_code,
   // Control characters.
   if (ctrl) {
     // Following Windows behavior to map ctrl-a ~ ctrl-z to \x01 ~ \x1A.
-    if (key_code >= VKEY_A && key_code <= VKEY_Z) {
-      *character = static_cast<uint16>(key_code - VKEY_A + 1);
-      switch (key_code) {
-        case VKEY_H:
-          *dom_key = DomKey::BACKSPACE;
-          break;
-        case VKEY_I:
-          *dom_key = DomKey::TAB;
-          break;
-        case VKEY_J:
-        case VKEY_M:
-          *dom_key = DomKey::ENTER;
-          break;
-        default:
-          *dom_key = DomKey::CHARACTER;
-          break;
-      }
-      return true;
-    }
+    if (key_code >= VKEY_A && key_code <= VKEY_Z)
+      return DomKey::FromCharacter(key_code - VKEY_A + 1);
     // Other control characters.
     if (shift) {
       // The following graphics characters require the shift key to input.
       switch (key_code) {
         // ctrl-@ maps to \x00 (Null byte)
         case VKEY_2:
-          *dom_key = DomKey::CHARACTER;
-          *character = 0;
-          return true;
+          return DomKey::FromCharacter(0);
         // ctrl-^ maps to \x1E (Record separator, Information separator two)
         case VKEY_6:
-          *dom_key = DomKey::CHARACTER;
-          *character = 0x1E;
-          return true;
+          return DomKey::FromCharacter(0x1E);
         // ctrl-_ maps to \x1F (Unit separator, Information separator one)
         case VKEY_OEM_MINUS:
-          *dom_key = DomKey::CHARACTER;
-          *character = 0x1F;
-          return true;
-        // Returns 0 for all other keys to avoid inputting unexpected chars.
+          return DomKey::FromCharacter(0x1F);
+        // Returns UNIDENTIFIED for all other keys to avoid inputting
+        // unexpected chars.
         default:
-          *dom_key = DomKey::UNIDENTIFIED;
-          *character = 0;
-          return false;
+          return DomKey::UNIDENTIFIED;
       }
     } else {
       switch (key_code) {
         // ctrl-[ maps to \x1B (Escape)
         case VKEY_OEM_4:
-          *dom_key = DomKey::ESCAPE;
-          *character = 0x1B;
-          return true;
+          return DomKey::ESCAPE;
         // ctrl-\ maps to \x1C (File separator, Information separator four)
         case VKEY_OEM_5:
-          *dom_key = DomKey::CHARACTER;
-          *character = 0x1C;
-          return true;
+          return DomKey::FromCharacter(0x1C);
         // ctrl-] maps to \x1D (Group separator, Information separator three)
         case VKEY_OEM_6:
-          *dom_key = DomKey::CHARACTER;
-          *character = 0x1D;
-          return true;
+          return DomKey::FromCharacter(0x1D);
         // ctrl-Enter maps to \x0A (Line feed)
         case VKEY_RETURN:
-          *dom_key = DomKey::CHARACTER;
-          *character = 0x0A;
-          return true;
-        // Returns 0 for all other keys to avoid inputting unexpected chars.
+          return DomKey::FromCharacter(0x0A);
+        // Returns UNIDENTIFIED for all other keys to avoid inputting
+        // unexpected chars.
         default:
-          *dom_key = DomKey::UNIDENTIFIED;
-          *character = 0;
-          return false;
+          return DomKey::UNIDENTIFIED;
       }
     }
   }
 
   // ASCII alphanumeric characters.
-  if (key_code >= VKEY_A && key_code <= VKEY_Z) {
-    *dom_key = DomKey::CHARACTER;
-    *character = static_cast<uint16>(key_code - VKEY_A + (upper ? 'A' : 'a'));
-    return true;
-  }
+  if (key_code >= VKEY_A && key_code <= VKEY_Z)
+    return DomKey::FromCharacter(key_code - VKEY_A + (upper ? 'A' : 'a'));
   if (key_code >= VKEY_0 && key_code <= VKEY_9) {
-    *dom_key = DomKey::CHARACTER;
-    *character =
-        shift ? ")!@#$%^&*("[key_code - VKEY_0] : static_cast<uint16>(key_code);
-    return true;
+    return DomKey::FromCharacter(shift ? ")!@#$%^&*("[key_code - VKEY_0]
+                 : '0' + key_code - VKEY_0);
   }
-  if (key_code >= VKEY_NUMPAD0 && key_code <= VKEY_NUMPAD9) {
-    *dom_key = DomKey::CHARACTER;
-    *character = static_cast<uint16>(key_code - VKEY_NUMPAD0 + '0');
-    return true;
-  }
+  if (key_code >= VKEY_NUMPAD0 && key_code <= VKEY_NUMPAD9)
+    return DomKey::FromCharacter(key_code - VKEY_NUMPAD0 + '0');
 
   // Function keys.
-  if (key_code >= VKEY_F1 && key_code <= VKEY_F24) {
-    *dom_key =
-        static_cast<DomKey>(key_code - VKEY_F1 + static_cast<int>(DomKey::F1));
-    *character = 0;
-    return true;
-  }
+  if (key_code >= VKEY_F1 && key_code <= VKEY_F24)
+    return DomKey::FromCharacter(key_code - VKEY_F1 + DomKey::F1);
 
   // Other keys.
-  for (size_t i = 0; i < arraysize(kKeyboardCodeToMeaning); ++i) {
-    if (kKeyboardCodeToMeaning[i].key_code == key_code) {
-      const KeyboardCodeToMeaning* p = &kKeyboardCodeToMeaning[i];
-      *dom_key = p->key;
-      *character = (shift && p->shift_character) ? p->shift_character
-                                                 : p->plain_character;
-      return true;
-    }
+  for (const auto& k : kKeyboardCodeToDomKey) {
+    if (k.key_code == key_code)
+      return (shift && k.shift) ? k.shift : k.plain;
   }
-  *dom_key = DomKey::UNIDENTIFIED;
-  *character = 0;
-  return false;
+  return DomKey::UNIDENTIFIED;
 }
 
-bool DomCodeToUsLayoutMeaning(DomCode dom_code,
-                              int flags,
-                              DomKey* out_dom_key,
-                              base::char16* out_character,
-                              KeyboardCode* out_key_code) {
+bool DomCodeToUsLayoutDomKey(DomCode dom_code,
+                             int flags,
+                             DomKey* out_dom_key,
+                             KeyboardCode* out_key_code) {
   if ((flags & EF_CONTROL_DOWN) == EF_CONTROL_DOWN) {
-    if (DomCodeToControlCharacter(dom_code, flags, out_dom_key, out_character,
-                                  out_key_code)) {
+    if (DomCodeToControlCharacter(dom_code, flags, out_dom_key, out_key_code)) {
       return true;
     }
     if (!IsModifierDomCode(dom_code)) {
       *out_dom_key = DomKey::UNIDENTIFIED;
-      *out_character = 0;
       *out_key_code = LocatedToNonLocatedKeyboardCode(
           DomCodeToUsLayoutKeyboardCode(dom_code));
       return true;
@@ -299,13 +251,12 @@ bool DomCodeToUsLayoutMeaning(DomCode dom_code,
       if (it.dom_code == dom_code) {
         int state = ((flags & EF_SHIFT_DOWN) == EF_SHIFT_DOWN);
         base::char16 ch = it.character[state];
-        *out_dom_key = DomKey::CHARACTER;
-        *out_character = ch;
         if ((flags & EF_CAPS_LOCK_DOWN) == EF_CAPS_LOCK_DOWN) {
           ch |= 0x20;
           if ((ch >= 'a') && (ch <= 'z'))
-            *out_character = it.character[state ^ 1];
+            ch = it.character[state ^ 1];
         }
+        *out_dom_key = DomKey::FromCharacter(ch);
         *out_key_code = LocatedToNonLocatedKeyboardCode(
             DomCodeToUsLayoutKeyboardCode(dom_code));
         return true;
@@ -315,14 +266,12 @@ bool DomCodeToUsLayoutMeaning(DomCode dom_code,
   for (const auto& it : kNonPrintableCodeMap) {
     if (it.dom_code == dom_code) {
       *out_dom_key = it.dom_key;
-      *out_character = it.character;
       *out_key_code = NonPrintableDomKeyToKeyboardCode(it.dom_key);
       return true;
     }
   }
   if ((flags & EF_CONTROL_DOWN) == EF_CONTROL_DOWN) {
     *out_dom_key = DomKey::UNIDENTIFIED;
-    *out_character = 0;
     *out_key_code = LocatedToNonLocatedKeyboardCode(
         DomCodeToUsLayoutKeyboardCode(dom_code));
     return true;
@@ -333,7 +282,6 @@ bool DomCodeToUsLayoutMeaning(DomCode dom_code,
 bool DomCodeToControlCharacter(DomCode dom_code,
                                int flags,
                                DomKey* dom_key,
-                               base::char16* character,
                                KeyboardCode* key_code) {
   if ((flags & EF_CONTROL_DOWN) == 0)
     return false;
@@ -342,23 +290,19 @@ bool DomCodeToControlCharacter(DomCode dom_code,
   const int kKeyA = static_cast<int>(DomCode::KEY_A);
   // Control-A - Control-Z map to 0x01 - 0x1A.
   if (code >= kKeyA && code <= static_cast<int>(DomCode::KEY_Z)) {
-    *character = static_cast<base::char16>(code - kKeyA + 1);
+    *dom_key = DomKey::FromCharacter(code - kKeyA + 1);
+    *key_code = static_cast<KeyboardCode>(code - kKeyA + VKEY_A);
     switch (dom_code) {
       case DomCode::KEY_H:
-        *dom_key = DomKey::BACKSPACE;
         *key_code = VKEY_BACK;
         break;
       case DomCode::KEY_I:
-        *dom_key = DomKey::TAB;
         *key_code = VKEY_TAB;
         break;
       case DomCode::KEY_M:
-        *dom_key = DomKey::ENTER;
         *key_code = VKEY_RETURN;
         break;
       default:
-        *dom_key = DomKey::CHARACTER;
-        *key_code = static_cast<KeyboardCode>(code - kKeyA + VKEY_A);
         break;
     }
     return true;
@@ -368,20 +312,17 @@ bool DomCodeToControlCharacter(DomCode dom_code,
     switch (dom_code) {
       case DomCode::DIGIT2:
         // NUL
-        *character = 0;
-        *dom_key = DomKey::CHARACTER;
+        *dom_key = DomKey::FromCharacter(0);
         *key_code = VKEY_2;
         return true;
       case DomCode::DIGIT6:
         // RS
-        *character = 0x1E;
-        *dom_key = DomKey::CHARACTER;
+        *dom_key = DomKey::FromCharacter(0x1E);
         *key_code = VKEY_6;
         return true;
       case DomCode::MINUS:
         // US
-        *character = 0x1F;
-        *dom_key = DomKey::CHARACTER;
+        *dom_key = DomKey::FromCharacter(0x1F);
         *key_code = VKEY_OEM_MINUS;
         return true;
       default:
@@ -392,47 +333,26 @@ bool DomCodeToControlCharacter(DomCode dom_code,
   switch (dom_code) {
     case DomCode::ENTER:
       // NL
-      *character = 0x0A;
-      *dom_key = DomKey::CHARACTER;
+      *dom_key = DomKey::FromCharacter(0x0A);
       *key_code = VKEY_RETURN;
       return true;
     case DomCode::BRACKET_LEFT:
       // ESC
-      *character = 0x1B;
-      *dom_key = DomKey::ESCAPE;
+      *dom_key = DomKey::FromCharacter(0x1B);
       *key_code = VKEY_OEM_4;
       return true;
     case DomCode::BACKSLASH:
       // FS
-      *character = 0x1C;
-      *dom_key = DomKey::CHARACTER;
+      *dom_key = DomKey::FromCharacter(0x1C);
       *key_code = VKEY_OEM_5;
       return true;
     case DomCode::BRACKET_RIGHT:
       // GS
-      *character = 0x1D;
-      *dom_key = DomKey::CHARACTER;
+      *dom_key = DomKey::FromCharacter(0x1D);
       *key_code = VKEY_OEM_6;
       return true;
     default:
       return false;
-  }
-}
-
-DomKey CharacterToDomKey(uint32 character) {
-  switch (character) {
-    case 0x08:
-      return DomKey::BACKSPACE;
-    case 0x09:
-      return DomKey::TAB;
-    case 0x0D:
-      return DomKey::ENTER;
-    case 0x1B:
-      return DomKey::ESCAPE;
-    case 0x7F:
-      return DomKey::DEL;
-    default:
-      return DomKey::CHARACTER;
   }
 }
 

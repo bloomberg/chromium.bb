@@ -7,6 +7,10 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
+#ifndef XK_dead_greek
+#define XK_dead_greek 0xfe8c
+#endif
+
 namespace ui {
 
 DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym) {
@@ -353,36 +357,104 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym) {
     case XKB_KEY_ISO_Last_Group:
       return DomKey::GROUP_LAST;
     case XKB_KEY_dead_grave:
+      // combining grave accent
+      return DomKey::DeadKeyFromCombiningCharacter(0x0300);
     case XKB_KEY_dead_acute:
+      // combining acute accent
+      return DomKey::DeadKeyFromCombiningCharacter(0x0301);
     case XKB_KEY_dead_circumflex:
+      // combining circumflex accent
+      return DomKey::DeadKeyFromCombiningCharacter(0x0302);
     case XKB_KEY_dead_tilde:
+      // combining tilde
+      return DomKey::DeadKeyFromCombiningCharacter(0x0303);
     case XKB_KEY_dead_macron:
+      // combining macron
+      return DomKey::DeadKeyFromCombiningCharacter(0x0304);
     case XKB_KEY_dead_breve:
+      // combining breve
+      return DomKey::DeadKeyFromCombiningCharacter(0x0306);
     case XKB_KEY_dead_abovedot:
+      // combining dot above
+      return DomKey::DeadKeyFromCombiningCharacter(0x0307);
     case XKB_KEY_dead_diaeresis:
+      // combining diaeresis
+      return DomKey::DeadKeyFromCombiningCharacter(0x0308);
     case XKB_KEY_dead_abovering:
+      // combining ring above
+      return DomKey::DeadKeyFromCombiningCharacter(0x030A);
     case XKB_KEY_dead_doubleacute:
+      // combining double acute accent
+      return DomKey::DeadKeyFromCombiningCharacter(0x030B);
     case XKB_KEY_dead_caron:
+      // combining caron
+      return DomKey::DeadKeyFromCombiningCharacter(0x030C);
     case XKB_KEY_dead_cedilla:
+      // combining cedilla
+      return DomKey::DeadKeyFromCombiningCharacter(0x0327);
     case XKB_KEY_dead_ogonek:
+      // combining ogonek
+      return DomKey::DeadKeyFromCombiningCharacter(0x0328);
     case XKB_KEY_dead_iota:
+      // combining greek ypogegrammeni
+      return DomKey::DeadKeyFromCombiningCharacter(0x0345);
+    case XKB_KEY_dead_voiced_sound:
+      // combining voiced sound mark
+      return DomKey::DeadKeyFromCombiningCharacter(0x3099);
+    case XKB_KEY_dead_semivoiced_sound:
+      // combining semi-voiced sound mark
+      return DomKey::DeadKeyFromCombiningCharacter(0x309A);
     case XKB_KEY_dead_belowdot:
+      // combining dot below
+      return DomKey::DeadKeyFromCombiningCharacter(0x0323);
     case XKB_KEY_dead_hook:
+      // combining hook above
+      return DomKey::DeadKeyFromCombiningCharacter(0x0309);
     case XKB_KEY_dead_horn:
+      // combining horn
+      return DomKey::DeadKeyFromCombiningCharacter(0x031B);
     case XKB_KEY_dead_stroke:
+      // combining long solidus overlay
+      return DomKey::DeadKeyFromCombiningCharacter(0x0338);
     case XKB_KEY_dead_abovecomma:
+      // combining comma above
+      return DomKey::DeadKeyFromCombiningCharacter(0x0313);
     case XKB_KEY_dead_abovereversedcomma:
+      // combining reversed comma above
+      return DomKey::DeadKeyFromCombiningCharacter(0x0314);
     case XKB_KEY_dead_doublegrave:
+      // combining double grave accent
+      return DomKey::DeadKeyFromCombiningCharacter(0x030F);
     case XKB_KEY_dead_belowring:
+      // combining ring below
+      return DomKey::DeadKeyFromCombiningCharacter(0x0325);
     case XKB_KEY_dead_belowmacron:
+      // combining macron below
+      return DomKey::DeadKeyFromCombiningCharacter(0x0331);
     case XKB_KEY_dead_belowcircumflex:
+      // combining circumflex accent below
+      return DomKey::DeadKeyFromCombiningCharacter(0x032D);
     case XKB_KEY_dead_belowtilde:
+      // combining tilde below
+      return DomKey::DeadKeyFromCombiningCharacter(0x0330);
     case XKB_KEY_dead_belowbreve:
+      // combining breve below
+      return DomKey::DeadKeyFromCombiningCharacter(0x032E);
     case XKB_KEY_dead_belowdiaeresis:
+      // combining diaeresis below
+      return DomKey::DeadKeyFromCombiningCharacter(0x0324);
     case XKB_KEY_dead_invertedbreve:
+      // combining inverted breve
+      return DomKey::DeadKeyFromCombiningCharacter(0x0311);
     case XKB_KEY_dead_belowcomma:
+      // combining comma below
+      return DomKey::DeadKeyFromCombiningCharacter(0x0326);
     case XKB_KEY_dead_currency:
-      return DomKey::DEAD;
+      // currency sign
+      return DomKey::DeadKeyFromCombiningCharacter(0x00A4);
+    case XKB_KEY_dead_greek:
+      // greek question mark
+      return DomKey::DeadKeyFromCombiningCharacter(0x037E);
     default:
       return DomKey::NONE;
   }
@@ -390,9 +462,9 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym) {
 
 DomKey XKeySymToDomKey(xkb_keysym_t keysym, base::char16 character) {
   DomKey dom_key = NonPrintableXKeySymToDomKey(keysym);
-  if (dom_key == DomKey::NONE)
-    dom_key = CharacterToDomKey(character);
-  return dom_key;
+  if (dom_key != DomKey::NONE)
+    return dom_key;
+  return DomKey::FromCharacter(character);
 }
 
 }  // namespace ui

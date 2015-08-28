@@ -85,13 +85,12 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
                                base::char16 character) const {
     KeyboardCode key_code = DifficultKeyboardCode(
         dom_code, flags, key_code_converter_.DomCodeToXkbKeyCode(dom_code),
-        flags, CharacterToKeySym(character), DomKey::CHARACTER, character);
+        flags, CharacterToKeySym(character), character);
     if (key_code == VKEY_UNKNOWN) {
       DomKey dummy_dom_key;
-      base::char16 dummy_character;
       // If this fails, key_code remains VKEY_UNKNOWN.
-      ignore_result(DomCodeToUsLayoutMeaning(dom_code, EF_NONE, &dummy_dom_key,
-                                             &dummy_character, &key_code));
+      ignore_result(DomCodeToUsLayoutDomKey(dom_code, EF_NONE, &dummy_dom_key,
+                                             &key_code));
     }
     return key_code;
   }
@@ -100,7 +99,7 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
   bool XkbLookup(xkb_keycode_t xkb_keycode,
                  xkb_mod_mask_t xkb_flags,
                  xkb_keysym_t* xkb_keysym,
-                 base::char16* character) const override {
+                 uint32_t* character) const override {
     switch (entry_type_) {
       case EntryType::NONE:
         break;
@@ -817,11 +816,10 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForNonPrintable) {
     SCOPED_TRACE(static_cast<int>(e.test.dom_code));
     layout_engine_->SetEntry(&e.test);
     DomKey dom_key = DomKey::NONE;
-    base::char16 character = 0;
     KeyboardCode key_code = VKEY_UNKNOWN;
     uint32_t keysym;
     EXPECT_TRUE(layout_engine_->Lookup(e.test.dom_code, EF_NONE, &dom_key,
-                                       &character, &key_code, &keysym));
+                                       &key_code, &keysym));
     EXPECT_EQ(e.test.keysym, keysym);
     EXPECT_EQ(e.key_code, key_code);
   }

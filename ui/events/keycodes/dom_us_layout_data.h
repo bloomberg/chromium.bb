@@ -8,7 +8,7 @@
 namespace ui {
 
 // This table maps a DomCode to a printable character, assuming US layout.
-// It is used by DomCodeToUsLayoutMeaning(), which provides a fallback
+// It is used by DomCodeToUsLayoutDomKey(), which provides a fallback
 // interpretation when there is no other way to map a physical key.
 const struct PrintableCodeEntry {
   DomCode dom_code;
@@ -88,12 +88,11 @@ const struct PrintableCodeEntry {
 };
 
 // This table maps a DomCode to a DomKey, assuming US keyboard layout.
-// It is used by DomCodeToUsLayoutMeaning(), which provides a fallback
+// It is used by DomCodeToUsLayoutDomKey(), which provides a fallback
 // interpretation when there is no other way to map a physical key.
 const struct NonPrintableCodeEntry {
   DomCode dom_code;
-  DomKey dom_key;
-  base::char16 character;
+  DomKey::Base dom_key;
 } kNonPrintableCodeMap[] = {
     {DomCode::ABORT, DomKey::CANCEL},
     {DomCode::AGAIN, DomKey::AGAIN},
@@ -103,7 +102,7 @@ const struct NonPrintableCodeEntry {
     {DomCode::ARROW_LEFT, DomKey::ARROW_LEFT},
     {DomCode::ARROW_RIGHT, DomKey::ARROW_RIGHT},
     {DomCode::ARROW_UP, DomKey::ARROW_UP},
-    {DomCode::BACKSPACE, DomKey::BACKSPACE, 0x0008},
+    {DomCode::BACKSPACE, DomKey::BACKSPACE},
     {DomCode::BRIGHTNESS_DOWN, DomKey::BRIGHTNESS_DOWN},
     {DomCode::BRIGHTNESS_UP, DomKey::BRIGHTNESS_UP},
     // {DomCode::BRIGHTNESS_AUTO, DomKey::_}
@@ -124,11 +123,11 @@ const struct NonPrintableCodeEntry {
     {DomCode::CONVERT, DomKey::CONVERT},
     {DomCode::COPY, DomKey::COPY},
     {DomCode::CUT, DomKey::CUT},
-    {DomCode::DEL, DomKey::DEL, 0x007F},
+    {DomCode::DEL, DomKey::DEL},
     {DomCode::EJECT, DomKey::EJECT},
     {DomCode::END, DomKey::END},
-    {DomCode::ENTER, DomKey::ENTER, 0x000D},
-    {DomCode::ESCAPE, DomKey::ESCAPE, 0x001B},
+    {DomCode::ENTER, DomKey::ENTER},
+    {DomCode::ESCAPE, DomKey::ESCAPE},
     {DomCode::F1, DomKey::F1},
     {DomCode::F2, DomKey::F2},
     {DomCode::F3, DomKey::F3},
@@ -186,9 +185,9 @@ const struct NonPrintableCodeEntry {
     // {DomCode::MENU, DomKey::_}
     {DomCode::NON_CONVERT, DomKey::NON_CONVERT},
     {DomCode::NUM_LOCK, DomKey::NUM_LOCK},
-    {DomCode::NUMPAD_BACKSPACE, DomKey::BACKSPACE, 0x0008},
+    {DomCode::NUMPAD_BACKSPACE, DomKey::BACKSPACE},
     {DomCode::NUMPAD_CLEAR, DomKey::CLEAR},
-    {DomCode::NUMPAD_ENTER, DomKey::ENTER, 0x000D},
+    {DomCode::NUMPAD_ENTER, DomKey::ENTER},
     // {DomCode::NUMPAD_CLEAR_ENTRY, DomKey::_}
     // {DomCode::NUMPAD_MEMORY_ADD, DomKey::_}
     // {DomCode::NUMPAD_MEMORY_CLEAR, DomKey::_}
@@ -211,7 +210,7 @@ const struct NonPrintableCodeEntry {
     {DomCode::SHIFT_LEFT, DomKey::SHIFT},
     {DomCode::SHIFT_RIGHT, DomKey::SHIFT},
     {DomCode::SUPER, DomKey::SUPER},
-    {DomCode::TAB, DomKey::TAB, 0x0009},
+    {DomCode::TAB, DomKey::TAB},
     {DomCode::UNDO, DomKey::UNDO},
     // {DomCode::VOICE_COMMAND, DomKey::_}
     {DomCode::VOLUME_DOWN, DomKey::VOLUME_DOWN},
@@ -223,7 +222,7 @@ const struct NonPrintableCodeEntry {
 
 // This table maps a DomKey to a non-located KeyboardCode.
 const struct DomKeyToKeyboardCodeEntry {
-  DomKey dom_key;
+  DomKey::Base dom_key;
   KeyboardCode key_code;
 } kDomKeyToKeyboardCodeMap[] = {
     // No value.

@@ -673,9 +673,7 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event)
       key_code_(KeyboardCodeFromNative(native_event)),
       code_(CodeFromNative(native_event)),
       is_char_(IsCharFromNative(native_event)),
-      platform_keycode_(PlatformKeycodeFromNative(native_event)),
-      key_(DomKey::NONE),
-      character_(0) {
+      platform_keycode_(PlatformKeycodeFromNative(native_event)) {
   if (IsRepeated(*this))
     set_flags(flags() | ui::EF_IS_REPEAT);
 
@@ -685,7 +683,7 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event)
 #if defined(OS_WIN)
   // Only Windows has native character events.
   if (is_char_)
-    character_ = native_event.wParam;
+    key_ = DomKey::FromCharacter(native_event.wParam);
 #endif
 }
 
@@ -694,11 +692,7 @@ KeyEvent::KeyEvent(EventType type,
                    int flags)
     : Event(type, EventTimeForNow(), flags),
       key_code_(key_code),
-      code_(UsLayoutKeyboardCodeToDomCode(key_code)),
-      is_char_(false),
-      platform_keycode_(0),
-      key_(DomKey::NONE),
-      character_() {
+      code_(UsLayoutKeyboardCodeToDomCode(key_code)) {
 }
 
 KeyEvent::KeyEvent(EventType type,
@@ -707,11 +701,7 @@ KeyEvent::KeyEvent(EventType type,
                    int flags)
     : Event(type, EventTimeForNow(), flags),
       key_code_(key_code),
-      code_(code),
-      is_char_(false),
-      platform_keycode_(0),
-      key_(DomKey::NONE),
-      character_(0) {
+      code_(code) {
 }
 
 KeyEvent::KeyEvent(EventType type,
@@ -719,15 +709,11 @@ KeyEvent::KeyEvent(EventType type,
                    DomCode code,
                    int flags,
                    DomKey key,
-                   base::char16 character,
                    base::TimeDelta time_stamp)
     : Event(type, time_stamp, flags),
       key_code_(key_code),
       code_(code),
-      is_char_(false),
-      platform_keycode_(0),
-      key_(key),
-      character_(character) {
+      key_(key) {
 }
 
 KeyEvent::KeyEvent(base::char16 character, KeyboardCode key_code, int flags)
@@ -735,9 +721,7 @@ KeyEvent::KeyEvent(base::char16 character, KeyboardCode key_code, int flags)
       key_code_(key_code),
       code_(DomCode::NONE),
       is_char_(true),
-      platform_keycode_(0),
-      key_(DomKey::CHARACTER),
-      character_(character) {
+      key_(DomKey::FromCharacter(character)) {
 }
 
 KeyEvent::KeyEvent(const KeyEvent& rhs)
@@ -746,8 +730,7 @@ KeyEvent::KeyEvent(const KeyEvent& rhs)
       code_(rhs.code_),
       is_char_(rhs.is_char_),
       platform_keycode_(rhs.platform_keycode_),
-      key_(rhs.key_),
-      character_(rhs.character_) {
+      key_(rhs.key_) {
   if (rhs.extended_key_event_data_)
     extended_key_event_data_.reset(rhs.extended_key_event_data_->Clone());
 }
@@ -760,7 +743,6 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
     key_ = rhs.key_;
     is_char_ = rhs.is_char_;
     platform_keycode_ = rhs.platform_keycode_;
-    character_ = rhs.character_;
 
     if (rhs.extended_key_event_data_)
       extended_key_event_data_.reset(rhs.extended_key_event_data_->Clone());
@@ -775,14 +757,6 @@ void KeyEvent::SetExtendedKeyEventData(scoped_ptr<ExtendedKeyEventData> data) {
 }
 
 void KeyEvent::ApplyLayout() const {
-  // If the client has set the character (e.g. faked key events from virtual
-  // keyboard), it's client's responsibility to set the dom key correctly.
-  // Otherwise, set the dom key as unidentified.
-  // Please refer to crbug.com/443889.
-  if (character_ != 0) {
-    key_ = DomKey::UNIDENTIFIED;
-    return;
-  }
   ui::DomCode code = code_;
   if (code == DomCode::NONE) {
     // Catch old code that tries to do layout without a physical key, and try
@@ -806,13 +780,12 @@ void KeyEvent::ApplyLayout() const {
   // returns 'a' for VKEY_A even if the key is actually bound to 'à' in X11.
   // GetCharacterFromXEvent returns 'à' in that case.
   if (!IsControlDown() && native_event()) {
-    GetMeaningFromXEvent(native_event(), &key_, &character_);
+    key_ = GetDomKeyFromXEvent(native_event());
     return;
   }
 #elif defined(USE_OZONE)
   if (KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
-          code, flags(), &key_, &character_, &dummy_key_code,
-          &platform_keycode_)) {
+          code, flags(), &key_, &dummy_key_code, &platform_keycode_)) {
     return;
   }
 #else
@@ -821,33 +794,38 @@ void KeyEvent::ApplyLayout() const {
            EventTypeFromNative(native_event()) == ET_KEY_RELEASED);
   }
 #endif
-  if (!DomCodeToUsLayoutMeaning(code, flags(), &key_, &character_,
-                                &dummy_key_code)) {
+  if (!DomCodeToUsLayoutDomKey(code, flags(), &key_, &dummy_key_code))
     key_ = DomKey::UNIDENTIFIED;
-  }
 }
 
 DomKey KeyEvent::GetDomKey() const {
-  // Determination of character_ and key_ may be done lazily.
+  // Determination of key_ may be done lazily.
   if (key_ == DomKey::NONE)
     ApplyLayout();
   return key_;
 }
 
 base::char16 KeyEvent::GetCharacter() const {
-  // Determination of character_ and key_ may be done lazily.
+  // Determination of key_ may be done lazily.
   if (key_ == DomKey::NONE)
     ApplyLayout();
-  return character_;
+  if (key_.IsCharacter()) {
+    // Historically ui::KeyEvent has held only BMP characters.
+    // Until this explicitly changes, require |key_| to hold a BMP character.
+    DomKey::Base utf32_character = key_.ToCharacter();
+    base::char16 ucs2_character = static_cast<base::char16>(utf32_character);
+    DCHECK(static_cast<DomKey::Base>(ucs2_character) == utf32_character);
+    return ucs2_character;
+  }
+  return 0;
 }
 
 base::char16 KeyEvent::GetText() const {
   if ((flags() & EF_CONTROL_DOWN) != 0) {
-    base::char16 character;
     ui::DomKey key;
     ui::KeyboardCode key_code;
-    if (DomCodeToControlCharacter(code_, flags(), &key, &character, &key_code))
-      return character;
+    if (DomCodeToControlCharacter(code_, flags(), &key, &key_code))
+      return key.ToCharacter();
   }
   return GetUnmodifiedText();
 }
@@ -908,7 +886,7 @@ KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {
 
 uint16 KeyEvent::GetConflatedWindowsKeyCode() const {
   if (is_char_)
-    return character_;
+    return key_.ToCharacter();
   return key_code_;
 }
 

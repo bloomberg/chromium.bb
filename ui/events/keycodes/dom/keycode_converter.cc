@@ -5,6 +5,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 
@@ -36,11 +37,17 @@ struct DomKeyMapEntry {
   const char* string;
 };
 
-#define DOM_KEY_MAP(key, id) {DomKey::id, key}
 #define DOM_KEY_MAP_DECLARATION const DomKeyMapEntry dom_key_map[] =
+#define DOM_KEY_UNI(key, id, value) {DomKey::id, key}
+#define DOM_KEY_MAP_BEGIN
+#define DOM_KEY_MAP(key, id)        {DomKey::id, key}
+#define DOM_KEY_MAP_END
 #include "ui/events/keycodes/dom/dom_key_data.inc"
-#undef DOM_KEY_MAP
 #undef DOM_KEY_MAP_DECLARATION
+#undef DOM_KEY_MAP_BEGIN
+#undef DOM_KEY_MAP
+#undef DOM_KEY_MAP_END
+#undef DOM_KEY_UNI
 
 const size_t kDomKeyMapEntries = arraysize(dom_key_map);
 
@@ -166,22 +173,51 @@ DomKeyLocation KeycodeConverter::DomCodeToLocation(DomCode dom_code) {
 DomKey KeycodeConverter::KeyStringToDomKey(const char* key) {
   if (!key || !*key)
     return DomKey::NONE;
+  // Check for standard key names.
   for (size_t i = 0; i < kDomKeyMapEntries; ++i) {
-    if (dom_key_map[i].string &&
-        strcmp(dom_key_map[i].string, key) == 0) {
+    if (dom_key_map[i].string && strcmp(dom_key_map[i].string, key) == 0) {
       return dom_key_map[i].dom_key;
     }
+  }
+  if (strcmp(key, "Dead") == 0) {
+    // The web KeyboardEvent string does not encode the combining character,
+    // so we just set it to the Unicode designated non-character 0xFFFF.
+    // This will round-trip convert back to 'Dead' but take no part in
+    // character composition.
+    return DomKey::DeadKeyFromCombiningCharacter(0xFFFF);
+  }
+  // Otherwise, if the string contains a single Unicode character,
+  // the key value is that character.
+  int32_t char_index = 0;
+  uint32_t character;
+  if (base::ReadUnicodeCharacter(key, static_cast<int32_t>(strlen(key)),
+                                 &char_index, &character) &&
+      key[++char_index] == 0) {
+    return DomKey::FromCharacter(character);
   }
   return DomKey::NONE;
 }
 
 // static
-const char* KeycodeConverter::DomKeyToKeyString(DomKey dom_key) {
-  for (size_t i = 0; i < kDomKeyMapEntries; ++i) {
-    if (dom_key_map[i].dom_key == dom_key)
-      return dom_key_map[i].string;
+std::string KeycodeConverter::DomKeyToKeyString(DomKey dom_key) {
+  if (dom_key.IsDeadKey()) {
+    // All dead-key combining codes collapse to 'Dead', as UI Events
+    // KeyboardEvent represents the combining character separately.
+    return "Dead";
   }
-  return "";
+  for (size_t i = 0; i < kDomKeyMapEntries; ++i) {
+    if (dom_key_map[i].dom_key == dom_key) {
+      if (dom_key_map[i].string)
+        return dom_key_map[i].string;
+      break;
+    }
+  }
+  if (dom_key.IsCharacter()) {
+    std::string s;
+    base::WriteUnicodeCharacter(dom_key.ToCharacter(), &s);
+    return s;
+  }
+  return std::string();
 }
 
 // static

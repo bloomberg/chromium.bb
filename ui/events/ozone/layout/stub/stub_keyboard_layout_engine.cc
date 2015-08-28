@@ -41,11 +41,9 @@ bool StubKeyboardLayoutEngine::UsesAltGr() const {
 bool StubKeyboardLayoutEngine::Lookup(DomCode dom_code,
                                       int flags,
                                       DomKey* out_dom_key,
-                                      base::char16* out_character,
                                       KeyboardCode* out_key_code,
                                       uint32* platform_keycode) const {
-  return DomCodeToUsLayoutMeaning(dom_code, flags, out_dom_key, out_character,
-                                  out_key_code);
+  return DomCodeToUsLayoutDomKey(dom_code, flags, out_dom_key, out_key_code);
 }
 
 }  // namespace ui

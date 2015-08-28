@@ -10,6 +10,7 @@
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
@@ -32,13 +33,12 @@ bool ConvertKeyCodeToText(ui::KeyboardCode key_code,
   if (modifiers & kShiftKeyModifierMask)
     event_flags |= ui::EF_SHIFT_DOWN;
 
-  ui::DomKey dom_key_ignored;
-  base::char16 str[2] = {'\0'};
+  ui::DomKey dom_key;
   ui::KeyboardCode key_code_ignored;
   uint32 platform_keycode_ignored;
 
-  if (!keyboard_layout_engine->Lookup(dom_code, event_flags, &dom_key_ignored,
-                                      &str[0], &key_code_ignored,
+  if (!keyboard_layout_engine->Lookup(dom_code, event_flags, &dom_key,
+                                      &key_code_ignored,
                                       &platform_keycode_ignored)) {
     // Key codes like ui::VKEY_UNKNOWN need to be mapped to the empty string, so
     // even if the lookup fails we still need to return true here.
@@ -46,13 +46,14 @@ bool ConvertKeyCodeToText(ui::KeyboardCode key_code,
     return true;
   }
 
-  if (!base::UTF16ToUTF8(str, base::c16len(str), text)) {
+  if (!dom_key.IsCharacter()) {
     *error_msg = base::StringPrintf(
         "unicode conversion failed for keycode %d with modifiers 0x%x",
         key_code, modifiers);
     return false;
   }
 
+  *text = ui::KeycodeConverter::DomKeyToKeyString(dom_key);
   return true;
 }
 

@@ -6,7 +6,10 @@
 #define UI_EVENTS_KEYCODES_DOM4_KEYCODE_CONVERTER_H_
 
 #include <stdint.h>
+#include <string>
+
 #include "base/basictypes.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 // For reference, the W3C UI Event spec is located at:
 // http://www.w3.org/TR/uievents/
@@ -14,7 +17,6 @@
 namespace ui {
 
 enum class DomCode;
-enum class DomKey;
 
 enum class DomKeyLocation { STANDARD, LEFT, RIGHT, NUMPAD };
 
@@ -64,10 +66,15 @@ class KeycodeConverter {
   static DomKeyLocation DomCodeToLocation(DomCode dom_code);
 
   // Convert a UI Events |key| string value into a DomKey.
+  // Accepts a character string containing either
+  // - a key name from http://www.w3.org/TR/DOM-Level-3-Events-key/, or
+  // - a single Unicode character (represented in UTF-8).
+  // Returns DomKey::NONE for other inputs, including |nullptr|.
   static DomKey KeyStringToDomKey(const char* key);
 
   // Convert a DomKey into a UI Events |key| string value.
-  static const char* DomKeyToKeyString(DomKey dom_key);
+  // For an invalid DomKey, returns an empty string.
+  static std::string DomKeyToKeyString(DomKey dom_key);
 
   // Returns true if the DomKey is a modifier.
   static bool IsDomKeyForModifier(DomKey dom_key);

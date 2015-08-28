@@ -193,8 +193,6 @@
           'layout/xkb/xkb_evdev_codes.cc',
           'layout/xkb/xkb_evdev_codes.h',
           'layout/xkb/xkb_key_code_converter.h',
-          'layout/xkb/xkb_keyboard_code_conversion.cc',
-          'layout/xkb/xkb_keyboard_code_conversion.h',
           'layout/xkb/xkb_keyboard_layout_engine.cc',
           'layout/xkb/xkb_keyboard_layout_engine.h',
           'layout/xkb/xkb_keysym.h',

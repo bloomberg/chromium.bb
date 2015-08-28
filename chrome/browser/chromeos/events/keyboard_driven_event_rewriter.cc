@@ -81,7 +81,6 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
       flags & ~(ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN),
       key_event.code(),
       key_event.GetDomKey(),
-      key_event.GetCharacter(),
       key_event.key_code()};
 
   chromeos::EventRewriter::BuildRewrittenKeyEvent(key_event, state,

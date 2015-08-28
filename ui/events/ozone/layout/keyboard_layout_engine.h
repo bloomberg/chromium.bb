@@ -8,13 +8,13 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/layout/events_ozone_layout_export.h"
 
 namespace ui {
 
 enum class DomCode;
-enum class DomKey;
 
 // A KeyboardLayoutEngine provides a platform-independent interface to
 // key mapping. Key mapping provides a meaning (DomKey and character,
@@ -66,7 +66,6 @@ class EVENTS_OZONE_LAYOUT_EXPORT KeyboardLayoutEngine {
   virtual bool Lookup(DomCode dom_code,
                       int event_flags,
                       DomKey* dom_key,
-                      base::char16* character,
                       KeyboardCode* key_code,
                       uint32* platform_keycode) const = 0;
 };

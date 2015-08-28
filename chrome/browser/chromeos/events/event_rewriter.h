@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 class PrefService;
 
@@ -23,7 +24,6 @@ class StickyKeysController;
 
 namespace ui {
 enum class DomCode;
-enum class DomKey;
 };
 
 namespace chromeos {
@@ -54,8 +54,7 @@ class EventRewriter : public ui::EventRewriter {
   struct MutableKeyState {
     int flags;
     ui::DomCode code;
-    ui::DomKey key;
-    base::char16 character;
+    ui::DomKey::Base key;
     ui::KeyboardCode key_code;
   };
 

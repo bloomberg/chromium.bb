@@ -15,6 +15,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point.h"
@@ -27,7 +28,6 @@ class Transform;
 namespace ui {
 class EventTarget;
 enum class DomCode;
-enum class DomKey;
 
 class EVENTS_EXPORT Event {
  public:
@@ -659,40 +659,38 @@ class EVENTS_EXPORT ExtendedKeyEventData {
 // or a character event (is_char_ == true).
 //
 // For a keystroke event,
-// -- is_char_ is false.
-// -- Event::type() can be any one of ET_KEY_PRESSED, ET_KEY_RELEASED.
-// -- code_ and Event::flags() represent the physical key event.
+// -- |bool is_char_| is false.
+// -- |EventType Event::type()| can be ET_KEY_PRESSED or ET_KEY_RELEASED.
+// -- |DomCode code_| and |int Event::flags()| represent the physical key event.
 //    - code_ is a platform-independent representation of the physical key,
-//      based on DOM KeyboardEvent |code| values. It does not vary depending
-//      on key layout.
+//      based on DOM UI Events KeyboardEvent |code| values. It does not
+//      vary depending on key layout.
+//      http://www.w3.org/TR/DOM-Level-3-Events-code/
 //    - Event::flags() provides the active modifiers for the physical key
 //      press. Its value reflects the state after the event; that is, for
 //      a modifier key, a press includes the corresponding flag and a release
 //      does not.
-// -- key_ and character_ provide the meaning of the key event, in the context
-//    of the active layout and modifiers. Together they correspond to DOM
-//    KeyboardEvent |key| values.
-//    - key_ is an enumeration of non-Unicode meanings, plus sentinels
-//      (specifically DomKey::CHARACTER for Unicode meanings).
-//    - character_ is the code point for Unicode meanings.
-// -- key_code_ is a KeyboardCode value associated with the key. This supports
-//    the legacy web event |keyCode| field, and the VKEY_ values are chosen
-//    to match Windows/IE for compatibility. For printable characters, this
-//    may or may not be a layout-mapped value, imitating MS Windows:
-//    if the mapped key generates a character that has an associated VKEY_
-//    code, then key_code_ is that code; if not, then key_code_ is the unmapped
-//    VKEY_ code. For example, US, Greek, Cyrillic, Japanese, etc. all use
-//    VKEY_Q for the key beside Tab, while French uses VKEY_A. The stored
-//    key_code_ is non-located (e.g. VKEY_SHIFT rather than VKEY_LSHIFT,
-//    VKEY_1 rather than VKEY_NUMPAD1).
+// -- |DomKey key_| provides the meaning (character or action) of the key
+//    event, in the context of the active layout and modifiers. It corresponds
+//    to DOM UI Events KeyboardEvent |key| values.
+//    http://www.w3.org/TR/DOM-Level-3-Events-key/
+// -- |KeyboardCode key_code_| supports the legacy web event |keyCode| field,
+//    and its VKEY_ values are chosen to match Windows/IE for compatibility.
+//    For printable characters, this may or may not be a layout-mapped value,
+//    imitating MS Windows: if the mapped key generates a character that has
+//    an associated VKEY_ code, then key_code_ is that code; if not, then
+//    key_code_ is the unmapped VKEY_ code. For example, US, Greek, Cyrillic,
+//    Japanese, etc. all use VKEY_Q for the key beside Tab, while French uses
+//    VKEY_A. The stored key_code_ is non-located (e.g. VKEY_SHIFT rather than
+//    VKEY_LSHIFT, VKEY_1 rather than VKEY_NUMPAD1).
 //
 // For a character event,
-// -- is_char_ is true.
-// -- type() is ET_KEY_PRESSED.
-// -- code_ is DomCode::NONE.
-// -- key_ is DomKey::CHARACTER and character_ is a UTF-16 code point.
-// -- key_code_ is conflated with character_ by some code, because both
-//    arrive in the wParam field of a Windows event.
+// -- |bool is_char_| is true.
+// -- |EventType Event::type()| is ET_KEY_PRESSED.
+// -- |DomCode code_| is DomCode::NONE.
+// -- |DomKey key_| is a UTF-16 code point.
+// -- |KeyboardCode key_code_| is conflated with the character-valued key_
+//    by some code, because both arrive in the wParam field of a Windows event.
 //
 class EVENTS_EXPORT KeyEvent : public Event {
  public:
@@ -701,7 +699,8 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // (WM_CHAR). Other systems have only keystroke events.
   explicit KeyEvent(const base::NativeEvent& native_event);
 
-  // Create a keystroke event.
+  // Create a keystroke event from a legacy KeyboardCode.
+  // This should not be used in new code.
   KeyEvent(EventType type, KeyboardCode key_code, int flags);
 
   // Create a fully defined keystroke event.
@@ -710,7 +709,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
            DomCode code,
            int flags,
            DomKey key,
-           base::char16 character,
            base::TimeDelta time_stamp);
 
   // Create a character event.
@@ -744,7 +742,9 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // which allows an I18N virtual keyboard to fabricate a keyboard event that
   // does not have a corresponding KeyboardCode (example: U+00E1 Latin small
   // letter A with acute, U+0410 Cyrillic capital letter A).
-  void set_character(base::char16 character) { character_ = character; }
+  void set_character(base::char16 character) {
+    key_ = DomKey::FromCharacter(character);
+  }
 
   // Gets the character generated by this key event. It only supports Unicode
   // BMP characters.
@@ -760,6 +760,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   base::char16 GetText() const;
 
   // Gets the platform key code. For XKB, this is the xksym value.
+  // This should not be used in new code.
   void set_platform_keycode(uint32 keycode) { platform_keycode_ = keycode; }
   uint32 platform_keycode() const { return platform_keycode_; }
 
@@ -810,7 +811,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   void set_is_char(bool is_char) { is_char_ = is_char; }
 
  private:
-  // Determine key_ and character_ on a keystroke event from code_ and flags().
+  // Determine key_ on a keystroke event from code_ and flags().
   void ApplyLayout() const;
 
   KeyboardCode key_code_;
@@ -823,13 +824,13 @@ class EVENTS_EXPORT KeyEvent : public Event {
   DomCode code_;
 
   // True if this is a character event, false if this is a keystroke event.
-  bool is_char_;
+  bool is_char_ = false;
 
   // The platform related keycode value. For XKB, it's keysym value.
   // For now, this is used for CharacterComposer in ChromeOS.
-  mutable uint32 platform_keycode_;
+  mutable uint32 platform_keycode_ = 0;
 
-  // TODO(kpschoedel): refactor so that key_ and character_ are not mutable.
+  // TODO(kpschoedel): refactor so that key_ is not mutable.
   // This requires defining the KeyEvent completely at construction rather
   // than lazily under GetCharacter(), which likely also means removing
   // the two 'incomplete' constructors. crbug.com/444045
@@ -837,20 +838,11 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // DOM KeyboardEvent |key|
   // http://www.w3.org/TR/DOM-Level-3-Events-key/
   //
-  // This value, together with character_, represents the meaning of a key.
-  // The value is DomKey::CHARACTER when the interpretation is a character.
-  // This, along with character_, is not necessarily initialized when the
-  // event is constructed; it may be set only if and when GetCharacter()
-  // or GetDomKey() is called.
-  mutable DomKey key_;
-
-  // String of 'key' defined in DOM KeyboardEvent (e.g. 'a', 'â')
-  // http://www.w3.org/TR/uievents/#keyboard-key-codes.
-  //
-  // This value represents the text that the key event will insert to input
-  // field. For key with modifier key, it may have specifial text.
-  // e.g. CTRL+A has '\x01'.
-  mutable base::char16 character_;
+  // This value represents the meaning of a key, which is either a Unicode
+  // character, or a named DomKey:: value.
+  // This is not necessarily initialized when the event is constructed;
+  // it may be set only if and when GetCharacter() or GetDomKey() is called.
+  mutable DomKey key_ = DomKey::NONE;
 
   // Parts of our event handling require raw native events (see both the
   // windows and linux implementations of web_input_event in content/). Because

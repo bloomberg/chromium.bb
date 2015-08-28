@@ -900,7 +900,7 @@ uint16 GetCharacterFromXEvent(const XEvent* xev) {
   return GetUnicodeCharacterFromXKeySym(keysym);
 }
 
-void GetMeaningFromXEvent(const XEvent* xev, DomKey* key, base::char16* ch) {
+DomKey GetDomKeyFromXEvent(const XEvent* xev) {
   XEvent xkeyevent = {0};
   const XKeyEvent* xkey = NULL;
   if (xev->type == GenericEvent) {
@@ -913,8 +913,8 @@ void GetMeaningFromXEvent(const XEvent* xev, DomKey* key, base::char16* ch) {
   }
   KeySym keysym = XK_VoidSymbol;
   XLookupString(const_cast<XKeyEvent*>(xkey), NULL, 0, &keysym, NULL);
-  *ch = GetUnicodeCharacterFromXKeySym(keysym);
-  *key = XKeySymToDomKey(keysym, *ch);
+  base::char16 ch = GetUnicodeCharacterFromXKeySym(keysym);
+  return XKeySymToDomKey(keysym, ch);
 }
 
 KeyboardCode DefaultKeyboardCodeFromHardwareKeycode(

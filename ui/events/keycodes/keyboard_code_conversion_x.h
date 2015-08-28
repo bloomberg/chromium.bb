@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "ui/events/events_base_export.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
 typedef union _XEvent XEvent;
@@ -16,7 +17,6 @@ typedef struct _XDisplay XDisplay;
 namespace ui {
 
 enum class DomCode;
-enum class DomKey;
 
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev);
 
@@ -28,9 +28,7 @@ EVENTS_BASE_EXPORT DomCode CodeFromXEvent(const XEvent* xev);
 EVENTS_BASE_EXPORT uint16 GetCharacterFromXEvent(const XEvent* xev);
 
 // Returns DomKey and character from an XEvent.
-EVENTS_BASE_EXPORT void GetMeaningFromXEvent(const XEvent* xev,
-                                             DomKey* key,
-                                             base::char16* character);
+EVENTS_BASE_EXPORT DomKey GetDomKeyFromXEvent(const XEvent* xev);
 
 // Converts a KeyboardCode into an X KeySym.
 EVENTS_BASE_EXPORT int XKeysymForWindowsKeyCode(KeyboardCode keycode,
