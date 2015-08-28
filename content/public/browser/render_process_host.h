@@ -280,7 +280,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
-  int GetActiveViewCount();
+  size_t GetActiveViewCount();
 
   // Static management functions -----------------------------------------------
 

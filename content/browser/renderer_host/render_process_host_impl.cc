@@ -1720,7 +1720,6 @@ void RenderProcessHostImpl::Cleanup() {
       io_surface_manager_token_.SetZero();
     }
 #endif
-
   }
 }
 
@@ -1814,7 +1813,7 @@ void RenderProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
 }
 
 bool RenderProcessHostImpl::FastShutdownForPageCount(size_t count) {
-  if (static_cast<size_t>(GetActiveViewCount()) == count)
+  if (GetActiveViewCount() == count)
     return FastShutdownIfPossible();
   return false;
 }
@@ -2168,8 +2167,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
   // TODO(darin): clean this up
 }
 
-int RenderProcessHost::GetActiveViewCount() {
-  int num_active_views = 0;
+size_t RenderProcessHost::GetActiveViewCount() {
+  size_t num_active_views = 0;
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
   while (RenderWidgetHost* widget = widgets->GetNextHost()) {
@@ -2232,8 +2231,7 @@ void RenderProcessHostImpl::OnShutdownRequest() {
   // Don't shut down if there are active RenderViews, or if there are pending
   // RenderViews being swapped back in.
   // In single process mode, we never shutdown the renderer.
-  int num_active_views = GetActiveViewCount();
-  if (pending_views_ || num_active_views > 0 || run_renderer_in_process())
+  if (pending_views_ || run_renderer_in_process() || GetActiveViewCount() > 0)
     return;
 
   // Notify any contents that might have swapped out renderers from this

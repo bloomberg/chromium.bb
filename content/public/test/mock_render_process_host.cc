@@ -236,7 +236,7 @@ void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {
 }
 
 bool MockRenderProcessHost::FastShutdownForPageCount(size_t count) {
-  if (static_cast<size_t>(GetActiveViewCount()) == count)
+  if (GetActiveViewCount() == count)
     return FastShutdownIfPossible();
   return false;
 }
@@ -351,4 +351,4 @@ void MockRenderProcessHostFactory::Remove(MockRenderProcessHost* host) const {
   }
 }
 
-}  // content
+}  // namespace content
