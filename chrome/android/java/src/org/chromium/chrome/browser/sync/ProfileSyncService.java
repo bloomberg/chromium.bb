@@ -124,19 +124,6 @@ public class ProfileSyncService {
         return get().mNativeProfileSyncServiceAndroid;
     }
 
-    /**
-     * If we are currently in the process of setting up sync, this method clears the
-     * sync setup in progress flag.
-     */
-    @Deprecated
-    @VisibleForTesting
-    public void finishSyncFirstSetupIfNeeded() {
-        if (isFirstSetupInProgress()) {
-            setSyncSetupCompleted();
-            setSetupInProgress(false);
-        }
-    }
-
     public void signOut() {
         nativeSignOutSync(mNativeProfileSyncServiceAndroid);
     }
@@ -480,13 +467,6 @@ public class ProfileSyncService {
     @VisibleForTesting
     public void overrideNetworkResourcesForTest(long networkResources) {
         nativeOverrideNetworkResourcesForTest(mNativeProfileSyncServiceAndroid, networkResources);
-    }
-
-    @Deprecated
-    public boolean isSyncingUrlsWithKeystorePassphrase() {
-        return isSyncInitialized()
-            && getPreferredDataTypes().contains(ModelType.TYPED_URLS)
-            && getPassphraseType().equals(PassphraseType.KEYSTORE_PASSPHRASE);
     }
 
     /**
