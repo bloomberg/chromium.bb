@@ -127,7 +127,7 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
       kCFAllocatorDefault, num_planes, &kCFTypeArrayCallBacks));
 
   for (size_t plane = 0; plane < num_planes; ++plane) {
-    size_t factor = GpuMemoryBufferImpl::SubsamplingFactor(format, plane);
+    size_t factor = gfx::SubsamplingFactorForBufferFormat(format, plane);
 
     base::ScopedCFTypeRef<CFMutableDictionaryRef> plane_info(
         CFDictionaryCreateMutable(kCFAllocatorDefault, 0,

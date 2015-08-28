@@ -34,7 +34,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplSharedMemory::Create(
     gfx::BufferFormat format,
     const DestructionCallback& callback) {
   size_t buffer_size = 0u;
-  if (!BufferSizeInBytes(size, format, &buffer_size))
+  if (!gfx::BufferSizeForBufferFormatChecked(size, format, &buffer_size))
     return nullptr;
 
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
@@ -53,7 +53,7 @@ GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
     gfx::BufferFormat format,
     base::ProcessHandle child_process) {
   size_t buffer_size = 0u;
-  if (!BufferSizeInBytes(size, format, &buffer_size))
+  if (!gfx::BufferSizeForBufferFormatChecked(size, format, &buffer_size))
     return gfx::GpuMemoryBufferHandle();
 
   base::SharedMemory shared_memory;
@@ -77,10 +77,7 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
   if (!base::SharedMemory::IsHandleValid(handle.handle))
     return nullptr;
 
-  size_t buffer_size = 0u;
-  bool result = BufferSizeInBytes(size, format, &buffer_size);
-  DCHECK(result);
-
+  size_t buffer_size = gfx::BufferSizeForBufferFormat(size, format);
   scoped_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle.handle, false));
   if (!shared_memory->Map(buffer_size))
@@ -154,7 +151,7 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     case gfx::BufferFormat::YUV_420: {
       size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
       for (size_t i = 0; i < num_planes; ++i) {
-        size_t factor = SubsamplingFactor(format, i);
+        size_t factor = gfx::SubsamplingFactorForBufferFormat(format, i);
         if (size.width() % factor || size.height() % factor)
           return false;
       }
@@ -174,12 +171,9 @@ bool GpuMemoryBufferImplSharedMemory::Map(void** data) {
   size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format_);
   for (size_t i = 0; i < num_planes; ++i) {
     data[i] = reinterpret_cast<uint8*>(shared_memory_->memory()) + offset;
-    size_t row_size_in_bytes = 0;
-    bool valid_row_size =
-        RowSizeInBytes(size_.width(), format_, i, &row_size_in_bytes);
-    DCHECK(valid_row_size);
-    offset +=
-        row_size_in_bytes * (size_.height() / SubsamplingFactor(format_, i));
+    size_t row_size = gfx::RowSizeForBufferFormat(size_.width(), format_, i);
+    size_t factor = gfx::SubsamplingFactorForBufferFormat(format_, i);
+    offset += row_size * (size_.height() / factor);
   }
   mapped_ = true;
   return true;
@@ -192,13 +186,8 @@ void GpuMemoryBufferImplSharedMemory::Unmap() {
 
 void GpuMemoryBufferImplSharedMemory::GetStride(int* stride) const {
   size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format_);
-  for (size_t i = 0; i < num_planes; ++i) {
-    size_t row_size_in_bytes = 0;
-    bool valid_row_size =
-        RowSizeInBytes(size_.width(), format_, i, &row_size_in_bytes);
-    DCHECK(valid_row_size);
-    stride[i] = row_size_in_bytes;
-  }
+  for (size_t i = 0; i < num_planes; ++i)
+    stride[i] = gfx::RowSizeForBufferFormat(size_.width(), format_, i);
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {

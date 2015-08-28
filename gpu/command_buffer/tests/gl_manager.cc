@@ -41,73 +41,6 @@
 namespace gpu {
 namespace {
 
-size_t SubsamplingFactor(gfx::BufferFormat format, int plane) {
-  switch (format) {
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::UYVY_422:
-      return 1;
-    case gfx::BufferFormat::YUV_420: {
-      static size_t factor[] = {1, 2, 2};
-      DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
-      return factor[plane];
-    }
-  }
-  NOTREACHED();
-  return 0;
-}
-
-size_t StrideInBytes(size_t width, gfx::BufferFormat format, int plane) {
-  switch (format) {
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT5:
-      DCHECK_EQ(plane, 0);
-      return width;
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::ETC1:
-      DCHECK_EQ(plane, 0);
-      DCHECK_EQ(width % 2, 0U);
-      return width / 2;
-    case gfx::BufferFormat::R_8:
-      return (width + 3) & ~0x3;
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::UYVY_422:
-      DCHECK_EQ(plane, 0);
-      return width * 2;
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::BGRA_8888:
-      DCHECK_EQ(plane, 0);
-      return width * 4;
-    case gfx::BufferFormat::BGRX_8888:
-      NOTREACHED();
-      return 0;
-    case gfx::BufferFormat::YUV_420:
-      return width / SubsamplingFactor(format, plane);
-  }
-
-  NOTREACHED();
-  return 0;
-}
-
-size_t BufferSizeInBytes(const gfx::Size& size, gfx::BufferFormat format) {
-  size_t size_in_bytes = 0;
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
-  for (size_t i = 0; i < num_planes; ++i) {
-    size_in_bytes += StrideInBytes(size.width(), format, i) *
-                     (size.height() / SubsamplingFactor(format, i));
-  }
-  return size_in_bytes;
-}
-
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   GpuMemoryBufferImpl(base::RefCountedBytes* bytes,
@@ -125,8 +58,9 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format_);
     for (size_t i = 0; i < num_planes; ++i) {
       data[i] = reinterpret_cast<uint8*>(&bytes_->data().front()) + offset;
-      offset += StrideInBytes(size_.width(), format_, i) *
-                (size_.height() / SubsamplingFactor(format_, i));
+      offset +=
+          gfx::RowSizeForBufferFormat(size_.width(), format_, i) *
+          (size_.height() / gfx::SubsamplingFactorForBufferFormat(format_, i));
     }
     mapped_ = true;
     return true;
@@ -137,7 +71,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   void GetStride(int* stride) const override {
     size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format_);
     for (size_t i = 0; i < num_planes; ++i)
-      stride[i] = StrideInBytes(size_.width(), format_, i);
+      stride[i] = gfx::RowSizeForBufferFormat(size_.width(), format_, i);
   }
   gfx::GpuMemoryBufferId GetId() const override {
     NOTREACHED();
@@ -204,7 +138,7 @@ GLManager::~GLManager() {
 scoped_ptr<gfx::GpuMemoryBuffer> GLManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format) {
-  std::vector<unsigned char> data(BufferSizeInBytes(size, format), 0);
+  std::vector<uint8> data(gfx::BufferSizeForBufferFormat(size, format), 0);
   scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(data));
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
       new GpuMemoryBufferImpl(bytes.get(), size, format));

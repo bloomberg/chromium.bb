@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_shared_memory.h"
 
@@ -63,8 +64,7 @@ GpuMemoryBufferFactorySharedMemory::CreateGpuMemoryBuffer(
     int client_id,
     gfx::PluginWindowHandle surface_handle) {
   size_t buffer_size = 0u;
-  if (!GpuMemoryBufferImplSharedMemory::BufferSizeInBytes(size, format,
-                                                          &buffer_size))
+  if (!gfx::BufferSizeForBufferFormatChecked(size, format, &buffer_size))
     return gfx::GpuMemoryBufferHandle();
 
   base::SharedMemory shared_memory;

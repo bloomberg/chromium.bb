@@ -173,13 +173,13 @@ IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
   // Write to buffer and check result.
   for (size_t plane = 0; plane < num_planes; ++plane) {
     size_t row_size_in_bytes = 0;
-    EXPECT_TRUE(GpuMemoryBufferImpl::RowSizeInBytes(buffer_size.width(), format,
-                                                    plane, &row_size_in_bytes));
+    EXPECT_TRUE(gfx::RowSizeForBufferFormatChecked(buffer_size.width(), format,
+                                                   plane, &row_size_in_bytes));
 
     scoped_ptr<char[]> data(new char[row_size_in_bytes]);
     memset(data.get(), 0x2a + plane, row_size_in_bytes);
     size_t height = buffer_size.height() /
-                    GpuMemoryBufferImpl::SubsamplingFactor(format, plane);
+                    gfx::SubsamplingFactorForBufferFormat(format, plane);
     for (size_t y = 0; y < height; ++y) {
       // Copy |data| to row |y| of |plane| and verify result.
       memcpy(static_cast<char*>(planes[plane]) + y * strides[plane], data.get(),
