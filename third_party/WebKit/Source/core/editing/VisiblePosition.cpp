@@ -662,12 +662,12 @@ void VisiblePosition::init(const PositionAlgorithm<Strategy>& position, TextAffi
     m_affinity = TextAffinity::Downstream;
 }
 
-UChar32 VisiblePosition::characterAfter() const
+UChar32 characterAfter(const VisiblePosition& visiblePosition)
 {
     // We canonicalize to the first of two equivalent candidates, but the second
     // of the two candidates is the one that will be inside the text node
     // containing the character after this visible position.
-    Position pos = mostForwardCaretPosition(m_deepPosition);
+    Position pos = mostForwardCaretPosition(visiblePosition.deepEquivalent());
     if (!pos.isOffsetInAnchor())
         return 0;
     Node* containerNode = pos.computeContainerNode();
@@ -682,9 +682,9 @@ UChar32 VisiblePosition::characterAfter() const
     return textNode->data().characterStartingAt(offset);
 }
 
-UChar32 VisiblePosition::characterBefore() const
+UChar32 characterBefore(const VisiblePosition& visiblePosition)
 {
-    return previousPositionOf(*this).characterAfter();
+    return characterAfter(previousPositionOf(visiblePosition));
 }
 
 LayoutRect VisiblePosition::localCaretRect(LayoutObject*& layoutObject) const

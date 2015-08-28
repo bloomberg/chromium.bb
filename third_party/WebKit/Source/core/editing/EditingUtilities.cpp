@@ -1363,7 +1363,7 @@ Position trailingWhitespacePosition(const Position& position, TextAffinity, Whit
         return Position();
 
     VisiblePosition visiblePosition(position);
-    UChar characterAfterVisiblePosition = visiblePosition.characterAfter();
+    UChar characterAfterVisiblePosition = characterAfter(visiblePosition);
     bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(characterAfterVisiblePosition) || characterAfterVisiblePosition == noBreakSpaceCharacter) : isCollapsibleWhitespace(characterAfterVisiblePosition);
     // The space must not be in another paragraph and it must be editable.
     if (isSpace && !isEndOfParagraph(visiblePosition) && nextPositionOf(visiblePosition, CannotCrossEditingBoundary).isNotNull())

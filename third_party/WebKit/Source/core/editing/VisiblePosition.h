@@ -103,9 +103,6 @@ public:
     VisiblePosition left() const;
     VisiblePosition right() const;
 
-    UChar32 characterAfter() const;
-    UChar32 characterBefore() const;
-
     // FIXME: This does not handle [table, 0] correctly.
     Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.anchorNode()->rootEditableElement() : 0; }
 
@@ -144,6 +141,10 @@ EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
 
 CORE_EXPORT Position canonicalPositionOf(const Position&);
 CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
+// TODO(yosin) We should move |characterAfter()| and |characterBefore()| to
+// "VisibleUnits.cpp"
+UChar32 characterAfter(const VisiblePosition&);
+UChar32 characterBefore(const VisiblePosition&);
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
 PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
 

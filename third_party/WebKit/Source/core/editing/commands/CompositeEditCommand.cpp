@@ -712,7 +712,7 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
 
 void CompositeEditCommand::replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(const VisiblePosition& visiblePosition)
 {
-    if (!isCollapsibleWhitespace(visiblePosition.characterAfter()))
+    if (!isCollapsibleWhitespace(characterAfter(visiblePosition)))
         return;
     Position pos = mostForwardCaretPosition(visiblePosition.deepEquivalent());
     if (!pos.computeContainerNode() || !pos.computeContainerNode()->isTextNode())

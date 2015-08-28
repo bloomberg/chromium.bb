@@ -501,7 +501,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     unsigned suffixLength = 0;
 
     TrackExceptionState exceptionState;
-    if (requiresContextForWordBoundary(c.characterBefore())) {
+    if (requiresContextForWordBoundary(characterBefore(c))) {
         RefPtrWillBeRawPtr<Range> forwardsScanRange(d.createRange());
         forwardsScanRange->setEndAfter(boundary, exceptionState);
         forwardsScanRange->setStart(end.anchorNode(), end.offsetInContainerNode(), exceptionState);
@@ -577,7 +577,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
     Vector<UChar, 1024> string;
     unsigned prefixLength = 0;
 
-    if (requiresContextForWordBoundary(c.characterAfter())) {
+    if (requiresContextForWordBoundary(characterAfter(c))) {
         SimplifiedBackwardsTextIterator backwardsIterator(Position::firstPositionInNode(&d), start);
         while (!backwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;

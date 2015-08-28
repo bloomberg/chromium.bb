@@ -1320,7 +1320,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
         endOffset = endUpstream.offsetInContainerNode();
     }
 
-    bool needsTrailingSpace = !isEndOfParagraph(endOfInsertedContent) && !isCharacterSmartReplaceExemptConsideringNonBreakingSpace(endOfInsertedContent.characterAfter(), false);
+    bool needsTrailingSpace = !isEndOfParagraph(endOfInsertedContent) && !isCharacterSmartReplaceExemptConsideringNonBreakingSpace(characterAfter(endOfInsertedContent), false);
     if (needsTrailingSpace && endNode) {
         bool collapseWhiteSpace = !endNode->layoutObject() || endNode->layoutObject()->style()->collapseWhiteSpace();
         if (endNode->isTextNode()) {
@@ -1344,7 +1344,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
         startOffset = startDownstream.offsetInContainerNode();
     }
 
-    bool needsLeadingSpace = !isStartOfParagraph(startOfInsertedContent) && !isCharacterSmartReplaceExemptConsideringNonBreakingSpace(previousPositionOf(startOfInsertedContent).characterAfter(), true);
+    bool needsLeadingSpace = !isStartOfParagraph(startOfInsertedContent) && !isCharacterSmartReplaceExemptConsideringNonBreakingSpace(characterBefore(startOfInsertedContent), true);
     if (needsLeadingSpace && startNode) {
         bool collapseWhiteSpace = !startNode->layoutObject() || startNode->layoutObject()->style()->collapseWhiteSpace();
         if (startNode->isTextNode()) {
