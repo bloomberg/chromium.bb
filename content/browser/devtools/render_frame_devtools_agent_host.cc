@@ -315,6 +315,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   dispatcher->SetDOMHandler(dom_handler_.get());
   dispatcher->SetInputHandler(input_handler_.get());
   dispatcher->SetInspectorHandler(inspector_handler_.get());
+  dispatcher->SetIOHandler(io_handler_.get());
   dispatcher->SetNetworkHandler(network_handler_.get());
   dispatcher->SetPowerHandler(power_handler_.get());
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());

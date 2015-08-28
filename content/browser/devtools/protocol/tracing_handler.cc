@@ -88,6 +88,7 @@ TracingHandler::TracingHandler(TracingHandler::Target target,
     : target_(target),
       io_context_(io_context),
       did_initiate_recording_(false),
+      return_as_stream_(false),
       weak_factory_(this) {}
 
 TracingHandler::~TracingHandler() {
@@ -119,6 +120,8 @@ void TracingHandler::OnTraceComplete() {
 }
 
 void TracingHandler::OnTraceToStreamComplete(const std::string& stream_handle) {
+  client_->TracingComplete(
+      TracingCompleteParams::Create()->set_stream(stream_handle));
 }
 
 Response TracingHandler::Start(DevToolsCommandId command_id,
@@ -138,6 +141,8 @@ Response TracingHandler::Start(DevToolsCommandId command_id,
     return Response::InternalError("Tracing is already started");
 
   did_initiate_recording_ = true;
+  return_as_stream_ =
+      transfer_mode && *transfer_mode == start::kTransferModeReturnAsStream;
   base::trace_event::TraceConfig trace_config(
       categories ? *categories : std::string(),
       options ? *options : std::string());
@@ -166,7 +171,12 @@ Response TracingHandler::End(DevToolsCommandId command_id) {
     return Response::InternalError("Tracing is not started");
 
   scoped_refptr<TracingController::TraceDataSink> proxy;
-  proxy = new DevToolsTraceSinkProxy(weak_factory_.GetWeakPtr());
+  if (return_as_stream_) {
+    proxy = new DevToolsStreamTraceSink(
+        weak_factory_.GetWeakPtr(), io_context_->CreateTempFileBackedStream());
+  } else {
+    proxy = new DevToolsTraceSinkProxy(weak_factory_.GetWeakPtr());
+  }
   DisableRecording(proxy);
   // If inspected target is a render process Tracing.end will be handled by
   // tracing agent in the renderer.

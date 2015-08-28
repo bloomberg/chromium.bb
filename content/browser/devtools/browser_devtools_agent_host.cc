@@ -34,6 +34,7 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
           base::Bind(&BrowserDevToolsAgentHost::SendMessageToClient,
                      base::Unretained(this)))) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
+  dispatcher->SetIOHandler(io_handler_.get());
   dispatcher->SetSystemInfoHandler(system_info_handler_.get());
   dispatcher->SetTetheringHandler(tethering_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());

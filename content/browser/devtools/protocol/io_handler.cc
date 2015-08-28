@@ -27,7 +27,8 @@ IOHandler::IOHandler(DevToolsIOContext* io_context)
 
 IOHandler::~IOHandler() {}
 
-void IOHandler::SetClient(const scoped_ptr<Client>& client) {
+void IOHandler::SetClient(scoped_ptr<Client> client) {
+  client_.swap(client);
 }
 
 Response IOHandler::Read(DevToolsCommandId command_id,
@@ -48,6 +49,13 @@ Response IOHandler::Read(DevToolsCommandId command_id,
 void IOHandler::ReadComplete(DevToolsCommandId command_id,
                              const scoped_refptr<base::RefCountedString>& data,
                              int status) {
+  if (status == DevToolsIOContext::Stream::StatusFailure) {
+    client_->SendError(command_id, Response::ServerError("Read failed"));
+    return;
+  }
+  bool eof = status == DevToolsIOContext::Stream::StatusEOF;
+  client_->SendReadResponse(command_id,
+      ReadResponse::Create()->set_data(data->data())->set_eof(eof));
 }
 
 Response IOHandler::Close(const std::string& handle) {

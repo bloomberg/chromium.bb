@@ -79,6 +79,7 @@ class TracingHandler {
   scoped_ptr<Client> client_;
   DevToolsIOContext* io_context_;
   bool did_initiate_recording_;
+  bool return_as_stream_;
   base::WeakPtrFactory<TracingHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingHandler);
