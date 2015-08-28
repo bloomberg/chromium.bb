@@ -702,13 +702,16 @@ IntRect VisiblePosition::absoluteCaretBounds() const
     return layoutObject->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
 }
 
-int VisiblePosition::lineDirectionPointForBlockDirectionNavigation() const
+// TODO(yosin) We should move a global function
+// |lineDirectionPointForBlockDirectionNavigationOf()| to "FrameSelection.h"
+// as static function.
+int lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition& visiblePosition)
 {
-    if (isNull())
+    if (visiblePosition.isNull())
         return 0;
 
     LayoutObject* layoutObject;
-    LayoutRect localRect = localCaretRect(layoutObject);
+    LayoutRect localRect = visiblePosition.localCaretRect(layoutObject);
     if (localRect.isEmpty() || !layoutObject)
         return 0;
 

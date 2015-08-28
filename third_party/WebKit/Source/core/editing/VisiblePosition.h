@@ -114,9 +114,6 @@ public:
     LayoutRect localCaretRect(LayoutObject*&) const;
     // Bounds of (possibly transformed) caret in absolute coords
     IntRect absoluteCaretBounds() const;
-    // Abs x/y position of the caret ignoring transforms.
-    // FIXME: navigation with transforms should be smarter.
-    int lineDirectionPointForBlockDirectionNavigation() const;
 
     DECLARE_TRACE();
 
@@ -136,6 +133,13 @@ private:
     Position m_deepPosition;
     TextAffinity m_affinity;
 };
+
+// Abs x/y position of the caret ignoring transforms.
+// TODO(yosin) navigation with transforms should be smarter.
+// TODO(yosin) We should move a glboal funciton
+// |lineDirectionPointForBlockDirectionNavigationOf()| to "FrameSelection.h"
+// as static function.
+int lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition&);
 
 EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
 
