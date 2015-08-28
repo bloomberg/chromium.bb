@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_EXTENSION_TASK_H_
 
 #include "chrome/browser/task_management/providers/web_contents/renderer_task.h"
+#include "extensions/browser/extension_icon_image.h"
 #include "extensions/common/view_type.h"
 
 namespace extensions {
@@ -15,7 +16,9 @@ class Extension;
 namespace task_management {
 
 // Defines a task manager representation for extensions.
-class ExtensionTask : public RendererTask {
+class ExtensionTask
+    : public RendererTask,
+      public extensions::IconImage::Observer {
  public:
   ExtensionTask(content::WebContents* web_contents,
                 const extensions::Extension* extension,
@@ -27,6 +30,9 @@ class ExtensionTask : public RendererTask {
   void OnFaviconChanged() override;
   Type GetType() const override;
 
+  // extensions::IconImage::Observer
+  void OnExtensionIconImageChanged(extensions::IconImage* image) override;
+
  private:
   // If |extension| is nullptr, this method will get the title from
   // the |web_contents|.
@@ -34,6 +40,13 @@ class ExtensionTask : public RendererTask {
       content::WebContents* web_contents,
       const extensions::Extension* extension,
       extensions::ViewType view_type) const;
+
+  // This is called upon the creation of this task to load the extension icon
+  // for the first time if any.
+  void LoadExtensionIcon(const extensions::Extension* extension);
+
+  // The favicon of the extension represented by this task.
+  scoped_ptr<extensions::IconImage> extension_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTask);
 };

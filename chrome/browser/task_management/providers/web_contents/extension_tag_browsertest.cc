@@ -6,6 +6,10 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/task_management/task_management_browsertest_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/browser/test_image_loader.h"
+#include "extensions/common/constants.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/skia_util.h"
 
 namespace task_management {
 
@@ -56,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTagsTest, Basic) {
 }
 
 #if defined(OS_WIN)
-// Test disabled due to flakiness on Windows.
+// Test disabled due to flakiness on Windows XP.
 // See bug: http://crbug.com/519333
 #define MAYBE_PreAndPostExistingTaskProviding \
     DISABLED_PreAndPostExistingTaskProviding
@@ -80,16 +84,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionTagsTest,
   EXPECT_EQ(2U, tracked_tags().size());
   EXPECT_TRUE(task_manager.tasks().empty());
 
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
   // Start observing, pre-existing tasks will be provided.
   task_manager.StartObserving();
-  EXPECT_EQ(2U, task_manager.tasks().size());
-  EXPECT_EQ(Task::EXTENSION, task_manager.tasks().back()->GetType());
+  ASSERT_EQ(2U, task_manager.tasks().size());
+  const Task* extension_task = task_manager.tasks().back();
+  EXPECT_EQ(Task::EXTENSION, extension_task->GetType());
+
+  SkBitmap expected_bitmap =
+      extensions::TestImageLoader::LoadAndGetExtensionBitmap(
+          extension,
+          "icon_128.png",
+          extension_misc::EXTENSION_ICON_SMALL);
+  ASSERT_FALSE(expected_bitmap.empty());
+
+  EXPECT_TRUE(gfx::BitmapsAreEqual(*extension_task->icon().bitmap(),
+                                   expected_bitmap));
 
   // Unload the extension and expect that the task manager now shows only the
   // about:blank tab.
   UnloadExtension(extension->id());
   EXPECT_EQ(1U, tracked_tags().size());
-  EXPECT_EQ(1U, task_manager.tasks().size());
+  ASSERT_EQ(1U, task_manager.tasks().size());
   const Task* about_blank_task = task_manager.tasks().back();
   EXPECT_EQ(Task::RENDERER, about_blank_task->GetType());
   EXPECT_EQ(base::UTF8ToUTF16("Tab: about:blank"), about_blank_task->title());

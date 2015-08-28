@@ -1045,6 +1045,8 @@
       'browser/test_extension_registry_observer.h',
       'browser/test_extensions_browser_client.cc',
       'browser/test_extensions_browser_client.h',
+      'browser/test_image_loader.cc',
+      'browser/test_image_loader.h',
       'browser/test_management_policy.cc',
       'browser/test_management_policy.h',
       'browser/test_runtime_api_delegate.cc',

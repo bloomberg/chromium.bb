@@ -8,7 +8,9 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/view_type.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -40,6 +42,7 @@ ExtensionTask::ExtensionTask(content::WebContents* web_contents,
                    GetDefaultIcon(),
                    web_contents,
                    web_contents->GetRenderProcessHost()) {
+  LoadExtensionIcon(extension);
 }
 
 ExtensionTask::~ExtensionTask() {
@@ -51,13 +54,19 @@ void ExtensionTask::OnTitleChanged(content::NavigationEntry* entry) {
 }
 
 void ExtensionTask::OnFaviconChanged() {
-  // For now we never change the favicon of the extension, we always use the
-  // default one.
-  // TODO(afakhry): In the future use the extensions' favicons.
+  // We don't care about the favicon of the WebContents but rather of the
+  // extension.
 }
 
 Task::Type ExtensionTask::GetType() const {
   return Task::EXTENSION;
+}
+
+void ExtensionTask::OnExtensionIconImageChanged(extensions::IconImage* image) {
+  DCHECK_EQ(extension_icon_.get(), image);
+
+  if (!image->image_skia().isNull())
+    set_icon(image->image_skia());
 }
 
 base::string16 ExtensionTask::GetExtensionTitle(
@@ -75,10 +84,27 @@ base::string16 ExtensionTask::GetExtensionTitle(
 
   return RendererTask::PrefixRendererTitle(
       title,
-      extension->is_app(),
+      extension && extension->is_app(),
       true,  // is_extension
       web_contents->GetBrowserContext()->IsOffTheRecord(),
       is_background);
+}
+
+void ExtensionTask::LoadExtensionIcon(const extensions::Extension* extension) {
+  if (!extension)
+    return;
+
+  extension_icon_.reset(
+      new extensions::IconImage(web_contents()->GetBrowserContext(),
+                                extension,
+                                extensions::IconsInfo::GetIcons(extension),
+                                extension_misc::EXTENSION_ICON_SMALL,
+                                icon(),
+                                this));
+
+  // Triggers actual image loading with 1x resources.
+  extension_icon_->image_skia().GetRepresentation(1.0f);
+  set_icon(extension_icon_->image_skia());
 }
 
 }  // namespace task_management
