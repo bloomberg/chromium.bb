@@ -1120,7 +1120,7 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
   // Set SSL interstitial delay long enough so that a captive portal result
   // is guaranteed to arrive during this window, and a captive portal
   // error page is displayed instead of an SSL interstitial.
-  SSLErrorHandler::SetInterstitialDelayTypeForTest(SSLErrorHandler::LONG);
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
 }
 
 void CaptivePortalBrowserTest::TearDownOnMainThread() {
@@ -2363,7 +2363,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SSLCertErrorLogin) {
   // Set SSL interstitial delay to zero so that a captive portal result can not
   // arrive during this window, so an SSL interstitial is displayed instead
   // of a captive portal error page.
-  SSLErrorHandler::SetInterstitialDelayTypeForTest(SSLErrorHandler::NONE);
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta());
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   WebContents* broken_tab_contents = tab_strip_model->GetActiveWebContents();
 

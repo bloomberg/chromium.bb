@@ -2482,7 +2482,8 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   CommonNameMismatchHandler::set_state_for_testing(
       CommonNameMismatchHandler::IGNORE_REQUESTS_FOR_TESTING);
-  SSLErrorHandler::SetInterstitialDelayTypeForTest(SSLErrorHandler::LONG);
+  // Set delay long enough so that the page appears loading.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
 
   ui_test_utils::NavigateToURLWithDisposition(
@@ -2550,7 +2551,8 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   CommonNameMismatchHandler::set_state_for_testing(
       CommonNameMismatchHandler::IGNORE_REQUESTS_FOR_TESTING);
-  SSLErrorHandler::SetInterstitialDelayTypeForTest(SSLErrorHandler::LONG);
+  // Set delay long enough so that the page appears loading.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
 
   ui_test_utils::NavigateToURLWithDisposition(
@@ -2616,7 +2618,8 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   CommonNameMismatchHandler::set_state_for_testing(
       CommonNameMismatchHandler::IGNORE_REQUESTS_FOR_TESTING);
-  SSLErrorHandler::SetInterstitialDelayTypeForTest(SSLErrorHandler::LONG);
+  // Set delay long enough so that the page appears loading.
+  SSLErrorHandler::SetInterstitialDelayForTest(base::TimeDelta::FromHours(1));
   SSLInterstitialTimerObserver interstitial_timer_observer(contents);
 
   ui_test_utils::NavigateToURLWithDisposition(

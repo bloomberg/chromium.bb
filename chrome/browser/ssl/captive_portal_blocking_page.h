@@ -13,7 +13,11 @@
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "url/gurl.h"
 
-namespace content{
+#if !defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#error This file must be built with ENABLE_CAPTIVE_PORTAL_DETECTION flag.
+#endif
+
+namespace content {
 class WebContents;
 }
 
@@ -34,17 +38,7 @@ class SSLCertReporter;
 class CaptivePortalBlockingPage : public SecurityInterstitialPage {
  public:
   // Interstitial type, for testing.
-  static const void* kTypeForTesting;
-
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // Returns true if the connection is a Wi-Fi connection.
-    virtual bool IsWifiConnection() const = 0;
-    // Returns the SSID of the connected Wi-Fi network, if any.
-    virtual std::string GetWiFiSSID() const = 0;
-  };
+  static const void* const kTypeForTesting;
 
   CaptivePortalBlockingPage(content::WebContents* web_contents,
                             const GURL& request_url,
@@ -54,17 +48,19 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
                             const base::Callback<void(bool)>& callback);
   ~CaptivePortalBlockingPage() override;
 
-  // SecurityInterstitialPage method:
+  // InterstitialPageDelegate method:
   const void* GetTypeForTesting() const override;
 
-  // Should only be used for testing and chrome://interstitials page.
-  void SetDelegate(Delegate* delegate) { delegate_.reset(delegate); }
-
  protected:
+  // Returns true if the connection is a Wi-Fi connection. Virtual for tests.
+  virtual bool IsWifiConnection() const;
+  // Returns the SSID of the connected Wi-Fi network, if any. Virtual for tests.
+  virtual std::string GetWiFiSSID() const;
+
   // SecurityInterstitialPage methods:
+  bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
-  bool ShouldCreateNewNavigation() const override;
 
   // InterstitialPageDelegate method:
   void CommandReceived(const std::string& command) override;
@@ -73,8 +69,7 @@ class CaptivePortalBlockingPage : public SecurityInterstitialPage {
 
  private:
   // URL of the login page, opened when the user clicks the "Connect" button.
-  GURL login_url_;
-  scoped_ptr<Delegate> delegate_;
+  const GURL login_url_;
   scoped_ptr<CertReportHelper> cert_report_helper_;
   base::Callback<void(bool)> callback_;
 

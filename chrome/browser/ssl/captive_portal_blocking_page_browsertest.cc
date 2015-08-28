@@ -56,20 +56,31 @@ enum ExpectLoginURL {
 
 }  // namespace
 
-class FakeConnectionInfoDelegate : public CaptivePortalBlockingPage::Delegate {
+class CaptivePortalBlockingPageForTesting : public CaptivePortalBlockingPage {
  public:
-  FakeConnectionInfoDelegate(bool is_wifi_connection, std::string wifi_ssid)
-      : is_wifi_connection_(is_wifi_connection), wifi_ssid_(wifi_ssid) {}
-  ~FakeConnectionInfoDelegate() override {}
-
-  bool IsWifiConnection() const override { return is_wifi_connection_; }
-  std::string GetWiFiSSID() const override { return wifi_ssid_; }
+  CaptivePortalBlockingPageForTesting(
+      content::WebContents* web_contents,
+      const GURL& request_url,
+      const GURL& login_url,
+      scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+      const net::SSLInfo& ssl_info,
+      const base::Callback<void(bool)>& callback,
+      bool is_wifi,
+      const std::string& wifi_ssid)
+      : CaptivePortalBlockingPage(web_contents,
+                                  request_url,
+                                  login_url,
+                                  ssl_cert_reporter.Pass(),
+                                  ssl_info,
+                                  callback),
+        is_wifi_(is_wifi),
+        wifi_ssid_(wifi_ssid) {}
 
  private:
-  const bool is_wifi_connection_;
+  bool IsWifiConnection() const override { return is_wifi_; }
+  std::string GetWiFiSSID() const override { return wifi_ssid_; }
+  const bool is_wifi_;
   const std::string wifi_ssid_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeConnectionInfoDelegate);
 };
 
 class CaptivePortalBlockingPageTest
@@ -119,18 +130,15 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   DCHECK(contents);
-  // Delegate is owned by the blocking page.
-  FakeConnectionInfoDelegate* delegate =
-      new FakeConnectionInfoDelegate(is_wifi_connection, wifi_ssid);
   net::SSLInfo ssl_info;
   ssl_info.cert = new net::X509Certificate(
       login_url.host(), "CA", base::Time::Max(), base::Time::Max());
-
   // Blocking page is owned by the interstitial.
-  CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
-      contents, GURL(kBrokenSSL), login_url, ssl_cert_reporter.Pass(), ssl_info,
-      base::Callback<void(bool)>());
-  blocking_page->SetDelegate(delegate);
+  CaptivePortalBlockingPage* blocking_page =
+      new CaptivePortalBlockingPageForTesting(
+          contents, GURL(kBrokenSSL), login_url, ssl_cert_reporter.Pass(),
+          ssl_info, base::Callback<void(bool)>(), is_wifi_connection,
+          wifi_ssid);
   blocking_page->Show();
 
   WaitForInterstitialAttach(contents);
@@ -302,15 +310,12 @@ class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
   SecurityInterstitialPage* CreateInterstitial(
       content::WebContents* contents,
       const GURL& request_url) const override {
-    // Delegate is owned by the blocking page.
-    FakeConnectionInfoDelegate* delegate =
-        new FakeConnectionInfoDelegate(false, std::string());
     net::SSLInfo empty_ssl_info;
     // Blocking page is owned by the interstitial.
-    CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
-        contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
-        base::Callback<void(bool)>());
-    blocking_page->SetDelegate(delegate);
+    CaptivePortalBlockingPage* blocking_page =
+        new CaptivePortalBlockingPageForTesting(
+            contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
+            base::Callback<void(bool)>(), false, "");
     return blocking_page;
   }
 };

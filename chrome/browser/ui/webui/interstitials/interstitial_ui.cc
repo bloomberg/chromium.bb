@@ -52,20 +52,36 @@ class InterstitialHTMLSource : public content::URLDataSource {
 };
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-class FakeConnectionInfoDelegate : public CaptivePortalBlockingPage::Delegate {
+// Provides fake connection information to the captive portal blocking page so
+// that both Wi-Fi and non Wi-Fi blocking pages can be displayed.
+class CaptivePortalBlockingPageWithNetInfo : public CaptivePortalBlockingPage {
  public:
-  FakeConnectionInfoDelegate(bool is_wifi_connection, std::string wifi_ssid)
-      : is_wifi_connection_(is_wifi_connection), wifi_ssid_(wifi_ssid) {}
-  ~FakeConnectionInfoDelegate() override {}
-
-  bool IsWifiConnection() const override { return is_wifi_connection_; }
-  std::string GetWiFiSSID() const override { return wifi_ssid_; }
+  CaptivePortalBlockingPageWithNetInfo(
+      content::WebContents* web_contents,
+      const GURL& request_url,
+      const GURL& login_url,
+      const net::SSLInfo& ssl_info,
+      const base::Callback<void(bool)>& callback,
+      bool is_wifi,
+      const std::string& wifi_ssid)
+      : CaptivePortalBlockingPage(web_contents,
+                                  request_url,
+                                  login_url,
+                                  nullptr,
+                                  ssl_info,
+                                  callback),
+        is_wifi_(is_wifi),
+        wifi_ssid_(wifi_ssid) {}
 
  private:
-  bool is_wifi_connection_;
+  // CaptivePortalBlockingPage methods:
+  bool IsWifiConnection() const override { return is_wifi_; }
+  std::string GetWiFiSSID() const override { return wifi_ssid_; }
+
+  const bool is_wifi_;
   const std::string wifi_ssid_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeConnectionInfoDelegate);
+  DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPageWithNetInfo);
 };
 #endif
 
@@ -231,15 +247,13 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
                                  &wifi_ssid_param)) {
     wifi_ssid = wifi_ssid_param;
   }
-  FakeConnectionInfoDelegate* delegate =
-      new FakeConnectionInfoDelegate(is_wifi_connection, wifi_ssid);
   net::SSLInfo ssl_info;
   ssl_info.cert = new net::X509Certificate(
       request_url.host(), "CA", base::Time::Max(), base::Time::Max());
-  CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
-      web_contents, request_url, landing_url, nullptr, ssl_info,
-      base::Callback<void(bool)>());
-  blocking_page->SetDelegate(delegate);
+  CaptivePortalBlockingPage* blocking_page =
+      new CaptivePortalBlockingPageWithNetInfo(
+          web_contents, request_url, landing_url, ssl_info,
+          base::Callback<void(bool)>(), is_wifi_connection, wifi_ssid);
   return blocking_page;
 }
 #endif
