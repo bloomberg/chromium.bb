@@ -53,7 +53,7 @@ int32_t PepperVideoDestinationHost::OnHostMsgOpen(
     return PP_ERROR_BADARGUMENT;
 
   FrameWriterInterface* frame_writer = NULL;
-  if (!VideoDestinationHandler::Open(
+  if (!PepperToVideoTrackAdapter::Open(
           NULL /* registry */, gurl.spec(), &frame_writer))
     return PP_ERROR_FAILED;
   frame_writer_.reset(frame_writer);

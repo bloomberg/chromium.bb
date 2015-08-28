@@ -707,7 +707,7 @@
       'browser/renderer_host/pepper/pepper_printing_host_unittest.cc',
       'browser/renderer_host/pepper/quota_reservation_unittest.cc',
       'child/npapi/plugin_lib_unittest.cc',
-      'renderer/media/webrtc/video_destination_handler_unittest.cc',
+      'renderer/media/pepper_to_video_track_adapter_unittest.cc',
       'renderer/npapi/webplugin_impl_unittest.cc',
       'renderer/pepper/event_conversion_unittest.cc',
       'renderer/pepper/host_var_tracker_unittest.cc',
@@ -1093,7 +1093,7 @@
           ]
         }, {
           'sources!': [
-            'renderer/media/webrtc/video_destination_handler_unittest.cc',
+            'renderer/media/pepper_to_video_track_adapter_unittest.cc',
           ],
         }],
         ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {

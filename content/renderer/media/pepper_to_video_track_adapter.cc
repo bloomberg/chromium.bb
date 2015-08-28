@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/video_destination_handler.h"
+#include "content/renderer/media/pepper_to_video_track_adapter.h"
 
 #include <string>
 
@@ -13,10 +13,12 @@
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
+#include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/video_capture_types.h"
+#include "media/base/video_frame_pool.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
@@ -24,6 +26,43 @@
 #include "url/gurl.h"
 
 namespace content {
+
+// PpFrameWriter implements MediaStreamVideoSource and can therefore provide
+// video frames to MediaStreamVideoTracks. It also implements
+// FrameWriterInterface, which will be used by Pepper plugins (notably the
+// Effects plugin) to inject the processed frame.
+class PpFrameWriter : public MediaStreamVideoSource,
+                      public FrameWriterInterface,
+                      public base::SupportsWeakPtr<PpFrameWriter> {
+ public:
+  PpFrameWriter();
+  virtual ~PpFrameWriter();
+
+  // FrameWriterInterface implementation.
+  // This method will be called by the Pepper host from render thread.
+  void PutFrame(PPB_ImageData_Impl* image_data, int64 time_stamp_ns) override;
+
+ protected:
+  // MediaStreamVideoSource implementation.
+  void GetCurrentSupportedFormats(
+      int max_requested_width,
+      int max_requested_height,
+      double max_requested_frame_rate,
+      const VideoCaptureDeviceFormatsCB& callback) override;
+  void StartSourceImpl(
+      const media::VideoCaptureFormat& format,
+      const blink::WebMediaConstraints& constraints,
+      const VideoCaptureDeliverFrameCB& frame_callback) override;
+  void StopSourceImpl() override;
+
+ private:
+  media::VideoFramePool frame_pool_;
+
+  class FrameWriterDelegate;
+  scoped_refptr<FrameWriterDelegate> delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(PpFrameWriter);
+};
 
 class PpFrameWriter::FrameWriterDelegate
     : public base::RefCountedThreadSafe<FrameWriterDelegate> {
@@ -184,11 +223,10 @@ class PpFrameWriterProxy : public FrameWriterInterface {
   DISALLOW_COPY_AND_ASSIGN(PpFrameWriterProxy);
 };
 
-bool VideoDestinationHandler::Open(
-    MediaStreamRegistryInterface* registry,
-    const std::string& url,
-    FrameWriterInterface** frame_writer) {
-  DVLOG(3) << "VideoDestinationHandler::Open";
+bool PepperToVideoTrackAdapter::Open(MediaStreamRegistryInterface* registry,
+                                     const std::string& url,
+                                     FrameWriterInterface** frame_writer) {
+  DVLOG(3) << "PepperToVideoTrackAdapter::Open";
   blink::WebMediaStream stream;
   if (registry) {
     stream = registry->GetMediaStream(url);
@@ -197,7 +235,7 @@ bool VideoDestinationHandler::Open(
         blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
   }
   if (stream.isNull()) {
-    LOG(ERROR) << "VideoDestinationHandler::Open - invalid url: " << url;
+    LOG(ERROR) << "PepperToVideoTrackAdapter::Open - invalid url: " << url;
     return false;
   }
 

@@ -11,7 +11,7 @@
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"
-#include "content/renderer/media/webrtc/video_destination_handler.h"
+#include "content/renderer/media/pepper_to_video_track_adapter.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/test/ppapi_unittest.h"
@@ -32,9 +32,9 @@ ACTION_P(RunClosure, closure) {
 static const std::string kTestStreamUrl = "stream_url";
 static const std::string kUnknownStreamUrl = "unknown_stream_url";
 
-class VideoDestinationHandlerTest : public PpapiUnittest {
+class PepperToVideoTrackAdapterTest : public PpapiUnittest {
  public:
-  VideoDestinationHandlerTest() : registry_(new MockMediaStreamRegistry()) {
+  PepperToVideoTrackAdapterTest() : registry_(new MockMediaStreamRegistry()) {
     registry_->Init(kTestStreamUrl);
   }
 
@@ -52,20 +52,20 @@ class VideoDestinationHandlerTest : public PpapiUnittest {
   scoped_ptr<MockMediaStreamRegistry> registry_;
 };
 
-TEST_F(VideoDestinationHandlerTest, Open) {
+TEST_F(PepperToVideoTrackAdapterTest, Open) {
   // |frame_writer| is a proxy and is owned by whoever call Open.
   FrameWriterInterface* frame_writer = nullptr;
   // Unknow url will return false.
-  EXPECT_FALSE(VideoDestinationHandler::Open(registry_.get(),
+  EXPECT_FALSE(PepperToVideoTrackAdapter::Open(registry_.get(),
                                              kUnknownStreamUrl, &frame_writer));
-  EXPECT_TRUE(VideoDestinationHandler::Open(registry_.get(),
+  EXPECT_TRUE(PepperToVideoTrackAdapter::Open(registry_.get(),
                                             kTestStreamUrl, &frame_writer));
   delete frame_writer;
 }
 
-TEST_F(VideoDestinationHandlerTest, PutFrame) {
+TEST_F(PepperToVideoTrackAdapterTest, PutFrame) {
   FrameWriterInterface* frame_writer = NULL;
-  EXPECT_TRUE(VideoDestinationHandler::Open(registry_.get(),
+  EXPECT_TRUE(PepperToVideoTrackAdapter::Open(registry_.get(),
                                             kTestStreamUrl, &frame_writer));
   ASSERT_TRUE(frame_writer);
 

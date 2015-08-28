@@ -610,7 +610,7 @@ test("content_unittests") {
       # This file is added only when plugins are enabled, but we don't want it
       # unless webrtc is also enabled.
       sources -=
-          [ "../renderer/media/webrtc/video_destination_handler_unittest.cc" ]
+          [ "../renderer/media/pepper_to_video_track_adapter_unittest.cc" ]
     }
   }
 

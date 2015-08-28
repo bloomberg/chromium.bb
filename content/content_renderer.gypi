@@ -664,8 +664,8 @@
       'renderer/media/webrtc/stun_field_trial.h',
       'renderer/media/webrtc/track_observer.cc',
       'renderer/media/webrtc/track_observer.h',
-      'renderer/media/webrtc/video_destination_handler.cc',
-      'renderer/media/webrtc/video_destination_handler.h',
+      'renderer/media/pepper_to_video_track_adapter.cc',
+      'renderer/media/pepper_to_video_track_adapter.h',
       'renderer/media/webrtc/webrtc_audio_sink_adapter.cc',
       'renderer/media/webrtc/webrtc_audio_sink_adapter.h',
       'renderer/media/webrtc/webrtc_local_audio_track_adapter.cc',
@@ -840,8 +840,8 @@
     }, {  # enable_plugins==0
       'sources!': [
         # These are not in the plugins sources list since it also requires webrtc.
-        'renderer/media/webrtc/video_destination_handler.cc',
-        'renderer/media/webrtc/video_destination_handler.h',
+        'renderer/media/pepper_to_video_track_adapter.cc',
+        'renderer/media/pepper_to_video_track_adapter.h',
       ],
     }],
     ['enable_plugins==1 and enable_webrtc==1', {
