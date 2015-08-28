@@ -14,13 +14,19 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
+#include "components/tracing/trace_config_file.h"
 #include "components/tracing/tracing_switches.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_shutdown_profile_dumper.h"
 #include "content/browser/notification_service_impl.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "ui/base/ime/input_method_initializer.h"
+
+#if defined(OS_ANDROID)
+#include "content/browser/android/tracing_controller_android.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -229,14 +235,26 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // If startup tracing has not been finished yet, replace it's dumper
     // with special version, which would save trace file on exit (i.e.
     // startup tracing becomes a version of shutdown tracing).
+    // There are two cases:
+    // 1. Startup duration is not reached.
+    // 2. Or startup duration is not specified for --trace-config-file flag.
     scoped_ptr<BrowserShutdownProfileDumper> startup_profiler;
-    if (main_loop_->is_tracing_startup()) {
+    if (main_loop_->is_tracing_startup_for_duration()) {
       main_loop_->StopStartupTracingTimer();
       if (main_loop_->startup_trace_file() !=
           base::FilePath().AppendASCII("none")) {
         startup_profiler.reset(
             new BrowserShutdownProfileDumper(main_loop_->startup_trace_file()));
       }
+    } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled() &&
+               TracingController::GetInstance()->IsRecording()) {
+      base::FilePath result_file;
+#if defined(OS_ANDROID)
+      TracingControllerAndroid::GenerateTracingFilePath(&result_file);
+#else
+      result_file = tracing::TraceConfigFile::GetInstance()->GetResultFile();
+#endif
+      startup_profiler.reset(new BrowserShutdownProfileDumper(result_file));
     }
 
     // The shutdown tracing got enabled in AttemptUserExit earlier, but someone

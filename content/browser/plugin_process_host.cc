@@ -222,6 +222,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
     switches::kLogPluginMessages,
     switches::kNoSandbox,
     switches::kPluginStartupDialog,
+    switches::kTraceConfigFile,
     switches::kTraceStartup,
     switches::kUseGL,
     switches::kForceDeviceScaleFactor,
