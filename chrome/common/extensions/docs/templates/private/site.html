@@ -1,7 +1,6 @@
 {{- This is the template for every page on the site.
-  - |platform|      The platform.
-  - |platformTitle| The title of the platform ("Extensions" or "Apps").
   - |content|       The main content of the page.
+  - |canonical|     Link href to the canonical version of this page, if any.
   -}}
 <!DOCTYPE html>
 <html>
@@ -19,6 +18,10 @@
     <link href="{{static}}/css/print.css" rel="stylesheet" type="text/css" media="print">
     <link href="{{static}}/css/prettify.css" rel="stylesheet" type="text/css">
     <link href='//fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro' rel='stylesheet' type='text/css'>
+
+    {{?canonical}}
+    <link rel="canonical" href="{{canonical}}">
+    {{/canonical}}
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

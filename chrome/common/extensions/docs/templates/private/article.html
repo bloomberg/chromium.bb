@@ -1,12 +1,11 @@
-{{- This is the shared template for Extension/App articles.
+{{- This is the shared template for developer.chrome.com articles.
   - |article|       The article content.
+  - |canonical|     The canonical URL (see comment in site.html).
   - |platform|      The platform.
   - |platformTitle| The title of the platform ("Extensions" or "Apps").
   - |removeToc|     Whether or not to remove the Table of Contents.
   -}}
-{{+content:partials.site
-       platform:platform
-       platformTitle:platformTitle}}
+{{+content:partials.site canonical:canonical}}
 <article class="article-content">
   <nav class="inline-site-toc no-permalink">
     {{+partials.relatedpages_items items:sidenavs.chrome /}}

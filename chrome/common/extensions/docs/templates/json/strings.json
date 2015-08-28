@@ -1,4 +1,5 @@
 {
+  // General strings.
   "app": "app",
   "appsTitle": "Apps",
   "devtools": "devtools",
@@ -15,5 +16,7 @@
   "sampleApps": "Sample Apps",
   "sampleExtensions": "Sample Extensions",
   "webstore": "webstore",
-  "webstoreTitle": "Chrome Web Store"
+  "webstoreTitle": "Chrome Web Store",
+  // Canonical references to DevTools articles.
+  "canonicalDevToolsConsole": "https://developers.google.com/web/tools/javascript/console/console-reference"
 }
