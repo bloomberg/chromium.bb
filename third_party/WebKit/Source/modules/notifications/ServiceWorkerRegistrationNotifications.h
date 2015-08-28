@@ -6,7 +6,6 @@
 #define ServiceWorkerRegistrationNotifications_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
 
 namespace blink {
 
@@ -14,6 +13,7 @@ class ExceptionState;
 class GetNotificationOptions;
 class NotificationOptions;
 class ScriptState;
+class ServiceWorkerRegistration;
 
 class ServiceWorkerRegistrationNotifications {
     STATIC_ONLY(ServiceWorkerRegistrationNotifications);

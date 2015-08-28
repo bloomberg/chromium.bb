@@ -26,7 +26,5 @@ test(function() {
 test(function() {
     assert_will_be_idl_attribute(self, 'onnotificationclick',
                                  'The notificationclick event exists.');
-    assert_will_be_idl_attribute(self, 'onnotificationerror',
-                                 'The notificationerror event exists.');
 
-}, 'The notificationclick and notificationerror events exist on the global scope.');
+}, 'The notificationclick event exists on the global scope.');

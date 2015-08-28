@@ -558,7 +558,6 @@ interface ServiceWorkerGlobalScope
     getter oninstall
     getter onmessage
     getter onnotificationclick
-    getter onnotificationerror
     getter onperiodicsync
     getter onpush
     getter onsync
@@ -575,7 +574,6 @@ interface ServiceWorkerGlobalScope
     setter oninstall
     setter onmessage
     setter onnotificationclick
-    setter onnotificationerror
     setter onperiodicsync
     setter onpush
     setter onsync

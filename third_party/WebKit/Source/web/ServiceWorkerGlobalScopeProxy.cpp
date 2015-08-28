@@ -50,6 +50,7 @@
 #include "modules/navigatorconnect/WorkerNavigatorServices.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationEvent.h"
+#include "modules/notifications/NotificationEventInit.h"
 #include "modules/push_messaging/PushEvent.h"
 #include "modules/push_messaging/PushMessageData.h"
 #include "modules/serviceworkers/ExtendableEvent.h"

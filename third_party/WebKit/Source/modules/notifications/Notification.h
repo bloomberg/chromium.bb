@@ -45,10 +45,8 @@
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationDelegate.h"
 #include "public/platform/modules/notifications/WebNotificationPermission.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -57,8 +55,6 @@ class NotificationAction;
 class NotificationOptions;
 class NotificationPermissionCallback;
 class ScriptState;
-class ScriptValue;
-class UnsignedLongOrUnsignedLongSequence;
 
 class MODULES_EXPORT Notification final : public RefCountedGarbageCollectedEventTargetWithInlineData<Notification>, public ActiveDOMObject, public WebNotificationDelegate {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Notification);
@@ -133,7 +129,6 @@ private:
 
     void setPersistentId(int64_t persistentId) { m_persistentId = persistentId; }
 
-private:
     WebNotificationData m_data;
 
     // ScriptValue representations of the developer-associated data. Initialized lazily on first access.

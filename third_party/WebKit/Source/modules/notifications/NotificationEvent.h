@@ -8,11 +8,12 @@
 #include "modules/EventModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/notifications/Notification.h"
-#include "modules/notifications/NotificationEventInit.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
+class NotificationEventInit;
 
 class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();

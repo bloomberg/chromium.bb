@@ -6,13 +6,14 @@
 #define ServiceWorkerGlobalScopeNotifications_h
 
 #include "core/events/EventTarget.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class ServiceWorkerGlobalScopeNotifications {
+    STATIC_ONLY(ServiceWorkerGlobalScopeNotifications);
 public:
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(notificationclick);
-    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(notificationerror);
 };
 
 } // namespace blink

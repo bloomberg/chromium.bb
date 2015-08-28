@@ -6,7 +6,7 @@
 
 [
     Exposed=(Window, ServiceWorker),
-    RuntimeEnabled=ServiceWorkerNotifications
+    RuntimeEnabled=Notifications
 ] partial interface ServiceWorkerRegistration {
     [CallWith=ScriptState, RaisesException] Promise showNotification(DOMString title, optional NotificationOptions options);
     [CallWith=ScriptState] Promise<sequence<Notification>> getNotifications(optional GetNotificationOptions filter);

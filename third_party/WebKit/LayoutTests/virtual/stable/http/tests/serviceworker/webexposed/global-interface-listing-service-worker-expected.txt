@@ -458,7 +458,6 @@ interface ServiceWorkerGlobalScope
     getter oninstall
     getter onmessage
     getter onnotificationclick
-    getter onnotificationerror
     getter onpush
     getter registration
     method close
@@ -470,7 +469,6 @@ interface ServiceWorkerGlobalScope
     setter oninstall
     setter onmessage
     setter onnotificationclick
-    setter onnotificationerror
     setter onpush
 interface ServiceWorkerRegistration
     getter onupdatefound

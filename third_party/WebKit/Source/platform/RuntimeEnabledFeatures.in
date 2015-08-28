@@ -141,7 +141,6 @@ ScrollTopLeftInterop status=experimental
 SelectionForComposedTree status=stable
 SelectionPaintingWithoutSelectionGaps
 ServiceWorkerClientAttributes status=stable
-ServiceWorkerNotifications status=stable
 ServiceWorkerPerformanceTimeline status=stable
 ServiceWorkerWindowClientNavigate status=experimental
 ShadowRootClosedMode status=experimental

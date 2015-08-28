@@ -7,7 +7,10 @@
 
 #include "modules/ModulesExport.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
-#include "wtf/text/WTFString.h"
+
+namespace WTF {
+class String;
+}
 
 namespace blink {
 

@@ -32,10 +32,7 @@
 #include "modules/notifications/Notification.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"

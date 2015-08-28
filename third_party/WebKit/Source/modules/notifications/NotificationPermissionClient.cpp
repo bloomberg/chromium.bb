@@ -19,11 +19,11 @@ const char* NotificationPermissionClient::supplementName()
 NotificationPermissionClient* NotificationPermissionClient::from(ExecutionContext* context)
 {
     if (!context->isDocument())
-        return 0;
+        return nullptr;
 
     const Document* document = toDocument(context);
     if (!document->frame() || !document->frame()->isLocalFrame())
-        return 0;
+        return nullptr;
 
     return static_cast<NotificationPermissionClient*>(WillBeHeapSupplement<LocalFrame>::from(document->frame(), supplementName()));
 }
