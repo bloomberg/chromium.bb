@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/image-encoders/skia/WEBPImageEncoder.h"
 
-#include "SkBitmap.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "webp/encode.h"
@@ -46,11 +45,8 @@ static int writeOutput(const uint8_t* data, size_t size, const WebPPicture* cons
     return 1;
 }
 
-static bool rgbPictureImport(const unsigned char* pixels, bool premultiplied, WebPImporter importRGBX, WebPImporter importRGB, WebPPicture* picture)
+static bool rgbPictureImport(const unsigned char* pixels, WebPImporter importRGB, WebPPicture* picture)
 {
-    if (premultiplied)
-        return importRGBX(picture, pixels, picture->width * 4);
-
     // Write the RGB pixels to an rgb data buffer, alpha premultiplied, then import the rgb data.
 
     size_t pixelCount = picture->height * picture->width;
@@ -75,25 +71,7 @@ static bool rgbPictureImport(const unsigned char* pixels, bool premultiplied, We
     return importRGB(picture, rgb.get(), picture->width * 3);
 }
 
-template <bool Premultiplied> inline bool importPictureBGRX(const unsigned char* pixels, WebPPicture* picture)
-{
-    return rgbPictureImport(pixels, Premultiplied, &WebPPictureImportBGRX, &WebPPictureImportBGR, picture);
-}
-
-template <bool Premultiplied> inline bool importPictureRGBX(const unsigned char* pixels, WebPPicture* picture)
-{
-    return rgbPictureImport(pixels, Premultiplied, &WebPPictureImportRGBX, &WebPPictureImportRGB, picture);
-}
-
-static bool platformPremultipliedImportPicture(const unsigned char* pixels, WebPPicture* picture)
-{
-    if (SK_B32_SHIFT) // Android
-        return importPictureRGBX<true>(pixels, picture);
-
-    return importPictureBGRX<true>(pixels, picture);
-}
-
-static bool encodePixels(IntSize imageSize, const unsigned char* pixels, bool premultiplied, int quality, Vector<unsigned char>* output)
+static bool encodePixels(IntSize imageSize, const unsigned char* pixels, int quality, Vector<unsigned char>* output)
 {
     if (imageSize.width() <= 0 || imageSize.width() > WEBP_MAX_DIMENSION)
         return false;
@@ -110,9 +88,7 @@ static bool encodePixels(IntSize imageSize, const unsigned char* pixels, bool pr
     picture.width = imageSize.width();
     picture.height = imageSize.height();
 
-    if (premultiplied && !platformPremultipliedImportPicture(pixels, &picture))
-        return false;
-    if (!premultiplied && !importPictureRGBX<false>(pixels, &picture))
+    if (!rgbPictureImport(pixels, &WebPPictureImportRGB, &picture))
         return false;
 
     picture.custom_ptr = output;
@@ -125,22 +101,12 @@ static bool encodePixels(IntSize imageSize, const unsigned char* pixels, bool pr
     return success;
 }
 
-bool WEBPImageEncoder::encode(const SkBitmap& bitmap, int quality, Vector<unsigned char>* output)
-{
-    SkAutoLockPixels bitmapLock(bitmap);
-
-    if (bitmap.colorType() != kN32_SkColorType || !bitmap.getPixels())
-        return false; // Only support 32 bit/pixel skia bitmaps.
-
-    return encodePixels(IntSize(bitmap.width(), bitmap.height()), static_cast<unsigned char *>(bitmap.getPixels()), true, quality, output);
-}
-
 bool WEBPImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vector<unsigned char>* output)
 {
     if (!imageData.pixels())
         return false;
 
-    return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), false, quality, output);
+    return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), quality, output);
 }
 
 } // namespace blink
