@@ -38,7 +38,7 @@
             "params": {
                 "rtt_msec": "2000",
                 "hysteresis_period_seconds": "120"
-            }            
+            }
         }
     ],
     "DataReductionProxyUseQuic": [
@@ -265,6 +265,16 @@
         },
         {
             "group_name": "Disabled"
+        }
+    ],
+    "UMA_EnableCellularLogUpload": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "Enabled": "true",
+                "Sample_Probability": "100",
+                "Optimize": "true"
+            }
         }
     ]
 }
