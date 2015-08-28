@@ -262,16 +262,20 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
             "elapsed_time_ms",
             static_cast<int>(test_result.elapsed_time.InMilliseconds()));
 
-        // There are no guarantees about character encoding of the output
-        // snippet. Escape it and record whether it was losless.
-        // It's useful to have the output snippet as string in the summary
-        // for easy viewing.
-        std::string escaped_output_snippet;
-        bool losless_snippet = EscapeJSONString(
-            test_result.output_snippet, false, &escaped_output_snippet);
-        test_result_value->SetString("output_snippet",
-                                     escaped_output_snippet);
-        test_result_value->SetBoolean("losless_snippet", losless_snippet);
+        bool lossless_snippet = false;
+        if (IsStringUTF8(test_result.output_snippet)) {
+          test_result_value->SetString(
+              "output_snippet", test_result.output_snippet);
+          lossless_snippet = true;
+        } else {
+          test_result_value->SetString(
+              "output_snippet",
+              "<non-UTF-8 snippet, see output_snippet_base64>");
+        }
+
+        // TODO(phajdan.jr): Fix typo in JSON key (losless -> lossless)
+        // making sure not to break any consumers of this data.
+        test_result_value->SetBoolean("losless_snippet", lossless_snippet);
 
         // Also include the raw version (base64-encoded so that it can be safely
         // JSON-serialized - there are no guarantees about character encoding
