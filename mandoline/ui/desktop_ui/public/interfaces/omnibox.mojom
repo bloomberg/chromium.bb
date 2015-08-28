@@ -4,9 +4,12 @@
 
 module mandoline;
 
+import "components/view_manager/public/interfaces/view_tree.mojom";
+
 // TODO(beng): Could this be generalized as a "Chooser" with a specific type??
 
 // Interface implemented by an application providing a method for URL input.
 interface Omnibox {
+  GetViewTreeClient(mojo.ViewTreeClient& client);
   ShowForURL(string url);
 };

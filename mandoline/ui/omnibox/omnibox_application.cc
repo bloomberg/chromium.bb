@@ -2,47 +2,110 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mandoline/ui/omnibox/omnibox_impl.h"
+#include "mandoline/ui/omnibox/omnibox_application.h"
 
 #include "base/strings/string16.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
+#include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mandoline/ui/aura/aura_init.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
+#include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/layout/layout_manager.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace mandoline {
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxImpl, public:
+// OmniboxImpl
 
-OmniboxImpl::OmniboxImpl()
-    : app_impl_(nullptr), root_(nullptr), edit_(nullptr) {}
-OmniboxImpl::~OmniboxImpl() {}
+class OmniboxImpl : public mojo::ViewTreeDelegate,
+                    public views::LayoutManager,
+                    public views::TextfieldController,
+                    public Omnibox {
+ public:
+  OmniboxImpl(mojo::ApplicationImpl* app,
+              mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<Omnibox> request);
+  ~OmniboxImpl() override;
+
+ private:
+  // Overridden from mojo::ViewTreeDelegate:
+  void OnEmbed(mojo::View* root) override;
+  void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
+
+  // Overridden from views::LayoutManager:
+  gfx::Size GetPreferredSize(const views::View* view) const override;
+  void Layout(views::View* host) override;
+
+  // Overridden from views::TextfieldController:
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
+
+  // Overridden from Omnibox:
+  void GetViewTreeClient(
+      mojo::InterfaceRequest<mojo::ViewTreeClient> request) override;
+  void ShowForURL(const mojo::String& url) override;
+
+  void HideWindow();
+  void ShowWindow();
+
+  scoped_ptr<AuraInit> aura_init_;
+  mojo::ApplicationImpl* app_;
+  mojo::View* root_;
+  mojo::String url_;
+  views::Textfield* edit_;
+  mojo::Binding<Omnibox> binding_;
+  ViewEmbedderPtr view_embedder_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxImpl);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxImpl, mojo::ApplicationDelegate implementation:
+// OmniboxApplication, public:
 
-void OmniboxImpl::Initialize(mojo::ApplicationImpl* app) {
-  app_impl_ = app;
+OmniboxApplication::OmniboxApplication() : app_(nullptr) {}
+OmniboxApplication::~OmniboxApplication() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// OmniboxApplication, mojo::ApplicationDelegate implementation:
+
+void OmniboxApplication::Initialize(mojo::ApplicationImpl* app) {
+  app_ = app;
 }
 
-bool OmniboxImpl::ConfigureIncomingConnection(
+bool OmniboxApplication::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<Omnibox>(this);
-  connection->AddService<mojo::ViewTreeClient>(this);
-  connection->ConnectToService(&view_embedder_);
   return true;
 }
 
-bool OmniboxImpl::ConfigureOutgoingConnection(
-    mojo::ApplicationConnection* connection) {
-  return true;
+////////////////////////////////////////////////////////////////////////////////
+// OmniboxApplication, mojo::InterfaceFactory<Omnibox> implementation:
+
+void OmniboxApplication::Create(mojo::ApplicationConnection* connection,
+                                mojo::InterfaceRequest<Omnibox> request) {
+  new OmniboxImpl(app_, connection, request.Pass());
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// OmniboxImpl, public:
+
+OmniboxImpl::OmniboxImpl(mojo::ApplicationImpl* app,
+                         mojo::ApplicationConnection* connection,
+                         mojo::InterfaceRequest<Omnibox> request)
+    : app_(app),
+      root_(nullptr),
+      edit_(nullptr),
+      binding_(this, request.Pass()) {
+  connection->ConnectToService(&view_embedder_);
+}
+OmniboxImpl::~OmniboxImpl() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxImpl, mojo::ViewTreeDelegate implementation:
@@ -51,7 +114,7 @@ void OmniboxImpl::OnEmbed(mojo::View* root) {
   root_ = root;
 
   if (!aura_init_.get()) {
-    aura_init_.reset(new AuraInit(root, app_impl_->shell()));
+    aura_init_.reset(new AuraInit(root, app_->shell()));
     edit_ = new views::Textfield;
     edit_->set_controller(this);
     edit_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
@@ -71,7 +134,7 @@ void OmniboxImpl::OnEmbed(mojo::View* root) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.native_widget =
-      new NativeWidgetViewManager(widget, app_impl_->shell(), root);
+      new NativeWidgetViewManager(widget, app_->shell(), root);
   params.delegate = widget_delegate;
   params.bounds = root->bounds().To<gfx::Rect>();
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -122,26 +185,12 @@ bool OmniboxImpl::HandleKeyEvent(views::Textfield* sender,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxImpl, mojo::InterfaceFactory<Omnibox> implementation:
+// OmniboxImpl, Omnibox implementation:
 
-void OmniboxImpl::Create(mojo::ApplicationConnection* connection,
-                         mojo::InterfaceRequest<Omnibox> request) {
-  // TODO(beng): methinks this doesn't work well across multiple browser
-  //             windows...
-  bindings_.AddBinding(this, request.Pass());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OmniboxImpl, mojo::InterfaceFactory<mojo::ViewTreeClient> implementation:
-
-void OmniboxImpl::Create(
-    mojo::ApplicationConnection* connection,
+void OmniboxImpl::GetViewTreeClient(
     mojo::InterfaceRequest<mojo::ViewTreeClient> request) {
   mojo::ViewTreeConnection::Create(this, request.Pass());
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// OmniboxImpl, Omnibox implementation:
 
 void OmniboxImpl::ShowForURL(const mojo::String& url) {
   url_ = url;

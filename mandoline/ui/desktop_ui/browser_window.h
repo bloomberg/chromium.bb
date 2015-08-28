@@ -79,7 +79,7 @@ class BrowserWindow : public mojo::ViewTreeDelegate,
 
   void Init(mojo::View* root);
   void ShowOmnibox();
-  void EmbedOmnibox(mojo::ApplicationConnection* connection);
+  void EmbedOmnibox();
 
   mojo::ApplicationImpl* app_;
   scoped_ptr<AuraInit> aura_init_;

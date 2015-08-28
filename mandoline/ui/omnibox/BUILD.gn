@@ -20,8 +20,8 @@ mojo_native_application("omnibox") {
 
 source_set("lib") {
   sources = [
-    "omnibox_impl.cc",
-    "omnibox_impl.h",
+    "omnibox_application.cc",
+    "omnibox_application.h",
   ]
 
   deps = [

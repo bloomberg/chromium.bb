@@ -91,6 +91,11 @@ void BrowserWindow::LoadURL(const GURL& url) {
     return;
   }
 
+  if (!url.is_valid()) {
+    ShowOmnibox();
+    return;
+  }
+
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = url.spec();
   Embed(request.Pass());
@@ -122,15 +127,10 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
 
   web_view_.Init(app_, content_);
 
-  host_->AddAccelerator(mojo::KEYBOARD_CODE_BROWSER_BACK,
-                        mojo::EVENT_FLAGS_NONE);
+  host_->AddAccelerator(mojo::KEYBOARD_CODE_N, mojo::EVENT_FLAGS_CONTROL_DOWN);
 
   // Now that we're ready, load the default url.
-  if (default_url_.is_valid()) {
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From(default_url_.spec());
-    Embed(request.Pass());
-  }
+  LoadURL(default_url_);
 
   // Record the time spent opening initial tabs, used for performance testing.
   const base::TimeDelta open_tabs_delta = base::Time::Now() - display_time;
@@ -161,9 +161,16 @@ void BrowserWindow::OnConnectionLost(mojo::ViewTreeConnection* connection) {
 // BrowserWindow, mojo::ViewTreeHostClient implementation:
 
 void BrowserWindow::OnAccelerator(mojo::EventPtr event) {
-  DCHECK_EQ(mojo::KEYBOARD_CODE_BROWSER_BACK,
-            event->key_data->windows_key_code);
-  NOTIMPLEMENTED();
+  if (!(event->flags & mojo::EVENT_FLAGS_CONTROL_DOWN))
+    return;
+  switch (event->key_data->windows_key_code) {
+    case mojo::KEYBOARD_CODE_N:
+      manager_->CreateBrowser(GURL());
+      break;
+    default:
+      NOTIMPLEMENTED();
+      break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -187,7 +194,7 @@ void BrowserWindow::ProgressChanged(double progress) {
 void BrowserWindow::Embed(mojo::URLRequestPtr request) {
   const std::string string_url = request->url.To<std::string>();
   if (string_url == "mojo:omnibox") {
-    EmbedOmnibox(omnibox_connection_.get());
+    EmbedOmnibox();
     return;
   }
 
@@ -298,9 +305,9 @@ void BrowserWindow::ShowOmnibox() {
   omnibox_->ShowForURL(mojo::String::From(current_url_.spec()));
 }
 
-void BrowserWindow::EmbedOmnibox(mojo::ApplicationConnection* connection) {
+void BrowserWindow::EmbedOmnibox() {
   mojo::ViewTreeClientPtr view_tree_client;
-  connection->ConnectToService(&view_tree_client);
+  omnibox_->GetViewTreeClient(GetProxy(&view_tree_client));
   omnibox_view_->Embed(view_tree_client.Pass());
 
   // TODO(beng): This should be handled sufficiently by
