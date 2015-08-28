@@ -560,6 +560,8 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("cellForColumnAndRow", &WebAXObjectProxy::CellForColumnAndRow)
       .SetMethod("setSelectedTextRange",
                  &WebAXObjectProxy::SetSelectedTextRange)
+      .SetMethod("setSelection",
+                 &WebAXObjectProxy::SetSelection)
       .SetMethod("isAttributeSettable", &WebAXObjectProxy::IsAttributeSettable)
       .SetMethod("isPressActionSupported",
                  &WebAXObjectProxy::IsPressActionSupported)
@@ -1170,6 +1172,35 @@ void WebAXObjectProxy::SetSelectedTextRange(int selection_start,
   accessibility_object_.updateLayoutAndCheckValidity();
   accessibility_object_.setSelectedTextRange(selection_start,
                                               selection_start + length);
+}
+
+void WebAXObjectProxy::SetSelection(
+    v8::Local<v8::Value> anchor_object, int anchor_offset,
+    v8::Local<v8::Value> focus_object, int focus_offset) {
+  if (anchor_object.IsEmpty() || focus_object.IsEmpty() ||
+      !anchor_object->IsObject() || !focus_object->IsObject() ||
+      anchor_offset < 0 || focus_offset < 0) {
+    return;
+  }
+
+  WebAXObjectProxy* web_ax_anchor = nullptr;
+  if (!gin::ConvertFromV8(
+      blink::mainThreadIsolate(), anchor_object, &web_ax_anchor)) {
+    return;
+  }
+  DCHECK(web_ax_anchor);
+
+  WebAXObjectProxy* web_ax_focus = nullptr;
+  if (!gin::ConvertFromV8(
+      blink::mainThreadIsolate(), focus_object, &web_ax_focus)) {
+    return;
+  }
+  DCHECK(web_ax_focus);
+
+  accessibility_object_.updateLayoutAndCheckValidity();
+  accessibility_object_.setSelection(
+      web_ax_anchor->accessibility_object_, anchor_offset,
+      web_ax_focus->accessibility_object_, focus_offset);
 }
 
 bool WebAXObjectProxy::IsAttributeSettable(const std::string& attribute) {
