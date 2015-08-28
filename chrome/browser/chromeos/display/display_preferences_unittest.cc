@@ -43,7 +43,7 @@ const char kPositionKey[] = "position";
 const char kOffsetKey[] = "offset";
 
 // The mean acceleration due to gravity on Earth in m/s^2.
-const float kMeanGravity = 9.80665f;
+const float kMeanGravity = -9.80665f;
 
 bool IsRotationLocked() {
   return ash::Shell::GetInstance()

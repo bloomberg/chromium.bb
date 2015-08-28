@@ -12,7 +12,7 @@
 
 namespace {
 
-const double kMeanGravity = 9.80665;
+const double kMeanGravity = -9.80665;
 
 // Isolated content::SensorManagerChromeOS from the active
 // chromeos::AccelerometerReader. This allows for direct control over which

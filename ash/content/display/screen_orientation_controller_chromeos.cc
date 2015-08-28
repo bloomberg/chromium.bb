@@ -344,7 +344,7 @@ void ScreenOrientationController::HandleScreenRotation(
   // The reference vector is the angle of gravity when the device is rotated
   // clockwise by 45 degrees. Computing the angle between this vector and
   // gravity we can easily determine the expected display rotation.
-  static const gfx::Vector3dF rotation_reference(-1.0f, -1.0f, 0.0f);
+  static const gfx::Vector3dF rotation_reference(-1.0f, 1.0f, 0.0f);
 
   // Set the down vector to match the expected direction of gravity given the
   // last configured rotation. This is used to enforce a stickiness that the
@@ -352,13 +352,13 @@ void ScreenOrientationController::HandleScreenRotation(
   // when holding the device near 45 degrees.
   gfx::Vector3dF down(0.0f, 0.0f, 0.0f);
   if (current_rotation_ == gfx::Display::ROTATE_0)
-    down.set_y(-1.0f);
-  else if (current_rotation_ == gfx::Display::ROTATE_90)
-    down.set_x(-1.0f);
-  else if (current_rotation_ == gfx::Display::ROTATE_180)
     down.set_y(1.0f);
-  else
+  else if (current_rotation_ == gfx::Display::ROTATE_90)
     down.set_x(1.0f);
+  else if (current_rotation_ == gfx::Display::ROTATE_180)
+    down.set_y(-1.0f);
+  else
+    down.set_x(-1.0f);
 
   // Don't rotate if the screen has not passed the threshold.
   if (gfx::AngleBetweenVectorsInDegrees(down, lid_flattened) <
@@ -367,20 +367,21 @@ void ScreenOrientationController::HandleScreenRotation(
   }
 
   float angle = gfx::ClockwiseAngleBetweenVectorsInDegrees(
-      rotation_reference, lid_flattened, gfx::Vector3dF(0.0f, 0.0f, -1.0f));
+      rotation_reference, lid_flattened, gfx::Vector3dF(0.0f, 0.0f, 1.0f));
 
-  gfx::Display::Rotation new_rotation = gfx::Display::ROTATE_90;
+  gfx::Display::Rotation new_rotation = gfx::Display::ROTATE_270;
   if (angle < 90.0f)
     new_rotation = gfx::Display::ROTATE_0;
   else if (angle < 180.0f)
-    new_rotation = gfx::Display::ROTATE_270;
+    new_rotation = gfx::Display::ROTATE_90;
   else if (angle < 270.0f)
     new_rotation = gfx::Display::ROTATE_180;
 
   if (new_rotation != current_rotation_ &&
-      IsRotationAllowedInLockedState(new_rotation))
+      IsRotationAllowedInLockedState(new_rotation)) {
     SetDisplayRotation(new_rotation,
                        gfx::Display::ROTATION_SOURCE_ACCELEROMETER);
+  }
 }
 
 void ScreenOrientationController::LoadDisplayRotationProperties() {

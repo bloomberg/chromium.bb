@@ -36,7 +36,7 @@ namespace ash {
 namespace {
 
 const float kDegreesToRadians = 3.1415926f / 180.0f;
-const float kMeanGravity = 9.8066f;
+const float kMeanGravity = -9.8066f;
 
 DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
   DisplayInfo info(id, "dummy", false);
