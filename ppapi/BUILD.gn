@@ -139,3 +139,61 @@ executable("pepper_hash_for_uma") {
     "//base",
   ]
 }
+
+source_set("ppapi_cpp_lib") {
+  sources = ppapi_sources.cpp_source_files
+  sources += [
+    "cpp/module_embedder.h",
+    "cpp/ppp_entrypoints.cc",
+  ]
+}
+
+source_set("ppapi_gles2_lib") {
+  include_dirs = [ "lib/gl/include" ]
+  sources = [
+    "lib/gl/gles2/gl2ext_ppapi.c",
+    "lib/gl/gles2/gl2ext_ppapi.h",
+    "lib/gl/gles2/gles2.c",
+  ]
+  deps = [
+    "//ppapi/cpp",
+  ]
+}
+
+if (is_nacl) {
+  executable("ppapi_nacl_tests_newlib") {
+    include_dirs = [
+      "lib/gl/include",
+      "..",
+    ]
+
+    sources = ppapi_sources.test_common_source_files +
+              ppapi_sources.test_nacl_source_files
+
+    defines = [ "GL_GLEXT_PROTOTYPES" ]
+
+    deps = [
+      ":ppapi_cpp_lib",
+      "//ppapi/native_client:ppapi_lib",
+    ]
+  }
+
+  copy("nacl_tests_copy") {
+    sources = [
+      "${root_out_dir}/ppapi_nacl_tests_newlib.nexe",
+    ]
+    outputs = [
+      "${root_build_dir}/{{source_name_part}}_${target_cpu}.nexe",
+    ]
+    deps = [
+      ":ppapi_nacl_tests_newlib",
+    ]
+  }
+}
+
+group("ppapi_nacl_tests") {
+  deps = []
+  if (target_cpu == "x86" || target_cpu == "x64") {
+    deps += [ ":nacl_tests_copy(//native_client/build/toolchain/nacl:clang_newlib_${target_cpu})" ]
+  }
+}
