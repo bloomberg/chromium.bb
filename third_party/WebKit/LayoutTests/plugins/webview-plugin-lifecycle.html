@@ -11,11 +11,13 @@
 onload = function() {
     if (window.testRunner) {
         window.testRunner.waitUntilDone();
-        // Need to paint two frames in order to allow the plugin to propery load.
+        // Need to paint two frames in order to allow the plugin to properly load.
         // TODO(chrishtr): find out why and fix.
-        window.testRunner.layoutAndPaintAsyncThen(function() {
-            window.testRunner.layoutAndPaintAsyncThen(function() {
-                window.testRunner.notifyDone();
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    window.testRunner.notifyDone();
+                });
             });
         });
     }
