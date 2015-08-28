@@ -850,10 +850,15 @@ private:
     LayoutRectOutsets m_marginBoxOutsets;
 
 protected:
-    // The preferred logical width of the element if it were to break its lines at every possible opportunity.
+    // The preferred logical width of the element if it were to break its lines at every
+    // possible opportunity. CSS 2.1 calls this width the "preferred minimum width" and
+    // "minimum content width".
+    // See https://drafts.csswg.org/css-sizing-3/#intrinsic for more information.
     LayoutUnit m_minPreferredLogicalWidth;
 
     // The preferred logical width of the element if it never breaks any lines at all.
+    // CSS 2.1 calls this width the "preferred width" and "maximum cell width".
+    // See https://drafts.csswg.org/css-sizing-3/#intrinsic for more information.
     LayoutUnit m_maxPreferredLogicalWidth;
 
     // Our overflow information.

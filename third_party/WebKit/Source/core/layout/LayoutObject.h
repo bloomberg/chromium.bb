@@ -116,7 +116,30 @@ typedef WTF::HashMap<const DeprecatedPaintLayer*, Vector<LayoutRect>> LayerHitTe
 const int showTreeCharacterOffset = 39;
 #endif
 
-// Base class for all layout tree objects.
+// LayoutObject is the base class for all layout tree objects.
+//
+// LayoutObjects form a tree structure that is a close mapping of the DOM tree.
+// The root of the LayoutObject tree is the LayoutView, which is the LayoutObject associated
+// with the Document.
+//
+// Some LayoutObjects don't have an associated Node and are called "anonymous" (see the constructor
+// below). Anonymous LayoutObjects exists for several purposes but are usually required by CSS. A
+// good example is anonymous table parts (http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes).
+// Also some Node don't have an associated LayoutObjects e.g. if display: none is set. For more
+// detail, see LayoutObject::createObject that creates the right LayoutObject based on the style.
+//
+// Because the SVG and CSS classes both inherit from this object, functions can belong to either
+// realm and sometimes to both.
+//
+// The purpose of the layout tree is to do layout (aka reflow) and store its results for painting and
+// hit-testing.
+// Layout is the process of sizing and positioning Nodes on the page. In Blink, layouts always start
+// from a relayout boundary (see objectIsRelayoutBoundary in LayoutObject.cpp). As such, we need to mark
+// the ancestors all the way to the enclosing relayout boundary in order to do a correct layout.
+//
+// Due to the high cost of layout, a lot of effort is done to avoid doing full layouts of nodes.
+// This is why there are several types of layout available to bypass the complex operations. See the
+// comments on the layout booleans in LayoutObjectBitfields below about the different layouts.
 class CORE_EXPORT LayoutObject : public ImageResourceClient {
     friend class LayoutObjectChildList;
     WTF_MAKE_NONCOPYABLE(LayoutObject);
@@ -669,6 +692,11 @@ public:
 
     // Subclasses must reimplement this method to compute the size and position
     // of this object and all its descendants.
+    //
+    // By default, layout only lays out the children that are marked for layout.
+    // In some cases, layout has to force laying out more children. An example is
+    // when the width of the LayoutObject changes as this impacts children with
+    // 'width' set to auto.
     virtual void layout() = 0;
     virtual bool updateImageLoadingPriorities() { return false; }
     void setHasPendingResourceUpdate(bool hasPendingResourceUpdate) { m_bitfields.setHasPendingResourceUpdate(hasPendingResourceUpdate); }
@@ -1287,19 +1315,19 @@ private:
     public:
         LayoutObjectBitfields(Node* node)
             : m_selfNeedsLayout(false)
+            , m_needsPositionedMovementLayout(false)
+            , m_normalChildNeedsLayout(false)
+            , m_posChildNeedsLayout(false)
+            , m_needsSimplifiedNormalFlowLayout(false)
+            , m_selfNeedsOverflowRecalcAfterStyleChange(false)
+            , m_childNeedsOverflowRecalcAfterStyleChange(false)
+            , m_preferredLogicalWidthsDirty(false)
             , m_shouldInvalidateOverflowForPaint(false)
             , m_childShouldCheckForPaintInvalidation(false)
             , m_mayNeedPaintInvalidation(false)
             , m_shouldInvalidateSelection(false)
             , m_neededLayoutBecauseOfChildren(false)
-            , m_needsPositionedMovementLayout(false)
-            , m_normalChildNeedsLayout(false)
-            , m_posChildNeedsLayout(false)
-            , m_needsSimplifiedNormalFlowLayout(false)
-            , m_preferredLogicalWidthsDirty(false)
             , m_floating(false)
-            , m_selfNeedsOverflowRecalcAfterStyleChange(false)
-            , m_childNeedsOverflowRecalcAfterStyleChange(false)
             , m_isAnonymous(!node)
             , m_isText(false)
             , m_isBox(false)
@@ -1331,20 +1359,68 @@ private:
         }
 
         // 32 bits have been used in the first word, and 16 in the second.
+
+        // Self needs layout means that this layout object is marked for a full layout.
+        // This is the default layout but it is expensive as it recomputes everything.
+        // For CSS boxes, this includes the width (laying out the line boxes again), the margins
+        // (due to block collapsing margins), the positions, the height and the potential overflow.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
+
+        // A positioned movement layout is a specialized type of layout used on positioned objects
+        // that only visually moved. This layout is used when changing 'top'/'left' on a positioned
+        // element or margins on an out-of-flow one. Because the following operations don't impact
+        // the size of the object or sibling LayoutObjects, this layout is very lightweight.
+        //
+        // Positioned movement layout is implemented in LayoutBlock::simplifiedLayout.
+        ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
+
+        // This boolean is set when a normal flow ('position' == static || relative) child requires
+        // layout (but this object doesn't). Due to the nature of CSS, laying out a child can cause
+        // the parent to resize (e.g., if 'height' is auto).
+        ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
+
+        // This boolean is set when an out-of-flow positioned ('position' == fixed || absolute) child
+        // requires layout (but this object doesn't).
+        ADD_BOOLEAN_BITFIELD(posChildNeedsLayout, PosChildNeedsLayout);
+
+        // Simplified normal flow layout only relayouts the normal flow children, ignoring the
+        // out-of-flow descendants.
+        //
+        // The implementation of this layout is in LayoutBlock::simplifiedNormalFlowLayout.
+        ADD_BOOLEAN_BITFIELD(needsSimplifiedNormalFlowLayout, NeedsSimplifiedNormalFlowLayout);
+
+        // Some properties only have a visual impact and don't impact the actual layout position and
+        // sizes of the object. An example of this is the 'transform' property, who doesn't modify the
+        // layout but gets applied at paint time.
+        // Setting this flag only recomputes the overflow information.
+        ADD_BOOLEAN_BITFIELD(selfNeedsOverflowRecalcAfterStyleChange, SelfNeedsOverflowRecalcAfterStyleChange);
+
+        // This flag is set on the ancestor of a LayoutObject needing
+        // selfNeedsOverflowRecalcAfterStyleChange. This is needed as a descendant overflow can
+        // bleed into its containing block's so we have to recompute it in some cases.
+        ADD_BOOLEAN_BITFIELD(childNeedsOverflowRecalcAfterStyleChange, ChildNeedsOverflowRecalcAfterStyleChange);
+
+        // The preferred logical widths are the intrinsic sizes of this element.
+        // Intrinsic sizes depend mostly on the content and a limited set of style
+        // properties (e.g. any font-related property for text, 'min-width'/'max-width',
+        // 'min-height'/'max-height').
+        //
+        // Those widths are used to determine the final layout logical width, which
+        // depends on the layout algorithm used and the available logical width.
+        //
+        // Blink stores them in LayoutBox (m_minPreferredLogicalWidth and
+        // m_maxPreferredLogicalWidth).
+        //
+        // Setting this boolean marks both widths for lazy recomputation when
+        // LayoutBox::minPreferredLogicalWidth() or maxPreferredLogicalWidth() is called.
+        ADD_BOOLEAN_BITFIELD(preferredLogicalWidthsDirty, PreferredLogicalWidthsDirty);
+
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint); // TODO(wangxianzhu): Remove for slimming paint v2.
         ADD_BOOLEAN_BITFIELD(childShouldCheckForPaintInvalidation, ChildShouldCheckForPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection); // TODO(wangxianzhu): Remove for slimming paint v2.
         ADD_BOOLEAN_BITFIELD(neededLayoutBecauseOfChildren, NeededLayoutBecauseOfChildren); // TODO(wangxianzhu): Remove for slimming paint v2.
-        ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
-        ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
-        ADD_BOOLEAN_BITFIELD(posChildNeedsLayout, PosChildNeedsLayout);
-        ADD_BOOLEAN_BITFIELD(needsSimplifiedNormalFlowLayout, NeedsSimplifiedNormalFlowLayout);
-        ADD_BOOLEAN_BITFIELD(preferredLogicalWidthsDirty, PreferredLogicalWidthsDirty);
         ADD_BOOLEAN_BITFIELD(floating, Floating);
-        ADD_BOOLEAN_BITFIELD(selfNeedsOverflowRecalcAfterStyleChange, SelfNeedsOverflowRecalcAfterStyleChange);
-        ADD_BOOLEAN_BITFIELD(childNeedsOverflowRecalcAfterStyleChange, ChildNeedsOverflowRecalcAfterStyleChange);
 
         ADD_BOOLEAN_BITFIELD(isAnonymous, IsAnonymous);
         ADD_BOOLEAN_BITFIELD(isText, IsText);
