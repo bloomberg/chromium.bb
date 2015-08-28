@@ -38,6 +38,11 @@
     "type": "raw",
     "args": [],
   },
+  "angle_end2end_tests": {
+    "label": "//gpu:angle_end2end_tests",
+    "type": "raw",
+    "args": [],
+  },
   "angle_unittests": {
     "label": "//gpu:angle_unittests",
     "type": "raw",
@@ -365,6 +370,11 @@
     "label": "//chrome/test:browser_tests",
     "type": "gpu_browser_test",
     "gtest_filter": "CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
+  },
+  "telemetry_gpu_test": {
+    "label": "//chrome/test:telemetry_gpu_test",
+    "type": "script",
+    "script": "//content/test/gpu/run_gpu_test.py",
   },
   "ui_base_unittests": {
     "label": "//ui/base:ui_base_unittests",

@@ -312,3 +312,32 @@ test("angle_unittests") {
     "//third_party/angle:translator_static",
   ]
 }
+
+#
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("angle_end2end_tests_run") {
+  testonly = true
+  deps = [
+    ":angle_end2end_tests",
+  ]
+}
+
+test("angle_end2end_tests") {
+  sources = [
+    # TODO(crbug.com/519778): Use this instead when angle actually works.
+    # For now, this creates an empty stub binary that will at least
+    # run properly on the bots.
+    # "angle_end2end_tests_main.cc",
+    "//base/test/run_all_unittests.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+
+    # TODO(crbug.com/519778): This needs to be implemented.
+    # "//third_party/angle:end_to_end_tests",
+  ]
+}

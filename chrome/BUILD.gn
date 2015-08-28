@@ -27,6 +27,31 @@ if (!is_android) {
     ]
     defines = []
     deps = []
+
+    data = [
+      "$root_out_dir/resources.pak",
+    ]
+    if (is_linux || is_win) {
+      data += [
+        "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/locales/en-US.pak",
+        "$root_out_dir/locales/fr.pak",
+      ]
+    }
+    if (enable_nacl) {
+      if (is_win || (is_linux && target_cpu == "x64")) {
+        data += [
+          # TODO(GYP): Enable this when the IRT is in the right location.
+          # "$root_out_dir/nacl_irt_x86_64.nexe"
+        ]
+      } else if (is_linux && target_cpu == "arm") {
+        data += [
+          # TODO(GYP): same comment
+          # "$root_out_dir/nacl_irt_arm.nexe"
+        ]
+      }
+    }
+
     data_deps = []
 
     # TODO(GYP) mac_bundle_resources, xcode_settings

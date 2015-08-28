@@ -363,6 +363,12 @@ class MetaBuildWrapper(object):
     for target in swarming_targets:
       if gn_isolate_map[target]['type'] == 'gpu_browser_test':
         runtime_deps_target = 'browser_tests'
+      elif gn_isolate_map[target]['type'] == 'script':
+        # For script targets, the build target is usually a group,
+        # for which gn generates the runtime_deps next to the stamp file
+        # for the label, which lives under the obj/ directory.
+        label = gn_isolate_map[target]['label']
+        runtime_deps_target = 'obj/%s.stamp' % label.replace(':', '/')
       else:
         runtime_deps_target = target
       if sys.platform == 'win32':
@@ -568,12 +574,19 @@ class MetaBuildWrapper(object):
       gtest_filter = gn_isolate_map[target]['gtest_filter']
       cmdline = [
           '../../testing/test_env.py',
-          'browser_tests<(EXECUTABLE_SUFFIX)',
+          './browser_tests' + executable_suffix,
           '--test-launcher-bot-mode',
           '--enable-gpu',
           '--test-launcher-jobs=1',
           '--gtest_filter=%s' % gtest_filter,
       ]
+    elif test_type == 'script':
+      extra_files = [
+          '../../testing/test_env.py'
+      ]
+      cmdline = [
+          '../../testing/test_env.py',
+      ] + ['../../' + self.ToSrcRelPath(gn_isolate_map[target]['script'])]
     elif test_type in ('raw'):
       extra_files = []
       cmdline = [

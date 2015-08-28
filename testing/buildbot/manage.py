@@ -65,10 +65,12 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
 
   # These targets are run on the bots but not listed in the
   # buildbot JSON files.
+  'angle_end2end_tests',
   'content_gl_tests',
   'gl_tests',
   'gles2_conform_test',
   'tab_capture_end2end_tests',
+  'telemetry_gpu_test',
 }
 
 

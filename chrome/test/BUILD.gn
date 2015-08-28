@@ -590,6 +590,59 @@ if (!is_android) {
 
   # TODO(GYP): Delete this after we've converted everything to GN.
   # The _run targets exist only for compatibility w/ GYP.
+  group("telemetry_gpu_test_run") {
+    testonly = true
+    deps = [
+      ":telemetry_gpu_test",
+    ]
+  }
+
+  group("telemetry_gpu_test") {
+    data_deps = [
+      "//chrome",
+      "//tools/telemetry:bitmaptools",
+    ]
+
+    data = [
+      "//content/test/gpu/",
+      "//content/test/data/gpu/",
+
+      # For GpuProcess.video
+      "//content/test/data/media/bear.ogv",
+      "//third_party/catapult/",
+
+      # For webgl_conformance
+      "//third_party/webgl/",
+      "//content/test/gpu/run_gpu_test.py",
+
+      # Generic telemetry deps
+      # TODO(GYP): These should probably be specified somewhere else
+      # and pulled in via a deps entry.
+      "//build/android/pylib/",
+      "//build/util/",
+      "//third_party/WebKit/PerformanceTests/resources/jquery.tablesorter.min.js",
+      "//third_party/WebKit/PerformanceTests/resources/statistics.js",
+      "//third_party/flot/jquery.flot.min.js",
+      "//third_party/webpagereplay/",
+      "//tools/telemetry/",
+    ]
+
+    if (is_win && (symbol_level == 1 || symbol_level == 2)) {
+      # TODO(GYP): These should be provided automatically through data_deps.
+      data += [ "$root_out_dir/chrome.exe.pdb" ]
+      if (is_component_build) {
+        data += [
+          "$root_out_dir/base.dll.pdb",
+          "$root_out_dir/blink_platform.dll.pdb",
+          "$root_out_dir/blink_web.dll.pdb",
+          "$root_out_dir/content.dll.pdb",
+        ]
+      }
+    }
+  }
+
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
   group("tab_capture_end2end_tests_run") {
     testonly = true
     deps = [
@@ -601,9 +654,7 @@ if (!is_android) {
   # The _run targets exist only for compatibility w/ GYP.
   group("browser_tests_run") {
     testonly = true
-    deps = [
-      ":browser_tests",
-    ]
+    data_deps = [ ":browser_tests" ]
   }
 
   test("browser_tests") {
