@@ -28,9 +28,6 @@ CONTENT_EXPORT extern const char kMediaStreamSourceSystem[];
 // device belongs to.
 CONTENT_EXPORT extern const char kMediaStreamRenderToAssociatedSink[];
 
-// Controls whether ducking of audio is enabled on platforms that support it.
-CONTENT_EXPORT extern const char kMediaStreamAudioDucking[];
-
 // Controls whether the hotword audio stream is used on platforms that support
 // it.
 CONTENT_EXPORT extern const char kMediaStreamAudioHotword[];

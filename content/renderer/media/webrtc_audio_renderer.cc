@@ -131,21 +131,6 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
   OnPlayStateChanged on_play_state_changed_;
 };
 
-// Returns either AudioParameters::NO_EFFECTS or AudioParameters::DUCKING
-// depending on whether or not an input element is currently open with
-// ducking enabled.
-int GetCurrentDuckingFlag(int render_frame_id) {
-  RenderFrameImpl* const frame =
-      RenderFrameImpl::FromRoutingID(render_frame_id);
-  MediaStreamDispatcher* const dispatcher = frame ?
-      frame->GetMediaStreamDispatcher() : NULL;
-  if (dispatcher && dispatcher->IsAudioDuckingActive()) {
-    return media::AudioParameters::DUCKING;
-  }
-
-  return media::AudioParameters::NO_EFFECTS;
-}
-
 }  // namespace
 
 int WebRtcAudioRenderer::GetOptimalBufferSize(int sample_rate,
@@ -200,8 +185,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       fifo_delay_milliseconds_(0),
       sink_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                    media::CHANNEL_LAYOUT_STEREO, sample_rate, 16,
-                   frames_per_buffer,
-                   GetCurrentDuckingFlag(source_render_frame_id)),
+                   frames_per_buffer),
       render_callback_count_(0) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_frame_id=%d"

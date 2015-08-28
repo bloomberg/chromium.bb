@@ -337,7 +337,7 @@ TEST_F(MediaStreamAudioProcessorTest, VerifyConstraints) {
 
   {
     // When |kEchoCancellation| is explicitly set to false, the default values
-    // for all the constraints except |kMediaStreamAudioDucking| are false.
+    // for all the constraints are false.
     MockMediaConstraintFactory constraint_factory;
     constraint_factory.AddOptional(MediaAudioConstraints::kEchoCancellation,
                                    false);
@@ -347,11 +347,6 @@ TEST_F(MediaStreamAudioProcessorTest, VerifyConstraints) {
     for (size_t i = 0; i < arraysize(kDefaultAudioConstraints); ++i) {
       EXPECT_FALSE(audio_constraints.GetProperty(kDefaultAudioConstraints[i]));
     }
-#if defined(OS_WIN)
-    EXPECT_TRUE(audio_constraints.GetProperty(kMediaStreamAudioDucking));
-#else
-    EXPECT_FALSE(audio_constraints.GetProperty(kMediaStreamAudioDucking));
-#endif
   }
 
   {

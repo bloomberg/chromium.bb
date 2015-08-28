@@ -19,7 +19,6 @@ const char kMediaStreamRenderToAssociatedSink[] =
     "chromeRenderToAssociatedSink";
 // The prefix of this constant is 'goog' to match with other getUserMedia
 // constraints for audio.
-const char kMediaStreamAudioDucking[] = "googDucking";
 const char kMediaStreamAudioHotword[] = "googHotword";
 
 namespace {

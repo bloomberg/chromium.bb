@@ -66,18 +66,8 @@ struct {
   { MediaAudioConstraints::kGoogTypingNoiseDetection, true },
   { MediaAudioConstraints::kGoogExperimentalNoiseSuppression, false },
   { MediaAudioConstraints::kGoogBeamforming, false },
-#if defined(OS_WIN)
-  { kMediaStreamAudioDucking, true },
-#else
-  { kMediaStreamAudioDucking, false },
-#endif
   { kMediaStreamAudioHotword, false },
 };
-
-bool IsAudioProcessingConstraint(const std::string& key) {
-  // |kMediaStreamAudioDucking| does not require audio processing.
-  return key != kMediaStreamAudioDucking;
-}
 
 // Used to log echo quality based on delay estimates.
 enum DelayBasedEchoQuality {
@@ -213,11 +203,7 @@ bool MediaAudioConstraints::IsValid() const {
 bool MediaAudioConstraints::GetDefaultValueForConstraint(
     const blink::WebMediaConstraints& constraints,
     const std::string& key) const {
-  // |kMediaStreamAudioDucking| is not restricted by
-  // |default_audio_processing_constraint_value_| since it does not require
-  // audio processing.
-  if (!default_audio_processing_constraint_value_ &&
-      IsAudioProcessingConstraint(key))
+  if (!default_audio_processing_constraint_value_)
     return false;
 
   for (size_t i = 0; i < arraysize(kDefaultAudioConstraints); ++i) {

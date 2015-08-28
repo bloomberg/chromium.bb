@@ -72,6 +72,12 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
       audio_bus_(AudioBus::Create(params)) {
   DCHECK(manager_);
 
+  // The empty string is used to indicate a default device and the
+  // |device_role_| member controls whether that's the default or default
+  // communications device.
+  DCHECK_NE(device_id_, AudioManagerBase::kDefaultDeviceId);
+  DCHECK_NE(device_id_, AudioManagerBase::kCommunicationsDeviceId);
+
   DVLOG(1) << "WASAPIAudioOutputStream::WASAPIAudioOutputStream()";
   DVLOG_IF(1, share_mode_ == AUDCLNT_SHAREMODE_EXCLUSIVE)
        << "Core Audio (WASAPI) EXCLUSIVE MODE is enabled.";
@@ -140,8 +146,7 @@ bool WASAPIAudioOutputStream::Open() {
 
   // Create an IAudioClient interface for the default rendering IMMDevice.
   ScopedComPtr<IAudioClient> audio_client;
-  if (device_id_.empty() ||
-      CoreAudioUtil::DeviceIsDefault(eRender, device_role_, device_id_)) {
+  if (device_id_.empty()) {
     audio_client = CoreAudioUtil::CreateDefaultClient(eRender, device_role_);
     communications_device = (device_role_ == eCommunications);
   } else {

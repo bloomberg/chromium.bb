@@ -34,6 +34,8 @@ static const int kMaxInputChannels = 3;
 
 const char AudioManagerBase::kDefaultDeviceName[] = "Default";
 const char AudioManagerBase::kDefaultDeviceId[] = "default";
+const char AudioManagerBase::kCommunicationsDeviceId[] = "communications";
+const char AudioManagerBase::kCommunicationsDeviceName[] = "Communications";
 const char AudioManagerBase::kLoopbackInputDeviceId[] = "loopback";
 
 struct AudioManagerBase::DispatcherParams {

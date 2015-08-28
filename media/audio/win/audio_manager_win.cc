@@ -283,9 +283,14 @@ void AudioManagerWin::GetAudioDeviceNamesImpl(
       GetOutputDeviceNamesWin(device_names);
   }
 
-  // Always add default device parameters as first element.
   if (!device_names->empty()) {
     AudioDeviceName name;
+    if (enumeration_type() == kMMDeviceEnumeration) {
+      name.device_name = AudioManagerBase::kCommunicationsDeviceName;
+      name.unique_id = AudioManagerBase::kCommunicationsDeviceId;
+      device_names->push_front(name);
+    }
+    // Always add default device parameters as first element.
     name.device_name = AudioManagerBase::kDefaultDeviceName;
     name.unique_id = AudioManagerBase::kDefaultDeviceId;
     device_names->push_front(name);
@@ -377,11 +382,12 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
   // Pass an empty string to indicate that we want the default device
   // since we consistently only check for an empty string in
   // WASAPIAudioOutputStream.
+  bool communications = device_id == AudioManagerBase::kCommunicationsDeviceId;
   return new WASAPIAudioOutputStream(this,
-      device_id == AudioManagerBase::kDefaultDeviceId ?
+      communications || device_id == AudioManagerBase::kDefaultDeviceId ?
           std::string() : device_id,
       params,
-      params.effects() & AudioParameters::DUCKING ? eCommunications : eConsole);
+      communications ? eCommunications : eConsole);
 }
 
 // Factory for the implementations of AudioInputStream for AUDIO_PCM_LINEAR

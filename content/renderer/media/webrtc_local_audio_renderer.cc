@@ -255,18 +255,6 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
 
   DVLOG(1) << "WebRtcLocalAudioRenderer::ReconfigureSink()";
 
-  int implicit_ducking_effect = 0;
-  RenderFrameImpl* const frame =
-      RenderFrameImpl::FromRoutingID(source_render_frame_id_);
-  MediaStreamDispatcher* const dispatcher = frame ?
-      frame->GetMediaStreamDispatcher() : NULL;
-  if (dispatcher && dispatcher->IsAudioDuckingActive()) {
-    DVLOG(1) << "Forcing DUCKING to be ON for output";
-    implicit_ducking_effect = media::AudioParameters::DUCKING;
-  } else {
-    DVLOG(1) << "DUCKING not forced ON for output";
-  }
-
   if (source_params_.Equals(params))
     return;
 
@@ -280,9 +268,7 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
       source_params_.bits_per_sample(),
       WebRtcAudioRenderer::GetOptimalBufferSize(source_params_.sample_rate(),
                                                 frames_per_buffer_),
-      // If DUCKING is enabled on the source, it needs to be enabled on the
-      // sink as well.
-      source_params_.effects() | implicit_ducking_effect);
+      source_params_.effects());
 
   {
     // Note: The max buffer is fairly large, but will rarely be used.

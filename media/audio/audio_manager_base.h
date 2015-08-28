@@ -35,6 +35,10 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   static const char kDefaultDeviceName[];
   // Unique Id of the generic "default" device.
   static const char kDefaultDeviceId[];
+  // Unique Id of the generic default communications device (where supported).
+  static const char kCommunicationsDeviceId[];
+  // Name of the generic default communications device (where supported).
+  static const char kCommunicationsDeviceName[];
 
   // Input device ID used to capture the default system playback stream. When
   // this device ID is passed to MakeAudioInputStream() the returned

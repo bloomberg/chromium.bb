@@ -127,12 +127,7 @@ void ParseStreamType(const StreamOptions& options,
 // explicitly turn them off.
 void FilterAudioEffects(const StreamOptions& options, int* effects) {
   DCHECK(effects);
-  // TODO(ajm): Should we also handle ECHO_CANCELLER here?
-  std::string value;
-  if (options.GetFirstAudioConstraintByName(
-          kMediaStreamAudioDucking, &value, NULL) && value == "false") {
-    *effects &= ~media::AudioParameters::DUCKING;
-  }
+  // TODO(ajm): Should we handle ECHO_CANCELLER here?
 }
 
 // Unlike other effects, hotword is off by default, so turn it on if it's

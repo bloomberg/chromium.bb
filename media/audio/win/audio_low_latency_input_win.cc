@@ -28,7 +28,6 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(AudioManagerWin* manager,
       packet_size_frames_(0),
       packet_size_bytes_(0),
       endpoint_buffer_size_frames_(0),
-      effects_(params.effects()),
       device_id_(device_id),
       perf_count_to_100ns_units_(0.0),
       ms_to_frame_count_(0.0),
@@ -433,47 +432,22 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
   // Retrieve the IMMDevice by using the specified role or the specified
   // unique endpoint device-identification string.
 
-  if (effects_ & AudioParameters::DUCKING) {
-    // Ducking has been requested and it is only supported for the default
-    // communication device.  So, let's open up the communication device and
-    // see if the ID of that device matches the requested ID.
-    // We consider a kDefaultDeviceId as well as an explicit device id match,
-    // to be valid matches.
+  if (device_id_ == AudioManagerBase::kDefaultDeviceId) {
+    // Retrieve the default capture audio endpoint for the specified role.
+    // Note that, in Windows Vista, the MMDevice API supports device roles
+    // but the system-supplied user interface programs do not.
+    hr = enumerator->GetDefaultAudioEndpoint(eCapture, eConsole,
+                                             endpoint_device_.Receive());
+  } else if (device_id_ == AudioManagerBase::kCommunicationsDeviceId) {
     hr = enumerator->GetDefaultAudioEndpoint(eCapture, eCommunications,
                                              endpoint_device_.Receive());
-    if (endpoint_device_.get() &&
-        device_id_ != AudioManagerBase::kDefaultDeviceId) {
-      base::win::ScopedCoMem<WCHAR> communications_id;
-      endpoint_device_->GetId(&communications_id);
-      if (device_id_ !=
-          base::WideToUTF8(static_cast<WCHAR*>(communications_id))) {
-        DLOG(WARNING) << "Ducking has been requested for a non-default device."
-                         "Not supported.";
-        // We can't honor the requested effect flag, so turn it off and
-        // continue.  We'll check this flag later to see if we've actually
-        // opened up the communications device, so it's important that it
-        // reflects the active state.
-        effects_ &= ~AudioParameters::DUCKING;
-        endpoint_device_.Release();  // Fall back on code below.
-      }
-    }
-  }
-
-  if (!endpoint_device_.get()) {
-    if (device_id_ == AudioManagerBase::kDefaultDeviceId) {
-      // Retrieve the default capture audio endpoint for the specified role.
-      // Note that, in Windows Vista, the MMDevice API supports device roles
-      // but the system-supplied user interface programs do not.
-      hr = enumerator->GetDefaultAudioEndpoint(eCapture, eConsole,
-                                               endpoint_device_.Receive());
-    } else if (device_id_ == AudioManagerBase::kLoopbackInputDeviceId) {
-      // Capture the default playback stream.
-      hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
-                                               endpoint_device_.Receive());
-    } else {
-      hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id_).c_str(),
-                                 endpoint_device_.Receive());
-    }
+  } else if (device_id_ == AudioManagerBase::kLoopbackInputDeviceId) {
+    // Capture the default playback stream.
+    hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
+                                             endpoint_device_.Receive());
+  } else {
+    hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id_).c_str(),
+                               endpoint_device_.Receive());
   }
 
   if (FAILED(hr))
@@ -571,8 +545,7 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   if (device_id_ == AudioManagerBase::kLoopbackInputDeviceId) {
     flags = AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_NOPERSIST;
   } else {
-    flags =
-      AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_NOPERSIST;
+    flags = AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_NOPERSIST;
   }
 
   // Initialize the audio stream between the client and the device.
@@ -587,7 +560,8 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
       0,  // hnsBufferDuration
       0,
       &format_,
-      (effects_ & AudioParameters::DUCKING) ? &kCommunicationsSessionId : NULL);
+      device_id_ == AudioManagerBase::kCommunicationsDeviceId ?
+          &kCommunicationsSessionId : nullptr);
 
   if (FAILED(hr))
     return hr;

@@ -423,7 +423,26 @@ std::string CoreAudioUtil::GetAudioControllerID(IMMDevice* device,
 
 std::string CoreAudioUtil::GetMatchingOutputDeviceID(
     const std::string& input_device_id) {
-  ScopedComPtr<IMMDevice> input_device(CreateDevice(input_device_id));
+  // Special handling for the default communications device.
+  // We always treat the configured communications devices, as a pair.
+  // If we didn't do that and the user has e.g. configured a mic of a headset
+  // as the default comms input device and a different device (not the speakers
+  // of the headset) as the default comms output device, then we would otherwise
+  // here pick the headset as the matched output device.  That's technically
+  // correct, but the user experience would be that any audio played out to
+  // the matched device, would get ducked since it's not the default comms
+  // device.  So here, we go with the user's configuration.
+  if (input_device_id == AudioManagerBase::kCommunicationsDeviceId)
+    return AudioManagerBase::kCommunicationsDeviceId;
+
+  ScopedComPtr<IMMDevice> input_device;
+  if (input_device_id.empty() ||
+      input_device_id == AudioManagerBase::kDefaultDeviceId) {
+    input_device = CreateDefaultDevice(eCapture, eConsole);
+  } else {
+    input_device = CreateDevice(input_device_id);
+  }
+
   if (!input_device.get())
     return std::string();
 
@@ -723,6 +742,9 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
   } else if (device_id == AudioManagerBase::kLoopbackInputDeviceId) {
     DCHECK(!is_output_device);
     device = CoreAudioUtil::CreateDefaultDevice(eRender, eConsole);
+  } else if (device_id == AudioManagerBase::kCommunicationsDeviceId) {
+    device = CoreAudioUtil::CreateDefaultDevice(
+        is_output_device ? eRender : eCapture, eCommunications);
   } else {
     device = CreateDevice(device_id);
   }
@@ -753,18 +775,6 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
     params->Reset(params->format(), CHANNEL_LAYOUT_STEREO, 2,
                   params->sample_rate(), params->bits_per_sample(),
                   params->frames_per_buffer());
-  }
-
-  ScopedComPtr<IMMDevice> communications_device(
-      CreateDefaultDevice(eCapture, eCommunications));
-  if (communications_device &&
-      GetDeviceID(communications_device.get()) == GetDeviceID(device.get())) {
-    // Raise the 'DUCKING' flag for default communication devices.
-    *params =
-        AudioParameters(params->format(), params->channel_layout(),
-                        params->channels(), params->sample_rate(),
-                        params->bits_per_sample(), params->frames_per_buffer(),
-                        params->effects() | AudioParameters::DUCKING);
   }
 
   return hr;

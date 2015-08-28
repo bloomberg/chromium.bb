@@ -403,19 +403,4 @@ int MediaStreamDispatcher::video_session_id(const std::string& label,
   return it->second.video_array[index].session_id;
 }
 
-bool MediaStreamDispatcher::IsAudioDuckingActive() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  LabelStreamMap::const_iterator stream_it = label_stream_map_.begin();
-  while (stream_it != label_stream_map_.end()) {
-    const StreamDeviceInfoArray& audio_array = stream_it->second.audio_array;
-    for (StreamDeviceInfoArray::const_iterator device_it = audio_array.begin();
-         device_it != audio_array.end(); ++device_it) {
-      if (device_it->device.input.effects & media::AudioParameters::DUCKING)
-        return true;
-    }
-    ++stream_it;
-  }
-  return false;
-}
-
 }  // namespace content
