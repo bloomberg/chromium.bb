@@ -632,8 +632,6 @@ Segment::~Segment() {
 
   while (i != j) {
     Cluster* const p = *i++;
-    assert(p);
-
     delete p;
   }
 
@@ -649,8 +647,8 @@ Segment::~Segment() {
 
 long long Segment::CreateInstance(IMkvReader* pReader, long long pos,
                                   Segment*& pSegment) {
-  assert(pReader);
-  assert(pos >= 0);
+  if (pReader == NULL || pos < 0)
+    return E_PARSE_FAILED;
 
   pSegment = NULL;
 
@@ -993,7 +991,8 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
   if (status < 0)  // error
     return status;
 
-  assert((total < 0) || (avail <= total));
+  if (total >= 0 && avail > total)
+    return E_FILE_FORMAT_INVALID;
 
   const long long segment_stop = (m_size < 0) ? -1 : m_start + m_size;
 
@@ -1114,7 +1113,10 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
     break;
   }
 
-  assert(cluster_off >= 0);  // have cluster
+  if (cluster_off < 0) {
+    // No cluster, die.
+    return E_FILE_FORMAT_INVALID;
+  }
 
   long long pos_;
   long len_;
@@ -1160,14 +1162,16 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
   const long idx = m_clusterCount;
 
   if (m_clusterPreloadCount > 0) {
-    assert(idx < m_clusterSize);
+    if (idx >= m_clusterSize)
+      return E_FILE_FORMAT_INVALID;
 
     Cluster* const pCluster = m_clusters[idx];
-    assert(pCluster);
-    assert(pCluster->m_index < 0);
+    if (pCluster == NULL || pCluster->m_index >= 0)
+      return E_FILE_FORMAT_INVALID;
 
     const long long off = pCluster->GetPosition();
-    assert(off >= 0);
+    if (off < 0)
+      return E_FILE_FORMAT_INVALID;
 
     if (off == cluster_off) {  // preloaded already
       if (status == 0)  // no entries found
@@ -1224,15 +1228,14 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
     delete pCluster;
     return -1;
   }
-  assert(m_clusters);
-  assert(idx < m_clusterSize);
-  assert(m_clusters[idx] == pCluster);
 
   if (cluster_size >= 0) {
     pos += cluster_size;
 
     m_pos = pos;
-    assert((segment_stop < 0) || (m_pos <= segment_stop));
+
+    if (segment_stop > 0 && m_pos > segment_stop)
+      return E_FILE_FORMAT_INVALID;
 
     return 0;
   }
