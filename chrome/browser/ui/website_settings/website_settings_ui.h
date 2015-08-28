@@ -34,7 +34,7 @@ class Image;
 // etc.).
 class WebsiteSettingsUI {
  public:
-  // The Website Settings UI contains several tabs. Each tab is assiciated with
+  // The Website Settings UI contains several tabs. Each tab is associated with
   // a unique tab id. The enum |TabId| contains all the ids for the tabs.
   enum TabId {
     TAB_ID_PERMISSIONS = 0,
@@ -43,7 +43,7 @@ class WebsiteSettingsUI {
   };
 
   // |CookieInfo| contains information about the cookies from a specific source.
-  // A source can for example be a specific origin or an entire domain.
+  // A source can for example be a specific origin or an entire wildcard domain.
   struct CookieInfo {
     CookieInfo();
 
@@ -53,6 +53,10 @@ class WebsiteSettingsUI {
     int allowed;
     // The number of blocked cookies.
     int blocked;
+
+    // Whether these cookies are from the current top-level origin as seen by
+    // the user, or from third-party origins.
+    bool is_first_party;
   };
 
   // |PermissionInfo| contains information about a single permission |type| for

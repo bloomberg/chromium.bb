@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/i18n/rtl.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -108,7 +109,6 @@ const int kPermissionsSectionHeadlineMarginBottom = 10;
 const int kPermissionsSectionRowSpacing = 2;
 
 const int kSiteDataIconColumnWidth = 20;
-const int kSiteDataSectionRowSpacing = 11;
 
 }  // namespace
 
@@ -486,30 +486,50 @@ void WebsiteSettingsPopupView::SetCookieInfo(
                         views::GridLayout::USE_PREF,
                         0,
                         0);
+  // No padding. This third column is for |third_party_label_text| (see below),
+  // and the text needs to flow naturally from the |first_party_label_text|
+  // link.
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                        views::GridLayout::USE_PREF, 0, 0);
 
   layout->AddPaddingRow(1, 5);
-  for (CookieInfoList::const_iterator i(cookie_info_list.begin());
-       i != cookie_info_list.end();
-       ++i) {
-    base::string16 label_text = l10n_util::GetStringFUTF16(
-        IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE,
-        base::UTF8ToUTF16(i->cookie_source),
-        base::IntToString16(i->allowed),
-        base::IntToString16(i->blocked));
-    if (i != cookie_info_list.begin())
-      layout->AddPaddingRow(1, kSiteDataSectionRowSpacing);
-    layout->StartRow(1, site_data_content_column);
-    WebsiteSettingsUI::PermissionInfo info;
-    info.type = CONTENT_SETTINGS_TYPE_COOKIES;
-    info.setting = CONTENT_SETTING_ALLOW;
-    views::ImageView* icon = new views::ImageView();
-    const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(info);
-    icon->SetImage(image.ToImageSkia());
-    layout->AddView(icon, 1, 1, views::GridLayout::CENTER,
-                    views::GridLayout::CENTER);
-    layout->AddView(new views::Label(label_text), 1, 1,
-                    views::GridLayout::LEADING, views::GridLayout::CENTER);
+
+  // |cookie_info_list| should only ever have 2 items: first- and third-party
+  // cookies.
+  DCHECK_EQ(cookie_info_list.size(), 2u);
+  base::string16 first_party_label_text;
+  base::string16 third_party_label_text;
+  for (const auto& i : cookie_info_list) {
+    if (i.is_first_party) {
+      first_party_label_text =
+          l10n_util::GetStringFUTF16(IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA,
+                                     base::IntToString16(i.allowed));
+    } else {
+      third_party_label_text =
+          l10n_util::GetStringFUTF16(IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA,
+                                     base::IntToString16(i.allowed));
+    }
   }
+
+  cookie_dialog_link_ = new views::Link(first_party_label_text);
+  cookie_dialog_link_->set_listener(this);
+
+  layout->StartRow(1, site_data_content_column);
+  WebsiteSettingsUI::PermissionInfo info;
+  info.type = CONTENT_SETTINGS_TYPE_COOKIES;
+  info.setting = CONTENT_SETTING_ALLOW;
+  views::ImageView* icon = new views::ImageView();
+  const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(info);
+  icon->SetImage(image.ToImageSkia());
+  layout->AddView(icon, 1, 1, views::GridLayout::CENTER,
+                  views::GridLayout::CENTER);
+  layout->AddView(cookie_dialog_link_, 1, 1, views::GridLayout::CENTER,
+                  views::GridLayout::CENTER);
+  base::string16 comma = base::ASCIIToUTF16(", ");
+
+  layout->AddView(new views::Label(comma + third_party_label_text), 1, 1,
+                  views::GridLayout::LEADING, views::GridLayout::CENTER);
+
   layout->AddPaddingRow(1, 6);
 
   layout->Layout(site_data_content_);
@@ -633,15 +653,10 @@ views::View* WebsiteSettingsPopupView::CreatePermissionsTab() {
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
 
   // Add cookies and site data section.
-  cookie_dialog_link_ = new views::Link(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_SHOW_SITE_DATA));
-  cookie_dialog_link_->set_listener(this);
   site_data_content_ = new views::View();
-  views::View* site_data_section =
-      CreateSection(l10n_util::GetStringUTF16(
-                        IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA),
-                    site_data_content_,
-                    cookie_dialog_link_);
+  views::View* site_data_section = CreateSection(
+      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA),
+      site_data_content_, NULL);
   pane->AddChildView(site_data_section);
 
   return pane;

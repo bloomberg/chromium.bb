@@ -8,6 +8,7 @@
 
 #import <AppKit/AppKit.h>
 
+#include "base/i18n/rtl.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -105,6 +106,10 @@ const CGFloat kTabLabelTopPadding = 6;
 
 // The amount of padding to leave on either side of the tab label.
 const CGFloat kTabLabelXPadding = 12;
+
+// The amount of padding to *remove* when placing
+// |IDS_WEBSITE_SETTINGS_{FIRST,THIRD}_PARTY_SITE_DATA| next to each other.
+const CGFloat kTextLabelXPadding = 5;
 
 // Takes in the parent window, which should be a BrowserWindow, and gets the
 // proper anchor point for the bubble. The returned point is in screen
@@ -523,15 +528,6 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [contentView addSubview:cookiesView_];
   [contentView addSubview:permissionsView_];
 
-  // Create the link button to view cookies and site data. Its position will be
-  // set in performLayout.
-  NSString* cookieButtonText = l10n_util::GetNSString(
-      IDS_WEBSITE_SETTINGS_SHOW_SITE_DATA);
-  cookiesButton_ = [self addLinkButtonWithText:cookieButtonText
-                                        toView:contentView];
-  [cookiesButton_ setTarget:self];
-  [cookiesButton_ setAction:@selector(showCookiesAndSiteData:)];
-
   // Create the link button to view site settings. Its position will be set in
   // performLayout.
   NSString* siteSettingsButtonText =
@@ -683,13 +679,9 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
   yPos = [self setYPositionOfView:cookiesView_ to:kFramePadding];
 
-  // Put the link button for cookies and site data just below the cookie info.
-  [cookiesButton_ setFrameOrigin:NSMakePoint(kFramePadding, yPos)];
-
   // Put the permission info just below the link button.
-  yPos =
-      [self setYPositionOfView:permissionsView_
-                            to:NSMaxY([cookiesButton_ frame]) + kFramePadding];
+  yPos = [self setYPositionOfView:permissionsView_
+                               to:NSMaxY([cookiesView_ frame]) + kFramePadding];
 
   // Put the link button for site settings just below the permissions.
   [siteSettingsButton_ setFrameOrigin:NSMakePoint(kFramePadding, yPos)];
@@ -1017,38 +1009,6 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [imageView setFrame:frame];
 }
 
-- (CGFloat)addCookieInfo:
-    (const WebsiteSettingsUI::CookieInfo&)cookieInfo
-                  toView:(NSView*)view
-                 atPoint:(NSPoint)point {
-  WebsiteSettingsUI::PermissionInfo info;
-  info.type = CONTENT_SETTINGS_TYPE_COOKIES;
-  info.setting = CONTENT_SETTING_ALLOW;
-  NSImage* image = WebsiteSettingsUI::GetPermissionIcon(info).ToNSImage();
-  NSImageView* imageView = [self addImageWithSize:[image size]
-                                           toView:view
-                                          atPoint:point];
-  [imageView setImage:image];
-  point.x += kPermissionImageSize + kPermissionImageSpacing;
-
-  base::string16 labelText = l10n_util::GetStringFUTF16(
-      IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE,
-      base::UTF8ToUTF16(cookieInfo.cookie_source),
-      base::IntToString16(cookieInfo.allowed),
-      base::IntToString16(cookieInfo.blocked));
-
-  NSTextField* label = [self addText:labelText
-                            withSize:[NSFont smallSystemFontSize]
-                                bold:NO
-                              toView:view
-                             atPoint:point];
-
-  // Align the icon with the text.
-  [self alignPermissionIcon:imageView withTextField:label];
-
-  return NSHeight([label frame]);
-}
-
 // Set the content of the identity and identity status fields.
 - (void)setIdentityInfo:(const WebsiteSettingsUI::IdentityInfo&)identityInfo {
   [identityField_ setStringValue:
@@ -1112,18 +1072,59 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
                                toView:cookiesView_
                               atPoint:controlOrigin];
   controlOrigin.y += NSHeight([header frame]) + kPermissionsHeadlineSpacing;
+  controlOrigin.y += kPermissionsTabSpacing;
 
-  for (CookieInfoList::const_iterator it = cookieInfoList.begin();
-       it != cookieInfoList.end();
-       ++it) {
-    controlOrigin.y += kPermissionsTabSpacing;
-    CGFloat rowHeight = [self addCookieInfo:*it
-                                     toView:cookiesView_
-                                    atPoint:controlOrigin];
-    controlOrigin.y += rowHeight;
+  // |cookieInfoList| should only ever have 2 items: first- and third-party
+  // cookies.
+  DCHECK_EQ(cookieInfoList.size(), 2u);
+  base::string16 firstPartyLabelText;
+  base::string16 thirdPartyLabelText;
+  for (const auto& i : cookieInfoList) {
+    if (i.is_first_party) {
+      firstPartyLabelText =
+          l10n_util::GetStringFUTF16(IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA,
+                                     base::IntToString16(i.allowed));
+    } else {
+      thirdPartyLabelText =
+          l10n_util::GetStringFUTF16(IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA,
+                                     base::IntToString16(i.allowed));
+    }
   }
 
-  controlOrigin.y += kPermissionsTabSpacing;
+  WebsiteSettingsUI::PermissionInfo info;
+  info.type = CONTENT_SETTINGS_TYPE_COOKIES;
+  info.setting = CONTENT_SETTING_ALLOW;
+  NSImage* image = WebsiteSettingsUI::GetPermissionIcon(info).ToNSImage();
+  NSImageView* imageView = [self addImageWithSize:[image size]
+                                           toView:cookiesView_
+                                          atPoint:controlOrigin];
+  [imageView setImage:image];
+  controlOrigin.x += kPermissionImageSize + kPermissionImageSpacing;
+
+  base::string16 comma = base::ASCIIToUTF16(", ");
+  NSString* cookieButtonText = base::SysUTF16ToNSString(firstPartyLabelText);
+  NSButton* cookiesButton =
+      [self addLinkButtonWithText:cookieButtonText toView:cookiesView_];
+  [cookiesButton setTarget:self];
+  [cookiesButton setAction:@selector(showCookiesAndSiteData:)];
+  [cookiesButton setFrameOrigin:controlOrigin];
+
+  controlOrigin.x += NSWidth([cookiesButton frame]) - kTextLabelXPadding;
+
+  bool is_rtl = base::i18n::RIGHT_TO_LEFT ==
+                base::i18n::GetStringDirection(firstPartyLabelText);
+  NSTextField* label = [self addText:is_rtl ? thirdPartyLabelText + comma
+                                            : comma + thirdPartyLabelText
+                            withSize:[NSFont smallSystemFontSize]
+                                bold:NO
+                              toView:cookiesView_
+                             atPoint:controlOrigin];
+
+  // Align the icon with the text.
+  [self alignPermissionIcon:imageView withTextField:label];
+
+  controlOrigin.y += NSHeight([label frame]) + kPermissionsTabSpacing;
+
   [cookiesView_ setFrameSize:
       NSMakeSize(NSWidth([cookiesView_ frame]), controlOrigin.y)];
 

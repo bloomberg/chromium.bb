@@ -44,9 +44,6 @@ class WebContents;
   // Container for cookies info on the Permissions tab.
   NSView* cookiesView_;
 
-  // The link button for showing cookies and site data info.
-  NSButton* cookiesButton_;
-
   // The link button for showing site settings.
   NSButton* siteSettingsButton_;
 
