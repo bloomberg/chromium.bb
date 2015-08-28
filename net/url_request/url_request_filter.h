@@ -29,6 +29,11 @@ class URLRequestInterceptor;
 // URLRequestFilter::GetInstance()->AddUrlInterceptor(GURL("http://foo.com/"),
 //                                                    interceptor.Pass());
 //
+// The URLRequestFilter is implemented as a singleton that is not thread-safe,
+// and hence must only be used in test code where the network stack is used
+// from a single thread. It must only be accessed on that networking thread.
+// One exception is that during startup, before any message loops have been
+// created, interceptors may be added (the session restore tests rely on this).
 // If the URLRequestFilter::MaybeInterceptRequest can't find a handler for a
 // request, it returns NULL and lets the configured ProtocolHandler handle the
 // request.

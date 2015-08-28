@@ -474,7 +474,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   NavigationController& controller = shell()->web_contents()->GetController();
   GURL error_url(
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_RESET));
-  net::URLRequestFailedJob::AddUrlHandler();
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&net::URLRequestFailedJob::AddUrlHandler));
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
   EXPECT_EQ(1, controller.GetEntryCount());

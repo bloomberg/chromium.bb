@@ -156,6 +156,10 @@ void RegisterHttpInterceptor(
       "http", hostname, interceptor.Pass());
 }
 
+void UnregisterHttpInterceptor(const std::string& hostname) {
+  net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http", hostname);
+}
+
 }  // namespace
 
 class TestRequestInterceptor::Delegate : public net::URLRequestInterceptor {
@@ -269,10 +273,7 @@ TestRequestInterceptor::~TestRequestInterceptor() {
   // RemoveHostnameHandler() destroys the |delegate_|, which is owned by
   // the URLRequestFilter.
   delegate_ = NULL;
-  PostToIOAndWait(
-      base::Bind(&net::URLRequestFilter::RemoveHostnameHandler,
-                 base::Unretained(net::URLRequestFilter::GetInstance()),
-                 "http", hostname_));
+  PostToIOAndWait(base::Bind(&UnregisterHttpInterceptor, hostname_));
 }
 
 size_t TestRequestInterceptor::GetPendingSize() {
