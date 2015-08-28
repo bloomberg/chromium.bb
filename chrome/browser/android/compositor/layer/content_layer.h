@@ -52,8 +52,7 @@ class ContentLayer : public Layer {
   void SetContentLayer(scoped_refptr<cc::Layer> layer);
   void SetStaticLayer(scoped_refptr<ThumbnailLayer> layer);
   void ClipContentLayer(scoped_refptr<cc::Layer> content_layer,
-                        gfx::Rect clipping,
-                        gfx::Size content_size);
+                        gfx::Rect clipping);
   void ClipStaticLayer(scoped_refptr<ThumbnailLayer> static_layer,
                        gfx::Rect clipping);
 

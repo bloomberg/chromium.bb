@@ -447,7 +447,7 @@ scoped_refptr<cc::Layer> RenderWidgetHostViewAndroid::CreateDelegatedLayer()
     delegated_layer = cc::DelegatedRendererLayer::Create(
         Compositor::LayerSettings(), frame_provider_);
   }
-  delegated_layer->SetBounds(content_size_in_layer_);
+  delegated_layer->SetBounds(texture_size_in_layer_);
   delegated_layer->SetIsDrawable(true);
   delegated_layer->SetContentsOpaque(true);
 
@@ -1099,23 +1099,11 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
   if (layer_.get()) {
     layer_->SetIsDrawable(true);
     layer_->SetContentsOpaque(true);
-    layer_->SetBounds(content_size_in_layer_);
+    layer_->SetBounds(texture_size_in_layer_);
   }
 
   if (host_->is_hidden())
     RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
-}
-
-void RenderWidgetHostViewAndroid::ComputeContentsSize(
-    const cc::CompositorFrameMetadata& frame_metadata) {
-  // Calculate the content size.  This should be 0 if the texture_size is 0.
-  gfx::Vector2dF offset;
-  if (texture_size_in_layer_.IsEmpty())
-    content_size_in_layer_ = gfx::Size();
-  content_size_in_layer_ = gfx::ToCeiledSize(gfx::ScaleSize(
-      frame_metadata.scrollable_viewport_size,
-      frame_metadata.device_scale_factor * frame_metadata.page_scale_factor));
-
 }
 
 void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
@@ -1147,7 +1135,6 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   cc::RenderPass* root_pass =
       frame->delegated_frame_data->render_pass_list.back();
   texture_size_in_layer_ = root_pass->output_rect.size();
-  ComputeContentsSize(frame->metadata);
 
   cc::CompositorFrameMetadata metadata = frame->metadata;
 
@@ -1194,7 +1181,6 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
   // This is a subset of OnSwapCompositorFrame() used in the synchronous
   // compositor flow.
   OnFrameMetadataUpdated(frame_metadata);
-  ComputeContentsSize(frame_metadata);
 
   // DevTools ScreenCast support for Android WebView.
   WebContents* web_contents = content_view_core_->GetWebContents();
@@ -1280,7 +1266,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const SkColorType color_type) {
   gfx::Size input_size_in_pixel;
   if (src_subrect_in_pixel.IsEmpty())
-    input_size_in_pixel = content_size_in_layer_;
+    input_size_in_pixel = texture_size_in_layer_;
   else
     input_size_in_pixel = src_subrect_in_pixel.size();
 

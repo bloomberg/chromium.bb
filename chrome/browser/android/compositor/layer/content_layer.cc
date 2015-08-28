@@ -53,12 +53,6 @@ static bool DoesLeafDrawContents(scoped_refptr<cc::Layer> layer) {
   return false;
 }
 
-static gfx::Size GetLeafBounds(scoped_refptr<cc::Layer> layer) {
-  if (layer->children().size() > 0)
-    return GetLeafBounds(layer->children()[0]);
-  return layer->bounds();
-}
-
 void ContentLayer::SetProperties(int id,
                                  bool can_use_live_layer,
                                  bool can_use_ntp_fallback,
@@ -70,7 +64,7 @@ void ContentLayer::SetProperties(int id,
                                  const gfx::Size& content_size) {
   scoped_refptr<cc::Layer> content_layer =
       tab_content_manager_->GetLiveLayer(id);
-  ClipContentLayer(content_layer, desired_bounds, content_size);
+  ClipContentLayer(content_layer, desired_bounds);
   bool content_layer_draws = DoesLeafDrawContents(content_layer);
 
   scoped_refptr<ThumbnailLayer> static_layer =
@@ -216,23 +210,12 @@ void ContentLayer::SetStaticLayer(
 }
 
 void ContentLayer::ClipContentLayer(scoped_refptr<cc::Layer> content_layer,
-                                    gfx::Rect clipping,
-                                    gfx::Size content_size) {
+                                    gfx::Rect clipping) {
   if (!content_layer.get())
     return;
 
-  gfx::Size bounds(GetLeafBounds(content_layer));
   content_layer->SetMasksToBounds(true);
-  gfx::Size clamped_bounds(bounds);
-  clamped_bounds.SetToMin(clipping.size());
-  content_layer->SetBounds(clamped_bounds);
-
-  if (content_layer->children().size() > 0) {
-    gfx::PointF offset(
-        std::min(content_size.width() - bounds.width() - clipping.x(), 0),
-        std::min(content_size.height() - bounds.height() - clipping.y(), 0));
-    content_layer->children()[0]->SetPosition(offset);
-  }
+  content_layer->SetBounds(clipping.size());
 }
 
 void ContentLayer::ClipStaticLayer(scoped_refptr<ThumbnailLayer> static_layer,

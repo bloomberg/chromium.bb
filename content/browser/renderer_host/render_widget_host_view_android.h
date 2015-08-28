@@ -269,7 +269,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void OnFrameMetadataUpdated(
       const cc::CompositorFrameMetadata& frame_metadata);
-  void ComputeContentsSize(const cc::CompositorFrameMetadata& frame_metadata);
 
   void ShowInternal();
   void HideInternal(bool hide_frontbuffer, bool stop_observing_root_window);
@@ -363,9 +362,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // The most recent texture size that was pushed to the texture layer.
   gfx::Size texture_size_in_layer_;
-
-  // The most recent content size that was pushed to the texture layer.
-  gfx::Size content_size_in_layer_;
 
   // The output surface id of the last received frame.
   uint32_t last_output_surface_id_;
