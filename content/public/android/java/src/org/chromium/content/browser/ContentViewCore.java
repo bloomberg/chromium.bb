@@ -813,8 +813,9 @@ public class ContentViewCore implements
                                 } else if (hasFocus() && resultCode
                                         == InputMethodManager.RESULT_UNCHANGED_SHOWN) {
                                     // If the OSK was already there, focus the form immediately.
-                                    assert mWebContents != null;
-                                    mWebContents.scrollFocusedEditableNodeIntoView();
+                                    if (mWebContents != null) {
+                                        mWebContents.scrollFocusedEditableNodeIntoView();
+                                    }
                                 }
                             }
                         };
