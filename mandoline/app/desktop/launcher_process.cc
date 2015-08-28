@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
-#include "components/tracing/startup_tracing.h"
+#include "components/tracing/trace_config_file.h"
 #include "components/tracing/tracing_switches.h"
 #include "mandoline/app/core_services_initialization.h"
 #include "mandoline/app/desktop/launcher_process.h"
@@ -90,10 +90,11 @@ int LauncherProcessMain(int argc, char** argv) {
         base::trace_event::RECORD_UNTIL_FULL);
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
         trace_config, base::trace_event::TraceLog::RECORDING_MODE);
-  } else {
-    // |g_tracing| is not touched in this case and Telemetry will stop tracing
-    // on demand later.
-    tracing::EnableStartupTracingIfConfigFileExists();
+  } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
+    g_tracing = true;
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
+        base::trace_event::TraceLog::RECORDING_MODE);
   }
 
   // We want the runner::Context to outlive the MessageLoop so that pipes are

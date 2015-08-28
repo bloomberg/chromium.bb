@@ -28,7 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "components/tracing/startup_tracing.h"
+#include "components/tracing/trace_config_file.h"
 #include "components/tracing/tracing_switches.h"
 #include "content/browser/browser_main.h"
 #include "content/common/set_process_title.h"
@@ -629,9 +629,11 @@ class ContentMainRunnerImpl : public ContentMainRunner {
           base::trace_event::TraceLog::RECORDING_MODE);
     } else if (process_type != switches::kZygoteProcess &&
                process_type != switches::kRendererProcess) {
-      // There is no need to schedule stopping tracing in this case. Telemetry
-      // will stop tracing on demand later.
-      tracing::EnableStartupTracingIfConfigFileExists();
+      if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
+        base::trace_event::TraceLog::GetInstance()->SetEnabled(
+            tracing::TraceConfigFile::GetInstance()->GetTraceConfig(),
+            base::trace_event::TraceLog::RECORDING_MODE);
+      }
     }
 
 #if defined(OS_WIN)
