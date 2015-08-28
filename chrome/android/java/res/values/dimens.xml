@@ -68,8 +68,6 @@
     <dimen name="infobar_min_width">220dp</dimen>
     <!-- Margin between items in an infobar. -->
     <dimen name="infobar_margin">16dp</dimen>
-    <!-- Minimum height for a touch target. -->
-    <dimen name="infobar_touch_target_height">40dp</dimen>
     <!-- Width and height of the infobar icon. -->
     <dimen name="infobar_icon_size">36dp</dimen>
 
