@@ -3048,6 +3048,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bookmarks.OpenAction" enum="BookmarksOpenAction">
+  <owner>kkimlabs@chromium.org</owner>
+  <summary>
+    Logs how user is opening a bookmark on Android. For example, user can long
+    press and select &quot;Open in a new tab&quot; or &quot;Open in incognito
+    tab&quot;.
+  </summary>
+</histogram>
+
 <histogram name="BrowserRenderProcessHost.ChildCrashes" enum="RendererType">
   <owner>wfh@chromium.org</owner>
   <summary>Count of renderer process crashes grouped by type.</summary>
@@ -53236,6 +53245,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="Experiment disabled (finch opt out)"/>
   <int value="5" label="Experiment disabled (finch but signed in)"/>
   <int value="6" label="Experiment enabled (sync unknown)"/>
+</enum>
+
+<enum name="BookmarksOpenAction" type="int">
+  <int value="0" label="Open in current tab"/>
+  <int value="1" label="Open in new tab"/>
+  <int value="2" label="Open in incognito tab"/>
 </enum>
 
 <enum name="Boolean" type="int">
