@@ -61,14 +61,19 @@ class PrecacheManager : public KeyedService,
                   const history::HistoryService* const history_service);
   ~PrecacheManager() override;
 
-  // Returns true if precaching is allowed for the browser context based on user
-  // settings, and enabled as part of a field trial or by commandline flag.
-  // Virtual for testing.
-  virtual bool ShouldRun() const;
+  // Returns true if the client is in the experiment group -- that is,
+  // precaching is allowed based on user settings, and enabled as part of a
+  // field trial or by commandline flag. Virtual for testing.
+  virtual bool IsInExperimentGroup() const;
 
-  // Returns true if precaching is allowed for the browser context based on user
-  // settings. Virtual for testing.
-  virtual bool WouldRun() const;
+  // Returns true if the client is in the control group -- that is, precaching
+  // is allowed based on user settings, and the browser is in the control group
+  // of the field trial. Virtual for testing.
+  virtual bool IsInControlGroup() const;
+
+  // Returns true if precaching is allowed based on user settings. Virtual for
+  // testing.
+  virtual bool IsPrecachingAllowed() const;
 
   // Starts precaching resources that the user is predicted to fetch in the
   // future. If precaching is already currently in progress, then this method
@@ -115,16 +120,6 @@ class PrecacheManager : public KeyedService,
   // From history::HistoryService::TopHosts. Used for the control group, which
   // gets the list of TopHosts for metrics purposes, but otherwise does nothing.
   void OnHostsReceivedThenDone(const history::TopHostsList& host_counts);
-
-  // Returns true if precaching is enabled as part of a field trial or by the
-  // command line flag. This has a different meaning from the
-  // "is_precaching_enabled" pref set in PrecacheServiceLauncher. This method
-  // can be called on any thread.
-  static bool IsPrecachingEnabled();
-
-  // Returns true if the client is placed into the control group as part of the
-  // field trial.
-  bool InControlGroup() const;
 
   // Returns true if precaching is allowed for the browser context.
   AllowedType PrecachingAllowed() const;

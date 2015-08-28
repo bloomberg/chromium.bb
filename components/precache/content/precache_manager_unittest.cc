@@ -117,8 +117,9 @@ class PrecacheManagerUnderTest : public PrecacheManager {
                            const sync_driver::SyncService* const sync_service,
                            const history::HistoryService* const history_service)
       : PrecacheManager(browser_context, sync_service, history_service) {}
-  bool ShouldRun() const override { return true; }
-  bool WouldRun() const override { return true; }
+  bool IsInExperimentGroup() const override { return true; }
+  bool IsInControlGroup() const override { return false; }
+  bool IsPrecachingAllowed() const override { return true; }
 };
 
 class PrecacheManagerTest : public testing::Test {

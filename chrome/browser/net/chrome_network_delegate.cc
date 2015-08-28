@@ -121,7 +121,7 @@ void RecordPrecacheStatsOnUIThread(const GURL& url,
   precache::PrecacheManager* precache_manager =
       precache::PrecacheManagerFactory::GetForBrowserContext(profile);
   // |precache_manager| could be NULL if the profile is off the record.
-  if (!precache_manager || !precache_manager->WouldRun())
+  if (!precache_manager || !precache_manager->IsPrecachingAllowed())
     return;
 
   precache_manager->RecordStatsForFetch(url, referrer, latency, fetch_time,

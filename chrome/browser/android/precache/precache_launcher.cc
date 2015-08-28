@@ -88,7 +88,8 @@ static jlong Init(JNIEnv* env, jobject obj) {
 static jboolean ShouldRun(JNIEnv* env, jobject obj) {
   Profile* profile = GetProfile();
   PrecacheManager* precache_manager = GetPrecacheManager(profile);
-  return precache_manager && precache_manager->ShouldRun();
+  return precache_manager && (precache_manager->IsInExperimentGroup() ||
+                              precache_manager->IsInControlGroup());
 }
 
 bool RegisterPrecacheLauncher(JNIEnv* env) {
