@@ -39,10 +39,10 @@ class WebRtcAudioCapturer;
 // When the audio layer in the browser process asks for data to render, this
 // class provides the data by implementing the MediaStreamAudioSink
 // interface, i.e., we are a sink seen from the WebRtcAudioCapturer perspective.
-// TODO(henrika): improve by using similar principles as in RTCVideoRenderer
-// which register itself to the video track when the provider is started and
-// deregisters itself when it is stopped.
-// Tracking this at http://crbug.com/164813.
+// TODO(henrika): improve by using similar principles as in
+// MediaStreamVideoRendererSink which register itself to the video track when
+// the provider is started and deregisters itself when it is stopped. Tracking
+// this at http://crbug.com/164813.
 class CONTENT_EXPORT WebRtcLocalAudioRenderer
     : NON_EXPORTED_BASE(public MediaStreamAudioRenderer),
       NON_EXPORTED_BASE(public MediaStreamAudioSink),

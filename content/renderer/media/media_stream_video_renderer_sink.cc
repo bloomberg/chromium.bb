@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/rtc_video_renderer.h"
+#include "content/renderer/media/media_stream_video_renderer_sink.h"
 
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -14,7 +14,7 @@ const int kMinFrameSize = 2;
 
 namespace content {
 
-RTCVideoRenderer::RTCVideoRenderer(
+MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
     const blink::WebMediaStreamTrack& video_track,
     const base::Closure& error_cb,
     const RepaintCB& repaint_cb)
@@ -27,10 +27,10 @@ RTCVideoRenderer::RTCVideoRenderer(
       weak_factory_(this) {
 }
 
-RTCVideoRenderer::~RTCVideoRenderer() {
+MediaStreamVideoRendererSink::~MediaStreamVideoRendererSink() {
 }
 
-void RTCVideoRenderer::Start() {
+void MediaStreamVideoRendererSink::Start() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STOPPED);
 
@@ -38,7 +38,7 @@ void RTCVideoRenderer::Start() {
       this,
       media::BindToCurrentLoop(
           base::Bind(
-              &RTCVideoRenderer::OnVideoFrame,
+              &MediaStreamVideoRendererSink::OnVideoFrame,
               weak_factory_.GetWeakPtr())),
       video_track_);
   state_ = STARTED;
@@ -50,7 +50,7 @@ void RTCVideoRenderer::Start() {
   }
 }
 
-void RTCVideoRenderer::Stop() {
+void MediaStreamVideoRendererSink::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == STARTED || state_ == PAUSED);
   RemoveFromVideoTrack(this, video_track_);
@@ -60,26 +60,26 @@ void RTCVideoRenderer::Stop() {
   frame_size_.set_height(kMinFrameSize);
 }
 
-void RTCVideoRenderer::Play() {
+void MediaStreamVideoRendererSink::Play() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ == PAUSED)
     state_ = STARTED;
 }
 
-void RTCVideoRenderer::Pause() {
+void MediaStreamVideoRendererSink::Pause() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ == STARTED)
     state_ = PAUSED;
 }
 
-void RTCVideoRenderer::OnReadyStateChanged(
+void MediaStreamVideoRendererSink::OnReadyStateChanged(
     blink::WebMediaStreamSource::ReadyState state) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (state == blink::WebMediaStreamSource::ReadyStateEnded)
     RenderSignalingFrame();
 }
 
-void RTCVideoRenderer::OnVideoFrame(
+void MediaStreamVideoRendererSink::OnVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks estimated_capture_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -88,7 +88,7 @@ void RTCVideoRenderer::OnVideoFrame(
 
   frame_size_ = frame->natural_size();
 
-  TRACE_EVENT_INSTANT1("rtc_video_renderer",
+  TRACE_EVENT_INSTANT1("media_stream_video_renderer_sink",
                        "OnVideoFrame",
                        TRACE_EVENT_SCOPE_THREAD,
                        "timestamp",
@@ -96,7 +96,7 @@ void RTCVideoRenderer::OnVideoFrame(
   repaint_cb_.Run(frame);
 }
 
-void RTCVideoRenderer::RenderSignalingFrame() {
+void MediaStreamVideoRendererSink::RenderSignalingFrame() {
   // This is necessary to make sure audio can play if the video tag src is
   // a MediaStream video track that has been rejected or ended.
   // It also ensure that the renderer don't hold a reference to a real video

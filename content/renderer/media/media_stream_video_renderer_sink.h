@@ -20,22 +20,23 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
-// RTCVideoRenderer is a VideoFrameProvider designed for rendering Video
-// MediaStreamTracks [1], RTCVideoRenderer implements MediaStreamVideoSink in
-// order to render video frames provided from a MediaStreamVideoTrack, to which
-// it AddToVideoTrack()s itself when the VideoFrameProvider is Start()ed
-// and RemoveFromVideoTrack()s itself when the latter is Stop()ed.
+// MediaStreamVideoRendererSink is a VideoFrameProvider designed for rendering
+// Video MediaStreamTracks [1], MediaStreamVideoRendererSink implements
+// MediaStreamVideoSink in order to render video frames provided from a
+// MediaStreamVideoTrack, to which it AddToVideoTrack()s itself when the
+// VideoFrameProvider is Start()ed and RemoveFromVideoTrack()s itself when the
+// latter is Stop()ed.
 //
 // [1] http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
 //
 // TODO(wuchengli): Add unit test. See the link below for reference.
 // http://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_vi
 // deo_decoder_unittest.cc?revision=180591&view=markup
-class CONTENT_EXPORT RTCVideoRenderer
+class CONTENT_EXPORT MediaStreamVideoRendererSink
     : NON_EXPORTED_BASE(public VideoFrameProvider),
       NON_EXPORTED_BASE(public MediaStreamVideoSink) {
  public:
-  RTCVideoRenderer(const blink::WebMediaStreamTrack& video_track,
+  MediaStreamVideoRendererSink(const blink::WebMediaStreamTrack& video_track,
                    const base::Closure& error_cb,
                    const RepaintCB& repaint_cb);
 
@@ -46,9 +47,10 @@ class CONTENT_EXPORT RTCVideoRenderer
   void Pause() override;
 
  protected:
-  ~RTCVideoRenderer() override;
+  ~MediaStreamVideoRendererSink() override;
 
  private:
+  friend class MediaStreamVideoRendererSinkTest;
   enum State {
     STARTED,
     PAUSED,
@@ -70,9 +72,9 @@ class CONTENT_EXPORT RTCVideoRenderer
   State state_;
   gfx::Size frame_size_;
   const blink::WebMediaStreamTrack video_track_;
-  base::WeakPtrFactory<RTCVideoRenderer> weak_factory_;
+  base::WeakPtrFactory<MediaStreamVideoRendererSink> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RTCVideoRenderer);
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoRendererSink);
 };
 
 }  // namespace content

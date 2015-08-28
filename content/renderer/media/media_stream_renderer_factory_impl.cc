@@ -6,8 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream.h"
+#include "content/renderer/media/media_stream_video_renderer_sink.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/rtc_video_renderer.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
@@ -129,7 +129,8 @@ MediaStreamRendererFactoryImpl::GetVideoFrameProvider(
     return NULL;
   }
 
-  return new RTCVideoRenderer(video_tracks[0], error_cb, repaint_cb);
+  return new MediaStreamVideoRendererSink(video_tracks[0], error_cb,
+                                          repaint_cb);
 }
 
 scoped_refptr<MediaStreamAudioRenderer>
