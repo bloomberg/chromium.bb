@@ -32,11 +32,12 @@ enum NetworkErrorPageEvent {
 
   NETWORK_ERROR_EASTER_EGG_ACTIVATED = 12,         // Easter egg activated.
 
-  // For "Google cached copy" label experiment button.
+  // For "Google cached copy" button experiment.
   NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN = 13,
   NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED = 14,
-  NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_SHOWN = 15,
-  NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_CLICKED = 16,
+  // Obsolete. No longer experimenting with the label.
+  // NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_SHOWN = 15,
+  // NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_CLICKED = 16,
 
   NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED = 17,      // Diagnose button clicked.
 

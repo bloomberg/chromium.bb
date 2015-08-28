@@ -49,7 +49,6 @@ static const char kWeakDHKeyLearnMoreUrl[] =
 static const char kCachedCopyButtonFieldTrial[] =
     "EnableGoogleCachedCopyTextExperiment";
 static const char kCachedCopyButtonExpTypeControl[] = "control";
-static const char kCachedCopyButtonExpTypeCopy[] = "copy";
 static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
@@ -902,6 +901,7 @@ void LocalizedError::EnableGoogleCachedCopyButtonExperiment(
   std::string field_trial_exp_type_ =
       base::FieldTrialList::FindFullName(kCachedCopyButtonFieldTrial);
 
+  // Google cache copy button experiment.
   // If the first suggestion is for a Google cache copy. Promote the
   // suggestion to a separate set of strings for displaying as a button.
   if (!suggestions->empty() && !field_trial_exp_type_.empty() &&
@@ -916,22 +916,10 @@ void LocalizedError::EnableGoogleCachedCopyButtonExperiment(
       suggestion->GetString("urlCorrection", &cache_url);
       int cache_tracking_id = -1;
       suggestion->GetInteger("trackingId", &cache_tracking_id);
-
       scoped_ptr<base::DictionaryValue> cache_button(new base::DictionaryValue);
-
-      // Google cache copy button label experiment.
-      if (field_trial_exp_type_ == kCachedCopyButtonExpTypeCopy) {
-        cache_button->SetString(
+      cache_button->SetString(
             "msg",
-            l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_CACHED_COPY));
-        cache_button->SetBoolean("defaultLabel", false);
-      } else {
-        // Default to "Show cached page" button label.
-        cache_button->SetString(
-            "msg",
-            l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_CACHED_PAGE));
-        cache_button->SetBoolean("defaultLabel", true);
-      }
+            l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY));
       cache_button->SetString("cacheUrl", cache_url);
       cache_button->SetInteger("trackingId", cache_tracking_id);
       error_strings->Set("cacheButton", cache_button.release());

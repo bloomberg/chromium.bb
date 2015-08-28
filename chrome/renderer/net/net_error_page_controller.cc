@@ -59,10 +59,8 @@ bool NetErrorPageController::DiagnoseErrorsButtonClick() {
   return ButtonClick(error_page::NetErrorHelperCore::DIAGNOSE_ERROR);
 }
 
-bool NetErrorPageController::TrackCachedCopyButtonClick(bool is_default_label) {
-  return is_default_label ?
-      ButtonClick(error_page::NetErrorHelperCore::SHOW_CACHED_PAGE_BUTTON) :
-      ButtonClick(error_page::NetErrorHelperCore::SHOW_CACHED_COPY_BUTTON);
+bool NetErrorPageController::TrackCachedCopyButtonClick() {
+  return ButtonClick(error_page::NetErrorHelperCore::SHOW_CACHED_COPY_BUTTON);
 }
 
 bool NetErrorPageController::TrackClick(const gin::Arguments& args) {

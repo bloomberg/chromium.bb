@@ -174,7 +174,6 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     bool* reload_button_shown,
     bool* show_saved_copy_button_shown,
     bool* show_cached_copy_button_shown,
-    bool* show_cached_page_button_shown,
     std::string* error_html) const {
   error_html->clear();
 
@@ -193,23 +192,11 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
                                render_frame()->GetRenderView()->
                                    GetAcceptLanguages(),
                                params.Pass(), &error_strings);
-    *reload_button_shown = error_strings.Get("reloadButton", NULL);
+    *reload_button_shown = error_strings.Get("reloadButton", nullptr);
     *show_saved_copy_button_shown =
-        error_strings.Get("showSavedCopyButton", NULL);
-
-    bool show_cache_copy_button_default_label;
-    bool showing_cache_copy_experiment =
-        error_strings.GetBoolean("cacheButton.defaultLabel",
-        &show_cache_copy_button_default_label);
-    if (showing_cache_copy_experiment) {
-      if (show_cache_copy_button_default_label) {
-        *show_cached_copy_button_shown = false;
-        *show_cached_page_button_shown = true;
-      } else {
-        *show_cached_page_button_shown = false;
-        *show_cached_copy_button_shown = true;
-      }
-    }
+        error_strings.Get("showSavedCopyButton", nullptr);
+    *show_cached_copy_button_shown =
+        error_strings.Get("cacheButton", nullptr);
     // "t" is the id of the template's root node.
     *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
   }

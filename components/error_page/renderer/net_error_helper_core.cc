@@ -376,7 +376,6 @@ struct NetErrorHelperCore::ErrorPageInfo {
         needs_load_navigation_corrections(false),
         reload_button_in_page(false),
         show_saved_copy_button_in_page(false),
-        show_cached_page_button_in_page(false),
         show_cached_copy_button_in_page(false),
         is_finished_loading(false),
         auto_reload_triggered(false) {
@@ -411,7 +410,6 @@ struct NetErrorHelperCore::ErrorPageInfo {
   // Track if specific buttons are included in an error page, for statistics.
   bool reload_button_in_page;
   bool show_saved_copy_button_in_page;
-  bool show_cached_page_button_in_page;
   bool show_cached_copy_button_in_page;
 
   // True if a page has completed loading, at which point it can receive
@@ -598,8 +596,6 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
   }
   if (committed_error_page_info_->show_cached_copy_button_in_page) {
     RecordEvent(NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_SHOWN);
-  } else if (committed_error_page_info_->show_cached_page_button_in_page) {
-    RecordEvent(NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_SHOWN);
   }
 
   delegate_->EnablePageHelperFunctions();
@@ -647,14 +643,13 @@ void NetErrorHelperCore::GetErrorHTML(
     bool reload_button_in_page;
     bool show_saved_copy_button_in_page;
     bool show_cached_copy_button_in_page;
-    bool show_cached_page_button_in_page;
 
     delegate_->GenerateLocalizedErrorPage(
         error, is_failed_post,
         false /* No diagnostics dialogs allowed for subframes. */,
         scoped_ptr<ErrorPageParams>(), &reload_button_in_page,
         &show_saved_copy_button_in_page, &show_cached_copy_button_in_page,
-        &show_cached_page_button_in_page, error_html);
+        error_html);
   }
 }
 
@@ -721,7 +716,6 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
       &pending_error_page_info->reload_button_in_page,
       &pending_error_page_info->show_saved_copy_button_in_page,
       &pending_error_page_info->show_cached_copy_button_in_page,
-      &pending_error_page_info->show_cached_page_button_in_page,
       error_html);
 }
 
@@ -786,7 +780,6 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
         &pending_error_page_info_->reload_button_in_page,
         &pending_error_page_info_->show_saved_copy_button_in_page,
         &pending_error_page_info_->show_cached_copy_button_in_page,
-        &pending_error_page_info_->show_cached_page_button_in_page,
         &error_html);
   } else {
     // Since |navigation_correction_params| in |pending_error_page_info_| is
@@ -946,9 +939,6 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
       return;
     case SHOW_CACHED_COPY_BUTTON:
       RecordEvent(NETWORK_ERROR_PAGE_CACHED_COPY_BUTTON_CLICKED);
-      return;
-    case SHOW_CACHED_PAGE_BUTTON:
-      RecordEvent(NETWORK_ERROR_PAGE_CACHED_PAGE_BUTTON_CLICKED);
       return;
     case DIAGNOSE_ERROR:
       RecordEvent(NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED);

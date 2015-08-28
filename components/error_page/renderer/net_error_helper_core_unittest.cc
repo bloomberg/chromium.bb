@@ -322,7 +322,6 @@ class NetErrorHelperCoreTest : public testing::Test,
                                   bool* reload_button_shown,
                                   bool* show_saved_copy_button_shown,
                                   bool* show_cached_copy_button_shown,
-                                  bool* show_cached_page_button_shown,
                                   std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
@@ -330,7 +329,6 @@ class NetErrorHelperCoreTest : public testing::Test,
     *reload_button_shown = false;
     *show_saved_copy_button_shown = false;
     *show_cached_copy_button_shown = false;
-    *show_cached_page_button_shown = false;
     *html = ErrorToString(error, is_failed_post);
   }
 

@@ -132,8 +132,7 @@ function setUpCachedButton(buttonStrings) {
     e.preventDefault();
     trackClick(trackingId);
     if (window.errorPageController) {
-      errorPageController.trackCachedCopyButtonClick(
-          buttonStrings.defaultLabel);
+      errorPageController.trackCachedCopyButtonClick();
     }
     location = url;
   };

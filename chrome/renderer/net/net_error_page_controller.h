@@ -66,8 +66,8 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
   // Execute a "Diagnose Errors" button click.
   bool DiagnoseErrorsButtonClick();
 
-  // Track "Show cached copy/page" button clicks.
-  bool TrackCachedCopyButtonClick(bool is_default_label);
+  // Track "Show cached copy" button clicks.
+  bool TrackCachedCopyButtonClick();
 
   // Track a click when the page has suggestions from the navigation correction
   // service.

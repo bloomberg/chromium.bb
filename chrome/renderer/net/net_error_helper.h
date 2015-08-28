@@ -92,7 +92,6 @@ class NetErrorHelper
       bool* reload_button_shown,
       bool* show_saved_copy_button_shown,
       bool* show_cached_copy_button_shown,
-      bool* show_cached_page_button_shown,
       std::string* html) const override;
   void LoadErrorPageInMainFrame(const std::string& html,
                                 const GURL& failed_url) override;
