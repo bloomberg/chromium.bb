@@ -371,8 +371,8 @@ bool InspectorResourceAgent::shouldBlockRequest(LocalFrame* frame, const Resourc
 {
     String url = request.url().string();
     RefPtr<JSONObject> blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
-    for (const auto& blocked : *blockedURLs) {
-        if (url.contains(blocked.key)) {
+    for (const auto& entry : *blockedURLs) {
+        if (url.contains(entry.key)) {
             unsigned long identifier = createUniqueIdentifier();
             willSendRequestInternal(frame, identifier, loader, request, ResourceResponse(), initiatorInfo);
 
