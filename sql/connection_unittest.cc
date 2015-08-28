@@ -12,7 +12,6 @@
 #include "sql/connection.h"
 #include "sql/correct_sql_test_base.h"
 #include "sql/meta_table.h"
-#include "sql/proxy.h"
 #include "sql/statement.h"
 #include "sql/test/error_callback_support.h"
 #include "sql/test/scoped_error_ignorer.h"
@@ -86,12 +85,12 @@ class ScopedScalarFunction {
       int args,
       base::Callback<void(sqlite3_context*,int,sqlite3_value**)> cb)
       : db_(db.db_), function_name_(function_name), cb_(cb) {
-    sql::sqlite3_create_function_v2(db_, function_name, args, SQLITE_UTF8,
-                                    this, &Run, NULL, NULL, NULL);
+    ::sqlite3_create_function_v2(db_, function_name, args, SQLITE_UTF8,
+                                 this, &Run, NULL, NULL, NULL);
   }
   ~ScopedScalarFunction() {
-    sql::sqlite3_create_function_v2(db_, function_name_, 0, SQLITE_UTF8,
-                                    NULL, NULL, NULL, NULL, NULL);
+    ::sqlite3_create_function_v2(db_, function_name_, 0, SQLITE_UTF8,
+                                 NULL, NULL, NULL, NULL, NULL);
   }
 
  private:
@@ -115,10 +114,10 @@ class ScopedCommitHook {
                    base::Callback<int(void)> cb)
       : db_(db.db_),
         cb_(cb) {
-    sql::sqlite3_commit_hook(db_, &Run, this);
+    ::sqlite3_commit_hook(db_, &Run, this);
   }
   ~ScopedCommitHook() {
-    sql::sqlite3_commit_hook(db_, NULL, NULL);
+    ::sqlite3_commit_hook(db_, NULL, NULL);
   }
 
  private:
