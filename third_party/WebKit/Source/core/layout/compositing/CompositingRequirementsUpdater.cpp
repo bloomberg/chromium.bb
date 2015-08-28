@@ -155,7 +155,7 @@ static CompositingReasons subtreeReasonsForCompositing(DeprecatedPaintLayer* lay
     CompositingReasons subtreeReasons = CompositingReasonNone;
 
     // When a layer has composited descendants, some effects, like 2d transforms, filters, masks etc must be implemented
-    // via compositing so that they also apply to those composited descdendants.
+    // via compositing so that they also apply to those composited descendants.
     if (hasCompositedDescendants) {
         subtreeReasons |= layer->potentialCompositingReasonsFromStyle() & CompositingReasonComboCompositedDescendants;
 
@@ -299,8 +299,6 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
 
     bool willBeCompositedOrSquashed = compositor->canBeComposited(layer) && requiresCompositingOrSquashing(reasonsToComposite);
     if (willBeCompositedOrSquashed) {
-        // Tell the parent it has compositing descendants.
-        currentRecursionData.m_subtreeIsCompositing = true;
         // This layer now acts as the ancestor for kids.
         childRecursionData.m_compositingAncestor = layer;
 
@@ -391,6 +389,7 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
         // Otherwise, we can disable compositing entirely.
         if (childRecursionData.m_subtreeIsCompositing || requiresCompositingOrSquashing(reasonsToComposite) || compositor->rootShouldAlwaysComposite()) {
             reasonsToComposite |= CompositingReasonRoot;
+            currentRecursionData.m_subtreeIsCompositing = true;
         } else {
             compositor->setCompositingModeEnabled(false);
             reasonsToComposite = CompositingReasonNone;
@@ -428,6 +427,10 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
 
         if (willBeCompositedOrSquashed && layer->layoutObject()->style()->hasBlendMode())
             currentRecursionData.m_hasUnisolatedCompositedBlendingDescendant = true;
+
+        // Tell the parent it has compositing descendants.
+        if (willBeCompositedOrSquashed)
+            currentRecursionData.m_subtreeIsCompositing = true;
 
         // Turn overlap testing off for later layers if it's already off, or if we have an animating transform.
         // Note that if the layer clips its descendants, there's no reason to propagate the child animation to the parent layers. That's because
