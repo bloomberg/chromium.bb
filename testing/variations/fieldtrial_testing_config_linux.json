@@ -74,6 +74,11 @@
             "group_name": "Enabled"
         }
     ],
+    "TabSyncByRecency": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "UseDelayAgnosticAEC": [
         {
             "group_name": "DefaultEnabled"

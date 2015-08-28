@@ -267,6 +267,11 @@
             "group_name": "Disabled"
         }
     ],
+    "TabSyncByRecency": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "UMA_EnableCellularLogUpload": [
         {
             "group_name": "Enabled",

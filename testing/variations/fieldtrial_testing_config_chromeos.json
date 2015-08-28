@@ -64,6 +64,11 @@
             }
         }
     ],
+    "TabSyncByRecency": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "VarationsServiceControl": [
         {
             "group_name": "Interval_30min",
