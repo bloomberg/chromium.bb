@@ -150,6 +150,22 @@ get_layer(struct wl_list *layer_list, uint32_t id_layer)
 	return NULL;
 }
 
+static struct weston_view *
+get_weston_view(struct ivi_layout_surface *ivisurf)
+{
+	struct weston_view *view = NULL;
+
+	assert(ivisurf->surface != NULL);
+
+	/* One view per surface */
+	if(wl_list_empty(&ivisurf->surface->views))
+		view = NULL;
+	else
+		view = wl_container_of(ivisurf->surface->views.next, view, surface_link);
+
+	return view;
+}
+
 static void
 remove_configured_listener(struct ivi_layout_surface *ivisurf)
 {
@@ -302,18 +318,15 @@ static void
 update_opacity(struct ivi_layout_layer *ivilayer,
 	       struct ivi_layout_surface *ivisurf)
 {
+	struct weston_view *tmpview = NULL;
 	double layer_alpha = wl_fixed_to_double(ivilayer->prop.opacity);
 	double surf_alpha  = wl_fixed_to_double(ivisurf->prop.opacity);
 
 	if ((ivilayer->event_mask & IVI_NOTIFICATION_OPACITY) ||
 	    (ivisurf->event_mask  & IVI_NOTIFICATION_OPACITY)) {
-		struct weston_view *tmpview = NULL;
-		wl_list_for_each(tmpview, &ivisurf->surface->views, surface_link) {
-			if (tmpview == NULL) {
-				continue;
-			}
-			tmpview->alpha = layer_alpha * surf_alpha;
-		}
+		tmpview = get_weston_view(ivisurf);
+		assert(tmpview != NULL);
+		tmpview->alpha = layer_alpha * surf_alpha;
 	}
 }
 
@@ -590,11 +603,8 @@ update_prop(struct ivi_layout_layer *ivilayer,
 
 	update_opacity(ivilayer, ivisurf);
 
-	wl_list_for_each(tmpview, &ivisurf->surface->views, surface_link) {
-		if (tmpview != NULL) {
-			break;
-		}
-	}
+	tmpview = get_weston_view(ivisurf);
+	assert(tmpview != NULL);
 
 	if (ivisurf->prop.source_width == 0 || ivisurf->prop.source_height == 0) {
 		weston_log("ivi-shell: source rectangle is not yet set by ivi_layout_surface_set_source_rectangle\n");
@@ -613,24 +623,18 @@ update_prop(struct ivi_layout_layer *ivilayer,
 		calc_surface_to_global_matrix_and_mask_to_weston_surface(
 			ivilayer, ivisurf, &ivisurf->transform.matrix, &r);
 
-		if (tmpview != NULL) {
-			weston_view_set_mask(tmpview, r.x, r.y, r.width, r.height);
-			wl_list_insert(&tmpview->geometry.transformation_list,
-				       &ivisurf->transform.link);
+		weston_view_set_mask(tmpview, r.x, r.y, r.width, r.height);
+		wl_list_insert(&tmpview->geometry.transformation_list,
+			       &ivisurf->transform.link);
 
-			weston_view_set_transform_parent(tmpview, NULL);
-		}
+		weston_view_set_transform_parent(tmpview, NULL);
 	}
 
 	ivisurf->update_count++;
 
-	if (tmpview != NULL) {
-		weston_view_geometry_dirty(tmpview);
-	}
+	weston_view_geometry_dirty(tmpview);
 
-	if (ivisurf->surface != NULL) {
-		weston_surface_damage(ivisurf->surface);
-	}
+	weston_surface_damage(ivisurf->surface);
 }
 
 static void
@@ -799,6 +803,7 @@ commit_screen_list(struct ivi_layout *layout)
 	struct ivi_layout_layer   *ivilayer = NULL;
 	struct ivi_layout_layer   *next     = NULL;
 	struct ivi_layout_surface *ivisurf  = NULL;
+	struct weston_view *tmpview = NULL;
 
 	wl_list_for_each(iviscrn, &layout->screen_list, link) {
 		if (iviscrn->order.dirty) {
@@ -831,17 +836,11 @@ commit_screen_list(struct ivi_layout *layout)
 				continue;
 
 			wl_list_for_each(ivisurf, &ivilayer->order.surface_list, order.link) {
-				struct weston_view *tmpview = NULL;
-				wl_list_for_each(tmpview, &ivisurf->surface->views, surface_link) {
-					if (tmpview != NULL) {
-						break;
-					}
-				}
-
 				if (ivisurf->prop.visibility == false)
 					continue;
-				if (ivisurf->surface == NULL || tmpview == NULL)
-					continue;
+
+				tmpview = get_weston_view(ivisurf);
+				assert(tmpview != NULL);
 
 				weston_layer_entry_insert(&layout->layout_layer.view_list,
 							  &tmpview->layer_link);
@@ -2555,18 +2554,10 @@ ivi_layout_surface_dump(struct weston_surface *surface,
 struct weston_view *
 ivi_layout_get_weston_view(struct ivi_layout_surface *surface)
 {
-	struct weston_view *tmpview = NULL;
-
 	if (surface == NULL)
 		return NULL;
 
-	wl_list_for_each(tmpview, &surface->surface->views, surface_link)
-	{
-		if (tmpview != NULL) {
-			break;
-		}
-	}
-	return tmpview;
+	return get_weston_view(surface);
 }
 
 void
