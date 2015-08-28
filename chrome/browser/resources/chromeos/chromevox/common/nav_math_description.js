@@ -20,7 +20,7 @@ goog.require('cvox.NavDescription');
  *          text: (string),
  *          userValue: (undefined|string),
  *          annotation: (undefined|string),
- *          earcons: (undefined|Array<number>),
+ *          earcons: (undefined|Array<cvox.Earcon>),
  *          personality: (undefined|Object),
  *          hint: (undefined|string),
  *          category: (undefined|string),

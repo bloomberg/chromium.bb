@@ -23,7 +23,7 @@ goog.require('cvox.QueueMode');
  *          text: (string),
  *          userValue: (undefined|string),
  *          annotation: (undefined|string),
- *          earcons: (undefined|Array<number>),
+ *          earcons: (undefined|Array<cvox.Earcon>),
  *          personality: (undefined|Object),
  *          hint: (undefined|string),
             category: (undefined|string)}} kwargs The arguments for this
@@ -81,8 +81,8 @@ cvox.NavDescription.prototype.toString = function() {
 
 /**
  * Modifies the earcon to play along with the spoken description of the object.
- * @param {number} earconId An earcon id to be pushed on to the list of earcon
- * ids to play along with the spoken description of this object.
+ * @param {cvox.Earcon} earconId An earcon id to be pushed on to the list of
+ * earcon ids to play along with the spoken description of this object.
  */
 cvox.NavDescription.prototype.pushEarcon = function(earconId) {
   this.earcons.push(earconId);

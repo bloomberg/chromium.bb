@@ -62,7 +62,7 @@ cvox.TabsApiHandler.prototype = {
                    cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
     this.braille_.write(
         cvox.NavBraille.fromText(this.msg_('chrome_tab_created')));
-    this.earcons_.playEarcon(cvox.AbstractEarcons.OBJECT_OPEN);
+    this.earcons_.playEarcon(cvox.Earcon.OBJECT_OPEN);
   },
 
   /**
@@ -73,7 +73,7 @@ cvox.TabsApiHandler.prototype = {
     if (!cvox.ChromeVox.isActive) {
       return;
     }
-    this.earcons_.playEarcon(cvox.AbstractEarcons.OBJECT_CLOSE);
+    this.earcons_.playEarcon(cvox.Earcon.OBJECT_CLOSE);
   },
 
   /**
@@ -96,7 +96,7 @@ cvox.TabsApiHandler.prototype = {
                      cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
       this.braille_.write(
           cvox.NavBraille.fromText(this.msg_('chrome_tab_selected', [title])));
-      this.earcons_.playEarcon(cvox.AbstractEarcons.OBJECT_SELECT);
+      this.earcons_.playEarcon(cvox.Earcon.OBJECT_SELECT);
     }.bind(this));
   },
 
@@ -115,10 +115,10 @@ cvox.TabsApiHandler.prototype = {
       }
       if (tab.status == 'loading') {
         this.lastActiveTabLoaded_ = false;
-        this.earcons_.playEarcon(cvox.AbstractEarcons.BUSY_PROGRESS_LOOP);
+        this.earcons_.playEarcon(cvox.Earcon.BUSY_PROGRESS_LOOP);
       } else if (!this.lastActiveTabLoaded_) {
         this.lastActiveTabLoaded_ = true;
-        this.earcons_.playEarcon(cvox.AbstractEarcons.TASK_SUCCESS);
+        this.earcons_.playEarcon(cvox.Earcon.TASK_SUCCESS);
       }
     }.bind(this));
   },
@@ -145,7 +145,7 @@ cvox.TabsApiHandler.prototype = {
                        cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
         this.braille_.write(
             cvox.NavBraille.fromText(this.msg_(msgId, [title])));
-        this.earcons_.playEarcon(cvox.AbstractEarcons.OBJECT_SELECT);
+        this.earcons_.playEarcon(cvox.Earcon.OBJECT_SELECT);
       }.bind(this));
     }.bind(this));
   }

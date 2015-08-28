@@ -63,7 +63,7 @@ CvoxLayoutLineWalkerUnitTest.prototype = {
           'userValue': '', 'annotation': '', 'earcons': [], 'personality': null,
           'hint': '', 'category': null},
          {'context': '', 'text': 'google', 'userValue': '', 'annotation': 'Link',
-          'earcons': [cvox.AbstractEarcons.LINK], 'personality': null,
+          'earcons': [cvox.Earcon.LINK], 'personality': null,
           hint: '', 'category': null},
          {'context': '', 'text': 'are considered a single layout line.',
           'userValue': '', 'annotation': '', 'earcons': [], 'personality': null,
@@ -78,7 +78,7 @@ CvoxLayoutLineWalkerUnitTest.prototype = {
           'text': 'Wikipedia',
           'userValue': '',
           'annotation': 'Link',
-          'earcons': [cvox.AbstractEarcons.LINK],
+          'earcons': [cvox.Earcon.LINK],
           'personality': null,
           'hint': '', 'category': null},
          {'context': '', 'text':

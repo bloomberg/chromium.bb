@@ -17,7 +17,7 @@ goog.require('cvox.HostFactory');
  * @extends {cvox.AbstractEarcons}
  */
 cvox.TestEarcons = function() {
-  cvox.AbstractEarcons.call(this);
+  cvox.Earcon.call(this);
 };
 goog.inherits(cvox.TestEarcons, cvox.AbstractEarcons);
 

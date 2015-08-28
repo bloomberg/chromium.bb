@@ -198,8 +198,8 @@ cvox.ApiImplementation.stop = function() {
  * @param {string} earcon An earcon name.
  */
 cvox.ApiImplementation.playEarcon = function(earcon) {
-  if (cvox.ChromeVox.isActive) {
-    cvox.ChromeVox.earcons.playEarconByName(earcon);
+  if (cvox.ChromeVox.isActive && cvox.Earcon[earcon]) {
+    cvox.ChromeVox.earcons.playEarcon(cvox.Earcon[earcon]);
   }
 };
 

@@ -905,7 +905,7 @@ cvox.AriaUtil.isGrid = function(node) {
  * Returns the id of an earcon to play along with the description for a node.
  *
  * @param {Node} node The node to get the earcon for.
- * @return {number?} The earcon id, or null if none applies.
+ * @return {cvox.Earcon?} The earcon id, or null if none applies.
  */
 cvox.AriaUtil.getEarcon = function(node) {
   if (!node || !node.getAttribute) {
@@ -914,26 +914,26 @@ cvox.AriaUtil.getEarcon = function(node) {
   var role = cvox.AriaUtil.getRoleAttribute(node);
   switch (role) {
     case 'button':
-      return cvox.AbstractEarcons.BUTTON;
+      return cvox.Earcon.BUTTON;
     case 'checkbox':
     case 'radio':
     case 'menuitemcheckbox':
     case 'menuitemradio':
       var checked = node.getAttribute('aria-checked');
       if (checked == 'true') {
-        return cvox.AbstractEarcons.CHECK_ON;
+        return cvox.Earcon.CHECK_ON;
       } else {
-        return cvox.AbstractEarcons.CHECK_OFF;
+        return cvox.Earcon.CHECK_OFF;
       }
     case 'combobox':
     case 'listbox':
-      return cvox.AbstractEarcons.LISTBOX;
+      return cvox.Earcon.LISTBOX;
     case 'textbox':
-      return cvox.AbstractEarcons.EDITABLE_TEXT;
+      return cvox.Earcon.EDITABLE_TEXT;
     case 'listitem':
-      return cvox.AbstractEarcons.BULLET;
+      return cvox.Earcon.BULLET;
     case 'link':
-      return cvox.AbstractEarcons.LINK;
+      return cvox.Earcon.LINK;
   }
 
   return null;

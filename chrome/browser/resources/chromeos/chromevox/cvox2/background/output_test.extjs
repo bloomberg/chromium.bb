@@ -493,7 +493,7 @@ SYNC_TEST_F('OutputE2ETest', 'MessageIdAndEarconValidity', function() {
     cvox.ChromeVox.msgs.getMsg(value.msgId + '_brl');
     assertFalse(/[A-Z]+/.test(value.msgId));
     if (value.earconId)
-      assertNotNullNorUndefined(cvox.AbstractEarcons[value.earconId]);
+      assertNotNullNorUndefined(cvox.Earcon[value.earconId]);
   }
   for (var key in Output.STATE_INFO_) {
     var value = Output.STATE_INFO_[key];
@@ -503,7 +503,7 @@ SYNC_TEST_F('OutputE2ETest', 'MessageIdAndEarconValidity', function() {
       cvox.ChromeVox.msgs.getMsg(innerValue.msgId + '_brl');
       assertFalse(/[A-Z]+/.test(innerValue.msgId));
       if (innerValue.earconId)
-        assertNotNullNorUndefined(cvox.AbstractEarcons[innerValue.earconId]);
+        assertNotNullNorUndefined(cvox.Earcon[innerValue.earconId]);
     }
   }
 });

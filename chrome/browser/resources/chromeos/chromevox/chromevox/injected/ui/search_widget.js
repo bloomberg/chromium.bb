@@ -418,7 +418,7 @@ cvox.SearchWidget.prototype.next_ = function(searchStr, opt_reversed) {
     cvox.ChromeVox.navigationManager.setReversed(!!opt_reversed);
     if (!success) {
       cvox.ChromeVox.navigationManager.syncToBeginning();
-      cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons.WRAP);
+      cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
       success = true;
     }
   } else {
@@ -444,7 +444,7 @@ cvox.SearchWidget.prototype.next_ = function(searchStr, opt_reversed) {
 cvox.SearchWidget.prototype.outputSearchResult_ = function(result, searchStr) {
   cvox.ChromeVox.tts.stop();
   if (!result) {
-    cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons.WRAP);
+    cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
     this.hasMatch_ = false;
     return;
   }

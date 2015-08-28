@@ -93,7 +93,7 @@ cvox.Widget.prototype.show = function() {
         andMessage(this.getHelpMsg()).
         speakFlush();
   }
-  cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons.OBJECT_OPEN);
+  cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_OPEN);
 
   this.active = true;
 };
@@ -110,7 +110,7 @@ cvox.Widget.prototype.hide = function(opt_noSync) {
   window.removeEventListener('keydown', this.onKeyDown, true);
   cvox.ChromeVox.stickyOverride = null;
 
-  cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons.OBJECT_CLOSE);
+  cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_CLOSE);
   if (!opt_noSync) {
     this.initialNode = this.initialNode.nodeType == 1 ?
         this.initialNode : this.initialNode.parentNode;

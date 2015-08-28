@@ -238,7 +238,7 @@ cvox.Search.keyhandler = function(evt) {
       cvox.Search.index = cvox.SearchUtil.subOneWrap(cvox.Search.index,
         cvox.Search.results.length);
       if (cvox.Search.index === cvox.Search.results.length - 1) {
-        cvox.ChromeVox.earcons.playEarconByName('WRAP');
+        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
       }
       cvox.Search.syncToIndex();
       break;
@@ -247,7 +247,7 @@ cvox.Search.keyhandler = function(evt) {
       cvox.Search.index = cvox.SearchUtil.addOneWrap(cvox.Search.index,
         cvox.Search.results.length);
       if (cvox.Search.index === 0) {
-        cvox.ChromeVox.earcons.playEarconByName('WRAP');
+        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
       }
       cvox.Search.syncToIndex();
       break;

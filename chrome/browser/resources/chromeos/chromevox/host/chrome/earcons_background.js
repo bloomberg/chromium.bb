@@ -54,13 +54,13 @@ cvox.EarconsBackground.prototype.playEarcon = function(earcon) {
     return;
   }
   if (window['console']) {
-    window['console']['log']('Earcon ' + this.getEarconName(earcon));
+    window['console']['log']('Earcon ' + earcon);
   }
 
   this.currentAudio = this.audioMap[earcon];
   if (!this.currentAudio) {
     this.currentAudio = new Audio(chrome.extension.getURL(this.getBaseUrl() +
-        this.getEarconFilename(earcon)));
+        earcon + '.ogg'));
     this.audioMap[earcon] = this.currentAudio;
   }
   try {

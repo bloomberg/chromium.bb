@@ -526,7 +526,7 @@ Output.EarconAction.prototype = {
 
   /** @override */
   run: function() {
-    cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons[this.earconId]);
+    cvox.ChromeVox.earcons.playEarcon(cvox.Earcon[this.earconId]);
   }
 };
 

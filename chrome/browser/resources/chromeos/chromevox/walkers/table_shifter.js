@@ -78,7 +78,7 @@ cvox.TableShifter.prototype.getDescription = function(prevSel, sel) {
   var descs = this.currentWalker_.getDescription(prevSel, sel);
   if (descs.length > 0) {
     if (this.bumpedEdge_) {
-      descs[0].pushEarcon(cvox.AbstractEarcons.WRAP_EDGE);
+      descs[0].pushEarcon(cvox.Earcon.WRAP_EDGE);
       this.bumpedEdge_ = false;
     }
     if (this.begin_) {

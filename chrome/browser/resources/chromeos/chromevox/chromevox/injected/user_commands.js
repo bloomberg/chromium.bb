@@ -325,7 +325,7 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
             cvox.ChromeVox.navigationManager.saveSel();
             prefixMsg = wrap;
             cvox.ChromeVox.navigationManager.syncToBeginning();
-            cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons.WRAP);
+            cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
             found = cvox.ChromeVox.navigationManager.findNext(
                 predicate, predicateName, true);
             if (!found) {

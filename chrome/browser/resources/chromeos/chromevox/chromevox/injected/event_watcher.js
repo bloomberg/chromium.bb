@@ -1104,9 +1104,9 @@ cvox.ChromeVoxEventWatcher.handleControlChanged = function(control) {
     announceChange = true;
     // Play earcons for checkboxes and radio buttons
     if (control.checked) {
-      cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons.CHECK_ON);
+      cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.CHECK_ON);
     } else {
-      cvox.ChromeVox.earcons.playEarcon(cvox.AbstractEarcons.CHECK_OFF);
+      cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.CHECK_OFF);
     }
   }
 
