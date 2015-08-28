@@ -156,7 +156,6 @@ class MediaRouterMojoImpl : public MediaRouter,
                                   const SendRouteMessageCallback& callback);
   void DoListenForRouteMessages(const MediaRoute::Id& route_id);
   void DoStopListeningForRouteMessages(const MediaRoute::Id& route_id);
-  void DoClearIssue(const Issue::Id& issue_id);
   void DoOnPresentationSessionDetached(const MediaRoute::Id& route_id);
   void DoStartObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);

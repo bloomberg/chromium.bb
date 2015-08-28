@@ -159,9 +159,6 @@ interface MediaRouteProvider {
   // Stops querying the state of all media routes.
   StopObservingMediaRoutes();
 
-  // "Clears" an issue after it is addressed.
-  ClearIssue(string issue_id);
-
   // Called when the MediaRouter is ready to get the next batch of messages
   // associated with |route_id|.
   // |messages| returned will contain the batch of messages.

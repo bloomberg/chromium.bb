@@ -261,8 +261,6 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   issue_manager_.ClearIssue(issue_id);
-  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoClearIssue,
-                        base::Unretained(this), issue_id));
 }
 
 void MediaRouterMojoImpl::OnPresentationSessionDetached(
@@ -506,11 +504,6 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
   media_route_provider_->ListenForRouteMessages(
       route_id, base::Bind(&MediaRouterMojoImpl::OnRouteMessagesReceived,
                            base::Unretained(this), route_id));
-}
-
-void MediaRouterMojoImpl::DoClearIssue(const Issue::Id& issue_id) {
-  DVLOG_WITH_INSTANCE(1) << "DoClearIssue " << issue_id;
-  media_route_provider_->ClearIssue(issue_id);
 }
 
 void MediaRouterMojoImpl::DoOnPresentationSessionDetached(
