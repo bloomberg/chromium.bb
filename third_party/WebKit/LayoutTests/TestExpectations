@@ -255,8 +255,6 @@ crbug.com/418091 [ SnowLeopard Debug ] inspector/elements/bidi-dom-tree.html [ P
 crbug.com/449242 [ SnowLeopard Debug ] fast/css/word-spacing-characters-complex-text.html [ Pass Crash ]
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 
-crbug.com/525905 [ Yosemite ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
-
 crbug.com/524859 fast/text/complex-text-opacity.html [ NeedsManualRebaseline ]
 # crbug.com/498021 [ Linux ] fast/text/complex-text-opacity.html [ ImageOnlyFailure ]
 # crbug.com/509025 [ Yosemite ] fast/text/complex-text-opacity.html [ Failure ]
@@ -1095,6 +1093,7 @@ crbug.com/509025 [ Yosemite ] virtual/threaded/printing/return-from-printing-mod
 crbug.com/509025 [ Yosemite ] paint/inline/outline-offset.html [ Missing ]
 crbug.com/509025 [ Yosemite ] virtual/spv2/paint/inline/outline-offset.html [ Missing ]
 crbug.com/509025 [ Yosemite ] fast/block/lineboxcontain/block-with-ideographs.xhtml [ Failure ]
+crbug.com/509025 [ Yosemite ] fast/encoding/denormalised-voiced-japanese-chars.html [ ImageOnlyFailure ]
 crbug.com/525884 [ Mac ] fast/forms/submit/submit-appearance-basic.html [ NeedsRebaseline ]
 crbug.com/525884 [ Mac ] fast/forms/color/input-appearance-color.html [ NeedsRebaseline ]
 crbug.com/509025 [ Yosemite ] fast/overflow/scrollRevealButton.html [ Failure ]
