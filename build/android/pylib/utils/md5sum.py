@@ -63,17 +63,21 @@ def CalculateDeviceMd5Sums(paths, device):
   # Allow generators
   paths = list(paths)
 
-  def push_md5sum():
-    md5sum_dist_path = os.path.join(constants.GetOutDirectory(), 'md5sum_dist')
-    if not os.path.exists(md5sum_dist_path):
-      raise IOError('File not built: %s' % md5sum_dist_path)
-    device.adb.Push(md5sum_dist_path, MD5SUM_DEVICE_LIB_PATH)
+  md5sum_dist_path = os.path.join(constants.GetOutDirectory(), 'md5sum_dist')
+  md5sum_dist_bin_path = os.path.join(md5sum_dist_path, 'md5sum_bin')
+
+  if not os.path.exists(md5sum_dist_path):
+    raise IOError('File not built: %s' % md5sum_dist_path)
+  md5sum_file_size = os.path.getsize(md5sum_dist_bin_path)
 
   # For better performance, make the script as small as possible to try and
   # avoid needing to write to an intermediary file (which RunShellCommand will
   # do if necessary).
   md5sum_script = 'a=%s;' % MD5SUM_DEVICE_BIN_PATH
-  md5sum_script += 'test -e $a||exit 2;'
+  # Check if the binary is missing or has changed (using its file size as an
+  # indicator), and trigger a (re-)push via the exit code.
+  md5sum_script += '! [[ $(ls -l $a) = *%d* ]]&&exit 2;' % md5sum_file_size
+  # Make sure it can find libbase.so
   md5sum_script += 'export LD_LIBRARY_PATH=%s;' % MD5SUM_DEVICE_LIB_PATH
   if len(paths) > 1:
     prefix = posixpath.commonprefix(paths)
@@ -91,7 +95,7 @@ def CalculateDeviceMd5Sums(paths, device):
     # Push the binary only if it is found to not exist
     # (faster than checking up-front).
     if e.status == 2:
-      push_md5sum()
+      device.adb.Push(md5sum_dist_path, MD5SUM_DEVICE_LIB_PATH)
       out = device.RunShellCommand(md5sum_script, check_return=True)
     else:
       raise

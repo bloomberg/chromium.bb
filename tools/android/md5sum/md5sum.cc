@@ -79,11 +79,13 @@ int main(int argc, const char* argv[]) {
   std::string digest;
   for (std::set<std::string>::const_iterator it = files.begin();
        it != files.end(); ++it) {
-    if (!MD5Sum(it->c_str(), &digest))
+    if (!MD5Sum(it->c_str(), &digest)) {
       failed = true;
-    base::FilePath file_path(*it);
-    std::cout << digest << "  "
-              << base::MakeAbsoluteFilePath(file_path).value() << std::endl;
+    } else {
+      base::FilePath file_path(*it);
+      std::cout << digest << "  "
+                << base::MakeAbsoluteFilePath(file_path).value() << std::endl;
+    }
   }
   return failed;
 }
