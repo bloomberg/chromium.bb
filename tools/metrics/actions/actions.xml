@@ -8576,31 +8576,41 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Notifications.Mute">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dewittj@chromium.org</owner>
+  <description>
+    Recorded when a user enables the message center's Do Not Disturb mode.
+  </description>
 </action>
 
 <action name="Notifications.ShowMessageCenter">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dewittj@chromium.org</owner>
+  <description>
+    Recorded when the message center screen is being presented to the user.
+  </description>
 </action>
 
 <action name="Notifications.ShowSettings">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dewittj@chromium.org</owner>
+  <description>
+    Recorded when the message center settings screen is being presented to the
+    user.
+  </description>
 </action>
 
 <action name="Notifications.ShowSiteSettings">
   <owner>peter@chromium.org</owner>
   <description>
-    Counts the number of times users click on the Site Settings button included
-    with Web Notifications.
+    Recorded when a user clicks on the Site Settings button included with Web
+    Notifications.
   </description>
 </action>
 
 <action name="Notifications.Unmute">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dewittj@chromium.org</owner>
+  <description>
+    Recorded when the message center's Do Not Disturb mode is disabled, either
+    due to manual user action, or because a timed Do Not Disturb expires.
+  </description>
 </action>
 
 <action name="Omnibox.ServerSuggestDelete.Failure">
@@ -9127,8 +9137,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_DefaultNotificationsSettingChanged">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>peter@chromium.org</owner>
+  <description>
+    Recorded when the default value for the Notifications content setting is
+    changed by the user.
+  </description>
 </action>
 
 <action name="Options_DefaultPluginsSettingChanged">
