@@ -42,9 +42,8 @@ IN_PROC_BROWSER_TEST_F(VariationsServiceDevicePolicyTest, VariationsURLValid) {
           GetDefaultVariationsServerURLForTesting();
 
   // Device policy has updated the cros settings.
-  const GURL url =
-      g_browser_process->variations_service()->GetVariationsServerURL(
-          g_browser_process->local_state(), std::string());
+  const GURL url = chrome_variations::VariationsService::GetVariationsServerURL(
+      g_browser_process->local_state(), std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   std::string value;
