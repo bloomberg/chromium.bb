@@ -116,7 +116,7 @@ void SendAlgorithmSimulator::TransferBytes(QuicByteCount max_bytes,
       DVLOG(1) << "Handling ack of largest observed:"
                << ack_event.transfer->sender->next_acked << ", advancing time:"
                << ack_event.time_delta.ToMicroseconds() << "us";
-      // Ack data all the data up to ack time and lose any missing sequence
+      // Ack data all the data up to ack time and lose any missing packet
       // numbers.
       clock_->AdvanceTime(ack_event.time_delta);
       HandlePendingAck(ack_event.transfer);
@@ -190,7 +190,7 @@ QuicTime::Delta SendAlgorithmSimulator::FindNextAcked(Transfer* transfer) {
         reverse_loss_rate_ * kuint64max > simple_random_.RandUint64();
   }
 
-  QuicPacketSequenceNumber next_acked = sender->last_acked;
+  QuicPacketNumber next_acked = sender->last_acked;
   QuicTime::Delta next_ack_delay =
       FindNextAck(transfer, sender->last_acked, &next_acked);
   if (lose_next_ack_) {
@@ -202,8 +202,8 @@ QuicTime::Delta SendAlgorithmSimulator::FindNextAcked(Transfer* transfer) {
 
 QuicTime::Delta SendAlgorithmSimulator::FindNextAck(
     const Transfer* transfer,
-    QuicPacketSequenceNumber last_acked,
-    QuicPacketSequenceNumber* next_acked) const {
+    QuicPacketNumber last_acked,
+    QuicPacketNumber* next_acked) const {
   *next_acked = last_acked;
   QuicTime::Delta ack_delay = QuicTime::Delta::Infinite();
   // Remove any packets that are simulated as lost.
@@ -213,19 +213,19 @@ QuicTime::Delta SendAlgorithmSimulator::FindNextAck(
       continue;
     }
     // Skip over any packets less than or equal to last_acked.
-    if (it->sequence_number <= last_acked) {
+    if (it->packet_number <= last_acked) {
       continue;
     }
     // Lost packets don't trigger an ack.
     if (it->lost) {
       continue;
     }
-    DCHECK_LT(*next_acked, it->sequence_number);
+    DCHECK_LT(*next_acked, it->packet_number);
     // Consider a delayed ack for the current next_acked.
     if (ack_delay < it->ack_time.Subtract(clock_->Now())) {
       break;
     }
-    *next_acked = it->sequence_number;
+    *next_acked = it->packet_number;
     ack_delay = it->ack_time.Subtract(clock_->Now());
     if (HasRecentLostPackets(transfer, *next_acked) ||
         (*next_acked - last_acked) >= 2) {
@@ -241,10 +241,11 @@ QuicTime::Delta SendAlgorithmSimulator::FindNextAck(
 }
 
 bool SendAlgorithmSimulator::HasRecentLostPackets(
-    const Transfer* transfer, QuicPacketSequenceNumber next_acked) const {
-  QuicPacketSequenceNumber last_packet = transfer->sender->last_acked;
+    const Transfer* transfer,
+    QuicPacketNumber next_acked) const {
+  QuicPacketNumber last_packet = transfer->sender->last_acked;
   for (list<SentPacket>::const_iterator it = sent_packets_.begin();
-       it != sent_packets_.end() && it->sequence_number < next_acked; ++it) {
+       it != sent_packets_.end() && it->packet_number < next_acked; ++it) {
     if (transfer != it->transfer) {
       continue;
     }
@@ -254,10 +255,10 @@ bool SendAlgorithmSimulator::HasRecentLostPackets(
     }
     // Buffer dropped packets are skipped automatically, but still end up
     // being lost and cause acks to be sent immediately.
-    if (it->sequence_number > last_packet + 1) {
+    if (it->packet_number > last_packet + 1) {
       return true;
     }
-    last_packet = it->sequence_number;
+    last_packet = it->packet_number;
   }
   return false;
 }
@@ -286,7 +287,7 @@ void SendAlgorithmSimulator::HandlePendingAck(Transfer* transfer) {
       ++it;
     }
     // If it's missing from the array, it's a loss.
-    if (it->sequence_number > sender->last_acked) {
+    if (it->packet_number > sender->last_acked) {
       DVLOG(1) << "Lost packet:" << sender->last_acked
                << " dropped by buffer overflow.";
       lost_packets.push_back(std::make_pair(sender->last_acked, info));

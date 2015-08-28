@@ -42,7 +42,7 @@ class NET_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
   // QuicEncrypter implementation
   bool SetKey(base::StringPiece key) override;
   bool SetNoncePrefix(base::StringPiece nonce_prefix) override;
-  bool EncryptPacket(QuicPacketSequenceNumber sequence_number,
+  bool EncryptPacket(QuicPacketNumber packet_number,
                      base::StringPiece associated_data,
                      base::StringPiece plaintext,
                      char* output,
@@ -56,7 +56,7 @@ class NET_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
   base::StringPiece GetNoncePrefix() const override;
 
   // Necessary so unit tests can explicitly specify a nonce, instead of a
-  // nonce prefix and sequence number.
+  // nonce prefix and packet number.
   bool Encrypt(base::StringPiece nonce,
                base::StringPiece associated_data,
                base::StringPiece plaintext,

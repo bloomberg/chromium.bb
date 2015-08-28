@@ -32,7 +32,8 @@ class QuicAckNotifierTest : public ::testing::Test {
   QuicTime::Delta zero_;
 };
 
-// Should trigger callback when we receive acks for all the registered seqnums.
+// Should trigger callback when we receive acks for all the registered packet
+// numbers.
 TEST_F(QuicAckNotifierTest, TriggerCallback) {
   EXPECT_CALL(*delegate_, OnAckNotification(0, 0, zero_)).Times(1);
   EXPECT_FALSE(notifier_->OnAck(zero_));
@@ -40,7 +41,7 @@ TEST_F(QuicAckNotifierTest, TriggerCallback) {
   EXPECT_TRUE(notifier_->OnAck(zero_));
 }
 
-// Should not trigger callback if we never provide all the seqnums.
+// Should not trigger callback if we never provide all the packet numbers.
 TEST_F(QuicAckNotifierTest, DoesNotTrigger) {
   // Should not trigger callback as not all packets have been seen.
   EXPECT_CALL(*delegate_, OnAckNotification(_, _, _)).Times(0);
@@ -57,10 +58,10 @@ TEST_F(QuicAckNotifierTest, AbandonDoesNotTrigger) {
   EXPECT_TRUE(notifier_->OnPacketAbandoned());
 }
 
-// Should trigger even after updating sequence numbers and receiving ACKs for
-// new sequeunce numbers.
-TEST_F(QuicAckNotifierTest, UpdateSeqNums) {
-  // Update a couple of the sequence numbers (i.e. retransmitted packets)
+// Should trigger even after updating packet numbers and receiving ACKs for
+// new packet numbers.
+TEST_F(QuicAckNotifierTest, UpdatePacketNumbers) {
+  // Update a couple of the packet numbers (i.e. retransmitted packets)
   notifier_->OnPacketRetransmitted(20);
   notifier_->OnPacketRetransmitted(3);
 

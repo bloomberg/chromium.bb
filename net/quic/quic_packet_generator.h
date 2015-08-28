@@ -154,22 +154,19 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   QuicEncryptedPacket* SerializeVersionNegotiationPacket(
       const QuicVersionVector& supported_versions);
 
-
-  // Re-serializes frames with the original packet's sequence number length.
+  // Re-serializes frames with the original packet's packet number length.
   // Used for retransmitting packets to ensure they aren't too long.
   // Caller must ensure that any open FEC group is closed before calling this
   // method.
-  SerializedPacket ReserializeAllFrames(
-      const RetransmittableFrames& frames,
-      QuicSequenceNumberLength original_length,
-      char* buffer,
-      size_t buffer_len);
+  SerializedPacket ReserializeAllFrames(const RetransmittableFrames& frames,
+                                        QuicPacketNumberLength original_length,
+                                        char* buffer,
+                                        size_t buffer_len);
 
-  // Update the sequence number length to use in future packets as soon as it
+  // Update the packet number length to use in future packets as soon as it
   // can be safely changed.
-  void UpdateSequenceNumberLength(
-      QuicPacketSequenceNumber least_packet_awaited_by_peer,
-      QuicPacketCount max_packets_in_flight);
+  void UpdateSequenceNumberLength(QuicPacketNumber least_packet_awaited_by_peer,
+                                  QuicPacketCount max_packets_in_flight);
 
   // Set the minimum number of bytes for the connection id length;
   void SetConnectionIdLength(uint32 length);
@@ -177,12 +174,12 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // Called when the FEC alarm fires.
   void OnFecTimeout();
 
-  // Called after sending |sequence_number| to determine whether an FEC alarm
+  // Called after sending |packet_number| to determine whether an FEC alarm
   // should be set for sending out an FEC packet. Returns a positive and finite
   // timeout if an FEC alarm should be set, and infinite if no alarm should be
   // set. OnFecTimeout should be called to send the FEC packet when the alarm
   // fires.
-  QuicTime::Delta GetFecTimeout(QuicPacketSequenceNumber sequence_number);
+  QuicTime::Delta GetFecTimeout(QuicPacketNumber packet_number);
 
   // Sets the encrypter to use for the encryption level.
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
@@ -190,9 +187,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level);
 
-  // Sequence number of the last created packet, or 0 if no packets have been
+  // packet number of the last created packet, or 0 if no packets have been
   // created.
-  QuicPacketSequenceNumber sequence_number() const;
+  QuicPacketNumber packet_number() const;
 
   // Returns the maximum packet length.  Note that this is the long-term maximum
   // packet length, and it may not be the maximum length of the current packet,

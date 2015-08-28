@@ -57,8 +57,8 @@ scoped_ptr<base::Value> NetLogQuicPacketSentCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("encryption_level", level);
   dict->SetInteger("transmission_type", transmission_type);
-  dict->SetString("packet_sequence_number",
-                  base::Uint64ToString(serialized_packet.sequence_number));
+  dict->SetString("packet_number",
+                  base::Uint64ToString(serialized_packet.packet_number));
   dict->SetInteger("size", packet_size);
   dict->SetString("sent_time_us",
                   base::Int64ToString(sent_time.ToDebuggingValue()));
@@ -66,23 +66,20 @@ scoped_ptr<base::Value> NetLogQuicPacketSentCallback(
 }
 
 scoped_ptr<base::Value> NetLogQuicPacketRetransmittedCallback(
-    QuicPacketSequenceNumber old_sequence_number,
-    QuicPacketSequenceNumber new_sequence_number,
+    QuicPacketNumber old_packet_number,
+    QuicPacketNumber new_packet_number,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("old_packet_sequence_number",
-                  base::Uint64ToString(old_sequence_number));
-  dict->SetString("new_packet_sequence_number",
-                  base::Uint64ToString(new_sequence_number));
+  dict->SetString("old_packet_number", base::Uint64ToString(old_packet_number));
+  dict->SetString("new_packet_number", base::Uint64ToString(new_packet_number));
   return dict.Pass();
 }
 
 scoped_ptr<base::Value> NetLogQuicDuplicatePacketCallback(
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketNumber packet_number,
     NetLogCaptureMode /* capture_mode */) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("packet_sequence_number",
-                  base::Uint64ToString(sequence_number));
+  dict->SetString("packet_number", base::Uint64ToString(packet_number));
   return dict.Pass();
 }
 
@@ -94,8 +91,8 @@ scoped_ptr<base::Value> NetLogQuicPacketHeaderCallback(
                   base::Uint64ToString(header->public_header.connection_id));
   dict->SetInteger("reset_flag", header->public_header.reset_flag);
   dict->SetInteger("version_flag", header->public_header.version_flag);
-  dict->SetString("packet_sequence_number",
-                  base::Uint64ToString(header->packet_sequence_number));
+  dict->SetString("packet_number",
+                  base::Uint64ToString(header->packet_packet_number));
   dict->SetInteger("entropy_flag", header->entropy_flag);
   dict->SetInteger("fec_flag", header->fec_flag);
   dict->SetInteger("fec_group", static_cast<int>(header->fec_group));
@@ -128,16 +125,16 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
 
   base::ListValue* missing = new base::ListValue();
   dict->Set("missing_packets", missing);
-  const SequenceNumberSet& missing_packets = frame->missing_packets;
-  for (SequenceNumberSet::const_iterator it = missing_packets.begin();
+  const PacketNumberSet& missing_packets = frame->missing_packets;
+  for (PacketNumberSet::const_iterator it = missing_packets.begin();
        it != missing_packets.end(); ++it) {
     missing->AppendString(base::Uint64ToString(*it));
   }
 
   base::ListValue* revived = new base::ListValue();
   dict->Set("revived_packets", revived);
-  const SequenceNumberSet& revived_packets = frame->revived_packets;
-  for (SequenceNumberSet::const_iterator it = revived_packets.begin();
+  const PacketNumberSet& revived_packets = frame->revived_packets;
+  for (PacketNumberSet::const_iterator it = revived_packets.begin();
        it != revived_packets.end(); ++it) {
     revived->AppendString(base::Uint64ToString(*it));
   }
@@ -148,7 +145,7 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
   for (PacketTimeList::const_iterator it = received_times.begin();
        it != received_times.end(); ++it) {
     base::DictionaryValue* info = new base::DictionaryValue();
-    info->SetInteger("sequence_number", static_cast<int>(it->first));
+    info->SetInteger("packet_number", static_cast<int>(it->first));
     info->SetString("received",
                     base::Int64ToString(it->second.ToDebuggingValue()));
     received->Append(info);
@@ -295,11 +292,11 @@ QuicConnectionLogger::QuicConnectionLogger(
     const BoundNetLog& net_log)
     : net_log_(net_log),
       session_(session),
-      last_received_packet_sequence_number_(0),
+      last_received_packet_number_(0),
       last_received_packet_size_(0),
       previous_received_packet_size_(0),
-      largest_received_packet_sequence_number_(0),
-      largest_received_missing_packet_sequence_number_(0),
+      largest_received_packet_number_(0),
+      largest_received_missing_packet_number_(0),
       num_out_of_order_received_packets_(0),
       num_out_of_order_large_received_packets_(0),
       num_packets_received_(0),
@@ -312,8 +309,7 @@ QuicConnectionLogger::QuicConnectionLogger(
       num_duplicate_packets_(0),
       num_blocked_frames_received_(0),
       num_blocked_frames_sent_(0),
-      connection_description_(connection_description) {
-}
+      connection_description_(connection_description) {}
 
 QuicConnectionLogger::~QuicConnectionLogger() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.OutOfOrderPacketsReceived",
@@ -368,8 +364,7 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_ACK_FRAME_SENT,
           base::Bind(&NetLogQuicAckFrameCallback, frame.ack_frame));
-      const SequenceNumberSet& missing_packets =
-          frame.ack_frame->missing_packets;
+      const PacketNumberSet& missing_packets = frame.ack_frame->missing_packets;
       const uint8 max_ranges = std::numeric_limits<uint8>::max();
       // Compute an upper bound on the number of NACK ranges. If the bound
       // is below the max, then it clearly isn't truncated.
@@ -379,8 +374,8 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
         break;
       }
       size_t num_ranges = 0;
-      QuicPacketSequenceNumber last_missing = 0;
-      for (SequenceNumberSet::const_iterator it = missing_packets.begin();
+      QuicPacketNumber last_missing = 0;
+      for (PacketNumberSet::const_iterator it = missing_packets.begin();
            it != missing_packets.end(); ++it) {
         if (*it != last_missing + 1 && ++num_ranges >= max_ranges) {
           ++num_truncated_acks_sent_;
@@ -448,12 +443,12 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
 
 void QuicConnectionLogger::OnPacketSent(
     const SerializedPacket& serialized_packet,
-    QuicPacketSequenceNumber original_sequence_number,
+    QuicPacketNumber original_packet_number,
     EncryptionLevel level,
     TransmissionType transmission_type,
     const QuicEncryptedPacket& packet,
     QuicTime sent_time) {
-  if (original_sequence_number == 0) {
+  if (original_packet_number == 0) {
     net_log_.AddEvent(
         NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
         base::Bind(&NetLogQuicPacketSentCallback, serialized_packet,
@@ -462,8 +457,7 @@ void QuicConnectionLogger::OnPacketSent(
     net_log_.AddEvent(
         NetLog::TYPE_QUIC_SESSION_PACKET_RETRANSMITTED,
         base::Bind(&NetLogQuicPacketRetransmittedCallback,
-                   original_sequence_number,
-                   serialized_packet.sequence_number));
+                   original_packet_number, serialized_packet.packet_number));
   }
 }
 
@@ -501,11 +495,10 @@ void QuicConnectionLogger::OnUndecryptablePacket() {
   ++num_undecryptable_packets_;
 }
 
-void QuicConnectionLogger::OnDuplicatePacket(
-    QuicPacketSequenceNumber sequence_number) {
+void QuicConnectionLogger::OnDuplicatePacket(QuicPacketNumber packet_number) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_DUPLICATE_PACKET_RECEIVED,
-      base::Bind(&NetLogQuicDuplicatePacketCallback, sequence_number));
+      base::Bind(&NetLogQuicDuplicatePacketCallback, packet_number));
   ++num_duplicate_packets_;
 }
 
@@ -517,10 +510,9 @@ void QuicConnectionLogger::OnProtocolVersionMismatch(
 void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PACKET_AUTHENTICATED);
   ++num_packets_received_;
-  if (largest_received_packet_sequence_number_ <
-      header.packet_sequence_number) {
-    QuicPacketSequenceNumber delta = header.packet_sequence_number -
-        largest_received_packet_sequence_number_;
+  if (largest_received_packet_number_ < header.packet_packet_number) {
+    QuicPacketNumber delta =
+        header.packet_packet_number - largest_received_packet_number_;
     if (delta > 1) {
       // There is a gap between the largest packet previously received and
       // the current packet.  This indicates either loss, or out-of-order
@@ -528,23 +520,21 @@ void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
       UMA_HISTOGRAM_COUNTS("Net.QuicSession.PacketGapReceived",
                            static_cast<base::HistogramBase::Sample>(delta - 1));
     }
-    largest_received_packet_sequence_number_ = header.packet_sequence_number;
+    largest_received_packet_number_ = header.packet_packet_number;
   }
-  if (header.packet_sequence_number < received_packets_.size()) {
-    received_packets_[static_cast<size_t>(header.packet_sequence_number)] =
-        true;
+  if (header.packet_packet_number < received_packets_.size()) {
+    received_packets_[static_cast<size_t>(header.packet_packet_number)] = true;
   }
-  if (header.packet_sequence_number < last_received_packet_sequence_number_) {
+  if (header.packet_packet_number < last_received_packet_number_) {
     ++num_out_of_order_received_packets_;
     if (previous_received_packet_size_ < last_received_packet_size_)
       ++num_out_of_order_large_received_packets_;
     UMA_HISTOGRAM_COUNTS(
         "Net.QuicSession.OutOfOrderGapReceived",
-        static_cast<base::HistogramBase::Sample>(
-            last_received_packet_sequence_number_ -
-            header.packet_sequence_number));
+        static_cast<base::HistogramBase::Sample>(last_received_packet_number_ -
+                                                 header.packet_packet_number));
   }
-  last_received_packet_sequence_number_ = header.packet_sequence_number;
+  last_received_packet_number_ = header.packet_packet_number;
 }
 
 void QuicConnectionLogger::OnStreamFrame(const QuicStreamFrame& frame) {
@@ -559,10 +549,9 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
       base::Bind(&NetLogQuicAckFrameCallback, &frame));
 
   const size_t kApproximateLargestSoloAckBytes = 100;
-  if (last_received_packet_sequence_number_ < received_acks_.size() &&
+  if (last_received_packet_number_ < received_acks_.size() &&
       last_received_packet_size_ < kApproximateLargestSoloAckBytes) {
-    received_acks_[static_cast<size_t>(last_received_packet_sequence_number_)] =
-        true;
+    received_acks_[static_cast<size_t>(last_received_packet_number_)] = true;
   }
 
   if (frame.is_truncated)
@@ -571,20 +560,20 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
   if (frame.missing_packets.empty())
     return;
 
-  SequenceNumberSet missing_packets = frame.missing_packets;
-  SequenceNumberSet::const_iterator it = missing_packets.lower_bound(
-      largest_received_missing_packet_sequence_number_);
+  PacketNumberSet missing_packets = frame.missing_packets;
+  PacketNumberSet::const_iterator it =
+      missing_packets.lower_bound(largest_received_missing_packet_number_);
   if (it == missing_packets.end())
     return;
 
-  if (*it == largest_received_missing_packet_sequence_number_) {
+  if (*it == largest_received_missing_packet_number_) {
     ++it;
     if (it == missing_packets.end())
       return;
   }
   // Scan through the list and log consecutive ranges of missing packets.
   size_t num_consecutive_missing_packets = 0;
-  QuicPacketSequenceNumber previous_missing_packet = *it - 1;
+  QuicPacketNumber previous_missing_packet = *it - 1;
   while (it != missing_packets.end()) {
     if (previous_missing_packet == *it - 1) {
       ++num_consecutive_missing_packets;
@@ -600,8 +589,7 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
   if (num_consecutive_missing_packets != 0) {
     UpdatePacketGapSentHistogram(num_consecutive_missing_packets);
   }
-  largest_received_missing_packet_sequence_number_ =
-        *missing_packets.rbegin();
+  largest_received_missing_packet_number_ = *missing_packets.rbegin();
 }
 
 void QuicConnectionLogger::OnStopWaitingFrame(
@@ -731,7 +719,7 @@ void QuicConnectionLogger::OnCertificateVerified(
       base::Bind(&NetLogQuicCertificateVerifiedCallback, result.verified_cert));
 }
 
-base::HistogramBase* QuicConnectionLogger::GetPacketSequenceNumberHistogram(
+base::HistogramBase* QuicConnectionLogger::GetPacketNumberHistogram(
     const char* statistic_name) const {
   string prefix("Net.QuicSession.PacketReceived_");
   return base::LinearHistogram::FactoryGet(
@@ -795,11 +783,10 @@ void QuicConnectionLogger::AddTo21CumulativeHistogram(
 }
 
 float QuicConnectionLogger::ReceivedPacketLossRate() const {
-  if (largest_received_packet_sequence_number_ <= num_packets_received_)
+  if (largest_received_packet_number_ <= num_packets_received_)
     return 0.0f;
-  float num_received =
-      largest_received_packet_sequence_number_ - num_packets_received_;
-  return num_received / largest_received_packet_sequence_number_;
+  float num_received = largest_received_packet_number_ - num_packets_received_;
+  return num_received / largest_received_packet_number_;
 }
 
 void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
@@ -809,7 +796,7 @@ void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
   // histogram.  (e.g., if we only got 5 packets, but lost 1, we'd otherwise
   // record a 20% loss in this histogram!). We may still get some strange data
   // (1 loss in 22 is still high :-/).
-  if (largest_received_packet_sequence_number_ <= 21)
+  if (largest_received_packet_number_ <= 21)
     return;
 
   string prefix("Net.QuicSession.PacketLossRate_");
@@ -821,18 +808,18 @@ void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
 }
 
 void QuicConnectionLogger::RecordLossHistograms() const {
-  if (largest_received_packet_sequence_number_ == 0)
+  if (largest_received_packet_number_ == 0)
     return;  // Connection was never used.
   RecordAggregatePacketLossRate();
 
   base::HistogramBase* is_not_ack_histogram =
-      GetPacketSequenceNumberHistogram("IsNotAck_");
+      GetPacketNumberHistogram("IsNotAck_");
   base::HistogramBase* is_an_ack_histogram =
-      GetPacketSequenceNumberHistogram("IsAnAck_");
+      GetPacketNumberHistogram("IsAnAck_");
   base::HistogramBase* packet_arrived_histogram =
-      GetPacketSequenceNumberHistogram("Ack_");
+      GetPacketNumberHistogram("Ack_");
   base::HistogramBase* packet_missing_histogram =
-      GetPacketSequenceNumberHistogram("Nack_");
+      GetPacketNumberHistogram("Nack_");
   base::HistogramBase* ongoing_cumulative_packet_histogram =
       Get21CumulativeHistogram("Some21s_");
   base::HistogramBase* first_cumulative_packet_histogram =
@@ -840,11 +827,10 @@ void QuicConnectionLogger::RecordLossHistograms() const {
   base::HistogramBase* six_packet_histogram = Get6PacketHistogram("Some6s_");
 
   DCHECK_EQ(received_packets_.size(), received_acks_.size());
-  const QuicPacketSequenceNumber last_index =
-      std::min<QuicPacketSequenceNumber>(received_packets_.size() - 1,
-          largest_received_packet_sequence_number_);
-  const QuicPacketSequenceNumber index_of_first_21_contribution =
-      std::min<QuicPacketSequenceNumber>(21, last_index);
+  const QuicPacketNumber last_index = std::min<QuicPacketNumber>(
+      received_packets_.size() - 1, largest_received_packet_number_);
+  const QuicPacketNumber index_of_first_21_contribution =
+      std::min<QuicPacketNumber>(21, last_index);
   // Bit pattern of consecutively received packets that is maintained as we scan
   // through the received_packets_ vector. Less significant bits correspond to
   // less recent packets, and only the low order 21 bits are ever defined.

@@ -199,8 +199,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
     }
   }
 
-  void CheckPacketIsFec(size_t packet_index,
-                        QuicPacketSequenceNumber fec_group) {
+  void CheckPacketIsFec(size_t packet_index, QuicPacketNumber fec_group) {
     ASSERT_GT(packets_.size(), packet_index);
     const SerializedPacket& packet = packets_[packet_index];
     ASSERT_TRUE(packet.retransmittable_frames == nullptr);
@@ -618,9 +617,9 @@ TEST_P(QuicPacketGeneratorTest, GetFecTimeoutFiniteOnlyOnFirstPacketInGroup) {
 
   // GetFecTimeout returns finite timeout only for first packet in group.
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(kMinFecTimeoutMs),
-            generator_.GetFecTimeout(/*sequence_number=*/1u));
+            generator_.GetFecTimeout(/*packet_number=*/1u));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
-            generator_.GetFecTimeout(/*sequence_number=*/2u));
+            generator_.GetFecTimeout(/*packet_number=*/2u));
 
   // Send more data with MAY_FEC_PROTECT. This packet should also be protected,
   // and FEC packet is not yet sent.
@@ -633,7 +632,7 @@ TEST_P(QuicPacketGeneratorTest, GetFecTimeoutFiniteOnlyOnFirstPacketInGroup) {
 
   // GetFecTimeout returns finite timeout only for first packet in group.
   EXPECT_EQ(QuicTime::Delta::Infinite(),
-            generator_.GetFecTimeout(/*sequence_number=*/3u));
+            generator_.GetFecTimeout(/*packet_number=*/3u));
 
   // Calling OnFecTimeout should cause the FEC packet to be emitted.
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -662,9 +661,9 @@ TEST_P(QuicPacketGeneratorTest, GetFecTimeoutFiniteOnlyOnFirstPacketInGroup) {
 
   // GetFecTimeout returns finite timeout for first packet in the new group.
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(kMinFecTimeoutMs),
-            generator_.GetFecTimeout(/*sequence_number=*/5u));
+            generator_.GetFecTimeout(/*packet_number=*/5u));
   EXPECT_EQ(QuicTime::Delta::Infinite(),
-            generator_.GetFecTimeout(/*sequence_number=*/6u));
+            generator_.GetFecTimeout(/*packet_number=*/6u));
 
   // Calling OnFecTimeout should cause the FEC packet to be emitted.
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -682,7 +681,7 @@ TEST_P(QuicPacketGeneratorTest, GetFecTimeoutFiniteOnlyOnFirstPacketInGroup) {
   CheckPacketHasSingleStreamFrame(7);
   EXPECT_FALSE(creator_->IsFecProtected());
   EXPECT_EQ(QuicTime::Delta::Infinite(),
-            generator_.GetFecTimeout(/*sequence_number=*/8u));
+            generator_.GetFecTimeout(/*packet_number=*/8u));
 }
 
 TEST_P(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
@@ -692,7 +691,7 @@ TEST_P(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
       NullEncrypter().GetCiphertextSize(0) +
       GetPacketHeaderSize(
           creator_->connection_id_length(), true,
-          QuicPacketCreatorPeer::NextSequenceNumberLength(creator_),
+          QuicPacketCreatorPeer::NextPacketNumberLength(creator_),
           NOT_IN_FEC_GROUP) +
       // Add an extra 3 bytes for the payload and 1 byte so BytesFree is larger
       // than the GetMinStreamFrameSize.
@@ -1629,8 +1628,8 @@ TEST_P(QuicPacketGeneratorTest, DontCrashOnInvalidStopWaiting) {
   // Test added to ensure the generator does not crash when an invalid frame is
   // added.  Because this is an indication of internal programming errors,
   // DFATALs are expected.
-  // A 1 byte sequence number length can't encode a gap of 1000.
-  QuicPacketCreatorPeer::SetSequenceNumber(creator_, 1000);
+  // A 1 byte packet number length can't encode a gap of 1000.
+  QuicPacketCreatorPeer::SetPacketNumber(creator_, 1000);
 
   delegate_.SetCanNotWrite();
   generator_.SetShouldSendAck(true);
@@ -1648,7 +1647,7 @@ TEST_P(QuicPacketGeneratorTest, DontCrashOnInvalidStopWaiting) {
   EXPECT_CALL(delegate_,
               CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false));
   EXPECT_DFATAL(generator_.FinishBatchOperations(),
-                "sequence_number_length 1 is too small "
+                "packet_number_length 1 is too small "
                 "for least_unacked_delta: 1001");
 }
 

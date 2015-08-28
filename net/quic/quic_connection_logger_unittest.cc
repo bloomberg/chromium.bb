@@ -22,10 +22,9 @@ class QuicConnectionLoggerPeer {
     logger.num_packets_received_ = value;
   }
 
-  static void set_largest_received_packet_sequence_number(
-      QuicConnectionLogger& logger,
-      int value) {
-    logger.largest_received_packet_sequence_number_ = value;
+  static void set_largest_received_packet_number(QuicConnectionLogger& logger,
+                                                 int value) {
+    logger.largest_received_packet_number_ = value;
   }
 };
 
@@ -45,7 +44,7 @@ TEST_F(QuicConnectionLoggerTest, TruncatedAcksSentNotChanged) {
   logger_.OnFrameAddedToPacket(QuicFrame(&frame));
   EXPECT_EQ(0u, QuicConnectionLoggerPeer::num_truncated_acks_sent(logger_));
 
-  for (QuicPacketSequenceNumber i = 0; i < 256; ++i) {
+  for (QuicPacketNumber i = 0; i < 256; ++i) {
     frame.missing_packets.insert(i);
   }
   logger_.OnFrameAddedToPacket(QuicFrame(&frame));
@@ -54,7 +53,7 @@ TEST_F(QuicConnectionLoggerTest, TruncatedAcksSentNotChanged) {
 
 TEST_F(QuicConnectionLoggerTest, TruncatedAcksSent) {
   QuicAckFrame frame;
-  for (QuicPacketSequenceNumber i = 0; i < 512; i += 2) {
+  for (QuicPacketNumber i = 0; i < 512; i += 2) {
     frame.missing_packets.insert(i);
   }
   logger_.OnFrameAddedToPacket(QuicFrame(&frame));
@@ -63,8 +62,7 @@ TEST_F(QuicConnectionLoggerTest, TruncatedAcksSent) {
 
 TEST_F(QuicConnectionLoggerTest, ReceivedPacketLossRate) {
   QuicConnectionLoggerPeer::set_num_packets_received(logger_, 1);
-  QuicConnectionLoggerPeer::set_largest_received_packet_sequence_number(logger_,
-                                                                        2);
+  QuicConnectionLoggerPeer::set_largest_received_packet_number(logger_, 2);
   EXPECT_EQ(0.5f, logger_.ReceivedPacketLossRate());
 }
 

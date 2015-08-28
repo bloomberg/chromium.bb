@@ -62,17 +62,16 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Makes the framer not serialize the protocol version in sent packets.
   void StopSendingVersion();
 
-  // Update the sequence number length to use in future packets as soon as it
+  // Update the packet number length to use in future packets as soon as it
   // can be safely changed.
-  void UpdateSequenceNumberLength(
-      QuicPacketSequenceNumber least_packet_awaited_by_peer,
-      QuicPacketCount max_packets_in_flight);
+  void UpdatePacketNumberLength(QuicPacketNumber least_packet_awaited_by_peer,
+                                QuicPacketCount max_packets_in_flight);
 
   // The overhead the framing will add for a packet with one frame.
   static size_t StreamFramePacketOverhead(
       QuicConnectionIdLength connection_id_length,
       bool include_version,
-      QuicSequenceNumberLength sequence_number_length,
+      QuicPacketNumberLength packet_number_length,
       QuicStreamOffset offset,
       InFecGroup is_in_fec_group);
 
@@ -100,15 +99,14 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
                                       char* buffer,
                                       size_t buffer_len);
 
-  // Re-serializes frames with the original packet's sequence number length.
+  // Re-serializes frames with the original packet's packet number length.
   // Used for retransmitting packets to ensure they aren't too long.
   // Caller must ensure that any open FEC group is closed before calling this
   // method.
-  SerializedPacket ReserializeAllFrames(
-      const RetransmittableFrames& frames,
-      QuicSequenceNumberLength original_length,
-      char* buffer,
-      size_t buffer_len);
+  SerializedPacket ReserializeAllFrames(const RetransmittableFrames& frames,
+                                        QuicPacketNumberLength original_length,
+                                        char* buffer,
+                                        size_t buffer_len);
 
   // Returns true if there are frames pending to be serialized.
   bool HasPendingFrames() const;
@@ -192,11 +190,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
     encryption_level_ = level;
   }
 
-  // Sequence number of the last created packet, or 0 if no packets have been
+  // packet number of the last created packet, or 0 if no packets have been
   // created.
-  QuicPacketSequenceNumber sequence_number() const {
-    return sequence_number_;
-  }
+  QuicPacketNumber packet_number() const { return packet_number_; }
 
   QuicConnectionIdLength connection_id_length() const {
     return connection_id_length_;
@@ -279,7 +275,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   EncryptionLevel encryption_level_;
   QuicFramer* framer_;
   scoped_ptr<QuicRandomBoolSource> random_bool_source_;
-  QuicPacketSequenceNumber sequence_number_;
+  QuicPacketNumber packet_number_;
   // If true, any created packets will be FEC protected.
   bool should_fec_protect_;
   QuicFecGroupNumber fec_group_number_;
@@ -293,15 +289,15 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   size_t max_packets_per_fec_group_;
   // Length of connection_id to send over the wire.
   QuicConnectionIdLength connection_id_length_;
-  // Staging variable to hold next packet sequence number length. When sequence
+  // Staging variable to hold next packet number length. When sequence
   // number length is to be changed, this variable holds the new length until
-  // a packet or FEC group boundary, when the creator's sequence_number_length_
+  // a packet or FEC group boundary, when the creator's packet_number_length_
   // can be changed to this new value.
-  QuicSequenceNumberLength next_sequence_number_length_;
-  // Sequence number length for the current packet and for the current FEC group
+  QuicPacketNumberLength next_packet_number_length_;
+  // packet number length for the current packet and for the current FEC group
   // when FEC is enabled. Mutable so PacketSize() can adjust it when the packet
   // is empty.
-  mutable QuicSequenceNumberLength sequence_number_length_;
+  mutable QuicPacketNumberLength packet_number_length_;
   // packet_size_ is mutable because it's just a cache of the current size.
   // packet_size should never be read directly, use PacketSize() instead.
   mutable size_t packet_size_;

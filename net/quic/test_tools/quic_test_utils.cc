@@ -46,18 +46,18 @@ class TestAlarm : public QuicAlarm {
 
 }  // namespace
 
-QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed) {
+QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed) {
   QuicAckFrame ack;
   ack.largest_observed = largest_observed;
   ack.entropy_hash = 0;
   return ack;
 }
 
-QuicAckFrame MakeAckFrameWithNackRanges(
-    size_t num_nack_ranges, QuicPacketSequenceNumber least_unacked) {
+QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
+                                        QuicPacketNumber least_unacked) {
   QuicAckFrame ack = MakeAckFrame(2 * num_nack_ranges + least_unacked);
   // Add enough missing packets to get num_nack_ranges nack ranges.
-  for (QuicPacketSequenceNumber i = 1; i < 2 * num_nack_ranges; i += 2) {
+  for (QuicPacketNumber i = 1; i < 2 * num_nack_ranges; i += 2) {
     ack.missing_packets.insert(least_unacked + i);
   }
   return ack;
@@ -74,8 +74,7 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
     bool last_frame = i == frames.size() - 1;
     const size_t frame_size = framer->GetSerializedFrameLength(
         frames[i], max_plaintext_size - packet_size, first_frame, last_frame,
-        header.is_in_fec_group,
-        header.public_header.sequence_number_length);
+        header.is_in_fec_group, header.public_header.packet_number_length);
     DCHECK(frame_size);
     packet_size += frame_size;
   }
@@ -94,7 +93,7 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
   return new QuicPacket(buffer, packet->length(), true,
                         header.public_header.connection_id_length,
                         header.public_header.version_flag,
-                        header.public_header.sequence_number_length);
+                        header.public_header.packet_number_length);
 }
 
 uint64 SimpleRandom::RandUint64() {
@@ -487,46 +486,45 @@ void GenerateBody(string* body, int length) {
   }
 }
 
-QuicEncryptedPacket* ConstructEncryptedPacket(
-    QuicConnectionId connection_id,
-    bool version_flag,
-    bool reset_flag,
-    QuicPacketSequenceNumber sequence_number,
-    const string& data) {
+QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
+                                              bool version_flag,
+                                              bool reset_flag,
+                                              QuicPacketNumber packet_number,
+                                              const string& data) {
   return ConstructEncryptedPacket(
-      connection_id, version_flag, reset_flag, sequence_number, data,
-      PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER);
+      connection_id, version_flag, reset_flag, packet_number, data,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER);
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
     bool reset_flag,
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketNumber packet_number,
     const string& data,
     QuicConnectionIdLength connection_id_length,
-    QuicSequenceNumberLength sequence_number_length) {
+    QuicPacketNumberLength packet_number_length) {
   return ConstructEncryptedPacket(connection_id, version_flag, reset_flag,
-                                  sequence_number, data, connection_id_length,
-                                  sequence_number_length, nullptr);
+                                  packet_number, data, connection_id_length,
+                                  packet_number_length, nullptr);
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
     bool reset_flag,
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketNumber packet_number,
     const string& data,
     QuicConnectionIdLength connection_id_length,
-    QuicSequenceNumberLength sequence_number_length,
+    QuicPacketNumberLength packet_number_length,
     QuicVersionVector* versions) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id;
   header.public_header.connection_id_length = connection_id_length;
   header.public_header.version_flag = version_flag;
   header.public_header.reset_flag = reset_flag;
-  header.public_header.sequence_number_length = sequence_number_length;
-  header.packet_sequence_number = sequence_number;
+  header.public_header.packet_number_length = packet_number_length;
+  header.packet_packet_number = packet_number;
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;
@@ -544,7 +542,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   EXPECT_TRUE(packet != nullptr);
   char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPayload(
-      ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize));
+      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize));
   EXPECT_TRUE(encrypted != nullptr);
   return encrypted->Clone();
 }
@@ -553,18 +551,18 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
     bool reset_flag,
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketNumber packet_number,
     const string& data,
     QuicConnectionIdLength connection_id_length,
-    QuicSequenceNumberLength sequence_number_length,
+    QuicPacketNumberLength packet_number_length,
     QuicVersionVector* versions) {
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id;
   header.public_header.connection_id_length = connection_id_length;
   header.public_header.version_flag = version_flag;
   header.public_header.reset_flag = reset_flag;
-  header.public_header.sequence_number_length = sequence_number_length;
-  header.packet_sequence_number = sequence_number;
+  header.public_header.packet_number_length = packet_number_length;
+  header.packet_packet_number = packet_number;
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;
@@ -584,11 +582,11 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   // Now set the packet's private flags byte to 0xFF, which is an invalid value.
   reinterpret_cast<unsigned char*>(
       packet->mutable_data())[GetStartOfEncryptedData(
-      connection_id_length, version_flag, sequence_number_length)] = 0xFF;
+      connection_id_length, version_flag, packet_number_length)] = 0xFF;
 
   char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPayload(
-      ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize));
+      ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize));
   EXPECT_TRUE(encrypted != nullptr);
   return encrypted->Clone();
 }
@@ -650,7 +648,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   header.public_header.connection_id = connection_id;
   header.public_header.reset_flag = false;
   header.public_header.version_flag = should_include_version;
-  header.packet_sequence_number = 1;
+  header.packet_packet_number = 1;
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;
@@ -672,32 +670,31 @@ QuicPacket* ConstructHandshakePacket(QuicConnectionId connection_id,
   return ConstructPacketFromHandshakeMessage(connection_id, message, false);
 }
 
-size_t GetPacketLengthForOneStream(
-    QuicVersion version,
-    bool include_version,
-    QuicConnectionIdLength connection_id_length,
-    QuicSequenceNumberLength sequence_number_length,
-    InFecGroup is_in_fec_group,
-    size_t* payload_length) {
+size_t GetPacketLengthForOneStream(QuicVersion version,
+                                   bool include_version,
+                                   QuicConnectionIdLength connection_id_length,
+                                   QuicPacketNumberLength packet_number_length,
+                                   InFecGroup is_in_fec_group,
+                                   size_t* payload_length) {
   *payload_length = 1;
   const size_t stream_length =
       NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          PACKET_8BYTE_CONNECTION_ID, include_version,
-          sequence_number_length, 0u, is_in_fec_group);
+          PACKET_8BYTE_CONNECTION_ID, include_version, packet_number_length, 0u,
+          is_in_fec_group);
   const size_t ack_length =
       NullEncrypter().GetCiphertextSize(
-          QuicFramer::GetMinAckFrameSize(PACKET_1BYTE_SEQUENCE_NUMBER)) +
+          QuicFramer::GetMinAckFrameSize(PACKET_1BYTE_PACKET_NUMBER)) +
       GetPacketHeaderSize(connection_id_length, include_version,
-                          sequence_number_length, is_in_fec_group);
+                          packet_number_length, is_in_fec_group);
   if (stream_length < ack_length) {
     *payload_length = 1 + ack_length - stream_length;
   }
 
   return NullEncrypter().GetCiphertextSize(*payload_length) +
-      QuicPacketCreator::StreamFramePacketOverhead(
-          connection_id_length, include_version,
-          sequence_number_length, 0u, is_in_fec_group);
+         QuicPacketCreator::StreamFramePacketOverhead(
+             connection_id_length, include_version, packet_number_length, 0u,
+             is_in_fec_group);
 }
 
 TestEntropyCalculator::TestEntropyCalculator() {}
@@ -705,7 +702,7 @@ TestEntropyCalculator::TestEntropyCalculator() {}
 TestEntropyCalculator::~TestEntropyCalculator() {}
 
 QuicPacketEntropyHash TestEntropyCalculator::EntropyHash(
-    QuicPacketSequenceNumber sequence_number) const {
+    QuicPacketNumber packet_number) const {
   return 1u;
 }
 

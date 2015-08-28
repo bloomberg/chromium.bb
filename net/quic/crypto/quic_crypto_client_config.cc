@@ -584,7 +584,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     scoped_ptr<char[]> output(new char[encrypted_len]);
     size_t output_size = 0;
     if (!crypters.encrypter->EncryptPacket(
-            0 /* sequence number */, StringPiece() /* associated data */,
+            0 /* packet number */, StringPiece() /* associated data */,
             cetv_plaintext.AsStringPiece(), output.get(), &output_size,
             encrypted_len)) {
       *error_details = "Packet encryption failed";

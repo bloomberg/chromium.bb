@@ -140,26 +140,23 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
   }
 
   void ProcessPacket(QuicConnectionId connection_id,
-                     QuicPacketSequenceNumber sequence_number) {
+                     QuicPacketNumber packet_number) {
     QuicEncryptedPacket packet(nullptr, 0);
-    time_wait_list_manager_.ProcessPacket(server_address_,
-                                          client_address_,
-                                          connection_id,
-                                          sequence_number,
-                                          packet);
+    time_wait_list_manager_.ProcessPacket(server_address_, client_address_,
+                                          connection_id, packet_number, packet);
   }
 
   QuicEncryptedPacket* ConstructEncryptedPacket(
       EncryptionLevel level,
       QuicConnectionId connection_id,
-      QuicPacketSequenceNumber sequence_number) {
+      QuicPacketNumber packet_number) {
     QuicPacketHeader header;
     header.public_header.connection_id = connection_id;
     header.public_header.connection_id_length = PACKET_8BYTE_CONNECTION_ID;
     header.public_header.version_flag = false;
     header.public_header.reset_flag = false;
-    header.public_header.sequence_number_length = PACKET_6BYTE_SEQUENCE_NUMBER;
-    header.packet_sequence_number = sequence_number;
+    header.public_header.packet_number_length = PACKET_6BYTE_PACKET_NUMBER;
+    header.packet_packet_number = packet_number;
     header.entropy_flag = false;
     header.entropy_hash = 0;
     header.fec_flag = false;
@@ -174,7 +171,7 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
     EXPECT_TRUE(packet != nullptr);
     char buffer[kMaxPacketSize];
     scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPayload(
-        ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize));
+        ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize));
     EXPECT_TRUE(encrypted != nullptr);
     return encrypted->Clone();
   }
@@ -195,9 +192,8 @@ class ValidatePublicResetPacketPredicate
     : public MatcherInterface<const std::tr1::tuple<const char*, int> > {
  public:
   explicit ValidatePublicResetPacketPredicate(QuicConnectionId connection_id,
-                                              QuicPacketSequenceNumber number)
-      : connection_id_(connection_id), sequence_number_(number) {
-  }
+                                              QuicPacketNumber number)
+      : connection_id_(connection_id), packet_number_(number) {}
 
   bool MatchAndExplain(
       const std::tr1::tuple<const char*, int> packet_buffer,
@@ -211,10 +207,11 @@ class ValidatePublicResetPacketPredicate
     framer.ProcessPacket(encrypted);
     QuicPublicResetPacket packet = visitor.public_reset_packet();
     return connection_id_ == packet.public_header.connection_id &&
-        packet.public_header.reset_flag && !packet.public_header.version_flag &&
-        sequence_number_ == packet.rejected_sequence_number &&
-        net::test::TestPeerIPAddress() == packet.client_address.address() &&
-        kTestPort == packet.client_address.port();
+           packet.public_header.reset_flag &&
+           !packet.public_header.version_flag &&
+           packet_number_ == packet.rejected_packet_number &&
+           net::test::TestPeerIPAddress() == packet.client_address.address() &&
+           kTestPort == packet.client_address.port();
   }
 
   void DescribeTo(::std::ostream* os) const override {}
@@ -223,14 +220,14 @@ class ValidatePublicResetPacketPredicate
 
  private:
   QuicConnectionId connection_id_;
-  QuicPacketSequenceNumber sequence_number_;
+  QuicPacketNumber packet_number_;
 };
 
 Matcher<const std::tr1::tuple<const char*, int>> PublicResetPacketEq(
     QuicConnectionId connection_id,
-    QuicPacketSequenceNumber sequence_number) {
-  return MakeMatcher(new ValidatePublicResetPacketPredicate(connection_id,
-                                                            sequence_number));
+    QuicPacketNumber packet_number) {
+  return MakeMatcher(
+      new ValidatePublicResetPacketPredicate(connection_id, packet_number));
 }
 
 TEST_F(QuicTimeWaitListManagerTest, CheckConnectionIdInTimeWait) {
@@ -283,19 +280,19 @@ TEST_F(QuicTimeWaitListManagerTest, SendPublicResetWithExponentialBackOff) {
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));
   AddConnectionId(connection_id_);
   EXPECT_EQ(1u, time_wait_list_manager_.num_connections());
-  for (int sequence_number = 1; sequence_number < 101; ++sequence_number) {
-    if ((sequence_number & (sequence_number - 1)) == 0) {
+  for (int packet_number = 1; packet_number < 101; ++packet_number) {
+    if ((packet_number & (packet_number - 1)) == 0) {
       EXPECT_CALL(writer_, WritePacket(_, _, _, _))
           .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
     }
-    ProcessPacket(connection_id_, sequence_number);
+    ProcessPacket(connection_id_, packet_number);
     // Send public reset with exponential back off.
-    if ((sequence_number & (sequence_number - 1)) == 0) {
+    if ((packet_number & (packet_number - 1)) == 0) {
       EXPECT_TRUE(QuicTimeWaitListManagerPeer::ShouldSendResponse(
-                      &time_wait_list_manager_, sequence_number));
+          &time_wait_list_manager_, packet_number));
     } else {
       EXPECT_FALSE(QuicTimeWaitListManagerPeer::ShouldSendResponse(
-                       &time_wait_list_manager_, sequence_number));
+          &time_wait_list_manager_, packet_number));
     }
   }
 }
@@ -363,62 +360,52 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   QuicConnectionId connection_id = 1;
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id));
   AddConnectionId(connection_id);
-  QuicPacketSequenceNumber sequence_number = 234;
-  scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      ENCRYPTION_NONE, connection_id, sequence_number));
+  QuicPacketNumber packet_number = 234;
+  scoped_ptr<QuicEncryptedPacket> packet(
+      ConstructEncryptedPacket(ENCRYPTION_NONE, connection_id, packet_number));
   // Let first write through.
-  EXPECT_CALL(writer_, WritePacket(_, _,
-                                   server_address_.address(),
-                                   client_address_))
-      .With(Args<0, 1>(PublicResetPacketEq(connection_id,
-                                           sequence_number)))
+  EXPECT_CALL(writer_,
+              WritePacket(_, _, server_address_.address(), client_address_))
+      .With(Args<0, 1>(PublicResetPacketEq(connection_id, packet_number)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
-  ProcessPacket(connection_id, sequence_number);
+  ProcessPacket(connection_id, packet_number);
 
   // write block for the next packet.
-  EXPECT_CALL(writer_, WritePacket(_, _,
-                                   server_address_.address(),
-                                   client_address_))
-      .With(Args<0, 1>(PublicResetPacketEq(connection_id,
-                                           sequence_number)))
-      .WillOnce(DoAll(
-          Assign(&writer_is_blocked_, true),
-          Return(WriteResult(WRITE_STATUS_BLOCKED, EAGAIN))));
+  EXPECT_CALL(writer_,
+              WritePacket(_, _, server_address_.address(), client_address_))
+      .With(Args<0, 1>(PublicResetPacketEq(connection_id, packet_number)))
+      .WillOnce(DoAll(Assign(&writer_is_blocked_, true),
+                      Return(WriteResult(WRITE_STATUS_BLOCKED, EAGAIN))));
   EXPECT_CALL(visitor_, OnWriteBlocked(&time_wait_list_manager_));
-  ProcessPacket(connection_id, sequence_number);
+  ProcessPacket(connection_id, packet_number);
   // 3rd packet. No public reset should be sent;
-  ProcessPacket(connection_id, sequence_number);
+  ProcessPacket(connection_id, packet_number);
 
   // write packet should not be called since we are write blocked but the
   // should be queued.
   QuicConnectionId other_connection_id = 2;
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(other_connection_id));
   AddConnectionId(other_connection_id);
-  QuicPacketSequenceNumber other_sequence_number = 23423;
-  scoped_ptr<QuicEncryptedPacket> other_packet(
-      ConstructEncryptedPacket(
-          ENCRYPTION_NONE, other_connection_id, other_sequence_number));
+  QuicPacketNumber other_packet_number = 23423;
+  scoped_ptr<QuicEncryptedPacket> other_packet(ConstructEncryptedPacket(
+      ENCRYPTION_NONE, other_connection_id, other_packet_number));
   EXPECT_CALL(writer_, WritePacket(_, _, _, _))
       .Times(0);
   EXPECT_CALL(visitor_, OnWriteBlocked(&time_wait_list_manager_));
-  ProcessPacket(other_connection_id, other_sequence_number);
+  ProcessPacket(other_connection_id, other_packet_number);
   EXPECT_EQ(2u, time_wait_list_manager_.num_connections());
 
   // Now expect all the write blocked public reset packets to be sent again.
   writer_is_blocked_ = false;
-  EXPECT_CALL(writer_, WritePacket(_, _,
-                                   server_address_.address(),
-                                   client_address_))
-      .With(Args<0, 1>(PublicResetPacketEq(connection_id,
-                                           sequence_number)))
+  EXPECT_CALL(writer_,
+              WritePacket(_, _, server_address_.address(), client_address_))
+      .With(Args<0, 1>(PublicResetPacketEq(connection_id, packet_number)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
-  EXPECT_CALL(writer_, WritePacket(_, _,
-                                   server_address_.address(),
-                                   client_address_))
-      .With(Args<0, 1>(PublicResetPacketEq(other_connection_id,
-                                           other_sequence_number)))
-      .WillOnce(Return(WriteResult(WRITE_STATUS_OK,
-                                   other_packet->length())));
+  EXPECT_CALL(writer_,
+              WritePacket(_, _, server_address_.address(), client_address_))
+      .With(Args<0, 1>(
+          PublicResetPacketEq(other_connection_id, other_packet_number)))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, other_packet->length())));
   time_wait_list_manager_.OnCanWrite();
 }
 

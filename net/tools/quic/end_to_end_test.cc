@@ -1665,7 +1665,7 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
   header.public_header.connection_id = incorrect_connection_id;
   header.public_header.reset_flag = true;
   header.public_header.version_flag = false;
-  header.rejected_sequence_number = 10101;
+  header.rejected_packet_number = 10101;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
                     Perspective::IS_SERVER);
   scoped_ptr<QuicEncryptedPacket> packet(framer.BuildPublicResetPacket(header));
@@ -1700,7 +1700,7 @@ TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
   header.public_header.connection_id = incorrect_connection_id;
   header.public_header.reset_flag = true;
   header.public_header.version_flag = false;
-  header.rejected_sequence_number = 10101;
+  header.rejected_packet_number = 10101;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
                     Perspective::IS_CLIENT);
   scoped_ptr<QuicEncryptedPacket> packet(framer.BuildPublicResetPacket(header));
@@ -1842,7 +1842,7 @@ TEST_P(EndToEndTest, BadEncryptedData) {
   scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       client_->client()->session()->connection()->connection_id(), false, false,
       1, "At least 20 characters.", PACKET_8BYTE_CONNECTION_ID,
-      PACKET_6BYTE_SEQUENCE_NUMBER));
+      PACKET_6BYTE_PACKET_NUMBER));
   // Damage the encrypted data.
   string damaged_packet(packet->data(), packet->length());
   damaged_packet[30] ^= 0x01;

@@ -20,11 +20,11 @@ namespace test {
 
 class EntropyTrackerPeer {
  public:
-  static QuicPacketSequenceNumber first_gap(
+  static QuicPacketNumber first_gap(
       const QuicReceivedPacketManager::EntropyTracker& tracker) {
     return tracker.first_gap_;
   }
-  static QuicPacketSequenceNumber largest_observed(
+  static QuicPacketNumber largest_observed(
       const QuicReceivedPacketManager::EntropyTracker& tracker) {
     return tracker.largest_observed_;
   }
@@ -34,11 +34,11 @@ class EntropyTrackerPeer {
   }
   static bool IsTrackingPacket(
       const QuicReceivedPacketManager::EntropyTracker& tracker,
-      QuicPacketSequenceNumber sequence_number) {
-    return sequence_number >= tracker.first_gap_ &&
-        sequence_number <
-            (tracker.first_gap_ + tracker.packets_entropy_.size()) &&
-        tracker.packets_entropy_[sequence_number - tracker.first_gap_].second;
+      QuicPacketNumber packet_number) {
+    return packet_number >= tracker.first_gap_ &&
+           packet_number <
+               (tracker.first_gap_ + tracker.packets_entropy_.size()) &&
+           tracker.packets_entropy_[packet_number - tracker.first_gap_].second;
   }
 };
 
@@ -189,22 +189,22 @@ class QuicReceivedPacketManagerTest : public ::testing::Test {
  protected:
   QuicReceivedPacketManagerTest() : received_manager_(&stats_) {}
 
-  void RecordPacketReceipt(QuicPacketSequenceNumber sequence_number,
+  void RecordPacketReceipt(QuicPacketNumber packet_number,
                            QuicPacketEntropyHash entropy_hash) {
-    RecordPacketReceipt(sequence_number, entropy_hash, QuicTime::Zero());
+    RecordPacketReceipt(packet_number, entropy_hash, QuicTime::Zero());
   }
 
-  void RecordPacketReceipt(QuicPacketSequenceNumber sequence_number,
+  void RecordPacketReceipt(QuicPacketNumber packet_number,
                            QuicPacketEntropyHash entropy_hash,
                            QuicTime receipt_time) {
     QuicPacketHeader header;
-    header.packet_sequence_number = sequence_number;
+    header.packet_packet_number = packet_number;
     header.entropy_hash = entropy_hash;
     received_manager_.RecordPacketReceived(0u, header, receipt_time);
   }
 
-  void RecordPacketRevived(QuicPacketSequenceNumber sequence_number) {
-    received_manager_.RecordPacketRevived(sequence_number);
+  void RecordPacketRevived(QuicPacketNumber packet_number) {
+    received_manager_.RecordPacketRevived(packet_number);
   }
 
   QuicConnectionStats stats_;
@@ -212,7 +212,7 @@ class QuicReceivedPacketManagerTest : public ::testing::Test {
 };
 
 TEST_F(QuicReceivedPacketManagerTest, ReceivedPacketEntropyHash) {
-  vector<pair<QuicPacketSequenceNumber, QuicPacketEntropyHash>> entropies;
+  vector<pair<QuicPacketNumber, QuicPacketEntropyHash>> entropies;
   entropies.push_back(std::make_pair(1, 12));
   entropies.push_back(std::make_pair(7, 1));
   entropies.push_back(std::make_pair(2, 33));
@@ -254,7 +254,7 @@ TEST_F(QuicReceivedPacketManagerTest, EntropyHashAboveLargestObserved) {
 }
 
 TEST_F(QuicReceivedPacketManagerTest, SetCumulativeEntropyUpTo) {
-  vector<pair<QuicPacketSequenceNumber, QuicPacketEntropyHash>> entropies;
+  vector<pair<QuicPacketNumber, QuicPacketEntropyHash>> entropies;
   entropies.push_back(std::make_pair(1, 12));
   entropies.push_back(std::make_pair(2, 1));
   entropies.push_back(std::make_pair(3, 33));
@@ -290,9 +290,9 @@ TEST_F(QuicReceivedPacketManagerTest, SetCumulativeEntropyUpTo) {
 
 TEST_F(QuicReceivedPacketManagerTest, DontWaitForPacketsBefore) {
   QuicPacketHeader header;
-  header.packet_sequence_number = 2u;
+  header.packet_packet_number = 2u;
   received_manager_.RecordPacketReceived(0u, header, QuicTime::Zero());
-  header.packet_sequence_number = 7u;
+  header.packet_packet_number = 7u;
   received_manager_.RecordPacketReceived(0u, header, QuicTime::Zero());
   EXPECT_TRUE(received_manager_.IsAwaitingPacket(3u));
   EXPECT_TRUE(received_manager_.IsAwaitingPacket(6u));
@@ -304,7 +304,7 @@ TEST_F(QuicReceivedPacketManagerTest, DontWaitForPacketsBefore) {
 
 TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
   QuicPacketHeader header;
-  header.packet_sequence_number = 2u;
+  header.packet_packet_number = 2u;
   QuicTime two_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
   received_manager_.RecordPacketReceived(0u, header, two_ms);
 

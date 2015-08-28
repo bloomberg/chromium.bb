@@ -66,8 +66,8 @@ class TcpCubicSenderTest : public ::testing::Test {
   TcpCubicSenderTest()
       : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
         sender_(new TcpCubicSenderPeer(&clock_, true, kMaxCongestionWindow)),
-        sequence_number_(1),
-        acked_sequence_number_(0),
+        packet_number_(1),
+        acked_packet_number_(0),
         bytes_in_flight_(0) {
     standard_packet_.bytes_sent = kDefaultTCPMSS;
   }
@@ -78,7 +78,7 @@ class TcpCubicSenderTest : public ::testing::Test {
     bool can_send = sender_->TimeUntilSend(
         clock_.Now(), bytes_in_flight_, HAS_RETRANSMITTABLE_DATA).IsZero();
     while (can_send) {
-      sender_->OnPacketSent(clock_.Now(), bytes_in_flight_, sequence_number_++,
+      sender_->OnPacketSent(clock_.Now(), bytes_in_flight_, packet_number_++,
                             kDefaultTCPMSS, HAS_RETRANSMITTABLE_DATA);
       ++packets_sent;
       bytes_in_flight_ += kDefaultTCPMSS;
@@ -96,9 +96,9 @@ class TcpCubicSenderTest : public ::testing::Test {
     SendAlgorithmInterface::CongestionVector acked_packets;
     SendAlgorithmInterface::CongestionVector lost_packets;
     for (int i = 0; i < n; ++i) {
-      ++acked_sequence_number_;
+      ++acked_packet_number_;
       acked_packets.push_back(
-          std::make_pair(acked_sequence_number_, standard_packet_));
+          std::make_pair(acked_packet_number_, standard_packet_));
     }
     sender_->OnCongestionEvent(
         true, bytes_in_flight_, acked_packets, lost_packets);
@@ -110,20 +110,20 @@ class TcpCubicSenderTest : public ::testing::Test {
     SendAlgorithmInterface::CongestionVector acked_packets;
     SendAlgorithmInterface::CongestionVector lost_packets;
     for (int i = 0; i < n; ++i) {
-      ++acked_sequence_number_;
+      ++acked_packet_number_;
       lost_packets.push_back(
-          std::make_pair(acked_sequence_number_, standard_packet_));
+          std::make_pair(acked_packet_number_, standard_packet_));
     }
     sender_->OnCongestionEvent(
         false, bytes_in_flight_, acked_packets, lost_packets);
     bytes_in_flight_ -= n * kDefaultTCPMSS;
   }
 
-  // Does not increment acked_sequence_number_.
-  void LosePacket(QuicPacketSequenceNumber sequence_number) {
+  // Does not increment acked_packet_number_.
+  void LosePacket(QuicPacketNumber packet_number) {
     SendAlgorithmInterface::CongestionVector acked_packets;
     SendAlgorithmInterface::CongestionVector lost_packets;
-    lost_packets.push_back(std::make_pair(sequence_number, standard_packet_));
+    lost_packets.push_back(std::make_pair(packet_number, standard_packet_));
     sender_->OnCongestionEvent(
         false, bytes_in_flight_, acked_packets, lost_packets);
     bytes_in_flight_ -= kDefaultTCPMSS;
@@ -132,8 +132,8 @@ class TcpCubicSenderTest : public ::testing::Test {
   const QuicTime::Delta one_ms_;
   MockClock clock_;
   scoped_ptr<TcpCubicSenderPeer> sender_;
-  QuicPacketSequenceNumber sequence_number_;
-  QuicPacketSequenceNumber acked_sequence_number_;
+  QuicPacketNumber packet_number_;
+  QuicPacketNumber acked_packet_number_;
   QuicByteCount bytes_in_flight_;
   TransmissionInfo standard_packet_;
 };
@@ -487,28 +487,28 @@ TEST_F(TcpCubicSenderTest, TcpCubicMaxCongestionWindow) {
 TEST_F(TcpCubicSenderTest, MultipleLossesInOneWindow) {
   SendAvailableSendWindow();
   const QuicByteCount initial_window = sender_->GetCongestionWindow();
-  LosePacket(acked_sequence_number_ + 1);
+  LosePacket(acked_packet_number_ + 1);
   const QuicByteCount post_loss_window = sender_->GetCongestionWindow();
   EXPECT_GT(initial_window, post_loss_window);
-  LosePacket(acked_sequence_number_ + 3);
+  LosePacket(acked_packet_number_ + 3);
   EXPECT_EQ(post_loss_window, sender_->GetCongestionWindow());
-  LosePacket(sequence_number_ - 1);
+  LosePacket(packet_number_ - 1);
   EXPECT_EQ(post_loss_window, sender_->GetCongestionWindow());
 
   // Lose a later packet and ensure the window decreases.
-  LosePacket(sequence_number_);
+  LosePacket(packet_number_);
   EXPECT_GT(post_loss_window, sender_->GetCongestionWindow());
 }
 
 TEST_F(TcpCubicSenderTest, DontTrackAckPackets) {
   // Send a packet with no retransmittable data, and ensure it's not tracked.
   EXPECT_FALSE(sender_->OnPacketSent(clock_.Now(), bytes_in_flight_,
-                                     sequence_number_++, kDefaultTCPMSS,
+                                     packet_number_++, kDefaultTCPMSS,
                                      NO_RETRANSMITTABLE_DATA));
 
   // Send a data packet with retransmittable data, and ensure it is tracked.
   EXPECT_TRUE(sender_->OnPacketSent(clock_.Now(), bytes_in_flight_,
-                                    sequence_number_++, kDefaultTCPMSS,
+                                    packet_number_++, kDefaultTCPMSS,
                                     HAS_RETRANSMITTABLE_DATA));
 }
 

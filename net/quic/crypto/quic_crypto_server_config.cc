@@ -698,7 +698,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     char plaintext[kMaxPacketSize];
     size_t plaintext_length = 0;
     const bool success = crypters.decrypter->DecryptPacket(
-        0 /* sequence number */, StringPiece() /* associated data */,
+        0 /* packet number */, StringPiece() /* associated data */,
         cetv_ciphertext, plaintext, &plaintext_length, kMaxPacketSize);
     if (!success) {
       *error_details = "CETV decryption failure";

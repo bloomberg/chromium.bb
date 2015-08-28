@@ -161,7 +161,7 @@ TEST_F(QuicStreamSequencerTest, RejectOldFrame) {
   EXPECT_EQ(0u, NumBufferedFrames());
   EXPECT_EQ(3u, sequencer_->num_bytes_consumed());
   EXPECT_EQ(3u, stream_.flow_controller()->bytes_consumed());
-  // Ignore this - it matches a past sequence number and we should not see it
+  // Ignore this - it matches a past packet number and we should not see it
   // again.
   OnFrame(0, "def");
   EXPECT_EQ(0u, NumBufferedFrames());

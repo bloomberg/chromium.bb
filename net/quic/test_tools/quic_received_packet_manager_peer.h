@@ -17,12 +17,12 @@ class QuicReceivedPacketManagerPeer {
  public:
   static void SetCumulativeEntropyUpTo(
       QuicReceivedPacketManager* received_packet_manager,
-      QuicPacketSequenceNumber peer_least_unacked,
+      QuicPacketNumber peer_least_unacked,
       QuicPacketEntropyHash entropy_hash);
 
   static bool DontWaitForPacketsBefore(
       QuicReceivedPacketManager* received_packet_manager,
-      QuicPacketSequenceNumber least_unacked);
+      QuicPacketNumber least_unacked);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicReceivedPacketManagerPeer);

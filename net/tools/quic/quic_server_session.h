@@ -137,7 +137,7 @@ class QuicServerSession : public QuicSpdySession {
   QuicTime last_scup_time_;
 
   // Number of packets sent to the peer, at the time we last sent a SCUP.
-  int64 last_scup_sequence_number_;
+  int64 last_scup_packet_number_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServerSession);
 };

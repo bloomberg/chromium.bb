@@ -52,7 +52,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                          const CongestionVector& lost_packets) override;
   bool OnPacketSent(QuicTime sent_time,
                     QuicByteCount bytes_in_flight,
-                    QuicPacketSequenceNumber sequence_number,
+                    QuicPacketNumber packet_number,
                     QuicByteCount bytes,
                     HasRetransmittableData is_retransmittable) override;
   void OnRetransmissionTimeout(bool packets_retransmitted) override;
@@ -77,13 +77,13 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   float RenoBeta() const;
 
   // TODO(ianswett): Remove these and migrate to OnCongestionEvent.
-  void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
+  void OnPacketAcked(QuicPacketNumber acked_packet_number,
                      QuicByteCount acked_bytes,
                      QuicByteCount bytes_in_flight);
-  void OnPacketLost(QuicPacketSequenceNumber largest_loss,
+  void OnPacketLost(QuicPacketNumber largest_loss,
                     QuicByteCount bytes_in_flight);
 
-  void MaybeIncreaseCwnd(QuicPacketSequenceNumber acked_sequence_number,
+  void MaybeIncreaseCwnd(QuicPacketNumber acked_packet_number,
                          QuicByteCount bytes_in_flight);
   bool IsCwndLimited(QuicByteCount bytes_in_flight) const;
 
@@ -103,13 +103,13 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   uint64 congestion_window_count_;
 
   // Track the largest packet that has been sent.
-  QuicPacketSequenceNumber largest_sent_sequence_number_;
+  QuicPacketNumber largest_sent_packet_number_;
 
   // Track the largest packet that has been acked.
-  QuicPacketSequenceNumber largest_acked_sequence_number_;
+  QuicPacketNumber largest_acked_packet_number_;
 
-  // Track the largest sequence number outstanding when a CWND cutback occurs.
-  QuicPacketSequenceNumber largest_sent_at_last_cutback_;
+  // Track the largest packet number outstanding when a CWND cutback occurs.
+  QuicPacketNumber largest_sent_at_last_cutback_;
 
   // Congestion window in packets.
   QuicPacketCount congestion_window_;

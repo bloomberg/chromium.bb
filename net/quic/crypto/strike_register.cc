@@ -8,8 +8,6 @@
 
 #include "base/logging.h"
 
-using std::max;
-using std::min;
 using std::pair;
 using std::set;
 using std::vector;
@@ -330,7 +328,7 @@ pair<uint32, uint32> StrikeRegister::GetValidRange(
 
   uint32 lower_bound;
   if (current_time_internal >= window_secs_) {
-    lower_bound = max(horizon_, current_time_internal - window_secs_);
+    lower_bound = std::max(horizon_, current_time_internal - window_secs_);
   } else {
     lower_bound = horizon_;
   }
@@ -341,9 +339,8 @@ pair<uint32, uint32> StrikeRegister::GetValidRange(
   // allows the strike server to degrade optimally in cases where the
   // insert rate exceeds |max_entries_ / (2 * window_secs_)| entries
   // per second.
-  uint32 upper_bound =
-      current_time_internal + min(current_time_internal - horizon_,
-                                  window_secs_);
+  uint32 upper_bound = current_time_internal +
+                       std::min(current_time_internal - horizon_, window_secs_);
 
   return std::make_pair(lower_bound, upper_bound);
 }

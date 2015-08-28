@@ -20,7 +20,7 @@ namespace net {
 
 namespace {
 
-// kData[] and kEntropyFlag[] are indexed by packet sequence numbers, which
+// kData[] and kEntropyFlag[] are indexed by packet numbers, which
 // start at 1, so their first elements are dummy.
 const char* kData[] = {
     "",  // dummy
@@ -53,7 +53,7 @@ const bool kEntropyFlag[] = {
 class QuicFecGroupTest : public ::testing::Test {
  protected:
   void RunTest(size_t num_packets, size_t lost_packet, bool out_of_order) {
-    // kData[] and kEntropyFlag[] are indexed by packet sequence numbers, which
+    // kData[] and kEntropyFlag[] are indexed by packet numbers, which
     // start at 1.
     DCHECK_GE(arraysize(kData), num_packets);
     scoped_ptr<char[]> redundancy(new char[kDataMaxLen]);
@@ -84,7 +84,7 @@ class QuicFecGroupTest : public ::testing::Test {
               group.UpdateFec(ENCRYPTION_FORWARD_SECURE, num_packets + 1, fec));
         } else {
           QuicPacketHeader header;
-          header.packet_sequence_number = packet;
+          header.packet_packet_number = packet;
           header.entropy_flag = kEntropyFlag[packet];
           ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header,
                                    kData[packet]));
@@ -99,7 +99,7 @@ class QuicFecGroupTest : public ::testing::Test {
         }
 
         QuicPacketHeader header;
-        header.packet_sequence_number = packet;
+        header.packet_packet_number = packet;
         header.entropy_flag = kEntropyFlag[packet];
         ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header,
                                  kData[packet]));
@@ -122,7 +122,7 @@ class QuicFecGroupTest : public ::testing::Test {
     ASSERT_NE(0u, len)
         << "Failed to revive packet " << lost_packet << " out of "
         << num_packets;
-    EXPECT_EQ(lost_packet, header.packet_sequence_number)
+    EXPECT_EQ(lost_packet, header.packet_packet_number)
         << "Failed to revive packet " << lost_packet << " out of "
         << num_packets;
     // Revived packets have an unknown entropy.
@@ -163,20 +163,20 @@ TEST_F(QuicFecGroupTest, UpdateFecIfReceivedPacketIsNotCovered) {
   QuicFecGroup group;
 
   QuicPacketHeader header;
-  header.packet_sequence_number = 3;
+  header.packet_packet_number = 3;
   group.Update(ENCRYPTION_FORWARD_SECURE, header, data1);
 
   QuicFecData fec;
   fec.fec_group = 1u;
   fec.redundancy = redundancy;
 
-  header.packet_sequence_number = 2;
+  header.packet_packet_number = 2;
   ASSERT_FALSE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, 2, fec));
 }
 
 TEST_F(QuicFecGroupTest, ProtectsPacketsBefore) {
   QuicPacketHeader header;
-  header.packet_sequence_number = 3;
+  header.packet_packet_number = 3;
 
   QuicFecGroup group;
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
@@ -191,15 +191,15 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBefore) {
 
 TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithSeveralPackets) {
   QuicPacketHeader header;
-  header.packet_sequence_number = 3;
+  header.packet_packet_number = 3;
 
   QuicFecGroup group;
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
-  header.packet_sequence_number = 7;
+  header.packet_packet_number = 7;
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
-  header.packet_sequence_number = 5;
+  header.packet_packet_number = 5;
   ASSERT_TRUE(group.Update(ENCRYPTION_FORWARD_SECURE, header, kDataSingle));
 
   EXPECT_FALSE(group.ProtectsPacketsBefore(1));
@@ -235,7 +235,7 @@ TEST_F(QuicFecGroupTest, EffectiveEncryptionLevel) {
   EXPECT_EQ(NUM_ENCRYPTION_LEVELS, group.effective_encryption_level());
 
   QuicPacketHeader header;
-  header.packet_sequence_number = 5;
+  header.packet_packet_number = 5;
   ASSERT_TRUE(group.Update(ENCRYPTION_INITIAL, header, kDataSingle));
   EXPECT_EQ(ENCRYPTION_INITIAL, group.effective_encryption_level());
 
@@ -245,7 +245,7 @@ TEST_F(QuicFecGroupTest, EffectiveEncryptionLevel) {
   ASSERT_TRUE(group.UpdateFec(ENCRYPTION_FORWARD_SECURE, 7, fec));
   EXPECT_EQ(ENCRYPTION_INITIAL, group.effective_encryption_level());
 
-  header.packet_sequence_number = 3;
+  header.packet_packet_number = 3;
   ASSERT_TRUE(group.Update(ENCRYPTION_NONE, header, kDataSingle));
   EXPECT_EQ(ENCRYPTION_NONE, group.effective_encryption_level());
 }

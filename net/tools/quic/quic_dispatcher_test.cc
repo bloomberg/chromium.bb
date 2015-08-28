@@ -156,7 +156,7 @@ class QuicDispatcherTest : public ::testing::Test {
                      bool has_version_flag,
                      const string& data) {
     ProcessPacket(client_address, connection_id, has_version_flag, data,
-                  PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER);
+                  PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER);
   }
 
   void ProcessPacket(IPEndPoint client_address,
@@ -164,9 +164,9 @@ class QuicDispatcherTest : public ::testing::Test {
                      bool has_version_flag,
                      const string& data,
                      QuicConnectionIdLength connection_id_length,
-                     QuicSequenceNumberLength sequence_number_length) {
+                     QuicPacketNumberLength packet_number_length) {
     ProcessPacket(client_address, connection_id, has_version_flag, data,
-                  connection_id_length, sequence_number_length, 1);
+                  connection_id_length, packet_number_length, 1);
   }
 
   void ProcessPacket(IPEndPoint client_address,
@@ -174,11 +174,11 @@ class QuicDispatcherTest : public ::testing::Test {
                      bool has_version_flag,
                      const string& data,
                      QuicConnectionIdLength connection_id_length,
-                     QuicSequenceNumberLength sequence_number_length,
-                     QuicPacketSequenceNumber sequence_number) {
+                     QuicPacketNumberLength packet_number_length,
+                     QuicPacketNumber packet_number) {
     scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-        connection_id, has_version_flag, false, sequence_number, data,
-        connection_id_length, sequence_number_length));
+        connection_id, has_version_flag, false, packet_number, data,
+        connection_id_length, packet_number_length));
     data_ = string(packet->data(), packet->length());
     dispatcher_.ProcessPacket(server_address_, client_address, *packet);
   }
@@ -266,7 +266,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   packet.public_header.connection_id = connection_id;
   packet.public_header.reset_flag = true;
   packet.public_header.version_flag = false;
-  packet.rejected_sequence_number = 19191;
+  packet.rejected_packet_number = 19191;
   packet.nonce_proof = 132232;
   scoped_ptr<QuicEncryptedPacket> encrypted(
       QuicFramer::BuildPublicResetPacket(packet));
@@ -448,11 +448,11 @@ TEST_F(QuicDispatcherTest, OKSeqNoPacketProcessed) {
       .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
                                               client_address, &crypto_config_,
                                               &session1_)));
-  // A packet whose sequence number is the largest that is allowed to start a
+  // A packet whose packet number is the largest that is allowed to start a
   // connection.
   ProcessPacket(client_address, connection_id, true, "data",
-                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER,
-                QuicDispatcher::kMaxReasonableInitialSequenceNumber);
+                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
+                QuicDispatcher::kMaxReasonableInitialPacketNumber);
   EXPECT_EQ(client_address, dispatcher_.current_client_address());
   EXPECT_EQ(server_address_, dispatcher_.current_server_address());
 }
@@ -469,11 +469,11 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
               ProcessPacket(_, _, connection_id, _, _)).Times(1);
   EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
       .Times(1);
-  // A packet whose sequence number is one to large to be allowed to start a
+  // A packet whose packet number is one to large to be allowed to start a
   // connection.
   ProcessPacket(client_address, connection_id, true, "data",
-                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER,
-                QuicDispatcher::kMaxReasonableInitialSequenceNumber + 1);
+                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
+                QuicDispatcher::kMaxReasonableInitialPacketNumber + 1);
 }
 
 INSTANTIATE_TEST_CASE_P(QuicDispatcherStatelessRejectTests,
@@ -544,7 +544,7 @@ TEST_P(QuicDispatcherTestStrayPacketConnectionId,
   EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _, _))
       .Times(0);
   ProcessPacket(client_address, connection_id, true, "data",
-                connection_id_length, PACKET_6BYTE_SEQUENCE_NUMBER);
+                connection_id_length, PACKET_6BYTE_PACKET_NUMBER);
 }
 
 INSTANTIATE_TEST_CASE_P(ConnectionIdLength,

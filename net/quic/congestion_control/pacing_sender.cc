@@ -53,12 +53,12 @@ void PacingSender::OnCongestionEvent(bool rtt_updated,
 bool PacingSender::OnPacketSent(
     QuicTime sent_time,
     QuicByteCount bytes_in_flight,
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketNumber packet_number,
     QuicByteCount bytes,
     HasRetransmittableData has_retransmittable_data) {
   const bool in_flight =
-      sender_->OnPacketSent(sent_time, bytes_in_flight, sequence_number,
-                            bytes, has_retransmittable_data);
+      sender_->OnPacketSent(sent_time, bytes_in_flight, packet_number, bytes,
+                            has_retransmittable_data);
   if (has_retransmittable_data != HAS_RETRANSMITTABLE_DATA) {
     return in_flight;
   }

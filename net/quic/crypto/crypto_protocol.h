@@ -160,7 +160,7 @@ const QuicTag kCIDS = TAG('C', 'I', 'D', 'S');   // ChannelID signature
 
 // Public reset tags
 const QuicTag kRNON = TAG('R', 'N', 'O', 'N');   // Public reset nonce proof
-const QuicTag kRSEQ = TAG('R', 'S', 'E', 'Q');   // Rejected sequence number
+const QuicTag kRSEQ = TAG('R', 'S', 'E', 'Q');   // Rejected packet number
 
 // Universal tags
 const QuicTag kPAD  = TAG('P', 'A', 'D', '\0');  // Padding

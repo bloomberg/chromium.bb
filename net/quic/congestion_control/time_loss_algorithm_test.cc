@@ -35,21 +35,20 @@ class TimeLossAlgorithmTest : public ::testing::Test {
     STLDeleteElements(&packets_);
   }
 
-  void SendDataPacket(QuicPacketSequenceNumber sequence_number) {
+  void SendDataPacket(QuicPacketNumber packet_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     SerializedPacket packet(
-        sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER, packets_.back(), 0,
+        packet_number, PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
         new RetransmittableFrames(ENCRYPTION_NONE), false, false);
     unacked_packets_.AddSentPacket(packet, 0, NOT_RETRANSMISSION, clock_.Now(),
                                    1000, true);
   }
 
-  void VerifyLosses(QuicPacketSequenceNumber largest_observed,
-                    QuicPacketSequenceNumber* losses_expected,
+  void VerifyLosses(QuicPacketNumber largest_observed,
+                    QuicPacketNumber* losses_expected,
                     size_t num_losses) {
-    SequenceNumberSet lost_packets =
-        loss_algorithm_.DetectLostPackets(
-            unacked_packets_, clock_.Now(), largest_observed, rtt_stats_);
+    PacketNumberSet lost_packets = loss_algorithm_.DetectLostPackets(
+        unacked_packets_, clock_.Now(), largest_observed, rtt_stats_);
     EXPECT_EQ(num_losses, lost_packets.size());
     for (size_t i = 0; i < num_losses; ++i) {
       EXPECT_TRUE(ContainsKey(lost_packets, losses_expected[i]));
@@ -98,7 +97,7 @@ TEST_F(TimeLossAlgorithmTest, NoLossUntilTimeout) {
   unacked_packets_.NackPacket(1, 5);
   VerifyLosses(2, nullptr, 0);
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt().Multiply(0.25));
-  QuicPacketSequenceNumber lost[] = { 1 };
+  QuicPacketNumber lost[] = {1};
   VerifyLosses(2, lost, arraysize(lost));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
@@ -144,7 +143,7 @@ TEST_F(TimeLossAlgorithmTest, MultipleLossesAtOnce) {
   EXPECT_EQ(rtt_stats_.smoothed_rtt().Multiply(0.25),
             loss_algorithm_.GetLossTimeout().Subtract(clock_.Now()));
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt().Multiply(0.25));
-  QuicPacketSequenceNumber lost[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+  QuicPacketNumber lost[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   VerifyLosses(10, lost, arraysize(lost));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }

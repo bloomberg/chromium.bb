@@ -44,7 +44,7 @@ const size_t kQuicStreamPayloadLengthSize = 2;
 // Size in bytes of the entropy hash sent in ack frames.
 const size_t kQuicEntropyHashSize = 1;
 // Size in bytes reserved for the delta time of the largest observed
-// sequence number in ack frames.
+// packet number in ack frames.
 const size_t kQuicDeltaTimeLargestObservedSize = 2;
 // Size in bytes reserved for the number of received packets with timestamps.
 const size_t kQuicNumTimestampsSize = 1;
@@ -161,9 +161,9 @@ class NET_EXPORT_PRIVATE QuicReceivedEntropyHashCalculatorInterface {
   // entropy of the ack frame needs to be calculated since the some of the
   // missing packets are not added and the largest observed might be lowered.
   // This should return the received entropy hash of the packets received up to
-  // and including |sequence_number|.
+  // and including |packet_number|.
   virtual QuicPacketEntropyHash EntropyHash(
-      QuicPacketSequenceNumber sequence_number) const = 0;
+      QuicPacketNumber packet_number) const = 0;
 };
 
 // Class for parsing and constructing QUIC packets.  It has a
@@ -243,10 +243,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
                                       InFecGroup is_in_fec_group);
   // Size in bytes of all ack frame fields without the missing packets.
   static size_t GetMinAckFrameSize(
-      QuicSequenceNumberLength largest_observed_length);
+      QuicPacketNumberLength largest_observed_length);
   // Size in bytes of a stop waiting frame.
   static size_t GetStopWaitingFrameSize(
-      QuicSequenceNumberLength sequence_number_length);
+      QuicPacketNumberLength packet_number_length);
   // Size in bytes of all reset stream frame without the error details.
   // Used before QUIC_VERSION_25.
   static size_t GetMinRstStreamFrameSize();
@@ -271,13 +271,12 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Returns the number of bytes added to the packet for the specified frame,
   // and 0 if the frame doesn't fit.  Includes the header size for the first
   // frame.
-  size_t GetSerializedFrameLength(
-      const QuicFrame& frame,
-      size_t free_bytes,
-      bool first_frame_in_packet,
-      bool last_frame_in_packet,
-      InFecGroup is_in_fec_group,
-      QuicSequenceNumberLength sequence_number_length);
+  size_t GetSerializedFrameLength(const QuicFrame& frame,
+                                  size_t free_bytes,
+                                  bool first_frame_in_packet,
+                                  bool last_frame_in_packet,
+                                  InFecGroup is_in_fec_group,
+                                  QuicPacketNumberLength packet_number_length);
 
   // Returns the associated data from the encrypted packet |encrypted| as a
   // stringpiece.
@@ -285,7 +284,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
       const QuicEncryptedPacket& encrypted,
       QuicConnectionIdLength connection_id_length,
       bool includes_version,
-      QuicSequenceNumberLength sequence_number_length);
+      QuicPacketNumberLength packet_number_length);
 
   // Returns a QuicPacket* that is owned by the caller, is created from
   // |frames|.  Returns nullptr if the packet could not be created.
@@ -337,7 +336,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Encrypts into |buffer| if |buffer_len| is long enough, and otherwise
   // constructs a new buffer owned by the EncryptedPacket.
   QuicEncryptedPacket* EncryptPayload(EncryptionLevel level,
-                                      QuicPacketSequenceNumber sequence_number,
+                                      QuicPacketNumber packet_number,
                                       const QuicPacket& packet,
                                       char* buffer,
                                       size_t buffer_len);
@@ -348,9 +347,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   const std::string& detailed_error() { return detailed_error_; }
 
-  // The minimum sequence number length required to represent |sequence_number|.
-  static QuicSequenceNumberLength GetMinSequenceNumberLength(
-      QuicPacketSequenceNumber sequence_number);
+  // The minimum packet number length required to represent |packet_number|.
+  static QuicPacketNumberLength GetMinSequenceNumberLength(
+      QuicPacketNumber packet_number);
 
   void SetSupportedVersions(const QuicVersionVector& versions) {
     supported_versions_ = versions;
@@ -367,15 +366,15 @@ class NET_EXPORT_PRIVATE QuicFramer {
  private:
   friend class test::QuicFramerPeer;
 
-  typedef std::map<QuicPacketSequenceNumber, uint8> NackRangeMap;
+  typedef std::map<QuicPacketNumber, uint8> NackRangeMap;
 
   struct AckFrameInfo {
     AckFrameInfo();
     ~AckFrameInfo();
 
     // The maximum delta between ranges.
-    QuicPacketSequenceNumber max_delta;
-    // Nack ranges starting with start sequence numbers and lengths.
+    QuicPacketNumber max_delta;
+    // Nack ranges starting with start packet numbers and lengths.
     NackRangeMap nack_ranges;
   };
 
@@ -404,10 +403,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessAuthenticatedHeader(QuicDataReader* reader,
                                   QuicPacketHeader* header);
 
-  bool ProcessPacketSequenceNumber(
-      QuicDataReader* reader,
-      QuicSequenceNumberLength sequence_number_length,
-      QuicPacketSequenceNumber* sequence_number);
+  bool ProcessPacketSequenceNumber(QuicDataReader* reader,
+                                   QuicPacketNumberLength packet_number_length,
+                                   QuicPacketNumber* packet_number);
   bool ProcessFrameData(QuicDataReader* reader, const QuicPacketHeader& header);
   bool ProcessStreamFrame(QuicDataReader* reader,
                           uint8 frame_type,
@@ -434,11 +432,11 @@ class NET_EXPORT_PRIVATE QuicFramer {
                       size_t buffer_length,
                       size_t* decrypted_length);
 
-  // Returns the full packet sequence number from the truncated
-  // wire format version and the last seen packet sequence number.
-  QuicPacketSequenceNumber CalculatePacketSequenceNumberFromWire(
-      QuicSequenceNumberLength sequence_number_length,
-      QuicPacketSequenceNumber packet_sequence_number) const;
+  // Returns the full packet number from the truncated
+  // wire format version and the last seen packet number.
+  QuicPacketNumber CalculatePacketNumberFromWire(
+      QuicPacketNumberLength packet_number_length,
+      QuicPacketNumber packet_packet_number) const;
 
   // Returns the QuicTime::Delta corresponding to the time from when the framer
   // was created.
@@ -446,21 +444,21 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   // Computes the wire size in bytes of the |ack| frame, assuming no truncation.
   size_t GetAckFrameSize(const QuicAckFrame& ack,
-                         QuicSequenceNumberLength sequence_number_length);
+                         QuicPacketNumberLength packet_number_length);
 
   // Computes the wire size in bytes of the payload of |frame|.
   size_t ComputeFrameLength(const QuicFrame& frame,
                             bool last_frame_in_packet,
                             InFecGroup is_in_fec_group,
-                            QuicSequenceNumberLength sequence_number_length);
+                            QuicPacketNumberLength packet_number_length);
 
   static bool AppendPacketSequenceNumber(
-      QuicSequenceNumberLength sequence_number_length,
-      QuicPacketSequenceNumber packet_sequence_number,
+      QuicPacketNumberLength packet_number_length,
+      QuicPacketNumber packet_packet_number,
       QuicDataWriter* writer);
 
   static uint8 GetSequenceNumberFlags(
-      QuicSequenceNumberLength sequence_number_length);
+      QuicPacketNumberLength packet_number_length);
 
   static AckFrameInfo GetAckFrameInfo(const QuicAckFrame& frame);
 
@@ -511,7 +509,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicReceivedEntropyHashCalculatorInterface* entropy_calculator_;
   QuicErrorCode error_;
   // Updated by ProcessPacketHeader when it succeeds.
-  QuicPacketSequenceNumber last_sequence_number_;
+  QuicPacketNumber last_packet_number_;
   // Updated by WritePacketHeader.
   QuicConnectionId last_serialized_connection_id_;
   // Version of the protocol being used.

@@ -27,7 +27,7 @@ class RttStats;
 class NET_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
   // A sorted vector of packets.
-  typedef std::vector<std::pair<QuicPacketSequenceNumber, TransmissionInfo>>
+  typedef std::vector<std::pair<QuicPacketNumber, TransmissionInfo>>
       CongestionVector;
 
   static SendAlgorithmInterface* Create(
@@ -67,7 +67,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // Note: this function must be called for every packet sent to the wire.
   virtual bool OnPacketSent(QuicTime sent_time,
                             QuicByteCount bytes_in_flight,
-                            QuicPacketSequenceNumber sequence_number,
+                            QuicPacketNumber packet_number,
                             QuicByteCount bytes,
                             HasRetransmittableData is_retransmittable) = 0;
 

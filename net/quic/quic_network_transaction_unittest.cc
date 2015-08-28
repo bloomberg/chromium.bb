@@ -78,7 +78,7 @@ const char kDefaultServerHostName[] = "www.google.com";
 // Simplify ownership issues and the interaction with the MockSocketFactory.
 class MockQuicData {
  public:
-  MockQuicData() : sequence_number_(0) {}
+  MockQuicData() : packet_number_(0) {}
 
   ~MockQuicData() {
     STLDeleteElements(&packets_);
@@ -86,23 +86,23 @@ class MockQuicData {
 
   void AddSynchronousRead(scoped_ptr<QuicEncryptedPacket> packet) {
     reads_.push_back(MockRead(SYNCHRONOUS, packet->data(), packet->length(),
-                              sequence_number_++));
+                              packet_number_++));
     packets_.push_back(packet.release());
   }
 
   void AddRead(scoped_ptr<QuicEncryptedPacket> packet) {
     reads_.push_back(
-        MockRead(ASYNC, packet->data(), packet->length(), sequence_number_++));
+        MockRead(ASYNC, packet->data(), packet->length(), packet_number_++));
     packets_.push_back(packet.release());
   }
 
   void AddRead(IoMode mode, int rv) {
-    reads_.push_back(MockRead(mode, rv, sequence_number_++));
+    reads_.push_back(MockRead(mode, rv, packet_number_++));
   }
 
   void AddWrite(scoped_ptr<QuicEncryptedPacket> packet) {
     writes_.push_back(MockWrite(SYNCHRONOUS, packet->data(), packet->length(),
-                                sequence_number_++));
+                                packet_number_++));
     packets_.push_back(packet.release());
   }
 
@@ -120,7 +120,7 @@ class MockQuicData {
   std::vector<QuicEncryptedPacket*> packets_;
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
-  size_t sequence_number_;
+  size_t packet_number_;
   scoped_ptr<SequencedSocketData> socket_data_;
 };
 
@@ -175,13 +175,13 @@ class QuicNetworkTransactionTest
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructConnectionClosePacket(
-      QuicPacketSequenceNumber num) {
+      QuicPacketNumber num) {
     return maker_.MakeConnectionClosePacket(num);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
-      QuicPacketSequenceNumber largest_received,
-      QuicPacketSequenceNumber least_unacked) {
+      QuicPacketNumber largest_received,
+      QuicPacketNumber least_unacked) {
     return maker_.MakeAckPacket(2, largest_received, least_unacked, true);
   }
 
@@ -196,37 +196,37 @@ class QuicNetworkTransactionTest
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructDataPacket(
-      QuicPacketSequenceNumber sequence_number,
+      QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       QuicStreamOffset offset,
       base::StringPiece data) {
-    return maker_.MakeDataPacket(
-        sequence_number, stream_id, should_include_version, fin, offset, data);
+    return maker_.MakeDataPacket(packet_number, stream_id,
+                                 should_include_version, fin, offset, data);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
-      QuicPacketSequenceNumber sequence_number,
+      QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       const SpdyHeaderBlock& headers) {
     QuicPriority priority =
         ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
-    return maker_.MakeRequestHeadersPacket(sequence_number, stream_id,
+    return maker_.MakeRequestHeadersPacket(packet_number, stream_id,
                                            should_include_version, fin,
                                            priority, headers);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
-      QuicPacketSequenceNumber sequence_number,
+      QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       const SpdyHeaderBlock& headers) {
     return maker_.MakeResponseHeadersPacket(
-        sequence_number, stream_id, should_include_version, fin, headers);
+        packet_number, stream_id, should_include_version, fin, headers);
   }
 
   void CreateSession() {
@@ -450,10 +450,9 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
       NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
-  std::string packet_sequence_number;
-  ASSERT_TRUE(entries[pos].GetStringValue(
-      "packet_sequence_number", &packet_sequence_number));
-  EXPECT_EQ("1", packet_sequence_number);
+  std::string packet_number;
+  ASSERT_TRUE(entries[pos].GetStringValue("packet_number", &packet_number));
+  EXPECT_EQ("1", packet_number);
 
   // ... and also a TYPE_QUIC_SESSION_PACKET_AUTHENTICATED.
   pos = ExpectLogContainsSomewhere(

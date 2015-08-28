@@ -26,7 +26,7 @@ class PacingSenderTest : public ::testing::Test {
   PacingSenderTest()
       : zero_time_(QuicTime::Delta::Zero()),
         infinite_time_(QuicTime::Delta::Infinite()),
-        sequence_number_(1),
+        packet_number_(1),
         mock_sender_(new StrictMock<MockSendAlgorithm>()),
         pacing_sender_(new PacingSender(mock_sender_,
                                         QuicTime::Delta::FromMilliseconds(1),
@@ -61,10 +61,10 @@ class PacingSenderTest : public ::testing::Test {
 
     // Actually send the packet.
     EXPECT_CALL(*mock_sender_,
-                OnPacketSent(clock_.Now(), bytes_in_flight, sequence_number_,
+                OnPacketSent(clock_.Now(), bytes_in_flight, packet_number_,
                              kMaxPacketSize, retransmittable_data));
     pacing_sender_->OnPacketSent(clock_.Now(), bytes_in_flight,
-                                 sequence_number_++, kMaxPacketSize,
+                                 packet_number_++, kMaxPacketSize,
                                  retransmittable_data);
   }
 
@@ -102,7 +102,7 @@ class PacingSenderTest : public ::testing::Test {
   const QuicTime::Delta zero_time_;
   const QuicTime::Delta infinite_time_;
   MockClock clock_;
-  QuicPacketSequenceNumber sequence_number_;
+  QuicPacketNumber packet_number_;
   StrictMock<MockSendAlgorithm>* mock_sender_;
   scoped_ptr<PacingSender> pacing_sender_;
 };

@@ -124,20 +124,19 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // Deletes all sessions on the closed session list and clears the list.
   void DeleteSessions();
 
-  // The largest packet sequence number we expect to receive with a connection
+  // The largest packet number we expect to receive with a connection
   // ID for a connection that is not established yet.  The current design will
   // send a handshake and then up to 50 or so data packets, and then it may
   // resend the handshake packet up to 10 times.  (Retransmitted packets are
-  // sent with unique sequence numbers.)
-  static const QuicPacketSequenceNumber kMaxReasonableInitialSequenceNumber =
-      100;
-  static_assert(kMaxReasonableInitialSequenceNumber >=
+  // sent with unique packet numbers.)
+  static const QuicPacketNumber kMaxReasonableInitialPacketNumber = 100;
+  static_assert(kMaxReasonableInitialPacketNumber >=
                     kInitialCongestionWindowSecure + 10,
-                "kMaxReasonableInitialSequenceNumber is unreasonably small "
+                "kMaxReasonableInitialPacketNumber is unreasonably small "
                 "relative to kInitialCongestionWindowSecure.");
-  static_assert(kMaxReasonableInitialSequenceNumber >=
+  static_assert(kMaxReasonableInitialPacketNumber >=
                     kInitialCongestionWindowInsecure + 10,
-                "kMaxReasonableInitialSequenceNumber is unreasonably small "
+                "kMaxReasonableInitialPacketNumber is unreasonably small "
                 "relative to kInitialCongestionWindowInsecure.");
 
  protected:

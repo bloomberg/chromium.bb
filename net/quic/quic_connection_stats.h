@@ -30,7 +30,7 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   QuicPacketCount packets_discarded;
 
   // These include version negotiation and public reset packets, which do not
-  // have sequence numbers or frame data.
+  // have packet numbers or frame data.
   QuicByteCount bytes_received;  // Includes duplicate data for a stream, fec.
   // Includes packets which were not processable.
   QuicPacketCount packets_received;
@@ -67,10 +67,10 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   QuicBandwidth estimated_bandwidth;
 
   // Reordering stats for received packets.
-  // Number of packets received out of sequence number order.
+  // Number of packets received out of packet number order.
   QuicPacketCount packets_reordered;
-  // Maximum reordering observed in sequence space.
-  QuicPacketSequenceNumber max_sequence_reordering;
+  // Maximum reordering observed in packet number space.
+  QuicPacketNumber max_sequence_reordering;
   // Maximum reordering observed in microseconds
   int64 max_time_reordering_us;
 

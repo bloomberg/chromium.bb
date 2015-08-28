@@ -40,7 +40,7 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
                void(const IPEndPoint& server_address,
                     const IPEndPoint& client_address,
                     QuicConnectionId connection_id,
-                    QuicPacketSequenceNumber sequence_number,
+                    QuicPacketNumber packet_number,
                     const QuicEncryptedPacket& packet));
 };
 

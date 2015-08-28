@@ -76,10 +76,10 @@ QuicTime::Delta QuicConnectionPeer::GetNetworkTimeout(
 // TODO(ianswett): Create a GetSentEntropyHash which accepts an AckFrame.
 QuicPacketEntropyHash QuicConnectionPeer::GetSentEntropyHash(
     QuicConnection* connection,
-    QuicPacketSequenceNumber sequence_number) {
+    QuicPacketNumber packet_number) {
   QuicSentEntropyManager::CumulativeEntropy last_entropy_copy =
       connection->sent_entropy_manager_.last_cumulative_entropy_;
-  connection->sent_entropy_manager_.UpdateCumulativeEntropy(sequence_number,
+  connection->sent_entropy_manager_.UpdateCumulativeEntropy(packet_number,
                                                             &last_entropy_copy);
   return last_entropy_copy.entropy;
 }
@@ -87,16 +87,15 @@ QuicPacketEntropyHash QuicConnectionPeer::GetSentEntropyHash(
 // static
 QuicPacketEntropyHash QuicConnectionPeer::PacketEntropy(
     QuicConnection* connection,
-    QuicPacketSequenceNumber sequence_number) {
-  return connection->sent_entropy_manager_.GetPacketEntropy(sequence_number);
+    QuicPacketNumber packet_number) {
+  return connection->sent_entropy_manager_.GetPacketEntropy(packet_number);
 }
 
 // static
 QuicPacketEntropyHash QuicConnectionPeer::ReceivedEntropyHash(
     QuicConnection* connection,
-    QuicPacketSequenceNumber sequence_number) {
-  return connection->received_packet_manager_.EntropyHash(
-      sequence_number);
+    QuicPacketNumber packet_number) {
+  return connection->received_packet_manager_.EntropyHash(packet_number);
 }
 
 // static
@@ -224,9 +223,10 @@ QuicPacketHeader* QuicConnectionPeer::GetLastHeader(
 }
 
 // static
-void QuicConnectionPeer::SetSequenceNumberOfLastSentPacket(
-    QuicConnection* connection, QuicPacketSequenceNumber number) {
-  connection->sequence_number_of_last_sent_packet_ = number;
+void QuicConnectionPeer::SetPacketNumberOfLastSentPacket(
+    QuicConnection* connection,
+    QuicPacketNumber number) {
+  connection->packet_number_of_last_sent_packet_ = number;
 }
 
 // static
@@ -248,7 +248,7 @@ void QuicConnectionPeer::SetPacketsBetweenMtuProbes(QuicConnection* connection,
 
 // static
 void QuicConnectionPeer::SetNextMtuProbeAt(QuicConnection* connection,
-                                           QuicPacketSequenceNumber number) {
+                                           QuicPacketNumber number) {
   connection->next_mtu_probe_at_ = number;
 }
 

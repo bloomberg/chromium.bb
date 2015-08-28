@@ -242,59 +242,59 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructDataPacket(
-      QuicPacketSequenceNumber sequence_number,
+      QuicPacketNumber packet_number,
       bool should_include_version,
       bool fin,
       QuicStreamOffset offset,
       base::StringPiece data) {
-    return maker_.MakeDataPacket(sequence_number, stream_id_,
+    return maker_.MakeDataPacket(packet_number, stream_id_,
                                  should_include_version, fin, offset, data);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
-      QuicPacketSequenceNumber sequence_number,
+      QuicPacketNumber packet_number,
       bool fin,
       RequestPriority request_priority) {
     QuicPriority priority =
         ConvertRequestPriorityToQuicPriority(request_priority);
-    return maker_.MakeRequestHeadersPacket(sequence_number, stream_id_,
+    return maker_.MakeRequestHeadersPacket(packet_number, stream_id_,
                                            kIncludeVersion, fin, priority,
                                            request_headers_);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
-      QuicPacketSequenceNumber sequence_number,
+      QuicPacketNumber packet_number,
       bool fin) {
     return maker_.MakeResponseHeadersPacket(
-        sequence_number, stream_id_, !kIncludeVersion, fin, response_headers_);
+        packet_number, stream_id_, !kIncludeVersion, fin, response_headers_);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRstStreamPacket(
-      QuicPacketSequenceNumber sequence_number) {
+      QuicPacketNumber packet_number) {
     return maker_.MakeRstPacket(
-        sequence_number, true, stream_id_,
+        packet_number, true, stream_id_,
         AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam()));
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRstStreamCancelledPacket(
-      QuicPacketSequenceNumber sequence_number) {
-    return maker_.MakeRstPacket(sequence_number, !kIncludeVersion, stream_id_,
+      QuicPacketNumber packet_number) {
+    return maker_.MakeRstPacket(packet_number, !kIncludeVersion, stream_id_,
                                 QUIC_STREAM_CANCELLED);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(
-      QuicPacketSequenceNumber sequence_number) {
-    return maker_.MakeAckAndRstPacket(
-        sequence_number, !kIncludeVersion, stream_id_, QUIC_STREAM_CANCELLED,
-        2, 1, !kIncludeCongestionFeedback);
+      QuicPacketNumber packet_number) {
+    return maker_.MakeAckAndRstPacket(packet_number, !kIncludeVersion,
+                                      stream_id_, QUIC_STREAM_CANCELLED, 2, 1,
+                                      !kIncludeCongestionFeedback);
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
-      QuicPacketSequenceNumber sequence_number,
-      QuicPacketSequenceNumber largest_received,
-      QuicPacketSequenceNumber least_unacked) {
-    return maker_.MakeAckPacket(sequence_number, largest_received,
-                                least_unacked, !kIncludeCongestionFeedback);
+      QuicPacketNumber packet_number,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber least_unacked) {
+    return maker_.MakeAckPacket(packet_number, largest_received, least_unacked,
+                                !kIncludeCongestionFeedback);
   }
 
   BoundNetLog net_log_;

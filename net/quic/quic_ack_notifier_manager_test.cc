@@ -34,12 +34,11 @@ class QuicAckNotifierManagerTest : public ::testing::Test {
   }
 
   // Add a mock packet with specified parameters.  The packet with given
-  // sequence number must not exist in the map before.
-  void AddPacket(QuicPacketSequenceNumber sequence_number,
-                 bool retransmittable) {
+  // packet number must not exist in the map before.
+  void AddPacket(QuicPacketNumber packet_number, bool retransmittable) {
     // Create a mock packet.
     RetransmittableFrames frames(ENCRYPTION_NONE);
-    SerializedPacket packet(sequence_number, PACKET_4BYTE_SEQUENCE_NUMBER,
+    SerializedPacket packet(packet_number, PACKET_4BYTE_PACKET_NUMBER,
                             /*packet=*/nullptr,
                             /*entropy_hash=*/0,
                             retransmittable ? &frames : nullptr,
@@ -142,18 +141,17 @@ TEST_F(QuicAckNotifierManagerTest, RepeatedRetransmission) {
   const size_t packet_size = kDefaultMaxPacketSize;
   const size_t times_lost = 100;
   const size_t total_size_lost = packet_size * times_lost;
-  const QuicPacketSequenceNumber last_packet = times_lost + 1;
+  const QuicPacketNumber last_packet = times_lost + 1;
 
   // Retransmit the packet many times.
-  for (size_t sequence_number = 1; sequence_number < last_packet;
-       sequence_number++) {
-    manager_.OnPacketRetransmitted(sequence_number, sequence_number + 1,
+  for (size_t packet_number = 1; packet_number < last_packet; packet_number++) {
+    manager_.OnPacketRetransmitted(packet_number, packet_number + 1,
                                    packet_size);
     EXPECT_EQ(1u, CountPackets());
   }
 
   // Remove all lost packets.
-  for (QuicPacketSequenceNumber packet = 1; packet < last_packet; packet++) {
+  for (QuicPacketNumber packet = 1; packet < last_packet; packet++) {
     manager_.OnPacketRemoved(packet);
   }
   EXPECT_EQ(1u, CountPackets());

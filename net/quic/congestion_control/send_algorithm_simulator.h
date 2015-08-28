@@ -59,12 +59,12 @@ class SendAlgorithmSimulator {
     RttStats* rtt_stats;
     QuicTime::Delta additional_rtt;
 
-    // Last sequence number the sender sent.
-    QuicPacketSequenceNumber last_sent;
-    // Last packet sequence number acked.
-    QuicPacketSequenceNumber last_acked;
-    // Packet sequence number to ack up to.
-    QuicPacketSequenceNumber next_acked;
+    // Last packet number the sender sent.
+    QuicPacketNumber last_sent;
+    // Last packet number acked.
+    QuicPacketNumber last_acked;
+    // packet number to ack up to.
+    QuicPacketNumber next_acked;
 
     // Stats collected for understanding the congestion control.
     QuicByteCount max_cwnd;
@@ -93,23 +93,23 @@ class SendAlgorithmSimulator {
 
   struct SentPacket {
     SentPacket()
-        : sequence_number(0),
+        : packet_number(0),
           send_time(QuicTime::Zero()),
           ack_time(QuicTime::Zero()),
           lost(false),
           transfer(nullptr) {}
-    SentPacket(QuicPacketSequenceNumber sequence_number,
+    SentPacket(QuicPacketNumber packet_number,
                QuicTime send_time,
                QuicTime ack_time,
                bool lost,
                Transfer* transfer)
-        : sequence_number(sequence_number),
+        : packet_number(packet_number),
           send_time(send_time),
           ack_time(ack_time),
           lost(lost),
           transfer(transfer) {}
 
-    QuicPacketSequenceNumber sequence_number;
+    QuicPacketNumber packet_number;
     QuicTime send_time;
     QuicTime ack_time;
     bool lost;
@@ -200,13 +200,13 @@ class SendAlgorithmSimulator {
   // |last_acked|.  Returns QuicTime::Delta::Infinite and doesn't set
   // |next_acked| if there is no ack after |last_acked|.
   QuicTime::Delta FindNextAck(const Transfer* transfer,
-                              QuicPacketSequenceNumber last_acked,
-                              QuicPacketSequenceNumber* next_acked) const;
+                              QuicPacketNumber last_acked,
+                              QuicPacketNumber* next_acked) const;
 
   // Returns true if any of the packets |transfer| is waiting for less than
   // next_acked have been lost.
   bool HasRecentLostPackets(const Transfer* transfer,
-                            QuicPacketSequenceNumber next_acked) const;
+                            QuicPacketNumber next_acked) const;
 
   // Process all the acks that should have arrived by the current time, and
   // lose any packets that are missing.  Returns the number of bytes acked.

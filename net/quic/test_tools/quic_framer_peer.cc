@@ -11,12 +11,12 @@ namespace net {
 namespace test {
 
 // static
-QuicPacketSequenceNumber QuicFramerPeer::CalculatePacketSequenceNumberFromWire(
+QuicPacketNumber QuicFramerPeer::CalculatePacketNumberFromWire(
     QuicFramer* framer,
-    QuicSequenceNumberLength sequence_number_length,
-    QuicPacketSequenceNumber packet_sequence_number) {
-  return framer->CalculatePacketSequenceNumberFromWire(sequence_number_length,
-                                                       packet_sequence_number);
+    QuicPacketNumberLength packet_number_length,
+    QuicPacketNumber packet_packet_number) {
+  return framer->CalculatePacketNumberFromWire(packet_number_length,
+                                               packet_packet_number);
 }
 
 // static
@@ -26,10 +26,10 @@ void QuicFramerPeer::SetLastSerializedConnectionId(
 }
 
 // static
-void QuicFramerPeer::SetLastSequenceNumber(
+void QuicFramerPeer::SetLastPacketNumber(
     QuicFramer* framer,
-    QuicPacketSequenceNumber packet_sequence_number) {
-  framer->last_sequence_number_ = packet_sequence_number;
+    QuicPacketNumber packet_packet_number) {
+  framer->last_packet_number_ = packet_packet_number;
 }
 
 // static

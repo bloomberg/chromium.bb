@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   // if it does not claim to protect all the packets previously seen in this
   // group.
   bool UpdateFec(EncryptionLevel encryption_level,
-                 QuicPacketSequenceNumber fec_packet_sequence_number,
+                 QuicPacketNumber fec_packet_packet_number,
                  const QuicFecData& fec);
 
   // Returns true if a packet can be revived from this FEC group.
@@ -53,13 +53,13 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
 
   // Returns true of this FEC group protects any packets with sequence
   // numbers less than |num|.
-  bool ProtectsPacketsBefore(QuicPacketSequenceNumber num) const;
+  bool ProtectsPacketsBefore(QuicPacketNumber num) const;
 
   const base::StringPiece payload_parity() const {
     return base::StringPiece(payload_parity_, payload_parity_len_);
   }
 
-  QuicPacketSequenceNumber min_protected_packet() const {
+  QuicPacketNumber min_protected_packet() const {
     return min_protected_packet_;
   }
 
@@ -83,15 +83,15 @@ class NET_EXPORT_PRIVATE QuicFecGroup {
   QuicPacketCount NumMissingPackets() const;
 
   // Set of packets that we have recevied.
-  SequenceNumberSet received_packets_;
-  // Sequence number of the first protected packet in this group (the one
-  // with the lowest packet sequence number).  Will only be set once the FEC
+  PacketNumberSet received_packets_;
+  // packet number of the first protected packet in this group (the one
+  // with the lowest packet number).  Will only be set once the FEC
   // packet has been seen.
-  QuicPacketSequenceNumber min_protected_packet_;
-  // Sequence number of the last protected packet in this group (the one
-  // with the highest packet sequence number).  Will only be set once the FEC
+  QuicPacketNumber min_protected_packet_;
+  // packet number of the last protected packet in this group (the one
+  // with the highest packet number).  Will only be set once the FEC
   // packet has been seen.
-  QuicPacketSequenceNumber max_protected_packet_;
+  QuicPacketNumber max_protected_packet_;
   // The cumulative parity calculation of all received packets.
   char payload_parity_[kMaxPacketSize];
   size_t payload_parity_len_;

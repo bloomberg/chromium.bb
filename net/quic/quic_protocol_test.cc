@@ -48,8 +48,8 @@ TEST(QuicProtocolTest, InsertMissingPacketsBetween) {
   InsertMissingPacketsBetween(&ack_frame, 4u, 10u);
   EXPECT_EQ(6u, ack_frame.missing_packets.size());
 
-  QuicPacketSequenceNumber i = 4;
-  for (SequenceNumberSet::iterator it = ack_frame.missing_packets.begin();
+  QuicPacketNumber i = 4;
+  for (PacketNumberSet::iterator it = ack_frame.missing_packets.begin();
        it != ack_frame.missing_packets.end(); ++it, ++i) {
     EXPECT_EQ(i, *it);
   }

@@ -21,34 +21,34 @@ void QuicPacketCreatorPeer::SetSendVersionInPacket(
 }
 
 // static
-void QuicPacketCreatorPeer::SetSequenceNumberLength(
-      QuicPacketCreator* creator,
-      QuicSequenceNumberLength sequence_number_length) {
-  creator->sequence_number_length_ = sequence_number_length;
-}
-
-// static
-void QuicPacketCreatorPeer::SetNextSequenceNumberLength(
+void QuicPacketCreatorPeer::SetPacketNumberLength(
     QuicPacketCreator* creator,
-    QuicSequenceNumberLength next_sequence_number_length) {
-  creator->next_sequence_number_length_ = next_sequence_number_length;
+    QuicPacketNumberLength packet_number_length) {
+  creator->packet_number_length_ = packet_number_length;
 }
 
 // static
-QuicSequenceNumberLength QuicPacketCreatorPeer::NextSequenceNumberLength(
-    QuicPacketCreator* creator) {
-  return creator->next_sequence_number_length_;
+void QuicPacketCreatorPeer::SetNextPacketNumberLength(
+    QuicPacketCreator* creator,
+    QuicPacketNumberLength next_packet_number_length) {
+  creator->next_packet_number_length_ = next_packet_number_length;
 }
 
 // static
-QuicSequenceNumberLength QuicPacketCreatorPeer::GetSequenceNumberLength(
+QuicPacketNumberLength QuicPacketCreatorPeer::NextPacketNumberLength(
     QuicPacketCreator* creator) {
-  return creator->sequence_number_length_;
+  return creator->next_packet_number_length_;
 }
 
-void QuicPacketCreatorPeer::SetSequenceNumber(QuicPacketCreator* creator,
-                                              QuicPacketSequenceNumber s) {
-  creator->sequence_number_ = s;
+// static
+QuicPacketNumberLength QuicPacketCreatorPeer::GetPacketNumberLength(
+    QuicPacketCreator* creator) {
+  return creator->packet_number_length_;
+}
+
+void QuicPacketCreatorPeer::SetPacketNumber(QuicPacketCreator* creator,
+                                            QuicPacketNumber s) {
+  creator->packet_number_ = s;
 }
 
 }  // namespace test

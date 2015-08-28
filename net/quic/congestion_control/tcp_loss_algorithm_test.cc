@@ -35,21 +35,20 @@ class TcpLossAlgorithmTest : public ::testing::Test {
     STLDeleteElements(&packets_);
   }
 
-  void SendDataPacket(QuicPacketSequenceNumber sequence_number) {
+  void SendDataPacket(QuicPacketNumber packet_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     SerializedPacket packet(
-        sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER, packets_.back(), 0,
+        packet_number, PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
         new RetransmittableFrames(ENCRYPTION_NONE), false, false);
     unacked_packets_.AddSentPacket(packet, 0, NOT_RETRANSMISSION, clock_.Now(),
                                    1000, true);
   }
 
-  void VerifyLosses(QuicPacketSequenceNumber largest_observed,
-                    QuicPacketSequenceNumber* losses_expected,
+  void VerifyLosses(QuicPacketNumber largest_observed,
+                    QuicPacketNumber* losses_expected,
                     size_t num_losses) {
-    SequenceNumberSet lost_packets =
-        loss_algorithm_.DetectLostPackets(
-            unacked_packets_, clock_.Now(), largest_observed, rtt_stats_);
+    PacketNumberSet lost_packets = loss_algorithm_.DetectLostPackets(
+        unacked_packets_, clock_.Now(), largest_observed, rtt_stats_);
     EXPECT_EQ(num_losses, lost_packets.size());
     for (size_t i = 0; i < num_losses; ++i) {
       EXPECT_TRUE(ContainsKey(lost_packets, losses_expected[i]));
@@ -81,7 +80,7 @@ TEST_F(TcpLossAlgorithmTest, NackRetransmit1Packet) {
   // Loss on three acks.
   unacked_packets_.RemoveFromInFlight(4);
   unacked_packets_.NackPacket(1, 3);
-  QuicPacketSequenceNumber lost[] = {1};
+  QuicPacketNumber lost[] = {1};
   VerifyLosses(4, lost, arraysize(lost));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
@@ -100,7 +99,7 @@ TEST_F(TcpLossAlgorithmTest, NackRetransmit1PacketWith1StretchAck) {
   unacked_packets_.RemoveFromInFlight(2);
   unacked_packets_.RemoveFromInFlight(3);
   unacked_packets_.RemoveFromInFlight(4);
-  QuicPacketSequenceNumber lost[] = { 1 };
+  QuicPacketNumber lost[] = {1};
   VerifyLosses(4, lost, arraysize(lost));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
@@ -118,7 +117,7 @@ TEST_F(TcpLossAlgorithmTest, NackRetransmit1PacketSingleAck) {
   unacked_packets_.NackPacket(2, 2);
   unacked_packets_.NackPacket(3, 1);
   unacked_packets_.RemoveFromInFlight(4);
-  QuicPacketSequenceNumber lost[] = { 1 };
+  QuicPacketNumber lost[] = {1};
   VerifyLosses(4, lost, arraysize(lost));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
@@ -137,7 +136,7 @@ TEST_F(TcpLossAlgorithmTest, EarlyRetransmit1Packet) {
             loss_algorithm_.GetLossTimeout());
 
   clock_.AdvanceTime(rtt_stats_.latest_rtt().Multiply(1.25));
-  QuicPacketSequenceNumber lost[] = { 1 };
+  QuicPacketNumber lost[] = {1};
   VerifyLosses(2, lost, arraysize(lost));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
@@ -159,7 +158,7 @@ TEST_F(TcpLossAlgorithmTest, EarlyRetransmitAllPackets) {
   for (size_t i = 1; i < kNumSentPackets; ++i) {
     unacked_packets_.NackPacket(i, kNumSentPackets - i);
   }
-  QuicPacketSequenceNumber lost[] = { 1, 2 };
+  QuicPacketNumber lost[] = {1, 2};
   VerifyLosses(kNumSentPackets, lost, arraysize(lost));
   // The time has already advanced 1/4 an RTT, so ensure the timeout is set
   // 1.25 RTTs after the earliest pending packet(3), not the last(4).
@@ -167,12 +166,12 @@ TEST_F(TcpLossAlgorithmTest, EarlyRetransmitAllPackets) {
             loss_algorithm_.GetLossTimeout());
 
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt());
-  QuicPacketSequenceNumber lost2[] = { 1, 2, 3 };
+  QuicPacketNumber lost2[] = {1, 2, 3};
   VerifyLosses(kNumSentPackets, lost2, arraysize(lost2));
   EXPECT_EQ(clock_.Now().Add(rtt_stats_.smoothed_rtt().Multiply(0.25)),
             loss_algorithm_.GetLossTimeout());
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt().Multiply(0.25));
-  QuicPacketSequenceNumber lost3[] = { 1, 2, 3, 4 };
+  QuicPacketNumber lost3[] = {1, 2, 3, 4};
   VerifyLosses(kNumSentPackets, lost3, arraysize(lost3));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
@@ -209,7 +208,7 @@ TEST_F(TcpLossAlgorithmTest, AlwaysLosePacketSent1RTTEarlier) {
   unacked_packets_.IncreaseLargestObserved(2);
   unacked_packets_.RemoveFromInFlight(2);
   unacked_packets_.NackPacket(1, 1);
-  QuicPacketSequenceNumber lost[] = {1};
+  QuicPacketNumber lost[] = {1};
   VerifyLosses(2, lost, arraysize(lost));
 }
 

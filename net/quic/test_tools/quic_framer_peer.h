@@ -15,15 +15,14 @@ namespace test {
 
 class QuicFramerPeer {
  public:
-  static QuicPacketSequenceNumber CalculatePacketSequenceNumberFromWire(
+  static QuicPacketNumber CalculatePacketNumberFromWire(
       QuicFramer* framer,
-      QuicSequenceNumberLength sequence_number_length,
-      QuicPacketSequenceNumber packet_sequence_number);
+      QuicPacketNumberLength packet_number_length,
+      QuicPacketNumber packet_packet_number);
   static void SetLastSerializedConnectionId(QuicFramer* framer,
                                             QuicConnectionId connection_id);
-  static void SetLastSequenceNumber(
-      QuicFramer* framer,
-      QuicPacketSequenceNumber packet_sequence_number);
+  static void SetLastPacketNumber(QuicFramer* framer,
+                                  QuicPacketNumber packet_packet_number);
   static void SetPerspective(QuicFramer* framer, Perspective perspective);
 
   // SwapCrypters exchanges the state of the crypters of |framer1| with

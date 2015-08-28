@@ -373,7 +373,7 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
 
   // Bandwidth estimate has now changed sufficiently, enough time has passed,
   // and enough packets have been sent.
-  QuicConnectionPeer::SetSequenceNumberOfLastSentPacket(
+  QuicConnectionPeer::SetPacketNumberOfLastSentPacket(
       session_->connection(), kMinPacketsBetweenServerConfigUpdates);
 
   // Verify that the proto has exactly the values we expect.

@@ -43,7 +43,7 @@ TEST_F(QuicSentEntropyManagerTest, IsValidEntropy) {
     entropy_manager_.RecordPacketEntropyHash(i + 1, entropies[i]);
   }
 
-  SequenceNumberSet missing_packets;
+  PacketNumberSet missing_packets;
   missing_packets.insert(1);
   missing_packets.insert(4);
   missing_packets.insert(7);
@@ -72,7 +72,7 @@ TEST_F(QuicSentEntropyManagerTest, ClearEntropiesBefore) {
   // still return correct results.
   entropy_manager_.ClearEntropyBefore(5);
 
-  SequenceNumberSet missing_packets;
+  PacketNumberSet missing_packets;
   missing_packets.insert(7);
   missing_packets.insert(8);
 

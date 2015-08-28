@@ -72,10 +72,10 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
     bool reset_flag,
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketNumber packet_number,
     const std::string& data,
     QuicConnectionIdLength connection_id_length,
-    QuicSequenceNumberLength sequence_number_length,
+    QuicPacketNumberLength packet_number_length,
     QuicVersionVector* versions);
 
 // This form assumes |versions| == nullptr.
@@ -83,20 +83,19 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
     bool reset_flag,
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketNumber packet_number,
     const std::string& data,
     QuicConnectionIdLength connection_id_length,
-    QuicSequenceNumberLength sequence_number_length);
+    QuicPacketNumberLength packet_number_length);
 
 // This form assumes |connection_id_length| == PACKET_8BYTE_CONNECTION_ID,
-// |sequence_number_length| == PACKET_6BYTE_SEQUENCE_NUMBER and
+// |packet_number_length| == PACKET_6BYTE_PACKET_NUMBER and
 // |versions| == nullptr.
-QuicEncryptedPacket* ConstructEncryptedPacket(
-    QuicConnectionId connection_id,
-    bool version_flag,
-    bool reset_flag,
-    QuicPacketSequenceNumber sequence_number,
-    const std::string& data);
+QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
+                                              bool version_flag,
+                                              bool reset_flag,
+                                              QuicPacketNumber packet_number,
+                                              const std::string& data);
 
 // Create an encrypted packet for testing whose data portion erroneous.
 // The specific way the data portion is erroneous is not specified, but
@@ -107,10 +106,10 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,
     bool reset_flag,
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketNumber packet_number,
     const std::string& data,
     QuicConnectionIdLength connection_id_length,
-    QuicSequenceNumberLength sequence_number_length,
+    QuicPacketNumberLength packet_number_length,
     QuicVersionVector* versions);
 
 void CompareCharArraysWithHexError(const std::string& description,
@@ -124,13 +123,12 @@ bool DecodeHexString(const base::StringPiece& hex, std::string* bytes);
 // Returns the length of a QuicPacket that is capable of holding either a
 // stream frame or a minimal ack frame.  Sets |*payload_length| to the number
 // of bytes of stream data that will fit in such a packet.
-size_t GetPacketLengthForOneStream(
-    QuicVersion version,
-    bool include_version,
-    QuicConnectionIdLength connection_id_length,
-    QuicSequenceNumberLength sequence_number_length,
-    InFecGroup is_in_fec_group,
-    size_t* payload_length);
+size_t GetPacketLengthForOneStream(QuicVersion version,
+                                   bool include_version,
+                                   QuicConnectionIdLength connection_id_length,
+                                   QuicPacketNumberLength packet_number_length,
+                                   InFecGroup is_in_fec_group,
+                                   size_t* payload_length);
 
 // Returns QuicConfig set to default values.
 QuicConfig DefaultQuicConfig();
@@ -143,12 +141,12 @@ QuicVersionVector SupportedVersions(QuicVersion version);
 
 // Testing convenience method to construct a QuicAckFrame with entropy_hash set
 // to 0 and largest_observed from peer set to |largest_observed|.
-QuicAckFrame MakeAckFrame(QuicPacketSequenceNumber largest_observed);
+QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed);
 
 // Testing convenience method to construct a QuicAckFrame with |num_nack_ranges|
 // nack ranges of width 1 packet, starting from |least_unacked|.
 QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
-                                        QuicPacketSequenceNumber least_unacked);
+                                        QuicPacketNumber least_unacked);
 
 // Returns a QuicPacket that is owned by the caller, and
 // is populated with the fields in |header| and |frames|, or is nullptr if the
@@ -542,8 +540,11 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                                        const CongestionVector& acked_packets,
                                        const CongestionVector& lost_packets));
   MOCK_METHOD5(OnPacketSent,
-               bool(QuicTime, QuicByteCount, QuicPacketSequenceNumber,
-                    QuicByteCount, HasRetransmittableData));
+               bool(QuicTime,
+                    QuicByteCount,
+                    QuicPacketNumber,
+                    QuicByteCount,
+                    HasRetransmittableData));
   MOCK_METHOD1(OnRetransmissionTimeout, void(bool));
   MOCK_METHOD0(RevertRetransmissionTimeout, void());
   MOCK_CONST_METHOD3(TimeUntilSend,
@@ -553,7 +554,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_CONST_METHOD0(PacingRate, QuicBandwidth(void));
   MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_CONST_METHOD0(HasReliableBandwidthEstimate, bool());
-  MOCK_METHOD1(OnRttUpdated, void(QuicPacketSequenceNumber));
+  MOCK_METHOD1(OnRttUpdated, void(QuicPacketNumber));
   MOCK_CONST_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(GetCongestionWindow, QuicByteCount());
   MOCK_CONST_METHOD0(InSlowStart, bool());
@@ -574,10 +575,10 @@ class MockLossAlgorithm : public LossDetectionInterface {
 
   MOCK_CONST_METHOD0(GetLossDetectionType, LossDetectionType());
   MOCK_METHOD4(DetectLostPackets,
-               SequenceNumberSet(const QuicUnackedPacketMap& unacked_packets,
-                                 const QuicTime& time,
-                                 QuicPacketSequenceNumber largest_observed,
-                                 const RttStats& rtt_stats));
+               PacketNumberSet(const QuicUnackedPacketMap& unacked_packets,
+                               const QuicTime& time,
+                               QuicPacketNumber largest_observed,
+                               const RttStats& rtt_stats));
   MOCK_CONST_METHOD0(GetLossTimeout, QuicTime());
 
  private:
@@ -591,7 +592,7 @@ class TestEntropyCalculator :
   ~TestEntropyCalculator() override;
 
   QuicPacketEntropyHash EntropyHash(
-      QuicPacketSequenceNumber sequence_number) const override;
+      QuicPacketNumber packet_number) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestEntropyCalculator);
@@ -602,9 +603,8 @@ class MockEntropyCalculator : public TestEntropyCalculator {
   MockEntropyCalculator();
   ~MockEntropyCalculator() override;
 
-  MOCK_CONST_METHOD1(
-      EntropyHash,
-      QuicPacketEntropyHash(QuicPacketSequenceNumber sequence_number));
+  MOCK_CONST_METHOD1(EntropyHash,
+                     QuicPacketEntropyHash(QuicPacketNumber packet_number));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEntropyCalculator);
@@ -689,7 +689,7 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
 
   MOCK_METHOD6(OnPacketSent,
                void(const SerializedPacket&,
-                    QuicPacketSequenceNumber,
+                    QuicPacketNumber,
                     EncryptionLevel,
                     TransmissionType,
                     const QuicEncryptedPacket&,
