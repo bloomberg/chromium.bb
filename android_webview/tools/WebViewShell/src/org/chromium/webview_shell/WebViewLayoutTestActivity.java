@@ -55,7 +55,10 @@ public class WebViewLayoutTestActivity extends Activity {
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin,
                     GeolocationPermissions.Callback callback) {
-                callback.invoke(origin, true, false);
+                mConsoleLog.append("onGeolocationPermissionsShowPrompt" + "\n");
+                callback.invoke(origin, false /* allow */, false);
+                mConsoleLog.append("invoked GeolocationPermissions.Callback with allow set to "
+                        + "false" + "\n");
             }
 
             @Override

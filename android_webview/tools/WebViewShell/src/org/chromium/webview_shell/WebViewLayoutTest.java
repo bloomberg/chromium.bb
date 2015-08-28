@@ -162,6 +162,13 @@ public class WebViewLayoutTest
         assertEquals("Missing webview interfaces found", "", missing.toString());
     }
 
+    // Blink platform API tests
+
+    public void testGeolocationCallbacks() throws Exception {
+        runWebViewLayoutTest("blink-apis/geolocation/geolocation-permission-callbacks.html",
+                "blink-apis/geolocation/geolocation-permission-callbacks-expected.txt");
+    }
+
     // test helper methods
 
     private void runWebViewLayoutTest(final String fileName, final String fileNameExpected)

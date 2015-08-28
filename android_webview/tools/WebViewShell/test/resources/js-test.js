@@ -43,3 +43,7 @@ function getAllPropertyNames(object) {
 if (!isWorker()) {
   window.addEventListener('DOMContentLoaded', handleTestFinished, false);
 }
+
+function testFailed(msg) {
+  debug('FAIL: ' + msg);
+}

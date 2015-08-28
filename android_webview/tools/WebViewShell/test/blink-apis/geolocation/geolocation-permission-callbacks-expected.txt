@@ -1,0 +1,5 @@
+Test Geolocation API permission callbacks in WebView
+onGeolocationPermissionsShowPrompt
+invoked GeolocationPermissions.Callback with allow set to false
+onError: code=1, message=User denied Geolocation
+TEST FINISHED
