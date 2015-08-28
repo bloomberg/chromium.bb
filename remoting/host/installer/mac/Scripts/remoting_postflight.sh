@@ -33,6 +33,22 @@ function find_login_window_for_user {
   ps -ec -u "$user" -o comm,pid | awk '$1 == "loginwindow" { print $2; exit }'
 }
 
+# Return 0 (true) if the current OS is El Capitan (OS X 10.11) or newer.
+function is_el_capitan_or_newer {
+  local full_version=$(sw_vers -productVersion)
+
+  # Split the OS version into an array.
+  local version
+  IFS='.' read -a version <<< "${full_version}"
+  local v0="${version[0]}"
+  local v1="${version[1]}"
+  if [[ $v0 -gt 10 || ( $v0 -eq 10 && $v1 -ge 11 ) ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 trap on_error ERR
 trap 'rm -f "$USERS_TMP_FILE"' EXIT
 
@@ -86,21 +102,26 @@ if [[ -r "$USERS_TMP_FILE" ]]; then
   for uid in $(sort "$USERS_TMP_FILE" | uniq); do
     logger Starting service for user "$uid".
 
-    if [[ "$uid" = "0" ]]; then
-      context="LoginWindow"
+    sudo_user="sudo -u #$uid"
+    load="launchctl load -w -S Aqua $PLIST"
+    start="launchctl start $SERVICE_NAME"
+
+    if is_el_capitan_or_newer; then
+      boostrap_user="launchctl asuser $uid"
     else
-      context="Aqua"
+      # Load the launchd agent in the bootstrap context of user $uid's
+      # graphical session, so that screen-capture and input-injection can
+      # work. To do this, find the PID of a process which is running in that
+      # context. The loginwindow process is a good candidate since the user
+      # (if logged in to a session) will definitely be running it.
+      pid="$(find_login_window_for_user "$uid")"
+      if [[ ! -n "$pid" ]]; then
+        exit 1
+      fi
+      bootstrap_user="launchctl bsexec $pid"
     fi
 
-    # Load the launchd agent in the bootstrap context of user $uid's graphical
-    # session, so that screen-capture and input-injection can work. To do this,
-    # find the PID of a process which is running in that context. The
-    # loginwindow process is a good candidate since the user (if logged in to
-    # a session) will definitely be running it.
-    pid="$(find_login_window_for_user "$uid")"
-    if [[ -n "$pid" ]]; then
-      launchctl bsexec "$pid" sudo -u "#$uid" launchctl load -w -S Aqua "$PLIST"
-      launchctl bsexec "$pid" sudo -u "#$uid" launchctl start "$SERVICE_NAME"
-    fi
+    $bootstrap_user $sudo_user $load
+    $bootstrap_user $sudo_user $start
   done
 fi
