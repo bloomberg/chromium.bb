@@ -81,8 +81,19 @@
 # define st_ctimensec st_ctimespec.tv_nsec
 #endif
 
-void _user_start(void *info);
-void _start(void *info);
+/*
+ * On Linux, we rename _start() to _user_start() to avoid a clash
+ * with the "_start" routine in the host toolchain.  On Mac OS X,
+ * lacking objcopy, doing the symbol renaming is trickier, but also
+ * unnecessary, because the host toolchain doesn't have a "_start"
+ * routine.
+ */
+#if defined(__APPLE__)
+# define USER_START _start
+#else
+# define USER_START _user_start
+#endif
+void USER_START(uint32_t *info);
 
 /* TODO(mseaborn): Make threads work on Mac OS X. */
 #if defined(__APPLE__)
@@ -853,19 +864,7 @@ int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
 #if defined(DEFINE_MAIN)
 int main(int argc, char **argv, char **environ) {
   nacl_irt_nonsfi_allow_dev_interfaces();
-  /*
-   * On Linux, we rename _start() to _user_start() to avoid a clash
-   * with the "_start" routine in the host toolchain.  On Mac OS X,
-   * lacking objcopy, doing the symbol renaming is trickier, but also
-   * unnecessary, because the host toolchain doesn't have a "_start"
-   * routine.
-   */
-  nacl_entry_func_t entry_func =
-#if defined(__APPLE__)
-    _start;
-#else
-    _user_start;
-#endif
+  nacl_entry_func_t entry_func = USER_START;
 
   return nacl_irt_nonsfi_entry(argc, argv, environ, entry_func,
                                nacl_irt_query_core);
