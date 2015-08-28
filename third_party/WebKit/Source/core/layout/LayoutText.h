@@ -37,6 +37,36 @@ namespace blink {
 class AbstractInlineTextBox;
 class InlineTextBox;
 
+// LayoutText is the root class for anything that represents
+// a text node (see core/dom/Text.h).
+//
+// This is a common node in the tree so to the limit memory overhead,
+// this class inherits directly from LayoutObject.
+// Also this class is used by both CSS and SVG layouts so LayoutObject
+// was a natural choice.
+//
+// The actual layout of text is handled by the containing inline
+// (LayoutInline) or block (LayoutBlock). They will invoke the Unicode
+// Bidirectional Algorithm to break the text into actual lines.
+// The result of layout is the line box tree, which represents lines
+// on the screen. It is stored into m_firstTextBox and m_lastTextBox.
+// To understand how lines are broken by the bidi algorithm, read e.g.
+// LayoutBlockFlow::layoutInlineChildren.
+//
+//
+// ***** LINE BOXES OWNERSHIP *****
+// m_firstTextBox and m_lastTextBox are not owned by LayoutText
+// but are pointers into the enclosing inline / block (see LayoutInline's
+// and LayoutBlock's m_lineBoxes).
+//
+//
+// This class implements the preferred logical widths computation
+// for its underlying text. The widths are stored into m_minWidth
+// and m_maxWidth. They are computed lazily based on
+// m_preferredLogicalWidthsDirty.
+//
+// The previous comment applies also for painting. See e.g.
+// BlockPainter::paintContents in particular the use of LineBoxListPainter.
 class CORE_EXPORT LayoutText : public LayoutObject {
 public:
     // FIXME: If the node argument is not a Text node or the string argument is
@@ -171,6 +201,7 @@ private:
     // callers with a LayoutObject* can continue to use length().
     unsigned length() const final { return textLength(); }
 
+    // See the class comment as to why we shouldn't call this function directly.
     void paint(const PaintInfo&, const LayoutPoint&) final { ASSERT_NOT_REACHED(); }
     void layout() final { ASSERT_NOT_REACHED(); }
     bool nodeAtPoint(HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction) final { ASSERT_NOT_REACHED(); return false; }
@@ -210,6 +241,8 @@ private:
 
     String m_text;
 
+    // The line boxes associated with this object.
+    // Read the LINE BOXES OWNERSHIP section in the class header comment.
     InlineTextBox* m_firstTextBox;
     InlineTextBox* m_lastTextBox;
 };
