@@ -498,6 +498,27 @@ void MediaCodecPlayer::SetDecodersTimeCallbackForTests(
   decoders_time_cb_ = cb;
 }
 
+void MediaCodecPlayer::SetCodecCreatedCallbackForTests(
+    CodecCreatedCallback cb) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_decoder_ && video_decoder_);
+
+  audio_decoder_->SetCodecCreatedCallbackForTests(
+      base::Bind(cb, DemuxerStream::AUDIO));
+  video_decoder_->SetCodecCreatedCallbackForTests(
+      base::Bind(cb, DemuxerStream::VIDEO));
+}
+
+void MediaCodecPlayer::SetAlwaysReconfigureForTests(DemuxerStream::Type type) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(audio_decoder_ && video_decoder_);
+
+  if (type == DemuxerStream::AUDIO)
+    audio_decoder_->SetAlwaysReconfigureForTests();
+  else if (type == DemuxerStream::VIDEO)
+    video_decoder_->SetAlwaysReconfigureForTests();
+}
+
 bool MediaCodecPlayer::IsPrerollingForTests(DemuxerStream::Type type) const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(audio_decoder_ && video_decoder_);
@@ -592,9 +613,49 @@ void MediaCodecPlayer::OnPrerollDone() {
     GetMediaTaskRunner()->PostTask(FROM_HERE, internal_error_cb_);
 }
 
-void MediaCodecPlayer::OnStopDone() {
+void MediaCodecPlayer::OnDecoderDrained(DemuxerStream::Type type) {
   DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__ << " " << type;
+
+  // We expect that OnStopDone() comes next.
+
+  DCHECK(type == DemuxerStream::AUDIO || type == DemuxerStream::VIDEO);
+  DCHECK(state_ == kStatePlaying || state_ == kStateStopping)
+      << __FUNCTION__ << " illegal state: " << AsString(state_);
+
+  switch (state_) {
+    case kStatePlaying:
+      SetState(kStateStopping);
+      SetPendingStart(true);
+
+      if (type == DemuxerStream::AUDIO && !VideoFinished()) {
+        DVLOG(1) << __FUNCTION__ << " requesting to stop video";
+        video_decoder_->SetDecodingUntilOutputIsPresent();
+        video_decoder_->RequestToStop();
+      } else if (type == DemuxerStream::VIDEO && !AudioFinished()) {
+        DVLOG(1) << __FUNCTION__ << " requesting to stop audio";
+        audio_decoder_->SetDecodingUntilOutputIsPresent();
+        audio_decoder_->RequestToStop();
+      }
+      break;
+
+    case kStateStopping:
+      if (type == DemuxerStream::AUDIO && !VideoFinished())
+        video_decoder_->SetDecodingUntilOutputIsPresent();
+      else if (type == DemuxerStream::VIDEO && !AudioFinished())
+        audio_decoder_->SetDecodingUntilOutputIsPresent();
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void MediaCodecPlayer::OnStopDone(DemuxerStream::Type type) {
+  DCHECK(GetMediaTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << " " << type
+           << " interpolated time:" << GetInterpolatedTime();
 
   if (!(audio_decoder_->IsStopped() && video_decoder_->IsStopped())) {
     DVLOG(1) << __FUNCTION__ << " both audio and video has to be stopped"
@@ -1001,7 +1062,8 @@ void MediaCodecPlayer::RequestToStopDecoders() {
 
   if (!do_audio && !do_video) {
     GetMediaTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&MediaCodecPlayer::OnStopDone, media_weak_this_));
+        FROM_HERE, base::Bind(&MediaCodecPlayer::OnStopDone, media_weak_this_,
+                              DemuxerStream::UNKNOWN));
     return;
   }
 
@@ -1054,7 +1116,10 @@ void MediaCodecPlayer::CreateDecoders() {
                                        media_weak_this_, DemuxerStream::AUDIO),
       base::Bind(&MediaCodecPlayer::OnStarvation, media_weak_this_,
                  DemuxerStream::AUDIO),
-      base::Bind(&MediaCodecPlayer::OnStopDone, media_weak_this_),
+      base::Bind(&MediaCodecPlayer::OnDecoderDrained, media_weak_this_,
+                 DemuxerStream::AUDIO),
+      base::Bind(&MediaCodecPlayer::OnStopDone, media_weak_this_,
+                 DemuxerStream::AUDIO),
       internal_error_cb_,
       base::Bind(&MediaCodecPlayer::OnTimeIntervalUpdate, media_weak_this_,
                  DemuxerStream::AUDIO)));
@@ -1064,7 +1129,10 @@ void MediaCodecPlayer::CreateDecoders() {
                                        media_weak_this_, DemuxerStream::VIDEO),
       base::Bind(&MediaCodecPlayer::OnStarvation, media_weak_this_,
                  DemuxerStream::VIDEO),
-      base::Bind(&MediaCodecPlayer::OnStopDone, media_weak_this_),
+      base::Bind(&MediaCodecPlayer::OnDecoderDrained, media_weak_this_,
+                 DemuxerStream::VIDEO),
+      base::Bind(&MediaCodecPlayer::OnStopDone, media_weak_this_,
+                 DemuxerStream::VIDEO),
       internal_error_cb_,
       base::Bind(&MediaCodecPlayer::OnTimeIntervalUpdate, media_weak_this_,
                  DemuxerStream::VIDEO),

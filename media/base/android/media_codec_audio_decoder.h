@@ -21,6 +21,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_runner,
       const base::Closure& request_data_cb,
       const base::Closure& starvation_cb,
+      const base::Closure& decoder_drained_cb,
       const base::Closure& stop_done_cb,
       const base::Closure& error_cb,
       const SetTimeCallback& update_current_time_cb);
@@ -40,8 +41,7 @@ class MediaCodecAudioDecoder : public MediaCodecDecoder {
   void SetBaseTimestamp(base::TimeDelta base_timestamp);
 
  protected:
-  bool IsCodecReconfigureNeeded(const DemuxerConfigs& curr,
-                                const DemuxerConfigs& next) const override;
+  bool IsCodecReconfigureNeeded(const DemuxerConfigs& next) const override;
   ConfigStatus ConfigureInternal() override;
   void OnOutputFormatChanged() override;
   void Render(int buffer_index,

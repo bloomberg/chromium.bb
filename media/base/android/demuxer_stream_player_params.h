@@ -69,6 +69,9 @@ struct MEDIA_EXPORT DemuxerData {
 
 // For logging
 MEDIA_EXPORT
+std::ostream& operator<<(std::ostream& os, media::DemuxerStream::Type type);
+
+MEDIA_EXPORT
 std::ostream& operator<<(std::ostream& os, const media::AccessUnit& au);
 
 MEDIA_EXPORT

@@ -4,6 +4,8 @@
 
 #include "media/base/android/test_data_factory.h"
 
+#include <iterator>
+
 #include "base/strings/stringprintf.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/decoder_buffer.h"
@@ -60,6 +62,7 @@ TestDataFactory::TestDataFactory(const char* file_name_template,
                                  base::TimeDelta frame_period)
     : duration_(duration),
       frame_period_(frame_period),
+      total_chunks_(0),
       starvation_mode_(false),
       eos_reached_(false) {
   LoadPackets(file_name_template);
@@ -75,6 +78,16 @@ bool TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
     return false;
 
   *delay = base::TimeDelta();
+
+  if (!total_chunks_ &&
+      HasReconfigForInterval(base::TimeDelta::FromMilliseconds(-1),
+                             base::TimeDelta())) {
+    // Since the configs AU has to come last in the chunk the initial configs
+    // preceeding any other data has to be the only unit in the chunk.
+    AddConfiguration(chunk);
+    ++total_chunks_;
+    return true;
+  }
 
   for (int i = 0; i < 4; ++i) {
     chunk->access_units.push_back(AccessUnit());
@@ -103,13 +116,36 @@ bool TestDataFactory::CreateChunk(DemuxerData* chunk, base::TimeDelta* delay) {
       last_pts_ = unit.timestamp;
   }
 
+  // Replace last access unit with |kConfigChanged| if we have a config
+  // request for the chunk's interval.
+  base::TimeDelta chunk_end_pts = regular_pts_;
+
+  // The interval is [first, last)
+  if (HasReconfigForInterval(chunk_begin_pts_, chunk_end_pts)) {
+    eos_reached_ = false;
+    regular_pts_ -= frame_period_;
+    chunk->access_units.pop_back();
+    AddConfiguration(chunk);
+  }
+  chunk_begin_pts_ = chunk_end_pts;
+
+  ++total_chunks_;
   return true;
 }
 
 void TestDataFactory::SeekTo(const base::TimeDelta& seek_time) {
   regular_pts_ = seek_time;
+  chunk_begin_pts_ = seek_time;
   last_pts_ = base::TimeDelta();
   eos_reached_ = false;
+}
+
+void TestDataFactory::RequestInitialConfigs() {
+  reconfigs_.insert(base::TimeDelta::FromMilliseconds(-1));
+}
+
+void TestDataFactory::RequestConfigChange(base::TimeDelta config_position) {
+  reconfigs_.insert(config_position);
 }
 
 void TestDataFactory::LoadPackets(const char* file_name_template) {
@@ -119,6 +155,27 @@ void TestDataFactory::LoadPackets(const char* file_name_template) {
     packet_[i] = std::vector<uint8>(buffer->data(),
                                     buffer->data() + buffer->data_size());
   }
+}
+
+bool TestDataFactory::HasReconfigForInterval(base::TimeDelta left,
+                                             base::TimeDelta right) const {
+  // |first| points to an element greater or equal to |left|.
+  PTSSet::const_iterator first = reconfigs_.lower_bound(left);
+
+  // |last| points to an element greater or equal to |right|.
+  PTSSet::const_iterator last = reconfigs_.lower_bound(right);
+
+  return std::distance(first, last);
+}
+
+void TestDataFactory::AddConfiguration(DemuxerData* chunk) {
+  DCHECK(chunk);
+  chunk->access_units.push_back(AccessUnit());
+  AccessUnit& unit = chunk->access_units.back();
+  unit.status = DemuxerStream::kConfigChanged;
+
+  DCHECK(chunk->demuxer_configs.empty());
+  chunk->demuxer_configs.push_back(GetConfigs());
 }
 
 }  // namespace media

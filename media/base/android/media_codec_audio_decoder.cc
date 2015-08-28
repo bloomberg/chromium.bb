@@ -23,12 +23,14 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const base::Closure& request_data_cb,
     const base::Closure& starvation_cb,
+    const base::Closure& decoder_drained_cb,
     const base::Closure& stop_done_cb,
     const base::Closure& error_cb,
     const SetTimeCallback& update_current_time_cb)
     : MediaCodecDecoder(media_task_runner,
                         request_data_cb,
                         starvation_cb,
+                        decoder_drained_cb,
                         stop_done_cb,
                         error_cb,
                         "AudioDecoder"),
@@ -56,8 +58,6 @@ bool MediaCodecAudioDecoder::HasStream() const {
 }
 
 void MediaCodecAudioDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
   DVLOG(1) << class_name() << "::" << __FUNCTION__ << " " << configs;
 
   configs_ = configs;
@@ -102,14 +102,17 @@ void MediaCodecAudioDecoder::SetBaseTimestamp(base::TimeDelta base_timestamp) {
 }
 
 bool MediaCodecAudioDecoder::IsCodecReconfigureNeeded(
-    const DemuxerConfigs& curr,
     const DemuxerConfigs& next) const {
-  return curr.audio_codec != next.audio_codec ||
-         curr.audio_channels != next.audio_channels ||
-         curr.audio_sampling_rate != next.audio_sampling_rate ||
+  if (always_reconfigure_for_tests_)
+    return true;
+
+  return configs_.audio_codec != next.audio_codec ||
+         configs_.audio_channels != next.audio_channels ||
+         configs_.audio_sampling_rate != next.audio_sampling_rate ||
          next.is_audio_encrypted != next.is_audio_encrypted ||
-         curr.audio_extra_data.size() != next.audio_extra_data.size() ||
-         !std::equal(curr.audio_extra_data.begin(), curr.audio_extra_data.end(),
+         configs_.audio_extra_data.size() != next.audio_extra_data.size() ||
+         !std::equal(configs_.audio_extra_data.begin(),
+                     configs_.audio_extra_data.end(),
                      next.audio_extra_data.begin());
 }
 
@@ -154,6 +157,9 @@ MediaCodecDecoder::ConfigStatus MediaCodecAudioDecoder::ConfigureInternal() {
   frame_count_ = 0;
   ResetTimestampHelper();
 
+  if (!codec_created_for_tests_cb_.is_null())
+    media_task_runner_->PostTask(FROM_HERE, codec_created_for_tests_cb_);
+
   return kConfigOk;
 }
 
@@ -192,10 +198,6 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
     int64 head_position =
         audio_codec->PlayOutputBuffer(buffer_index, size, offset, postpone);
 
-    DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
-             << (postpone ? " POSTPONE" : "")
-             << " head_position:" << head_position;
-
     // Reset the base timestamp if we have not started playing.
     // SetBaseTimestamp() must be called before AddFrames() since it resets the
     // internal frame count.
@@ -207,6 +209,9 @@ void MediaCodecAudioDecoder::Render(int buffer_index,
     audio_timestamp_helper_->AddFrames(new_frames_count);
 
     if (postpone) {
+      DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
+               << " POSTPONE";
+
       // Let the player adjust the start time.
       media_task_runner_->PostTask(
           FROM_HERE, base::Bind(update_current_time_cb_, pts, pts, true));

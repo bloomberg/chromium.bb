@@ -6,6 +6,7 @@
 #define MEDIA_BASE_ANDROID_TEST_DATA_FACTORY_H_
 
 #include <stdint.h>
+#include <set>
 #include <vector>
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -53,6 +54,12 @@ class TestDataFactory {
   // Resets the timestamp for the next access unit.
   void SeekTo(const base::TimeDelta& seek_time);
 
+  // Request that a chunk containing sole |kConfigChanged| unit is generated
+  // before the first true data chunk.
+  void RequestInitialConfigs();
+
+  void RequestConfigChange(base::TimeDelta config_position);
+
   // Returns the maximum PTS, taking into account possible modifications
   // by subclasses. The SeekTo() resets this value.
   base::TimeDelta last_pts() const { return last_pts_; }
@@ -67,9 +74,23 @@ class TestDataFactory {
 
   base::TimeDelta duration_;
   base::TimeDelta frame_period_;
+
+ private:
+  typedef std::set<base::TimeDelta> PTSSet;
+
+  // |left| is included in the interval, |right| is excluded.
+  // If |left| == |right|, the interval is empty and the method returns false.
+  bool HasReconfigForInterval(base::TimeDelta left,
+                              base::TimeDelta right) const;
+
+  void AddConfiguration(DemuxerData* chunk);
+
   std::vector<uint8_t> packet_[4];
   base::TimeDelta regular_pts_;  // monotonically increasing PTS
+  base::TimeDelta chunk_begin_pts_;  // beginning of chunk time interval
   base::TimeDelta last_pts_;     // subclass can modify PTS, maintain the last
+  PTSSet reconfigs_;             // ConfigChange requests
+  size_t total_chunks_;          // total number of chunks returned
   bool starvation_mode_;         // true means no EOS at the end
   bool eos_reached_;             // true if CreateChunk() returned EOS frame
 };

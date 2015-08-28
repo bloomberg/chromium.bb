@@ -20,6 +20,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
     const base::Closure& request_data_cb,
     const base::Closure& starvation_cb,
+    const base::Closure& decoder_drained_cb,
     const base::Closure& stop_done_cb,
     const base::Closure& error_cb,
     const SetTimeCallback& update_current_time_cb,
@@ -28,6 +29,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     : MediaCodecDecoder(media_task_runner,
                         request_data_cb,
                         starvation_cb,
+                        decoder_drained_cb,
                         stop_done_cb,
                         error_cb,
                         "VideoDecoder"),
@@ -53,8 +55,6 @@ bool MediaCodecVideoDecoder::HasStream() const {
 }
 
 void MediaCodecVideoDecoder::SetDemuxerConfigs(const DemuxerConfigs& configs) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
   DVLOG(1) << class_name() << "::" << __FUNCTION__ << " " << configs;
 
   configs_ = configs;
@@ -102,18 +102,20 @@ bool MediaCodecVideoDecoder::HasVideoSurface() const {
 }
 
 bool MediaCodecVideoDecoder::IsCodecReconfigureNeeded(
-    const DemuxerConfigs& curr,
     const DemuxerConfigs& next) const {
-  if (curr.video_codec != next.video_codec ||
-      curr.is_video_encrypted != next.is_video_encrypted) {
+  if (always_reconfigure_for_tests_)
+    return true;
+
+  if (configs_.video_codec != next.video_codec ||
+      configs_.is_video_encrypted != next.is_video_encrypted) {
     return true;
   }
 
   // Only size changes below this point
 
-  if (curr.video_size.width() == next.video_size.width() &&
-      curr.video_size.height() == next.video_size.height()) {
-    return false;  // i.e. curr == next
+  if (configs_.video_size.width() == next.video_size.width() &&
+      configs_.video_size.height() == next.video_size.height()) {
+    return false;  // i.e. configs_ == next
   }
 
   return !static_cast<VideoCodecBridge*>(media_codec_bridge_.get())
@@ -165,6 +167,9 @@ MediaCodecDecoder::ConfigStatus MediaCodecVideoDecoder::ConfigureInternal() {
   DVLOG(0) << class_name() << "::" << __FUNCTION__ << " succeeded";
 
   media_task_runner_->PostTask(FROM_HERE, codec_created_cb_);
+
+  if (!codec_created_for_tests_cb_.is_null())
+    media_task_runner_->PostTask(FROM_HERE, codec_created_for_tests_cb_);
 
   return kConfigOk;
 }

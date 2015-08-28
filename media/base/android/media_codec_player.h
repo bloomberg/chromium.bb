@@ -162,6 +162,9 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
                               base::TimeDelta,
                               base::TimeDelta)> DecodersTimeCallback;
 
+  // For testing only.
+  typedef base::Callback<void(DemuxerStream::Type)> CodecCreatedCallback;
+
   // Constructs a player with the given ID and demuxer. |manager| must outlive
   // the lifetime of this object.
   MediaCodecPlayer(int player_id,
@@ -201,6 +204,8 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
 
   // For testing only.
   void SetDecodersTimeCallbackForTests(DecodersTimeCallback cb);
+  void SetCodecCreatedCallbackForTests(CodecCreatedCallback cb);
+  void SetAlwaysReconfigureForTests(DemuxerStream::Type type);
   bool IsPrerollingForTests(DemuxerStream::Type type) const;
 
  private:
@@ -249,7 +254,8 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   void RequestDemuxerData(DemuxerStream::Type stream_type);
   void OnPrefetchDone();
   void OnPrerollDone();
-  void OnStopDone();
+  void OnDecoderDrained(DemuxerStream::Type type);
+  void OnStopDone(DemuxerStream::Type type);
   void OnError();
   void OnStarvation(DemuxerStream::Type stream_type);
   void OnTimeIntervalUpdate(DemuxerStream::Type stream_type,

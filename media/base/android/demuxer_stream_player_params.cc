@@ -29,6 +29,23 @@ DemuxerData::~DemuxerData() {}
 
 namespace {
 
+const char* AsString(DemuxerStream::Type stream_type) {
+  switch (stream_type) {
+    case DemuxerStream::UNKNOWN:
+      return "UNKNOWN";
+    case DemuxerStream::AUDIO:
+      return "AUDIO";
+    case DemuxerStream::VIDEO:
+      return "VIDEO";
+    case DemuxerStream::TEXT:
+      return "TEXT";
+    case DemuxerStream::NUM_TYPES:
+      return "NUM_TYPES";
+  }
+  NOTREACHED();
+  return nullptr;  // crash early
+}
+
 #undef RETURN_STRING
 #define RETURN_STRING(x) \
   case x:                \
@@ -89,6 +106,11 @@ const char* AsString(DemuxerStream::Status status) {
 }  // namespace (anonymous)
 
 }  // namespace media
+
+std::ostream& operator<<(std::ostream& os, media::DemuxerStream::Type type) {
+  os << media::AsString(type);
+  return os;
+}
 
 std::ostream& operator<<(std::ostream& os, const media::AccessUnit& au) {
   os << "status:" << media::AsString(au.status)

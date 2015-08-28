@@ -40,6 +40,9 @@ class AccessUnitQueue {
     // Number of access units in the queue.
     int length;
 
+    // Number of access units in the queue excluding config units.
+    int data_length;
+
     // Whether End Of Stream has been added to the queue. Cleared by Flush().
     bool has_eos;
 
@@ -75,9 +78,11 @@ class AccessUnitQueue {
   void SetHistorySizeForTesting(size_t number_of_history_chunks);
 
  private:
-  // Returns the amount of access units between the current one and the end,
-  // incuding current. Logically these are units that have not been consumed.
-  int GetUnconsumedAccessUnitLength() const;
+  // Returns the total number of access units (total_length) and the number of
+  // units excluding configiration change requests (data_length). The number is
+  // calculated between the current one and the end, incuding the current.
+  // Logically these are units that have not been consumed.
+  void GetUnconsumedAccessUnitLength(int* total_length, int* data_length) const;
 
   // The queue of data chunks. It owns the chunks.
   typedef std::list<DemuxerData*> DataChunkQueue;

@@ -30,6 +30,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_runner,
       const base::Closure& request_data_cb,
       const base::Closure& starvation_cb,
+      const base::Closure& drained_requested_cb,
       const base::Closure& stop_done_cb,
       const base::Closure& error_cb,
       const SetTimeCallback& update_current_time_cb,
@@ -51,8 +52,7 @@ class MediaCodecVideoDecoder : public MediaCodecDecoder {
   bool HasVideoSurface() const;
 
  protected:
-  bool IsCodecReconfigureNeeded(const DemuxerConfigs& curr,
-                                const DemuxerConfigs& next) const override;
+  bool IsCodecReconfigureNeeded(const DemuxerConfigs& next) const override;
   ConfigStatus ConfigureInternal() override;
   void AssociateCurrentTimeWithPTS(base::TimeDelta pts) override;
   void DissociatePTSFromTime() override;

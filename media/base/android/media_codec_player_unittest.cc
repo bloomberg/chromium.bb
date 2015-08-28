@@ -62,6 +62,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   MockMediaPlayerManager()
       : playback_completed_(false),
         num_seeks_completed_(0),
+        num_audio_codecs_created_(0),
+        num_video_codecs_created_(0),
         weak_ptr_factory_(this) {}
   ~MockMediaPlayerManager() override {}
 
@@ -111,17 +113,25 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   void OnDecodersTimeUpdate(DemuxerStream::Type stream_type,
                             base::TimeDelta now_playing,
                             base::TimeDelta last_buffered) {
-    PTSTime& hit = first_frame_hit_[stream_type];
-    if (hit.is_null())
-      hit = PTSTime(now_playing, base::TimeTicks::Now());
+    render_stat_[stream_type].AddValue(
+        PTSTime(now_playing, base::TimeTicks::Now()));
+  }
+
+  // Notification called on MediaCodec creation.
+  // Implementation dependent, used for testing only.
+  void OnMediaCodecCreated(DemuxerStream::Type stream_type) {
+    if (stream_type == DemuxerStream::AUDIO)
+      ++num_audio_codecs_created_;
+    else if (stream_type == DemuxerStream::VIDEO)
+      ++num_video_codecs_created_;
   }
 
   // First frame information
   base::TimeDelta FirstFramePTS(DemuxerStream::Type stream_type) const {
-    return first_frame_hit_[stream_type].pts;
+    return render_stat_[stream_type].min().pts;
   }
   base::TimeTicks FirstFrameTime(DemuxerStream::Type stream_type) const {
-    return first_frame_hit_[stream_type].time;
+    return render_stat_[stream_type].min().time;
   }
 
   base::WeakPtr<MockMediaPlayerManager> GetWeakPtr() {
@@ -137,8 +147,11 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   }
   bool IsSeekCompleted() const { return num_seeks_completed_ > 0; }
   bool HasFirstFrame(DemuxerStream::Type stream_type) const {
-    return !first_frame_hit_[stream_type].is_null();
+    return render_stat_[stream_type].num_values() != 0;
   }
+
+  int num_audio_codecs_created() const { return num_audio_codecs_created_; }
+  int num_video_codecs_created() const { return num_video_codecs_created_; }
 
   struct MediaMetadata {
     base::TimeDelta duration;
@@ -149,20 +162,24 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   };
   MediaMetadata media_metadata_;
 
+  struct PTSTime {
+    base::TimeDelta pts;
+    base::TimeTicks time;
+
+    PTSTime() : pts(), time() {}
+    PTSTime(base::TimeDelta p, base::TimeTicks t) : pts(p), time(t) {}
+    bool is_null() const { return time.is_null(); }
+    bool operator<(const PTSTime& rhs) const { return time < rhs.time; }
+  };
+  Minimax<PTSTime> render_stat_[DemuxerStream::NUM_TYPES];
+
   Minimax<base::TimeDelta> pts_stat_;
 
  private:
   bool playback_completed_;
   int num_seeks_completed_;
-
-  struct PTSTime {
-    base::TimeDelta pts;
-    base::TimeTicks time;
-    PTSTime() : pts(), time() {}
-    PTSTime(base::TimeDelta p, base::TimeTicks t) : pts(p), time(t) {}
-    bool is_null() const { return time.is_null(); }
-  };
-  PTSTime first_frame_hit_[DemuxerStream::NUM_TYPES];
+  int num_audio_codecs_created_;
+  int num_video_codecs_created_;
 
   base::WeakPtrFactory<MockMediaPlayerManager> weak_ptr_factory_;
 
@@ -380,6 +397,10 @@ void MockDemuxerAndroid::RequestDemuxerData(DemuxerStream::Type type) {
 
   if (!created)
     return;
+
+  // Request key frame after |kConfigChanged|
+  if (type == DemuxerStream::VIDEO && !chunk.demuxer_configs.empty())
+    video_factory_->RequestKeyFrame();
 
   chunk.type = type;
 
@@ -1563,7 +1584,7 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
   // Start the playback.
   player_->Start();
 
-  // The video decoder should start prerolling
+  // The video decoder should start prerolling.
   // Wait till preroll starts.
   EXPECT_TRUE(WaitForCondition(
       base::Bind(&MediaCodecPlayer::IsPrerollingForTests,
@@ -1585,6 +1606,240 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
 
   // There should not be any video frames.
   EXPECT_FALSE(manager_.HasFirstFrame(DemuxerStream::VIDEO));
+}
+
+TEST_F(MediaCodecPlayerTest, VideoConfigChangeWhilePlaying) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that video only playback continues after video config change.
+
+  // Initialize video playback
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1200);
+  base::TimeDelta config_change_position =
+      base::TimeDelta::FromMilliseconds(1000);
+
+  base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(2000);
+  base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
+
+  demuxer_->SetVideoFactory(
+      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+
+  demuxer_->video_factory()->RequestConfigChange(config_change_position);
+
+  CreatePlayer();
+  SetVideoSurface();
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  if (!demuxer_->IsInitialized()) {
+    DVLOG(0) << "AVConfigChangeWhilePlaying: demuxer is not initialized";
+    return;
+  }
+
+  // Ask decoders to always reconfigure after the player has been initialized.
+  player_->SetAlwaysReconfigureForTests(DemuxerStream::VIDEO);
+
+  // Set a testing callback to receive PTS from decoders.
+  player_->SetDecodersTimeCallbackForTests(
+      base::Bind(&MockMediaPlayerManager::OnDecodersTimeUpdate,
+                 base::Unretained(&manager_)));
+
+  // Set a testing callback to receive MediaCodec creation events from decoders.
+  player_->SetCodecCreatedCallbackForTests(
+      base::Bind(&MockMediaPlayerManager::OnMediaCodecCreated,
+                 base::Unretained(&manager_)));
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  // Start and wait for playback.
+  player_->Start();
+
+  // Wait till we start to play.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       start_timeout));
+
+  // Wait till completion
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackCompleted,
+                                  base::Unretained(&manager_)),
+                       completion_timeout));
+
+  // The video codec should be recreated upon config changes.
+  EXPECT_EQ(2, manager_.num_video_codecs_created());
+
+  // Check that we did not miss video frames
+  int expected_video_frames = duration / kVideoFramePeriod + 1;
+  EXPECT_EQ(expected_video_frames,
+            manager_.render_stat_[DemuxerStream::VIDEO].num_values());
+}
+
+TEST_F(MediaCodecPlayerTest, AVVideoConfigChangeWhilePlaying) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that A/V playback continues after video config change.
+
+  // Initialize A/V playback
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1200);
+  base::TimeDelta config_change_position =
+      base::TimeDelta::FromMilliseconds(1000);
+
+  base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(2000);
+  base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
+
+  demuxer_->SetAudioFactory(
+      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+  demuxer_->SetVideoFactory(
+      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+
+  demuxer_->video_factory()->RequestConfigChange(config_change_position);
+
+  CreatePlayer();
+  SetVideoSurface();
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  if (!demuxer_->IsInitialized()) {
+    DVLOG(0) << "AVConfigChangeWhilePlaying: demuxer is not initialized";
+    return;
+  }
+
+  // Ask decoders to always reconfigure after the player has been initialized.
+  player_->SetAlwaysReconfigureForTests(DemuxerStream::VIDEO);
+
+  // Set a testing callback to receive PTS from decoders.
+  player_->SetDecodersTimeCallbackForTests(
+      base::Bind(&MockMediaPlayerManager::OnDecodersTimeUpdate,
+                 base::Unretained(&manager_)));
+
+  // Set a testing callback to receive MediaCodec creation events from decoders.
+  player_->SetCodecCreatedCallbackForTests(
+      base::Bind(&MockMediaPlayerManager::OnMediaCodecCreated,
+                 base::Unretained(&manager_)));
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  // Start and wait for playback.
+  player_->Start();
+
+  // Wait till we start to play.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       start_timeout));
+
+  // Wait till completion
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackCompleted,
+                                  base::Unretained(&manager_)),
+                       completion_timeout));
+
+  // The audio codec should be kept.
+  EXPECT_EQ(1, manager_.num_audio_codecs_created());
+
+  // The video codec should be recreated upon config changes.
+  EXPECT_EQ(2, manager_.num_video_codecs_created());
+
+  // Check that we did not miss video frames
+  int expected_video_frames = duration / kVideoFramePeriod + 1;
+  EXPECT_EQ(expected_video_frames,
+            manager_.render_stat_[DemuxerStream::VIDEO].num_values());
+
+  // Check that we did not miss audio frames. We expect two postponed frames
+  // that are not reported.
+  // For Nexus 4 KitKat the AAC decoder seems to swallow the first frame
+  // but reports the last pts twice, maybe it just shifts the reported PTS.
+  int expected_audio_frames = duration / kAudioFramePeriod + 1 - 2;
+  EXPECT_EQ(expected_audio_frames,
+            manager_.render_stat_[DemuxerStream::AUDIO].num_values());
+}
+
+TEST_F(MediaCodecPlayerTest, AVAudioConfigChangeWhilePlaying) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that A/V playback continues after audio config change.
+
+  // Initialize A/V playback
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1200);
+  base::TimeDelta config_change_position =
+      base::TimeDelta::FromMilliseconds(1000);
+
+  base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(2000);
+  base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
+
+  demuxer_->SetAudioFactory(
+      scoped_ptr<AudioFactory>(new AudioFactory(duration)));
+  demuxer_->SetVideoFactory(
+      scoped_ptr<VideoFactory>(new VideoFactory(duration)));
+
+  demuxer_->audio_factory()->RequestConfigChange(config_change_position);
+
+  CreatePlayer();
+  SetVideoSurface();
+
+  // Wait till the player is initialized on media thread.
+  EXPECT_TRUE(WaitForCondition(base::Bind(&MockDemuxerAndroid::IsInitialized,
+                                          base::Unretained(demuxer_))));
+
+  if (!demuxer_->IsInitialized()) {
+    DVLOG(0) << "AVConfigChangeWhilePlaying: demuxer is not initialized";
+    return;
+  }
+
+  // Ask decoders to always reconfigure after the player has been initialized.
+  player_->SetAlwaysReconfigureForTests(DemuxerStream::AUDIO);
+
+  // Set a testing callback to receive PTS from decoders.
+  player_->SetDecodersTimeCallbackForTests(
+      base::Bind(&MockMediaPlayerManager::OnDecodersTimeUpdate,
+                 base::Unretained(&manager_)));
+
+  // Set a testing callback to receive MediaCodec creation events from decoders.
+  player_->SetCodecCreatedCallbackForTests(
+      base::Bind(&MockMediaPlayerManager::OnMediaCodecCreated,
+                 base::Unretained(&manager_)));
+
+  // Post configuration after the player has been initialized.
+  demuxer_->PostInternalConfigs();
+
+  // Start and wait for playback.
+  player_->Start();
+
+  // Wait till we start to play.
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackStarted,
+                                  base::Unretained(&manager_)),
+                       start_timeout));
+
+  // Wait till completion
+  EXPECT_TRUE(
+      WaitForCondition(base::Bind(&MockMediaPlayerManager::IsPlaybackCompleted,
+                                  base::Unretained(&manager_)),
+                       completion_timeout));
+
+  // The audio codec should be recreated upon config changes.
+  EXPECT_EQ(2, manager_.num_audio_codecs_created());
+
+  // The video codec should be kept.
+  EXPECT_EQ(1, manager_.num_video_codecs_created());
+
+  // Check that we did not miss video frames.
+  int expected_video_frames = duration / kVideoFramePeriod + 1;
+  EXPECT_EQ(expected_video_frames,
+            manager_.render_stat_[DemuxerStream::VIDEO].num_values());
+
+  // Check that we did not miss audio frames. We expect two postponed frames
+  // that are not reported.
+  int expected_audio_frames = duration / kAudioFramePeriod + 1 - 2;
+  EXPECT_EQ(expected_audio_frames,
+            manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
 
 }  // namespace media

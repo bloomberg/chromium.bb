@@ -164,7 +164,8 @@ AccessUnitQueue::Info AccessUnitQueue::GetInfo() const {
   Info info;
   base::AutoLock lock(lock_);
 
-  info.length = GetUnconsumedAccessUnitLength();
+  GetUnconsumedAccessUnitLength(&info.length, &info.data_length);
+
   info.has_eos = has_eos_;
   info.front_unit = nullptr;
   info.configs = nullptr;
@@ -186,14 +187,25 @@ void AccessUnitQueue::SetHistorySizeForTesting(size_t history_chunks_amount) {
   history_chunks_amount_ = history_chunks_amount;
 }
 
-int AccessUnitQueue::GetUnconsumedAccessUnitLength() const {
-  int result = 0;
-  DataChunkQueue::const_iterator chunk;
-  for (chunk = current_chunk_; chunk != chunks_.end(); ++chunk)
-    result += (*chunk)->access_units.size();
+void AccessUnitQueue::GetUnconsumedAccessUnitLength(int* total_length,
+                                                    int* data_length) const {
+  *total_length = *data_length = 0;
 
-  result -= index_in_chunk_;
-  return result;
+  DataChunkQueue::const_iterator chunk;
+  for (chunk = current_chunk_; chunk != chunks_.end(); ++chunk) {
+    size_t chunk_size = (*chunk)->access_units.size();
+    *total_length += chunk_size;
+    *data_length += chunk_size;
+
+    // Do not count configuration changes for |data_length|.
+    if (!(*chunk)->demuxer_configs.empty()) {
+      DCHECK((*chunk)->demuxer_configs.size() == 1);
+      --(*data_length);
+    }
+  }
+
+  *total_length -= index_in_chunk_;
+  *data_length -= index_in_chunk_;
 }
 
 }  // namespace media
