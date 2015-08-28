@@ -249,10 +249,24 @@ void InlineTextBox::attachLine()
     lineLayoutItem().attachTextBox(this);
 }
 
+void InlineTextBox::setTruncation(unsigned truncation)
+{
+    if (truncation == m_truncation)
+        return;
+
+    m_truncation = truncation;
+    InlineTextBoxPainter::removeFromTextBlobCache(*this);
+}
+
+void InlineTextBox::clearTruncation()
+{
+    setTruncation(cNoTruncation);
+}
+
 LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLeftEdge, LayoutUnit visibleRightEdge, LayoutUnit ellipsisWidth, LayoutUnit &truncatedWidth, bool& foundBox)
 {
     if (foundBox) {
-        m_truncation = cFullTruncation;
+        setTruncation(cFullTruncation);
         return -1;
     }
 
@@ -266,7 +280,7 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
     bool rtlFullTruncation = !flowIsLTR && ellipsisX >= logicalLeft() + logicalWidth();
     if (ltrFullTruncation || rtlFullTruncation) {
         // Too far.  Just set full truncation, but return -1 and let the ellipsis just be placed at the edge of the box.
-        m_truncation = cFullTruncation;
+        setTruncation(cFullTruncation);
         foundBox = true;
         return -1;
     }
@@ -290,13 +304,13 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
         if (offset == 0) {
             // No characters should be laid out.  Set ourselves to full truncation and place the ellipsis at the min of our start
             // and the ellipsis edge.
-            m_truncation = cFullTruncation;
+            setTruncation(cFullTruncation);
             truncatedWidth += ellipsisWidth;
             return std::min(ellipsisX, logicalLeft());
         }
 
         // Set the truncation index on the text run.
-        m_truncation = offset;
+        setTruncation(offset);
 
         // If we got here that means that we were only partially truncated and we need to return the pixel offset at which
         // to place the ellipsis.

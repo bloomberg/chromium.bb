@@ -128,7 +128,9 @@ public:
     SelectionState selectionState() const final;
 
 private:
-    void clearTruncation() final { m_truncation = cNoTruncation; }
+    void setTruncation(unsigned);
+
+    void clearTruncation() final;
     LayoutUnit placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLeftEdge, LayoutUnit visibleRightEdge, LayoutUnit ellipsisWidth, LayoutUnit &truncatedWidth, bool& foundBox) final;
 
 public:
