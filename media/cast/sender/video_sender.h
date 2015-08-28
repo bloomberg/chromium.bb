@@ -64,6 +64,13 @@ class VideoSender : public FrameSender,
   base::TimeDelta GetInFlightMediaDuration() const final;
   void OnAck(uint32 frame_id) final;
 
+  // Return the maximum target bitrate that should be used for the given video
+  // |frame|.  This will be provided to CongestionControl as a soft maximum
+  // limit, and should be interpreted as "the point above which the extra
+  // encoder CPU time + network bandwidth usage isn't warranted for the amount
+  // of further quality improvement to be gained."
+  static int GetMaximumTargetBitrateForFrame(const media::VideoFrame& frame);
+
  private:
   // Called by the |video_encoder_| with the next EncodedFrame to send.
   void OnEncodedVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
@@ -87,7 +94,7 @@ class VideoSender : public FrameSender,
 
   // Remember what we set the bitrate to before, no need to set it again if
   // we get the same value.
-  uint32 last_bitrate_;
+  int last_bitrate_;
 
   PlayoutDelayChangeCB playout_delay_change_cb_;
 

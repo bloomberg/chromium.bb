@@ -14,8 +14,8 @@
 namespace media {
 namespace cast {
 
-static const uint32 kMaxBitrateConfigured = 5000000;
-static const uint32 kMinBitrateConfigured = 500000;
+static const int kMaxBitrateConfigured = 5000000;
+static const int kMinBitrateConfigured = 500000;
 static const int64 kFrameDelayMs = 33;
 static const double kMaxFrameRate = 1000.0 / kFrameDelayMs;
 static const int64 kStartMillisecond = INT64_C(12345678900000);
@@ -67,6 +67,9 @@ class CongestionControlTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CongestionControlTest);
 };
 
+// Tests that AdaptiveCongestionControl returns reasonable bitrates based on
+// estimations of network bandwidth and how much is in-flight (i.e, using the
+// "target buffer fill" model).
 TEST_F(CongestionControlTest, SimpleRun) {
   uint32 frame_size = 10000 * 8;
   Run(500,
@@ -77,23 +80,30 @@ TEST_F(CongestionControlTest, SimpleRun) {
   // Empty the buffer.
   task_runner_->Sleep(base::TimeDelta::FromMilliseconds(100));
 
+  // Use a soft maximum bitrate limit so large it will not bound the results of
+  // the underlying computations.
+  const int soft_max_bitrate = std::numeric_limits<int>::max();
+
   uint32 safe_bitrate = frame_size * 1000 / kFrameDelayMs;
   uint32 bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(300),
-      base::TimeDelta::FromMilliseconds(300));
+      base::TimeDelta::FromMilliseconds(300),
+      soft_max_bitrate);
   EXPECT_NEAR(
       safe_bitrate / kTargetEmptyBufferFraction, bitrate, safe_bitrate * 0.05);
 
   bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(200),
-      base::TimeDelta::FromMilliseconds(300));
+      base::TimeDelta::FromMilliseconds(300),
+      soft_max_bitrate);
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 2 / 3,
               bitrate,
               safe_bitrate * 0.05);
 
   bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(100),
-      base::TimeDelta::FromMilliseconds(300));
+      base::TimeDelta::FromMilliseconds(300),
+      soft_max_bitrate);
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 1 / 3,
               bitrate,
               safe_bitrate * 0.05);
@@ -102,10 +112,11 @@ TEST_F(CongestionControlTest, SimpleRun) {
   congestion_control_->SendFrameToTransport(
       frame_id_++, safe_bitrate * 100 / 1000, testing_clock_.NowTicks());
 
-  // Results should show that we have ~200ms to send
+  // Results should show that we have ~200ms to send.
   bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(300),
-      base::TimeDelta::FromMilliseconds(300));
+      base::TimeDelta::FromMilliseconds(300),
+      soft_max_bitrate);
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 2 / 3,
               bitrate,
               safe_bitrate * 0.05);
@@ -114,15 +125,15 @@ TEST_F(CongestionControlTest, SimpleRun) {
   congestion_control_->SendFrameToTransport(
       frame_id_++, safe_bitrate * 100 / 1000, testing_clock_.NowTicks());
 
-  // Resulst should show that we have ~100ms to send
+  // Results should show that we have ~100ms to send.
   bitrate = congestion_control_->GetBitrate(
       testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(300),
-      base::TimeDelta::FromMilliseconds(300));
+      base::TimeDelta::FromMilliseconds(300),
+      soft_max_bitrate);
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 1 / 3,
               bitrate,
               safe_bitrate * 0.05);
 }
-
 
 }  // namespace cast
 }  // namespace media
