@@ -166,7 +166,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                           4: constants.FAILURE_CATEGORY_BAD_CL}
       cl_stats.blames = {1: '', 2: '', 3: 'crosreview.com/1',
                          4: 'crosreview.com/1'}
-      summary = cl_stats.Summarize()
+      summary = cl_stats.Summarize('cq')
 
       expected = {
           'mean_good_patch_rejections': 0.5,
@@ -208,7 +208,9 @@ class TestCLActionLogic(cros_test_lib.TestCase):
              'https://chromium-review.googlesource.com/#/c/6543/ and '
              'then crosreview.com/i/9876 followed by '
              'https://chrome-internal-review.googlesource.com/#/c/6789/ '
-             'blah https://gutsv3.corp.google.com/#ticket/1234 t/4321')
+             'blah https://gutsv3.corp.google.com/#ticket/1234 t/4321 and '
+             'https://code.google.com/p/chromium/issues/detail?id=522555#c58'
+             ' and https://codereview.chromium.org/1216423002 ')
     expected = ['crbug.com/1234',
                 'crbug.com/4321',
                 'b/2345',
@@ -218,7 +220,9 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                 'crosreview.com/i/9876',
                 'crosreview.com/i/6789',
                 't/1234',
-                't/4321']
+                't/4321',
+                'crbug.com/522555',
+                'codereview.chromium.org/1216423002']
     self.assertEqual(
         summarize_build_stats.CLStatsEngine.ProcessBlameString(blame),
         expected)

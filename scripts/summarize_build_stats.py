@@ -23,6 +23,7 @@ GUTS_BASE_URL = 't/'
 CROS_BUG_BASE_URL = 'crbug.com/'
 INTERNAL_CL_BASE_URL = 'crosreview.com/i/'
 EXTERNAL_CL_BASE_URL = 'crosreview.com/'
+CHROMIUM_CL_BASE_URL = 'codereview.chromium.org/'
 
 class CLStatsEngine(object):
   """Engine to generate stats about CL actions taken by the Commit Queue."""
@@ -75,8 +76,9 @@ class CLStatsEngine(object):
 
     # Format to generate the regex patterns. Matches one of provided domain
     # names, followed by lazy wildcard, followed by greedy digit wildcard,
-    # followed by optional slash and optional comma.
-    general_regex = r'^.*(%s).*?([0-9]+)/?,?$'
+    # followed by optional slash and optional comma and optional (# +
+    # alphanum wildcard).
+    general_regex = r'^.*(%s).*?([0-9]+)/?,?(#\S*)?$'
 
     crbug = general_regex % r'crbug.com|code.google.com'
     internal_review = general_regex % (
@@ -84,6 +86,7 @@ class CLStatsEngine(object):
     external_review = general_regex % (
         r'crosreview.com|chromium-review.googlesource.com')
     guts = general_regex % r't/|gutsv\d.corp.google.com/#ticket/'
+    chromium_review = general_regex % r'codereview.chromium.org'
 
     # Buganizer regex is different, as buganizer urls do not end with the bug
     # number.
@@ -96,12 +99,14 @@ class CLStatsEngine(object):
                 internal_review,
                 external_review,
                 buganizer,
-                guts]
+                guts,
+                chromium_review]
     url_patterns = [CROS_BUG_BASE_URL,
                     INTERNAL_CL_BASE_URL,
                     EXTERNAL_CL_BASE_URL,
                     BUGANIZER_BASE_URL,
-                    GUTS_BASE_URL]
+                    GUTS_BASE_URL,
+                    CHROMIUM_CL_BASE_URL]
 
     for t in tokens:
       for p, u in zip(patterns, url_patterns):
@@ -112,7 +117,9 @@ class CLStatsEngine(object):
 
     return urls
 
-  def Gather(self, start_date, end_date, sort_by_build_number=True,
+  def Gather(self, start_date, end_date,
+             master_config=constants.CQ_MASTER,
+             sort_by_build_number=True,
              starting_build_number=None):
     """Fetches build data and failure reasons.
 
@@ -121,15 +128,17 @@ class CLStatsEngine(object):
           examine.
       end_date: A datetime.date instance for the latest build to
           examine.
+      master_config: Config name of master to gather data for.
+                     Default to CQ_MASTER.
       sort_by_build_number: Optional boolean. If True, builds will be
           sorted by build number.
-      starting_build_number: (optional) The lowest build number from the CQ to
+      starting_build_number: (optional) The lowest build number to
           include in the results.
     """
-    logging.info('Gathering data for %s from %s until %s', constants.CQ_MASTER,
+    logging.info('Gathering data for %s from %s until %s', master_config,
                  start_date, end_date)
     self.builds = self.db.GetBuildHistory(
-        constants.CQ_MASTER,
+        master_config,
         start_date=start_date,
         end_date=end_date,
         starting_build_number=starting_build_number,
@@ -190,7 +199,20 @@ class CLStatsEngine(object):
       )
     return false_rejection_rate
 
-  def Summarize(self):
+  def Summarize(self, build_type):
+    """Process, print, and return a summary of statistics.
+
+    As a side effect, save summary to self.summary.
+
+    Returns:
+      A dictionary summarizing the statistics.
+    """
+    if build_type == 'cq':
+      return self.SummarizeCQ()
+    else:
+      return self.SummarizePFQ()
+
+  def SummarizeCQ(self):
     """Process, print, and return a summary of cl action statistics.
 
     As a side effect, save summary to self.summary.
@@ -386,6 +408,47 @@ class CLStatsEngine(object):
 
     return summary
 
+  # TODO(akeshet): some of this logic is copied directly from SummarizeCQ.
+  # Refactor to reuse that code instead.
+  def SummarizePFQ(self):
+    """Process, print, and return a summary of pfq bug and failure statistics.
+
+    As a side effect, save summary to self.summary.
+
+    Returns:
+      A dictionary summarizing the statistics.
+    """
+    if self.builds:
+      logging.info('%d total runs included, from build %d to %d.',
+                   len(self.builds), self.builds[-1]['build_number'],
+                   self.builds[0]['build_number'])
+      total_passed = len([b for b in self.builds
+                          if b['status'] == constants.BUILDER_STATUS_PASSED])
+      logging.info('%d of %d runs passed.', total_passed, len(self.builds))
+    else:
+      logging.info('No runs included.')
+
+    # TODO(akeshet): This is the end of the verbatim copied code.
+
+    # Count the number of times each particular (canonicalized) blame url was
+    # given.
+    unique_blame_counts = {}
+    for blames in self.blames.itervalues():
+      for b in blames:
+        unique_blame_counts[b] = unique_blame_counts.get(b, 0) + 1
+
+    top_blames = sorted([(count, blame) for
+                         blame, count in unique_blame_counts.iteritems()],
+                        reverse=True)
+    logging.info('Top blamed issues:')
+    if top_blames:
+      for tb in top_blames:
+        logging.info('   %s x %s', tb[0], tb[1])
+    else:
+      logging.info('None!')
+
+    return {}
+
 
 def _CheckOptions(options):
   # Ensure that specified start date is in the past.
@@ -423,6 +486,10 @@ def GetParser():
                                          '(inclusive).')
   parser.add_argument('--end-date', action='store', type='date', default=None,
                       help='Limit scope to an end date in the past.')
+
+  parser.add_argument('--build-type', choices=['cq', 'chrome-pfq'],
+                      default='cq',
+                      help='Build type to summarize. Default: cq.')
   return parser
 
 
@@ -452,7 +519,12 @@ def main(argv):
     else:
       start_date = end_date - datetime.timedelta(days=1)
 
+  if options.build_type == 'cq':
+    master_config = constants.CQ_MASTER
+  else:
+    master_config = constants.PFQ_MASTER
+
   cl_stats_engine = CLStatsEngine(db)
-  cl_stats_engine.Gather(start_date, end_date,
+  cl_stats_engine.Gather(start_date, end_date, master_config,
                          starting_build_number=options.starting_build)
-  cl_stats_engine.Summarize()
+  cl_stats_engine.Summarize(options.build_type)
