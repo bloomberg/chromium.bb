@@ -2089,18 +2089,16 @@ WebFrame* CreateChildCounterFrameClient::createChildFrame(WebLocalFrame* parent,
 
 TEST_F(WebViewTest, ChangeDisplayMode)
 {
-    WebView* webView = m_webViewHelper.initializeAndLoad("about:blank", true);
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("display_mode.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "display_mode.html", true);
 
-    WebScriptSource source("document.querySelector('body').innerHTML = window.matchMedia('(display-mode: minimal-ui)').matches");
-
-    webView->mainFrame()->executeScript(source);
-    std::string content = webView->mainFrame()->contentAsText(5).utf8();
-    EXPECT_EQ("false", content);
+    std::string content = webView->mainFrame()->contentAsText(21).utf8();
+    EXPECT_EQ("regular-ui", content);
 
     webView->setDisplayMode(WebDisplayModeMinimalUi);
-    webView->mainFrame()->executeScript(source);
-    content = webView->mainFrame()->contentAsText(5).utf8();
-    EXPECT_EQ("true", content);
+    content = webView->mainFrame()->contentAsText(21).utf8();
+    EXPECT_EQ("minimal-ui", content);
+    m_webViewHelper.reset();
 }
 
 TEST_F(WebViewTest, AddFrameInCloseUnload)

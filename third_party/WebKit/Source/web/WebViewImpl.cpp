@@ -1744,10 +1744,8 @@ void WebViewImpl::performResize()
     // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
     // Therefore we should force explicit media queries invalidation here.
     if (m_devToolsEmulator->deviceEmulationEnabled()) {
-        if (Document* document = mainFrameImpl()->frame()->document()) {
-            document->styleResolverChanged();
+        if (Document* document = mainFrameImpl()->frame()->document())
             document->mediaQueryAffectingValueChanged();
-        }
     }
 }
 

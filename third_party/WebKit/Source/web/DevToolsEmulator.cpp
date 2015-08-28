@@ -180,10 +180,8 @@ void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& par
 
     m_webViewImpl->setCompositorDeviceScaleFactorOverride(params.deviceScaleFactor);
     m_webViewImpl->setRootLayerTransform(WebSize(params.offset.x, params.offset.y), params.scale);
-    if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document()) {
-        document->styleResolverChanged();
+    if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document())
         document->mediaQueryAffectingValueChanged();
-    }
 }
 
 void DevToolsEmulator::disableDeviceEmulation()
@@ -199,10 +197,8 @@ void DevToolsEmulator::disableDeviceEmulation()
     m_webViewImpl->setCompositorDeviceScaleFactorOverride(0.f);
     m_webViewImpl->setRootLayerTransform(WebSize(0.f, 0.f), 1.f);
     m_webViewImpl->setPageScaleFactor(1.f);
-    if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document()) {
-        document->styleResolverChanged();
+    if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document())
         document->mediaQueryAffectingValueChanged();
-    }
 }
 
 void DevToolsEmulator::enableMobileEmulation()

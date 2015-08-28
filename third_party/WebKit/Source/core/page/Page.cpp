@@ -467,7 +467,6 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
             if (frame->isLocalFrame())
                 toLocalFrame(frame)->document()->mediaQueryAffectingValueChanged();
         }
-        setNeedsRecalcStyleInAllFrames();
         break;
     case SettingsDelegate::AccessibilityStateChange:
         if (!mainFrame() || !mainFrame()->isLocalFrame())

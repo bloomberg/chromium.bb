@@ -776,7 +776,6 @@ void FrameView::performPreLayoutTasks()
 
     // Viewport-dependent media queries may cause us to need completely different style information.
     if (!document->styleResolver() || (wasResized && document->styleResolver()->mediaQueryAffectedByViewportChange())) {
-        document->styleResolverChanged();
         document->mediaQueryAffectingValueChanged();
     } else if (wasResized) {
         document->evaluateMediaQueryList();
@@ -1179,7 +1178,11 @@ void FrameView::addPartToUpdate(LayoutEmbeddedObject& object)
 
 void FrameView::setDisplayMode(WebDisplayMode mode)
 {
+    if (mode == m_displayMode)
+        return;
+
     m_displayMode = mode;
+
     if (m_frame->document())
         m_frame->document()->mediaQueryAffectingValueChanged();
 }
