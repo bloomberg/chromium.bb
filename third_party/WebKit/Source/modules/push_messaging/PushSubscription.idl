@@ -15,9 +15,6 @@ enum PushEncryptionKeyName {
 ] interface PushSubscription {
     readonly attribute USVString endpoint;
 
-    // TODO(peter): Remove this once the embedder updates to getKey().
-    [RuntimeEnabled=PushMessagingData] readonly attribute ArrayBuffer curve25519dh;
-
     [RuntimeEnabled=PushMessagingData] ArrayBuffer? getKey(PushEncryptionKeyName name);
     [CallWith=ScriptState] Promise<boolean> unsubscribe();
 

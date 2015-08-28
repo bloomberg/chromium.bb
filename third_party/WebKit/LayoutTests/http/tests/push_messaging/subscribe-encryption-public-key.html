@@ -38,9 +38,6 @@
                         return swRegistration.pushManager.subscribe();
                     })
                     .then(function(pushSubscription) {
-                        // TODO(peter): Remove support for the attribute when the embedder has been updated.
-                        assert_idl_attribute(pushSubscription, 'curve25519dh');
-
                         assert_own_property(PushSubscription.prototype, 'getKey');
                         assert_not_equals(pushSubscription.getKey('curve25519dh'), null);
                         assert_equals(pushSubscription.getKey('curve25519dh').byteLength, EXPECTED_KEY_LENGTH);
