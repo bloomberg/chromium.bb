@@ -187,5 +187,35 @@
         'includes': [ '../../../../build/apk_test.gypi' ],
       }],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'blink_heap_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'blink_heap_unittests',
+          ],
+          'includes': [
+            '../../../../build/isolate.gypi',
+          ],
+          'sources': [
+            'blink_heap_unittests.isolate',
+          ],
+        },
+        {
+          'target_name': 'blink_platform_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'blink_platform_unittests',
+          ],
+          'includes': [
+            '../../../../build/isolate.gypi',
+          ],
+          'sources': [
+            'blink_platform_unittests.isolate',
+          ],
+        }
+      ],
+    }],
   ],
 }

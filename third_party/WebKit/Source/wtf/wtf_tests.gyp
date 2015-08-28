@@ -95,5 +95,22 @@
         'includes': [ '../../../../build/apk_test.gypi' ],
       }],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'wtf_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'wtf_unittests',
+          ],
+          'includes': [
+            '../../../../build/isolate.gypi',
+          ],
+          'sources': [
+            'wtf_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }
