@@ -31,8 +31,6 @@ class MediaRouterFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory interface.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterFactory);
 };

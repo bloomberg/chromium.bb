@@ -200,6 +200,10 @@ ScopedVector<ToolbarActionViewController> ToolbarActionsModel::CreateActions(
         // We should always find a corresponding action.
         DCHECK(iter != component_actions.end());
         action_list.push_back(*iter);
+
+        // We have moved ownership of the action from |component_actions| to
+        // |action_list|.
+        component_actions.weak_erase(iter);
         break;
       }
       case UNKNOWN_ACTION:
@@ -210,8 +214,8 @@ ScopedVector<ToolbarActionViewController> ToolbarActionsModel::CreateActions(
 
   // We've moved ownership of the subset of the component actions that we
   // kept track of via toolbar_items() from |component_actions| to
-  // |action_list|, so we don't need to keep track of these.
-  component_actions.weak_clear();
+  // |action_list|. The rest will be deleted when |component_actions| goes out
+  // of scope.
 
   return action_list.Pass();
 }
@@ -641,10 +645,22 @@ void ToolbarActionsModel::IncognitoPopulate() {
   for (std::vector<ToolbarItem>::const_iterator iter =
            original_model->toolbar_items_.begin();
        iter != original_model->toolbar_items_.end(); ++iter) {
-    // The extension might not be shown in incognito mode. For now, all
-    // component actions are present.
-    if (iter->type == EXTENSION_ACTION &&
-        !ShouldAddExtension(GetExtensionById(iter->id)))
+    // The extension might not be shown in incognito mode.
+    // We may also disable certain component actions in incognito mode.
+    bool should_add = false;
+    switch (iter->type) {
+      case EXTENSION_ACTION:
+        should_add = ShouldAddExtension(GetExtensionById(iter->id));
+        break;
+      case COMPONENT_ACTION:
+        should_add = ComponentToolbarActionsFactory::EnabledIncognito(iter->id);
+        break;
+      case UNKNOWN_ACTION:
+        // We should never have an uninitialized action in the model.
+        NOTREACHED();
+        break;
+    }
+    if (!should_add)
       continue;
     toolbar_items_.push_back(*iter);
     if (iter - original_model->toolbar_items_.begin() < original_visible)

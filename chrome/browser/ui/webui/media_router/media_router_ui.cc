@@ -104,7 +104,6 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
 
   router_ = static_cast<MediaRouterMojoImpl*>(
       MediaRouterFactory::GetApiForBrowserContext(wc->GetBrowserContext()));
-  DCHECK(router_);
 
   // Allows UI to load extensionview.
   // TODO(haibinlu): limit object-src to current extension once crbug/514866
@@ -167,6 +166,7 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator,
                                const MediaSource& default_source,
                                const GURL& default_frame_url) {
   DCHECK(initiator);
+  DCHECK(router_);
 
   // Register for Issue and MediaRoute updates.
   issues_observer_.reset(new UIIssuesObserver(router_, this));

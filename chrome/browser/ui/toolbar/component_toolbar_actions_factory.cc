@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -54,6 +56,12 @@ std::vector<std::string> ComponentToolbarActionsFactory::GetComponentIds() {
   return component_ids;
 }
 
+// static
+bool ComponentToolbarActionsFactory::EnabledIncognito(
+    const std::string& action_id) {
+  return action_id != kMediaRouterActionId;
+}
+
 ScopedVector<ToolbarActionViewController>
 ComponentToolbarActionsFactory::GetComponentToolbarActions(Browser* browser) {
   ScopedVector<ToolbarActionViewController> component_actions;
@@ -70,7 +78,7 @@ ComponentToolbarActionsFactory::GetComponentToolbarActions(Browser* browser) {
   // should be okay. If this changes, we should rethink this design to have,
   // e.g., RegisterChromeAction().
 
-  if (switches::MediaRouterEnabled())
+  if (switches::MediaRouterEnabled() && !browser->profile()->IsOffTheRecord())
     component_actions.push_back(new MediaRouterAction(browser));
 
   return component_actions.Pass();

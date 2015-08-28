@@ -29,6 +29,10 @@ class ComponentToolbarActionsFactory {
   // Returns a vector of IDs of the component actions.
   static std::vector<std::string> GetComponentIds();
 
+  // Returns true if the component action with |action_id| should be added
+  // in incognito mode.
+  static bool EnabledIncognito(const std::string& action_id);
+
   // Returns a collection of controllers for component actions. Declared
   // virtual for testing.
   virtual ScopedVector<ToolbarActionViewController>

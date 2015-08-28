@@ -56,12 +56,4 @@ KeyedService* MediaRouterFactory::BuildServiceInstanceFor(
 #endif
 }
 
-BrowserContext* MediaRouterFactory::GetBrowserContextToUse(
-    BrowserContext* context) const {
-  // Always use the input context. This means that an incognito context will
-  // have its own MediaRouter service, rather than sharing it with its
-  // original non-incognito context.
-  return context;
-}
-
 }  // namespace media_router
