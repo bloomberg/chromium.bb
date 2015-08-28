@@ -15,3 +15,7 @@ reports=no
 
 # We use two spaces for indents, instead of the usual four spaces or tab.
 indent-string='  '
+
+# We suppress long line check for lines that contain only the URL (with or
+# without quote).
+ignore-long-lines=^\s*'?https?://\S+'?$

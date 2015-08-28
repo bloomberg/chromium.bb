@@ -73,7 +73,6 @@ class KeyMobileSitesPageSet(story.StorySet):
 
     # Why: #18 (Alexa global), Picked an interesting post """
     self.AddStory(KeyMobileSitesPage(
-      # pylint: disable=line-too-long
       url='http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
       page_set=self,
       name='Wordpress'))
@@ -127,7 +126,6 @@ class KeyMobileSitesPageSet(story.StorySet):
     # Add simple pages with no custom navigation logic or labels.
     urls_list = [
       # Why: Social; top Google property; Public profile; infinite scrolls.
-      # pylint: disable=line-too-long
       'https://plus.google.com/app/basic/110031535020051778989/posts?source=apppromo',
       # Why: crbug.com/242544
       ('http://www.androidpolice.com/2012/10/03/rumor-evidence-mounts-that-an-'
@@ -148,7 +146,6 @@ class KeyMobileSitesPageSet(story.StorySet):
       # Why: #1 commerce website by time spent by users in US
       'http://shop.mobileweb.ebay.com/searchresults?kw=viking+helmet',
       # Why: #1 Alexa recreation
-      # pylint: disable=line-too-long
       'http://www.booking.com/searchresults.html?src=searchresults&latitude=65.0500&longitude=25.4667',
       # Why: #1 Alexa sports
       'http://sports.yahoo.com/',
