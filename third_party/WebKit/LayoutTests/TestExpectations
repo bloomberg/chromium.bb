@@ -1108,8 +1108,6 @@ crbug.com/509025 [ Yosemite ] virtual/threaded/printing/return-from-printing-mod
 crbug.com/509025 [ Yosemite ] paint/inline/outline-offset.html [ Missing ]
 crbug.com/509025 [ Yosemite ] virtual/spv2/paint/inline/outline-offset.html [ Missing ]
 crbug.com/509025 [ Yosemite ] fast/block/lineboxcontain/block-with-ideographs.xhtml [ Failure ]
-# TODO(tkent): Needs to increase padding-right.
-crbug.com/509025 [ Yosemite ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
 # TODO(tkent): zoom:1.5 looks to have a real problem.
 crbug.com/509025 [ Yosemite ] fast/forms/submit/submit-appearance-basic.html [ Failure ]
 crbug.com/509025 [ Yosemite ] fast/overflow/scrollRevealButton.html [ Failure ]
@@ -1295,7 +1293,6 @@ crbug.com/521730 [ Win10 ] editing/selection/vertical-lr-ltr-extend-line-backwar
 crbug.com/521730 [ Win10 ] editing/selection/vertical-lr-ltr-extend-line-forward-br.html [ Failure Timeout Failure Failure ]
 crbug.com/521730 [ Win10 ] editing/selection/vertical-rl-ltr-extend-line-forward-p.html [ Failure Timeout Timeout Failure ]
 crbug.com/521730 [ Win10 ] fast/dynamic/text-combine.html [ Failure Failure Failure Timeout ]
-crbug.com/521730 [ Win10 ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure Failure Failure Timeout ]
 crbug.com/521730 [ Win10 ] fast/ruby/base-shorter-than-text.html [ Failure Failure Timeout Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emphasis-combined-text.html [ Failure Timeout Failure Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emphasis-complex.html [ Failure Timeout Failure Failure ]
