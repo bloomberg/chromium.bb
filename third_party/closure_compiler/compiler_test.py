@@ -329,6 +329,19 @@ testScript();
     with open(out_file, "r") as file:
       self.assertEquals(file.read(), expected_output)
 
+  def testExportPath(self):
+    self._runCheckerTestExpectSuccess(self._CR_DEFINE_DEFINITION +
+        "cr.exportPath('a.b.c');");
+
+  def testExportPathWithTargets(self):
+    self._runCheckerTestExpectSuccess(self._CR_DEFINE_DEFINITION +
+        "var path = 'a.b.c'; cr.exportPath(path, {}, {});")
+
+  def testExportPathNoPath(self):
+    self._runCheckerTestExpectError(self._CR_DEFINE_DEFINITION +
+        "cr.exportPath();",
+        "ERROR - cr.exportPath() should have at least 1 argument: path name")
+
 
 if __name__ == "__main__":
   unittest.main()

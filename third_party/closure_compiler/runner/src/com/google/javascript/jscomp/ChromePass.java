@@ -46,9 +46,9 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
             DiagnosticType.error("JSC_CR_DEFINE_WRONG_NUMBER_OF_ARGUMENTS",
                     "cr.define() should have exactly 2 arguments. " + CR_DEFINE_COMMON_EXPLANATION);
 
-    static final DiagnosticType CR_EXPORT_PATH_WRONG_NUMBER_OF_ARGUMENTS =
-            DiagnosticType.error("JSC_CR_EXPORT_PATH_WRONG_NUMBER_OF_ARGUMENTS",
-                    "cr.exportPath() should have exactly 1 argument: namespace name.");
+    static final DiagnosticType CR_EXPORT_PATH_TOO_FEW_ARGUMENTS =
+            DiagnosticType.error("JSC_CR_EXPORT_PATH_TOO_FEW_ARGUMENTS",
+                    "cr.exportPath() should have at least 1 argument: path name.");
 
     static final DiagnosticType CR_DEFINE_INVALID_FIRST_ARGUMENT =
             DiagnosticType.error("JSC_CR_DEFINE_INVALID_FIRST_ARGUMENT",
@@ -250,14 +250,15 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
     }
 
     private void visitExportPath(Node crExportPathNode, Node parent) {
-        if (crExportPathNode.getChildCount() != 2) {
-            compiler.report(JSError.make(crExportPathNode,
-                    CR_EXPORT_PATH_WRONG_NUMBER_OF_ARGUMENTS));
+        if (crExportPathNode.getChildCount() < 2) {
+            compiler.report(JSError.make(crExportPathNode, CR_EXPORT_PATH_TOO_FEW_ARGUMENTS));
             return;
         }
 
-        createAndInsertObjectsForQualifiedName(parent,
-                crExportPathNode.getChildAtIndex(1).getString());
+        Node pathArg = crExportPathNode.getChildAtIndex(1);
+        if (pathArg.isString()) {
+            createAndInsertObjectsForQualifiedName(parent, pathArg.getString());
+        }
     }
 
     private void createAndInsertObjectsForQualifiedName(Node scriptChild, String namespace) {
