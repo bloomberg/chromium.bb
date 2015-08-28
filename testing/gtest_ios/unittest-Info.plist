@@ -20,6 +20,37 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>chromium</string>
+		<string>chromiums</string>
+		<string>comgooglemaps-v2</string>
+		<string>comgooglemaps-x-callback</string>
+		<string>comgooglemaps</string>
+		<string>googleapp</string>
+		<string>googlechrome</string>
+		<string>googlechromes</string>
+		<string>googledocs-v2</string>
+		<string>googledocs-x-callback</string>
+		<string>googledocs</string>
+		<string>googledrive-v1</string>
+		<string>googledrive-x-callback</string>
+		<string>googledrive</string>
+		<string>googlegmail-x-callback</string>
+		<string>googlegmail</string>
+		<string>googlesheets-v2</string>
+		<string>googlesheets-x-callback</string>
+		<string>googlesheets</string>
+		<string>googleslides-v2</string>
+		<string>googleslides-x-callback</string>
+		<string>googleslides</string>
+		<string>gplus-v2</string>
+		<string>gplus-v3</string>
+		<string>gplus</string>
+		<string>vnd.google.calendar</string>
+		<string>vnd.youtube</string>
+		<string>youtube</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
