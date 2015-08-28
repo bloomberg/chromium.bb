@@ -1587,3 +1587,5 @@ crbug.com/525295 fast/block/float/trailing-float-layout.html [ Failure Pass ]
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash ImageOnlyFailure Pass ]
 
 crbug.com/525299 [ MountainLion Mavericks XP Win10 ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
+
+crbug.com/525903 inspector/sources/debugger-ui/watch-expressions-preserve-expansion.html [ Failure Pass ]
