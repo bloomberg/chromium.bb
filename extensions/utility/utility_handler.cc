@@ -91,38 +91,22 @@ void UtilityHandler::OnUnzipToDir(const base::FilePath& zip_path,
   ReleaseProcessIfNeeded();
 }
 
-void UtilityHandler::OnUnpackExtension(
-    const base::FilePath& extension_path,
-    const std::string& extension_id,
-    int location,
-    int creation_flags) {
+void UtilityHandler::OnUnpackExtension(const base::FilePath& directory_path,
+                                       const std::string& extension_id,
+                                       int location,
+                                       int creation_flags) {
   CHECK_GT(location, Manifest::INVALID_LOCATION);
   CHECK_LT(location, Manifest::NUM_LOCATIONS);
   DCHECK(ExtensionsClient::Get());
   content::UtilityThread::Get()->EnsureBlinkInitialized();
-  base::FilePath working_dir = extension_path.DirName();
-  base::FilePath unzipped_dir = working_dir.AppendASCII(kTempExtensionName);
-  base::string16 error;
-  if (!base::CreateDirectory(unzipped_dir)) {
-    Send(new ExtensionUtilityHostMsg_UnpackExtension_Failed(
-        l10n_util::GetStringFUTF16(
-            IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR,
-            base::i18n::GetDisplayStringInLTRDirectionality(
-                unzipped_dir.LossyDisplayName()))));
-  } else if (!zip::Unzip(extension_path, unzipped_dir)) {
-    Send(new ExtensionUtilityHostMsg_UnpackExtension_Failed(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PACKAGE_UNZIP_ERROR)));
+  Unpacker unpacker(directory_path.DirName(), directory_path, extension_id,
+                    static_cast<Manifest::Location>(location), creation_flags);
+  if (unpacker.Run()) {
+    Send(new ExtensionUtilityHostMsg_UnpackExtension_Succeeded(
+        *unpacker.parsed_manifest()));
   } else {
-    Unpacker unpacker(working_dir, unzipped_dir, extension_id,
-                      static_cast<Manifest::Location>(location),
-                        creation_flags);
-    if (unpacker.Run()) {
-      Send(new ExtensionUtilityHostMsg_UnpackExtension_Succeeded(
-          *unpacker.parsed_manifest()));
-    } else {
-      Send(new ExtensionUtilityHostMsg_UnpackExtension_Failed(
-          unpacker.error_message()));
-    }
+    Send(new ExtensionUtilityHostMsg_UnpackExtension_Failed(
+        unpacker.error_message()));
   }
   ReleaseProcessIfNeeded();
 }

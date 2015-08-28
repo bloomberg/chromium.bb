@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SANDBOXED_UNPACKER_H_
-#define CHROME_BROWSER_EXTENSIONS_SANDBOXED_UNPACKER_H_
+#ifndef EXTENSIONS_BROWSER_SANDBOXED_UNPACKER_H_
+#define EXTENSIONS_BROWSER_SANDBOXED_UNPACKER_H_
 
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_delete_on_message_loop.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
@@ -22,6 +23,10 @@ class SkBitmap;
 namespace base {
 class DictionaryValue;
 class SequencedTaskRunner;
+}
+
+namespace content {
+class UtilityProcessHost;
 }
 
 namespace crypto {
@@ -64,10 +69,11 @@ class SandboxedUnpackerClient
   virtual ~SandboxedUnpackerClient() {}
 };
 
-// SandboxedUnpacker unpacks extensions from the CRX format into a
-// directory. This is done in a sandboxed subprocess to protect the browser
-// process from parsing complex formats like JPEG or JSON from untrusted
-// sources.
+// SandboxedUnpacker does work to optionally unpack and then validate/sanitize
+// an extension, either starting from a crx file or an already unzipped
+// directory (eg from differential update). This is done in a sandboxed
+// subprocess to protect the browser process from parsing complex formats like
+// JPEG or JSON from untrusted sources.
 //
 // Unpacking an extension using this class makes minor changes to its source,
 // such as transcoding all images to PNG, parsing all message catalogs
@@ -87,19 +93,25 @@ class SandboxedUnpackerClient
 // NOTE: This class should only be used on the file thread.
 class SandboxedUnpacker : public content::UtilityProcessHostClient {
  public:
-  // Unpacks the extension in |crx_path| into a temporary directory and calls
-  // |client| with the result. If |run_out_of_process| is provided, unpacking
-  // is done in a sandboxed subprocess. Otherwise, it is done in-process.
+  // Creates a SanboxedUnpacker that will do work to unpack an extension,
+  // passing the |location| and |creation_flags| to Extension::Create. The
+  // |extensions_dir| parameter should specify the directory under which we'll
+  // create a subdirectory to write the unpacked extension contents.
   SandboxedUnpacker(
-      const CRXFileInfo& file,
       Manifest::Location location,
       int creation_flags,
       const base::FilePath& extensions_dir,
       const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
       SandboxedUnpackerClient* client);
 
-  // Start unpacking the extension. The client is called with the results.
-  void Start();
+  // Start processing the extension, either from a CRX file or already unzipped
+  // in a directory. The client is called with the results. The directory form
+  // requires the id and base64-encoded public key (for insertion into the
+  // 'key' field of the manifest.json file).
+  void StartWithCrx(const CRXFileInfo& crx_info);
+  void StartWithDirectory(const std::string& extension_id,
+                          const std::string& public_key_base64,
+                          const base::FilePath& directory);
 
  private:
   class ProcessHostClient;
@@ -163,6 +175,10 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
     // SandboxedUnpacker::ValidateSignature()
     CRX_HASH_VERIFICATION_FAILED,
 
+    UNZIP_FAILED,
+    DIRECTORY_MOVE_FAILED,
+    COULD_NOT_START_UTILITY_PROCESS,
+
     NUM_FAILURE_REASONS
   };
 
@@ -181,16 +197,19 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
 
   // Validates the signature of the extension and extract the key to
   // |public_key_|. Returns true if the signature validates, false otherwise.
-  bool ValidateSignature();
+  bool ValidateSignature(const base::FilePath& crx_path,
+                         const std::string& expected_hash);
 
-  // Starts the utility process that unpacks our extension.
-  void StartProcessOnIOThread(const base::FilePath& temp_crx_path);
+  void StartUnzipOnIOThread(const base::FilePath& crx_path);
+  void StartUnpackOnIOThread(const base::FilePath& directory_path);
 
   // UtilityProcessHostClient
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnProcessCrashed(int exit_code) override;
 
   // IPC message handlers.
+  void OnUnzipToDirSucceeded(const base::FilePath& directory);
+  void OnUnzipToDirFailed(const std::string& error);
   void OnUnpackExtensionSucceeded(const base::DictionaryValue& manifest);
   void OnUnpackExtensionFailed(const base::string16& error_message);
 
@@ -211,14 +230,41 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // Cleans up temp directory artifacts.
   void Cleanup();
 
-  // The path to the CRX to unpack.
-  base::FilePath crx_path_;
+  // This is a helper class to make it easier to keep track of the lifecycle of
+  // a UtilityProcessHost, including automatic begin and end of batch mode.
+  class UtilityHostWrapper : public base::RefCountedThreadSafe<
+                                 UtilityHostWrapper,
+                                 content::BrowserThread::DeleteOnIOThread> {
+   public:
+    UtilityHostWrapper();
 
-  // The package SHA256 hash sum that was reported from the Web Store.
-  std::string package_hash_;
+    // Start up the utility process if it is not already started, putting it
+    // into batch mode and giving it access to |exposed_dir|. This should only
+    // be called on the IO thread. Returns false if there was an error starting
+    // the utility process or putting it into batch mode.
+    bool StartIfNeeded(
+        const base::FilePath& exposed_dir,
+        const scoped_refptr<UtilityProcessHostClient>& client,
+        const scoped_refptr<base::SequencedTaskRunner>& client_task_runner);
 
-  // Whether we need to check the .crx hash sum.
-  bool check_crx_hash_;
+    // This should only be called on the IO thread.
+    content::UtilityProcessHost* host() const;
+
+   private:
+    friend struct content::BrowserThread::DeleteOnThread<
+        content::BrowserThread::IO>;
+    friend class base::DeleteHelper<UtilityHostWrapper>;
+    ~UtilityHostWrapper();
+
+    // Should only be used on the IO thread.
+    base::WeakPtr<content::UtilityProcessHost> utility_host_;
+
+    DISALLOW_COPY_AND_ASSIGN(UtilityHostWrapper);
+  };
+
+  // If we unpacked a crx file, we hold on to the path for use in various
+  // histograms.
+  base::FilePath crx_path_for_histograms_;
 
   // Our client.
   scoped_refptr<SandboxedUnpackerClient> client_;
@@ -245,8 +291,9 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // header.
   std::string extension_id_;
 
-  // Time at which unpacking started. Used to compute the time unpacking takes.
-  base::TimeTicks unpack_start_time_;
+  // If we unpacked a .crx file, the time at which unpacking started. Used to
+  // compute the time unpacking takes.
+  base::TimeTicks crx_unpack_start_time_;
 
   // Location to use for the unpacked extension.
   Manifest::Location location_;
@@ -257,8 +304,13 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
 
   // Sequenced task runner where file I/O operations will be performed at.
   scoped_refptr<base::SequencedTaskRunner> unpacker_io_task_runner_;
+
+  // Used for sending tasks to the utility process.
+  scoped_refptr<UtilityHostWrapper> utility_wrapper_;
+
+  DISALLOW_COPY_AND_ASSIGN(SandboxedUnpacker);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SANDBOXED_UNPACKER_H_
+#endif  // EXTENSIONS_BROWSER_SANDBOXED_UNPACKER_H_

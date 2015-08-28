@@ -183,18 +183,15 @@ void CrxInstaller::InstallCrxFile(const CRXFileInfo& source_file) {
 
   source_file_ = source_file.path;
 
-  scoped_refptr<SandboxedUnpacker> unpacker(
-      new SandboxedUnpacker(source_file,
-                            install_source_,
-                            creation_flags_,
-                            install_directory_,
-                            installer_task_runner_.get(),
-                            this));
+  scoped_refptr<SandboxedUnpacker> unpacker(new SandboxedUnpacker(
+      install_source_, creation_flags_, install_directory_,
+      installer_task_runner_.get(), this));
 
   if (!installer_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&SandboxedUnpacker::Start, unpacker.get())))
+          FROM_HERE, base::Bind(&SandboxedUnpacker::StartWithCrx,
+                                unpacker.get(), source_file))) {
     NOTREACHED();
+  }
 }
 
 void CrxInstaller::InstallUserScript(const base::FilePath& source_file,

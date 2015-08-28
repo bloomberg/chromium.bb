@@ -47,10 +47,10 @@ IPC_MESSAGE_CONTROL2(ExtensionUtilityMsg_UnzipToDir,
                      base::FilePath /* zip_file */,
                      base::FilePath /* dir */)
 
-// Tells the utility process to unpack the given extension file in its
-// directory and verify that it is valid.
+// Tells the utility process to validate and sanitize the extension in a
+// directory.
 IPC_MESSAGE_CONTROL4(ExtensionUtilityMsg_UnpackExtension,
-                     base::FilePath /* extension_filename */,
+                     base::FilePath /* directory_path */,
                      std::string /* extension_id */,
                      int /* Manifest::Location */,
                      int /* InitFromValue flags */)

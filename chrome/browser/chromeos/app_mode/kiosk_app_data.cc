@@ -147,10 +147,9 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
 
     scoped_refptr<extensions::SandboxedUnpacker> unpacker(
         new extensions::SandboxedUnpacker(
-            extensions::CRXFileInfo(crx_file_), extensions::Manifest::INTERNAL,
-            extensions::Extension::NO_FLAGS, temp_dir_.path(),
-            task_runner_.get(), this));
-    unpacker->Start();
+            extensions::Manifest::INTERNAL, extensions::Extension::NO_FLAGS,
+            temp_dir_.path(), task_runner_.get(), this));
+    unpacker->StartWithCrx(extensions::CRXFileInfo(crx_file_));
   }
 
   void NotifyFinishedOnBlockingPool() {

@@ -212,26 +212,18 @@ SandboxedUnpackerClient::SandboxedUnpackerClient()
 }
 
 SandboxedUnpacker::SandboxedUnpacker(
-    const CRXFileInfo& file,
     Manifest::Location location,
     int creation_flags,
     const base::FilePath& extensions_dir,
     const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
     SandboxedUnpackerClient* client)
-    : crx_path_(file.path),
-      package_hash_(base::ToLowerASCII(file.expected_hash)),
-      check_crx_hash_(false),
-      client_(client),
+    : client_(client),
       extensions_dir_(extensions_dir),
       got_response_(false),
       location_(location),
       creation_flags_(creation_flags),
-      unpacker_io_task_runner_(unpacker_io_task_runner) {
-  if (!package_hash_.empty()) {
-    check_crx_hash_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        extensions::switches::kEnableCrxHashCheck);
-  }
-}
+      unpacker_io_task_runner_(unpacker_io_task_runner),
+      utility_wrapper_(new UtilityHostWrapper) {}
 
 bool SandboxedUnpacker::CreateTempDirectory() {
   CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
@@ -256,15 +248,21 @@ bool SandboxedUnpacker::CreateTempDirectory() {
   return true;
 }
 
-void SandboxedUnpacker::Start() {
+void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
   // We assume that we are started on the thread that the client wants us to do
   // file IO on.
   CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
 
-  unpack_start_time_ = base::TimeTicks::Now();
+  crx_unpack_start_time_ = base::TimeTicks::Now();
+  std::string expected_hash;
+  if (!crx_info.expected_hash.empty() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          extensions::switches::kEnableCrxHashCheck)) {
+    expected_hash = base::ToLowerASCII(crx_info.expected_hash);
+  }
 
   PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackInitialCrxPathLength",
-                        crx_path_);
+                        crx_info.path);
   if (!CreateTempDirectory())
     return;  // ReportFailure() already called.
 
@@ -274,15 +272,16 @@ void SandboxedUnpacker::Start() {
                         extension_root_);
 
   // Extract the public key and validate the package.
-  if (!ValidateSignature())
+  if (!ValidateSignature(crx_info.path, expected_hash))
     return;  // ValidateSignature() already reported the error.
 
   // Copy the crx file into our working directory.
-  base::FilePath temp_crx_path = temp_dir_.path().Append(crx_path_.BaseName());
+  base::FilePath temp_crx_path =
+      temp_dir_.path().Append(crx_info.path.BaseName());
   PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackTempCrxPathLength",
                         temp_crx_path);
 
-  if (!base::CopyFile(crx_path_, temp_crx_path)) {
+  if (!base::CopyFile(crx_info.path, temp_crx_path)) {
     // Failed to copy extension file to temporary directory.
     ReportFailure(
         FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY,
@@ -309,8 +308,33 @@ void SandboxedUnpacker::Start() {
                         link_free_crx_path);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SandboxedUnpacker::StartProcessOnIOThread,
+                          base::Bind(&SandboxedUnpacker::StartUnzipOnIOThread,
                                      this, link_free_crx_path));
+}
+
+void SandboxedUnpacker::StartWithDirectory(const std::string& extension_id,
+                                           const std::string& public_key,
+                                           const base::FilePath& directory) {
+  extension_id_ = extension_id;
+  public_key_ = public_key;
+  if (!CreateTempDirectory())
+    return;  // ReportFailure() already called.
+
+  extension_root_ = temp_dir_.path().AppendASCII(kTempExtensionName);
+
+  if (!base::Move(directory, extension_root_)) {
+    LOG(ERROR) << "Could not move " << directory.value() << " to "
+               << extension_root_.value();
+    ReportFailure(
+        DIRECTORY_MOVE_FAILED,
+        l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+                                   ASCIIToUTF16("DIRECTORY_MOVE_FAILED")));
+    return;
+  }
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&SandboxedUnpacker::StartUnpackOnIOThread,
+                                     this, extension_root_));
 }
 
 SandboxedUnpacker::~SandboxedUnpacker() {
@@ -322,11 +346,15 @@ SandboxedUnpacker::~SandboxedUnpacker() {
 bool SandboxedUnpacker::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SandboxedUnpacker, message)
-  IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_UnpackExtension_Succeeded,
-                      OnUnpackExtensionSucceeded)
-  IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_UnpackExtension_Failed,
-                      OnUnpackExtensionFailed)
-  IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_UnzipToDir_Succeeded,
+                        OnUnzipToDirSucceeded)
+    IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_UnzipToDir_Failed,
+                        OnUnzipToDirFailed)
+    IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_UnpackExtension_Succeeded,
+                        OnUnpackExtensionSucceeded)
+    IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_UnpackExtension_Failed,
+                        OnUnpackExtensionFailed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
@@ -346,23 +374,57 @@ void SandboxedUnpacker::OnProcessCrashed(int exit_code) {
           l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_PROCESS_CRASHED));
 }
 
-void SandboxedUnpacker::StartProcessOnIOThread(
-    const base::FilePath& temp_crx_path) {
-  UtilityProcessHost* host =
-      UtilityProcessHost::Create(this, unpacker_io_task_runner_.get());
-  host->SetName(
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_EXTENSION_UNPACKER_NAME));
-  // Grant the subprocess access to the entire subdir the extension file is
-  // in, so that it can unpack to that dir.
-  host->SetExposedDir(temp_crx_path.DirName());
-  host->Send(new ExtensionUtilityMsg_UnpackExtension(
-      temp_crx_path, extension_id_, location_, creation_flags_));
+void SandboxedUnpacker::StartUnzipOnIOThread(const base::FilePath& crx_path) {
+  if (!utility_wrapper_->StartIfNeeded(temp_dir_.path(), this,
+                                       unpacker_io_task_runner_)) {
+    ReportFailure(
+        COULD_NOT_START_UTILITY_PROCESS,
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+            FailureReasonToString16(COULD_NOT_START_UTILITY_PROCESS)));
+    return;
+  }
+  DCHECK(crx_path.DirName() == temp_dir_.path());
+  base::FilePath unzipped_dir =
+      crx_path.DirName().AppendASCII(kTempExtensionName);
+  utility_wrapper_->host()->Send(
+      new ExtensionUtilityMsg_UnzipToDir(crx_path, unzipped_dir));
+}
+
+void SandboxedUnpacker::StartUnpackOnIOThread(
+    const base::FilePath& directory_path) {
+  if (!utility_wrapper_->StartIfNeeded(temp_dir_.path(), this,
+                                       unpacker_io_task_runner_)) {
+    ReportFailure(
+        COULD_NOT_START_UTILITY_PROCESS,
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PACKAGE_INSTALL_ERROR,
+            FailureReasonToString16(COULD_NOT_START_UTILITY_PROCESS)));
+    return;
+  }
+  DCHECK(directory_path.DirName() == temp_dir_.path());
+  utility_wrapper_->host()->Send(new ExtensionUtilityMsg_UnpackExtension(
+      directory_path, extension_id_, location_, creation_flags_));
+}
+
+void SandboxedUnpacker::OnUnzipToDirSucceeded(const base::FilePath& directory) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SandboxedUnpacker::StartUnpackOnIOThread, this, directory));
+}
+
+void SandboxedUnpacker::OnUnzipToDirFailed(const std::string& error) {
+  got_response_ = true;
+  utility_wrapper_ = nullptr;
+  ReportFailure(UNZIP_FAILED,
+                l10n_util::GetStringUTF16(IDS_EXTENSION_PACKAGE_UNZIP_ERROR));
 }
 
 void SandboxedUnpacker::OnUnpackExtensionSucceeded(
     const base::DictionaryValue& manifest) {
   CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
   got_response_ = true;
+  utility_wrapper_ = nullptr;
 
   scoped_ptr<base::DictionaryValue> final_manifest(
       RewriteManifestFile(manifest));
@@ -411,6 +473,7 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
 void SandboxedUnpacker::OnUnpackExtensionFailed(const base::string16& error) {
   CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
   got_response_ = true;
+  utility_wrapper_ = nullptr;
   ReportFailure(
       UNPACKER_CLIENT_FAILED,
       l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE, error));
@@ -495,6 +558,13 @@ base::string16 SandboxedUnpacker::FailureReasonToString16(
     case CRX_HASH_VERIFICATION_FAILED:
       return ASCIIToUTF16("CRX_HASH_VERIFICATION_FAILED");
 
+    case UNZIP_FAILED:
+      return ASCIIToUTF16("UNZIP_FAILED");
+    case DIRECTORY_MOVE_FAILED:
+      return ASCIIToUTF16("DIRECTORY_MOVE_FAILED");
+    case COULD_NOT_START_UTILITY_PROCESS:
+      return ASCIIToUTF16("COULD_NOT_START_UTILITY_PROCESS");
+
     case NUM_FAILURE_REASONS:
       NOTREACHED();
       return base::string16();
@@ -509,14 +579,14 @@ void SandboxedUnpacker::FailWithPackageError(FailureReason reason) {
                                            FailureReasonToString16(reason)));
 }
 
-bool SandboxedUnpacker::ValidateSignature() {
+bool SandboxedUnpacker::ValidateSignature(const base::FilePath& crx_path,
+                                          const std::string& expected_hash) {
   CrxFile::ValidateError error = CrxFile::ValidateSignature(
-      crx_path_, check_crx_hash_ ? package_hash_ : std::string(), &public_key_,
-      &extension_id_, nullptr);
+      crx_path, expected_hash, &public_key_, &extension_id_, nullptr);
 
   switch (error) {
     case CrxFile::ValidateError::NONE: {
-      if (check_crx_hash_)
+      if (!expected_hash.empty())
         UMA_HISTOGRAM_BOOLEAN("Extensions.SandboxUnpackHashCheck", true);
       return true;
     }
@@ -558,7 +628,7 @@ bool SandboxedUnpacker::ValidateSignature() {
     case CrxFile::ValidateError::CRX_HASH_VERIFICATION_FAILED:
       // We should never get this result unless we had specifically asked for
       // verification of the crx file's hash.
-      CHECK(check_crx_hash_ && !package_hash_.empty());
+      CHECK(!expected_hash.empty());
       UMA_HISTOGRAM_BOOLEAN("Extensions.SandboxUnpackHashCheck", false);
       FailWithPackageError(CRX_HASH_VERIFICATION_FAILED);
       break;
@@ -568,10 +638,12 @@ bool SandboxedUnpacker::ValidateSignature() {
 
 void SandboxedUnpacker::ReportFailure(FailureReason reason,
                                       const base::string16& error) {
+  utility_wrapper_ = nullptr;
   UMA_HISTOGRAM_ENUMERATION("Extensions.SandboxUnpackFailureReason", reason,
                             NUM_FAILURE_REASONS);
-  UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",
-                      base::TimeTicks::Now() - unpack_start_time_);
+  if (!crx_unpack_start_time_.is_null())
+    UMA_HISTOGRAM_TIMES("Extensions.SandboxUnpackFailureTime",
+                        base::TimeTicks::Now() - crx_unpack_start_time_);
   Cleanup();
 
   CrxInstallError error_info(reason == CRX_HASH_VERIFICATION_FAILED
@@ -585,10 +657,14 @@ void SandboxedUnpacker::ReportFailure(FailureReason reason,
 void SandboxedUnpacker::ReportSuccess(
     const base::DictionaryValue& original_manifest,
     const SkBitmap& install_icon) {
+  utility_wrapper_ = nullptr;
   UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
 
-  RecordSuccessfulUnpackTimeHistograms(
-      crx_path_, base::TimeTicks::Now() - unpack_start_time_);
+  if (!crx_unpack_start_time_.is_null())
+    RecordSuccessfulUnpackTimeHistograms(
+        crx_path_for_histograms_,
+        base::TimeTicks::Now() - crx_unpack_start_time_);
+  DCHECK(!temp_dir_.path().empty());
 
   // Client takes ownership of temporary directory and extension.
   client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_,
@@ -601,6 +677,7 @@ base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
   // Add the public key extracted earlier to the parsed manifest and overwrite
   // the original manifest. We do this to ensure the manifest doesn't contain an
   // exploitable bug that could be used to compromise the browser.
+  DCHECK(!public_key_.empty());
   scoped_ptr<base::DictionaryValue> final_manifest(manifest.DeepCopy());
   final_manifest->SetString(manifest_keys::kPublicKey, public_key_);
 
@@ -631,6 +708,7 @@ base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
 }
 
 bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
+  DCHECK(!temp_dir_.path().empty());
   DecodedImages images;
   if (!ReadImagesFromFile(temp_dir_.path(), &images)) {
     // Couldn't read image data from disk.
@@ -807,6 +885,44 @@ void SandboxedUnpacker::Cleanup() {
   if (!temp_dir_.Delete()) {
     LOG(WARNING) << "Can not delete temp directory at "
                  << temp_dir_.path().value();
+  }
+}
+
+SandboxedUnpacker::UtilityHostWrapper::UtilityHostWrapper() {}
+
+bool SandboxedUnpacker::UtilityHostWrapper::StartIfNeeded(
+    const base::FilePath& exposed_dir,
+    const scoped_refptr<UtilityProcessHostClient>& client,
+    const scoped_refptr<base::SequencedTaskRunner>& client_task_runner) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!utility_host_) {
+    utility_host_ =
+        UtilityProcessHost::Create(client, client_task_runner)->AsWeakPtr();
+    utility_host_->SetName(
+        l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_EXTENSION_UNPACKER_NAME));
+
+    // Grant the subprocess access to our temp dir so it can write out files.
+    DCHECK(!exposed_dir.empty());
+    utility_host_->SetExposedDir(exposed_dir);
+    if (!utility_host_->StartBatchMode()) {
+      utility_host_.reset();
+      return false;
+    }
+  }
+  return true;
+}
+
+content::UtilityProcessHost* SandboxedUnpacker::UtilityHostWrapper::host()
+    const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return utility_host_.get();
+}
+
+SandboxedUnpacker::UtilityHostWrapper::~UtilityHostWrapper() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (utility_host_) {
+    utility_host_->EndBatchMode();
+    utility_host_.reset();
   }
 }
 

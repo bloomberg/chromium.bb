@@ -34,9 +34,10 @@ class UtilityHandler {
   // IPC message handlers.
   void OnParseUpdateManifest(const std::string& xml);
   void OnUnzipToDir(const base::FilePath& zip_path, const base::FilePath& dir);
-  void OnUnpackExtension(const base::FilePath& extension_path,
+  void OnUnpackExtension(const base::FilePath& directory_path,
                          const std::string& extension_id,
-                         int location, int creation_flags);
+                         int location,
+                         int creation_flags);
 
   DISALLOW_COPY_AND_ASSIGN(UtilityHandler);
 };

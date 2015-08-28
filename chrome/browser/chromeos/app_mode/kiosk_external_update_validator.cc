@@ -29,12 +29,11 @@ KioskExternalUpdateValidator::~KioskExternalUpdateValidator() {
 void KioskExternalUpdateValidator::Start() {
   scoped_refptr<extensions::SandboxedUnpacker> unpacker(
       new extensions::SandboxedUnpacker(
-          crx_file_, extensions::Manifest::EXTERNAL_PREF,
-          extensions::Extension::NO_FLAGS, crx_unpack_dir_,
-          backend_task_runner_.get(), this));
+          extensions::Manifest::EXTERNAL_PREF, extensions::Extension::NO_FLAGS,
+          crx_unpack_dir_, backend_task_runner_.get(), this));
   if (!backend_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&extensions::SandboxedUnpacker::Start, unpacker.get()))) {
+          FROM_HERE, base::Bind(&extensions::SandboxedUnpacker::StartWithCrx,
+                                unpacker.get(), crx_file_))) {
     NOTREACHED();
   }
 }

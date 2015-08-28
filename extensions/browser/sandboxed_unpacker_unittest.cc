@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -11,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extensions_test.h"
@@ -21,6 +23,7 @@
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/zlib/google/zip.h"
 
 namespace extensions {
 
@@ -69,6 +72,10 @@ class SandboxedUnpackerTest : public ExtensionsTest {
         new content::InProcessUtilityThreadHelper);
     // It will delete itself.
     client_ = new MockSandboxedUnpackerClient;
+
+    sandboxed_unpacker_ = new SandboxedUnpacker(
+        Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.path(),
+        base::ThreadTaskRunnerHandle::Get(), client_);
   }
 
   void TearDown() override {
@@ -79,21 +86,38 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     ExtensionsTest::TearDown();
   }
 
+  base::FilePath GetCrxFullPath(const std::string& crx_name) {
+    base::FilePath full_path;
+    EXPECT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &full_path));
+    full_path = full_path.AppendASCII("unpacker").AppendASCII(crx_name);
+    EXPECT_TRUE(base::PathExists(full_path)) << full_path.value();
+    return full_path;
+  }
+
   void SetupUnpacker(const std::string& crx_name,
                      const std::string& package_hash) {
-    base::FilePath original_path;
-    ASSERT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &original_path));
-    original_path = original_path.AppendASCII("unpacker").AppendASCII(crx_name);
-    ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
-
-    sandboxed_unpacker_ = new SandboxedUnpacker(
-        extensions::CRXFileInfo(std::string(), original_path, package_hash),
-        Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.path(),
-        base::ThreadTaskRunnerHandle::Get(), client_);
-
+    base::FilePath crx_path = GetCrxFullPath(crx_name);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&SandboxedUnpacker::Start, sandboxed_unpacker_.get()));
+        base::Bind(
+            &SandboxedUnpacker::StartWithCrx, sandboxed_unpacker_,
+            extensions::CRXFileInfo(std::string(), crx_path, package_hash)));
+    client_->WaitForUnpack();
+  }
+
+  void SetupUnpackerWithDirectory(const std::string& crx_name) {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::FilePath crx_path = GetCrxFullPath(crx_name);
+    ASSERT_TRUE(zip::Unzip(crx_path, temp_dir.path()));
+
+    std::string fake_id = crx_file::id_util::GenerateId(crx_name);
+    std::string fake_public_key;
+    base::Base64Encode(std::string(2048, 'k'), &fake_public_key);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SandboxedUnpacker::StartWithDirectory,
+                              sandboxed_unpacker_.get(), fake_id,
+                              fake_public_key, temp_dir.Take()));
     client_->WaitForUnpack();
   }
 
@@ -119,8 +143,22 @@ TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
   EXPECT_FALSE(base::PathExists(install_path));
 }
 
+TEST_F(SandboxedUnpackerTest, FromDirNoCatalogsSuccess) {
+  SetupUnpackerWithDirectory("no_l10n.crx");
+  // Check that there is no _locales folder.
+  base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
+  EXPECT_FALSE(base::PathExists(install_path));
+}
+
 TEST_F(SandboxedUnpackerTest, WithCatalogsSuccess) {
   SetupUnpacker("good_l10n.crx", "");
+  // Check that there is _locales folder.
+  base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
+  EXPECT_TRUE(base::PathExists(install_path));
+}
+
+TEST_F(SandboxedUnpackerTest, FromDirWithCatalogsSuccess) {
+  SetupUnpackerWithDirectory("good_l10n.crx");
   // Check that there is _locales folder.
   base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_TRUE(base::PathExists(install_path));
