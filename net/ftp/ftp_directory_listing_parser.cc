@@ -14,8 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/ftp/ftp_directory_listing_parser_ls.h"
-#include "net/ftp/ftp_directory_listing_parser_netware.h"
-#include "net/ftp/ftp_directory_listing_parser_os2.h"
 #include "net/ftp/ftp_directory_listing_parser_vms.h"
 #include "net/ftp/ftp_directory_listing_parser_windows.h"
 #include "net/ftp/ftp_server_type_histograms.h"
@@ -66,15 +64,6 @@ int ParseListing(const base::string16& text,
       base::Bind(&ParseFtpDirectoryListingVms, lines, entries),
       SERVER_VMS
     },
-    {
-      base::Bind(&ParseFtpDirectoryListingNetware,
-                 lines, current_time, entries),
-      SERVER_NETWARE
-    },
-    {
-      base::Bind(&ParseFtpDirectoryListingOS2, lines, entries),
-      SERVER_OS2
-    }
   };
 
   for (size_t i = 0; i < arraysize(parsers); i++) {

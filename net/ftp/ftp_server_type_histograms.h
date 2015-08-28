@@ -19,8 +19,8 @@ enum FtpServerType {
   SERVER_LS = 1,       // Server using /bin/ls -l listing style.
   SERVER_WINDOWS = 2,  // Server using Windows listing style.
   SERVER_VMS = 3,      // Server using VMS listing style.
-  SERVER_NETWARE = 4,  // Server using Netware listing style.
-  SERVER_OS2 = 5,      // Server using OS/2 listing style.
+  SERVER_NETWARE = 4,  // OBSOLETE. Server using Netware listing style.
+  SERVER_OS2 = 5,      // OBSOLETE. Server using OS/2 listing style.
 
   NUM_OF_SERVER_TYPES
 };

@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -19,11 +20,22 @@ namespace net {
 
 namespace {
 
-class FtpDirectoryListingParserTest
-    : public testing::TestWithParam<const char*> {
+struct FtpTestParam {
+  const char* name;
+  Error expected_result;
 };
 
+std::string TestName(testing::TestParamInfo<FtpTestParam> info) {
+  std::string result;
+  base::ReplaceChars(info.param.name, "-", "_", &result);
+  return result;
+}
+
+class FtpDirectoryListingParserTest
+    : public testing::TestWithParam<FtpTestParam> {};
+
 TEST_P(FtpDirectoryListingParserTest, Parse) {
+  FtpTestParam param = GetParam();
   base::FilePath test_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
   test_dir = test_dir.AppendASCII("net");
@@ -39,21 +51,23 @@ TEST_P(FtpDirectoryListingParserTest, Parse) {
   base::Time mock_current_time(
       base::Time::FromLocalExploded(mock_current_time_exploded));
 
-  SCOPED_TRACE(base::StringPrintf("Test case: %s", GetParam()));
+  SCOPED_TRACE(base::StringPrintf("Test case: %s", param.name));
 
   std::string test_listing;
-  EXPECT_TRUE(base::ReadFileToString(test_dir.AppendASCII(GetParam()),
-                                     &test_listing));
+  EXPECT_TRUE(
+      base::ReadFileToString(test_dir.AppendASCII(param.name), &test_listing));
 
   std::vector<FtpDirectoryListingEntry> entries;
-  EXPECT_EQ(OK, ParseFtpDirectoryListing(test_listing,
-                                         mock_current_time,
-                                         &entries));
+  EXPECT_EQ(
+      param.expected_result,
+      ParseFtpDirectoryListing(test_listing, mock_current_time, &entries));
+  if (param.expected_result != OK)
+    return;
 
   std::string expected_listing;
   ASSERT_TRUE(base::ReadFileToString(
-                  test_dir.AppendASCII(std::string(GetParam()) + ".expected"),
-                  &expected_listing));
+      test_dir.AppendASCII(std::string(param.name) + ".expected"),
+      &expected_listing));
 
   std::vector<std::string> lines;
   base::SplitStringUsingSubstr(expected_listing, "\r\n", &lines);
@@ -104,63 +118,65 @@ TEST_P(FtpDirectoryListingParserTest, Parse) {
   }
 }
 
-const char* const kTestFiles[] = {
-  "dir-listing-ls-1",
-  "dir-listing-ls-1-utf8",
-  "dir-listing-ls-2",
-  "dir-listing-ls-3",
-  "dir-listing-ls-4",
-  "dir-listing-ls-5",
-  "dir-listing-ls-6",
-  "dir-listing-ls-7",
-  "dir-listing-ls-8",
-  "dir-listing-ls-9",
-  "dir-listing-ls-10",
-  "dir-listing-ls-11",
-  "dir-listing-ls-12",
-  "dir-listing-ls-13",
-  "dir-listing-ls-14",
-  "dir-listing-ls-15",
-  "dir-listing-ls-16",
-  "dir-listing-ls-17",
-  "dir-listing-ls-18",
-  "dir-listing-ls-19",
-  "dir-listing-ls-20",
-  "dir-listing-ls-21",
-  "dir-listing-ls-22",
-  "dir-listing-ls-23",
-  "dir-listing-ls-24",
+const FtpTestParam kTestParams[] = {
+    {"dir-listing-ls-1", OK},
+    {"dir-listing-ls-1-utf8", OK},
+    {"dir-listing-ls-2", OK},
+    {"dir-listing-ls-3", OK},
+    {"dir-listing-ls-4", OK},
+    {"dir-listing-ls-5", OK},
+    {"dir-listing-ls-6", OK},
+    {"dir-listing-ls-7", OK},
+    {"dir-listing-ls-8", OK},
+    {"dir-listing-ls-9", OK},
+    {"dir-listing-ls-10", OK},
+    {"dir-listing-ls-11", OK},
+    {"dir-listing-ls-12", OK},
+    {"dir-listing-ls-13", OK},
+    {"dir-listing-ls-14", OK},
+    {"dir-listing-ls-15", OK},
+    {"dir-listing-ls-16", OK},
+    {"dir-listing-ls-17", OK},
+    {"dir-listing-ls-18", OK},
+    {"dir-listing-ls-19", OK},
+    {"dir-listing-ls-20", OK},
+    {"dir-listing-ls-21", OK},
+    {"dir-listing-ls-22", OK},
+    {"dir-listing-ls-23", OK},
+    {"dir-listing-ls-24", OK},
 
-  // Tests for Russian listings. The only difference between those
-  // files is character encoding:
-  "dir-listing-ls-25",  // UTF-8
-  "dir-listing-ls-26",  // KOI8-R
-  "dir-listing-ls-27",  // windows-1251
+    // Tests for Russian listings. The only difference between those
+    // files is character encoding:
+    {"dir-listing-ls-25", OK},  // UTF-8
+    {"dir-listing-ls-26", OK},  // KOI8-R
+    {"dir-listing-ls-27", OK},  // windows-1251
 
-  "dir-listing-ls-28",  // Hylafax FTP server
-  "dir-listing-ls-29",
-  "dir-listing-ls-30",
-  "dir-listing-ls-31",
-  "dir-listing-ls-32",  // busybox
+    {"dir-listing-ls-28", OK},  // Hylafax FTP server
+    {"dir-listing-ls-29", OK},
+    {"dir-listing-ls-30", OK},
+    {"dir-listing-ls-31", OK},
+    {"dir-listing-ls-32", OK},  // busybox
 
-  "dir-listing-netware-1",
-  "dir-listing-netware-2",
-  "dir-listing-netware-3",  // Spaces in file names.
-  "dir-listing-os2-1",
-  "dir-listing-vms-1",
-  "dir-listing-vms-2",
-  "dir-listing-vms-3",
-  "dir-listing-vms-4",
-  "dir-listing-vms-5",
-  "dir-listing-vms-6",
-  "dir-listing-vms-7",
-  "dir-listing-vms-8",
-  "dir-listing-windows-1",
-  "dir-listing-windows-2",
+    {"dir-listing-netware-1", OK},
+    {"dir-listing-netware-2", OK},
+    {"dir-listing-netware-3", OK},
+    {"dir-listing-os2-1", ERR_UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT},
+    {"dir-listing-vms-1", OK},
+    {"dir-listing-vms-2", OK},
+    {"dir-listing-vms-3", OK},
+    {"dir-listing-vms-4", OK},
+    {"dir-listing-vms-5", OK},
+    {"dir-listing-vms-6", OK},
+    {"dir-listing-vms-7", OK},
+    {"dir-listing-vms-8", OK},
+    {"dir-listing-windows-1", OK},
+    {"dir-listing-windows-2", OK},
 };
 
-INSTANTIATE_TEST_CASE_P(, FtpDirectoryListingParserTest,
-                        testing::ValuesIn(kTestFiles));
+INSTANTIATE_TEST_CASE_P(,
+                        FtpDirectoryListingParserTest,
+                        testing::ValuesIn(kTestParams),
+                        TestName);
 
 }  // namespace
 
