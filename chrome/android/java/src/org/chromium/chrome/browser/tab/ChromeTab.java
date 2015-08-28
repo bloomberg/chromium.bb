@@ -42,7 +42,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.chrome.browser.media.MediaNotificationService;
+import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
@@ -442,9 +442,9 @@ public class ChromeTab extends Tab {
         @Override
         public void navigationStateChanged(int flags) {
             if ((flags & InvalidateTypes.TAB) != 0) {
-                MediaNotificationService.updateMediaNotificationForTab(
+                MediaCaptureNotificationService.updateMediaNotificationForTab(
                         getApplicationContext(), getId(), isCapturingAudio(),
-                        isCapturingVideo(), false, getUrl());
+                        isCapturingVideo(), getUrl());
             }
             super.navigationStateChanged(flags);
         }
@@ -546,14 +546,6 @@ public class ChromeTab extends Tab {
         private boolean isCapturingVideo() {
             return !isClosing()
                     && ChromeWebContentsDelegateAndroid.nativeIsCapturingVideo(getWebContents());
-        }
-
-        /**
-         * @return Whether audio is being played.
-         */
-        private boolean hasAudibleAudio() {
-            return !isClosing()
-                    && ChromeWebContentsDelegateAndroid.nativeHasAudibleAudio(getWebContents());
         }
     }
 
@@ -784,8 +776,8 @@ public class ChromeTab extends Tab {
 
             @Override
             public void destroy() {
-                MediaNotificationService.updateMediaNotificationForTab(
-                        getApplicationContext(), getId(), false, false, false, getUrl());
+                MediaCaptureNotificationService.updateMediaNotificationForTab(
+                        getApplicationContext(), getId(), false, false, getUrl());
                 super.destroy();
             }
         };

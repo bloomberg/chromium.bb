@@ -2140,12 +2140,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_VIDEO_AUDIO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video and audio call is in progress">
         Accessing audio and video input
       </message>
-      <message name="IDS_AUDIO_PLAYBACK_NOTIFICATION_TEXT" desc="Text to be shown as a notification when a Chrome tab is playing audio">
-        Audio is playing
-      </message>
-      <message name="IDS_AUDIO_PLAYBACK_NOTIFICATION_TEXT_WITH_URL" desc="The notification will display this text for the user to identify the tab to return to when a Chrome tab is playing audio">
-        Audio is playing. Touch to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
-      </message>
       <message name="IDS_MEDIA_NOTIFICATION_LINK_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
         Touch to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
       </message>

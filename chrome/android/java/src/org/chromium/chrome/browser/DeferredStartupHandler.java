@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.bookmarkswidget.BookmarkThumbnailWidgetProvid
 import org.chromium.chrome.browser.crash.CrashFileManager;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.download.DownloadManagerService;
-import org.chromium.chrome.browser.media.MediaNotificationService;
+import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -119,7 +119,7 @@ public class DeferredStartupHandler {
         ShareHelper.clearSharedScreenshots(application);
 
         // Clear any media notifications that existed when Chrome was last killed.
-        MediaNotificationService.clearMediaNotifications(application);
+        MediaCaptureNotificationService.clearMediaNotifications(application);
 
         startModerateBindingManagementIfNeeded(application);
 

@@ -22,35 +22,24 @@ AudioStreamMonitor* AudioStreamMonitorFromRenderFrame(int render_process_id,
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(
           RenderFrameHost::FromID(render_process_id, render_frame_id)));
 
-  if (!web_contents)
-    return nullptr;
-
-  AudioStateProvider* audio_provider = web_contents->audio_state_provider();
-  return audio_provider ? audio_provider->audio_stream_monitor() : nullptr;
+  return web_contents ? web_contents->audio_stream_monitor() : nullptr;
 }
 
 }  // namespace
 
 AudioStreamMonitor::AudioStreamMonitor(WebContents* contents)
-    : AudioStateProvider(contents),
-      clock_(&default_tick_clock_)
+    : web_contents_(contents),
+      clock_(&default_tick_clock_),
+      was_recently_audible_(false)
 {
+  DCHECK(web_contents_);
 }
 
 AudioStreamMonitor::~AudioStreamMonitor() {}
 
-bool AudioStreamMonitor::IsAudioStateAvailable() const {
-  return media::AudioOutputController::will_monitor_audio_levels();
-}
-
-// This provider is the monitor.
-AudioStreamMonitor* AudioStreamMonitor::audio_stream_monitor() {
-  return this;
-}
-
 bool AudioStreamMonitor::WasRecentlyAudible() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return AudioStateProvider::WasRecentlyAudible();
+  return was_recently_audible_;
 }
 
 // static
@@ -59,7 +48,7 @@ void AudioStreamMonitor::StartMonitoringStream(
     int render_frame_id,
     int stream_id,
     const ReadPowerAndClipCallback& read_power_callback) {
-  if (!media::AudioOutputController::will_monitor_audio_levels())
+  if (!monitoring_available())
     return;
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
@@ -152,12 +141,16 @@ void AudioStreamMonitor::Poll() {
 }
 
 void AudioStreamMonitor::MaybeToggle() {
+  const bool indicator_was_on = was_recently_audible_;
   const base::TimeTicks off_time =
       last_blurt_time_ + base::TimeDelta::FromMilliseconds(kHoldOnMilliseconds);
   const base::TimeTicks now = clock_->NowTicks();
   const bool should_indicator_be_on = now < off_time;
 
-  Notify(should_indicator_be_on);
+  if (should_indicator_be_on != indicator_was_on) {
+    was_recently_audible_ = should_indicator_be_on;
+    web_contents_->NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  }
 
   if (!should_indicator_be_on) {
     off_timer_.Stop();

@@ -14,9 +14,9 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.util.SparseIntArray;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -27,29 +27,23 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Service that creates/destroys media related notifications.
- * There are two kinds of notifications:
- * 1. The WebRTC notification when media capture starts/stops.
- * 2. The audio playback notification when a tab is playing audio.
- * These notifications are made mutually exclusive: there can be
- * only one media notification for a tab.
+ * Service that creates/destroys the WebRTC notification when media capture starts/stops.
  */
-public class MediaNotificationService extends Service {
+public class MediaCaptureNotificationService extends Service {
 
-    private static final String NOTIFICATION_NAMESPACE = "MediaNotificationService";
+    private static final String NOTIFICATION_NAMESPACE = "MediaCaptureNotificationService";
 
     private static final String NOTIFICATION_ID_EXTRA = "NotificationId";
     private static final String NOTIFICATION_MEDIA_TYPE_EXTRA = "NotificationMediaType";
     private static final String NOTIFICATION_MEDIA_URL_EXTRA = "NotificationMediaUrl";
 
-    private static final String MEDIA_NOTIFICATION_IDS = "WebRTCNotificationIds";
-    private static final String LOG_TAG = "MediaNotificationService";
+    private static final String WEBRTC_NOTIFICATION_IDS = "WebRTCNotificationIds";
+    private static final String TAG = "cr.MediaCapture";
 
     private static final int MEDIATYPE_NO_MEDIA = 0;
-    private static final int MEDIATYPE_AUDIO_AND_VIDEO_CAPTURE = 1;
-    private static final int MEDIATYPE_VIDEO_CAPTURE_ONLY = 2;
-    private static final int MEDIATYPE_AUDIO_CAPTURE_ONLY = 3;
-    private static final int MEDIATYPE_AUDIO_PLAYBACK = 4;
+    private static final int MEDIATYPE_AUDIO_AND_VIDEO = 1;
+    private static final int MEDIATYPE_VIDEO_ONLY = 2;
+    private static final int MEDIATYPE_AUDIO_ONLY = 3;
 
     private NotificationManager mNotificationManager;
     private Context mContext;
@@ -103,14 +97,14 @@ public class MediaNotificationService extends Service {
      */
     private void cancelPreviousWebRtcNotifications() {
         Set<String> notificationIds =
-                mSharedPreferences.getStringSet(MEDIA_NOTIFICATION_IDS, null);
+                mSharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS, null);
         if (notificationIds == null) return;
         Iterator<String> iterator = notificationIds.iterator();
         while (iterator.hasNext()) {
             mNotificationManager.cancel(NOTIFICATION_NAMESPACE, Integer.parseInt(iterator.next()));
         }
         SharedPreferences.Editor sharedPreferenceEditor = mSharedPreferences.edit();
-        sharedPreferenceEditor.remove(MediaNotificationService.MEDIA_NOTIFICATION_IDS);
+        sharedPreferenceEditor.remove(MediaCaptureNotificationService.WEBRTC_NOTIFICATION_IDS);
         sharedPreferenceEditor.apply();
     }
 
@@ -154,18 +148,15 @@ public class MediaNotificationService extends Service {
     private void createNotification(int notificationId, int mediaType, String url) {
         int notificationContentTextId = 0;
         int notificationIconId = 0;
-        if (mediaType == MEDIATYPE_AUDIO_AND_VIDEO_CAPTURE) {
+        if (mediaType == MEDIATYPE_AUDIO_AND_VIDEO) {
             notificationContentTextId = R.string.video_audio_call_notification_text_2;
             notificationIconId = R.drawable.webrtc_video;
-        } else if (mediaType == MEDIATYPE_VIDEO_CAPTURE_ONLY) {
+        } else if (mediaType == MEDIATYPE_VIDEO_ONLY) {
             notificationContentTextId = R.string.video_call_notification_text_2;
             notificationIconId = R.drawable.webrtc_video;
-        } else if (mediaType == MEDIATYPE_AUDIO_CAPTURE_ONLY) {
+        } else if (mediaType == MEDIATYPE_AUDIO_ONLY) {
             notificationContentTextId = R.string.audio_call_notification_text_2;
             notificationIconId = R.drawable.webrtc_audio;
-        } else if (mediaType == MEDIATYPE_AUDIO_PLAYBACK) {
-            notificationContentTextId = R.string.audio_playback_notification_text;
-            notificationIconId = R.drawable.audio_playing;
         }
 
         Intent tabIntent = Tab.createBringTabToFrontIntent(notificationId);
@@ -198,7 +189,7 @@ public class MediaNotificationService extends Service {
      */
     private void updateSharedPreferencesEntry(int notificationId, boolean remove) {
         Set<String> notificationIds =
-                new HashSet<String>(mSharedPreferences.getStringSet(MEDIA_NOTIFICATION_IDS,
+                new HashSet<String>(mSharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS,
                         new HashSet<String>()));
         if (remove && !notificationIds.isEmpty()
                 && notificationIds.contains(String.valueOf(notificationId))) {
@@ -207,7 +198,7 @@ public class MediaNotificationService extends Service {
             notificationIds.add(String.valueOf(notificationId));
         }
         SharedPreferences.Editor sharedPreferenceEditor =  mSharedPreferences.edit();
-        sharedPreferenceEditor.putStringSet(MEDIA_NOTIFICATION_IDS, notificationIds);
+        sharedPreferenceEditor.putStringSet(WEBRTC_NOTIFICATION_IDS, notificationIds);
         sharedPreferenceEditor.apply();
     }
 
@@ -233,16 +224,13 @@ public class MediaNotificationService extends Service {
      * @param video If video is being captured.
      * @return A constant identify what media is being captured.
      */
-    public static int getMediaType(boolean audioCapture,
-            boolean videoCapture, boolean audioPlayback) {
-        if (audioCapture && videoCapture) {
-            return MEDIATYPE_AUDIO_AND_VIDEO_CAPTURE;
-        } else if (audioCapture) {
-            return MEDIATYPE_AUDIO_CAPTURE_ONLY;
-        } else if (videoCapture) {
-            return MEDIATYPE_VIDEO_CAPTURE_ONLY;
-        } else if (audioPlayback) {
-            return MEDIATYPE_AUDIO_PLAYBACK;
+    public static int getMediaType(boolean audio, boolean video) {
+        if (audio && video) {
+            return MEDIATYPE_AUDIO_AND_VIDEO;
+        } else if (audio) {
+            return MEDIATYPE_AUDIO_ONLY;
+        } else if (video) {
+            return MEDIATYPE_VIDEO_ONLY;
         } else {
             return MEDIATYPE_NO_MEDIA;
         }
@@ -253,7 +241,7 @@ public class MediaNotificationService extends Service {
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(context);
         Set<String> notificationIds =
-                sharedPreferences.getStringSet(MEDIA_NOTIFICATION_IDS, null);
+                sharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS, null);
         if (notificationIds != null
                 && !notificationIds.isEmpty()
                 && notificationIds.contains(String.valueOf(tabId))) {
@@ -263,26 +251,25 @@ public class MediaNotificationService extends Service {
     }
 
     /**
-     * Send an intent to MediaNotificationService to either create, update or destroy the
+     * Send an intent to MediaCaptureNotificationService to either create, update or destroy the
      * notification identified by tabId.
      * @param tabId Unique notification id.
      * @param audio If audio is being captured.
      * @param video If video is being captured.
      * @param fullUrl Url of the current webrtc call.
      */
-    public static void updateMediaNotificationForTab(Context context, int tabId,
-            boolean audioCapture, boolean videoCapture, boolean audioPlayback,
-            String fullUrl) {
-        int mediaType = getMediaType(audioCapture, videoCapture, audioPlayback);
+    public static void updateMediaNotificationForTab(
+            Context context, int tabId, boolean audio, boolean video, String fullUrl) {
+        int mediaType = getMediaType(audio, video);
         if (!shouldStartService(context, mediaType, tabId)) return;
-        Intent intent = new Intent(context, MediaNotificationService.class);
+        Intent intent = new Intent(context, MediaCaptureNotificationService.class);
         intent.putExtra(NOTIFICATION_ID_EXTRA, tabId);
         String baseUrl = fullUrl;
         try {
             URL url = new URL(fullUrl);
             baseUrl = url.getProtocol() + "://" + url.getHost();
         } catch (MalformedURLException e) {
-            Log.w(LOG_TAG, "Error parsing the webrtc url " + fullUrl);
+            Log.w(TAG, "Error parsing the webrtc url " + fullUrl);
         }
         intent.putExtra(NOTIFICATION_MEDIA_URL_EXTRA, baseUrl);
         intent.putExtra(NOTIFICATION_MEDIA_TYPE_EXTRA, mediaType);
@@ -296,9 +283,9 @@ public class MediaNotificationService extends Service {
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(context);
         Set<String> notificationIds =
-                sharedPreferences.getStringSet(MEDIA_NOTIFICATION_IDS, null);
+                sharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS, null);
         if (notificationIds == null || notificationIds.isEmpty()) return;
 
-        context.startService(new Intent(context, MediaNotificationService.class));
+        context.startService(new Intent(context, MediaCaptureNotificationService.class));
     }
 }

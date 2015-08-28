@@ -625,7 +625,7 @@ by a child template that "extends" this file.
         <!--  Receiver for lock screen input when casting -->
         <receiver android:name="org.chromium.chrome.browser.media.remote.LockScreenTransportControl$MediaButtonIntentReceiver"/>
 
-        <service android:name="org.chromium.chrome.browser.media.MediaNotificationService"
+        <service android:name="org.chromium.chrome.browser.media.MediaCaptureNotificationService"
             android:exported="false"/>
         <service android:name="org.chromium.chrome.browser.media.ui.NotificationMediaPlaybackControls$ListenerService"
             android:exported="false">

@@ -396,11 +396,3 @@ jboolean IsCapturingVideo(JNIEnv* env,
           GetMediaStreamCaptureIndicator();
   return indicator->IsCapturingVideo(web_contents);
 }
-
-jboolean HasAudibleAudio(JNIEnv* env,
-                         jclass clazz,
-                         jobject java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  return web_contents->WasRecentlyAudible();
-}

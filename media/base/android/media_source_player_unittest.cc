@@ -47,8 +47,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
         num_resources_requested_(0),
         num_metadata_changes_(0),
         timestamp_updated_(false),
-        is_audible_(false),
-        is_delay_expired_(false),
         allow_play_(true) {}
   ~MockMediaPlayerManager() override {}
 
@@ -86,10 +84,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     return allow_play_;
   }
 
-  void OnAudibleStateChanged(int player_id, bool is_audible_now) override {
-    is_audible_ = is_audible_now;
-  }
-
   bool playback_completed() const {
     return playback_completed_;
   }
@@ -114,18 +108,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     timestamp_updated_ = false;
   }
 
-  bool is_audible() const {
-    return is_audible_;
-  }
-
-  bool is_delay_expired() const {
-    return is_delay_expired_;
-  }
-
-  void SetDelayExpired(bool value) {
-    is_delay_expired_ = value;
-  }
-
   void set_allow_play(bool value) {
     allow_play_ = value;
   }
@@ -139,10 +121,6 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   int num_metadata_changes_;
   // Playback timestamp was updated.
   bool timestamp_updated_;
-  // Audible state of the pipeline
-  bool is_audible_;
-  // Helper flag to ensure delay for WaitForDelay().
-  bool is_delay_expired_;
   // Whether the manager will allow players that request playing.
   bool allow_play_;
 
@@ -566,37 +544,6 @@ class MediaSourcePlayerTest : public testing::Test {
     EXPECT_LE(target_timestamp, player_.GetCurrentTime());
   }
 
-  void PlayAudioForTimeInterval(const base::TimeDelta& start_timestamp,
-                                const base::TimeDelta& target_timestamp ) {
-
-    DemuxerData data = CreateReadFromDemuxerAckForAudio(1);
-    int current_timestamp = start_timestamp.InMilliseconds();
-    int stop_timestamp = target_timestamp.InMilliseconds();
-    while (current_timestamp < stop_timestamp) {
-      data.access_units[0].timestamp =
-          base::TimeDelta::FromMilliseconds(current_timestamp);
-      player_.OnDemuxerDataAvailable(data);
-      current_timestamp += 30;
-      WaitForAudioDecodeDone();
-    }
-  }
-
-  void WaitForDelay(const base::TimeDelta& delay) {
-    // Let the message_loop_ process events.
-    // We post delayed task and RunUnitilIdle() until it signals.
-
-    manager_.SetDelayExpired(false);
-    message_loop_.PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&MockMediaPlayerManager::SetDelayExpired,
-                   base::Unretained(&manager_),
-                   true),
-        delay);
-
-    while (!manager_.is_delay_expired())
-      message_loop_.RunUntilIdle();
-  }
-
   DemuxerData CreateReadFromDemuxerAckWithConfigChanged(
       bool is_audio,
       int config_unit_index,
@@ -921,8 +868,6 @@ class MediaSourcePlayerTest : public testing::Test {
   bool surface_texture_a_is_next_;
   int next_texture_id_;
 
-  bool verify_not_audible_is_called_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayerTest);
 };
 
@@ -952,107 +897,6 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
   // Decoder is not created after data is received.
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForAudio(0));
   EXPECT_FALSE(GetMediaCodecBridge(true));
-}
-
-// timav
-TEST_F(MediaSourcePlayerTest, AudioDecoderSetsAudibleState) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
-
-  // No data arrived yet
-  EXPECT_FALSE(manager_.is_audible());
-
-  // Initialize decoder
-  StartAudioDecoderJob();
-  player_.SetVolume(1.0);
-
-  // Process frames until prerolling is done.
-  SeekPlayerWithAbort(true, base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(IsPrerolling(true));
-  PrerollDecoderToTime(
-      true, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100), false);
-  EXPECT_TRUE(IsPrerolling(false));
-
-  // Send more packets
-  PlayAudioForTimeInterval(base::TimeDelta::FromMilliseconds(150),
-                           base::TimeDelta::FromMilliseconds(220));
-
-  // The player should trigger audible status
-  EXPECT_TRUE(manager_.is_audible());
-
-  // The player release should report a non-audible state.
-  ReleasePlayer();
-  EXPECT_FALSE(manager_.is_audible());
-}
-
-TEST_F(MediaSourcePlayerTest, AudioDecoderRemovesAudibleStateWhenPaused) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
-
-  // No data arrived yet
-  EXPECT_FALSE(manager_.is_audible());
-
-  // Initialize decoder
-  StartAudioDecoderJob();
-  player_.SetVolume(1.0);
-
-  // Process frames until prerolling is done.
-  SeekPlayerWithAbort(true, base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(IsPrerolling(true));
-  PrerollDecoderToTime(
-      true, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100), false);
-  EXPECT_TRUE(IsPrerolling(false));
-
-  // Send more packets
-  PlayAudioForTimeInterval(base::TimeDelta::FromMilliseconds(150),
-                           base::TimeDelta::FromMilliseconds(220));
-
-  // The player should trigger audible status
-  EXPECT_TRUE(manager_.is_audible());
-
-  // Pause the player
-  player_.Pause(true);
-
-  // Send more packets
-  PlayAudioForTimeInterval(base::TimeDelta::FromMilliseconds(240),
-                           base::TimeDelta::FromMilliseconds(280));
-
-  // The player should trigger audible status again
-  EXPECT_FALSE(manager_.is_audible());
-
-  player_.Release();
-}
-
-TEST_F(MediaSourcePlayerTest, AudioDecoderRemovesAudibleStateWhenIdle) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
-
-  // No data arrived yet
-  EXPECT_FALSE(manager_.is_audible());
-
-  // Initialize decoder
-  StartAudioDecoderJob();
-  player_.SetVolume(1.0);
-
-  // Process frames until prerolling is done.
-  SeekPlayerWithAbort(true, base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(IsPrerolling(true));
-  PrerollDecoderToTime(
-      true, base::TimeDelta(), base::TimeDelta::FromMilliseconds(100), false);
-  EXPECT_TRUE(IsPrerolling(false));
-
-  // Send more packets
-  PlayAudioForTimeInterval(base::TimeDelta::FromMilliseconds(150),
-                           base::TimeDelta::FromMilliseconds(220));
-
-  // The player should trigger audible status
-  EXPECT_TRUE(manager_.is_audible());
-
-  // Simulate the freeze on demuxer: wait for 300 ms
-  WaitForDelay(base::TimeDelta::FromMilliseconds(300));
-
-  // By this time the player should have reported
-  // that there is no audio.
-  EXPECT_FALSE(manager_.is_audible());
-
-  ReleasePlayer();
 }
 
 TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {

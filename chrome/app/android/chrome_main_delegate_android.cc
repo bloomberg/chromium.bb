@@ -17,10 +17,8 @@
 namespace {
 
 content::BrowserMediaPlayerManager* CreateRemoteMediaPlayerManager(
-    content::RenderFrameHost* render_frame_host,
-    content::MediaPlayersObserver* audio_monitor) {
-  return new remote_media::RemoteMediaPlayerManager(render_frame_host,
-                                                    audio_monitor);
+    content::RenderFrameHost* render_frame_host) {
+  return new remote_media::RemoteMediaPlayerManager(render_frame_host);
 }
 
 } // namespace

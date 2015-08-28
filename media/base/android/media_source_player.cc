@@ -134,8 +134,6 @@ void MediaSourcePlayer::Pause(bool is_media_related_action) {
   // MediaDecoderCallback() is called.
   playing_ = false;
   start_time_ticks_ = base::TimeTicks();
-
-  SetAudible(false);
 }
 
 bool MediaSourcePlayer::IsPlaying() {
@@ -188,7 +186,6 @@ void MediaSourcePlayer::Release() {
 
   decoder_starvation_callback_.Cancel();
 
-  SetAudible(false);
   DetachListener();
 }
 
@@ -495,18 +492,13 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
-  if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM) {
-    if (is_audio)
-      SetAudible(false);
+  if (status == MEDIA_CODEC_OUTPUT_END_OF_STREAM)
     return;
-  }
 
   if (!playing_) {
     if (is_clock_manager)
       interpolator_.StopInterpolating();
 
-    if (is_audio)
-      SetAudible(false);
     return;
   }
 
@@ -515,9 +507,6 @@ void MediaSourcePlayer::MediaDecoderCallback(
       DVLOG(2) << __FUNCTION__ << ": Key was added during decoding.";
       ResumePlaybackAfterKeyAdded();
     } else {
-      if (is_audio)
-        SetAudible(false);
-
       is_waiting_for_key_ = true;
       manager()->OnWaitingForDecryptionKey(player_id());
     }
@@ -537,11 +526,8 @@ void MediaSourcePlayer::MediaDecoderCallback(
   // If the status is MEDIA_CODEC_ABORT, stop decoding new data. The player is
   // in the middle of a seek or stop event and needs to wait for the IPCs to
   // come.
-  if (status == MEDIA_CODEC_ABORT) {
-    if (is_audio)
-      SetAudible(false);
+  if (status == MEDIA_CODEC_ABORT)
     return;
-  }
 
   if (prerolling_ && IsPrerollFinished(is_audio)) {
     if (IsPrerollFinished(!is_audio)) {
@@ -549,13 +535,6 @@ void MediaSourcePlayer::MediaDecoderCallback(
       StartInternal();
     }
     return;
-  }
-
-  // We successfully decoded a frame and going to the next one.
-  // Set the audible state.
-  if (is_audio) {
-    bool is_audible = !prerolling_ && audio_decoder_job_->volume() > 0;
-    SetAudible(is_audible);
   }
 
   if (is_clock_manager) {
@@ -669,13 +648,6 @@ bool MediaSourcePlayer::VideoFinished() {
 
 void MediaSourcePlayer::OnDecoderStarved() {
   DVLOG(1) << __FUNCTION__;
-
-  if (HasAudio()) {
-    // If the starvation timer fired but there are no encoded frames
-    // in the queue we believe the demuxer (i.e. renderer process) froze.
-    if (!audio_decoder_job_->HasData())
-      SetAudible(false);
-  }
 
   SetPendingEvent(PREFETCH_REQUEST_EVENT_PENDING);
   ProcessPendingEvents();

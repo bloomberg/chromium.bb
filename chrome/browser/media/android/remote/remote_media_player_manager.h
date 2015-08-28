@@ -21,9 +21,8 @@ namespace remote_media {
 // remotely.
 class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
  public:
-  RemoteMediaPlayerManager(
-      content::RenderFrameHost* render_frame_host,
-      content::MediaPlayersObserver* audio_monitor);
+  explicit RemoteMediaPlayerManager(
+      content::RenderFrameHost* render_frame_host);
   ~RemoteMediaPlayerManager() override;
 
   void OnPlaying(int player_id);

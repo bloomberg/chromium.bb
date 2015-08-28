@@ -7,7 +7,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/command_line.h"
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/media_players_observer.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/media/android/media_session.h"
@@ -121,11 +120,10 @@ void BrowserMediaPlayerManager::SetSurfacePeer(
 
 // static
 BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
-    RenderFrameHost* rfh,
-    MediaPlayersObserver* audio_monitor) {
+    RenderFrameHost* rfh) {
   if (g_factory)
-    return g_factory(rfh, audio_monitor);
-  return new BrowserMediaPlayerManager(rfh, audio_monitor);
+    return g_factory(rfh);
+  return new BrowserMediaPlayerManager(rfh);
 }
 
 ContentViewCore* BrowserMediaPlayerManager::GetContentViewCore() const {
@@ -194,10 +192,8 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
 }
 
 BrowserMediaPlayerManager::BrowserMediaPlayerManager(
-    RenderFrameHost* render_frame_host,
-    MediaPlayersObserver* audio_monitor)
+    RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host),
-      audio_monitor_(audio_monitor),
       fullscreen_player_id_(kInvalidMediaPlayerId),
       fullscreen_player_is_released_(false),
       web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
@@ -335,12 +331,6 @@ void BrowserMediaPlayerManager::OnVideoSizeChanged(
       width, height));
   if (fullscreen_player_id_ == player_id)
     video_view_->OnVideoSizeChanged(width, height);
-}
-
-void BrowserMediaPlayerManager::OnAudibleStateChanged(
-    int player_id, bool is_audible) {
-  audio_monitor_->OnAudibleStateChanged(
-      render_frame_host_, player_id, is_audible);
 }
 
 void BrowserMediaPlayerManager::OnWaitingForDecryptionKey(int player_id) {
@@ -623,7 +613,6 @@ void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
       ReleaseMediaResources(player_id);
       (*it)->DeleteOnCorrectThread();
       players_.weak_erase(it);
-      audio_monitor_->RemovePlayer(render_frame_host_, player_id);
       MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
       break;
     }

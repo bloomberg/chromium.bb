@@ -15,9 +15,8 @@ using media::MediaPlayerAndroid;
 namespace remote_media {
 
 RemoteMediaPlayerManager::RemoteMediaPlayerManager(
-    content::RenderFrameHost* render_frame_host,
-    content::MediaPlayersObserver* audio_monitor)
-    : BrowserMediaPlayerManager(render_frame_host, audio_monitor),
+    content::RenderFrameHost* render_frame_host)
+    : BrowserMediaPlayerManager(render_frame_host),
       weak_ptr_factory_(this) {
 }
 
