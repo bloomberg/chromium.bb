@@ -177,6 +177,7 @@
 
 #if defined(OS_WIN)
 #include "base/environment.h"  // For PreRead experiment.
+#include "base/trace_event/trace_event_etw_export_win.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/chrome_browser_main_win.h"
@@ -909,6 +910,18 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
                                         about_flags::kAddSentinels);
   }
 #endif  // !defined(OS_CHROMEOS)
+
+#if defined(OS_WIN)
+  // This is needed to enable ETW exporting when requested in about:flags.
+  // Normally, we enable it in ContentMainRunnerImpl::Initialize when the flag
+  // is present on the command line but flags in about:flags are converted only
+  // after this function runs. Note that this starts exporting later which
+  // affects tracing the browser startup. Also, this is only relevant for the
+  // browser process, as other processes will get all the flags on their command
+  // line regardless of the origin (command line or about:flags).
+  if (parsed_command_line().HasSwitch(switches::kTraceExportEventsToETW))
+    base::trace_event::TraceEventETWExport::EnableETWExport();
+#endif  // OS_WIN
 
   local_state_->UpdateCommandLinePrefStore(
       new CommandLinePrefStore(base::CommandLine::ForCurrentProcess()));
