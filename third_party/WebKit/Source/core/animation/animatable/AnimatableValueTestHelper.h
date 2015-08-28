@@ -51,11 +51,6 @@
 
 #include "core/css/CSSValueTestHelper.h"
 
-// FIXME: Move to something like core/wtf/WTFTestHelpers.h
-// Compares the targets of two RefPtrs for equality.
-// (Objects still need an operator== defined for this to work).
-#define EXPECT_REFV_EQ(a, b) EXPECT_EQ(*(a.get()), *(b.get()))
-
 namespace blink {
 
 bool operator==(const AnimatableValue&, const AnimatableValue&);
