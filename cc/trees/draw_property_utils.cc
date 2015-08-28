@@ -518,13 +518,16 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     if (!clip_node->data.inherit_parent_target_space_clip) {
       gfx::RectF clip_in_target_space =
           MathUtil::MapClippedRect(clip_to_target, clip_node->data.clip);
-
       intersected_in_target_space = gfx::IntersectRects(
           inherited_clip_in_target_space, clip_in_target_space);
+      if (!clip_node->data.requires_tight_clip_rect)
+        clip_node->data.clip_in_target_space = clip_in_target_space;
+      else
+        clip_node->data.clip_in_target_space = intersected_in_target_space;
     } else {
       intersected_in_target_space = inherited_clip_in_target_space;
+      clip_node->data.clip_in_target_space = intersected_in_target_space;
     }
-    clip_node->data.clip_in_target_space = intersected_in_target_space;
 
     clip_node->data.combined_clip = MathUtil::ProjectClippedRect(
         target_to_clip, intersected_in_target_space);
