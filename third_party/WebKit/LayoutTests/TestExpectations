@@ -600,7 +600,6 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrin
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001v.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001w.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001x.html [ Failure ]
-crbug.com/410320 fast/table/border-collapsing/border-collapsing-head-foot-vertical.html [ NeedsRebaseline ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001.html [ Skip ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Failure ]
 
