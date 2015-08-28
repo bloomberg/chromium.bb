@@ -1,15 +1,15 @@
 {
-  "bounds": [2008, 2016],
+  "bounds": [785, 2016],
   "children": [
     {
-      "bounds": [2008, 2016],
+      "bounds": [785, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 8, 50, 50]
+        [100, 500, 200, 200]
       ],
       "paintInvalidationClients": [
-        "LayoutImage IMG id='targetImage'"
+        "LayoutBlockFlow (positioned) DIV id='fixed'"
       ]
     }
   ]

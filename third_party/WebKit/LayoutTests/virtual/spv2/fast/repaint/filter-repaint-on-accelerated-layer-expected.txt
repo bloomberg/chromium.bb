@@ -1,15 +1,15 @@
 {
-  "bounds": [2008, 2016],
+  "bounds": [800, 600],
   "children": [
     {
-      "bounds": [2008, 2016],
+      "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 8, 50, 50]
+        [108, 8, 100, 200]
       ],
       "paintInvalidationClients": [
-        "LayoutImage IMG id='targetImage'"
+        "LayoutBlockFlow DIV id='resize' class='accelerated'"
       ]
     }
   ]

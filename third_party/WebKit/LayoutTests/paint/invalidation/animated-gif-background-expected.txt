@@ -8,6 +8,10 @@
       "repaintRects": [
         [8, 58, 50, 50],
         [8, 8, 50, 50]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='targetImage'",
+        "LayoutImage IMG id='testTarget'"
       ]
     }
   ]

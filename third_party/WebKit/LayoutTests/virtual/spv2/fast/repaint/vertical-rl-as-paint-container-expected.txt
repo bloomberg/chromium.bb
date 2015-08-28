@@ -1,0 +1,21 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [528, 8, 80, 340]
+      ],
+      "paintInvalidationClients": [
+        "LayoutText #text",
+        "InlineTextBox 'Lorem ipsum dolor'",
+        "InlineTextBox 'sit amet,'",
+        "InlineTextBox 'consectetur'",
+        "InlineTextBox 'adipiscing elit.'"
+      ]
+    }
+  ]
+}
+

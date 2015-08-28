@@ -1,0 +1,18 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [-32, -32, 312, 312],
+        [-32, -32, 212, 312]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'"
+      ]
+    }
+  ]
+}
+
