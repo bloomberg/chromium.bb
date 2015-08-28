@@ -60,6 +60,9 @@ function PrivateScriptController()
 
         // Web Crypto
         "OperationError",
+
+        // Push API
+        "PermissionDeniedError",
     ];
 
     // This list must be in sync with the enum in ExceptionCode.h. The order matters.

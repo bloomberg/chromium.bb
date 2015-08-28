@@ -21,6 +21,8 @@ DOMException* PushError::take(ScriptPromiseResolver*, const WebPushError& webErr
         return DOMException::create(NotFoundError, webError.message);
     case WebPushError::ErrorTypeNotSupported:
         return DOMException::create(NotSupportedError, webError.message);
+    case WebPushError::ErrorTypePermissionDenied:
+        return DOMException::create(PermissionDeniedError, webError.message);
     case WebPushError::ErrorTypeUnknown:
         return DOMException::create(UnknownError, webError.message);
     }

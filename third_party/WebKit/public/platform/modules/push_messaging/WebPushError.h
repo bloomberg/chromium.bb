@@ -15,6 +15,7 @@ struct WebPushError {
         ErrorTypeNetwork,
         ErrorTypeNotFound,
         ErrorTypeNotSupported,
+        ErrorTypePermissionDenied,
         ErrorTypeUnknown,
         ErrorTypeLast = ErrorTypeUnknown
     };

@@ -81,6 +81,9 @@ enum {
 
     // Web Crypto
     OperationError,
+
+    // Push API
+    PermissionDeniedError,
 };
 
 enum V8ErrorType {

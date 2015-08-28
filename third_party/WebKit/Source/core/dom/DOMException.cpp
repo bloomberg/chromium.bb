@@ -79,6 +79,9 @@ static const struct CoreException {
 
     // Web Crypto
     { "OperationError", "The operation failed for an operation-specific reason", 0 },
+
+    // Push API
+    { "PermissionDeniedError", "User or security policy denied the request.", 0 },
 };
 
 static const CoreException* getErrorEntry(ExceptionCode ec)
