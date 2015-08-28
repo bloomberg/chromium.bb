@@ -113,7 +113,6 @@ static const char* const kSwitchNames[] = {
   switches::kNoSandbox,
   switches::kProfilerTiming,
   switches::kTestGLLib,
-  switches::kTraceConfigFile,
   switches::kTraceStartup,
   switches::kTraceToConsole,
   switches::kV,
