@@ -240,6 +240,12 @@ GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
   event->key.group = keyboard_group;
   event->key.is_modifier = IsKeycodeModifierKey(xkey.keycode);
 
+  // See gtk2_event_loop.cc where it packs a GdkEvent into an XEvent for this
+  // magical decoding.
+  if (xkey.send_event && xkey.x == -1 && xkey.y == -1 &&
+      xkey.x_root == static_cast<int>(xkey.keycode))
+    event->key.state |= (xkey.y_root << 16);
+
   char keybits[32] = {0};
   XQueryKeymap(xkey.display, keybits);
   if (IsAnyOfKeycodesPressed(meta_keycodes_, keybits, sizeof keybits * 8))

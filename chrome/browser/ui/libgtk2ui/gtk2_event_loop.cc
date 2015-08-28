@@ -8,6 +8,7 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <X11/X.h>
+#include <X11/Xlib.h>
 
 #include "base/memory/singleton.h"
 #include "ui/gfx/x/x11_types.h"
@@ -70,7 +71,15 @@ void Gtk2EventLoop::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   x_event.xkey.keycode = gdk_event_key.hardware_keycode;
   x_event.xkey.same_screen = true;
 
-  XPutBackEvent(x_event.xkey.display, &x_event);
+  // ibus-gtk uses the top 16 bits of the xkey.state; but Xserver only
+  // supports 16 bit accuracy on this field over the wire so we pack
+  // the upper 16 bits into another unused field. (crbug.com/524084)
+  x_event.xkey.x = x_event.xkey.y = -1;
+  x_event.xkey.x_root  = gdk_event_key.hardware_keycode;
+  x_event.xkey.y_root = gdk_event_key.state >> 16;
+
+  XSendEvent(x_event.xkey.display, x_event.xkey.window, true, KeyPressMask,
+             &x_event);
 }
 
 }  // namespace libgtk2ui
