@@ -20,6 +20,7 @@
                 tag: "notification",
                 icon: "http://localhost/my_icon.png",
                 silent: true,
+                requireInteraction: true,
                 data: "my data",
                 actions: []
             };
@@ -40,6 +41,7 @@
             assert_equals(notification.tag, options.tag);
             assert_equals(notification.icon, options.icon);
             assert_true(notification.silent);
+            assert_true(notification.requireInteraction);
             assert_equals(notification.data, options.data);
             // Only the first maxActions actions should be reflected.
             assert_object_equals(notification.actions, options.actions.slice(0, Notification.maxActions));
@@ -63,6 +65,7 @@
             assert_equals(emptyNotification.icon, "");
             assert_equals(notification.vibrate, null);
             assert_false(emptyNotification.silent);
+            assert_false(emptyNotification.requireInteraction);
             assert_equals(emptyNotification.data, null);
             assert_array_equals(emptyNotification.actions, []);
 

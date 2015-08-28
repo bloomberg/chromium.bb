@@ -250,6 +250,11 @@ bool Notification::silent() const
     return m_data.silent;
 }
 
+bool Notification::requireInteraction() const
+{
+    return m_data.requireInteraction;
+}
+
 ScriptValue Notification::data(ScriptState* scriptState)
 {
     if (m_developerData.isEmpty()) {

@@ -28,6 +28,7 @@
               icon: 'https://example/icon.png',
               vibrate: [100, 200, 300],
               silent: false,
+              requireInteraction: true,
               data: [
                   { property: 'foobar',
                     string: '\uDFFF\u0000\uDBFF',
@@ -70,6 +71,10 @@
 
                   options.actions = options.actions.slice(0, Notification.maxActions);
                   Object.keys(options).forEach(function(key) {
+                      if (key == 'requireInteraction') {
+                          // TODO(johnme): requireInteraction is not yet serialized properly.
+                          return;
+                      }
                       if (typeof options[key] == 'object')
                           assert_object_equals(event.data.notification[key], options[key], 'The ' + key + ' field must be the same.');
                       else

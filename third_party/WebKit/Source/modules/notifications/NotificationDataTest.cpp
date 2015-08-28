@@ -26,6 +26,7 @@ const char kNotificationTag[] = "my_tag";
 const char kNotificationIcon[] = "https://example.com/icon.png";
 const unsigned kNotificationVibration[] = { 42, 10, 20, 30, 40 };
 const bool kNotificationSilent = false;
+const bool kNotificationRequireInteraction = true;
 
 const char kNotificationActionAction[] = "my_action";
 const char kNotificationActionTitle[] = "My Action";
@@ -72,6 +73,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
     options.setIcon(kNotificationIcon);
     options.setVibrate(vibrationSequence);
     options.setSilent(kNotificationSilent);
+    options.setRequireInteraction(kNotificationRequireInteraction);
     options.setActions(actions);
 
     // TODO(peter): Test |options.data| and |notificationData.data|.
@@ -94,6 +96,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
         EXPECT_EQ(vibrationPattern[i], static_cast<unsigned>(notificationData.vibrate[i]));
 
     EXPECT_EQ(kNotificationSilent, notificationData.silent);
+    EXPECT_EQ(kNotificationRequireInteraction, notificationData.requireInteraction);
     EXPECT_EQ(actions.size(), notificationData.actions.size());
 }
 

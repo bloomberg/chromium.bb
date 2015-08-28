@@ -91,6 +91,7 @@ public:
     String icon() const;
     NavigatorVibration::VibrationPattern vibrate(bool& isNull) const;
     bool silent() const;
+    bool requireInteraction() const;
     ScriptValue data(ScriptState*);
     HeapVector<NotificationAction> actions() const;
 

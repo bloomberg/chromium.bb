@@ -28,6 +28,7 @@ struct WebNotificationData {
     WebURL icon;
     WebVector<int> vibrate;
     bool silent = false;
+    bool requireInteraction = false;
     WebVector<char> data;
     WebVector<WebNotificationAction> actions;
 };

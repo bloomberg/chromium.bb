@@ -57,6 +57,7 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
     webData.icon = iconUrl;
     webData.vibrate = NavigatorVibration::sanitizeVibrationPattern(options.vibrate());
     webData.silent = options.silent();
+    webData.requireInteraction = options.requireInteraction();
 
     if (options.hasData()) {
         RefPtr<SerializedScriptValue> serializedScriptValue = SerializedScriptValueFactory::instance().create(options.data().isolate(), options.data(), nullptr, exceptionState);
