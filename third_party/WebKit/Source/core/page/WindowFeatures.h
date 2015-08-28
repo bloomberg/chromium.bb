@@ -29,6 +29,7 @@
 #ifndef WindowFeatures_h
 #define WindowFeatures_h
 
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
@@ -37,6 +38,7 @@ namespace blink {
 class IntRect;
 
 struct WindowFeatures {
+    DISALLOW_ALLOCATION();
     WindowFeatures()
         : x(0)
         , xSet(false)

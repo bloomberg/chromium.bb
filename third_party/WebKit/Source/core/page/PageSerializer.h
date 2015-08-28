@@ -64,6 +64,7 @@ class CORE_EXPORT PageSerializer final {
     STACK_ALLOCATED();
 public:
     class Delegate {
+        WTF_MAKE_FAST_ALLOCATED(Delegate);
     public:
         virtual ~Delegate() { }
         virtual bool shouldIgnoreAttribute(const Attribute&) = 0;

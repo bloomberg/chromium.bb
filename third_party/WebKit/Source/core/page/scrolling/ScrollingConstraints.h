@@ -27,12 +27,14 @@
 #define ScrollingConstraints_h
 
 #include "platform/geometry/FloatRect.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 // ViewportConstraints classes encapsulate data and logic required to reposition elements whose layout
 // depends on the viewport rect (i.e., position fixed), when scrolling and zooming.
 class ViewportConstraints {
+    STACK_ALLOCATED();
 public:
     // FIXME: Simplify this code now that position: sticky doesn't exist.
     enum ConstraintType {
@@ -74,6 +76,7 @@ protected:
 };
 
 class FixedPositionViewportConstraints final : public ViewportConstraints {
+    STACK_ALLOCATED();
 public:
     FixedPositionViewportConstraints()
         : ViewportConstraints()

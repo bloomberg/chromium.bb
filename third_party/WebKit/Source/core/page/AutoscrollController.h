@@ -53,6 +53,7 @@ enum AutoscrollType {
 
 // AutscrollController handels autoscroll and pan scroll for EventHandler.
 class CORE_EXPORT AutoscrollController final : public NoBaseWillBeGarbageCollected<AutoscrollController> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(AutoscrollController);
 public:
     static PassOwnPtrWillBeRawPtr<AutoscrollController> create(Page&);
     DECLARE_TRACE();

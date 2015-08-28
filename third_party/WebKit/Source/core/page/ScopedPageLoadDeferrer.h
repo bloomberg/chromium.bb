@@ -32,6 +32,7 @@ class Page;
 
 class CORE_EXPORT ScopedPageLoadDeferrer final : public NoBaseWillBeGarbageCollectedFinalized<ScopedPageLoadDeferrer> {
     WTF_MAKE_NONCOPYABLE(ScopedPageLoadDeferrer);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScopedPageLoadDeferrer);
 public:
     ScopedPageLoadDeferrer(Page* exclusion = nullptr);
     ~ScopedPageLoadDeferrer();

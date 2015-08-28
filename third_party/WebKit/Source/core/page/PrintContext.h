@@ -40,6 +40,7 @@ class IntRect;
 class Node;
 
 class CORE_EXPORT PrintContext : public NoBaseWillBeGarbageCollectedFinalized<PrintContext> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PrintContext);
 public:
     explicit PrintContext(LocalFrame*);
     virtual ~PrintContext();
