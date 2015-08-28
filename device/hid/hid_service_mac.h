@@ -26,13 +26,12 @@ class HidConnection;
 class HidServiceMac : public HidService {
  public:
   HidServiceMac(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  ~HidServiceMac() override;
 
   void Connect(const HidDeviceId& device_id,
                const ConnectCallback& connect) override;
 
  private:
-  ~HidServiceMac() override;
-
   // IOService matching callbacks.
   static void FirstMatchCallback(void* context, io_iterator_t iterator);
   static void TerminatedCallback(void* context, io_iterator_t iterator);

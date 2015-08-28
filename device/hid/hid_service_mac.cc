@@ -129,6 +129,8 @@ HidServiceMac::HidServiceMac(
   FirstEnumerationComplete();
 }
 
+HidServiceMac::~HidServiceMac() {}
+
 void HidServiceMac::Connect(const HidDeviceId& device_id,
                             const ConnectCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -178,9 +180,6 @@ void HidServiceMac::Connect(const HidDeviceId& device_id,
       FROM_HERE, base::Bind(callback, make_scoped_refptr(new HidConnectionMac(
                                           hid_device.release(), device_info,
                                           file_task_runner_))));
-}
-
-HidServiceMac::~HidServiceMac() {
 }
 
 // static

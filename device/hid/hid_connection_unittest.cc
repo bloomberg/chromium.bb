@@ -153,7 +153,7 @@ class HidConnectionTest : public testing::Test {
     io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
     device_client_.reset(new TestDeviceClient(io_thread_->task_runner()));
 
-    service_ = HidService::GetInstance(io_thread_->task_runner());
+    service_ = DeviceClient::Get()->GetHidService();
     ASSERT_TRUE(service_);
 
     test_gadget_ = UsbTestGadget::Claim(io_thread_->task_runner());

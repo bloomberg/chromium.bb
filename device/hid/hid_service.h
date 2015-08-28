@@ -43,13 +43,12 @@ class HidService {
   typedef base::Callback<void(scoped_refptr<HidConnection> connection)>
       ConnectCallback;
 
-  // Gets a pointer to the HidService singleton. This function should be called
-  // on a thread with a MessageLoopForUI and be passed the task runner for a
-  // thread with a MessageLoopForIO.
-  static HidService* GetInstance(
+  // This function should be called on a thread with a MessageLoopForUI and be
+  // passed the task runner for a thread with a MessageLoopForIO.
+  static scoped_ptr<HidService> Create(
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
-  static void SetInstanceForTest(HidService* instance);
+  virtual ~HidService();
 
   // Enumerates available devices. The provided callback will always be posted
   // to the calling thread's task runner.
@@ -69,13 +68,11 @@ class HidService {
                        const ConnectCallback& callback) = 0;
 
  protected:
-  friend void base::DeletePointer<HidService>(HidService* service);
   friend class HidConnectionTest;
 
   typedef std::map<HidDeviceId, scoped_refptr<HidDeviceInfo>> DeviceMap;
 
   HidService();
-  virtual ~HidService();
 
   void AddDevice(scoped_refptr<HidDeviceInfo> info);
   void RemoveDevice(const HidDeviceId& device_id);

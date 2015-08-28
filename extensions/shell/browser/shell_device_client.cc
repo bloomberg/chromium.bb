@@ -29,8 +29,11 @@ device::UsbService* ShellDeviceClient::GetUsbService() {
 
 device::HidService* ShellDeviceClient::GetHidService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return device::HidService::GetInstance(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  if (!hid_service_) {
+    hid_service_ = device::HidService::Create(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+  }
+  return hid_service_.get();
 }
 
 }

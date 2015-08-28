@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "device/core/device_client.h"
 #include "device/hid/hid_collection_info.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"
@@ -168,6 +169,19 @@ class MockHidService : public HidService {
   }
 };
 
+class TestDeviceClient : public DeviceClient {
+ public:
+  TestDeviceClient() : DeviceClient() {}
+  ~TestDeviceClient() override {}
+
+  MockHidService& mock_service() { return hid_service_; }
+
+ private:
+  HidService* GetHidService() override { return &hid_service_; }
+
+  MockHidService hid_service_;
+};
+
 }  // namespace device
 
 namespace extensions {
@@ -208,12 +222,11 @@ class HidApiTest : public ShellApiTest {
  public:
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-    hid_service_ = new device::MockHidService();
-    HidService::SetInstanceForTest(hid_service_);
+    device_client_.reset(new device::TestDeviceClient());
   }
 
  protected:
-  device::MockHidService* hid_service_;
+  scoped_ptr<device::TestDeviceClient> device_client_;
 };
 
 IN_PROC_BROWSER_TEST_F(HidApiTest, HidApp) {
@@ -230,8 +243,10 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceAdded) {
 
   // Add a blocked device first so that the test will fail if a notification is
   // received.
-  hid_service_->AddDevice(kTestDeviceIds[3], 0x18D1, 0x58F1, false);
-  hid_service_->AddDevice(kTestDeviceIds[4], 0x18D1, 0x58F0, false);
+  device_client_->mock_service().AddDevice(kTestDeviceIds[3], 0x18D1, 0x58F1,
+                                           false);
+  device_client_->mock_service().AddDevice(kTestDeviceIds[4], 0x18D1, 0x58F0,
+                                           false);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
@@ -246,9 +261,9 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
 
   // Device C was not returned by chrome.hid.getDevices, the app will not get
   // a notification.
-  hid_service_->RemoveDevice(kTestDeviceIds[2]);
+  device_client_->mock_service().RemoveDevice(kTestDeviceIds[2]);
   // Device A was returned, the app will get a notification.
-  hid_service_->RemoveDevice(kTestDeviceIds[0]);
+  device_client_->mock_service().RemoveDevice(kTestDeviceIds[0]);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
@@ -261,11 +276,12 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, GetUserSelectedDevices) {
   ASSERT_TRUE(open_listener.WaitUntilSatisfied());
 
   ExtensionTestMessageListener remove_listener("removed", false);
-  hid_service_->RemoveDevice(kTestDeviceIds[0]);
+  device_client_->mock_service().RemoveDevice(kTestDeviceIds[0]);
   ASSERT_TRUE(remove_listener.WaitUntilSatisfied());
 
   ExtensionTestMessageListener add_listener("added", false);
-  hid_service_->AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, true);
+  device_client_->mock_service().AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0,
+                                           true);
   ASSERT_TRUE(add_listener.WaitUntilSatisfied());
 }
 

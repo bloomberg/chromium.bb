@@ -16,11 +16,13 @@ TestDeviceClient::TestDeviceClient(
 TestDeviceClient::~TestDeviceClient() {}
 
 HidService* TestDeviceClient::GetHidService() {
-#if !defined(OS_LINUX) || defined(USE_UDEV)
-  return HidService::GetInstance(blocking_task_runner_);
-#else
-  return nullptr;
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && \
+    !(defined(OS_LINUX) && !defined(USE_UDEV))
+  if (!hid_service_) {
+    hid_service_ = HidService::Create(blocking_task_runner_);
+  }
 #endif
+  return hid_service_.get();
 }
 
 UsbService* TestDeviceClient::GetUsbService() {

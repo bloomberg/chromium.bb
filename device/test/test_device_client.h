@@ -24,6 +24,7 @@ class TestDeviceClient : public DeviceClient {
   HidService* GetHidService() override;
   UsbService* GetUsbService() override;
 
+  scoped_ptr<HidService> hid_service_;
   scoped_ptr<UsbService> usb_service_;
   scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner_;
 };

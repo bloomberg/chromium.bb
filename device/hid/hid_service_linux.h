@@ -22,6 +22,7 @@ class HidConnection;
 class HidServiceLinux : public HidService {
  public:
   HidServiceLinux(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  ~HidServiceLinux() override;
 
   void Connect(const HidDeviceId& device_id,
                const ConnectCallback& callback) override;
@@ -29,8 +30,6 @@ class HidServiceLinux : public HidService {
  private:
   struct ConnectParams;
   class FileThreadHelper;
-
-  ~HidServiceLinux() override;
 
   // These functions implement the process of locating, requesting access to and
   // opening a device. Because this operation crosses multiple threads these

@@ -29,13 +29,6 @@
 
 namespace device {
 
-namespace {
-
-void Noop() {
-  // This function does nothing.
-}
-}
-
 HidServiceWin::HidServiceWin(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : file_task_runner_(file_task_runner),
@@ -52,6 +45,8 @@ HidServiceWin::HidServiceWin(
       FROM_HERE, base::Bind(&HidServiceWin::EnumerateOnFileThread,
                             weak_factory_.GetWeakPtr(), task_runner_));
 }
+
+HidServiceWin::~HidServiceWin() {}
 
 void HidServiceWin::Connect(const HidDeviceId& device_id,
                             const ConnectCallback& callback) {
@@ -73,9 +68,6 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(callback, new HidConnectionWin(device_info, file.Pass())));
-}
-
-HidServiceWin::~HidServiceWin() {
 }
 
 // static
@@ -286,7 +278,7 @@ void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
   // Execute a no-op closure on the file task runner to synchronize with any
   // devices that are still being enumerated.
   file_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&Noop),
+      FROM_HERE, base::Bind(&base::DoNothing),
       base::Bind(&HidServiceWin::RemoveDevice, weak_factory_.GetWeakPtr(),
                  device_path));
 }

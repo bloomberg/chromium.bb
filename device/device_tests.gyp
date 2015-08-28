@@ -118,10 +118,6 @@
             ['exclude', '(^|/)serial'],
             ['exclude', '(^|/)usb'],
           ],
-          'sources!': [
-            'test/test_device_client.cc',
-            'test/test_device_client.h',
-          ],
         }],
         ['OS=="mac"', {
           'dependencies': [

@@ -215,6 +215,10 @@ HidServiceLinux::HidServiceLinux(
       FROM_HERE, base::Bind(&FileThreadHelper::Start, base::Passed(&helper)));
 }
 
+HidServiceLinux::~HidServiceLinux() {
+  file_task_runner_->DeleteSoon(FROM_HERE, helper_);
+}
+
 void HidServiceLinux::Connect(const HidDeviceId& device_id,
                               const ConnectCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -242,10 +246,6 @@ void HidServiceLinux::Connect(const HidDeviceId& device_id,
                               base::Bind(&HidServiceLinux::OpenOnBlockingThread,
                                          base::Passed(&params)));
 #endif  // defined(OS_CHROMEOS)
-}
-
-HidServiceLinux::~HidServiceLinux() {
-  file_task_runner_->DeleteSoon(FROM_HERE, helper_);
 }
 
 #if defined(OS_CHROMEOS)
