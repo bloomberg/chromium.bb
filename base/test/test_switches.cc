@@ -18,7 +18,8 @@ const char switches::kTestLauncherBotMode[] =
 const char switches::kTestLauncherDebugLauncher[] =
     "test-launcher-debug-launcher";
 
-// Force running all requested tests even when too many errors occur.
+// Force running all requested tests and retries even if too many test errors
+// occur.
 const char switches::kTestLauncherForceRunBrokenTests[] =
     "test-launcher-force-run-broken-tests";
 

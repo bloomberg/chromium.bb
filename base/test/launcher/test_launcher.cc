@@ -644,7 +644,7 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
     return;
   }
 
-  if (tests_to_retry_.size() >= broken_threshold) {
+  if (!force_run_broken_tests_ && tests_to_retry_.size() >= broken_threshold) {
     fprintf(stdout,
             "Too many failing tests (%" PRIuS "), skipping retries.\n",
             tests_to_retry_.size());
