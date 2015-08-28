@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import itertools
 import os
+import string
 import sys
 import textwrap
 
@@ -24,6 +25,17 @@ def DisplayValue(key, value):
     print('%-*s %s' % (24, key + ':', value))
   else:
     raise ValueError('Cannot display an empty value.')
+
+
+def DisplayHexData(data, indent=0):
+  """Print out binary data as a hex values."""
+  for off in range(0, len(data), 16):
+    chunk = data[off:off + 16]
+    print(' ' * indent +
+          ' '.join('%.2x' % ord(c) for c in chunk) +
+          '   ' * (16 - len(chunk)) +
+          ' | ' +
+          ''.join(c if c in string.printable else '.' for c in chunk))
 
 
 @command.CommandDecorator('payload')
@@ -61,6 +73,8 @@ Example:
                         help='List the install operations and their extents.')
     parser.add_argument('--stats', default=False, action='store_true',
                         help='Show information about overall input/output.')
+    parser.add_argument('--signatures', default=False, action='store_true',
+                        help='Show signatures stored in the payload.')
 
   def _DisplayHeader(self):
     """Show information from the payload header."""
@@ -76,6 +90,31 @@ Example:
                  len(manifest.kernel_install_operations))
     DisplayValue('Block size', manifest.block_size)
     DisplayValue('Minor version', manifest.minor_version)
+
+  def _DisplaySignatures(self):
+    """Show information about the signatures from the manifest."""
+    manifest = self.payload.manifest
+    if not manifest.HasField('signatures_offset'):
+      print('No signatures stored in the payload')
+      return
+
+    signature_msg = 'offset=%d' % manifest.signatures_offset
+    if manifest.signatures_size:
+      signature_msg += ' (%d bytes)' % manifest.signatures_size
+    DisplayValue('Signature blob', signature_msg)
+    signatures_blob = self.payload.ReadDataBlob(manifest.signatures_offset,
+                                                manifest.signatures_size)
+
+    from dev.host.lib.update_payload import update_metadata_pb2
+    signatures = update_metadata_pb2.Signatures()
+    signatures.ParseFromString(signatures_blob)
+    print('Payload signatures: (%d entries)' % len(signatures.signatures))
+    for signature in signatures.signatures:
+      print('  version=%s, hex_data: (%d bytes)' %
+            (signature.version if signature.HasField('version') else None,
+             len(signature.data)))
+      DisplayHexData(signature.data, indent=4)
+
 
   def _DisplayOps(self, name, operations):
     """Show information about the install operations from the manifest.
@@ -162,6 +201,8 @@ Example:
     self.payload.Init()
     self._DisplayHeader()
     self._DisplayManifest()
+    if self.options.signatures:
+      self._DisplaySignatures()
     if self.options.stats:
       self._DisplayStats(self.payload.manifest)
     if self.options.list_ops:
