@@ -11,6 +11,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -18,6 +19,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "components/view_manager/android_loader.h"
 #include "jni/ShellMain_jni.h"
 #include "mojo/message_pump/message_pump_mojo.h"
@@ -183,6 +185,10 @@ Context* GetContext() {
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
+
+#if !defined(OFFICIAL_BUILD)
+  base::debug::EnableInProcessStackDumping();
+#endif
 
   mojo::runner::InitializeLogging();
   return mojo::runner::ChildProcessMain();

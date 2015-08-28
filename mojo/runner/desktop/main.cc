@@ -4,6 +4,9 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
+#include "base/process/launch.h"
+#include "build/build_config.h"
 #include "mojo/runner/child_process.h"
 #include "mojo/runner/desktop/launcher_process.h"
 #include "mojo/runner/init.h"
@@ -17,6 +20,14 @@ int main(int argc, char** argv) {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+#if !defined(OFFICIAL_BUILD)
+  base::debug::EnableInProcessStackDumping();
+#if defined(OS_WIN)
+  base::RouteStdioToConsole(false);
+#endif
+#endif
+
   if (command_line.HasSwitch(switches::kChildProcess))
     return mojo::runner::ChildProcessMain();
 
