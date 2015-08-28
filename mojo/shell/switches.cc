@@ -16,6 +16,10 @@ const char kDontDeleteOnDownload[] = "dont-delete-on-download";
 // change it to "single-process") when it works.
 const char kEnableMultiprocess[] = "enable-multiprocess";
 
+// Disables the sandbox for debugging. (Why the Mojo prefix on the constant?
+// Because otherwise we conflict with content.)
+const char kMojoNoSandbox[] = "no-sandbox";
+
 // If set apps downloaded are saved in with a predictable filename, to help
 // remote debugging: when gdb is used through gdbserver, it needs to be able to
 // find locally any loaded library. For this, gdb use the filename of the
