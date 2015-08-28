@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/animation/scrollbar_animation_controller_thinning.h"
+#include "cc/animation/transform_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/top_controls_manager.h"
@@ -1066,6 +1067,102 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
   host_impl_->ScrollEnd();
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 10), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), overflow->CurrentScrollOffset());
+}
+
+TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+
+  host_impl_->CreatePendingTree();
+  host_impl_->pending_tree()->SetRootLayer(
+      LayerImpl::Create(host_impl_->pending_tree(), 1));
+  LayerImpl* root = host_impl_->pending_tree()->root_layer();
+  root->SetBounds(gfx::Size(50, 50));
+  root->SetHasRenderSurface(true);
+
+  root->AddChild(LayerImpl::Create(host_impl_->pending_tree(), 2));
+  LayerImpl* child = root->children()[0];
+  child->SetBounds(gfx::Size(10, 10));
+  child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
+  child->SetDrawsContent(true);
+  AddAnimatedTransformToLayer(child, 10.0, 3, 0);
+
+  EXPECT_FALSE(did_request_animate_);
+  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
+
+  host_impl_->Animate();
+
+  // An animation exists on the pending layer. Doing Animate() requests another
+  // frame.
+  // In reality, animations without has_set_start_time() == true do not need to
+  // be continuously ticked on the pending tree, so it should not request
+  // another animation frame here. But we currently do so blindly if any
+  // animation exists.
+  EXPECT_TRUE(did_request_animate_);
+  // The pending tree with an animation does not need to draw after animating.
+  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
+
+  did_request_animate_ = false;
+  did_request_redraw_ = false;
+  did_request_commit_ = false;
+
+  host_impl_->ActivateSyncTree();
+
+  // When the animation activates, we should request another animation frame
+  // to keep the animation moving.
+  EXPECT_TRUE(did_request_animate_);
+  // On activation we don't need to request a redraw for the animation,
+  // activating will draw on its own when it's ready.
+  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
+}
+
+TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+
+  host_impl_->active_tree()->SetRootLayer(
+      LayerImpl::Create(host_impl_->active_tree(), 1));
+  LayerImpl* root = host_impl_->active_tree()->root_layer();
+  root->SetBounds(gfx::Size(50, 50));
+  root->SetHasRenderSurface(true);
+
+  root->AddChild(LayerImpl::Create(host_impl_->active_tree(), 2));
+  LayerImpl* child = root->children()[0];
+  child->SetBounds(gfx::Size(10, 10));
+  child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
+  child->SetDrawsContent(true);
+
+  // Add a translate from 6,7 to 8,9.
+  TransformOperations start;
+  start.AppendTranslate(6.f, 7.f, 0.f);
+  TransformOperations end;
+  end.AppendTranslate(8.f, 9.f, 0.f);
+  AddAnimatedTransformToLayer(child, 4.0, start, end);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  host_impl_->WillBeginImplFrame(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now));
+
+  EXPECT_FALSE(did_request_animate_);
+  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
+
+  host_impl_->ActivateAnimations();
+  did_request_animate_ = false;
+  did_request_redraw_ = false;
+  did_request_commit_ = false;
+
+  host_impl_->Animate();
+
+  // An animation exists on the active layer. Doing Animate() requests another
+  // frame after the current one.
+  EXPECT_TRUE(did_request_animate_);
+  // TODO(danakj): We also need to draw in the current frame if something
+  // animated, but this is currently handled by
+  // SchedulerStateMachine::WillAnimate.
+  EXPECT_FALSE(did_request_redraw_);
+  EXPECT_FALSE(did_request_commit_);
 }
 
 TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {

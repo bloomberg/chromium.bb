@@ -338,6 +338,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->CommitCompleteOnThread(this);
   }
 
+  bool PrepareTiles() override {
+    test_hooks_->WillPrepareTiles(this);
+    return LayerTreeHostImpl::PrepareTiles();
+  }
+
   DrawResult PrepareToDraw(FrameData* frame) override {
     DrawResult draw_result = LayerTreeHostImpl::PrepareToDraw(frame);
     return test_hooks_->PrepareToDrawOnThread(this, frame, draw_result);

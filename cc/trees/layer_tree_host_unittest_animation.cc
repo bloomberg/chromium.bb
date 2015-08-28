@@ -8,6 +8,7 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
+#include "cc/animation/transform_operations.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/time_util.h"
 #include "cc/layers/layer.h"
@@ -228,8 +229,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestAnimationsGetDeleted);
 class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestAddAnimationWithTimingFunction() {}
-
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
     picture_ = FakePictureLayer::Create(layer_settings(), &client_);
@@ -241,6 +240,10 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
 
   void AnimateLayers(LayerTreeHostImpl* host_impl,
                      base::TimeTicks monotonic_time) override {
+    // TODO(ajuma): This test only checks the active tree. Add checks for
+    // pending tree too.
+    if (!host_impl->active_tree()->root_layer())
+      return;
     LayerAnimationController* controller_impl =
         host_impl->active_tree()->root_layer()->children()[0]->
         layer_animation_controller();
@@ -277,8 +280,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestSynchronizeAnimationStartTimes() {}
-
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
     picture_ = FakePictureLayer::Create(layer_settings(), &client_);
@@ -332,8 +333,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostAnimationTestAnimationFinishedEvents
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestAnimationFinishedEvents() {}
-
   void BeginTest() override {
     PostAddInstantAnimationToMainThread(layer_tree_host()->root_layer());
   }
@@ -405,8 +404,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostAnimationTestLayerAddedWithAnimation
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestLayerAddedWithAnimation() {}
-
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
@@ -635,8 +632,6 @@ MULTI_THREAD_TEST_F(
 class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestScrollOffsetChangesArePropagated() {}
-
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
 
@@ -879,13 +874,71 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
 MULTI_THREAD_BLOCKNOTIFY_TEST_F(
     LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers);
 
+class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
+    : public LayerTreeHostAnimationTest {
+ public:
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+
+    layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    layer_->SetBounds(gfx::Size(2, 2));
+    // Transform the layer to 4,4 to start.
+    gfx::Transform start_transform;
+    start_transform.Translate(4.0, 4.0);
+    layer_->SetTransform(start_transform);
+
+    layer_tree_host()->root_layer()->AddChild(layer_);
+  }
+
+  void BeginTest() override {
+    // Add a translate from 6,7 to 8,9.
+    TransformOperations start;
+    start.AppendTranslate(6.f, 7.f, 0.f);
+    TransformOperations end;
+    end.AppendTranslate(8.f, 9.f, 0.f);
+    AddAnimatedTransformToLayer(layer_.get(), 4.0, start, end);
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void WillPrepareTiles(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->sync_tree()->source_frame_number() != 0)
+      return;
+    LayerImpl* root = host_impl->sync_tree()->root_layer();
+    LayerImpl* child = root->children()[0];
+    LayerAnimationController* controller_impl =
+        child->layer_animation_controller();
+    Animation* animation = controller_impl->GetAnimation(Animation::TRANSFORM);
+
+    // The animation should be starting for the first frame.
+    EXPECT_EQ(Animation::STARTING, animation->run_state());
+
+    // And the transform should be propogated to the sync tree layer, at its
+    // starting state which is 6,7.
+    gfx::Transform expected_transform;
+    expected_transform.Translate(6.0, 7.0);
+    EXPECT_EQ(expected_transform, child->draw_transform());
+    // And the sync tree layer should know it is animating.
+    EXPECT_TRUE(child->screen_space_transform_is_animating());
+
+    controller_impl->AbortAnimations(Animation::TRANSFORM);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+  scoped_refptr<Layer> layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit);
+
 // When a layer with an animation is removed from the tree and later re-added,
 // the animation should resume.
 class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded() {}
-
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
     layer_ = Layer::Create(layer_settings());

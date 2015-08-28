@@ -322,6 +322,12 @@ void LayerTreeHostImpl::CommitComplete() {
     ActivateAnimations();
   }
 
+  // Start animations before UpdateDrawProperties and PrepareTiles, as they can
+  // change the results. When doing commit to the active tree, this must happen
+  // after ActivateAnimations() in order for this ticking to be propogated to
+  // layers on the active tree.
+  Animate();
+
   // LayerTreeHost may have changed the GPU rasterization flags state, which
   // may require an update of the tree resources.
   UpdateTreeResourcesForGpuRasterizationIfNeeded();
@@ -3072,13 +3078,19 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
   if (!settings_.accelerated_animation_enabled)
     return;
 
+  bool animated = false;
   if (animation_host_) {
     if (animation_host_->AnimateLayers(monotonic_time))
-      SetNeedsAnimate();
+      animated = true;
   } else {
     if (animation_registrar_->AnimateLayers(monotonic_time))
-      SetNeedsAnimate();
+      animated = true;
   }
+
+  // TODO(ajuma): Only do this if the animations are on the active tree, or if
+  // they are on the pending tree waiting for some future time to start.
+  if (animated)
+    SetNeedsAnimate();
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {

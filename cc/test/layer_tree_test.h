@@ -61,6 +61,7 @@ class TestHooks : public AnimationDelegate {
   virtual void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                              CommitEarlyOutReason reason) {}
+  virtual void WillPrepareTiles(LayerTreeHostImpl* host_impl) {}
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) {}
