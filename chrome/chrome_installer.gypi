@@ -459,10 +459,14 @@
         'flock_bash': ['flock', '--', '/tmp/linux_package_lock', 'bash'],
         'deb_build': '<(PRODUCT_DIR)/installer/debian/build.sh',
         'rpm_build': '<(PRODUCT_DIR)/installer/rpm/build.sh',
+        # The script expects either "google_chrome" or "chromium" for -d,
+        # which is also what branding_path_component contains.
         'deb_cmd': ['<@(flock_bash)', '<(deb_build)', '-o' '<(PRODUCT_DIR)',
-                    '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
+                    '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)',
+                    '-d', '<(branding_path_component)'],
         'rpm_cmd': ['<@(flock_bash)', '<(rpm_build)', '-o' '<(PRODUCT_DIR)',
-                    '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
+                    '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)',
+                    '-d', '<(branding_path_component)'],
         'conditions': [
           ['target_arch=="ia32"', {
             'deb_arch': 'i386',

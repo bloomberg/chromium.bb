@@ -122,11 +122,12 @@ cleanup() {
 
 usage() {
   echo "usage: $(basename $0) [-c channel] [-a target_arch] [-o 'dir'] "
-  echo "                      [-b 'dir']"
+  echo "                      [-b 'dir'] -d branding"
   echo "-c channel the package channel (trunk, asan, unstable, beta, stable)"
   echo "-a arch    package architecture (ia32 or x64)"
   echo "-o dir     package output directory [${OUTPUTDIR}]"
   echo "-b dir     build input directory    [${BUILDDIR}]"
+  echo "-d brand   either chromium or google_chrome"
   echo "-h         this help message"
 }
 
@@ -161,7 +162,7 @@ verify_channel() {
 }
 
 process_opts() {
-  while getopts ":o:b:c:a:h" OPTNAME
+  while getopts ":o:b:c:a:d:h" OPTNAME
   do
     case $OPTNAME in
       o )
@@ -176,6 +177,9 @@ process_opts() {
         ;;
       a )
         TARGETARCH="$OPTARG"
+        ;;
+      d )
+        BRANDING="$OPTARG"
         ;;
       h )
         usage
@@ -224,7 +228,7 @@ source ${BUILDDIR}/installer/common/installer.include
 get_version_info
 VERSIONFULL="${VERSION}-${PACKAGE_RELEASE}"
 
-if [ "$CHROMIUM_BUILD" = "_google_chrome" ]; then
+if [ "$BRANDING" = "google_chrome" ]; then
   source "${BUILDDIR}/installer/common/google-chrome.info"
 else
   source "${BUILDDIR}/installer/common/chromium-browser.info"
