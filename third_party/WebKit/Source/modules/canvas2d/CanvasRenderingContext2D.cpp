@@ -1359,7 +1359,7 @@ bool shouldDisableDeferral(CanvasImageSource* imageSource)
         return true;
     if (imageSource->isCanvasElement()) {
         HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(imageSource);
-        if (canvas->is3D())
+        if (canvas->renderingContext() && canvas->renderingContext()->isAccelerated())
             return true;
         if (canvas->isAnimated2D())
             return true;
