@@ -72,6 +72,11 @@ class CONTENT_EXPORT MediaStreamManager
                               scoped_ptr<MediaStreamUIProxy> ui)>
       MediaRequestResponseCallback;
 
+  // Adds |message| to native logs for outstanding device requests, for use by
+  // render processes hosts whose corresponding render processes are requesting
+  // logging from webrtcLoggingPrivate API. Safe to call from any thread.
+  static void SendMessageToNativeLog(const std::string& message);
+
   explicit MediaStreamManager(media::AudioManager* audio_manager);
   ~MediaStreamManager() override;
 
@@ -154,12 +159,11 @@ class CONTENT_EXPORT MediaStreamManager
   // Finds and returns the device id corresponding to the given
   // |source_id|. Returns true if there was a raw device id that matched the
   // given |source_id|, false if nothing matched it.
-  bool TranslateSourceIdToDeviceId(
-      MediaStreamType stream_type,
-      const ResourceContext::SaltCallback& rc,
-      const GURL& security_origin,
-      const std::string& source_id,
-      std::string* device_id) const;
+  bool TranslateSourceIdToDeviceId(MediaStreamType stream_type,
+                                   const ResourceContext::SaltCallback& rc,
+                                   const GURL& security_origin,
+                                   const std::string& source_id,
+                                   std::string* device_id) const;
 
   // Called by UI to make sure the device monitor is started so that UI receive
   // notifications about device changes.
@@ -174,10 +178,6 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Implements base::SystemMonitor::DevicesChangedObserver.
   void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) override;
-
-  // Called by the tests to specify a fake UI that should be used for next
-  // generated stream (or when using --use-fake-ui-for-media-stream).
-  void UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy> fake_ui);
 
   // Returns all devices currently opened by a request with label |label|.
   // If no request with |label| exist, an empty array is returned.
@@ -199,18 +199,13 @@ class CONTENT_EXPORT MediaStreamManager
   // webrtcLoggingPrivate API if requested.
   void AddLogMessageOnIOThread(const std::string& message);
 
-  // Adds |message| to native logs for outstanding device requests, for use by
-  // render processes hosts whose corresponding render processes are requesting
-  // logging from webrtcLoggingPrivate API. Safe to call from any thread.
-  static void SendMessageToNativeLog(const std::string& message);
-
   // base::PowerObserver overrides.
   void OnSuspend() override;
   void OnResume() override;
 
- protected:
-  // Used for testing.
-  MediaStreamManager();
+  // Called by the tests to specify a fake UI that should be used for next
+  // generated stream (or when using --use-fake-ui-for-media-stream).
+  void UseFakeUIForTests(scoped_ptr<FakeMediaStreamUIProxy> fake_ui);
 
  private:
   // Contains all data needed to keep track of requests.
@@ -228,7 +223,8 @@ class CONTENT_EXPORT MediaStreamManager
   // |DeviceRequests| is a list to ensure requests are processed in the order
   // they arrive. The first member of the pair is the label of the
   // |DeviceRequest|.
-  typedef std::list<std::pair<std::string, DeviceRequest*> > DeviceRequests;
+  using LabeledDeviceRequest = std::pair<std::string, DeviceRequest*>;
+  using DeviceRequests = std::list<LabeledDeviceRequest>;
 
   // Initializes the device managers on IO thread.  Auto-starts the device
   // thread and registers this as a listener with the device managers.
@@ -306,13 +302,11 @@ class CONTENT_EXPORT MediaStreamManager
       StreamDeviceInfo* existing_device_info,
       MediaRequestState* existing_request_state) const;
 
-  void FinalizeGenerateStream(const std::string& label,
-                              DeviceRequest* request);
+  void FinalizeGenerateStream(const std::string& label, DeviceRequest* request);
   void FinalizeRequestFailed(const std::string& label,
                              DeviceRequest* request,
                              content::MediaStreamRequestResult result);
-  void FinalizeOpenDevice(const std::string& label,
-                          DeviceRequest* request);
+  void FinalizeOpenDevice(const std::string& label, DeviceRequest* request);
   void FinalizeMediaAccessRequest(const std::string& label,
                                   DeviceRequest* request,
                                   const MediaStreamDevices& devices);
@@ -347,12 +341,6 @@ class CONTENT_EXPORT MediaStreamManager
 
   void TranslateDeviceIdToSourceId(DeviceRequest* request,
                                    MediaStreamDevice* device);
-
-  // Helper method that sends log messages to the render process hosts whose
-  // corresponding render processes are in |render_process_ids|, to be used by
-  // the webrtcLoggingPrivate API if requested.
-  void AddLogMessageOnUIThread(const std::set<int>& render_process_ids,
-                               const std::string& message);
 
   // Handles the callback from MediaStreamUIProxy to receive the UI window id,
   // used for excluding the notification window in desktop capturing.
@@ -409,10 +397,6 @@ class CONTENT_EXPORT MediaStreamManager
 
   // All non-closed request. Must be accessed on IO thread.
   DeviceRequests requests_;
-
-  // Hold a pointer to the IO loop to check we delete the device thread and
-  // managers on the right thread.
-  base::MessageLoop* io_loop_;
 
   bool use_fake_ui_;
   scoped_ptr<FakeMediaStreamUIProxy> fake_ui_;

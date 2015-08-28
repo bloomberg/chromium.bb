@@ -274,7 +274,8 @@ class VideoCaptureHostTest : public testing::Test {
         switches::kUseFakeDeviceForMediaStream);
 #endif
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
-    media_stream_manager_->UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy>());
+    media_stream_manager_->UseFakeUIForTests(
+        scoped_ptr<FakeMediaStreamUIProxy>());
 
     // Create a Host and connect it to a simulated IPC channel.
     host_ = new MockVideoCaptureHost(media_stream_manager_.get());

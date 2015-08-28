@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
@@ -33,7 +34,6 @@ class SpeechRecognitionTest : public extensions::PlatformAppBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-    command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 
@@ -45,12 +45,16 @@ class SpeechRecognitionTest : public extensions::PlatformAppBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionTest, SpeechFromBackgroundPage) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kUseFakeUIForMediaStream);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/speech/background_page"))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionTest,
                        SpeechFromBackgroundPageWithoutPermission) {
+  EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeUIForMediaStream));
   ASSERT_TRUE(
       RunPlatformAppTest("platform_apps/speech/background_page_no_permission"))
           << message_;

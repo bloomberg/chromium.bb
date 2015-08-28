@@ -205,7 +205,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     enumerated_devices_ = devices;
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   IPC::Message* current_ipc_;
   std::queue<base::Closure> quit_closures_;
 };
@@ -283,7 +283,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     if (expect_started) {
       EXPECT_CALL(*stream_ui_, OnStarted(_, _));
     }
-    media_stream_manager_->UseFakeUI(
+    media_stream_manager_->UseFakeUIForTests(
       scoped_ptr<FakeMediaStreamUIProxy>(stream_ui_));
   }
 
@@ -862,7 +862,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
   EXPECT_CALL(*stream_ui, OnStarted(_, _))
       .WillOnce(SaveArg<0>(&close_callback));
-  media_stream_manager_->UseFakeUI(stream_ui.Pass());
+  media_stream_manager_->UseFakeUIForTests(stream_ui.Pass());
 
   GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
 
