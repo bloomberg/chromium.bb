@@ -64,9 +64,6 @@ class BrowsingDataCounter {
   // is to be deleted.
   IntegerPrefMember period_;
 
-  // Whether this counter is currently in the process of counting.
-  bool counting_ = false;
-
   // Whether this class was properly initialized by calling |Init|.
   bool initialized_ = false;
 };

@@ -54,19 +54,12 @@ void BrowsingDataCounter::RestartCounting() {
   if (!profile_->GetPrefs()->GetBoolean(GetPrefName()))
     return;
 
-  // If counting is already in progress, do not restart it.
-  if (counting_)
-    return;
-
   callback_.Run(false, 0u);
 
-  counting_ = true;
   Count();
 }
 
 void BrowsingDataCounter::ReportResult(uint32 value) {
   DCHECK(initialized_);
-  DCHECK(counting_);
-  counting_ = false;
   callback_.Run(true, value);
 }

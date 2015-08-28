@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -17,10 +18,13 @@ namespace {
 
 using autofill::PasswordForm;
 
-class PasswordsCounterTest : public InProcessBrowserTest {
+class PasswordsCounterTest : public InProcessBrowserTest,
+                             public password_manager::PasswordStore::Observer {
  public:
   void SetUpOnMainThread() override {
     time_ = base::Time::Now();
+    store_ = PasswordStoreFactory::GetForProfile(
+        browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS);
     SetPasswordsDeletionPref(true);
     SetDeletionPeriodPref(BrowsingDataRemover::EVERYTHING);
   }
@@ -28,19 +32,33 @@ class PasswordsCounterTest : public InProcessBrowserTest {
   void AddLogin(const std::string& origin,
                 const std::string& username,
                 bool blacklisted) {
-    PasswordStoreFactory::GetForProfile(
-        browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)->
-            AddLogin(CreateCredentials(origin, username, blacklisted));
+    // Add login and wait until the password store actually changes.
+    // on the database thread.
+    passwords_helper::AddLogin(
+        store_.get(), CreateCredentials(origin, username, blacklisted));
     base::RunLoop().RunUntilIdle();
+    // Even after the store changes on the database thread, we must wait until
+    // the listeners are notified on this thread.
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->RunUntilIdle();
   }
 
   void RemoveLogin(const std::string& origin,
                    const std::string& username,
                    bool blacklisted) {
-    PasswordStoreFactory::GetForProfile(
-        browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)->
-            RemoveLogin(CreateCredentials(origin, username, blacklisted));
-    base::RunLoop().RunUntilIdle();
+    // Remove login and wait until the password store actually changes
+    // on the database thread.
+    passwords_helper::RemoveLogin(
+        store_.get(), CreateCredentials(origin, username, blacklisted));
+    // Even after the store changes on the database thread, we must wait until
+    // the listeners are notified on this thread.
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->RunUntilIdle();
+  }
+
+  void OnLoginsChanged(
+      const password_manager::PasswordStoreChangeList& changes) override {
+    run_loop_->Quit();
   }
 
   void SetPasswordsDeletionPref(bool value) {
@@ -58,6 +76,8 @@ class PasswordsCounterTest : public InProcessBrowserTest {
   }
 
   void WaitForCounting() {
+    if (finished_)
+      return;
     run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
   }
@@ -87,6 +107,8 @@ class PasswordsCounterTest : public InProcessBrowserTest {
     result.date_created = time_;
     return result;
   }
+
+  scoped_refptr<password_manager::PasswordStore> store_;
 
   scoped_ptr<base::RunLoop> run_loop_;
   base::Time time_;
