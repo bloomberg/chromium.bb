@@ -190,13 +190,15 @@ public:
 
     void push(UChar c)
     {
+        ASSERT(c);
+
         if (!m_pushedChar1) {
-            m_pushedChar1 = c;
-            m_currentChar = m_pushedChar1 ? m_pushedChar1 : m_currentString.getCurrentChar();
+            m_currentChar = m_pushedChar1 = c;
             updateSlowCaseFunctionPointers();
         } else {
             ASSERT(!m_pushedChar2);
-            m_pushedChar2 = c;
+            m_pushedChar2 = m_pushedChar1;
+            m_currentChar = m_pushedChar1 = c;
         }
     }
 

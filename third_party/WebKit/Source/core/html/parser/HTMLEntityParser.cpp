@@ -95,8 +95,8 @@ static void unconsumeCharacters(SegmentedString& source, ConsumedCharacterBuffer
     if (consumedCharacters.size() == 1)
         source.push(consumedCharacters[0]);
     else if (consumedCharacters.size() == 2) {
-        source.push(consumedCharacters[0]);
         source.push(consumedCharacters[1]);
+        source.push(consumedCharacters[0]);
     } else
         source.prepend(SegmentedString(String(consumedCharacters)));
 }
@@ -212,8 +212,8 @@ bool consumeHTMLEntity(SegmentedString& source, DecodedHTMLEntity& decodedEntity
                 entityState = Hex;
                 continue;
             }
-            source.push('#');
             source.push('x');
+            source.push('#');
             return false;
         }
         case MaybeHexUpperCaseX: {
@@ -221,8 +221,8 @@ bool consumeHTMLEntity(SegmentedString& source, DecodedHTMLEntity& decodedEntity
                 entityState = Hex;
                 continue;
             }
-            source.push('#');
             source.push('X');
+            source.push('#');
             return false;
         }
         case Hex: {
