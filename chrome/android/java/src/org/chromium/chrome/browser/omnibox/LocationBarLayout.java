@@ -949,6 +949,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      */
     public void onUrlFocusChange(boolean hasFocus) {
         mUrlHasFocus = hasFocus;
+        mUrlContainer.onUrlFocusChanged(hasFocus);
         updateFocusSource(hasFocus);
         updateDeleteButtonVisibility();
         Tab currentTab = getCurrentTab();

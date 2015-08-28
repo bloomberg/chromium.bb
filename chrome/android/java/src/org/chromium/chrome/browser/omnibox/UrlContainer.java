@@ -46,6 +46,10 @@ public class UrlContainer extends ViewGroup {
     private long mLastShowRequestTime;
     private boolean mUseDarkColors;
 
+    private boolean mUrlBarHasFocus;
+    private boolean mTrailingTextShownWhileFocused;
+    private boolean mTrailingTextHiddenWhileFocused;
+
     /**
      * Constructor used to inflate from XML.
      */
@@ -188,6 +192,16 @@ public class UrlContainer extends ViewGroup {
      * @param visible Whether the trailing text view should be visible.
      */
     public void setTrailingTextVisible(boolean visible) {
+        if (mUrlBarHasFocus) {
+            if (visible) {
+                mTrailingTextShownWhileFocused = true;
+                mTrailingTextHiddenWhileFocused = false;
+            } else {
+                assert mTrailingTextShownWhileFocused;
+                mTrailingTextHiddenWhileFocused = true;
+            }
+            return;
+        }
         if (visible) mLastShowRequestTime = SystemClock.uptimeMillis();
 
         if (visible == mShowTrailingText) return;
@@ -268,5 +282,35 @@ public class UrlContainer extends ViewGroup {
         });
         set.start();
         mTrailingTextAnimator = set;
+    }
+
+    /**
+     * Updates the focus state of the url bar.
+     * @param hasFocus Whether the url bar has focus.
+     */
+    void onUrlFocusChanged(boolean hasFocus) {
+        mUrlBarHasFocus = hasFocus;
+
+        if (mUrlBarHasFocus) {
+            mTrailingTextShownWhileFocused = mShowTrailingText
+                    || mTrailingTextView.getVisibility() == VISIBLE;
+            mTrailingTextHiddenWhileFocused = !mShowTrailingText
+                    && mTrailingTextView.getVisibility() == VISIBLE;
+
+            removeCallbacks(mTriggerHideRunnable);
+            removeCallbacks(mTriggerHideAnimationRunnable);
+            if (mTrailingTextAnimator != null && mTrailingTextAnimator.isRunning()) {
+                mTrailingTextAnimator.cancel();
+                mTrailingTextAnimator = null;
+            }
+            mShowTrailingText = false;
+        } else {
+            if (mTrailingTextShownWhileFocused) {
+                setTrailingTextVisible(true);
+                if (mTrailingTextHiddenWhileFocused) {
+                    setTrailingTextVisible(false);
+                }
+            }
+        }
     }
 }
