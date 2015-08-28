@@ -223,13 +223,6 @@
           'ssl/openssl_client_key_store.cc',
           'ssl/openssl_client_key_store.h',
         ],
-    }, {
-        'sources!': [
-          # TODO(davidben): Remove these exclusions when use_openssl_certs
-          # builds also use the SSLPrivateKey machinery.
-          'ssl/threaded_ssl_private_key.cc',
-          'ssl/threaded_ssl_private_key.h',
-        ],
     }],
     [ 'use_glib == 1', {
         'dependencies': [

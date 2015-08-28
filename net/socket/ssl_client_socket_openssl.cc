@@ -51,9 +51,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(USE_OPENSSL_CERTS)
-#include "net/ssl/openssl_client_key_store.h"
-#else
+#if !defined(OS_NACL)
 #include "net/ssl/ssl_platform_key.h"
 #endif
 
@@ -171,7 +169,7 @@ bool EVP_MDToPrivateKeyHash(const EVP_MD* md, SSLPrivateKey::Hash* hash) {
   }
 }
 
-#if !defined(USE_OPENSSL_CERTS)
+#if !defined(OS_NACL)
 class PlatformKeyTaskRunner {
  public:
   PlatformKeyTaskRunner() {
@@ -196,7 +194,7 @@ class PlatformKeyTaskRunner {
 
 base::LazyInstance<PlatformKeyTaskRunner>::Leaky g_platform_key_task_runner =
     LAZY_INSTANCE_INITIALIZER;
-#endif  // !USE_OPENSSL_CERTS
+#endif
 
 }  // namespace
 
@@ -1805,24 +1803,10 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
       return -1;
     }
 
-#if defined(USE_OPENSSL_CERTS)
-    // TODO(davidben): Move Android to the SSLPrivateKey codepath and disable
-    // client auth on NaCl altogether.
-    crypto::ScopedEVP_PKEY privkey =
-        OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(
-            ssl_config_.client_cert.get());
-    if (!privkey) {
-      // Could not find the private key. Fail the handshake and surface an
-      // appropriate error to the caller.
-      LOG(WARNING) << "Client cert found without private key";
+#if defined(OS_NACL)
       OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY);
       return -1;
-    }
-    if (!SSL_use_PrivateKey(ssl_, privkey.get())) {
-      LOG(WARNING) << "Failed to set private key";
-      return -1;
-    }
-#else   // !USE_OPENSSL_CERTS
+#else
     // TODO(davidben): Lift this call up to the embedder so we can actually test
     // this code. https://crbug.com/394131
     private_key_ = FetchClientCertPrivateKey(
@@ -1837,7 +1821,7 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
     }
 
     SSL_set_private_key_method(ssl_, &SSLContext::kPrivateKeyMethod);
-#endif  // USE_OPENSSL_CERTS
+#endif
 
     int cert_count = 1 + sk_X509_num(chain.get());
     net_log_.AddEvent(NetLog::TYPE_SSL_CLIENT_CERT_PROVIDED,

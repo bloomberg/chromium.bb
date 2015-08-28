@@ -259,6 +259,9 @@ component("net") {
     if (is_mac) {
       sources -= [ "ssl/ssl_platform_key_mac.cc" ]
     }
+    if (is_android) {
+      sources -= [ "ssl/ssl_platform_key_android.cc" ]
+    }
     if (is_win) {
       sources -= [
         "cert/sha256_legacy_support_openssl_win.cc",
@@ -301,13 +304,6 @@ component("net") {
         "cert/test_root_certs_openssl.cc",
       ]
     }
-
-    # TODO(davidben): Remove these exclusions when use_openssl_certs builds also
-    # use the SSLPrivateKey machinery.
-    sources -= [
-      "ssl/threaded_ssl_private_key.cc",
-      "ssl/threaded_ssl_private_key.h",
-    ]
   }
 
   if (use_glib && !is_chromeos) {
