@@ -1,8 +1,8 @@
 {
-  "bounds": [785, 2016],
+  "bounds": [800, 2016],
   "children": [
     {
-      "bounds": [785, 2016],
+      "bounds": [800, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [

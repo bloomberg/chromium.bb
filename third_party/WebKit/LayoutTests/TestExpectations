@@ -966,20 +966,6 @@ crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ ImageO
 crbug.com/492511 [ Mac ] fast/text/atsui-spacing-features.html [ ImageOnlyFailure ]
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ ImageOnlyFailure ]
 
-crbug.com/523056 compositing/fixed-body-background-positioned.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/geometry/fixed-position.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/geometry/vertical-scroll-composited.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/overflow/fixed-position-ancestor-clip.html [ NeedsRebaseline ]
-crbug.com/523056 fast/repaint/absolute-position-changed.html [ NeedsRebaseline ]
-crbug.com/523056 virtual/prefer_compositing_to_lcd_text/compositing/overflow/fixed-position-ancestor-clip.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/geometry/fixed-position-composited-page-scale-down.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/geometry/fixed-position-transform-composited-page-scale-down.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/geometry/fixed-position-iframe-composited-page-scale.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/geometry/fixed-position-composited-page-scale.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/geometry/fixed-position-transform-composited-page-scale.html [ NeedsRebaseline ]
-crbug.com/523056 compositing/scaling/tiled-layer-recursion.html [ NeedsRebaseline ]
-
 # Temporary, until [Unforgeable] attributes have the right accessors 'get' and 'set'.
 crbug.com/491006 http/tests/security/cross-origin-access-over-property-descriptor.html [ Failure ]
 
