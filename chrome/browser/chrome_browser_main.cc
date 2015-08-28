@@ -126,6 +126,7 @@
 #include "components/variations/net/variations_http_header_provider.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -662,7 +663,8 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 #if defined(FIELDTRIAL_TESTING_ENABLED)
   if (!command_line->HasSwitch(switches::kDisableFieldTrialTestingConfig) &&
       !command_line->HasSwitch(switches::kForceFieldTrials) &&
-      !command_line->HasSwitch(switches::kVariationsServerURL))
+      !command_line->HasSwitch(
+          chrome_variations::switches::kVariationsServerURL))
     chrome_variations::AssociateDefaultFieldTrialConfig();
 #endif  // defined(FIELDTRIAL_TESTING_ENABLED)
 

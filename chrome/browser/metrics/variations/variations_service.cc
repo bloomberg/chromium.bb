@@ -15,8 +15,6 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/metrics/variations/generated_resources_map.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -24,6 +22,7 @@
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_seed_simulator.h"
+#include "components/variations/variations_switches.h"
 #include "components/variations/variations_url_constants.h"
 #include "components/version_info/version_info.h"
 #include "net/base/load_flags.h"
@@ -36,7 +35,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/device_form_factor.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -208,17 +206,6 @@ std::string GetHeaderValue(const net::HttpResponseHeaders* headers,
   return value;
 }
 
-// Overrides the string resource sepecified by |hash| with |string| in the
-// resource bundle. Used as a callback passed to the variations seed processor.
-void OverrideUIString(uint32_t hash, const base::string16& string) {
-  int resource_id = GetResourceIndex(hash);
-  if (resource_id == -1)
-    return;
-
-  ui::ResourceBundle::GetSharedInstance().OverrideLocaleStringResource(
-      resource_id, string);
-}
-
 }  // namespace
 
 VariationsService::VariationsService(
@@ -262,12 +249,15 @@ bool VariationsService::CreateTrialsFromSeed() {
 
   const std::string latest_country =
       local_state_->GetString(prefs::kVariationsCountry);
+  // Note that passing |client_| via base::Unretained below is safe because
+  // the callback is executed synchronously.
   variations::VariationsSeedProcessor().CreateTrialsFromSeed(
       seed, client_->GetApplicationLocale(),
       GetReferenceDateForExpiryChecks(local_state_), current_version, channel,
       GetCurrentFormFactor(), GetHardwareClass(), latest_country,
       LoadPermanentConsistencyCountry(current_version, latest_country),
-      base::Bind(&OverrideUIString));
+      base::Bind(&VariationsServiceClient::OverrideUIString,
+                 base::Unretained(client_.get())));
 
   const base::Time now = base::Time::Now();
 
@@ -432,7 +422,8 @@ void VariationsService::RegisterProfilePrefs(
 scoped_ptr<VariationsService> VariationsService::Create(
     scoped_ptr<VariationsServiceClient> client,
     PrefService* local_state,
-    metrics::MetricsStateManager* state_manager) {
+    metrics::MetricsStateManager* state_manager,
+    const char* disable_network_switch) {
   scoped_ptr<VariationsService> result;
 #if !defined(GOOGLE_CHROME_BUILD)
   // Unless the URL was provided, unsupported builds should return NULL to
@@ -446,7 +437,7 @@ scoped_ptr<VariationsService> VariationsService::Create(
 #endif
   result.reset(new VariationsService(
       client.Pass(), new web_resource::ResourceRequestAllowedNotifier(
-                         local_state, switches::kDisableBackgroundNetworking),
+                         local_state, disable_network_switch),
       local_state, state_manager));
   return result.Pass();
 }

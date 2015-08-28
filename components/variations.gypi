@@ -62,6 +62,8 @@
         'variations/variations_seed_simulator.h',
         'variations/variations_seed_store.cc',
         'variations/variations_seed_store.h',
+        'variations/variations_switches.cc',
+        'variations/variations_switches.h',
         'variations/variations_url_constants.cc',
         'variations/variations_url_constants.h',
         'variations/variations_util.cc',

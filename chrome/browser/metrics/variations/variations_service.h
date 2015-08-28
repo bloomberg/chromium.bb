@@ -127,7 +127,8 @@ class VariationsService
   static scoped_ptr<VariationsService> Create(
       scoped_ptr<VariationsServiceClient> client,
       PrefService* local_state,
-      metrics::MetricsStateManager* state_manager);
+      metrics::MetricsStateManager* state_manager,
+      const char* disable_network_switch);
 
   // Set the PrefService responsible for getting policy-related preferences,
   // such as the restrict parameter.

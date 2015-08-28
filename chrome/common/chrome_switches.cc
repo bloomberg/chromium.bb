@@ -579,12 +579,6 @@ const char kExtensionsNotWebstore[] = "extensions-not-webstore";
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 
-// Fakes the channel of the browser for purposes of Variations filtering. This
-// is to be used for testing only. Possible values are "stable", "beta", "dev"
-// and "canary". Note that this only applies if the browser's reported channel
-// is UNKNOWN.
-const char kFakeVariationsChannel[]         = "fake-variations-channel";
-
 // If this flag is present then this command line is being delegated to an
 // already running chrome process via the fast path, ie: before chrome.dll is
 // loaded. It is useful to tell the difference for tracking purposes.
@@ -1141,11 +1135,6 @@ const char kV8PacMojoInProcess[] = "v8-pac-mojo-in-process";
 
 // Enables using an out-of-process Mojo service for the v8 proxy resolver.
 const char kV8PacMojoOutOfProcess[] = "v8-pac-mojo-out-of-process";
-
-// Specifies a custom URL for the server which reports variation data to the
-// client. Specifying this switch enables the Variations service on
-// unofficial builds. See variations_service.cc.
-const char kVariationsServerURL[]           = "variations-server-url";
 
 // Prints version information and quits.
 const char kVersion[]                       = "version";

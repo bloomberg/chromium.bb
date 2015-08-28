@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "base/version.h"
 #include "components/version_info/version_info.h"
 
@@ -50,6 +51,11 @@ class VariationsServiceClient {
 
   // Gets the channel of the embedder.
   virtual version_info::Channel GetChannel() = 0;
+
+  // Allows the embedder to override the string resource specified by |hash|
+  // with |string| in the resource bundle if desired.
+  virtual void OverrideUIString(uint32_t hash,
+                                const base::string16& string) = 0;
 
   // Called from VariationsService::PerformPreMainMessageLoopStartup().
   virtual void OnInitialStartup() {}

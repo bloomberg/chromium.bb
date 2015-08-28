@@ -28,6 +28,7 @@ class ChromeVariationsServiceClient
   net::URLRequestContextGetter* GetURLRequestContext() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   version_info::Channel GetChannel() override;
+  void OverrideUIString(uint32_t hash, const base::string16& string) override;
   void OnInitialStartup() override;
 
  private:

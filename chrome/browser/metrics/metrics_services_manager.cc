@@ -68,7 +68,7 @@ MetricsServicesManager::GetVariationsService() {
   if (!variations_service_) {
     variations_service_ = chrome_variations::VariationsService::Create(
         make_scoped_ptr(new ChromeVariationsServiceClient()), local_state_,
-        GetMetricsStateManager());
+        GetMetricsStateManager(), switches::kDisableBackgroundNetworking);
   }
   return variations_service_.get();
 }
