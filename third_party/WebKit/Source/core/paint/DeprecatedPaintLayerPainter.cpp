@@ -26,6 +26,7 @@
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
+#include "platform/graphics/paint/SubsequenceRecorder.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
 #include "wtf/Optional.h"
 
@@ -68,8 +69,13 @@ void DeprecatedPaintLayerPainter::paintLayer(GraphicsContext* context, const Dep
     }
 
     // Non self-painting leaf layers don't need to be painted as their layoutObject() should properly paint itself.
-    if (!m_paintLayer.isSelfPaintingLayer() && !m_paintLayer.hasSelfPaintingLayerDescendant())
+    if (!m_paintLayer.isSelfPaintingLayer() && !m_paintLayer.hasSelfPaintingLayerDescendant()) {
+        ASSERT(!m_paintLayer.needsRepaint());
         return;
+    }
+
+    bool needsRepaint = m_paintLayer.needsRepaint();
+    m_paintLayer.clearNeedsRepaint();
 
     if (shouldSuppressPaintingLayer(&m_paintLayer))
         return;
@@ -77,6 +83,10 @@ void DeprecatedPaintLayerPainter::paintLayer(GraphicsContext* context, const Dep
     // If this layer is totally invisible then there is nothing to paint.
     if (!m_paintLayer.layoutObject()->opacity() && !m_paintLayer.layoutObject()->hasBackdropFilter())
         return;
+
+    if (!needsRepaint && SubsequenceRecorder::useCachedSubsequenceIfPossible(*context, *m_paintLayer.layoutObject()))
+        return;
+    SubsequenceRecorder subsequenceRecorder(*context, *m_paintLayer.layoutObject());
 
     if (m_paintLayer.paintsWithTransparency(paintingInfo.globalPaintFlags()))
         paintFlags |= PaintLayerHaveTransparency;

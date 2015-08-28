@@ -123,6 +123,7 @@ DeprecatedPaintLayer::DeprecatedPaintLayer(LayoutBoxModelObject* layoutObject, D
     , m_hasNonCompositedChild(false)
     , m_shouldIsolateCompositedDescendants(false)
     , m_lostGroupedMapping(false)
+    , m_needsRepaint(false)
     , m_layoutObject(layoutObject)
     , m_parent(0)
     , m_previous(0)
@@ -858,13 +859,13 @@ LayoutPoint DeprecatedPaintLayer::computeOffsetFromTransformedAncestor() const
     return LayoutPoint(transformState.lastPlanarPoint());
 }
 
-const DeprecatedPaintLayer* DeprecatedPaintLayer::compositingContainer() const
+DeprecatedPaintLayer* DeprecatedPaintLayer::compositingContainer() const
 {
     if (!stackingNode()->isTreatedAsStackingContextForPainting())
         return parent();
     if (DeprecatedPaintLayerStackingNode* ancestorStackingNode = stackingNode()->ancestorStackingContextNode())
         return ancestorStackingNode->layer();
-    return 0;
+    return nullptr;
 }
 
 bool DeprecatedPaintLayer::isPaintInvalidationContainer() const
@@ -881,12 +882,12 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingLayerWithCompositedDeprecat
     if ((includeSelf == IncludeSelf) && compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking)
         return const_cast<DeprecatedPaintLayer*>(this);
 
-    for (const DeprecatedPaintLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
+    for (DeprecatedPaintLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
         if (curr->compositingState() != NotComposited && curr->compositingState() != PaintsIntoGroupedBacking)
-            return const_cast<DeprecatedPaintLayer*>(curr);
+            return curr;
     }
 
-    return 0;
+    return nullptr;
 }
 
 // Return the enclosingCompositedLayerForPaintInvalidation for the given Layer
@@ -914,12 +915,12 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::enclosingLayerForPaintInvalidation()
     if (isPaintInvalidationContainer())
         return const_cast<DeprecatedPaintLayer*>(this);
 
-    for (const DeprecatedPaintLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
+    for (DeprecatedPaintLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
         if (curr->isPaintInvalidationContainer())
-            return const_cast<DeprecatedPaintLayer*>(curr);
+            return curr;
     }
 
-    return 0;
+    return nullptr;
 }
 
 void DeprecatedPaintLayer::setNeedsCompositingInputsUpdate()
@@ -2683,6 +2684,41 @@ void DeprecatedPaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) con
             rect.append(logicalBoundingBox());
             rects.set(this, rect);
         }
+    }
+}
+
+void DeprecatedPaintLayer::setNeedsRepaint()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
+    DeprecatedPaintLayer* layer = this;
+    while (!layer->isSelfPaintingLayer() && !layer->hasSelfPaintingLayerDescendant()) {
+        layer = layer->parent();
+        ASSERT(layer); // At least the root layer is self painting.
+    }
+
+    if (layer->m_needsRepaint)
+        return;
+    layer->m_needsRepaint = true;
+    layer->markCompositingContainerChainForNeedsRepaint();
+}
+
+void DeprecatedPaintLayer::markCompositingContainerChainForNeedsRepaint()
+{
+    DeprecatedPaintLayer* layer = this;
+    while (true) {
+        DeprecatedPaintLayer* container = layer->compositingContainer();
+        if (!container) {
+            LayoutObject* owner = layer->layoutObject()->frame()->ownerLayoutObject();
+            if (!owner)
+                break;
+            container = owner->enclosingLayer();
+        }
+        if (container->m_needsRepaint)
+            break;
+        if (container->isSelfPaintingLayer() || container->hasSelfPaintingLayerDescendant())
+            container->m_needsRepaint = true;
+        layer = container;
     }
 }
 

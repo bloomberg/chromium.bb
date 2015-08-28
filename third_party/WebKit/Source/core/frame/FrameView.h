@@ -77,10 +77,13 @@ typedef unsigned long long DOMTimeStamp;
 
 class CORE_EXPORT FrameView final : public Widget, public ScrollableArea {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameView);
-public:
-    friend class LayoutView;
-    friend class Internals;
 
+    friend class DisplayItemListPaintTestForSlimmingPaintV2;
+    friend class Internals;
+    friend class LayoutPart; // for invalidateTreeIfNeeded
+    friend class LayoutView; // for contentRectangleForPaintInvalidation
+
+public:
     static PassRefPtrWillBeRawPtr<FrameView> create(LocalFrame*);
     static PassRefPtrWillBeRawPtr<FrameView> create(LocalFrame*, const IntSize& initialSize);
 
@@ -623,8 +626,6 @@ private:
 
     // Called when our frame rect changes (or the rect/scroll position of an ancestor changes).
     void frameRectsChanged() override;
-
-    friend class LayoutPart;
 
     bool contentsInCompositedLayer() const;
 

@@ -1191,6 +1191,9 @@ void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& pain
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this);
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        enclosingLayer()->setNeedsRepaint();
 }
 
 LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const

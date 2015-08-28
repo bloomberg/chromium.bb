@@ -111,7 +111,9 @@ public:
     DeprecatedPaintLayer* firstChild() const { return m_first; }
     DeprecatedPaintLayer* lastChild() const { return m_last; }
 
-    const DeprecatedPaintLayer* compositingContainer() const;
+    // TODO(wangxianzhu): Find a better name for it. 'paintContainer' might be good but
+    // we can't use it for now because it conflicts with PaintInfo::paintContainer.
+    DeprecatedPaintLayer* compositingContainer() const;
 
     void addChild(DeprecatedPaintLayer* newChild, DeprecatedPaintLayer* beforeChild = 0);
     DeprecatedPaintLayer* removeChild(DeprecatedPaintLayer*);
@@ -545,6 +547,10 @@ public:
     static LayoutRect transparencyClipBox(const DeprecatedPaintLayer*, const DeprecatedPaintLayer* rootLayer, TransparencyClipBoxBehavior transparencyBehavior,
         TransparencyClipBoxMode transparencyMode, GlobalPaintFlags = GlobalPaintNormalPhase);
 
+    bool needsRepaint() const { return m_needsRepaint; }
+    void setNeedsRepaint();
+    void clearNeedsRepaint() { m_needsRepaint = false; }
+
 private:
     // Bounding box in the coordinates of this layer.
     LayoutRect logicalBoundingBox() const;
@@ -617,6 +623,8 @@ private:
 
     void blockSelectionGapsBoundsChanged();
 
+    void markCompositingContainerChainForNeedsRepaint();
+
     DeprecatedPaintLayerType m_layerType;
 
     // Self-painting layer is an optimization where we avoid the heavy Layer painting
@@ -667,6 +675,8 @@ private:
     // True if this layout layer just lost its grouped mapping due to the CompositedDeprecatedPaintLayerMapping being destroyed,
     // and we don't yet know to what graphics layer this Layer will be assigned.
     unsigned m_lostGroupedMapping : 1;
+
+    unsigned m_needsRepaint : 1;
 
     LayoutBoxModelObject* m_layoutObject;
 
