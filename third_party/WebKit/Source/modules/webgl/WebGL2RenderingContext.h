@@ -41,6 +41,7 @@ protected:
     PersistentWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
     PersistentWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
     PersistentWillBeMember<OESTextureFloatLinear> m_oesTextureFloatLinear;
+    PersistentWillBeMember<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
     PersistentWillBeMember<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
     PersistentWillBeMember<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
     PersistentWillBeMember<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;

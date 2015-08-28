@@ -81,6 +81,7 @@ class OESTextureHalfFloatLinear;
 class OESVertexArrayObject;
 class WebGLActiveInfo;
 class WebGLBuffer;
+class WebGLCompressedTextureASTC;
 class WebGLCompressedTextureATC;
 class WebGLCompressedTextureETC1;
 class WebGLCompressedTexturePVRTC;
@@ -410,6 +411,7 @@ protected:
     friend class WebGLContextObject;
     friend class OESVertexArrayObject;
     friend class WebGLDebugShaders;
+    friend class WebGLCompressedTextureASTC;
     friend class WebGLCompressedTextureATC;
     friend class WebGLCompressedTextureETC1;
     friend class WebGLCompressedTexturePVRTC;

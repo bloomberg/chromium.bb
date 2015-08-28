@@ -79,6 +79,7 @@ private:
     PersistentWillBeMember<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
     PersistentWillBeMember<WebGLDebugShaders> m_webglDebugShaders;
     PersistentWillBeMember<WebGLDrawBuffers> m_webglDrawBuffers;
+    PersistentWillBeMember<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
     PersistentWillBeMember<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
     PersistentWillBeMember<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
     PersistentWillBeMember<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;

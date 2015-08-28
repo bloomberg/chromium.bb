@@ -12,6 +12,7 @@
 #include "modules/webgl/CHROMIUMSubscribeUniform.h"
 #include "modules/webgl/EXTTextureFilterAnisotropic.h"
 #include "modules/webgl/OESTextureFloatLinear.h"
+#include "modules/webgl/WebGLCompressedTextureASTC.h"
 #include "modules/webgl/WebGLCompressedTextureATC.h"
 #include "modules/webgl/WebGLCompressedTextureETC1.h"
 #include "modules/webgl/WebGLCompressedTexturePVRTC.h"
@@ -79,6 +80,7 @@ void WebGL2RenderingContext::registerContextExtensions()
     registerExtension<CHROMIUMSubscribeUniform>(m_chromiumSubscribeUniform);
     registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic);
     registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);
+    registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC);
     registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC);
     registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1);
     registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC);
@@ -93,6 +95,7 @@ DEFINE_TRACE(WebGL2RenderingContext)
     visitor->trace(m_chromiumSubscribeUniform);
     visitor->trace(m_extTextureFilterAnisotropic);
     visitor->trace(m_oesTextureFloatLinear);
+    visitor->trace(m_webglCompressedTextureASTC);
     visitor->trace(m_webglCompressedTextureATC);
     visitor->trace(m_webglCompressedTextureETC1);
     visitor->trace(m_webglCompressedTexturePVRTC);
