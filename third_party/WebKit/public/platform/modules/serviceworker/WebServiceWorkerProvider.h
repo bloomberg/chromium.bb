@@ -52,34 +52,12 @@ public:
     // events. Must be cleared before the client becomes invalid.
     virtual void setClient(WebServiceWorkerProviderClient*) { }
 
-    class WebServiceWorkerRegistrationCallbacks : public WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration>, const WebServiceWorkerError&> {
-    public:
-        void onSuccess(WebServiceWorkerRegistration* r) { onSuccess(adoptWebPtr(r)); }
-        void onError(WebServiceWorkerError* e)
-        {
-            onError(*e);
-            delete e;
-        }
-        virtual void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration>) = 0;
-        virtual void onError(const WebServiceWorkerError&) = 0;
-    };
-    using WebServiceWorkerGetRegistrationCallbacks = WebServiceWorkerRegistrationCallbacks;
-    class WebServiceWorkerGetRegistrationsCallbacks : public WebCallbacks<WebPassOwnPtr<WebVector<WebServiceWorkerRegistration*>>, const WebServiceWorkerError&> {
-    public:
-        void onSuccess(WebVector<WebServiceWorkerRegistration*>* r) { onSuccess(adoptWebPtr(r)); }
-        void onError(WebServiceWorkerError* e)
-        {
-            onError(*e);
-            delete e;
-        }
-        virtual void onSuccess(WebPassOwnPtr<WebVector<WebServiceWorkerRegistration*>>) = 0;
-        virtual void onError(const WebServiceWorkerError&) = 0;
-    };
-    class WebServiceWorkerGetRegistrationForReadyCallbacks : public WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration>, void> {
-    public:
-        void onSuccess(WebServiceWorkerRegistration* r) { onSuccess(adoptWebPtr(r)); }
-        virtual void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration>) = 0;
-    };
+    using WebServiceWorkerRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration>, const WebServiceWorkerError&>;
+    using WebServiceWorkerGetRegistrationCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration>, const WebServiceWorkerError&>;
+    // Each element's ownership is transferred.
+    // TODO(yhirano): Consider using vector<scoped_ptr<>>.
+    using WebServiceWorkerGetRegistrationsCallbacks = WebCallbacks<WebPassOwnPtr<WebVector<WebServiceWorkerRegistration*>>, const WebServiceWorkerError&>;
+    using WebServiceWorkerGetRegistrationForReadyCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerRegistration>, void>;
 
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
     virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks*) { }
