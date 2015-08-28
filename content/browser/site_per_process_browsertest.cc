@@ -1644,9 +1644,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
-// Verify that origin replication works for an A-embed-B-embed-C hierarchy.
+// Verify origin replication with an A-embed-B-embed-C-embed-A hierarchy.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
-  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c(a),b), a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -1654,74 +1655,85 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
                             ->GetFrameTree()
                             ->root();
 
-  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   |--Site B ------- proxies for A C\n"       // tiptop_child
+      "   |    |--Site C -- proxies for A B\n"       // middle_child
+      "   |    |    +--Site A -- proxies for B C\n"  // lowest_child
+      "   |    +--Site B -- proxies for A C\n"
+      "   +--Site A ------- proxies for B C\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://c.com/",
+      DepictFrameTree(root));
 
-  // Navigate the first subframe to a cross-site page with two subframes.
-  GURL foo_url(
-      embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html"));
-  NavigateFrameToURL(root->child_at(0), foo_url);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  std::string a_origin = embedded_test_server()->GetURL("a.com", "/").spec();
+  std::string b_origin = embedded_test_server()->GetURL("b.com", "/").spec();
+  std::string c_origin = embedded_test_server()->GetURL("c.com", "/").spec();
+  FrameTreeNode* tiptop_child = root->child_at(0);
+  FrameTreeNode* middle_child = root->child_at(0)->child_at(0);
+  FrameTreeNode* lowest_child = root->child_at(0)->child_at(0)->child_at(0);
 
-  // We can't use a TestNavigationObserver to verify the URL here,
-  // since the frame has children that may have clobbered it in the observer.
-  EXPECT_EQ(foo_url, root->child_at(0)->current_url());
-
-  // Ensure that a new process is created for the subframe.
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            root->child_at(0)->current_frame_host()->GetSiteInstance());
-
-  // Load cross-site page into subframe's subframe.
-  ASSERT_EQ(2U, root->child_at(0)->child_count());
-  GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
-  NavigateFrameToURL(root->child_at(0)->child_at(0), bar_url);
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  EXPECT_EQ(bar_url, observer.last_navigation_url());
-
-  // Check that a new process is created and is different from the top one and
-  // the middle one.
-  FrameTreeNode* bottom_child = root->child_at(0)->child_at(0);
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            bottom_child->current_frame_host()->GetSiteInstance());
-  EXPECT_NE(root->child_at(0)->current_frame_host()->GetSiteInstance(),
-            bottom_child->current_frame_host()->GetSiteInstance());
-
-  // Check that foo.com frame's location.ancestorOrigins contains the correct
+  // Check that b.com frame's location.ancestorOrigins contains the correct
   // origin for the parent.  The origin should have been replicated as part of
   // the ViewMsg_New message that created the parent's RenderFrameProxy in
-  // foo.com's process.
+  // b.com's process.
   int ancestor_origins_length = 0;
   EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      root->child_at(0)->current_frame_host(),
+      tiptop_child->current_frame_host(),
       "window.domAutomationController.send(location.ancestorOrigins.length);",
       &ancestor_origins_length));
   EXPECT_EQ(1, ancestor_origins_length);
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      root->child_at(0)->current_frame_host(),
+      tiptop_child->current_frame_host(),
       "window.domAutomationController.send(location.ancestorOrigins[0]);",
       &result));
-  EXPECT_EQ(result + "/", main_url.GetOrigin().spec());
+  EXPECT_EQ(a_origin, result + "/");
 
-  // Check that bar.com frame's location.ancestorOrigins contains the correct
+  // Check that c.com frame's location.ancestorOrigins contains the correct
   // origin for its two ancestors. The topmost parent origin should be
-  // replicated as part of ViewMsg_New, and the middle frame (foo.com's) origin
-  // should be replicated as part of FrameMsg_NewFrameProxy sent for foo.com's
-  // frame in bar.com's process.
+  // replicated as part of ViewMsg_New, and the middle frame (b.com's) origin
+  // should be replicated as part of FrameMsg_NewFrameProxy sent for b.com's
+  // frame in c.com's process.
   EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      bottom_child->current_frame_host(),
+      middle_child->current_frame_host(),
       "window.domAutomationController.send(location.ancestorOrigins.length);",
       &ancestor_origins_length));
   EXPECT_EQ(2, ancestor_origins_length);
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      bottom_child->current_frame_host(),
+      middle_child->current_frame_host(),
       "window.domAutomationController.send(location.ancestorOrigins[0]);",
       &result));
-  EXPECT_EQ(result + "/", foo_url.GetOrigin().spec());
+  EXPECT_EQ(b_origin, result + "/");
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      bottom_child->current_frame_host(),
+      middle_child->current_frame_host(),
       "window.domAutomationController.send(location.ancestorOrigins[1]);",
       &result));
-  EXPECT_EQ(result + "/", main_url.GetOrigin().spec());
+  EXPECT_EQ(a_origin, result + "/");
+
+  // Check that the nested a.com frame's location.ancestorOrigins contains the
+  // correct origin for its three ancestors.
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      lowest_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins.length);",
+      &ancestor_origins_length));
+  EXPECT_EQ(3, ancestor_origins_length);
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      lowest_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[0]);",
+      &result));
+  EXPECT_EQ(c_origin, result + "/");
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      lowest_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[1]);",
+      &result));
+  EXPECT_EQ(b_origin, result + "/");
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      lowest_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[2]);",
+      &result));
+  EXPECT_EQ(a_origin, result + "/");
 }
 
 // Check that iframe sandbox flags are replicated correctly.
