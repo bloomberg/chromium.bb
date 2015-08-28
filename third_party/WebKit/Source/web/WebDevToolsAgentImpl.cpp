@@ -280,7 +280,9 @@ private:
 PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLocalFrameImpl* frame, WebDevToolsAgentClient* client)
 {
     WebViewImpl* view = frame->viewImpl();
-    bool isMainFrame = view && view->mainFrameImpl() == frame;
+    // TODO(dgozman): sometimes view->mainFrameImpl() does return null, even though |frame| is meant to be main frame.
+    // See http://crbug.com/526162.
+    bool isMainFrame = view && !frame->parent();
     if (!isMainFrame) {
         WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlayImpl::createEmpty());
         if (frame->frameWidget())
