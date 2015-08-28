@@ -22,6 +22,12 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(OS_WIN)
+#include "base/memory/memory_pressure_monitor_win.h"
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/memory/memory_pressure_monitor_mac.h"
+#endif
+
 using content::NavigationController;
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -126,7 +132,17 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
   if (!delegate_) {
     delegate_ = TabLoaderDelegate::Create(this);
     // There is already at least one tab loading (the active tab). As such we
-    // only have to start the timeout timer here.
+    // only have to start the timeout timer here. But, don't restore background
+    // tabs if the system is under memory pressure.
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level =
+        CurrentMemoryPressureLevel();
+
+    if (memory_pressure_level !=
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+      OnMemoryPressure(memory_pressure_level);
+      return;
+    }
+
     StartFirstTimer();
   }
 }
@@ -209,6 +225,24 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* controller) {
   RemoveTab(controller);
   if (delegate_ && loading_enabled_)
     LoadNextTab();
+}
+
+base::MemoryPressureListener::MemoryPressureLevel
+    TabLoader::CurrentMemoryPressureLevel() {
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+  // Check for explicit memory pressure integration.
+  std::string react_to_memory_pressure = variations::GetVariationParamValue(
+      "IntelligentSessionRestore", "ReactToMemoryPressure");
+  if (react_to_memory_pressure == "true") {
+#if defined(OS_WIN)
+    return base::win::MemoryPressureMonitor::Get()->GetCurrentPressureLevel();
+#else
+    return base::mac::MemoryPressureMonitor::Get()->GetCurrentPressureLevel();
+#endif
+  }
+#endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+
+  return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 }
 
 void TabLoader::OnMemoryPressure(
