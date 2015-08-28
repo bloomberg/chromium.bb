@@ -693,10 +693,10 @@ LayoutRect VisiblePosition::localCaretRect(LayoutObject*& layoutObject) const
     return localCaretRectOfPosition(positionWithAffinity, layoutObject);
 }
 
-IntRect VisiblePosition::absoluteCaretBounds() const
+IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition)
 {
     LayoutObject* layoutObject;
-    LayoutRect localRect = localCaretRect(layoutObject);
+    LayoutRect localRect = visiblePosition.localCaretRect(layoutObject);
     if (localRect.isEmpty() || !layoutObject)
         return IntRect();
 

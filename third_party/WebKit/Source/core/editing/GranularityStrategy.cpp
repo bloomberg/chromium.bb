@@ -19,7 +19,7 @@ enum class SearchDirection {SearchBackwards, SearchForward};
 // unless the text is transformed.
 static IntPoint positionLocation(const VisiblePosition& vp)
 {
-    return vp.absoluteCaretBounds().minXMaxYCorner();
+    return absoluteCaretBoundsOf(vp).minXMaxYCorner();
 }
 
 // Order is specified using the same contract as comparePositions.

@@ -28,7 +28,7 @@ namespace blink {
 
 IntPoint visiblePositionToContentsPoint(const VisiblePosition& pos)
 {
-    IntPoint result = pos.absoluteCaretBounds().minXMaxYCorner();
+    IntPoint result = absoluteCaretBoundsOf(pos).minXMaxYCorner();
     // Need to move the point at least by 1 - caret's minXMaxYCorner is not
     // evaluated to the same line as the text by hit testing.
     result.move(0, -1);

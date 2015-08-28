@@ -108,8 +108,6 @@ public:
 
     // Rect is local to the returned layoutObject
     LayoutRect localCaretRect(LayoutObject*&) const;
-    // Bounds of (possibly transformed) caret in absolute coords
-    IntRect absoluteCaretBounds() const;
 
     DECLARE_TRACE();
 
@@ -129,6 +127,10 @@ private:
     Position m_deepPosition;
     TextAffinity m_affinity;
 };
+
+// TODO(yosin) We should move |absoluteCaretBoundsOf()| to "VisibleUnits.cpp".
+// Bounds of (possibly transformed) caret in absolute coords
+CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
 
 // Abs x/y position of the caret ignoring transforms.
 // TODO(yosin) navigation with transforms should be smarter.

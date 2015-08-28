@@ -1095,7 +1095,7 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
 // FIXME: Maybe baseline would be better?
 static bool absoluteCaretY(const VisiblePosition &c, int &y)
 {
-    IntRect rect = c.absoluteCaretBounds();
+    IntRect rect = absoluteCaretBoundsOf(c);
     if (rect.isEmpty())
         return false;
     y = rect.y() + rect.height() / 2;
@@ -1861,7 +1861,7 @@ void FrameSelection::revealSelection(const ScrollAlignment& alignment, RevealExt
         rect = LayoutRect(absoluteCaretBounds());
         break;
     case RangeSelection:
-        rect = LayoutRect(revealExtentOption == RevealExtent ? VisiblePosition(extent()).absoluteCaretBounds() : enclosingIntRect(unclippedBounds()));
+        rect = LayoutRect(revealExtentOption == RevealExtent ? absoluteCaretBoundsOf(VisiblePosition(extent())) : enclosingIntRect(unclippedBounds()));
         break;
     }
 

@@ -653,7 +653,7 @@ void DeleteSelectionCommand::mergeParagraphs()
 
     // The rule for merging into an empty block is: only do so if its farther to the right.
     // FIXME: Consider RTL.
-    if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) && startOfParagraphToMove.absoluteCaretBounds().x() > mergeDestination.absoluteCaretBounds().x()) {
+    if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) && absoluteCaretBoundsOf(startOfParagraphToMove).x() > absoluteCaretBoundsOf(mergeDestination).x()) {
         if (isHTMLBRElement(*mostForwardCaretPosition(mergeDestination.deepEquivalent()).anchorNode())) {
             removeNodeAndPruneAncestors(mostForwardCaretPosition(mergeDestination.deepEquivalent()).anchorNode());
             m_endingPosition = startOfParagraphToMove.deepEquivalent();
