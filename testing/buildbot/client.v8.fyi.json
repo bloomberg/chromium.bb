@@ -1,7 +1,7 @@
 {
   "V8 Android GN (dbg)": {
     "additional_compile_targets": [
-      "chrome_shell_apk"
+      "chrome_public_apk"
     ],
     "gtest_tests": []
   },

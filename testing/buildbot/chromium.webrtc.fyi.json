@@ -1,12 +1,12 @@
 {
   "Android GN": {
     "additional_compile_targets": [
-      "chrome_shell_apk"
+      "chrome_public_apk"
     ]
   },
   "Android GN (dbg)": {
     "additional_compile_targets": [
-      "chrome_shell_apk"
+      "chrome_public_apk"
     ]
   },
   "Linux GN": {

@@ -1,10 +1,4 @@
 {
-  "android_chromium_gn_compile_rel": {
-    "additional_compile_targets": [
-      "chrome_shell_apk"
-    ],
-    "gtest_tests": []
-  },
   "linux_chromium_gn_rel": {
     "additional_compile_targets": [
       "accessibility_unittests",
