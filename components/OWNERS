@@ -145,7 +145,6 @@ per-file leveldb_proto*=mathp@chromium.org
 
 per-file login*=alemate@chromium.org
 per-file login*=antrim@chromium.org
-per-file login*=dpolukhin@chromium.org
 per-file login*=dzhioev@chromium.org
 per-file login*=nkostylev@chromium.org
 per-file login*=achuith@chromium.org
@@ -185,7 +184,6 @@ per-file onc.gypi=stevenjb@chromium.org
 per-file open_from_clipboard.gypi=jif@chromium.org
 
 per-file ownership.gypi=alemate@chromium.org
-per-file ownership.gypi=dpolukhin@chromium.org
 
 per-file packed_ct_ev_whitelist.gypi=eranm@chromium.org
 per-file packed_ct_ev_whitelist.gypi=rsleevi@chromium.org
@@ -254,7 +252,6 @@ per-file search_provider_logos*=newt@chromium.org
 per-file search_provider_logos*=justincohen@chromium.org
 
 per-file session_manager.gypi=antrim@chromium.org
-per-file session_manager.gypi=dpolukhin@chromium.org
 per-file session_manager.gypi=dzhioev@chromium.org
 per-file session_manager.gypi=nkostylev@chromium.org
 
@@ -302,7 +299,6 @@ per-file undo_strings.grdp=sky@chromium.org
 per-file undo_strings.grdp=tom.cassiotis@gmail.com
 
 per-file user_manager.gypi=antrim@chromium.org
-per-file user_manager.gypi=dpolukhin@chromium.org
 per-file user_manager.gypi=dzhioev@chromium.org
 per-file user_manager.gypi=nkostylev@chromium.org
 

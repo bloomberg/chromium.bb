@@ -10899,7 +10899,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionCacheCount">
-  <owner>dpolukhin@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Number of cached extensions on disk. Reported on Chrome OS during user
     session start.
@@ -10907,7 +10907,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionCacheSize" units="MB">
-  <owner>dpolukhin@chromium.org</owner>
+  <owner>achuith@chromium.org</owner>
   <summary>
     Total size of .crx files in cache on disk. Reported on Chrome OS during user
     session start.
@@ -39312,7 +39312,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ServicesCustomization.LoadResult"
     enum="ServicesCustomizationLoadResult">
-  <owner>dpolukhin@chromium.org</owner>
+  <owner>alemate@chromium.org</owner>
   <summary>
     Records result of fetching and parsing OEM customization manifest. See
     ServicesCustomizationDocument class for more info. Used only on Chrome OS.
