@@ -99,7 +99,7 @@ remoting.V2AppLauncher.prototype.restart = function(id) {
 };
 
 /**
- * @param {chrome.app.window.CreateWindowOptions=} opt_options
+ * @param {!chrome.app.window.CreateWindowOptions=} opt_options
  * @param {Object=} opt_launchArgs
  * @return {Promise<string>} A promise that resolves with the id of the created
  *     window.

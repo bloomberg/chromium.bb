@@ -130,12 +130,6 @@ Event.prototype.initMouseEvent = function(
 /** @type {Object} */
 Event.prototype.data = {};
 
-/**
- * @param {*} value
- * @return {boolean} whether value is an integer or not.
- */
-Number.isInteger = function(value) {};
-
 // Chrome implements XMLHttpRequest.responseURL starting from Chrome 37.
 /** @type {string} */
 XMLHttpRequest.prototype.responseURL = "";

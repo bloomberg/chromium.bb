@@ -364,7 +364,7 @@ remoting.AutoRetryXhr = function(params, opt_maxRetryAttempts) {
    * Retry for 60 x 250ms = 15s by default.
    * @private
    */
-  this.retryAttemptsRemaining_ =
+  this.retryAttemptsRemaining_ = opt_maxRetryAttempts != undefined &&
       Number.isInteger(opt_maxRetryAttempts) ? opt_maxRetryAttempts : 60;
   /** @private */
   this.deferred_ = new base.Deferred();

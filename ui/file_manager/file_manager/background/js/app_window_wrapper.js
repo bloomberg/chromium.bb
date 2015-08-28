@@ -23,7 +23,7 @@ function AppWindowWrapper(url, id, options) {
   this.url_ = url;
   this.id_ = id;
   // Do deep copy for the template of options to assign customized params later.
-  this.options_ = /** @type chrome.app.window.CreateWindowOptions */(
+  this.options_ = /** @type {!chrome.app.window.CreateWindowOptions} */(
       JSON.parse(JSON.stringify(options)));
   this.window_ = null;
   this.appState_ = null;

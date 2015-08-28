@@ -24,7 +24,8 @@ remoting.SuspendDetector = function(opt_maxSuspendInMs) {
   base.inherits(this, base.EventSourceImpl);
   this.defineEvents(base.values(remoting.SuspendDetector.Events));
 
-  if (!Number.isInteger(opt_maxSuspendInMs)) {
+  if (opt_maxSuspendInMs == undefined ||
+      !Number.isInteger(opt_maxSuspendInMs)) {
     opt_maxSuspendInMs = TIMER_INACCURACY_IN_MS;
   }
 
