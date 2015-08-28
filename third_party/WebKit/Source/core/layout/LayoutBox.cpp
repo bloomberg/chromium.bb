@@ -235,6 +235,14 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
     if (isDocumentElement() || isBody()) {
         document().view()->recalculateScrollbarOverlayStyle();
         document().view()->recalculateCustomScrollbarStyle();
+        if (LayoutView* layoutView = view()) {
+            if (DeprecatedPaintLayerScrollableArea* scrollableArea = layoutView->scrollableArea()) {
+                if (scrollableArea->horizontalScrollbar() && scrollableArea->horizontalScrollbar()->isCustomScrollbar())
+                    scrollableArea->horizontalScrollbar()->styleChanged();
+                if (scrollableArea->verticalScrollbar() && scrollableArea->verticalScrollbar()->isCustomScrollbar())
+                    scrollableArea->verticalScrollbar()->styleChanged();
+            }
+        }
     }
     updateShapeOutsideInfoAfterStyleChange(*style(), oldStyle);
     updateGridPositionAfterStyleChange(oldStyle);
