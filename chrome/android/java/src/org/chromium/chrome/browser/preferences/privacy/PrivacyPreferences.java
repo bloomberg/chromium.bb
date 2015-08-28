@@ -260,6 +260,18 @@ public class PrivacyPreferences extends PreferenceFragment
                 contextualPref.setSummary(getActivity().getResources().getText(R.string.text_on));
             }
         }
+        PrivacyPreferencesManager privacyPrefManager =
+                PrivacyPreferencesManager.getInstance(getActivity());
+        if (privacyPrefManager.isCellularExperimentEnabled()) {
+            Preference usageAndCrashPref = findPreference(PREF_USAGE_AND_CRASH_REPORTING);
+            if (privacyPrefManager.isUsageAndCrashReportingEnabled()) {
+                usageAndCrashPref.setSummary(
+                        getActivity().getResources().getText(R.string.text_on));
+            } else {
+                usageAndCrashPref.setSummary(
+                        getActivity().getResources().getText(R.string.text_off));
+            }
+        }
     }
 
     private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
