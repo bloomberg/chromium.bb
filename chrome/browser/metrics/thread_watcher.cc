@@ -928,10 +928,7 @@ base::StackSamplingProfiler::SamplingParams GetJankTimeBombSamplingParams() {
 //
 JankTimeBomb::JankTimeBomb(base::TimeDelta duration)
     : weak_ptr_factory_(this) {
-  version_info::Channel channel = chrome::GetChannel();
-  if (channel == version_info::Channel::UNKNOWN ||
-      channel == version_info::Channel::CANARY ||
-      channel == version_info::Channel::DEV) {
+  if (IsEnabled()) {
     WatchDogThread::PostDelayedTask(
         FROM_HERE,
         base::Bind(&JankTimeBomb::Alarm,
@@ -942,6 +939,13 @@ JankTimeBomb::JankTimeBomb(base::TimeDelta duration)
 }
 
 JankTimeBomb::~JankTimeBomb() {
+}
+
+bool JankTimeBomb::IsEnabled() const {
+  version_info::Channel channel = chrome::GetChannel();
+  return channel == version_info::Channel::UNKNOWN ||
+      channel == version_info::Channel::CANARY ||
+      channel == version_info::Channel::DEV;
 }
 
 void JankTimeBomb::Alarm(base::PlatformThreadId thread_id) {

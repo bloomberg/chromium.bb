@@ -652,6 +652,9 @@ class JankTimeBomb {
   explicit JankTimeBomb(base::TimeDelta duration);
   virtual ~JankTimeBomb();
 
+  // Returns true if JankTimeBomb is enabled.
+  bool IsEnabled() const;
+
  protected:
   // Logs the call stack of given thread_id's janky method. This runs on
   // WatchDogThread. This is overridden in tests to prevent the metrics logging.

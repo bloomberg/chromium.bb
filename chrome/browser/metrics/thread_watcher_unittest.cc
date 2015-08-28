@@ -811,6 +811,8 @@ TEST_F(JankTimeBombTest, StartShutdownTest) {
 TEST_F(JankTimeBombTest, ArmTest) {
   // Test firing of Alarm by passing empty delay.
   TestingJankTimeBomb timebomb((base::TimeDelta()));
+  if (!timebomb.IsEnabled())
+    return;
   WaitForWatchDogThreadPostTask();
   EXPECT_TRUE(timebomb.alarm_invoked());
 }
