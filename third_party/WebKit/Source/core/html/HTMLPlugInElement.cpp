@@ -163,8 +163,15 @@ void HTMLPlugInElement::attach(const AttachContext& context)
 {
     HTMLFrameOwnerElement::attach(context);
 
-    if (!layoutObject() || useFallbackContent())
+    if (!layoutObject() || useFallbackContent()) {
+        // If we don't have a layoutObject we have to dispose of any plugins
+        // which we persisted over a reattach.
+        if (m_persistedPluginWidget) {
+            HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+            setPersistedPluginWidget(nullptr);
+        }
         return;
+    }
 
     if (isImageType()) {
         if (!m_imageLoader)
@@ -189,6 +196,17 @@ void HTMLPlugInElement::updateWidget()
         m_isDelayingLoadEvent = false;
         document().decrementLoadEventDelayCount();
     }
+}
+
+void HTMLPlugInElement::removedFrom(ContainerNode* insertionPoint)
+{
+    // If we've persisted the plugin and we're removed from the tree then
+    // make sure we cleanup the persistance pointer.
+    if (m_persistedPluginWidget) {
+        HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+        setPersistedPluginWidget(nullptr);
+    }
+    HTMLFrameOwnerElement::removedFrom(insertionPoint);
 }
 
 void HTMLPlugInElement::requestPluginCreationWithoutLayoutObjectIfPossible()
@@ -241,7 +259,7 @@ void HTMLPlugInElement::detach(const AttachContext& context)
 
     // Only try to persist a plugin widget we actually own.
     Widget* plugin = ownedWidget();
-    if (plugin && plugin->pluginShouldPersist())
+    if (plugin && context.performingReattach)
         setPersistedPluginWidget(plugin);
 
     resetInstance();

@@ -94,7 +94,6 @@ public:
     void widgetPositionsUpdated() override;
     bool isPluginContainer() const override { return true; }
     void eventListenersRemoved() override;
-    bool pluginShouldPersist() const override;
 
     // WebPluginContainer methods
     WebElement element() override;

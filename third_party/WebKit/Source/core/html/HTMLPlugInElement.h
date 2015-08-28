@@ -82,6 +82,8 @@ public:
     bool usePlaceholderContent() const { return m_placeholder; }
     void setPlaceholder(PassOwnPtrWillBeRawPtr<PluginPlaceholder>);
 
+    void removedFrom(ContainerNode* insertionPoint) override;
+
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
