@@ -33,10 +33,6 @@ SaveFileResourceHandler::SaveFileResourceHandler(net::URLRequest* request,
 SaveFileResourceHandler::~SaveFileResourceHandler() {
 }
 
-bool SaveFileResourceHandler::OnUploadProgress(uint64 position, uint64 size) {
-  return true;
-}
-
 bool SaveFileResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,

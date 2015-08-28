@@ -44,9 +44,6 @@ using base::TimeTicks;
 namespace content {
 namespace {
 
-// The interval for calls to ResourceLoader::ReportUploadProgress.
-const int kUploadProgressIntervalMsec = 100;
-
 void StoreSignedCertificateTimestamps(
     const net::SignedCertificateTimestampAndStatusList& sct_list,
     int process_id,
@@ -134,8 +131,6 @@ ResourceLoader::ResourceLoader(scoped_ptr<net::URLRequest> request,
       request_(request.Pass()),
       handler_(handler.Pass()),
       delegate_(delegate),
-      last_upload_position_(0),
-      waiting_for_upload_progress_ack_(false),
       is_transferring_(false),
       times_cancelled_before_request_start_(0),
       started_request_(false),
@@ -189,38 +184,6 @@ void ResourceLoader::CancelWithError(int error_code) {
   CancelRequestInternal(error_code, false);
 }
 
-void ResourceLoader::ReportUploadProgress() {
-  DCHECK(GetRequestInfo()->is_upload_progress_enabled());
-
-  if (waiting_for_upload_progress_ack_)
-    return;  // Send one progress event at a time.
-
-  net::UploadProgress progress = request_->GetUploadProgress();
-  if (!progress.size())
-    return;  // Nothing to upload.
-
-  if (progress.position() == last_upload_position_)
-    return;  // No progress made since last time.
-
-  const uint64 kHalfPercentIncrements = 200;
-  const TimeDelta kOneSecond = TimeDelta::FromMilliseconds(1000);
-
-  uint64 amt_since_last = progress.position() - last_upload_position_;
-  TimeDelta time_since_last = TimeTicks::Now() - last_upload_ticks_;
-
-  bool is_finished = (progress.size() == progress.position());
-  bool enough_new_progress =
-      (amt_since_last > (progress.size() / kHalfPercentIncrements));
-  bool too_much_time_passed = time_since_last > kOneSecond;
-
-  if (is_finished || enough_new_progress || too_much_time_passed) {
-    handler_->OnUploadProgress(progress.position(), progress.size());
-    waiting_for_upload_progress_ack_ = true;
-    last_upload_ticks_ = TimeTicks::Now();
-    last_upload_position_ = progress.position();
-  }
-}
-
 void ResourceLoader::MarkAsTransferring() {
   CHECK(IsResourceTypeFrame(GetRequestInfo()->GetResourceType()))
       << "Can only transfer for navigations";
@@ -264,10 +227,6 @@ ResourceRequestInfoImpl* ResourceLoader::GetRequestInfo() {
 
 void ResourceLoader::ClearLoginDelegate() {
   login_delegate_ = NULL;
-}
-
-void ResourceLoader::OnUploadProgressACK() {
-  waiting_for_upload_progress_ack_ = false;
 }
 
 void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
@@ -384,20 +343,9 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
 
   DVLOG(1) << "OnResponseStarted: " << request_->url().spec();
 
-  progress_timer_.Stop();
-
   if (!request_->status().is_success()) {
     ResponseCompleted();
     return;
-  }
-
-  // We want to send a final upload progress message prior to sending the
-  // response complete message even if we're waiting for an ack to to a
-  // previous upload progress message.
-  ResourceRequestInfoImpl* info = GetRequestInfo();
-  if (info->is_upload_progress_enabled()) {
-    waiting_for_upload_progress_ack_ = false;
-    ReportUploadProgress();
   }
 
   CompleteResponseStarted();
@@ -536,15 +484,6 @@ void ResourceLoader::StartRequestInternal() {
   request_->Start();
 
   delegate_->DidStartRequest(this);
-
-  if (GetRequestInfo()->is_upload_progress_enabled() &&
-      request_->has_upload()) {
-    progress_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kUploadProgressIntervalMsec),
-        this,
-        &ResourceLoader::ReportUploadProgress);
-  }
 }
 
 void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {

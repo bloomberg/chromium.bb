@@ -142,11 +142,6 @@ DownloadResourceHandler::DownloadResourceHandler(
       PowerSaveBlocker::kReasonOther, "Download in progress");
 }
 
-bool DownloadResourceHandler::OnUploadProgress(uint64 position,
-                                               uint64 size) {
-  return true;
-}
-
 bool DownloadResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,

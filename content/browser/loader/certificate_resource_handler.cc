@@ -25,11 +25,6 @@ CertificateResourceHandler::CertificateResourceHandler(net::URLRequest* request)
 CertificateResourceHandler::~CertificateResourceHandler() {
 }
 
-bool CertificateResourceHandler::OnUploadProgress(uint64 position,
-                                                  uint64 size) {
-  return true;
-}
-
 bool CertificateResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* resp,

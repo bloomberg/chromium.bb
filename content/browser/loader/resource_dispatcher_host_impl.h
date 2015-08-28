@@ -461,7 +461,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       scoped_ptr<ResourceHandler> handler);
 
   void OnDataDownloadedACK(int request_id);
-  void OnUploadProgressACK(int request_id);
   void OnCancelRequest(int request_id);
   void OnReleaseDownloadedFile(int request_id);
   void OnDidChangePriority(int request_id,

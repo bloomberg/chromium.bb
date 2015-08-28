@@ -256,8 +256,7 @@ class ResourceHandlerStub : public ResourceHandler {
         received_eof_(false),
         received_response_completed_(false),
         received_request_redirected_(false),
-        total_bytes_downloaded_(0),
-        upload_position_(0) {}
+        total_bytes_downloaded_(0) {}
 
   // If true, defers the resource load in OnWillStart.
   void set_defer_request_on_will_start(bool defer_request_on_will_start) {
@@ -292,24 +291,6 @@ class ResourceHandlerStub : public ResourceHandler {
 
   void Resume() {
     controller()->Resume();
-  }
-
-  // Waits until OnUploadProgress is called and returns the upload position.
-  uint64 WaitForUploadProgress() {
-    wait_for_progress_loop_.reset(new base::RunLoop());
-    wait_for_progress_loop_->Run();
-    wait_for_progress_loop_.reset();
-    return upload_position_;
-  }
-
-  // ResourceHandler implementation:
-  bool OnUploadProgress(uint64 position, uint64 size) override {
-    EXPECT_LE(position, size);
-    EXPECT_GT(position, upload_position_);
-    upload_position_ = position;
-    if (wait_for_progress_loop_)
-      wait_for_progress_loop_->Quit();
-    return true;
   }
 
   bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
@@ -404,7 +385,6 @@ class ResourceHandlerStub : public ResourceHandler {
   net::URLRequestStatus status_;
   int total_bytes_downloaded_;
   scoped_ptr<base::RunLoop> wait_for_progress_loop_;
-  uint64 upload_position_;
 };
 
 // Test browser client that captures calls to SelectClientCertificates and
@@ -515,17 +495,6 @@ class ResourceLoaderTest : public testing::Test,
 
   std::string test_data() const {
     return net::URLRequestTestJob::test_data_1();
-  }
-
-  // Waits until upload progress reaches |target_position|
-  void WaitForUploadProgress(uint64 target_position) {
-    while (true) {
-      uint64 position = raw_ptr_resource_handler_->WaitForUploadProgress();
-      EXPECT_LE(position, target_position);
-      loader_->OnUploadProgressACK();
-      if (position == target_position)
-        break;
-    }
   }
 
   virtual scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
@@ -830,39 +799,6 @@ TEST_F(ResourceLoaderTest, DeferEOF) {
   EXPECT_TRUE(raw_ptr_resource_handler_->received_response_completed());
   EXPECT_EQ(net::URLRequestStatus::SUCCESS,
             raw_ptr_resource_handler_->status().status());
-}
-
-// Tests that progress is reported correctly while uploading.
-// TODO(andresantoso): Add test for the redirect case.
-TEST_F(ResourceLoaderTest, UploadProgress) {
-  // Set up a test server.
-  net::test_server::EmbeddedTestServer server;
-  ASSERT_TRUE(server.InitializeAndWaitUntilReady());
-  base::FilePath path;
-  PathService::Get(content::DIR_TEST_DATA, &path);
-  server.ServeFilesFromDirectory(path);
-
-  scoped_ptr<net::URLRequest> request(
-      resource_context_.GetRequestContext()->CreateRequest(
-          server.GetURL("/title1.html"),
-          net::DEFAULT_PRIORITY,
-          nullptr /* delegate */));
-
-  // Start an upload.
-  auto stream = new NonChunkedUploadDataStream(10);
-  request->set_upload(make_scoped_ptr(stream));
-
-  SetUpResourceLoader(request.Pass());
-  loader_->StartRequest();
-
-  stream->AppendData("xx");
-  WaitForUploadProgress(2);
-
-  stream->AppendData("yyy");
-  WaitForUploadProgress(5);
-
-  stream->AppendData("zzzzz");
-  WaitForUploadProgress(10);
 }
 
 class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {

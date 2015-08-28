@@ -23,11 +23,6 @@ void StreamResourceHandler::SetController(ResourceController* controller) {
   ResourceHandler::SetController(controller);
 }
 
-bool StreamResourceHandler::OnUploadProgress(uint64 position,
-                                             uint64 size) {
-  return true;
-}
-
 bool StreamResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* resp,

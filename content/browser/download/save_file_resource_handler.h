@@ -29,7 +29,6 @@ class SaveFileResourceHandler : public ResourceHandler {
   ~SaveFileResourceHandler() override;
 
   // ResourceHandler Implementation:
-  bool OnUploadProgress(uint64 position, uint64 size) override;
 
   // Saves the redirected URL to final_url_, we need to use the original
   // URL to match original request.

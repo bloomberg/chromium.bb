@@ -45,8 +45,6 @@ class CONTENT_EXPORT DownloadResourceHandler
       const DownloadUrlParameters::OnStartedCallback& started_cb,
       scoped_ptr<DownloadSaveInfo> save_info);
 
-  bool OnUploadProgress(uint64 position, uint64 size) override;
-
   bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                            ResourceResponse* response,
                            bool* defer) override;

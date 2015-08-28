@@ -29,12 +29,6 @@ void LayeredResourceHandler::SetController(ResourceController* controller) {
   next_handler_->SetController(controller);
 }
 
-bool LayeredResourceHandler::OnUploadProgress(uint64 position,
-                                              uint64 size) {
-  DCHECK(next_handler_.get());
-  return next_handler_->OnUploadProgress(position, size);
-}
-
 bool LayeredResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,

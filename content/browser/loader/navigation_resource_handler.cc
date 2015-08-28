@@ -49,10 +49,6 @@ void NavigationResourceHandler::SetController(ResourceController* controller) {
   ResourceHandler::SetController(controller);
 }
 
-bool NavigationResourceHandler::OnUploadProgress(uint64 position, uint64 size) {
-  return true;
-}
-
 bool NavigationResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,

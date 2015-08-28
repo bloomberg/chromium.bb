@@ -1007,7 +1007,6 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ResourceHostMsg_ReleaseDownloadedFile,
                         OnReleaseDownloadedFile)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DataDownloaded_ACK, OnDataDownloadedACK)
-    IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DidChangePriority, OnDidChangePriority)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1549,12 +1548,6 @@ void ResourceDispatcherHostImpl::UnregisterDownloadedTempFile(
 bool ResourceDispatcherHostImpl::Send(IPC::Message* message) {
   delete message;
   return false;
-}
-
-void ResourceDispatcherHostImpl::OnUploadProgressACK(int request_id) {
-  ResourceLoader* loader = GetLoader(filter_->child_id(), request_id);
-  if (loader)
-    loader->OnUploadProgressACK();
 }
 
 // Note that this cancel is subtly different from the other

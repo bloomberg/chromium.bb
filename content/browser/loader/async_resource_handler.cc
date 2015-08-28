@@ -32,6 +32,7 @@
 #include "net/log/net_log.h"
 #include "net/url_request/redirect_info.h"
 
+using base::TimeDelta;
 using base::TimeTicks;
 
 namespace content {
@@ -40,6 +41,8 @@ namespace {
 static int kBufferSize = 1024 * 512;
 static int kMinAllocationSize = 1024 * 4;
 static int kMaxAllocationSize = 1024 * 32;
+// The interval for calls to ReportUploadProgress.
+static int kUploadProgressIntervalMsec = 10;
 
 void GetNumericArg(const std::string& name, int* result) {
   const std::string& value =
@@ -84,6 +87,8 @@ AsyncResourceHandler::AsyncResourceHandler(
       has_checked_for_sufficient_resources_(false),
       sent_received_response_msg_(false),
       sent_first_data_msg_(false),
+      last_upload_position_(0),
+      waiting_for_upload_progress_ack_(false),
       reported_transfer_size_(0) {
   InitializeResourceBufferConstants();
 }
@@ -98,6 +103,7 @@ bool AsyncResourceHandler::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AsyncResourceHandler, message)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_FollowRedirect, OnFollowRedirect)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DataReceived_ACK, OnDataReceivedACK)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -122,13 +128,45 @@ void AsyncResourceHandler::OnDataReceivedACK(int request_id) {
   }
 }
 
-bool AsyncResourceHandler::OnUploadProgress(uint64 position,
-                                            uint64 size) {
-  ResourceMessageFilter* filter = GetFilter();
-  if (!filter)
-    return false;
-  return filter->Send(
-      new ResourceMsg_UploadProgress(GetRequestID(), position, size));
+void AsyncResourceHandler::OnUploadProgressACK(int request_id) {
+  waiting_for_upload_progress_ack_ = false;
+}
+
+void AsyncResourceHandler::ReportUploadProgress() {
+  DCHECK(GetRequestInfo()->is_upload_progress_enabled());
+  if (waiting_for_upload_progress_ack_)
+    return;  // Send one progress event at a time.
+
+  net::UploadProgress progress = request()->GetUploadProgress();
+  if (!progress.size())
+    return;  // Nothing to upload.
+
+  if (progress.position() == last_upload_position_)
+    return;  // No progress made since last time.
+
+  const uint64 kHalfPercentIncrements = 200;
+  const TimeDelta kOneSecond = TimeDelta::FromMilliseconds(1000);
+
+  uint64 amt_since_last = progress.position() - last_upload_position_;
+  TimeDelta time_since_last = TimeTicks::Now() - last_upload_ticks_;
+
+  bool is_finished = (progress.size() == progress.position());
+  bool enough_new_progress =
+      (amt_since_last > (progress.size() / kHalfPercentIncrements));
+  bool too_much_time_passed = time_since_last > kOneSecond;
+
+  if (is_finished || enough_new_progress || too_much_time_passed) {
+    ResourceMessageFilter* filter = GetFilter();
+    if (filter) {
+      filter->Send(
+        new ResourceMsg_UploadProgress(GetRequestID(),
+                                       progress.position(),
+                                       progress.size()));
+    }
+    waiting_for_upload_progress_ack_ = true;
+    last_upload_ticks_ = TimeTicks::Now();
+    last_upload_position_ = progress.position();
+  }
 }
 
 bool AsyncResourceHandler::OnRequestRedirected(
@@ -168,9 +206,18 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
 
+  progress_timer_.Stop();
   const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info->filter())
     return false;
+
+  // We want to send a final upload progress message prior to sending the
+  // response complete message even if we're waiting for an ack to to a
+  // previous upload progress message.
+  if (info->is_upload_progress_enabled()) {
+    waiting_for_upload_progress_ack_ = false;
+    ReportUploadProgress();
+  }
 
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(
@@ -220,6 +267,15 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
 }
 
 bool AsyncResourceHandler::OnWillStart(const GURL& url, bool* defer) {
+  if (GetRequestInfo()->is_upload_progress_enabled() &&
+      request()->has_upload()) {
+    ReportUploadProgress();
+    progress_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kUploadProgressIntervalMsec),
+        this,
+        &AsyncResourceHandler::ReportUploadProgress);
+  }
   return true;
 }
 

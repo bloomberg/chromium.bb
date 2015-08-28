@@ -41,8 +41,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void StartRequest();
   void CancelRequest(bool from_renderer);
 
-  void ReportUploadProgress();
-
   bool is_transferring() const { return is_transferring_; }
   void MarkAsTransferring();
   void CompleteTransfer();
@@ -51,9 +49,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   ResourceRequestInfoImpl* GetRequestInfo();
 
   void ClearLoginDelegate();
-
-  // IPC message handlers:
-  void OnUploadProgressACK();
 
  private:
   // net::URLRequest::Delegate implementation:
@@ -136,9 +131,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   scoped_refptr<ResourceDispatcherHostLoginDelegate> login_delegate_;
   scoped_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 
-  uint64 last_upload_position_;
-  bool waiting_for_upload_progress_ack_;
-  base::TimeTicks last_upload_ticks_;
   base::TimeTicks read_deferral_start_time_;
 
   // Indicates that we are in a state of being transferred to a new downstream
@@ -151,8 +143,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   int times_cancelled_before_request_start_;
   bool started_request_;
   int times_cancelled_after_request_start_;
-
-  base::RepeatingTimer<ResourceLoader> progress_timer_;
 
   base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
 

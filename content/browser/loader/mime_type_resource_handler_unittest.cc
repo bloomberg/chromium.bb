@@ -31,11 +31,6 @@ class TestResourceHandler : public ResourceHandler {
 
   void SetController(ResourceController* controller) override {}
 
-  bool OnUploadProgress(uint64 position, uint64 size) override {
-    NOTREACHED();
-    return false;
-  }
-
   bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                            ResourceResponse* response,
                            bool* defer) override {

@@ -41,10 +41,6 @@ SyncResourceHandler::~SyncResourceHandler() {
   }
 }
 
-bool SyncResourceHandler::OnUploadProgress(uint64 position, uint64 size) {
-  return true;
-}
-
 bool SyncResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,

@@ -45,9 +45,6 @@ class CONTENT_EXPORT ResourceHandler
   // Sets the controller for this handler.
   virtual void SetController(ResourceController* controller);
 
-  // Called as upload progress is made.  The return value is ignored.
-  virtual bool OnUploadProgress(uint64 position, uint64 size) = 0;
-
   // The request was redirected to a new URL.  |*defer| has an initial value of
   // false.  Set |*defer| to true to defer the redirect.  The redirect may be
   // followed later on via ResourceDispatcherHost::FollowDeferredRedirect.  If

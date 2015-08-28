@@ -87,13 +87,6 @@ void DetachableResourceHandler::SetController(ResourceController* controller) {
     next_handler_->SetController(this);
 }
 
-bool DetachableResourceHandler::OnUploadProgress(uint64 position, uint64 size) {
-  if (!next_handler_)
-    return true;
-
-  return next_handler_->OnUploadProgress(position, size);
-}
-
 bool DetachableResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,

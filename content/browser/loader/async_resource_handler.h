@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/timer/timer.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/browser/loader/resource_message_delegate.h"
 #include "url/gurl.h"
@@ -35,7 +36,6 @@ class AsyncResourceHandler : public ResourceHandler,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // ResourceHandler implementation:
-  bool OnUploadProgress(uint64 position, uint64 size) override;
   bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                            ResourceResponse* response,
                            bool* defer) override;
@@ -55,6 +55,9 @@ class AsyncResourceHandler : public ResourceHandler,
   // IPC message handlers:
   void OnFollowRedirect(int request_id);
   void OnDataReceivedACK(int request_id);
+  void OnUploadProgressACK(int request_id);
+
+  void ReportUploadProgress();
 
   bool EnsureResourceBufferIsInitialized();
   void ResumeIfDeferred();
@@ -74,6 +77,11 @@ class AsyncResourceHandler : public ResourceHandler,
   bool has_checked_for_sufficient_resources_;
   bool sent_received_response_msg_;
   bool sent_first_data_msg_;
+
+  uint64 last_upload_position_;
+  bool waiting_for_upload_progress_ack_;
+  base::TimeTicks last_upload_ticks_;
+  base::RepeatingTimer<AsyncResourceHandler> progress_timer_;
 
   int64_t reported_transfer_size_;
 

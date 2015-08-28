@@ -30,8 +30,6 @@ class CertificateResourceHandler : public ResourceHandler {
   explicit CertificateResourceHandler(net::URLRequest* request);
   ~CertificateResourceHandler() override;
 
-  bool OnUploadProgress(uint64 position, uint64 size) override;
-
   // Not needed, as this event handler ought to be the final resource.
   bool OnRequestRedirected(const net::RedirectInfo& redirect_info,
                            ResourceResponse* resp,
