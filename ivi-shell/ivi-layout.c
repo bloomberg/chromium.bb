@@ -233,25 +233,6 @@ ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf)
 }
 
 /**
- * Internal API to check ivi_layer/ivi_surface already added in ivi_layer/ivi_screen.
- * Called by ivi_layout_layer_add_surface/ivi_layout_screenAddLayer
- */
-static int
-is_surface_in_layer(struct ivi_layout_surface *ivisurf,
-		    struct ivi_layout_layer *ivilayer)
-{
-	struct ivi_layout_surface *surf = NULL;
-
-	wl_list_for_each(surf, &ivilayer->pending.surface_list, pending.link) {
-		if (surf->id_surface == ivisurf->id_surface) {
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-/**
  * Internal API to initialize ivi_screens found from output_list of weston_compositor.
  * Called by ivi_layout_init_with_compositor.
  */
@@ -2387,15 +2368,13 @@ ivi_layout_layer_add_surface(struct ivi_layout_layer *ivilayer,
 	struct ivi_layout *layout = get_instance();
 	struct ivi_layout_surface *ivisurf = NULL;
 	struct ivi_layout_surface *next = NULL;
-	int is_surf_in_layer = 0;
 
 	if (ivilayer == NULL || addsurf == NULL) {
 		weston_log("ivi_layout_layer_add_surface: invalid argument\n");
 		return IVI_FAILED;
 	}
 
-	is_surf_in_layer = is_surface_in_layer(addsurf, ivilayer);
-	if (is_surf_in_layer == 1) {
+	if (addsurf->on_layer == ivilayer) {
 		weston_log("ivi_layout_layer_add_surface: addsurf is already available\n");
 		return IVI_SUCCEEDED;
 	}
