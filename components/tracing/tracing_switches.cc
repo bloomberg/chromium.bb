@@ -6,10 +6,6 @@
 
 namespace switches {
 
-// Causes TRACE_EVENT flags to be recorded from startup.
-// This flag will be ignored if --trace-startup or --trace-shutdown is provided.
-const char kTraceConfigFile[]               = "trace-config-file";
-
 // Causes TRACE_EVENT flags to be recorded beginning with shutdown. Optionally,
 // can specify the specific trace categories to include (e.g.
 // --trace-shutdown=base,net) otherwise, all events are recorded.

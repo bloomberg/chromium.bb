@@ -116,9 +116,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::midi::MidiManager* midi_manager() const { return midi_manager_.get(); }
   base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
 
-  bool is_tracing_startup_for_duration() const {
-    return is_tracing_startup_for_duration_;
-  }
+  bool is_tracing_startup() const { return is_tracing_startup_; }
 
   const base::FilePath& startup_trace_file() const {
     return startup_trace_file_;
@@ -154,7 +152,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   base::FilePath GetStartupTraceFileName(
       const base::CommandLine& command_line) const;
-  void InitStartupTracingForDuration(const base::CommandLine& command_line);
+  void InitStartupTracing(const base::CommandLine& command_line);
   void EndStartupTracing();
 
   bool UsingInProcessGpu() const;
@@ -168,7 +166,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // MainMessageLoopStart()
   //   InitializeMainThread()
   // PostMainMessageLoopStart()
-  //   InitStartupTracingForDuration()
+  //   InitStartupTracing()
   // CreateStartupTasks()
   //   PreCreateThreads()
   //   CreateThreads()
@@ -179,7 +177,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   const base::CommandLine& parsed_command_line_;
   int result_code_;
   bool created_threads_;  // True if the non-UI threads were created.
-  bool is_tracing_startup_for_duration_;
+  bool is_tracing_startup_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<base::MessageLoop> main_message_loop_;
@@ -208,7 +206,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<MemoryObserver> memory_observer_;
   scoped_ptr<base::trace_event::TraceMemoryController> trace_memory_controller_;
 
-  // Members initialized in |InitStartupTracingForDuration()| ------------------
+  // Members initialized in |InitStartupTracing()| -----------------------------
   base::FilePath startup_trace_file_;
 
   // This timer initiates trace file saving.

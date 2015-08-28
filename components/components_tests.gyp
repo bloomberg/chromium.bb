@@ -622,9 +622,6 @@
       'sync_driver/tab_node_pool_unittest.cc',
       'sync_driver/ui_data_type_controller_unittest.cc',
     ],
-    'tracing_unittest_sources': [
-      'tracing/trace_config_file_unittest.cc',
-    ],
     'translate_unittest_sources': [
       'translate/core/browser/language_state_unittest.cc',
       'translate/core/browser/translate_browser_metrics_unittest.cc',
@@ -1183,7 +1180,6 @@
             '<@(copresence_unittest_sources)',
             '<@(feedback_unittest_sources)',
             '<@(proximity_auth_unittest_sources)',
-            '<@(tracing_unittest_sources)',
           ],
           'sources!': [
             'variations/variations_request_scheduler_mobile_unittest.cc',
@@ -1203,7 +1199,6 @@
             'components.gyp:pref_registry_test_support',
             'components.gyp:proximity_auth',
             'components.gyp:proximity_auth_test_support',
-            'tracing.gyp:tracing',
           ],
         }],
         ['chromeos==1', {
