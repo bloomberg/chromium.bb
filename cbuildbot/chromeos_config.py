@@ -1725,6 +1725,8 @@ def GetConfig():
                     blocking=True, num=1, timeout=120*60,
                     pool=constants.HWTEST_PALADIN_POOL)
             ])
+      if board is 'guado_moblab':
+        customizations.update(active_waterfall=constants.WATERFALL_INTERNAL)
       if board not in _paladin_important_boards:
         customizations.update(important=False)
       if board in _paladin_chroot_replace_boards:
