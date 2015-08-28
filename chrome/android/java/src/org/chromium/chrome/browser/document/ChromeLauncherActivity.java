@@ -168,6 +168,14 @@ public class ChromeLauncherActivity extends Activity
             return;
         }
 
+        // The notification settings cog on the flipped side of Notifications and in the Android
+        // Settings "App Notifications" view will open us with a specific category.
+        if (getIntent().hasCategory(Notification.INTENT_CATEGORY_NOTIFICATION_PREFERENCES)) {
+            NotificationUIManager.launchNotificationPreferences(this, getIntent());
+            finish();
+            return;
+        }
+
         // Check if we should launch the ChromeTabbedActivity.
         if (!mIsCustomTabIntent && !FeatureUtilities.isDocumentMode(this)) {
             launchTabbedMode();
@@ -179,13 +187,6 @@ public class ChromeLauncherActivity extends Activity
         if (TextUtils.equals(getIntent().getAction(), ACTION_CLOSE_ALL_INCOGNITO)) {
             ChromeApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
             ApiCompatibilityUtils.finishAndRemoveTask(this);
-            return;
-        }
-
-        // The notification settings cog on the flipped side of Notifications and in the Android
-        // Settings "App Notifications" view will open us with a specific category.
-        if (getIntent().hasCategory(Notification.INTENT_CATEGORY_NOTIFICATION_PREFERENCES)) {
-            NotificationUIManager.launchNotificationPreferences(this, getIntent());
             return;
         }
 
