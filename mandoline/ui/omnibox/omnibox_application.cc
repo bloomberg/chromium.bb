@@ -5,6 +5,8 @@
 #include "mandoline/ui/omnibox/omnibox_application.h"
 
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/url_fixer.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_delegate.h"
 #include "mandoline/ui/aura/aura_init.h"
@@ -176,7 +178,9 @@ bool OmniboxImpl::HandleKeyEvent(views::Textfield* sender,
   if (key_event.key_code() == ui::VKEY_RETURN) {
     // TODO(beng): call back to browser.
     mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From<base::string16>(sender->text());
+    GURL url = url_formatter::FixupURL(base::UTF16ToUTF8(sender->text()),
+                                       std::string());
+    request->url = url.spec();
     view_embedder_->Embed(request.Pass());
     HideWindow();
     return true;

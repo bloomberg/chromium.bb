@@ -26,6 +26,7 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//components/url_formatter",
     "//components/view_manager/public/cpp",
     "//mandoline/ui/aura",
     "//mandoline/ui/desktop_ui/public/interfaces",
