@@ -2329,6 +2329,8 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseColor(const CS
     if (isColorKeyword(id)) {
         if (!isValueAllowedInMode(id, m_context.mode()))
             return nullptr;
+        if (id == CSSValueWebkitText && m_context.useCounter())
+            m_context.useCounter()->count(UseCounter::WebkitTextInColorProperty);
         return cssValuePool().createIdentifierValue(id);
     }
     RGBA32 c = Color::transparent;
@@ -2851,13 +2853,18 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
                 || val->id == CSSValueBorderBox || val->id == CSSValuePaddingBox || val->id == CSSValueContentBox
                 || ((propId == CSSPropertyWebkitBackgroundClip || propId == CSSPropertyWebkitMaskClip)
                     && (val->id == CSSValueText || val->id == CSSValueWebkitText))) {
+                if (val->id == CSSValueWebkitText && m_context.useCounter())
+                    m_context.useCounter()->count(UseCounter::WebkitTextInClipProperty);
                 currValue = cssValuePool().createIdentifierValue(val->id);
                 m_valueList->next();
             }
             break;
         case CSSPropertyBackgroundClip:
-            if (parseBackgroundClip(val, currValue))
+            if (parseBackgroundClip(val, currValue)) {
+                if (val->id == CSSValueWebkitText && m_context.useCounter())
+                    m_context.useCounter()->count(UseCounter::WebkitTextInClipProperty);
                 m_valueList->next();
+            }
             break;
         case CSSPropertyBackgroundOrigin:
             if (val->id == CSSValueBorderBox || val->id == CSSValuePaddingBox || val->id == CSSValueContentBox) {
