@@ -16,7 +16,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo.ContextualSearchPromoHost;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
@@ -325,11 +324,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         if (mOverrideIsFullscreenSizePanelForTesting) {
             return mIsFullscreenSizePanelForTesting;
         }
-
-        if (!ContextualSearchFieldTrial.isNarrowPanelSupported()) {
-            return true;
-        }
-
         return getFullscreenWidth() <= SMALL_PANEL_WIDTH_THRESHOLD_DP;
     }
 

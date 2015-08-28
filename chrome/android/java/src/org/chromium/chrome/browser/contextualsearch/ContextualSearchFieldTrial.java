@@ -40,8 +40,6 @@ public class ContextualSearchFieldTrial {
     static final String SELECTION_EXPANSION_DISABLED =
             "contextual_search_selection_expansion_disabled";
 
-    static final String NARROW_PANEL_SUPPORTED = "contextual_search_narrow_panel_supported";
-
     private static final String CHINESE_LANGUAGE_CODE = "zh";
     private static final String JAPANESE_LANGUAGE_CODE = "ja";
     private static final String KOREAN_LANGUAGE_CODE = "ko";
@@ -61,7 +59,6 @@ public class ContextualSearchFieldTrial {
     // Cached value to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sSelectionExpansionDisabled;
-    private static Boolean sNarrowPanelSupported;
 
     /**
      * Don't instantiate.
@@ -246,16 +243,6 @@ public class ContextualSearchFieldTrial {
             sSelectionExpansionDisabled = getBooleanParam(SELECTION_EXPANSION_DISABLED);
         }
         return sSelectionExpansionDisabled.booleanValue();
-    }
-
-    /**
-     * @return Whether the narrow version of the Search Panel is supported.
-     */
-    public static boolean isNarrowPanelSupported() {
-        if (sNarrowPanelSupported == null) {
-            sNarrowPanelSupported = getBooleanParam(NARROW_PANEL_SUPPORTED);
-        }
-        return sNarrowPanelSupported.booleanValue();
     }
 
     // --------------------------------------------------------------------------------------------
