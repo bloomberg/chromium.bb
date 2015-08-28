@@ -79,6 +79,7 @@ class MenuItemViewTestInsert : public MenuTestBase {
 
   // Insert item at INSERT_INDEX and click item at SELECT_INDEX.
   void DoTestWithMenuOpen() override {
+    LOG(ERROR) << "\nDoTestWithMenuOpen\n";
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_TRUE(submenu->IsShowing());
@@ -103,6 +104,7 @@ class MenuItemViewTestInsert : public MenuTestBase {
 
   // Check clicked item and complete test.
   void Step2() {
+    LOG(ERROR) << "\nStep2\n";
     views::SubmenuView* submenu = menu()->GetSubmenu();
     ASSERT_TRUE(submenu);
     ASSERT_FALSE(submenu->IsShowing());
@@ -115,6 +117,7 @@ class MenuItemViewTestInsert : public MenuTestBase {
     else
       ASSERT_EQ(SELECT_INDEX, last_command());
 
+    LOG(ERROR) << "\nDone\n";
     Done();
   }
 
