@@ -497,7 +497,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void HandleGestureForTouchSelection(ui::GestureEvent* event);
 
   // The model object.
-  RenderWidgetHostImpl* host_;
+  RenderWidgetHostImpl* const host_;
 
   aura::Window* window_;
 

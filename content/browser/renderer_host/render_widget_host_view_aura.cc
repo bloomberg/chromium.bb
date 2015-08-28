@@ -599,7 +599,6 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
 void RenderWidgetHostViewAura::Show() {
   window_->Show();
 
-  DCHECK(host_);
   if (!host_->is_hidden())
     return;
 
@@ -2413,6 +2412,9 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
+  if (host_->GetProcess()->FastShutdownStarted())
+    return;
+
   aura::Window* root_window = window_->GetRootWindow();
   if (!root_window)
     return;
