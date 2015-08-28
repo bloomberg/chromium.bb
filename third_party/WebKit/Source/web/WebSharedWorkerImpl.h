@@ -153,7 +153,7 @@ private:
     bool m_isPausedOnStart;
 
     // Kept around only while main script loading is ongoing.
-    OwnPtr<WorkerScriptLoader> m_mainScriptLoader;
+    RefPtr<WorkerScriptLoader> m_mainScriptLoader;
 
     RefPtr<WorkerLoaderProxy> m_loaderProxy;
 

@@ -100,11 +100,15 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
     ResourceLoaderOptions resourceLoaderOptions;
     resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
 
+    // During create, callbacks may happen which could remove the last reference
+    // to this object, while some of the callchain assumes that the client and
+    // loader wouldn't be deleted within callbacks.
+    // (E.g. see crbug.com/524694 for why we can't easily remove this protect)
+    RefPtr<WorkerScriptLoader> protect(this);
     m_needToCancel = true;
     m_threadableLoader = ThreadableLoader::create(executionContext, this, *request, options, resourceLoaderOptions);
     if (m_failed)
         notifyFinished();
-    // Do nothing here since notifyFinished() could delete |this|.
 }
 
 const KURL& WorkerScriptLoader::responseURL() const

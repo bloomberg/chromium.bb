@@ -261,7 +261,7 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame, bool)
     ASSERT(!m_askedToTerminate);
     m_loadingShadowPage = false;
     m_networkProvider = adoptPtr(m_workerContextClient->createServiceWorkerNetworkProvider(frame->dataSource()));
-    m_mainScriptLoader = adoptPtr(new WorkerScriptLoader());
+    m_mainScriptLoader = WorkerScriptLoader::create();
     m_mainScriptLoader->setRequestContext(WebURLRequest::RequestContextServiceWorker);
     m_mainScriptLoader->loadAsynchronously(
         *m_mainFrame->frame()->document(),

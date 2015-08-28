@@ -37,6 +37,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Functional.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -47,11 +48,13 @@ class ResourceResponse;
 class ExecutionContext;
 class TextResourceDecoder;
 
-class CORE_EXPORT WorkerScriptLoader final : public ThreadableLoaderClient {
+class CORE_EXPORT WorkerScriptLoader final : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
     WTF_MAKE_FAST_ALLOCATED(WorkerScriptLoader);
 public:
-    WorkerScriptLoader();
-    ~WorkerScriptLoader() override;
+    static PassRefPtr<WorkerScriptLoader> create()
+    {
+        return adoptRef(new WorkerScriptLoader());
+    }
 
     void loadSynchronously(ExecutionContext&, const KURL&, CrossOriginRequestPolicy);
     // TODO: |finishedCallback| is not currently guaranteed to be invoked if
@@ -88,6 +91,11 @@ public:
     void setRequestContext(WebURLRequest::RequestContext requestContext) { m_requestContext = requestContext; }
 
 private:
+    friend class WTF::RefCounted<WorkerScriptLoader>;
+
+    WorkerScriptLoader();
+    ~WorkerScriptLoader() override;
+
     PassOwnPtr<ResourceRequest> createResourceRequest();
     void notifyError();
     void notifyFinished();

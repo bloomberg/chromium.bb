@@ -172,7 +172,7 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame, bool)
     ASSERT(!m_loadingDocument);
     ASSERT(!m_mainScriptLoader);
     m_networkProvider = adoptPtr(m_client->createServiceWorkerNetworkProvider(frame->dataSource()));
-    m_mainScriptLoader = adoptPtr(new WorkerScriptLoader());
+    m_mainScriptLoader = WorkerScriptLoader::create();
     m_mainScriptLoader->setRequestContext(WebURLRequest::RequestContextSharedWorker);
     m_loadingDocument = toWebLocalFrameImpl(frame)->frame()->document();
     m_mainScriptLoader->loadAsynchronously(

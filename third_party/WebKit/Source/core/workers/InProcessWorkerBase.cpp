@@ -51,7 +51,7 @@ bool InProcessWorkerBase::initialize(ExecutionContext* context, const String& ur
     if (scriptURL.isEmpty())
         return false;
 
-    m_scriptLoader = adoptPtr(new WorkerScriptLoader());
+    m_scriptLoader = WorkerScriptLoader::create();
     m_scriptLoader->loadAsynchronously(
         *context,
         scriptURL,

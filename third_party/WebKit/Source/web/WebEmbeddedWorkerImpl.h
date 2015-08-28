@@ -103,7 +103,7 @@ private:
     OwnPtr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
     // Kept around only while main script loading is ongoing.
-    OwnPtr<WorkerScriptLoader> m_mainScriptLoader;
+    RefPtr<WorkerScriptLoader> m_mainScriptLoader;
 
     RefPtr<WorkerThread> m_workerThread;
     RefPtr<WorkerLoaderProxy> m_loaderProxy;
