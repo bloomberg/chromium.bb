@@ -33,7 +33,8 @@
   flex: 1;
 }
 
-.loading :-webkit-any(#no-downloads, #downloads-list) {
+.loading #no-downloads,
+.loading #downloads-list {
   display: none;
 }
 
