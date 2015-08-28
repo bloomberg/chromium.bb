@@ -1718,9 +1718,9 @@ void TraceLog::UpdateETWCategoryGroupEnabledFlags() {
     DCHECK(category_group);
     if (base::trace_event::TraceEventETWExport::IsCategoryGroupEnabled(
             category_group)) {
-      g_category_group_enabled[category_index] |= ENABLED_FOR_ETW_EXPORT;
+      g_category_group_enabled[i] |= ENABLED_FOR_ETW_EXPORT;
     } else {
-      g_category_group_enabled[category_index] &= ~ENABLED_FOR_ETW_EXPORT;
+      g_category_group_enabled[i] &= ~ENABLED_FOR_ETW_EXPORT;
     }
   }
 }
