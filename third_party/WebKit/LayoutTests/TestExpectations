@@ -901,10 +901,6 @@ crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
-crbug.com/525824 fast/canvas/canvas-toBlob-case-insensitive-mimetype.html [ Crash ]
-crbug.com/525824 virtual/gpu/fast/canvas/canvas-toBlob-case-insensitive-mimetype.html [ Crash ]
-crbug.com/525824 virtual/display_list_2d_canvas/fast/canvas/canvas-toBlob-case-insensitive-mimetype.html [ Crash ]
-
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ ImageOnlyFailure ]
 crbug.com/463358 [ Lion Mavericks MountainLion Retina SnowLeopard Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
 

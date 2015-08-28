@@ -555,10 +555,12 @@ void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, c
     }
 
     double quality;
+    double* qualityPtr = nullptr;
     if (!qualityArgument.isEmpty()) {
         v8::Local<v8::Value> v8Value = qualityArgument.v8Value();
         if (v8Value->IsNumber()) {
             quality = v8Value.As<v8::Number>()->Value();
+            qualityPtr = &quality;
         }
     }
 
@@ -569,7 +571,7 @@ void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, c
 
     // Perform image encoding
     Vector<char> encodedImage;
-    ImageDataBuffer(imageData->size(), imageData->data()->data()).encodeImage(encodingMimeType, &quality, &encodedImage);
+    ImageDataBuffer(imageData->size(), imageData->data()->data()).encodeImage(encodingMimeType, qualityPtr, &encodedImage);
     resultBlob = File::create(encodedImage.data(), encodedImage.size(), encodingMimeType);
 
     Platform::current()->mainThread()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, resultBlob));
