@@ -31,10 +31,10 @@
 #include "config.h"
 #include "platform/image-encoders/skia/JPEGImageEncoder.h"
 
-#include "SkBitmap.h"
 #include "SkColorPriv.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
+
 extern "C" {
 #include <setjmp.h>
 #include <stdio.h> // jpeglib.h needs stdio.h FILE
@@ -79,20 +79,11 @@ static void handleError(j_common_ptr common)
     longjmp(*jumpBufferPtr, -1);
 }
 
-static void preMultipliedBGRAtoRGB(const unsigned char* pixels, unsigned pixelCount, unsigned char* output)
-{
-    const SkPMColor* input = reinterpret_cast_ptr<const SkPMColor*>(pixels);
-    for (; pixelCount-- > 0; ++input) {
-        *output++ = SkGetPackedR32(*input);
-        *output++ = SkGetPackedG32(*input);
-        *output++ = SkGetPackedB32(*input);
-    }
-}
-
 static void RGBAtoRGB(const unsigned char* pixels, unsigned pixelCount, unsigned char* output)
 {
+    // Per <canvas> spec, composite the input image pixels source-over on black.
+
     for (; pixelCount-- > 0; pixels += 4) {
-        // Do source-over composition on black.
         unsigned char alpha = pixels[3];
         if (alpha != 255) {
             *output++ = SkMulDiv255Round(pixels[0], alpha);
@@ -117,7 +108,7 @@ static void disableSubsamplingForHighQuality(jpeg_compress_struct* cinfo, int qu
     }
 }
 
-static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bool premultiplied, int quality, Vector<unsigned char>* output)
+static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, int quality, Vector<unsigned char>* output)
 {
     if (imageSize.width() <= 0 || imageSize.height() <= 0)
         return false;
@@ -146,38 +137,8 @@ static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bo
 
     cinfo.image_height = imageSize.height();
     cinfo.image_width = imageSize.width();
-
-#if defined(JCS_EXTENSIONS)
-    if (premultiplied) {
-        cinfo.in_color_space = SK_B32_SHIFT ? JCS_EXT_RGBX : JCS_EXT_BGRX;
-
-        cinfo.input_components = 4;
-
-        jpeg_set_defaults(&cinfo);
-        jpeg_set_quality(&cinfo, quality, TRUE);
-        disableSubsamplingForHighQuality(&cinfo, quality);
-        jpeg_start_compress(&cinfo, TRUE);
-
-        unsigned char* pixels = const_cast<unsigned char*>(inputPixels);
-        const size_t pixelRowStride = cinfo.image_width * 4;
-        while (cinfo.next_scanline < cinfo.image_height) {
-            jpeg_write_scanlines(&cinfo, &pixels, 1);
-            pixels += pixelRowStride;
-        }
-
-        jpeg_finish_compress(&cinfo);
-        jpeg_destroy_compress(&cinfo);
-        return true;
-    }
-#endif
-
     cinfo.in_color_space = JCS_RGB;
     cinfo.input_components = 3;
-
-    void (*extractRowRGB)(const unsigned char*, unsigned, unsigned char* output);
-    extractRowRGB = &RGBAtoRGB;
-    if (premultiplied)
-        extractRowRGB = &preMultipliedBGRAtoRGB;
 
     jpeg_set_defaults(&cinfo);
     jpeg_set_quality(&cinfo, quality, TRUE);
@@ -189,7 +150,7 @@ static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bo
     const size_t pixelRowStride = cinfo.image_width * 4;
     while (cinfo.next_scanline < cinfo.image_height) {
         JSAMPLE* rowData = row.data();
-        extractRowRGB(pixels, cinfo.image_width, rowData);
+        RGBAtoRGB(pixels, cinfo.image_width, rowData);
         jpeg_write_scanlines(&cinfo, &rowData, 1);
         pixels += pixelRowStride;
     }
@@ -199,22 +160,12 @@ static bool encodePixels(IntSize imageSize, const unsigned char* inputPixels, bo
     return true;
 }
 
-bool JPEGImageEncoder::encode(const SkBitmap& bitmap, int quality, Vector<unsigned char>* output)
-{
-    SkAutoLockPixels bitmapLock(bitmap);
-
-    if (bitmap.colorType() != kN32_SkColorType || !bitmap.getPixels())
-        return false; // Only support 32 bit/pixel skia bitmaps.
-
-    return encodePixels(IntSize(bitmap.width(), bitmap.height()), static_cast<unsigned char *>(bitmap.getPixels()), true, quality, output);
-}
-
 bool JPEGImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vector<unsigned char>* output)
 {
     if (!imageData.pixels())
         return false;
 
-    return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), false, quality, output);
+    return encodePixels(IntSize(imageData.width(), imageData.height()), imageData.pixels(), quality, output);
 }
 
 } // namespace blink
