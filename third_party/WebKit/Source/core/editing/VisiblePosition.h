@@ -103,9 +103,6 @@ public:
     // TODO(yosin) This does not handle [table, 0] correctly.
     Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.anchorNode()->rootEditableElement() : 0; }
 
-    // Rect is local to the returned layoutObject
-    LayoutRect localCaretRect(LayoutObject*&) const;
-
     DECLARE_TRACE();
 
 #ifndef NDEBUG
