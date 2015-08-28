@@ -100,7 +100,6 @@ typedef std::bitset<kNumberOfTaskSets> TaskSetCollection;
 class CC_EXPORT TileTaskRunnerClient {
  public:
   virtual void DidFinishRunningTileTasks(TaskSet task_set) = 0;
-  virtual TaskSetCollection TasksThatShouldBeForcedToComplete() const = 0;
 
  protected:
   virtual ~TileTaskRunnerClient() {}

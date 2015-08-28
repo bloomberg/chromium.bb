@@ -219,7 +219,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
 
   // Overriden from TileTaskRunnerClient:
   void DidFinishRunningTileTasks(TaskSet task_set) override;
-  TaskSetCollection TasksThatShouldBeForcedToComplete() const override;
 
   typedef std::vector<PrioritizedTile> PrioritizedTileVector;
   typedef std::set<Tile*> TileSet;

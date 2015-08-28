@@ -288,9 +288,6 @@ class TileTaskWorkerPoolPerfTest
   void DidFinishRunningTileTasks(TaskSet task_set) override {
     tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
   }
-  TaskSetCollection TasksThatShouldBeForcedToComplete() const override {
-    return TaskSetCollection();
-  }
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
     task_graph_runner_->RunUntilIdle();

@@ -195,10 +195,6 @@ class TileTaskWorkerPoolTest
     }
   }
 
-  TaskSetCollection TasksThatShouldBeForcedToComplete() const override {
-    return TaskSetCollection();
-  }
-
   void RunMessageLoopUntilAllTasksHaveCompleted() {
     if (timeout_seconds_) {
       timeout_.Reset(base::Bind(&TileTaskWorkerPoolTest::OnTimeout,

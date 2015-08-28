@@ -260,13 +260,6 @@ void TileManager::Release(Tile* tile) {
   released_tiles_.push_back(tile);
 }
 
-TaskSetCollection TileManager::TasksThatShouldBeForcedToComplete() const {
-  TaskSetCollection tasks_that_should_be_forced_to_complete;
-  if (global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY)
-    tasks_that_should_be_forced_to_complete[REQUIRED_FOR_ACTIVATION] = true;
-  return tasks_that_should_be_forced_to_complete;
-}
-
 void TileManager::FreeResourcesForReleasedTiles() {
   for (auto* tile : released_tiles_)
     FreeResourcesForTile(tile);
