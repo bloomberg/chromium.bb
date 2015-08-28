@@ -19,6 +19,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 ** Braille table improvements
 - Improvements to Hungarian, thanks to Attila Hammer
+- Improvements to Hungarian 8 dot and Serbian grade 1, thanks to Zvonimir Stanecic
 
 * Noteworthy changes in release 2.6.3 (2015-06-01)
 Given the release number you might think this is only a minor release.
