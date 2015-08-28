@@ -75,6 +75,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/FrameLoaderStateMachine.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/DragController.h"
@@ -3912,6 +3913,8 @@ void WebViewImpl::didRemoveAllPendingStylesheet(WebLocalFrameImpl* webframe)
 
 void WebViewImpl::resumeTreeViewCommits()
 {
+    if (!mainFrameImpl()->frame()->loader().stateMachine()->committedFirstRealDocumentLoad())
+        return;
     if (m_layerTreeView)
         m_layerTreeView->setDeferCommits(false);
 }
