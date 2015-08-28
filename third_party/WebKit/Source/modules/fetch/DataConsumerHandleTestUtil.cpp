@@ -51,6 +51,7 @@ void DataConsumerHandleTestUtil::Thread::shutdown()
     m_thread->shutdown();
     if (m_isolateHolder) {
         isolate()->Exit();
+        isolate()->RequestGarbageCollectionForTesting(isolate()->kFullGarbageCollection);
         m_isolateHolder = nullptr;
     }
     m_waitableEvent->signal();
