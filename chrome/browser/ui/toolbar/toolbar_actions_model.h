@@ -133,7 +133,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
                           toolbar_items().size());
   }
 
-  bool all_icons_visible() const { return visible_icon_count_ == -1; }
+  bool all_icons_visible() const {
+    return visible_icon_count() == toolbar_items().size();
+  }
 
   bool actions_initialized() const { return actions_initialized_; }
 
