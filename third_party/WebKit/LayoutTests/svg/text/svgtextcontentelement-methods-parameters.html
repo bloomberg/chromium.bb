@@ -19,6 +19,9 @@ svgText.style.fontSize = "20px";
 svgText.appendChild(document.createTextNode("abcdefg"));
 svgRoot.appendChild(svgText);
 
+var emptySvgText = document.createElementNS(svgNS, "text");
+svgRoot.appendChild(emptySvgText);
+
 var actualTestPoint, expectedTestPoint;
 function shouldBeEqualToSVGPoint(actualPoint, expectedPoint)
 {
@@ -59,6 +62,20 @@ shouldThrow("svgText.getEndPositionOfChar(999)", '"IndexSizeError: Failed to exe
 shouldThrow("svgText.getExtentOfChar(999)", '"IndexSizeError: Failed to execute \'getExtentOfChar\' on \'SVGTextContentElement\': The charnum provided (999) is greater than the maximum bound (7)."');
 shouldThrow("svgText.getRotationOfChar(999)", '"IndexSizeError: Failed to execute \'getRotationOfChar\' on \'SVGTextContentElement\': The charnum provided (999) is greater than the maximum bound (7)."');
 shouldThrow("svgText.selectSubString(999, 2)", '"IndexSizeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': The charnum provided (999) is greater than the maximum bound (7)."');
+// Test the equality part of the restriction.
+shouldThrow("svgText.getSubStringLength(7, 2)", '"IndexSizeError: Failed to execute \'getSubStringLength\' on \'SVGTextContentElement\': The charnum provided (7) is greater than or equal to the maximum bound (7)."');
+shouldThrow("svgText.getStartPositionOfChar(7)", '"IndexSizeError: Failed to execute \'getStartPositionOfChar\' on \'SVGTextContentElement\': The charnum provided (7) is greater than or equal to the maximum bound (7)."');
+shouldThrow("svgText.getEndPositionOfChar(7)", '"IndexSizeError: Failed to execute \'getEndPositionOfChar\' on \'SVGTextContentElement\': The charnum provided (7) is greater than or equal to the maximum bound (7)."');
+shouldThrow("svgText.getExtentOfChar(7)", '"IndexSizeError: Failed to execute \'getExtentOfChar\' on \'SVGTextContentElement\': The charnum provided (7) is greater than or equal to the maximum bound (7)."');
+shouldThrow("svgText.getRotationOfChar(7)", '"IndexSizeError: Failed to execute \'getRotationOfChar\' on \'SVGTextContentElement\': The charnum provided (7) is greater than or equal to the maximum bound (7)."');
+shouldThrow("svgText.selectSubString(7, 2)", '"IndexSizeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': The charnum provided (7) is greater than or equal to the maximum bound (7)."');
+// Test the equality part of the restriction for the <number of chars> == 0 case.
+shouldThrow("emptySvgText.getSubStringLength(0, 2)", '"IndexSizeError: Failed to execute \'getSubStringLength\' on \'SVGTextContentElement\': The charnum provided (0) is greater than or equal to the maximum bound (0)."');
+shouldThrow("emptySvgText.getStartPositionOfChar(0)", '"IndexSizeError: Failed to execute \'getStartPositionOfChar\' on \'SVGTextContentElement\': The charnum provided (0) is greater than or equal to the maximum bound (0)."');
+shouldThrow("emptySvgText.getEndPositionOfChar(0)", '"IndexSizeError: Failed to execute \'getEndPositionOfChar\' on \'SVGTextContentElement\': The charnum provided (0) is greater than or equal to the maximum bound (0)."');
+shouldThrow("emptySvgText.getExtentOfChar(0)", '"IndexSizeError: Failed to execute \'getExtentOfChar\' on \'SVGTextContentElement\': The charnum provided (0) is greater than or equal to the maximum bound (0)."');
+shouldThrow("emptySvgText.getRotationOfChar(0)", '"IndexSizeError: Failed to execute \'getRotationOfChar\' on \'SVGTextContentElement\': The charnum provided (0) is greater than or equal to the maximum bound (0)."');
+shouldThrow("emptySvgText.selectSubString(0, 2)", '"IndexSizeError: Failed to execute \'selectSubString\' on \'SVGTextContentElement\': The charnum provided (0) is greater than or equal to the maximum bound (0)."');
 
 // Should not throw if charnum is negative and wraps to a valid positive index (-4294967294 wraps to 2).
 shouldBe("svgText.getSubStringLength(-4294967294, 2)", "svgText.getSubStringLength(2, 2)");

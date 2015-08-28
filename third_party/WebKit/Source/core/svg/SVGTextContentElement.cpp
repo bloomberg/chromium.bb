@@ -121,7 +121,7 @@ PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionO
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (charnum > getNumberOfChars()) {
+    if (charnum >= getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return nullptr;
     }
@@ -134,7 +134,7 @@ PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGTextContentElement::getEndPositionOfC
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (charnum > getNumberOfChars()) {
+    if (charnum >= getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return nullptr;
     }
@@ -147,7 +147,7 @@ PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGTextContentElement::getExtentOfChar(un
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (charnum > getNumberOfChars()) {
+    if (charnum >= getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return nullptr;
     }
@@ -160,7 +160,7 @@ float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState&
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (charnum > getNumberOfChars()) {
+    if (charnum >= getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
         return 0.0f;
     }

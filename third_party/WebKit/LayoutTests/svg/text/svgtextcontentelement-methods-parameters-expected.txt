@@ -20,6 +20,18 @@ PASS svgText.getEndPositionOfChar(999) threw exception IndexSizeError: Failed to
 PASS svgText.getExtentOfChar(999) threw exception IndexSizeError: Failed to execute 'getExtentOfChar' on 'SVGTextContentElement': The charnum provided (999) is greater than the maximum bound (7)..
 PASS svgText.getRotationOfChar(999) threw exception IndexSizeError: Failed to execute 'getRotationOfChar' on 'SVGTextContentElement': The charnum provided (999) is greater than the maximum bound (7)..
 PASS svgText.selectSubString(999, 2) threw exception IndexSizeError: Failed to execute 'selectSubString' on 'SVGTextContentElement': The charnum provided (999) is greater than the maximum bound (7)..
+PASS svgText.getSubStringLength(7, 2) threw exception IndexSizeError: Failed to execute 'getSubStringLength' on 'SVGTextContentElement': The charnum provided (7) is greater than or equal to the maximum bound (7)..
+PASS svgText.getStartPositionOfChar(7) threw exception IndexSizeError: Failed to execute 'getStartPositionOfChar' on 'SVGTextContentElement': The charnum provided (7) is greater than or equal to the maximum bound (7)..
+PASS svgText.getEndPositionOfChar(7) threw exception IndexSizeError: Failed to execute 'getEndPositionOfChar' on 'SVGTextContentElement': The charnum provided (7) is greater than or equal to the maximum bound (7)..
+PASS svgText.getExtentOfChar(7) threw exception IndexSizeError: Failed to execute 'getExtentOfChar' on 'SVGTextContentElement': The charnum provided (7) is greater than or equal to the maximum bound (7)..
+PASS svgText.getRotationOfChar(7) threw exception IndexSizeError: Failed to execute 'getRotationOfChar' on 'SVGTextContentElement': The charnum provided (7) is greater than or equal to the maximum bound (7)..
+PASS svgText.selectSubString(7, 2) threw exception IndexSizeError: Failed to execute 'selectSubString' on 'SVGTextContentElement': The charnum provided (7) is greater than or equal to the maximum bound (7)..
+PASS emptySvgText.getSubStringLength(0, 2) threw exception IndexSizeError: Failed to execute 'getSubStringLength' on 'SVGTextContentElement': The charnum provided (0) is greater than or equal to the maximum bound (0)..
+PASS emptySvgText.getStartPositionOfChar(0) threw exception IndexSizeError: Failed to execute 'getStartPositionOfChar' on 'SVGTextContentElement': The charnum provided (0) is greater than or equal to the maximum bound (0)..
+PASS emptySvgText.getEndPositionOfChar(0) threw exception IndexSizeError: Failed to execute 'getEndPositionOfChar' on 'SVGTextContentElement': The charnum provided (0) is greater than or equal to the maximum bound (0)..
+PASS emptySvgText.getExtentOfChar(0) threw exception IndexSizeError: Failed to execute 'getExtentOfChar' on 'SVGTextContentElement': The charnum provided (0) is greater than or equal to the maximum bound (0)..
+PASS emptySvgText.getRotationOfChar(0) threw exception IndexSizeError: Failed to execute 'getRotationOfChar' on 'SVGTextContentElement': The charnum provided (0) is greater than or equal to the maximum bound (0)..
+PASS emptySvgText.selectSubString(0, 2) threw exception IndexSizeError: Failed to execute 'selectSubString' on 'SVGTextContentElement': The charnum provided (0) is greater than or equal to the maximum bound (0)..
 PASS svgText.getSubStringLength(-4294967294, 2) is svgText.getSubStringLength(2, 2)
 PASS actualTestPoint.x is expectedTestPoint.x
 PASS actualTestPoint.y is expectedTestPoint.y
@@ -47,3 +59,4 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 abcdefg
+
