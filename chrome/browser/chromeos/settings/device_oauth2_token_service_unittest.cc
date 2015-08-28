@@ -119,7 +119,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   void TearDown() override {
     oauth2_service_.reset();
     CrosSettings::Shutdown();
-    TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(NULL);
+    TestingBrowserProcess::GetGlobal()->ShutdownBrowserPolicyConnector();
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     DeviceSettingsService::Get()->UnsetSessionManager();
     DeviceSettingsService::Shutdown();

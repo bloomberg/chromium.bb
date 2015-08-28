@@ -46,7 +46,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
   }
 
   void TearDown() override {
-    TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(nullptr);
+    TestingBrowserProcess::GetGlobal()->ShutdownBrowserPolicyConnector();
     cloud_policy_manager_->Shutdown();
   }
 

@@ -131,11 +131,11 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetLocalState(PrefService* local_state);
   void SetProfileManager(ProfileManager* profile_manager);
   void SetIOThread(IOThread* io_thread);
-  void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
   void SetSafeBrowsingService(SafeBrowsingService* sb_service);
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
   void SetNotificationUIManager(
       scoped_ptr<NotificationUIManager> notification_ui_manager);
+  void ShutdownBrowserPolicyConnector();
 
  private:
   // See CreateInstance() and DestoryInstance() above.
@@ -150,6 +150,7 @@ class TestingBrowserProcess : public BrowserProcess {
 #if !defined(OS_IOS)
 #if defined(ENABLE_CONFIGURATION_POLICY)
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
+  bool created_browser_policy_connector_ = false;
 #else
   scoped_ptr<policy::PolicyService> policy_service_;
 #endif

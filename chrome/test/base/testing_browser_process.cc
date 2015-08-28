@@ -85,7 +85,7 @@ TestingBrowserProcess::TestingBrowserProcess()
 TestingBrowserProcess::~TestingBrowserProcess() {
   EXPECT_FALSE(local_state_);
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  SetBrowserPolicyConnector(nullptr);
+  ShutdownBrowserPolicyConnector();
 #endif
 #if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionsBrowserClient::Set(nullptr);
@@ -160,8 +160,11 @@ PromoResourceService* TestingBrowserProcess::promo_resource_service() {
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  if (!browser_policy_connector_)
+  if (!browser_policy_connector_) {
+    EXPECT_FALSE(created_browser_policy_connector_);
+    created_browser_policy_connector_ = true;
     browser_policy_connector_ = platform_part_->CreateBrowserPolicyConnector();
+  }
   return browser_policy_connector_.get();
 #else
   return nullptr;
@@ -419,7 +422,8 @@ void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
     notification_ui_manager_.reset();
 #endif
 #if defined(ENABLE_CONFIGURATION_POLICY)
-    SetBrowserPolicyConnector(nullptr);
+    ShutdownBrowserPolicyConnector();
+    created_browser_policy_connector_ = false;
 #endif
   }
   local_state_ = local_state;
@@ -429,13 +433,11 @@ void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {
   io_thread_ = io_thread;
 }
 
-void TestingBrowserProcess::SetBrowserPolicyConnector(
-    policy::BrowserPolicyConnector* connector) {
+void TestingBrowserProcess::ShutdownBrowserPolicyConnector() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  if (browser_policy_connector_) {
+  if (browser_policy_connector_)
     browser_policy_connector_->Shutdown();
-  }
-  browser_policy_connector_.reset(connector);
+  browser_policy_connector_.reset();
 #else
   CHECK(false);
 #endif

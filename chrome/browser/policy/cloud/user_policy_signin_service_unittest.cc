@@ -201,7 +201,7 @@ class UserPolicySigninServiceTest : public testing::Test {
         TestingBrowserProcess::GetGlobal();
     testing_browser_process->SetLocalState(NULL);
     local_state_.reset();
-    testing_browser_process->SetBrowserPolicyConnector(NULL);
+    testing_browser_process->ShutdownBrowserPolicyConnector();
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
