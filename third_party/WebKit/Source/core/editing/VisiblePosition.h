@@ -100,10 +100,7 @@ public:
     VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition&) const;
     VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition&) const;
 
-    VisiblePosition left() const;
-    VisiblePosition right() const;
-
-    // FIXME: This does not handle [table, 0] correctly.
+    // TODO(yosin) This does not handle [table, 0] correctly.
     Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.anchorNode()->rootEditableElement() : 0; }
 
     // Rect is local to the returned layoutObject
@@ -121,9 +118,6 @@ private:
     template<typename Strategy>
     void init(const PositionAlgorithm<Strategy>&, TextAffinity);
 
-    Position leftVisuallyDistinctCandidate() const;
-    Position rightVisuallyDistinctCandidate() const;
-
     Position m_deepPosition;
     TextAffinity m_affinity;
 };
@@ -140,6 +134,11 @@ CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
 int lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition&);
 
 EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
+
+// TODO(yosin) We should move |leftPositionOf()| and |rightPositionOf()| to
+// "VisibleUnits.cpp".
+VisiblePosition leftPositionOf(const VisiblePosition&);
+VisiblePosition rightPositionOf(const VisiblePosition&);
 
 CORE_EXPORT Position canonicalPositionOf(const Position&);
 CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);

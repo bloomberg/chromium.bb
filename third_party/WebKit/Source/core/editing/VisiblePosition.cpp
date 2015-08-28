@@ -115,32 +115,36 @@ VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, Editi
     return visiblePosition.honorEditingBoundaryAtOrBefore(prev);
 }
 
-Position VisiblePosition::leftVisuallyDistinctCandidate() const
+// TODO(yosin) We should move |rightVisuallyDistinctCandidate()| with
+// |rightPositionOf()| to "VisibleUnits.cpp".
+static Position leftVisuallyDistinctCandidate(const VisiblePosition& visiblePosition)
 {
-    Position p = m_deepPosition;
+    const Position deepPosition = visiblePosition.deepEquivalent();
+    Position p = deepPosition;
     if (p.isNull())
         return Position();
 
     Position downstreamStart = mostForwardCaretPosition(p);
     TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
+    const TextAffinity affinity = visiblePosition.affinity();
 
     while (true) {
-        InlineBoxPosition boxPosition = computeInlineBoxPosition(p, m_affinity, primaryDirection);
+        InlineBoxPosition boxPosition = computeInlineBoxPosition(p, affinity, primaryDirection);
         InlineBox* box = boxPosition.inlineBox;
         int offset = boxPosition.offsetInBox;
         if (!box)
-            return primaryDirection == LTR ? previousVisuallyDistinctCandidate(m_deepPosition) : nextVisuallyDistinctCandidate(m_deepPosition);
+            return primaryDirection == LTR ? previousVisuallyDistinctCandidate(deepPosition) : nextVisuallyDistinctCandidate(deepPosition);
 
         LayoutObject* layoutObject = &box->layoutObject();
 
         while (true) {
             if ((layoutObject->isReplaced() || layoutObject->isBR()) && offset == box->caretRightmostOffset())
-                return box->isLeftToRightDirection() ? previousVisuallyDistinctCandidate(m_deepPosition) : nextVisuallyDistinctCandidate(m_deepPosition);
+                return box->isLeftToRightDirection() ? previousVisuallyDistinctCandidate(deepPosition) : nextVisuallyDistinctCandidate(deepPosition);
 
             if (!layoutObject->node()) {
                 box = box->prevLeafChild();
                 if (!box)
-                    return primaryDirection == LTR ? previousVisuallyDistinctCandidate(m_deepPosition) : nextVisuallyDistinctCandidate(m_deepPosition);
+                    return primaryDirection == LTR ? previousVisuallyDistinctCandidate(deepPosition) : nextVisuallyDistinctCandidate(deepPosition);
                 layoutObject = &box->layoutObject();
                 offset = box->caretRightmostOffset();
                 continue;
@@ -158,11 +162,11 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
                 // Overshot to the left.
                 InlineBox* prevBox = box->prevLeafChildIgnoringLineBreak();
                 if (!prevBox) {
-                    Position positionOnLeft = primaryDirection == LTR ? previousVisuallyDistinctCandidate(m_deepPosition) : nextVisuallyDistinctCandidate(m_deepPosition);
+                    Position positionOnLeft = primaryDirection == LTR ? previousVisuallyDistinctCandidate(deepPosition) : nextVisuallyDistinctCandidate(deepPosition);
                     if (positionOnLeft.isNull())
                         return Position();
 
-                    InlineBox* boxOnLeft = computeInlineBoxPosition(positionOnLeft, m_affinity, primaryDirection).inlineBox;
+                    InlineBox* boxOnLeft = computeInlineBoxPosition(positionOnLeft, affinity, primaryDirection).inlineBox;
                     if (boxOnLeft && boxOnLeft->root() == box->root())
                         return Position();
                     return positionOnLeft;
@@ -257,49 +261,54 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
         if ((isVisuallyEquivalentCandidate(p) && mostForwardCaretPosition(p) != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
 
-        ASSERT(p != m_deepPosition);
+        ASSERT(p != deepPosition);
     }
 }
 
-VisiblePosition VisiblePosition::left() const
+// TODO(yosin) We should move |leftPositionOf()| to "VisibleUnits.cpp".
+VisiblePosition leftPositionOf(const VisiblePosition& visiblePosition)
 {
-    Position pos = leftVisuallyDistinctCandidate();
-    // FIXME: Why can't we move left from the last position in a tree?
+    const Position pos = leftVisuallyDistinctCandidate(visiblePosition);
+    // TODO(yosin) Why can't we move left from the last position in a tree?
     if (pos.atStartOfTree() || pos.atEndOfTree())
         return VisiblePosition();
 
     VisiblePosition left = VisiblePosition(pos);
-    ASSERT(left.deepEquivalent() != m_deepPosition);
+    ASSERT(left.deepEquivalent() != visiblePosition.deepEquivalent());
 
-    return directionOfEnclosingBlock(left.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrBefore(left) : honorEditingBoundaryAtOrAfter(left);
+    return directionOfEnclosingBlock(left.deepEquivalent()) == LTR ? visiblePosition.honorEditingBoundaryAtOrBefore(left) : visiblePosition.honorEditingBoundaryAtOrAfter(left);
 }
 
-Position VisiblePosition::rightVisuallyDistinctCandidate() const
+// TODO(yosin) We should move |rightVisuallyDistinctCandidate()| with
+// |rightPositionOf()| to "VisibleUnits.cpp".
+static Position rightVisuallyDistinctCandidate(const VisiblePosition& visiblePosition)
 {
-    Position p = m_deepPosition;
+    const Position deepPosition = visiblePosition.deepEquivalent();
+    Position p = deepPosition;
     if (p.isNull())
         return Position();
 
     Position downstreamStart = mostForwardCaretPosition(p);
     TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
+    const TextAffinity affinity = visiblePosition.affinity();
 
     while (true) {
-        InlineBoxPosition boxPosition = computeInlineBoxPosition(p, m_affinity, primaryDirection);
+        InlineBoxPosition boxPosition = computeInlineBoxPosition(p, affinity, primaryDirection);
         InlineBox* box = boxPosition.inlineBox;
         int offset = boxPosition.offsetInBox;
         if (!box)
-            return primaryDirection == LTR ? nextVisuallyDistinctCandidate(m_deepPosition) : previousVisuallyDistinctCandidate(m_deepPosition);
+            return primaryDirection == LTR ? nextVisuallyDistinctCandidate(deepPosition) : previousVisuallyDistinctCandidate(deepPosition);
 
         LayoutObject* layoutObject = &box->layoutObject();
 
         while (true) {
             if ((layoutObject->isReplaced() || layoutObject->isBR()) && offset == box->caretLeftmostOffset())
-                return box->isLeftToRightDirection() ? nextVisuallyDistinctCandidate(m_deepPosition) : previousVisuallyDistinctCandidate(m_deepPosition);
+                return box->isLeftToRightDirection() ? nextVisuallyDistinctCandidate(deepPosition) : previousVisuallyDistinctCandidate(deepPosition);
 
             if (!layoutObject->node()) {
                 box = box->nextLeafChild();
                 if (!box)
-                    return primaryDirection == LTR ? nextVisuallyDistinctCandidate(m_deepPosition) : previousVisuallyDistinctCandidate(m_deepPosition);
+                    return primaryDirection == LTR ? nextVisuallyDistinctCandidate(deepPosition) : previousVisuallyDistinctCandidate(deepPosition);
                 layoutObject = &box->layoutObject();
                 offset = box->caretLeftmostOffset();
                 continue;
@@ -317,11 +326,11 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
                 // Overshot to the right.
                 InlineBox* nextBox = box->nextLeafChildIgnoringLineBreak();
                 if (!nextBox) {
-                    Position positionOnRight = primaryDirection == LTR ? nextVisuallyDistinctCandidate(m_deepPosition) : previousVisuallyDistinctCandidate(m_deepPosition);
+                    Position positionOnRight = primaryDirection == LTR ? nextVisuallyDistinctCandidate(deepPosition) : previousVisuallyDistinctCandidate(deepPosition);
                     if (positionOnRight.isNull())
                         return Position();
 
-                    InlineBox* boxOnRight = computeInlineBoxPosition(positionOnRight, m_affinity, primaryDirection).inlineBox;
+                    InlineBox* boxOnRight = computeInlineBoxPosition(positionOnRight, affinity, primaryDirection).inlineBox;
                     if (boxOnRight && boxOnRight->root() == box->root())
                         return Position();
                     return positionOnRight;
@@ -419,21 +428,22 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
         if ((isVisuallyEquivalentCandidate(p) && mostForwardCaretPosition(p) != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
 
-        ASSERT(p != m_deepPosition);
+        ASSERT(p != deepPosition);
     }
 }
 
-VisiblePosition VisiblePosition::right() const
+// TODO(yosin) We should move |rightPositionOf()| to "VisibleUnits.cpp".
+VisiblePosition rightPositionOf(const VisiblePosition& visiblePosition)
 {
-    Position pos = rightVisuallyDistinctCandidate();
-    // FIXME: Why can't we move left from the last position in a tree?
+    const Position pos = rightVisuallyDistinctCandidate(visiblePosition);
+    // TODO(yosin) Why can't we move left from the last position in a tree?
     if (pos.atStartOfTree() || pos.atEndOfTree())
         return VisiblePosition();
 
     VisiblePosition right = VisiblePosition(pos);
-    ASSERT(right.deepEquivalent() != m_deepPosition);
+    ASSERT(right.deepEquivalent() != visiblePosition.deepEquivalent());
 
-    return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right) : honorEditingBoundaryAtOrBefore(right);
+    return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? visiblePosition.honorEditingBoundaryAtOrAfter(right) : visiblePosition.honorEditingBoundaryAtOrBefore(right);
 }
 
 template <typename Strategy>

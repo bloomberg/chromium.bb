@@ -747,7 +747,7 @@ VisiblePosition FrameSelection::modifyMovingRight(TextGranularity granularity)
             else
                 pos = VisiblePosition(m_selection.start(), m_selection.affinity());
         } else {
-            pos = VisiblePosition(m_selection.extent(), m_selection.affinity()).right();
+            pos = rightPositionOf(VisiblePosition(m_selection.extent(), m_selection.affinity()));
         }
         break;
     case WordGranularity: {
@@ -916,7 +916,7 @@ VisiblePosition FrameSelection::modifyMovingLeft(TextGranularity granularity)
             else
                 pos = VisiblePosition(m_selection.end(), m_selection.affinity());
         } else {
-            pos = VisiblePosition(m_selection.extent(), m_selection.affinity()).left();
+            pos = leftPositionOf(VisiblePosition(m_selection.extent(), m_selection.affinity()));
         }
         break;
     case WordGranularity: {
