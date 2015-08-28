@@ -36,7 +36,6 @@ class ContextualSearchLayer : public Layer {
                      int search_bar_text_resource_id,
                      int search_bar_shadow_resource_id,
                      int search_provider_icon_resource_id,
-                     int search_icon_resource_id,
                      int arrow_up_resource_id,
                      int close_icon_resource_id,
                      int progress_bar_background_resource_id,
@@ -58,8 +57,6 @@ class ContextualSearchLayer : public Layer {
                      float search_bar_border_height,
                      bool search_bar_shadow_visible,
                      float search_bar_shadow_opacity,
-                     bool search_icon_visible,
-                     float search_icon_opacity,
                      float arrow_icon_opacity,
                      float arrow_icon_rotation,
                      bool close_icon_visible,
@@ -85,7 +82,6 @@ class ContextualSearchLayer : public Layer {
   scoped_refptr<cc::UIResourceLayer> search_bar_text_;
   scoped_refptr<cc::UIResourceLayer> search_bar_shadow_;
   scoped_refptr<cc::UIResourceLayer> search_provider_icon_;
-  scoped_refptr<cc::UIResourceLayer> search_icon_;
   scoped_refptr<cc::UIResourceLayer> arrow_icon_;
   scoped_refptr<cc::UIResourceLayer> close_icon_;
   scoped_refptr<cc::Layer> content_view_container_;

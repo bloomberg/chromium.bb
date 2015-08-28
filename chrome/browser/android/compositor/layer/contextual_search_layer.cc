@@ -37,7 +37,6 @@ void ContextualSearchLayer::SetProperties(
     int search_bar_text_resource_id,
     int search_bar_shadow_resource_id,
     int search_provider_icon_resource_id,
-    int search_icon_resource_id,
     int arrow_up_resource_id,
     int close_icon_resource_id,
     int progress_bar_background_resource_id,
@@ -59,8 +58,6 @@ void ContextualSearchLayer::SetProperties(
     float search_bar_border_height,
     bool search_bar_shadow_visible,
     float search_bar_shadow_opacity,
-    bool search_icon_visible,
-    float search_icon_opacity,
     float arrow_icon_opacity,
     float arrow_icon_rotation,
     bool close_icon_visible,
@@ -153,41 +150,6 @@ void ContextualSearchLayer::SetProperties(
   search_provider_icon_->SetBounds(search_provider_icon_resource->size);
   search_provider_icon_->SetPosition(
       gfx::PointF(search_provider_icon_left, search_provider_icon_top));
-
-  // ---------------------------------------------------------------------------
-  // Search Icon
-  // ---------------------------------------------------------------------------
-  if (search_icon_visible) {
-    // Grabs the Search Icon resource.
-    ui::ResourceManager::Resource* search_icon_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                       search_icon_resource_id);
-    if (search_icon_->parent() != layer_) {
-      layer_->AddChild(search_icon_);
-    }
-
-    // Positions the icon at the start of the Search Bar.
-    float search_icon_left;
-    if (is_rtl) {
-      search_icon_left = search_panel_width -
-          search_icon_resource->size.width() - search_bar_margin_side;
-    } else {
-      search_icon_left = search_bar_margin_side;
-    }
-
-    // Centers the Search Icon vertically in the Search Bar.
-    float search_icon_top =
-        search_bar_height / 2 -
-        search_icon_resource->size.height() / 2;
-    search_icon_->SetUIResourceId(search_icon_resource->ui_resource->id());
-    search_icon_->SetBounds(search_icon_resource->size);
-    search_icon_->SetPosition(
-        gfx::PointF(search_icon_left, search_icon_top));
-    search_icon_->SetOpacity(search_icon_opacity);
-  } else {
-    if (search_icon_.get() && search_icon_->parent())
-      search_icon_->RemoveFromParent();
-  }
 
   // ---------------------------------------------------------------------------
   // Arrow Icon
@@ -434,8 +396,6 @@ ContextualSearchLayer::ContextualSearchLayer(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       search_provider_icon_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      search_icon_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       arrow_icon_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       close_icon_(
@@ -472,9 +432,6 @@ ContextualSearchLayer::ContextualSearchLayer(
   // Search Provider Icon
   search_provider_icon_->SetIsDrawable(true);
   layer_->AddChild(search_provider_icon_);
-
-  // Search Icon
-  search_icon_->SetIsDrawable(true);
 
   // Arrow Icon
   arrow_icon_->SetIsDrawable(true);

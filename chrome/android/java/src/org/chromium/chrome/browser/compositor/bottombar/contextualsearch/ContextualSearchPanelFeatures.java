@@ -20,13 +20,6 @@ public class ContextualSearchPanelFeatures {
     }
 
     /**
-     * @return {@code true} Whether the side search icon is available.
-     */
-    public boolean isSearchIconAvailable() {
-        return !mIsCustomTab;
-    }
-
-    /**
      * @return {@code true} Whether search term refining is available.
      */
     public boolean isSearchTermRefiningAvailable() {

@@ -88,21 +88,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private static final float BASE_PAGE_BRIGHTNESS_STATE_MAXIMIZED = .4f;
 
     /**
-     * The opacity of the search icon when the Panel is peeking.
-     */
-    private static final float SEARCH_ICON_OPACITY_STATE_PEEKED = 0.f;
-
-    /**
-     * The opacity of the search icon when the Panel is expanded.
-     */
-    private static final float SEARCH_ICON_OPACITY_STATE_EXPANDED = 0.f;
-
-    /**
-     * The opacity of the search icon when the Panel is maximized.
-     */
-    private static final float SEARCH_ICON_OPACITY_STATE_MAXIMIZED = 1.f;
-
-    /**
      * The opacity of the arrow icon when the Panel is peeking.
      */
     private static final float ARROW_ICON_OPACITY_STATE_PEEKED = 1.f;
@@ -562,8 +547,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private boolean mSearchBarShadowVisible = false;
     private float mSearchBarShadowOpacity = 0.f;
 
-    private float mSearchIconOpacity;
-
     private float mArrowIconOpacity;
     private float mArrowIconRotation;
 
@@ -624,20 +607,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     public float getSearchBarShadowOpacity() {
         return mSearchBarShadowOpacity;
-    }
-
-    /**
-     * @return Whether the search icon is visible.
-     */
-    public boolean isSearchIconVisible() {
-        return mSearchPanelFeatures.isSearchIconAvailable();
-    }
-
-    /**
-     * @return The opacity of the search icon.
-     */
-    public float getSearchIconOpacity() {
-        return mSearchIconOpacity;
     }
 
     /**
@@ -1090,9 +1059,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Search Bar text opacity.
         mSearchBarTextOpacity = 1.f;
 
-        // Search icon opacity.
-        mSearchIconOpacity = SEARCH_ICON_OPACITY_STATE_PEEKED;
-
         // Arrow Icon.
         mArrowIconOpacity = ARROW_ICON_OPACITY_STATE_PEEKED;
         mArrowIconRotation = ARROW_ICON_ROTATION_STATE_PEEKED;
@@ -1144,9 +1110,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Search Bar border.
         mIsSearchBarBorderVisible = true;
         mSearchBarBorderY = searchBarHeight - SEARCH_BAR_BORDER_HEIGHT_DP + 1;
-
-        // Search icon opacity.
-        mSearchIconOpacity = SEARCH_ICON_OPACITY_STATE_EXPANDED;
 
         // Arrow Icon.
         mArrowIconOpacity = ARROW_ICON_OPACITY_STATE_EXPANDED;
@@ -1217,13 +1180,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             fadingOutPercentage = Math.min(percentage, .5f) / .5f;
             fadingInPercentage = Math.max(percentage - .5f, 0.f) / .5f;
         }
-
-        // Search icon opacity.
-        float searchIconOpacity = MathUtils.interpolate(
-                SEARCH_ICON_OPACITY_STATE_EXPANDED,
-                SEARCH_ICON_OPACITY_STATE_MAXIMIZED,
-                fadingInPercentage);
-        mSearchIconOpacity = searchIconOpacity;
 
         // Arrow Icon.
         mArrowIconOpacity = MathUtils.interpolate(
