@@ -10,7 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -270,8 +272,6 @@ void OfflinePageModel::OnLoadDone(
   DCHECK(!is_loaded_);
   is_loaded_ = true;
 
-  // TODO(fgorski): Report the UMA upon failure. Cache should probably start
-  // empty. See if we can do something about it.
   if (success) {
     for (const auto& offline_page : offline_pages)
       offline_pages_[offline_page.bookmark_id] = offline_page;
@@ -318,8 +318,18 @@ void OfflinePageModel::OnRemoveOfflinePagesDone(
     bool success) {
   // Delete the offline page from the in memory cache regardless of success in
   // store.
-  for (int64 bookmark_id : bookmark_ids)
-    offline_pages_.erase(bookmark_id);
+  base::Time now = base::Time::Now();
+  for (int64 bookmark_id : bookmark_ids) {
+    auto iter = offline_pages_.find(bookmark_id);
+    if (iter == offline_pages_.end())
+      continue;
+    UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.PageLifetime",
+                                (now - iter->second.creation_time).InMinutes(),
+                                1,
+                                base::TimeDelta::FromDays(365).InMinutes(),
+                                100);
+    offline_pages_.erase(iter);
+  }
   // Deleting multiple pages always succeeds when it gets to this point.
   if (success || bookmark_ids.size() > 1)
     callback.Run(DeletePageResult::SUCCESS);

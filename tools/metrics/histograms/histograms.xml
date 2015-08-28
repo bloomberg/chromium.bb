@@ -28224,6 +28224,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.LoadSuccess" enum="BooleanSuccess">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Whether an attempt to load the offline pages metadata store was successful.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.PageLifetime" units="minutes">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Length of time between when an offline page was created and was removed.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.SavedPageCount" units="pages">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Number of saved pages restored from the offline pages metadata store when it
+    is logged.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePolicy.SuccessfulResourceLoadPercentage" units="%">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
