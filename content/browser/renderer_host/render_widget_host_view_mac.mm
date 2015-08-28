@@ -1459,7 +1459,8 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
   if (composition_range_.is_empty()) {
     if (!selection_range_.Contains(requested_range))
       return false;
-    *actual_range = selection_range_.ToNSRange();
+    if (actual_range)
+      *actual_range = selection_range_.ToNSRange();
     *rect = NSRectFromCGRect(first_selection_rect_.ToCGRect());
     return true;
   }
