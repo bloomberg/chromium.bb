@@ -44,14 +44,14 @@ bool ScriptForbiddenScope::isScriptForbidden()
 }
 
 ScriptForbiddenScope::AllowUserAgentScript::AllowUserAgentScript()
-    : m_change(s_scriptForbiddenCount, 0)
 {
-    ASSERT(isMainThread());
+    if (isMainThread())
+        m_change.emplace(s_scriptForbiddenCount, 0);
 }
 
 ScriptForbiddenScope::AllowUserAgentScript::~AllowUserAgentScript()
 {
-    ASSERT(!s_scriptForbiddenCount);
+    ASSERT(!isMainThread() || !s_scriptForbiddenCount);
 }
 
 } // namespace blink

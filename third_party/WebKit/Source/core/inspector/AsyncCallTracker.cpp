@@ -41,8 +41,6 @@
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "wtf/MainThread.h"
-#include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 
@@ -242,9 +240,7 @@ void AsyncCallTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event)
 {
     ASSERT(eventTarget->executionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    Optional<ScriptForbiddenScope::AllowUserAgentScript> allowScripting;
-    if (isMainThread())
-        allowScripting.emplace();
+    ScriptForbiddenScope::AllowUserAgentScript allowScripting;
     int operationId = m_debuggerAgent->traceAsyncOperationStarting(event->type());
     ExecutionContextData* data = createContextDataIfNeeded(eventTarget->executionContext());
     data->m_eventCallChains.set(event, operationId);
@@ -310,9 +306,7 @@ void AsyncCallTracker::didEnqueueMutationRecord(ExecutionContext* context, Mutat
     ExecutionContextData* data = createContextDataIfNeeded(context);
     if (data->m_mutationObserverCallChains.contains(observer))
         return;
-    Optional<ScriptForbiddenScope::AllowUserAgentScript> allowScripting;
-    if (isMainThread())
-        allowScripting.emplace();
+    ScriptForbiddenScope::AllowUserAgentScript allowScripting;
     int operationId = m_debuggerAgent->traceAsyncOperationStarting(enqueueMutationRecordName);
     data->m_mutationObserverCallChains.set(observer, operationId);
 }

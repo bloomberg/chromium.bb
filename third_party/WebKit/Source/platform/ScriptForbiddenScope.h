@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
+#include "wtf/Optional.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -21,7 +22,7 @@ public:
         AllowUserAgentScript();
         ~AllowUserAgentScript();
     private:
-        TemporaryChange<unsigned> m_change;
+        Optional<TemporaryChange<unsigned>> m_change;
     };
 
     static void enter();

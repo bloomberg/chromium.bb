@@ -34,8 +34,6 @@
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "wtf/MainThread.h"
-#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -262,9 +260,7 @@ bool InspectorDebuggerAgent::isPaused()
 
 PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyncStackTraceForConsole()
 {
-    Optional<ScriptForbiddenScope::AllowUserAgentScript> allowScripting;
-    if (isMainThread())
-        allowScripting.emplace();
+    ScriptForbiddenScope::AllowUserAgentScript allowScripting;
     return m_v8DebuggerAgent->currentAsyncStackTraceForConsole();
 }
 
