@@ -5,6 +5,8 @@
 #ifndef PartPainter_h
 #define PartPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -12,6 +14,7 @@ class LayoutPoint;
 class LayoutPart;
 
 class PartPainter {
+    STACK_ALLOCATED();
 public:
     PartPainter(LayoutPart& layoutPart) : m_layoutPart(layoutPart) { }
 

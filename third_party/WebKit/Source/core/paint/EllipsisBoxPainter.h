@@ -5,6 +5,8 @@
 #ifndef EllipsisBoxPainter_h
 #define EllipsisBoxPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -18,6 +20,7 @@ class LayoutUnit;
 class ComputedStyle;
 
 class EllipsisBoxPainter {
+    STACK_ALLOCATED();
 public:
     EllipsisBoxPainter(EllipsisBox& ellipsisBox) : m_ellipsisBox(ellipsisBox) { }
 

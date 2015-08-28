@@ -13,6 +13,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/transforms/AffineTransform.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -29,6 +30,7 @@ class TextRun;
 struct TextRunPaintInfo;
 
 class CORE_EXPORT TextPainter {
+    STACK_ALLOCATED();
 public:
     struct Style;
 
@@ -43,6 +45,7 @@ public:
     void paint(int startOffset, int endOffset, int length, const Style&, TextBlobPtr* cachedTextBlob = 0);
 
     struct Style {
+        STACK_ALLOCATED();
         Color currentColor;
         Color fillColor;
         Color strokeColor;

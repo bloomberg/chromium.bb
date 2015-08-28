@@ -5,6 +5,8 @@
 #ifndef TableSectionPainter_h
 #define TableSectionPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class LayoutPoint;
@@ -13,6 +15,7 @@ class LayoutTableSection;
 struct PaintInfo;
 
 class TableSectionPainter {
+    STACK_ALLOCATED();
 public:
     TableSectionPainter(LayoutTableSection& layoutTableSection) : m_layoutTableSection(layoutTableSection) { }
 

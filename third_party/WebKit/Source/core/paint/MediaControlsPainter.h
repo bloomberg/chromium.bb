@@ -28,6 +28,8 @@
 #ifndef MediaControlsPainter_h
 #define MediaControlsPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -37,6 +39,7 @@ class IntRect;
 class LayoutObject;
 
 class MediaControlsPainter {
+    STATIC_ONLY(MediaControlsPainter);
 public:
     static bool paintMediaMuteButton(LayoutObject*, const PaintInfo&, const IntRect&);
     static bool paintMediaPlayButton(LayoutObject*, const PaintInfo&, const IntRect&);

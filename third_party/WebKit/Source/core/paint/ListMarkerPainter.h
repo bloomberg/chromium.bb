@@ -5,6 +5,8 @@
 #ifndef ListMarkerPainter_h
 #define ListMarkerPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -13,6 +15,7 @@ class LayoutListMarker;
 class LayoutPoint;
 
 class ListMarkerPainter {
+    STACK_ALLOCATED();
 public:
     ListMarkerPainter(LayoutListMarker& layoutListMarker) : m_layoutListMarker(layoutListMarker) { }
 

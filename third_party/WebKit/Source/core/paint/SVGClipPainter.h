@@ -7,6 +7,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -15,6 +16,7 @@ class LayoutObject;
 class LayoutSVGResourceClipper;
 
 class SVGClipPainter {
+    STACK_ALLOCATED();
 public:
     enum ClipperState {
         ClipperNotApplied,

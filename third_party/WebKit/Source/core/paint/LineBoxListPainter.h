@@ -6,6 +6,7 @@
 #define LineBoxListPainter_h
 
 #include "core/style/ComputedStyleConstants.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -15,6 +16,7 @@ class LayoutBoxModelObject;
 class LineBoxList;
 
 class LineBoxListPainter {
+    STACK_ALLOCATED();
 public:
     LineBoxListPainter(LineBoxList& lineBoxList) : m_lineBoxList(lineBoxList) { }
 

@@ -6,10 +6,12 @@
 #define TableRowPainter_h
 
 #include "core/layout/LayoutTableRow.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class TableRowPainter {
+    STACK_ALLOCATED();
 public:
     TableRowPainter(LayoutTableRow& layoutTableRow) : m_layoutTableRow(layoutTableRow) { }
 

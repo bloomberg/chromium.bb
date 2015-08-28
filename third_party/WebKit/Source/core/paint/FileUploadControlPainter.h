@@ -5,6 +5,8 @@
 #ifndef FileUploadControlPainter_h
 #define FileUploadControlPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -12,6 +14,7 @@ class LayoutPoint;
 class LayoutFileUploadControl;
 
 class FileUploadControlPainter {
+    STACK_ALLOCATED();
 public:
     FileUploadControlPainter(LayoutFileUploadControl& layoutFileUploadControl) : m_layoutFileUploadControl(layoutFileUploadControl) { }
 

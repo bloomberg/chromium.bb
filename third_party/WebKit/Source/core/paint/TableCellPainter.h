@@ -6,6 +6,7 @@
 #define TableCellPainter_h
 
 #include "core/style/CollapsedBorderValue.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -17,6 +18,7 @@ class LayoutObject;
 class ComputedStyle;
 
 class TableCellPainter {
+    STACK_ALLOCATED();
 public:
     TableCellPainter(LayoutTableCell& layoutTableCell) : m_layoutTableCell(layoutTableCell) { }
 

@@ -59,6 +59,7 @@ class ComputedStyle;
 class LayoutBoxModelObject;
 
 class CORE_EXPORT DeprecatedPaintLayerStackingNode {
+    WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerStackingNode);
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNode);
 public:
     explicit DeprecatedPaintLayerStackingNode(LayoutBoxModelObject&);

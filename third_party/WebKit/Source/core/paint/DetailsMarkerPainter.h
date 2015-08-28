@@ -5,6 +5,8 @@
 #ifndef DetailsMarkerPainter_h
 #define DetailsMarkerPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -13,6 +15,7 @@ class LayoutPoint;
 class LayoutDetailsMarker;
 
 class DetailsMarkerPainter {
+    STACK_ALLOCATED();
 public:
     DetailsMarkerPainter(LayoutDetailsMarker& layoutDetailsMarker) : m_layoutDetailsMarker(layoutDetailsMarker) { }
 

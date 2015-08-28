@@ -5,6 +5,8 @@
 #ifndef BlockPainter_h
 #define BlockPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -17,6 +19,7 @@ class LayoutPoint;
 class LayoutRect;
 
 class BlockPainter {
+    STACK_ALLOCATED();
 public:
     BlockPainter(LayoutBlock& block) : m_layoutBlock(block) { }
 

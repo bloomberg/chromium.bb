@@ -9,6 +9,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "public/platform/WebBlendMode.h"
+#include "wtf/FastAllocBase.h"
 
 namespace blink {
 
@@ -16,6 +17,7 @@ class GraphicsContext;
 class LayoutObject;
 
 class CompositingRecorder {
+    WTF_MAKE_FAST_ALLOCATED(CompositingRecorder);
 public:
     CompositingRecorder(GraphicsContext&, const DisplayItemClientWrapper&, const SkXfermode::Mode, const float opacity, const FloatRect* bounds = 0, ColorFilter = ColorFilterNone);
 

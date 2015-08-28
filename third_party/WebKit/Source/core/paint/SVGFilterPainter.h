@@ -7,6 +7,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -16,6 +17,8 @@ class LayoutObject;
 class LayoutSVGResourceFilter;
 
 class SVGFilterRecordingContext {
+    WTF_MAKE_FAST_ALLOCATED(SVGFilterRecordingContext);
+    WTF_MAKE_NONCOPYABLE(SVGFilterRecordingContext);
 public:
     explicit SVGFilterRecordingContext(GraphicsContext* initialContext) : m_initialContext(initialContext) { }
 
@@ -31,6 +34,7 @@ private:
 };
 
 class SVGFilterPainter {
+    STACK_ALLOCATED();
 public:
     SVGFilterPainter(LayoutSVGResourceFilter& filter) : m_filter(filter) { }
 

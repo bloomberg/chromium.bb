@@ -24,6 +24,7 @@
 #define ThemePainter_h
 
 #include "platform/ThemeTypes.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -33,6 +34,7 @@ class LayoutObject;
 struct PaintInfo;
 
 class ThemePainter {
+    DISALLOW_ALLOCATION();
 public:
     // This method is called to paint the widget as a background of the LayoutObject.  A widget's foreground, e.g., the
     // text of a button, is always rendered by the engine itself.  The boolean return value indicates

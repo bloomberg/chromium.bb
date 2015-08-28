@@ -47,6 +47,7 @@
 
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/LayoutRect.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -75,6 +76,7 @@ enum PaintLayerFlag {
 typedef unsigned PaintLayerFlags;
 
 struct DeprecatedPaintLayerPaintingInfo {
+    STACK_ALLOCATED();
     DeprecatedPaintLayerPaintingInfo(DeprecatedPaintLayer* inRootLayer, const LayoutRect& inDirtyRect,
         GlobalPaintFlags globalPaintFlags, const LayoutSize& inSubPixelAccumulation,
         LayoutObject* inPaintingRoot = 0)

@@ -5,6 +5,8 @@
 #ifndef VideoPainter_h
 #define VideoPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -12,6 +14,7 @@ class LayoutPoint;
 class LayoutVideo;
 
 class VideoPainter {
+    STACK_ALLOCATED();
 public:
     VideoPainter(LayoutVideo& layoutVideo) : m_layoutVideo(layoutVideo) { }
 

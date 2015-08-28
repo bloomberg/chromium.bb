@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -15,6 +16,7 @@ class GraphicsContext;
 class LayoutObject;
 
 class CORE_EXPORT ScopeRecorder {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     ScopeRecorder(GraphicsContext&);
 

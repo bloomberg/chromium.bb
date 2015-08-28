@@ -47,6 +47,7 @@
 
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/DeprecatedPaintLayerPaintingInfo.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -55,6 +56,7 @@ class DeprecatedPaintLayer;
 class LayoutReplica;
 
 class DeprecatedPaintLayerReflectionInfo {
+    WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerReflectionInfo);
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerReflectionInfo);
 public:
     explicit DeprecatedPaintLayerReflectionInfo(LayoutBox&);

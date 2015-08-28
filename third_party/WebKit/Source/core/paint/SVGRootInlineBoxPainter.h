@@ -5,6 +5,8 @@
 #ifndef SVGRootInlineBoxPainter_h
 #define SVGRootInlineBoxPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -12,6 +14,7 @@ class LayoutPoint;
 class SVGRootInlineBox;
 
 class SVGRootInlineBoxPainter {
+    STACK_ALLOCATED();
 public:
     SVGRootInlineBoxPainter(SVGRootInlineBox& svgRootInlineBox) : m_svgRootInlineBox(svgRootInlineBox) { }
 

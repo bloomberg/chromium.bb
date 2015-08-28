@@ -6,10 +6,13 @@
 #define ClipScope_h
 
 #include "platform/graphics/GraphicsContext.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class ClipScope {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+    WTF_MAKE_NONCOPYABLE(ClipScope);
 public:
     ClipScope(GraphicsContext* context)
         : m_context(context)
@@ -21,7 +24,6 @@ public:
 private:
     GraphicsContext* m_context;
     int m_clipCount;
-    WTF_MAKE_NONCOPYABLE(ClipScope);
 };
 
 } // namespace blink

@@ -63,6 +63,7 @@ class DeprecatedPaintLayer;
 class LayoutScrollbarPart;
 
 class CORE_EXPORT DeprecatedPaintLayerScrollableArea final : public NoBaseWillBeGarbageCollectedFinalized<DeprecatedPaintLayerScrollableArea>, public ScrollableArea {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(DeprecatedPaintLayerScrollableArea);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeprecatedPaintLayerScrollableArea);
     friend class Internals;
 

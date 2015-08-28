@@ -5,6 +5,8 @@
 #ifndef FrameSetPainter_h
 #define FrameSetPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class IntRect;
@@ -13,6 +15,7 @@ class LayoutFrameSet;
 class LayoutPoint;
 
 class FrameSetPainter {
+    STACK_ALLOCATED();
 public:
     FrameSetPainter(LayoutFrameSet& layoutFrameSet) : m_layoutFrameSet(layoutFrameSet) { }
 

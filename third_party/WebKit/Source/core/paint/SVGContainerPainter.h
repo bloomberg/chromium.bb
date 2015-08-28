@@ -5,12 +5,15 @@
 #ifndef SVGContainerPainter_h
 #define SVGContainerPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
 class LayoutSVGContainer;
 
 class SVGContainerPainter {
+    STACK_ALLOCATED();
 public:
     SVGContainerPainter(LayoutSVGContainer& layoutSVGContainer) : m_layoutSVGContainer(layoutSVGContainer) { }
 

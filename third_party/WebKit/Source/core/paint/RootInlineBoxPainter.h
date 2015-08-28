@@ -5,6 +5,8 @@
 #ifndef RootInlineBoxPainter_h
 #define RootInlineBoxPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -13,6 +15,7 @@ class LayoutUnit;
 class RootInlineBox;
 
 class RootInlineBoxPainter {
+    STACK_ALLOCATED();
 public:
     RootInlineBoxPainter(RootInlineBox& rootInlineBox) : m_rootInlineBox(rootInlineBox) { }
 

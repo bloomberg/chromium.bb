@@ -5,6 +5,8 @@
 #ifndef ReplacedPainter_h
 #define ReplacedPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -12,6 +14,7 @@ class LayoutPoint;
 class LayoutReplaced;
 
 class ReplacedPainter {
+    STACK_ALLOCATED();
 public:
     ReplacedPainter(LayoutReplaced& layoutReplaced) : m_layoutReplaced(layoutReplaced) { }
 

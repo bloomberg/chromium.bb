@@ -35,6 +35,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/filters/FilterOperation.h"
 #include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -48,6 +49,8 @@ class DeprecatedPaintLayerFilterInfo;
 typedef HashMap<const DeprecatedPaintLayer*, DeprecatedPaintLayerFilterInfo*> DeprecatedPaintLayerFilterInfoMap;
 
 class DeprecatedPaintLayerFilterInfo final : public DocumentResourceClient {
+    WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerFilterInfo);
+    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerFilterInfo);
 public:
     static DeprecatedPaintLayerFilterInfo* filterInfoForLayer(const DeprecatedPaintLayer*);
     static DeprecatedPaintLayerFilterInfo* createFilterInfoForLayerIfNeeded(DeprecatedPaintLayer*);

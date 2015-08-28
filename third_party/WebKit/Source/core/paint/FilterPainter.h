@@ -6,6 +6,7 @@
 #define FilterPainter_h
 
 #include "core/paint/DeprecatedPaintLayerPaintingInfo.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -16,6 +17,7 @@ class DeprecatedPaintLayer;
 class LayerClipRecorder;
 
 class FilterPainter {
+    STACK_ALLOCATED();
 public:
     FilterPainter(DeprecatedPaintLayer&, GraphicsContext*, const LayoutPoint& offsetFromRoot, const ClipRect&, DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags paintFlags, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed);
     ~FilterPainter();

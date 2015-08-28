@@ -5,6 +5,8 @@
 #ifndef FieldsetPainter_h
 #define FieldsetPainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
@@ -12,6 +14,7 @@ class LayoutPoint;
 class LayoutFieldset;
 
 class FieldsetPainter {
+    STACK_ALLOCATED();
 public:
     FieldsetPainter(LayoutFieldset& layoutFieldset) : m_layoutFieldset(layoutFieldset) { }
 

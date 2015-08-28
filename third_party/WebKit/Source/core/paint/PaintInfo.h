@@ -35,6 +35,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/AffineTransform.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 
@@ -47,6 +48,7 @@ class LayoutBoxModelObject;
 class LayoutObject;
 
 struct PaintInfo {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     PaintInfo(GraphicsContext* newContext, const IntRect& newRect, PaintPhase newPhase, GlobalPaintFlags globalPaintFlags, PaintLayerFlags paintFlags,
         LayoutObject* newPaintingRoot = 0, ListHashSet<LayoutInline*>* newOutlineObjects = 0,
         const LayoutBoxModelObject* newPaintContainer = 0)

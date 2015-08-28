@@ -5,12 +5,15 @@
 #ifndef SVGImagePainter_h
 #define SVGImagePainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct PaintInfo;
 class LayoutSVGImage;
 
 class SVGImagePainter {
+    STACK_ALLOCATED();
 public:
     SVGImagePainter(LayoutSVGImage& layoutSVGImage) : m_layoutSVGImage(layoutSVGImage) { }
 

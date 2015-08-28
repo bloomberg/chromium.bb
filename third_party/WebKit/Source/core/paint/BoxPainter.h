@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/ObjectPainter.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -18,6 +19,7 @@ class LayoutBox;
 class LayoutObject;
 
 class BoxPainter {
+    STACK_ALLOCATED();
 public:
     BoxPainter(LayoutBox& layoutBox) : m_layoutBox(layoutBox) { }
     void paint(const PaintInfo&, const LayoutPoint&);

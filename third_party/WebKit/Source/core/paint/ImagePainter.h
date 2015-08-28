@@ -5,6 +5,8 @@
 #ifndef ImagePainter_h
 #define ImagePainter_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class GraphicsContext;
@@ -14,6 +16,7 @@ class LayoutRect;
 class LayoutImage;
 
 class ImagePainter {
+    STACK_ALLOCATED();
 public:
     ImagePainter(LayoutImage& layoutImage) : m_layoutImage(layoutImage) { }
 

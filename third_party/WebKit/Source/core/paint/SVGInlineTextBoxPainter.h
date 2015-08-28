@@ -7,6 +7,7 @@
 
 #include "core/style/ComputedStyleConstants.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -22,6 +23,7 @@ class TextRun;
 class DocumentMarker;
 
 class SVGInlineTextBoxPainter {
+    STACK_ALLOCATED();
 public:
     SVGInlineTextBoxPainter(SVGInlineTextBox& svgInlineTextBox) : m_svgInlineTextBox(svgInlineTextBox) { }
     void paint(const PaintInfo&, const LayoutPoint&);

@@ -6,6 +6,7 @@
 #define SVGMaskPainter_h
 
 #include "platform/geometry/FloatRect.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -14,6 +15,7 @@ class LayoutObject;
 class LayoutSVGResourceMasker;
 
 class SVGMaskPainter {
+    STACK_ALLOCATED();
 public:
     SVGMaskPainter(LayoutSVGResourceMasker& mask) : m_mask(mask) { }
 

@@ -10,6 +10,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "wtf/Allocator.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -18,6 +19,7 @@ class GraphicsContext;
 
 // Convenience wrapper of DrawingRecorder for LayoutObject painters.
 class LayoutObjectDrawingRecorder final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType)
     {

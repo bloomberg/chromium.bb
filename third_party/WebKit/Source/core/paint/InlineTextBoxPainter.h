@@ -7,6 +7,7 @@
 
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/LayoutRect.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -25,6 +26,7 @@ class LayoutPoint;
 class LayoutTextCombine;
 
 class InlineTextBoxPainter {
+    STACK_ALLOCATED();
 public:
     InlineTextBoxPainter(InlineTextBox& inlineTextBox) : m_inlineTextBox(inlineTextBox) { }
 

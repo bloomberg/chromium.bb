@@ -8,6 +8,7 @@
 #include "core/style/ShadowData.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/text/TextDirection.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -22,6 +23,7 @@ struct PaintInfo;
 class ComputedStyle;
 
 class InlineFlowBoxPainter {
+    STACK_ALLOCATED();
 public:
     InlineFlowBoxPainter(InlineFlowBox& inlineFlowBox) : m_inlineFlowBox(inlineFlowBox) { }
     void paint(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutUnit lineTop, const LayoutUnit lineBottom);

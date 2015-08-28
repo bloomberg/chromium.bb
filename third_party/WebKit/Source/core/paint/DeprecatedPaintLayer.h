@@ -56,6 +56,7 @@
 #include "core/paint/DeprecatedPaintLayerStackingNodeIterator.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "public/platform/WebBlendMode.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -79,6 +80,7 @@ enum CompositingQueryMode {
 
 // FIXME: remove this once the compositing query ASSERTS are no longer hit.
 class CORE_EXPORT DisableCompositingQueryAsserts {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(DisableCompositingQueryAsserts);
 public:
     DisableCompositingQueryAsserts();
@@ -409,6 +411,7 @@ public:
     bool hasStyleDeterminedDirectCompositingReasons() const { return m_potentialCompositingReasonsFromStyle & CompositingReasonComboAllDirectStyleDeterminedReasons; }
 
     class AncestorDependentCompositingInputs {
+        DISALLOW_ALLOCATION();
     public:
         AncestorDependentCompositingInputs()
             : opacityAncestor(0)
@@ -449,6 +452,7 @@ public:
     };
 
     class DescendantDependentCompositingInputs {
+        DISALLOW_ALLOCATION();
     public:
         DescendantDependentCompositingInputs()
             : hasDescendantWithClipPath(false)

@@ -6,6 +6,7 @@
 #define ObjectPainter_h
 
 #include "core/style/ComputedStyleConstants.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -20,6 +21,7 @@ class LayoutObject;
 class ComputedStyle;
 
 class ObjectPainter {
+    STACK_ALLOCATED();
 public:
     ObjectPainter(LayoutObject& layoutObject) : m_layoutObject(layoutObject) { }
 

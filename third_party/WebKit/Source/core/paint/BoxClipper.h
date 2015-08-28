@@ -7,6 +7,7 @@
 
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -16,6 +17,7 @@ struct PaintInfo;
 enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
 
 class BoxClipper {
+    STACK_ALLOCATED();
 public:
     BoxClipper(const LayoutBox&, const PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
     ~BoxClipper();

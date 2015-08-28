@@ -31,6 +31,7 @@
 #ifndef DeprecatedPaintLayerStackingNodeIterator_h
 #define DeprecatedPaintLayerStackingNodeIterator_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -48,6 +49,7 @@ class DeprecatedPaintLayer;
 // This iterator walks the DeprecatedPaintLayerStackingNode lists in the following order:
 // NegativeZOrderChildren -> NormalFlowChildren -> PositiveZOrderChildren.
 class DeprecatedPaintLayerStackingNodeIterator {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNodeIterator);
 public:
     DeprecatedPaintLayerStackingNodeIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren);
@@ -64,6 +66,7 @@ private:
 // This iterator is similar to DeprecatedPaintLayerStackingNodeIterator but it walks the lists in reverse order
 // (from the last item to the first one).
 class DeprecatedPaintLayerStackingNodeReverseIterator {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNodeReverseIterator);
 public:
     DeprecatedPaintLayerStackingNodeReverseIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren)

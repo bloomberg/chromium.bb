@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/paint/DeprecatedPaintLayerFragment.h"
 #include "core/paint/DeprecatedPaintLayerPaintingInfo.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -17,6 +18,7 @@ class GraphicsContext;
 class LayoutPoint;
 
 class CORE_EXPORT DeprecatedPaintLayerPainter {
+    STACK_ALLOCATED();
 public:
     enum FragmentPolicy { AllowMultipleFragments, ForceSingleFragment };
 

@@ -6,6 +6,7 @@
 #define InlinePainter_h
 
 #include "core/style/ComputedStyleConstants.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -18,6 +19,7 @@ struct PaintInfo;
 class LayoutInline;
 
 class InlinePainter {
+    STACK_ALLOCATED();
 public:
     InlinePainter(LayoutInline& layoutInline) : m_layoutInline(layoutInline) { }
 

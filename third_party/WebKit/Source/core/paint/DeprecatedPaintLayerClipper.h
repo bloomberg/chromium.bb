@@ -48,6 +48,7 @@
 #include "core/layout/ClipRects.h"
 #include "core/layout/ClipRectsCache.h"
 #include "core/layout/LayoutBox.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -56,6 +57,7 @@ class DeprecatedPaintLayer;
 // This is the state information passed down
 // on the stack for calculating clip rects.
 struct ClipRectComputationState {
+    STACK_ALLOCATED();
     ClipRectComputationState()
     {
         currentClipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
@@ -77,6 +79,7 @@ enum ShouldRespectOverflowClip {
 };
 
 class ClipRectsContext {
+    STACK_ALLOCATED();
 public:
     ClipRectsContext(const DeprecatedPaintLayer* root, ClipRectsCacheSlot slot, OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize, const LayoutSize& accumulation = LayoutSize())
         : rootLayer(root)
@@ -125,6 +128,7 @@ private:
 };
 
 class DeprecatedPaintLayerClipper {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerClipper);
 public:
     explicit DeprecatedPaintLayerClipper(LayoutBoxModelObject&);

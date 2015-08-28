@@ -27,11 +27,13 @@
 #define DeprecatedPaintLayerFragment_h
 
 #include "core/layout/ClipRect.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 struct DeprecatedPaintLayerFragment {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     void setRects(const LayoutRect& bounds, const ClipRect& background, const ClipRect& foreground, const ClipRect& outline)
     {

@@ -6,6 +6,7 @@
 #define SVGShapePainter_h
 
 #include "third_party/skia/include/core/SkPath.h"
+#include "wtf/Allocator.h"
 
 class SkPaint;
 
@@ -20,6 +21,7 @@ class LayoutSVGResourceMarker;
 class LayoutSVGShape;
 
 class SVGShapePainter {
+    STACK_ALLOCATED();
 public:
     SVGShapePainter(LayoutSVGShape& layoutSVGShape) : m_layoutSVGShape(layoutSVGShape) { }
 
