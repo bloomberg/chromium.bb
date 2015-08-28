@@ -14,8 +14,8 @@ namespace remoting {
 
 scoped_ptr<base::DictionaryValue> HostConfigFromJson(
     const std::string& json) {
-  scoped_ptr<base::Value> value(
-      base::JSONReader::DeprecatedRead(json, base::JSON_ALLOW_TRAILING_COMMAS));
+  scoped_ptr<base::Value> value =
+      base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(WARNING) << "Failed to parse host config from JSON";
     return nullptr;
