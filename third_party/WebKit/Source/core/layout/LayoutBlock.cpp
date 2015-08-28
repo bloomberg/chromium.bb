@@ -2494,14 +2494,6 @@ void LayoutBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
     }
 }
 
-LayoutRect LayoutBlock::rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
-{
-    LayoutRect r(LayoutBox::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth, paintInvalidationState));
-    if (isAnonymousBlockContinuation())
-        r.inflateY(collapsedMarginBefore()); // FIXME: This is wrong for vertical writing-modes.
-    return r;
-}
-
 LayoutObject* LayoutBlock::hoverAncestor() const
 {
     return isAnonymousBlockContinuation() ? continuation() : LayoutBox::hoverAncestor();

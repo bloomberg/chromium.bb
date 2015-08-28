@@ -1492,6 +1492,11 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     maxLogicalWidth = std::max(maxLogicalWidth, inlineMax);
 }
 
+static bool isInlineWithOutlineAndContinuation(const LayoutObject& o)
+{
+    return o.isLayoutInline() && o.styleRef().hasOutline() && !o.isElementContinuation() && toLayoutInline(o).continuation();
+}
+
 void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge)
 {
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
@@ -1566,6 +1571,9 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
                     dirtyLineBoxesForObject(o, layoutState.isFullLayout());
                 o->clearNeedsLayout();
             }
+
+            if (isInlineWithOutlineAndContinuation(*o))
+                setContainsInlineWithOutlineAndContinuation(true);
         }
 
         for (size_t i = 0; i < replacedChildren.size(); i++)
@@ -1854,6 +1862,24 @@ void LayoutBlockFlow::addOverflowFromInlineChildren()
         LayoutRect visualOverflow = curr->visualOverflowRect(curr->lineTop(), curr->lineBottom());
         addContentsVisualOverflow(visualOverflow);
     }
+
+    if (!containsInlineWithOutlineAndContinuation())
+        return;
+
+    // Add outline rects of continuations of descendant inlines into visual overflow of this block.
+    LayoutRect outlineBoundsOfAllContinuations;
+    for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
+        const LayoutObject& o = *walker.current();
+        if (!isInlineWithOutlineAndContinuation(o))
+            continue;
+
+        Vector<LayoutRect> outlineRects;
+        toLayoutInline(o).addOutlineRectsForContinuations(outlineRects, LayoutPoint());
+        LayoutRect outlineBounds = unionRect(outlineRects);
+        outlineBounds.inflate(o.styleRef().outlineOutsetExtent());
+        outlineBoundsOfAllContinuations.unite(outlineBounds);
+    }
+    addContentsVisualOverflow(outlineBoundsOfAllContinuations);
 }
 
 void LayoutBlockFlow::deleteEllipsisLineBoxes()

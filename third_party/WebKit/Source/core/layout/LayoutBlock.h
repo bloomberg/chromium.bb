@@ -345,8 +345,6 @@ private:
     // children.
     LayoutBlock* firstLineBlock() const override;
 
-    LayoutRect rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = nullptr) const final;
-
     LayoutObject* hoverAncestor() const final;
     void updateDragState(bool dragOn) final;
     void childBecameNonInline(LayoutObject* child) final;

@@ -369,6 +369,9 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
 
     TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
+    // Reset the flag here instead of in layoutInlineChildren() in case that
+    // all inline children are removed from this block.
+    setContainsInlineWithOutlineAndContinuation(false);
     if (childrenInline())
         layoutInlineChildren(relayoutChildren, m_paintInvalidationLogicalTop, m_paintInvalidationLogicalBottom, afterEdge);
     else

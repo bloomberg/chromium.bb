@@ -4116,23 +4116,15 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const
     }
 
     if (style()->hasOutline()) {
+        Vector<LayoutRect> outlineRects;
+        // The result rects are in coordinates of this object's border box.
+        addOutlineRects(outlineRects, LayoutPoint());
+        LayoutRect rect = unionRect(outlineRects);
         int outlineOutset = style()->outlineOutsetExtent();
-        if (style()->outlineStyleIsAuto()) {
-            // The result focus ring rects are in coordinates of this object's border box.
-            Vector<LayoutRect> focusRingRects;
-            addOutlineRects(focusRingRects, LayoutPoint());
-            LayoutRect rect = unionRect(focusRingRects);
-
-            top = std::max(top, -rect.y() + outlineOutset);
-            right = std::max(right, rect.maxX() - size().width() + outlineOutset);
-            bottom = std::max(bottom, rect.maxY() - size().height() + outlineOutset);
-            left = std::max(left, -rect.x() + outlineOutset);
-        } else {
-            top = std::max<LayoutUnit>(top, outlineOutset);
-            right = std::max<LayoutUnit>(right, outlineOutset);
-            bottom = std::max<LayoutUnit>(bottom, outlineOutset);
-            left = std::max<LayoutUnit>(left, outlineOutset);
-        }
+        top = std::max(top, -rect.y() + outlineOutset);
+        right = std::max(right, rect.maxX() - size().width() + outlineOutset);
+        bottom = std::max(bottom, rect.maxY() - size().height() + outlineOutset);
+        left = std::max(left, -rect.x() + outlineOutset);
     }
 
     return LayoutRectOutsets(top, right, bottom, left);

@@ -902,7 +902,6 @@ public:
     // coordinate space. This method deals with outlines and overflow.
     virtual LayoutRect absoluteClippedOverflowRect() const;
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
-    virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = nullptr) const;
 
     // Given a rect in the object's coordinate space, compute a rect suitable for invalidating paints of
     // that rect in the coordinate space of paintInvalidationContainer.
@@ -1017,6 +1016,8 @@ public:
 
     bool createsGroup() const { return isTransparent() || hasMask() || hasFilter() || style()->hasBlendMode(); }
 
+    // Collects rectangles that the outline of this object would be drawing along the outside of,
+    // even if the object isn't styled with a outline for now.
     virtual void addOutlineRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const { }
 
     // Compute a list of hit-test rectangles per layer rooted at this layoutObject.
@@ -1222,6 +1223,9 @@ protected:
     // Remove this object and all descendants from the containing LayoutFlowThread.
     void removeFromLayoutFlowThread();
 
+    bool containsInlineWithOutlineAndContinuation() const { return m_bitfields.containsInlineWithOutlineAndContinuation(); }
+    void setContainsInlineWithOutlineAndContinuation(bool b) { m_bitfields.setContainsInlineWithOutlineAndContinuation(b); }
+
 private:
     void fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
@@ -1348,6 +1352,7 @@ private:
             , m_notifiedOfSubtreeChange(false)
             , m_consumesSubtreeChangeNotification(false)
             , m_childrenInline(false)
+            , m_containsInlineWithOutlineAndContinuation(false)
             , m_alwaysCreateLineBoxesForLayoutInline(false)
             , m_lastBoxDecorationBackgroundObscured(false)
             , m_isSlowRepaintObject(false)
@@ -1358,7 +1363,7 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 16 in the second.
+        // 32 bits have been used in the first word, and 17 in the second.
 
         // Self needs layout means that this layout object is marked for a full layout.
         // This is the default layout but it is expensive as it recomputes everything.
@@ -1449,6 +1454,9 @@ private:
 
         // from LayoutBlock
         ADD_BOOLEAN_BITFIELD(childrenInline, ChildrenInline);
+
+        // from LayoutBlockFlow
+        ADD_BOOLEAN_BITFIELD(containsInlineWithOutlineAndContinuation, ContainsInlineWithOutlineAndContinuation);
 
         // from LayoutInline
         ADD_BOOLEAN_BITFIELD(alwaysCreateLineBoxesForLayoutInline, AlwaysCreateLineBoxesForLayoutInline);

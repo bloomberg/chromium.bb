@@ -696,6 +696,18 @@ crbug.com/116710 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-pres
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
 
+crbug.com/506669 compositing/layer-creation/stacking-context-overlap-nested.html [ NeedsRebaseline ]
+crbug.com/506669 fast/repaint/focus-continuations.html [ NeedsRebaseline ]
+crbug.com/506669 fast/repaint/focus-enable-continuations.html [ NeedsRebaseline ]
+crbug.com/506669 fast/repaint/focus-ring-on-continuation-move.html [ NeedsRebaseline ]
+crbug.com/506669 fast/repaint/outline-change-continuations.html [ NeedsRebaseline ]
+crbug.com/506669 fast/repaint/outline-continuations.html [ NeedsRebaseline ]
+crbug.com/506669 virtual/spv2/fast/repaint/focus-continuations.html [ NeedsRebaseline ]
+crbug.com/506669 virtual/spv2/fast/repaint/focus-enable-continuations.html [ NeedsRebaseline ]
+crbug.com/506669 virtual/spv2/fast/repaint/focus-ring-on-continuation-move.html [ NeedsRebaseline ]
+crbug.com/506669 virtual/spv2/fast/repaint/outline-change-continuations.html [ NeedsRebaseline ]
+crbug.com/506669 virtual/spv2/fast/repaint/outline-continuations.html [ NeedsRebaseline ]
+
 # Reftests that needs investigation.
 crbug.com/397232 [ XP ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure ]
 crbug.com/397232 [ XP ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]

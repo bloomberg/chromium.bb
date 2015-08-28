@@ -1515,13 +1515,6 @@ void LayoutObject::invalidatePaintForOverflowIfNeeded()
         invalidatePaintForOverflow();
 }
 
-LayoutRect LayoutObject::rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
-{
-    LayoutRect r(clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState));
-    r.inflate(outlineWidth);
-    return r;
-}
-
 LayoutRect LayoutObject::absoluteClippedOverflowRect() const
 {
     return clippedOverflowRectForPaintInvalidation(view());

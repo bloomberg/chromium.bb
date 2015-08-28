@@ -1063,30 +1063,20 @@ LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintIn
         return LayoutRect();
 
     LayoutRect overflowRect(linesVisualOverflowBoundingBox());
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, overflowRect, paintInvalidationState);
 
     LayoutUnit outlineOutset = style()->outlineOutsetExtent();
     if (outlineOutset) {
-        for (LayoutObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
-            if (!curr->isText())
-                overflowRect.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineOutset));
+        Vector<LayoutRect> rects;
+        addOutlineRectsForChildrenAndContinuations(rects, LayoutPoint());
+        LayoutRect outlineRect = unionRect(rects);
+        if (!outlineRect.isEmpty()) {
+            outlineRect.inflate(outlineOutset);
+            overflowRect.unite(outlineRect);
         }
-
-        if (continuation && !continuation->isInline() && continuation->parent())
-            overflowRect.unite(continuation->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineOutset));
     }
 
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, overflowRect, paintInvalidationState);
     return overflowRect;
-}
-
-LayoutRect LayoutInline::rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* paintInvalidationState) const
-{
-    LayoutRect r(LayoutBoxModelObject::rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth, paintInvalidationState));
-    for (LayoutObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
-        if (!curr->isText())
-            r.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineWidth, paintInvalidationState));
-    }
-    return r;
 }
 
 void LayoutInline::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
