@@ -294,34 +294,17 @@ class _PaygenBuild(object):
   class PayloadTest(object):
     """A payload test definition.
 
-    You must either use a delta payload, or specify both the src_channel and
-    src_version.
-
     Attrs:
       payload: A gspaths.Payload object describing the payload to be tested.
-
-      src_channel: The channel of the image to test updating from. Required
-                   if the payload is a full payload, required to be None if
-                   it's a delta.
-      src_version: The version of the image to test updating from. Required
-                   if the payload is a full payload, required to be None if
-                   it's a delta.
+      src_channel: The channel of the image to test updating from.
+      src_version: The version of the image to test updating from.
         for a delta payload, as it already encodes the source version.
     """
+
     def __init__(self, payload, src_channel=None, src_version=None):
       self.payload = payload
-
-      assert bool(src_channel) == bool(src_version), (
-          'src_channel(%s), src_version(%s) must both be set, or not set' %
-          (src_channel, src_version))
-
-      assert bool(src_channel and src_version) ^ bool(payload.src_image), (
-          'src_channel(%s), src_version(%s) required for full, not allowed'
-          ' for deltas. src_image: %s ' %
-          (src_channel, src_version, payload.src_image))
-
-      self.src_channel = src_channel or payload.src_image.channel
-      self.src_version = src_version or payload.src_image.version
+      self.src_channel = src_channel
+      self.src_version = src_version
 
     def __str__(self):
       return ('<test for %s%s>' %
@@ -913,14 +896,14 @@ class _PaygenBuild(object):
     multiple tests in a single run.
 
     Args:
-      channel: Channel to look in for payload.
+      channel: Channel to look in for payload. If None, use build's channel.
       version: A build version whose payloads to look for.
 
     Returns:
       A (possibly empty) list of payload URIs.
     """
-    assert channel
-    assert version
+    if channel is None:
+      channel = self._build.channel
 
     if (channel, version) in self._version_to_full_test_payloads:
       # Serve from cache, if possible.
@@ -947,6 +930,13 @@ class _PaygenBuild(object):
     payload = payload_test.payload
     src_version = payload_test.src_version
     src_channel = payload_test.src_channel
+    if not src_version:
+      if not payload.src_image:
+        raise PayloadTestError(
+            'no source version provided for testing full payload %s' %
+            payload)
+
+      src_version = payload.src_image.version
 
     # Discover the full test payload that corresponds to the source version.
     src_payload_uri_list = self._FindFullTestPayloads(src_channel, src_version)
@@ -967,22 +957,13 @@ class _PaygenBuild(object):
     src_payload_uri = src_payload_uri_list[0]
     logging.info('Source full test payload found at %s', src_payload_uri)
 
-    stateful_tgz_dir = gspaths.ChromeosReleases.BuildUri(
-        src_channel, self._build.board, src_version)
-
-    # TODO(dgarrett): Remove if block after finishing crbug.com/523122
-    if not urilib.Exists(os.path.join(stateful_tgz_dir, 'stateful.tgz')):
-      logging.warning('Falling back to chromeos-image-archive: %s', payload)
-      try:
-        _, _, source_archive_uri = self._MapToArchive(
-            payload.tgt_image.board, src_version)
-      except ArchiveError as e:
-        raise PayloadTestError(
-            'error mapping source build to images archive: %s' % e)
-      stateful_archive_uri = os.path.join(source_archive_uri, 'stateful.tgz')
-      logging.info('Copying stateful.tgz from %s -> %s',
-                   stateful_archive_uri, stateful_tgz_dir)
-      urilib.Copy(stateful_archive_uri, stateful_tgz_dir)
+    # Find the chromeos_image_archive location of the source build.
+    try:
+      _, _, source_archive_uri = self._MapToArchive(
+          payload.tgt_image.board, src_version)
+    except ArchiveError as e:
+      raise PayloadTestError(
+          'error mapping source build to images archive: %s' % e)
 
     test = test_params.TestConfig(
         self._archive_board,
@@ -994,14 +975,13 @@ class _PaygenBuild(object):
         src_payload_uri,
         payload.uri,
         suite_name=suite_name,
-        source_archive_uri=stateful_tgz_dir)
+        source_archive_uri=source_archive_uri)
 
     with open(test_control.get_control_file_name()) as f:
       control_code = f.read()
     control_file = test_control.dump_autotest_control_file(
         test, None, control_code, control_dump_dir)
     logging.info('Control file emitted at %s', control_file)
-    return control_file
 
   def _ScheduleAutotestTests(self, suite_name):
     """Run the appropriate command to schedule the Autotests we have prepped.

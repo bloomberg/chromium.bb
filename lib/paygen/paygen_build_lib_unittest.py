@@ -21,7 +21,6 @@ from chromite.cbuildbot import failures_lib
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.lib import parallel
 
 from chromite.lib.paygen import download_cache
@@ -1230,18 +1229,16 @@ DOC = "Faux doc"
 """)
 
     self.mox.StubOutWithMock(urilib, 'ListFiles')
-    self.mox.StubOutWithMock(urilib, 'Exists')
-
-    urilib.Exists(
-        'gs://chromeos-releases/foo-channel/foo-board/1.2.3/stateful.tgz'
-        ).AndReturn(True)
-
     urilib.ListFiles(
         gspaths.ChromeosReleases.PayloadUri(
             self.basic_image.channel, self.basic_image.board,
             self.basic_image.version,
             '*', bucket=self.basic_image.bucket)).AndReturn(
                 ['gs://foo/bar.tar.bz2'])
+    urilib.ListFiles(
+        gspaths.ChromeosImageArchive.BuildUri(
+            'foo_board', '*', self.basic_image.version)).AndReturn(
+                ['gs://foo-archive/src-build'])
 
     self.mox.StubOutWithMock(
         paygen_build_lib.test_control, 'get_control_file_name')
@@ -1251,29 +1248,7 @@ DOC = "Faux doc"
     self.mox.ReplayAll()
 
     payload_test = paygen_build_lib._PaygenBuild.PayloadTest(payload)
-    cf = paygen._EmitControlFile(payload_test, suite_name, control_dir)
-
-    control_contents = osutils.ReadFile(cf)
-
-    self.assertEqual(control_contents, '''name = 'paygen_foo'
-image_type = 'test'
-update_type = 'delta'
-source_release = '1.2.3'
-target_release = '1.2.3'
-source_image_uri = 'gs://foo/bar.tar.bz2'
-target_payload_uri = 'None'
-SUITE = 'paygen_foo'
-source_archive_uri = 'gs://chromeos-releases/foo-channel/foo-board/1.2.3'
-
-AUTHOR = "Chromium OS"
-NAME = "autoupdate_EndToEndTest_paygen_foo_delta_1.2.3"
-TIME = "MEDIUM"
-TEST_CATEGORY = "Functional"
-TEST_CLASS = "platform"
-TEST_TYPE = "server"
-DOC = "Faux doc"
-
-''')
+    paygen._EmitControlFile(payload_test, suite_name, control_dir)
 
     shutil.rmtree(control_dir)
     os.remove(control_file_name)
