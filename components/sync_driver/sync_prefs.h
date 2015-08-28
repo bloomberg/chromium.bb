@@ -13,6 +13,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/sync_encryption_handler.h"
 
 class PrefService;
 class ProfileIOData;
@@ -150,7 +151,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Check if the previous shutdown was clean.
   bool DidSyncShutdownCleanly() const;
 
-  // Set whetherthe last shutdown was clean.
+  // Set whether the last shutdown was clean.
   void SetCleanShutdown(bool value);
 
   // Get/set for the last known sync invalidation versions.
@@ -165,6 +166,18 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // updated to the current version).
   std::string GetLastRunVersion() const;
   void SetLastRunVersion(const std::string& current_version);
+
+  // Get/set for flag indicating that passphrase encryption transition is in
+  // progress.
+  void SetPassphraseEncryptionTransitionInProgress(bool value);
+  bool GetPassphraseEncryptionTransitionInProgress() const;
+
+  // Get/set for saved Nigori state that needs to be passed to backend
+  // initialization after transition.
+  void SetSavedNigoriStateForPassphraseEncryptionTransition(
+      const syncer::SyncEncryptionHandler::NigoriState& nigori_state);
+  scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>
+  GetSavedNigoriStateForPassphraseEncryptionTransition() const;
 
  private:
   void RegisterPrefGroups();

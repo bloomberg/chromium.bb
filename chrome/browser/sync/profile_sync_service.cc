@@ -239,6 +239,7 @@ ProfileSyncService::ProfileSyncService(
       backup_finished_(false),
       clear_browsing_data_(base::Bind(&ClearBrowsingData)),
       browsing_data_remover_observer_(NULL),
+      catch_up_configure_in_progress_(false),
       passphrase_prompt_triggered_by_version_(false),
       weak_factory_(this),
       startup_controller_weak_factory_(this) {
@@ -405,6 +406,16 @@ void ProfileSyncService::TrySyncDatatypePrefRecovery() {
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncEnableClearDataOnPassphraseEncryption) &&
+      backend_mode_ == SYNC &&
+      sync_prefs_.GetPassphraseEncryptionTransitionInProgress()) {
+    BeginConfigureCatchUpBeforeClear();
+    return;
+  }
+
   if (backend_)
     backend_->StartSyncingWithServer();
 }
@@ -916,6 +927,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   encrypt_everything_ = false;
   encrypted_types_ = syncer::SyncEncryptionHandler::SensitiveTypes();
   passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
+  catch_up_configure_in_progress_ = false;
   request_access_token_retry_timer_.Stop();
   // Revert to "no auth error".
   if (last_auth_error_.state() != GoogleServiceAuthError::NONE)
@@ -1438,15 +1450,44 @@ void ProfileSyncService::OnLocalSetPassphraseEncryption(
           switches::kSyncEnableClearDataOnPassphraseEncryption))
     return;
 
-  // At this point the user has set a custom passphrase and we
-  // have received the updated nigori state. Time to cache the nigori state,
-  // shutdown sync, then restart it and restore the cached nigori state.
+  // At this point the user has set a custom passphrase and we have received the
+  // updated nigori state. Time to cache the nigori state, and catch up the
+  // active data types.
+  sync_prefs_.SetSavedNigoriStateForPassphraseEncryptionTransition(
+      nigori_state);
+  sync_prefs_.SetPassphraseEncryptionTransitionInProgress(true);
+  BeginConfigureCatchUpBeforeClear();
+}
+
+void ProfileSyncService::BeginConfigureCatchUpBeforeClear() {
+  DCHECK_EQ(backend_mode_, SYNC);
+  DCHECK(directory_data_type_manager_);
+  DCHECK(!saved_nigori_state_);
+  saved_nigori_state_ =
+      sync_prefs_.GetSavedNigoriStateForPassphraseEncryptionTransition().Pass();
+  const syncer::ModelTypeSet types = GetActiveDataTypes();
+  catch_up_configure_in_progress_ = true;
+  directory_data_type_manager_->Configure(types,
+                                          syncer::CONFIGURE_REASON_CATCH_UP);
+}
+
+void ProfileSyncService::ClearAndRestartSyncForPassphraseEncryption() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  backend_->ClearServerData(base::Bind(
+      &ProfileSyncService::OnClearServerDataDone, weak_factory_.GetWeakPtr()));
+}
+
+void ProfileSyncService::OnClearServerDataDone() {
+  DCHECK(sync_prefs_.GetPassphraseEncryptionTransitionInProgress());
+  sync_prefs_.SetPassphraseEncryptionTransitionInProgress(false);
+
+  // Call to ClearServerData generates new keystore key on the server. This
+  // makes keystore bootstrap token invalid. Let's clear it from preferences.
+  sync_prefs_.SetKeystoreEncryptionBootstrapToken(std::string());
+
+  // Shutdown sync, delete the Directory, then restart, restoring the cached
+  // nigori state.
   ShutdownImpl(syncer::DISABLE_SYNC);
-  saved_nigori_state_.reset(
-      new syncer::SyncEncryptionHandler::NigoriState(nigori_state));
-  // TODO(maniscalco): We should also clear the bootstrap keystore key from the
-  // pref before restarting sync to ensure we obtain a new, valid one when we
-  // perform the configuration sync cycle (crbug.com/490836).
   startup_controller_->TryStart();
 }
 
@@ -1537,6 +1578,8 @@ void ProfileSyncService::OnConfigureDone(
     return;
   }
 
+  DCHECK_EQ(DataTypeManager::OK, configure_status_);
+
   // We should never get in a state where we have no encrypted datatypes
   // enabled, and yet we still think we require a passphrase for decryption.
   DCHECK(!(IsPassphraseRequiredForDecryption() &&
@@ -1554,9 +1597,16 @@ void ProfileSyncService::OnConfigureDone(
     // configuring something.  It will be up to the migrator to call
     // StartSyncingWithServer() if migration is now finished.
     migrator_->OnConfigureDone(result);
-  } else {
-    StartSyncingWithServer();
+    return;
   }
+
+  if (catch_up_configure_in_progress_) {
+    catch_up_configure_in_progress_ = false;
+    ClearAndRestartSyncForPassphraseEncryption();
+    return;
+  }
+
+  StartSyncingWithServer();
 }
 
 void ProfileSyncService::OnConfigureStart() {

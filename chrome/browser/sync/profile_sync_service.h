@@ -878,6 +878,22 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Check if previous shutdown is shutdown cleanly.
   void ReportPreviousSessionMemoryWarningCount();
 
+  // After user switches to custom passphrase encryption a set of steps needs to
+  // be performed:
+  // - Download all latest updates from server (catch up configure).
+  // - Clear user data on server.
+  // - Clear directory so that data is merged from model types and encrypted.
+  // Following three functions perform these steps.
+
+  // Calls data type manager to start catch up configure.
+  void BeginConfigureCatchUpBeforeClear();
+
+  // Calls sync backend to send ClearServerDataMessage to server.
+  void ClearAndRestartSyncForPassphraseEncryption();
+
+  // Restarts sync clearing directory in the process.
+  void OnClearServerDataDone();
+
   // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
@@ -1061,8 +1077,16 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Listens for the system being under memory pressure.
   scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  // Used to save/restore nigori state across backend instances. May be null.
+  // Nigori state after user switching to custom passphrase, saved until
+  // transition steps complete. It will be injected into new backend after sync
+  // restart.
   scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state_;
+
+  // When BeginConfigureCatchUpBeforeClear is called it will set
+  // catch_up_configure_in_progress_ to true. This is needed to detect that call
+  // to OnConfigureDone originated from BeginConfigureCatchUpBeforeClear and
+  // needs to be followed by ClearAndRestartSyncForPassphraseEncryption().
+  bool catch_up_configure_in_progress_;
 
   // Whether the major version has changed since the last time Chrome ran,
   // and therefore a passphrase required state should result in prompting

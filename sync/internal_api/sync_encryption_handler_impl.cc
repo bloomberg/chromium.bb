@@ -786,6 +786,7 @@ base::Time SyncEncryptionHandlerImpl::custom_passphrase_time() const {
 void SyncEncryptionHandlerImpl::RestoreNigori(
     const SyncEncryptionHandler::NigoriState& nigori_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   WriteTransaction trans(FROM_HERE, user_share_);
 
   // Verify we don't already have a nigori node.
@@ -1531,7 +1532,6 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
   if (new_encrypt_everything &&
       (new_passphrase_type == FROZEN_IMPLICIT_PASSPHRASE ||
        new_passphrase_type == CUSTOM_PASSPHRASE)) {
-    UpdateNigoriForTransitionToPassphraseEncryption(trans);
     NotifyObserversOfLocalCustomPassphrase(trans);
   }
 
@@ -1695,15 +1695,6 @@ base::Time SyncEncryptionHandlerImpl::GetExplicitPassphraseTime() const {
   else if (passphrase_type_ == CUSTOM_PASSPHRASE)
     return custom_passphrase_time();
   return base::Time();
-}
-
-void SyncEncryptionHandlerImpl::UpdateNigoriForTransitionToPassphraseEncryption(
-    WriteTransaction* trans) {
-  DCHECK(trans);
-  if (clear_data_option_ != PASSPHRASE_TRANSITION_CLEAR_DATA)
-    return;
-  // TODO(maniscalco): Update the Nigori node to record the fact the user has
-  // begun the transition to passphrase encryption (crbug.com/505917).
 }
 
 }  // namespace browser_sync

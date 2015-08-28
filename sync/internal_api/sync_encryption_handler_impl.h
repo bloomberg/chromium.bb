@@ -276,10 +276,6 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
   // Notify observers when a custom passphrase is set by this device.
   void NotifyObserversOfLocalCustomPassphrase(WriteTransaction* trans);
 
-  // Update the Nigori node to indicate that we're transitioning to passphrsae
-  // encryption.
-  void UpdateNigoriForTransitionToPassphraseEncryption(WriteTransaction* trans);
-
   base::ThreadChecker thread_checker_;
 
   base::ObserverList<SyncEncryptionHandler::Observer> observers_;
