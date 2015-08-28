@@ -80,23 +80,23 @@ VisiblePosition VisiblePosition::next(EditingBoundaryCrossingRule rule) const
     return honorEditingBoundaryAtOrAfter(next);
 }
 
-VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) const
+VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
-    Position pos = previousVisuallyDistinctCandidate(m_deepPosition);
+    Position pos = previousVisuallyDistinctCandidate(visiblePosition.deepEquivalent());
 
     // return null visible position if there is no previous visible position
     if (pos.atStartOfTree())
         return VisiblePosition();
 
     VisiblePosition prev = VisiblePosition(pos);
-    ASSERT(prev.deepEquivalent() != m_deepPosition);
+    ASSERT(prev.deepEquivalent() != visiblePosition.deepEquivalent());
 
 #if ENABLE(ASSERT)
     // we should always be able to make the affinity |TextAffinity::Downstream|,
     // because going previous from an |TextAffinity::Upstream| position can
     // never yield another |TextAffinity::Upstream position| (unless line wrap
     // length is 0!).
-    if (prev.isNotNull() && m_affinity == TextAffinity::Upstream) {
+    if (prev.isNotNull() && visiblePosition.affinity() == TextAffinity::Upstream) {
         ASSERT(inSameLine(PositionWithAffinity(prev.deepEquivalent()), PositionWithAffinity(prev.deepEquivalent(), TextAffinity::Upstream)));
     }
 #endif
@@ -105,13 +105,13 @@ VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) cons
     case CanCrossEditingBoundary:
         return prev;
     case CannotCrossEditingBoundary:
-        return honorEditingBoundaryAtOrBefore(prev);
+        return visiblePosition.honorEditingBoundaryAtOrBefore(prev);
     case CanSkipOverEditingBoundary:
-        return skipToStartOfEditingBoundary(prev);
+        return visiblePosition.skipToStartOfEditingBoundary(prev);
     }
 
     ASSERT_NOT_REACHED();
-    return honorEditingBoundaryAtOrBefore(prev);
+    return visiblePosition.honorEditingBoundaryAtOrBefore(prev);
 }
 
 Position VisiblePosition::leftVisuallyDistinctCandidate() const
@@ -679,6 +679,11 @@ UChar32 VisiblePosition::characterAfter() const
         return 0;
 
     return textNode->data().characterStartingAt(offset);
+}
+
+UChar32 VisiblePosition::characterBefore() const
+{
+    return previousPositionOf(*this).characterAfter();
 }
 
 LayoutRect VisiblePosition::localCaretRect(LayoutObject*& layoutObject) const

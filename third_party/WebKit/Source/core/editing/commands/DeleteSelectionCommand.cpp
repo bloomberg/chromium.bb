@@ -229,7 +229,7 @@ void DeleteSelectionCommand::initializePositionData()
         // extend selection upstream if there is whitespace there
         bool hasLeadingWhitespaceBeforeAdjustment = leadingWhitespacePosition(m_upstreamStart, m_selectionToDelete.affinity(), ConsiderNonCollapsibleWhitespace).isNotNull();
         if (!skipSmartDelete && hasLeadingWhitespaceBeforeAdjustment) {
-            VisiblePosition visiblePos = VisiblePosition(m_upstreamStart, VP_DEFAULT_AFFINITY).previous();
+            VisiblePosition visiblePos = previousPositionOf(VisiblePosition(m_upstreamStart, VP_DEFAULT_AFFINITY));
             pos = visiblePos.deepEquivalent();
             // Expand out one character upstream for smart delete and recalculate
             // positions based on this change.
@@ -384,7 +384,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
     }
 
     if (node == m_startBlock) {
-        VisiblePosition previous = VisiblePosition(firstPositionInNode(m_startBlock.get())).previous();
+        VisiblePosition previous = previousPositionOf(VisiblePosition(firstPositionInNode(m_startBlock.get())));
         if (previous.isNotNull() && !isEndOfBlock(previous))
             m_needPlaceholder = true;
     }
@@ -816,9 +816,10 @@ void DeleteSelectionCommand::doApply()
     // set up our state
     initializePositionData();
 
-    bool lineBreakBeforeStart = lineBreakExistsAtVisiblePosition(VisiblePosition(m_upstreamStart).previous());
+    bool lineBreakBeforeStart = lineBreakExistsAtVisiblePosition(previousPositionOf(VisiblePosition(m_upstreamStart)));
 
-    // Delete any text that may hinder our ability to fixup whitespace after the delete
+    // Delete any text that may hinder our ability to fixup whitespace after the
+    // delete
     deleteInsignificantTextDownstream(m_trailingWhitespace);
 
     saveTypingStyleState();

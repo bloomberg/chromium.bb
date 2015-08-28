@@ -145,9 +145,9 @@ static bool needInterchangeNewlineAfter(const VisiblePosition& v)
 
 static bool needInterchangeNewlineAt(const VisiblePosition& v)
 {
-    // FIXME: |v.previous()| works on a DOM tree. We need to fix this to work on
-    // a composed tree.
-    return needInterchangeNewlineAfter(v.previous());
+    // TODO(yosin) |previousPositionOf(v)| works on a DOM tree. We need to fix
+    // this to work on a composed tree.
+    return needInterchangeNewlineAfter(previousPositionOf(v));
 }
 
 template<typename Strategy>
@@ -179,7 +179,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
     VisiblePosition visibleEnd(m_end);
     if (shouldAnnotate() && needInterchangeNewlineAfter(visibleStart)) {
         markupAccumulator.appendInterchangeNewline();
-        if (visibleStart.deepEquivalent() == visibleEnd.previous().deepEquivalent())
+        if (visibleStart.deepEquivalent() == previousPositionOf(visibleEnd).deepEquivalent())
             return markupAccumulator.takeResults();
 
         firstNode = visibleStart.next().deepEquivalent().anchorNode();

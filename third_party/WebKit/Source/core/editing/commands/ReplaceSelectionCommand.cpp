@@ -400,7 +400,7 @@ bool ReplaceSelectionCommand::shouldMergeStart(bool selectionStartWasStartOfPara
         return false;
 
     VisiblePosition startOfInsertedContent(positionAtStartOfInsertedContent());
-    VisiblePosition prev = startOfInsertedContent.previous(CannotCrossEditingBoundary);
+    VisiblePosition prev = previousPositionOf(startOfInsertedContent, CannotCrossEditingBoundary);
     if (prev.isNull())
         return false;
 
@@ -1001,7 +1001,7 @@ void ReplaceSelectionCommand::doApply()
         // Don't do this if the selection started in a Mail blockquote.
         if (m_preventNesting && !startIsInsideMailBlockquote && !isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart)) {
             insertParagraphSeparator();
-            setEndingSelection(endingSelection().visibleStart().previous());
+            setEndingSelection(previousPositionOf(endingSelection().visibleStart()));
         }
         insertionPos = endingSelection().start();
     }
@@ -1032,7 +1032,7 @@ void ReplaceSelectionCommand::doApply()
     HTMLBRElement* endBR = isHTMLBRElement(*mostForwardCaretPosition(insertionPos).anchorNode()) ? toHTMLBRElement(mostForwardCaretPosition(insertionPos).anchorNode()) : 0;
     VisiblePosition originalVisPosBeforeEndBR;
     if (endBR)
-        originalVisPosBeforeEndBR = VisiblePosition(positionBeforeNode(endBR)).previous();
+        originalVisPosBeforeEndBR = previousPositionOf(VisiblePosition(positionBeforeNode(endBR)));
 
     RefPtrWillBeRawPtr<Element> enclosingBlockOfInsertionPos = enclosingBlock(insertionPos.anchorNode());
 
@@ -1193,7 +1193,7 @@ void ReplaceSelectionCommand::doApply()
 
     if (shouldMergeStart(selectionStartWasStartOfParagraph, fragment.hasInterchangeNewlineAtStart(), startIsInsideMailBlockquote)) {
         VisiblePosition startOfParagraphToMove = positionAtStartOfInsertedContent();
-        VisiblePosition destination = startOfParagraphToMove.previous();
+        VisiblePosition destination = previousPositionOf(startOfParagraphToMove);
         // We need to handle the case where we need to merge the end
         // but our destination node is inside an inline that is the last in the block.
         // We insert a placeholder before the newly inserted content to avoid being merged into the inline.
@@ -1278,7 +1278,7 @@ bool ReplaceSelectionCommand::shouldRemoveEndBR(HTMLBRElement* endBR, const Visi
     VisiblePosition visiblePos(positionBeforeNode(endBR));
 
     // Don't remove the br if nothing was inserted.
-    if (visiblePos.previous().deepEquivalent() == originalVisPosBeforeEndBR.deepEquivalent())
+    if (previousPositionOf(visiblePos).deepEquivalent() == originalVisPosBeforeEndBR.deepEquivalent())
         return false;
 
     // Remove the br if it is collapsed away and so is unnecessary.
@@ -1344,7 +1344,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace()
         startOffset = startDownstream.offsetInContainerNode();
     }
 
-    bool needsLeadingSpace = !isStartOfParagraph(startOfInsertedContent) && !isCharacterSmartReplaceExemptConsideringNonBreakingSpace(startOfInsertedContent.previous().characterAfter(), true);
+    bool needsLeadingSpace = !isStartOfParagraph(startOfInsertedContent) && !isCharacterSmartReplaceExemptConsideringNonBreakingSpace(previousPositionOf(startOfInsertedContent).characterAfter(), true);
     if (needsLeadingSpace && startNode) {
         bool collapseWhiteSpace = !startNode->layoutObject() || startNode->layoutObject()->style()->collapseWhiteSpace();
         if (startNode->isTextNode()) {

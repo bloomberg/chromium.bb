@@ -96,7 +96,6 @@ public:
 
     // next() and previous() will increment/decrement by a character cluster.
     VisiblePosition next(EditingBoundaryCrossingRule = CanCrossEditingBoundary) const;
-    VisiblePosition previous(EditingBoundaryCrossingRule = CanCrossEditingBoundary) const;
     VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition&) const;
     VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&) const;
     VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition&) const;
@@ -106,7 +105,7 @@ public:
     VisiblePosition right() const;
 
     UChar32 characterAfter() const;
-    UChar32 characterBefore() const { return previous().characterAfter(); }
+    UChar32 characterBefore() const;
 
     // FIXME: This does not handle [table, 0] correctly.
     Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.anchorNode()->rootEditableElement() : 0; }
@@ -144,6 +143,9 @@ CORE_EXPORT Position canonicalPositionOf(const Position&);
 CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
 PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
+
+// TODO(yosin) We should move |previousPositionOf()| to "VisibleUnits.cpp"
+VisiblePosition previousPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 
 } // namespace blink
 

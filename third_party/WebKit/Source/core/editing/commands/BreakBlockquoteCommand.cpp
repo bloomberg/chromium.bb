@@ -50,7 +50,7 @@ bool isFirstVisiblePositionInNode(const VisiblePosition& visiblePosition, const 
     if (!visiblePosition.deepEquivalent().computeContainerNode()->isDescendantOf(node))
         return false;
 
-    VisiblePosition previous = visiblePosition.previous();
+    VisiblePosition previous = previousPositionOf(visiblePosition);
     return previous.isNull() || !previous.deepEquivalent().anchorNode()->isDescendantOf(node);
 }
 

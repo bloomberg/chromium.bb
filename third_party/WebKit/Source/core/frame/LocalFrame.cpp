@@ -707,7 +707,7 @@ EphemeralRange LocalFrame::rangeForPoint(const IntPoint& framePoint)
         return EphemeralRange();
 
     VisiblePosition position(positionWithAffinity);
-    VisiblePosition previous = position.previous();
+    VisiblePosition previous = previousPositionOf(position);
     if (previous.isNotNull()) {
         const EphemeralRange previousCharacterRange = makeRange(previous, position);
         IntRect rect = editor().firstRectForRange(previousCharacterRange);

@@ -697,7 +697,7 @@ VisiblePosition endOfWord(const VisiblePosition& c, EWordSide side)
         if (isStartOfParagraph(c))
             return c;
 
-        p = c.previous();
+        p = previousPositionOf(c);
         if (p.isNull())
             return c;
     } else if (isEndOfParagraph(c)) {
@@ -893,7 +893,7 @@ static VisiblePosition endOfLine(const VisiblePosition& c, LineEndpointComputati
         // a abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg abcdefg </div>
         // In this case, use the previous position of the computed logical end position.
         if (!inSameLogicalLine(c, visPos))
-            visPos = visPos.previous();
+            visPos = previousPositionOf(visPos);
 
         if (ContainerNode* editableRoot = highestEditableRoot(c.deepEquivalent())) {
             if (!editableRoot->contains(visPos.deepEquivalent().computeContainerNode()))
@@ -909,7 +909,7 @@ static VisiblePosition endOfLine(const VisiblePosition& c, LineEndpointComputati
     // in the next line instead. This fix is to account for the discrepancy between lines with webkit-line-break:after-white-space style
     // versus lines without that style, which would break before a space by default.
     if (!inSameLine(c, visPos)) {
-        visPos = c.previous();
+        visPos = previousPositionOf(c);
         if (visPos.isNull())
             return VisiblePosition();
         visPos = endPositionForLine(visPos, UseInlineBoxOrdering);
@@ -1415,7 +1415,7 @@ VisiblePosition endOfDocument(const VisiblePosition& c)
 
 bool isStartOfDocument(const VisiblePosition& p)
 {
-    return p.isNotNull() && p.previous(CanCrossEditingBoundary).isNull();
+    return p.isNotNull() && previousPositionOf(p, CanCrossEditingBoundary).isNull();
 }
 
 bool isEndOfDocument(const VisiblePosition& p)

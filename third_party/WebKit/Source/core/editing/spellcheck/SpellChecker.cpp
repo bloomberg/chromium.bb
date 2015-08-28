@@ -179,7 +179,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         if (startBeforeSelection) {
             VisiblePosition start(selection.visibleStart());
             // We match AppKit's rule: Start 1 character before the selection.
-            VisiblePosition oneBeforeStart = start.previous();
+            VisiblePosition oneBeforeStart = previousPositionOf(start);
             spellingSearchStart = (oneBeforeStart.isNotNull() ? oneBeforeStart : start).toParentAnchoredPosition();
         } else {
             spellingSearchStart = selection.visibleEnd().toParentAnchoredPosition();
@@ -208,10 +208,11 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     // |editingIgnoresContent(highestEditableRoot())| returns true, e.g. <table>
     spellingSearchEnd = Position::editingPositionOf(topNode, EditingStrategy::lastOffsetForEditing(topNode));
 
-    // If spellingSearchRange starts in the middle of a word, advance to the next word so we start checking
-    // at a word boundary. Going back by one char and then forward by a word does the trick.
+    // If spellingSearchRange starts in the middle of a word, advance to the
+    // next word so we start checking at a word boundary. Going back by one char
+    // and then forward by a word does the trick.
     if (startedWithSelection) {
-    VisiblePosition oneBeforeStart = VisiblePosition(spellingSearchStart).previous();
+    VisiblePosition oneBeforeStart = previousPositionOf(VisiblePosition(spellingSearchStart));
         if (oneBeforeStart.isNotNull())
             spellingSearchStart = endOfWord(oneBeforeStart).toParentAnchoredPosition();
         // else we were already at the start of the editable node

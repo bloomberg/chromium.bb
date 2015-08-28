@@ -266,7 +266,7 @@ void InsertParagraphSeparatorCommand::doApply()
     //---------------------------------------------------------------------
     // Handle case when position is in the first visible position in its block, and
     // similar case where previous position is in another, presumeably nested, block.
-    if (isFirstInBlock || !inSameBlock(visiblePos, visiblePos.previous())) {
+    if (isFirstInBlock || !inSameBlock(visiblePos, previousPositionOf(visiblePos))) {
         Node* refNode = nullptr;
         insertionPosition = positionOutsideTabSpan(insertionPosition);
 

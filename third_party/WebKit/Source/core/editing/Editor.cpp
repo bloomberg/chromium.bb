@@ -256,7 +256,7 @@ bool Editor::canDeleteRange(const EphemeralRange& range) const
 
     if (range.isCollapsed()) {
         VisiblePosition start(range.startPosition());
-        VisiblePosition previous = start.previous();
+        VisiblePosition previous = previousPositionOf(start);
         // FIXME: We sometimes allow deletions at the start of editable roots, like when the caret is in an empty list item.
         if (previous.isNull() || previous.deepEquivalent().anchorNode()->rootEditableElement() != startContainer->rootEditableElement())
             return false;
@@ -1024,10 +1024,10 @@ void Editor::transpose()
     // Make a selection that goes back one character and forward two characters.
     VisiblePosition caret = selection.visibleStart();
     VisiblePosition next = isEndOfParagraph(caret) ? caret : caret.next();
-    VisiblePosition previous = next.previous();
+    VisiblePosition previous = previousPositionOf(next);
     if (next.deepEquivalent() == previous.deepEquivalent())
         return;
-    previous = previous.previous();
+    previous = previousPositionOf(previous);
     if (!inSameParagraph(next, previous))
         return;
     const EphemeralRange range = makeRange(previous, next);

@@ -815,7 +815,7 @@ static HTMLElement* lastInSpecialElement(const Position& pos)
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos);
             VisiblePosition lastInElement = VisiblePosition(lastPositionInOrAfterNode(specialElement));
-            if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == lastInElement.previous().deepEquivalent())
+            if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == previousPositionOf(lastInElement).deepEquivalent())
                 return specialElement;
             if (vPos.deepEquivalent() == lastInElement.deepEquivalent())
                 return specialElement;
@@ -1471,7 +1471,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // (a table is itself a paragraph).
     if (Element* table = isFirstPositionAfterTable(endOfSelection)) {
         if (startOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
-            newSelection = VisibleSelection(startOfSelection, endOfSelection.previous(CannotCrossEditingBoundary));
+            newSelection = VisibleSelection(startOfSelection, previousPositionOf(endOfSelection, CannotCrossEditingBoundary));
     }
 
     // If the start of the selection to modify is just before a table,

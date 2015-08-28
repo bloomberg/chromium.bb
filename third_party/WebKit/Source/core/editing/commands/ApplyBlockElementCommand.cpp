@@ -72,10 +72,10 @@ void ApplyBlockElementCommand::doApply()
     // ends "inside" that paragraph, so it would be confusing if Indent/Outdent
     // operated on that paragraph.
     // FIXME: We paint the gap before some paragraphs that are indented with left
-    // margin/padding, but not others.  We should make the gap painting more consistent and
-    // then use a left margin/padding rule here.
+    // margin/padding, but not others.  We should make the gap painting more
+    // consistent and then use a left margin/padding rule here.
     if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraph(visibleEnd)) {
-        VisibleSelection newSelection(visibleStart, visibleEnd.previous(CannotCrossEditingBoundary), endingSelection().isDirectional());
+        VisibleSelection newSelection(visibleStart, previousPositionOf(visibleEnd, CannotCrossEditingBoundary), endingSelection().isDirectional());
         if (newSelection.isNone())
             return;
         setEndingSelection(newSelection);

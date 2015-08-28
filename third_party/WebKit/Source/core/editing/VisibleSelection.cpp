@@ -429,7 +429,7 @@ void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity
     case ParagraphGranularity: {
         VisiblePosition pos(m_start, m_affinity);
         if (isStartOfLine(pos) && isEndOfEditableOrNonEditableContent(pos))
-            pos = pos.previous();
+            pos = previousPositionOf(pos);
         m_start = startOfParagraph(pos).deepEquivalent();
         break;
     }

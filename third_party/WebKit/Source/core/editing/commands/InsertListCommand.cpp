@@ -132,7 +132,7 @@ void InsertListCommand::doApply()
     // margin/padding, but not others.  We should make the gap painting more consistent and
     // then use a left margin/padding rule here.
     if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraph(visibleEnd, CanSkipOverEditingBoundary)) {
-        setEndingSelection(VisibleSelection(visibleStart, visibleEnd.previous(CannotCrossEditingBoundary), endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(visibleStart, previousPositionOf(visibleEnd, CannotCrossEditingBoundary), endingSelection().isDirectional()));
         if (!endingSelection().rootEditableElement())
             return;
     }
@@ -296,7 +296,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         end = endOfParagraph(start, CanSkipOverEditingBoundary);
         nextListChild = enclosingListChild(end.next().deepEquivalent().anchorNode(), listElement);
         ASSERT(nextListChild != listChildNode);
-        previousListChild = enclosingListChild(start.previous().deepEquivalent().anchorNode(), listElement);
+        previousListChild = enclosingListChild(previousPositionOf(start).deepEquivalent().anchorNode(), listElement);
         ASSERT(previousListChild != listChildNode);
     }
     // When removing a list, we must always create a placeholder to act as a point of insertion
@@ -369,7 +369,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
     appendNode(placeholder, listItemElement);
 
     // Place list item into adjoining lists.
-    HTMLElement* previousList = adjacentEnclosingList(start, start.previous(CannotCrossEditingBoundary), listTag);
+    HTMLElement* previousList = adjacentEnclosingList(start, previousPositionOf(start, CannotCrossEditingBoundary), listTag);
     HTMLElement* nextList = adjacentEnclosingList(start, end.next(CannotCrossEditingBoundary), listTag);
     RefPtrWillBeRawPtr<HTMLElement> listElement = nullptr;
     if (previousList) {

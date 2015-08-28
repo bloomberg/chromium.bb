@@ -303,7 +303,7 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
     // see if typing made a new word that is not in the current selection. Basically, you
     // get this by being at the end of a word and typing a space.
     VisiblePosition start(endingSelection().start(), endingSelection().affinity());
-    VisiblePosition previous = start.previous();
+    VisiblePosition previous = previousPositionOf(start);
 
     VisiblePosition p1 = startOfWord(previous, LeftWordIfOnBoundary);
 
@@ -438,7 +438,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
             selection->modify(FrameSelection::AlterationExtend, DirectionBackward, CharacterGranularity);
 
         VisiblePosition visibleStart(endingSelection().visibleStart());
-        if (visibleStart.previous(CannotCrossEditingBoundary).isNull()) {
+        if (previousPositionOf(visibleStart, CannotCrossEditingBoundary).isNull()) {
             // When the caret is at the start of the editable area in an empty list item, break out of the list item.
             if (breakOutOfEmptyListItem()) {
                 typingAddedToOpenCommand(DeleteKey);
@@ -457,7 +457,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
             return;
 
         // If the caret is at the start of a paragraph after a table, move content into the last table cell.
-        if (isStartOfParagraph(visibleStart) && isFirstPositionAfterTable(visibleStart.previous(CannotCrossEditingBoundary))) {
+        if (isStartOfParagraph(visibleStart) && isFirstPositionAfterTable(previousPositionOf(visibleStart, CannotCrossEditingBoundary))) {
             // Unless the caret is just before a table.  We don't want to move a table into the last table cell.
             if (isLastPositionBeforeTable(visibleStart))
                 return;

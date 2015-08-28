@@ -705,7 +705,7 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
     position = mostForwardCaretPosition(upstreamPos);
 
     VisiblePosition visiblePos(position);
-    VisiblePosition previousVisiblePos(visiblePos.previous());
+    VisiblePosition previousVisiblePos(previousPositionOf(visiblePos));
     replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(previousVisiblePos);
     replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(visiblePos);
 }
@@ -1130,7 +1130,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     ASSERT(outerNode);
     ASSERT(blockElement);
 
-    VisiblePosition beforeParagraph = startOfParagraphToMove.previous();
+    VisiblePosition beforeParagraph = previousPositionOf(startOfParagraphToMove);
     VisiblePosition afterParagraph(endOfParagraphToMove.next());
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
@@ -1205,7 +1205,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
         }
     }
 
-    VisiblePosition beforeParagraph = startOfParagraphToMove.previous(CannotCrossEditingBoundary);
+    VisiblePosition beforeParagraph = previousPositionOf(startOfParagraphToMove, CannotCrossEditingBoundary);
     VisiblePosition afterParagraph(endOfParagraphToMove.next(CannotCrossEditingBoundary));
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
@@ -1372,7 +1372,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
     if (!isStartOfParagraph(caret) || !isEndOfParagraph(caret))
         return false;
 
-    VisiblePosition previous(caret.previous(CannotCrossEditingBoundary));
+    VisiblePosition previous(previousPositionOf(caret, CannotCrossEditingBoundary));
     // Only move forward if there's nothing before the caret, or if there's unquoted content before it.
     if (enclosingNodeOfType(previous.deepEquivalent(), &isMailHTMLBlockquoteElement))
         return false;
