@@ -107,6 +107,7 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
     , m_widthAvailableToChildrenChanged(false)
     , m_hasOnlySelfCollapsingChildren(false)
     , m_descendantsWithFloatsMarkedForLayout(false)
+    , m_needsRecalcLogicalWidthAfterLayoutChildren(false)
 {
     // LayoutBlockFlow calls setChildrenInline(true).
     // By default, subclasses do not have inline children.
@@ -2135,11 +2136,20 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
 void LayoutBlock::computeChildPreferredLogicalWidths(LayoutObject& child, LayoutUnit& minPreferredLogicalWidth, LayoutUnit& maxPreferredLogicalWidth) const
 {
     if (child.isBox() && child.isHorizontalWritingMode() != isHorizontalWritingMode()) {
+        // If the child is an orthogonal flow, child's height determines the width, but the height is not available until layout.
+        // http://dev.w3.org/csswg/css-writing-modes-3/#orthogonal-shrink-to-fit
+        if (!child.needsLayout()) {
+            minPreferredLogicalWidth = maxPreferredLogicalWidth = toLayoutBox(child).logicalHeight();
+            return;
+        }
+        m_needsRecalcLogicalWidthAfterLayoutChildren = true;
         minPreferredLogicalWidth = maxPreferredLogicalWidth = toLayoutBox(child).computeLogicalHeightWithoutLayout();
         return;
     }
     minPreferredLogicalWidth = child.minPreferredLogicalWidth();
     maxPreferredLogicalWidth = child.maxPreferredLogicalWidth();
+    if (child.isLayoutBlock() && toLayoutBlock(child).needsRecalcLogicalWidthAfterLayoutChildren())
+        m_needsRecalcLogicalWidthAfterLayoutChildren = true;
 }
 
 bool LayoutBlock::hasLineIfEmpty() const
