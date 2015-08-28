@@ -37,10 +37,6 @@ public class ContextualSearchFieldTrial {
     static final String TAP_RESOLVE_LIMIT_FOR_UNDECIDED = "tap_resolve_limit_for_undecided";
     static final String TAP_PREFETCH_LIMIT_FOR_UNDECIDED = "tap_prefetch_limit_for_undecided";
 
-    static final String ARROW_ICON_ENABLED = "contextual_search_arrow_icon_enabled";
-    static final String SIDE_SEARCH_PROVIDER_ICON_ENABLED =
-            "contextual_search_side_search_provider_icon_enabled";
-
     static final String SELECTION_EXPANSION_DISABLED =
             "contextual_search_selection_expansion_disabled";
 
@@ -64,8 +60,6 @@ public class ContextualSearchFieldTrial {
 
     // Cached value to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
-    private static Boolean sArrowIconEnabled;
-    private static Boolean sSideSearchProviderIconEnabled;
     private static Boolean sSelectionExpansionDisabled;
     private static Boolean sNarrowPanelSupported;
 
@@ -243,26 +237,6 @@ public class ContextualSearchFieldTrial {
     // --------------------------------------------------------------------------------------------
     // Experimental UI Features.
     // --------------------------------------------------------------------------------------------
-
-    /**
-     * @return {@code true} Whether the arrow icon should be displayed.
-     */
-    public static boolean isArrowIconEnabled() {
-        if (sArrowIconEnabled == null) {
-            sArrowIconEnabled = getBooleanParam(ARROW_ICON_ENABLED);
-        }
-        return sArrowIconEnabled.booleanValue();
-    }
-
-    /**
-     * @return {@code true} Whether the search provider icon should be displayed on the side.
-     */
-    public static boolean isSideSearchProviderIconEnabled() {
-        if (sSideSearchProviderIconEnabled == null) {
-            sSideSearchProviderIconEnabled = getBooleanParam(SIDE_SEARCH_PROVIDER_ICON_ENABLED);
-        }
-        return sSideSearchProviderIconEnabled.booleanValue();
-    }
 
     /**
      * @return Whether the base page selection expansion after server response is disabled.

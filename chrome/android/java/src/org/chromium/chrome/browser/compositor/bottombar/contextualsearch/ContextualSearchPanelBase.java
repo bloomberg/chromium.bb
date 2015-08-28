@@ -88,21 +88,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private static final float BASE_PAGE_BRIGHTNESS_STATE_MAXIMIZED = .4f;
 
     /**
-     * The opacity of the search provider icon when the Panel is peeking.
-     */
-    private static final float SEARCH_PROVIDER_ICON_OPACITY_STATE_PEEKED = 1.f;
-
-    /**
-     * The opacity of the search provider icon when the Panel is expanded.
-     */
-    private static final float SEARCH_PROVIDER_ICON_OPACITY_STATE_EXPANDED = 1.f;
-
-    /**
-     * The opacity of the search provider icon when the Panel is maximized.
-     */
-    private static final float SEARCH_PROVIDER_ICON_OPACITY_STATE_MAXIMIZED = 0.f;
-
-    /**
      * The opacity of the search icon when the Panel is peeking.
      */
     private static final float SEARCH_ICON_OPACITY_STATE_PEEKED = 0.f;
@@ -577,8 +562,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private boolean mSearchBarShadowVisible = false;
     private float mSearchBarShadowOpacity = 0.f;
 
-    private float mSearchProviderIconOpacity;
-
     private float mSearchIconOpacity;
 
     private float mArrowIconOpacity;
@@ -644,20 +627,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     /**
-     * @return Whether the side search provider icon is visible .
-     */
-    public boolean isSideSearchProviderIconVisible() {
-        return ContextualSearchPanelFeatures.isSideSearchProviderIconAvailable();
-    }
-
-    /**
-     * @return The opacity of the search provider's icon.
-     */
-    public float getSearchProviderIconOpacity() {
-        return mSearchProviderIconOpacity;
-    }
-
-    /**
      * @return Whether the search icon is visible.
      */
     public boolean isSearchIconVisible() {
@@ -669,13 +638,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     public float getSearchIconOpacity() {
         return mSearchIconOpacity;
-    }
-
-    /**
-     * @return Whether the arrow icon is visible.
-     */
-    public boolean isArrowIconVisible() {
-        return ContextualSearchPanelFeatures.isArrowIconAvailable();
     }
 
     /**
@@ -1128,9 +1090,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Search Bar text opacity.
         mSearchBarTextOpacity = 1.f;
 
-        // Search provider icon opacity.
-        mSearchProviderIconOpacity = SEARCH_PROVIDER_ICON_OPACITY_STATE_PEEKED;
-
         // Search icon opacity.
         mSearchIconOpacity = SEARCH_ICON_OPACITY_STATE_PEEKED;
 
@@ -1185,9 +1144,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Search Bar border.
         mIsSearchBarBorderVisible = true;
         mSearchBarBorderY = searchBarHeight - SEARCH_BAR_BORDER_HEIGHT_DP + 1;
-
-        // Search provider icon opacity.
-        mSearchProviderIconOpacity = SEARCH_PROVIDER_ICON_OPACITY_STATE_EXPANDED;
 
         // Search icon opacity.
         mSearchIconOpacity = SEARCH_ICON_OPACITY_STATE_EXPANDED;
@@ -1257,22 +1213,10 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // fading out should use the same percentage.
         float fadingOutPercentage = percentage;
         float fadingInPercentage = percentage;
-        if (isArrowIconVisible() && mSearchPanelFeatures.isCloseButtonAvailable()) {
+        if (mSearchPanelFeatures.isCloseButtonAvailable()) {
             fadingOutPercentage = Math.min(percentage, .5f) / .5f;
             fadingInPercentage = Math.max(percentage - .5f, 0.f) / .5f;
         }
-
-        // Search provider icon opacity.
-        float searchProviderIconOpacity;
-        if (isSideSearchProviderIconVisible()) {
-            searchProviderIconOpacity = SEARCH_PROVIDER_ICON_OPACITY_STATE_EXPANDED;
-        } else {
-            searchProviderIconOpacity = MathUtils.interpolate(
-                    SEARCH_PROVIDER_ICON_OPACITY_STATE_EXPANDED,
-                    SEARCH_PROVIDER_ICON_OPACITY_STATE_MAXIMIZED,
-                    fadingOutPercentage);
-        }
-        mSearchProviderIconOpacity = searchProviderIconOpacity;
 
         // Search icon opacity.
         float searchIconOpacity = MathUtils.interpolate(
