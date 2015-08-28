@@ -334,16 +334,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 }
 
 // Test fails under Android, http://crbug.com/524388
-// Test fails under MSan, flaky under Linux in general: http://crbug.com/523152
-#if defined(OS_ANDROID) || defined(MEMORY_SANITIZER) || defined(OS_LINUX)
-#define MAYBE_RenderVideoTrackInMultipleTagsAndPause \
-    DISABLED_RenderVideoTrackInMultipleTagsAndPause
-#else
-#define MAYBE_RenderVideoTrackInMultipleTagsAndPause \
-    RenderVideoTrackInMultipleTagsAndPause
-#endif
+// Test fails under MSan
+// Flaky everywhere else: http://crbug.com/523152
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_RenderVideoTrackInMultipleTagsAndPause) {
+                       DISABLED_RenderVideoTrackInMultipleTagsAndPause) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -351,8 +345,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
   ExecuteJavascriptAndWaitForOk("getUserMediaAndRenderInSeveralVideoTags();");
 }
-
-
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        GetUserMediaWithMandatorySourceID) {
