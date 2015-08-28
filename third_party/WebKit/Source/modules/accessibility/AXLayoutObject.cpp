@@ -2007,23 +2007,29 @@ void AXLayoutObject::setSelection(const AXRange& selection)
     if (!layoutObject() || !selection.isValid())
         return;
 
-    if (selection.anchorObject && !isValidSelectionBound(selection.anchorObject.get()))
-        return;
-
-    if (selection.focusObject && !isValidSelectionBound(selection.focusObject.get()))
-        return;
-
     AXObject* anchorObject = selection.anchorObject ?
         selection.anchorObject.get() : this;
     AXObject* focusObject = selection.focusObject ?
         selection.focusObject.get() : this;
 
-    if (anchorObject == this && anchorObject == focusObject
-        && layoutObject()->isTextControl()) {
+    if (!isValidSelectionBound(anchorObject)
+        || !isValidSelectionBound(focusObject)) {
+        return;
+    }
+
+    if (anchorObject == focusObject
+        && anchorObject->layoutObject()->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(
-            layoutObject())->textFormControlElement();
-        textControl->setSelectionRange(selection.anchorOffset, selection.focusOffset,
-            SelectionHasNoDirection, NotDispatchSelectEvent);
+            anchorObject->layoutObject())->textFormControlElement();
+        if (selection.anchorOffset <= selection.focusOffset) {
+            textControl->setSelectionRange(
+                selection.anchorOffset, selection.focusOffset,
+                SelectionHasForwardDirection, NotDispatchSelectEvent);
+        } else {
+            textControl->setSelectionRange(
+                selection.focusOffset, selection.anchorOffset,
+                SelectionHasBackwardDirection, NotDispatchSelectEvent);
+        }
         return;
     }
 
@@ -2053,8 +2059,8 @@ void AXLayoutObject::setSelection(const AXRange& selection)
 
 bool AXLayoutObject::isValidSelectionBound(const AXObject* boundObject) const
 {
-    return boundObject && !boundObject->isDetached()
-        && boundObject->isAXLayoutObject()
+    return layoutObject() && boundObject && !boundObject->isDetached()
+        && boundObject->isAXLayoutObject() && boundObject->layoutObject()
         && boundObject->layoutObject()->frame() == layoutObject()->frame()
         && &boundObject->axObjectCache() == &axObjectCache();
 }
