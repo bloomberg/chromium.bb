@@ -54,6 +54,8 @@ class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
   int render_process_id_;
 
 #if defined(OS_ANDROID)
+  void OnToggleSpellCheck(bool enabled, bool checked);
+
   // Android-specific object used to query the Android spellchecker.
   scoped_ptr<SpellCheckerSessionBridge> impl_;
 #endif

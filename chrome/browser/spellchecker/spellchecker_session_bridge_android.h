@@ -34,6 +34,10 @@ class SpellCheckerSessionBridge {
                                 jintArray offset_array,
                                 jintArray length_array);
 
+  // Sets the handle to the Java SpellCheckerSessionBridge object to null,
+  // marking the Java object for garbage collection.
+  void DisconnectSession();
+
  private:
   struct SpellingRequest {
     SpellingRequest(int route_id, int identifier, const base::string16& text);

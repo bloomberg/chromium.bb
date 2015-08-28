@@ -28,6 +28,7 @@ bool SpellCheckMessageFilterPlatform::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SpellCheckMessageFilterPlatform, message)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RequestTextCheck, OnRequestTextCheck)
+    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ToggleSpellCheck, OnToggleSpellCheck)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -82,4 +83,11 @@ int SpellCheckMessageFilterPlatform::ToDocumentTag(int route_id) {
 
 void SpellCheckMessageFilterPlatform::RetireDocumentTag(int route_id) {
   NOTREACHED();
+}
+
+void SpellCheckMessageFilterPlatform::OnToggleSpellCheck(
+    bool enabled,
+    bool checked) {
+  if (!enabled)
+    impl_->DisconnectSession();
 }

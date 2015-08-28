@@ -12,10 +12,7 @@
 #include "jni/SpellCheckerSessionBridge_jni.h"
 
 SpellCheckerSessionBridge::SpellCheckerSessionBridge(int render_process_id)
-    : render_process_id_(render_process_id),
-      java_object_(Java_SpellCheckerSessionBridge_create(
-          base::android::AttachCurrentThread(),
-          reinterpret_cast<intptr_t>(this))) {}
+    : render_process_id_(render_process_id) {}
 
 SpellCheckerSessionBridge::~SpellCheckerSessionBridge() {}
 
@@ -27,8 +24,16 @@ bool SpellCheckerSessionBridge::RegisterJNI(JNIEnv* env) {
 void SpellCheckerSessionBridge::RequestTextCheck(int route_id,
                                                  int identifier,
                                                  const base::string16& text) {
-  if (java_object_.is_null())
-    return;
+  // RequestTextCheck IPC arrives at the message filter before
+  // ToggleSpellCheck IPC when the user focuses an input field that already
+  // contains completed text.  We need to initialize the spellchecker here
+  // rather than in response to ToggleSpellCheck so that the existing text
+  // will be spellchecked immediately.
+  if (java_object_.is_null()) {
+    java_object_.Reset(Java_SpellCheckerSessionBridge_create(
+        base::android::AttachCurrentThread(),
+        reinterpret_cast<intptr_t>(this)));
+  }
 
   // Save incoming requests to run at the end of the currently active request.
   // If multiple requests arrive during one active request, only the most
@@ -80,6 +85,10 @@ void SpellCheckerSessionBridge::ProcessSpellCheckResults(
         base::android::ConvertUTF16ToJavaString(env, active_request_->text)
             .obj());
   }
+}
+
+void SpellCheckerSessionBridge::DisconnectSession() {
+  java_object_.Reset();
 }
 
 SpellCheckerSessionBridge::SpellingRequest::SpellingRequest(
