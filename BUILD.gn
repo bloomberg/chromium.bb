@@ -66,9 +66,10 @@ group("both_gn_and_gyp") {
   testonly = true
   deps = [
     "//base:base_unittests",
-    "//sql:sql_unittests",
+    "//chrome/installer",
     "//net:net_unittests",
     "//skia:skia_unittests",
+    "//sql:sql_unittests",
     "//ui/base:ui_base_unittests",
     "//url:url_unittests",
   ]

@@ -512,18 +512,21 @@
           # we only create packages for official builds.
           'copies': [
             {
+              # GN version: //chrome/installer/linux:deb_packaging_files
               'destination': '<(PRODUCT_DIR)/installer/debian/',
               'files': [
                 '<@(packaging_files_deb)',
               ]
             },
             {
+              # GN version: //chrome/installer/linux:rpm_packaging_files
               'destination': '<(PRODUCT_DIR)/installer/rpm/',
               'files': [
                 '<@(packaging_files_rpm)',
               ]
             },
             {
+              # GN version: //chrome/installer/linux:common_packaging_files
               'destination': '<(PRODUCT_DIR)/installer/common/',
               'files': [
                 '<@(packaging_files_common)',
@@ -531,6 +534,7 @@
             },
             # Additional theme resources needed for package building.
             {
+              # GN version: //chrome/installer/linux:theme_files
               'destination': '<(PRODUCT_DIR)/installer/theme/',
               'files': [
                 '<(branding_dir)/linux/product_logo_32.xpm',
@@ -548,6 +552,7 @@
           ],
           'actions': [
             {
+              # GN version: //chrome/installer/linux:save_build_info
               'action_name': 'save_build_info',
               'inputs': [
                 '<(branding_dir)/BRANDING',
@@ -569,6 +574,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux
           'target_name': 'linux_packages_all',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -615,6 +621,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:unstable
           'target_name': 'linux_packages_unstable',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -631,6 +638,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:beta
           'target_name': 'linux_packages_beta',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -647,6 +655,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:stable
           'target_name': 'linux_packages_stable',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -665,6 +674,7 @@
         # TODO(mmoss) gyp looping construct would be handy here ...
         # These package actions are the same except for the 'channel' variable.
         {
+          # GN version: //chrome/installer/linux:asan
           'target_name': 'linux_packages_asan_deb',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -693,6 +703,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:trunk
           'target_name': 'linux_packages_trunk_deb',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -721,6 +732,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:unstable
           'target_name': 'linux_packages_unstable_deb',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -749,6 +761,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:beta
           'target_name': 'linux_packages_beta_deb',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -777,6 +790,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:stable
           'target_name': 'linux_packages_stable_deb',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -805,6 +819,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:asan
           'target_name': 'linux_packages_asan_rpm',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -834,6 +849,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:trunk
           'target_name': 'linux_packages_trunk_rpm',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -863,6 +879,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:unstable
           'target_name': 'linux_packages_unstable_rpm',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -892,6 +909,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:beta
           'target_name': 'linux_packages_beta_rpm',
           'suppress_wildcard': 1,
           'type': 'none',
@@ -921,6 +939,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/linux:stable
           'target_name': 'linux_packages_stable_rpm',
           'suppress_wildcard': 1,
           'type': 'none',

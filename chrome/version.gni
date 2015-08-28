@@ -21,8 +21,6 @@ import("//build/config/chrome_build.gni")
 # processes one file per invocation of the template so you may have to have
 # multiple targets.
 #
-# You must specify either sources or a template_file, or both.
-#
 # Parameters:
 #   sources (optional):
 #     List of file names to read. When converting a GYP target, this should
@@ -34,9 +32,9 @@ import("//build/config/chrome_build.gni")
 #     "_version.rc" to the end. But in GN you need to specify the full name.
 #
 #   template_file (optional):
-#     Template file to use (not a list). Defaults to
-#     //chrome/app/chrome_version.rc.version if unspecified.
-#     TODO(brettw) remove this default behavior and specify it every time.
+#     Template file to use (not a list). Most Windows uses for generating
+#     resources will want to specify the chrome_version_rc_template defined
+#     below.
 #
 #   extra_args (optional):
 #     Extra arguments to pass to version.py. Any "-f <filename>" args should
@@ -57,8 +55,6 @@ import("//build/config/chrome_build.gni")
 #     extra_files = [ "foo/BRANDING" ]
 #   }
 template("process_version") {
-  assert(defined(invoker.sources) || defined(invoker.template_file),
-         "Either sources or template_file must be defined for $target_name")
   assert(defined(invoker.output), "Output must be defined for $target_name")
 
   process_only = defined(invoker.process_only) && invoker.process_only
@@ -80,18 +76,15 @@ template("process_version") {
     } else {
       branding_path = "//chrome/app/theme/chromium/BRANDING"
     }
-    if (defined(invoker.template_file)) {
-      template_path = invoker.template_file
-    } else {
-      template_path = "//chrome/app/chrome_version.rc.version"
-    }
 
     inputs = [
       version_path,
       lastchange_path,
       branding_path,
-      template_path,
     ]
+    if (defined(invoker.template_file)) {
+      inputs += [ invoker.template_file ]
+    }
 
     outputs = [
       invoker.output,
@@ -121,9 +114,12 @@ template("process_version") {
       args += invoker.extra_args
     }
     args += [
-      rebase_path(template_path, root_build_dir),
+      "-o",
       rebase_path(invoker.output, root_build_dir),
     ]
+    if (defined(invoker.template_file)) {
+      args += [ rebase_path(invoker.template_file, root_build_dir) ]
+    }
 
     if (process_only) {
       # When processing only, visibility gets applied to this target.
@@ -144,3 +140,5 @@ template("process_version") {
     }
   }
 }
+
+chrome_version_rc_template = "//chrome/app/chrome_version.rc.version"

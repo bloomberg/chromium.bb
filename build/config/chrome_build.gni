@@ -17,3 +17,11 @@ declare_args() {
   # on Windows.
   is_multi_dll_chrome = is_win && !is_component_build
 }
+
+# Refers to the subdirectory for branding in various places including
+# chrome/app/theme.
+if (is_chrome_branded) {
+  branding_path_component = "google_chrome"
+} else {
+  branding_path_component = "chromium"
+}

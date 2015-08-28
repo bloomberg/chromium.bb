@@ -7,6 +7,7 @@ import("//chrome/version.gni")
 import("//testing/test.gni")
 
 process_version("chrome_elf_resources") {
+  template_file = chrome_version_rc_template
   sources = [
     "chrome_elf.ver",
   ]
