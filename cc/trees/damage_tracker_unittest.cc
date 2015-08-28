@@ -266,7 +266,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
   // CASE 1: Adding the layer damage rect should cause the corresponding damage
   // to the surface.
   ClearDamageForAllSurfaces(root.get());
-  child->AddDamageRect(gfx::RectF(10.f, 11.f, 12.f, 13.f));
+  child->AddDamageRect(gfx::Rect(10, 11, 12, 13));
   EmulateDrawingOneFrame(root.get());
 
   // Damage position on the surface should be: position of layer damage_rect
@@ -278,7 +278,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
   // CASE 2: The same layer damage rect twice in a row still produces the same
   // damage.
   ClearDamageForAllSurfaces(root.get());
-  child->AddDamageRect(gfx::RectF(10.f, 11.f, 12.f, 13.f));
+  child->AddDamageRect(gfx::Rect(10, 11, 12, 13));
   EmulateDrawingOneFrame(root.get());
   root_damage_rect =
       root->render_surface()->damage_tracker()->current_damage_rect();
@@ -287,7 +287,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
   // CASE 3: Adding a different layer damage rect should cause damage on the
   // new damaged region, but no additional exposed old region.
   ClearDamageForAllSurfaces(root.get());
-  child->AddDamageRect(gfx::RectF(20.f, 25.f, 1.f, 2.f));
+  child->AddDamageRect(gfx::Rect(20, 25, 1, 2));
   EmulateDrawingOneFrame(root.get());
 
   // Damage position on the surface should be: position of layer damage_rect
@@ -299,8 +299,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
   // CASE 4: Adding multiple layer damage rects should cause a unified
   // damage on root damage rect.
   ClearDamageForAllSurfaces(root.get());
-  child->AddDamageRect(gfx::RectF(20.f, 25.f, 1.f, 2.f));
-  child->AddDamageRect(gfx::RectF(10.f, 15.f, 3.f, 4.f));
+  child->AddDamageRect(gfx::Rect(20, 25, 1, 2));
+  child->AddDamageRect(gfx::Rect(10, 15, 3, 4));
   EmulateDrawingOneFrame(root.get());
 
   // Damage position on the surface should be: position of layer damage_rect
@@ -318,7 +318,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
   // CASE 1: Adding the layer damage rect and update rect should cause the
   // corresponding damage to the surface.
   ClearDamageForAllSurfaces(root.get());
-  child->AddDamageRect(gfx::RectF(5.f, 6.f, 12.f, 13.f));
+  child->AddDamageRect(gfx::Rect(5, 6, 12, 13));
   child->SetUpdateRect(gfx::Rect(15, 16, 14, 10));
   EmulateDrawingOneFrame(root.get());
 
@@ -332,7 +332,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
   // CASE 2: The same layer damage rect and update rect twice in a row still
   // produces the same damage.
   ClearDamageForAllSurfaces(root.get());
-  child->AddDamageRect(gfx::RectF(10.f, 11.f, 12.f, 13.f));
+  child->AddDamageRect(gfx::Rect(10, 11, 12, 13));
   child->SetUpdateRect(gfx::Rect(10, 11, 14, 15));
   EmulateDrawingOneFrame(root.get());
   root_damage_rect =
@@ -342,7 +342,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
   // CASE 3: Adding a different layer damage rect and update rect should cause
   // damage on the new damaged region, but no additional exposed old region.
   ClearDamageForAllSurfaces(root.get());
-  child->AddDamageRect(gfx::RectF(20.f, 25.f, 2.f, 3.f));
+  child->AddDamageRect(gfx::Rect(20, 25, 2, 3));
   child->SetUpdateRect(gfx::Rect(5, 10, 7, 8));
   EmulateDrawingOneFrame(root.get());
 

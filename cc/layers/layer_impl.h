@@ -571,11 +571,10 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   // Note this rect is in layer space (not content space).
   void SetUpdateRect(const gfx::Rect& update_rect);
-  gfx::Rect update_rect() const { return update_rect_; }
+  const gfx::Rect& update_rect() const { return update_rect_; }
 
-  void AddDamageRect(const gfx::RectF& damage_rect);
-
-  const gfx::RectF& damage_rect() const { return damage_rect_; }
+  void AddDamageRect(const gfx::Rect& damage_rect);
+  const gfx::Rect& damage_rect() const { return damage_rect_; }
 
   virtual base::DictionaryValue* LayerTreeAsJson() const;
 
@@ -852,11 +851,12 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
  private:
   // Rect indicating what was repainted/updated during update.
   // Note that plugin layers bypass this and leave it empty.
-  // Uses layer (not content) space.
+  // This is in the layer's space.
   gfx::Rect update_rect_;
 
-  // This rect is in layer space.
-  gfx::RectF damage_rect_;
+  // Denotes an area that is damaged and needs redraw. This is in the layer's
+  // space.
+  gfx::Rect damage_rect_;
 
   // Manages animations for this layer.
   scoped_refptr<LayerAnimationController> layer_animation_controller_;

@@ -778,8 +778,8 @@ const char* LayerImpl::LayerTypeAsString() const {
 void LayerImpl::ResetAllChangeTrackingForSubtree() {
   layer_property_changed_ = false;
 
-  update_rect_ = gfx::Rect();
-  damage_rect_ = gfx::RectF();
+  update_rect_.SetRect(0, 0, 0, 0);
+  damage_rect_.SetRect(0, 0, 0, 0);
 
   if (render_surface_)
     render_surface_->ResetPropertyChangedFlag();
@@ -1377,8 +1377,8 @@ void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
   SetNeedsPushProperties();
 }
 
-void LayerImpl::AddDamageRect(const gfx::RectF& damage_rect) {
-  damage_rect_ = gfx::UnionRects(damage_rect_, damage_rect);
+void LayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {
+  damage_rect_.Union(damage_rect);
 }
 
 bool LayerImpl::IsExternalScrollActive() const {
