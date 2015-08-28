@@ -56,7 +56,9 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
     private static final String NATIVE_APP_INSTALL_TEXT = "Install this";
 
-    private static final String NATIVE_APP_REFERRER = "chrome_inline";
+    private static final String NATIVE_APP_REFERRER = "chrome_inline&playinline=chrome_inline";
+
+    private static final String NATIVE_APP_BLANK_REFERRER = "playinline=chrome_inline";
 
     private static final String NATIVE_APP_URL_WITH_MANIFEST_URL =
             TestHttpServerClient.getUrl("chrome/test/data/banners/play_app_url_test_page.html");
@@ -259,7 +261,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature({"AppBanners"})
     public void testFullNativeInstallPathwayFromId() throws Exception {
-        runFullNativeInstallPathway(NATIVE_APP_URL, "");
+        runFullNativeInstallPathway(NATIVE_APP_URL, NATIVE_APP_BLANK_REFERRER);
     }
 
     @SmallTest
