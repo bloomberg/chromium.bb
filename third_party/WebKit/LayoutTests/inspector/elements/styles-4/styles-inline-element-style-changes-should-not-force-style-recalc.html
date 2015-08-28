@@ -14,6 +14,7 @@ function performActions()
 
 function test()
 {
+    WebInspector.context.setFlavor(WebInspector.TimelinePanel, WebInspector.panels.timeline);
     InspectorTest.performActionsAndPrint("performActions()", "RecalculateStyles");
 }
 
