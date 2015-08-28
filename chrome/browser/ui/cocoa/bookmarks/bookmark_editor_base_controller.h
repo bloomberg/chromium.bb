@@ -25,7 +25,8 @@ class BookmarkModel;
 // NOTE: If a derived class is intended to be dispatched via the
 // BookmarkEditor::Show static function found in the accompanying
 // implementation, that function will need to be update.
-@interface BookmarkEditorBaseController : NSWindowController {
+@interface BookmarkEditorBaseController
+    : NSWindowController<NSOutlineViewDelegate> {
  @private
   IBOutlet NSButton* newFolderButton_;
   IBOutlet NSButton* okButton_;  // Used for unit testing only.

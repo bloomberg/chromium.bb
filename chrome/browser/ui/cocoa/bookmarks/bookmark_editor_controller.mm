@@ -59,17 +59,11 @@ using bookmarks::BookmarkNode;
 }
 
 - (void)awakeFromNib {
-  // Check if NSTextFieldCell supports the method. This check is in place as
-  // only 10.6 and greater support the setUsesSingleLineMode method.
-  // TODO(kushi.p): Remove this when the project hits a 10.6+ only state.
   NSTextFieldCell* nameFieldCell_ = [nameTextField_ cell];
-  if ([nameFieldCell_
-          respondsToSelector:@selector(setUsesSingleLineMode:)]) {
-    [nameFieldCell_ setUsesSingleLineMode:YES];
-  }
+  [nameFieldCell_ setUsesSingleLineMode:YES];
 
-  // Set text fields to match our bookmark.  If the node is NULL we
-  // arrived here from an "Add Page..." item in a context menu.
+  // Set text fields to match our bookmark.  If the node is NULL we arrived here
+  // from an "Add Page..." item in a context menu.
   if (node_) {
     [self setInitialName:base::SysUTF16ToNSString(node_->GetTitle())];
     PrefService* prefs = [self profile] ?
