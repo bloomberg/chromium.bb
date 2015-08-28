@@ -4892,7 +4892,6 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     layer->SetContentsOpaque(true);
     // Avoid LCD text on the layer so we don't cause extra commits when we
     // pinch.
-    layer->disable_lcd_text();
     pinch->AddChild(layer);
 
     layer_tree_host()->RegisterViewportLayers(NULL, root, pinch, pinch);
@@ -5192,7 +5191,6 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     layer->SetContentsOpaque(true);
     // Avoid LCD text on the layer so we don't cause extra commits when we
     // pinch.
-    layer->disable_lcd_text();
     pinch->AddChild(layer);
 
     layer_tree_host()->RegisterViewportLayers(NULL, root, pinch, pinch);
@@ -5582,12 +5580,10 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
       case 1:
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
             base::Bind(CopyOutputCallback)));
-        EXPECT_TRUE(
-            root->draw_properties().layer_or_descendant_has_copy_request);
+        EXPECT_GT(root->num_layer_or_descendants_with_copy_request(), 0);
         break;
       case 2:
-        EXPECT_FALSE(
-            root->draw_properties().layer_or_descendant_has_copy_request);
+        EXPECT_EQ(root->num_layer_or_descendants_with_copy_request(), 0);
         EndTest();
         break;
     }

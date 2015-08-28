@@ -31,9 +31,8 @@ bool LayerTreesMatch(LayerImpl* const layer_impl,
   RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->bounds(), layer->bounds()));
   RETURN_IF_EXPECTATION_FAILS(
       EXPECT_EQ(layer_impl->position(), layer->position()));
-  RETURN_IF_EXPECTATION_FAILS(
-      EXPECT_TRANSFORMATION_MATRIX_EQ(layer_impl->draw_transform(),
-                                      layer->draw_transform()));
+  RETURN_IF_EXPECTATION_FAILS(EXPECT_TRANSFORMATION_MATRIX_EQ(
+      layer_impl->transform(), layer->transform()));
   RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->contents_opaque(),
                                         layer->contents_opaque()));
   RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->scrollable(),

@@ -24,6 +24,7 @@
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -88,6 +89,7 @@ Layer::Layer(const LayerSettings& settings)
       clip_parent_(nullptr),
       replica_layer_(nullptr),
       client_(nullptr),
+      num_unclipped_descendants_(0),
       frame_timing_requests_dirty_(false) {
   if (!settings.use_compositor_animation_timelines) {
     layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
@@ -423,8 +425,6 @@ void Layer::UpdateNumCopyRequestsForSubtree(bool add) {
   int change = add ? 1 : -1;
   for (Layer* layer = this; layer; layer = layer->parent()) {
     layer->num_layer_or_descendants_with_copy_request_ += change;
-    layer->draw_properties().layer_or_descendant_has_copy_request =
-        (layer->num_layer_or_descendants_with_copy_request_ != 0);
     DCHECK_GE(layer->num_layer_or_descendants_with_copy_request_, 0);
   }
 }
@@ -823,7 +823,6 @@ void Layer::AddScrollChild(Layer* child) {
   scroll_children_->insert(child);
   if (layer_tree_host_ && !layer_tree_host_->needs_meta_info_recomputation()) {
     num_children_with_scroll_parent_++;
-    draw_properties().has_child_with_a_scroll_parent = true;
   }
   SetNeedsCommit();
 }
@@ -835,8 +834,6 @@ void Layer::RemoveScrollChild(Layer* child) {
   if (layer_tree_host_ && !layer_tree_host_->needs_meta_info_recomputation()) {
     num_children_with_scroll_parent_--;
     DCHECK_GE(num_children_with_scroll_parent_, 0);
-    draw_properties().has_child_with_a_scroll_parent =
-        (num_children_with_scroll_parent_ != 0);
   }
   SetNeedsCommit();
 }
@@ -1688,6 +1685,18 @@ void Layer::set_sorted_for_recursion(bool sorted_for_recursion) {
 bool Layer::sorted_for_recursion() {
   return sorted_for_recursion_tracker_ ==
          layer_tree_host()->meta_information_sequence_number();
+}
+
+gfx::Transform Layer::draw_transform() const {
+  DCHECK_NE(transform_tree_index_, -1);
+  return DrawTransformFromPropertyTrees(
+      this, layer_tree_host_->property_trees()->transform_tree);
+}
+
+gfx::Transform Layer::screen_space_transform() const {
+  DCHECK_NE(transform_tree_index_, -1);
+  return ScreenSpaceTransformFromPropertyTrees(
+      this, layer_tree_host_->property_trees()->transform_tree);
 }
 
 }  // namespace cc

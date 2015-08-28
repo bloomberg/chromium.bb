@@ -291,7 +291,7 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer,
 
   // When we need to do a readback/copy of a layer's output, we can not skip
   // it or any of its ancestors.
-  if (layer->draw_properties().layer_or_descendant_has_copy_request)
+  if (layer->num_layer_or_descendants_with_copy_request() > 0)
     return false;
 
   // If the layer is not drawn, then skip it and its subtree.
@@ -787,9 +787,8 @@ float StartingAnimationScaleFromPropertyTrees(const LayerImpl* layer,
       ->data.combined_starting_animation_scale;
 }
 
-template <typename LayerType>
-float DrawOpacityFromPropertyTreesInternal(LayerType layer,
-                                           const EffectTree& tree) {
+float DrawOpacityFromPropertyTrees(const LayerImpl* layer,
+                                   const EffectTree& tree) {
   if (!layer->render_target())
     return 0.f;
 
@@ -805,15 +804,6 @@ float DrawOpacityFromPropertyTreesInternal(LayerType layer,
     node = tree.parent(node);
   }
   return draw_opacity;
-}
-
-float DrawOpacityFromPropertyTrees(const Layer* layer, const EffectTree& tree) {
-  return DrawOpacityFromPropertyTreesInternal(layer, tree);
-}
-
-float DrawOpacityFromPropertyTrees(const LayerImpl* layer,
-                                   const EffectTree& tree) {
-  return DrawOpacityFromPropertyTreesInternal(layer, tree);
 }
 
 float DrawOpacityOfRenderSurfaceFromPropertyTrees(

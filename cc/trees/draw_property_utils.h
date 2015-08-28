@@ -121,9 +121,6 @@ float CC_EXPORT
 StartingAnimationScaleFromPropertyTrees(const LayerImpl* layer,
                                         const TransformTree& tree);
 
-float CC_EXPORT DrawOpacityFromPropertyTrees(const Layer* layer,
-                                             const EffectTree& tree);
-
 float CC_EXPORT DrawOpacityFromPropertyTrees(const LayerImpl* layer,
                                              const EffectTree& tree);
 

@@ -1177,7 +1177,6 @@ static void PreCalculateMetaInformationInternal(
   }
 
   layer->set_sorted_for_recursion(false);
-  layer->draw_properties().has_child_with_a_scroll_parent = false;
   layer->set_layer_or_descendant_is_drawn(false);
   layer->set_visited(false);
 
@@ -1198,7 +1197,6 @@ static void PreCalculateMetaInformationInternal(
     PreCalculateMetaInformationInternal(child_layer, &data_for_child);
 
     if (child_layer->scroll_parent()) {
-      layer->draw_properties().has_child_with_a_scroll_parent = true;
       layer->set_num_children_with_scroll_parent(
           layer->num_children_with_scroll_parent() + 1);
     }
@@ -1218,13 +1216,9 @@ static void PreCalculateMetaInformationInternal(
       layer->have_wheel_event_handlers())
     recursive_data->num_layer_or_descendants_with_input_handler++;
 
-  layer->draw_properties().num_unclipped_descendants =
-      recursive_data->num_unclipped_descendants;
-  layer->draw_properties().layer_or_descendant_has_copy_request =
-      (recursive_data->num_layer_or_descendants_with_copy_request != 0);
-  layer->draw_properties().layer_or_descendant_has_input_handler =
-      (recursive_data->num_layer_or_descendants_with_input_handler != 0);
-  layer->set_num_layer_or_descandant_with_copy_request(
+  layer->set_num_unclipped_descendants(
+      recursive_data->num_unclipped_descendants);
+  layer->set_num_layer_or_descendant_with_copy_request(
       recursive_data->num_layer_or_descendants_with_copy_request);
 
   if (IsRootLayer(layer))

@@ -3398,7 +3398,6 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   EXPECT_FALSE(front_facing_child->has_render_surface());
   EXPECT_FALSE(back_facing_child->has_render_surface());
   EXPECT_TRUE(front_facing_surface->has_render_surface());
-  EXPECT_NE(back_facing_surface->render_target(), back_facing_surface);
   // We expect that a has_render_surface was created but not used.
   EXPECT_TRUE(back_facing_surface->has_render_surface());
   EXPECT_FALSE(
@@ -3621,8 +3620,6 @@ TEST_F(LayerTreeHostCommonTest,
 
   // We expect the render surface to have been created, but remain unused.
   EXPECT_TRUE(back_facing_surface->has_render_surface());
-  EXPECT_NE(back_facing_surface->render_target(),
-            back_facing_surface);  // because it should be culled
   EXPECT_FALSE(child1->has_render_surface());
   EXPECT_FALSE(child2->has_render_surface());
 
@@ -7687,13 +7684,13 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
   host()->SetRootLayer(root);
 
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_EQ(parent->draw_properties().num_unclipped_descendants, 1u);
+  EXPECT_EQ(parent->num_unclipped_descendants(), 1u);
 
   child->RequestCopyOfOutput(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
-  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_copy_request);
+  EXPECT_GT(root->num_layer_or_descendants_with_copy_request(), 0);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_copy_request);
+  EXPECT_GT(root->num_layer_or_descendants_with_copy_request(), 0);
 }
 
 TEST_F(LayerTreeHostCommonTest, InputHandlersRecursiveUpdateTest) {

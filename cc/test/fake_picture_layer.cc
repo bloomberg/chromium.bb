@@ -13,8 +13,7 @@ FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
     : PictureLayer(settings, client),
       update_count_(0),
       push_properties_count_(0),
-      always_update_resources_(false),
-      disable_lcd_text_(false) {
+      always_update_resources_(false) {
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
 }
@@ -25,8 +24,7 @@ FakePictureLayer::FakePictureLayer(const LayerSettings& settings,
     : PictureLayer(settings, client, source.Pass()),
       update_count_(0),
       push_properties_count_(0),
-      always_update_resources_(false),
-      disable_lcd_text_(false) {
+      always_update_resources_(false) {
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
 }
@@ -41,8 +39,6 @@ scoped_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
 }
 
 bool FakePictureLayer::Update() {
-  if (disable_lcd_text_)
-    draw_properties().can_use_lcd_text = false;
   bool updated = PictureLayer::Update();
   update_count_++;
   return updated || always_update_resources_;
