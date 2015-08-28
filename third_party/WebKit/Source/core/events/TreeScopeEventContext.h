@@ -65,12 +65,18 @@ public:
 
     WillBeHeapVector<RefPtrWillBeMember<EventTarget>>& ensureEventPath(EventPath&);
 
-    bool isInclusiveAncestorOf(const TreeScopeEventContext&);
+    bool isInclusiveAncestorOf(const TreeScopeEventContext&) const;
+    bool isDescendantOf(const TreeScopeEventContext&) const;
+#if ENABLE(ASSERT)
+    bool isExclusivePartOf(const TreeScopeEventContext&) const;
+#endif
     void addChild(TreeScopeEventContext& child) { m_children.append(&child); }
 
-    // For ancestor-descendant relationship check in Q(1).
+    // For ancestor-descendant relationship check in O(1).
     // Preprocessing takes O(N).
-    int calculatePrePostOrderNumber(int orderNumber);
+    int calculateTreeOrderAndSetNearestAncestorClosedTree(int orderNumber, TreeScopeEventContext* nearestAncestorClosedTreeScopeEventContext);
+
+    TreeScopeEventContext* containingClosedShadowTree() const { return m_containingClosedShadowTree.get(); }
 
 private:
     TreeScopeEventContext(TreeScope&);
@@ -79,12 +85,15 @@ private:
     bool isUnreachableNode(EventTarget&);
 #endif
 
+    bool isUnclosedTreeOf(const TreeScopeEventContext& other);
+
     RawPtrWillBeMember<TreeScope> m_treeScope;
     RefPtrWillBeMember<Node> m_rootNode; // Prevents TreeScope from being freed. TreeScope itself isn't RefCounted.
     RefPtrWillBeMember<EventTarget> m_target;
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
     OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<EventTarget>>> m_eventPath;
     RefPtrWillBeMember<TouchEventContext> m_touchEventContext;
+    RawPtrWillBeMember<TreeScopeEventContext> m_containingClosedShadowTree;
 
     WillBeHeapVector<RawPtrWillBeMember<TreeScopeEventContext>> m_children;
     int m_preOrder;
@@ -113,11 +122,26 @@ inline void TreeScopeEventContext::setRelatedTarget(PassRefPtrWillBeRawPtr<Event
     m_relatedTarget = relatedTarget;
 }
 
-inline bool TreeScopeEventContext::isInclusiveAncestorOf(const TreeScopeEventContext& other)
+inline bool TreeScopeEventContext::isInclusiveAncestorOf(const TreeScopeEventContext& other) const
 {
     ASSERT(m_preOrder != -1 && m_postOrder != -1 && other.m_preOrder != -1 && other.m_postOrder != -1);
     return m_preOrder <= other.m_preOrder && other.m_postOrder <= m_postOrder;
 }
+
+inline bool TreeScopeEventContext::isDescendantOf(const TreeScopeEventContext& other) const
+{
+    ASSERT(m_preOrder != -1 && m_postOrder != -1 && other.m_preOrder != -1 && other.m_postOrder != -1);
+    return other.m_preOrder < m_preOrder && m_postOrder < other.m_postOrder;
+}
+
+#if ENABLE(ASSERT)
+inline bool TreeScopeEventContext::isExclusivePartOf(const TreeScopeEventContext& other) const
+{
+    ASSERT(m_preOrder != -1 && m_postOrder != -1 && other.m_preOrder != -1 && other.m_postOrder != -1);
+    return (m_preOrder < other.m_preOrder && m_postOrder < other.m_preOrder)
+        || (m_preOrder > other.m_preOrder && m_preOrder > other.m_postOrder);
+}
+#endif
 
 }
 

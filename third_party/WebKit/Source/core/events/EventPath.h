@@ -81,7 +81,7 @@ private:
     void initialize();
     void calculatePath();
     void calculateAdjustedTargets();
-    void calculateTreeScopePrePostOrderNumbers();
+    void calculateTreeOrderAndSetNearestAncestorClosedTree();
 
     void shrink(size_t newSize) { ASSERT(!m_windowEventContext); m_nodeEventContexts.shrink(newSize); }
     void shrinkIfNeeded(const Node& target, const EventTarget& relatedTarget);

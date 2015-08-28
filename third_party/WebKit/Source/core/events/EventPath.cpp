@@ -94,7 +94,7 @@ void EventPath::initialize()
         return;
     calculatePath();
     calculateAdjustedTargets();
-    calculateTreeScopePrePostOrderNumbers();
+    calculateTreeOrderAndSetNearestAncestorClosedTree();
 }
 
 void EventPath::calculatePath()
@@ -155,7 +155,7 @@ void EventPath::calculatePath()
     }
 }
 
-void EventPath::calculateTreeScopePrePostOrderNumbers()
+void EventPath::calculateTreeOrderAndSetNearestAncestorClosedTree()
 {
     // Precondition:
     //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same tree of trees.
@@ -166,7 +166,8 @@ void EventPath::calculateTreeScopePrePostOrderNumbers()
     TreeScopeEventContext* rootTree = 0;
     for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
         // Use olderShadowRootOrParentTreeScope here for parent-child relationships.
-        // See the definition of trees of trees in the Shado DOM spec: http://w3c.github.io/webcomponents/spec/shadow/
+        // See the definition of trees of trees in the Shadow DOM spec:
+        // http://w3c.github.io/webcomponents/spec/shadow/
         TreeScope* parent = treeScopeEventContext.get()->treeScope().olderShadowRootOrParentTreeScope();
         if (!parent) {
             ASSERT(!rootTree);
@@ -177,7 +178,7 @@ void EventPath::calculateTreeScopePrePostOrderNumbers()
         treeScopeEventContextMap.find(parent)->value->addChild(*treeScopeEventContext.get());
     }
     ASSERT(rootTree);
-    rootTree->calculatePrePostOrderNumber(0);
+    rootTree->calculateTreeOrderAndSetNearestAncestorClosedTree(0, nullptr);
 }
 
 TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarget, TreeScope* treeScope, TreeScopeEventContextMap& treeScopeEventContextMap)

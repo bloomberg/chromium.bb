@@ -1,0 +1,79 @@
+<!doctype html>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<body></body>
+<script>
+function prepareTree() {
+    document.body.appendChild(
+        createDOM('div', {id: 'host_open'},
+            createShadowRoot({mode: 'open', id: 'open_shadow'},
+                createDOM('div', {id: 'inner_open'},
+                    createShadowRoot({mode: 'open', id: 'open_shadow_in_open_shadow'},
+                        createDOM('span', {id: 'target_open', tabindex: '0'},
+                            document.createTextNode('open')))))));
+
+    document.body.appendChild(
+        createDOM('div', {id: 'host_closed'},
+            createShadowRoot({mode: 'closed', id: 'closed_shadow'},
+                createDOM('div', {id: 'inner_closed'},
+                    createShadowRoot({mode: 'open', id: 'open_shadow_in_closed_shadow'},
+                        createDOM('span', {id: 'target_closed', tabindex: '0'},
+                            document.createTextNode('closed')))))));
+}
+
+function clickHandler(e) {
+    eventPath = e.path;
+}
+
+debug('Event.path should include only unclosed nodes.');
+
+prepareTree();
+
+var targetOpen = getNodeInTreeOfTrees('host_open/inner_open/target_open');
+var targetClosed = getNodeInTreeOfTrees('host_closed/inner_closed/target_closed');
+
+targetOpen.addEventListener('click', clickHandler, false);
+targetClosed.addEventListener('click', clickHandler, false);
+
+debug("\nDispaching a click event on #target_open, listening on #target_open.");
+var eventPath = null;
+targetOpen.click();
+// Expected: <span#target_open>, #open_shadow_in_open_shadow, <div#inner_open>,
+// #open_shadow, <div#host_open>, <body>, <html>, #document, window
+shouldBe('eventPath.length', '9');
+debug("\nevent.path for #target_open:");
+debug(dumpNodeList(eventPath));
+
+debug("\nDispaching a click event on #target_closed, listening on #target_closed.");
+eventPath = null;
+targetClosed.click();
+// Expected: <span#target_closed>, #open_shadow_in_closed_shadow, <div#inner_closed>,
+// #closed_shadow, <div#host_closed>, <body>, <html>, #document, window
+shouldBe('eventPath.length', '9');
+debug("\nevent.path for #target_closed:");
+debug(dumpNodeList(eventPath));
+
+
+targetOpen.removeEventListener('click', clickHandler, false);
+targetClosed.removeEventListener('click', clickHandler, false);
+document.body.addEventListener('click', clickHandler, false);
+
+debug("\nDispaching a click event on #target_open, listening on document.body.");
+var eventPath = null;
+targetOpen.click();
+// Expected: <span#target_open>, #open_shadow_in_open_shadow, <div#inner_open>,
+// #open_shadow, <div#host_open>, <body>, <html>, #document, window
+shouldBe('eventPath.length', '9');
+debug("\nevent.path for #target_open:");
+debug(dumpNodeList(eventPath));
+
+debug("\nDispaching a click event on #target_closed, listening on document.body.");
+eventPath = null;
+targetClosed.click();
+// For this test, <span> and closed shadow root are excluded from the open shadow case,
+// thus 9 - 4 = 5.
+// Expected: <div#host_closed>, <body>, <html>, #document, window
+shouldBe('eventPath.length', '5');
+debug("\nevent.path for #target_closed:");
+debug(dumpNodeList(eventPath));
+</script>
