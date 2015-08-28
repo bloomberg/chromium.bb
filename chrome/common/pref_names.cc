@@ -958,10 +958,6 @@ const char kContentSettingsPluginWhitelist[] =
     "profile.content_settings.plugin_whitelist";
 #endif
 
-// Boolean that is true when all locally stored site data (e.g. cookies, local
-// storage, etc..) should be deleted on exit.
-const char kClearSiteDataOnExit[] = "profile.clear_site_data_on_exit";
-
 // Double that indicates the default zoom level.
 const char kPartitionDefaultZoomLevel[] = "partition.default_zoom_level";
 

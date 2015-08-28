@@ -324,8 +324,6 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"cookiesBlock", IDS_COOKIES_BLOCK_RADIO},
     {"cookiesSession", IDS_COOKIES_SESSION_ONLY_RADIO},
     {"cookiesBlock3rdParty", IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX},
-    {"cookiesClearWhenClose", IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX},
-    {"cookiesLsoClearWhenClose", IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX},
     {"cookiesShowCookies", IDS_COOKIES_SHOW_COOKIES_BUTTON},
     {"flashStorageSettings", IDS_FLASH_STORAGE_SETTINGS},
     {"flashStorageUrl", IDS_FLASH_STORAGE_URL},

@@ -330,7 +330,6 @@ extern const char kUseCustomChromeFrame[];
 #if !defined(OS_ANDROID)
 extern const char kContentSettingsPluginWhitelist[];
 #endif
-extern const char kClearSiteDataOnExit[];
 extern const char kPartitionDefaultZoomLevel[];
 extern const char kPartitionPerHostZoomLevels[];
 extern const char kAutofillDialogAutofillDefault[];

@@ -359,12 +359,6 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterFilePathPref(prefs::kDiskCacheDir, base::FilePath());
   registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
   registry->RegisterIntegerPref(prefs::kMediaCacheSize, 0);
-
-  // Deprecated. Kept around for migration.
-  registry->RegisterBooleanPref(
-      prefs::kClearSiteDataOnExit,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 ProfileImpl::ProfileImpl(
