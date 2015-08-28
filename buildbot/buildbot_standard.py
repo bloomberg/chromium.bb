@@ -426,16 +426,21 @@ def BuildScript(status, context):
       '64': 'x64'
     }[context['arch']]
     gn_sel_ldr = os.path.join(gn_out, 'trusted_' + arch_name, 'sel_ldr')
+    gn_irt = os.path.join(gn_out, 'irt_' + arch_name, 'irt_core.nexe')
     gn_extra = [
         'force_sel_ldr=' + gn_sel_ldr,
+        'force_irt=' + gn_irt,
         'perf_prefix=gn_',
     ]
-    with Step('small_tests under GN', status, halt_on_fail=False):
-      SCons(context, args=['small_tests'] + gn_extra)
-    with Step('medium_tests under GN', status, halt_on_fail=False):
-      SCons(context, args=['medium_tests'] + gn_extra)
-    with Step('large_tests under GN', status, halt_on_fail=False):
-      SCons(context, args=['large_tests'] + gn_extra)
+    for step_suffix, extra_scons_modes, suite_suffix in [
+        ('', [], ''),
+        (' under IRT', ['nacl_irt_test'], '_irt')
+        ]:
+      for suite in ['small_tests', 'medium_tests', 'large_tests']:
+        with Step(suite + step_suffix + ' (GN)', status, halt_on_fail=False):
+          SCons(context,
+                mode=context['default_scons_mode'] + extra_scons_modes,
+                args=[suite + suite_suffix] + gn_extra)
   ### END GN tests ###
 
 
