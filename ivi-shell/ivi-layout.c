@@ -75,12 +75,6 @@ struct link_layer {
 	struct wl_list link_to_layer;
 };
 
-struct link_screen {
-	struct ivi_layout_screen *iviscrn;
-	struct wl_list link;
-	struct wl_list link_to_screen;
-};
-
 struct listener_layout_notification {
 	void *userdata;
 	struct wl_listener listener;
@@ -90,7 +84,6 @@ struct ivi_layout;
 
 struct ivi_layout_screen {
 	struct wl_list link;
-	struct wl_list link_to_layer;
 	uint32_t id_screen;
 
 	struct ivi_layout *layout;
@@ -165,16 +158,6 @@ remove_link_to_surface(struct ivi_layout_layer *ivilayer)
 }
 
 /**
- * Internal API to add a link to ivi_layer from ivi_screen.
- */
-static void
-add_link_to_layer(struct ivi_layout_screen *iviscrn,
-		  struct link_screen *link_screen)
-{
-	wl_list_insert(&iviscrn->link_to_layer, &link_screen->link_to_screen);
-}
-
-/**
  * Internal API to add/remove a ivi_surface from ivi_layer.
  */
 static void
@@ -206,40 +189,6 @@ remove_ordersurface_from_layer(struct ivi_layout_surface *ivisurf)
 		free(link_layer);
 	}
 	wl_list_init(&ivisurf->layer_list);
-}
-
-/**
- * Internal API to add/remove a ivi_layer to/from ivi_screen.
- */
-static void
-add_orderlayer_to_screen(struct ivi_layout_layer *ivilayer,
-			 struct ivi_layout_screen *iviscrn)
-{
-	struct link_screen *link_scrn = NULL;
-
-	link_scrn = malloc(sizeof *link_scrn);
-	if (link_scrn == NULL) {
-		weston_log("fails to allocate memory\n");
-		return;
-	}
-
-	link_scrn->iviscrn = iviscrn;
-	wl_list_insert(&ivilayer->screen_list, &link_scrn->link);
-	add_link_to_layer(iviscrn, link_scrn);
-}
-
-static void
-remove_orderlayer_from_screen(struct ivi_layout_layer *ivilayer)
-{
-	struct link_screen *link_scrn = NULL;
-	struct link_screen *next = NULL;
-
-	wl_list_for_each_safe(link_scrn, next, &ivilayer->screen_list, link) {
-		wl_list_remove(&link_scrn->link);
-		wl_list_remove(&link_scrn->link_to_screen);
-		free(link_scrn);
-	}
-	wl_list_init(&ivilayer->screen_list);
 }
 
 /**
@@ -421,8 +370,6 @@ create_screen(struct weston_compositor *ec)
 
 		wl_list_init(&iviscrn->order.layer_list);
 		wl_list_init(&iviscrn->order.link);
-
-		wl_list_init(&iviscrn->link_to_layer);
 
 		wl_list_insert(&layout->screen_list, &iviscrn->link);
 	}
@@ -964,7 +911,7 @@ commit_screen_list(struct ivi_layout *layout)
 		if (iviscrn->order.dirty) {
 			wl_list_for_each_safe(ivilayer, next,
 					      &iviscrn->order.layer_list, order.link) {
-				remove_orderlayer_from_screen(ivilayer);
+				ivilayer->on_screen = NULL;
 				wl_list_remove(&ivilayer->order.link);
 				wl_list_init(&ivilayer->order.link);
 				ivilayer->event_mask |= IVI_NOTIFICATION_REMOVE;
@@ -976,7 +923,7 @@ commit_screen_list(struct ivi_layout *layout)
 					 pending.link) {
 				wl_list_insert(&iviscrn->order.layer_list,
 					       &ivilayer->order.link);
-				add_orderlayer_to_screen(ivilayer, iviscrn);
+				ivilayer->on_screen = iviscrn;
 				ivilayer->event_mask |= IVI_NOTIFICATION_ADD;
 			}
 
@@ -1596,7 +1543,6 @@ ivi_layout_get_screens_under_layer(struct ivi_layout_layer *ivilayer,
 				   int32_t *pLength,
 				   struct ivi_layout_screen ***ppArray)
 {
-	struct link_screen *link_scrn = NULL;
 	int32_t length = 0;
 	int32_t n = 0;
 
@@ -1605,7 +1551,8 @@ ivi_layout_get_screens_under_layer(struct ivi_layout_layer *ivilayer,
 		return IVI_FAILED;
 	}
 
-	length = wl_list_length(&ivilayer->screen_list);
+	if (ivilayer->on_screen != NULL)
+		length = 1;
 
 	if (length != 0) {
 		/* the Array must be free by module which called this function */
@@ -1615,9 +1562,7 @@ ivi_layout_get_screens_under_layer(struct ivi_layout_layer *ivilayer,
 			return IVI_FAILED;
 		}
 
-		wl_list_for_each(link_scrn, &ivilayer->screen_list, link) {
-			(*ppArray)[n++] = link_scrn->iviscrn;
-		}
+		(*ppArray)[n++] = ivilayer->on_screen;
 	}
 
 	*pLength = length;
@@ -1816,7 +1761,6 @@ ivi_layout_layer_create_with_dimension(uint32_t id_layer,
 
 	ivilayer->ref_count = 1;
 	wl_signal_init(&ivilayer->property_changed);
-	wl_list_init(&ivilayer->screen_list);
 	wl_list_init(&ivilayer->link_to_surface);
 	ivilayer->layout = layout;
 	ivilayer->id_layer = id_layer;
@@ -1884,7 +1828,6 @@ ivi_layout_layer_destroy(struct ivi_layout_layer *ivilayer)
 	wl_list_remove(&ivilayer->order.link);
 	wl_list_remove(&ivilayer->link);
 
-	remove_orderlayer_from_screen(ivilayer);
 	remove_link_to_surface(ivilayer);
 	ivi_layout_layer_remove_notification(ivilayer);
 
