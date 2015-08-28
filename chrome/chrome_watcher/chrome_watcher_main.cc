@@ -244,8 +244,7 @@ void DumpHungBrowserProcess(DWORD main_thread_id,
   // This is looking up the version of chrome_watcher.dll, which is equivalent
   // for our purposes to chrome.dll.
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForModule(
-          reinterpret_cast<HMODULE>(&__ImageBase)));
+      CREATE_FILE_VERSION_INFO_FOR_CURRENT_MODULE());
   using CrashKeyStrings = std::pair<base::string16, base::string16>;
   std::vector<CrashKeyStrings> crash_key_strings;
   if (version_info.get()) {

@@ -99,7 +99,7 @@ base::FilePath GetExecutableDir() {
 
 base::string16 GetCurrentModuleVersion() {
   scoped_ptr<FileVersionInfo> file_version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      CREATE_FILE_VERSION_INFO_FOR_CURRENT_MODULE());
   if (file_version_info.get()) {
     base::string16 version_string(file_version_info->file_version());
     if (Version(base::UTF16ToASCII(version_string)).IsValid())

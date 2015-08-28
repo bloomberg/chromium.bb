@@ -61,7 +61,7 @@ void SetGoogleUpdateKeys(const base::string16& product_id,
   // Get the version from the resource file.
   base::string16 version_string;
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      CREATE_FILE_VERSION_INFO_FOR_CURRENT_MODULE());
 
   if (version_info.get()) {
     FileVersionInfoWin* version_info_win =
@@ -152,7 +152,7 @@ void CreateUninstallKey(const base::string16& uninstall_id,
 
   // Get the version resource.
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      CREATE_FILE_VERSION_INFO_FOR_CURRENT_MODULE());
 
   if (version_info.get()) {
     FileVersionInfoWin* version_info_win =

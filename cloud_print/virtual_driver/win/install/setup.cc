@@ -172,7 +172,7 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
 DWORDLONG GetVersionNumber() {
   DWORDLONG retval = 0;
   scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+      CREATE_FILE_VERSION_INFO_FOR_CURRENT_MODULE());
   if (version_info.get()) {
     FileVersionInfoWin* version_info_win =
         static_cast<FileVersionInfoWin*>(version_info.get());
