@@ -898,10 +898,6 @@ gfx::Rect ClipRectFromPropertyTrees(const LayerImpl* layer,
       gfx::Rect(layer->bounds()));
 }
 
-gfx::Rect ViewportRectFromPropertyTrees(const ClipTree& tree) {
-  return gfx::ToEnclosingRect(tree.Node(1)->data.clip);
-}
-
 gfx::Transform ReplicaToSurfaceTransform(
     const RenderSurfaceImpl* render_surface,
     const TransformTree& tree) {

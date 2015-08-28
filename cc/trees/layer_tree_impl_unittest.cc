@@ -90,6 +90,48 @@ TEST_F(LayerTreeImplTest, HitTestingForSingleLayer) {
   EXPECT_EQ(12345, result_layer->id());
 }
 
+TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
+  // Ensures that the viewport rect is correctly updated by the clip tree.
+  TestSharedBitmapManager shared_bitmap_manager;
+  TestTaskGraphRunner task_graph_runner;
+  FakeImplProxy proxy;
+  LayerTreeSettings settings;
+  settings.verify_property_trees = true;
+  scoped_ptr<FakeLayerTreeHostImpl> host_impl;
+  host_impl.reset(new FakeLayerTreeHostImpl(
+      settings, &proxy, &shared_bitmap_manager, &task_graph_runner));
+  EXPECT_TRUE(host_impl->InitializeRenderer(FakeOutputSurface::Create3d()));
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl->active_tree(), 12345);
+
+  gfx::Transform identity_matrix;
+  gfx::Point3F transform_origin;
+  gfx::PointF position;
+  gfx::Size bounds(100, 100);
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, transform_origin,
+                               position, bounds, true, false, true);
+  root->SetDrawsContent(true);
+
+  host_impl->SetViewportSize(root->bounds());
+  host_impl->active_tree()->SetRootLayer(root.Pass());
+  host_impl->UpdateNumChildrenAndDrawPropertiesForActiveTree();
+  EXPECT_EQ(
+      gfx::RectF(bounds),
+      host_impl->active_tree()->property_trees()->clip_tree.ViewportClip());
+  EXPECT_EQ(gfx::Rect(bounds),
+            host_impl->RootLayer()->visible_rect_from_property_trees());
+
+  gfx::Size new_bounds(50, 50);
+  host_impl->SetViewportSize(new_bounds);
+  gfx::Point test_point(51, 51);
+  host_impl->active_tree()->FindLayerThatIsHitByPoint(test_point);
+  EXPECT_EQ(
+      gfx::RectF(new_bounds),
+      host_impl->active_tree()->property_trees()->clip_tree.ViewportClip());
+  EXPECT_EQ(gfx::Rect(new_bounds),
+            host_impl->RootLayer()->visible_rect_from_property_trees());
+}
+
 TEST_F(LayerTreeImplTest, HitTestingForSingleLayerAndHud) {
   scoped_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl().active_tree(), 12345);

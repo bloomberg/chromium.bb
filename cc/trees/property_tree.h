@@ -335,7 +335,11 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
 };
 
-class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {};
+class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
+ public:
+  void SetViewportClip(gfx::RectF viewport_rect);
+  gfx::RectF ViewportClip();
+};
 
 class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
  public:

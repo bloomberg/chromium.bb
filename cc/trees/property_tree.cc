@@ -591,6 +591,22 @@ void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
         parent_node->data.node_and_ancestors_have_only_integer_translation;
 }
 
+void ClipTree::SetViewportClip(gfx::RectF viewport_rect) {
+  if (size() < 2)
+    return;
+  ClipNode* node = Node(1);
+  if (viewport_rect == node->data.clip)
+    return;
+  node->data.clip = viewport_rect;
+  set_needs_update(true);
+}
+
+gfx::RectF ClipTree::ViewportClip() {
+  const unsigned long min_size = 1;
+  DCHECK_GT(size(), min_size);
+  return Node(1)->data.clip;
+}
+
 PropertyTrees::PropertyTrees() : needs_rebuild(true), sequence_number(0) {
 }
 

@@ -2239,6 +2239,8 @@ void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
   client_->OnCanDrawStateChanged(CanDraw());
   SetFullRootLayerDamage();
   active_tree_->set_needs_update_draw_properties();
+  active_tree_->property_trees()->clip_tree.SetViewportClip(
+      gfx::RectF(device_viewport_size));
 }
 
 void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {

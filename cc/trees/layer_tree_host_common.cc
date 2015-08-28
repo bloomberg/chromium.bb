@@ -2582,7 +2582,7 @@ void CalculateRenderSurfaceLayerListInternal(
       if (IsRootLayer(layer)) {
         // The root layer's surface content rect is always the entire viewport.
         gfx::Rect viewport =
-            ViewportRectFromPropertyTrees(property_trees->clip_tree);
+            gfx::ToEnclosingRect(property_trees->clip_tree.ViewportClip());
         layer->render_surface()->SetAccumulatedContentRect(viewport);
       } else {
         // If the owning layer of a render surface draws content, the content

@@ -149,8 +149,6 @@ gfx::Rect CC_EXPORT
 ClipRectFromPropertyTrees(const LayerImpl* layer,
                           const TransformTree& transform_tree);
 
-gfx::Rect CC_EXPORT ViewportRectFromPropertyTrees(const ClipTree& tree);
-
 gfx::Transform CC_EXPORT DrawTransformOfRenderSurfaceReplicaFromPropertyTrees(
     const RenderSurfaceImpl* render_surface,
     const TransformTree& tree);
