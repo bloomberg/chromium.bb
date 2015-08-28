@@ -36,6 +36,7 @@ nacl_toolchain("newlib_arm") {
   toolchain_revision = nacl_arm_newlib_rev
   toolchain_cpu = "arm"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/arm-nacl-"
+  is_clang = false
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -48,6 +49,7 @@ nacl_toolchain("newlib_x86") {
   toolchain_revision = nacl_x86_newlib_rev
   toolchain_cpu = "x86"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
+  is_clang = false
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -60,6 +62,7 @@ nacl_toolchain("newlib_x64") {
   toolchain_revision = nacl_x86_newlib_rev
   toolchain_cpu = "x64"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
+  is_clang = false
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -72,6 +75,7 @@ nacl_toolchain("newlib_pnacl") {
   toolchain_revision = pnacl_newlib_rev
   toolchain_cpu = "pnacl"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/pnacl-"
+  is_clang = true
 
   cc = toolprefix + "clang"
   cxx = toolprefix + "clang++"
@@ -92,6 +96,7 @@ nacl_toolchain("glibc_x86") {
   toolchain_revision = nacl_x86_glibc_rev
   toolchain_cpu = "x86"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
+  is_clang = false
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -104,6 +109,7 @@ nacl_toolchain("glibc_x64") {
   toolchain_revision = nacl_x86_glibc_rev
   toolchain_cpu = "x64"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
+  is_clang = false
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -189,6 +195,7 @@ nacl_toolchain("irt_arm") {
   toolchain_revision = nacl_arm_newlib_rev
   toolchain_cpu = "arm"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/arm-nacl-"
+  is_clang = false
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
