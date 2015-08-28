@@ -14,6 +14,7 @@
     'auto_login_parser.gypi',
     'autofill.gypi',
     'bookmarks.gypi',
+    'bubble.gypi',
     'captive_portal.gypi',
     'cloud_devices.gypi',
     'component_updater.gypi',

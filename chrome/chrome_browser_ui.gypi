@@ -1541,6 +1541,8 @@
       'browser/ui/browser_view_prefs.h',
       'browser/ui/browser_window_state.cc',
       'browser/ui/browser_window_state.h',
+      'browser/ui/chrome_bubble_manager.cc',
+      'browser/ui/chrome_bubble_manager.h',
       'browser/ui/chrome_pages.cc',
       'browser/ui/chrome_pages.h',
       'browser/ui/chrome_style.cc',
@@ -3183,6 +3185,7 @@
         }],
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
+            '../components/components.gyp:bubble',
             '../components/components.gyp:feedback_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../third_party/libusb/libusb.gyp:libusb',

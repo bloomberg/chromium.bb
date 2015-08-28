@@ -91,6 +91,7 @@ source_set("ui") {
       "//chrome/common/net",
       "//chrome/installer/util",
       "//components/autofill/content/browser:risk_proto",
+      "//components/bubble:bubble",
       "//components/power",
       "//components/suggestions/proto",
       "//components/url_formatter",

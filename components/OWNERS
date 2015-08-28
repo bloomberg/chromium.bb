@@ -23,6 +23,11 @@ per-file browsing_data.gypi=mkwst@chromium.org
 per-file browsing_data.gypi=bauerb@chromium.org
 per-file browsing_data.gypi=michaeln@chromium.org
 
+per-file bubble.gypi=groby@chromium.org
+per-file bubble.gypi=hcarmona@chromium.org
+per-file bubble.gypi=msw@chromium.org
+per-file bubble.gypi=rouslan@chromium.org
+
 per-file cdm.gypi=ddorwin@chromium.org
 per-file cdm.gypi=xhwang@chromium.org
 

@@ -235,6 +235,8 @@ willPositionSheet:(NSWindow*)sheet
   PermissionBubbleManager* manager = [self permissionBubbleManager];
   if (manager)
     manager->UpdateAnchorPosition();
+
+  browser_->GetBubbleManager()->UpdateAllBubbleAnchors();
 }
 
 - (void)applyTabStripLayout:(const chrome::TabStripLayout&)layout {

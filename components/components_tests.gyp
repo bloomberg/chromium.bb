@@ -81,6 +81,9 @@
       'browser_watcher/watcher_metrics_provider_win_unittest.cc',
       'browser_watcher/window_hang_monitor_win_unittest.cc',
     ],
+    'bubble_unittest_sources': [
+      'bubble/bubble_manager_unittest.cc',
+    ],
     'captive_portal_unittest_sources': [
       'captive_portal/captive_portal_detector_unittest.cc',
     ],
@@ -754,6 +757,7 @@
         '<@(autofill_unittest_sources)',
         '<@(bookmarks_unittest_sources)',
         '<@(browser_watcher_unittest_sources)',
+        '<@(bubble_unittest_sources)',
         '<@(captive_portal_unittest_sources)',
         '<@(cloud_devices_unittest_sources)',
         '<@(component_updater_unittest_sources)',
@@ -849,6 +853,7 @@
         'components.gyp:bookmarks_browser',
         'components.gyp:bookmarks_managed',
         'components.gyp:bookmarks_test_support',
+        'components.gyp:bubble',
         'components.gyp:captive_portal_test_support',
         'components.gyp:cloud_devices_common',
         'components.gyp:component_updater',

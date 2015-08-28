@@ -471,6 +471,7 @@ Browser::~Browser() {
   // The tab strip should not have any tabs at this point.
   DCHECK(tab_strip_model_->empty());
   tab_strip_model_->RemoveObserver(this);
+  bubble_manager_.reset();
 
   // Destroy the BrowserCommandController before removing the browser, so that
   // it doesn't act on any notifications that are sent as a result of removing
@@ -548,6 +549,12 @@ Browser::~Browser() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Getters & Setters
+
+ChromeBubbleManager* Browser::GetBubbleManager() {
+  if (!bubble_manager_)
+    bubble_manager_.reset(new ChromeBubbleManager(tab_strip_model_.get()));
+  return bubble_manager_.get();
+}
 
 FindBarController* Browser::GetFindBarController() {
   if (!find_bar_controller_.get()) {

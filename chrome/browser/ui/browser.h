@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/chrome_bubble_manager.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -282,6 +283,9 @@ class Browser : public TabStripModelObserver,
   extensions::HostedAppBrowserController* hosted_app_controller() {
     return hosted_app_controller_.get();
   }
+
+  // Will lazy create the bubble manager.
+  ChromeBubbleManager* GetBubbleManager();
 
   // Get the FindBarController for this browser, creating it if it does not
   // yet exist.
@@ -923,6 +927,8 @@ class Browser : public TabStripModelObserver,
 
   scoped_ptr<chrome::UnloadController> unload_controller_;
   scoped_ptr<chrome::FastUnloadController> fast_unload_controller_;
+
+  scoped_ptr<ChromeBubbleManager> bubble_manager_;
 
   // The Find Bar. This may be NULL if there is no Find Bar, and if it is
   // non-NULL, it may or may not be visible.
