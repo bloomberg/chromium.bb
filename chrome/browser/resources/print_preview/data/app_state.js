@@ -153,9 +153,14 @@ cr.define('print_preview', function() {
      */
     init: function(serializedAppStateStr, systemDefaultDestinationId) {
       if (serializedAppStateStr) {
-        var state = JSON.parse(serializedAppStateStr);
-        if (state[AppState.Field.VERSION] == AppState.VERSION_) {
-          this.state_ = state;
+        try {
+          var state = JSON.parse(serializedAppStateStr);
+          if (state[AppState.Field.VERSION] == AppState.VERSION_) {
+            this.state_ = state;
+          }
+        } catch(e) {
+          console.error('Unable to parse state: ' + e);
+          // Proceed with default state.
         }
       } else {
         // Set some state defaults.
