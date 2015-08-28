@@ -46,7 +46,6 @@ public:
     static PassOwnPtrWillBeRawPtr<SelectionController> create(LocalFrame&);
     DECLARE_TRACE();
 
-    bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
     void handleMousePressEvent(const MouseEventWithHitTestResults&);
     bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
@@ -82,6 +81,7 @@ private:
     void selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
     void selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults&);
     void selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHitTestResults&);
+    bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
 
     FrameSelection& selection() const;
 
