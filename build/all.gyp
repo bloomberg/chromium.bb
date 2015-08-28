@@ -161,6 +161,7 @@
             '../device/bluetooth/bluetooth.gyp:*',
             '../device/device_tests.gyp:*',
             '../gpu/skia_runner/skia_runner.gyp:*',
+            '../gpu/command_buffer_gles2/command_buffer_gles2.gyp:*',
           ],
         }],
         ['use_openssl==0 and (OS=="mac" or OS=="ios" or OS=="win")', {
