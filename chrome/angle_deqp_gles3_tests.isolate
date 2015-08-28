@@ -5,7 +5,7 @@
 {
   'includes': [
     '../base/base.isolate',
-    '../ui/gl/gl.isolate',
+    '../third_party/angle/angle_on_all_platforms.isolate',
   ],
   'conditions': [
     ['OS=="win" or OS=="linux"', {
