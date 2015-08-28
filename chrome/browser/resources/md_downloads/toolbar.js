@@ -28,7 +28,7 @@ cr.define('downloads', function() {
 
     /** @return {boolean} Whether removal can be undone. */
     canUndo: function() {
-      return !this.$['search-term'].shadowRoot.activeElement;
+      return this.$['search-input'] != this.shadowRoot.activeElement;
     },
 
     /** @return {boolean} Whether "Clear all" should be allowed. */
