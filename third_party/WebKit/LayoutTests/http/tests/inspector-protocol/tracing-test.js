@@ -9,7 +9,23 @@ initialize_tracingHarness = function()
 
 InspectorTest.startTracing = function(callback)
 {
-    InspectorTest.sendCommand("Tracing.start", { "categories": "-*,disabled-by-default-devtools.timeline,devtools.timeline", "type": "", "options": "" }, onStart);
+    InspectorTest.startTracingWithArguments({ "categories": "-*,disabled-by-default-devtools.timeline,devtools.timeline", "type": "", "options": "" }, callback);
+}
+
+InspectorTest.startTracingAndSaveAsStream = function(callback)
+{
+    var args = {
+        "categories": "-*,disabled-by-default-devtools.timeline,devtools.timeline",
+        "type": "",
+        "options": "",
+        "transferMode": "ReturnAsStream"
+    };
+    InspectorTest.startTracingWithArguments(args, callback);
+}
+
+InspectorTest.startTracingWithArguments = function(args, callback)
+{
+    InspectorTest.sendCommand("Tracing.start", args, onStart);
 
     function onStart(response)
     {
@@ -40,6 +56,57 @@ InspectorTest.stopTracing = function(callback)
         InspectorTest.eventHandler["Tracing.tracingComplete"] = null;
         InspectorTest.eventHandler["Tracing.dataCollected"] = null;
         callback(InspectorTest.devtoolsEvents);
+    }
+}
+
+InspectorTest.stopTracingAndReturnStream = function(callback)
+{
+    InspectorTest.eventHandler["Tracing.tracingComplete"] = tracingComplete;
+    InspectorTest.eventHandler["Tracing.dataCollected"] = dataCollected;
+    InspectorTest.sendCommand("Tracing.end");
+
+    function dataCollected(reply)
+    {
+        InspectorTest.log("FAIL: dataCollected event should not be fired when returning trace as stream.");
+
+    }
+
+    function tracingComplete(event)
+    {
+        InspectorTest.log("Tracing complete");
+        InspectorTest.eventHandler["Tracing.tracingComplete"] = null;
+        InspectorTest.eventHandler["Tracing.dataCollected"] = null;
+        callback(event.params.stream);
+    }
+}
+
+InspectorTest.retrieveStream = function(streamHandle, offset, chunkSize, callback)
+{
+    var result = "";
+    var had_eof = false;
+
+    var readArguments = { handle: streamHandle };
+    if (typeof chunkSize === "number")
+        readArguments.size = chunkSize;
+    var firstReadArguments = JSON.parse(JSON.stringify(readArguments));
+    if (typeof offset === "number")
+        firstReadArguments.offset = 0;
+    InspectorTest.sendCommandOrDie("IO.read", firstReadArguments, onChunkRead);
+    // Assure multiple in-lfight reads are fine (also, save on latencies).
+    InspectorTest.sendCommandOrDie("IO.read", readArguments, onChunkRead);
+
+    function onChunkRead(response)
+    {
+        if (had_eof)
+            return;
+        result += response.data;
+        if (response.eof) {
+            // Ignore stray callbacks from proactive read requests.
+            had_eof = true;
+            callback(result);
+            return;
+        }
+        InspectorTest.sendCommandOrDie("IO.read", readArguments, onChunkRead);
     }
 }
 
@@ -99,4 +166,3 @@ InspectorTest.didInvokePageFunctionAsync = function(callId, value)
 }
 
 }
-
