@@ -69,12 +69,6 @@
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
-struct link_layer {
-	struct ivi_layout_layer *ivilayer;
-	struct wl_list link;
-	struct wl_list link_to_layer;
-};
-
 struct listener_layout_notification {
 	void *userdata;
 	struct wl_listener listener;
@@ -123,72 +117,6 @@ struct ivi_layout *
 get_instance(void)
 {
 	return &ivilayout;
-}
-
-/**
- * Internal API to add/remove a link to ivi_surface from ivi_layer.
- */
-static void
-add_link_to_surface(struct ivi_layout_layer *ivilayer,
-		    struct link_layer *link_layer)
-{
-	struct link_layer *link = NULL;
-
-	wl_list_for_each(link, &ivilayer->link_to_surface, link_to_layer) {
-		if (link == link_layer)
-			return;
-	}
-
-	wl_list_insert(&ivilayer->link_to_surface, &link_layer->link_to_layer);
-}
-
-static void
-remove_link_to_surface(struct ivi_layout_layer *ivilayer)
-{
-	struct link_layer *link = NULL;
-	struct link_layer *next = NULL;
-
-	wl_list_for_each_safe(link, next, &ivilayer->link_to_surface, link_to_layer) {
-		wl_list_remove(&link->link_to_layer);
-		wl_list_remove(&link->link);
-		free(link);
-	}
-
-	wl_list_init(&ivilayer->link_to_surface);
-}
-
-/**
- * Internal API to add/remove a ivi_surface from ivi_layer.
- */
-static void
-add_ordersurface_to_layer(struct ivi_layout_surface *ivisurf,
-			  struct ivi_layout_layer *ivilayer)
-{
-	struct link_layer *link_layer = NULL;
-
-	link_layer = malloc(sizeof *link_layer);
-	if (link_layer == NULL) {
-		weston_log("fails to allocate memory\n");
-		return;
-	}
-
-	link_layer->ivilayer = ivilayer;
-	wl_list_insert(&ivisurf->layer_list, &link_layer->link);
-	add_link_to_surface(ivilayer, link_layer);
-}
-
-static void
-remove_ordersurface_from_layer(struct ivi_layout_surface *ivisurf)
-{
-	struct link_layer *link_layer = NULL;
-	struct link_layer *next = NULL;
-
-	wl_list_for_each_safe(link_layer, next, &ivisurf->layer_list, link) {
-		wl_list_remove(&link_layer->link);
-		wl_list_remove(&link_layer->link_to_layer);
-		free(link_layer);
-	}
-	wl_list_init(&ivisurf->layer_list);
 }
 
 /**
@@ -294,7 +222,6 @@ ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf)
 	wl_list_remove(&ivisurf->pending.link);
 	wl_list_remove(&ivisurf->order.link);
 	wl_list_remove(&ivisurf->link);
-	remove_ordersurface_from_layer(ivisurf);
 
 	wl_signal_emit(&layout->surface_notification.removed, ivisurf);
 
@@ -878,7 +805,7 @@ commit_layer_list(struct ivi_layout *layout)
 
 		wl_list_for_each_safe(ivisurf, next, &ivilayer->order.surface_list,
 					 order.link) {
-			remove_ordersurface_from_layer(ivisurf);
+			ivisurf->on_layer = NULL;
 			wl_list_remove(&ivisurf->order.link);
 			wl_list_init(&ivisurf->order.link);
 			ivisurf->event_mask |= IVI_NOTIFICATION_REMOVE;
@@ -891,7 +818,7 @@ commit_layer_list(struct ivi_layout *layout)
 			wl_list_remove(&ivisurf->order.link);
 			wl_list_insert(&ivilayer->order.surface_list,
 				       &ivisurf->order.link);
-			add_ordersurface_to_layer(ivisurf, ivilayer);
+			ivisurf->on_layer = ivilayer;
 			ivisurf->event_mask |= IVI_NOTIFICATION_ADD;
 		}
 
@@ -1642,7 +1569,6 @@ ivi_layout_get_layers_under_surface(struct ivi_layout_surface *ivisurf,
 				    int32_t *pLength,
 				    struct ivi_layout_layer ***ppArray)
 {
-	struct link_layer *link_layer = NULL;
 	int32_t length = 0;
 	int32_t n = 0;
 
@@ -1651,19 +1577,16 @@ ivi_layout_get_layers_under_surface(struct ivi_layout_surface *ivisurf,
 		return IVI_FAILED;
 	}
 
-	length = wl_list_length(&ivisurf->layer_list);
-
-	if (length != 0) {
+	if (ivisurf->on_layer != NULL) {
 		/* the Array must be free by module which called this function */
-		*ppArray = calloc(length, sizeof(struct ivi_layout_layer *));
+		length = 1;
+		*ppArray = calloc(length, sizeof(struct ivi_layout_screen *));
 		if (*ppArray == NULL) {
 			weston_log("fails to allocate memory\n");
 			return IVI_FAILED;
 		}
 
-		wl_list_for_each(link_layer, &ivisurf->layer_list, link) {
-			(*ppArray)[n++] = link_layer->ivilayer;
-		}
+		(*ppArray)[n++] = ivisurf->on_layer;
 	}
 
 	*pLength = length;
@@ -1761,7 +1684,6 @@ ivi_layout_layer_create_with_dimension(uint32_t id_layer,
 
 	ivilayer->ref_count = 1;
 	wl_signal_init(&ivilayer->property_changed);
-	wl_list_init(&ivilayer->link_to_surface);
 	ivilayer->layout = layout;
 	ivilayer->id_layer = id_layer;
 
@@ -1828,7 +1750,6 @@ ivi_layout_layer_destroy(struct ivi_layout_layer *ivilayer)
 	wl_list_remove(&ivilayer->order.link);
 	wl_list_remove(&ivilayer->link);
 
-	remove_link_to_surface(ivilayer);
 	ivi_layout_layer_remove_notification(ivilayer);
 
 	free(ivilayer);
@@ -2741,7 +2662,6 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 
 	wl_signal_init(&ivisurf->property_changed);
 	wl_signal_init(&ivisurf->configured);
-	wl_list_init(&ivisurf->layer_list);
 	ivisurf->id_surface = id_surface;
 	ivisurf->layout = layout;
 
