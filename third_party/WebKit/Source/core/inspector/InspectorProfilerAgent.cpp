@@ -35,7 +35,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -151,17 +150,17 @@ public:
     String m_title;
 };
 
-PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(v8::Isolate* isolate, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(v8::Isolate* isolate, InjectedScriptManager* injectedScriptManager, Client* client)
 {
-    return adoptPtrWillBeNoop(new InspectorProfilerAgent(isolate, injectedScriptManager, overlay));
+    return adoptPtrWillBeNoop(new InspectorProfilerAgent(isolate, injectedScriptManager, client));
 }
 
-InspectorProfilerAgent::InspectorProfilerAgent(v8::Isolate* isolate, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+InspectorProfilerAgent::InspectorProfilerAgent(v8::Isolate* isolate, InjectedScriptManager* injectedScriptManager, Client* client)
     : InspectorBaseAgent<InspectorProfilerAgent, InspectorFrontend::Profiler>("Profiler")
     , m_isolate(isolate)
     , m_injectedScriptManager(injectedScriptManager)
     , m_recordingCPUProfile(false)
-    , m_overlay(overlay)
+    , m_client(client)
 {
 }
 
@@ -267,8 +266,8 @@ void InspectorProfilerAgent::start(ErrorString* error)
         return;
     }
     m_recordingCPUProfile = true;
-    if (m_overlay)
-        m_overlay->suspendUpdates();
+    if (m_client)
+        m_client->profilingStarted();
     m_frontendInitiatedProfileId = nextProfileId();
     startProfiling(m_frontendInitiatedProfileId);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
@@ -287,8 +286,8 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
         return;
     }
     m_recordingCPUProfile = false;
-    if (m_overlay)
-        m_overlay->resumeUpdates();
+    if (m_client)
+        m_client->profilingStopped();
     RefPtr<TypeBuilder::Profiler::CPUProfile> cpuProfile = stopProfiling(m_frontendInitiatedProfileId, !!profile);
     if (profile) {
         *profile = cpuProfile;
@@ -367,7 +366,6 @@ void InspectorProfilerAgent::didLeaveNestedRunLoop()
 DEFINE_TRACE(InspectorProfilerAgent)
 {
     visitor->trace(m_injectedScriptManager);
-    visitor->trace(m_overlay);
     InspectorBaseAgent::trace(visitor);
 }
 

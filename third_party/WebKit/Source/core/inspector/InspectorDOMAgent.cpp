@@ -70,7 +70,6 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
-#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -306,11 +305,11 @@ bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, TypeBuilder::DOM
     }
 }
 
-InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, Client* client)
     : InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>("DOM")
     , m_pageAgent(pageAgent)
     , m_injectedScriptManager(injectedScriptManager)
-    , m_overlay(overlay)
+    , m_client(client)
     , m_domListener(nullptr)
     , m_documentNodeToIdMap(adoptPtrWillBeNoop(new NodeToIdMap()))
     , m_lastNodeId(1)
@@ -1144,7 +1143,8 @@ bool InspectorDOMAgent::handleGestureEvent(LocalFrame* frame, const PlatformGest
         return false;
     Node* node = hoveredNodeForEvent(frame, event, false);
     if (node && m_inspectModeHighlightConfig) {
-        m_overlay->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig, false);
+        if (m_client)
+            m_client->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig, false);
         inspect(node);
         return true;
     }
@@ -1157,7 +1157,8 @@ bool InspectorDOMAgent::handleTouchEvent(LocalFrame* frame, const PlatformTouchE
         return false;
     Node* node = hoveredNodeForEvent(frame, event, false);
     if (node && m_inspectModeHighlightConfig) {
-        m_overlay->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig, false);
+        if (m_client)
+            m_client->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig, false);
         inspect(node);
         return true;
     }
@@ -1213,15 +1214,18 @@ bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
 
     if (node && m_inspectModeHighlightConfig) {
         m_hoveredNodeForInspectMode = node;
-        m_overlay->highlightNode(node, eventTarget, *m_inspectModeHighlightConfig, event.ctrlKey() || event.metaKey());
+        if (m_client)
+            m_client->highlightNode(node, eventTarget, *m_inspectModeHighlightConfig, event.ctrlKey() || event.metaKey());
     }
     return true;
 }
 
 void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, JSONObject* highlightInspectorObject)
 {
+    // TODO(dgozman): move this to overlay.
     m_searchingForNode = searchMode;
-    m_overlay->setInspectModeEnabled(searchMode != NotSearching);
+    if (m_client)
+        m_client->setInspectModeEnabled(searchMode != NotSearching);
     if (searchMode != NotSearching) {
         m_inspectModeHighlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject);
     } else {
@@ -1294,7 +1298,8 @@ void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const Ref
     OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
     highlightConfig->content = parseColor(color);
     highlightConfig->contentOutline = parseColor(outlineColor);
-    m_overlay->highlightQuad(quad, *highlightConfig);
+    if (m_client)
+        m_client->highlightQuad(quad, *highlightConfig);
 }
 
 Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String& objectId)
@@ -1345,7 +1350,8 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSO
     if (!highlightConfig)
         return;
 
-    m_overlay->highlightNode(node, 0 /* eventTarget */, *highlightConfig, false);
+    if (m_client)
+        m_client->highlightNode(node, 0 /* eventTarget */, *highlightConfig, false);
 }
 
 void InspectorDOMAgent::highlightFrame(
@@ -1361,13 +1367,15 @@ void InspectorDOMAgent::highlightFrame(
         highlightConfig->showInfo = true; // Always show tooltips for frames.
         highlightConfig->content = parseColor(color);
         highlightConfig->contentOutline = parseColor(outlineColor);
-        m_overlay->highlightNode(frame->deprecatedLocalOwner(), 0 /* eventTarget */, *highlightConfig, false);
+        if (m_client)
+            m_client->highlightNode(frame->deprecatedLocalOwner(), 0 /* eventTarget */, *highlightConfig, false);
     }
 }
 
 void InspectorDOMAgent::hideHighlight(ErrorString*)
 {
-    m_overlay->hideHighlight();
+    if (m_client)
+        m_client->hideHighlight();
 }
 
 void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetElementId, const int* const anchorNodeId, int* newNodeId)
@@ -2227,7 +2235,6 @@ DEFINE_TRACE(InspectorDOMAgent)
     visitor->trace(m_domListener);
     visitor->trace(m_pageAgent);
     visitor->trace(m_injectedScriptManager);
-    visitor->trace(m_overlay);
 #if ENABLE(OILPAN)
     visitor->trace(m_documentNodeToIdMap);
     visitor->trace(m_danglingNodeToIdMaps);

@@ -1662,7 +1662,6 @@
             'inspector/InspectorLayerTreeAgent.h',
             'inspector/InspectorMemoryAgent.cpp',
             'inspector/InspectorMemoryAgent.h',
-            'inspector/InspectorOverlay.h',
             'inspector/InspectorOverlayHost.cpp',
             'inspector/InspectorOverlayHost.h',
             'inspector/InspectorPageAgent.cpp',

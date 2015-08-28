@@ -38,7 +38,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -52,17 +51,15 @@ using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager)
 {
-    return adoptPtrWillBeNoop(new PageDebuggerAgent(mainThreadDebugger, pageAgent, injectedScriptManager, overlay));
+    return adoptPtrWillBeNoop(new PageDebuggerAgent(mainThreadDebugger, pageAgent, injectedScriptManager));
 }
 
-PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager)
     : InspectorDebuggerAgent(injectedScriptManager, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(pageAgent->inspectedFrame()))
     , m_pageAgent(pageAgent)
-    , m_overlay(overlay)
 {
-    m_overlay->setListener(this);
 }
 
 PageDebuggerAgent::~PageDebuggerAgent()
@@ -72,7 +69,6 @@ PageDebuggerAgent::~PageDebuggerAgent()
 DEFINE_TRACE(PageDebuggerAgent)
 {
     visitor->trace(m_pageAgent);
-    visitor->trace(m_overlay);
     InspectorDebuggerAgent::trace(visitor);
 }
 
@@ -119,18 +115,6 @@ void PageDebuggerAgent::muteConsole()
 void PageDebuggerAgent::unmuteConsole()
 {
     FrameConsole::unmute();
-}
-
-void PageDebuggerAgent::overlayResumed()
-{
-    ErrorString error;
-    resume(&error);
-}
-
-void PageDebuggerAgent::overlaySteppedOver()
-{
-    ErrorString error;
-    stepOver(&error);
 }
 
 InjectedScript PageDebuggerAgent::defaultInjectedScript()

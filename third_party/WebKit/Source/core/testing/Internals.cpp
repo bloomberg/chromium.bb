@@ -99,7 +99,6 @@
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InstanceCounters.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutMenuList.h"

@@ -56,7 +56,6 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -257,9 +256,9 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
     return decodeBuffer(data, size, textEncodingName, result);
 }
 
-PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(LocalFrame* inspectedFrame, InspectorOverlay* overlay, InspectorResourceContentLoader* resourceContentLoader)
+PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(LocalFrame* inspectedFrame, Client* client, InspectorResourceContentLoader* resourceContentLoader)
 {
-    return adoptPtrWillBeNoop(new InspectorPageAgent(inspectedFrame, overlay, resourceContentLoader));
+    return adoptPtrWillBeNoop(new InspectorPageAgent(inspectedFrame, client, resourceContentLoader));
 }
 
 void InspectorPageAgent::setDebuggerAgent(InspectorDebuggerAgent* debuggerAgent)
@@ -350,11 +349,11 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
 
-InspectorPageAgent::InspectorPageAgent(LocalFrame* inspectedFrame, InspectorOverlay* overlay, InspectorResourceContentLoader* resourceContentLoader)
+InspectorPageAgent::InspectorPageAgent(LocalFrame* inspectedFrame, Client* client, InspectorResourceContentLoader* resourceContentLoader)
     : InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>("Page")
     , m_inspectedFrame(inspectedFrame)
     , m_debuggerAgent(nullptr)
-    , m_overlay(overlay)
+    , m_client(client)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
     , m_reloading(false)
@@ -367,6 +366,8 @@ void InspectorPageAgent::restore()
     if (m_state->getBoolean(PageAgentState::pageAgentEnabled)) {
         ErrorString error;
         enable(&error);
+        if (m_client)
+            m_client->setShowViewportSizeOnResize(m_state->getBoolean(PageAgentState::showSizeOnResize), m_state->getBoolean(PageAgentState::showGridOnResize));
     }
 }
 
@@ -698,15 +699,14 @@ void InspectorPageAgent::didRunJavaScriptDialog(bool result)
 
 void InspectorPageAgent::didLayout()
 {
-    if (!m_enabled)
-        return;
-    m_overlay->update();
+    if (m_enabled && m_client)
+        m_client->pageLayoutInvalidated(false);
 }
 
 void InspectorPageAgent::didScroll()
 {
-    if (m_enabled)
-        m_overlay->update();
+    if (m_enabled && m_client)
+        m_client->pageLayoutInvalidated(false);
 }
 
 void InspectorPageAgent::didResizeMainFrame()
@@ -714,16 +714,16 @@ void InspectorPageAgent::didResizeMainFrame()
     if (!inspectedFrame()->isMainFrame())
         return;
 #if !OS(ANDROID)
-    if (m_enabled && m_state->getBoolean(PageAgentState::showSizeOnResize))
-        m_overlay->showAndHideViewSize(m_state->getBoolean(PageAgentState::showGridOnResize));
+    if (m_enabled && m_client)
+        m_client->pageLayoutInvalidated(true);
 #endif
     frontend()->frameResized();
 }
 
 void InspectorPageAgent::didRecalculateStyle(int)
 {
-    if (m_enabled)
-        m_overlay->update();
+    if (m_enabled && m_client)
+        m_client->pageLayoutInvalidated(false);
 }
 
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
@@ -805,18 +805,20 @@ void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, co
 {
     m_state->setBoolean(PageAgentState::showSizeOnResize, show);
     m_state->setBoolean(PageAgentState::showGridOnResize, asBool(showGrid));
+    if (m_client)
+        m_client->setShowViewportSizeOnResize(show, asBool(showGrid));
 }
 
 void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)
 {
-    m_overlay->setPausedInDebuggerMessage(message);
+    if (m_client)
+        m_client->setPausedInDebuggerMessage(message);
 }
 
 DEFINE_TRACE(InspectorPageAgent)
 {
     visitor->trace(m_inspectedFrame);
     visitor->trace(m_debuggerAgent);
-    visitor->trace(m_overlay);
     visitor->trace(m_inspectorResourceContentLoader);
     InspectorBaseAgent::trace(visitor);
 }

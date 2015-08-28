@@ -54,7 +54,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorMemoryAgent.h"
-#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
@@ -284,7 +283,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
     // See http://crbug.com/526162.
     bool isMainFrame = view && !frame->parent();
     if (!isMainFrame) {
-        WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlayImpl::createEmpty());
+        WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, nullptr);
         if (frame->frameWidget())
             agent->layerTreeViewChanged(toWebFrameWidgetImpl(frame->frameWidget())->layerTreeView());
         return adoptPtrWillBeNoop(agent);
@@ -308,7 +307,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* webLocalFrameImpl,
     WebDevToolsAgentClient* client,
-    PassOwnPtrWillBeRawPtr<InspectorOverlay> overlay)
+    PassOwnPtrWillBeRawPtr<InspectorOverlayImpl> overlay)
     : m_client(client)
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_attached(false)
@@ -462,7 +461,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorApplicationCacheAgent::create(m_pageAgent));
 
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_pageAgent, injectedScriptManager, m_overlay.get()));
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_pageAgent, injectedScriptManager));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
     m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(debuggerAgent->v8DebuggerAgent(), m_instrumentingAgents.get()));
@@ -486,6 +485,9 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
         bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()),
         mainThreadDebugger->debugger(),
         adoptPtr(new PageInjectedScriptHostClient()));
+
+    if (m_overlay)
+        m_overlay->init(m_cssAgent.get(), debuggerAgent);
 }
 
 void WebDevToolsAgentImpl::registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
@@ -503,7 +505,6 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId)
 
     initializeDeferredAgents();
     m_resourceAgent->setHostId(hostId);
-    m_overlay->setLayoutEditor(LayoutEditor::create(m_cssAgent.get()));
 
     m_inspectorFrontend = adoptPtr(new InspectorFrontend(this));
     // We can reconnect to existing front-end -> unmute state.
@@ -546,8 +547,8 @@ void WebDevToolsAgentImpl::detach()
     m_inspectorFrontend.clear();
 
     // Release overlay resources.
-    m_overlay->clear();
-    m_overlay->setLayoutEditor(nullptr);
+    if (m_overlay)
+        m_overlay->clear();
     InspectorInstrumentation::frontendDeleted();
     InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
 

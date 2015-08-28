@@ -37,6 +37,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/input/EventHandler.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/LayoutEditor.h"
 #include "core/loader/EmptyClients.h"
@@ -56,37 +57,6 @@
 #include <v8.h>
 
 namespace blink {
-
-namespace {
-
-class InspectorOverlayStub : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlayStub>, public InspectorOverlay {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlayStub);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayStub);
-public:
-    InspectorOverlayStub() { }
-    DECLARE_TRACE();
-
-    // InspectorOverlay implementation.
-    void update() override { }
-    void setPausedInDebuggerMessage(const String*) override { }
-    void setInspectModeEnabled(bool) override { }
-    void hideHighlight() override { }
-    void highlightNode(Node*, Node* eventTarget, const InspectorHighlightConfig&, bool omitTooltip) override { }
-    void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&) override { }
-    void showAndHideViewSize(bool showGrid) override { }
-    void setListener(InspectorOverlay::Listener* listener) override { }
-    void suspendUpdates() override { }
-    void resumeUpdates() override { }
-    void clear() override { }
-    void setLayoutEditor(PassOwnPtrWillBeRawPtr<LayoutEditor>) override { }
-};
-
-DEFINE_TRACE(InspectorOverlayStub)
-{
-    InspectorOverlay::trace(visitor);
-}
-
-} // anonymous namespace
 
 class InspectorOverlayImpl::InspectorPageOverlayDelegate final : public PageOverlay::Delegate {
 public:
@@ -164,18 +134,13 @@ private:
 };
 
 
-// static
-PassOwnPtrWillBeRawPtr<InspectorOverlay> InspectorOverlayImpl::createEmpty()
-{
-    return adoptPtrWillBeNoop(new InspectorOverlayStub());
-}
-
 InspectorOverlayImpl::InspectorOverlayImpl(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)
     , m_inspectModeEnabled(false)
     , m_overlayHost(InspectorOverlayHost::create())
     , m_drawViewSize(false)
     , m_drawViewSizeWithGrid(false)
+    , m_resizeTimerActive(false)
     , m_omitTooltip(false)
     , m_timer(this, &InspectorOverlayImpl::onTimer)
     , m_suspendCount(0)
@@ -197,9 +162,15 @@ DEFINE_TRACE(InspectorOverlayImpl)
     visitor->trace(m_overlayPage);
     visitor->trace(m_overlayChromeClient);
     visitor->trace(m_overlayHost);
-    visitor->trace(m_listener);
     visitor->trace(m_layoutEditor);
-    InspectorOverlay::trace(visitor);
+}
+
+void InspectorOverlayImpl::init(InspectorCSSAgent* cssAgent, InspectorDebuggerAgent* debuggerAgent)
+{
+    m_layoutEditor = LayoutEditor::create(cssAgent);
+    // TODO(dgozman): overlay should be a listener, not layout editor.
+    m_overlayHost->setLayoutEditorListener(m_layoutEditor.get());
+    m_debuggerAgent = debuggerAgent;
 }
 
 void InspectorOverlayImpl::invalidate()
@@ -297,19 +268,11 @@ void InspectorOverlayImpl::highlightQuad(PassOwnPtr<FloatQuad> quad, const Inspe
     update();
 }
 
-void InspectorOverlayImpl::showAndHideViewSize(bool showGrid)
-{
-    m_drawViewSize = true;
-    m_drawViewSizeWithGrid = showGrid;
-    update();
-    m_timer.startOneShot(1, FROM_HERE);
-}
-
 bool InspectorOverlayImpl::isEmpty()
 {
     if (m_suspendCount)
         return true;
-    bool hasAlwaysVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad  || m_drawViewSize;
+    bool hasAlwaysVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad  || (m_resizeTimerActive && m_drawViewSize);
     bool hasInvisibleInInspectModeElements = !m_pausedInDebuggerMessage.isNull();
     return !(hasAlwaysVisibleElements || (hasInvisibleInInspectModeElements && !m_inspectModeEnabled));
 }
@@ -388,7 +351,7 @@ void InspectorOverlayImpl::drawPausedInDebuggerMessage()
 
 void InspectorOverlayImpl::drawViewSize()
 {
-    if (m_drawViewSize)
+    if (m_resizeTimerActive && m_drawViewSize)
         evaluateInOverlay("drawViewSize", m_drawViewSizeWithGrid ? "true" : "false");
 }
 
@@ -492,7 +455,7 @@ void InspectorOverlayImpl::evaluateInOverlay(const String& method, PassRefPtr<JS
 
 void InspectorOverlayImpl::onTimer(Timer<InspectorOverlayImpl>*)
 {
-    m_drawViewSize = false;
+    m_resizeTimerActive = false;
     update();
 }
 
@@ -503,7 +466,7 @@ void InspectorOverlayImpl::clear()
         m_overlayPage.clear();
         m_overlayChromeClient.clear();
     }
-    m_drawViewSize = false;
+    m_resizeTimerActive = false;
     m_pausedInDebuggerMessage = String();
     m_inspectModeEnabled = false;
     m_timer.stop();
@@ -512,31 +475,44 @@ void InspectorOverlayImpl::clear()
 
 void InspectorOverlayImpl::overlayResumed()
 {
-    if (m_listener)
-        m_listener->overlayResumed();
+    if (m_debuggerAgent) {
+        ErrorString error;
+        m_debuggerAgent->resume(&error);
+    }
 }
 
 void InspectorOverlayImpl::overlaySteppedOver()
 {
-    if (m_listener)
-        m_listener->overlaySteppedOver();
+    if (m_debuggerAgent) {
+        ErrorString error;
+        m_debuggerAgent->stepOver(&error);
+    }
 }
 
-void InspectorOverlayImpl::suspendUpdates()
+void InspectorOverlayImpl::profilingStarted()
 {
     if (!m_suspendCount++)
         clear();
 }
 
-void InspectorOverlayImpl::resumeUpdates()
+void InspectorOverlayImpl::profilingStopped()
 {
     --m_suspendCount;
 }
 
-void InspectorOverlayImpl::setLayoutEditor(PassOwnPtrWillBeRawPtr<LayoutEditor> layoutEditor)
+void InspectorOverlayImpl::pageLayoutInvalidated(bool resized)
 {
-    m_layoutEditor = layoutEditor;
-    m_overlayHost->setLayoutEditorListener(m_layoutEditor.get());
+    if (resized && m_drawViewSize) {
+        m_resizeTimerActive = true;
+        m_timer.startOneShot(1, FROM_HERE);
+    }
+    update();
+}
+
+void InspectorOverlayImpl::setShowViewportSizeOnResize(bool show, bool showGrid)
+{
+    m_drawViewSize = show;
+    m_drawViewSizeWithGrid = showGrid;
 }
 
 } // namespace blink

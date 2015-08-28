@@ -48,7 +48,6 @@ namespace blink {
 class ExecutionContext;
 class InjectedScriptManager;
 class InspectorFrontend;
-class InspectorOverlay;
 
 typedef String ErrorString;
 
@@ -56,7 +55,14 @@ class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<Inspe
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorProfilerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> create(v8::Isolate*, InjectedScriptManager*, InspectorOverlay*);
+    class Client {
+    public:
+        virtual ~Client() { }
+        virtual void profilingStarted() { }
+        virtual void profilingStopped() { }
+    };
+
+    static PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> create(v8::Isolate*, InjectedScriptManager*, Client*);
     ~InspectorProfilerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -77,7 +83,7 @@ public:
     void didLeaveNestedRunLoop();
 
 private:
-    InspectorProfilerAgent(v8::Isolate*, InjectedScriptManager*, InspectorOverlay*);
+    InspectorProfilerAgent(v8::Isolate*, InjectedScriptManager*, Client*);
     bool enabled();
     void doEnable();
     void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>*);
@@ -96,7 +102,7 @@ private:
     class ProfileDescriptor;
     Vector<ProfileDescriptor> m_startedProfiles;
     String m_frontendInitiatedProfileId;
-    RawPtrWillBeMember<InspectorOverlay> m_overlay;
+    Client* m_client;
 };
 
 } // namespace blink

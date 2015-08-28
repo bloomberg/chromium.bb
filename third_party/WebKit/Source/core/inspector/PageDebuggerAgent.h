@@ -33,7 +33,6 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorOverlay.h"
 
 using blink::TypeBuilder::Debugger::ExceptionDetails;
 using blink::TypeBuilder::Debugger::ScriptId;
@@ -46,13 +45,12 @@ class InspectorPageAgent;
 class MainThreadDebugger;
 
 class CORE_EXPORT PageDebuggerAgent final
-    : public InspectorDebuggerAgent
-    , public InspectorOverlay::Listener {
+    : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PageDebuggerAgent);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PageDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
+    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*);
     ~PageDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -71,16 +69,11 @@ private:
     void muteConsole() override;
     void unmuteConsole() override;
 
-    // InspectorOverlay::Listener implementation.
-    void overlayResumed() override;
-    void overlaySteppedOver() override;
-
     InjectedScript defaultInjectedScript() override;
     bool canExecuteScripts() const;
 
-    PageDebuggerAgent(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
+    PageDebuggerAgent(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*);
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    RawPtrWillBeMember<InspectorOverlay> m_overlay;
     HashMap<String, String> m_compiledScriptURLs;
 };
 

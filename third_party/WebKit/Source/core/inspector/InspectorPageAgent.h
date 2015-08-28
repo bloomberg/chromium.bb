@@ -47,7 +47,6 @@ class DocumentLoader;
 class FrameHost;
 class InspectorCSSAgent;
 class InspectorDebuggerAgent;
-class InspectorOverlay;
 class InspectorResourceContentLoader;
 class KURL;
 class LocalFrame;
@@ -59,6 +58,14 @@ typedef String ErrorString;
 class CORE_EXPORT InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>, public InspectorBackendDispatcher::PageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
 public:
+    class Client {
+    public:
+        virtual ~Client() { }
+        virtual void pageLayoutInvalidated(bool resized) { }
+        virtual void setShowViewportSizeOnResize(bool show, bool showGrid) { }
+        virtual void setPausedInDebuggerMessage(const String*) { }
+    };
+
     enum ResourceType {
         DocumentResource,
         StylesheetResource,
@@ -74,7 +81,7 @@ public:
         OtherResource
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, InspectorOverlay*, InspectorResourceContentLoader*);
+    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, Client*, InspectorResourceContentLoader*);
     void setDebuggerAgent(InspectorDebuggerAgent*);
 
     static Vector<Document*> importsForFrame(LocalFrame*);
@@ -134,7 +141,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorPageAgent(LocalFrame* inspectedFrame, InspectorOverlay*, InspectorResourceContentLoader*);
+    InspectorPageAgent(LocalFrame* inspectedFrame, Client*, InspectorResourceContentLoader*);
 
     void finishReload();
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
@@ -145,7 +152,7 @@ private:
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
-    RawPtrWillBeMember<InspectorOverlay> m_overlay;
+    Client* m_client;
     long m_lastScriptIdentifier;
     String m_pendingScriptToEvaluateOnLoadOnce;
     String m_scriptToEvaluateOnLoadOnce;
