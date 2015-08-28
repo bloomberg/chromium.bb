@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/CrossThreadCopier.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -63,6 +64,7 @@ enum ContentSecurityPolicyEnforcement {
 };
 
 struct ThreadableLoaderOptions {
+    DISALLOW_ALLOCATION();
     ThreadableLoaderOptions()
         : preflightPolicy(ConsiderPreflight)
         , crossOriginRequestPolicy(DenyCrossOriginRequests)
@@ -80,6 +82,7 @@ struct ThreadableLoaderOptions {
 
 // Encode AtomicString as String to cross threads.
 struct CrossThreadThreadableLoaderOptionsData {
+    STACK_ALLOCATED();
     explicit CrossThreadThreadableLoaderOptionsData(const ThreadableLoaderOptions& options)
         : preflightPolicy(options.preflightPolicy)
         , crossOriginRequestPolicy(options.crossOriginRequestPolicy)

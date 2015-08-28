@@ -34,6 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -47,6 +48,7 @@ public:
     enum Method { GetMethod, PostMethod, DialogMethod };
 
     class Attributes {
+        DISALLOW_ALLOCATION();
         WTF_MAKE_NONCOPYABLE(Attributes);
     public:
         Attributes()

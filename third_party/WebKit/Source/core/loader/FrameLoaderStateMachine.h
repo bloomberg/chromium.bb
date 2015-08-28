@@ -30,6 +30,7 @@
 #define FrameLoaderStateMachine_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -37,6 +38,7 @@ namespace blink {
 // Encapsulates a state machine for FrameLoader. Note that this is different from FrameState,
 // which stores the state of the current load that FrameLoader is executing.
 class CORE_EXPORT FrameLoaderStateMachine {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(FrameLoaderStateMachine);
 public:
     FrameLoaderStateMachine();

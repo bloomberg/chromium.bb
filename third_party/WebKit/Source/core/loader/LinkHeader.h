@@ -7,11 +7,13 @@
 
 #include "core/CoreExport.h"
 #include "core/html/CrossOriginAttribute.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class LinkHeader {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     template <typename CharType>
     LinkHeader(CharType*& position, CharType* end);
@@ -38,6 +40,7 @@ private:
 };
 
 class CORE_EXPORT LinkHeaderSet {
+    STACK_ALLOCATED();
 public:
     LinkHeaderSet(const String& header);
 

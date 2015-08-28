@@ -32,6 +32,7 @@
 #define TextResourceDecoderBuilder_h
 
 #include "core/html/parser/TextResourceDecoder.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -41,6 +42,7 @@ class Document;
 class TextResourceDecoder;
 
 class TextResourceDecoderBuilder {
+    DISALLOW_ALLOCATION();
 public:
     TextResourceDecoderBuilder(const AtomicString& mimeType, const AtomicString& encoding);
     ~TextResourceDecoderBuilder();

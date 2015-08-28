@@ -131,6 +131,7 @@ public:
     ClientHintsPreferences& clientHintsPreferences() { return m_clientHintsPreferences; }
 
     struct InitialScrollState {
+        DISALLOW_ALLOCATION();
         InitialScrollState()
             : wasScrolledByUser(false)
             , didRestoreFromHistory(false)

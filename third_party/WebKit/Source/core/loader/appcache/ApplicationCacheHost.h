@@ -34,6 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebApplicationCacheHostClient.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -76,6 +77,7 @@ namespace blink {
         };
 
         struct CacheInfo {
+            STACK_ALLOCATED();
             CacheInfo(const KURL& manifest, double creationTime, double updateTime, long long size)
                 : m_manifest(manifest)
                 , m_creationTime(creationTime)
@@ -88,6 +90,7 @@ namespace blink {
         };
 
         struct ResourceInfo {
+            ALLOW_ONLY_INLINE_ALLOCATION();
             ResourceInfo(const KURL& resource, bool isMaster, bool isManifest, bool isFallback, bool isForeign, bool isExplicit, long long size)
                 : m_resource(resource)
                 , m_isMaster(isMaster)
