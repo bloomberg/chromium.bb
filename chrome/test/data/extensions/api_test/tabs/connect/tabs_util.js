@@ -1,3 +1,7 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Utility functions to help with tabs/windows testing.
 
 // Removes current windows and creates one window with tabs set to
@@ -39,32 +43,3 @@ function createWindow(tabUrls, winOptions, callback) {
     callback(win.id, newTabIds);
   });
 }
-
-// Waits until all tabs (yes, in every window) have status "complete".
-// This is useful to prevent test overlap when testing tab events.
-// |callback| should look like function() {...}.  Note that |callback| expects
-// zero arguments.
-function waitForAllTabs(callback) {
-  // Wait for all tabs to load.
-  function waitForTabs(){
-    chrome.windows.getAll({"populate": true}, function(windows) {
-      var ready = true;
-      for (var i in windows){
-        for (var j in windows[i].tabs) {
-          if (windows[i].tabs[j].status != "complete") {
-            ready = false;
-            break;
-          }
-        }
-        if (!ready)
-          break;
-      }
-      if (ready)
-        callback();
-      else
-        window.setTimeout(waitForTabs, 30);
-    });
-  }
-  waitForTabs();
-}
-

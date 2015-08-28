@@ -27,6 +27,7 @@ void ExtensionMessagePort::DispatchOnConnect(
     const std::string& channel_name,
     scoped_ptr<base::DictionaryValue> source_tab,
     int source_frame_id,
+    int target_tab_id,
     int target_frame_id,
     int guest_process_id,
     int guest_render_frame_routing_id,
@@ -43,6 +44,7 @@ void ExtensionMessagePort::DispatchOnConnect(
   info.target_id = target_extension_id;
   info.source_id = source_extension_id;
   info.source_url = source_url;
+  info.target_tab_id = target_tab_id;
   info.target_frame_id = target_frame_id;
   info.guest_process_id = guest_process_id;
   info.guest_render_frame_routing_id = guest_render_frame_routing_id;

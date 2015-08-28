@@ -25,6 +25,7 @@ class ExtensionMessagePort : public MessageService::MessagePort {
                          const std::string& channel_name,
                          scoped_ptr<base::DictionaryValue> source_tab,
                          int source_frame_id,
+                         int target_tab_id,
                          int target_frame_id,
                          int guest_process_id,
                          int guest_render_frame_routing_id,

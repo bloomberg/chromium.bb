@@ -180,7 +180,12 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
   // The URL of the frame that initiated the request.
   IPC_STRUCT_MEMBER(GURL, source_url)
 
-  // The ID of the frame that is the target of the request.
+  // The ID of the tab that is the target of the request, or -1 if there is no
+  // target tab.
+  IPC_STRUCT_MEMBER(int, target_tab_id)
+
+  // The ID of the frame that is the target of the request, or -1 if there is
+  // no target frame (implying the message is for all frames).
   IPC_STRUCT_MEMBER(int, target_frame_id)
 
   // The process ID of the webview that initiated the request.
