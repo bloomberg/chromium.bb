@@ -1540,6 +1540,7 @@ crbug.com/521764 [ Win10 ] printing/webgl-repeated-printing.html [ Crash Timeout
 crbug.com/521764 [ Win10 ] svg/custom/textPath-remove-path-pattern.svg [ ImageOnlyFailure Pass Timeout ]
 crbug.com/521764 [ Win10 ] accessibility/inline-text-changes.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/loader/javascript-detached-frame-no-crash.html [ Pass Timeout ]
+crbug.com/521764 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/canvas-resize-reset.html [ Pass Timeout ]
 
 # GrGLConvolutionEffect optimization causes blink layout test image differences
 crbug.com/505086 css3/filters/effect-blur-hw.html [ NeedsManualRebaseline ]
