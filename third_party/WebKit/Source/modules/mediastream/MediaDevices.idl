@@ -8,9 +8,9 @@
 
 [
     GarbageCollected,
-    RuntimeEnabled=EnumerateDevices
+    RuntimeEnabled=MediaDevices
 ]
 interface MediaDevices {
-    [RuntimeEnabled=EnumerateDevices, TypeChecking=Interface, CallWith=ScriptState] Promise<sequence<MediaDeviceInfo>> enumerateDevices();
-    [CallWith=ScriptState, RaisesException] Promise<MediaStream> getUserMedia(MediaStreamConstraints options);
+    [TypeChecking=Interface, CallWith=ScriptState] Promise<sequence<MediaDeviceInfo>> enumerateDevices();
+    [RuntimeEnabled=GetUserMedia, CallWith=ScriptState, RaisesException] Promise<MediaStream> getUserMedia(MediaStreamConstraints options);
 };

@@ -63,7 +63,6 @@ DisplayList2dCanvas status=stable
 DurableStorage status=experimental
 ForceDisplayList2dCanvas
 EncryptedMedia status=stable
-EnumerateDevices status=experimental
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
 ExperimentalCanvasFeatures status=test
@@ -76,6 +75,7 @@ FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental
 Geofencing status=experimental
 GeometryInterfaces status=test
+GetUserMedia depends_on=MediaDevices, status=experimental
 GlobalCacheStorage status=stable
 ImageColorProfiles
 ImageOrientation status=test
@@ -93,6 +93,7 @@ FractionalScrollOffsets status=experimental
 Media status=stable
 MediaCapture
 MediaController depends_on=Media, status=experimental
+MediaDevices status=stable
 MediaSession
 MediaSource status=stable
 MediaSourceExperimental depends_on=MediaSource, status=experimental
