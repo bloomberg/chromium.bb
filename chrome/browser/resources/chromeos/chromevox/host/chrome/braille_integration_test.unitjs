@@ -47,7 +47,7 @@ CvoxBrailleIntegrationUnitTest.prototype = {
     cvox.ExtensionBridge = new FakeExtensionBridge(this.brailleBackground);
 
     this.braille = new cvox.ChromeBraille();
-    this.braille.setCommandListener(function(command, content) {
+    this.braille.setKeyEventHandlerForTest(function(command, content) {
       this.lastCommand = command;
       this.lastCommandContent = content;
     }.bind(this));

@@ -4,8 +4,8 @@
 
 goog.provide('cvox.ChromeVoxTester');
 
-goog.require('cvox.AbstractBraille');
 goog.require('cvox.AbstractEarcons');
+goog.require('cvox.BrailleInterface');
 goog.require('cvox.ChromeVoxEventWatcher');
 goog.require('cvox.ChromeVoxUserCommands');
 goog.require('cvox.LiveRegions');
@@ -40,7 +40,7 @@ cvox.ChromeVoxTester.setUp = function(doc) {
   cvox.ChromeVox.earcons = new cvox.AbstractEarcons();
   cvox.ChromeVox.earcons.playEarcon = function(earcon) { };
 
-  cvox.ChromeVox.braille = new cvox.AbstractBraille();
+  cvox.ChromeVox.braille = new cvox.BrailleInterface();
   cvox.ChromeVox.braille.write = function(params) {};
 
   cvox.ChromeVox.msgs = new cvox.TestMsgs();

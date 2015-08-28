@@ -10,7 +10,6 @@
 
 goog.provide('cvox.HostFactory');
 
-goog.require('cvox.AbstractBraille');
 goog.require('cvox.AbstractEarcons');
 goog.require('cvox.AbstractHost');
 goog.require('cvox.AbstractMathJax');

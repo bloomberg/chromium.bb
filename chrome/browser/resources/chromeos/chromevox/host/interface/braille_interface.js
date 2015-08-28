@@ -27,15 +27,3 @@ cvox.BrailleInterface = function() { };
  */
 cvox.BrailleInterface.prototype.write =
     function(params) { };
-
-/**
- * Sets a callback for handling braille keyboard commands.
- *
- * @param {function(!cvox.BrailleKeyEvent, cvox.NavBraille)} func The function
- * to be called when the user invokes a keyboard command on the braille
- * display. The first parameter is the key event.  The second parameter is
- * the content that was present on the display when the key command
- * was invoked, if available.
- */
-cvox.BrailleInterface.prototype.setCommandListener =
-    function(func) { };

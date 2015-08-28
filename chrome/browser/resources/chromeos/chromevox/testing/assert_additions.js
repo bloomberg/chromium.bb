@@ -20,7 +20,7 @@ function assertUndefined(a) {
 function assertNotNullNorUndefined(obj, opt_message) {
   if (obj === undefined || obj === null) {
     throw new Error('Can\'t be null or undefined: ' + (opt_message || '') +
-        '\n' + 'Actual: ' + a);
+        '\n' + 'Actual: ' + obj);
   }
 }
 

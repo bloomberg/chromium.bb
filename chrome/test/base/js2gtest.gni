@@ -4,6 +4,19 @@
 
 import("//build/module_args/v8.gni")
 
+# Variables:
+#   test_type: One of 'webui', 'unit' or 'extension' indicating what
+#       environment the test runs under.
+#   sources: List of javascript test source files.
+#   deps_js: Javascript file with closure library dependencies.  Only needed
+#       if the test fixtures use closureModuleDeps.
+#   gen_include_files: List of javascript files used in GEN_INCLUDE calls
+#       in the tests and therefore considered input to the C++ generation step.
+#   extra_js_files: List of javascript files needed by the test at runtime,
+#       typically listed in the extraLibraries member of the test fixture.
+#   defines
+#   deps
+#   visibility
 template("js2gtest") {
   assert(defined(invoker.test_type) &&
          (invoker.test_type == "webui" || invoker.test_type == "unit" ||
@@ -34,6 +47,9 @@ template("js2gtest") {
     inputs = [ d8_path ] + input_js
     if (defined(invoker.deps_js)) {
       inputs += [ invoker.deps_js ]
+    }
+    if (defined(invoker.gen_include_files)) {
+      inputs += invoker.gen_include_files
     }
 
     # Outputs. The script will copy the source files to the output directory,

@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 // Include test fixture.
-GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
+GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js',
+             '../../testing/assert_additions.js']);
 
-GEN_INCLUDE(['../../testing/mock_tts.js']);
+GEN_INCLUDE(['../../testing/mock_feedback.js']);
 
 /**
  * Test fixture for Background.
@@ -19,10 +20,14 @@ function BackgroundTest() {
 BackgroundTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
-  /** @override */
-  setUp: function() {
-    this.mockTts = new MockTts();
-    cvox.ChromeVox.tts = this.mockTts;
+  /**
+   * @return {!MockFeedback}
+   */
+  createMockFeedback: function() {
+    var mockFeedback = new MockFeedback(this.newCallback(),
+                                        this.newCallback.bind(this));
+    mockFeedback.install();
+    return mockFeedback;
   },
 
   /**
@@ -69,103 +74,144 @@ SYNC_TEST_F('BackgroundTest', 'NextNamespaces', function() {
   assertEquals('function', typeof(Background));
 });
 
-/** Tests feedback once a page loads. */
-TEST_F('BackgroundTest', 'MANUAL_InitialFeedback', function() {
-  cvox.ChromeVox.tts.expectSpeech('start', this.newCallback());
-
-  this.runWithTab(function() {/*!
-    <p>start
-    <p>end
-  */});
-});
-
 /** Tests consistency of navigating forward and backward. */
-TEST_F('BackgroundTest', 'MANUAL_ForwardBackwardNavigation', function() {
+TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
+  var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
     var doCmd = this.doCmd.bind(this);
-    var expectAfter =
-        cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
 
-    expectAfter('alpha', doCmd('nextLink'));
-    expectAfter('beta', doCmd('nextLink'));
-    expectAfter('delta', doCmd('nextLink'));
-    expectAfter('beta', doCmd('previousLink'));
+    mockFeedback.expectSpeech('start').expectBraille('start');
 
-    expectAfter('charlie', doCmd('nextHeading'));
-    expectAfter('foxtraut', doCmd('nextHeading'));
-    expectAfter('charlie', doCmd('previousHeading'));
+    mockFeedback.call(doCmd('nextLink'))
+        .expectSpeech('alpha', 'Link')
+        .expectBraille('alpha lnk');
+    mockFeedback.call(doCmd('nextLink'))
+        .expectSpeech('beta', 'Link')
+        .expectBraille('beta lnk');
+    mockFeedback.call(doCmd('nextLink'))
+        .expectSpeech('delta', 'Link')
+        .expectBraille('delta lnk');
+    mockFeedback.call(doCmd('previousLink'))
+        .expectSpeech('beta', 'Link')
+        .expectBraille('beta lnk');
+    mockFeedback.call(doCmd('nextHeading'))
+        .expectSpeech('Heading 1', 'charlie')
+        .expectBraille('h1 charlie');
+    mockFeedback.call(doCmd('nextHeading'))
+        .expectSpeech('Heading 2', 'foxtraut')
+        .expectBraille('h2 foxtraut');
+    mockFeedback.call(doCmd('previousHeading'))
+        .expectSpeech('Heading 1', 'charlie')
+        .expectBraille('h1 charlie');
 
-    expectAfter('delta', doCmd('nextElement'));
-    expectAfter('echo', doCmd('nextElement'));
-    expectAfter('foxtraut', doCmd('nextElement'));
-    expectAfter('end', doCmd('nextElement'));
-    expectAfter('foxtraut', doCmd('previousElement'));
-    expectAfter('end of test', doCmd('nextLine'));
+    mockFeedback.call(doCmd('nextElement'))
+        .expectSpeech('delta', 'Link')
+        .expectBraille('delta lnk');
+    mockFeedback.call(doCmd('nextElement'))
+        .expectSpeech('echo', 'Link')
+        .expectBraille('echo lnk');
+    mockFeedback.call(doCmd('nextElement'))
+        .expectSpeech('Heading 2', 'foxtraut')
+        .expectBraille('h2 foxtraut');
+    mockFeedback.call(doCmd('nextElement'))
+        .expectSpeech('end')
+        .expectBraille('end');
+    mockFeedback.call(doCmd('previousElement'))
+        .expectSpeech('Heading 2', 'foxtraut')
+        .expectBraille('h2 foxtraut');
+    mockFeedback.call(doCmd('nextLine'))
+        .expectSpeech('end', 'of test')
+        .expectBraille('end of test');
 
-    expectAfter('start', doCmd('goToBeginning'));
-    expectAfter('of test', doCmd('goToEnd'));
+    mockFeedback.call(doCmd('goToBeginning'))
+        .expectSpeech('start')
+        .expectBraille('start');
+    mockFeedback.call(doCmd('goToEnd'))
+        .expectSpeech('of test')
+        .expectBraille('of test');
 
-    cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+    mockFeedback.replay();
   });
 });
 
-TEST_F('BackgroundTest', 'MANUAL_CaretNavigation', function() {
+TEST_F('BackgroundTest', 'CaretNavigation', function() {
+  // TODO(plundblad): Add braille expectaions when crbug.com/523285 is fixed.
+  var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
     var doCmd = this.doCmd.bind(this);
-    var expectAfter =
-        cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
 
-    expectAfter('t', doCmd('nextCharacter'), true);
-    expectAfter('a', doCmd('nextCharacter'), true);
-    expectAfter('Link alpha', doCmd('nextWord'), true);
-    expectAfter('Link beta', doCmd('nextWord'), true);
-    expectAfter('Heading charlie', doCmd('nextWord'), true);
-    expectAfter('Link delta', doCmd('nextLine'), true);
-    expectAfter('Link echo', doCmd('nextLine'), true);
-    expectAfter('Heading foxtraut', doCmd('nextLine'), true);
-    expectAfter(
-        'end of test', doCmd('nextLine'), true);
-    expectAfter('n', doCmd('nextCharacter'), true);
-    expectAfter('e', doCmd('previousCharacter'), true);
-    expectAfter('Heading t', doCmd('previousCharacter'), true);
-    expectAfter('foxtraut', doCmd('previousWord'), true);
-    expectAfter('Link echo', doCmd('previousWord'), true);
-    expectAfter('Link a', doCmd('previousCharacter'), true);
-    expectAfter('t', doCmd('previousCharacter'), true);
-    expectAfter('Link echo', doCmd('nextWord'), true);
-
-    cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+    mockFeedback.expectSpeech('start');
+    mockFeedback.call(doCmd('nextCharacter'))
+        .expectSpeech('t');
+    mockFeedback.call(doCmd('nextCharacter'))
+        .expectSpeech('a');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('Link', 'alpha');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('Link', 'beta');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('Heading 1', 'charlie');
+    mockFeedback.call(doCmd('nextLine'))
+        .expectSpeech('Link', 'delta');
+    mockFeedback.call(doCmd('nextLine'))
+        .expectSpeech('Link', 'echo');
+    mockFeedback.call(doCmd('nextLine'))
+        .expectSpeech('Heading 2', 'foxtraut');
+    mockFeedback.call(doCmd('nextLine'))
+        .expectSpeech('end', 'of test');
+    mockFeedback.call(doCmd('nextCharacter'))
+        .expectSpeech('n');
+    mockFeedback.call(doCmd('previousCharacter'))
+        .expectSpeech('e');
+    mockFeedback.call(doCmd('previousCharacter'))
+        .expectSpeech('Heading 2', 't');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('foxtraut');
+    mockFeedback.call(doCmd('previousWord'))
+        .expectSpeech('Link', 'echo');
+    mockFeedback.call(doCmd('previousCharacter'))
+        .expectSpeech('Link', 'a');
+    mockFeedback.call(doCmd('previousCharacter'))
+        .expectSpeech('t');
+    mockFeedback.call(doCmd('nextWord'))
+        .expectSpeech('Link', 'echo');
+    mockFeedback.replay();
   });
 });
 
-// Flaky: http://crbug.com/451362
-TEST_F('BackgroundTest', 'DISABLED_SelectSingleBasic', function() {
+TEST_F('BackgroundTest', 'SelectSingleBasic', function() {
+  var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.formsDoc, function() {
     var sendDownToSelect =
         this.sendKeyToElement.bind(this, undefined, 'Down', '#fruitSelect');
-    var expect = cvox.ChromeVox.tts.expectSpeech.bind(cvox.ChromeVox.tts);
-    expect('apple Menu item  1 of 3 ', sendDownToSelect, true);
-    expect('grape  2 of 3 ', sendDownToSelect, true);
-    expect('banana  3 of 3 ', function() {}, true);
-    cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+    mockFeedback.expectSpeech('apple', 'Menu item', /1 of 3/)
+        .expectBraille('apple mnuitm 1/3')
+        .call(sendDownToSelect)
+        .expectSpeech('grape', /2 of 3/)
+        .expectBraille('grape mnuitm 2/3')
+        .call(sendDownToSelect)
+        .expectSpeech('banana', /3 of 3/)
+        .expectBraille('banana mnuitm 3/3');
+    mockFeedback.replay();
   });
 });
 
-TEST_F('BackgroundTest', 'MANUAL_ContinuousRead', function() {
+TEST_F('BackgroundTest', 'ContinuousRead', function() {
+  var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
-    cvox.ChromeVox.tts.expectSpeech('start');
-    cvox.ChromeVox.tts.expectSpeechAfter('start', this.doCmd('continuousRead'));
-    cvox.ChromeVox.tts.expectSpeech('alpha');
-    cvox.ChromeVox.tts.expectSpeech('Link');
-    cvox.ChromeVox.tts.expectSpeech('beta');
-    cvox.ChromeVox.tts.expectSpeech('Link');
-    cvox.ChromeVox.tts.expectSpeech('Heading 1');
-    cvox.ChromeVox.tts.expectSpeech('charlie');
-    cvox.ChromeVox.tts.finishExpectations();
+    mockFeedback.expectSpeech('start')
+        .call(this.doCmd('continuousRead'))
+        .expectSpeech(
+            'start',
+            'alpha', 'Link',
+            'beta', 'Link',
+            'Heading 1', 'charlie');
+    mockFeedback.replay();
   });
 });
 
 TEST_F('BackgroundTest', 'LiveRegionAddElement', function() {
+  var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
       <h1>Document with live region</h1>
@@ -179,13 +225,14 @@ TEST_F('BackgroundTest', 'LiveRegionAddElement', function() {
     */},
     function(rootNode) {
       var go = rootNode.find({ role: chrome.automation.RoleType.button });
-      go.doDefault();
-      cvox.ChromeVox.tts.expectSpeech('Hello, world');
-      cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+      mockFeedback.call(go.doDefault.bind(go))
+          .expectSpeech('Hello, world');
+      mockFeedback.replay();
     });
 });
 
 TEST_F('BackgroundTest', 'LiveRegionRemoveElement', function() {
+  var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
       <h1>Document with live region</h1>
@@ -200,39 +247,47 @@ TEST_F('BackgroundTest', 'LiveRegionRemoveElement', function() {
     function(rootNode) {
       var go = rootNode.find({ role: chrome.automation.RoleType.button });
       go.doDefault();
-      cvox.ChromeVox.tts.expectSpeech('removed:');
-      cvox.ChromeVox.tts.expectSpeech('Hello, world');
-      cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+      mockFeedback.expectSpeech('removed:')
+          .expectSpeech('Hello, world');
+      mockFeedback.replay();
     });
 });
 
 TEST_F('BackgroundTest', 'InitialFocus', function() {
-  cvox.ChromeVox.tts.expectSpeech('a');
-  cvox.ChromeVox.tts.expectSpeech('Link', this.newCallback());
-  this.runWithLoadedTree('<a href="a">a</a>', function() {});
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree('<a href="a">a</a>',
+    function(rootNode) {
+      mockFeedback.expectSpeech('a')
+          .expectSpeech('Link');
+      mockFeedback.replay();
+    });
 });
 
 TEST_F('BackgroundTest', 'AriaLabel', function() {
+  var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<a aria-label="foo" href="a">a</a>',
     function(rootNode) {
-      cvox.ChromeVox.tts.expectSpeech('foo');
-      cvox.ChromeVox.tts.expectSpeech('Link', this.newCallback());
       rootNode.find({role: 'link'}).focus();
+      mockFeedback.expectSpeech('foo')
+          .expectSpeech('Link')
+          .expectBraille('foo lnk');
+      mockFeedback.replay();
     }
   );
 });
 
 TEST_F('BackgroundTest', 'ShowContextMenu', function() {
+  var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<a href="a">a</a>',
     function(rootNode) {
-      cvox.ChromeVox.tts.expectSpeech(' menu opened', this.newCallback(
-        function() {
-          // When shown, the context menu pushes a new message loop so test
-          // messages sent to the browser do not get processed. Ensure we exit
-          // the context menu here.
-          go.showContextMenu();
-        })
-      );
+      mockFeedback.expectSpeech(/menu opened/)
+          .call(function() {
+            // When shown, the context menu pushes a new message loop so test
+            // messages sent to the browser do not get processed. Ensure we
+            // exit the context menu here.
+            go.showContextMenu();
+          });
+      mockFeedback.replay();
 
       var go = rootNode.find({ role: chrome.automation.RoleType.link });
       this.listenOnce(go, 'focus', function(e) {
@@ -240,4 +295,47 @@ TEST_F('BackgroundTest', 'ShowContextMenu', function() {
       }.bind(this), true);
       go.focus();
     }.bind(this));
+});
+
+TEST_F('BackgroundTest', 'BrailleRouting', function() {
+  var mockFeedback = this.createMockFeedback();
+  var route = function(position) {
+    assertTrue(global.backgroundObj.onBrailleKeyEvent(
+        {command: cvox.BrailleKeyCommand.ROUTING,
+         displayPosition: position},
+        mockFeedback.lastMatchedBraille));
+  };
+  this.runWithLoadedTree(
+      function() {/*!
+        <p>start</p>
+        <button id="btn1">Click me</button>
+        <p>Some text</p>
+        <button id="btn2">Focus me</button>
+        <p>Some more text</p>
+        <input type="text" id ="text" value="Edit me">
+        <script>
+          document.getElementById('btn1').addEventListener('click', function() {
+            document.getElementById('btn2').focus();
+          }, false);
+        </script>
+      */},
+      function(rootNode) {
+        var button1 = rootNode.find({role: chrome.automation.RoleType.button,
+                                     name: 'Click me'});
+        var textField = rootNode.find(
+            {role: chrome.automation.RoleType.textField});
+        mockFeedback.expectBraille('start')
+            .call(button1.focus.bind(button1))
+            .expectBraille(/^Click me btn/)
+            .call(route.bind(null, 5))
+            .expectBraille(/Focus me btn/)
+            .call(textField.focus.bind(textField))
+            .expectBraille('Edit me ed', {startIndex: 0})
+            .call(route.bind(null, 3))
+            .expectBraille('Edit me ed', {startIndex: 3})
+            .call(function() {
+              assertEquals(3, textField.textSelStart);
+            });
+        mockFeedback.replay();
+      });
 });

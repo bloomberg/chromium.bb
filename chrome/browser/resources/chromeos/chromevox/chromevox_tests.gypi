@@ -26,6 +26,12 @@
       '../../../../test/base/web_ui_browser_test.cc',
       '../../../../test/base/web_ui_browser_test.h',
     ],
+    'chromevox_tests_unit_gen_include_sources': [
+      'testing/assert_additions.js',
+      'testing/callback_helper.js',
+      'testing/chromevox_unittest_base.js',
+      'testing/mock_feedback.js',
+    ],
     'chromevox_tests_unitjs_sources': [
       'braille/braille_display_manager_test.unitjs',
       'braille/braille_input_handler_test.unitjs',
@@ -52,6 +58,7 @@
       'chromevox/injected/user_commands_test.unitjs',
       'chromevox/injected/navigation_manager_test.unitjs',
       'host/chrome/braille_integration_test.unitjs',
+      'testing/mock_feedback_test.unitjs',
       'walkers/character_walker_test.unitjs',
       'walkers/group_walker_test.unitjs',
       'walkers/object_walker_test.unitjs',
@@ -61,6 +68,13 @@
       'walkers/structural_line_walker_test.unitjs',
       'walkers/table_walker_test.unitjs',
       'walkers/word_walker_test.unitjs',
+    ],
+    'chromevox_tests_ext_gen_include_sources': [
+      'testing/assert_additions.js',
+      'testing/callback_helper.js',
+      'testing/chromevox_e2e_test_base.js',
+      'testing/chromevox_next_e2e_test_base.js',
+      'testing/mock_feedback.js',
     ],
     'chromevox_tests_extjs_sources': [
       'braille/braille_table_test.extjs',
@@ -139,8 +153,7 @@
             '<(test_api_js)',
             '<(js2gtest)',
             '<(chromevox_test_deps_js_file)',
-            'testing/assert_additions.js',
-            'testing/chromevox_unittest_base.js',
+            '<@(chromevox_tests_unit_gen_include_sources)',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',
@@ -183,10 +196,7 @@
             '<(mock_js)',
             '<(test_api_js)',
             '<(js2gtest)',
-            'testing/callback_helper.js',
-            'testing/chromevox_e2e_test_base.js',
-            'testing/chromevox_next_e2e_test_base.js',
-            'testing/assert_additions.js',
+            '<@(chromevox_tests_ext_gen_include_sources)',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',

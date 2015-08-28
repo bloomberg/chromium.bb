@@ -377,6 +377,8 @@ generate_deps_js("chromevox_test_deps_js") {
 js2gtest("chromevox_unitjs_tests") {
   test_type = "webui"
   sources = chromevox_tests_gypi_values.chromevox_tests_unitjs_sources
+  gen_include_files =
+      chromevox_tests_gypi_values.chromevox_tests_unit_gen_include_sources
   test_deps_js_outputs = get_target_outputs(":chromevox_test_deps_js")
   deps_js = test_deps_js_outputs[0]
   deps = [
@@ -389,5 +391,7 @@ js2gtest("chromevox_extjs_tests") {
   test_type = "extension"
   sources = chromevox_tests_gypi_values.chromevox_tests_extjs_sources
   sources -= [ "braille/liblouis_test.extjs" ]  # TODO(GYP)
+  gen_include_files =
+      chromevox_tests_gypi_values.chromevox_tests_ext_gen_include_sources
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }

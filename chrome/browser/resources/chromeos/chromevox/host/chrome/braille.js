@@ -10,7 +10,7 @@
 
 goog.provide('cvox.ChromeBraille');
 
-goog.require('cvox.AbstractBraille');
+goog.require('cvox.BrailleInterface');
 goog.require('cvox.BrailleKeyEvent');
 goog.require('cvox.ChromeVoxUserCommands');
 goog.require('cvox.HostFactory');
@@ -18,15 +18,9 @@ goog.require('cvox.HostFactory');
 
 /**
  * @constructor
- * @extends {cvox.AbstractBraille}
+ * @implements {cvox.BrailleInterface}
  */
 cvox.ChromeBraille = function() {
-  goog.base(this);
-  /**
-   * @type {function(!cvox.BrailleKeyEvent, cvox.NavBraille)}
-   * @private
-   */
-  this.commandListener_ = this.defaultCommandListener_;
   /**
    * @type {cvox.NavBraille}
    * @private
@@ -57,11 +51,10 @@ cvox.ChromeBraille = function() {
       if (msg['contentId'] == this.lastContentId_) {
         content = this.lastContent_;
       }
-      this.commandListener_(msg['args'], content);
+      this.onKeyEvent_(msg['args'], content);
     }
   }, this));
 };
-goog.inherits(cvox.ChromeBraille, cvox.AbstractBraille);
 
 
 /** @override */
@@ -86,12 +79,6 @@ cvox.ChromeBraille.prototype.updateLastContentId_ = function() {
 };
 
 
-/** @override */
-cvox.ChromeBraille.prototype.setCommandListener = function(func) {
-  this.commandListener_ = func;
-};
-
-
 /**
  * Dispatches braille input commands.
  * @param {!cvox.BrailleKeyEvent} brailleEvt The braille key event.
@@ -99,7 +86,7 @@ cvox.ChromeBraille.prototype.setCommandListener = function(func) {
  *                                  if available.
  * @private
  */
-cvox.ChromeBraille.prototype.defaultCommandListener_ = function(brailleEvt,
+cvox.ChromeBraille.prototype.onKeyEvent_ = function(brailleEvt,
                                                                 content) {
   var command = cvox.ChromeVoxUserCommands.commands[brailleEvt.command];
   if (command) {
@@ -107,6 +94,15 @@ cvox.ChromeBraille.prototype.defaultCommandListener_ = function(brailleEvt,
   } else {
     console.error('Unknown braille command: ' + JSON.stringify(brailleEvt));
   }
+};
+
+
+/**
+ * Overrides the key event handler
+ * @param {function(!cvox.BrailleKeyEvent, cvox.NavBraille):void} listener
+ */
+cvox.ChromeBraille.prototype.setKeyEventHandlerForTest = function(listener) {
+  this.onKeyEvent_ = listener;
 };
 
 

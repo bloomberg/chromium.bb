@@ -147,7 +147,6 @@ chromevox_modules = [
   "host/chrome/tts.js",
   "host/chrome/tts_background.js",
   "host/chrome/tts_base.js",
-  "host/interface/abstract_braille.js",
   "host/interface/abstract_earcons.js",
   "host/interface/abstract_host.js",
   "host/interface/abstract_mathjax.js",

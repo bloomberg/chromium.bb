@@ -8,9 +8,9 @@
 
 goog.provide('cvox.BrailleBackground');
 
-goog.require('cvox.AbstractBraille');
 goog.require('cvox.BrailleDisplayManager');
 goog.require('cvox.BrailleInputHandler');
+goog.require('cvox.BrailleInterface');
 goog.require('cvox.BrailleKeyEvent');
 goog.require('cvox.BrailleTranslatorManager');
 goog.require('global');
@@ -24,12 +24,11 @@ goog.require('global');
  *        (for mocking in tests).
  * @param {cvox.BrailleTranslatorManager=} opt_translatorManagerForTest
  *        Braille translator manager (for mocking in tests)
- * @extends {cvox.AbstractBraille}
+ * @implements {cvox.BrailleInterface}
  */
 cvox.BrailleBackground = function(opt_displayManagerForTest,
                                   opt_inputHandlerForTest,
                                   opt_translatorManagerForTest) {
-  goog.base(this);
   /**
    * @type {!cvox.BrailleTranslatorManager}
    * @private*/
@@ -60,19 +59,11 @@ cvox.BrailleBackground = function(opt_displayManagerForTest,
       new cvox.BrailleInputHandler(this.translatorManager_);
   this.inputHandler_.init();
 };
-goog.inherits(cvox.BrailleBackground, cvox.AbstractBraille);
 
 
 /** @override */
 cvox.BrailleBackground.prototype.write = function(params) {
   this.setContent_(params, null);
-};
-
-
-/** @override */
-cvox.BrailleBackground.prototype.setCommandListener = function(func) {
-  // TODO(plundblad): Implement when the background page handles commands
-  // as well.
 };
 
 
