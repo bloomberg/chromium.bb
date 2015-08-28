@@ -6,10 +6,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "content/child/child_process.h"
-#include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
-#include "content/renderer/media/video_source_handler.h"
+#include "content/renderer/media/video_track_to_pepper_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
@@ -20,11 +19,11 @@ static const std::string kTestStreamUrl = "stream_url";
 static const std::string kTestVideoTrackId = "video_track_id";
 static const std::string kUnknownStreamUrl = "unknown_stream_url";
 
-class VideoSourceHandlerTest : public ::testing::Test,
-                               public FrameReaderInterface {
+class VideoTrackToPepperAdapterTest : public ::testing::Test,
+                                      public FrameReaderInterface {
  public:
-  VideoSourceHandlerTest() : registry_(new MockMediaStreamRegistry()) {
-    handler_.reset(new VideoSourceHandler(registry_.get()));
+  VideoTrackToPepperAdapterTest() : registry_(new MockMediaStreamRegistry()) {
+    handler_.reset(new VideoTrackToPepperAdapter(registry_.get()));
     registry_->Init(kTestStreamUrl);
     registry_->AddVideoTrack(kTestVideoTrackId);
     EXPECT_FALSE(handler_->GetFirstVideoTrack(kTestStreamUrl).isNull());
@@ -43,7 +42,7 @@ class VideoSourceHandlerTest : public ::testing::Test,
   }
 
  protected:
-  scoped_ptr<VideoSourceHandler> handler_;
+  scoped_ptr<VideoTrackToPepperAdapter> handler_;
   // A ChildProcess and a MessageLoop are both needed to fool the Tracks and
   // Sources inside |registry_| into believing they are on the right threads.
   const ChildProcess child_process_;
@@ -52,7 +51,7 @@ class VideoSourceHandlerTest : public ::testing::Test,
 };
 
 // Open |handler_| and send a VideoFrame to be received at the other side.
-TEST_F(VideoSourceHandlerTest, OpenClose) {
+TEST_F(VideoTrackToPepperAdapterTest, OpenClose) {
   // Unknow url will return false.
   EXPECT_FALSE(handler_->Open(kUnknownStreamUrl, this));
   EXPECT_TRUE(handler_->Open(kTestStreamUrl, this));
@@ -69,7 +68,7 @@ TEST_F(VideoSourceHandlerTest, OpenClose) {
   EXPECT_TRUE(handler_->Close(this));
 }
 
-TEST_F(VideoSourceHandlerTest, OpenWithoutClose) {
+TEST_F(VideoTrackToPepperAdapterTest, OpenWithoutClose) {
   EXPECT_TRUE(handler_->Open(kTestStreamUrl, this));
 }
 

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/media/video_track_to_pepper_adapter.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/pp_errors.h"
@@ -27,6 +28,24 @@ using ppapi::host::ReplyMessageContext;
 
 namespace content {
 
+class PepperVideoSourceHost::FrameReceiver
+    : public FrameReaderInterface,
+      public base::RefCountedThreadSafe<FrameReceiver> {
+ public:
+  explicit FrameReceiver(const base::WeakPtr<PepperVideoSourceHost>& host);
+
+  // FrameReaderInterface implementation.
+  void GotFrame(const scoped_refptr<media::VideoFrame>& frame) override;
+
+ private:
+  friend class base::RefCountedThreadSafe<FrameReceiver>;
+  ~FrameReceiver() override;
+
+  base::WeakPtr<PepperVideoSourceHost> host_;
+  // |thread_checker_| is bound to the main render thread.
+  base::ThreadChecker thread_checker_;
+};
+
 PepperVideoSourceHost::FrameReceiver::FrameReceiver(
     const base::WeakPtr<PepperVideoSourceHost>& host)
     : host_(host) {}
@@ -36,20 +55,19 @@ PepperVideoSourceHost::FrameReceiver::~FrameReceiver() {}
 void PepperVideoSourceHost::FrameReceiver::GotFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (host_.get()) {
-    // Hold a reference to the new frame and release the previous.
-    host_->last_frame_ = frame;
-
-    if (host_->get_frame_pending_)
-      host_->SendGetFrameReply();
-  }
+  if (!host_)
+    return;
+  // Hold a reference to the new frame and release the previous.
+  host_->last_frame_ = frame;
+  if (host_->get_frame_pending_)
+    host_->SendGetFrameReply();
 }
 
 PepperVideoSourceHost::PepperVideoSourceHost(RendererPpapiHost* host,
                                              PP_Instance instance,
                                              PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      source_handler_(new VideoSourceHandler(NULL)),
+      frame_source_(new VideoTrackToPepperAdapter(nullptr)),
       get_frame_pending_(false),
       weak_factory_(this) {
   frame_receiver_ = new FrameReceiver(weak_factory_.GetWeakPtr());
@@ -78,7 +96,7 @@ int32_t PepperVideoSourceHost::OnHostMsgOpen(HostMessageContext* context,
   if (!gurl.is_valid())
     return PP_ERROR_BADARGUMENT;
 
-  if (!source_handler_->Open(gurl.spec(), frame_receiver_.get()))
+  if (!frame_source_->Open(gurl.spec(), frame_receiver_.get()))
     return PP_ERROR_BADARGUMENT;
 
   stream_url_ = gurl.spec();
@@ -90,7 +108,7 @@ int32_t PepperVideoSourceHost::OnHostMsgOpen(HostMessageContext* context,
 }
 
 int32_t PepperVideoSourceHost::OnHostMsgGetFrame(HostMessageContext* context) {
-  if (!source_handler_.get())
+  if (!frame_source_.get())
     return PP_ERROR_FAILED;
   if (get_frame_pending_)
     return PP_ERROR_INPROGRESS;
@@ -279,10 +297,10 @@ void PepperVideoSourceHost::SendGetFrameErrorReply(int32_t error) {
 }
 
 void PepperVideoSourceHost::Close() {
-  if (source_handler_.get() && !stream_url_.empty())
-    source_handler_->Close(frame_receiver_.get());
+  if (frame_source_.get() && !stream_url_.empty())
+    frame_source_->Close(frame_receiver_.get());
 
-  source_handler_.reset(NULL);
+  frame_source_.reset(NULL);
   stream_url_.clear();
 
   shared_image_ = NULL;

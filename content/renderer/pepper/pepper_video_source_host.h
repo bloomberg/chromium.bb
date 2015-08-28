@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/video_source_handler.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/host/host_message_context.h"
@@ -19,10 +18,15 @@
 
 struct PP_ImageDataDesc;
 
+namespace media {
+class VideoFrame;
+}  // namespace media
+
 namespace content {
 
 class PPB_ImageData_Impl;
 class RendererPpapiHost;
+class VideoTrackToPepperAdapter;
 
 class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
  public:
@@ -37,26 +41,9 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context) override;
 
  private:
-  // This helper object receives frames on a video worker thread and passes
-  // them on to us.
-  class FrameReceiver : public FrameReaderInterface,
-                        public base::RefCountedThreadSafe<FrameReceiver> {
-   public:
-    explicit FrameReceiver(const base::WeakPtr<PepperVideoSourceHost>& host);
-
-    // FrameReaderInterface implementation.
-    void GotFrame(const scoped_refptr<media::VideoFrame>& frame) override;
-
-   private:
-    friend class base::RefCountedThreadSafe<FrameReceiver>;
-    ~FrameReceiver() override;
-
-    base::WeakPtr<PepperVideoSourceHost> host_;
-    // |thread_checker_| is bound to the main render thread.
-    base::ThreadChecker thread_checker_;
-  };
-
-  friend class FrameReceiver;
+  // Helper object to receive frames on a video worker thread and pass them on
+  // to us.
+  class FrameReceiver;
 
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
                         const std::string& stream_url);
@@ -73,7 +60,7 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
 
   ppapi::host::ReplyMessageContext reply_context_;
 
-  scoped_ptr<VideoSourceHandler> source_handler_;
+  scoped_ptr<VideoTrackToPepperAdapter> frame_source_;
   scoped_refptr<FrameReceiver> frame_receiver_;
   std::string stream_url_;
   scoped_refptr<media::VideoFrame> last_frame_;

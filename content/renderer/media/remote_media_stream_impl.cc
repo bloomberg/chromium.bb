@@ -17,6 +17,8 @@
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/track_observer.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {

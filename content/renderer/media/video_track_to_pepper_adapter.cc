@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/video_source_handler.h"
+#include "content/renderer/media/video_track_to_pepper_adapter.h"
 
 #include <string>
 
@@ -66,16 +66,16 @@ class PpFrameReceiver : public MediaStreamVideoSink {
   DISALLOW_COPY_AND_ASSIGN(PpFrameReceiver);
 };
 
-VideoSourceHandler::VideoSourceHandler(MediaStreamRegistryInterface* registry)
-    : registry_(registry) {
-}
+VideoTrackToPepperAdapter::VideoTrackToPepperAdapter(
+    MediaStreamRegistryInterface* registry)
+    : registry_(registry) {}
 
-VideoSourceHandler::~VideoSourceHandler() {
+VideoTrackToPepperAdapter::~VideoTrackToPepperAdapter() {
   for (const auto& reader_and_receiver : reader_to_receiver_)
     delete reader_and_receiver.second;
 }
 
-bool VideoSourceHandler::Open(const std::string& url,
+bool VideoTrackToPepperAdapter::Open(const std::string& url,
                               FrameReaderInterface* reader) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const blink::WebMediaStreamTrack& track = GetFirstVideoTrack(url);
@@ -85,7 +85,7 @@ bool VideoSourceHandler::Open(const std::string& url,
   return true;
 }
 
-bool VideoSourceHandler::Close(FrameReaderInterface* reader) {
+bool VideoTrackToPepperAdapter::Close(FrameReaderInterface* reader) {
   DCHECK(thread_checker_. CalledOnValidThread());
   SourceInfoMap::iterator it = reader_to_receiver_.find(reader);
   if (it == reader_to_receiver_.end())
@@ -95,7 +95,7 @@ bool VideoSourceHandler::Close(FrameReaderInterface* reader) {
   return true;
 }
 
-blink::WebMediaStreamTrack VideoSourceHandler::GetFirstVideoTrack(
+blink::WebMediaStreamTrack VideoTrackToPepperAdapter::GetFirstVideoTrack(
     const std::string& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const blink::WebMediaStream stream = registry_
@@ -118,7 +118,7 @@ blink::WebMediaStreamTrack VideoSourceHandler::GetFirstVideoTrack(
   return video_tracks[0];
 }
 
-void VideoSourceHandler::DeliverFrameForTesting(
+void VideoTrackToPepperAdapter::DeliverFrameForTesting(
     FrameReaderInterface* reader,
     const scoped_refptr<media::VideoFrame>& frame) {
   SourceInfoMap::const_iterator it = reader_to_receiver_.find(reader);
@@ -128,14 +128,14 @@ void VideoSourceHandler::DeliverFrameForTesting(
   receiver->OnVideoFrame(frame, base::TimeTicks());
 }
 
-VideoSourceHandler::SourceInfo::SourceInfo(
+VideoTrackToPepperAdapter::SourceInfo::SourceInfo(
     const blink::WebMediaStreamTrack& blink_track,
     FrameReaderInterface* reader)
     : receiver_(new PpFrameReceiver(blink_track)) {
   receiver_->SetReader(reader);
 }
 
-VideoSourceHandler::SourceInfo::~SourceInfo() {
+VideoTrackToPepperAdapter::SourceInfo::~SourceInfo() {
   receiver_->SetReader(NULL);
 }
 

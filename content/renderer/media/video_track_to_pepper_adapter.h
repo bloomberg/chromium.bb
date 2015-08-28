@@ -20,8 +20,7 @@ namespace content {
 class MediaStreamRegistryInterface;
 class PpFrameReceiver;
 
-// Interface used by the effects pepper plugin to get captured frames
-// from the video track.
+// Interface used by a Pepper plugin to get captured frames from a video track.
 class CONTENT_EXPORT FrameReaderInterface {
  public:
   // Got a new captured frame.
@@ -31,14 +30,14 @@ class CONTENT_EXPORT FrameReaderInterface {
   virtual ~FrameReaderInterface() {}
 };
 
-// VideoSourceHandler is a glue class between MediaStreamVideoTrack and
-// the effects pepper plugin host.
-class CONTENT_EXPORT VideoSourceHandler {
+// VideoTrackToPepperAdapter is a glue class between MediaStreamVideoTrack and a
+// Pepper plugin host.
+class CONTENT_EXPORT VideoTrackToPepperAdapter {
  public:
   // |registry| is used to look up the media stream by url. If a NULL |registry|
   // is given, the global blink::WebMediaStreamRegistry will be used.
-  explicit VideoSourceHandler(MediaStreamRegistryInterface* registry);
-  virtual ~VideoSourceHandler();
+  explicit VideoTrackToPepperAdapter(MediaStreamRegistryInterface* registry);
+  virtual ~VideoTrackToPepperAdapter();
   // Connects to the first video track in the MediaStream specified by |url| and
   // the received frames will be delivered via |reader|.
   // Returns true on success and false on failure.
@@ -49,7 +48,7 @@ class CONTENT_EXPORT VideoSourceHandler {
   bool Close(FrameReaderInterface* reader);
 
  private:
-  friend class VideoSourceHandlerTest;
+  friend class VideoTrackToPepperAdapterTest;
 
   struct SourceInfo {
     SourceInfo(const blink::WebMediaStreamTrack& blink_track,
@@ -61,19 +60,19 @@ class CONTENT_EXPORT VideoSourceHandler {
 
   typedef std::map<FrameReaderInterface*, SourceInfo*> SourceInfoMap;
 
+  blink::WebMediaStreamTrack GetFirstVideoTrack(const std::string& url);
+
   // Deliver VideoFrame to the MediaStreamVideoSink associated with
   // |reader|. For testing only.
   void DeliverFrameForTesting(FrameReaderInterface* reader,
                               const scoped_refptr<media::VideoFrame>& frame);
-
-  blink::WebMediaStreamTrack GetFirstVideoTrack(const std::string& url);
 
   MediaStreamRegistryInterface* const registry_;
   SourceInfoMap reader_to_receiver_;
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoSourceHandler);
+  DISALLOW_COPY_AND_ASSIGN(VideoTrackToPepperAdapter);
 };
 
 }  // namespace content
