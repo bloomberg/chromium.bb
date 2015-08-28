@@ -43,7 +43,7 @@ const char kReactiveConfigRuleTraceAtRandomIntervals[] =
 const char kTraceAtRandomIntervalsEventName[] =
     "ReactiveTraceAtRandomIntervals";
 
-const int kReactiveConfigNavigationTimeout = 10;
+const int kReactiveConfigNavigationTimeout = 30;
 const int kReactiveTraceRandomStartTimeMin = 60;
 const int kReactiveTraceRandomStartTimeMax = 120;
 
