@@ -251,10 +251,12 @@ ViewTreeImpl* ConnectionManager::EmbedAtView(
   return client_connection->service();
 }
 
-void ConnectionManager::OnAccelerator(ServerView* root, mojo::EventPtr event) {
+void ConnectionManager::OnAccelerator(ServerView* root,
+                                      uint32 id,
+                                      mojo::EventPtr event) {
   for (auto& pair : host_connection_map_) {
     if (root == pair.first->root_view()) {
-      pair.first->client()->OnAccelerator(event.Pass());
+      pair.first->client()->OnAccelerator(id, event.Pass());
       return;
     }
   }
@@ -387,15 +389,14 @@ void ConnectionManager::OnEvent(ViewTreeHostImpl* host,
 }
 
 void ConnectionManager::AddAccelerator(ViewTreeHostImpl* host,
+                                       uint32_t id,
                                        mojo::KeyboardCode keyboard_code,
                                        mojo::EventFlags flags) {
-  event_dispatcher_.AddAccelerator(keyboard_code, flags);
+  event_dispatcher_.AddAccelerator(id, keyboard_code, flags);
 }
 
-void ConnectionManager::RemoveAccelerator(ViewTreeHostImpl* host,
-                                          mojo::KeyboardCode keyboard_code,
-                                          mojo::EventFlags flags) {
-  event_dispatcher_.RemoveAccelerator(keyboard_code, flags);
+void ConnectionManager::RemoveAccelerator(ViewTreeHostImpl* host, uint32_t id) {
+  event_dispatcher_.RemoveAccelerator(id);
 }
 
 void ConnectionManager::SetImeVisibility(ServerView* view, bool visible) {

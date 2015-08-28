@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VIEW_MANAGER_EVENT_DISPATCHER_H_
 #define COMPONENTS_VIEW_MANAGER_EVENT_DISPATCHER_H_
 
-#include <set>
+#include <map>
 
 #include "base/basictypes.h"
 #include "ui/mojo/events/input_event_constants.mojom.h"
@@ -23,9 +23,10 @@ class EventDispatcher {
   explicit EventDispatcher(ConnectionManager* connection_manager);
   ~EventDispatcher();
 
-  void AddAccelerator(mojo::KeyboardCode keyboard_code, mojo::EventFlags flags);
-  void RemoveAccelerator(mojo::KeyboardCode keyboard_code,
-                         mojo::EventFlags flags);
+  void AddAccelerator(uint32_t id,
+                      mojo::KeyboardCode keyboard_code,
+                      mojo::EventFlags flags);
+  void RemoveAccelerator(uint32_t id);
 
   void OnEvent(ServerView* root, mojo::EventPtr event);
 
@@ -45,9 +46,18 @@ class EventDispatcher {
     mojo::EventFlags flags;
   };
 
+  // Looks to see if there is an accelerator bound to the specified code/flags.
+  // If there is one, sets |accelerator_id| to the id of the accelerator invoked
+  // and returns true. If there is none, returns false so normal key event
+  // processing can continue.
+  bool HandleAccelerator(mojo::KeyboardCode keyboard_code,
+                         mojo::EventFlags flags,
+                         uint32_t* accelerator_id);
+
   ConnectionManager* connection_manager_;
 
-  std::set<Accelerator> accelerators_;
+  using Entry = std::pair<uint32_t, Accelerator>;
+  std::map<uint32_t, Accelerator> accelerators_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };

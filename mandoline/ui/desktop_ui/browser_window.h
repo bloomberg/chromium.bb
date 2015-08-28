@@ -55,7 +55,7 @@ class BrowserWindow : public mojo::ViewTreeDelegate,
   void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
 
   // Overridden from ViewTreeHostClient:
-  void OnAccelerator(mojo::EventPtr event) override;
+  void OnAccelerator(uint32_t id, mojo::EventPtr event) override;
 
   // Overridden from web_view::mojom::WebViewClient:
   void TopLevelNavigate(mojo::URLRequestPtr request) override;

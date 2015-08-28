@@ -110,7 +110,7 @@ class ConnectionManager : public ServerViewDelegate,
 
   // Invoked when an accelerator has been triggered on a view tree with the
   // provided |root|.
-  void OnAccelerator(ServerView* root, mojo::EventPtr event);
+  void OnAccelerator(ServerView* root, uint32 id, mojo::EventPtr event);
 
   // Returns the connection by id.
   ViewTreeImpl* GetConnection(
@@ -167,12 +167,10 @@ class ConnectionManager : public ServerViewDelegate,
   void OnEvent(ViewTreeHostImpl* host, mojo::EventPtr event);
 
   void AddAccelerator(ViewTreeHostImpl* host,
+                      uint32_t id,
                       mojo::KeyboardCode keyboard_code,
                       mojo::EventFlags flags);
-
-  void RemoveAccelerator(ViewTreeHostImpl* host,
-                         mojo::KeyboardCode keyboard_code,
-                         mojo::EventFlags flags);
+  void RemoveAccelerator(ViewTreeHostImpl* host, uint32_t id);
 
   // Set IME's visibility for the specified view. If the view is not the current
   // focused view, this function will do nothing.

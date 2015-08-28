@@ -72,14 +72,14 @@ void ViewTreeHostImpl::SetSize(mojo::SizePtr size) {
   display_manager_->SetViewportSize(size.To<gfx::Size>());
 }
 
-void ViewTreeHostImpl::AddAccelerator(mojo::KeyboardCode keyboard_code,
+void ViewTreeHostImpl::AddAccelerator(uint32_t id,
+                                      mojo::KeyboardCode keyboard_code,
                                       mojo::EventFlags flags) {
-  connection_manager_->AddAccelerator(this, keyboard_code, flags);
+  connection_manager_->AddAccelerator(this, id, keyboard_code, flags);
 }
 
-void ViewTreeHostImpl::RemoveAccelerator(mojo::KeyboardCode keyboard_code,
-                                         mojo::EventFlags flags) {
-  connection_manager_->RemoveAccelerator(this, keyboard_code, flags);
+void ViewTreeHostImpl::RemoveAccelerator(uint32_t id) {
+  connection_manager_->RemoveAccelerator(this, id);
 }
 
 ServerView* ViewTreeHostImpl::GetRootView() {

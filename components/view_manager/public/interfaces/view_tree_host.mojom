@@ -18,14 +18,17 @@ interface ViewTreeHost {
 
   // Add and remove accelerators. When accelerators are registered the
   // ViewTreeHostClient receives the key event via OnAccelerator() rather than
-  // the focused view.
-  AddAccelerator(mojo.KeyboardCode keyboard_code, mojo.EventFlags flags);
-  RemoveAccelerator(mojo.KeyboardCode keyboard_code, mojo.EventFlags flags);
+  // the focused view. The id is defined by the client and can be used to more
+  // easily identify the accelerator's action.
+  AddAccelerator(uint32 id,
+                 mojo.KeyboardCode keyboard_code,
+                 mojo.EventFlags flags);
+  RemoveAccelerator(uint32 id);
 };
 
 interface ViewTreeHostClient {
   // An accelerator registered via AddAccelerator() has been triggered.
-  OnAccelerator(mojo.Event event);
+  OnAccelerator(uint32 id, mojo.Event event);
 };
 
 interface ViewTreeHostFactory {

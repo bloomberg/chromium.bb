@@ -144,9 +144,6 @@ void OmniboxImpl::OnEmbed(mojo::View* root) {
   widget->Show();
   widget->GetCompositor()->SetBackgroundColor(
       SkColorSetA(SK_ColorBLACK, kOpacity));
-  edit_->SetText(url_.To<base::string16>());
-  edit_->SelectAll(false);
-  edit_->RequestFocus();
 
   ShowWindow();
 }
@@ -215,6 +212,9 @@ void OmniboxImpl::ShowWindow() {
   root_->SetVisible(true);
   root_->SetFocus();
   root_->MoveToFront();
+  edit_->SetText(url_.To<base::string16>());
+  edit_->SelectAll(false);
+  edit_->RequestFocus();
 }
 
 void OmniboxImpl::HideWindow() {

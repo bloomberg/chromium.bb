@@ -22,6 +22,7 @@ mojo_native_application("desktop_ui") {
 
 source_set("lib") {
   sources = [
+    "browser_commands.h",
     "browser_manager.cc",
     "browser_manager.h",
     "browser_window.cc",

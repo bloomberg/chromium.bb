@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/view_manager/public/cpp/view_tree_host_factory.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
+#include "mandoline/ui/desktop_ui/browser_commands.h"
 #include "mandoline/ui/desktop_ui/browser_manager.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mojo/common/common_type_converters.h"
@@ -127,7 +128,10 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
 
   web_view_.Init(app_, content_);
 
-  host_->AddAccelerator(mojo::KEYBOARD_CODE_N, mojo::EVENT_FLAGS_CONTROL_DOWN);
+  host_->AddAccelerator(BrowserCommand_FocusOmnibox, mojo::KEYBOARD_CODE_L,
+                        mojo::EVENT_FLAGS_CONTROL_DOWN);
+  host_->AddAccelerator(BrowserCommand_NewWindow, mojo::KEYBOARD_CODE_N,
+                        mojo::EVENT_FLAGS_CONTROL_DOWN);
 
   // Now that we're ready, load the default url.
   LoadURL(default_url_);
@@ -160,15 +164,16 @@ void BrowserWindow::OnConnectionLost(mojo::ViewTreeConnection* connection) {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, mojo::ViewTreeHostClient implementation:
 
-void BrowserWindow::OnAccelerator(mojo::EventPtr event) {
-  if (!(event->flags & mojo::EVENT_FLAGS_CONTROL_DOWN))
-    return;
-  switch (event->key_data->windows_key_code) {
-    case mojo::KEYBOARD_CODE_N:
+void BrowserWindow::OnAccelerator(uint32_t id, mojo::EventPtr event) {
+  switch (id) {
+    case BrowserCommand_NewWindow:
       manager_->CreateBrowser(GURL());
       break;
+    case BrowserCommand_FocusOmnibox:
+      ShowOmnibox();
+      break;
     default:
-      NOTIMPLEMENTED();
+      NOTREACHED();
       break;
   }
 }
