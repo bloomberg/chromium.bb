@@ -479,13 +479,13 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
         if (isEndOfParagraph(originalEnd) && !isEmptyTableCell(m_start.anchorNode())) {
             // Select the paragraph break (the space from the end of a paragraph to the start of
             // the next one) to match TextEdit.
-            end = wordEnd.next();
+            end = nextPositionOf(wordEnd);
 
             if (Element* table = isFirstPositionAfterTable(end)) {
                 // The paragraph break after the last paragraph in the last cell of a block table ends
                 // at the start of the paragraph after the table.
                 if (isEnclosingBlock(table))
-                    end = end.next(CannotCrossEditingBoundary);
+                    end = nextPositionOf(end, CannotCrossEditingBoundary);
                 else
                     end = wordEnd;
             }
@@ -507,7 +507,7 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
         // If the end of this line is at the end of a paragraph, include the space
         // after the end of the line in the selection.
         if (isEndOfParagraph(end)) {
-            VisiblePosition next = end.next();
+            VisiblePosition next = nextPositionOf(end);
             if (next.isNotNull())
                 end = next;
         }
@@ -522,13 +522,13 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, 
 
         // Include the "paragraph break" (the space from the end of this paragraph to the start
         // of the next one) in the selection.
-        VisiblePosition end(visibleParagraphEnd.next());
+        VisiblePosition end(nextPositionOf(visibleParagraphEnd));
 
         if (Element* table = isFirstPositionAfterTable(end)) {
             // The paragraph break after the last paragraph in the last cell of a block table ends
             // at the start of the paragraph after the table, not at the position just after the table.
             if (isEnclosingBlock(table))
-                end = end.next(CannotCrossEditingBoundary);
+                end = nextPositionOf(end, CannotCrossEditingBoundary);
             // There is no parargraph break after the last paragraph in the last cell of an inline table.
             else
                 end = visibleParagraphEnd;

@@ -445,7 +445,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
                 return;
             }
             // When there are no visible positions in the editing root, delete its entire contents.
-            if (visibleStart.next(CannotCrossEditingBoundary).isNull() && makeEditableRootEmpty()) {
+            if (nextPositionOf(visibleStart, CannotCrossEditingBoundary).isNull() && makeEditableRootEmpty()) {
                 typingAddedToOpenCommand(DeleteKey);
                 return;
             }
@@ -546,7 +546,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         if (enclosingTableCell && visibleEnd.deepEquivalent() == VisiblePosition(lastPositionInNode(enclosingTableCell)).deepEquivalent())
             return;
         if (visibleEnd.deepEquivalent() == endOfParagraph(visibleEnd).deepEquivalent())
-            downstreamEnd = mostForwardCaretPosition(visibleEnd.next(CannotCrossEditingBoundary).deepEquivalent());
+            downstreamEnd = mostForwardCaretPosition(nextPositionOf(visibleEnd, CannotCrossEditingBoundary).deepEquivalent());
         // When deleting tables: Select the table first, then perform the deletion
         if (isRenderedTableElement(downstreamEnd.computeContainerNode()) && downstreamEnd.computeOffsetInContainerNode() <= caretMinOffset(downstreamEnd.computeContainerNode())) {
             setEndingSelection(VisibleSelection(endingSelection().end(), positionAfterNode(downstreamEnd.computeContainerNode()), TextAffinity::Downstream, endingSelection().isDirectional()));

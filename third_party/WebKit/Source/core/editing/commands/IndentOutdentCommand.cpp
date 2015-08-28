@@ -220,10 +220,10 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
     }
 
     Position originalSelectionEnd = endingSelection().end();
-    VisiblePosition endAfterSelection = endOfParagraph(endOfLastParagraph.next());
+    VisiblePosition endAfterSelection = endOfParagraph(nextPositionOf(endOfLastParagraph));
 
     while (endOfCurrentParagraph.deepEquivalent() != endAfterSelection.deepEquivalent()) {
-        VisiblePosition endOfNextParagraph = endOfParagraph(endOfCurrentParagraph.next());
+        VisiblePosition endOfNextParagraph = endOfParagraph(nextPositionOf(endOfCurrentParagraph));
         if (endOfCurrentParagraph.deepEquivalent() == endOfLastParagraph.deepEquivalent())
             setEndingSelection(VisibleSelection(originalSelectionEnd, TextAffinity::Downstream));
         else
@@ -239,7 +239,7 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
 
         if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.deepEquivalent().inDocument()) {
             endOfCurrentParagraph = VisiblePosition(endingSelection().end());
-            endOfNextParagraph = endOfParagraph(endOfCurrentParagraph.next());
+            endOfNextParagraph = endOfParagraph(nextPositionOf(endOfCurrentParagraph));
         }
         endOfCurrentParagraph = endOfNextParagraph;
     }

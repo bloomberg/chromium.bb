@@ -715,7 +715,7 @@ EphemeralRange LocalFrame::rangeForPoint(const IntPoint& framePoint)
             return EphemeralRange(previousCharacterRange);
     }
 
-    VisiblePosition next = position.next();
+    VisiblePosition next = nextPositionOf(position);
     const EphemeralRange nextCharacterRange = makeRange(position, next);
     if (nextCharacterRange.isNotNull()) {
         IntRect rect = editor().firstRectForRange(nextCharacterRange);

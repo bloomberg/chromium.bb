@@ -123,7 +123,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
     RefPtrWillBeRawPtr<HTMLElement> blockquoteForNextIndent = nullptr;
     VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
     VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
-    VisiblePosition endAfterSelection = endOfParagraph(endOfLastParagraph.next());
+    VisiblePosition endAfterSelection = endOfParagraph(nextPositionOf(endOfLastParagraph));
     m_endOfLastParagraph = endOfLastParagraph.deepEquivalent();
 
     bool atEnd = false;
@@ -249,7 +249,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
 
 VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfNeeded(VisiblePosition& endOfCurrentParagraph, Position& start, Position& end)
 {
-    VisiblePosition endOfNextParagraph = endOfParagraph(endOfCurrentParagraph.next());
+    VisiblePosition endOfNextParagraph = endOfParagraph(nextPositionOf(endOfCurrentParagraph));
     Position position = endOfNextParagraph.deepEquivalent();
     const ComputedStyle* style = computedStyleOfEnclosingTextNode(position);
     if (!style)

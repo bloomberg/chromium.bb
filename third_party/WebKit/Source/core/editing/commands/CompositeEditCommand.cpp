@@ -838,7 +838,7 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
 
 void CompositeEditCommand::deleteInsignificantTextDownstream(const Position& pos)
 {
-    Position end = mostForwardCaretPosition(VisiblePosition(pos, VP_DEFAULT_AFFINITY).next().deepEquivalent());
+    Position end = mostForwardCaretPosition(nextPositionOf(VisiblePosition(pos, VP_DEFAULT_AFFINITY)).deepEquivalent());
     deleteInsignificantText(pos, end);
 }
 
@@ -923,7 +923,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
     VisiblePosition visiblePos(pos, VP_DEFAULT_AFFINITY);
     VisiblePosition visibleParagraphStart(startOfParagraph(visiblePos));
     VisiblePosition visibleParagraphEnd = endOfParagraph(visiblePos);
-    VisiblePosition next = visibleParagraphEnd.next();
+    VisiblePosition next = nextPositionOf(visibleParagraphEnd);
     VisiblePosition visibleEnd = next.isNotNull() ? next : visibleParagraphEnd;
 
     Position upstreamStart = mostBackwardCaretPosition(visibleParagraphStart.deepEquivalent());
@@ -1131,7 +1131,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     ASSERT(blockElement);
 
     VisiblePosition beforeParagraph = previousPositionOf(startOfParagraphToMove);
-    VisiblePosition afterParagraph(endOfParagraphToMove.next());
+    VisiblePosition afterParagraph(nextPositionOf(endOfParagraphToMove));
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.
@@ -1206,7 +1206,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     }
 
     VisiblePosition beforeParagraph = previousPositionOf(startOfParagraphToMove, CannotCrossEditingBoundary);
-    VisiblePosition afterParagraph(endOfParagraphToMove.next(CannotCrossEditingBoundary));
+    VisiblePosition afterParagraph(nextPositionOf(endOfParagraphToMove, CannotCrossEditingBoundary));
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.

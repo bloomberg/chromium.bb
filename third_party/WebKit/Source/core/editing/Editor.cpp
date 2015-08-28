@@ -1023,7 +1023,7 @@ void Editor::transpose()
 
     // Make a selection that goes back one character and forward two characters.
     VisiblePosition caret = selection.visibleStart();
-    VisiblePosition next = isEndOfParagraph(caret) ? caret : caret.next();
+    VisiblePosition next = isEndOfParagraph(caret) ? caret : nextPositionOf(caret);
     VisiblePosition previous = previousPositionOf(next);
     if (next.deepEquivalent() == previous.deepEquivalent())
         return;

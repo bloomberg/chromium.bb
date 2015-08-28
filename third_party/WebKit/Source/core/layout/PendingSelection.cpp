@@ -98,7 +98,7 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
     VisiblePosition visibleStart = VisiblePosition(start, selectionType == SelectionType::RangeSelection ? TextAffinity::Downstream : affinity);
     if (paintBlockCursor) {
         VisiblePosition visibleExtent(end, affinity);
-        visibleExtent = visibleExtent.next(CanSkipOverEditingBoundary);
+        visibleExtent = nextPositionOf(visibleExtent, CanSkipOverEditingBoundary);
         return VisibleSelection(visibleStart, visibleExtent);
     }
     VisiblePosition visibleEnd(end, selectionType == SelectionType::RangeSelection ? TextAffinity::Upstream : affinity);

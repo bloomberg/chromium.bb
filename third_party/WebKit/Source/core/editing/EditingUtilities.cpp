@@ -798,7 +798,7 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
             HTMLElement* specialElement = toHTMLElement(n);
             VisiblePosition vPos = VisiblePosition(pos);
             VisiblePosition firstInElement = VisiblePosition(firstPositionInOrBeforeNode(specialElement));
-            if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == firstInElement.next().deepEquivalent())
+            if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == nextPositionOf(firstInElement).deepEquivalent())
                 return specialElement;
             if (vPos.deepEquivalent() == firstInElement.deepEquivalent())
                 return specialElement;
@@ -1366,7 +1366,7 @@ Position trailingWhitespacePosition(const Position& position, TextAffinity, Whit
     UChar characterAfterVisiblePosition = visiblePosition.characterAfter();
     bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(characterAfterVisiblePosition) || characterAfterVisiblePosition == noBreakSpaceCharacter) : isCollapsibleWhitespace(characterAfterVisiblePosition);
     // The space must not be in another paragraph and it must be editable.
-    if (isSpace && !isEndOfParagraph(visiblePosition) && visiblePosition.next(CannotCrossEditingBoundary).isNotNull())
+    if (isSpace && !isEndOfParagraph(visiblePosition) && nextPositionOf(visiblePosition, CannotCrossEditingBoundary).isNotNull())
         return position;
     return Position();
 }
@@ -1480,7 +1480,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // containing the table itself.
     if (Element* table = isLastPositionBeforeTable(startOfSelection)) {
         if (endOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
-            newSelection = VisibleSelection(startOfSelection.next(CannotCrossEditingBoundary), endOfSelection);
+            newSelection = VisibleSelection(nextPositionOf(startOfSelection, CannotCrossEditingBoundary), endOfSelection);
     }
 
     return newSelection;
@@ -1606,7 +1606,7 @@ Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selec
 
     // if the selection starts just before a paragraph break, skip over it
     if (isEndOfParagraph(visiblePosition))
-        return mostForwardCaretPosition(visiblePosition.next().deepEquivalent());
+        return mostForwardCaretPosition(nextPositionOf(visiblePosition).deepEquivalent());
 
     // otherwise, make sure to be at the start of the first selected node,
     // instead of possibly at the end of the last node before the selection

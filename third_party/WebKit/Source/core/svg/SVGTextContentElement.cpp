@@ -190,12 +190,12 @@ void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, E
     // Find selection start
     VisiblePosition start(firstPositionInNode(const_cast<SVGTextContentElement*>(this)));
     for (unsigned i = 0; i < charnum; ++i)
-        start = start.next();
+        start = nextPositionOf(start);
 
     // Find selection end
     VisiblePosition end(start);
     for (unsigned i = 0; i < nchars; ++i)
-        end = end.next();
+        end = nextPositionOf(end);
 
     document().frame()->selection().setSelection(VisibleSelection(start, end));
 }

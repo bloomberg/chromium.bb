@@ -266,8 +266,8 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
     int endIndex = TextIterator::rangeLength(endRange->startPosition(), endRange->endPosition(), true);
 
     VisiblePosition paragraphStart(startOfParagraph(visibleStart));
-    VisiblePosition nextParagraphStart(endOfParagraph(paragraphStart).next());
-    VisiblePosition beyondEnd(endOfParagraph(visibleEnd).next());
+    VisiblePosition nextParagraphStart(nextPositionOf(endOfParagraph(paragraphStart)));
+    VisiblePosition beyondEnd(nextPositionOf(endOfParagraph(visibleEnd)));
     while (paragraphStart.isNotNull() && paragraphStart.deepEquivalent() != beyondEnd.deepEquivalent()) {
         StyleChange styleChange(style, paragraphStart.deepEquivalent());
         if (styleChange.cssStyle().length() || m_removeOnly) {
@@ -285,11 +285,11 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
             }
 
             if (nextParagraphStart.isOrphan())
-                nextParagraphStart = endOfParagraph(paragraphStart).next();
+                nextParagraphStart = nextPositionOf(endOfParagraph(paragraphStart));
         }
 
         paragraphStart = nextParagraphStart;
-        nextParagraphStart = endOfParagraph(paragraphStart).next();
+        nextParagraphStart = nextPositionOf(endOfParagraph(paragraphStart));
     }
 
     EphemeralRange startEphemeralRange = PlainTextRange(startIndex).createRangeForSelection(toContainerNode(scope));

@@ -245,7 +245,7 @@ void DeleteSelectionCommand::initializePositionData()
         if (!skipSmartDelete && !hasLeadingWhitespaceBeforeAdjustment && trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY, ConsiderNonCollapsibleWhitespace).isNotNull()) {
             // Expand out one character downstream for smart delete and recalculate
             // positions based on this change.
-            pos = VisiblePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY).next().deepEquivalent();
+            pos = nextPositionOf(VisiblePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY)).deepEquivalent();
             m_upstreamEnd = mostBackwardCaretPosition(pos);
             m_downstreamEnd = mostForwardCaretPosition(pos);
             m_trailingWhitespace = trailingWhitespacePosition(m_downstreamEnd, VP_DEFAULT_AFFINITY);
@@ -389,7 +389,7 @@ void DeleteSelectionCommand::removeNode(PassRefPtrWillBeRawPtr<Node> node, Shoul
             m_needPlaceholder = true;
     }
     if (node == m_endBlock) {
-        VisiblePosition next = VisiblePosition(lastPositionInNode(m_endBlock.get())).next();
+        VisiblePosition next = nextPositionOf(VisiblePosition(lastPositionInNode(m_endBlock.get())));
         if (next.isNotNull() && !isStartOfBlock(next))
             m_needPlaceholder = true;
     }
@@ -845,7 +845,7 @@ void DeleteSelectionCommand::doApply()
     if (!m_needPlaceholder && rootWillStayOpenWithoutPlaceholder) {
         VisiblePosition visualEnding(m_endingPosition);
         bool hasPlaceholder = lineBreakExistsAtVisiblePosition(visualEnding)
-            && visualEnding.next(CannotCrossEditingBoundary).isNull();
+            && nextPositionOf(visualEnding, CannotCrossEditingBoundary).isNull();
         m_needPlaceholder = hasPlaceholder && lineBreakBeforeStart && !lineBreakAtEndOfSelectionToDelete;
     }
 

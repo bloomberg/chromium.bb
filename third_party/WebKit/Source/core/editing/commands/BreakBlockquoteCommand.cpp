@@ -62,7 +62,7 @@ bool isLastVisiblePositionInNode(const VisiblePosition& visiblePosition, const C
     if (!visiblePosition.deepEquivalent().computeContainerNode()->isDescendantOf(node))
         return false;
 
-    VisiblePosition next = visiblePosition.next();
+    VisiblePosition next = nextPositionOf(visiblePosition);
     return next.isNull() || !next.deepEquivalent().anchorNode()->isDescendantOf(node);
 }
 

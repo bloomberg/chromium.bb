@@ -64,20 +64,21 @@ VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinit
     init(positionWithAffinity.position(), positionWithAffinity.affinity());
 }
 
-VisiblePosition VisiblePosition::next(EditingBoundaryCrossingRule rule) const
+// TODO(yosin) We should move |nextPositionOf()| to "VisibleUnits.cpp".
+VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
-    VisiblePosition next(nextVisuallyDistinctCandidate(m_deepPosition), m_affinity);
+    VisiblePosition next(nextVisuallyDistinctCandidate(visiblePosition.deepEquivalent()), visiblePosition.affinity());
 
     switch (rule) {
     case CanCrossEditingBoundary:
         return next;
     case CannotCrossEditingBoundary:
-        return honorEditingBoundaryAtOrAfter(next);
+        return visiblePosition.honorEditingBoundaryAtOrAfter(next);
     case CanSkipOverEditingBoundary:
-        return skipToEndOfEditingBoundary(next);
+        return visiblePosition.skipToEndOfEditingBoundary(next);
     }
     ASSERT_NOT_REACHED();
-    return honorEditingBoundaryAtOrAfter(next);
+    return visiblePosition.honorEditingBoundaryAtOrAfter(next);
 }
 
 VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)

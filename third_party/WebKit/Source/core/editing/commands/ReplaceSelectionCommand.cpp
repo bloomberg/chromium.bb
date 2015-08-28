@@ -422,7 +422,7 @@ bool ReplaceSelectionCommand::shouldMergeStart(bool selectionStartWasStartOfPara
 bool ReplaceSelectionCommand::shouldMergeEnd(bool selectionEndWasEndOfParagraph)
 {
     VisiblePosition endOfInsertedContent(positionAtEndOfInsertedContent());
-    VisiblePosition next = endOfInsertedContent.next(CannotCrossEditingBoundary);
+    VisiblePosition next = nextPositionOf(endOfInsertedContent, CannotCrossEditingBoundary);
     if (next.isNull())
         return false;
 
@@ -842,8 +842,8 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
     // block styles.
     bool mergeForward = !(inSameParagraph(startOfInsertedContent, endOfInsertedContent) && !isStartOfParagraph(startOfInsertedContent));
 
-    VisiblePosition destination = mergeForward ? endOfInsertedContent.next() : endOfInsertedContent;
-    VisiblePosition startOfParagraphToMove = mergeForward ? startOfParagraph(endOfInsertedContent) : endOfInsertedContent.next();
+    VisiblePosition destination = mergeForward ? nextPositionOf(endOfInsertedContent) : endOfInsertedContent;
+    VisiblePosition startOfParagraphToMove = mergeForward ? startOfParagraph(endOfInsertedContent) : nextPositionOf(endOfInsertedContent);
 
     // Merging forward could result in deleting the destination anchor node.
     // To avoid this, we add a placeholder node before the start of the paragraph.
@@ -977,7 +977,7 @@ void ReplaceSelectionCommand::doApply()
         if (fragment.hasInterchangeNewlineAtStart()) {
             if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart)) {
                 if (!isEndOfEditableOrNonEditableContent(visibleStart))
-                    setEndingSelection(visibleStart.next());
+                    setEndingSelection(nextPositionOf(visibleStart));
             } else {
                 insertParagraphSeparator();
             }
@@ -986,7 +986,7 @@ void ReplaceSelectionCommand::doApply()
     } else {
         ASSERT(selection.isCaret());
         if (fragment.hasInterchangeNewlineAtStart()) {
-            VisiblePosition next = visibleStart.next(CannotCrossEditingBoundary);
+            VisiblePosition next = nextPositionOf(visibleStart, CannotCrossEditingBoundary);
             if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart) && next.isNotNull()) {
                 setEndingSelection(next);
             } else  {
@@ -1227,7 +1227,7 @@ void ReplaceSelectionCommand::doApply()
     Position lastPositionToSelect;
     if (fragment.hasInterchangeNewlineAtEnd()) {
         VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
-        VisiblePosition next = endOfInsertedContent.next(CannotCrossEditingBoundary);
+        VisiblePosition next = nextPositionOf(endOfInsertedContent, CannotCrossEditingBoundary);
 
         if (selectionEndWasEndOfParagraph || !isEndOfParagraph(endOfInsertedContent) || next.isNull()) {
             if (!isStartOfParagraph(endOfInsertedContent)) {

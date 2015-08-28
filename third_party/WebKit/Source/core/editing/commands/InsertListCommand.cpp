@@ -294,7 +294,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         // A paragraph is visually a list item minus a list marker.  The paragraph will be moved.
         start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
         end = endOfParagraph(start, CanSkipOverEditingBoundary);
-        nextListChild = enclosingListChild(end.next().deepEquivalent().anchorNode(), listElement);
+        nextListChild = enclosingListChild(nextPositionOf(end).deepEquivalent().anchorNode(), listElement);
         ASSERT(nextListChild != listChildNode);
         previousListChild = enclosingListChild(previousPositionOf(start).deepEquivalent().anchorNode(), listElement);
         ASSERT(previousListChild != listChildNode);
@@ -370,7 +370,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
 
     // Place list item into adjoining lists.
     HTMLElement* previousList = adjacentEnclosingList(start, previousPositionOf(start, CannotCrossEditingBoundary), listTag);
-    HTMLElement* nextList = adjacentEnclosingList(start, end.next(CannotCrossEditingBoundary), listTag);
+    HTMLElement* nextList = adjacentEnclosingList(start, nextPositionOf(end, CannotCrossEditingBoundary), listTag);
     RefPtrWillBeRawPtr<HTMLElement> listElement = nullptr;
     if (previousList) {
         appendNode(listItemElement, previousList);

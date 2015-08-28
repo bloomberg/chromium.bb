@@ -672,7 +672,7 @@ VisiblePosition startOfWord(const VisiblePosition& c, EWordSide side)
         if (isEndOfParagraph(c))
             return c;
 
-        p = c.next();
+        p = nextPositionOf(c);
         if (p.isNull())
             return c;
     }
@@ -1306,11 +1306,11 @@ VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossing
 VisiblePosition startOfNextParagraph(const VisiblePosition& visiblePosition)
 {
     VisiblePosition paragraphEnd(endOfParagraph(visiblePosition, CanSkipOverEditingBoundary));
-    VisiblePosition afterParagraphEnd(paragraphEnd.next(CannotCrossEditingBoundary));
+    VisiblePosition afterParagraphEnd(nextPositionOf(paragraphEnd, CannotCrossEditingBoundary));
     // The position after the last position in the last cell of a table
     // is not the start of the next paragraph.
     if (isFirstPositionAfterTable(afterParagraphEnd))
-        return afterParagraphEnd.next(CannotCrossEditingBoundary);
+        return nextPositionOf(afterParagraphEnd, CannotCrossEditingBoundary);
     return afterParagraphEnd;
 }
 
@@ -1420,7 +1420,7 @@ bool isStartOfDocument(const VisiblePosition& p)
 
 bool isEndOfDocument(const VisiblePosition& p)
 {
-    return p.isNotNull() && p.next(CanCrossEditingBoundary).isNull();
+    return p.isNotNull() && nextPositionOf(p, CanCrossEditingBoundary).isNull();
 }
 
 // ---------
@@ -1445,7 +1445,7 @@ VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)
 
 bool isEndOfEditableOrNonEditableContent(const VisiblePosition& p)
 {
-    return p.isNotNull() && p.next().isNull();
+    return p.isNotNull() && nextPositionOf(p).isNull();
 }
 
 VisiblePosition leftBoundaryOfLine(const VisiblePosition& c, TextDirection direction)

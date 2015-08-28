@@ -95,7 +95,6 @@ public:
     TextAffinity affinity() const { return m_affinity; }
 
     // next() and previous() will increment/decrement by a character cluster.
-    VisiblePosition next(EditingBoundaryCrossingRule = CanCrossEditingBoundary) const;
     VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition&) const;
     VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&) const;
     VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition&) const;
@@ -148,6 +147,8 @@ CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedT
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
 PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
 
+// TODO(yosin) We should move |nextPositionOf()| to "VisibleUnits.cpp".
+VisiblePosition nextPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 // TODO(yosin) We should move |previousPositionOf()| to "VisibleUnits.cpp"
 VisiblePosition previousPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 

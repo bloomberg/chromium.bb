@@ -666,7 +666,7 @@ VisiblePosition FrameSelection::modifyExtendingRight(TextGranularity granularity
     switch (granularity) {
     case CharacterGranularity:
         if (directionOfEnclosingBlock() == LTR)
-            pos = pos.next(CanSkipOverEditingBoundary);
+            pos = nextPositionOf(pos, CanSkipOverEditingBoundary);
         else
             pos = previousPositionOf(pos, CanSkipOverEditingBoundary);
         break;
@@ -701,7 +701,7 @@ VisiblePosition FrameSelection::modifyExtendingForward(TextGranularity granulari
     VisiblePosition pos(m_selection.extent(), m_selection.affinity());
     switch (granularity) {
     case CharacterGranularity:
-        pos = pos.next(CanSkipOverEditingBoundary);
+        pos = nextPositionOf(pos, CanSkipOverEditingBoundary);
         break;
     case WordGranularity:
         pos = nextWordPositionForPlatform(pos);
@@ -780,7 +780,7 @@ VisiblePosition FrameSelection::modifyMovingForward(TextGranularity granularity)
         if (isRange())
             pos = VisiblePosition(m_selection.end(), m_selection.affinity());
         else
-            pos = VisiblePosition(m_selection.extent(), m_selection.affinity()).next(CanSkipOverEditingBoundary);
+            pos = nextPositionOf(VisiblePosition(m_selection.extent(), m_selection.affinity()), CanSkipOverEditingBoundary);
         break;
     case WordGranularity:
         pos = nextWordPositionForPlatform(VisiblePosition(m_selection.extent(), m_selection.affinity()));
@@ -833,7 +833,7 @@ VisiblePosition FrameSelection::modifyExtendingLeft(TextGranularity granularity)
         if (directionOfEnclosingBlock() == LTR)
             pos = previousPositionOf(pos, CanSkipOverEditingBoundary);
         else
-            pos = pos.next(CanSkipOverEditingBoundary);
+            pos = nextPositionOf(pos, CanSkipOverEditingBoundary);
         break;
     case WordGranularity:
         if (directionOfEnclosingBlock() == LTR)
