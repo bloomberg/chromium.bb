@@ -22,6 +22,7 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
+#include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
@@ -52,6 +53,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   enhanced_bookmarks::BookmarkServerClusterServiceFactory::GetInstance();
   enhanced_bookmarks::EnhancedBookmarkModelFactory::GetInstance();
   ios::AboutSigninInternalsFactory::GetInstance();
+  ios::AccountConsistencyServiceFactory::GetInstance();
   ios::AccountFetcherServiceFactory::GetInstance();
   ios::AccountReconcilorFactory::GetInstance();
   ios::AccountTrackerServiceFactory::GetInstance();

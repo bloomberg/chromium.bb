@@ -4,6 +4,8 @@
 
 source_set("browser") {
   sources = [
+    "account_consistency_service.h",
+    "account_consistency_service.mm",
     "merge_session_observer_bridge.h",
     "merge_session_observer_bridge.mm",
     "oauth2_token_service_observer_bridge.h",
@@ -14,6 +16,7 @@ source_set("browser") {
   ]
 
   deps = [
+    "//ios/web",
     "//signin/core/browser",
   ]
 }
@@ -37,10 +40,13 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "account_consistency_service_unittest.mm",
     "profile_oauth2_token_service_ios_delegate_unittest.mm",
   ]
 
   deps = [
     ":test_support",
+    "//ios/web",
+    "//third_party/ocmock",
   ]
 }

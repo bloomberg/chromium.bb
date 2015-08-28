@@ -582,6 +582,7 @@
       'signin/core/browser/refresh_token_annotation_request_unittest.cc',
       'signin/core/browser/signin_error_controller_unittest.cc',
       'signin/core/browser/webdata/token_service_table_unittest.cc',
+      'signin/ios/browser/account_consistency_service_unittest.mm',
       'signin/ios/browser/profile_oauth2_token_service_ios_delegate_unittest.mm',
     ],
     'storage_monitor_unittest_sources': [
