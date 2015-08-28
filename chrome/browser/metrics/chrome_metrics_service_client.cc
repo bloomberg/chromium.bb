@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/browser_process.h"
@@ -140,6 +141,7 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
 #endif
       drive_metrics_provider_(nullptr),
       start_time_(base::TimeTicks::Now()),
+      has_uploaded_profiler_data_(false),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
   RecordCommandLineMetrics();
@@ -239,7 +241,15 @@ void ChromeMetricsServiceClient::CollectFinalMetrics(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   collect_final_metrics_done_callback_ = done_callback;
-  CollectFinalHistograms();
+
+  if (ShouldIncludeProfilerDataInLog()) {
+    // Fetch profiler data. This will call into
+    // |FinishedReceivingProfilerData()| when the task completes.
+    metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
+        weak_ptr_factory_.GetWeakPtr());
+  } else {
+    CollectFinalHistograms();
+  }
 }
 
 scoped_ptr<metrics::MetricsLogUploader>
@@ -424,10 +434,27 @@ void ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData() {
 }
 
 void ChromeMetricsServiceClient::OnInitTaskGotDriveMetrics() {
-  // Start the next part of the init task: fetching performance data.  This will
-  // call into |FinishedReceivingProfilerData()| when the task completes.
-  metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
-      weak_ptr_factory_.GetWeakPtr());
+  finished_gathering_initial_metrics_callback_.Run();
+}
+
+bool ChromeMetricsServiceClient::ShouldIncludeProfilerDataInLog() {
+  // Upload profiler data at most once per session.
+  if (has_uploaded_profiler_data_)
+    return false;
+
+  // For each log, flip a fair coin. Thus, profiler data is sent with the first
+  // log with probability 50%, with the second log with probability 25%, and so
+  // on. As a result, uploaded data is biased toward earlier logs.
+  // TODO(isherman): Explore other possible algorithms, and choose one that
+  // might be more appropriate.  For example, it might be reasonable to include
+  // profiler data with some fixed probability, so that a given client might
+  // upload profiler data more than once; but on average, clients won't upload
+  // too much data.
+  if (base::RandDouble() < 0.5)
+    return false;
+
+  has_uploaded_profiler_data_ = true;
+  return true;
 }
 
 void ChromeMetricsServiceClient::ReceivedProfilerData(
@@ -441,7 +468,7 @@ void ChromeMetricsServiceClient::ReceivedProfilerData(
 }
 
 void ChromeMetricsServiceClient::FinishedReceivingProfilerData() {
-  finished_gathering_initial_metrics_callback_.Run();
+  CollectFinalHistograms();
 }
 
 void ChromeMetricsServiceClient::CollectFinalHistograms() {
@@ -487,6 +514,11 @@ void ChromeMetricsServiceClient::CollectFinalHistograms() {
       }
     }
     if (resource_usage) {
+      // TODO(isherman): This looks like it might miss the log, depending on
+      // whether OnMemoryDetailCollectionDone() is called first. But, actually,
+      // it looks like OnWebCacheStatsRefresh only records local histograms. Why
+      // is it triggered here at all, if it has nothing to do with metrics log
+      // uploads?
       resource_usage->Refresh(
           base::Bind(&ChromeMetricsServiceClient::OnWebCacheStatsRefresh,
                      weak_ptr_factory_.GetWeakPtr(), host_id));

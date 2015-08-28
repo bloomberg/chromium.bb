@@ -102,6 +102,11 @@ class ChromeMetricsServiceClient
   // the init task by loading profiler data.
   void OnInitTaskGotDriveMetrics();
 
+  // Returns true iff profiler data should be included in the next metrics log.
+  // NOTE: This method is probabilistic and also updates internal state as a
+  // side-effect when called, so it should only be called once per log.
+  bool ShouldIncludeProfilerDataInLog();
+
   // TrackingSynchronizerObserver:
   void ReceivedProfilerData(
       const metrics::ProfilerDataAttributes& attributes,
@@ -207,6 +212,10 @@ class ChromeMetricsServiceClient
   // omnibox.
   scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
       omnibox_url_opened_subscription_;
+
+  // Whether this client has already uploaded profiler data during this session.
+  // Profiler data is uploaded at most once per session.
+  bool has_uploaded_profiler_data_;
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
 
