@@ -15,25 +15,42 @@ InspectorTest.computedStyleWidget = function()
 InspectorTest.dumpComputedStyle = function()
 {
     var computed = InspectorTest.computedStyleWidget();
-    var items = computed.element.querySelectorAll(".computed-style-property");
-    for (var i = 0; i < items.length; ++i) {
-        var item = items[i];
-        var property = item[WebInspector.ComputedStyleWidget._propertySymbol];
+    var treeOutline = computed._propertiesOutline;
+    var children = treeOutline.rootElement().children();
+    for (var treeElement of children) {
+        var property = treeElement[WebInspector.ComputedStyleWidget._propertySymbol];
         if (property.name === "width" || property.name === "height")
             continue;
-        InspectorTest.addResult(item.textContent);
+        var dumpText = "";
+        dumpText += treeElement.title.querySelector(".property-name").textContent;
+        dumpText += ": ";
+        dumpText += treeElement.title.querySelector(".property-value").textContent;
+        InspectorTest.addResult(dumpText);
+        for (var trace of treeElement.children()) {
+            var title = trace.title;
+            var dumpText = "";
+            if (trace.title.classList.contains("property-trace-inactive"))
+                dumpText += "OVERLOADED ";
+            dumpText += title.querySelector(".property-trace-value").textContent;
+            dumpText += " - ";
+            dumpText += title.querySelector(".property-trace-selector").textContent;
+            var link = title.querySelector(".trace-link");
+            if (link)
+                dumpText += " " + extractText(link);
+            InspectorTest.addResult("    " + dumpText);
+        }
     }
 }
 
 InspectorTest.findComputedPropertyWithName = function(name)
 {
     var computed = InspectorTest.computedStyleWidget();
-    var items = computed.element.querySelectorAll(".computed-style-property");
-    for (var i = 0; i < items.length; ++i) {
-        var item = items[i];
-        var property = item[WebInspector.ComputedStyleWidget._propertySymbol];
+    var treeOutline = computed._propertiesOutline;
+    var children = treeOutline.rootElement().children();
+    for (var treeElement of children) {
+        var property = treeElement[WebInspector.ComputedStyleWidget._propertySymbol];
         if (property.name === name)
-            return item;
+            return treeElement.title;
     }
     return null;
 }

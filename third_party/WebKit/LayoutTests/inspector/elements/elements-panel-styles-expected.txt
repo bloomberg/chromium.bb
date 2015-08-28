@@ -1,27 +1,57 @@
 Tests that elements panel shows proper styles in the sidebar panel.
 
 Foo
--webkit-font-smoothing: subpixel-antialiased;
-border-bottom-left-radius: 5px;
-border-bottom-right-radius: 5px;
-border-top-left-radius: 5px;
-border-top-right-radius: 5px;
-color: rgb(0, 0, 255);
-display: block;
-font-family: serif;
-font-size: 14px;
-font-style: italic;
-font-weight: normal;
-margin-bottom: 2px;
-margin-left: 0px;
-margin-right: 0px;
-margin-top: 10px;
-padding-bottom: 4px;
-padding-left: 4px;
-padding-right: 1px;
-padding-top: 4px;
-text-align: -webkit-left;
-text-indent: 0px;
+-webkit-font-smoothing: subpixel-antialiased
+    subpixel-antialiased - element.style
+border-bottom-left-radius: 5px
+    5px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+border-bottom-right-radius: 5px
+    5px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+border-top-left-radius: 5px
+    5px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+border-top-right-radius: 5px
+    5px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+color: rgb(0, 0, 255)
+    blue - .foo, .foo::before elements-panel-styles.css:34 -> elements-panel-styles.css:34:1
+    OVERLOADED black - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+    OVERLOADED red - #container elements-panel-styles.css:10 -> elements-panel-styles.css:10:1
+    OVERLOADED magenta !important - html elements-panel-styles.css:61 -> elements-panel-styles.css:61:1
+display: block
+    OVERLOADED none - element.style
+    block !important - .foo, .foo::before elements-panel-styles.css:34 -> elements-panel-styles.css:34:1
+    OVERLOADED block - div user agent stylesheet
+font-family: serif
+    serif - #container elements-panel-styles.css:10 -> elements-panel-styles.css:10:1
+font-size: 14px
+    14px - #container elements-panel-styles.css:10 -> elements-panel-styles.css:10:1
+    OVERLOADED 12px - body elements-panel-styles.css:1 -> elements-panel-styles.css:1:1
+font-style: italic
+    italic !important - #container .foo elements-panel-styles.css:17 -> elements-panel-styles.css:17:1
+    OVERLOADED normal !important - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+font-weight: normal
+    normal !important - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+margin-bottom: 2px
+    2px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+margin-left: 0px
+    1px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+margin-right: 0px
+    0px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+margin-top: 10px
+    10px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+padding-bottom: 4px
+    4px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+padding-left: 4px
+    4px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+padding-right: 1px
+    1px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+padding-top: 4px
+    4px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+text-align: -webkit-left
+    -webkit-left - element.style
+text-indent: 0px
+    OVERLOADED 10px - body .foo elements-panel-styles.css:6 -> elements-panel-styles.css:6:1
+    0 !important - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
+    OVERLOADED 20px !important - body elements-panel-styles.css:1 -> elements-panel-styles.css:1:1
 [expanded] 
 element.style  { ()
 /-- overloaded --/     display: none;
