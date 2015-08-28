@@ -256,9 +256,6 @@ private:
 // to return.
 CORE_EXPORT PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection&);
 
-// TODO(yosin) We should move |intersectsNode()| to "FrameSelection.cpp".
-bool intersectsNode(const VisibleSelection&, Node*);
-
 } // namespace blink
 
 #ifndef NDEBUG

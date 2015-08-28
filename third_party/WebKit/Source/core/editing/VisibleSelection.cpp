@@ -230,18 +230,6 @@ PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection& selection)
     return Range::create(*start.document(), start, end);
 }
 
-// TODO(yosin) We should move |intersectsNode()| to "FrameSelection.cpp".
-bool intersectsNode(const VisibleSelection& selection, Node* node)
-{
-    if (selection.isNone())
-        return false;
-    Position start = selection.start().parentAnchoredEquivalent();
-    Position end = selection.end().parentAnchoredEquivalent();
-    TrackExceptionState exceptionState;
-    // TODO(yosin) We should avoid to use |Range::intersectsNode()|.
-    return Range::intersectsNode(node, start, end, exceptionState) && !exceptionState.hadException();
-}
-
 template <typename Strategy>
 static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralRangeTemplate<Strategy>& range)
 {

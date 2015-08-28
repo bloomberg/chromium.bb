@@ -360,6 +360,17 @@ void FrameSelection::nodeWillBeRemoved(Node& node)
         removingNodeRemovesPosition(node, m_selection.start()), removingNodeRemovesPosition(node, m_selection.end()));
 }
 
+static bool intersectsNode(const VisibleSelection& selection, Node* node)
+{
+    if (selection.isNone())
+        return false;
+    Position start = selection.start().parentAnchoredEquivalent();
+    Position end = selection.end().parentAnchoredEquivalent();
+    TrackExceptionState exceptionState;
+    // TODO(yosin) We should avoid to use |Range::intersectsNode()|.
+    return Range::intersectsNode(node, start, end, exceptionState) && !exceptionState.hadException();
+}
+
 void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved)
 {
     ASSERT(node.document().isActive());
