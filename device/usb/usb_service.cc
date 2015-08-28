@@ -12,12 +12,6 @@
 
 namespace device {
 
-namespace {
-
-UsbService* g_service;
-
-}  // namespace
-
 UsbService::Observer::~Observer() {}
 
 void UsbService::Observer::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
@@ -31,28 +25,14 @@ void UsbService::Observer::OnDeviceRemovedCleanup(
 }
 
 // static
-UsbService* UsbService::GetInstance(
+scoped_ptr<UsbService> UsbService::Create(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
-  if (!g_service) {
-    // |g_service| is set by the UsbService constructor.
-    new UsbServiceImpl(blocking_task_runner);
-    if (!g_service) {
-      base::AtExitManager::RegisterTask(base::Bind(
-          &base::DeletePointer<UsbService>, base::Unretained(g_service)));
-    }
-  }
-  return g_service;
+  return make_scoped_ptr(new UsbServiceImpl(blocking_task_runner));
 }
 
-UsbService::UsbService() {
-  DCHECK(!g_service);
-  g_service = this;
-}
+UsbService::~UsbService() {}
 
-UsbService::~UsbService() {
-  DCHECK(g_service);
-  g_service = nullptr;
-}
+UsbService::UsbService() {}
 
 void UsbService::AddObserver(Observer* observer) {
   DCHECK(CalledOnValidThread());

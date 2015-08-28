@@ -67,7 +67,6 @@ UsbContext::UsbContext(PlatformUsbContext context) : context_(context) {
 }
 
 UsbContext::~UsbContext() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   event_handler_->Stop();
   event_handler_->Join();
 }

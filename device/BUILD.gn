@@ -111,6 +111,8 @@ test("device_unittests") {
     sources += [
       "devices_app/usb/device_impl_unittest.cc",
       "devices_app/usb/device_manager_impl_unittest.cc",
+      "test/test_device_client.cc",
+      "test/test_device_client.h",
       "test/usb_test_gadget_impl.cc",
       "usb/usb_context_unittest.cc",
       "usb/usb_descriptors_unittest.cc",

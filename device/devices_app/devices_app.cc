@@ -65,14 +65,20 @@ class AppDeviceClient : public DeviceClient {
  public:
   explicit AppDeviceClient(
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-      : usb_service_(UsbService::GetInstance(blocking_task_runner)) {}
+      : blocking_task_runner_(blocking_task_runner) {}
   ~AppDeviceClient() override {}
 
  private:
   // DeviceClient:
-  UsbService* GetUsbService() override { return usb_service_; }
+  UsbService* GetUsbService() override {
+    if (!usb_service_) {
+      usb_service_ = UsbService::Create(blocking_task_runner_);
+    }
+    return usb_service_.get();
+  }
 
-  UsbService* usb_service_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  scoped_ptr<UsbService> usb_service_;
 };
 
 }  // namespace

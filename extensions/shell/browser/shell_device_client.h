@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace extensions {
 
@@ -24,6 +25,8 @@ class ShellDeviceClient : device::DeviceClient {
   device::HidService* GetHidService() override;
 
  private:
+  scoped_ptr<device::UsbService> usb_service_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellDeviceClient);
 };
 

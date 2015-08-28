@@ -75,6 +75,8 @@
         "serial/serial_io_handler_posix_unittest.cc",
         'serial/serial_service_unittest.cc',
         'test/run_all_unittests.cc',
+        'test/test_device_client.cc',
+        'test/test_device_client.h',
         'test/usb_test_gadget_impl.cc',
         'usb/usb_context_unittest.cc',
         'usb/usb_descriptors_unittest.cc',
@@ -115,6 +117,10 @@
             ['exclude', '(^|/)hid'],
             ['exclude', '(^|/)serial'],
             ['exclude', '(^|/)usb'],
+          ],
+          'sources!': [
+            'test/test_device_client.cc',
+            'test/test_device_client.h',
           ],
         }],
         ['OS=="mac"', {

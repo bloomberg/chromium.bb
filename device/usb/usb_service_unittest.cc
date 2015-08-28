@@ -5,6 +5,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_io_thread.h"
+#include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
@@ -19,11 +20,13 @@ class UsbServiceTest : public ::testing::Test {
   void SetUp() override {
     message_loop_.reset(new base::MessageLoopForUI);
     io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
+    device_client_.reset(new TestDeviceClient(io_thread_->task_runner()));
   }
 
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<base::TestIOThread> io_thread_;
+  scoped_ptr<TestDeviceClient> device_client_;
 };
 
 TEST_F(UsbServiceTest, ClaimGadget) {

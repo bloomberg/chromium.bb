@@ -17,6 +17,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "device/core/device_client.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_handle.h"
@@ -24,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using device::DeviceClient;
 using device::UsbConfigDescriptor;
 using device::UsbDevice;
 using device::UsbDeviceHandle;
@@ -503,6 +505,18 @@ class MockUsbServiceForCheckingTraits : public MockUsbService {
   int step_;
 };
 
+class TestDeviceClient : public DeviceClient {
+ public:
+  explicit TestDeviceClient(scoped_ptr<UsbService> service)
+      : DeviceClient(), usb_service_(service.Pass()) {}
+  ~TestDeviceClient() override {}
+
+ private:
+  UsbService* GetUsbService() override { return usb_service_.get(); }
+
+  scoped_ptr<UsbService> usb_service_;
+};
+
 class DevToolsAndroidBridgeWarmUp
     : public DevToolsAndroidBridge::DeviceCountListener {
  public:
@@ -525,14 +539,8 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
       : scheduler_invoked_(0) {
   }
 
-  void SetUp() override {
-    // This must happen before profile creation as there are KeyedServices that
-    // may trigger the creation of a non-mock instance of UsbService.
-    mock_usb_service_.reset(CreateMockService());
-    InProcessBrowserTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
+    device_client_.reset(new TestDeviceClient(CreateMockService()));
     adb_bridge_ =
         DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
     DCHECK(adb_bridge_);
@@ -554,10 +562,12 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, request);
   }
 
-  virtual MockUsbService* CreateMockService() { return new MockUsbService(); }
+  virtual scoped_ptr<MockUsbService> CreateMockService() {
+    return make_scoped_ptr(new MockUsbService());
+  }
 
   scoped_refptr<content::MessageLoopRunner> runner_;
-  scoped_ptr<MockUsbService> mock_usb_service_;
+  scoped_ptr<TestDeviceClient> device_client_;
   DevToolsAndroidBridge* adb_bridge_;
   int scheduler_invoked_;
 };
@@ -575,22 +585,22 @@ class AndroidUsbCountTest : public AndroidUsbDiscoveryTest {
 
 class AndroidUsbTraitsTest : public AndroidUsbDiscoveryTest {
  protected:
-  MockUsbService* CreateMockService() override {
-    return new MockUsbServiceForCheckingTraits();
+  scoped_ptr<MockUsbService> CreateMockService() override {
+    return make_scoped_ptr(new MockUsbServiceForCheckingTraits());
   }
 };
 
 class AndroidBreakingUsbTest : public AndroidUsbDiscoveryTest {
  protected:
-  MockUsbService* CreateMockService() override {
-    return new MockBreakingUsbService();
+  scoped_ptr<MockUsbService> CreateMockService() override {
+    return make_scoped_ptr(new MockBreakingUsbService());
   }
 };
 
 class AndroidNoConfigUsbTest : public AndroidUsbDiscoveryTest {
  protected:
-  MockUsbService* CreateMockService() override {
-    return new MockNoConfigUsbService();
+  scoped_ptr<MockUsbService> CreateMockService() override {
+    return make_scoped_ptr(new MockNoConfigUsbService());
   }
 };
 

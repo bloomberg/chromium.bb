@@ -39,10 +39,9 @@ class UsbServiceImpl :
  public:
   explicit UsbServiceImpl(
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
-
- private:
   ~UsbServiceImpl() override;
 
+ private:
   // device::UsbService implementation
   scoped_refptr<UsbDevice> GetDevice(const std::string& guid) override;
   void GetDevices(const GetDevicesCallback& callback) override;

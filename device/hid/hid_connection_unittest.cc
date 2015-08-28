@@ -14,6 +14,7 @@
 #include "base/test/test_io_thread.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_service.h"
+#include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
 #include "net/base/io_buffer.h"
@@ -150,6 +151,7 @@ class HidConnectionTest : public testing::Test {
 
     message_loop_.reset(new base::MessageLoopForUI());
     io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
+    device_client_.reset(new TestDeviceClient(io_thread_->task_runner()));
 
     service_ = HidService::GetInstance(io_thread_->task_runner());
     ASSERT_TRUE(service_);
@@ -166,6 +168,7 @@ class HidConnectionTest : public testing::Test {
 
   scoped_ptr<base::MessageLoopForUI> message_loop_;
   scoped_ptr<base::TestIOThread> io_thread_;
+  scoped_ptr<TestDeviceClient> device_client_;
   HidService* service_;
   scoped_ptr<UsbTestGadget> test_gadget_;
   HidDeviceId device_id_;

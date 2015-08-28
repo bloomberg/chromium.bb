@@ -10,17 +10,16 @@ namespace device {
 
 namespace {
 
-DeviceClient* g_instance = NULL;
+DeviceClient* g_instance;
 
 }  // namespace
 
 DeviceClient::DeviceClient() {
-  DCHECK(!g_instance);
   g_instance = this;
 }
 
 DeviceClient::~DeviceClient() {
-  g_instance = NULL;
+  g_instance = nullptr;
 }
 
 /* static */
@@ -32,13 +31,13 @@ DeviceClient* DeviceClient::Get() {
 UsbService* DeviceClient::GetUsbService() {
   // This should never be called by clients which do not support the USB API.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 HidService* DeviceClient::GetHidService() {
   // This should never be called by clients which do not support the HID API.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace device
