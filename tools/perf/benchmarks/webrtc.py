@@ -9,7 +9,7 @@ from telemetry import benchmark
 import page_sets
 
 
-@benchmark.Disabled  # crbug.com/523517
+@benchmark.Disabled('reference')
 class WebRTC(perf_benchmark.PerfBenchmark):
   """Obtains WebRTC metrics for a real-time video tests."""
   test = webrtc.WebRTC
