@@ -78,6 +78,19 @@ public:
     // Called when a call to WebWidget::animate is required
     virtual void scheduleAnimation() { }
 
+    // Called when one of the following things were involved during the layout:
+    // * > 200 text characters
+    // * > 1024 image pixels
+    // * a plugin
+    // * a canvas
+    // An approximation for first layout that resulted in pixels on screen.
+    // Not the best heuristic, and we should replace it with something better.
+    virtual void didFirstVisuallyNonEmptyLayout() { }
+
+    // The frame's document first layout immediately after the parsing finished.
+    // Another way to put it: first frame produced after DOMContentLoaded was dispatched.
+    virtual void didFirstLayoutAfterFinishedParsing() { }
+
     // Called when the widget acquires or loses focus, respectively.
     virtual void didFocus() { }
     virtual void didBlur() { }

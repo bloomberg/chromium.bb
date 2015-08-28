@@ -1905,8 +1905,9 @@ void WebViewImpl::layout()
             m_shouldDispatchFirstVisuallyNonEmptyLayout = false;
             // TODO(esprehn): Move users of this callback to something
             // better, the heuristic for "visually non-empty" is bad.
-            // TODO(dglazkov): This should likely be a WebViewClient API.
+            // TODO(dglazkov): Remove this line after https://codereview.chromium.org/1319073003 lands.
             frame->loader().client()->dispatchDidFirstVisuallyNonEmptyLayout();
+            client()->didFirstVisuallyNonEmptyLayout();
         }
 
         if (m_shouldDispatchFirstLayoutAfterFinishedParsing && frame->document()->hasFinishedParsing())  {
