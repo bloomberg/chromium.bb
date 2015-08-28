@@ -110,6 +110,7 @@ class ChooseMobileNetworkHandler
   std::string device_path_;
   base::ListValue networks_list_;
   bool is_page_ready_;
+  bool scanning_;
   bool has_pending_results_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooseMobileNetworkHandler);
@@ -119,6 +120,7 @@ class ChooseMobileNetworkHandler
 
 ChooseMobileNetworkHandler::ChooseMobileNetworkHandler()
     : is_page_ready_(false),
+      scanning_(false),
       has_pending_results_(false) {
   NetworkStateHandler* handler = GetNetworkStateHandler();
   const DeviceState* cellular =
@@ -167,9 +169,12 @@ void ChooseMobileNetworkHandler::DeviceListChanged() {
   }
   if (cellular->scanning()) {
     NET_LOG_EVENT("ChooseMobileNetwork", "Device is scanning for networks.");
-    web_ui()->CallJavascriptFunction(kJsApiShowScanning);
+    scanning_ = true;
+    if (is_page_ready_)
+      web_ui()->CallJavascriptFunction(kJsApiShowScanning);
     return;
   }
+  scanning_ = false;
   const DeviceState::CellularScanResults& scan_results =
       cellular->scan_results();
   std::set<std::string> network_ids;
@@ -246,6 +251,8 @@ void ChooseMobileNetworkHandler::HandlePageReady(const base::ListValue* args) {
     web_ui()->CallJavascriptFunction(kJsApiShowNetworks, networks_list_);
     networks_list_.Clear();
     has_pending_results_ = false;
+  } else if (scanning_) {
+    web_ui()->CallJavascriptFunction(kJsApiShowScanning);
   }
   is_page_ready_ = true;
 }
