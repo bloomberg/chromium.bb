@@ -593,10 +593,7 @@ group("both_gn_and_gyp") {
   }
 
   if (!is_ios) {
-    deps += [
-      "//gpu/skia_runner:skia_runner",
-      "//gpu/command_buffer_gles2:command_buffer_gles2",
-    ]
+    deps += [ "//gpu/skia_runner:skia_runner" ]
   }
 }
 

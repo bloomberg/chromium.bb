@@ -102,16 +102,12 @@ EGLBoolean eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor) {
   if (!display->Initialize())
     return EglError(EGL_NOT_INITIALIZED, EGL_FALSE);
 
-  // eglInitialize can be called multiple times, prevent InitializeOneOff from
-  // being called multiple times.
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
-    int argc = 1;
-    const char* const argv[] = {
-      "dummy"
-    };
-    base::CommandLine::Init(argc, argv);
-    gfx::GLSurface::InitializeOneOff();
-  }
+  int argc = 1;
+  const char* const argv[] = {
+    "dummy"
+  };
+  base::CommandLine::Init(argc, argv);
+  gfx::GLSurface::InitializeOneOff();
 
   *major = 1;
   *minor = 4;
