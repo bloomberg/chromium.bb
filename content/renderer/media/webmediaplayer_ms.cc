@@ -12,7 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "cc/blink/context_provider_web_context.h"
 #include "cc/blink/web_layer_impl.h"
-#include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
@@ -93,8 +92,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
     media::MediaLog* media_log,
-    scoped_ptr<MediaStreamRendererFactory> factory,
-    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner)
+    scoped_ptr<MediaStreamRendererFactory> factory)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
@@ -103,11 +101,13 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       client_(client),
       delegate_(delegate),
       paused_(true),
+      current_frame_used_(false),
+      video_frame_provider_client_(NULL),
       received_first_frame_(false),
+      total_frame_count_(0),
+      dropped_frame_count_(0),
       media_log_(media_log),
-      renderer_factory_(factory.Pass()),
-      compositor_(new Compositor(compositor_task_runner)),
-      compositor_task_runner_(compositor_task_runner) {
+      renderer_factory_(factory.Pass()) {
   DVLOG(1) << "WebMediaPlayerMS::ctor";
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
@@ -117,8 +117,7 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   DVLOG(1) << "WebMediaPlayerMS::dtor";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_.release());
-
+  SetVideoFrameProviderClient(NULL);
   GetClient()->setWebLayer(NULL);
 
   if (video_frame_provider_.get())
@@ -187,10 +186,6 @@ void WebMediaPlayerMS::play() {
     if (video_frame_provider_.get())
       video_frame_provider_->Play();
 
-    compositor_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&WebMediaPlayerMS::Compositor::StartRendering,
-                              base::Unretained(compositor_.get())));
-
     if (audio_renderer_.get())
       audio_renderer_->Play();
 
@@ -210,10 +205,6 @@ void WebMediaPlayerMS::pause() {
   if (video_frame_provider_.get())
     video_frame_provider_->Pause();
 
-  compositor_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WebMediaPlayerMS::Compositor::StopRendering,
-                            base::Unretained(compositor_.get())));
-
   if (!paused_) {
     if (audio_renderer_.get())
       audio_renderer_->Pause();
@@ -225,6 +216,19 @@ void WebMediaPlayerMS::pause() {
   paused_ = true;
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
+
+  if (!current_frame_.get())
+    return;
+
+  // Copy the frame so that rendering can show the last received frame.
+  // The original frame must not be referenced when the player is paused since
+  // there might be a finite number of available buffers. E.g, video that
+  // originates from a video camera.
+  scoped_refptr<media::VideoFrame> new_frame =
+      CopyFrameToYV12(current_frame_, &video_renderer_);
+
+  base::AutoLock auto_lock(current_frame_lock_);
+  current_frame_ = new_frame;
 }
 
 bool WebMediaPlayerMS::supportsSave() const {
@@ -284,8 +288,9 @@ bool WebMediaPlayerMS::hasAudio() const {
 blink::WebSize WebMediaPlayerMS::naturalSize() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  gfx::Size size = compositor_->GetCurrentSize();
-
+  gfx::Size size;
+  if (current_frame_.get())
+    size = current_frame_->natural_size();
   DVLOG(3) << "WebMediaPlayerMS::naturalSize, " << size.ToString();
   return blink::WebSize(size);
 }
@@ -307,9 +312,8 @@ double WebMediaPlayerMS::duration() const {
 
 double WebMediaPlayerMS::currentTime() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::TimeDelta current_time = compositor_->GetCurrentTime();
-  if (current_time.ToInternalValue() != 0) {
-    return current_time.InSecondsF();
+  if (current_time_.ToInternalValue() != 0) {
+    return current_time_.InSecondsF();
   } else if (audio_renderer_.get()) {
     return audio_renderer_->GetCurrentRenderTime().InSecondsF();
   }
@@ -350,10 +354,8 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
   DVLOG(3) << "WebMediaPlayerMS::paint";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_refptr<media::VideoFrame> frame = compositor_->GetCurrentFrame();
-
   media::Context3D context_3d;
-  if (frame.get() && frame->HasTextures()) {
+  if (current_frame_.get() && current_frame_->HasTextures()) {
     cc::ContextProvider* provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     // GPU Process crashed.
@@ -363,8 +365,14 @@ void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
     DCHECK(context_3d.gl);
   }
   gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
-  video_renderer_.Paint(frame, canvas, dest_rect, alpha, mode,
-                                         media::VIDEO_ROTATION_0, context_3d);
+  video_renderer_.Paint(current_frame_, canvas, dest_rect, alpha, mode,
+                        media::VIDEO_ROTATION_0, context_3d);
+
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    if (current_frame_.get())
+      current_frame_used_ = true;
+  }
 }
 
 bool WebMediaPlayerMS::hasSingleSecurityOrigin() const {
@@ -383,16 +391,14 @@ double WebMediaPlayerMS::mediaTimeForTimeValue(double timeValue) const {
 
 unsigned WebMediaPlayerMS::decodedFrameCount() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  unsigned total_frame_count = compositor_->GetTotalFrameCount();
-  DVLOG(1) << "WebMediaPlayerMS::decodedFrameCount, " << total_frame_count;
-  return total_frame_count;
+  DVLOG(1) << "WebMediaPlayerMS::decodedFrameCount, " << total_frame_count_;
+  return total_frame_count_;
 }
 
 unsigned WebMediaPlayerMS::droppedFrameCount() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  unsigned dropped_frame_count = compositor_->GetDroppedFrameCount();
-  DVLOG(1) << "WebMediaPlayerMS::droppedFrameCount, " << dropped_frame_count;
-  return dropped_frame_count;
+  DVLOG(1) << "WebMediaPlayerMS::droppedFrameCount, " << dropped_frame_count_;
+  return dropped_frame_count_;
 }
 
 unsigned WebMediaPlayerMS::audioDecodedByteCount() const {
@@ -417,7 +423,11 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
   TRACE_EVENT0("media", "WebMediaPlayerMS:copyVideoTextureToPlatformTexture");
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame;
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    video_frame = current_frame_;
+  }
 
   if (!video_frame.get() || video_frame->HasTextures() ||
       media::VideoFrame::NumPlanes(video_frame->format()) != 1) {
@@ -435,39 +445,86 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
   return true;
 }
 
+void WebMediaPlayerMS::SetVideoFrameProviderClient(
+    cc::VideoFrameProvider::Client* client) {
+  // This is called from both the main renderer thread and the compositor
+  // thread (when the main thread is blocked).
+  if (video_frame_provider_client_)
+    video_frame_provider_client_->StopUsingProvider();
+  video_frame_provider_client_ = client;
+}
+
+bool WebMediaPlayerMS::UpdateCurrentFrame(base::TimeTicks deadline_min,
+                                          base::TimeTicks deadline_max) {
+  // TODO(dalecurtis): This should make use of the deadline interval to ensure
+  // the painted frame is correct for the given interval.
+  NOTREACHED();
+  return false;
+}
+
+bool WebMediaPlayerMS::HasCurrentFrame() {
+  base::AutoLock auto_lock(current_frame_lock_);
+  return current_frame_;
+}
+
+scoped_refptr<media::VideoFrame> WebMediaPlayerMS::GetCurrentFrame() {
+  DVLOG(3) << "WebMediaPlayerMS::GetCurrentFrame";
+  base::AutoLock auto_lock(current_frame_lock_);
+  if (!current_frame_.get())
+    return NULL;
+  current_frame_used_ = true;
+  return current_frame_;
+}
+
+void WebMediaPlayerMS::PutCurrentFrame() {
+  DVLOG(3) << "WebMediaPlayerMS::PutCurrentFrame";
+}
+
 void WebMediaPlayerMS::OnFrameAvailable(
     const scoped_refptr<media::VideoFrame>& frame) {
   DVLOG(3) << "WebMediaPlayerMS::OnFrameAvailable";
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  base::TimeTicks render_time;
-  if (!frame->metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
-    render_time = base::TimeTicks();
-  }
-  TRACE_EVENT1("webrtc", "WebMediaPlayerMS::OnFrameAvailable",
-               "Ideal Render Instant", render_time.ToInternalValue());
-
+  ++total_frame_count_;
   if (!received_first_frame_) {
     received_first_frame_ = true;
+    {
+      base::AutoLock auto_lock(current_frame_lock_);
+      DCHECK(!current_frame_used_);
+      current_frame_ = frame;
+    }
     SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+    GetClient()->sizeChanged();
 
     if (video_frame_provider_.get()) {
       video_weblayer_.reset(new cc_blink::WebLayerImpl(
-          cc::VideoLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
-                                 compositor_.get(), media::VIDEO_ROTATION_0)));
+          cc::VideoLayer::Create(cc_blink::WebLayerImpl::LayerSettings(), this,
+                                 media::VIDEO_ROTATION_0)));
       video_weblayer_->setOpaque(true);
       GetClient()->setWebLayer(video_weblayer_.get());
     }
   }
 
-  bool size_changed = compositor_->GetCurrentSize() != frame->natural_size();
+  // Do not update |current_frame_| when paused.
+  if (paused_)
+    return;
 
-  compositor_->EnqueueFrame(frame);
+  bool size_changed = !current_frame_.get() ||
+                      current_frame_->natural_size() != frame->natural_size();
+
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    if (!current_frame_used_ && current_frame_.get())
+      ++dropped_frame_count_;
+    current_frame_ = frame;
+    current_time_ = frame->timestamp();
+    current_frame_used_ = false;
+  }
 
   if (size_changed)
     GetClient()->sizeChanged();
+
+  GetClient()->repaint();
 }
 
 void WebMediaPlayerMS::RepaintInternal() {
@@ -503,150 +560,4 @@ blink::WebMediaPlayerClient* WebMediaPlayerMS::GetClient() {
   return client_;
 }
 
-WebMediaPlayerMS::Compositor::Compositor(
-    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner)
-    : compositor_task_runner_(compositor_task_runner),
-      video_frame_provider_client_(NULL),
-      current_frame_used_(false),
-      last_deadline_max_(base::TimeTicks()),
-      total_frame_count_(0),
-      dropped_frame_count_(0),
-      paused_(false) {}
-
-WebMediaPlayerMS::Compositor::~Compositor() {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  if (video_frame_provider_client_)
-    video_frame_provider_client_->StopUsingProvider();
-}
-
-void WebMediaPlayerMS::Compositor::EnqueueFrame(
-    scoped_refptr<media::VideoFrame> const& frame) {
-  base::AutoLock auto_lock(current_frame_lock_);
-  ++total_frame_count_;
-
-  if (base::TimeTicks::Now() > last_deadline_max_) {
-    // TODO(qiangchen): This shows vsyncs stops rendering frames. A probable
-    // cause is that the tab is not in the front. But we still have to let
-    // old frames go. Call VRA::RemoveExpiredFrames.
-    current_frame_ = frame;
-  }
-
-  if (staging_frame_.get() != current_frame_.get()) {
-    // This shows the staging_frame_ nevers get updated into current_frame_, and
-    // now we are going to overwrite it. The frame should be counted as dropped.
-    ++dropped_frame_count_;
-  }
-
-  // TODO(qiangchen): Instead of using one variable to hold one frame, use
-  // VideoRendererAlgorithm.
-  staging_frame_ = frame;
-}
-
-bool WebMediaPlayerMS::Compositor::UpdateCurrentFrame(
-    base::TimeTicks deadline_min,
-    base::TimeTicks deadline_max) {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  base::AutoLock auto_lock(current_frame_lock_);
-  TRACE_EVENT_BEGIN2("webrtc", "WebMediaPlayerMS::UpdateCurrentFrame",
-                     "Actual Render Begin", deadline_min.ToInternalValue(),
-                     "Actual Render End", deadline_max.ToInternalValue());
-  last_deadline_max_ = deadline_max;
-
-  // TODO(dalecurtis): This should make use of the deadline interval to ensure
-  // the painted frame is correct for the given interval.
-
-  if (paused_)
-    return false;
-
-  if (current_frame_.get() != staging_frame_.get()) {
-    if (!current_frame_used_)
-      ++dropped_frame_count_;
-    current_frame_ = staging_frame_;
-    current_frame_used_ = false;
-  }
-
-  base::TimeTicks render_time;
-  if (!current_frame_->metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
-    render_time = base::TimeTicks();
-  }
-  TRACE_EVENT_END1("webrtc", "WebMediaPlayerMS::UpdateCurrentFrame",
-                   "Ideal Render Instant", render_time.ToInternalValue());
-  return !current_frame_used_;
-}
-
-bool WebMediaPlayerMS::Compositor::HasCurrentFrame() {
-  base::AutoLock auto_lock(current_frame_lock_);
-  return !!current_frame_.get();
-}
-
-scoped_refptr<media::VideoFrame>
-WebMediaPlayerMS::Compositor::GetCurrentFrame() {
-  DVLOG(3) << "WebMediaPlayerMS::Compositor::GetCurrentFrame";
-  base::AutoLock auto_lock(current_frame_lock_);
-  if (!current_frame_.get())
-    return NULL;
-  return current_frame_;
-}
-
-void WebMediaPlayerMS::Compositor::PutCurrentFrame() {
-  DVLOG(3) << "WebMediaPlayerMS::PutCurrentFrame";
-  current_frame_used_ = true;
-}
-
-void WebMediaPlayerMS::Compositor::SetVideoFrameProviderClient(
-    cc::VideoFrameProvider::Client* client) {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  if (video_frame_provider_client_)
-    video_frame_provider_client_->StopUsingProvider();
-
-  video_frame_provider_client_ = client;
-  if (video_frame_provider_client_)
-    video_frame_provider_client_->StartRendering();
-}
-
-void WebMediaPlayerMS::Compositor::StartRendering() {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  paused_ = false;
-  if (video_frame_provider_client_)
-    video_frame_provider_client_->StartRendering();
-}
-
-void WebMediaPlayerMS::Compositor::StopRendering() {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  paused_ = true;
-  if (video_frame_provider_client_)
-    video_frame_provider_client_->StopRendering();
-
-  base::AutoLock auto_lock(current_frame_lock_);
-  if (!current_frame_.get())
-    return;
-
-  // Copy the frame so that rendering can show the last received frame.
-  // The original frame must not be referenced when the player is paused since
-  // there might be a finite number of available buffers. E.g, video that
-  // originates from a video camera.
-  scoped_refptr<media::VideoFrame> new_frame =
-      CopyFrameToYV12(current_frame_, &video_renderer_);
-
-  current_frame_ = new_frame;
-}
-
-gfx::Size WebMediaPlayerMS::Compositor::GetCurrentSize() {
-  base::AutoLock auto_lock(current_frame_lock_);
-  return staging_frame_.get() ? staging_frame_->natural_size() : gfx::Size();
-}
-
-base::TimeDelta WebMediaPlayerMS::Compositor::GetCurrentTime() {
-  base::AutoLock auto_lock(current_frame_lock_);
-  return staging_frame_.get() ? staging_frame_->timestamp() : base::TimeDelta();
-}
-
-unsigned WebMediaPlayerMS::Compositor::GetTotalFrameCount() {
-  return total_frame_count_;
-}
-
-unsigned WebMediaPlayerMS::Compositor::GetDroppedFrameCount() {
-  return dropped_frame_count_;
-}
 }  // namespace content

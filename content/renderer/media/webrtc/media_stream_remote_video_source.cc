@@ -14,7 +14,6 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/libjingle/source/talk/media/base/videoframe.h"
-#include "third_party/webrtc/system_wrappers/interface/tick_util.h"
 
 namespace content {
 
@@ -48,9 +47,6 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
 
   // |frame_callback_| is accessed on the IO thread.
   VideoCaptureDeliverFrameCB frame_callback_;
-
-  // WebRTC Chromium timestamp diff
-  int64_t time_diff_us_;
 };
 
 MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
@@ -58,12 +54,6 @@ MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
         scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
         const VideoCaptureDeliverFrameCB& new_frame_callback)
     : io_task_runner_(io_task_runner), frame_callback_(new_frame_callback) {
-  // TODO(qiangchen): There can be two differences between clocks: 1)
-  // the offset, 2) the rate (i.e., one clock runs faster than the other).
-  // See http://crbug/516700
-  time_diff_us_ =
-      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds() -
-      webrtc::TickTime::MicrosecondTimestamp();
 }
 
 MediaStreamRemoteVideoSource::
@@ -72,14 +62,7 @@ RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {
 
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
     const cricket::VideoFrame* incoming_frame) {
-  base::TimeTicks render_time =
-      base::TimeTicks() +
-      base::TimeDelta::FromMicroseconds(incoming_frame->GetTimeStamp() / 1000 +
-                                        time_diff_us_);
-
-  TRACE_EVENT1("webrtc", "RemoteVideoSourceDelegate::RenderFrame",
-               "Ideal Render Instant", render_time.ToInternalValue());
-
+  TRACE_EVENT0("webrtc", "RemoteVideoSourceDelegate::RenderFrame");
   base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
       incoming_frame->GetElapsedTime() / rtc::kNumNanosecsPerMicrosec);
 
@@ -112,9 +95,6 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
     video_frame->AddDestructionObserver(
         base::Bind(&base::DeletePointer<cricket::VideoFrame>, frame->Copy()));
   }
-
-  video_frame->metadata()->SetTimeTicks(
-      media::VideoFrameMetadata::REFERENCE_TIME, render_time);
 
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RemoteVideoSourceDelegate::DoRenderFrameOnIOThread,
