@@ -40,6 +40,9 @@ crbug.com/524134 virtual/spv2/paint/deprecatedpaintlayer/non-self-painting-layer
 crbug.com/524134 [ SnowLeopard ] virtual/spv2/compositing/repaint/newly-composited-on-scroll.html [ ImageOnlyFailure ]
 crbug.com/524134 [ SnowLeopard ] virtual/spv2/fast/repaint/background-image-paint-invalidation-large-abspos-div.html [ ImageOnlyFailure ]
 crbug.com/524134 [ SnowLeopard ] virtual/spv2/fast/repaint/repaint-during-scroll.html [ ImageOnlyFailure ]
+crbug.com/524134 [ Win10 ] virtual/spv2/compositing/repaint/become-overlay-composited-layer.html [ Timeout ]
+crbug.com/524134 [ Win10 ] virtual/spv2/compositing/repaint/clipped-layer-size-change.html [ Timeout ]
+crbug.com/524134 [ Win10 ] virtual/spv2/compositing/repaint/layer-repaint.html [ Timeout ]
 
 crbug.com/524236 virtual/spv2/compositing/repaint/clipping-should-not-repaint-composited-descendants.html [ Failure ]
 crbug.com/524236 virtual/spv2/compositing/repaint/scroll-fixed-layer-no-content.html [ Failure ]
@@ -759,6 +762,7 @@ crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-tran
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 
 crbug.com/506525 [ XP ] paint/masks/fieldset-mask.html [ ImageOnlyFailure ]
+crbug.com/506525 [ XP ] virtual/spv2/paint/masks/fieldset-mask.html [ Skip ]
 
 crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]
 crbug.com/400829 media/video-object-fit.html [ ImageOnlyFailure ]
@@ -1541,6 +1545,8 @@ crbug.com/521124 [ XP Win7 ] fast/css/font-weight-1.html [ ImageOnlyFailure ]
 
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
+crbug.com/502927 [ XP ] virtual/spv2/paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Skip ]
+crbug.com/502927 [ XP ] virtual/spv2/paint/frames/frameset-with-stacking-contexts.html [ Skip ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ ImageOnlyFailure Pass ]
 
