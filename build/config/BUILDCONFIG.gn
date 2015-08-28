@@ -415,7 +415,7 @@ if (is_linux) {
   _native_compiler_configs += [ "//build/config/android:sdk" ]
 }
 
-if (is_clang) {
+if (is_clang && !is_nacl) {
   _native_compiler_configs += [
     "//build/config/clang:find_bad_constructs",
     "//build/config/clang:extra_warnings",

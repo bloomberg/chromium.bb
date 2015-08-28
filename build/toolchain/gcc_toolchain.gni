@@ -30,13 +30,34 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #  - solink_libs_section_prefix
 #  - solink_libs_section_postfix
 #      Same as libs_section_{pre,post}fix except used for solink instead of link.
-#  - post_solink
-#      The content of this string, if specified, will be appended to the solink
-#      command.
+#  - link_outputs
+#      The content of this array, if specified, will be added to the list of
+#      outputs from the link command. This can be useful in conjunction with
+#      the post_link parameter.
+#  - post_link
+#      The content of this string, if specified, will be run as a separate
+#      command following the the link command.
 #  - deps
 #      Just forwarded to the toolchain definition.
+#  - executable_extension
+#      If this string is specified it will be used for the file extension
+#      for an executable, rather than using no extension; targets will
+#      still be able to override the extension using the output_extension
+#      variable.
 #  - is_clang
 #      Whether to use clang instead of gcc.
+#  - is_component_build
+#      Whether to forcibly enable or disable component builds for this
+#      toolchain; if not specified, the toolchain will inherit the
+#      default setting.
+#  - rebuild_define
+#      The contents of this string, if specified, will be passed as a #define
+#      to the toolchain. It can be used to force recompiles whenever a
+#      toolchain is updated.
+#  - shlib_extension
+#      If this string is specified it will be used for the file extension
+#      for a shared library, rather than default value specified in
+#      toolchain.gni
 #  - strip
 #      Location of the strip executable. When specified, strip will be run on
 #      all shared libraries and executables as they are built. The pre-stripped
@@ -51,6 +72,14 @@ template("gcc_toolchain") {
            "gcc_toolchain() must specify a \"toolchain_cpu\"")
     assert(defined(invoker.toolchain_os),
            "gcc_toolchain() must specify a \"toolchain_os\"")
+
+    # This define changes when the toolchain changes, forcing a rebuild.
+    # Nothing should ever use this define.
+    if (defined(invoker.rebuild_define)) {
+      rebuild_string = "-D" + invoker.rebuild_define + " "
+    } else {
+      rebuild_string = ""
+    }
 
     # We can't do string interpolation ($ in strings) on things with dots in
     # them. To allow us to use $cc below, for example, we create copies of
@@ -68,6 +97,18 @@ template("gcc_toolchain") {
       nm = invoker.nm
     } else {
       nm = "nm"
+    }
+
+    if (defined(invoker.shlib_extension)) {
+      default_shlib_extension = invoker.shlib_extension
+    } else {
+      default_shlib_extension = shlib_extension
+    }
+
+    if (defined(invoker.executable_extension)) {
+      default_executable_extension = invoker.executable_extension
+    } else {
+      default_executable_extension = ""
     }
 
     # Bring these into our scope for string interpolation with default values.
@@ -101,7 +142,7 @@ template("gcc_toolchain") {
 
     tool("cc") {
       depfile = "{{output}}.d"
-      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      command = "$cc -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CC {{output}}"
       outputs = [
@@ -111,7 +152,7 @@ template("gcc_toolchain") {
 
     tool("cxx") {
       depfile = "{{output}}.d"
-      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+      command = "$cxx -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CXX {{output}}"
       outputs = [
@@ -122,7 +163,7 @@ template("gcc_toolchain") {
     tool("asm") {
       # For GCC we can just use the C compiler to compile assembly.
       depfile = "{{output}}.d"
-      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      command = "$cc -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "ASM {{output}}"
       outputs = [
@@ -181,10 +222,7 @@ template("gcc_toolchain") {
       # Use this for {{output_extension}} expansions unless a target manually
       # overrides it (in which case {{output_extension}} will be what the target
       # specifies).
-      default_output_extension = shlib_extension
-      if (defined(invoker.default_output_extension)) {
-        default_output_extension = invoker.default_output_extension
-      }
+      default_output_extension = default_shlib_extension
 
       output_prefix = "lib"
 
@@ -211,6 +249,12 @@ template("gcc_toolchain") {
       outfile = "{{root_out_dir}}/$exename"
       rspfile = "$outfile.rsp"
       unstripped_outfile = outfile
+
+      # Use this for {{output_extension}} expansions unless a target manually
+      # overrides it (in which case {{output_extension}} will be what the target
+      # specifies).
+      default_output_extension = default_executable_extension
+
       if (defined(invoker.strip)) {
         unstripped_outfile = "{{root_out_dir}}/exe.unstripped/$exename"
       }
@@ -221,6 +265,9 @@ template("gcc_toolchain") {
             "${invoker.strip} --strip-unneeded -o $outfile $unstripped_outfile"
         command += " && " + strip_command
       }
+      if (defined(invoker.postlink)) {
+        command += " && " + invoker.postlink
+      }
       description = "LINK $outfile"
       rspfile_content = "{{inputs}}"
       outputs = [
@@ -228,6 +275,9 @@ template("gcc_toolchain") {
       ]
       if (outfile != unstripped_outfile) {
         outputs += [ unstripped_outfile ]
+      }
+      if (defined(invoker.link_outputs)) {
+        outputs += invoker.link_outputs
       }
     }
 
@@ -253,6 +303,9 @@ template("gcc_toolchain") {
 
       if (defined(invoker.is_clang)) {
         is_clang = invoker.is_clang
+      }
+      if (defined(invoker.is_component_build)) {
+        is_component_build = invoker.is_component_build
       }
     }
 
