@@ -11,13 +11,10 @@ declare_args() {
 
 if (!use_system_sqlite) {
   config("sqlite_config") {
-    if (is_component_build && is_win) {
-      defines = [ "SQLITE_API=__declspec(dllimport)" ]
-    }
     include_dirs = [ "." ]
   }
 
-  component("sqlite") {
+  source_set("sqlite") {
     sources = [
       "amalgamation/sqlite3.c",
       "amalgamation/sqlite3.h",
@@ -34,13 +31,6 @@ if (!use_system_sqlite) {
       "SQLITE_SEPARATE_CACHE_POOLS",
       "THREADSAFE",
     ]
-    if (is_component_build) {
-      if (is_win) {
-        defines += [ "SQLITE_API=__declspec(dllexport)" ]
-      } else {
-        defines += [ "SQLITE_API=__attribute__((visibility(\"default\")))" ]
-      }
-    }
     if (is_chromeos) {
       defines += [
         # Despite obvious warnings about not using this flag in deployment, we
@@ -94,10 +84,7 @@ if (!use_system_sqlite) {
     if (is_linux) {
       libs = [ "dl" ]
     } else if (is_mac || is_ios) {
-      libs = [
-        "CoreFoundation.framework",
-        "CoreServices.framework",
-      ]
+      libs = [ "CoreFoundation.framework" ]
     } else if (is_android) {
       defines += [
         "SQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576",
