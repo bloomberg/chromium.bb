@@ -201,7 +201,7 @@ Polymer({
     if (!state.GUID)
       return;
     var preferred = state.Priority > 0;
-    var onc = { Priority: preferred ? 0 : 1 };
+    var onc = {Priority: preferred ? 0 : 1};
     chrome.networkingPrivate.setProperties(state.GUID, onc);
   },
 

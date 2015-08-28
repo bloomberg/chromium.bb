@@ -15,19 +15,19 @@
  * Performs argument substitution, replacing $1, $2, etc in 'text' with
  * corresponding entries in |args|.
  * @param {string} text The string to perform the substitution on.
- * @param {?Array<string>=} args The arguments to replace $1, $2, etc with.
+ * @param {?Array<string>=} opt_args The arguments to replace $1, $2, etc with.
  */
-function getText(text, args) {
+function getText(text, opt_args) {
   var res;
   if (loadTimeData && loadTimeData.data_)
     res = loadTimeData.getString(text) || text;
   else
     res = text;
-  if (!args)
+  if (!opt_args)
     return res;
-  for (let i = 0; i < args.length; ++i) {
+  for (let i = 0; i < opt_args.length; ++i) {
     let key = '$' + (i + 1);
-    res = res.replace(key, args[i]);
+    res = res.replace(key, opt_args[i]);
   }
   return res;
 }

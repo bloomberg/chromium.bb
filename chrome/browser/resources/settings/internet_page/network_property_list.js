@@ -61,7 +61,7 @@ Polymer({
     var newValue = event.target.value;
     if (newValue == curValue)
       return;
-    this.fire('property-change', { field: field, value: newValue });
+    this.fire('property-change', {field: field, value: newValue});
   },
 
   /**
@@ -139,6 +139,6 @@ Polymer({
     if (value === undefined)
       return '';
     // TODO(stevenjb): Localize.
-    return value;
+    return /** @type {string} */(value);
   },
 });

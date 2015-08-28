@@ -5,6 +5,9 @@
 /**
  * @fileoverview Polymer element for displaying network nameserver options.
  */
+(function() {
+'use strict';
+
 Polymer({
   is: 'network-nameservers',
 
@@ -177,9 +180,9 @@ Polymer({
     var nameservers;
     if (type == 'custom') {
       nameservers = [];
-      for (var i = 0; i < 4; ++i) {
-        var id = 'nameserver' + i;
-        var nameserver = this.$$('#' + id).value;
+      for (let i = 0; i < 4; ++i) {
+        let id = 'nameserver' + i;
+        let nameserver = this.$$('#' + id).value;
         if (nameserver)
           nameservers.push(nameserver);
       }
@@ -202,3 +205,4 @@ Polymer({
     }
   },
 });
+})();

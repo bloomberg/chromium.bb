@@ -6,10 +6,11 @@
  * @fileoverview Polymer element for displaying the network state for a specific
  * type and a list of networks for that type.
  */
-(function() {
 
 /** @typedef {chrome.networkingPrivate.DeviceStateProperties} */
 var DeviceStateProperties;
+
+(function() {
 
 Polymer({
   is: 'network-summary-item',
@@ -122,7 +123,7 @@ Polymer({
    * @private
    */
   deviceIsEnabled_: function(deviceState) {
-    return deviceState && deviceState.State == 'Enabled';
+    return !!deviceState && deviceState.State == 'Enabled';
   },
 
   /**
@@ -157,7 +158,7 @@ Polymer({
   expandIsVisible_: function(deviceState, networkList) {
     if (!this.deviceIsEnabled_(deviceState))
       return false;
-    var minLength = (this.type == CrOnc.Type.WI_FI) ? 1 : 2;
+    var minLength = (this.deviceState.Type == CrOnc.Type.WI_FI) ? 1 : 2;
     return networkList.length >= minLength;
   },
 

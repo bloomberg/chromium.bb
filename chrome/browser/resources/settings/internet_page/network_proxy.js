@@ -110,7 +110,8 @@ Polymer({
       return;
 
     var defaultProxy = this.createDefaultProxySettings_();
-    var proxy = this.networkState.ProxySettings || {};
+    var proxy = /** @type {CrOnc.ProxySettings|undefined} */(
+        CrOnc.getActiveValue(this.networkState, 'ProxySettings')) || {};
 
     // Ensure that all proxy settings object properties are specified.
     proxy.ExcludeDomains = proxy.ExcludeDomains || this.savedExcludeDomains_ ||
@@ -142,10 +143,10 @@ Polymer({
       Type: CrOnc.ProxySettingsType.DIRECT,
       ExcludeDomains: [],
       Manual: {
-        HTTPProxy: { Host: '', Port: 80 },
-        SecureHTTPProxy: { Host: '', Port: 80 },
-        FTPProxy: { Host: '', Port: 80 },
-        SOCKS: { Host: '', Port: 1080 }
+        HTTPProxy: {Host: '', Port: 80},
+        SecureHTTPProxy: {Host: '', Port: 80},
+        FTPProxy: {Host: '', Port: 80},
+        SOCKS: {Host: '', Port: 1080}
       },
       PAC: ''
     };
@@ -170,8 +171,8 @@ Polymer({
         this.set('proxy.Manual.FTPProxy', Object.assign({}, defaultProxy));
         this.set('proxy.Manual.SOCKS', Object.assign({}, defaultProxy));
       }
-      this.savedManual_ = this.proxy.Manual;
-      this.savedExcludeDomains_ = this.proxy.ExcludeDomains;
+      this.savedManual_ = this.proxy.Manual || null;
+      this.savedExcludeDomains_ = this.proxy.ExcludeDomains || null;
     }
     this.fire('proxy-change', {
       field: 'ProxySettings',

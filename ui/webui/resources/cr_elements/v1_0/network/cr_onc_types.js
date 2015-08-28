@@ -25,14 +25,14 @@ CrOnc.NetworkStateProperty;
 
 /**
  * @typedef {{
- *    Active: CrOnc.NetworkStateProperty,
- *    Effective: CrOnc.NetworkStateProperty,
- *    UserPolicy: CrOnc.NetworkStateProperty,
- *    DevicePolicy: CrOnc.NetworkStateProperty,
- *    UserSetting: CrOnc.NetworkStateProperty,
- *    SharedSetting: CrOnc.NetworkStateProperty,
- *    UserEditable: boolean,
- *    DeviceEditable: boolean
+ *   Active: CrOnc.NetworkStateProperty,
+ *   Effective: CrOnc.NetworkStateProperty,
+ *   UserPolicy: CrOnc.NetworkStateProperty,
+ *   DevicePolicy: CrOnc.NetworkStateProperty,
+ *   UserSetting: CrOnc.NetworkStateProperty,
+ *   SharedSetting: CrOnc.NetworkStateProperty,
+ *   UserEditable: boolean,
+ *   DeviceEditable: boolean
  * }}
  */
 CrOnc.ManagedProperty;
@@ -42,9 +42,9 @@ CrOnc.ManagedNetworkStateProperty;
 
 /**
  * @typedef {{
- *    LockType: !CrOnc.LockType,
- *    LockEnabled: boolean,
- *    RetriesLeft: (number|undefined)
+ *   LockType: !CrOnc.LockType,
+ *   LockEnabled: boolean,
+ *   RetriesLeft: (number|undefined)
  * }}
  */
 CrOnc.SIMLockStatus;
@@ -71,15 +71,24 @@ CrOnc.ProxySettings;
 // human-readable string instead of as a number.
 /**
  * @typedef {{
- *    Gateway: (string|undefined),
- *    IPAddress: (string|undefined),
- *    NameServers: ?Array<string>,
- *    RoutingPrefix: (string|undefined),
- *    Type: (string|undefined),
- *    WebProxyAutoDiscoveryUrl: (string|undefined)
+ *   Gateway: (string|undefined),
+ *   IPAddress: (string|undefined),
+ *   NameServers: (!Array<string>|undefined),
+ *   RoutingPrefix: (string|undefined),
+ *   Type: (string|undefined),
+ *   WebProxyAutoDiscoveryUrl: (string|undefined)
  * }}
  */
 CrOnc.IPConfigUIProperties;
+
+/**
+ * @typedef {{
+ *   Method: string,
+ *   PostData: (string|undefined),
+ *   Url: string
+ * }}
+ */
+CrOnc.PaymentPortal;
 
 CrOnc.ActivationState = chrome.networkingPrivate.ActivationStateType;
 CrOnc.ConnectionState = chrome.networkingPrivate.ConnectionStateType;
@@ -171,7 +180,10 @@ CrOnc.getActivePropertyValue = function(property) {
 
 /**
  * Returns either a managed property dictionary or an unmanaged value associated
- * with a key.
+ * with a key. TODO(stevenjb): Remove this. Properties should be accessed
+ * directly so that the closure compiler can do type checking. Removal is
+ * dependent on adding a NetworkProperties type to the networking_private.js
+ * externs file.
  * @param {?CrOnc.NetworkStateProperties} state The ONC network state.
  * @param {string} key The property key which may be nested, e.g. 'Foo.Bar'.
  * @return {!CrOnc.ManagedNetworkStateProperty|undefined} The property value or
@@ -258,7 +270,8 @@ CrOnc.getIPConfigForType = function(state, type) {
   if (type != CrOnc.IPType.IPV4)
     return result;
 
-  var staticIpConfig = state.StaticIPConfig;
+  var staticIpConfig = /** @type{CrOnc.IPConfigProperties} */(
+      CrOnc.getActiveValue(state, 'StaticIPConfig'));
   if (!staticIpConfig)
     return result;
 
@@ -298,25 +311,32 @@ CrOnc.isSimLocked = function(state) {
  * Modifies |config| to include the correct set of properties for configuring
  * a network IP Address and NameServer configuration for |state|. Existing
  * properties in |config| will be preserved unless invalid.
- * @param {!CrOnc.NetworkStateProperties} config A partial ONC configuration.
+ * @param {!chrome.networkingPrivate.NetworkConfigProperties} config A partial
+ *     ONC configuration.
  * @param {!CrOnc.NetworkStateProperties} state The complete ONC network state.
  */
 CrOnc.setValidStaticIPConfig = function(config, state) {
-  config.IPAddressConfigType =
-      config.IPAddressConfigType || state.IPAddressConfigType || 'DHCP';
-  config.NameServersConfigType =
-      config.NameServersConfigType || state.NameServersConfigType || 'DHCP';
-
-  if (config.IPAddressConfigType != 'Static' &&
-      config.NameServersConfigType != 'Static') {
+  if (!config.IPAddressConfigType) {
+    var ipConfigType = /** @type {chrome.networkingPrivate.IPConfigType} */(
+        CrOnc.getActiveValue(state, 'IPAddressConfigType'));
+    config.IPAddressConfigType = ipConfigType || CrOnc.IPConfigType.DHCP;
+  }
+  if (!config.NameServersConfigType) {
+    var nsConfigType = /** @type {chrome.networkingPrivate.IPConfigType} */(
+        CrOnc.getActiveValue(state, 'NameServersConfigType'));
+    config.NameServersConfigType = nsConfigType || CrOnc.IPConfigType.DHCP;
+  }
+  if (config.IPAddressConfigType != CrOnc.IPConfigType.STATIC &&
+      config.NameServersConfigType != CrOnc.IPConfigType.STATIC) {
     if (config.hasOwnProperty('StaticIPConfig'))
       delete config.StaticIPConfig;
     return;
   }
 
-  if (!config.hasOwnProperty('StaticIPConfig'))
-    config.StaticIPConfig = {};
-
+  if (!config.hasOwnProperty('StaticIPConfig')) {
+    config.StaticIPConfig =
+        /** @type {chrome.networkingPrivate.IPConfigProperties} */({});
+  }
   var staticIP = config.StaticIPConfig;
   var stateIPConfig = CrOnc.getIPConfigForType(state, CrOnc.IPType.IPV4);
   if (config.IPAddressConfigType == 'Static') {

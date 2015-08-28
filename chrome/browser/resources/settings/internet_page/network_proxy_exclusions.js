@@ -26,6 +26,7 @@ Polymer({
 
   /**
    * Event triggered when an item is removed.
+   * @param {!{model: !{index: number}}} event
    * @private
    */
   removeItem_: function(event) {

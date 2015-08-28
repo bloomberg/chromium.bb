@@ -7,6 +7,9 @@
  * a network state. TODO(stevenjb): Allow editing of static IP configurations
  * when 'editable' is true.
  */
+(function() {
+'use strict';
+
 Polymer({
   is: 'network-ip-config',
 
@@ -43,14 +46,14 @@ Polymer({
     /**
      * The currently visible IP Config property dictionary. The 'RoutingPrefix'
      * property is a human-readable mask instead of a prefix length.
-     * @type {{
+     * @type {?{
      *   ipv4: !CrOnc.IPConfigUIProperties,
      *   ipv6: !CrOnc.IPConfigUIProperties
      * }}
      */
     ipConfig: {
       type: Object,
-      value: function() { return {ipv4: {}, ipv6: {}}; }
+      value: null
     },
 
     /**
@@ -81,7 +84,7 @@ Polymer({
    * Polymer networkState changed method.
    */
   networkStateChanged_: function(newValue, oldValue) {
-    if (this.networkState === undefined || this.ipConfig === undefined)
+    if (!this.networkState || !this.ipConfig)
       return;
 
     if (newValue.GUID != (oldValue && oldValue.GUID))
@@ -105,7 +108,7 @@ Polymer({
    * Polymer automatic changed method.
    */
   automaticChanged_: function() {
-    if (this.automatic === undefined || this.ipConfig === undefined)
+    if (!this.automatic || !this.ipConfig)
       return;
     if (this.automatic || !this.savedStaticIp_) {
       // Save the static IP configuration when switching to automatic.
@@ -142,8 +145,8 @@ Polymer({
     var result = {};
     if (!ipconfig)
       return result;
-    for (var key in ipconfig) {
-      var value = ipconfig[key];
+    for (let key in ipconfig) {
+      let value = ipconfig[key];
       if (key == 'RoutingPrefix')
         result.RoutingPrefix = CrOnc.getRoutingPrefixAsNetmask(value);
       else
@@ -160,8 +163,8 @@ Polymer({
    */
   getIPConfigProperties_: function(ipconfig) {
     var result = {};
-    for (var key in ipconfig) {
-      var value = ipconfig[key];
+    for (let key in ipconfig) {
+      let value = ipconfig[key];
       if (key == 'RoutingPrefix')
         result.RoutingPrefix = CrOnc.getRoutingPrefixAsLength(value);
       else
@@ -194,6 +197,8 @@ Polymer({
    * @private
    */
   onIPChange_: function(event) {
+    if (!this.ipConfig)
+      return;
     var field = event.detail.field;
     var value = event.detail.value;
     // Note: |field| includes the 'ipv4.' prefix.
@@ -204,3 +209,4 @@ Polymer({
     });
   },
 });
+})();

@@ -58,9 +58,10 @@ Polymer({
   networkStateChanged_: function() {
     if (!this.networkState || !this.networkState.Cellular)
       return;
-    var simLockStatus = this.networkState.Cellular.SIMLockStatus;
+    var simLockStatus = /** @type {CrOnc.SIMLockStatus|undefined} */(
+        CrOnc.getActiveValue(this.networkState, 'Cellular.SIMLockStatus'));
     this.pukRequired =
-        simLockStatus && simLockStatus.LockType == CrOnc.LockType.PUK;
+        !!simLockStatus && simLockStatus.LockType == CrOnc.LockType.PUK;
   },
 
   /** Polymer networkState changed method. */
@@ -132,10 +133,10 @@ Polymer({
     if (!this.validatePin_(pin))
       return;
 
-    var /** @type {?CrOnc.CellularSimState} */ simState = {
-      requirePin: this.sendSimLockEnabled_,
-      currentPin: pin
-    };
+    var simState = /** @type {!CrOnc.CellularSimState} */({
+      currentPin: pin,
+      requirePin: this.sendSimLockEnabled_
+    });
     chrome.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
@@ -184,11 +185,11 @@ Polymer({
     if (!this.validatePin_(newPin, this.$.changePinNew2.value))
       return;
 
-    var /** @type {?CrOnc.CellularSimState} */ simState = {
+    var simState = /** @type {!CrOnc.CellularSimState} */({
       requirePin: true,
       currentPin: this.$.changePinOld.value,
       newPin: newPin
-    };
+    });
     chrome.networkingPrivate.setCellularSimState(guid, simState, function() {
       if (chrome.runtime.lastError) {
         this.error = ErrorType.INCORRECT_PIN;
@@ -297,7 +298,7 @@ Polymer({
    * @private
    */
   isSimLocked_: function(state) {
-    return state && CrOnc.isSimLocked(state);
+    return !!state && CrOnc.isSimLocked(state);
   },
 
   /**
@@ -318,7 +319,7 @@ Polymer({
    * @private
    */
   showError_: function(error) {
-    return error && error != ErrorType.NONE;
+    return !!error && error != ErrorType.NONE;
   },
 
   /**
@@ -342,20 +343,20 @@ Polymer({
   },
 
   /**
-   * Checks whether |pin1| is of the proper length and if pin2 is not
-   * undefined, whether pin1 and pin2 match. On any failure, sets |this.error|
-   * and returns false.
+   * Checks whether |pin1| is of the proper length and if opt_pin2 is not
+   * undefined, whether pin1 and opt_pin2 match. On any failure, sets
+   * |this.error| and returns false.
    * @param {string} pin1
-   * @param {string|undefined} pin2
+   * @param {string=} opt_pin2
    * @return {boolean} True if the pins match and are of minimum length.
    * @private
    */
-  validatePin_: function(pin1, pin2) {
+  validatePin_: function(pin1, opt_pin2) {
     if (pin1.length < PIN_MIN_LENGTH) {
       this.error = ErrorType.INVALID_PIN;
       return false;
     }
-    if (pin2 != undefined && pin1 != pin2) {
+    if (opt_pin2 != undefined && pin1 != opt_pin2) {
       this.error = ErrorType.MISMATCHED_PIN;
       return false;
     }
