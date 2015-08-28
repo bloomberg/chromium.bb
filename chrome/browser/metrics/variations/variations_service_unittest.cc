@@ -264,20 +264,22 @@ TEST_F(VariationsServiceTest, GetVariationsServerURL) {
       VariationsService::GetDefaultVariationsServerURLForTesting();
 
   std::string value;
-  GURL url = VariationsService::GetVariationsServerURL(prefs, std::string());
+  TestVariationsService service(
+      new web_resource::TestRequestAllowedNotifier(prefs), prefs);
+  GURL url = service.GetVariationsServerURL(prefs, std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_FALSE(net::GetValueForKeyInQuery(url, "restrict", &value));
 
   prefs_store.SetVariationsRestrictParameterPolicyValue("restricted");
-  url = VariationsService::GetVariationsServerURL(prefs, std::string());
+  url = service.GetVariationsServerURL(prefs, std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("restricted", value);
 
   // The override value should take precedence over what's in prefs.
-  url = VariationsService::GetVariationsServerURL(prefs, "override");
+  url = service.GetVariationsServerURL(prefs, "override");
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
@@ -287,8 +289,9 @@ TEST_F(VariationsServiceTest, GetVariationsServerURL) {
 TEST_F(VariationsServiceTest, VariationsURLHasOSNameParam) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
-  const GURL url =
-      VariationsService::GetVariationsServerURL(&prefs, std::string());
+  TestVariationsService service(
+      new web_resource::TestRequestAllowedNotifier(&prefs), &prefs);
+  const GURL url = service.GetVariationsServerURL(&prefs, std::string());
 
   std::string value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "osname", &value));
@@ -336,7 +339,7 @@ TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
   TestVariationsService service(
       new web_resource::TestRequestAllowedNotifier(&prefs), &prefs);
   service.variations_server_url_ =
-      VariationsService::GetVariationsServerURL(&prefs, std::string());
+      service.GetVariationsServerURL(&prefs, std::string());
   service.set_intercepts_fetch(false);
 
   net::TestURLFetcherFactory factory;
@@ -367,7 +370,7 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
       make_scoped_ptr(new ChromeVariationsServiceClient()),
       new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
   service.variations_server_url_ =
-      VariationsService::GetVariationsServerURL(&prefs, std::string());
+      service.GetVariationsServerURL(&prefs, std::string());
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
     net::TestURLFetcherFactory factory;
     service.DoActualFetch();
@@ -388,7 +391,7 @@ TEST_F(VariationsServiceTest, CountryHeader) {
   TestVariationsService service(
       new web_resource::TestRequestAllowedNotifier(&prefs), &prefs);
   service.variations_server_url_ =
-      VariationsService::GetVariationsServerURL(&prefs, std::string());
+      service.GetVariationsServerURL(&prefs, std::string());
   service.set_intercepts_fetch(false);
 
   net::TestURLFetcherFactory factory;

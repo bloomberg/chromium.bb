@@ -365,7 +365,6 @@ void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
   create_trials_from_seed_called_ = called;
 }
 
-// static
 GURL VariationsService::GetVariationsServerURL(
     PrefService* policy_pref_service,
     const std::string& restrict_mode_override) {

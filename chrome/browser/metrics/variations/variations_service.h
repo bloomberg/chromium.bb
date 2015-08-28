@@ -109,8 +109,8 @@ class VariationsService
   // Returns the variations server URL, which can vary if a command-line flag is
   // set and/or the variations restrict pref is set in |local_prefs|. Declared
   // static for test purposes.
-  static GURL GetVariationsServerURL(PrefService* local_prefs,
-                                     const std::string& restrict_mode_override);
+  GURL GetVariationsServerURL(PrefService* local_prefs,
+                              const std::string& restrict_mode_override);
 
   // Exposed for testing.
   static std::string GetDefaultVariationsServerURLForTesting();
