@@ -369,7 +369,8 @@ void SiteInstanceImpl::LockToOrigin() {
     // call sites of ChildProcessSecurityPolicy::CanAccessDataForOrigin, we
     // must give the embedder a chance to exempt some sites to avoid process
     // kills.
-    if (!GetContentClient()->browser()->ShouldLockToOrigin(site_))
+    if (!GetContentClient()->browser()->ShouldLockToOrigin(
+            browsing_instance_->browser_context(), site_))
       return;
 
     ChildProcessSecurityPolicyImpl* policy =

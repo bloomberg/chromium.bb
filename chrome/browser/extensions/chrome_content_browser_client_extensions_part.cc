@@ -184,6 +184,27 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
 }
 
 // static
+bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
+    content::BrowserContext* browser_context,
+    const GURL& effective_site_url) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
+  if (!registry)
+    return true;
+
+  // https://crbug.com/160576 workaround: Origin lock to the extension:// scheme
+  // for a hosted app would kill processes on legitimate requests for the app's
+  // cookies.
+  if (effective_site_url.SchemeIs(extensions::kExtensionScheme)) {
+    const Extension* extension =
+        registry->enabled_extensions().GetExtensionOrAppByURL(
+            effective_site_url);
+    if (extension && extension->is_hosted_app())
+      return false;
+  }
+  return true;
+}
+
+// static
 bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
     content::RenderProcessHost* process_host, const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

@@ -935,11 +935,28 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
 #endif
 }
 
-bool ChromeContentBrowserClient::ShouldLockToOrigin(const GURL& effective_url) {
-  // Don't lock the NTP's process to a single origin for now, since we cannot
-  // map its actual URLs to the effective URL of the site on the IO thread.
-  // TODO(creis, nick): Remove this exception in https://crbug.com/160576.
-  return effective_url.scheme() != chrome::kChromeSearchScheme;
+// TODO(creis, nick): https://crbug.com/160576 describes a weakness in our
+// origin-lock enforcement, where we don't have a way to efficiently know
+// effective URLs on the IO thread, and wind up killing processes that e.g.
+// request cookies for their actual URL. This whole function (and its
+// ExtensionsPart) should be removed once we add that ability to the IO thread.
+bool ChromeContentBrowserClient::ShouldLockToOrigin(
+    content::BrowserContext* browser_context,
+    const GURL& effective_site_url) {
+  // Origin lock to the search scheme would kill processes upon legitimate
+  // requests for cookies from the search engine's domain.
+  if (effective_site_url.SchemeIs(chrome::kChromeSearchScheme))
+    return false;
+
+#if defined(ENABLE_EXTENSIONS)
+  // Disable origin lock if this is an extension/app that applies effective URL
+  // mappings.
+  if (!ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
+          browser_context, effective_site_url)) {
+    return false;
+  }
+#endif
+  return true;
 }
 
 // These are treated as WebUI schemes but do not get WebUI bindings. Also,
