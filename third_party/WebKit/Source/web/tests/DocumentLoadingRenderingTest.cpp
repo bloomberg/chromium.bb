@@ -16,49 +16,148 @@
 namespace blink {
 
 class DocumentLoadingRenderingTest : public ::testing::Test {
-    void SetUp() override
+protected:
+    DocumentLoadingRenderingTest()
+        : m_webViewClient(m_layerTreeView)
     {
+        m_webViewHelper.initialize(true, nullptr, &m_webViewClient);
         Document::setThreadedParsingEnabledForUnitTestsOnly(false);
     }
 
-    void TearDown() override
+    virtual ~DocumentLoadingRenderingTest()
     {
         Document::setThreadedParsingEnabledForUnitTestsOnly(true);
     }
+
+    void loadURL(const String& url)
+    {
+        WebURLRequest request;
+        request.initialize();
+        request.setURL(KURL(ParsedURLString, url));
+        m_webViewHelper.webViewImpl()->mainFrameImpl()->loadRequest(request);
+    }
+
+    SimNetwork m_network;
+    SimLayerTreeView m_layerTreeView;
+    SimWebViewClient m_webViewClient;
+    FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
 TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterBodyParsedWithoutSheets)
 {
-    SimLayerTreeView layerTreeView;
-    SimWebViewClient webViewClient(layerTreeView);
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initialize(true, nullptr, &webViewClient);
-
-    SimNetwork network;
     SimRequest mainResource("https://example.com/test.html", "text/html");
 
-    WebURLRequest request;
-    request.initialize();
-    request.setURL(KURL(ParsedURLString, "https://example.com/test.html"));
-
-    webViewHelper.webViewImpl()->mainFrameImpl()->loadRequest(request);
+    loadURL("https://example.com/test.html");
 
     mainResource.start();
 
     // Still in the head, should not resume commits.
     mainResource.write("<!DOCTYPE html>");
-    EXPECT_TRUE(layerTreeView.deferCommits());
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
     mainResource.write("<title>Test</title><style>div { color red; }</style>");
-    EXPECT_TRUE(layerTreeView.deferCommits());
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
 
     // Implicitly inserts the body. Since there's no loading stylesheets we
     // should resume commits.
     mainResource.write("<p>Hello World</p>");
-    EXPECT_FALSE(layerTreeView.deferCommits());
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
 
     // Finish the load, should stay resumed.
     mainResource.finish();
-    EXPECT_FALSE(layerTreeView.deferCommits());
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+}
+
+TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterBodyIfSheetsLoaded)
+{
+    SimRequest mainResource("https://example.com/test.html", "text/html");
+    SimRequest cssResource("https://example.com/test.css", "text/css");
+
+    loadURL("https://example.com/test.html");
+
+    mainResource.start();
+
+    // Still in the head, should not resume commits.
+    mainResource.write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Sheet is streaming in, but not ready yet.
+    cssResource.start();
+    cssResource.write("a { color: red; }");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Sheet finished, but no body yet, so don't resume.
+    cssResource.finish();
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Body inserted and sheet is loaded so resume commits.
+    mainResource.write("<body>");
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+
+    // Finish the load, should stay resumed.
+    mainResource.finish();
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+}
+
+TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterSheetsLoaded)
+{
+    SimRequest mainResource("https://example.com/test.html", "text/html");
+    SimRequest cssResource("https://example.com/test.css", "text/css");
+
+    loadURL("https://example.com/test.html");
+
+    mainResource.start();
+
+    // Still in the head, should not resume commits.
+    mainResource.write("<!DOCTYPE html><link rel=stylesheet href=test.css>");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Sheet is streaming in, but not ready yet.
+    cssResource.start();
+    cssResource.write("a { color: red; }");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Body inserted, but sheet is still loading so don't resume.
+    mainResource.write("<body>");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Sheet finished and there's a body so resume.
+    cssResource.finish();
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+
+    // Finish the load, should stay resumed.
+    mainResource.finish();
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
+}
+
+TEST_F(DocumentLoadingRenderingTest, ShouldResumeCommitsAfterParsingSvg)
+{
+    SimRequest mainResource("https://example.com/test.svg", "image/svg+xml");
+    SimRequest cssResource("https://example.com/test.css", "text/css");
+
+    loadURL("https://example.com/test.svg");
+
+    mainResource.start();
+
+    // Not done parsing.
+    mainResource.write("<?xml-stylesheet type='text/css' href='test.css'?>");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Sheet is streaming in, but not ready yet.
+    cssResource.start();
+    cssResource.write("a { color: red; }");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Root inserted, but sheet is still loading so don't resume.
+    mainResource.write("<svg>");
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Sheet finished, but no body since it's svg so don't resume.
+    cssResource.finish();
+    EXPECT_TRUE(m_layerTreeView.deferCommits());
+
+    // Finish the load and resume.
+    mainResource.finish();
+    EXPECT_FALSE(m_layerTreeView.deferCommits());
 }
 
 } // namespace blink
