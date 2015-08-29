@@ -351,6 +351,8 @@ class PrefWatcher : public KeyedService {
 #if defined(ENABLE_WEBRTC)
     pref_change_registrar_.Add(prefs::kWebRTCMultipleRoutesEnabled,
                                renderer_callback);
+    pref_change_registrar_.Add(prefs::kWebRTCNonProxiedUdpTransportEnabled,
+                               renderer_callback);
 #endif
 
 #if !defined(OS_MACOSX)

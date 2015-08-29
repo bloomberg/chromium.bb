@@ -99,6 +99,12 @@ struct CONTENT_EXPORT RendererPreferences {
   // Set to false to indicate that WebRTC should use the OS default routing.
   bool enable_webrtc_multiple_routes;
 
+  // Set to false to indicate that WebRTC should not use non-proxied UDP to
+  // connect to peers and TURN servers, which effectively disables all WebRTC's
+  // UDP traffic for now, until UDP-based proxy support is available in
+  // Chromium. Default is true.
+  bool enable_webrtc_nonproxied_udp_transport;
+
   // Default page zoom level.
   double default_zoom_level;
 

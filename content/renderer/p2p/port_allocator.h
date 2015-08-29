@@ -35,11 +35,13 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
 
     std::vector<RelayServerConfig> relays;
 
-    // Disable TCP-based transport when set to true.
-    bool disable_tcp_transport;
+    // Enable non-proxied UDP-based transport when set to true. When set to
+    // false, it effectively disables all UDP traffic until UDP-supporting proxy
+    // RETURN is available in the future.
+    bool enable_nonproxied_udp_transport = true;
 
     // Disable binding to individual NICs when set to false.
-    bool enable_multiple_routes;
+    bool enable_multiple_routes = true;
   };
 
   P2PPortAllocator(P2PSocketDispatcher* socket_dispatcher,

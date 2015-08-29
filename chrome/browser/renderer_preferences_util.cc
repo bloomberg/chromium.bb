@@ -44,6 +44,8 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
 #if defined(ENABLE_WEBRTC)
   prefs->enable_webrtc_multiple_routes =
       pref_service->GetBoolean(prefs::kWebRTCMultipleRoutesEnabled);
+  prefs->enable_webrtc_nonproxied_udp_transport =
+      pref_service->GetBoolean(prefs::kWebRTCNonProxiedUdpTransportEnabled);
 #endif
 
   double default_zoom_level = 0;

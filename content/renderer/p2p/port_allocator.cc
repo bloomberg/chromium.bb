@@ -9,9 +9,7 @@
 
 namespace content {
 
-P2PPortAllocator::Config::Config()
-    : disable_tcp_transport(false) {
-}
+P2PPortAllocator::Config::Config() {}
 
 P2PPortAllocator::Config::~Config() {
 }
@@ -35,10 +33,13 @@ P2PPortAllocator::P2PPortAllocator(
       origin_(origin)
   {
   uint32 flags = 0;
-  if (config_.disable_tcp_transport)
-    flags |= cricket::PORTALLOCATOR_DISABLE_TCP;
   if (!config_.enable_multiple_routes)
     flags |= cricket::PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION;
+  if (!config_.enable_nonproxied_udp_transport) {
+    flags |= cricket::PORTALLOCATOR_DISABLE_UDP |
+             cricket::PORTALLOCATOR_DISABLE_STUN |
+             cricket::PORTALLOCATOR_DISABLE_UDP_RELAY;
+  }
   set_flags(flags);
   set_allow_tcp_listen(false);
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();

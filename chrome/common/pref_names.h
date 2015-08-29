@@ -412,6 +412,7 @@ extern const char kToolbarIconSurfacingBubbleLastShowTime[];
 
 #if defined(ENABLE_WEBRTC)
 extern const char kWebRTCMultipleRoutesEnabled[];
+extern const char kWebRTCNonProxiedUdpTransportEnabled[];
 #endif
 
 // Local state prefs. Please add Profile prefs above instead.

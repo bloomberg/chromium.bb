@@ -1188,10 +1188,16 @@ const char kToolbarIconSurfacingBubbleLastShowTime[] =
     "toolbar_icon_surfacing_bubble_show_time";
 #endif
 
+#if defined(ENABLE_WEBRTC)
 // Whether WebRTC should bind to individual NICs to explore all possible routing
 // options. Default is true.
-#if defined(ENABLE_WEBRTC)
 const char kWebRTCMultipleRoutesEnabled[] = "webrtc.multiple_routes_enabled";
+// Whether WebRTC should use non-proxied UDP. If false, WebRTC will not send UDP
+// unless it goes through a proxy (i.e RETURN when it's available).  If no UDP
+// proxy is configured, it will not send UDP.  If true, WebRTC will send UDP
+// regardless of whether or not a proxy is configured.
+const char kWebRTCNonProxiedUdpTransportEnabled[] =
+    "webrtc.nonproxied_udp_transport_enabled";
 #endif
 
 // *************** LOCAL STATE ***************

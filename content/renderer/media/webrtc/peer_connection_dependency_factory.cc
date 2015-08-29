@@ -112,17 +112,17 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
                           rtc::NetworkManager* network_manager,
                           rtc::PacketSocketFactory* socket_factory,
                           const GURL& origin,
-                          bool enable_multiple_routes)
+                          const P2PPortAllocator::Config& config)
       : socket_dispatcher_(socket_dispatcher),
         network_manager_(network_manager),
         socket_factory_(socket_factory),
         origin_(origin),
-        enable_multiple_routes_(enable_multiple_routes) {}
+        config_(config) {}
 
   cricket::PortAllocator* CreatePortAllocator(
       const std::vector<StunConfiguration>& stun_servers,
       const std::vector<TurnConfiguration>& turn_configurations) override {
-    P2PPortAllocator::Config config;
+    P2PPortAllocator::Config config = config_;
     for (size_t i = 0; i < stun_servers.size(); ++i) {
       config.stun_servers.insert(rtc::SocketAddress(
           stun_servers[i].server.hostname(),
@@ -138,7 +138,6 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       relay_config.secure = turn_configurations[i].secure;
       config.relays.push_back(relay_config);
     }
-    config.enable_multiple_routes = enable_multiple_routes_;
 
     return new P2PPortAllocator(
         socket_dispatcher_.get(), network_manager_,
@@ -157,9 +156,11 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   // The origin URL of the WebFrame that created the
   // P2PPortAllocatorFactory.
   GURL origin_;
-  // When false, only 'any' address (all 0s) will be bound for address
-  // discovery.
-  bool enable_multiple_routes_;
+
+  // Keep track of configuration common to all PortAllocators created by this
+  // factory; additional, per-allocator configuration is passed into
+  // CreatePortAllocator.
+  P2PPortAllocator::Config config_;
 };
 
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
@@ -396,27 +397,30 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   if (!GetPcFactory().get())
     return NULL;
 
-  // Copy the flag from Preference associated with this WebFrame.
-  bool enable_multiple_routes = true;
   rtc::scoped_ptr<PeerConnectionIdentityStore> identity_store(
       new PeerConnectionIdentityStore(
           GURL(web_frame->document().url()),
           GURL(web_frame->document().firstPartyForCookies())));
 
+  // Copy the flag from Preference associated with this WebFrame.
+  P2PPortAllocator::Config pref_config;
   if (web_frame && web_frame->view()) {
     RenderViewImpl* renderer_view_impl =
         RenderViewImpl::FromWebView(web_frame->view());
     if (renderer_view_impl) {
-      enable_multiple_routes = renderer_view_impl->renderer_preferences()
-                                    .enable_webrtc_multiple_routes;
+      pref_config.enable_multiple_routes =
+          renderer_view_impl->renderer_preferences()
+              .enable_webrtc_multiple_routes;
+      pref_config.enable_nonproxied_udp_transport =
+          renderer_view_impl->renderer_preferences()
+              .enable_webrtc_nonproxied_udp_transport;
     }
   }
 
   scoped_refptr<P2PPortAllocatorFactory> pa_factory =
       new rtc::RefCountedObject<P2PPortAllocatorFactory>(
           p2p_socket_dispatcher_.get(), network_manager_, socket_factory_.get(),
-          GURL(web_frame->document().url().spec()).GetOrigin(),
-          enable_multiple_routes);
+          GURL(web_frame->document().url().spec()).GetOrigin(), pref_config);
 
   return GetPcFactory()->CreatePeerConnection(config,
                                               constraints,
