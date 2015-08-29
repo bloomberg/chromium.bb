@@ -900,6 +900,13 @@
           'chromium_win_pch%': 1
         }],
 
+        # Whether PDF plugin is enabled.
+        ['OS=="android" or OS=="ios" or (embedded==1 and chromecast==0)', {
+          'enable_pdf%': 0,
+        }, {
+          'enable_pdf%': 1,
+        }],
+
         ['chromeos==1 or OS=="android" or OS=="ios" or desktop_linux==1', {
           'enable_plugin_installation%': 0,
         }, {
@@ -1204,6 +1211,7 @@
     'order_profiling%': '<(order_profiling)',
     'order_text_section%': '<(order_text_section)',
     'enable_extensions%': '<(enable_extensions)',
+    'enable_pdf%': '<(enable_pdf)',
     'enable_plugin_installation%': '<(enable_plugin_installation)',
     'enable_plugins%': '<(enable_plugins)',
     'enable_session_service%': '<(enable_session_service)',
@@ -2985,6 +2993,9 @@
       }],
       ['enable_dart==1', {
         'defines': ['WEBKIT_USING_DART=1'],
+      }],
+      ['enable_pdf==1', {
+        'defines': ['ENABLE_PDF=1'],
       }],
       ['enable_plugin_installation==1', {
         'defines': ['ENABLE_PLUGIN_INSTALLATION=1'],

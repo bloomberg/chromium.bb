@@ -77,12 +77,18 @@
         ],
       },
     }],
+    ['enable_plugins==1', {
+      'variables': {
+        'files': [
+          '../ppapi/tests/test_case.html',
+          '../ppapi/tests/test_page.css',
+        ],
+      },
+    }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
           '../net/tools/testserver/',
-          '../ppapi/tests/test_case.html',
-          '../ppapi/tests/test_page.css',
           '../testing/test_env.py',
           '../third_party/pyftpdlib/',
           '../third_party/pywebsocket/',

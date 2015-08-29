@@ -1892,8 +1892,6 @@
       'browser/ui/webui/options/supervised_user_learn_more_handler.h',
       'browser/ui/webui/options/sync_setup_handler.cc',
       'browser/ui/webui/options/sync_setup_handler.h',
-      'browser/ui/webui/plugins_ui.cc',
-      'browser/ui/webui/plugins_ui.h',
       'browser/ui/webui/profile_info_watcher.cc',
       'browser/ui/webui/profile_info_watcher.h',
       'browser/ui/webui/quota_internals/quota_internals_handler.cc',
@@ -2657,6 +2655,8 @@
       'browser/ui/hung_plugin_tab_helper.h',
       'browser/ui/webui/flash_ui.cc',
       'browser/ui/webui/flash_ui.h',
+      'browser/ui/webui/plugins_ui.cc',
+      'browser/ui/webui/plugins_ui.h',
     ],
     'chrome_browser_ui_policy_sources': [
       'browser/ui/webui/policy_ui.cc',

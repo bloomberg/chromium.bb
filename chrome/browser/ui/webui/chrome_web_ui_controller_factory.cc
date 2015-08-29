@@ -384,9 +384,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Downloads list on Android uses the built-in download manager.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
-  // Flash is not available on android.
-  if (url.host() == chrome::kChromeUIFlashHost)
-    return &NewWebUI<FlashUI>;
   if (url.host() == chrome::kChromeUIGCMInternalsHost)
     return &NewWebUI<GCMInternalsUI>;
   // Help is implemented with native UI elements on Android.
@@ -401,9 +398,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       ::switches::MdSettingsEnabled()) {
     return &NewWebUI<settings::MdSettingsUI>;
   }
-  // Android does not support plugins for now.
-  if (url.host() == chrome::kChromeUIPluginsHost)
-    return &NewWebUI<PluginsUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
     return &NewWebUI<QuotaInternalsUI>;
   // Settings are implemented with native UI elements on Android.
@@ -548,6 +542,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(ENABLE_EXTENSIONS)
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<extensions::ExtensionsUI>;
+#endif
+#if defined(ENABLE_PLUGINS)
+  if (url.host() == chrome::kChromeUIFlashHost)
+    return &NewWebUI<FlashUI>;
+  if (url.host() == chrome::kChromeUIPluginsHost)
+    return &NewWebUI<PluginsUI>;
 #endif
 #if defined(ENABLE_PRINT_PREVIEW)
   if (url.host() == chrome::kChromeUIPrintHost &&

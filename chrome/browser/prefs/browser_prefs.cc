@@ -440,6 +440,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ExtensionWelcomeNotification::RegisterProfilePrefs(registry);
 #endif
 
+#if defined(ENABLE_PLUGINS)
+  PluginsUI::RegisterProfilePrefs(registry);
+#endif
+
 #if defined(ENABLE_PRINT_PREVIEW)
   printing::StickySettings::RegisterProfilePrefs(registry);
 #endif
@@ -475,7 +479,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   NewTabUI::RegisterProfilePrefs(registry);
   PepperFlashSettingsManager::RegisterProfilePrefs(registry);
   PinnedTabCodec::RegisterProfilePrefs(registry);
-  PluginsUI::RegisterProfilePrefs(registry);
   RegisterAutolaunchUserPrefs(registry);
   signin::RegisterProfilePrefs(registry);
 #endif

@@ -911,7 +911,7 @@ const char kPluginsEnabledPlugins[] = "plugins.plugins_enabled";
 const char kNpapiFlashMigratedToPepperFlash[] =
     "plugins.npapi_flash_migrated_to_pepper_flash";
 
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_PLUGINS)
 // Whether about:plugins is shown in the details mode or not.
 const char kPluginsShowDetails[] = "plugins.show_details";
 #endif
@@ -952,7 +952,7 @@ const char kShowUpdatePromotionInfoBar[] =
 // true, we draw a custom chrome frame (thicker title bar and blue border).
 const char kUseCustomChromeFrame[] = "browser.custom_chrome_frame";
 
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_PLUGINS)
 // Which plugins have been whitelisted manually by the user.
 const char kContentSettingsPluginWhitelist[] =
     "profile.content_settings.plugin_whitelist";

@@ -1923,6 +1923,11 @@
                   '<(PRODUCT_DIR)/snapshot_blob.bin',
                 ],
               }],
+              ['enable_plugins==1', {
+                'additional_bundled_libs': [
+                  '<(PRODUCT_DIR)/libppapi_tests.so',
+                ],
+              }],
             ],
           },
           'includes': [ '../build/apk_browsertest.gypi' ],
