@@ -195,8 +195,8 @@ bool VertexAttribManager::ValidateBindings(
         ERRORSTATE_SET_GL_ERROR(
             error_state, GL_INVALID_OPERATION, function_name,
             (std::string(
-                 "attempt to access out of range vertices in attribute ") +
-             base::IntToString(attrib->index())).c_str());
+                "attempt to access out of range vertices in attribute ") +
+             base::UintToString(attrib->index())).c_str());
         return false;
       }
       if (use_client_side_arrays_for_stream_buffers) {
@@ -242,7 +242,7 @@ bool VertexAttribManager::ValidateBindings(
             (std::string(
                  "attempt to render with no buffer attached to "
                  "enabled attribute ") +
-                 base::IntToString(attrib->index())).c_str());
+                 base::UintToString(attrib->index())).c_str());
         return false;
       } else if (use_client_side_arrays_for_stream_buffers) {
         Buffer* buffer = attrib->buffer();
