@@ -9,7 +9,7 @@ function test()
     InspectorTest.eventHandler["DOM.setChildNodes"] = setChildNodes;
     InspectorTest.eventHandler["DOM.inspectNodeRequested"] = inspectNodeRequested;
     InspectorTest.sendCommand("DOM.enable", {});
-    InspectorTest.sendCommand("DOM.setInspectModeEnabled", { "enabled": true, highlightConfig: {} }, onSetModeEnabled);
+    InspectorTest.sendCommand("DOM.setInspectMode", { "mode": "searchForNode", highlightConfig: {} }, onSetModeEnabled);
 
     function onSetModeEnabled(message)
     {

@@ -132,7 +132,7 @@ public:
     void discardSearchResults(ErrorString*, const String& searchId) override;
     void resolveNode(ErrorString*, int nodeId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) override;
     void getAttributes(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<String>>& result) override;
-    void setInspectModeEnabled(ErrorString*, bool enabled, const bool* inspectUAShadowDOM, const RefPtr<JSONObject>* highlightConfig) override;
+    void setInspectMode(ErrorString*, const String&, const RefPtr<JSONObject>* highlightConfig) override;
     void requestNode(ErrorString*, const String& objectId, int* nodeId) override;
     void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId) override;
     void pushNodesByBackendIdsToFrontend(ErrorString*, const RefPtr<JSONArray>& nodeIds, RefPtr<TypeBuilder::Array<int>>&) override;

@@ -1269,11 +1269,23 @@ PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspe
     return highlightConfig.release();
 }
 
-void InspectorDOMAgent::setInspectModeEnabled(ErrorString* errorString, bool enabled, const bool* inspectUAShadowDOM, const RefPtr<JSONObject>* highlightConfig)
+void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& mode, const RefPtr<JSONObject>* highlightConfig)
 {
-    if (enabled && !pushDocumentUponHandlelessOperation(errorString))
+    SearchMode searchMode;
+    if (mode == TypeBuilder::getEnumConstantValue(TypeBuilder::DOM::InspectMode::SearchForNode)) {
+        searchMode = SearchingForNormal;
+    } else if (mode == TypeBuilder::getEnumConstantValue(TypeBuilder::DOM::InspectMode::SearchForUAShadowDOM)) {
+        searchMode = SearchingForUAShadow;
+    } else if (mode == TypeBuilder::getEnumConstantValue(TypeBuilder::DOM::InspectMode::None)) {
+        searchMode = NotSearching;
+    } else {
+        *errorString = "Unknown mode \"" + mode + "\" was provided.";
         return;
-    SearchMode searchMode = enabled ? (asBool(inspectUAShadowDOM) ? SearchingForUAShadow : SearchingForNormal) : NotSearching;
+    }
+
+    if (searchMode != NotSearching && !pushDocumentUponHandlelessOperation(errorString))
+        return;
+
     setSearchingForNode(errorString, searchMode, highlightConfig ? highlightConfig->get() : nullptr);
 }
 

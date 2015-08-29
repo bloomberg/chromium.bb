@@ -16,7 +16,7 @@ function clickPseudo()
 
 function test()
 {
-    InspectorTest.domModel.setInspectModeEnabled(true, false, inspectModeEnabled.bind(this));
+    InspectorTest.domModel.setInspectMode(DOMAgent.InspectMode.SearchForNode, inspectModeEnabled.bind(this));
 
     function inspectModeEnabled()
     {
