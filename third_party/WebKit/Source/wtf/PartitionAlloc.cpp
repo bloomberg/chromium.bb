@@ -98,7 +98,7 @@ static uint16_t partitionBucketNumSystemPages(size_t size)
     return bestPages;
 }
 
-static void parititonAllocBaseInit(PartitionRootBase* root)
+static void partitionAllocBaseInit(PartitionRootBase* root)
 {
     ASSERT(!root->initialized);
 
@@ -140,7 +140,7 @@ static void partitionBucketInitBase(PartitionBucket* bucket, PartitionRootBase* 
 
 void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_t maxAllocation)
 {
-    parititonAllocBaseInit(root);
+    partitionAllocBaseInit(root);
 
     root->numBuckets = numBuckets;
     root->maxAllocation = maxAllocation;
@@ -157,7 +157,7 @@ void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_t maxAlloca
 
 void partitionAllocGenericInit(PartitionRootGeneric* root)
 {
-    parititonAllocBaseInit(root);
+    partitionAllocBaseInit(root);
 
     root->lock = 0;
 
