@@ -278,12 +278,12 @@ class MetricsService : public base::HistogramFlattener {
 
   typedef std::vector<SyntheticTrialGroup> SyntheticTrialGroups;
 
-  // Calls into the client to start metrics gathering.
-  void StartGatheringMetrics();
+  // Calls into the client to initialize some system profile metrics.
+  void StartInitTask();
 
   // Callback that moves the state to INIT_TASK_DONE. When this is called, the
   // state should be INIT_TASK_SCHEDULED.
-  void FinishedGatheringInitialMetrics();
+  void FinishedInitTask();
 
   void OnUserAction(const std::string& action);
 

@@ -218,12 +218,12 @@ std::string CastMetricsServiceClient::GetVersionString() {
 void CastMetricsServiceClient::OnLogUploadComplete() {
 }
 
-void CastMetricsServiceClient::StartGatheringMetrics(
+void CastMetricsServiceClient::InitializeSystemProfileMetrics(
     const base::Closure& done_callback) {
   done_callback.Run();
 }
 
-void CastMetricsServiceClient::CollectFinalMetrics(
+void CastMetricsServiceClient::CollectFinalMetricsForLog(
     const base::Closure& done_callback) {
   done_callback.Run();
 }

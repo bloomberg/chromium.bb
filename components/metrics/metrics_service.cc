@@ -647,7 +647,7 @@ void MetricsService::OnUserAction(const std::string& action) {
   HandleIdleSinceLastTransmission(false);
 }
 
-void MetricsService::FinishedGatheringInitialMetrics() {
+void MetricsService::FinishedInitTask() {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   state_ = INIT_TASK_DONE;
 
@@ -721,15 +721,15 @@ void MetricsService::OpenNewLog() {
     state_ = INIT_TASK_SCHEDULED;
 
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&MetricsService::StartGatheringMetrics,
+        FROM_HERE, base::Bind(&MetricsService::StartInitTask,
                               self_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kInitializationDelaySeconds));
   }
 }
 
-void MetricsService::StartGatheringMetrics() {
-  client_->StartGatheringMetrics(
-      base::Bind(&MetricsService::FinishedGatheringInitialMetrics,
+void MetricsService::StartInitTask() {
+  client_->InitializeSystemProfileMetrics(
+      base::Bind(&MetricsService::FinishedInitTask,
                  self_ptr_factory_.GetWeakPtr()));
 }
 
@@ -814,7 +814,7 @@ void MetricsService::StartScheduledUpload() {
     SendNextLog();
   } else {
     // There are no logs left to send, so start creating a new one.
-    client_->CollectFinalMetrics(
+    client_->CollectFinalMetricsForLog(
         base::Bind(&MetricsService::OnFinalLogInfoCollectionDone,
                    self_ptr_factory_.GetWeakPtr()));
   }

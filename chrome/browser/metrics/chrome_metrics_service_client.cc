@@ -219,9 +219,9 @@ void ChromeMetricsServiceClient::OnLogUploadComplete() {
 #endif
 }
 
-void ChromeMetricsServiceClient::StartGatheringMetrics(
+void ChromeMetricsServiceClient::InitializeSystemProfileMetrics(
     const base::Closure& done_callback) {
-  finished_gathering_initial_metrics_callback_ = done_callback;
+  finished_init_task_callback_ = done_callback;
   base::Closure got_hardware_class_callback =
       base::Bind(&ChromeMetricsServiceClient::OnInitTaskGotHardwareClass,
                  weak_ptr_factory_.GetWeakPtr());
@@ -233,7 +233,7 @@ void ChromeMetricsServiceClient::StartGatheringMetrics(
 #endif  // defined(OS_CHROMEOS)
 }
 
-void ChromeMetricsServiceClient::CollectFinalMetrics(
+void ChromeMetricsServiceClient::CollectFinalMetricsForLog(
     const base::Closure& done_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -431,7 +431,7 @@ void ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData() {
 }
 
 void ChromeMetricsServiceClient::OnInitTaskGotDriveMetrics() {
-  finished_gathering_initial_metrics_callback_.Run();
+  finished_init_task_callback_.Run();
 }
 
 bool ChromeMetricsServiceClient::ShouldIncludeProfilerDataInLog() {

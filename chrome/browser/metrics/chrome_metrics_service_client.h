@@ -67,8 +67,9 @@ class ChromeMetricsServiceClient
   metrics::SystemProfileProto::Channel GetChannel() override;
   std::string GetVersionString() override;
   void OnLogUploadComplete() override;
-  void StartGatheringMetrics(const base::Closure& done_callback) override;
-  void CollectFinalMetrics(const base::Closure& done_callback) override;
+  void InitializeSystemProfileMetrics(
+      const base::Closure& done_callback) override;
+  void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
   scoped_ptr<metrics::MetricsLogUploader> CreateUploader(
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
@@ -155,7 +156,7 @@ class ChromeMetricsServiceClient
   // that has been registered with MetricsService. On other platforms, is NULL.
   ChromeOSMetricsProvider* chromeos_metrics_provider_;
 
-  // Saved callback received from CollectFinalMetrics().
+  // Saved callback received from CollectFinalMetricsForLog().
   base::Closure collect_final_metrics_done_callback_;
 
   // Indicates that collect final metrics step is running.
@@ -185,7 +186,7 @@ class ChromeMetricsServiceClient
   metrics::DriveMetricsProvider* drive_metrics_provider_;
 
   // Callback that is called when initial metrics gathering is complete.
-  base::Closure finished_gathering_initial_metrics_callback_;
+  base::Closure finished_init_task_callback_;
 
   // The MemoryGrowthTracker instance that tracks memory usage growth in
   // MemoryDetails.
