@@ -22,7 +22,6 @@
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/win/atl_module.h"
 
-using base::StringPrintf;
 
 namespace content {
 
@@ -96,15 +95,22 @@ base::string16 GetIA2Hypertext(BrowserAccessibilityWin& ax_object) {
     if (hr == S_OK) {
       DCHECK_GE(index_of_embed, 0);
       base::win::ScopedComPtr<IAccessibleHyperlink> embedded_object;
-      DCHECK(SUCCEEDED(ax_object.get_hyperlink(
-             index_of_embed, embedded_object.Receive())));
+      HRESULT hr = ax_object.get_hyperlink(
+          index_of_embed, embedded_object.Receive());
+      DCHECK(SUCCEEDED(hr));
       base::win::ScopedComPtr<IAccessible2> ax_embed;
-      DCHECK(SUCCEEDED(embedded_object.QueryInterface(ax_embed.Receive())));
-      DCHECK(SUCCEEDED(ax_embed->get_indexInParent(&child_index)));
+      hr = embedded_object.QueryInterface(ax_embed.Receive());
+      DCHECK(SUCCEEDED(hr));
+      hr = ax_embed->get_indexInParent(&child_index);
+      DCHECK(SUCCEEDED(hr));
     }
 
-    base::string16 child_index_str = base::StringPrintf(L"<obj%d>",
-        child_index);
+    base::string16 child_index_str(L"<obj");
+    if (child_index >= 0) {
+      base::StringAppendF(&child_index_str, L"%d>", child_index);
+    } else {
+      base::StringAppendF(&child_index_str, L">");
+    }
     base::ReplaceFirstSubstringAfterOffset(&ia2_hypertext, hypertext_index,
         embedded_character, child_index_str);
     ++character_index;
@@ -303,7 +309,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
         base::string16 string_value;
         value->GetAsString(&string_value);
         WriteAttribute(false,
-                       StringPrintf(L"%ls='%ls'",
+                       base::StringPrintf(L"%ls='%ls'",
                                     base::UTF8ToUTF16(attribute_name).c_str(),
                                     string_value.c_str()),
                        &line);
