@@ -29,6 +29,7 @@
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
+#include "chrome/browser/ssl/connection_security.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -974,6 +975,36 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
   // as page title.
   const base::string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(base::LowerCaseEqualsASCII(result, "pass"));
+}
+
+// Ensure that non-standard origins are marked correctly when the
+// MarkNonSecureAs field trial is enabled.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestMarkNonSecureAs) {
+  scoped_refptr<base::FieldTrial> trial =
+      base::FieldTrialList::CreateFieldTrial(
+          "MarkNonSecureAs", switches::kMarkNonSecureAsNonSecure);
+
+  ui_test_utils::NavigateToURL(browser(), GURL("file:/"));
+  EXPECT_EQ(connection_security::NONE,
+            connection_security::GetSecurityLevelForWebContents(
+                browser()->tab_strip_model()->GetActiveWebContents()));
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  EXPECT_EQ(connection_security::NONE,
+            connection_security::GetSecurityLevelForWebContents(
+                browser()->tab_strip_model()->GetActiveWebContents()));
+
+  ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
+  EXPECT_EQ(connection_security::NONE,
+            connection_security::GetSecurityLevelForWebContents(
+                browser()->tab_strip_model()->GetActiveWebContents()));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("blob:chrome%3A//newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
+  EXPECT_EQ(connection_security::NONE,
+            connection_security::GetSecurityLevelForWebContents(
+                browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 #if defined(USE_NSS_CERTS)
@@ -2307,8 +2338,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
 
 class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {
  public:
-  CommonNameMismatchBrowserTest() : CertVerifierBrowserTest(){};
-  ~CommonNameMismatchBrowserTest() override{};
+  CommonNameMismatchBrowserTest() : CertVerifierBrowserTest() {}
+  ~CommonNameMismatchBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Enable finch experiment for SSL common name mismatch handling.

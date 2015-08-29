@@ -133,7 +133,7 @@ SecurityLevel GetSecurityLevelForWebContents(
 
     case content::SECURITY_STYLE_UNAUTHENTICATED: {
       const GURL& url = entry->GetURL();
-      if (!content::IsOriginSecure(url))
+      if (!content::IsOriginSecure(url) && url.IsStandard())
         return GetSecurityLevelForNonSecureFieldTrial();
       return NONE;
     }
