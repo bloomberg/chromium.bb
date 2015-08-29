@@ -22,7 +22,6 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 
 /**
  * The containing view for {@link ContentViewCore} that exists in the Android UI hierarchy and
@@ -74,8 +73,7 @@ public class ContentView extends FrameLayout
         }
     }
 
-    // @Override[ANDROID-M] TODO(sgurun) override and also remove VisibleForTesting. crbug/512264
-    @VisibleForTesting
+    @Override
     public void onProvideVirtualStructure(final ViewStructure structure) {
         mContentViewCore.onProvideVirtualStructure(structure);
     }

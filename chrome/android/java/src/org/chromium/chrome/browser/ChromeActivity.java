@@ -805,13 +805,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         return mWindowAndroid.onActivityResult(requestCode, resultCode, intent);
     }
 
-    // @Override[ANDROID-M]
+    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
             int[] grantResults) {
         if (mWindowAndroid != null) {
-            mWindowAndroid.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            if (mWindowAndroid.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+                return;
+            }
         }
-        //super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
