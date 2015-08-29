@@ -371,6 +371,7 @@ int fd_bo_get_name(struct fd_bo *bo, uint32_t *name)
 		pthread_mutex_lock(&table_lock);
 		set_name(bo, req.name);
 		pthread_mutex_unlock(&table_lock);
+		bo->bo_reuse = 0;
 	}
 
 	*name = bo->name;
@@ -395,6 +396,7 @@ int fd_bo_dmabuf(struct fd_bo *bo)
 		}
 
 		bo->fd = prime_fd;
+		bo->bo_reuse = 0;
 	}
 	return dup(bo->fd);
 }
