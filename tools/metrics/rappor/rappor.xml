@@ -766,6 +766,14 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="PowerfulFeatureUse.Host.GetUserMedia.Secure"
+    type="ETLD_PLUS_ONE">
+  <owner>jww@chromium.org</owner>
+  <summary>
+    The host of the URL that uses the getUserMedia API from a secure origin.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="PushMessaging.GenericNotificationShown.Origin"
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
