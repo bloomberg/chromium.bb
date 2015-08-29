@@ -210,8 +210,8 @@ AC_CACHE_CHECK([for native atomic primitives], drm_cv_atomic_primitives, [
 	drm_cv_atomic_primitives="none"
 
 	AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-	int atomic_add(int i) { return __sync_fetch_and_add (&i, 1); }
-	int atomic_cmpxchg(int i, int j, int k) { return __sync_val_compare_and_swap (&i, j, k); }
+	int atomic_add(int *i) { return __sync_fetch_and_add (i, 1); }
+	int atomic_cmpxchg(int *i, int j, int k) { return __sync_val_compare_and_swap (i, j, k); }
 					  ]],[[]])], [drm_cv_atomic_primitives="Intel"],[])
 
 	if test "x$drm_cv_atomic_primitives" = "xnone"; then
