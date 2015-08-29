@@ -406,14 +406,8 @@ void FindBarView::ButtonPressed(
                                       sender->tag() == FIND_NEXT_TAG,
                                       false);  // Not case sensitive.
       }
-      if (event.IsMouseEvent()) {
-        // If mouse event, we move the focus back to the text-field, so that the
-        // user doesn't have to click on the text field to change the search. We
-        // don't want to do this for keyboard clicks on the button, since the
-        // user is more likely to press FindNext again than change the search
-        // query.
-        find_text_->RequestFocus();
-      }
+      // Move focus to the find textfield.
+      find_text_->RequestFocus();
       break;
     case CLOSE_TAG:
       find_bar_host()->GetFindBarController()->EndFindSession(

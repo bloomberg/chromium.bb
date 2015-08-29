@@ -90,6 +90,43 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
       browser(), ui::VKEY_ESCAPE, false, false, false, false));
 }
 
+IN_PROC_BROWSER_TEST_F(FindInPageTest, NavigationByKeyEvent) {
+  ASSERT_TRUE(test_server()->Start());
+  // Make sure Chrome is in the foreground, otherwise sending input
+  // won't do anything and the test will hang.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  // First we navigate to any page.
+  ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(kSimplePage));
+  // Show the Find bar.
+  browser()->GetFindBarController()->Show();
+  EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+  ui_test_utils::FindInPage(
+      browser()->tab_strip_model()->GetActiveWebContents(), ASCIIToUTF16("a"),
+      true, false, NULL, NULL);
+
+  // The textfield should be focused after pressing [Enter] on the find button.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                              false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_RETURN, false,
+                                              false, false, false));
+  EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // The textfield should be focused after pressing [Enter] on the find button.
+  ui_test_utils::FindInPage(
+      browser()->tab_strip_model()->GetActiveWebContents(), ASCIIToUTF16("b"),
+      true, false, NULL, NULL);
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                              false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                              false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_RETURN, false,
+                                              false, false, false));
+  EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+}
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_FocusRestore DISABLED_FocusRestore
