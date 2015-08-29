@@ -93,10 +93,8 @@ public:
     void didFireTimer();
     void didHandleEvent();
     void scriptExecutionBlockedByCSP(const String& directiveText);
-    void willCallFunction(const DevToolsFunctionInfo&);
-    void didCallFunction();
-    void willEvaluateScript();
-    void didEvaluateScript();
+    void willExecuteScript(int scriptId);
+    void didExecuteScript();
 
     // InspectorBaseAgent overrides.
     void init() override;

@@ -130,10 +130,8 @@ public:
     void cancelPauseOnNextStatement();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
-    void willCallFunction(int scriptId);
-    void didCallFunction();
-    void willEvaluateScript();
-    void didEvaluateScript();
+    void willExecuteScript(int scriptId);
+    void didExecuteScript();
 
     bool enabled();
     V8Debugger& debugger() { return *m_debugger; }

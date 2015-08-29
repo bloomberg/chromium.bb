@@ -35,6 +35,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -388,7 +389,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate
             return v8::MaybeLocal<v8::Value>();
         }
         V8RecursionScope recursionScope(isolate);
+        InspectorInstrumentationCookie cookie = InspectorInstrumentation::willExecuteScript(context, script->GetUnboundScript()->GetId());
         result = script->Run(isolate->GetCurrentContext());
+        InspectorInstrumentation::didExecuteScript(cookie);
     }
 
     crashIfV8IsDead();
@@ -434,8 +437,10 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> f
         return v8::MaybeLocal<v8::Value>();
     }
     V8RecursionScope recursionScope(isolate);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willExecuteScript(context, function->ScriptId());
     v8::MaybeLocal<v8::Value> result = function->Call(isolate->GetCurrentContext(), receiver, argc, args);
     crashIfV8IsDead();
+    InspectorInstrumentation::didExecuteScript(cookie);
     return result;
 }
 

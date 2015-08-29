@@ -283,24 +283,14 @@ void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directive
     m_v8DebuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::CSPViolation, directive.release());
 }
 
-void InspectorDebuggerAgent::willCallFunction(const DevToolsFunctionInfo& info)
+void InspectorDebuggerAgent::willExecuteScript(int scriptId)
 {
-    m_v8DebuggerAgent->willCallFunction(info.scriptId());
+    m_v8DebuggerAgent->willExecuteScript(scriptId);
 }
 
-void InspectorDebuggerAgent::didCallFunction()
+void InspectorDebuggerAgent::didExecuteScript()
 {
-    m_v8DebuggerAgent->didCallFunction();
-}
-
-void InspectorDebuggerAgent::willEvaluateScript()
-{
-    m_v8DebuggerAgent->willEvaluateScript();
-}
-
-void InspectorDebuggerAgent::didEvaluateScript()
-{
-    m_v8DebuggerAgent->didEvaluateScript();
+    m_v8DebuggerAgent->didExecuteScript();
 }
 
 // InspectorBaseAgent overrides.

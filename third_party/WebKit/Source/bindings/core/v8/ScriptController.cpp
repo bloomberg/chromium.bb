@@ -151,16 +151,14 @@ v8::MaybeLocal<v8::Value> ScriptController::callFunction(v8::Local<v8::Function>
 
 v8::MaybeLocal<v8::Value> ScriptController::callFunction(ExecutionContext* context, v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[], v8::Isolate* isolate)
 {
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(context, DevToolsFunctionInfo(function));
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, info, isolate);
-    InspectorInstrumentation::didCallFunction(cookie);
     return result;
 }
 
 v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Local<v8::Context> context, const ScriptSourceCode& source, AccessControlStatus accessControlStatus, double* compilationFinishTime)
 {
     TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame(), source.url().string(), source.startLine()));
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willEvaluateScript(frame());
+    InspectorInstrumentation::willEvaluateScript(frame()->document());
 
     v8::Local<v8::Value> result;
     {
@@ -188,7 +186,6 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Local<v8:
             return result;
     }
 
-    InspectorInstrumentation::didEvaluateScript(cookie);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 
     return result;

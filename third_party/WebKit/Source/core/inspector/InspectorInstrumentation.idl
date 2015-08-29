@@ -138,10 +138,10 @@ interface InspectorInstrumentation {
     void didRemoveTimer([Keep] ExecutionContext*, int timerId);
 
     [Debugger, Inline=FastReturn]
-    InspectorInstrumentationCookie willCallFunction(ExecutionContext*, const DevToolsFunctionInfo&);
+    InspectorInstrumentationCookie willExecuteScript(ExecutionContext*, int scriptId);
 
     [Debugger, Inline=FastReturn]
-    void didCallFunction(const InspectorInstrumentationCookie&);
+    void didExecuteScript(const InspectorInstrumentationCookie&);
 
     [AsyncCallTracker, Inline=FastReturn]
     void didEnqueueEvent([Keep] EventTarget*, Event*);
@@ -179,11 +179,8 @@ interface InspectorInstrumentation {
     [AsyncCallTracker, Inline=FastReturn]
     void didPerformExecutionContextTask(ExecutionContext*);
 
-    [Debugger, DOMDebugger, Inline=FastReturn]
-    InspectorInstrumentationCookie willEvaluateScript(LocalFrame*);
-
-    [Debugger, Inline=FastReturn]
-    void didEvaluateScript(const InspectorInstrumentationCookie&);
+    [DOMDebugger, Inline=FastReturn]
+    void willEvaluateScript(ExecutionContext*);
 
     [PageRuntime]
     void didCreateScriptContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);

@@ -1365,7 +1365,7 @@ void V8DebuggerAgent::removeAsyncCallTrackingListener(AsyncCallTrackingListener*
     m_asyncCallTrackingListeners.remove(listener);
 }
 
-void V8DebuggerAgent::willCallFunction(int scriptId)
+void V8DebuggerAgent::willExecuteScript(int scriptId)
 {
     changeJavaScriptRecursionLevel(+1);
     // Fast return.
@@ -1377,18 +1377,7 @@ void V8DebuggerAgent::willCallFunction(int scriptId)
     schedulePauseOnNextStatementIfSteppingInto();
 }
 
-void V8DebuggerAgent::didCallFunction()
-{
-    changeJavaScriptRecursionLevel(-1);
-}
-
-void V8DebuggerAgent::willEvaluateScript()
-{
-    changeJavaScriptRecursionLevel(+1);
-    schedulePauseOnNextStatementIfSteppingInto();
-}
-
-void V8DebuggerAgent::didEvaluateScript()
+void V8DebuggerAgent::didExecuteScript()
 {
     changeJavaScriptRecursionLevel(-1);
 }
