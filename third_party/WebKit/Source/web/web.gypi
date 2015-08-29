@@ -67,8 +67,6 @@
       'PageOverlay.h',
       'PageWidgetDelegate.cpp',
       'PageWidgetDelegate.h',
-      'PluginPlaceholderImpl.cpp',
-      'PluginPlaceholderImpl.h',
       'PopupMenuImpl.cpp',
       'PopupMenuImpl.h',
       'PrerendererClientImpl.cpp',

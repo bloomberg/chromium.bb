@@ -47,7 +47,6 @@
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/plugins/PluginPlaceholder.h"
 #include "core/plugins/PluginView.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
@@ -87,7 +86,6 @@ HTMLPlugInElement::~HTMLPlugInElement()
 DEFINE_TRACE(HTMLPlugInElement)
 {
     visitor->trace(m_imageLoader);
-    visitor->trace(m_placeholder);
     visitor->trace(m_persistedPluginWidget);
     HTMLFrameOwnerElement::trace(visitor);
 }
@@ -130,9 +128,7 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
 
 bool HTMLPlugInElement::canProcessDrag() const
 {
-    if (Widget* widget = existingPluginWidget())
-        return widget->isPluginView() && toPluginView(widget)->canProcessDrag();
-    return false;
+    return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->canProcessDrag();
 }
 
 bool HTMLPlugInElement::willRespondToMouseClickEvents()
@@ -288,8 +284,6 @@ LayoutObject* HTMLPlugInElement::createLayoutObject(const ComputedStyle& style)
         return image;
     }
 
-    if (usePlaceholderContent())
-        return new LayoutBlockFlow(this);
 
     return new LayoutEmbeddedObject(this);
 }
@@ -325,7 +319,7 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
         if (m_persistedPluginWidget)
             plugin = m_persistedPluginWidget.get();
         else
-            plugin = pluginWidgetForJSBindings();
+            plugin = pluginWidget();
 
         if (plugin)
             m_pluginWrapper = frame->script().createPluginWrapper(plugin);
@@ -333,14 +327,7 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
     return m_pluginWrapper.get();
 }
 
-Widget* HTMLPlugInElement::existingPluginWidget() const
-{
-    if (LayoutPart* layoutPart = existingLayoutPart())
-        return layoutPart->widget();
-    return nullptr;
-}
-
-Widget* HTMLPlugInElement::pluginWidgetForJSBindings()
+Widget* HTMLPlugInElement::pluginWidget() const
 {
     if (LayoutPart* layoutPart = layoutPartForJSBindings())
         return layoutPart->widget();
@@ -412,21 +399,14 @@ LayoutPart* HTMLPlugInElement::layoutPartForJSBindings() const
 
 bool HTMLPlugInElement::isKeyboardFocusable() const
 {
-    if (useFallbackContent() || usePlaceholderContent())
-        return HTMLElement::isKeyboardFocusable();
-
     if (!document().isActive())
         return false;
-
-    if (Widget* widget = existingPluginWidget())
-        return widget->isPluginView() && toPluginView(widget)->supportsKeyboardFocus();
-
-    return false;
+    return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->supportsKeyboardFocus();
 }
 
 bool HTMLPlugInElement::hasCustomFocusLogic() const
 {
-    return !useFallbackContent() && !usePlaceholderContent();
+    return !useFallbackContent();
 }
 
 bool HTMLPlugInElement::isPluginElement() const
@@ -454,10 +434,9 @@ NPObject* HTMLPlugInElement::getNPObject()
 
 void HTMLPlugInElement::setPluginFocus(bool focused)
 {
-    Widget* focusedWidget = existingPluginWidget();
     // NPAPI flash requires to receive messages when web contents focus changes.
-    if (getNPObject() && focusedWidget)
-        focusedWidget->setFocus(focused, WebFocusTypeNone);
+    if (getNPObject() && pluginWidget() && pluginWidget()->isPluginView())
+        toPluginView(pluginWidget())->setFocus(focused, WebFocusTypeNone);
 }
 
 bool HTMLPlugInElement::isImageType()
@@ -543,27 +522,17 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     WTF_LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
     m_loadedUrl = url;
 
-    OwnPtrWillBeRawPtr<PluginPlaceholder> placeholder = nullptr;
     RefPtrWillBeRawPtr<Widget> widget = m_persistedPluginWidget;
     if (!widget) {
         bool loadManually = document().isPluginDocument() && !document().containsPlugins();
-        placeholder = frame->loader().client()->createPluginPlaceholder(document(), url, paramNames, paramValues, mimeType, loadManually);
-        if (!placeholder) {
-            FrameLoaderClient::DetachedPluginPolicy policy = requireLayoutObject ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
-            widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
-        }
+        FrameLoaderClient::DetachedPluginPolicy policy = requireLayoutObject ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
+        widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
     }
 
-    if (!placeholder && !widget) {
+    if (!widget) {
         if (layoutObject && !layoutObject->showsUnavailablePluginIndicator())
             layoutObject->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
-        setPlaceholder(nullptr);
         return false;
-    }
-
-    if (placeholder) {
-        setPlaceholder(placeholder.release());
-        return true;
     }
 
     if (layoutObject) {
@@ -572,7 +541,6 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     } else {
         setPersistedPluginWidget(widget.get());
     }
-    setPlaceholder(nullptr);
     document().setContainsPlugins();
     // TODO(esprehn): WebPluginContainerImpl::setWebLayer also schedules a compositing update, do we need both?
     setNeedsCompositingUpdate();
@@ -601,22 +569,7 @@ bool HTMLPlugInElement::shouldUsePlugin(const KURL& url, const String& mimeType,
     // it be handled as a plugin to show the broken plugin icon.
     useFallback = objectType == ObjectContentNone && hasFallback;
     return objectType == ObjectContentNone || objectType == ObjectContentNetscapePlugin || objectType == ObjectContentOtherPlugin;
-}
 
-void HTMLPlugInElement::setPlaceholder(PassOwnPtrWillBeRawPtr<PluginPlaceholder> placeholder)
-{
-    bool needsLazyReattach = (!placeholder) != (!m_placeholder);
-    if (placeholder) {
-        placeholder->loadIntoContainer(ensureUserAgentShadowRoot());
-        m_placeholder = placeholder;
-    } else {
-        ShadowRoot& shadowRoot = ensureUserAgentShadowRoot();
-        shadowRoot.removeChildren();
-        shadowRoot.appendChild(HTMLContentElement::create(document()));
-        m_placeholder.clear();
-    }
-    if (needsLazyReattach)
-        lazyReattachIfAttached();
 }
 
 void HTMLPlugInElement::dispatchErrorEvent()
@@ -682,7 +635,7 @@ bool HTMLPlugInElement::useFallbackContent() const
 
 void HTMLPlugInElement::lazyReattachIfNeeded()
 {
-    if (!useFallbackContent() && !usePlaceholderContent() && needsWidgetUpdate() && layoutObject() && !isImageType())
+    if (!useFallbackContent() && needsWidgetUpdate() && layoutObject() && !isImageType())
         lazyReattachIfAttached();
 }
 

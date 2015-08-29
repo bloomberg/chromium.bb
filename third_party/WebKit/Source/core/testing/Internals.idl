@@ -308,9 +308,6 @@
 
     [TypeChecking=Interface] ClientRect boundsInViewportSpace(Element element);
 
-    [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, DocumentFragment fragment);
-    [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, PluginPlaceholderOptions options);
-
     DictionaryTest dictionaryTest();
     UnionTypesTest unionTypesTest();
 

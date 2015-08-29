@@ -50,12 +50,10 @@ class DOMArrayBuffer;
 class DOMPoint;
 class DictionaryTest;
 class Document;
-class DocumentFragment;
 class DocumentMarker;
 class Element;
 class ExceptionState;
 class GCObservation;
-class HTMLElement;
 class HTMLMediaElement;
 class InternalRuntimeFlags;
 class InternalSettings;
@@ -65,7 +63,6 @@ class LocalDOMWindow;
 class LocalFrame;
 class Node;
 class Page;
-class PluginPlaceholderOptions;
 class PrivateScriptTest;
 class Range;
 class SerializedScriptValue;
@@ -349,9 +346,6 @@ public:
     bool isInCanvasFontCache(Document*, const String&);
     unsigned canvasFontCacheMaxFonts();
 
-    void forcePluginPlaceholder(HTMLElement* plugin, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
-    void forcePluginPlaceholder(HTMLElement* plugin, const PluginPlaceholderOptions&, ExceptionState&);
-
     // Scheudle a forced Blink GC run (Oilpan) at the end of event loop.
     // Note: This is designed to be only used from PerformanceTests/BlinkGC to explicitly measure only Blink GC time.
     //       Normal LayoutTests should use gc() instead as it would trigger both Blink GC and V8 GC.
@@ -376,7 +370,6 @@ public:
     bool setScrollbarVisibilityInScrollableArea(Node*, bool visible);
 
     void forceRestrictIFramePermissions();
-
 private:
     explicit Internals(ScriptState*);
     Document* contextDocument() const;

@@ -43,7 +43,6 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/layout/LayoutReplaced.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/style/GridPosition.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/svg/SVGSVGElement.h"
@@ -413,16 +412,6 @@ void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const Comput
 
     if (isHTMLPlugInElement(element)) {
         style.setRequiresAcceleratedCompositingForExternalReasons(toHTMLPlugInElement(element).shouldAccelerate());
-
-        // Plugins should get the standard replaced width/height instead of 'auto'.
-        // Replaced layoutObjects get this for free, and fallback content doesn't count.
-        if (toHTMLPlugInElement(element).usePlaceholderContent()) {
-            if (style.width().isAuto())
-                style.setWidth(Length(LayoutReplaced::defaultWidth, Fixed));
-            if (style.height().isAuto())
-                style.setHeight(Length(LayoutReplaced::defaultHeight, Fixed));
-        }
-
         return;
     }
 }

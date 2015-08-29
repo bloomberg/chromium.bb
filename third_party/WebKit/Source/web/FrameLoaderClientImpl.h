@@ -122,10 +122,6 @@ public:
     void transitionToCommittedForNewPage() override;
     PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const WTF::AtomicString& name, HTMLFrameOwnerElement*) override;
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const;
-    PassOwnPtrWillBeRawPtr<PluginPlaceholder> createPluginPlaceholder(
-        Document&, const KURL&,
-        const Vector<String>& paramNames, const Vector<String>& paramValues,
-        const String& mimeType, bool loadManually) override;
     PassRefPtrWillBeRawPtr<Widget> createPlugin(
         HTMLPlugInElement*, const KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,

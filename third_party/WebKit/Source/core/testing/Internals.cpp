@@ -85,13 +85,11 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/forms/FormController.h"
-#include "core/html/shadow/PluginPlaceholderElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/input/EventHandler.h"
@@ -115,8 +113,6 @@
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
 #include "core/paint/DeprecatedPaintLayer.h"
-#include "core/plugins/testing/DictionaryPluginPlaceholder.h"
-#include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
 #include "core/svg/SVGImageElement.h"
 #include "core/testing/DictionaryTest.h"
 #include "core/testing/GCObservation.h"
@@ -2391,24 +2387,6 @@ ClientRect* Internals::boundsInViewportSpace(Element* element)
 {
     ASSERT(element);
     return ClientRect::create(element->boundsInViewportSpace());
-}
-
-void Internals::forcePluginPlaceholder(HTMLElement* element, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, ExceptionState& exceptionState)
-{
-    if (!element->isPluginElement()) {
-        exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a plugin.");
-        return;
-    }
-    toHTMLPlugInElement(element)->setPlaceholder(DocumentFragmentPluginPlaceholder::create(fragment));
-}
-
-void Internals::forcePluginPlaceholder(HTMLElement* element, const PluginPlaceholderOptions& options, ExceptionState& exceptionState)
-{
-    if (!element->isPluginElement()) {
-        exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a plugin.");
-        return;
-    }
-    toHTMLPlugInElement(element)->setPlaceholder(DictionaryPluginPlaceholder::create(element->document(), options));
 }
 
 void Internals::forceBlinkGCWithoutV8GC()

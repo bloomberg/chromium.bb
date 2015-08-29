@@ -57,7 +57,6 @@ class HTMLPlugInElement;
 class HistoryItem;
 class KURL;
 class LocalFrame;
-class PluginPlaceholder;
 class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
@@ -152,11 +151,6 @@ public:
         AllowDetachedPlugin,
     };
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const = 0;
-
-    // Called before plugin creation in order to ask the embedder whether a
-    // placeholder should be substituted instead.
-    virtual PassOwnPtrWillBeRawPtr<PluginPlaceholder> createPluginPlaceholder(Document&, const KURL&, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually) = 0;
-
     virtual PassRefPtrWillBeRawPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually, DetachedPluginPolicy) = 0;
 
     virtual PassRefPtrWillBeRawPtr<Widget> createJavaAppletWidget(HTMLAppletElement*, const KURL& baseURL, const Vector<String>& paramNames, const Vector<String>& paramValues) = 0;

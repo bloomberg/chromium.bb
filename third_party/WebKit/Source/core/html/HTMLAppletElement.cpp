@@ -35,7 +35,6 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/plugins/PluginPlaceholder.h"
 #include "platform/Widget.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -180,25 +179,17 @@ void HTMLAppletElement::updateWidgetInternal()
         paramValues.append(param->value());
     }
 
-    OwnPtrWillBeRawPtr<PluginPlaceholder> placeholder = nullptr;
     RefPtrWillBeRawPtr<Widget> widget = nullptr;
-    if (frame->loader().allowPlugins(AboutToInstantiatePlugin)) {
-        placeholder = frame->loader().client()->createPluginPlaceholder(document(), KURL(), paramNames, paramValues, m_serviceType, false);
-        if (!placeholder)
-            widget = frame->loader().client()->createJavaAppletWidget(this, baseURL, paramNames, paramValues);
-    }
+    if (frame->loader().allowPlugins(AboutToInstantiatePlugin))
+        widget = frame->loader().client()->createJavaAppletWidget(this, baseURL, paramNames, paramValues);
 
-    if (!placeholder && !widget) {
+    if (!widget) {
         if (!layoutObject->showsUnavailablePluginIndicator())
             layoutObject->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
-        setPlaceholder(nullptr);
-    } else if (placeholder) {
-        setPlaceholder(placeholder.release());
-    } else if (widget) {
-        document().setContainsPlugins();
-        setWidget(widget);
-        setPlaceholder(nullptr);
+        return;
     }
+    document().setContainsPlugins();
+    setWidget(widget);
 }
 
 bool HTMLAppletElement::canEmbedURL(const KURL& url) const

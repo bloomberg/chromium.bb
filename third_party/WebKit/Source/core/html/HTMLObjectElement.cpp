@@ -429,9 +429,7 @@ bool HTMLObjectElement::appendFormData(FormDataList& encoding, bool)
     if (name().isEmpty())
         return false;
 
-    // Widget is needed immediately to satisfy cases like
-    // LayoutTests/plugins/form-value.html.
-    Widget* widget = pluginWidgetForJSBindings();
+    Widget* widget = pluginWidget();
     if (!widget || !widget->isPluginView())
         return false;
     String value;
