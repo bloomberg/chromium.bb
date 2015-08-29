@@ -21,8 +21,7 @@ class InspectorCSSAgent;
 class JSONArray;
 class JSONObject;
 
-class CORE_EXPORT LayoutEditor final: public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LayoutEditor);
+class CORE_EXPORT LayoutEditor final : public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor> {
 public:
     static PassOwnPtrWillBeRawPtr<LayoutEditor> create(InspectorCSSAgent* cssAgent)
     {
@@ -35,7 +34,7 @@ public:
     void overlayPropertyChanged(float);
     void overlayEndedPropertyChange();
 
-    DECLARE_VIRTUAL_TRACE();
+    DECLARE_TRACE();
 
 private:
     explicit LayoutEditor(InspectorCSSAgent*);

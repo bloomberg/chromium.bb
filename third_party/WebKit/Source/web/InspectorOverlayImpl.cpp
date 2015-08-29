@@ -161,6 +161,7 @@ DEFINE_TRACE(InspectorOverlayImpl)
     visitor->trace(m_overlayPage);
     visitor->trace(m_overlayChromeClient);
     visitor->trace(m_overlayHost);
+    visitor->trace(m_debuggerAgent);
     visitor->trace(m_layoutEditor);
 }
 
