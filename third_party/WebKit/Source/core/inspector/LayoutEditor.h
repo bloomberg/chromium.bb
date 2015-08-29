@@ -9,7 +9,6 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Node.h"
-#include "core/inspector/InspectorOverlayHost.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -22,7 +21,7 @@ class InspectorCSSAgent;
 class JSONArray;
 class JSONObject;
 
-class CORE_EXPORT LayoutEditor final: public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor>, public InspectorOverlayHost::LayoutEditorListener {
+class CORE_EXPORT LayoutEditor final: public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LayoutEditor);
 public:
     static PassOwnPtrWillBeRawPtr<LayoutEditor> create(InspectorCSSAgent* cssAgent)
@@ -32,6 +31,9 @@ public:
 
     void setNode(Node*);
     PassRefPtr<JSONObject> buildJSONInfo() const;
+    void overlayStartedPropertyChange(const String&);
+    void overlayPropertyChanged(float);
+    void overlayEndedPropertyChange();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -40,11 +42,6 @@ private:
     RefPtrWillBeRawPtr<CSSPrimitiveValue> getPropertyCSSValue(CSSPropertyID) const;
     PassRefPtr<JSONObject> createValueDescription(const String&) const;
     void appendAnchorFor(JSONArray*, const String&, const String&, const FloatPoint&, const FloatPoint&) const;
-
-    // InspectorOverlayHost::LayoutEditorListener implementation.
-    void overlayStartedPropertyChange(const String&) override;
-    void overlayPropertyChanged(float) override;
-    void overlayEndedPropertyChange() override;
 
     RefPtrWillBeMember<Element> m_element;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;

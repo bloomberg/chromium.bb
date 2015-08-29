@@ -67,7 +67,7 @@ class InspectorOverlayImpl final
     , public InspectorDOMAgent::Client
     , public InspectorPageAgent::Client
     , public InspectorProfilerAgent::Client
-    , public InspectorOverlayHost::DebuggerListener {
+    , public InspectorOverlayHost::Listener {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorOverlayImpl);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayImpl);
 public:
@@ -92,9 +92,12 @@ private:
     class InspectorOverlayChromeClient;
     class InspectorPageOverlayDelegate;
 
-    // InspectorOverlayHost::DebuggerListener implementation.
+    // InspectorOverlayHost::Listener implementation.
     void overlayResumed() override;
     void overlaySteppedOver() override;
+    void overlayStartedPropertyChange(const String&) override;
+    void overlayPropertyChanged(float) override;
+    void overlayEndedPropertyChange() override;
 
     // InspectorProfilerAgent::Client implementation.
     void profilingStarted() override;

@@ -147,7 +147,6 @@ InspectorOverlayImpl::InspectorOverlayImpl(WebViewImpl* webViewImpl)
     , m_inLayout(false)
     , m_needsUpdate(false)
 {
-    m_overlayHost->setDebuggerListener(this);
 }
 
 InspectorOverlayImpl::~InspectorOverlayImpl()
@@ -168,9 +167,8 @@ DEFINE_TRACE(InspectorOverlayImpl)
 void InspectorOverlayImpl::init(InspectorCSSAgent* cssAgent, InspectorDebuggerAgent* debuggerAgent)
 {
     m_layoutEditor = LayoutEditor::create(cssAgent);
-    // TODO(dgozman): overlay should be a listener, not layout editor.
-    m_overlayHost->setLayoutEditorListener(m_layoutEditor.get());
     m_debuggerAgent = debuggerAgent;
+    m_overlayHost->setListener(this);
 }
 
 void InspectorOverlayImpl::invalidate()
@@ -487,6 +485,21 @@ void InspectorOverlayImpl::overlaySteppedOver()
         ErrorString error;
         m_debuggerAgent->stepOver(&error);
     }
+}
+
+void InspectorOverlayImpl::overlayStartedPropertyChange(const String& property)
+{
+    m_layoutEditor->overlayStartedPropertyChange(property);
+}
+
+void InspectorOverlayImpl::overlayPropertyChanged(float value)
+{
+    m_layoutEditor->overlayPropertyChanged(value);
+}
+
+void InspectorOverlayImpl::overlayEndedPropertyChange()
+{
+    m_layoutEditor->overlayEndedPropertyChange();
 }
 
 void InspectorOverlayImpl::profilingStarted()

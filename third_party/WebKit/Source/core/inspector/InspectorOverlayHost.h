@@ -52,28 +52,21 @@ public:
     void changeProperty(float delta);
     void endPropertyChange();
 
-    class DebuggerListener : public WillBeGarbageCollectedMixin {
+    class Listener : public WillBeGarbageCollectedMixin {
     public:
-        virtual ~DebuggerListener() { }
+        virtual ~Listener() { }
         virtual void overlayResumed() = 0;
         virtual void overlaySteppedOver() = 0;
-    };
-    void setDebuggerListener(DebuggerListener* listener) { m_debuggerListener = listener; }
-
-    class CORE_EXPORT LayoutEditorListener : public WillBeGarbageCollectedMixin {
-    public:
-        virtual ~LayoutEditorListener() { }
         virtual void overlayStartedPropertyChange(const String&) = 0;
         virtual void overlayPropertyChanged(float cssDelta) = 0;
         virtual void overlayEndedPropertyChange() = 0;
     };
-    void setLayoutEditorListener(LayoutEditorListener* listener) { m_layoutEditorListener = listener; }
+    void setListener(Listener* listener) { m_listener = listener; }
 
 private:
     InspectorOverlayHost();
 
-    RawPtrWillBeMember<DebuggerListener> m_debuggerListener;
-    RawPtrWillBeMember<LayoutEditorListener> m_layoutEditorListener;
+    RawPtrWillBeMember<Listener> m_listener;
 
 };
 
