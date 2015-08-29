@@ -1320,10 +1320,25 @@ TEST(PartitionAllocDeathTest, GuardPages)
 {
     TestSetup();
 
-    // This large size will result in a direct mapped allocation with guard
-    // pages at either end.
-    size_t size = (kGenericMaxBucketed + kSystemPageSize) - kExtraAllocSize;
+    // partitionAlloc adds kPartitionPageSize to the requested size
+    // (for metadata), and then rounds that size to kPageAllocationGranularity.
+    // To be able to reliably write one past a direct allocation, choose a size
+    // that's
+    // a) larger than kGenericMaxBucketed (to make the allocation direct)
+    // b) aligned at kPageAllocationGranularity boundaries after
+    //    kPartitionPageSize has been added to it.
+    // (On 32-bit, partitionAlloc adds another kSystemPageSize to the
+    // allocation size before rounding, but there it marks the memory right
+    // after size as inaccessible, so it's fine to write 1 past the size we
+    // hand to partitionAlloc and we don't need to worry about allocation
+    // granularities.)
+#define ALIGN(N, A) (((N) + (A) - 1) / (A) * (A))
+    const int kSize = ALIGN(kGenericMaxBucketed + 1 + kPartitionPageSize, kPageAllocationGranularity) - kPartitionPageSize;
+#undef ALIGN
+    static_assert(kSize > kGenericMaxBucketed, "allocation not large enough for direct allocation");
+    size_t size = kSize - kExtraAllocSize;
     void* ptr = partitionAllocGeneric(genericAllocator.root(), size);
+
     EXPECT_TRUE(ptr);
     char* charPtr = reinterpret_cast<char*>(ptr) - kPointerOffset;
 
