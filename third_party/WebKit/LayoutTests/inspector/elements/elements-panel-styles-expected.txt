@@ -1,8 +1,6 @@
 Tests that elements panel shows proper styles in the sidebar panel.
 
 Foo
--webkit-font-smoothing: subpixel-antialiased
-    subpixel-antialiased - element.style
 border-bottom-left-radius: 5px
     5px - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
 border-bottom-right-radius: 5px
@@ -52,6 +50,8 @@ text-indent: 0px
     OVERLOADED 10px - body .foo elements-panel-styles.css:6 -> elements-panel-styles.css:6:1
     0 !important - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
     OVERLOADED 20px !important - body elements-panel-styles.css:1 -> elements-panel-styles.css:1:1
+-webkit-font-smoothing: subpixel-antialiased
+    subpixel-antialiased - element.style
 [expanded] 
 element.style  { ()
 /-- overloaded --/     display: none;
