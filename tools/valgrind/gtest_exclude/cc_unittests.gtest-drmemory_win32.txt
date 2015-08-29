@@ -13,7 +13,6 @@ LayerTreeHostCopyRequestTestMultipleRequests.SoftwareRenderer_RunSingleThread
 LayerTreeHostTestReadyToDrawNonEmpty.*
 LayerTreeHostTestReadyToDrawVisibility.*
 LayerTreeHostTestMaxTransferBufferUsageBytes.*
-LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor.*
 LayerTreeHostTestReadyToActivateNonEmpty.*
 
 # http://crbug.com/430400

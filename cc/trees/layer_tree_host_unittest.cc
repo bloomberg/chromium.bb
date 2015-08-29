@@ -2024,6 +2024,10 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
   }
 
   void ScheduledActionInvalidateOutputSurface() override {
+    // Do not call ImplThreadTaskRunner after the test ended because of the
+    // possibility of use-after-free due to a race.
+    if (TestEnded())
+      return;
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(
