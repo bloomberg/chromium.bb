@@ -7,15 +7,47 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/sync_driver/data_type_controller.h"
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/attachments/attachment_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 
+namespace base {
+class FilePath;
+}  // namespace base
+
+namespace browser_sync {
+class SyncBackendHost;
+}  // namespace browser_sync
+
+namespace history {
+class HistoryBackend;
+}
+
+namespace invalidation {
+class InvalidationService;
+}  // namespace invalidation
+
 namespace syncer {
+class DataTypeDebugInfoListener;
+class SyncableService;
+
 struct UserShare;
 }  // namespace syncer
 
 namespace sync_driver {
+
+class AssociatorInterface;
+class ChangeProcessor;
+class DataTypeEncryptionHandler;
+class DataTypeErrorHandler;
+class DataTypeManager;
+class DataTypeManagerObserver;
+class DataTypeStatusTable;
+class GenericChangeProcessor;
+class LocalDeviceInfoProvider;
+class SyncPrefs;
+class SyncService;
 
 // This factory provides sync driver code with the model type specific sync/api
 // service (like SyncableService) implementations.
@@ -23,11 +55,62 @@ class SyncApiComponentFactory {
  public:
   virtual ~SyncApiComponentFactory() {}
 
-  // Returns a weak pointer to the syncable service specified by |type|.
-  // Weak pointer may be unset if service is already destroyed.
-  // Note: Should only be called from the model type thread.
-  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) = 0;
+  // The various factory methods for the data type model associators
+  // and change processors all return this struct.  This is needed
+  // because the change processors typically require a type-specific
+  // model associator at construction time.
+  //
+  // Note: This interface is deprecated in favor of the SyncableService API.
+  // New datatypes that do not live on the UI thread should directly return a
+  // weak pointer to a syncer::SyncableService. All others continue to return
+  // SyncComponents. It is safe to assume that the factory methods below are
+  // called on the same thread in which the datatype resides.
+  //
+  // TODO(zea): Have all datatypes using the new API switch to returning
+  // SyncableService weak pointers instead of SyncComponents (crbug.com/100114).
+  struct SyncComponents {
+    sync_driver::AssociatorInterface* model_associator;
+    sync_driver::ChangeProcessor* change_processor;
+    SyncComponents(sync_driver::AssociatorInterface* ma,
+                   sync_driver::ChangeProcessor* cp)
+        : model_associator(ma), change_processor(cp) {}
+  };
+
+  virtual void Initialize(sync_driver::SyncService* sync_service) = 0;
+
+  // Creates and registers enabled datatypes with internal SyncService.
+  virtual void RegisterDataTypes() = 0;
+
+  // Instantiates a new DataTypeManager with a SyncBackendHost, a list of data
+  // type controllers and a DataTypeManagerObserver.  The return pointer is
+  // owned by the caller.
+  virtual sync_driver::DataTypeManager* CreateDataTypeManager(
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
+      const sync_driver::DataTypeController::TypeMap* controllers,
+      const sync_driver::DataTypeEncryptionHandler* encryption_handler,
+      browser_sync::SyncBackendHost* backend,
+      sync_driver::DataTypeManagerObserver* observer) = 0;
+
+  // Creating this in the factory helps us mock it out in testing.
+  virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(
+      const std::string& name,
+      invalidation::InvalidationService* invalidator,
+      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+      const base::FilePath& sync_folder) = 0;
+
+  // Creating this in the factory helps us mock it out in testing.
+  virtual scoped_ptr<sync_driver::LocalDeviceInfoProvider>
+      CreateLocalDeviceInfoProvider() = 0;
+
+  // Legacy datatypes that need to be converted to the SyncableService API.
+  virtual SyncComponents CreateBookmarkSyncComponents(
+      sync_driver::SyncService* sync_service,
+      sync_driver::DataTypeErrorHandler* error_handler) = 0;
+  virtual SyncComponents CreateTypedUrlSyncComponents(
+      sync_driver::SyncService* sync_service,
+      history::HistoryBackend* history_backend,
+      sync_driver::DataTypeErrorHandler* error_handler) = 0;
 
   // Creates attachment service.
   // Note: Should only be called from the model type thread.

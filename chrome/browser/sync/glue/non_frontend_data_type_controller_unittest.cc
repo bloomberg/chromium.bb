@@ -21,6 +21,7 @@
 #include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/change_processor_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/model_associator_mock.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -43,6 +44,8 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
+namespace {
+
 ACTION_P(WaitOnEvent, event) {
   event->Wait();
 }
@@ -51,19 +54,16 @@ ACTION_P(SignalEvent, event) {
   event->Signal();
 }
 
-class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
+class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController{
  public:
   NonFrontendDataTypeControllerFake(
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile,
-      ProfileSyncService* sync_service,
+      sync_driver::SyncClient* sync_client,
       NonFrontendDataTypeControllerMock* mock)
       : NonFrontendDataTypeController(base::ThreadTaskRunnerHandle::Get(),
                                       base::Closure(),
-                                      profile_sync_factory,
-                                      profile,
-                                      sync_service),
-        mock_(mock) {}
+                                      sync_client),
+        mock_(mock),
+        sync_client_(sync_client) {}
 
   syncer::ModelType type() const override { return syncer::BOOKMARKS; }
   syncer::ModelSafeGroup model_safe_group() const override {
@@ -73,9 +73,10 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
  private:
   ~NonFrontendDataTypeControllerFake() override {}
 
-  ProfileSyncComponentsFactory::SyncComponents CreateSyncComponents() override {
-    return profile_sync_factory()->
-            CreateBookmarkSyncComponents(profile_sync_service(), this);
+  sync_driver::SyncApiComponentFactory::SyncComponents CreateSyncComponents()
+      override {
+    return sync_client_->GetSyncApiComponentFactory()->
+            CreateBookmarkSyncComponents(nullptr, this);
   }
 
   bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
@@ -102,25 +103,30 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
 
  private:
   NonFrontendDataTypeControllerMock* mock_;
+  sync_driver::SyncClient* sync_client_;
 };
 
-class SyncNonFrontendDataTypeControllerTest : public testing::Test {
+class SyncNonFrontendDataTypeControllerTest
+    : public testing::Test,
+      public sync_driver::FakeSyncClient {
  public:
   SyncNonFrontendDataTypeControllerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD),
+      : sync_driver::FakeSyncClient(&profile_sync_factory_),
+        thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD),
         service_(&profile_),
         model_associator_(NULL),
         change_processor_(NULL) {}
 
-  void SetUp() override {
-    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
+  // FakeSyncClient overrides.
+  sync_driver::SyncService* GetSyncService() override {
+    return &service_;
+  }
 
+  void SetUp() override {
     // All of these are refcounted, so don't need to be released.
     dtc_mock_ = new StrictMock<NonFrontendDataTypeControllerMock>();
     non_frontend_dtc_ =
-        new NonFrontendDataTypeControllerFake(profile_sync_factory_.get(),
-                                              &profile_,
-                                              &service_,
+        new NonFrontendDataTypeControllerFake(this,
                                               dtc_mock_.get());
   }
 
@@ -137,8 +143,8 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(model_load_callback_, Run(_, _));
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
-    EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _)).
-        WillOnce(Return(ProfileSyncComponentsFactory::SyncComponents(
+    EXPECT_CALL(profile_sync_factory_, CreateBookmarkSyncComponents(_, _)).
+        WillOnce(Return(sync_driver::SyncApiComponentFactory::SyncComponents(
             model_associator_, change_processor_)));
   }
 
@@ -200,10 +206,10 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<NonFrontendDataTypeControllerFake> non_frontend_dtc_;
-  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   scoped_refptr<NonFrontendDataTypeControllerMock> dtc_mock_;
   ProfileMock profile_;
   ProfileSyncServiceMock service_;
+  ProfileSyncComponentsFactoryMock profile_sync_factory_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
   StartCallbackMock start_callback_;
@@ -382,3 +388,5 @@ TEST_F(SyncNonFrontendDataTypeControllerTest,
   WaitForDTC();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
 }
+
+}  // namespace

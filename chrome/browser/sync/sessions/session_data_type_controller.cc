@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/sessions/synced_window_delegates_getter.h"
 #include "chrome/common/pref_names.h"
+#include "components/sync_driver/sync_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -21,7 +22,7 @@ using content::BrowserThread;
 namespace browser_sync {
 
 SessionDataTypeController::SessionDataTypeController(
-    sync_driver::SyncApiComponentFactory* sync_factory,
+    sync_driver::SyncClient* sync_client,
     Profile* profile,
     SyncedWindowDelegatesGetter* synced_window_getter,
     sync_driver::LocalDeviceInfoProvider* local_device)
@@ -29,14 +30,15 @@ SessionDataTypeController::SessionDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
           syncer::SESSIONS,
-          sync_factory),
+          sync_client),
+      sync_client_(sync_client),
       profile_(profile),
       synced_window_getter_(synced_window_getter),
       local_device_(local_device),
       waiting_on_session_restore_(false),
       waiting_on_local_device_info_(false) {
   DCHECK(local_device_);
-  pref_registrar_.Init(profile->GetPrefs());
+  pref_registrar_.Init(sync_client_->GetPrefService());
   pref_registrar_.Add(
       prefs::kSavingBrowserHistoryDisabled,
       base::Bind(&SessionDataTypeController::OnSavingBrowserHistoryPrefChanged,
@@ -78,7 +80,7 @@ void SessionDataTypeController::StopModels() {
 
 bool SessionDataTypeController::ReadyForStart() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return !profile_->GetPrefs()->GetBoolean(
+  return !sync_client_->GetPrefService()->GetBoolean(
       prefs::kSavingBrowserHistoryDisabled);
 }
 
@@ -115,7 +117,8 @@ void SessionDataTypeController::OnLocalDeviceInfoInitialized() {
 
 void SessionDataTypeController::OnSavingBrowserHistoryPrefChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled)) {
+  if (sync_client_->GetPrefService()->GetBoolean(
+          prefs::kSavingBrowserHistoryDisabled)) {
     // If history and tabs persistence is turned off then generate an
     // unrecoverable error. SESSIONS won't be a registered type on the next
     // Chrome restart.

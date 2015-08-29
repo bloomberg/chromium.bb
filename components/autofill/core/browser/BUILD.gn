@@ -274,6 +274,7 @@ source_set("unit_tests") {
     "//components/signin/core/common",
     "//components/strings",
     "//components/sync_driver",
+    "//components/sync_driver:test_support",
     "//components/variations",
     "//components/webdata/common",
     "//components/webdata_services:test_support",

@@ -21,11 +21,11 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
-    SyncApiComponentFactory* sync_factory) {
+    SyncClient* sync_client) {
   DCHECK(user_share);
   return make_scoped_ptr(new GenericChangeProcessor(
                              type, error_handler, local_service, merge_result,
-                             user_share, sync_factory,
+                             user_share, sync_client,
                              local_service->GetAttachmentStoreForSync()))
       .Pass();
 }

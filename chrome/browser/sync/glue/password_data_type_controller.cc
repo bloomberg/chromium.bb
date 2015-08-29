@@ -9,10 +9,9 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
+#include "components/sync_driver/sync_client.h"
+#include "components/sync_driver/sync_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -20,12 +19,13 @@ using content::BrowserThread;
 namespace browser_sync {
 
 PasswordDataTypeController::PasswordDataTypeController(
-    ProfileSyncComponentsFactory* profile_sync_factory,
+    sync_driver::SyncClient* sync_client,
     Profile* profile)
     : NonUIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          profile_sync_factory),
+          sync_client),
+      sync_client_(sync_client),
       profile_(profile) {
 }
 
@@ -53,24 +53,17 @@ bool PasswordDataTypeController::StartModels() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(MODEL_STARTING, state());
 
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  DCHECK(profile_sync_service);
-  profile_sync_service->AddObserver(this);
+  sync_client_->GetSyncService()->AddObserver(this);
 
   OnStateChanged();
 
-  password_store_ = PasswordStoreFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  password_store_ = sync_client_->GetPasswordStore();
   return !!password_store_.get();
 }
 
 void PasswordDataTypeController::StopModels() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  DCHECK(profile_sync_service);
-  profile_sync_service->RemoveObserver(this);
+  sync_client_->GetSyncService()->RemoveObserver(this);
 }
 
 void PasswordDataTypeController::OnStateChanged() {

@@ -63,9 +63,6 @@ void FakeSyncService::OnUserChoseDatatypes(bool sync_everything,
                                            syncer::ModelTypeSet chosen_types) {
 }
 
-void FakeSyncService::DeactivateDataType(syncer::ModelType type) {
-}
-
 void FakeSyncService::SetSyncSetupCompleted() {
 }
 
@@ -115,6 +112,10 @@ bool FakeSyncService::IsUsingSecondaryPassphrase() const {
 void FakeSyncService::EnableEncryptEverything() {
 }
 
+bool FakeSyncService::EncryptEverythingEnabled() const {
+  return false;
+}
+
 void FakeSyncService::SetEncryptionPassphrase(const std::string& passphrase,
                                               PassphraseType type) {
 }
@@ -131,6 +132,18 @@ bool FakeSyncService::IsCryptographerReady(
 syncer::UserShare* FakeSyncService::GetUserShare() const {
   return new syncer::UserShare();
 }
+
+LocalDeviceInfoProvider* FakeSyncService::GetLocalDeviceInfoProvider() const {
+  return nullptr;
+}
+
+void FakeSyncService::RegisterDataTypeController(
+      sync_driver::DataTypeController* data_type_controller) {
+}
+
+void FakeSyncService::ReenableDatatype(syncer::ModelType type) {}
+
+void FakeSyncService::DeactivateDataType(syncer::ModelType type) {}
 
 bool FakeSyncService::IsPassphraseRequired() const {
   return false;

@@ -108,7 +108,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
     scoped_ptr<ProfileSyncService> pss(new ProfileSyncService(
-        scoped_ptr<ProfileSyncComponentsFactory>(
+        scoped_ptr<sync_driver::SyncApiComponentFactory>(
             new ProfileSyncComponentsFactoryImpl(
                 profile_.get(),
                 command_line_.get(),
@@ -119,7 +119,8 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
         make_scoped_ptr<SupervisedUserSigninManagerWrapper>(NULL),
         token_service,
         browser_sync::MANUAL_START));
-    pss->factory()->RegisterDataTypes(pss.get());
+    pss->factory()->Initialize(pss.get());
+    pss->factory()->RegisterDataTypes();
     DataTypeController::StateMap controller_states;
     pss->GetDataTypeControllerStates(&controller_states);
     EXPECT_EQ(DefaultDatatypesCount() - types.Size(), controller_states.size());
@@ -136,7 +137,7 @@ TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
   scoped_ptr<ProfileSyncService> pss(new ProfileSyncService(
-      scoped_ptr<ProfileSyncComponentsFactory>(
+      scoped_ptr<sync_driver::SyncApiComponentFactory>(
           new ProfileSyncComponentsFactoryImpl(
               profile_.get(),
               command_line_.get(),
@@ -147,7 +148,8 @@ TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
       make_scoped_ptr<SupervisedUserSigninManagerWrapper>(NULL),
       token_service,
       browser_sync::MANUAL_START));
-  pss->factory()->RegisterDataTypes(pss.get());
+  pss->factory()->Initialize(pss.get());
+  pss->factory()->RegisterDataTypes();
   DataTypeController::StateMap controller_states;
   pss->GetDataTypeControllerStates(&controller_states);
   EXPECT_EQ(DefaultDatatypesCount(), controller_states.size());

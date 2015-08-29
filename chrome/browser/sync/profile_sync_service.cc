@@ -44,7 +44,6 @@
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
-#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/sync_type_preference_provider.h"
@@ -73,6 +72,7 @@
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/favicon_cache.h"
 #include "components/sync_driver/pref_names.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 #include "components/sync_driver/sync_error_controller.h"
 #include "components/sync_driver/sync_stopped_reporter.h"
 #include "components/sync_driver/system_encryptor.h"
@@ -204,7 +204,7 @@ bool ShouldShowActionOnUI(
 }
 
 ProfileSyncService::ProfileSyncService(
-    scoped_ptr<ProfileSyncComponentsFactory> factory,
+    scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
     Profile* profile,
     scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
     ProfileOAuth2TokenService* oauth2_token_service,
@@ -433,7 +433,7 @@ void ProfileSyncService::UnregisterAuthNotifications() {
 }
 
 void ProfileSyncService::RegisterDataTypeController(
-    DataTypeController* data_type_controller) {
+    sync_driver::DataTypeController* data_type_controller) {
   DCHECK_EQ(
       directory_data_type_controllers_.count(data_type_controller->type()),
       0U);
@@ -492,7 +492,7 @@ sync_driver::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
 }
 
 sync_driver::LocalDeviceInfoProvider*
-ProfileSyncService::GetLocalDeviceInfoProvider() {
+ProfileSyncService::GetLocalDeviceInfoProvider() const {
   return local_device_.get();
 }
 
@@ -710,7 +710,6 @@ void ProfileSyncService::StartUpSlowBackendComponents(
   backend_.reset(
       factory_->CreateSyncBackendHost(
           profile_->GetDebugName(),
-          profile_,
           invalidator,
           sync_prefs_.AsWeakPtr(),
           sync_folder));

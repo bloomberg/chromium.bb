@@ -23,7 +23,7 @@ class SyncedWindowDelegatesGetter;
 class SessionDataTypeController : public sync_driver::UIDataTypeController,
                                   public content::NotificationObserver {
  public:
-  SessionDataTypeController(sync_driver::SyncApiComponentFactory* factory,
+  SessionDataTypeController(sync_driver::SyncClient* sync_client,
                             Profile* profile,
                             SyncedWindowDelegatesGetter* synced_window_getter,
                             sync_driver::LocalDeviceInfoProvider* local_device);
@@ -47,6 +47,7 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController,
   void OnLocalDeviceInfoInitialized();
   void OnSavingBrowserHistoryPrefChanged();
 
+  sync_driver::SyncClient* const sync_client_;
   Profile* const profile_;
 
   SyncedWindowDelegatesGetter* synced_window_getter_;

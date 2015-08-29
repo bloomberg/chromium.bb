@@ -14,8 +14,6 @@
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
 
-class ProfileSyncComponentsFactory;
-
 namespace base {
 class SingleThreadTaskRunner;
 class TimeDelta;
@@ -28,7 +26,7 @@ class SyncError;
 namespace sync_driver {
 class AssociatorInterface;
 class ChangeProcessor;
-class SyncService;
+class SyncClient;
 }
 
 namespace browser_sync {
@@ -48,8 +46,7 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
   FrontendDataTypeController(
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       const base::Closure& error_callback,
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      sync_driver::SyncService* sync_service);
+      sync_driver::SyncClient* sync_client);
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
@@ -113,8 +110,7 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
       const tracked_objects::Location& from_here,
       const std::string& message);
 
-  ProfileSyncComponentsFactory* const profile_sync_factory_;
-  sync_driver::SyncService* const sync_service_;
+  sync_driver::SyncClient* const sync_client_;
 
   State state_;
 

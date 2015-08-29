@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/sync_api_component_factory.h"
+#include "components/sync_driver/sync_client.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
@@ -94,7 +95,7 @@ GenericChangeProcessor::GenericChangeProcessor(
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     syncer::UserShare* user_share,
-    SyncApiComponentFactory* sync_factory,
+    SyncClient* sync_client,
     scoped_ptr<syncer::AttachmentStoreForSync> attachment_store)
     : ChangeProcessor(error_handler),
       type_(type),
@@ -110,8 +111,9 @@ GenericChangeProcessor::GenericChangeProcessor(
       syncer::ReadTransaction trans(FROM_HERE, share_handle());
       store_birthday = trans.GetStoreBirthday();
     }
-    attachment_service_ = sync_factory->CreateAttachmentService(
-        attachment_store.Pass(), *user_share, store_birthday, type, this);
+    attachment_service_ =
+        sync_client->GetSyncApiComponentFactory()->CreateAttachmentService(
+            attachment_store.Pass(), *user_share, store_birthday, type, this);
     attachment_service_weak_ptr_factory_.reset(
         new base::WeakPtrFactory<syncer::AttachmentService>(
             attachment_service_.get()));

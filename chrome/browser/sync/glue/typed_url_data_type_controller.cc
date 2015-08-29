@@ -9,15 +9,12 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
+#include "components/sync_driver/sync_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 
@@ -65,17 +62,13 @@ class RunTaskOnHistoryThread : public history::HistoryDBTask {
 }  // namespace
 
 TypedUrlDataTypeController::TypedUrlDataTypeController(
-    ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile,
-    ProfileSyncService* sync_service)
+    sync_driver::SyncClient* sync_client)
     : NonFrontendDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          profile_sync_factory,
-          profile,
-          sync_service),
+          sync_client),
       backend_(NULL) {
-  pref_registrar_.Init(profile->GetPrefs());
+  pref_registrar_.Init(sync_client->GetPrefService());
   pref_registrar_.Add(
       prefs::kSavingBrowserHistoryDisabled,
       base::Bind(
@@ -94,7 +87,7 @@ syncer::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
 
 bool TypedUrlDataTypeController::ReadyForStart() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return !profile()->GetPrefs()->GetBoolean(
+  return !sync_client()->GetPrefService()->GetBoolean(
       prefs::kSavingBrowserHistoryDisabled);
 }
 
@@ -105,7 +98,7 @@ void TypedUrlDataTypeController::SetBackend(history::HistoryBackend* backend) {
 
 void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (profile()->GetPrefs()->GetBoolean(
+  if (sync_client()->GetPrefService()->GetBoolean(
           prefs::kSavingBrowserHistoryDisabled)) {
     // We've turned off history persistence, so if we are running,
     // generate an unrecoverable error. This can be fixed by restarting
@@ -125,8 +118,7 @@ bool TypedUrlDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile(), ServiceAccessType::IMPLICIT_ACCESS);
+  history::HistoryService* history = sync_client()->GetHistoryService();
   if (history) {
     history->ScheduleDBTask(
         scoped_ptr<history::HistoryDBTask>(
@@ -140,15 +132,15 @@ bool TypedUrlDataTypeController::PostTaskOnBackendThread(
   }
 }
 
-ProfileSyncComponentsFactory::SyncComponents
+sync_driver::SyncApiComponentFactory::SyncComponents
 TypedUrlDataTypeController::CreateSyncComponents() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
   DCHECK(backend_);
-  return profile_sync_factory()->CreateTypedUrlSyncComponents(
-      profile_sync_service(),
-      backend_,
-      this);
+  return sync_client()
+      ->GetSyncApiComponentFactory()
+      ->CreateTypedUrlSyncComponents(sync_client()->GetSyncService(), backend_,
+                                     this);
 }
 
 void TypedUrlDataTypeController::DisconnectProcessor(

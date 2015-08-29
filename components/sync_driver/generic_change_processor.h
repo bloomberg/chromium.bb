@@ -29,7 +29,9 @@ typedef std::vector<syncer::SyncData> SyncDataList;
 }  // namespace syncer
 
 namespace sync_driver {
+
 class SyncApiComponentFactory;
+class SyncClient;
 
 // Datatype agnostic change processor. One instance of GenericChangeProcessor
 // is created for each datatype and lives on the datatype's thread. It then
@@ -53,7 +55,7 @@ class GenericChangeProcessor : public ChangeProcessor,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       syncer::UserShare* user_share,
-      SyncApiComponentFactory* sync_factory,
+      SyncClient* sync_client,
       scoped_ptr<syncer::AttachmentStoreForSync> attachment_store);
   ~GenericChangeProcessor() override;
 

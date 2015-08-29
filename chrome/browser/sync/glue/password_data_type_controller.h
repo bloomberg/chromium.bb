@@ -12,10 +12,13 @@
 #include "components/sync_driver/sync_service_observer.h"
 
 class Profile;
-class ProfileSyncComponentsFactory;
 
 namespace password_manager {
 class PasswordStore;
+}
+
+namespace sync_driver {
+class SyncClient;
 }
 
 namespace browser_sync {
@@ -24,9 +27,8 @@ namespace browser_sync {
 class PasswordDataTypeController : public sync_driver::NonUIDataTypeController,
                                    public sync_driver::SyncServiceObserver {
  public:
-  PasswordDataTypeController(
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile);
+  PasswordDataTypeController(sync_driver::SyncClient* sync_client,
+                             Profile* profile);
 
   // NonFrontendDataTypeController implementation
   syncer::ModelType type() const override;
@@ -45,6 +47,7 @@ class PasswordDataTypeController : public sync_driver::NonUIDataTypeController,
   void OnStateChanged() override;
 
  private:
+  sync_driver::SyncClient* const sync_client_;
   Profile* const profile_;
   scoped_refptr<password_manager::PasswordStore> password_store_;
 

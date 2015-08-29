@@ -25,9 +25,9 @@ NonUIDataTypeController::CreateSharedChangeProcessor() {
 NonUIDataTypeController::NonUIDataTypeController(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback,
-    SyncApiComponentFactory* sync_factory)
+    SyncClient* sync_client)
     : DataTypeController(ui_thread, error_callback),
-      sync_factory_(sync_factory),
+      sync_client_(sync_client),
       state_(NOT_RUNNING),
       ui_thread_(ui_thread) {
 }
@@ -173,7 +173,7 @@ void NonUIDataTypeController::OnSingleDataTypeUnrecoverableError(
 
 NonUIDataTypeController::NonUIDataTypeController()
     : DataTypeController(base::ThreadTaskRunnerHandle::Get(), base::Closure()),
-      sync_factory_(NULL) {}
+      sync_client_(NULL) {}
 
 NonUIDataTypeController::~NonUIDataTypeController() {}
 
@@ -306,7 +306,7 @@ void NonUIDataTypeController::
   // point on are through it.
   GenericChangeProcessorFactory factory;
   local_service_ = shared_change_processor->Connect(
-      sync_factory_,
+      sync_client_,
       &factory,
       user_share(),
       this,

@@ -38,7 +38,6 @@ class FakeSyncService : public sync_driver::SyncService {
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
-  void DeactivateDataType(syncer::ModelType type) override;
   void SetSyncSetupCompleted() override;
   bool FirstSetupInProgress() const override;
   void SetSetupInProgress(bool setup_in_progress) override;
@@ -52,12 +51,18 @@ class FakeSyncService : public sync_driver::SyncService {
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
   void EnableEncryptEverything() override;
+  bool EncryptEverythingEnabled() const override;
   void SetEncryptionPassphrase(const std::string& passphrase,
                                PassphraseType type) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
   bool IsCryptographerReady(
       const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
+  LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override;
+  void RegisterDataTypeController(
+      sync_driver::DataTypeController* data_type_controller) override;
+  void ReenableDatatype(syncer::ModelType type) override;
+  void DeactivateDataType(syncer::ModelType type) override;
 
   // DataTypeEncryptionHandler:
   bool IsPassphraseRequired() const override;

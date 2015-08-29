@@ -11,13 +11,13 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
-#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync_driver/data_type_controller_mock.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "components/webdata_services/web_data_service_test_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -131,27 +131,26 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
   DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapperSyncable);
 };
 
-class SyncAutofillDataTypeControllerTest : public testing::Test {
+class SyncAutofillDataTypeControllerTest : public testing::Test,
+                                           public sync_driver::FakeSyncClient {
  public:
   SyncAutofillDataTypeControllerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD),
         service_(&profile_),
         last_start_result_(sync_driver::DataTypeController::OK),
         weak_ptr_factory_(this) {}
-
   ~SyncAutofillDataTypeControllerTest() override {}
 
-  void SetUp() override {
-    EXPECT_CALL(profile_sync_factory_,
-                GetSyncableServiceForType(_)).
-        WillRepeatedly(Return(base::WeakPtr<syncer::SyncableService>()));
+  // FakeSyncClient overrides.
+  scoped_refptr<autofill::AutofillWebDataService> GetWebDataService() override {
+    return WebDataServiceFactory::GetAutofillWebDataForProfile(
+                               &profile_, ServiceAccessType::EXPLICIT_ACCESS);
+  }
 
+  void SetUp() override {
     WebDataServiceFactory::GetInstance()->SetTestingFactory(
         &profile_, MockWebDataServiceWrapperSyncable::Build);
-
-    autofill_dtc_ =
-        new AutofillDataTypeController(
-            &profile_sync_factory_, &profile_);
+    autofill_dtc_ = new AutofillDataTypeController(this);
   }
 
   // Passed to AutofillDTC::Start().
@@ -178,7 +177,6 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  ProfileSyncComponentsFactoryMock profile_sync_factory_;
   TestingProfile profile_;
   ProfileSyncServiceMock service_;
   scoped_refptr<AutofillDataTypeController> autofill_dtc_;

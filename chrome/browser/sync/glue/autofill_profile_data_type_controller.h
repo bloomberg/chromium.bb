@@ -11,9 +11,6 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
-class Profile;
-class ProfileSyncComponentsFactory;
-
 namespace autofill {
 class PersonalDataManager;
 }  // namespace autofill
@@ -25,8 +22,7 @@ class AutofillProfileDataTypeController
       public autofill::PersonalDataManagerObserver {
  public:
   AutofillProfileDataTypeController(
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile);
+      sync_driver::SyncClient* sync_client);
 
   // NonUIDataTypeController implementation.
   syncer::ModelType type() const override;
@@ -48,7 +44,7 @@ class AutofillProfileDataTypeController
   // Callback to notify that WebDatabase has loaded.
   void WebDatabaseLoaded();
 
-  Profile* const profile_;
+  sync_driver::SyncClient* const sync_client_;
   autofill::PersonalDataManager* personal_data_;
   bool callback_registered_;
 

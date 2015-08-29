@@ -18,7 +18,7 @@ namespace sync_driver {
 class FakeGenericChangeProcessor : public GenericChangeProcessor {
  public:
   FakeGenericChangeProcessor(syncer::ModelType type,
-                             SyncApiComponentFactory* sync_factory);
+                             SyncClient* sync_client);
   ~FakeGenericChangeProcessor() override;
 
   // Setters for GenericChangeProcessor implementation results.
@@ -53,7 +53,7 @@ class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
       DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
-      SyncApiComponentFactory* sync_factory) override;
+      SyncClient* sync_client) override;
 
  private:
   scoped_ptr<FakeGenericChangeProcessor> processor_;

@@ -27,6 +27,8 @@
 
 namespace sync_driver {
 
+class SyncClient;
+
 namespace {
 
 using base::WaitableEvent;
@@ -63,7 +65,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   SharedChangeProcessorMock() {}
 
   MOCK_METHOD6(Connect, base::WeakPtr<syncer::SyncableService>(
-      SyncApiComponentFactory*,
+      SyncClient*,
       GenericChangeProcessorFactory*,
       syncer::UserShare*,
       DataTypeErrorHandler*,
@@ -95,13 +97,13 @@ class NonUIDataTypeControllerFake
     : public NonUIDataTypeController {
  public:
   NonUIDataTypeControllerFake(
-      SyncApiComponentFactory* sync_factory,
+      SyncClient* sync_client,
       NonUIDataTypeControllerMock* mock,
       SharedChangeProcessor* change_processor,
       scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner)
       : NonUIDataTypeController(base::ThreadTaskRunnerHandle::Get(),
                                 base::Closure(),
-                                sync_factory),
+                                sync_client),
         blocked_(false),
         mock_(mock),
         change_processor_(change_processor),

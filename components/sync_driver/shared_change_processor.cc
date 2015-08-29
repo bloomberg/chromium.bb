@@ -7,8 +7,9 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
-#include "components/sync_driver/sync_api_component_factory.h"
+#include "components/sync_driver/sync_client.h"
 #include "sync/api/sync_change.h"
+#include "sync/api/syncable_service.h"
 
 using base::AutoLock;
 
@@ -47,13 +48,13 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 }
 
 base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
-    SyncApiComponentFactory* sync_factory,
+    SyncClient* sync_client,
     GenericChangeProcessorFactory* processor_factory,
     syncer::UserShare* user_share,
     DataTypeErrorHandler* error_handler,
     syncer::ModelType type,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result) {
-  DCHECK(sync_factory);
+  DCHECK(sync_client);
   DCHECK(error_handler);
   DCHECK_NE(type, syncer::UNSPECIFIED);
   backend_task_runner_ = base::ThreadTaskRunnerHandle::Get();
@@ -63,7 +64,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
   type_ = type;
   error_handler_ = error_handler;
   base::WeakPtr<syncer::SyncableService> local_service =
-      sync_factory->GetSyncableServiceForType(type);
+      sync_client->GetSyncableServiceForType(type);
   if (!local_service.get()) {
     LOG(WARNING) << "SyncableService destroyed before DTC was stopped.";
     disconnected_ = true;
@@ -76,7 +77,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
                                                       error_handler,
                                                       local_service,
                                                       merge_result,
-                                                      sync_factory).release();
+                                                      sync_client).release();
   // If available, propagate attachment service to the syncable service.
   scoped_ptr<syncer::AttachmentService> attachment_service =
       generic_change_processor_->GetAttachmentService();

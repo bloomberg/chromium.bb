@@ -27,7 +27,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
  public:
   explicit ProfileSyncServiceMock(Profile* profile);
   ProfileSyncServiceMock(
-      scoped_ptr<ProfileSyncComponentsFactory> factory, Profile* profile);
+      scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
+      Profile* profile);
   virtual ~ProfileSyncServiceMock();
 
   // A utility used by sync tests to create a TestingProfile with a Google

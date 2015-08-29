@@ -22,6 +22,8 @@ struct UserShare;
 
 namespace sync_driver {
 
+class DataTypeController;
+class LocalDeviceInfoProvider;
 class OpenTabsUIDelegate;
 
 class SyncService : public DataTypeEncryptionHandler {
@@ -118,10 +120,6 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual void OnUserChoseDatatypes(bool sync_everything,
                                     syncer::ModelTypeSet chosen_types) = 0;
 
-  // Overridden by tests.
-  // TODO(zea): Remove these and have the dtc's call directly into the SBH.
-  virtual void DeactivateDataType(syncer::ModelType type) = 0;
-
   // Called whe Sync has been setup by the user and can be started.
   virtual void SetSyncSetupCompleted() = 0;
 
@@ -177,6 +175,9 @@ class SyncService : public DataTypeEncryptionHandler {
   // after calling this to force the encryption to occur.
   virtual void EnableEncryptEverything() = 0;
 
+  // Returns true if we are currently set to encrypt all the sync data.
+  virtual bool EncryptEverythingEnabled() const = 0;
+
   // Asynchronously sets the passphrase to |passphrase| for encryption. |type|
   // specifies whether the passphrase is a custom passphrase or the GAIA
   // password being reused as a passphrase.
@@ -202,6 +203,24 @@ class SyncService : public DataTypeEncryptionHandler {
   // directly, figure out how to expose this to tests, and remove this
   // function.
   virtual syncer::UserShare* GetUserShare() const = 0;
+
+  // Returns DeviceInfo provider for the local device.
+  virtual LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const = 0;
+
+  // Registers a data type controller with the sync service.  This
+  // makes the data type controller available for use, it does not
+  // enable or activate the synchronization of the data type (see
+  // ActivateDataType).  Takes ownership of the pointer.
+  virtual void RegisterDataTypeController(
+      DataTypeController* data_type_controller) = 0;
+
+  // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
+  // not change the preferred state of a datatype, and is not persisted across
+  // restarts.
+  virtual void ReenableDatatype(syncer::ModelType type) = 0;
+
+  // TODO(zea): Remove these and have the dtc's call directly into the SBH.
+  virtual void DeactivateDataType(syncer::ModelType type) = 0;
 
  protected:
   SyncService() {}

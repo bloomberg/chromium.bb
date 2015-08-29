@@ -11,14 +11,13 @@
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
 class Profile;
-class ProfileSyncComponentsFactory;
-
-namespace syncer {
-class SyncableService;
-}
 
 namespace extensions {
 class StorageFrontend;
+}
+
+namespace sync_driver {
+class SyncClient;
 }
 
 namespace browser_sync {
@@ -29,7 +28,7 @@ class ExtensionSettingDataTypeController
   ExtensionSettingDataTypeController(
       // Either EXTENSION_SETTINGS or APP_SETTINGS.
       syncer::ModelType type,
-      ProfileSyncComponentsFactory* profile_sync_factory,
+      sync_driver::SyncClient* sync_client,
       Profile* profile);
 
   // NonFrontendDataTypeController implementation

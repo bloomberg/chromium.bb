@@ -55,7 +55,6 @@
 
 class Profile;
 class ProfileOAuth2TokenService;
-class ProfileSyncComponentsFactory;
 class SupervisedUserSigninManagerWrapper;
 class SyncErrorController;
 class SyncTypePreferenceProvider;
@@ -80,6 +79,7 @@ class DataTypeManager;
 class DeviceInfoSyncService;
 class LocalDeviceInfoProvider;
 class OpenTabsUIDelegate;
+class SyncApiComponentFactory;
 }  // namespace sync_driver
 
 namespace syncer {
@@ -256,7 +256,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Takes ownership of |factory| and |signin_wrapper|.
   ProfileSyncService(
-      scoped_ptr<ProfileSyncComponentsFactory> factory,
+      scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
       Profile* profile,
       scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
@@ -279,7 +279,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
-  void DeactivateDataType(syncer::ModelType type) override;
   void SetSyncSetupCompleted() override;
   bool FirstSetupInProgress() const override;
   void SetSetupInProgress(bool setup_in_progress) override;
@@ -293,6 +292,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   base::Time GetExplicitPassphraseTime() const override;
   bool IsUsingSecondaryPassphrase() const override;
   void EnableEncryptEverything() override;
+  bool EncryptEverythingEnabled() const override;
   void SetEncryptionPassphrase(const std::string& passphrase,
                                PassphraseType type) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override
@@ -300,10 +300,16 @@ class ProfileSyncService : public sync_driver::SyncService,
   bool IsCryptographerReady(
       const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
+  sync_driver::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider()
+      const override;
   void AddObserver(sync_driver::SyncServiceObserver* observer) override;
   void RemoveObserver(sync_driver::SyncServiceObserver* observer) override;
   bool HasObserver(
       const sync_driver::SyncServiceObserver* observer) const override;
+  void RegisterDataTypeController(
+      sync_driver::DataTypeController* data_type_controller) override;
+  void ReenableDatatype(syncer::ModelType type) override;
+  void DeactivateDataType(syncer::ModelType type) override;
 
   void AddProtocolEventObserver(browser_sync::ProtocolEventObserver* observer);
   void RemoveProtocolEventObserver(
@@ -337,13 +343,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // to start up. Virtual to enable mocking in tests.
   virtual bool IsOAuthRefreshTokenAvailable();
 
-  // Registers a data type controller with the sync service.  This
-  // makes the data type controller available for use, it does not
-  // enable or activate the synchronization of the data type (see
-  // ActivateDataType).  Takes ownership of the pointer.
-  void RegisterDataTypeController(
-      sync_driver::DataTypeController* data_type_controller);
-
   // Registers a type whose sync storage will not be managed by the
   // ProfileSyncService.  It declares that this sync type may be activated at
   // some point in the future.  This function call does not enable or activate
@@ -371,9 +370,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Returns the SyncableService for syncer::DEVICE_INFO.
   virtual syncer::SyncableService* GetDeviceInfoSyncableService();
-
-  // Returns DeviceInfo provider for the local device.
-  virtual sync_driver::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider();
 
   // Returns synced devices tracker.
   virtual sync_driver::DeviceInfoTracker* GetDeviceInfoTracker() const;
@@ -476,7 +472,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // never become active. Use IsSyncActive to see if sync is running.
   virtual bool IsSyncRequested() const;
 
-  ProfileSyncComponentsFactory* factory() { return factory_.get(); }
+  sync_driver::SyncApiComponentFactory* factory() const {
+    return factory_.get();
+  }
 
   // The profile we are syncing for.
   Profile* profile() const { return profile_; }
@@ -501,11 +499,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // syncer::UnrecoverableErrorHandler implementation.
   void OnUnrecoverableError(const tracked_objects::Location& from_here,
                             const std::string& message) override;
-
-  // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
-  // not change the preferred state of a datatype, and is not persisted across
-  // restarts.
-  void ReenableDatatype(syncer::ModelType type);
 
   // The functions below (until ActivateDataType()) should only be
   // called if backend_initialized() is true.
@@ -595,12 +588,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Sets whether encrypting all the sync data is allowed or not.
   virtual void SetEncryptEverythingAllowed(bool allowed);
-
-  // Returns true if we are currently set to encrypt all the sync data. Note:
-  // this is based on the cryptographer's settings, so if the user has recently
-  // requested encryption to be turned on, this may not be true yet. For that,
-  // encryption_pending() must be checked.
-  virtual bool EncryptEverythingEnabled() const;
 
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   virtual bool encryption_pending() const;
@@ -895,7 +882,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   void OnClearServerDataDone();
 
   // Factory used to create various dependent objects.
-  scoped_ptr<ProfileSyncComponentsFactory> factory_;
+  scoped_ptr<sync_driver::SyncApiComponentFactory> factory_;
 
   // The profile whose data we are synchronizing.
   Profile* profile_;

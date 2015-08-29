@@ -37,7 +37,7 @@ class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
                     const base::Closure&));
   MOCK_METHOD0(StartAssociation, void());
   MOCK_METHOD0(CreateSyncComponents,
-               ProfileSyncComponentsFactory::SyncComponents());
+               sync_driver::SyncApiComponentFactory::SyncComponents());
   MOCK_METHOD3(StartDone,
                void(DataTypeController::ConfigureResult result,
                     const syncer::SyncMergeResult& local_merge_result,

@@ -18,13 +18,13 @@
 
 ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
     : ProfileSyncServiceMock(
-          scoped_ptr<ProfileSyncComponentsFactory>(
+          scoped_ptr<sync_driver::SyncApiComponentFactory>(
               new ProfileSyncComponentsFactoryMock()),
           profile) {
 }
 
 ProfileSyncServiceMock::ProfileSyncServiceMock(
-    scoped_ptr<ProfileSyncComponentsFactory> factory, Profile* profile)
+    scoped_ptr<sync_driver::SyncApiComponentFactory> factory, Profile* profile)
     : ProfileSyncService(
           factory.Pass(),
           profile,

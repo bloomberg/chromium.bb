@@ -29,7 +29,7 @@ class ChangeProcessor;
 class GenericChangeProcessor;
 class GenericChangeProcessorFactory;
 class DataTypeErrorHandler;
-class SyncApiComponentFactory;
+class SyncClient;
 
 // A ref-counted wrapper around a GenericChangeProcessor for use with datatypes
 // that don't live on the UI thread.
@@ -60,7 +60,7 @@ class SharedChangeProcessor
   // Note: If this SharedChangeProcessor has been disconnected, or the
   // syncer::SyncableService was not alive, will return a null weak pointer.
   virtual base::WeakPtr<syncer::SyncableService> Connect(
-      SyncApiComponentFactory* sync_factory,
+      SyncClient* sync_client,
       GenericChangeProcessorFactory* processor_factory,
       syncer::UserShare* user_share,
       DataTypeErrorHandler* error_handler,

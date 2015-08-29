@@ -12,6 +12,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 
 namespace history {
 class HistoryBackend;
@@ -24,10 +25,7 @@ class ControlTask;
 // A class that manages the startup and shutdown of typed_url sync.
 class TypedUrlDataTypeController : public NonFrontendDataTypeController {
  public:
-  TypedUrlDataTypeController(
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile,
-      ProfileSyncService* sync_service);
+  explicit TypedUrlDataTypeController(sync_driver::SyncClient* sync_client);
 
   // NonFrontendDataTypeController implementation
   syncer::ModelType type() const override;
@@ -42,7 +40,8 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
   // NonFrontendDataTypeController interface.
   bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
                                const base::Closure& task) override;
-  ProfileSyncComponentsFactory::SyncComponents CreateSyncComponents() override;
+  sync_driver::SyncApiComponentFactory::SyncComponents CreateSyncComponents()
+      override;
   void DisconnectProcessor(sync_driver::ChangeProcessor* processor) override;
 
  private:

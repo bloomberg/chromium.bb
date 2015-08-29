@@ -7,7 +7,6 @@
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "components/sync_driver/model_associator.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/api/attachments/attachment_store.h"
 #include "sync/internal_api/public/attachments/attachment_service_impl.h"
 
@@ -45,10 +44,10 @@ ProfileSyncComponentsFactoryMock::CreateAttachmentService(
   return syncer::AttachmentServiceImpl::CreateForTest();
 }
 
-ProfileSyncComponentsFactory::SyncComponents
+sync_driver::SyncApiComponentFactory::SyncComponents
 ProfileSyncComponentsFactoryMock::MakeSyncComponents() {
-  return SyncComponents(model_associator_.release(),
-                        change_processor_.release());
+  return sync_driver::SyncApiComponentFactory::SyncComponents(
+      model_associator_.release(), change_processor_.release());
 }
 
 scoped_ptr<sync_driver::LocalDeviceInfoProvider>

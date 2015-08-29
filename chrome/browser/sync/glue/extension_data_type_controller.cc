@@ -16,13 +16,13 @@ namespace browser_sync {
 
 ExtensionDataTypeController::ExtensionDataTypeController(
     syncer::ModelType type,
-    sync_driver::SyncApiComponentFactory* sync_factory,
+    sync_driver::SyncClient* sync_client,
     Profile* profile)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
           type,
-          sync_factory),
+          sync_client),
       profile_(profile) {
   DCHECK(type == syncer::EXTENSIONS || type == syncer::APPS);
 }

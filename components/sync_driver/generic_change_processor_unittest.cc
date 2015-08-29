@@ -10,6 +10,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
+#include "components/sync_driver/fake_sync_client.h"
+#include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/attachment_store.h"
@@ -80,11 +82,37 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
  public:
   MockSyncApiComponentFactory() {}
 
-  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) override {
-    // Shouldn't be called for this test.
-    NOTREACHED();
-    return base::WeakPtr<syncer::SyncableService>();
+  // SyncApiComponentFactory implementation.
+  void Initialize(SyncService* sync_service) override {}
+  void RegisterDataTypes() override {}
+  sync_driver::DataTypeManager* CreateDataTypeManager(
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
+      const sync_driver::DataTypeController::TypeMap* controllers,
+      const sync_driver::DataTypeEncryptionHandler* encryption_handler,
+      browser_sync::SyncBackendHost* backend,
+      sync_driver::DataTypeManagerObserver* observer) override{
+    return nullptr;
+  };
+  browser_sync::SyncBackendHost* CreateSyncBackendHost(
+      const std::string& name,
+      invalidation::InvalidationService* invalidator,
+      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+      const base::FilePath& sync_folder) override {
+    return nullptr;
+  }
+  scoped_ptr<sync_driver::LocalDeviceInfoProvider>
+      CreateLocalDeviceInfoProvider() override { return nullptr; }
+  SyncComponents CreateBookmarkSyncComponents(
+      sync_driver::SyncService* sync_service,
+      sync_driver::DataTypeErrorHandler* error_handler) override {
+    return SyncComponents(nullptr, nullptr);
+  }
+  SyncComponents CreateTypedUrlSyncComponents(
+      sync_driver::SyncService* sync_service,
+      history::HistoryBackend* history_backend,
+      sync_driver::DataTypeErrorHandler* error_handler) override {
+    return SyncComponents(nullptr, nullptr);
   }
 
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
@@ -119,7 +147,8 @@ class SyncGenericChangeProcessorTest : public testing::Test {
 
   SyncGenericChangeProcessorTest()
       : syncable_service_ptr_factory_(&fake_syncable_service_),
-        mock_attachment_service_(NULL) {}
+        mock_attachment_service_(NULL),
+        sync_client_(&sync_factory_) {}
 
   void SetUp() override {
     // Use kType by default, but allow test cases to re-initialize with whatever
@@ -157,15 +186,14 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   }
 
   void ConstructGenericChangeProcessor(syncer::ModelType type) {
-    MockSyncApiComponentFactory sync_factory;
     scoped_ptr<syncer::AttachmentStore> attachment_store =
         syncer::AttachmentStore::CreateInMemoryStore();
     change_processor_.reset(new GenericChangeProcessor(
         type, &data_type_error_handler_,
         syncable_service_ptr_factory_.GetWeakPtr(),
         merge_result_ptr_factory_->GetWeakPtr(), test_user_share_->user_share(),
-        &sync_factory, attachment_store->CreateAttachmentStoreForSync()));
-    mock_attachment_service_ = sync_factory.GetMockAttachmentService();
+        &sync_client_, attachment_store->CreateAttachmentStoreForSync()));
+    mock_attachment_service_ = sync_factory_.GetMockAttachmentService();
   }
 
   void BuildChildNodes(syncer::ModelType type, int n) {
@@ -207,6 +235,8 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   DataTypeErrorHandlerMock data_type_error_handler_;
   scoped_ptr<syncer::TestUserShare> test_user_share_;
   MockAttachmentService* mock_attachment_service_;
+  FakeSyncClient sync_client_;
+  MockSyncApiComponentFactory sync_factory_;
 
   scoped_ptr<GenericChangeProcessor> change_processor_;
 };

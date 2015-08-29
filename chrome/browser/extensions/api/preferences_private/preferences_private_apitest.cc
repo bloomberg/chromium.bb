@@ -46,7 +46,7 @@ class FakeProfileSyncService : public ProfileSyncService {
  public:
   explicit FakeProfileSyncService(Profile* profile)
       : ProfileSyncService(
-            scoped_ptr<ProfileSyncComponentsFactory>(
+            scoped_ptr<sync_driver::SyncApiComponentFactory>(
                 new ProfileSyncComponentsFactoryMock()),
             profile,
             make_scoped_ptr<SupervisedUserSigninManagerWrapper>(NULL),

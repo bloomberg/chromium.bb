@@ -10,14 +10,14 @@
 
 SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
     syncer::ModelType type,
-    sync_driver::SyncApiComponentFactory* sync_factory,
+    sync_driver::SyncClient* sync_client,
     Profile* profile)
     : sync_driver::UIDataTypeController(
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::UI),
           base::Bind(&browser_sync::ChromeReportUnrecoverableError),
           type,
-          sync_factory),
+          sync_client),
       profile_(profile) {
   DCHECK(type == syncer::SUPERVISED_USERS ||
          type == syncer::SUPERVISED_USER_SETTINGS ||

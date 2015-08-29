@@ -5,7 +5,8 @@
 #include "chrome/browser/sync/glue/history_delete_directives_data_type_controller.h"
 
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/profile_sync_service.h"
+#include "components/sync_driver/sync_client.h"
+#include "components/sync_driver/sync_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -14,14 +15,13 @@ namespace browser_sync {
 
 HistoryDeleteDirectivesDataTypeController::
     HistoryDeleteDirectivesDataTypeController(
-        sync_driver::SyncApiComponentFactory* factory,
-        ProfileSyncService* sync_service)
+        sync_driver::SyncClient* sync_client)
     : sync_driver::UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
           syncer::HISTORY_DELETE_DIRECTIVES,
-          factory),
-      sync_service_(sync_service) {
+          sync_client),
+      sync_client_(sync_client) {
 }
 
 HistoryDeleteDirectivesDataTypeController::
@@ -29,19 +29,19 @@ HistoryDeleteDirectivesDataTypeController::
 }
 
 bool HistoryDeleteDirectivesDataTypeController::ReadyForStart() const {
-  return !sync_service_->EncryptEverythingEnabled();
+  return !sync_client_->GetSyncService()->EncryptEverythingEnabled();
 }
 
 bool HistoryDeleteDirectivesDataTypeController::StartModels() {
   if (DisableTypeIfNecessary())
     return false;
-  sync_service_->AddObserver(this);
+  sync_client_->GetSyncService()->AddObserver(this);
   return true;
 }
 
 void HistoryDeleteDirectivesDataTypeController::StopModels() {
-  if (sync_service_->HasObserver(this))
-    sync_service_->RemoveObserver(this);
+  if (sync_client_->GetSyncService()->HasObserver(this))
+    sync_client_->GetSyncService()->RemoveObserver(this);
 }
 
 void HistoryDeleteDirectivesDataTypeController::OnStateChanged() {
@@ -49,14 +49,14 @@ void HistoryDeleteDirectivesDataTypeController::OnStateChanged() {
 }
 
 bool HistoryDeleteDirectivesDataTypeController::DisableTypeIfNecessary() {
-  if (!sync_service_->IsSyncActive())
+  if (!sync_client_->GetSyncService()->IsSyncActive())
     return false;
 
   if (ReadyForStart())
     return false;
 
-  if (sync_service_->HasObserver(this))
-    sync_service_->RemoveObserver(this);
+  if (sync_client_->GetSyncService()->HasObserver(this))
+    sync_client_->GetSyncService()->RemoveObserver(this);
   syncer::SyncError error(
       FROM_HERE,
       syncer::SyncError::DATATYPE_POLICY_ERROR,

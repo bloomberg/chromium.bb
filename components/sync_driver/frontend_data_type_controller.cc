@@ -8,7 +8,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
+#include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_service.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -19,15 +19,12 @@ namespace browser_sync {
 FrontendDataTypeController::FrontendDataTypeController(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback,
-    ProfileSyncComponentsFactory* profile_sync_factory,
-    sync_driver::SyncService* sync_service)
+    sync_driver::SyncClient* sync_client)
     : DataTypeController(ui_thread, error_callback),
-      profile_sync_factory_(profile_sync_factory),
-      sync_service_(sync_service),
+      sync_client_(sync_client),
       state_(NOT_RUNNING) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(profile_sync_factory);
-  DCHECK(sync_service);
+  DCHECK(sync_client);
 }
 
 void FrontendDataTypeController::LoadModels(
@@ -97,7 +94,7 @@ void FrontendDataTypeController::Stop() {
 
   CleanUpState();
 
-  sync_service_->DeactivateDataType(type());
+  sync_client_->GetSyncService()->DeactivateDataType(type());
 
   if (model_associator()) {
     syncer::SyncError error;  // Not used.
@@ -140,8 +137,7 @@ void FrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
 
 FrontendDataTypeController::FrontendDataTypeController()
     : DataTypeController(base::ThreadTaskRunnerHandle::Get(), base::Closure()),
-      profile_sync_factory_(NULL),
-      sync_service_(NULL),
+      sync_client_(NULL),
       state_(NOT_RUNNING) {
 }
 

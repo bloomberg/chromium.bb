@@ -20,6 +20,7 @@ class TimeDelta;
 
 namespace syncer {
 class SyncableService;
+class SyncClient;
 class SyncError;
 }
 
@@ -35,7 +36,7 @@ class UIDataTypeController : public DataTypeController {
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       const base::Closure& error_callback,
       syncer::ModelType type,
-      SyncApiComponentFactory* sync_factory);
+      SyncClient* sync_client);
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
@@ -87,7 +88,7 @@ class UIDataTypeController : public DataTypeController {
   // Record causes of start failure.
   virtual void RecordStartFailure(ConfigureResult result);
 
-  SyncApiComponentFactory* const sync_factory_;
+  SyncClient* const sync_client_;
 
   State state_;
 

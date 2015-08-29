@@ -8,8 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
+
+class PrefService;
 
 namespace autofill {
 class AutofillWebDataService;
@@ -29,9 +30,14 @@ namespace password_manager {
 class PasswordStore;
 }  // namespace password_manager
 
-class PrefService;
+namespace syncer {
+class SyncableService;
+}  // namespace syncer
 
 namespace sync_driver {
+
+class SyncApiComponentFactory;
+class SyncService;
 
 // Interface for clients of the Sync API to plumb through necessary dependent
 // components. This interface is purely for abstracting dependencies, and
@@ -39,12 +45,12 @@ namespace sync_driver {
 //
 // Note: on some platforms, getters might return nullptr. Callers are expected
 // to handle these scenarios gracefully.
-// TODO(zea): crbug.com/512768 Remove the ProfileSyncComponentsFactory
-// dependency once everything uses SyncClient instead, then have the SyncClient
-// include a GetSyncApiComponentsFactory getter.
-class SyncClient : public ProfileSyncComponentsFactory {
+class SyncClient {
  public:
   SyncClient();
+
+  // Returns the current SyncService instance.
+  virtual SyncService* GetSyncService() = 0;
 
   // Returns the current profile's preference service.
   virtual PrefService* GetPrefService() = 0;
@@ -57,8 +63,17 @@ class SyncClient : public ProfileSyncComponentsFactory {
   virtual scoped_refptr<autofill::AutofillWebDataService>
   GetWebDataService() = 0;
 
+  // Returns a weak pointer to the syncable service specified by |type|.
+  // Weak pointer may be unset if service is already destroyed.
+  // Note: Should only be called from the model type thread.
+  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) = 0;
+
+  // Returns the current SyncApiComponentFactory instance.
+  virtual SyncApiComponentFactory* GetSyncApiComponentFactory() = 0;
+
  protected:
-  ~SyncClient() override;
+  virtual ~SyncClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncClient);

@@ -22,6 +22,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -38,9 +39,11 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_manager.h"
+#include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/fake_data_type_controller.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "components/version_info/version_info_values.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -272,7 +275,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
     components_factory_ = new ProfileSyncComponentsFactoryMock();
     service_.reset(new ProfileSyncService(
-        scoped_ptr<ProfileSyncComponentsFactory>(components_factory_),
+        scoped_ptr<sync_driver::SyncApiComponentFactory>(components_factory_),
         profile_,
         make_scoped_ptr(new SupervisedUserSigninManagerWrapper(profile_,
                                                                signin)),
@@ -354,14 +357,14 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void ExpectSyncBackendHostCreation(int times) {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
         .Times(times)
         .WillRepeatedly(ReturnNewSyncBackendHostMock());
   }
 
   void ExpectSyncBackendHostCreationCollectDeleteDir(
       int times, std::vector<bool> *delete_dir_param) {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
         .Times(times)
         .WillRepeatedly(ReturnNewMockHostCollectDeleteDirParam(
             delete_dir_param));
@@ -369,13 +372,13 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
   void ExpectSyncBackendHostCreationCaptureClearServerData(
       syncer::SyncManager::ClearServerDataCallback* captured_callback) {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _))
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _))
         .Times(1)
         .WillOnce(ReturnNewMockHostCaptureClearServerData(captured_callback));
   }
 
   void PrepareDelayedInitSyncBackendHost() {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _, _)).
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _)).
         WillOnce(ReturnNewSyncBackendHostNoReturn());
   }
 

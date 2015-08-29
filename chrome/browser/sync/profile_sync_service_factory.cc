@@ -148,13 +148,13 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       browser_defaults::kSyncAutoStarts ? browser_sync::AUTO_START
                                         : browser_sync::MANUAL_START;
   ProfileSyncService* pss = new ProfileSyncService(
-      scoped_ptr<ProfileSyncComponentsFactory>(
+      scoped_ptr<sync_driver::SyncApiComponentFactory>(
           new ProfileSyncComponentsFactoryImpl(
               profile, base::CommandLine::ForCurrentProcess(), sync_service_url,
               token_service, url_request_context_getter)),
       profile, signin_wrapper.Pass(), token_service, behavior);
-
-  pss->factory()->RegisterDataTypes(pss);
+  pss->factory()->Initialize(pss);
+  pss->factory()->RegisterDataTypes();
   pss->Initialize();
   return pss;
 }

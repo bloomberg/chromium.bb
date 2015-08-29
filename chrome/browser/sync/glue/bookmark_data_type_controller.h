@@ -13,7 +13,6 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/sync_driver/frontend_data_type_controller.h"
 
-class Profile;
 class ProfileSyncService;
 
 namespace browser_sync {
@@ -23,9 +22,7 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
                                    public bookmarks::BaseBookmarkModelObserver,
                                    public history::HistoryServiceObserver {
  public:
-  BookmarkDataTypeController(ProfileSyncComponentsFactory* profile_sync_factory,
-                             Profile* profile,
-                             ProfileSyncService* sync_service);
+  explicit BookmarkDataTypeController(sync_driver::SyncClient* sync_client);
 
   // FrontendDataTypeController:
   syncer::ModelType type() const override;
@@ -53,7 +50,6 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   void HistoryServiceBeingDeleted(
       history::HistoryService* history_service) override;
 
-  Profile* const profile_;
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
   ScopedObserver<bookmarks::BookmarkModel, BaseBookmarkModelObserver>

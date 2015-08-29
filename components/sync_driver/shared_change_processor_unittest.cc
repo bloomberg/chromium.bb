@@ -14,8 +14,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
+#include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/attachment_store.h"
@@ -33,24 +35,45 @@ namespace {
 using ::testing::NiceMock;
 using ::testing::StrictMock;
 
-class SyncSharedChangeProcessorTest :
-    public testing::Test,
-    public SyncApiComponentFactory {
+class TestSyncApiComponentFactory : public SyncApiComponentFactory {
  public:
-  SyncSharedChangeProcessorTest()
-      : backend_thread_("dbthread"),
-        did_connect_(false),
-        has_attachment_service_(false) {}
+  TestSyncApiComponentFactory() {}
+  ~TestSyncApiComponentFactory() override {}
 
-  ~SyncSharedChangeProcessorTest() override {
-    EXPECT_FALSE(db_syncable_service_.get());
+  // SyncApiComponentFactory implementation.
+  void Initialize(sync_driver::SyncService* pss) override {}
+  void RegisterDataTypes() override {}
+  sync_driver::DataTypeManager* CreateDataTypeManager(
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
+      const sync_driver::DataTypeController::TypeMap* controllers,
+      const sync_driver::DataTypeEncryptionHandler* encryption_handler,
+      browser_sync::SyncBackendHost* backend,
+      sync_driver::DataTypeManagerObserver* observer) override {
+    return nullptr;
   }
-
-  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) override {
-    return db_syncable_service_->AsWeakPtr();
+  browser_sync::SyncBackendHost* CreateSyncBackendHost(
+      const std::string& name,
+      invalidation::InvalidationService* invalidator,
+      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+      const base::FilePath& sync_folder) override {
+    return nullptr;
   }
-
+  scoped_ptr<sync_driver::LocalDeviceInfoProvider>
+      CreateLocalDeviceInfoProvider() override {
+    return nullptr;
+  }
+  SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
+      sync_driver::SyncService* sync_service,
+      sync_driver::DataTypeErrorHandler* error_handler) override {
+    return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
+  }
+  SyncApiComponentFactory::SyncComponents CreateTypedUrlSyncComponents(
+      sync_driver::SyncService* sync_service,
+      history::HistoryBackend* history_backend,
+      sync_driver::DataTypeErrorHandler* error_handler) override {
+    return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
+  }
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
       const syncer::UserShare& user_share,
@@ -58,6 +81,27 @@ class SyncSharedChangeProcessorTest :
       syncer::ModelType model_type,
       syncer::AttachmentService::Delegate* delegate) override {
     return syncer::AttachmentServiceImpl::CreateForTest();
+  }
+};
+
+class SyncSharedChangeProcessorTest :
+    public testing::Test,
+    public FakeSyncClient {
+ public:
+  SyncSharedChangeProcessorTest()
+      : FakeSyncClient(&factory_),
+        backend_thread_("dbthread"),
+        did_connect_(false),
+        has_attachment_service_(false) {}
+
+  ~SyncSharedChangeProcessorTest() override {
+    EXPECT_FALSE(db_syncable_service_.get());
+  }
+
+  // FakeSyncClient override.
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) override {
+    return db_syncable_service_->AsWeakPtr();
   }
 
  protected:
@@ -164,6 +208,7 @@ class SyncSharedChangeProcessorTest :
   base::MessageLoop frontend_loop_;
   base::Thread backend_thread_;
   syncer::TestUserShare test_user_share_;
+  TestSyncApiComponentFactory factory_;
 
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
   StrictMock<DataTypeErrorHandlerMock> error_handler_;

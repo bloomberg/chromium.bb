@@ -18,7 +18,7 @@ class DeviceInfoDataTypeController : public UIDataTypeController {
   DeviceInfoDataTypeController(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const base::Closure& error_callback,
-      SyncApiComponentFactory* sync_factory,
+      SyncClient* sync_client,
       LocalDeviceInfoProvider* local_device_info_provider);
 
  private:

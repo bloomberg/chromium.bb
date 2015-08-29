@@ -6,13 +6,10 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
+#include "components/sync_driver/sync_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -22,13 +19,12 @@ using content::BrowserThread;
 namespace browser_sync {
 
 AutofillDataTypeController::AutofillDataTypeController(
-    ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile)
+    sync_driver::SyncClient* sync_client)
     : NonUIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          profile_sync_factory),
-      profile_(profile) {
+          sync_client),
+      sync_client_(sync_client) {
 }
 
 syncer::ModelType AutofillDataTypeController::type() const {
@@ -61,9 +57,8 @@ bool AutofillDataTypeController::StartModels() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(MODEL_STARTING, state());
 
-  autofill::AutofillWebDataService* web_data_service =
-      WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+      sync_client_->GetWebDataService();
 
   if (!web_data_service)
     return false;
@@ -81,9 +76,6 @@ void AutofillDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state(), MODEL_LOADED);
-  ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(
-      profile_);
-  DCHECK(sync);
   NonUIDataTypeController::StartAssociating(start_callback);
 }
 

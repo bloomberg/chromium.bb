@@ -9,9 +9,6 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
-class Profile;
-class ProfileSyncComponentsFactory;
-
 namespace browser_sync {
 
 // Controls syncing of either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
@@ -20,8 +17,7 @@ class AutofillWalletDataTypeController
  public:
   // |model_type| should be either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
   AutofillWalletDataTypeController(
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile,
+      sync_driver::SyncClient* sync_client,
       syncer::ModelType model_type);
 
   // NonUIDataTypeController implementation.
@@ -45,7 +41,7 @@ class AutofillWalletDataTypeController
   // Returns true if the prefs are set such that wallet sync should be enabled.
   bool IsEnabled();
 
-  Profile* const profile_;
+  sync_driver::SyncClient* const sync_client_;
   bool callback_registered_;
   syncer::ModelType model_type_;
 

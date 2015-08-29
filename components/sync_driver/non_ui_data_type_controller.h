@@ -20,14 +20,14 @@ class SyncableService;
 
 namespace sync_driver {
 
-class SyncApiComponentFactory;
+class SyncClient;
 
 class NonUIDataTypeController : public DataTypeController {
  public:
   NonUIDataTypeController(
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       const base::Closure& error_callback,
-      SyncApiComponentFactory* sync_factory);
+      SyncClient* sync_client);
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
@@ -124,7 +124,7 @@ class NonUIDataTypeController : public DataTypeController {
   // Note: this is performed on the UI thread.
   void DisableImpl(const syncer::SyncError& error);
 
-  SyncApiComponentFactory* const sync_factory_;
+  SyncClient* const sync_client_;
 
   // State of this datatype controller.
   State state_;

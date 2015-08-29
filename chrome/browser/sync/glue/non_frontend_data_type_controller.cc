@@ -8,12 +8,11 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
+#include "components/sync_driver/sync_client.h"
+#include "components/sync_driver/sync_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -79,7 +78,7 @@ NonFrontendDataTypeController::BackendComponentsContainer::CreateComponents() {
     return false;
   }
 
-  ProfileSyncComponentsFactory::SyncComponents sync_components =
+  sync_driver::SyncApiComponentFactory::SyncComponents sync_components =
       controller_->CreateSyncComponents();
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
@@ -157,27 +156,18 @@ NonFrontendDataTypeController::AssociationResult::AssociationResult(
 
 NonFrontendDataTypeController::AssociationResult::~AssociationResult() {}
 
-// TODO(tim): Legacy controllers are being left behind in componentization
-// effort for now, hence  still having a dependency on ProfileSyncService.
-// That dep can probably be removed without too much work.
 NonFrontendDataTypeController::NonFrontendDataTypeController(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback,
-    ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile,
-    ProfileSyncService* sync_service)
+    sync_driver::SyncClient* sync_client)
     : DataTypeController(ui_thread, error_callback),
       state_(NOT_RUNNING),
-      profile_sync_factory_(profile_sync_factory),
-      profile_(profile),
-      profile_sync_service_(sync_service),
+      sync_client_(sync_client),
       model_associator_(NULL),
       change_processor_(NULL),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(profile_sync_factory_);
-  DCHECK(profile_);
-  DCHECK(profile_sync_service_);
+  DCHECK(sync_client_);
 }
 
 void NonFrontendDataTypeController::LoadModels(
@@ -262,7 +252,7 @@ void NonFrontendDataTypeController::Stop() {
   // processor and associator on backend. Otherwise it could crash if syncer
   // post work to backend after destruction task and that work is run before
   // deactivation.
-  profile_sync_service()->DeactivateDataType(type());
+  sync_client_->GetSyncService()->DeactivateDataType(type());
 
   // Ignore association callback.
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -305,9 +295,7 @@ void NonFrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
 NonFrontendDataTypeController::NonFrontendDataTypeController()
     : DataTypeController(base::ThreadTaskRunnerHandle::Get(), base::Closure()),
       state_(NOT_RUNNING),
-      profile_sync_factory_(NULL),
-      profile_(NULL),
-      profile_sync_service_(NULL),
+      sync_client_(NULL),
       model_associator_(NULL),
       change_processor_(NULL),
       weak_ptr_factory_(this) {
@@ -411,18 +399,8 @@ void NonFrontendDataTypeController::RecordUnrecoverableError(
 }
 
 
-ProfileSyncComponentsFactory*
-    NonFrontendDataTypeController::profile_sync_factory() const {
-  return profile_sync_factory_;
-}
-
-Profile* NonFrontendDataTypeController::profile() const {
-  return profile_;
-}
-
-ProfileSyncService* NonFrontendDataTypeController::profile_sync_service()
-    const {
-  return profile_sync_service_;
+sync_driver::SyncClient* NonFrontendDataTypeController::sync_client() const {
+  return sync_client_;
 }
 
 void NonFrontendDataTypeController::set_start_callback(

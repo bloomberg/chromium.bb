@@ -9,6 +9,7 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/sync_driver/data_type_manager.h"
+#include "components/sync_driver/fake_sync_service.h"
 #include "components/sync_driver/sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,68 +20,39 @@ namespace autofill {
 
 namespace {
 
-class SyncServiceMock : public sync_driver::SyncService {
+class TestSyncService : public sync_driver::FakeSyncService {
  public:
-  MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
-  MOCK_CONST_METHOD0(IsSyncActive, bool());
-  MOCK_CONST_METHOD0(IsSyncAllowed, bool());
-  MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
-  MOCK_METHOD1(AddObserver, void(sync_driver::SyncServiceObserver*));
-  MOCK_METHOD1(RemoveObserver, void(sync_driver::SyncServiceObserver*));
-  MOCK_CONST_METHOD1(HasObserver,
-                     bool(const sync_driver::SyncServiceObserver*));
-  MOCK_METHOD1(OnDataTypeRequestsSyncStartup, void(syncer::ModelType type));
-  MOCK_CONST_METHOD0(CanSyncStart, bool());
-  MOCK_METHOD1(RequestStop, void(sync_driver::SyncService::SyncStopDataFate));
-  MOCK_METHOD0(RequestStart, void());
-  MOCK_CONST_METHOD0(GetPreferredDataTypes, syncer::ModelTypeSet());
-  MOCK_METHOD2(OnUserChoseDatatypes,
-               void(bool sync_everything, syncer::ModelTypeSet chosen_types));
-  MOCK_METHOD1(DeactivateDataType, void(syncer::ModelType type));
-  MOCK_METHOD0(SetSyncSetupCompleted, void());
-  MOCK_CONST_METHOD0(FirstSetupInProgress, bool());
-  MOCK_METHOD1(SetSetupInProgress, void(bool));
-  MOCK_CONST_METHOD0(setup_in_progress, bool());
-  MOCK_CONST_METHOD0(ConfigurationDone, bool());
-  MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
-  MOCK_CONST_METHOD0(HasUnrecoverableError, bool());
-  MOCK_CONST_METHOD0(backend_initialized, bool());
-  MOCK_METHOD0(GetOpenTabsUIDelegate, sync_driver::OpenTabsUIDelegate*());
-  MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());
-  MOCK_CONST_METHOD0(GetExplicitPassphraseTime, base::Time());
-  MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
-  MOCK_METHOD0(EnableEncryptEverything, void());
-  MOCK_METHOD2(SetEncryptionPassphrase,
-               void(const std::string& passphrase, PassphraseType type));
-  MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string& passphrase));
-  MOCK_CONST_METHOD1(IsCryptographerReady,
-                     bool(const syncer::BaseTransaction* trans));
-  MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
+  TestSyncService(syncer::ModelTypeSet type_set,
+                  bool can_sync_start)
+      : type_set_(type_set),
+        can_sync_start_(can_sync_start) {}
+  ~TestSyncService() override {}
 
-  // DataTypeEncryptionHandler mocks.
-  MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
-  MOCK_CONST_METHOD0(GetEncryptedDataTypes, syncer::ModelTypeSet());
+  // FakeSyncService overrides.
+  bool IsSyncAllowed() const override { return true; }
+  syncer::ModelTypeSet GetActiveDataTypes() const override {
+    return type_set_;
+  }
+  syncer::ModelTypeSet GetPreferredDataTypes() const override {
+    return type_set_;
+  }
+  bool CanSyncStart() const override { return can_sync_start_; }
+
+ private:
+  syncer::ModelTypeSet type_set_;
+  bool can_sync_start_;
 };
 
-scoped_ptr<SyncServiceMock> CreateSyncService(bool has_autofill_profile,
+scoped_ptr<TestSyncService> CreateSyncService(bool has_autofill_profile,
                                               bool has_autofill_wallet_data,
                                               bool is_enabled_and_logged_in) {
-  scoped_ptr<SyncServiceMock> sync(new SyncServiceMock());
-
-  ON_CALL(*sync, IsSyncAllowed()).WillByDefault(Return(true));
-
   syncer::ModelTypeSet type_set;
   if (has_autofill_profile)
     type_set.Put(syncer::AUTOFILL_PROFILE);
   if (has_autofill_wallet_data)
     type_set.Put(syncer::AUTOFILL_WALLET_DATA);
-  ON_CALL(*sync, GetActiveDataTypes()).WillByDefault(Return(type_set));
-  ON_CALL(*sync, GetPreferredDataTypes()).WillByDefault(Return(type_set));
-
-  ON_CALL(*sync, CanSyncStart())
-      .WillByDefault(Return(is_enabled_and_logged_in));
-
-  return sync;
+  return make_scoped_ptr(
+      new TestSyncService(type_set, is_enabled_and_logged_in));
 }
 
 scoped_ptr<TestingPrefServiceSimple> CreatePrefService(
@@ -116,7 +88,7 @@ scoped_ptr<TestPersonalDataManager> CreatePersonalDataManager(
 
 // Verify that true is returned when all inputs are complete.
 TEST(WalletIntegrationAvailableTest, AllInputsComplete) {
-  scoped_ptr<SyncServiceMock> sync = CreateSyncService(true, true, true);
+  scoped_ptr<TestSyncService> sync = CreateSyncService(true, true, true);
   scoped_ptr<TestingPrefServiceSimple> prefs =
       CreatePrefService(true, true, true);
   scoped_ptr<TestPersonalDataManager> pdm =
@@ -137,7 +109,7 @@ TEST(WalletIntegrationAvailableTest, MissingOrIncompleteSyncService) {
   // Incomplete SyncService data should return false.
   EXPECT_FALSE(WalletIntegrationAvailable(NULL, *prefs, *pdm));
 
-  scoped_ptr<SyncServiceMock> sync = CreateSyncService(false, false, false);
+  scoped_ptr<TestSyncService> sync = CreateSyncService(false, false, false);
   EXPECT_FALSE(WalletIntegrationAvailable(sync.get(), *prefs, *pdm));
 
   sync = CreateSyncService(false, false, true);
@@ -154,7 +126,7 @@ TEST(WalletIntegrationAvailableTest, MissingOrIncompleteSyncService) {
 // Verify that false is returned when
 // !prefs::kAutofillWalletSyncExperimentEnabled.
 TEST(WalletIntegrationAvailableTest, ExperimentalWalletIntegrationDisabled) {
-  scoped_ptr<SyncServiceMock> sync = CreateSyncService(true, true, true);
+  scoped_ptr<TestSyncService> sync = CreateSyncService(true, true, true);
   // Set kAutofillWalletSyncExperimentEnabled to false.
   scoped_ptr<TestingPrefServiceSimple> prefs =
       CreatePrefService(true, true, false);
@@ -166,7 +138,7 @@ TEST(WalletIntegrationAvailableTest, ExperimentalWalletIntegrationDisabled) {
 
 // Verify that false is returned if server data is missing.
 TEST(WalletIntegrationAvailableTest, NoServerData) {
-  scoped_ptr<SyncServiceMock> sync = CreateSyncService(true, true, true);
+  scoped_ptr<TestSyncService> sync = CreateSyncService(true, true, true);
   scoped_ptr<TestingPrefServiceSimple> prefs =
       CreatePrefService(true, true, true);
   // Set server data as missing.
@@ -179,7 +151,7 @@ TEST(WalletIntegrationAvailableTest, NoServerData) {
 // Verify that true is returned when !prefs::kAutofillWalletImportEnabled,
 // even if server data is missing.
 TEST(WalletIntegrationAvailableTest, WalletImportDisabled) {
-  scoped_ptr<SyncServiceMock> sync = CreateSyncService(true, true, true);
+  scoped_ptr<TestSyncService> sync = CreateSyncService(true, true, true);
   // Set kAutofillWalletImportEnabled to false.
   scoped_ptr<TestingPrefServiceSimple> prefs =
       CreatePrefService(true, false, true);
@@ -194,7 +166,7 @@ TEST(WalletIntegrationAvailableTest, WalletImportDisabled) {
 // server data is missing.
 TEST(WalletIntegrationAvailableTest, WalletDataNotSyncedYet) {
   // Set wallet data as not synced yet.
-  scoped_ptr<SyncServiceMock> sync = CreateSyncService(true, false, true);
+  scoped_ptr<TestSyncService> sync = CreateSyncService(true, false, true);
   scoped_ptr<TestingPrefServiceSimple> prefs =
       CreatePrefService(true, true, true);
   // Set server data as missing.

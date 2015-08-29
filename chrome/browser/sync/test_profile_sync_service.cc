@@ -21,7 +21,6 @@
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/test/sync_manager_factory_for_profile_sync_test.h"
 #include "sync/internal_api/public/test/test_internal_components_factory.h"
@@ -112,7 +111,7 @@ TestProfileSyncService::GetJsEventHandler() {
 }
 
 TestProfileSyncService::TestProfileSyncService(
-    scoped_ptr<ProfileSyncComponentsFactory> factory,
+    scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
     Profile* profile,
     SigninManagerBase* signin,
     ProfileOAuth2TokenService* oauth2_token_service,
@@ -139,7 +138,7 @@ scoped_ptr<KeyedService> TestProfileSyncService::TestFactoryFunction(
   ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   return make_scoped_ptr(new TestProfileSyncService(
-      scoped_ptr<ProfileSyncComponentsFactory>(
+      scoped_ptr<sync_driver::SyncApiComponentFactory>(
           new ProfileSyncComponentsFactoryMock()),
       profile, signin, oauth2_token_service, browser_sync::AUTO_START));
 }
@@ -154,7 +153,7 @@ TestProfileSyncService* TestProfileSyncService::BuildAutoStartAsyncInit(
       sync_service->components_factory_mock();
   // TODO(tim): Convert to a fake instead of mock.
   EXPECT_CALL(*components,
-              CreateSyncBackendHost(testing::_,testing::_, testing::_,
+              CreateSyncBackendHost(testing::_, testing::_,
                                     testing::_, testing::_)).
       WillOnce(testing::Return(
           new browser_sync::SyncBackendHostForProfileSyncTest(

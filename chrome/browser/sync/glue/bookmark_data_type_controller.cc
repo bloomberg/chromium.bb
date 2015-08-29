@@ -8,12 +8,11 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
+#include "components/sync_driver/sync_api_component_factory.h"
+#include "components/sync_driver/sync_client.h"
 #include "content/public/browser/browser_thread.h"
 
 using bookmarks::BookmarkModel;
@@ -22,15 +21,11 @@ using content::BrowserThread;
 namespace browser_sync {
 
 BookmarkDataTypeController::BookmarkDataTypeController(
-    ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile,
-    ProfileSyncService* sync_service)
+    sync_driver::SyncClient* sync_client)
     : FrontendDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          profile_sync_factory,
-          sync_service),
-      profile_(profile),
+          sync_client),
       history_service_observer_(this),
       bookmark_model_observer_(this) {
 }
@@ -44,12 +39,10 @@ BookmarkDataTypeController::~BookmarkDataTypeController() {
 
 bool BookmarkDataTypeController::StartModels() {
   if (!DependentsLoaded()) {
-    BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForProfile(profile_);
+    BookmarkModel* bookmark_model = sync_client_->GetBookmarkModel();
     bookmark_model_observer_.Add(bookmark_model);
     history::HistoryService* history_service =
-        HistoryServiceFactory::GetForProfile(
-            profile_, ServiceAccessType::EXPLICIT_ACCESS);
+        sync_client_->GetHistoryService();
     history_service_observer_.Add(history_service);
     return false;
   }
@@ -62,12 +55,9 @@ void BookmarkDataTypeController::CleanUpState() {
 }
 
 void BookmarkDataTypeController::CreateSyncComponents() {
-  // This cast is safe since |sync_service_| is the PSS that was passed in to
-  // this object's constructor.
-  // TODO(blundell): Remove this cast once it's no longer needed.
-  ProfileSyncService* pss = static_cast<ProfileSyncService*>(sync_service_);
-  ProfileSyncComponentsFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateBookmarkSyncComponents(pss, this);
+  sync_driver::SyncApiComponentFactory::SyncComponents sync_components =
+      sync_client_->GetSyncApiComponentFactory()->CreateBookmarkSyncComponents(
+          sync_client_->GetSyncService(), this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
 }
@@ -95,13 +85,12 @@ void BookmarkDataTypeController::BookmarkModelBeingDeleted(
 // Check that both the bookmark model and the history service (for favicons)
 // are loaded.
 bool BookmarkDataTypeController::DependentsLoaded() {
-  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
+  BookmarkModel* bookmark_model = sync_client_->GetBookmarkModel();
   if (!bookmark_model || !bookmark_model->loaded())
     return false;
 
-  history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  if (!history || !history->BackendLoaded())
+  history::HistoryService* history_service = sync_client_->GetHistoryService();
+  if (!history_service || !history_service->BackendLoaded())
     return false;
 
   // All necessary services are loaded.

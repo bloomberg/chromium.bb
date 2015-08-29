@@ -15,11 +15,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
+#include "components/sync_driver/sync_api_component_factory.h"
 
 class Profile;
 class ProfileSyncService;
-class ProfileSyncComponentsFactory;
 
 namespace base {
 class TimeDelta;
@@ -33,6 +32,7 @@ class SyncError;
 namespace sync_driver {
 class AssociatorInterface;
 class ChangeProcessor;
+class SyncClient;
 }
 
 namespace browser_sync {
@@ -53,9 +53,7 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
   NonFrontendDataTypeController(
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       const base::Closure& error_callback,
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile,
-      ProfileSyncService* sync_service);
+      sync_driver::SyncClient* sync_client);
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
@@ -123,7 +121,7 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
 
   // Datatype specific creation of sync components.
   // Note: this is performed on the datatype's thread.
-  virtual ProfileSyncComponentsFactory::SyncComponents
+  virtual sync_driver::SyncApiComponentFactory::SyncComponents
       CreateSyncComponents() = 0;
 
   // Called on UI thread during shutdown to effectively disable processing
@@ -161,9 +159,7 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
       const std::string& message);
 
   // Accessors and mutators used by derived classes.
-  ProfileSyncComponentsFactory* profile_sync_factory() const;
-  Profile* profile() const;
-  ProfileSyncService* profile_sync_service() const;
+  sync_driver::SyncClient* sync_client() const;
   void set_start_callback(const StartCallback& callback);
   void set_state(State state);
 
@@ -176,9 +172,7 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
 
  private:
   friend class BackendComponentsContainer;
-  ProfileSyncComponentsFactory* const profile_sync_factory_;
-  Profile* const profile_;
-  ProfileSyncService* const profile_sync_service_;
+  sync_driver::SyncClient* const sync_client_;
 
   // Created on UI thread and passed to backend to create processor/associator
   // and associate model. Released on backend.

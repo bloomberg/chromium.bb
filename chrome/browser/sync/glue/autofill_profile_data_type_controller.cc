@@ -6,13 +6,10 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
+#include "components/sync_driver/sync_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
@@ -23,13 +20,12 @@ using content::BrowserThread;
 namespace browser_sync {
 
 AutofillProfileDataTypeController::AutofillProfileDataTypeController(
-    ProfileSyncComponentsFactory* profile_sync_factory,
-    Profile* profile)
+    sync_driver::SyncClient* sync_client)
     : NonUIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          profile_sync_factory),
-      profile_(profile),
+          sync_client),
+      sync_client_(sync_client),
       personal_data_(NULL),
       callback_registered_(false) {}
 
@@ -51,10 +47,9 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state(), MODEL_STARTING);
 
-  personal_data_->RemoveObserver(this);
-  autofill::AutofillWebDataService* web_data_service =
-      WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
+  sync_client_->GetPersonalDataManager()->RemoveObserver(this);
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+      sync_client_->GetWebDataService();
 
   if (!web_data_service)
     return;
@@ -83,16 +78,15 @@ bool AutofillProfileDataTypeController::StartModels() {
   // Waiting for the personal data is subtle:  we do this as the PDM resets
   // its cache of unique IDs once it gets loaded. If we were to proceed with
   // association, the local ids in the mappings would wind up colliding.
-  personal_data_ =
-      autofill::PersonalDataManagerFactory::GetForProfile(profile_);
-  if (!personal_data_->IsDataLoaded()) {
-    personal_data_->AddObserver(this);
+  autofill::PersonalDataManager* personal_data =
+      sync_client_->GetPersonalDataManager();
+  if (!personal_data->IsDataLoaded()) {
+    personal_data->AddObserver(this);
     return false;
   }
 
-  autofill::AutofillWebDataService* web_data_service =
-      WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+      sync_client_->GetWebDataService();
 
   if (!web_data_service)
     return false;
@@ -111,7 +105,7 @@ bool AutofillProfileDataTypeController::StartModels() {
 
 void AutofillProfileDataTypeController::StopModels() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  personal_data_->RemoveObserver(this);
+  sync_client_->GetPersonalDataManager()->RemoveObserver(this);
 }
 
 }  // namespace browser_sync

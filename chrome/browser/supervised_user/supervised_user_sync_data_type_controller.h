@@ -10,7 +10,7 @@
 #include "components/sync_driver/ui_data_type_controller.h"
 
 namespace sync_driver {
-class SyncApiComponentFactory;
+class SyncClient;
 }
 
 class Profile;
@@ -22,7 +22,7 @@ class SupervisedUserSyncDataTypeController
  public:
   SupervisedUserSyncDataTypeController(
       syncer::ModelType type,
-      sync_driver::SyncApiComponentFactory* sync_factory,
+      sync_driver::SyncClient* sync_client,
       Profile* profile);
 
   bool ReadyForStart() const override;

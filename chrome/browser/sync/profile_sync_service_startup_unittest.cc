@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
@@ -76,7 +77,7 @@ ACTION_P3(InvokeOnConfigureDone, pss, error_callback, result) {
 class TestProfileSyncServiceNoBackup : public ProfileSyncService {
  public:
   TestProfileSyncServiceNoBackup(
-      scoped_ptr<ProfileSyncComponentsFactory> factory,
+      scoped_ptr<sync_driver::SyncApiComponentFactory> factory,
       Profile* profile,
       scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
       ProfileOAuth2TokenService* oauth2_token_service,
@@ -124,7 +125,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
       content::BrowserContext* browser_context) {
     Profile* profile = static_cast<Profile*>(browser_context);
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
-        scoped_ptr<ProfileSyncComponentsFactory>(
+        scoped_ptr<sync_driver::SyncApiComponentFactory>(
             new ProfileSyncComponentsFactoryMock()),
         profile, make_scoped_ptr(new SupervisedUserSigninManagerWrapper(
                      profile, SigninManagerFactory::GetForProfile(profile))),
@@ -193,7 +194,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     browser_sync::SyncBackendHostMock* sync_backend_host =
         new browser_sync::SyncBackendHostMock();
     EXPECT_CALL(*components_factory_mock(),
-                CreateSyncBackendHost(_, _, _, _, _)).
+                CreateSyncBackendHost(_, _, _, _)).
         WillOnce(Return(sync_backend_host));
     return sync_backend_host;
   }
@@ -227,7 +228,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     EXPECT_TRUE(signin->IsAuthenticated());
     return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
-        scoped_ptr<ProfileSyncComponentsFactory>(
+        scoped_ptr<sync_driver::SyncApiComponentFactory>(
             new ProfileSyncComponentsFactoryMock()),
         profile, make_scoped_ptr(
                      new SupervisedUserSigninManagerWrapper(profile, signin)),
@@ -362,7 +363,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, MAYBE_StartCrosNoCredentials) {
   EXPECT_CALL(*components_factory_mock(),
               CreateDataTypeManager(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*components_factory_mock(),
-              CreateSyncBackendHost(_, _, _, _, _)).Times(0);
+              CreateSyncBackendHost(_, _, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 

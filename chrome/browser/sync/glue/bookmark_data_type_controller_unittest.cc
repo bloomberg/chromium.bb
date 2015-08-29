@@ -26,6 +26,7 @@
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/sync_driver/change_processor_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/model_associator_mock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_error.h"
@@ -82,11 +83,26 @@ scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* profile) {
 
 }  // namespace
 
-class SyncBookmarkDataTypeControllerTest : public testing::Test {
+class SyncBookmarkDataTypeControllerTest : public testing::Test,
+                                           public sync_driver::FakeSyncClient {
  public:
   SyncBookmarkDataTypeControllerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         service_(&profile_) {}
+
+  // FakeSyncClient overrides.
+  bookmarks::BookmarkModel* GetBookmarkModel() override {
+    return bookmark_model_;
+  }
+  history::HistoryService* GetHistoryService() override {
+    return history_service_;
+  }
+  sync_driver::SyncService* GetSyncService() override {
+    return &service_;
+  }
+  sync_driver::SyncApiComponentFactory* GetSyncApiComponentFactory() override {
+    return profile_sync_factory_.get();
+  }
 
   void SetUp() override {
     model_associator_ = new ModelAssociatorMock();
@@ -97,9 +113,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
     profile_sync_factory_.reset(
         new ProfileSyncComponentsFactoryMock(model_associator_,
                                              change_processor_));
-    bookmark_dtc_ = new BookmarkDataTypeController(profile_sync_factory_.get(),
-                                                   &profile_,
-                                                   &service_);
+    bookmark_dtc_ = new BookmarkDataTypeController(this);
   }
 
  protected:

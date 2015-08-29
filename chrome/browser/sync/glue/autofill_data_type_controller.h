@@ -12,9 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
-class Profile;
-class ProfileSyncComponentsFactory;
-
 namespace autofill {
 class AutofillWebDataService;
 }  // namespace autofill
@@ -25,9 +22,7 @@ namespace browser_sync {
 class AutofillDataTypeController
     : public sync_driver::NonUIDataTypeController {
  public:
-  AutofillDataTypeController(
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      Profile* profile);
+  explicit AutofillDataTypeController(sync_driver::SyncClient* sync_client);
 
   // NonUIDataTypeController implementation.
   syncer::ModelType type() const override;
@@ -53,7 +48,7 @@ class AutofillDataTypeController
   // Callback once WebDatabase has loaded.
   void WebDatabaseLoaded();
 
-  Profile* const profile_;
+  sync_driver::SyncClient* const sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };

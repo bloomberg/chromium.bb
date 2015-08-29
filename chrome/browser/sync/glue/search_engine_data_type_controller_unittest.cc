@@ -16,6 +16,7 @@
 #include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/fake_syncable_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,17 +30,26 @@ using testing::SetArgumentPointee;
 namespace browser_sync {
 namespace {
 
-class SyncSearchEngineDataTypeControllerTest : public testing::Test {
+class SyncSearchEngineDataTypeControllerTest
+    : public testing::Test,
+      public sync_driver::FakeSyncClient {
  public:
-  SyncSearchEngineDataTypeControllerTest() : test_util_(&profile_) { }
+  SyncSearchEngineDataTypeControllerTest()
+      : sync_driver::FakeSyncClient(&profile_sync_factory_),
+        test_util_(&profile_) {}
+
+  // FakeSyncClient overrides.
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) override {
+    return syncable_service_.AsWeakPtr();
+  }
 
   void SetUp() override {
     service_.reset(new ProfileSyncServiceMock(&profile_));
-    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     // Feed the DTC the profile so it is reused later.
     // This allows us to control the associated TemplateURLService.
-    search_engine_dtc_ = new SearchEngineDataTypeController(
-        profile_sync_factory_.get(), &profile_);
+    search_engine_dtc_ =
+        new SearchEngineDataTypeController(this, &profile_);
   }
 
   void TearDown() override {
@@ -60,11 +70,8 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
         make_scoped_ptr<sync_driver::GenericChangeProcessorFactory>(
             new sync_driver::FakeGenericChangeProcessorFactory(
                 make_scoped_ptr(new sync_driver::FakeGenericChangeProcessor(
-                    syncer::SEARCH_ENGINES, profile_sync_factory_.get())))));
+                    syncer::SEARCH_ENGINES, this)))));
     EXPECT_CALL(model_load_callback_, Run(_, _));
-    EXPECT_CALL(*profile_sync_factory_,
-                GetSyncableServiceForType(syncer::SEARCH_ENGINES)).
-        WillOnce(Return(syncable_service_.AsWeakPtr()));
   }
 
   void Start() {
@@ -81,7 +88,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
   TestingProfile profile_;
   TemplateURLServiceFactoryTestUtil test_util_;
   scoped_refptr<SearchEngineDataTypeController> search_engine_dtc_;
-  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
+  ProfileSyncComponentsFactoryMock profile_sync_factory_;
   scoped_ptr<ProfileSyncServiceMock> service_;
   syncer::FakeSyncableService syncable_service_;
   sync_driver::StartCallbackMock start_callback_;

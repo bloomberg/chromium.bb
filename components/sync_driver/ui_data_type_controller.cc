@@ -12,6 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
+#include "components/sync_driver/sync_client.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -22,7 +23,7 @@ namespace sync_driver {
 UIDataTypeController::UIDataTypeController()
     : DataTypeController(base::ThreadTaskRunnerHandle::Get(),
                          base::Closure()),
-      sync_factory_(NULL),
+      sync_client_(NULL),
       state_(NOT_RUNNING),
       type_(syncer::UNSPECIFIED) {
 }
@@ -31,15 +32,14 @@ UIDataTypeController::UIDataTypeController(
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback,
     syncer::ModelType type,
-    SyncApiComponentFactory* sync_factory)
+    SyncClient* sync_client)
     : DataTypeController(ui_thread, error_callback),
-      sync_factory_(sync_factory),
+      sync_client_(sync_client),
       state_(NOT_RUNNING),
       type_(type),
       processor_factory_(new GenericChangeProcessorFactory()),
       ui_thread_(ui_thread) {
   DCHECK(ui_thread_->BelongsToCurrentThread());
-  DCHECK(sync_factory);
   DCHECK(syncer::IsRealDataType(type_));
 }
 
@@ -132,7 +132,7 @@ void UIDataTypeController::Associate() {
   // Connect |shared_change_processor_| to the syncer and get the
   // syncer::SyncableService associated with type().
   local_service_ = shared_change_processor_->Connect(
-      sync_factory_,
+      sync_client_,
       processor_factory_.get(),
       user_share(),
       this,

@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/generic_change_processor.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "sync/api/syncable_service.h"
@@ -21,12 +20,12 @@ namespace browser_sync {
 
 ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     syncer::ModelType type,
-    ProfileSyncComponentsFactory* profile_sync_factory,
+    sync_driver::SyncClient* sync_client,
     Profile* profile)
     : NonUIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::Bind(&ChromeReportUnrecoverableError),
-          profile_sync_factory),
+          sync_client),
       type_(type),
       profile_(profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

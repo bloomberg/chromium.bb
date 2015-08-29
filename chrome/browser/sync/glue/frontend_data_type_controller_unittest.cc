@@ -18,6 +18,7 @@
 #include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/change_processor_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
+#include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/frontend_data_type_controller.h"
 #include "components/sync_driver/frontend_data_type_controller_mock.h"
 #include "components/sync_driver/model_associator_mock.h"
@@ -37,27 +38,25 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
+namespace {
+
 class FrontendDataTypeControllerFake : public FrontendDataTypeController {
  public:
   FrontendDataTypeControllerFake(
-      ProfileSyncComponentsFactory* profile_sync_factory,
-      ProfileSyncService* sync_service,
+      sync_driver::SyncClient* sync_client,
       FrontendDataTypeControllerMock* mock)
       : FrontendDataTypeController(base::ThreadTaskRunnerHandle::Get(),
                                    base::Closure(),
-                                   profile_sync_factory,
-                                   sync_service),
-        mock_(mock) {}
+                                   sync_client),
+        mock_(mock),
+        sync_client_(sync_client) {}
   syncer::ModelType type() const override { return syncer::BOOKMARKS; }
 
  private:
   void CreateSyncComponents() override {
-  // This cast is safe since |sync_service_| is the PSS that was passed in to
-  // this object's constructor.
-  // TODO(blundell): Remove this cast once it's no longer needed.
-  ProfileSyncService* pss = static_cast<ProfileSyncService*>(sync_service_);
-    ProfileSyncComponentsFactory::SyncComponents sync_components =
-        profile_sync_factory_->CreateBookmarkSyncComponents(pss, this);
+    sync_driver::SyncApiComponentFactory::SyncComponents sync_components =
+        sync_client_->GetSyncApiComponentFactory()->
+            CreateBookmarkSyncComponents(nullptr, this);
     model_associator_.reset(sync_components.model_associator);
     change_processor_.reset(sync_components.change_processor);
   }
@@ -78,21 +77,28 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
   }
  private:
   ~FrontendDataTypeControllerFake() override {}
+
   FrontendDataTypeControllerMock* mock_;
+  sync_driver::SyncClient* sync_client_;
 };
 
-class SyncFrontendDataTypeControllerTest : public testing::Test {
+class SyncFrontendDataTypeControllerTest : public testing::Test,
+                                           public sync_driver::FakeSyncClient {
  public:
   SyncFrontendDataTypeControllerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
+      : sync_driver::FakeSyncClient(&profile_sync_factory_),
+        thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         service_(&profile_) {}
 
+  // FakeSyncClient overrides.
+  sync_driver::SyncService* GetSyncService() override {
+    return &service_;
+  }
+
   void SetUp() override {
-    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     dtc_mock_ = new StrictMock<FrontendDataTypeControllerMock>();
     frontend_dtc_ =
-        new FrontendDataTypeControllerFake(profile_sync_factory_.get(),
-                                           &service_,
+        new FrontendDataTypeControllerFake(this,
                                            dtc_mock_.get());
   }
 
@@ -102,8 +108,8 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(model_load_callback_, Run(_, _));
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
-    EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _)).
-        WillOnce(Return(ProfileSyncComponentsFactory::SyncComponents(
+    EXPECT_CALL(profile_sync_factory_, CreateBookmarkSyncComponents(_, _)).
+        WillOnce(Return(sync_driver::SyncApiComponentFactory::SyncComponents(
             model_associator_, change_processor_)));
   }
 
@@ -150,7 +156,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;
-  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
+  ProfileSyncComponentsFactoryMock profile_sync_factory_;
   scoped_refptr<FrontendDataTypeControllerMock> dtc_mock_;
   ProfileMock profile_;
   ProfileSyncServiceMock service_;
@@ -263,3 +269,5 @@ TEST_F(SyncFrontendDataTypeControllerTest, Stop) {
   frontend_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
+
+}  // namespace

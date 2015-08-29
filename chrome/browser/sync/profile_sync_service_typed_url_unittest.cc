@@ -28,6 +28,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
+#include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
@@ -53,7 +54,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
 #include "components/sync_driver/glue/typed_url_model_associator.h"
-#include "components/sync_driver/profile_sync_components_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/read_node.h"
@@ -200,8 +200,8 @@ ACTION_P6(MakeTypedUrlSyncComponents,
       new TestTypedUrlModelAssociator(service, hb, error_handler);
   TypedUrlChangeProcessor* change_processor =
       new TypedUrlChangeProcessor(profile, *model_associator, hb, dtc);
-  return ProfileSyncComponentsFactory::SyncComponents(*model_associator,
-                                                      change_processor);
+  return sync_driver::SyncApiComponentFactory::SyncComponents(*model_associator,
+                                                              change_processor);
 }
 
 class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
@@ -270,8 +270,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                                                                       callback);
       ProfileSyncComponentsFactoryMock* components =
           sync_service_->components_factory_mock();
+      sync_client_.reset(
+          new browser_sync::ChromeSyncClient(profile_, components));
+      sync_client_->Initialize(sync_service_);
       TypedUrlDataTypeController* data_type_controller =
-          new TypedUrlDataTypeController(components, profile_, sync_service_);
+          new TypedUrlDataTypeController(sync_client_.get());
 
       EXPECT_CALL(*components, CreateTypedUrlSyncComponents(_, _, _)).
           WillOnce(MakeTypedUrlSyncComponents(profile_,
@@ -408,6 +411,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   scoped_refptr<HistoryBackendMock> history_backend_;
   HistoryServiceMock* history_service_;
   sync_driver::DataTypeErrorHandlerMock error_handler_;
+  scoped_ptr<browser_sync::ChromeSyncClient> sync_client_;
 };
 
 void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,

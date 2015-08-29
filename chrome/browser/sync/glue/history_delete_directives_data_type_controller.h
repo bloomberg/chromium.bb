@@ -9,9 +9,6 @@
 #include "components/sync_driver/sync_service_observer.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 
-class Profile;
-class ProfileSyncService;
-
 namespace browser_sync {
 
 // A controller for delete directives, which cannot sync when full encryption
@@ -21,8 +18,7 @@ class HistoryDeleteDirectivesDataTypeController
       public sync_driver::SyncServiceObserver {
  public:
   HistoryDeleteDirectivesDataTypeController(
-      sync_driver::SyncApiComponentFactory* factory,
-      ProfileSyncService* sync_service);
+      sync_driver::SyncClient* sync_client);
 
   // UIDataTypeController override.
   bool ReadyForStart() const override;
@@ -40,7 +36,7 @@ class HistoryDeleteDirectivesDataTypeController
   // type is no longer ready, else does nothing and returns false.
   bool DisableTypeIfNecessary();
 
-  ProfileSyncService* sync_service_;
+  sync_driver::SyncClient* sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDeleteDirectivesDataTypeController);
 };
