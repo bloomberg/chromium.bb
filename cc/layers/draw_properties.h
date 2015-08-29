@@ -12,23 +12,13 @@
 #include "ui/gfx/transform.h"
 
 namespace cc {
+class LayerImpl;
 
 // Container for properties that layers need to compute before they can be
 // drawn.
-template <typename LayerType>
 struct CC_EXPORT DrawProperties {
-  DrawProperties()
-      : opacity(0.f),
-        screen_space_transform_is_animating(false),
-        can_use_lcd_text(false),
-        render_target(nullptr),
-        num_unclipped_descendants(0),
-        layer_or_descendant_has_copy_request(false),
-        layer_or_descendant_has_input_handler(false),
-        has_child_with_a_scroll_parent(false),
-        last_drawn_render_surface_layer_list_id(0),
-        maximum_animation_contents_scale(0.f),
-        starting_animation_contents_scale(0.f) {}
+  DrawProperties();
+  ~DrawProperties();
 
   // Transforms objects from content space to target surface space, where
   // this layer would be drawn.
@@ -40,7 +30,7 @@ struct CC_EXPORT DrawProperties {
   // Known occlusion above the layer mapped to the content space of the layer.
   Occlusion occlusion_in_content_space;
 
-  // DrawProperties::opacity may be different than LayerType::opacity,
+  // DrawProperties::opacity may be different than LayerImpl::opacity,
   // particularly in the case when a RenderSurface re-parents the layer's
   // opacity, or when opacity is compounded by the hierarchy.
   float opacity;
@@ -57,7 +47,7 @@ struct CC_EXPORT DrawProperties {
   // The layer whose coordinate space this layer draws into. This can be
   // either the same layer (draw_properties_.render_target == this) or an
   // ancestor of this layer.
-  LayerType* render_target;
+  LayerImpl* render_target;
 
   // This rect is a bounding box around what part of the layer is visible, in
   // the layer's coordinate space.

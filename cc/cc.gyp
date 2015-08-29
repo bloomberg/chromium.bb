@@ -182,6 +182,7 @@
         'layers/delegated_renderer_layer.h',
         'layers/delegated_renderer_layer_impl.cc',
         'layers/delegated_renderer_layer_impl.h',
+        'layers/draw_properties.cc',
         'layers/draw_properties.h',
         'layers/heads_up_display_layer.cc',
         'layers/heads_up_display_layer.h',

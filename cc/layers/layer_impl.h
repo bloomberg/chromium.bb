@@ -389,12 +389,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   RenderSurfaceImpl* render_surface() const { return render_surface_.get(); }
 
-  DrawProperties<LayerImpl>& draw_properties() {
-    return draw_properties_;
-  }
-  const DrawProperties<LayerImpl>& draw_properties() const {
-    return draw_properties_;
-  }
+  DrawProperties& draw_properties() { return draw_properties_; }
+  const DrawProperties& draw_properties() const { return draw_properties_; }
 
   // The following are shortcut accessors to get various information from
   // draw_properties_
@@ -870,7 +866,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   // Group of properties that need to be computed based on the layer tree
   // hierarchy before layers can be drawn.
-  DrawProperties<LayerImpl> draw_properties_;
+  DrawProperties draw_properties_;
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> debug_info_;
   scoped_ptr<RenderSurfaceImpl> render_surface_;

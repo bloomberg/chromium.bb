@@ -1594,7 +1594,7 @@ static void CalculateDrawPropertiesInternal(
   // layer that actually get computed. To avoid unnecessary copies
   // (particularly for matrices), we do computations directly on these values
   // when possible.
-  DrawProperties<LayerImpl>& layer_draw_properties = layer->draw_properties();
+  DrawProperties& layer_draw_properties = layer->draw_properties();
 
   gfx::Rect clip_rect_in_target_space;
   bool layer_or_ancestor_clips_descendants = false;
@@ -1819,7 +1819,7 @@ static void CalculateDrawPropertiesInternal(
     data_for_children.full_hierarchy_matrix.FlattenTo2d();
 
     if (layer->mask_layer()) {
-      DrawProperties<LayerImpl>& mask_layer_draw_properties =
+      DrawProperties& mask_layer_draw_properties =
           layer->mask_layer()->draw_properties();
       mask_layer_draw_properties.visible_layer_rect =
           gfx::Rect(layer->bounds());
@@ -1833,7 +1833,7 @@ static void CalculateDrawPropertiesInternal(
     }
 
     if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
-      DrawProperties<LayerImpl>& replica_mask_draw_properties =
+      DrawProperties& replica_mask_draw_properties =
           layer->replica_layer()->mask_layer()->draw_properties();
       replica_mask_draw_properties.visible_layer_rect =
           gfx::Rect(layer->bounds());
