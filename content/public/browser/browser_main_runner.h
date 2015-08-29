@@ -20,6 +20,9 @@ class CONTENT_EXPORT BrowserMainRunner {
   // Create a new BrowserMainRunner object.
   static BrowserMainRunner* Create();
 
+  // Returns true if the BrowserMainRunner has exited the main loop.
+  static bool ExitedMainMessageLoop();
+
   // Initialize all necessary browser state. The |parameters| values will be
   // copied. Returning a non-negative value indicates that initialization
   // failed, and the returned value is used as the exit code for the process.

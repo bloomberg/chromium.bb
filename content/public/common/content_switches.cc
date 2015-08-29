@@ -101,7 +101,7 @@ const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 
 // Disable the per-domain blocking for 3D APIs after GPU reset.
 // This switch is intended only for tests.
-extern const char kDisableDomainBlockingFor3DAPIs[] =
+const char kDisableDomainBlockingFor3DAPIs[] =
     "disable-domain-blocking-for-3d-apis";
 
 // Disable experimental WebGL support.
@@ -128,8 +128,7 @@ const char kDisableGpuEarlyInit[]           = "disable-gpu-early-init";
 
 // Disable the limit on the number of times the GPU process may be restarted
 // This switch is intended only for tests.
-extern const char kDisableGpuProcessCrashLimit[] =
-    "disable-gpu-process-crash-limit";
+const char kDisableGpuProcessCrashLimit[] = "disable-gpu-process-crash-limit";
 
 // Disable GPU rasterization, i.e. rasterize on the CPU only.
 // Overrides the kEnableGpuRasterization and kForceGpuRasterization flags.
@@ -796,8 +795,7 @@ const char kTestType[]                      = "test-type";
 const char kTouchTextSelectionStrategy[]    = "touch-selection-strategy";
 
 // Prioritizes the UI's command stream in the GPU process
-extern const char kUIPrioritizeInGpuProcess[] =
-    "ui-prioritize-in-gpu-process";
+const char kUIPrioritizeInGpuProcess[] = "ui-prioritize-in-gpu-process";
 
 // Bypass the media stream infobar by selecting the default device for media
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.

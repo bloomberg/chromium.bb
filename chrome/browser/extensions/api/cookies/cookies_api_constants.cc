@@ -16,11 +16,11 @@ const char kRemovedKey[] = "removed";
 const char kTabIdsKey[] = "tabIds";
 
 // Cause Constants
-extern const char kEvictedChangeCause[] = "evicted";
-extern const char kExpiredChangeCause[] = "expired";
-extern const char kExpiredOverwriteChangeCause[] = "expired_overwrite";
-extern const char kExplicitChangeCause[] = "explicit";
-extern const char kOverwriteChangeCause[] = "overwrite";
+const char kEvictedChangeCause[] = "evicted";
+const char kExpiredChangeCause[] = "expired";
+const char kExpiredOverwriteChangeCause[] = "expired_overwrite";
+const char kExplicitChangeCause[] = "explicit";
+const char kOverwriteChangeCause[] = "overwrite";
 
 // Errors
 const char kCookieSetFailedError[] =

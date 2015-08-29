@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/sandbox_init.h"
+#include "content/common/sandbox_init_mac.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/sandbox_init.h"
 
 namespace content {
 
@@ -81,8 +82,5 @@ bool BrokerDuplicateSharedMemoryHandle(
   *target_handle = base::SharedMemory::DuplicateHandle(source_handle);
   return base::SharedMemory::IsHandleValid(*target_handle);
 }
-
-extern const char kBootstrapPortNameForNPAPIPlugins[] =
-    "org.chromium.sandbox.real_bootstrap_server";
 
 }  // namespace content

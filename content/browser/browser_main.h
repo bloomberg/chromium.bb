@@ -12,8 +12,6 @@ namespace content {
 
 struct MainFunctionParams;
 
-bool ExitedMainMessageLoop();
-
 CONTENT_EXPORT int BrowserMain(const content::MainFunctionParams& parameters);
 
 }  // namespace content

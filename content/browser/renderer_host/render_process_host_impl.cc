@@ -211,8 +211,6 @@
 #include "content/common/media/media_stream_messages.h"
 #endif
 
-extern bool g_exited_main_message_loop;
-
 namespace content {
 namespace {
 
@@ -517,7 +515,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
 
-  CHECK(!g_exited_main_message_loop);
+  CHECK(!BrowserMainRunner::ExitedMainMessageLoop());
   RegisterHost(GetID(), this);
   g_all_hosts.Get().set_check_on_null_data(true);
   // Initialize |child_process_activity_time_| to a reasonable value.

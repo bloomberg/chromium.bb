@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
@@ -25,10 +26,6 @@
 #include "printing/pwg_raster_settings.h"
 #include "ui/gfx/text_elider.h"
 #endif  // ENABLE_PRINT_PREVIEW
-
-namespace cloud_print {
-extern const char kContentTypeJSON[];
-}
 
 namespace local_discovery {
 

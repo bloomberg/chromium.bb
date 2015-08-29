@@ -38,10 +38,10 @@ const char kPinnedAppsPrefAppIDPath[] = "id";
 const char kShelfAutoHideBehaviorAlways[] = "Always";
 const char kShelfAutoHideBehaviorNever[] = "Never";
 
-extern const char kShelfAlignmentBottom[] = "Bottom";
-extern const char kShelfAlignmentLeft[] = "Left";
-extern const char kShelfAlignmentRight[] = "Right";
-extern const char kShelfAlignmentTop[] = "Top";
+const char kShelfAlignmentBottom[] = "Bottom";
+const char kShelfAlignmentLeft[] = "Left";
+const char kShelfAlignmentRight[] = "Right";
+const char kShelfAlignmentTop[] = "Top";
 
 void RegisterChromeLauncherUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {

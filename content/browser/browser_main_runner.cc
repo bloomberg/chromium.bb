@@ -32,13 +32,13 @@
 #include "ui/gfx/win/direct_write.h"
 #endif
 
-bool g_exited_main_message_loop = false;
-
 namespace content {
 
-#if defined(OS_WIN)
 namespace {
 
+bool g_exited_main_message_loop = false;
+
+#if defined(OS_WIN)
 #if !defined(_WIN64)
 // Pointer to the original CryptVerifyCertificateSignatureEx function.
 net::sha256_interception::CryptVerifyCertificateSignatureExFunc
@@ -116,10 +116,9 @@ void InstallSha256LegacyHooks() {
                          &old_protect));
 #endif  // _WIN64
 }
+#endif  // OS_WIN
 
 }  // namespace
-
-#endif  // OS_WIN
 
 class BrowserMainRunnerImpl : public BrowserMainRunner {
  public:
@@ -289,12 +288,18 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
 #endif
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(BrowserMainRunnerImpl);
 };
 
 // static
 BrowserMainRunner* BrowserMainRunner::Create() {
   return new BrowserMainRunnerImpl();
+}
+
+// static
+bool BrowserMainRunner::ExitedMainMessageLoop() {
+  return g_exited_main_message_loop;
 }
 
 }  // namespace content

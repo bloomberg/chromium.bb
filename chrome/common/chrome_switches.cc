@@ -553,7 +553,7 @@ const char kEnableUserAlternateProtocolPorts[] =
 
 // Enables a new "web app" style frame for hosted apps (including bookmark
 // apps).
-extern const char kEnableWebAppFrame[] = "enable-web-app-frame";
+const char kEnableWebAppFrame[] = "enable-web-app-frame";
 
 // Enables synchronizing WiFi credentials across devices, using Chrome Sync.
 const char kEnableWifiCredentialSync[]      = "enable-wifi-credential-sync";
