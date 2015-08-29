@@ -2778,7 +2778,6 @@
     { "name": "patechmasters.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "payments-reference.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "pbprint.ru", "include_subdomains": true, "mode": "force-https" },
-    { "name": "phcorner.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "pieterhordijk.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "poedgirl.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "poiema.com.sg", "include_subdomains": true, "mode": "force-https" },
