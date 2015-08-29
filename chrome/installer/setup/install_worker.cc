@@ -1277,8 +1277,7 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
   // the COM probe/flush below does its job.
   AddUninstallDelegateExecuteWorkItems(root, delegate_execute_path, list);
 
-  // Add work items to register the handler iff it is present.
-  // See also shell_util.cc's GetProgIdEntries.
+  // See also shell_util.cc's GetChromeProgIdEntries.
   if (installer_state.operation() != InstallerState::UNINSTALL) {
     VLOG(1) << "Adding registration items for DelegateExecute verb handler.";
 
