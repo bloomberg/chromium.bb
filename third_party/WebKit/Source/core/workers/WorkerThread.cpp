@@ -274,10 +274,10 @@ void WorkerThread::shutdown()
         m_shutdown = true;
     }
 
-    workerGlobalScope()->dispose();
-
     // This should be called before we start the shutdown procedure.
     workerReportingProxy().willDestroyWorkerGlobalScope();
+
+    workerGlobalScope()->dispose();
 
     backingThread().removeTaskObserver(m_microtaskRunner.get());
     postTask(FROM_HERE, createSameThreadTask(&WorkerThread::performShutdownTask, this));

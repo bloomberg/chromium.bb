@@ -39,6 +39,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerThread.h"
 #include "modules/background_sync/SyncEvent.h"
 #include "modules/background_sync/SyncRegistration.h"
 #include "modules/fetch/Headers.h"
@@ -226,8 +227,9 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
 
 void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()
 {
+    v8::HandleScope handleScope(m_workerGlobalScope->thread()->isolate());
+    m_client.willDestroyWorkerContext(m_workerGlobalScope->script()->context());
     m_workerGlobalScope = nullptr;
-    m_client.willDestroyWorkerContext();
 }
 
 void ServiceWorkerGlobalScopeProxy::workerThreadTerminated()

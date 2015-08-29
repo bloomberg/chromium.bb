@@ -79,7 +79,12 @@ public:
 
     // WorkerGlobalScope is about to be destroyed. The client should clear
     // the WebServiceWorkerGlobalScopeProxy when this is called.
-    virtual void willDestroyWorkerContext() { }
+    virtual void willDestroyWorkerContext(v8::Local<v8::Context> context)
+    {
+        willDestroyWorkerContext();
+    }
+    // TODO(kalman): Remove after Chromium-side patch lands.
+    virtual void willDestroyWorkerContext() {}
 
     // WorkerGlobalScope is destroyed and the worker is ready to be terminated.
     virtual void workerContextDestroyed() { }
