@@ -4,10 +4,12 @@
 
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 
+#include <limits>
 #import <UIKit/UIKit.h>
 
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 
 bool UseRTLLayout() {
   return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater();
@@ -19,16 +21,41 @@ base::i18n::TextDirection LayoutDirection() {
 
 #pragma mark - LayoutRects.
 
-const LayoutRect LayoutRectZero = {0.0, 0.0, 0.0, CGSizeMake(0.0, 0.0)};
+const LayoutRectPosition LayoutRectPositionZero = {0.0, 0.0};
+
+LayoutRectPosition LayoutRectPositionMake(CGFloat leading, CGFloat originY) {
+  return {leading, originY};
+}
+
+BOOL LayoutRectPositionEqualToPosition(LayoutRectPosition a,
+                                       LayoutRectPosition b) {
+  CGFloat epsilon = std::numeric_limits<CGFloat>::epsilon();
+  return fabs(a.leading - b.leading) <= epsilon &&
+         fabs(a.originY - b.originY) <= epsilon;
+}
+
+LayoutRectPosition AlignLayoutRectPositionToPixel(LayoutRectPosition position) {
+  return LayoutRectPositionMake(AlignValueToPixel(position.leading),
+                                AlignValueToPixel(position.originY));
+}
+
+const LayoutRect LayoutRectZero = {0.0, LayoutRectPositionZero,
+                                   CGSizeMake(0.0, 0.0)};
 
 LayoutRect LayoutRectMake(CGFloat leading,
                           CGFloat boundingWidth,
                           CGFloat originY,
                           CGFloat width,
                           CGFloat height) {
-  LayoutRect layout = {leading, boundingWidth, originY,
-                       CGSizeMake(width, height)};
-  return layout;
+  return {boundingWidth, LayoutRectPositionMake(leading, originY),
+          CGSizeMake(width, height)};
+}
+
+BOOL LayoutRectEqualToRect(LayoutRect a, LayoutRect b) {
+  CGFloat epsilon = std::numeric_limits<CGFloat>::epsilon();
+  return fabs(a.boundingWidth - b.boundingWidth) <= epsilon &&
+         LayoutRectPositionEqualToPosition(a.position, b.position) &&
+         CGSizeEqualToSize(a.size, b.size);
 }
 
 CGRect LayoutRectGetRectUsingDirection(LayoutRect layout,
@@ -36,13 +63,13 @@ CGRect LayoutRectGetRectUsingDirection(LayoutRect layout,
   CGRect rect;
   if (direction == base::i18n::RIGHT_TO_LEFT) {
     CGFloat trailing =
-        layout.boundingWidth - (layout.leading + layout.size.width);
-    rect = CGRectMake(trailing, layout.originY, layout.size.width,
+        layout.boundingWidth - (layout.position.leading + layout.size.width);
+    rect = CGRectMake(trailing, layout.position.originY, layout.size.width,
                       layout.size.height);
   } else {
     DCHECK_EQ(direction, base::i18n::LEFT_TO_RIGHT);
-    rect = CGRectMake(layout.leading, layout.originY, layout.size.width,
-                      layout.size.height);
+    rect = CGRectMake(layout.position.leading, layout.position.originY,
+                      layout.size.width, layout.size.height);
   }
   return rect;
 }
@@ -75,12 +102,12 @@ LayoutRect LayoutRectForRectInBoundingRectUsingDirection(
     base::i18n::TextDirection direction) {
   LayoutRect layout;
   if (direction == base::i18n::RIGHT_TO_LEFT) {
-    layout.leading = contextRect.size.width - CGRectGetMaxX(rect);
+    layout.position.leading = contextRect.size.width - CGRectGetMaxX(rect);
   } else {
-    layout.leading = CGRectGetMinX(rect);
+    layout.position.leading = CGRectGetMinX(rect);
   }
   layout.boundingWidth = contextRect.size.width;
-  layout.originY = rect.origin.y;
+  layout.position.originY = rect.origin.y;
   layout.size = rect.size;
   return layout;
 }
@@ -92,26 +119,26 @@ LayoutRect LayoutRectForRectInBoundingRect(CGRect rect, CGRect contextRect) {
 
 LayoutRect LayoutRectGetLeadingLayout(LayoutRect layout) {
   LayoutRect leadingLayout;
-  leadingLayout.leading = 0;
+  leadingLayout.position.leading = 0;
   leadingLayout.boundingWidth = layout.boundingWidth;
-  leadingLayout.originY = leadingLayout.originY;
-  leadingLayout.size = CGSizeMake(layout.leading, layout.size.height);
+  leadingLayout.position.originY = leadingLayout.position.originY;
+  leadingLayout.size = CGSizeMake(layout.position.leading, layout.size.height);
   return leadingLayout;
 }
 
 LayoutRect LayoutRectGetTrailingLayout(LayoutRect layout) {
   LayoutRect leadingLayout;
   CGFloat trailing = LayoutRectGetTrailingEdge(layout);
-  leadingLayout.leading = trailing;
+  leadingLayout.position.leading = trailing;
   leadingLayout.boundingWidth = layout.boundingWidth;
-  leadingLayout.originY = leadingLayout.originY;
+  leadingLayout.position.originY = leadingLayout.position.originY;
   leadingLayout.size =
       CGSizeMake((layout.boundingWidth - trailing), layout.size.height);
   return leadingLayout;
 }
 
 CGFloat LayoutRectGetTrailingEdge(LayoutRect layout) {
-  return layout.leading + layout.size.width;
+  return layout.position.leading + layout.size.width;
 }
 
 #pragma mark - UIKit utilities

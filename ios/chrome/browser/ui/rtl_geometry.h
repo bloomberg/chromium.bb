@@ -19,17 +19,38 @@ bool UseRTLLayout();
 // RIGHT_TO_LEFT if UseRTLLayout(), otherwise LEFT_TO_RIGHT.
 base::i18n::TextDirection LayoutDirection();
 
-// A LayoutRect contains the information needed to generate a CGRect that may or
-// may not be flipped if positioned in RTL or LTR contexts. |leading| is the
-// distance from the leading edge that the final rect's edge should be; in LTR
-// this will be the x-origin, in RTL it will be used to compute the x-origin.
-// |boundingWidth| is the width of whatever element the rect will be used to
-// frame a subview of. |originY| will be origin.y of the rect, and |size| will
-// be the size of the rect.
-struct LayoutRect {
+// A LayoutRectPosition contains the information needed to position a CGRect,
+// optionally flipping across its bounding coordinate space's midpoint Y axis.
+// |leading| is the distance from the leading edge at which the resulting rect
+// should be laid out; in LTR this will be the x-origin, in RTL it will be used
+// to compute the x-origin.  |originY| is used to position the rect vertically.
+struct LayoutRectPosition {
   CGFloat leading;
-  CGFloat boundingWidth;
   CGFloat originY;
+};
+
+// The null LayoutRectPosition, with |leading| and |originY| equal to 0.0.
+extern const LayoutRectPosition LayoutRectPositionZero;
+
+// Returns a new LayoutRectPosition with the passed-in values.
+LayoutRectPosition LayoutRectPositionMake(CGFloat leading, CGFloat originY);
+
+// Returns YES if |a|'s values are equal to those of |b|.
+BOOL LayoutRectPositionEqualToPosition(LayoutRectPosition a,
+                                       LayoutRectPosition b);
+
+// Returns a new LayoutRectPosition created by aligning |position|'s values to
+// the nearest pixel boundary.
+LayoutRectPosition AlignLayoutRectPositionToPixel(LayoutRectPosition position);
+
+// A LayoutRect contains the information needed to generate a CGRect that may or
+// may not be flipped if positioned in RTL or LTR contexts. |boundingWidth| is
+// the width of the bounding coordinate space in which the resulting rect will
+// be used.  |position| is used to describe the location of the resulting frame,
+// and |size| is the size of resulting frame.
+struct LayoutRect {
+  CGFloat boundingWidth;
+  LayoutRectPosition position;
   CGSize size;
 };
 
@@ -44,6 +65,9 @@ LayoutRect LayoutRectMake(CGFloat leading,
                           CGFloat originY,
                           CGFloat width,
                           CGFloat height);
+
+// Returns YES if |a|'s values are equal to those of |b|.
+BOOL LayoutRectEqualToRect(LayoutRect a, LayoutRect b);
 
 // Given |layout|, returns the rect for that layout in text direction
 // |direction|.
