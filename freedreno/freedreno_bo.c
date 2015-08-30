@@ -230,17 +230,25 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 	uint32_t handle;
 	struct fd_bo *bo;
 
+	pthread_mutex_lock(&table_lock);
 	ret = drmPrimeFDToHandle(dev->fd, fd, &handle);
 	if (ret) {
 		return NULL;
 	}
 
+	bo = lookup_bo(dev->handle_table, handle);
+	if (bo)
+		goto out_unlock;
+
 	/* lseek() to get bo size */
 	size = lseek(fd, 0, SEEK_END);
 	lseek(fd, 0, SEEK_CUR);
 
-	bo = fd_bo_from_handle(dev, handle, size);
+	bo = bo_from_handle(dev, size, handle);
 	bo->fd = fd;
+
+out_unlock:
+	pthread_mutex_unlock(&table_lock);
 
 	return bo;
 }
