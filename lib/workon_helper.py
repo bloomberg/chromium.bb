@@ -356,6 +356,10 @@ class WorkonHelper(object):
         for possible_ebuild in possible_ebuilds:
           logging.warning('  %s', possible_ebuild)
       autocompleted_package = portage_util.EbuildToCP(possible_ebuilds[0])
+      # Sanity check to avoid infinite loop.
+      if package == autocompleted_package:
+        logging.error('Resolved %s to itself', package)
+        return None
       logging.info('Autocompleted "%s" to: "%s"',
                    package, autocompleted_package)
 

@@ -1520,7 +1520,7 @@ def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
   result = cros_build_lib.RunCommand(cmd, extra_env=extra_env, print_cmd=False,
                                      capture_output=True, error_code_ok=True)
 
-  if result.error:
+  if result.returncode:
     return None
   return result.output.strip()
 
