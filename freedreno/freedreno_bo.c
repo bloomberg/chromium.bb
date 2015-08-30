@@ -226,13 +226,11 @@ out_unlock:
 struct fd_bo *
 fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 {
-	struct drm_prime_handle req = {
-			.fd = fd,
-	};
 	int ret, size;
+	uint32_t handle;
 	struct fd_bo *bo;
 
-	ret = drmIoctl(dev->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &req);
+	ret = drmPrimeFDToHandle(dev->fd, fd, &handle);
 	if (ret) {
 		return NULL;
 	}
@@ -241,7 +239,7 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 	size = lseek(fd, 0, SEEK_END);
 	lseek(fd, 0, SEEK_CUR);
 
-	bo = fd_bo_from_handle(dev, req.handle, size);
+	bo = fd_bo_from_handle(dev, handle, size);
 	bo->fd = fd;
 
 	return bo;
@@ -381,18 +379,15 @@ uint32_t fd_bo_handle(struct fd_bo *bo)
 int fd_bo_dmabuf(struct fd_bo *bo)
 {
 	if (bo->fd < 0) {
-		struct drm_prime_handle req = {
-				.handle = bo->handle,
-				.flags = DRM_CLOEXEC,
-		};
-		int ret;
+		int ret, prime_fd;
 
-		ret = drmIoctl(bo->dev->fd, DRM_IOCTL_PRIME_HANDLE_TO_FD, &req);
+		ret = drmPrimeHandleToFD(bo->dev->fd, bo->handle, DRM_CLOEXEC,
+					&prime_fd);
 		if (ret) {
 			return ret;
 		}
 
-		bo->fd = req.fd;
+		bo->fd = prime_fd;
 	}
 	return dup(bo->fd);
 }
