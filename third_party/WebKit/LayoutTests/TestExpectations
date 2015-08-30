@@ -204,7 +204,6 @@ crbug.com/392640 [ Release ] svg/as-object/sizing/svg-in-object-placeholder-heig
 crbug.com/392640 [ Debug ] svg/as-object/sizing/svg-in-object-placeholder-height-auto.html [ Failure Timeout Pass ]
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 crbug.com/479181 inspector-protocol/animation/animation-multiple-frames.html [ Failure Pass ]
-crbug.com/479202 fast/forms/select/select-typeahead-with-spacekey.html [ Failure Pass ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Failure ImageOnlyFailure Pass ]
 crbug.com/516364 svg/animations/smil-leak-element-instances.svg [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
