@@ -1239,7 +1239,7 @@ WebString WebAXObject::computedStyleDisplay() const
     if (!computedStyle)
         return WebString();
 
-    return WebString(CSSPrimitiveValue::create(computedStyle->display())->getStringValue());
+    return WebString(CSSPrimitiveValue::create(computedStyle->display())->cssText());
 }
 
 bool WebAXObject::accessibilityIsIgnored() const

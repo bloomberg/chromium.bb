@@ -157,6 +157,7 @@ AtomicString StyleBuilderConverter::convertString(StyleResolverState&, CSSValue*
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID() == IdForNone)
         return nullAtom;
+    ASSERT(primitiveValue->isString());
     return AtomicString(primitiveValue->getStringValue());
 }
 

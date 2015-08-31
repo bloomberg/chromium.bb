@@ -775,14 +775,11 @@ String CSSPrimitiveValue::getStringValue() const
     case UnitType::Attribute:
     case UnitType::URI:
         return m_value.string;
-    case UnitType::ValueID:
-        return valueName(m_value.valueID);
-    case UnitType::PropertyID:
-        return propertyName(m_value.propertyID);
     default:
         break;
     }
 
+    ASSERT_NOT_REACHED();
     return String();
 }
 

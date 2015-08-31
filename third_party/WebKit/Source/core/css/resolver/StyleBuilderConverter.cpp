@@ -469,6 +469,7 @@ void StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTra
     for (auto& currValue : *toCSSValueList(value)) {
         if (currValue->isGridLineNamesValue()) {
             for (auto& namedGridLineValue : toCSSGridLineNamesValue(*currValue)) {
+                ASSERT(toCSSPrimitiveValue(namedGridLineValue.get())->isCustomIdent());
                 String namedGridLine = toCSSPrimitiveValue(namedGridLineValue.get())->getStringValue();
                 NamedGridLinesMap::AddResult result = namedGridLines.add(namedGridLine, Vector<size_t>());
                 result.storedValue->value.append(currentNamedGridLine);
@@ -740,13 +741,15 @@ PassRefPtr<QuotesData> StyleBuilderConverter::convertQuotes(StyleResolverState&,
         for (size_t i = 0; i < list->length(); i += 2) {
             CSSValue* first = list->item(i);
             CSSValue* second = list->item(i + 1);
+            ASSERT(toCSSPrimitiveValue(first)->isString());
+            ASSERT(toCSSPrimitiveValue(second)->isString());
             String startQuote = toCSSPrimitiveValue(first)->getStringValue();
             String endQuote = toCSSPrimitiveValue(second)->getStringValue();
             quotes->addPair(std::make_pair(startQuote, endQuote));
         }
         return quotes.release();
     }
-    // FIXME: We should assert we're a primitive value with valueID = CSSValueNone
+    ASSERT(value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
     return QuotesData::create();
 }
 

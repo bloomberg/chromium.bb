@@ -34,11 +34,11 @@ public:
         return adoptRefWillBeNoop(new CSSCounterValue(identifier, listStyle, separator));
     }
 
-    String identifier() const { return m_identifier ? m_identifier->getStringValue() : String(); }
-    String listStyle() const { return m_listStyle ? m_listStyle->getStringValue() : String(); }
-    String separator() const { return m_separator ? m_separator->getStringValue() : String(); }
+    String identifier() const { return m_identifier->getStringValue(); }
+    String listStyle() const { return m_listStyle->cssText(); }
+    String separator() const { return m_separator->getStringValue(); }
 
-    CSSValueID listStyleIdent() const { return m_listStyle ? m_listStyle->getValueID() : CSSValueInvalid; }
+    CSSValueID listStyleIdent() const { return m_listStyle->getValueID(); }
 
     bool equals(const CSSCounterValue& other) const
     {
@@ -56,7 +56,12 @@ private:
         : CSSValue(CounterClass)
         , m_identifier(identifier)
         , m_listStyle(listStyle)
-        , m_separator(separator) { }
+        , m_separator(separator)
+    {
+        ASSERT(m_identifier->isCustomIdent());
+        ASSERT(m_listStyle->isValueID());
+        ASSERT(m_separator->isCustomIdent());
+    }
 
     RefPtrWillBeMember<CSSPrimitiveValue> m_identifier; // string
     RefPtrWillBeMember<CSSPrimitiveValue> m_listStyle; // ident

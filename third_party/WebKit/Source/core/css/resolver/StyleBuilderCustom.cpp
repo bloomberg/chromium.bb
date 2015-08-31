@@ -777,10 +777,12 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState& state, CSSValue* value)
 {
     const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueAuto)
+    if (primitiveValue->getValueID() == CSSValueAuto) {
         state.style()->setLocale(nullAtom);
-    else
+    } else {
+        ASSERT(primitiveValue->isString());
         state.style()->setLocale(AtomicString(primitiveValue->getStringValue()));
+    }
     state.fontBuilder().setScript(state.style()->locale());
 }
 
