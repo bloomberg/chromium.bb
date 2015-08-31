@@ -32,10 +32,12 @@
 #define Init_h
 
 #include "core/CoreExport.h"
+#include "wtf/FastAllocBase.h"
 
 namespace blink {
 
 class CORE_EXPORT CoreInitializer {
+    WTF_MAKE_FAST_ALLOCATED(CoreInitializer);
 public:
     CoreInitializer() : m_isInited(false) { }
     // Should be called by clients before trying to create Frames.

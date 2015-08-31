@@ -29,6 +29,7 @@
 
 #include "core/xml/XPathPredicate.h"
 #include "core/xml/XPathStep.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -44,6 +45,7 @@ class Parser;
 class Predicate;
 
 struct Token {
+    STACK_ALLOCATED();
     int type;
     String str;
     Step::Axis axis;
