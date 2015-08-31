@@ -219,6 +219,26 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
   written at this time rather than in ReportStage.
   """
 
+  def _AbortPreviousHWTestSuites(self):
+    """Abort any outstanding synchronous hwtest suites from this builder."""
+    # Only try to clean up previous HWTests if this is really running on one of
+    # our builders in a non-trybot build.
+    debug = (self._run.options.remote_trybot or
+             (not self._run.options.buildbot) or
+             self._run.options.debug)
+    build_id, db = self._run.GetCIDBHandle()
+    if db:
+      builds = db.GetBuildHistory(self._run.config.name, 2,
+                                  ignore_build_id=build_id)
+      for build in builds:
+        old_version = build['full_version']
+        if old_version is None:
+          continue
+        for suite_config in self._run.config.hw_tests:
+          if not suite_config.async:
+            commands.AbortHWTests(self._run.config.name, old_version,
+                                  debug, suite_config.suite)
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     config = self._run.config
@@ -310,6 +330,10 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
               'Master build id %s has full_version %s, while slave version is '
               '%s.' % (master_id, master_full_version, my_full_version))
 
+    # Abort previous hw test suites. This happens after reexecution as it
+    # requires chromite/third_party/swarming.client, which is not available
+    # untill after reexecution.
+    self._AbortPreviousHWTestSuites()
 
 
 class ReportStage(generic_stages.BuilderStage,

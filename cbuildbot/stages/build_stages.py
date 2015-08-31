@@ -87,26 +87,6 @@ class CleanUpStage(generic_stages.BuilderStage):
     # builders.
     osutils.RmDir(site_packages_dir, ignore_missing=True)
 
-  def _AbortPreviousHWTestSuites(self):
-    """Abort any outstanding synchronous hwtest suites from this builder."""
-    # Only try to clean up previous HWTests if this is really running on one of
-    # our builders in a non-trybot build.
-    debug = (self._run.options.remote_trybot or
-             (not self._run.options.buildbot) or
-             self._run.options.debug)
-    build_id, db = self._run.GetCIDBHandle()
-    if db:
-      builds = db.GetBuildHistory(self._run.config.name, 2,
-                                  ignore_build_id=build_id)
-      for build in builds:
-        old_version = build['full_version']
-        if old_version is None:
-          continue
-        for suite_config in self._run.config.hw_tests:
-          if not suite_config.async:
-            commands.AbortHWTests(self._run.config.name, old_version,
-                                  debug, suite_config.suite)
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     if (not (self._run.options.buildbot or self._run.options.remote_trybot)
@@ -144,8 +124,7 @@ class CleanUpStage(generic_stages.BuilderStage):
                functools.partial(commands.WipeOldOutput, self._build_root),
                self._DeleteArchivedTrybotImages,
                self._DeleteArchivedPerfResults,
-               self._DeleteAutotestSitePackages,
-               self._AbortPreviousHWTestSuites]
+               self._DeleteAutotestSitePackages]
       if self._run.options.chrome_root:
         tasks.append(self._DeleteChromeBuildOutput)
       if self._run.config.chroot_replace and self._run.options.build:
