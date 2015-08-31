@@ -9,6 +9,10 @@ from telemetry import benchmark
 import page_sets
 
 
+# Disabled because the reference set becomes flaky with the new
+# https:// page set introduced in http://crbug.com/523517.
+# Try removing once the Chrome used for ref builds advances
+# past blink commit pos 200986.
 @benchmark.Disabled('reference')
 class WebRTC(perf_benchmark.PerfBenchmark):
   """Obtains WebRTC metrics for a real-time video tests."""
