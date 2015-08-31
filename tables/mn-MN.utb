@@ -1,10 +1,32 @@
+#
+#  Copyright (C) 2015 Tsengel Maidar tsengel@digitalsunngo.org of Digital Sun Accessible Technology Development
+#  Copyright (C) 2015 Sreeja sreeja.param@gmail.com
+#  Copyright (C) 2015 Dipendra Manocha d@saksham.org
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+#
 
-   # This table contains braille codes and rules for Mongolian  script.
-# Contributors: Dipendra Manocha, Sreeja, Tsengal
+# This table contains braille codes and rules for Mongolian  script.
+# Contributors: Dipendra Manocha, Sreeja, Tsengel
 # To report any bugs or any suggestion, please write to d@saksham.org and sreeja.param@gmail.com
+
 #include text_nabcc.dis All display opcodes
 include ru-ru.dis All display opcodes	#replace text_nabcc.dis Yuemei Sun 03/12/08
-   include UEBC-g1.utb
+include UEBC-g1.utb
 
 # ----------- define all chars --------------------------------------
 
