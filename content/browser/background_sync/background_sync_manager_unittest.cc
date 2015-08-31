@@ -374,7 +374,20 @@ class BackgroundSyncManagerTest : public testing::Test {
       const BackgroundSyncRegistrationOptions& options) {
     bool was_called = false;
     background_sync_manager_->Register(
-        sw_registration_id, options,
+        sw_registration_id, options, true /* requested_from_service_worker */,
+        base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+                   base::Unretained(this), &was_called));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
+    return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
+  }
+
+  bool RegisterFromDocumentWithServiceWorkerId(
+      int64 sw_registration_id,
+      const BackgroundSyncRegistrationOptions& options) {
+    bool was_called = false;
+    background_sync_manager_->Register(
+        sw_registration_id, options, false /* requested_from_service_worker */,
         base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
@@ -782,6 +795,7 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   bool get_registration_called = false;
   test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_options_1_,
+      true /* requested_from_service_worker */,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &register_called));
   test_background_sync_manager_->Unregister(
@@ -839,6 +853,7 @@ TEST_F(BackgroundSyncManagerTest,
   bool callback_called = false;
   test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_options_2_,
+      true /* requested_from_service_worker */,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &callback_called));
 
@@ -1267,6 +1282,12 @@ TEST_F(BackgroundSyncManagerTest, RegisterExistingFailsWithoutWindow) {
   EXPECT_TRUE(Register(sync_options_1_));
   RemoveWindowClients();
   EXPECT_FALSE(Register(sync_options_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegisterSucceedsFromUncontrolledWindow) {
+  RemoveWindowClients();
+  EXPECT_TRUE(RegisterFromDocumentWithServiceWorkerId(sw_registration_id_1_,
+                                                      sync_options_1_));
 }
 
 TEST_F(BackgroundSyncManagerTest, UnregisterSucceedsWithoutWindow) {

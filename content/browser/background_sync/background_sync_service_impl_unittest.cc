@@ -180,7 +180,17 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void RegisterOneShot(
       SyncRegistrationPtr sync,
       const BackgroundSyncService::RegisterCallback& callback) {
-    service_impl_->Register(sync.Pass(), sw_registration_id_, callback);
+    service_impl_->Register(sync.Pass(), sw_registration_id_,
+                            true /* requested_from_service_worker */, callback);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void RegisterOneShotFromDocument(
+      SyncRegistrationPtr sync,
+      const BackgroundSyncService::RegisterCallback& callback) {
+    service_impl_->Register(sync.Pass(), sw_registration_id_,
+                            false /* requested_from_service_worker */,
+                            callback);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -247,6 +257,31 @@ TEST_F(BackgroundSyncServiceImplTest, RegisterWithoutWindow) {
       base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
   EXPECT_TRUE(called);
   EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NOT_ALLOWED, error);
+}
+
+TEST_F(BackgroundSyncServiceImplTest, RegisterFromControlledClient) {
+  bool called = false;
+  BackgroundSyncError error;
+  SyncRegistrationPtr reg;
+  RegisterOneShotFromDocument(
+      default_sync_registration_.Clone(),
+      base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
+  EXPECT_TRUE(called);
+  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, error);
+  EXPECT_EQ("", reg->tag);
+}
+
+TEST_F(BackgroundSyncServiceImplTest, RegisterFromUncontrolledClient) {
+  bool called = false;
+  BackgroundSyncError error;
+  SyncRegistrationPtr reg;
+  RemoveWindowClient();
+  RegisterOneShotFromDocument(
+      default_sync_registration_.Clone(),
+      base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
+  EXPECT_TRUE(called);
+  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, error);
+  EXPECT_EQ("", reg->tag);
 }
 
 TEST_F(BackgroundSyncServiceImplTest, Unregister) {
