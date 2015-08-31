@@ -126,14 +126,12 @@ public:
         : m_page(DummyPageHolder::create(IntSize(1, 1)))
     {
         v8::HandleScope handleScope(isolate());
-        m_otherScriptState = ScriptStateForTesting::create(v8::Context::New(isolate()), DOMWrapperWorld::create(isolate(), 1));
+        m_otherScriptState = ScriptStateForTesting::create(v8::Context::New(isolate()), DOMWrapperWorld::ensureIsolatedWorld(isolate(), 1, -1));
     }
 
     virtual ~ScriptPromisePropertyTestBase()
     {
-        m_page.clear();
-        gc();
-        Heap::collectAllGarbage();
+        ScriptPromisePropertyTestBase::destroyContext();
     }
 
     Document& document() { return m_page->document(); }
@@ -147,9 +145,12 @@ public:
     virtual void destroyContext()
     {
         m_page.clear();
-        m_otherScriptState.clear();
+        if (m_otherScriptState) {
+            m_otherScriptState->disposePerContextData();
+            m_otherScriptState = nullptr;
+        }
         gc();
-        Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+        Heap::collectAllGarbage();
     }
 
     void gc() { V8GCController::collectGarbage(v8::Isolate::GetCurrent()); }
@@ -361,7 +362,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reject_RejectsScriptPromise)
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_DeadContext)
 {
-    Property* property = this->property();
+    Persistent<Property> property = this->property();
     property->resolve(new GarbageCollectedScriptWrappable("value"));
     EXPECT_EQ(Property::Resolved, property->state());
 
@@ -372,7 +373,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_DeadContext)
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_DeadContext)
 {
-    Property* property = this->property();
+    Persistent<Property> property = this->property();
 
     {
         ScriptState::Scope scope(mainScriptState());
