@@ -5882,10 +5882,8 @@ long Cluster::Parse(long long& pos, long& len) const {
   if (status < 0)
     return status;
 
-  assert(m_pos >= m_element_start);
-  assert(m_timecode >= 0);
-  // assert(m_size > 0);
-  // assert(m_element_size > m_size);
+  if (m_pos < m_element_start || m_timecode < 0)
+    return E_PARSE_FAILED;
 
   const long long cluster_stop =
       (m_element_size < 0) ? -1 : m_element_start + m_element_size;
@@ -5902,7 +5900,8 @@ long Cluster::Parse(long long& pos, long& len) const {
   if (status < 0)  // error
     return status;
 
-  assert((total < 0) || (avail <= total));
+  if (total >= 0 && avail > total)
+    return E_FILE_FORMAT_INVALID;
 
   pos = m_pos;
 
@@ -5929,7 +5928,7 @@ long Cluster::Parse(long long& pos, long& len) const {
     if (result < 0)  // error
       return static_cast<long>(result);
 
-    if (result > 0)  // weird
+    if (result > 0)
       return E_BUFFER_NOT_FULL;
 
     if ((cluster_stop >= 0) && ((pos + len) > cluster_stop))
@@ -5938,12 +5937,9 @@ long Cluster::Parse(long long& pos, long& len) const {
     if ((pos + len) > avail)
       return E_BUFFER_NOT_FULL;
 
-    const long long id = ReadUInt(pReader, pos, len);
+    const long long id = ReadID(pReader, pos, len);
 
-    if (id < 0)  // error
-      return static_cast<long>(id);
-
-    if (id == 0)  // weird
+    if (id < 0)
       return E_FILE_FORMAT_INVALID;
 
     // This is the distinguished set of ID's we use to determine
@@ -5971,7 +5967,7 @@ long Cluster::Parse(long long& pos, long& len) const {
     if (result < 0)  // error
       return static_cast<long>(result);
 
-    if (result > 0)  // weird
+    if (result > 0)
       return E_BUFFER_NOT_FULL;
 
     if ((cluster_stop >= 0) && ((pos + len) > cluster_stop))
@@ -5997,7 +5993,7 @@ long Cluster::Parse(long long& pos, long& len) const {
 
     // pos now points to start of payload
 
-    if (size == 0)  // weird
+    if (size == 0)
       continue;
 
     // const long long block_start = pos;
@@ -6033,7 +6029,8 @@ long Cluster::Parse(long long& pos, long& len) const {
       return E_FILE_FORMAT_INVALID;
   }
 
-  assert(m_element_size > 0);
+  if (m_element_size < 1)
+    return E_FILE_FORMAT_INVALID;
 
   m_pos = pos;
   if (cluster_stop >= 0 && m_pos > cluster_stop)
@@ -6043,23 +6040,26 @@ long Cluster::Parse(long long& pos, long& len) const {
     const long idx = m_entries_count - 1;
 
     const BlockEntry* const pLast = m_entries[idx];
-    assert(pLast);
+    if (pLast == NULL)
+      return E_PARSE_FAILED;
 
     const Block* const pBlock = pLast->GetBlock();
-    assert(pBlock);
+    if (pBlock == NULL)
+      return E_PARSE_FAILED;
 
     const long long start = pBlock->m_start;
 
     if ((total >= 0) && (start > total))
-      return -1;  // defend against trucated stream
+      return E_PARSE_FAILED;  // defend against trucated stream
 
     const long long size = pBlock->m_size;
 
     const long long stop = start + size;
-    assert((cluster_stop < 0) || (stop <= cluster_stop));
+    if (cluster_stop >= 0 && stop > cluster_stop)
+      return E_FILE_FORMAT_INVALID;
 
     if ((total >= 0) && (stop > total))
-      return -1;  // defend against trucated stream
+      return E_PARSE_FAILED;  // defend against trucated stream
   }
 
   return 1;  // no more entries
