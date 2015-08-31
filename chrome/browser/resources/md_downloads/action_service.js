@@ -65,6 +65,11 @@ cr.define('downloads', function() {
 
     /** @param {string} searchText What to search for. */
     search: function(searchText) {
+      if (this.searchText_ == searchText)
+        return;
+
+      this.searchText_ = searchText;
+
       // Split quoted terms (e.g., 'The "lazy" dog' => ['The', 'lazy', 'dog']).
       function trim(s) { return s.trim(); }
       chrome.send('getDownloads', searchText.split(/"([^"]*)"/).map(trim));
