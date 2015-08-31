@@ -33,6 +33,7 @@ void ProcessControlImpl::LoadApplication(
   auto it = url_to_loader_map_.find(application_url);
   if (it == url_to_loader_map_.end()) {
     callback.Run(false);
+    OnLoadFailed();
     return;
   }
 

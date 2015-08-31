@@ -21,6 +21,8 @@ class UtilityProcessControlImpl : public ProcessControlImpl {
   void RegisterApplicationLoaders(URLToLoaderMap* url_to_loader_map) override;
 
  private:
+  void OnLoadFailed() override;
+
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessControlImpl);
 };
 

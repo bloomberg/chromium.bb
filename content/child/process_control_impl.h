@@ -40,6 +40,9 @@ class ProcessControlImpl : public ProcessControl {
                        const LoadApplicationCallback& callback) override;
 
  private:
+  // Called if a LoadApplication request fails.
+  virtual void OnLoadFailed() {}
+
   bool has_registered_loaders_ = false;
   URLToLoaderMap url_to_loader_map_;
 

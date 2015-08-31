@@ -8,6 +8,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
+#include "content/utility/utility_thread_impl.h"
 #include "mojo/shell/static_application_loader.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
@@ -47,6 +48,13 @@ void UtilityProcessControlImpl::RegisterApplicationLoaders(
           base::Bind(&media::MojoMediaApplication::CreateApp),
           base::Bind(&QuitProcess));
 #endif
+}
+
+void UtilityProcessControlImpl::OnLoadFailed() {
+  UtilityThreadImpl* utility_thread =
+      static_cast<UtilityThreadImpl*>(UtilityThread::Get());
+  utility_thread->Shutdown();
+  utility_thread->ReleaseProcessIfNeeded();
 }
 
 }  // namespace content
