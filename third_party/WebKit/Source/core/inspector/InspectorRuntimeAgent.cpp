@@ -45,6 +45,7 @@ namespace blink {
 
 namespace InspectorRuntimeAgentState {
 static const char runtimeEnabled[] = "runtimeEnabled";
+static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled";
 };
 
 class InspectorRuntimeAgent::InjectedScriptCallScope {
@@ -196,6 +197,7 @@ void InspectorRuntimeAgent::isRunRequired(ErrorString*, bool* out_result)
 
 void InspectorRuntimeAgent::setCustomObjectFormatterEnabled(ErrorString*, bool enabled)
 {
+    m_state->setBoolean(InspectorRuntimeAgentState::customObjectFormatterEnabled, enabled);
     injectedScriptManager()->setCustomObjectFormatterEnabled(enabled);
 }
 
@@ -205,6 +207,8 @@ void InspectorRuntimeAgent::restore()
         frontend()->executionContextsCleared();
         String error;
         enable(&error);
+        if (m_state->getBoolean(InspectorRuntimeAgentState::customObjectFormatterEnabled))
+            injectedScriptManager()->setCustomObjectFormatterEnabled(true);
     }
 }
 
