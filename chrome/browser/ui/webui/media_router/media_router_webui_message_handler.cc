@@ -250,6 +250,10 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   initial_data.SetString("headerTextTooltip",
       media_router_ui_->GetInitialHeaderTextTooltip());
 
+  // "No Cast devices found?" Chromecast help center page.
+  initial_data.SetString("deviceMissingUrl",
+      base::StringPrintf(kHelpPageUrlPrefix, 3249268));
+
   scoped_ptr<base::ListValue> sinks(SinksToValue(media_router_ui_->sinks()));
   initial_data.Set("sinks", sinks.release());
 

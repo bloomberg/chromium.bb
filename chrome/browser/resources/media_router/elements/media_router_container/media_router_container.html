@@ -73,9 +73,10 @@
         <paper-spinner id="searching-devices-spinner" active
             hidden$="[[computeSpinnerHidden_(justOpened_)]]">
         </paper-spinner>
-        <span id="device-missing-text"
-            hidden$="[[!computeSpinnerHidden_(justOpened_)]]"
-                >[[deviceMissingText_]]</span>
+        <a href="[[deviceMissingUrl]]">
+          <span hidden$="[[!computeSpinnerHidden_(justOpened_)]]"
+              >[[deviceMissingText_]]</span>
+        </a>
       </div>
       <paper-menu id="sink-list"
           hidden$="[[computeSinkListHidden_(currentView_, issue)]]">

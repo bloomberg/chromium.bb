@@ -65,6 +65,15 @@ Polymer({
     },
 
     /**
+     * The URL to open when the device missing link is clicked.
+     * @private {string}
+     */
+    deviceMissingUrl: {
+      type: String,
+      value: '',
+    },
+
+    /**
      * The header text.
      * @type {string}
      */
