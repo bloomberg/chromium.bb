@@ -3,6 +3,7 @@
 <script src="../../resources/js-test.js"></script>
 <script>
 description("Test the Blob constructor.");
+var jsTestIsAsync = true;
 
 // Test the different ways you can construct a Blob.
 shouldBeTrue("(new Blob()) instanceof window.Blob");
@@ -107,4 +108,14 @@ shouldBe("new Blob([new Blob([(new Int32Array(100)).buffer]), (new Uint8Array(10
 // (This depends on the bindings code handling of sequence<T>)
 shouldBe("new Blob({length: 0}).size", "0");
 shouldBe("new Blob({length: 1, 0: 'string'}).size", "6");
+
+// Test that strings are not NFC normalized
+var OMICRON_WITH_OXIA = '\u1F79'; // NFC normalized to U+3CC
+shouldBe("OMICRON_WITH_OXIA.charCodeAt(0)", "0x1F79");
+var reader = new FileReader();
+reader.readAsText(new Blob([OMICRON_WITH_OXIA]));
+reader.onload = function() {
+    shouldBe("reader.result.charCodeAt(0)", "0x1F79");
+    finishJSTest();
+};
 </script>

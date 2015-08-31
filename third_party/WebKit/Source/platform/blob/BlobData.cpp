@@ -126,7 +126,7 @@ void BlobData::appendFileSystemURL(const KURL& url, long long offset, long long 
 
 void BlobData::appendText(const String& text, bool doNormalizeLineEndingsToNative)
 {
-    CString utf8Text = UTF8Encoding().normalizeAndEncode(text, WTF::EntitiesForUnencodables);
+    CString utf8Text = UTF8Encoding().encode(text, WTF::EntitiesForUnencodables);
     RefPtr<RawData> data = nullptr;
     Vector<char>* buffer;
     if (canConsolidateData(text.length())) {
