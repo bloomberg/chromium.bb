@@ -43,6 +43,7 @@ crbug.com/524134 [ SnowLeopard ] virtual/spv2/fast/repaint/repaint-during-scroll
 crbug.com/524134 [ Win10 ] virtual/spv2/compositing/repaint/become-overlay-composited-layer.html [ Timeout ]
 crbug.com/524134 [ Win10 ] virtual/spv2/compositing/repaint/clipped-layer-size-change.html [ Timeout ]
 crbug.com/524134 [ Win10 ] virtual/spv2/compositing/repaint/layer-repaint.html [ Timeout ImageOnlyFailure ]
+crbug.com/524134 [ Win10 ] virtual/spv2/compositing/repaint/layer-repaint-rects.html [ Timeout ImageOnlyFailure ]
 
 crbug.com/524236 virtual/spv2/compositing/repaint/clipping-should-not-repaint-composited-descendants.html [ Failure ]
 crbug.com/524236 virtual/spv2/compositing/repaint/scroll-fixed-layer-no-content.html [ Failure ]
@@ -849,6 +850,8 @@ crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
 
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Pass Slow Timeout ]
+crbug.com/440452 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/alpha.html [ Pass Slow Timeout ]
+crbug.com/440452 [ Win10 ] virtual/display_list_2d_canvas/fast/canvas/arc360.html [ Pass Slow Timeout ]
 
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
@@ -1287,7 +1290,7 @@ crbug.com/521730 [ Win10 ] fast/text/international/hindi-whitespace.html [ Failu
 #crbug.com/521730 [ Win10 ] fast/text/international/text-combine-image-test.html [ Failure ]
 #crbug.com/521730 [ Win10 ] fast/text/international/vertical-text-glyph-test.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/justify-ideograph-leading-expansion.html [ Failure Timeout Failure Timeout ]
-#crbug.com/521730 [ Win10 ] fast/text/orientation-sideways.html [ Failure Failure Timeout Failure ]
+crbug.com/521730 fast/text/orientation-sideways.html [ NeedsRebaseline ]
 crbug.com/521730 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure Timeout Failure Timeout ]
 crbug.com/521730 [ Win10 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Failure Timeout Failure ]
 crbug.com/521730 [ Win10 ] fast/writing-mode/border-vertical-lr.html [ Failure Timeout Failure Failure ]
@@ -1383,7 +1386,6 @@ crbug.com/521764 [ Win10 ] fast/text/international/vertical-text-glyph-test.html
 crbug.com/521764 [ Win10 ] fast/text/international/wrap-CJK-001.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure Timeout ]
 crbug.com/521764 [ Win10 ] fast/text/midword-break-hang.html [ ImageOnlyFailure Timeout ]
-crbug.com/521764 [ Win10 ] fast/text/orientation-sideways.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] fast/text/selection-multiple-runs.html [ Failure Timeout ]
 crbug.com/521764 [ Win10 ] fast/text/stroking.html [ ImageOnlyFailure Timeout ]
 crbug.com/521764 [ Win10 ] fast/text/sub-pixel/text-scaling-pixel.html [ ImageOnlyFailure Timeout ]
@@ -1574,6 +1576,8 @@ crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-x1-interpo
 crbug.com/524804 [ Win10 ] animations/svg-attribute-interpolation/svg-xChannelSelector-interpolation.html [ Failure Pass ]
 
 crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed.html [ Pass Timeout ]
+
+crbug.com/526752 [ Win10 ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
 crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
 
