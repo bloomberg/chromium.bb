@@ -11,7 +11,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/vector_icons_public2.h"
+#include "ui/gfx/vector_icons_public.h"
 
 PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
     const GURL& request_origin,

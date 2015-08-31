@@ -473,18 +473,11 @@
       'sources': [
         'paint_vector_icon.cc',
         'paint_vector_icon.h',
-        # The 2 in this file name is intended to get around issues with
-        # clean-up of generated files: crbug.com/509811
-        # TODO(estade): change this back to vector_icons_public.h in a second
-        # pass.
-        'vector_icons_public2.h',
+        'vector_icons_public.h',
       ],
       'variables': {
         'vector_icons_cc_file': '<(INTERMEDIATE_DIR)/ui/gfx/vector_icons.cc',
-        # The 2 in this file name is intended to get around issues with
-        # clean-up of generated files: crbug.com/509811
-        # TODO(estade): change this back to vector_icons.h in a second pass.
-        'vector_icons_h_file': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/vector_icons2.h',
+        'vector_icons_h_file': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/vector_icons.h',
       },
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)',

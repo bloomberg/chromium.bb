@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/autofill/info_bubble.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public2.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/painter.h"

@@ -21,7 +21,7 @@ source_set("gfx_export") {
 }
 
 vector_icons_cc_file = "$target_gen_dir/vector_icons.cc"
-vector_icons_h_file = "$target_gen_dir/vector_icons2.h"
+vector_icons_h_file = "$target_gen_dir/vector_icons.h"
 
 component("gfx") {
   sources = [
@@ -351,7 +351,7 @@ component("gfx") {
       "paint_vector_icon.cc",
       "paint_vector_icon.h",
       "vector_icon_types.h",
-      "vector_icons_public2.h",
+      "vector_icons_public.h",
       vector_icons_cc_file,
       vector_icons_h_file,
     ]

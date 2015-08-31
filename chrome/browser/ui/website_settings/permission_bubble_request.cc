@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 
-#include "ui/gfx/vector_icons_public2.h"
+#include "ui/gfx/vector_icons_public.h"
 
 gfx::VectorIconId PermissionBubbleRequest::GetVectorIconId() const {
   return gfx::VectorIconId::VECTOR_ICON_NONE;

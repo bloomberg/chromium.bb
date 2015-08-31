@@ -15,7 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public2.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"

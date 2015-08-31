@@ -10,7 +10,7 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public2.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/image_view.h"
@@ -70,7 +70,7 @@ DownloadStartedAnimationViews::DownloadStartedAnimationViews(
 
   // If we're too small to show the download image, then don't bother -
   // the shelf will be enough.
-  web_contents_bounds_= web_contents->GetContainerBounds();
+  web_contents_bounds_ = web_contents->GetContainerBounds();
   if (web_contents_bounds_.height() < download_image.height())
     return;
 

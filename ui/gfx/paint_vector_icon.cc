@@ -15,7 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/gfx/vector_icons2.h"
+#include "ui/gfx/vector_icons.h"
 
 namespace gfx {
 
