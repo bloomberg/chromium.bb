@@ -217,7 +217,9 @@ public class EnhancedBookmarksModelTest extends NativeLibraryTestBase {
 
     @UiThreadTest
     @SmallTest
-    @CommandLineFlags.Add(ChromeSwitches.ENABLE_OFFLINE_PAGES)
+    @CommandLineFlags.Add({
+            ChromeSwitches.ENABLE_ENHANCED_BOOKMARKS + "=1",
+            ChromeSwitches.ENABLE_OFFLINE_PAGES})
     @Feature({"Bookmark"})
     public void testOfflineBridgeLoaded() {
         assertTrue(mBookmarksModel.getOfflinePageBridge() != null);
