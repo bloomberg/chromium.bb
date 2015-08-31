@@ -60,7 +60,7 @@ bool LayerExceedsSize(const ui::Layer* layer, const gfx::Size& size) {
 
 gfx::RectF ImageGrid::TestAPI::GetTransformedLayerBounds(
     const ui::Layer& layer) {
-  gfx::RectF bounds = layer.bounds();
+  gfx::RectF bounds = gfx::RectF(layer.bounds());
   layer.transform().TransformRect(&bounds);
   return bounds;
 }

@@ -250,7 +250,7 @@ void CardUnmaskPromptViews::Layout() {
 
   // The progress overlay extends from the top of the input row
   // to the bottom of the content area.
-  gfx::RectF input_rect = input_row_->GetContentsBounds();
+  gfx::RectF input_rect = gfx::RectF(input_row_->GetContentsBounds());
   View::ConvertRectToTarget(input_row_, this, &input_rect);
   input_rect.set_height(contents_bounds.height());
   contents_bounds.Intersect(gfx::ToNearestRect(input_rect));

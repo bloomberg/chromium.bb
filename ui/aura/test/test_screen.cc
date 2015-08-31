@@ -75,7 +75,7 @@ void TestScreen::SetUIScale(float ui_scale) {
   ui_scale_ = ui_scale;
   gfx::Rect bounds_in_pixel(display_.GetSizeInPixel());
   gfx::Rect new_bounds = gfx::ToNearestRect(
-      gfx::ScaleRect(bounds_in_pixel, 1.0f / ui_scale));
+      gfx::ScaleRect(gfx::RectF(bounds_in_pixel), 1.0f / ui_scale));
   display_.SetScaleAndBounds(display_.device_scale_factor(), new_bounds);
   host_->SetRootTransform(GetRotationTransform() * GetUIScaleTransform());
 }

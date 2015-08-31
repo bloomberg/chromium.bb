@@ -178,7 +178,7 @@ void RotateScreen(int64 display_id,
   const gfx::Display::Rotation initial_orientation =
       GetCurrentRotation(display_id);
 
-  const gfx::RectF original_screen_bounds = root_window->GetTargetBounds();
+  const gfx::Rect original_screen_bounds = root_window->GetTargetBounds();
   // 180 degree rotations should animate clock-wise.
   const int rotation_factor =
       (initial_orientation + 3) % 4 == new_rotation ? 1 : -1;
@@ -196,7 +196,7 @@ void RotateScreen(int64 display_id,
   Shell::GetInstance()->display_manager()->SetDisplayRotation(
       display_id, new_rotation, source);
 
-  const gfx::RectF rotated_screen_bounds = root_window->GetTargetBounds();
+  const gfx::Rect rotated_screen_bounds = root_window->GetTargetBounds();
   const gfx::Point pivot = gfx::Point(rotated_screen_bounds.width() / 2,
                                       rotated_screen_bounds.height() / 2);
 
@@ -204,13 +204,19 @@ void RotateScreen(int64 display_id,
   gfx::Point3F old_layer_target_scale = gfx::Point3F(1.0f, 1.0f, 1.0f);
 
   if (should_scale) {
-    new_layer_initial_scale = gfx::Point3F(
-        original_screen_bounds.width() / rotated_screen_bounds.width(),
-        original_screen_bounds.height() / rotated_screen_bounds.height(), 1.0f);
+    new_layer_initial_scale =
+        gfx::Point3F(static_cast<float>(original_screen_bounds.width()) /
+                         rotated_screen_bounds.width(),
+                     static_cast<float>(original_screen_bounds.height()) /
+                         rotated_screen_bounds.height(),
+                     1.0f);
 
-    old_layer_target_scale = gfx::Point3F(
-        rotated_screen_bounds.width() / original_screen_bounds.width(),
-        rotated_screen_bounds.height() / original_screen_bounds.height(), 1.0f);
+    old_layer_target_scale =
+        gfx::Point3F(static_cast<float>(rotated_screen_bounds.width()) /
+                         original_screen_bounds.width(),
+                     static_cast<float>(rotated_screen_bounds.height()) /
+                         original_screen_bounds.height(),
+                     1.0f);
   }
 
   // We must animate each non-cloned child layer individually because the cloned

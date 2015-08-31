@@ -154,9 +154,9 @@ class TabStripTest : public views::ViewsTestBase {
   // |tab| in |tab|'s coordinate space (including padding if |padding|
   // is true).
   gfx::Rect GetTabCloseHitTestMask(Tab* tab, bool padding) {
-    gfx::RectF bounds_f = tab->close_button_->GetContentsBounds();
+    gfx::RectF bounds_f = gfx::RectF(tab->close_button_->GetContentsBounds());
     if (padding)
-      bounds_f = tab->close_button_->GetLocalBounds();
+      bounds_f = gfx::RectF(tab->close_button_->GetLocalBounds());
     views::View::ConvertRectToTarget(tab->close_button_, tab, &bounds_f);
     return gfx::ToEnclosingRect(bounds_f);
   }

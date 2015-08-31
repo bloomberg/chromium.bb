@@ -699,7 +699,7 @@ void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
 }
 
 gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
-  gfx::RectF x_rect = rect;
+  gfx::RectF x_rect = gfx::RectF(rect);
   GetTransform().TransformRect(&x_rect);
   x_rect.Offset(GetMirroredPosition().OffsetFromOrigin());
   // Pixels we partially occupy in the parent should be included.

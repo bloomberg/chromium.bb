@@ -31,7 +31,7 @@ gfx::Size ConvertSizeToDIP(float scale_factor, const gfx::Size& size_in_pixel) {
 
 gfx::Rect ConvertRectToDIP(float scale_factor, const gfx::Rect& rect_in_pixel) {
   return gfx::ToFlooredRectDeprecated(
-      gfx::ScaleRect(rect_in_pixel, 1.0f / scale_factor));
+      gfx::ScaleRect(gfx::RectF(rect_in_pixel), 1.0f / scale_factor));
 }
 
 gfx::Point ConvertPointToPixel(float scale_factor,
