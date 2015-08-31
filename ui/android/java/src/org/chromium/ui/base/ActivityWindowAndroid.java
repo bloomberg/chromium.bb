@@ -206,32 +206,24 @@ public class ActivityWindowAndroid
     @Override
     public void requestPermissions(
             final String[] permissions, final PermissionCallback callback) {
+        if (requestPermissionsInternal(permissions, callback)) return;
+
         // If the permission request was not sent successfully, just post a response to the
         // callback with whatever the current permission state is for all the requested
         // permissions.  The response is posted to keep the async behavior of this method
         // consistent.
-        if (!requestPermissionsInternal(permissions, callback)) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    int[] results = new int[permissions.length];
-                    for (int i = 0; i < permissions.length; i++) {
-                        results[i] = hasPermission(permissions[i])
-                                ? PackageManager.PERMISSION_GRANTED
-                                : PackageManager.PERMISSION_DENIED;
-                    }
-                    callback.onRequestPermissionsResult(permissions, results);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                int[] results = new int[permissions.length];
+                for (int i = 0; i < permissions.length; i++) {
+                    results[i] = hasPermission(permissions[i])
+                            ? PackageManager.PERMISSION_GRANTED
+                            : PackageManager.PERMISSION_DENIED;
                 }
-            });
-        } else {
-            Activity activity = mActivityRef.get();
-            SharedPreferences.Editor editor =
-                    PreferenceManager.getDefaultSharedPreferences(activity).edit();
-            for (int i = 0; i < permissions.length; i++) {
-                editor.putBoolean(getHasRequestedPermissionKey(permissions[i]), true);
+                callback.onRequestPermissionsResult(permissions, results);
             }
-            editor.apply();
-        }
+        });
     }
 
     /**
@@ -257,6 +249,16 @@ public class ActivityWindowAndroid
      */
     public boolean onRequestPermissionsResult(int requestCode, String[] permissions,
             int[] grantResults) {
+        Activity activity = mActivityRef.get();
+        assert activity != null;
+
+        SharedPreferences.Editor editor =
+                PreferenceManager.getDefaultSharedPreferences(activity).edit();
+        for (int i = 0; i < permissions.length; i++) {
+            editor.putBoolean(getHasRequestedPermissionKey(permissions[i]), true);
+        }
+        editor.apply();
+
         PermissionCallback callback = mOutstandingPermissionRequests.get(requestCode);
         mOutstandingPermissionRequests.delete(requestCode);
         if (callback == null) return false;
