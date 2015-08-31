@@ -1693,6 +1693,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
 
   gpu_channel_ =
       GpuChannelHost::Create(this,
+                             client_id,
                              gpu_info,
                              channel_handle,
                              ChildProcess::current()->GetShutDownEvent(),

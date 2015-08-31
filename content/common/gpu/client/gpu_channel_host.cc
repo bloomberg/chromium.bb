@@ -45,22 +45,26 @@ GpuChannelHost::StreamFlushInfo::~StreamFlushInfo() {}
 // static
 scoped_refptr<GpuChannelHost> GpuChannelHost::Create(
     GpuChannelHostFactory* factory,
+    int channel_id,
     const gpu::GPUInfo& gpu_info,
     const IPC::ChannelHandle& channel_handle,
     base::WaitableEvent* shutdown_event,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   DCHECK(factory->IsMainThread());
   scoped_refptr<GpuChannelHost> host =
-      new GpuChannelHost(factory, gpu_info, gpu_memory_buffer_manager);
+      new GpuChannelHost(factory, channel_id, gpu_info,
+                         gpu_memory_buffer_manager);
   host->Connect(channel_handle, shutdown_event);
   return host;
 }
 
 GpuChannelHost::GpuChannelHost(
     GpuChannelHostFactory* factory,
+    int channel_id,
     const gpu::GPUInfo& gpu_info,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : factory_(factory),
+      channel_id_(channel_id),
       gpu_info_(gpu_info),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   next_image_id_.GetNext();

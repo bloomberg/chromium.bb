@@ -408,8 +408,9 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
             "466866 BrowserGpuChannelHostFactory::GpuChannelEstablished1"));
     GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
     gpu_channel_ = GpuChannelHost::Create(
-        this, pending_request_->gpu_info(), pending_request_->channel_handle(),
-        shutdown_event_.get(), gpu_memory_buffer_manager_.get());
+        this, gpu_client_id_, pending_request_->gpu_info(),
+        pending_request_->channel_handle(), shutdown_event_.get(),
+        gpu_memory_buffer_manager_.get());
   }
   gpu_host_id_ = pending_request_->gpu_host_id();
   pending_request_ = NULL;

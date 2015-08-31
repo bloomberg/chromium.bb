@@ -83,6 +83,7 @@ class GpuChannelHost : public IPC::Sender,
   // Must be called on the main thread (as defined by the factory).
   static scoped_refptr<GpuChannelHost> Create(
       GpuChannelHostFactory* factory,
+      int channel_id,
       const gpu::GPUInfo& gpu_info,
       const IPC::ChannelHandle& channel_handle,
       base::WaitableEvent* shutdown_event,
@@ -94,6 +95,8 @@ class GpuChannelHost : public IPC::Sender,
     DCHECK(channel_filter_.get());
     return channel_filter_->IsLost();
   }
+
+  int channel_id() const { return channel_id_; }
 
   // The GPU stats reported by the GPU process.
   const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
@@ -236,6 +239,7 @@ class GpuChannelHost : public IPC::Sender,
   };
 
   GpuChannelHost(GpuChannelHostFactory* factory,
+                 int channel_id,
                  const gpu::GPUInfo& gpu_info,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~GpuChannelHost() override;
@@ -252,6 +256,7 @@ class GpuChannelHost : public IPC::Sender,
   // - |channel_| and |stream_flush_info_|, protected by |context_lock_|
   GpuChannelHostFactory* const factory_;
 
+  const int channel_id_;
   const gpu::GPUInfo gpu_info_;
 
   scoped_refptr<MessageFilter> channel_filter_;
