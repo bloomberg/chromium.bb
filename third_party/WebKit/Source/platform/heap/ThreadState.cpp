@@ -446,7 +446,7 @@ void ThreadState::snapshot()
 
     Vector<String> classNameVector(info.classTags.size());
     for (SnapshotInfo::ClassTagMap::iterator it = info.classTags.begin(); it != info.classTags.end(); ++it)
-        classNameVector[it->value] = it->key->m_className;
+        classNameVector[it->value] = it->key->className();
 
     size_t liveSize = 0;
     size_t deadSize = 0;

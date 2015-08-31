@@ -101,7 +101,7 @@ namespace blink {
 static String classOf(const void* object)
 {
     if (const GCInfo* gcInfo = Heap::findGCInfo(reinterpret_cast<Address>(const_cast<void*>(object))))
-        return gcInfo->m_className;
+        return gcInfo->className();
     return "unknown";
 }
 #endif
