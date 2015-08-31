@@ -965,6 +965,17 @@
       'browser/notifications/notification_permission_context_unittest.cc',
       'browser/notifications/platform_notification_service_unittest.cc',
     ],
+     # Used by Full Safe Browsing (safe_browsing==1) and Mobile Extended Safe
+     # Browsing (==3) modes.
+    'chrome_unit_tests_shared_safe_browsing_sources': [
+      'browser/safe_browsing/malware_details_unittest.cc',
+      'browser/safe_browsing/ping_manager_unittest.cc',
+      'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
+      'browser/safe_browsing/ui_manager_unittest.cc',
+     ],
+    'chrome_unit_tests_mobile_extended_safe_browsing_sources': [
+      'browser/safe_browsing/safe_browsing_api_handler_unittest.cc',
+     ],
     'chrome_unit_tests_full_safe_browsing_sources': [
       'browser/safe_browsing/browser_feature_extractor_unittest.cc',
       'browser/safe_browsing/chunk_range_unittest.cc',
@@ -997,13 +1008,10 @@
       'browser/safe_browsing/incident_reporting/variations_seed_signature_incident_unittest.cc',
       'browser/safe_browsing/local_database_manager_unittest.cc',
       'browser/safe_browsing/local_two_phase_testserver.cc',
-      'browser/safe_browsing/malware_details_unittest.cc',
       'browser/safe_browsing/path_sanitizer_unittest.cc',
-      'browser/safe_browsing/ping_manager_unittest.cc',
       'browser/safe_browsing/prefix_set_unittest.cc',
       'browser/safe_browsing/protocol_manager_unittest.cc',
       'browser/safe_browsing/protocol_parser_unittest.cc',
-      'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
       'browser/safe_browsing/safe_browsing_database_unittest.cc',
       'browser/safe_browsing/safe_browsing_store_file_unittest.cc',
       'browser/safe_browsing/safe_browsing_store_unittest.cc',
@@ -1013,7 +1021,6 @@
       'browser/safe_browsing/test_database_manager.cc',
       'browser/safe_browsing/test_database_manager.h',
       'browser/safe_browsing/two_phase_uploader_unittest.cc',
-      'browser/safe_browsing/ui_manager_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_mac_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_win_unittest.cc',
@@ -2387,26 +2394,17 @@
         }],
         ['safe_browsing==1', {
           # TODO(sgurun): enable tests for safe_browsing==2.
-          'sources': [ '<@(chrome_unit_tests_full_safe_browsing_sources)' ],
+          'sources': [ '<@(chrome_unit_tests_full_safe_browsing_sources)',
+                       '<@(chrome_unit_tests_shared_safe_browsing_sources)',
+                     ],
           'dependencies': [
             'ipc_protobuf_message_test_proto',
           ],
-          'conditions': [
-            ['OS == "android"', {
-              'dependencies!': [
-                'ipc_protobuf_message_test_proto',
-              ],
-              'sources!': [
-                # Android doesn't support download feedbacks.
-                'browser/safe_browsing/download_feedback_service_unittest.cc',
-                'browser/safe_browsing/download_feedback_unittest.cc',
-                'browser/safe_browsing/download_protection_service_unittest.cc',
-                'browser/safe_browsing/two_phase_uploader_unittest.cc',
-                'common/safe_browsing/ipc_protobuf_message_test_messages.h',
-                'common/safe_browsing/ipc_protobuf_message_unittest.cc',
-              ],
-            }],
-          ],
+        }],
+        ['safe_browsing==3', {
+          'sources': [ '<@(chrome_unit_tests_mobile_extended_safe_browsing_sources)',
+                       '<@(chrome_unit_tests_shared_safe_browsing_sources)',
+                     ],
         }],
         ['enable_autofill_dialog==1 and OS!="android"', {
           'sources': [ '<@(chrome_unit_tests_autofill_dialog_sources)' ],

@@ -37803,12 +37803,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SB2.RemoteCall.Result" enum="SB2RemoteCallsResult">
+<histogram name="SB2.RemoteCall.Result" enum="SB2RemoteCallResult">
   <owner>nparker@chromium.org</owner>
   <summary>
     Result of URL-classification API calls from Chrome via
     RemoteSafeBrowsingApiHandler.  Logged from Java when the remote IPC returns
     and is judged safe/not-safe, or hits a deadline.
+  </summary>
+</histogram>
+
+<histogram name="SB2.RemoteCall.ThreatSubType.PotentiallyHarmfulApp"
+    enum="SB2RemoteCallThreatSubType">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The threat sub-type annotated  for URLs classified as PHA via remote calls
+    through RemoteSafeBrowsingApiHandler. &quot;PHA&quot; classifications
+    generate &quot;malware&quot; interstitials.
+  </summary>
+</histogram>
+
+<histogram name="SB2.RemoteCall.ThreatSubType.SocialEngineering"
+    enum="SB2RemoteCallThreatSubType">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The threat sub-type annotated returned for URLs classified as social
+    engineering via remote calls through RemoteSafeBrowsingApiHandler.
+    &quot;Social engineering&quot; classifications generate &quot;phishing&quot;
+    interstitials.
   </summary>
 </histogram>
 
@@ -69601,11 +69622,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="19" label="BLOOM_MISS_PREFIX_HIT"/>
 </enum>
 
-<enum name="SB2RemoteCallsResult" type="int">
+<enum name="SB2RemoteCallResult" type="int">
   <int value="0" label="INTERNAL_ERROR"/>
   <int value="1" label="TIMEOUT"/>
   <int value="2" label="SAFE"/>
   <int value="3" label="UNSAFE"/>
+  <int value="4" label="JSON_EMPTY"/>
+  <int value="5" label="FAILED_TO_PARSE"/>
+  <int value="6" label="JSON_UNKNOWN_THREAT"/>
+</enum>
+
+<enum name="SB2RemoteCallThreatSubType" type="int">
+  <int value="0" label="No subtype added"/>
+  <int value="1" label="Landing URL"/>
+  <int value="2" label="Distribution URL"/>
+  <int value="3" label="Unknown"/>
 </enum>
 
 <enum name="SB2SideEffectFreeWhitelistStatus" type="int">

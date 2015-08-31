@@ -1658,22 +1658,15 @@ if (!is_android) {
     if (safe_browsing_mode == 1) {
       # TODO(sgurun): enable tests for safe_browsing==2.
       sources += rebase_path(
-              chrome_tests_unit_gypi_values.chrome_unit_tests_full_safe_browsing_sources,
+              chrome_tests_unit_gypi_values.chrome_unit_tests_full_safe_browsing_sources + chrome_tests_unit_gypi_values.chrome_unit_tests_shared_safe_browsing_sources,
               ".",
               "//chrome")
       deps += [ ":test_proto" ]
-      if (is_android) {
-        deps -= [ ":test_proto" ]
-        sources -= [
-          # Android doesn't support download feedbacks.
-          "../browser/safe_browsing/download_feedback_service_unittest.cc",
-          "../browser/safe_browsing/download_feedback_unittest.cc",
-          "../browser/safe_browsing/download_protection_service_unittest.cc",
-          "../browser/safe_browsing/two_phase_uploader_unittest.cc",
-          "../common/safe_browsing/ipc_protobuf_message_test_messages.h",
-          "../common/safe_browsing/ipc_protobuf_message_unittest.cc",
-        ]
-      }
+    } else if (safe_browsing_mode == 3) {
+      sources += rebase_path(
+              chrome_tests_unit_gypi_values.chrome_unit_tests_mobile_extended_safe_browsing_sources + chrome_tests_unit_gypi_values.chrome_unit_tests_shared_safe_browsing_sources,
+              ".",
+              "//chrome")
     }
     if (enable_autofill_dialog && !is_android) {
       sources += rebase_path(

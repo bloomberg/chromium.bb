@@ -2444,6 +2444,8 @@
       'browser/safe_browsing/remote_database_manager.h',
       'browser/safe_browsing/safe_browsing_api_handler.cc',
       'browser/safe_browsing/safe_browsing_api_handler.h',
+      'browser/safe_browsing/safe_browsing_api_handler_util.cc',
+      'browser/safe_browsing/safe_browsing_api_handler_util.h',
     ],
     # "Safe Browsing Full" files in addition to the "basic" ones to use for
     # full safe browsing. This has some in common with "mobile_extended."
