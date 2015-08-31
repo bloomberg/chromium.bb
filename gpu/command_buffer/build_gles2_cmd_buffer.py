@@ -2143,7 +2143,7 @@ _FUNCTION_INFO = {
   },
   'BindBufferBase': {
     'type': 'Bind',
-    'id_mapping': [ 'Buffer' ],
+    'decoder_func': 'DoBindBufferBase',
     'gen_func': 'GenBuffersARB',
     'unsafe': True,
   },

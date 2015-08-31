@@ -59,17 +59,7 @@ error::Error GLES2DecoderImpl::HandleBindBufferBase(
   GLenum target = static_cast<GLenum>(c.target);
   GLuint index = static_cast<GLuint>(c.index);
   GLuint buffer = c.buffer;
-  if (!group_->GetBufferServiceId(buffer, &buffer)) {
-    if (!group_->bind_generates_resource()) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindBufferBase",
-                         "invalid buffer id");
-      return error::kNoError;
-    }
-    GLuint client_id = buffer;
-    glGenBuffersARB(1, &buffer);
-    CreateBuffer(client_id, buffer);
-  }
-  glBindBufferBase(target, index, buffer);
+  DoBindBufferBase(target, index, buffer);
   return error::kNoError;
 }
 

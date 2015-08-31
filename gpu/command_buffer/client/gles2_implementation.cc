@@ -1126,7 +1126,7 @@ bool GLES2Implementation::GetQueryObjectValueHelper(
     SetGLError(
         GL_INVALID_OPERATION,
         function_name,
-        "query active. Did you to call glEndQueryEXT?");
+        "query active. Did you call glEndQueryEXT?");
     return false;
   }
 
@@ -4911,6 +4911,10 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
         return;
       }
       break;
+    case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
+      if (capabilities_.major_version >= 3)
+        break;
+      // Fall through
     default:
       SetGLError(
           GL_INVALID_ENUM, "glBeginQueryEXT", "unknown query target");
