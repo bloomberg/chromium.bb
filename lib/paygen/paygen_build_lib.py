@@ -1018,6 +1018,7 @@ class _PaygenBuild(object):
       except failures_lib.TestWarning as e:
         logging.warning('Warning running test suite; error output:\n%s', e)
     else:
+      # Run run_suite.py locally.
       cmd = [
           os.path.join(AUTOTEST_DIR, 'site_utils', 'run_suite.py'),
           '--board', self._archive_board,
@@ -1032,7 +1033,7 @@ class _PaygenBuild(object):
       ]
       logging.info('Running autotest suite: %s', ' '.join(cmd))
       try:
-        commands.HWTestCreateAndWait(cmd)
+        cros_build_lib.RunCommand(cmd)
       except cros_build_lib.RunCommandError as e:
         if e.result.returncode:
           logging.error('Error (%d) running test suite; error output:\n%s',

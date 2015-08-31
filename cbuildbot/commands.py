@@ -18,7 +18,6 @@ import shutil
 import sys
 import tempfile
 
-from chromite.cbuildbot import autotest_rpc_errors
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -871,8 +870,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
                    retry=None, max_retries=None,
                    minimum_duts=0, suite_min_duts=0,
-                   offload_failures_only=None, debug=True,
-                   subsystems=None, use_swarming_proxy=False):
+                   offload_failures_only=None, debug=True, subsystems=None):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -901,27 +899,6 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     debug: Whether we are in debug mode.
     subsystems: A set of subsystems that the relevant changes affect, for
                 testing purposes.
-    use_swarming_proxy: If True, use the new swarming proxy.
-  """
-  args = (build, suite, board, pool, num, file_bugs, wait_for_results,
-          priority, timeout_mins, retry, max_retries, minimum_duts,
-          suite_min_duts, offload_failures_only, debug, subsystems)
-  if use_swarming_proxy:
-    _RunHWTestSuiteSwarming(*args)
-  else:
-    _RunHWTestSuite(*args)
-
-
-# pylint: disable=docstring-missing-args
-def _RunHWTestSuiteSwarming(
-    build, suite, board, pool=None, num=None, file_bugs=None,
-    wait_for_results=None, priority=None, timeout_mins=None,
-    retry=None, max_retries=None, minimum_duts=0, suite_min_duts=0,
-    offload_failures_only=None, debug=True, subsystems=None):
-  """Run the test suite in the Autotest lab using swarming proxy.
-
-  Args:
-    See RunHWTestSuite.
   """
   try:
     cmd = [_RUN_SUITE_PATH]
@@ -930,7 +907,7 @@ def _RunHWTestSuiteSwarming(
                             max_retries, minimum_duts, suite_min_duts,
                             offload_failures_only, subsystems)
     swarming_args = _CreateSwarmingArgs(build, suite, timeout_mins)
-    HWTestCreateAndWaitSwarming(cmd, swarming_args, debug)
+    HWTestCreateAndWait(cmd, swarming_args, debug)
   except cros_build_lib.RunCommandError as e:
     result = e.result
     if not result.task_summary_json:
@@ -979,62 +956,8 @@ def _RunHWTestSuiteSwarming(
         raise failures_lib.TestFailure(
             '** HWTest failed (code %d) **' % result.returncode)
 
-# TODO(fdeng): To be deprecated
+
 # pylint: disable=docstring-missing-args
-def _RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
-                    wait_for_results=None, priority=None, timeout_mins=None,
-                    retry=None, max_retries=None,
-                    minimum_duts=0, suite_min_duts=0,
-                    offload_failures_only=None, debug=True,
-                    subsystems=None):
-  """Run the test suite in the Autotest lab using old golo proxy.
-
-  Args:
-    See RunHWTestSuite.
-  """
-
-  try:
-    cmd = [_AUTOTEST_RPC_CLIENT, _AUTOTEST_RPC_HOSTNAME, 'RunSuite']
-    cmd += _GetRunSuiteArgs(build, suite, board, pool, num, file_bugs,
-                            wait_for_results, priority, timeout_mins, retry,
-                            max_retries, minimum_duts, suite_min_duts,
-                            offload_failures_only, subsystems)
-    HWTestCreateAndWait(cmd, debug)
-  except cros_build_lib.RunCommandError as e:
-    result = e.result
-    # run_suite error codes:
-    #   0 - OK: Tests ran and passed.
-    #   1 - ERROR: Tests ran and failed (or timed out).
-    #   2 - WARNING: Tests ran and passed with warning(s). Note that 2
-    #         may also be CLIENT_HTTP_CODE error returned by
-    #         autotest_rpc_client.py. We ignore that case for now.
-    #   3 - INFRA_FAILURE: Tests did not complete due to lab issues.
-    #   4 - SUITE_TIMEOUT: Suite timed out. This could be caused by
-    #         infrastructure failures or by test failures.
-    # 11+ for cases when rpc is down, see autotest_rpc_errors.py.
-    lab_warning_codes = (2,)
-    infra_error_codes = (3,)
-    timeout_codes = (4,)
-    board_not_available_codes = (5,)
-
-    if result.returncode in lab_warning_codes:
-      raise failures_lib.TestWarning('** Suite passed with a warning code **')
-    elif (result.returncode in infra_error_codes or
-          result.returncode >= autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST):
-      raise failures_lib.TestLabFailure(
-          '** HWTest did not complete due to infrastructure issues '
-          '(code %d) **' % result.returncode)
-    elif result.returncode in timeout_codes:
-      raise failures_lib.SuiteTimedOut(
-          '** Suite timed out before completion **')
-    elif result.returncode in board_not_available_codes:
-      raise failures_lib.BoardNotAvailable(
-          '** Board was not availble in the lab **')
-    elif result.returncode != 0:
-      raise failures_lib.TestFailure(
-          '** HWTest failed (code %d) **' % result.returncode)
-
-
 def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
                      file_bugs=None, wait_for_results=None,
                      priority=None, timeout_mins=None,
@@ -1140,7 +1063,7 @@ def _CreateSwarmingArgs(build, suite, timeout_mins=None):
   return swarming_args
 
 
-def HWTestCreateAndWaitSwarming(cmd, swarming_args, debug=False):
+def HWTestCreateAndWait(cmd, swarming_args, debug=False):
   """Start and wait on HWTest suite in the lab.
 
   This method first run a command to create the suite.
@@ -1181,78 +1104,6 @@ def HWTestCreateAndWaitSwarming(cmd, swarming_args, debug=False):
       for output in result.task_summary_json['shards'][0]['outputs']:
         sys.stdout.write(output)
       sys.stdout.flush()
-
-
-# TODO(akeshet): This function exists solely to support a caller in
-# paygen_build_lib. That caller should be refactored to use RunHWTestSuite, at
-# which point this can be folded into RunHWTestSuite.
-
-# TODO(fdeng): To be removed
-def HWTestCreateAndWait(cmd, debug=False):
-  """Start and wait on HWTest suite in the lab, retrying on proxy failures.
-
-  Args:
-    cmd: Proxied run_suite command as returned by _CreateRunSuiteCommand.
-    debug: If True, log command rather than running it.
-  """
-  job_id = _HWTestStart(cmd, debug)
-  if job_id is not None:
-    _HWTestWait(cmd, job_id)
-
-
-# TODO(fdeng): To be removed
-def _HWTestStart(cmd, debug=True):
-  """Start a suite in the HWTest lab, and return its id.
-
-  Args:
-    cmd: The base run_suite command, as created by _CreateRunSuiteCommand.
-    debug: If True, log command that would have run rather than starting suite.
-
-  Returns:
-    Job id of created suite. Returned id will be None if no job id was created.
-  """
-  cmd = list(cmd)
-  cmd += ['-c']
-
-  if debug:
-    logging.info('RunHWTestSuite would run: %s', cros_build_lib.CmdToStr(cmd))
-  else:
-    max_retry = 10
-    retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,
-                autotest_rpc_errors.CLIENT_CANNOT_CONNECT,)
-    try:
-      result = retry_util.RunCommandWithRetries(max_retry, cmd,
-                                                retry_on=retry_on,
-                                                capture_output=True,
-                                                combine_stdout_stderr=True)
-    except cros_build_lib.RunCommandError as e:
-      logging.error('%s', e.result.output)
-      raise
-
-    logging.info('%s', result.output)
-    m = re.search(r'Created suite job:.*object_id=(?P<job_id>\d*)',
-                  result.output)
-    if m:
-      return m.group('job_id')
-
-
-# TODO(fdeng): To be removed
-def _HWTestWait(cmd, job_id):
-  """Wait for HWTest suite to complete, retrying rpc failures.
-
-  Args:
-    cmd: The base run_suite command that was used to launcht the suite, as
-         created by _CreateRunSuiteCommand.
-    job_id: The job id of the suite that was created.
-  """
-  cmd = list(cmd)
-  cmd += ['-m', str(job_id)]
-
-  retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,
-              autotest_rpc_errors.PROXY_CONNECTION_LOST,
-              autotest_rpc_errors.CLIENT_CANNOT_CONNECT,)
-  max_retry = 10
-  retry_util.RunCommandWithRetries(max_retry, cmd, retry_on=retry_on)
 
 
 def AbortHWTests(config_type_or_name, version, debug, suite=''):

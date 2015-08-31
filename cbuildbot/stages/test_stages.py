@@ -309,11 +309,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     else:
       subsystems = None
 
-    # TODO(fdeng): Remove this to turn on swarming proxy for all builders.
-    if not self._run.InProduction() or build.startswith('link-release'):
-      use_swarming_proxy = True
-    else:
-      use_swarming_proxy = False
     commands.RunHWTestSuite(
         build, self.suite_config.suite, self._current_board,
         pool=self.suite_config.pool, num=self.suite_config.num,
@@ -326,8 +321,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         minimum_duts=self.suite_config.minimum_duts,
         suite_min_duts=self.suite_config.suite_min_duts,
         offload_failures_only=self.suite_config.offload_failures_only,
-        debug=debug, subsystems=subsystems,
-        use_swarming_proxy=use_swarming_proxy)
+        debug=debug, subsystems=subsystems)
 
 
 class AUTestStage(HWTestStage):
