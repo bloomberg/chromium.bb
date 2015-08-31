@@ -217,8 +217,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mProjectionMatrix,
                 0, mEyePointCombinedMatrix, 0);
 
-        mEyePoint.setCombinedMatrix(mEyePointCombinedMatrix);
-        mEyePoint.draw();
+        mEyePoint.draw(mEyePointCombinedMatrix);
     }
 
     private void drawSkybox() {

@@ -33,7 +33,6 @@ public class CardboardActivityEyePoint {
     private int mProgramHandle;
     private int mCombinedMatrixHandle;
     private int mPositionHandle;
-    private float[] mCombinedMatrix;
 
     public CardboardActivityEyePoint() {
         // Set handlers for eye point drawing.
@@ -50,22 +49,15 @@ public class CardboardActivityEyePoint {
     }
 
     /**
-     * Set up model view projection matrix.
-     */
-    public void setCombinedMatrix(float[] combinedMatrix) {
-        mCombinedMatrix = combinedMatrix.clone();
-    }
-
-    /**
      * Draw the eye point based on given model view projection matrix.
      */
-    public void draw() {
+    public void draw(float[] combinedMatrix) {
         GLES20.glUseProgram(mProgramHandle);
 
         // Set the eye point in front of desktop.
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
 
-        GLES20.glUniformMatrix4fv(mCombinedMatrixHandle, 1, false, mCombinedMatrix, 0);
+        GLES20.glUniformMatrix4fv(mCombinedMatrixHandle, 1, false, combinedMatrix, 0);
 
         GLES20.glVertexAttrib4f(mPositionHandle, 0.0f, 0.0f, 0.0f, 1.0f);
 
