@@ -61,7 +61,7 @@ DEFINE_TRACE({{v8_class}})
     v8::Local<v8::Value> *argv = 0;
     {% endif %}
 
-    {% set this_handle_parameter = 'thisHandle, ' if method.call_with_this_handle else 'm_scriptState->context()->Global(), ' %}
+    {% set this_handle_parameter = 'thisHandle, ' if method.call_with_this_handle else 'v8::Undefined(m_scriptState->isolate()), ' %}
     {% if method.idl_type == 'boolean' %}
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
