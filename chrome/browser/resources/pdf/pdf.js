@@ -21,7 +21,7 @@ function getScrollbarWidth() {
 }
 
 /**
- * Return the filename component of a URL.
+ * Return the filename component of a URL, percent decoded if possible.
  * @param {string} url The URL to get the filename from.
  * @return {string} The filename component.
  */
@@ -29,7 +29,14 @@ function getFilenameFromURL(url) {
   // Ignore the query and fragment.
   var mainUrl = url.split(/#|\?/)[0];
   var components = mainUrl.split(/\/|\\/);
-  return components[components.length - 1];
+  var filename = components[components.length - 1];
+  try {
+    return decodeURIComponent(filename);
+  } catch (e) {
+    if (e instanceof URIError)
+      return filename;
+    throw e;
+  }
 }
 
 /**
@@ -608,8 +615,8 @@ PDFViewer.prototype = {
         if (message.data.title) {
           document.title = message.data.title;
         } else {
-          document.title = decodeURIComponent(
-              getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl));
+          document.title =
+              getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl);
         }
         this.bookmarks_ = message.data.bookmarks;
         if (this.isMaterial_) {

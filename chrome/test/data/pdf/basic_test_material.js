@@ -111,6 +111,14 @@ var tests = [
         'both.pdf',
         getFilenameFromURL('http://example.com/both.pdf?p=a/b#zoom=100/Title'));
 
+    chrome.test.assertEq(
+        'name with spaces.pdf',
+        getFilenameFromURL('http://example.com/name%20with%20spaces.pdf'));
+
+    chrome.test.assertEq(
+        'invalid%EDname.pdf',
+        getFilenameFromURL('http://example.com/invalid%EDname.pdf'));
+
     chrome.test.succeed();
   }
 ];
