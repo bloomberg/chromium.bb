@@ -57,6 +57,7 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
     BookmarkItem setBookmarkId(BookmarkId bookmarkId) {
         mBookmarkId = bookmarkId;
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(bookmarkId);
+        clearPopup();
         if (isSelectable()) {
             mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
             setChecked(mDelegate.isBookmarkSelected(bookmarkId));
@@ -77,8 +78,15 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
         updateSelectionState();
     }
 
+    private void clearPopup() {
+        if (mPopupMenu != null) {
+            if (mPopupMenu.isShowing()) mPopupMenu.dismiss();
+            mPopupMenu = null;
+        }
+    }
+
     private void cleanup() {
-        if (mPopupMenu != null) mPopupMenu.dismiss();
+        clearPopup();
         if (mDelegate != null) mDelegate.removeUIObserver(this);
     }
 
