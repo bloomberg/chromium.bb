@@ -315,7 +315,8 @@ void ChromeMetricsServiceClient::Initialize() {
       scoped_ptr<metrics::MetricsProvider>(new OmniboxMetricsProvider(
           base::Bind(&chrome::IsOffTheRecordSessionActive))));
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
+      scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider(
+          g_browser_process->local_state())));
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new metrics::GPUMetricsProvider));
 
