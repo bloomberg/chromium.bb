@@ -124,6 +124,30 @@ color: hsla(200,1.5%,50%,1)
   rgb: rgb(126, 128, 129)
   hsl: hsl(200, 1%, 50%)
 
+color: rgba(0,0,0,.5)
+  simple: false
+  original: rgba(0,0,0,.5)
+  rgb: null
+  rgba: rgba(0,0,0,.5)
+  hsl: null
+  hsla: hsla(0, 0%, 0%, 0.5)
+
+color: hsla(.5,.5%,.5%,.5)
+  simple: false
+  original: hsla(.5,.5%,.5%,.5)
+  rgb: null
+  rgba: rgba(1, 1, 1, 0.5)
+  hsl: null
+  hsla: hsla(.5,.5%,.5%,.5)
+
+color: hsla(100.5,50.5%,50.5%,.5)
+  simple: false
+  original: hsla(100.5,50.5%,50.5%,.5)
+  rgb: null
+  rgba: rgba(106, 193, 65, 0.5)
+  hsl: null
+  hsla: hsla(100.5,50.5%,50.5%,.5)
+
 color: rgba(255, 0, 0, -5)
   simple: false
   original: rgba(255, 0, 0, -5)
@@ -159,9 +183,13 @@ SUCCESS: parsed invalid color rgb(1,1,1.2) to null
 
 SUCCESS: parsed invalid color rgba(0,0,0,1%) to null
 
+SUCCESS: parsed invalid color rgba(0,0,0,) to null
+
 SUCCESS: parsed invalid color hsl(0,0,0) to null
 
 SUCCESS: parsed invalid color hsl(0%, 0%, 0%) to null
+
+SUCCESS: parsed invalid color hsla(0,,0,1) to null
 
 SUCCESS: parsed invalid color hsl(0, 0%, 0) to null
 

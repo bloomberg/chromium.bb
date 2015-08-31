@@ -23,6 +23,9 @@ function test()
         'hsla(240,100%,50%,0.05)',
         'hsl(200.5,0%,50%)',
         'hsla(200,1.5%,50%,1)',
+        'rgba(0,0,0,.5)',
+        'hsla(.5,.5%,.5%,.5)',
+        'hsla(100.5,50.5%,50.5%,.5)',
 
         // Each of these has their alpha clipped [0.0, 1.0].
         'rgba(255, 0, 0, -5)', // clipped to rgba(255,0,0,0)
@@ -39,8 +42,10 @@ function test()
         'rgb(a,b,c,d)',
         'rgb(1,1,1.2)',
         'rgba(0,0,0,1%)',
+        'rgba(0,0,0,)',
         'hsl(0,0,0)',
         'hsl(0%, 0%, 0%)',
+        'hsla(0,,0,1)',
         'hsl(0, 0%, 0)',
         'hsl(a,b,c)',
         'hsla(0,0,0,0)',
