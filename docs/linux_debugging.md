@@ -1,4 +1,4 @@
-﻿# Tips for debugging on Linux
+# Tips for debugging on Linux
 
 This page is for Chromium-specific debugging tips; learning how to run gdb is
 out of scope.

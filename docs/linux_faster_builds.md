@@ -1,4 +1,4 @@
-﻿# Tips for improving build speed on Linux
+# Tips for improving build speed on Linux
 
 This list is sorted such that the largest speedup is first; see
 [Linux build instructions](linux_build_instructions.md) for context and

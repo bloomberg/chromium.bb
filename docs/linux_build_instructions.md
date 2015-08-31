@@ -1,4 +1,4 @@
-﻿# Build instructions for Linux
+# Build instructions for Linux
 
 [TOC]
 
