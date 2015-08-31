@@ -1,0 +1,47 @@
+layer at (0,0) size 800x600 scrollHeight 622
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x622 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x622
+    LayoutBlockFlow {BODY} at (8,8) size 784x606
+      LayoutBlockFlow {DIV} at (0,0) size 784x32
+        LayoutText {#text} at (0,5) size 140x26
+          text run at (0,5) width 140: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+      LayoutBlockFlow {DIV} at (0,32) size 128x198
+        LayoutBlockFlow {DIV} at (0,10) size 32x178
+          LayoutText {#text} at (3,0) size 26x164
+            text run at (3,0) width 164: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+        LayoutBlockFlow {DIV} at (32,10) size 32x178 [color=#0000FF]
+          LayoutText {#text} at (3,0) size 26x178
+            text run at (3,0) width 178: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+        LayoutBlockFlow {DIV} at (64,10) size 32x178 [color=#008080]
+          LayoutText {#text} at (5,0) size 26x140
+            text run at (5,0) width 140: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+        LayoutBlockFlow {DIV} at (96,10) size 32x178 [color=#A52A2A]
+          LayoutText {#text} at (5,0) size 26x140
+            text run at (5,0) width 140: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+      LayoutBlockFlow {DIV} at (0,230) size 128x198
+        LayoutBlockFlow {DIV} at (0,10) size 32x178
+          LayoutText {#text} at (3,0) size 26x164
+            text run at (3,0) width 164: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+        LayoutBlockFlow {DIV} at (32,10) size 32x178 [color=#0000FF]
+          LayoutText {#text} at (3,0) size 26x178
+            text run at (3,0) width 178: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+        LayoutBlockFlow {DIV} at (64,10) size 32x178 [color=#008080]
+          LayoutText {#text} at (5,0) size 26x140
+            text run at (5,0) width 140: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+        LayoutBlockFlow {DIV} at (96,10) size 32x178 [color=#A52A2A]
+          LayoutText {#text} at (5,0) size 26x140
+            text run at (5,0) width 140: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+      LayoutBlockFlow {DIV} at (0,428) size 128x178
+        LayoutBlockFlow {DIV} at (0,0) size 32x178
+          LayoutText {#text} at (3,0) size 26x164
+            text run at (3,0) width 164: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+        LayoutBlockFlow {DIV} at (32,0) size 32x178 [color=#0000FF]
+          LayoutText {#text} at (3,0) size 26x178
+            text run at (3,0) width 178: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+        LayoutBlockFlow {DIV} at (64,0) size 32x178 [color=#008080]
+          LayoutText {#text} at (5,0) size 26x140
+            text run at (5,0) width 140: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"
+        LayoutBlockFlow {DIV} at (96,0) size 32x178 [color=#A52A2A]
+          LayoutText {#text} at (5,0) size 26x140
+            text run at (5,0) width 140: "\x{653B}\x{6BBB}\x{2307}\x{30FC}\x{FF1C}\x{FF1D}4"

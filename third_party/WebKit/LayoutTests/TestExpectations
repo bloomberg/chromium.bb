@@ -1290,7 +1290,6 @@ crbug.com/521730 [ Win10 ] fast/text/international/hindi-whitespace.html [ Failu
 #crbug.com/521730 [ Win10 ] fast/text/international/text-combine-image-test.html [ Failure ]
 #crbug.com/521730 [ Win10 ] fast/text/international/vertical-text-glyph-test.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/justify-ideograph-leading-expansion.html [ Failure Timeout Failure Timeout ]
-crbug.com/521730 fast/text/orientation-sideways.html [ NeedsRebaseline ]
 crbug.com/521730 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure Timeout Failure Timeout ]
 crbug.com/521730 [ Win10 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure Failure Timeout Failure ]
 crbug.com/521730 [ Win10 ] fast/writing-mode/border-vertical-lr.html [ Failure Timeout Failure Failure ]
