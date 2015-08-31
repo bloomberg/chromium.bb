@@ -40,7 +40,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleClient
   virtual void OnHandleTapped(const TouchHandle& handle) = 0;
   virtual void SetNeedsAnimate() = 0;
   virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() = 0;
-  virtual base::TimeDelta GetTapTimeout() const = 0;
+  virtual base::TimeDelta GetMaxTapDuration() const = 0;
 };
 
 // Responsible for displaying a selection or insertion handle for text

@@ -265,8 +265,8 @@ scoped_ptr<ui::TouchSelectionController> CreateSelectionController(
   DCHECK(client);
   DCHECK(content_view_core);
   ui::TouchSelectionController::Config config;
-  config.tap_timeout = base::TimeDelta::FromMilliseconds(
-      gfx::ViewConfiguration::GetTapTimeoutInMs());
+  config.max_tap_duration = base::TimeDelta::FromMilliseconds(
+      gfx::ViewConfiguration::GetLongPressTimeoutInMs());
   config.tap_slop = gfx::ViewConfiguration::GetTouchSlopInDips();
   config.show_on_tap_for_empty_editable = false;
   config.enable_longpress_drag_selection =

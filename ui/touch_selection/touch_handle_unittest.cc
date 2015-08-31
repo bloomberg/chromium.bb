@@ -14,7 +14,7 @@ using ui::test::MockMotionEvent;
 namespace ui {
 namespace {
 
-const int kDefaultTapTimeoutMs = 200;
+const int kDefaultTapDurationMs = 200;
 const double kDefaultTapSlop = 10.;
 const float kDefaultDrawableSize = 10.f;
 
@@ -101,8 +101,8 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
     return make_scoped_ptr(new MockTouchHandleDrawable(&drawable_data_));
   }
 
-  base::TimeDelta GetTapTimeout() const override {
-    return base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs);
+  base::TimeDelta GetMaxTapDuration() const override {
+    return base::TimeDelta::FromMilliseconds(kDefaultTapDurationMs);
   }
 
   void Animate(TouchHandle& handle) {
@@ -485,7 +485,7 @@ TEST_F(TouchHandleTest, Tap) {
   // Long press shouldn't trigger a tap.
   event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
-  event_time += 2 * GetTapTimeout();
+  event_time += 2 * GetMaxTapDuration();
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_FALSE(GetAndResetHandleTapped());
@@ -493,7 +493,7 @@ TEST_F(TouchHandleTest, Tap) {
   // Only a brief tap within the slop region should trigger a tap.
   event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
-  event_time += GetTapTimeout() / 2;
+  event_time += GetMaxTapDuration() / 2;
   event = MockMotionEvent(
       MockMotionEvent::ACTION_MOVE, event_time, kDefaultTapSlop / 2.f, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
@@ -505,7 +505,7 @@ TEST_F(TouchHandleTest, Tap) {
   // Moving beyond the slop region shouldn't trigger a tap.
   event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
-  event_time += GetTapTimeout() / 2;
+  event_time += GetMaxTapDuration() / 2;
   event = MockMotionEvent(
       MockMotionEvent::ACTION_MOVE, event_time, kDefaultTapSlop * 2.f, 0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));

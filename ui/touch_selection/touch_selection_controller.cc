@@ -41,11 +41,10 @@ TouchHandleOrientation ToTouchHandleOrientation(SelectionBound::Type type) {
 }  // namespace
 
 TouchSelectionController::Config::Config()
-    : tap_timeout(base::TimeDelta::FromMilliseconds(100)),
+    : max_tap_duration(base::TimeDelta::FromMilliseconds(300)),
       tap_slop(8),
       enable_longpress_drag_selection(false),
-      show_on_tap_for_empty_editable(false) {
-}
+      show_on_tap_for_empty_editable(false) {}
 
 TouchSelectionController::Config::~Config() {
 }
@@ -378,8 +377,8 @@ scoped_ptr<TouchHandleDrawable> TouchSelectionController::CreateDrawable() {
   return client_->CreateDrawable();
 }
 
-base::TimeDelta TouchSelectionController::GetTapTimeout() const {
-  return config_.tap_timeout;
+base::TimeDelta TouchSelectionController::GetMaxTapDuration() const {
+  return config_.max_tap_duration;
 }
 
 void TouchSelectionController::OnLongPressDragActiveStateChanged() {

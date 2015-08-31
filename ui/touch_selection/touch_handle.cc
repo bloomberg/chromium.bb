@@ -188,7 +188,7 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
     case MotionEvent::ACTION_UP: {
       if (is_drag_within_tap_region_ &&
           (event.GetEventTime() - touch_down_time_) <
-              client_->GetTapTimeout()) {
+              client_->GetMaxTapDuration()) {
         client_->OnHandleTapped(*this);
       }
 

@@ -209,7 +209,7 @@ class TouchSelectionControllerTest : public testing::Test,
     // |enable_longpress_drag_selection| are set to false by default, and should
     // be overriden for explicit testing.
     TouchSelectionController::Config config;
-    config.tap_timeout =
+    config.max_tap_duration =
         base::TimeDelta::FromMilliseconds(kDefaultTapTimeoutMs);
     config.tap_slop = kDefaulTapSlop;
     config.show_on_tap_for_empty_editable = false;

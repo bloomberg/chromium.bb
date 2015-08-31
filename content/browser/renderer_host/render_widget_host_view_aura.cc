@@ -2724,8 +2724,8 @@ void RenderWidgetHostViewAura::SelectionUpdated(bool is_editable,
 
 void RenderWidgetHostViewAura::CreateSelectionController() {
   ui::TouchSelectionController::Config tsc_config;
-  tsc_config.tap_timeout = base::TimeDelta::FromMilliseconds(
-      ui::GestureConfiguration::GetInstance()->show_press_delay_in_ms());
+  tsc_config.max_tap_duration = base::TimeDelta::FromMilliseconds(
+      ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
   tsc_config.tap_slop = ui::GestureConfiguration::GetInstance()
                             ->max_touch_move_in_pixels_for_click();
   tsc_config.show_on_tap_for_empty_editable = true;

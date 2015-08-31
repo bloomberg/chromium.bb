@@ -61,11 +61,13 @@ import org.chromium.content.browser.accessibility.captioning.CaptioningBridgeFac
 import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge;
 import org.chromium.content.browser.accessibility.captioning.TextTrackSettings;
 import org.chromium.content.browser.input.AdapterInputConnection;
+import org.chromium.content.browser.input.FloatingPastePopupMenu;
 import org.chromium.content.browser.input.GamepadList;
 import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.ImeAdapter.AdapterInputConnectionFactory;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.input.JoystickScrollProvider;
+import org.chromium.content.browser.input.LegacyPastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu.PastePopupMenuDelegate;
 import org.chromium.content.browser.input.PopupTouchHandleDrawable;
@@ -2635,55 +2637,35 @@ public class ContentViewCore implements
     @VisibleForTesting
     public boolean isPastePopupShowing() {
         if (mPastePopupMenu != null) return mPastePopupMenu.isShowing();
-        if (mHasInsertion && mActionMode != null) return true;
         return false;
     }
 
     private boolean showPastePopup(int x, int y) {
         if (!mHasInsertion || !canPaste()) return false;
         // TODO(jdduke): Factor out all selection/paste-related logic from ContentViewCore.
-        if (supportsFloatingActionMode()) {
-            if (mActionMode == null) {
-                showSelectActionMode(false);
-            } else {
-                invalidateActionModeContentRect();
-            }
-        }
-        // As floating action mode creation may fail if the embedding View
-        // doesn't support it, fall back to the custom paste popup.
-        if (!supportsFloatingActionMode()) {
-            assert mActionMode == null;
-            final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
-            getPastePopup().showAt(x, (int) (y + contentOffsetYPix));
-        }
+        final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
+        getPastePopup().show(x, (int) (y + contentOffsetYPix));
         return true;
     }
 
     private void hidePastePopup() {
-        // TODO(jdduke): Create a generic interface for the legacy PastePopupMenu and the
-        // new ActionMode-based paste popup menu.
-        if (mPastePopupMenu != null) {
-            assert !supportsFloatingActionMode();
-            mPastePopupMenu.hide();
-            return;
-        }
-        if (supportsFloatingActionMode() && mHasInsertion) {
-            mUnselectAllOnActionModeDismiss = false;
-            hideSelectActionMode();
-        }
+        if (mPastePopupMenu != null) mPastePopupMenu.hide();
     }
 
     private PastePopupMenu getPastePopup() {
-        assert !supportsFloatingActionMode();
         if (mPastePopupMenu == null) {
-            mPastePopupMenu = new PastePopupMenu(getContainerView(),
-                new PastePopupMenuDelegate() {
-                    @Override
-                    public void paste() {
-                        mWebContents.paste();
-                        dismissTextHandles();
-                    }
-                });
+            PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
+                @Override
+                public void paste() {
+                    mWebContents.paste();
+                    dismissTextHandles();
+                }
+            };
+            if (supportsFloatingActionMode()) {
+                mPastePopupMenu = new FloatingPastePopupMenu(getContainerView(), delegate);
+            } else {
+                mPastePopupMenu = new LegacyPastePopupMenu(getContainerView(), delegate);
+            }
         }
         return mPastePopupMenu;
     }
