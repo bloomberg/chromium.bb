@@ -51497,7 +51497,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of incoming frames per second for a sent video stream. Recorded
-    when a stream is removed.
+    when a stream is removed. The total number of frames is divided by the time
+    the video stream exists.
   </summary>
 </histogram>
 
@@ -51687,7 +51688,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of sent frames per second for a sent video stream. Recorded when
-    a stream is removed.
+    a stream is removed. The total number of frames is divided by the time the
+    video stream exists.
   </summary>
 </histogram>
 
