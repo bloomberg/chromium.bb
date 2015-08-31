@@ -606,6 +606,13 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   z-index: 1;
 }
 
+.gallery > .toolbar .icon-button > files-toggle-ripple {
+  height: 28px;
+  left: 2px;
+  top: 2px;
+  width: 28px;
+}
+
 .gallery > .toolbar button.edit > .icon {
   background-image: -webkit-image-set(
       url(../images/100/edit.png) 1x,
