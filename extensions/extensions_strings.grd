@@ -337,12 +337,12 @@
         other {UNUSED}}
       </message>
       <message name="IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE" desc="Title of the HID device selection dialog when the app will accept one or more selected devices. [ICU Syntax]">
-      {1, select,
+      {0, select,
        single {Select a HID device} multiple {Select HID devices}
        other {UNUSED}}
       </message>
       <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE" desc="Title of the USB device selection dialog when the app will accept one or more selected devices. [ICU Syntax]">
-      {1, select,
+      {0, select,
        single {Select a USB device} multiple {Select USB devices}
        other {UNUSED}}
       </message>
