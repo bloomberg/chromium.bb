@@ -92,9 +92,12 @@ same directory as your checkout.
 ### Install the C Development Tools ("CDT")
 
 1.  From the Help menu, select Install New Software...
-    1.  Select the URL for the CDT,
-        http://download.eclipse.org/tools/cdt/releases/kepler
-        1. If it's not there you can click Add... and add it.
+    1.  Select the 'Workd with' URL for the CDT
+        1.  If it's not there you can click Add... and add it.
+            1.  See https://eclipse.org/cdt/downloads.php for up to date
+                versions.
+                1.  e.g. with CDT 8.7.0 for Eclipse Mars, use
+                    http://download.eclipse.org/tools/cdt/releases/8.7
     1.  Googlers: We have a local mirror, but be sure you run prodaccess before
         trying to use it.
 1.  Select & install the Main and Optional features.

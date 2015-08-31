@@ -1,10 +1,11 @@
 # Cr
 
-Cr is the new unified interface to the myriad tools we use while working within
-a chromium checkout. Its main additional feature is that it allows you to build
-many configurations and run targets within a single checkout (by not relying on
-a directory called 'out'). This is especially important when you want to
-cross-compile (for instance, building android from linux or building arm from
+Cr is a tool that tries to hide some of the tools used for working on Chromium
+behind an abstraction layer. Nothing that cr does can't be done manually, but cr
+attempts to make things nicer. Its main additional feature is that it allows you
+to build many configurations and run targets within a single checkout (by not
+relying on a directory called 'out'). This is especially important when you want
+to cross-compile (for instance, building android from linux or building arm from
 intel), but it extends to any build variation.
 
 [TOC]
