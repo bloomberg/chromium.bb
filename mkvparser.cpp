@@ -94,9 +94,11 @@ long long ReadUInt(IMkvReader* pReader, long long pos, long& len) {
 
 long long ReadID(IMkvReader* pReader, long long pos, long& len) {
   const long long id = ReadUInt(pReader, pos, len);
-  if (id < 0 || len < 1 || len > 4) {
-    // An ID must be at least 1 byte long, and cannot exceed 4.
-    // See EBMLMaxIDLength: http://www.matroska.org/technical/specs/index.html
+  if (id <= 0 || len < 1 || len > 4) {
+    // An ID must at least 1 byte long, cannot exceed 4, and its value must be
+    // greater than 0.
+    // See known EBML values and EBMLMaxIDLength:
+    // http://www.matroska.org/technical/specs/index.html
     return E_FILE_FORMAT_INVALID;
   }
   return id;
