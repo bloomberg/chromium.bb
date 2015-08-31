@@ -1644,8 +1644,10 @@ ChromeContentRendererClient::DidInitializeServiceWorkerContextOnWorkerThread(
 }
 
 void ChromeContentRendererClient::WillDestroyServiceWorkerContextOnWorkerThread(
+    v8::Local<v8::Context> context,
     const GURL& url) {
 #if defined(ENABLE_EXTENSIONS)
-  extensions::Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(url);
+  extensions::Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(context,
+                                                                        url);
 #endif
 }

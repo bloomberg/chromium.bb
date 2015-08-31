@@ -103,7 +103,7 @@ class ServiceWorkerContextClient
   virtual void didEvaluateWorkerScript(bool success);
   virtual void didInitializeWorkerContext(v8::Local<v8::Context> context,
                                           const blink::WebURL& url);
-  virtual void willDestroyWorkerContext();
+  virtual void willDestroyWorkerContext(v8::Local<v8::Context> context);
   virtual void workerContextDestroyed();
   virtual void reportException(const blink::WebString& error_message,
                                int line_number,

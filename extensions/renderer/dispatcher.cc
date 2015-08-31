@@ -197,21 +197,41 @@ class ServiceWorkerScriptContextSet {
   ServiceWorkerScriptContextSet() {}
   ~ServiceWorkerScriptContextSet() {}
 
-  void Insert(const GURL& url, scoped_ptr<ScriptContext> context) {
+  void Insert(scoped_ptr<ScriptContext> context) {
     base::AutoLock lock(lock_);
-    CHECK(script_contexts_.find(url) == script_contexts_.end());
-    script_contexts_.set(url, context.Pass());
+    CHECK(FindScriptContext(context->v8_context()) == contexts_.end());
+    contexts_.push_back(context.Pass());
   }
 
-  void Remove(const GURL& url) {
+  void Remove(v8::Local<v8::Context> v8_context) {
     base::AutoLock lock(lock_);
-    scoped_ptr<ScriptContext> context = script_contexts_.take_and_erase(url);
-    CHECK(context);
-    context->Invalidate();
+    ScriptContextList::iterator context_it = FindScriptContext(v8_context);
+    // TODO(kalman): It would be good to CHECK(context_it != contexts_.end())
+    // here, but service workers can be started before the extension has been
+    // installed. See the length comment explaining why this happens, and
+    // how to solve it, in DidInitializeServiceWorkerContextOnWorkerThread.
+    // This does need to be fixed eventually, but for now, at least don't crash.
+    if (context_it == contexts_.end())
+      return;
+    (*context_it)->Invalidate();
+    contexts_.erase(context_it);
   }
 
  private:
-  base::ScopedPtrMap<GURL, scoped_ptr<ScriptContext>> script_contexts_;
+  using ScriptContextList = ScopedVector<ScriptContext>;
+
+  // Returns an iterator to the ScriptContext associated with |v8_context|, or
+  // contexts_.end() if not found.
+  ScriptContextList::iterator FindScriptContext(
+      v8::Local<v8::Context> v8_context) {
+    for (auto it = contexts_.begin(); it != contexts_.end(); ++it) {
+      if ((*it)->v8_context() == v8_context)
+        return it;
+    }
+    return contexts_.end();
+  }
+
+  ScriptContextList contexts_;
 
   mutable base::Lock lock_;
 
@@ -383,15 +403,35 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(url);
 
-  if (!extension)
+  if (!extension) {
+    // TODO(kalman): This is no good. Instead we need to either:
+    //
+    // - Hold onto the v8::Context and create the ScriptContext and install
+    //   our bindings when this extension is loaded.
+    // - Deal with there being an extension ID (url.host()) but no
+    //   extension associated with it, then document that getBackgroundClient
+    //   may fail if the extension hasn't loaded yet.
+    //
+    // The former is safer, but is unfriendly to caching (e.g. session restore).
+    // It seems to contradict the service worker idiom.
+    //
+    // The latter is friendly to caching, but running extension code without an
+    // installed extension makes me nervous, and means that we won't be able to
+    // expose arbitrary (i.e. capability-checked) extension APIs to service
+    // workers. We will probably need to relax some assertions - we just need
+    // to find them.
+    //
+    // Perhaps this could be solved with our own event on the service worker
+    // saying that an extension is ready, and documenting that extension APIs
+    // won't work before that event has fired?
     return;
+  }
 
   ScriptContext* context = new ScriptContext(
       v8_context, nullptr, extension, Feature::SERVICE_WORKER_CONTEXT,
       extension, Feature::SERVICE_WORKER_CONTEXT);
 
-  g_service_worker_script_context_set.Get().Insert(url,
-                                                   make_scoped_ptr(context));
+  g_service_worker_script_context_set.Get().Insert(make_scoped_ptr(context));
 
   v8::Isolate* isolate = context->isolate();
 
@@ -438,9 +478,10 @@ void Dispatcher::WillReleaseScriptContext(
 
 // static
 void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
+    v8::Local<v8::Context> v8_context,
     const GURL& url) {
-  if (RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(url))
-    g_service_worker_script_context_set.Get().Remove(url);
+  if (url.SchemeIs(kExtensionScheme))
+    g_service_worker_script_context_set.Get().Remove(v8_context);
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
