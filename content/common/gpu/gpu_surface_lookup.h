@@ -5,13 +5,14 @@
 #ifndef CONTENT_COMMON_GPU_GPU_SURFACE_LOOKUP_H_
 #define CONTENT_COMMON_GPU_GPU_SURFACE_LOOKUP_H_
 
+#include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
 
 // This class provides an interface to look up window surface handles
 // that cannot be sent through the IPC channel.
-class GpuSurfaceLookup {
+class CONTENT_EXPORT GpuSurfaceLookup {
  public:
   GpuSurfaceLookup() { }
   virtual ~GpuSurfaceLookup() { }

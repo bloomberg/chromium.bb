@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -26,7 +27,7 @@ namespace content {
 // Note: The ID can exist before the actual native handle for the surface is
 // created, for example to allow giving a reference to it to a renderer, so that
 // it is unamibiguously identified.
-class GpuSurfaceTracker : public GpuSurfaceLookup {
+class CONTENT_EXPORT GpuSurfaceTracker : public GpuSurfaceLookup {
  public:
   // Base class for reference counting surfaces. We store a
   // reference to an instance of this class in the surface_map_

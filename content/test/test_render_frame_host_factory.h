@@ -31,7 +31,9 @@ class TestRenderFrameHostFactory : public RenderFrameHostFactory {
       RenderWidgetHostDelegate* rwh_delegate,
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
-      int routing_id,
+      int32 routing_id,
+      int32 widget_routing_id,
+      int32 surface_id,
       int flags) override;
 
  private:

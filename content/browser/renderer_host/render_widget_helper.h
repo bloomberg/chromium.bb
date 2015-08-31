@@ -131,12 +131,15 @@ class RenderWidgetHelper
   void OnResumeRequestsForView(int route_id);
 
   // Called on the UI thread to finish creating a widget.
-  void OnCreateWidgetOnUI(int opener_id,
-                          int route_id,
+  void OnCreateWidgetOnUI(int32 opener_id,
+                          int32 route_id,
+                          int32 surface_id,
                           blink::WebPopupType popup_type);
 
   // Called on the UI thread to create a fullscreen widget.
-  void OnCreateFullscreenWidgetOnUI(int opener_id, int route_id);
+  void OnCreateFullscreenWidgetOnUI(int32 opener_id,
+                                    int32 route_id,
+                                    int32 surface_id);
 
   // Called on the IO thread to resume a paused navigation in the network
   // stack without transferring it to a new renderer process.

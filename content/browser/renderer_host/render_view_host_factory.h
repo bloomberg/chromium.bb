@@ -24,14 +24,13 @@ class RenderViewHostFactory {
   // Creates a RenderViewHost using the currently registered factory, or the
   // default one if no factory is registered. Ownership of the returned
   // pointer will be passed to the caller.
-  static RenderViewHost* Create(
-      SiteInstance* instance,
-      RenderViewHostDelegate* delegate,
-      RenderWidgetHostDelegate* widget_delegate,
-      int routing_id,
-      int main_frame_routing_id,
-      bool swapped_out,
-      bool hidden);
+  static RenderViewHost* Create(SiteInstance* instance,
+                                RenderViewHostDelegate* delegate,
+                                RenderWidgetHostDelegate* widget_delegate,
+                                int32 routing_id,
+                                int32 main_frame_routing_id,
+                                bool swapped_out,
+                                bool hidden);
 
   // Returns true if there is currently a globally-registered factory.
   static bool has_factory() {
@@ -48,8 +47,9 @@ class RenderViewHostFactory {
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
       RenderWidgetHostDelegate* widget_delegate,
-      int routing_id,
-      int main_frame_routing_id,
+      int32 routing_id,
+      int32 surface_id,
+      int32 main_frame_routing_id,
       bool swapped_out) = 0;
 
   // Registers your factory to be called when new RenderViewHosts are created.

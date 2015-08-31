@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/input_messages.h"
@@ -84,13 +85,12 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 // Create a RenderWidget for which we can filter messages.
 class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
  public:
-  RenderWidgetHostEditCommandCounter(
-      RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
-      int routing_id)
-    : RenderWidgetHostImpl(delegate, process, routing_id, false),
-      edit_command_message_count_(0) {
-  }
+  RenderWidgetHostEditCommandCounter(RenderWidgetHostDelegate* delegate,
+                                     RenderProcessHost* process,
+                                     int32 routing_id,
+                                     int32 surface_id)
+      : RenderWidgetHostImpl(delegate, process, routing_id, surface_id, false),
+        edit_command_message_count_(0) {}
 
   bool Send(IPC::Message* message) override {
     if (message->type() == InputMsg_ExecuteEditCommand::ID)
@@ -131,9 +131,12 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   supported_factors.push_back(ui::SCALE_FACTOR_100P);
   ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
 
+  int32 routing_id = process_host.GetNextRoutingID();
+  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
+      process_host.GetID(), routing_id);
   RenderWidgetHostEditCommandCounter* render_widget =
-      new RenderWidgetHostEditCommandCounter(
-          &delegate, &process_host, MSG_ROUTING_NONE);
+      new RenderWidgetHostEditCommandCounter(&delegate, &process_host,
+                                             routing_id, surface_id);
 
   base::mac::ScopedNSAutoreleasePool pool;
 

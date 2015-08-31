@@ -21,16 +21,18 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostFactory::Create(
     RenderWidgetHostDelegate* rwh_delegate,
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
-    int routing_id,
+    int32 routing_id,
+    int32 widget_routing_id,
+    int32 surface_id,
     int flags) {
   if (factory_) {
-    return factory_->CreateRenderFrameHost(site_instance, render_view_host,
-                                           delegate, rwh_delegate, frame_tree,
-                                           frame_tree_node, routing_id, flags);
+    return factory_->CreateRenderFrameHost(
+        site_instance, render_view_host, delegate, rwh_delegate, frame_tree,
+        frame_tree_node, routing_id, widget_routing_id, surface_id, flags);
   }
   return make_scoped_ptr(new RenderFrameHostImpl(
       site_instance, render_view_host, delegate, rwh_delegate, frame_tree,
-      frame_tree_node, routing_id, flags));
+      frame_tree_node, routing_id, widget_routing_id, surface_id, flags));
 }
 
 // static

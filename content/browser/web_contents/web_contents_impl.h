@@ -485,10 +485,13 @@ class CONTENT_EXPORT WebContentsImpl
       int main_frame_route_id,
       const ViewHostMsg_CreateWindow_Params& params,
       SessionStorageNamespace* session_storage_namespace) override;
-  void CreateNewWidget(int render_process_id,
-                       int route_id,
+  void CreateNewWidget(int32 render_process_id,
+                       int32 route_id,
+                       int32 surface_id,
                        blink::WebPopupType popup_type) override;
-  void CreateNewFullscreenWidget(int render_process_id, int route_id) override;
+  void CreateNewFullscreenWidget(int32 render_process_id,
+                                 int32 route_id,
+                                 int32 surface_id) override;
   void ShowCreatedWindow(int route_id,
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
@@ -914,8 +917,9 @@ class CONTENT_EXPORT WebContentsImpl
                            const base::string16& title);
 
   // Helper for CreateNewWidget/CreateNewFullscreenWidget.
-  void CreateNewWidget(int render_process_id,
-                       int route_id,
+  void CreateNewWidget(int32 render_process_id,
+                       int32 route_id,
+                       int32 surface_id,
                        bool is_fullscreen,
                        blink::WebPopupType popup_type);
 

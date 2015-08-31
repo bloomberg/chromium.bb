@@ -25,6 +25,7 @@
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -255,8 +256,10 @@ RenderFrameHostManager::~RenderFrameHostManager() {
 
 void RenderFrameHostManager::Init(BrowserContext* browser_context,
                                   SiteInstance* site_instance,
-                                  int view_routing_id,
-                                  int frame_routing_id) {
+                                  int32 view_routing_id,
+                                  int32 frame_routing_id,
+                                  int32 widget_routing_id,
+                                  int32 surface_id) {
   // Create a RenderViewHost and RenderFrameHost, once we have an instance.  It
   // is important to immediately give this SiteInstance to a RenderViewHost so
   // that the SiteInstance is ref counted.
@@ -265,7 +268,8 @@ void RenderFrameHostManager::Init(BrowserContext* browser_context,
 
   int flags = delegate_->IsHidden() ? CREATE_RF_HIDDEN : 0;
   SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
-                                           frame_routing_id, flags));
+                                           frame_routing_id, widget_routing_id,
+                                           surface_id, flags));
 
   // Notify the delegate of the creation of the current RenderFrameHost.
   // Do this only for subframes, as the main frame case is taken care of by
@@ -1563,8 +1567,7 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
   if (!new_instance->GetProcess()->Init())
     return;
 
-  CreateProxiesForNewRenderFrameHost(old_instance, new_instance,
-                                     &create_render_frame_flags);
+  CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
   // Create a non-swapped-out RFH with the given opener.
   pending_render_frame_host_ = CreateRenderFrame(
@@ -1573,8 +1576,7 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
 
 void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
     SiteInstance* old_instance,
-    SiteInstance* new_instance,
-    int* create_render_frame_flags) {
+    SiteInstance* new_instance) {
   // Only create opener proxies if they are in the same BrowsingInstance.
   if (new_instance->IsRelatedSiteInstance(old_instance))
     CreateOpenerProxiesIfNeeded(new_instance);
@@ -1586,13 +1588,6 @@ void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
     // before we allow them to interact (e.g., postMessage).
     frame_tree_node_->frame_tree()->CreateProxiesForSiteInstance(
         frame_tree_node_, new_instance);
-    // RenderFrames in different processes from their parent RenderFrames
-    // in the frame tree require RenderWidgets for rendering and processing
-    // input events.
-    if (frame_tree_node_->parent() &&
-        frame_tree_node_->parent()->current_frame_host()->GetSiteInstance() !=
-            new_instance)
-      *create_render_frame_flags |= CREATE_RF_NEEDS_RENDER_WIDGET_HOST;
   }
 }
 
@@ -1626,8 +1621,10 @@ void RenderFrameHostManager::CreateProxiesForNewNamedFrame() {
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
     SiteInstance* site_instance,
-    int view_routing_id,
-    int frame_routing_id,
+    int32 view_routing_id,
+    int32 frame_routing_id,
+    int32 widget_routing_id,
+    int32 surface_id,
     int flags) {
   if (frame_routing_id == MSG_ROUTING_NONE)
     frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
@@ -1643,17 +1640,13 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
         site_instance, view_routing_id, frame_routing_id, swapped_out, hidden);
   } else {
     render_view_host = frame_tree->GetRenderViewHost(site_instance);
-
     CHECK(render_view_host);
   }
 
-  // TODO(creis): Pass hidden to RFH.
-  scoped_ptr<RenderFrameHostImpl> render_frame_host = make_scoped_ptr(
-      RenderFrameHostFactory::Create(
-          site_instance, render_view_host, render_frame_delegate_,
-          render_widget_delegate_, frame_tree, frame_tree_node_,
-          frame_routing_id, flags).release());
-  return render_frame_host.Pass();
+  return RenderFrameHostFactory::Create(
+      site_instance, render_view_host, render_frame_delegate_,
+      render_widget_delegate_, frame_tree, frame_tree_node_, frame_routing_id,
+      widget_routing_id, surface_id, flags);
 }
 
 // PlzNavigate
@@ -1678,10 +1671,9 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   if (!new_instance->GetProcess()->Init())
     return false;
 
-  int create_render_frame_flags = 0;
-  CreateProxiesForNewRenderFrameHost(old_instance, new_instance,
-                                     &create_render_frame_flags);
+  CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
+  int create_render_frame_flags = 0;
   if (frame_tree_node_->IsMainFrame())
     create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
   if (delegate_->IsHidden())
@@ -1742,8 +1734,23 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     }
   } else {
     // Create a new RenderFrameHost if we don't find an existing one.
-    new_render_frame_host = CreateRenderFrameHost(instance, MSG_ROUTING_NONE,
-                                                  MSG_ROUTING_NONE, flags);
+
+    int32 widget_routing_id = MSG_ROUTING_NONE;
+    int32 surface_id = 0;
+    // A RenderFrame in a different process from its parent RenderFrame
+    // requires a RenderWidget for input/layout/painting.
+    if (frame_tree_node_->parent() &&
+        frame_tree_node_->parent()->current_frame_host()->GetSiteInstance() !=
+            instance) {
+      CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
+      widget_routing_id = instance->GetProcess()->GetNextRoutingID();
+      surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
+          instance->GetProcess()->GetID(), widget_routing_id);
+    }
+
+    new_render_frame_host =
+        CreateRenderFrameHost(instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                              widget_routing_id, surface_id, flags);
     RenderViewHostImpl* render_view_host =
         new_render_frame_host->render_view_host();
     int proxy_routing_id = MSG_ROUTING_NONE;

@@ -168,7 +168,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                          RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
-                                         int routing_id,
+                                         int32 routing_id,
+                                         int32 widget_routing_id,
+                                         int32 surface_id,
                                          int flags)
     : render_view_host_(render_view_host),
       delegate_(delegate),
@@ -209,10 +211,12 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
   swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
 
-  if (flags & CREATE_RF_NEEDS_RENDER_WIDGET_HOST) {
-    render_widget_host_ = new RenderWidgetHostImpl(rwh_delegate, GetProcess(),
-                                                   MSG_ROUTING_NONE, hidden);
+  if (widget_routing_id != MSG_ROUTING_NONE) {
+    render_widget_host_ = new RenderWidgetHostImpl(
+        rwh_delegate, GetProcess(), widget_routing_id, surface_id, hidden);
     render_widget_host_->set_owned_by_render_frame_host(true);
+  } else {
+    DCHECK_EQ(0, surface_id);
   }
 }
 

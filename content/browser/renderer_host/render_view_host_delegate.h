@@ -225,12 +225,15 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // happen in response to ShowCreatedWidget.
   // |popup_type| indicates if the widget is a popup and what kind of popup it
   // is (select, autofill...).
-  virtual void CreateNewWidget(int render_process_id,
-                               int route_id,
+  virtual void CreateNewWidget(int32 render_process_id,
+                               int32 route_id,
+                               int32 surface_id,
                                blink::WebPopupType popup_type) {}
 
   // Creates a full screen RenderWidget. Similar to above.
-  virtual void CreateNewFullscreenWidget(int render_process_id, int route_id) {}
+  virtual void CreateNewFullscreenWidget(int32 render_process_id,
+                                         int32 route_id,
+                                         int32 surface_id) {}
 
   // Show a previously created page with the specified disposition and bounds.
   // The window is identified by the route_id passed to CreateNewWindow.

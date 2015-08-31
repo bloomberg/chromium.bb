@@ -163,9 +163,8 @@ void RenderWidgetHelper::CreateNewWidget(int opener_id,
       render_process_id_, *route_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &RenderWidgetHelper::OnCreateWidgetOnUI, this, opener_id, *route_id,
-          popup_type));
+      base::Bind(&RenderWidgetHelper::OnCreateWidgetOnUI, this, opener_id,
+                 *route_id, *surface_id, popup_type));
 }
 
 void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
@@ -176,25 +175,27 @@ void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
       render_process_id_, *route_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &RenderWidgetHelper::OnCreateFullscreenWidgetOnUI, this,
-          opener_id, *route_id));
+      base::Bind(&RenderWidgetHelper::OnCreateFullscreenWidgetOnUI, this,
+                 opener_id, *route_id, *surface_id));
 }
 
-void RenderWidgetHelper::OnCreateWidgetOnUI(
-    int opener_id, int route_id, blink::WebPopupType popup_type) {
+void RenderWidgetHelper::OnCreateWidgetOnUI(int32 opener_id,
+                                            int32 route_id,
+                                            int32 surface_id,
+                                            blink::WebPopupType popup_type) {
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
   if (host)
-    host->CreateNewWidget(route_id, popup_type);
+    host->CreateNewWidget(route_id, surface_id, popup_type);
 }
 
-void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(int opener_id,
-                                                      int route_id) {
+void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(int32 opener_id,
+                                                      int32 route_id,
+                                                      int32 surface_id) {
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
   if (host)
-    host->CreateNewFullscreenWidget(route_id);
+    host->CreateNewFullscreenWidget(route_id, surface_id);
 }
 
 }  // namespace content

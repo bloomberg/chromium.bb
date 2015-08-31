@@ -203,8 +203,10 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // For arguments, see WebContentsImpl constructor.
   void Init(BrowserContext* browser_context,
             SiteInstance* site_instance,
-            int view_routing_id,
-            int frame_routing_id);
+            int32 view_routing_id,
+            int32 frame_routing_id,
+            int32 widget_routing_id,
+            int32 surface_id);
 
   // Returns the currently active RenderFrameHost.
   //
@@ -611,12 +613,9 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // Ensure that we have created all needed proxies for a new RFH with
   // SiteInstance |new_instance|: (1) create swapped-out RVHs and proxies for
   // the new RFH's opener chain if we are staying in the same BrowsingInstance;
-  // (2) Create proxies for the new RFH's SiteInstance in its own frame tree;
-  // (3) set any additional flags for the new RenderFrame with
-  // |create_render_frame_flags|.
+  // (2) Create proxies for the new RFH's SiteInstance in its own frame tree.
   void CreateProxiesForNewRenderFrameHost(SiteInstance* old_instance,
-                                          SiteInstance* new_instance,
-                                          int* create_render_frame_flags);
+                                          SiteInstance* new_instance);
 
   // Create swapped out RenderViews and RenderFrameProxies in the given
   // SiteInstance for all frames on the opener chain of this frame.  Same as
@@ -644,8 +643,10 @@ class CONTENT_EXPORT RenderFrameHostManager {
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,
-                                                        int view_routing_id,
-                                                        int frame_routing_id,
+                                                        int32 view_routing_id,
+                                                        int32 frame_routing_id,
+                                                        int32 widget_routing_id,
+                                                        int32 surface_id,
                                                         int flags);
 
   // PlzNavigate

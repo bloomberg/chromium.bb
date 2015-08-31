@@ -46,7 +46,9 @@ TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
                                          RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
-                                         int routing_id,
+                                         int32 routing_id,
+                                         int32 widget_routing_id,
+                                         int32 surface_id,
                                          int flags)
     : RenderFrameHostImpl(site_instance,
                           render_view_host,
@@ -55,11 +57,12 @@ TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
                           frame_tree,
                           frame_tree_node,
                           routing_id,
+                          widget_routing_id,
+                          surface_id,
                           flags),
       child_creation_observer_(delegate ? delegate->GetAsWebContents() : NULL),
       contents_mime_type_("text/html"),
-      simulate_history_list_was_cleared_(false) {
-}
+      simulate_history_list_was_cleared_(false) {}
 
 TestRenderFrameHost::~TestRenderFrameHost() {
 }

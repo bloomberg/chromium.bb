@@ -141,7 +141,8 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 
 RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                                            RenderProcessHost* process,
-                                           int routing_id,
+                                           int32 routing_id,
+                                           int32 surface_id,
                                            bool hidden)
     : view_(NULL),
       hung_renderer_delay_(
@@ -150,7 +151,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       delegate_(delegate),
       process_(process),
       routing_id_(routing_id),
-      surface_id_(0),
+      surface_id_(surface_id),
       is_loading_(false),
       is_hidden_(hidden),
       repaint_ack_pending_(false),
@@ -175,24 +176,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_focused_(false),
       weak_factory_(this) {
   CHECK(delegate_);
-  if (routing_id_ == MSG_ROUTING_NONE) {
-    routing_id_ = process_->GetNextRoutingID();
-    surface_id_ = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-        process_->GetID(),
-        routing_id_);
-  } else {
-    // TODO(piman): This is a O(N) lookup, where we could forward the
-    // information from the RenderWidgetHelper. The problem is that doing so
-    // currently leaks outside of content all the way to chrome classes, and
-    // would be a layering violation. Since we don't expect more than a few
-    // hundreds of RWH, this seems acceptable. Revisit if performance become a
-    // problem, for example by tracking in the RenderWidgetHelper the routing id
-    // (and surface id) that have been created, but whose RWH haven't yet.
-    surface_id_ = GpuSurfaceTracker::Get()->LookupSurfaceForRenderer(
-        process_->GetID(),
-        routing_id_);
-    DCHECK(surface_id_);
-  }
+  CHECK_NE(MSG_ROUTING_NONE, routing_id_);
+  DCHECK_EQ(surface_id_, GpuSurfaceTracker::Get()->LookupSurfaceForRenderer(
+                             process_->GetID(), routing_id_));
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(

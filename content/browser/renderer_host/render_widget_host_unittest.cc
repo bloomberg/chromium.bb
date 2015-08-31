@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -128,11 +129,16 @@ class MockInputRouter : public InputRouter {
 
 class MockRenderWidgetHost : public RenderWidgetHostImpl {
  public:
-  MockRenderWidgetHost(
-      RenderWidgetHostDelegate* delegate,
-      RenderProcessHost* process,
-      int routing_id)
-      : RenderWidgetHostImpl(delegate, process, routing_id, false),
+  MockRenderWidgetHost(RenderWidgetHostDelegate* delegate,
+                       RenderProcessHost* process,
+                       int routing_id)
+      : RenderWidgetHostImpl(
+            delegate,
+            process,
+            routing_id,
+            GpuSurfaceTracker::Get()->AddSurfaceForRenderer(process->GetID(),
+                                                            routing_id),
+            false),
         unresponsive_timer_fired_(false) {
     acked_touch_event_type_ = blink::WebInputEvent::Undefined;
   }
@@ -427,8 +433,8 @@ class RenderWidgetHostTest : public testing::Test {
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 #endif
-    host_.reset(
-        new MockRenderWidgetHost(delegate_.get(), process_, MSG_ROUTING_NONE));
+    host_.reset(new MockRenderWidgetHost(delegate_.get(), process_,
+                                         process_->GetNextRoutingID()));
     view_.reset(new TestView(host_.get()));
     ConfigureView(view_.get());
     host_->SetView(view_.get());

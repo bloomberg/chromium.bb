@@ -199,14 +199,16 @@ RenderViewHostImpl::RenderViewHostImpl(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,
-    int routing_id,
-    int main_frame_routing_id,
+    int32 routing_id,
+    int32 surface_id,
+    int32 main_frame_routing_id,
     bool swapped_out,
     bool hidden,
     bool has_initialized_audio_host)
     : RenderWidgetHostImpl(widget_delegate,
                            instance->GetProcess(),
                            routing_id,
+                           surface_id,
                            hidden),
       frames_ref_count_(0),
       delegate_(delegate),
@@ -995,13 +997,17 @@ void RenderViewHostImpl::CreateNewWindow(
                              validated_params, session_storage_namespace);
 }
 
-void RenderViewHostImpl::CreateNewWidget(int route_id,
-                                     blink::WebPopupType popup_type) {
-  delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, popup_type);
+void RenderViewHostImpl::CreateNewWidget(int32 route_id,
+                                         int32 surface_id,
+                                         blink::WebPopupType popup_type) {
+  delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, surface_id,
+                             popup_type);
 }
 
-void RenderViewHostImpl::CreateNewFullscreenWidget(int route_id) {
-  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id);
+void RenderViewHostImpl::CreateNewFullscreenWidget(int32 route_id,
+                                                   int32 surface_id) {
+  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id,
+                                       surface_id);
 }
 
 void RenderViewHostImpl::OnShowView(int route_id,

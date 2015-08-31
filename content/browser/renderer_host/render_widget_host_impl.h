@@ -108,7 +108,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // |delegate| goes away.
   RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                        RenderProcessHost* process,
-                       int routing_id,
+                       int32 routing_id,
+                       int32 surface_id,
                        bool hidden);
   ~RenderWidgetHostImpl() override;
 

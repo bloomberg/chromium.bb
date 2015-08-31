@@ -247,12 +247,18 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
   CaptureTestRenderViewHost(SiteInstance* instance,
                             RenderViewHostDelegate* delegate,
                             RenderWidgetHostDelegate* widget_delegate,
-                            int routing_id,
-                            int main_frame_routing_id,
+                            int32 routing_id,
+                            int32 surface_id,
+                            int32 main_frame_routing_id,
                             bool swapped_out,
                             CaptureTestSourceController* controller)
-      : TestRenderViewHost(instance, delegate, widget_delegate, routing_id,
-                           main_frame_routing_id, swapped_out),
+      : TestRenderViewHost(instance,
+                           delegate,
+                           widget_delegate,
+                           routing_id,
+                           surface_id,
+                           main_frame_routing_id,
+                           swapped_out),
         controller_(controller) {
     // Override the default view installed by TestRenderViewHost; we need
     // our special subclass which has mocked-out tab capture support.
@@ -306,12 +312,13 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
       RenderWidgetHostDelegate* widget_delegate,
-      int routing_id,
-      int main_frame_routing_id,
+      int32 routing_id,
+      int32 surface_id,
+      int32 main_frame_routing_id,
       bool swapped_out) override {
-    return new CaptureTestRenderViewHost(instance, delegate, widget_delegate,
-                                         routing_id, main_frame_routing_id,
-                                         swapped_out, controller_);
+    return new CaptureTestRenderViewHost(
+        instance, delegate, widget_delegate, routing_id, surface_id,
+        main_frame_routing_id, swapped_out, controller_);
   }
  private:
   CaptureTestSourceController* controller_;

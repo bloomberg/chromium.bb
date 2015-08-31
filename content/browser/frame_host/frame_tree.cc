@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 
 #include <queue>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -266,8 +267,8 @@ void FrameTree::SetFrameRemoveListener(
 }
 
 RenderViewHostImpl* FrameTree::CreateRenderViewHost(SiteInstance* site_instance,
-                                                    int routing_id,
-                                                    int main_frame_routing_id,
+                                                    int32 routing_id,
+                                                    int32 main_frame_routing_id,
                                                     bool swapped_out,
                                                     bool hidden) {
   RenderViewHostMap::iterator iter =
@@ -282,21 +283,16 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(SiteInstance* site_instance,
         main_frame->frame_tree_node()->render_manager()->IsPendingDeletion(
             main_frame)) {
       render_view_host_pending_shutdown_map_.insert(
-          std::pair<int, RenderViewHostImpl*>(site_instance->GetId(),
-                                              iter->second));
+          std::make_pair(site_instance->GetId(), iter->second));
       render_view_host_map_.erase(iter);
     } else {
       return iter->second;
     }
   }
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      RenderViewHostFactory::Create(site_instance,
-                                    render_view_delegate_,
-                                    render_widget_delegate_,
-                                    routing_id,
-                                    main_frame_routing_id,
-                                    swapped_out,
-                                    hidden));
+  RenderViewHostImpl* rvh =
+      static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
+          site_instance, render_view_delegate_, render_widget_delegate_,
+          routing_id, main_frame_routing_id, swapped_out, hidden));
 
   render_view_host_map_[site_instance->GetId()] = rvh;
   return rvh;

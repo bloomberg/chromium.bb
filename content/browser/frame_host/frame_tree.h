@@ -113,8 +113,8 @@ class CONTENT_EXPORT FrameTree {
   // |site_instance|.  The RenderViewHost will have its Shutdown method called
   // when all of the RenderFrameHosts using it are deleted.
   RenderViewHostImpl* CreateRenderViewHost(SiteInstance* site_instance,
-                                           int routing_id,
-                                           int main_frame_routing_id,
+                                           int32 routing_id,
+                                           int32 main_frame_routing_id,
                                            bool swapped_out,
                                            bool hidden);
 

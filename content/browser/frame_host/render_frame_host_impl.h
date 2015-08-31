@@ -85,10 +85,6 @@ enum CreateRenderFrameFlags {
   CREATE_RF_FOR_MAIN_FRAME_NAVIGATION = 1 << 1,
   // The RenderFrame is initially hidden.
   CREATE_RF_HIDDEN = 1 << 2,
-  // The RenderFrameHost will have a new RenderWidgetHost created and
-  // attached to it. This is used when the RenderFrameHost is in a different
-  // process from its parent frame.
-  CREATE_RF_NEEDS_RENDER_WIDGET_HOST = 1 << 3
 };
 
 class CONTENT_EXPORT RenderFrameHostImpl
@@ -486,7 +482,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       RenderWidgetHostDelegate* rwh_delegate,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
-                      int routing_id,
+                      int32 routing_id,
+                      int32 widget_routing_id,
+                      int32 surface_id,
                       int flags);
 
  private:

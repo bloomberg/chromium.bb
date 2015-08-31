@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -44,11 +45,15 @@ class TextInputClientMacTest : public testing::Test {
       : browser_context_(),
         process_factory_(),
         delegate_(),
-        widget_(&delegate_,
-                process_factory_.CreateRenderProcessHost(
-                    &browser_context_, NULL),
-                MSG_ROUTING_NONE, false),
-        thread_("TextInputClientMacTestThread") {}
+        thread_("TextInputClientMacTestThread") {
+    RenderProcessHost* rph =
+        process_factory_.CreateRenderProcessHost(&browser_context_, nullptr);
+    int32 routing_id = rph->GetNextRoutingID();
+    int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
+        rph->GetID(), routing_id);
+    widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id,
+                                           surface_id, false));
+  }
 
   // Accessor for the TextInputClientMac instance.
   TextInputClientMac* service() {
@@ -68,9 +73,7 @@ class TextInputClientMacTest : public testing::Test {
     thread_.message_loop()->PostDelayedTask(from_here, task, delay);
   }
 
-  RenderWidgetHostImpl* widget() {
-    return &widget_;
-  }
+  RenderWidgetHostImpl* widget() { return widget_.get(); }
 
   IPC::TestSink& ipc_sink() {
     return static_cast<MockRenderProcessHost*>(widget()->GetProcess())->sink();
@@ -85,7 +88,7 @@ class TextInputClientMacTest : public testing::Test {
   // Gets deleted when the last RWH in the "process" gets destroyed.
   MockRenderProcessHostFactory process_factory_;
   MockRenderWidgetHostDelegate delegate_;
-  RenderWidgetHostImpl widget_;
+  scoped_ptr<RenderWidgetHostImpl> widget_;
 
   base::Thread thread_;
 };

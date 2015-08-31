@@ -114,8 +114,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   RenderViewHostImpl(SiteInstance* instance,
                      RenderViewHostDelegate* delegate,
                      RenderWidgetHostDelegate* widget_delegate,
-                     int routing_id,
-                     int main_frame_routing_id,
+                     int32 routing_id,
+                     int32 surface_id,
+                     int32 main_frame_routing_id,
                      bool swapped_out,
                      bool hidden,
                      bool has_initialized_audio_host);
@@ -294,10 +295,12 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Creates a new RenderWidget with the given route id.  |popup_type| indicates
   // if this widget is a popup and what kind of popup it is (select, autofill).
-  void CreateNewWidget(int route_id, blink::WebPopupType popup_type);
+  void CreateNewWidget(int32 route_id,
+                       int32 surface_id,
+                       blink::WebPopupType popup_type);
 
   // Creates a full screen RenderWidget.
-  void CreateNewFullscreenWidget(int route_id);
+  void CreateNewFullscreenWidget(int32 route_id, int32 surface_id);
 
   int main_frame_routing_id() const {
     return main_frame_routing_id_;

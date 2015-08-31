@@ -30,12 +30,12 @@ RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,
-    int routing_id,
-    int main_frame_routing_id,
+    int32 routing_id,
+    int32 surface_id,
+    int32 main_frame_routing_id,
     bool swapped_out) {
-  return new TestRenderViewHost(
-      instance, delegate, widget_delegate, routing_id, main_frame_routing_id,
-      swapped_out);
+  return new TestRenderViewHost(instance, delegate, widget_delegate, routing_id,
+                                surface_id, main_frame_routing_id, swapped_out);
 }
 
 }  // namespace content

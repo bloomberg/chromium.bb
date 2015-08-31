@@ -133,8 +133,8 @@ void FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
   child->render_manager()->Init(
       render_manager_.current_host()->GetSiteInstance()->GetBrowserContext(),
       render_manager_.current_host()->GetSiteInstance(),
-      render_manager_.current_host()->GetRoutingID(),
-      frame_routing_id);
+      render_manager_.current_host()->GetRoutingID(), frame_routing_id,
+      MSG_ROUTING_NONE, 0 /* surface_id */);
   child->set_parent(this);
 
   // Other renderer processes in this BrowsingInstance may need to find out
