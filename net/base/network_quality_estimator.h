@@ -196,7 +196,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     ~CachedNetworkQuality();
 
     // Returns the network quality associated with this cached entry.
-    const NetworkQuality network_quality() const { return network_quality_; }
+    const NetworkQuality& network_quality() const { return network_quality_; }
 
     // Returns true if this cache entry was updated before
     // |cached_network_quality|.
