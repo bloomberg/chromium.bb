@@ -28234,6 +28234,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.DeletePageResult"
+    enum="OfflinePagesDeletePageResult">
+  <owner>jianli@chromium.org</owner>
+  <summary>Result of removing an offline copy for a page.</summary>
+</histogram>
+
 <histogram name="OfflinePages.LoadSuccess" enum="BooleanSuccess">
   <owner>jianli@chromium.org</owner>
   <summary>
@@ -28248,12 +28254,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.PageSize" units="KB">
+  <owner>jianli@chromium.org</owner>
+  <summary>Size of the saved copy of an offline page.</summary>
+</histogram>
+
 <histogram name="OfflinePages.SavedPageCount" units="pages">
   <owner>jianli@chromium.org</owner>
   <summary>
     Number of saved pages restored from the offline pages metadata store when it
     is logged.
   </summary>
+</histogram>
+
+<histogram name="OfflinePages.SavePageResult" enum="OfflinePagesSavePageResult">
+  <owner>jianli@chromium.org</owner>
+  <summary>Result of saving an offline copy for a page.</summary>
 </histogram>
 
 <histogram name="OfflinePolicy.SuccessfulResourceLoadPercentage" units="%">
@@ -66070,6 +66086,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Didn't remove URL, too few suggestions in MV"/>
   <int value="2" label="Too few URLs, didn't flip tiles 1 and 8"/>
   <int value="3" label="Too few URLs, didn't flip tiles 1 and 4"/>
+</enum>
+
+<enum name="OfflinePagesDeletePageResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Cancelled"/>
+  <int value="2" label="Store failure"/>
+  <int value="3" label="Device failure"/>
+  <int value="4" label="Not found"/>
+</enum>
+
+<enum name="OfflinePagesSavePageResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Cancelled"/>
+  <int value="2" label="Device full"/>
+  <int value="3" label="Content unavailable"/>
+  <int value="4" label="Archive creation failed"/>
+  <int value="5" label="Store failure"/>
+  <int value="6" label="Already exists"/>
 </enum>
 
 <enum name="OfflineStatus" type="int">

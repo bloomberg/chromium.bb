@@ -64,6 +64,10 @@ class OfflinePageModel : public KeyedService,
     ARCHIVE_CREATION_FAILED,
     STORE_FAILURE,
     ALREADY_EXISTS,
+    // NOTE: always keep this entry at the end. Add new result types only
+    // immediately above this line. Make sure to update the corresponding
+    // histogram enum accordingly.
+    RESULT_COUNT,
   };
 
   // Result of deleting an offline page.
@@ -75,6 +79,10 @@ class OfflinePageModel : public KeyedService,
     STORE_FAILURE,
     DEVICE_FAILURE,
     NOT_FOUND,
+    // NOTE: always keep this entry at the end. Add new result types only
+    // immediately above this line. Make sure to update the corresponding
+    // histogram enum accordingly.
+    RESULT_COUNT,
   };
 
   // Result of loading all pages.
@@ -194,6 +202,8 @@ class OfflinePageModel : public KeyedService,
   void OnRemoveOfflinePagesDone(const std::vector<int64>& bookmark_ids,
                                 const DeletePageCallback& callback,
                                 bool success);
+  void InformDeletePageDone(const DeletePageCallback& callback,
+                            DeletePageResult result);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;

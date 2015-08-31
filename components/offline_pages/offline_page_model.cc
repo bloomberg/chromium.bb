@@ -135,7 +135,7 @@ void OfflinePageModel::DeletePagesByBookmarkId(
   }
 
   if (paths_to_delete.empty()) {
-    callback.Run(DeletePageResult::NOT_FOUND);
+    InformDeletePageDone(callback, DeletePageResult::NOT_FOUND);
     return;
   }
 
@@ -239,6 +239,8 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
   if (success) {
     offline_pages_[offline_page.bookmark_id] = offline_page;
     result = SavePageResult::SUCCESS;
+    UMA_HISTOGRAM_MEMORY_KB(
+        "OfflinePages.PageSize", offline_page.file_size / 1024);
   } else {
     result = SavePageResult::STORE_FAILURE;
   }
@@ -287,6 +289,10 @@ void OfflinePageModel::OnLoadDone(
 
 void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
                                           SavePageResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.SavePageResult",
+      static_cast<int>(result),
+      static_cast<int>(SavePageResult::RESULT_COUNT));
   callback.Run(result);
 }
 
@@ -302,7 +308,7 @@ void OfflinePageModel::OnDeleteArchiveFilesDone(
   DCHECK(success);
 
   if (!*success) {
-    callback.Run(DeletePageResult::DEVICE_FAILURE);
+    InformDeletePageDone(callback, DeletePageResult::DEVICE_FAILURE);
     return;
   }
 
@@ -331,10 +337,19 @@ void OfflinePageModel::OnRemoveOfflinePagesDone(
     offline_pages_.erase(iter);
   }
   // Deleting multiple pages always succeeds when it gets to this point.
-  if (success || bookmark_ids.size() > 1)
-    callback.Run(DeletePageResult::SUCCESS);
-  else
-    callback.Run(DeletePageResult::STORE_FAILURE);
+  InformDeletePageDone(
+      callback,
+      (success || bookmark_ids.size() > 1) ? DeletePageResult::SUCCESS
+                                           : DeletePageResult::STORE_FAILURE);
+}
+
+void OfflinePageModel::InformDeletePageDone(const DeletePageCallback& callback,
+                                            DeletePageResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.DeletePageResult",
+      static_cast<int>(result),
+      static_cast<int>(DeletePageResult::RESULT_COUNT));
+  callback.Run(result);
 }
 
 }  // namespace offline_pages
