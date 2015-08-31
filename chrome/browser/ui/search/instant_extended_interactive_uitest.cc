@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -814,6 +815,12 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 #define MAYBE_SetPrefetchQuery SetPrefetchQuery
 #endif
 IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, MAYBE_SetPrefetchQuery) {
+  // Skip the test if suggest support is disabled, since this is generally due
+  // to policy and can't be overridden.
+  if (!browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kSearchSuggestEnabled)) {
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
@@ -883,6 +890,12 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, MAYBE_SetPrefetchQuery) {
 #endif
 IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest,
                        MAYBE_ClearPrefetchedResults) {
+  // Skip the test if suggest support is disabled, since this is generally due
+  // to policy and can't be overridden.
+  if (!browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kSearchSuggestEnabled)) {
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmnibox();
 
