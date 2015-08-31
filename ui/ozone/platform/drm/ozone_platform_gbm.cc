@@ -46,6 +46,10 @@
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #endif
 
+#if defined(USE_VGEM_MAP)
+#include <fcntl.h>
+#endif
+
 namespace ui {
 
 namespace {
@@ -148,6 +152,15 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(
         new DrmNativeDisplayDelegate(display_manager_.get()));
+  }
+  base::ScopedFD OpenClientNativePixmapDevice() const override {
+#if defined(USE_VGEM_MAP)
+    static const char kVgemPath[] = "/dev/dri/renderD129";
+    base::ScopedFD vgem_fd(open(kVgemPath, O_RDWR | O_CLOEXEC));
+    DCHECK(vgem_fd.is_valid()) << "Failed to open: " << kVgemPath;
+    return vgem_fd;
+#endif
+    return base::ScopedFD();
   }
   void InitializeUI() override {
     device_manager_ = CreateDeviceManager();

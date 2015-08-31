@@ -129,6 +129,12 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIOSurfaceManagerToken,
                      content::IOSurfaceManagerToken /* token */)
 #endif
 
+#if defined(USE_OZONE)
+// Sent to child processes to initialize ClientNativePixmapFactory using
+// a device file descriptor.
+IPC_MESSAGE_CONTROL1(ChildProcessMsg_InitializeClientNativePixmapFactory,
+                     base::FileDescriptor /* device_fd */)
+#endif
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
 

@@ -90,6 +90,9 @@ class OzonePlatformDrm : public OzonePlatform {
     return make_scoped_ptr(
         new DrmNativeDisplayDelegate(display_manager_.get()));
   }
+  base::ScopedFD OpenClientNativePixmapDevice() const override {
+    return base::ScopedFD();
+  }
   void InitializeUI() override {
     drm_device_manager_.reset(new DrmDeviceManager(
         scoped_ptr<DrmDeviceGenerator>(new DrmDeviceGenerator())));

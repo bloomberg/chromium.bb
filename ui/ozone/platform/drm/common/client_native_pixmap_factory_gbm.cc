@@ -4,12 +4,10 @@
 
 #include "ui/ozone/platform/drm/common/client_native_pixmap_factory_gbm.h"
 
-#include "base/file_descriptor_posix.h"
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 
 #if defined(USE_VGEM_MAP)
-#include <fcntl.h>
 #include "ui/ozone/platform/drm/gpu/client_native_pixmap_vgem.h"
 #endif
 
@@ -30,20 +28,22 @@ class ClientNativePixmapGbm : public ClientNativePixmap {
   void GetStride(int* stride) const override { NOTREACHED(); }
 };
 
+}  // namespace
+
 class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
  public:
-  ClientNativePixmapFactoryGbm() {
-#if defined(USE_VGEM_MAP)
-    // TODO(dshwang): remove ad-hoc file open. crrev.com/1248713002
-    static const char kVgemPath[] = "/dev/dri/renderD129";
-    int vgem_fd = open(kVgemPath, O_RDWR | O_CLOEXEC);
-    vgem_fd_.reset(vgem_fd);
-    DCHECK_GE(vgem_fd_.get(), 0) << "Failed to open: " << kVgemPath;
-#endif
-  }
+  ClientNativePixmapFactoryGbm() {}
   ~ClientNativePixmapFactoryGbm() override {}
 
   // ClientNativePixmapFactory:
+  void Initialize(base::ScopedFD device_fd) override {
+#if defined(USE_VGEM_MAP)
+    // It's called in IO thread. We rely on clients for thread-safety.
+    // Switching to an IPC message filter ensures thread-safety.
+    DCHECK_LT(vgem_fd_.get(), 0);
+    vgem_fd_ = device_fd.Pass();
+#endif
+  }
   std::vector<Configuration> GetSupportedConfigurations() const override {
     const Configuration kConfigurations[] = {
         {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
@@ -68,6 +68,9 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
       case gfx::BufferUsage::MAP:
       case gfx::BufferUsage::PERSISTENT_MAP:
 #if defined(USE_VGEM_MAP)
+        // A valid |vgem_fd_| is required to acquire a VGEM bo. |vgem_fd_| is
+        // set before a widget is created.
+        DCHECK_GE(vgem_fd_.get(), 0);
         return ClientNativePixmapVgem::ImportFromDmabuf(
             vgem_fd_.get(), scoped_fd.get(), size, handle.stride);
 #endif
@@ -88,8 +91,6 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
 
   DISALLOW_COPY_AND_ASSIGN(ClientNativePixmapFactoryGbm);
 };
-
-}  // namespace
 
 ClientNativePixmapFactory* CreateClientNativePixmapFactoryGbm() {
   return new ClientNativePixmapFactoryGbm();

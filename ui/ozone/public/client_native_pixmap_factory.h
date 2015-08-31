@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/ozone/ozone_export.h"
@@ -16,12 +17,6 @@ namespace gfx {
 struct NativePixmapHandle;
 class Size;
 }
-
-namespace base {
-
-struct FileDescriptor;
-
-}  // namespace base
 
 namespace ui {
 
@@ -35,6 +30,9 @@ class OZONE_EXPORT ClientNativePixmapFactory {
   static scoped_ptr<ClientNativePixmapFactory> Create();
 
   virtual ~ClientNativePixmapFactory();
+
+  // Initialize with the given client native pixmap |device_fd|.
+  virtual void Initialize(base::ScopedFD device_fd) = 0;
 
   struct Configuration {
     gfx::BufferFormat format;

@@ -4,8 +4,6 @@
 
 #include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 
-#include "base/file_descriptor_posix.h"
-
 namespace ui {
 
 namespace {
@@ -16,6 +14,7 @@ class StubClientNativePixmapFactory : public ClientNativePixmapFactory {
   ~StubClientNativePixmapFactory() override {}
 
   // ClientNativePixmapFactory:
+  void Initialize(base::ScopedFD device_fd) override {}
   std::vector<Configuration> GetSupportedConfigurations() const override {
     return std::vector<Configuration>();
   }

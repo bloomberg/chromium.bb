@@ -37,6 +37,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/client_native_pixmap_factory.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace content {
@@ -115,6 +116,8 @@ void ContentTestSuite::Initialize() {
     client_native_pixmap_factory_ = ui::ClientNativePixmapFactory::Create();
     ui::ClientNativePixmapFactory::SetInstance(
         client_native_pixmap_factory_.get());
+    ui::ClientNativePixmapFactory::GetInstance()->Initialize(
+        ui::OzonePlatform::GetInstance()->OpenClientNativePixmapDevice());
   }
 #endif
 }

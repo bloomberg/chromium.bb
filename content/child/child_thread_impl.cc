@@ -68,6 +68,10 @@
 #include "content/child/child_io_surface_manager_mac.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/client_native_pixmap_factory.h"
+#endif
+
 #if defined(OS_WIN)
 #include "ipc/attachment_broker_unprivileged_win.h"
 #endif
@@ -188,6 +192,31 @@ class IOSurfaceManagerFilter : public IPC::MessageFilter {
 
   void OnSetIOSurfaceManagerToken(const IOSurfaceManagerToken& token) {
     ChildIOSurfaceManager::GetInstance()->set_token(token);
+  }
+};
+#endif
+
+#if defined(USE_OZONE)
+class ClientNativePixmapFactoryFilter : public IPC::MessageFilter {
+ public:
+  // Overridden from IPC::MessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(ClientNativePixmapFactoryFilter, message)
+      IPC_MESSAGE_HANDLER(ChildProcessMsg_InitializeClientNativePixmapFactory,
+                          OnInitializeClientNativePixmapFactory)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+ protected:
+  ~ClientNativePixmapFactoryFilter() override {}
+
+  void OnInitializeClientNativePixmapFactory(
+      const base::FileDescriptor& device_fd) {
+    ui::ClientNativePixmapFactory::GetInstance()->Initialize(
+        base::ScopedFD(device_fd.fd));
   }
 };
 #endif
@@ -426,6 +455,10 @@ void ChildThreadImpl::Init(const Options& options) {
 
 #if defined(OS_MACOSX)
   channel_->AddFilter(new IOSurfaceManagerFilter());
+#endif
+
+#if defined(USE_OZONE)
+  channel_->AddFilter(new ClientNativePixmapFactoryFilter());
 #endif
 
   // Add filters passed here via options.

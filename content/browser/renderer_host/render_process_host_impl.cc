@@ -191,6 +191,8 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/ozone/public/client_native_pixmap_factory.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
@@ -1597,6 +1599,11 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
       BrowserIOSurfaceManager::GetInstance()->GenerateChildProcessToken(
           GetID());
   Send(new ChildProcessMsg_SetIOSurfaceManagerToken(io_surface_manager_token_));
+#endif
+#if defined(USE_OZONE)
+  Send(new ChildProcessMsg_InitializeClientNativePixmapFactory(
+      base::FileDescriptor(
+          ui::OzonePlatform::GetInstance()->OpenClientNativePixmapDevice())));
 #endif
 }
 
