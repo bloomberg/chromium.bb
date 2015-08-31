@@ -24,9 +24,7 @@
 namespace {
 
 // Whether the iOS specialization of the GaiaAuthFetcher should be used.
-// TODO(bzanotti): Having this be false is a temporary solution to
-// crbug.com/521521.
-bool g_should_use_gaia_auth_fetcher_ios = false;
+bool g_should_use_gaia_auth_fetcher_ios = true;
 
 // Creates an NSURLRequest to |url| that can be loaded by a WebView from |body|
 // and |headers|.
@@ -108,64 +106,120 @@ NSURLRequest* GetRequest(const std::string& body,
 
 @end
 
+#pragma mark - GaiaAuthFetcherIOSBridge::Request
+
+GaiaAuthFetcherIOSBridge::Request::Request()
+    : pending(false), url(), headers(), body() {}
+
+GaiaAuthFetcherIOSBridge::Request::Request(const GURL& request_url,
+                                           const std::string& request_headers,
+                                           const std::string& request_body)
+    : pending(true),
+      url(request_url),
+      headers(request_headers),
+      body(request_body) {}
+
 #pragma mark - GaiaAuthFetcherIOSBridge
 
 GaiaAuthFetcherIOSBridge::GaiaAuthFetcherIOSBridge(
     GaiaAuthFetcherIOS* fetcher,
     web::BrowserState* browser_state)
-    : fetch_pending_(false),
-      fetcher_(fetcher),
-      url_(),
-      navigation_delegate_(
-          [[GaiaAuthFetcherNavigationDelegate alloc] initWithBridge:this]),
-      web_view_(web::CreateWKWebView(CGRectZero, browser_state)) {
-  [web_view_ setNavigationDelegate:navigation_delegate_];
+    : browser_state_(browser_state), fetcher_(fetcher), request_() {
+  web::BrowserState::GetActiveStateManager(browser_state_)->AddObserver(this);
 }
 
 GaiaAuthFetcherIOSBridge::~GaiaAuthFetcherIOSBridge() {
+  web::BrowserState::GetActiveStateManager(browser_state_)
+      ->RemoveObserver(this);
+  ResetWKWebView();
+}
+
+void GaiaAuthFetcherIOSBridge::Fetch(const GURL& url,
+                                     const std::string& headers,
+                                     const std::string& body) {
+  request_ = Request(url, headers, body);
+  FetchPendingRequest();
+}
+
+void GaiaAuthFetcherIOSBridge::Cancel() {
+  if (!request_.pending) {
+    return;
+  }
+  [GetWKWebView() stopLoading];
+  URLFetchFailure(true /* is_cancelled */);
+}
+
+void GaiaAuthFetcherIOSBridge::URLFetchSuccess(const std::string& data) {
+  if (!request_.pending) {
+    return;
+  }
+  GURL url = FinishPendingRequest();
+  // WKWebViewNavigationDelegate API doesn't give any way to get the HTTP
+  // response code of a navigation. Default to 200 for success.
+  fetcher_->FetchComplete(url, data, net::ResponseCookies(),
+                          net::URLRequestStatus(), 200);
+}
+
+void GaiaAuthFetcherIOSBridge::URLFetchFailure(bool is_cancelled) {
+  if (!request_.pending) {
+    return;
+  }
+  GURL url = FinishPendingRequest();
+  // WKWebViewNavigationDelegate API doesn't give any way to get the HTTP
+  // response code of a navigation. Default to 500 for error.
+  int error = is_cancelled ? net::ERR_ABORTED : net::ERR_FAILED;
+  fetcher_->FetchComplete(url, std::string(), net::ResponseCookies(),
+                          net::URLRequestStatus::FromError(error), 500);
+}
+
+void GaiaAuthFetcherIOSBridge::FetchPendingRequest() {
+  if (!request_.pending)
+    return;
+  [GetWKWebView()
+      loadRequest:GetRequest(request_.body, request_.headers, request_.url)];
+}
+
+GURL GaiaAuthFetcherIOSBridge::FinishPendingRequest() {
+  GURL url = request_.url;
+  request_ = Request();
+  return url;
+}
+
+WKWebView* GaiaAuthFetcherIOSBridge::GetWKWebView() {
+  if (!web::BrowserState::GetActiveStateManager(browser_state_)->IsActive()) {
+    // |browser_state_| is not active, WKWebView linked to this browser state
+    // should not exist or be created.
+    return nil;
+  }
+  if (!web_view_) {
+    web_view_.reset(CreateWKWebView());
+    navigation_delegate_.reset(
+        [[GaiaAuthFetcherNavigationDelegate alloc] initWithBridge:this]);
+    [web_view_ setNavigationDelegate:navigation_delegate_];
+  }
+  return web_view_.get();
+}
+
+void GaiaAuthFetcherIOSBridge::ResetWKWebView() {
   [web_view_ setNavigationDelegate:nil];
   [web_view_ stopLoading];
   web_view_.reset();
   navigation_delegate_.reset();
 }
 
-void GaiaAuthFetcherIOSBridge::Fetch(const GURL& url,
-                                     const std::string& headers,
-                                     const std::string& body) {
-  fetch_pending_ = true;
-  url_ = url;
-  [web_view_ loadRequest:GetRequest(body, headers, url)];
+WKWebView* GaiaAuthFetcherIOSBridge::CreateWKWebView() {
+  return web::CreateWKWebView(CGRectZero, browser_state_);
 }
 
-void GaiaAuthFetcherIOSBridge::Cancel() {
-  if (!fetch_pending_) {
-    return;
-  }
-  [web_view_ stopLoading];
-  URLFetchFailure(true /* is_cancelled */);
+void GaiaAuthFetcherIOSBridge::OnActive() {
+  // |browser_state_| is now active. If there is a pending request, restart it.
+  FetchPendingRequest();
 }
 
-void GaiaAuthFetcherIOSBridge::URLFetchSuccess(const std::string& data) {
-  if (!fetch_pending_) {
-    return;
-  }
-  fetch_pending_ = false;
-  // WKWebViewNavigationDelegate API doesn't give any way to get the HTTP
-  // response code of a navigation. Default to 200 for success.
-  fetcher_->FetchComplete(url_, data, net::ResponseCookies(),
-                          net::URLRequestStatus(), 200);
-}
-
-void GaiaAuthFetcherIOSBridge::URLFetchFailure(bool is_cancelled) {
-  if (!fetch_pending_) {
-    return;
-  }
-  fetch_pending_ = false;
-  // WKWebViewNavigationDelegate API doesn't give any way to get the HTTP
-  // response code of a navigation. Default to 500 for error.
-  int error = is_cancelled ? net::ERR_ABORTED : net::ERR_FAILED;
-  fetcher_->FetchComplete(url_, std::string(), net::ResponseCookies(),
-                          net::URLRequestStatus::FromError(error), 500);
+void GaiaAuthFetcherIOSBridge::OnInactive() {
+  // |browser_state_| is now inactive. Stop using |web_view_| and don't create
+  // a new one until it is active.
+  ResetWKWebView();
 }
 
 #pragma mark - GaiaAuthFetcherIOS definition
@@ -175,9 +229,8 @@ GaiaAuthFetcherIOS::GaiaAuthFetcherIOS(GaiaAuthConsumer* consumer,
                                        net::URLRequestContextGetter* getter,
                                        web::BrowserState* browser_state)
     : GaiaAuthFetcher(consumer, source, getter),
-      bridge_(),
-      browser_state_(browser_state) {
-}
+      bridge_(new GaiaAuthFetcherIOSBridge(this, browser_state)),
+      browser_state_(browser_state) {}
 
 GaiaAuthFetcherIOS::~GaiaAuthFetcherIOS() {
 }
@@ -204,9 +257,6 @@ void GaiaAuthFetcherIOS::CreateAndStartGaiaFetcher(const std::string& body,
   // a network request with cookies sent and saved is by making it through a
   // WKWebView.
   SetPendingFetch(true);
-  if (!bridge_) {
-    bridge_.reset(new GaiaAuthFetcherIOSBridge(this, browser_state_));
-  }
   bridge_->Fetch(gaia_gurl, headers, body);
 }
 
@@ -214,9 +264,7 @@ void GaiaAuthFetcherIOS::CancelRequest() {
   if (!HasPendingFetch()) {
     return;
   }
-  if (bridge_) {
-    bridge_->Cancel();
-  }
+  bridge_->Cancel();
   GaiaAuthFetcher::CancelRequest();
 }
 
@@ -233,9 +281,7 @@ void GaiaAuthFetcherIOS::FetchComplete(const GURL& url,
 
 void GaiaAuthFetcherIOS::SetShouldUseGaiaAuthFetcherIOSForTesting(
     bool use_gaia_fetcher_ios) {
-  // TODO(bzanotti): Commenting the below line is a temporary solution to
-  // crbug.com/521521.
-  // g_should_use_gaia_auth_fetcher_ios = use_gaia_fetcher_ios;
+  g_should_use_gaia_auth_fetcher_ios = use_gaia_fetcher_ios;
 }
 
 bool GaiaAuthFetcherIOS::ShouldUseGaiaAuthFetcherIOS() {

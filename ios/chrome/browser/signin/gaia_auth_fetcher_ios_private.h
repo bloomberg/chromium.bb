@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "ios/web/public/active_state_manager.h"
 
 class GaiaAuthFetcherIOS;
 class GURL;
@@ -23,11 +24,11 @@ class BrowserState;
 
 // Bridge between the GaiaAuthFetcherIOS and the webview (and its navigation
 // delegate) used to actually do the network fetch.
-class GaiaAuthFetcherIOSBridge {
+class GaiaAuthFetcherIOSBridge : web::ActiveStateManager::Observer {
  public:
   GaiaAuthFetcherIOSBridge(GaiaAuthFetcherIOS* fetcher,
                            web::BrowserState* browser_state);
-  ~GaiaAuthFetcherIOSBridge();
+  virtual ~GaiaAuthFetcherIOSBridge();
 
   // Starts a network fetch.
   // * |url| is the URL to fetch.
@@ -56,10 +57,51 @@ class GaiaAuthFetcherIOSBridge {
  private:
   friend class GaiaAuthFetcherIOSTest;
 
-  bool fetch_pending_;
+  // A network request that needs to be fetched.
+  struct Request {
+    Request();
+    Request(const GURL& url,
+            const std::string& headers,
+            const std::string& body);
+    // Whether the request is pending (i.e. awaiting to be processed or
+    // currently being processed).
+    bool pending;
+    // URL to fetch.
+    GURL url;
+    // HTTP headers to add to the request.
+    std::string headers;
+    // HTTP body to add to the request.
+    std::string body;
+  };
+
+  // Fetches the pending request if it exists.
+  void FetchPendingRequest();
+  // Finishes the pending request and cleans up its associated state. Returns
+  // the URL of the request.
+  GURL FinishPendingRequest();
+
+  // Returns the cached WKWebView if it exists, or creates one if necessary.
+  // Can return nil if the browser state is not active.
+  WKWebView* GetWKWebView();
+  // Actually creates a WKWebView. Virtual for testing.
+  virtual WKWebView* CreateWKWebView();
+  // Stops any page loading in the WKWebView currently in use and releases it.
+  void ResetWKWebView();
+
+  // ActiveStateManager::Observer implementation.
+  void OnActive() override;
+  void OnInactive() override;
+
+  // Browser state associated with the bridge, used to create WKWebViews.
+  web::BrowserState* browser_state_;
+  // Fetcher owning this bridge.
   GaiaAuthFetcherIOS* fetcher_;
-  GURL url_;
+  // Request currently processed by the bridge.
+  Request request_;
+  // Navigation delegate of |web_view_| that informs the bridge of relevant
+  // navigation events.
   base::scoped_nsobject<GaiaAuthFetcherNavigationDelegate> navigation_delegate_;
+  // Web view used to do the network requests.
   base::scoped_nsobject<WKWebView> web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcherIOSBridge);
