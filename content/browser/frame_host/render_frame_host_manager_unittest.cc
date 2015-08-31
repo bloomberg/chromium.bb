@@ -2301,10 +2301,9 @@ TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
   // Setting tab2_proxy's opener required an extra IPC message to be set, since
   // the opener's routing ID wasn't available when tab2_proxy was created.
   // Verify that this IPC was sent and that it passed correct routing ID.
-  const FrameMsg_UpdateOpener* message =
-      static_cast<const FrameMsg_UpdateOpener*>(
-          rfh2->GetProcess()->sink().GetUniqueMessageMatching(
-              FrameMsg_UpdateOpener::ID));
+  const IPC::Message* message =
+      rfh2->GetProcess()->sink().GetUniqueMessageMatching(
+          FrameMsg_UpdateOpener::ID);
   EXPECT_TRUE(message);
   FrameMsg_UpdateOpener::Param params;
   EXPECT_TRUE(FrameMsg_UpdateOpener::Read(message, &params));
@@ -2349,10 +2348,9 @@ TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
   // Setting the opener in opener_proxy required an extra IPC message, since
   // the opener's routing ID wasn't available when opener_proxy was created.
   // Verify that this IPC was sent and that it passed correct routing ID.
-  const FrameMsg_UpdateOpener* message =
-      static_cast<const FrameMsg_UpdateOpener*>(
-          rfh2->GetProcess()->sink().GetUniqueMessageMatching(
-              FrameMsg_UpdateOpener::ID));
+  const IPC::Message* message =
+      rfh2->GetProcess()->sink().GetUniqueMessageMatching(
+          FrameMsg_UpdateOpener::ID);
   EXPECT_TRUE(message);
   FrameMsg_UpdateOpener::Param params;
   EXPECT_TRUE(FrameMsg_UpdateOpener::Read(message, &params));
