@@ -282,19 +282,22 @@ class PlatformKeysService::SelectTask : public Task {
   enum class Step {
     GET_EXTENSION_PERMISSIONS,
     GET_MATCHING_CERTS,
+    INTERSECT_WITH_INPUT_CERTS,
     SELECT_CERTS,
     UPDATE_PERMISSION,
     FILTER_BY_PERMISSIONS,
     DONE,
   };
 
-  // This task determines all known client certs matching |request|. If
-  // |interactive| is true, calls |service->select_delegate_->Select()| to
-  // select a cert from all matches. The extension with |extension_id| will be
-  // granted unlimited sign permission for the selected cert.
-  // Finally, either the selection or, if |interactive| is false, matching certs
-  // that the extension has permission for are passed to |callback|.
+  // This task determines all known client certs matching |request| and that are
+  // elements of |input_client_certificates|, if given. If |interactive| is
+  // true, calls |service->select_delegate_->Select()| to select a cert from all
+  // matches. The extension with |extension_id| will be granted unlimited sign
+  // permission for the selected cert. Finally, either the selection or, if
+  // |interactive| is false, matching certs that the extension has permission
+  // for are passed to |callback|.
   SelectTask(const platform_keys::ClientCertificateRequest& request,
+             scoped_ptr<net::CertificateList> input_client_certificates,
              bool interactive,
              const std::string& extension_id,
              const SelectCertificatesCallback& callback,
@@ -302,6 +305,7 @@ class PlatformKeysService::SelectTask : public Task {
              KeyPermissions* key_permissions,
              PlatformKeysService* service)
       : request_(request),
+        input_client_certificates_(input_client_certificates.Pass()),
         interactive_(interactive),
         extension_id_(extension_id),
         callback_(callback),
@@ -326,11 +330,15 @@ class PlatformKeysService::SelectTask : public Task {
         GetExtensionPermissions();
         return;
       case Step::GET_MATCHING_CERTS:
+        next_step_ = Step::INTERSECT_WITH_INPUT_CERTS;
+        GetMatchingCerts();
+        return;
+      case Step::INTERSECT_WITH_INPUT_CERTS:
         if (interactive_)
           next_step_ = Step::SELECT_CERTS;
         else  // Skip SelectCerts and UpdatePermission if not interactive.
           next_step_ = Step::FILTER_BY_PERMISSIONS;
-        GetMatchingCerts();
+        IntersectWithInputCerts();
         return;
       case Step::SELECT_CERTS:
         next_step_ = Step::UPDATE_PERMISSION;
@@ -376,6 +384,8 @@ class PlatformKeysService::SelectTask : public Task {
   // contain the list of matching certificates (maybe empty) and |error_message|
   // will be empty. If an error occurred, |matches| will be null and
   // |error_message| contain an error message.
+  // Note that the order of |matches|, based on the expiration/issuance date, is
+  // relevant and must be preserved in any processing of the list.
   void GotMatchingCerts(scoped_ptr<net::CertificateList> matches,
                         const std::string& error_message) {
     if (!error_message.empty()) {
@@ -416,6 +426,23 @@ class PlatformKeysService::SelectTask : public Task {
 
       matches_.push_back(certificate.Pass());
     }
+    DoStep();
+  }
+
+  // If |input_client_certificates_| is given, removes from |matches_| all
+  // certificates that are not elements of |input_client_certificates_|.
+  void IntersectWithInputCerts() {
+    if (!input_client_certificates_) {
+      DoStep();
+      return;
+    }
+    platform_keys::IntersectCertificates(
+        matches_, *input_client_certificates_,
+        base::Bind(&SelectTask::GotIntersection, weak_factory_.GetWeakPtr()));
+  }
+
+  void GotIntersection(scoped_ptr<net::CertificateList> intersection) {
+    matches_.swap(*intersection);
     DoStep();
   }
 
@@ -492,6 +519,7 @@ class PlatformKeysService::SelectTask : public Task {
   net::CertificateList matches_;
   scoped_refptr<net::X509Certificate> selected_cert_;
   platform_keys::ClientCertificateRequest request_;
+  scoped_ptr<net::CertificateList> input_client_certificates_;
   const bool interactive_;
   const std::string extension_id_;
   const SelectCertificatesCallback callback_;
@@ -571,14 +599,15 @@ void PlatformKeysService::SignRSAPKCS1Raw(const std::string& token_id,
 
 void PlatformKeysService::SelectClientCertificates(
     const platform_keys::ClientCertificateRequest& request,
+    scoped_ptr<net::CertificateList> client_certificates,
     bool interactive,
     const std::string& extension_id,
     const SelectCertificatesCallback& callback,
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  StartOrQueueTask(make_scoped_ptr(
-      new SelectTask(request, interactive, extension_id, callback, web_contents,
-                     &key_permissions_, this)));
+  StartOrQueueTask(make_scoped_ptr(new SelectTask(
+      request, client_certificates.Pass(), interactive, extension_id, callback,
+      web_contents, &key_permissions_, this)));
 }
 
 void PlatformKeysService::StartOrQueueTask(scoped_ptr<Task> task) {

@@ -163,16 +163,20 @@ class PlatformKeysService : public KeyedService {
 
   // Returns a list of certificates matching |request|.
   // 1) all certificates that match the request (like being rooted in one of the
-  // give CAs) are determined. 2) if |interactive| is true, the currently set
-  // SelectDelegate is used to select a single certificate from these matches
-  // which will the extension will also be granted access to. 3) only
-  // certificates, that the extension has unlimited sign permission for, will be
-  // returned.
+  // give CAs) are determined.
+  // 2) if |client_certificates| is not null, drops all certificates that are
+  // not elements of |client_certificates|,
+  // 3) if |interactive| is true, the currently set SelectDelegate is used to
+  // select a single certificate from these matches
+  // which will the extension will also be granted access to.
+  // 4) only certificates, that the extension has unlimited sign permission for,
+  // will be returned.
   // |callback| will be invoked with these certificates or an error message.
-  // Will only call back during the lifetime of this object.
-  // |web_contents| must not be null.
+  // Will only call back during the lifetime of this object. |web_contents| must
+  // not be null.
   void SelectClientCertificates(
       const platform_keys::ClientCertificateRequest& request,
+      scoped_ptr<net::CertificateList> client_certificates,
       bool interactive,
       const std::string& extension_id,
       const SelectCertificatesCallback& callback,

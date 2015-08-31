@@ -228,6 +228,19 @@ function testSelectAllCerts() {
   assertCertsSelected({interactive: false, request: requestAll}, expectedCerts);
 }
 
+function testSelectWithInputClientCerts() {
+  var expectedCerts = [];
+  if (systemTokenEnabled)
+    expectedCerts.push(data.client_2);
+  assertCertsSelected(
+      {
+        interactive: false,
+        request: requestAll,
+        clientCerts: [data.client_2.buffer]
+      },
+      expectedCerts);
+}
+
 function testSelectCA1Certs() {
   assertCertsSelected({interactive: false, request: requestCA1()},
                       [data.client_1]);
@@ -545,6 +558,7 @@ var testSuites = {
 
       testBackgroundNoninteractiveSelect,
       testBackgroundInteractiveSelect,
+      testSelectWithInputClientCerts,
       testSelectCA1Certs,
       testInteractiveSelectNoCerts,
       testMatchResultCA1,
