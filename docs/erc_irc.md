@@ -1,16 +1,24 @@
+# ERC IRC
+
 It's very simple to get started with ERC; just do the following:
-  1. Optional: Sign up at freenode.net to claim your nickname.
-  1. M-x
-  1. erc (and accept default for the first couple of items)
-  1. /join #chromium
+
+1.  Optional: Sign up at freenode.net to claim your nickname.
+1.  M-x
+1.  erc (and accept default for the first couple of items)
+1.  /join #chromium
 
 You may notice the following problems:
-  * It's hard to notice when you're mentioned.
-  * ERC does not have built-in accidental paste prevention, so you might accidentally paste multiple lines of text into the IRC channel.
 
-You can modify the following and add it to your .emacs file to fix both of the above. Note that you'll need to install and configure sendxmpp for the mention hack, which also requires you to create an account for your "robot" on e.g. jabber.org:
+*   It's hard to notice when you're mentioned.
+*   ERC does not have built-in accidental paste prevention, so you might
+    accidentally paste multiple lines of text into the IRC channel.
 
-```
+You can modify the following and add it to your .emacs file to fix both of the
+above. Note that you'll need to install and configure sendxmpp for the mention
+hack, which also requires you to create an account for your "robot" on e.g.
+jabber.org:
+
+```el
 (require 'erc)
 
 ;; Notify me when someone mentions my nick or aliases on IRC.
@@ -89,4 +97,6 @@ You can modify the following and add it to your .emacs file to fix both of the a
              ))
 ```
 
-Note: The paste protection code is modified from a paste by user 'yashh' at http://paste.lisp.org/display/78068 (Google cache [here](http://webcache.googleusercontent.com/search?q=cache:p_S9ZKlWZPoJ:paste.lisp.org/display/78068+paste+78068&cd=1&hl=en&ct=clnk&gl=ca&source=www.google.ca)).
+Note: The paste protection code is modified from a paste by user 'yashh' at
+http://paste.lisp.org/display/78068 (Google cache
+[here](http://webcache.googleusercontent.com/search?q=cache:p_S9ZKlWZPoJ:paste.lisp.org/display/78068+paste+78068&cd=1&hl=en&ct=clnk&gl=ca&source=www.google.ca)).

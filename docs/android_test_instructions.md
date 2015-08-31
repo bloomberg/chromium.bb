@@ -9,17 +9,18 @@ instructions below for setting up either a physical device or an emulator.
 
 In order to allow the ADB to connect to the device, you must enable USB
 debugging:
-  * Before Android 4.1 (Jelly Bean):
-      * Go to "System Settings"
-      * Go to "Developer options"
-      * Check "USB debugging".
-      * Un-check "Verify apps over USB".
-  * On Jelly Bean, developer options are hidden by default. To unhide them:
-      * Go to "About phone"
-      * Tap 10 times on "Build number"
-      * The "Developer options" menu will now be available.
-      * Check "USB debugging".
-      * Un-check "Verify apps over USB".
+
+*   Before Android 4.1 (Jelly Bean):
+    *   Go to "System Settings"
+    *   Go to "Developer options"
+    *   Check "USB debugging".
+    *   Un-check "Verify apps over USB".
+*   On Jelly Bean, developer options are hidden by default. To unhide them:
+    *   Go to "About phone"
+    *   Tap 10 times on "Build number"
+    *   The "Developer options" menu will now be available.
+    *   Check "USB debugging".
+    *   Un-check "Verify apps over USB".
 
 ### Screen
 
@@ -33,7 +34,7 @@ tests will break in exciting ways if stay awake is off).
 
 ### Enable Asserts!
 
-`adb shell setprop debug.assert 1`
+    adb shell setprop debug.assert 1
 
 ### Disable Verify Apps
 
@@ -94,14 +95,15 @@ It may not be immediately obvious where your test code gets compiled to, so here
 are some general rules:
 
 *  If your test code lives under /content, it will probably be built as part of
-   the content\_shell\_test\_apk * If your test code lives under /chrome (or
-   higher), it will probably be built as part of the chrome\_public\_test\_apk *
-   (Please fill in more details here if you know them).
+   the content_shell_test_apk
+*  If your test code lives under /chrome (or higher), it will probably be built
+   as part of the chrome_public_test_apk
+*  (Please fill in more details here if you know them).
 
-   NB: We used to call the chrome\_public\_test\_apk the
-   chromium\_shell\_test\_apk. There may still be references to this kicking
-   around, but wherever you see chromium\_shell\_test you should replace with
-   chrome\_public\_test.
+   NB: We used to call the chrome_public_test_apk the
+   chromium_shell_test_apk. There may still be references to this kicking
+   around, but wherever you see chromium_shell_test you should replace with
+   chrome_public_test.
 
 Once you know what to build, just do it like you normally would build anything
 else, e.g.: `ninja -C out/Release chrome_public_test_apk`
