@@ -13,6 +13,7 @@ source_set("content") {
   deps = [
     "//base",
     "//components/precache/core",
+    "//components/sync_driver",
     "//content/public/browser",
     "//url",
   ]

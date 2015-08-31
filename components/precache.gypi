@@ -11,6 +11,7 @@
       'dependencies': [
         'precache_core',
         '../base/base.gyp:base',
+        '../components/components.gyp:sync_driver',
         '../content/content.gyp:content_browser',
         '../url/url.gyp:url_lib',
       ],

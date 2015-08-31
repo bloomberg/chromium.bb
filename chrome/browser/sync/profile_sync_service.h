@@ -191,25 +191,6 @@ class ProfileSyncService : public sync_driver::SyncService,
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
 
-  // Status of sync server connection, sync token and token request.
-  struct SyncTokenStatus {
-    SyncTokenStatus();
-    ~SyncTokenStatus();
-
-    // Sync server connection status reported by sync backend.
-    base::Time connection_status_update_time;
-    syncer::ConnectionStatus connection_status;
-
-    // Times when OAuth2 access token is requested and received.
-    base::Time token_request_time;
-    base::Time token_receive_time;
-
-    // Error returned by OAuth2TokenService for token request and time when
-    // next request is scheduled.
-    GoogleServiceAuthError last_get_token_error;
-    base::Time next_token_request_time;
-  };
-
   enum SyncEventCodes  {
     MIN_SYNC_EVENT_CODE = 0,
 
@@ -310,6 +291,16 @@ class ProfileSyncService : public sync_driver::SyncService,
       sync_driver::DataTypeController* data_type_controller) override;
   void ReenableDatatype(syncer::ModelType type) override;
   void DeactivateDataType(syncer::ModelType type) override;
+  SyncTokenStatus GetSyncTokenStatus() const override;
+  std::string QuerySyncStatusSummaryString() override;
+  bool QueryDetailedSyncStatus(syncer::SyncStatus* result) override;
+  base::string16 GetLastSyncedTimeString() const override;
+  std::string GetBackendInitializationStateString() const override;
+  syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const override;
+  base::Value* GetTypeStatusMap() const override;
+  const GURL& sync_service_url() const override;
+  std::string unrecoverable_error_message() const override;
+  tracked_objects::Location unrecoverable_error_location() const override;
 
   void AddProtocolEventObserver(browser_sync::ProtocolEventObserver* observer);
   void RemoveProtocolEventObserver(
@@ -430,15 +421,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Get the sync status code.
   SyncStatusSummary QuerySyncStatusSummary();
 
-  // Get a description of the sync status for displaying in the user interface.
-  std::string QuerySyncStatusSummaryString();
-
-  // Initializes a struct of status indicators with data from the backend.
-  // Returns false if the backend was not available for querying; in that case
-  // the struct will be filled with default data.
-  virtual bool QueryDetailedSyncStatus(
-      browser_sync::SyncBackendHost::Status* result);
-
   // Reconfigures the data type manager with the latest enabled types.
   // Note: Does not initialize the backend if it is not already initialized.
   // This function needs to be called only after sync has been initialized
@@ -448,22 +430,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // This function is called by |SetSetupInProgress|.
   virtual void ReconfigureDatatypeManager();
 
-  const std::string& unrecoverable_error_message() {
-    return unrecoverable_error_message_;
-  }
-  tracked_objects::Location unrecoverable_error_location() {
-    return unrecoverable_error_location_;
-  }
-
   syncer::PassphraseRequiredReason passphrase_required_reason() const {
     return passphrase_required_reason_;
   }
-
-  // Returns a user-friendly string form of last synced time (in minutes).
-  virtual base::string16 GetLastSyncedTimeString() const;
-
-  // Returns a human readable string describing backend initialization state.
-  std::string GetBackendInitializationStateString() const;
 
   // Returns true if sync is requested to be running by the user.
   // Note that this does not mean that sync WILL be running; e.g. if
@@ -507,9 +476,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // ProfileSyncServiceHarness.  Figure out a different way to expose
   // this info to that class, and remove these functions.
 
-  virtual syncer::sessions::SyncSessionSnapshot
-      GetLastSessionSnapshot() const;
-
   // Returns whether or not the underlying sync engine has made any
   // local changes to items that have not yet been synced with the
   // server.
@@ -526,19 +492,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // TODO(sync): This is only used in tests.  Can we remove it?
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out) const;
-
-  // Returns a ListValue indicating the status of all registered types.
-  //
-  // The format is:
-  // [ {"name": <name>, "value": <value>, "status": <status> }, ... ]
-  // where <name> is a type's name, <value> is a string providing details for
-  // the type's status, and <status> is one of "error", "warning" or "ok"
-  // depending on the type's current status.
-  //
-  // This function is used by about_sync_util.cc to help populate the about:sync
-  // page.  It returns a ListValue rather than a DictionaryValue in part to make
-  // it easier to iterate over its elements when constructing that page.
-  base::Value* GetTypeStatusMap() const;
 
   // SyncPrefObserver implementation.
   void OnSyncManagedPrefChange(bool is_sync_managed) override;
@@ -592,7 +545,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   virtual bool encryption_pending() const;
 
-  const GURL& sync_service_url() const { return sync_service_url_; }
   SigninManagerBase* signin() const;
 
   // Used by tests.
@@ -634,9 +586,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;
-
-  // Return sync token status.
-  SyncTokenStatus GetSyncTokenStatus() const;
 
   browser_sync::FaviconCache* GetFaviconCache();
 

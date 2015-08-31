@@ -4,7 +4,9 @@
 
 #include "components/sync_driver/fake_sync_service.h"
 
+#include "base/values.h"
 #include "sync/internal_api/public/base_transaction.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/user_share.h"
 
 namespace sync_driver {
@@ -151,6 +153,48 @@ bool FakeSyncService::IsPassphraseRequired() const {
 
 syncer::ModelTypeSet FakeSyncService::GetEncryptedDataTypes() const {
   return syncer::ModelTypeSet();
+}
+
+FakeSyncService::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
+  return FakeSyncService::SyncTokenStatus();
+}
+
+std::string FakeSyncService::QuerySyncStatusSummaryString() {
+  return "";
+}
+
+bool FakeSyncService::QueryDetailedSyncStatus(syncer::SyncStatus* result) {
+  return false;
+}
+
+base::string16 FakeSyncService::GetLastSyncedTimeString() const {
+  return base::string16();
+}
+
+std::string FakeSyncService::GetBackendInitializationStateString() const {
+  return std::string();
+}
+
+syncer::sessions::SyncSessionSnapshot FakeSyncService::GetLastSessionSnapshot()
+    const {
+  return syncer::sessions::SyncSessionSnapshot();
+}
+
+base::Value* FakeSyncService::GetTypeStatusMap() const {
+  return new base::ListValue();
+}
+
+const GURL& FakeSyncService::sync_service_url() const {
+  return sync_service_url_;
+}
+
+std::string FakeSyncService::unrecoverable_error_message() const {
+  return unrecoverable_error_message_;
+}
+
+tracked_objects::Location FakeSyncService::unrecoverable_error_location()
+    const {
+  return tracked_objects::Location();
 }
 
 }  // namespace sync_driver

@@ -19,12 +19,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync_driver/about_sync_util.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -415,7 +416,9 @@ ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::GetAboutInfoForTest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<base::DictionaryValue> about_info =
-      sync_ui_util::ConstructAboutInformation(sync_service_);
+      sync_ui_util::ConstructAboutInformation(sync_service_,
+                                              sync_service_->signin(),
+                                              chrome::GetChannel());
   std::string about_info_json;
   base::JSONWriter::Write(*about_info, &about_info_json);
 

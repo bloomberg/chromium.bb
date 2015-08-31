@@ -20,12 +20,15 @@
         'invalidation_public',
         'os_crypt',
         'signin_core_browser',
+        'version_info',
       ],
       'include_dirs': [
         '..',
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'sync_driver/about_sync_util.cc',
+        'sync_driver/about_sync_util.h',
         'sync_driver/backend_data_type_configurer.cc',
         'sync_driver/backend_data_type_configurer.h',
         'sync_driver/backend_migrator.cc',
@@ -100,6 +103,7 @@
         'sync_driver/sync_frontend.h',
         'sync_driver/sync_prefs.cc',
         'sync_driver/sync_prefs.h',
+        'sync_driver/sync_service.cc',
         'sync_driver/sync_service.h',
         'sync_driver/sync_service_observer.cc',
         'sync_driver/sync_service_observer.h',

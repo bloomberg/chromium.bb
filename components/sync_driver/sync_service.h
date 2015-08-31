@@ -7,18 +7,28 @@
 
 #include <string>
 
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/sync_service_observer.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/connection_status.h"
 
 class GoogleServiceAuthError;
 
 namespace syncer {
+
 class BaseTransaction;
+struct SyncStatus;
 struct UserShare;
-}
+
+namespace sessions {
+class SyncSessionSnapshot;
+}  // namespace sessions
+
+}  // namespace syncer
 
 namespace sync_driver {
 
@@ -42,6 +52,25 @@ class SyncService : public DataTypeEncryptionHandler {
   enum SyncStopDataFate {
     KEEP_DATA,
     CLEAR_DATA,
+  };
+
+  // Status of sync server connection, sync token and token request.
+  struct SyncTokenStatus {
+    SyncTokenStatus();
+    ~SyncTokenStatus();
+
+    // Sync server connection status reported by sync backend.
+    base::Time connection_status_update_time;
+    syncer::ConnectionStatus connection_status;
+
+    // Times when OAuth2 access token is requested and received.
+    base::Time token_request_time;
+    base::Time token_receive_time;
+
+    // Error returned by OAuth2TokenService for token request and time when
+    // next request is scheduled.
+    GoogleServiceAuthError last_get_token_error;
+    base::Time next_token_request_time;
   };
 
   ~SyncService() override {}
@@ -221,6 +250,44 @@ class SyncService : public DataTypeEncryptionHandler {
 
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.
   virtual void DeactivateDataType(syncer::ModelType type) = 0;
+
+  // Return sync token status.
+  virtual SyncTokenStatus GetSyncTokenStatus() const = 0;
+
+  // Get a description of the sync status for displaying in the user interface.
+  virtual std::string QuerySyncStatusSummaryString() = 0;
+
+  // Initializes a struct of status indicators with data from the backend.
+  // Returns false if the backend was not available for querying; in that case
+  // the struct will be filled with default data.
+  virtual bool QueryDetailedSyncStatus(syncer::SyncStatus* result) = 0;
+
+  // Returns a user-friendly string form of last synced time (in minutes).
+  virtual base::string16 GetLastSyncedTimeString() const = 0;
+
+  // Returns a human readable string describing backend initialization state.
+  virtual std::string GetBackendInitializationStateString() const = 0;
+
+  virtual syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot()
+      const = 0;
+
+  // Returns a ListValue indicating the status of all registered types.
+  //
+  // The format is:
+  // [ {"name": <name>, "value": <value>, "status": <status> }, ... ]
+  // where <name> is a type's name, <value> is a string providing details for
+  // the type's status, and <status> is one of "error", "warning" or "ok"
+  // depending on the type's current status.
+  //
+  // This function is used by about_sync_util.cc to help populate the about:sync
+  // page.  It returns a ListValue rather than a DictionaryValue in part to make
+  // it easier to iterate over its elements when constructing that page.
+  virtual base::Value* GetTypeStatusMap() const = 0;
+
+  virtual const GURL& sync_service_url() const = 0;
+
+  virtual std::string unrecoverable_error_message() const = 0;
+  virtual tracked_objects::Location unrecoverable_error_location() const = 0;
 
  protected:
   SyncService() {}

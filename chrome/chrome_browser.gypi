@@ -2845,8 +2845,6 @@
       'browser/supervised_user/supervised_user_theme.h',
     ],
     'chrome_browser_sync_sources': [
-      'browser/sync/about_sync_util.cc',
-      'browser/sync/about_sync_util.h',
       'browser/sync/backup_rollback_controller.cc',
       'browser/sync/backup_rollback_controller.h',
       'browser/sync/chrome_sync_client.cc',

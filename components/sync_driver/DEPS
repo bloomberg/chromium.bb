@@ -9,6 +9,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/sessions",
   "+components/signin/core/browser",
+  "+components/version_info",
   "+google",
   "+google_apis",
   "+net",

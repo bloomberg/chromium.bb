@@ -252,6 +252,7 @@
         'internal_api/public/base_transaction.h',
         'internal_api/public/change_record.h',
         'internal_api/public/configure_reason.h',
+        'internal_api/public/connection_status.h',
         'internal_api/public/data_type_association_stats.cc',
         'internal_api/public/data_type_association_stats.h',
         'internal_api/public/data_type_debug_info_listener.cc',

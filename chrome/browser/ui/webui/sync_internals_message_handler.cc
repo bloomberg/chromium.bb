@@ -8,9 +8,10 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/channel_info.h"
+#include "components/sync_driver/about_sync_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "sync/internal_api/public/events/protocol_event.h"
@@ -209,8 +210,11 @@ void SyncInternalsMessageHandler::HandleJsEvent(
 }
 
 void SyncInternalsMessageHandler::SendAboutInfo() {
+  ProfileSyncService* sync_service = GetProfileSyncService();
   scoped_ptr<base::DictionaryValue> value =
-      sync_ui_util::ConstructAboutInformation(GetProfileSyncService());
+      sync_ui_util::ConstructAboutInformation(sync_service,
+                                              sync_service->signin(),
+                                              chrome::GetChannel());
   web_ui()->CallJavascriptFunction(
       "chrome.sync.dispatchEvent",
       base::StringValue("onAboutInfoUpdated"),

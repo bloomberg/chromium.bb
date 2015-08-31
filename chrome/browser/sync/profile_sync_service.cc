@@ -2607,12 +2607,7 @@ syncer::SyncableService* ProfileSyncService::GetDeviceInfoSyncableService() {
   return device_info_sync_service_.get();
 }
 
-ProfileSyncService::SyncTokenStatus::SyncTokenStatus()
-    : connection_status(syncer::CONNECTION_NOT_ATTEMPTED),
-      last_get_token_error(GoogleServiceAuthError::AuthErrorNone()) {}
-ProfileSyncService::SyncTokenStatus::~SyncTokenStatus() {}
-
-ProfileSyncService::SyncTokenStatus
+sync_driver::SyncService::SyncTokenStatus
 ProfileSyncService::GetSyncTokenStatus() const {
   SyncTokenStatus status;
   status.connection_status_update_time = connection_status_update_time_;
@@ -2798,4 +2793,17 @@ void ProfileSyncService::ReportPreviousSessionMemoryWarningCount() {
   // Will set to true during a clean shutdown, so crash or something else will
   // remain this as false.
   sync_prefs_.SetCleanShutdown(false);
+}
+
+const GURL& ProfileSyncService::sync_service_url() const {
+  return sync_service_url_;
+}
+
+std::string ProfileSyncService::unrecoverable_error_message() const {
+  return unrecoverable_error_message_;
+}
+
+tracked_objects::Location ProfileSyncService::unrecoverable_error_location()
+    const {
+  return unrecoverable_error_location_;
 }

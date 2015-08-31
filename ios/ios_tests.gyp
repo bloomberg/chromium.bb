@@ -30,6 +30,7 @@
         '../components/components.gyp:keyed_service_core',
         '../components/components.gyp:keyed_service_ios',
         '../components/components.gyp:sync_driver_test_support',
+        '../sync/sync.gyp:sync',
         '../testing/gtest.gyp:gtest',
         'provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
       ],

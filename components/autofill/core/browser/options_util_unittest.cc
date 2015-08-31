@@ -12,6 +12,8 @@
 #include "components/sync_driver/fake_sync_service.h"
 #include "components/sync_driver/sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "sync/internal_api/public/engine/sync_status.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Return;

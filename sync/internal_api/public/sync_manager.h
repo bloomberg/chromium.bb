@@ -22,6 +22,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/configure_reason.h"
+#include "sync/internal_api/public/connection_status.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/events/protocol_event.h"
@@ -60,14 +61,6 @@ struct UserShare;
 namespace sessions {
 class SyncSessionSnapshot;
 }  // namespace sessions
-
-// Used by SyncManager::OnConnectionStatusChange().
-enum ConnectionStatus {
-  CONNECTION_NOT_ATTEMPTED,
-  CONNECTION_OK,
-  CONNECTION_AUTH_ERROR,
-  CONNECTION_SERVER_ERROR
-};
 
 // Contains everything needed to talk to and identify a user account.
 struct SYNC_EXPORT SyncCredentials {

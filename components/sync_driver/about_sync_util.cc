@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/about_sync_util.h"
+#include "components/sync_driver/about_sync_util.h"
 
 #include <string>
 
+#include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/channel_info.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync_driver/sync_service.h"
 #include "components/version_info/version_info.h"
 #include "sync/api/time.h"
+#include "sync/internal_api/public/engine/sync_status.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/protocol/proto_enum_conversions.h"
 
@@ -140,15 +142,15 @@ void IntSyncStat::SetValue(int value) {
 // If version information is unavailable, returns "invalid."
 // TODO(zea): this approximately matches MakeUserAgentForSyncApi in
 // sync_backend_host.cc. Unify the two if possible.
-std::string GetVersionString() {
+std::string GetVersionString(version_info::Channel channel) {
   // Build a version string that matches MakeUserAgentForSyncApi with the
   // addition of channel info and proper OS names.
   // chrome::GetChannelString() returns empty string for stable channel or
   // unofficial builds, the channel string otherwise. We want to have "-devel"
   // for unofficial builds only.
-  std::string version_modifier = chrome::GetChannelString();
+  std::string version_modifier = version_info::GetChannelString(channel);
   if (version_modifier.empty()) {
-    if (chrome::GetChannel() != version_info::Channel::STABLE) {
+    if (channel != version_info::Channel::STABLE) {
       version_modifier = "-devel";
     }
   } else {
@@ -169,7 +171,7 @@ std::string GetTimeStr(base::Time time, const std::string& default_msg) {
 }
 
 std::string GetConnectionStatus(
-    const ProfileSyncService::SyncTokenStatus& status) {
+    const sync_driver::SyncService::SyncTokenStatus& status) {
   std::string message;
   switch (status.connection_status) {
     case syncer::CONNECTION_NOT_ATTEMPTED:
@@ -205,7 +207,9 @@ namespace sync_ui_util {
 // which are grouped into sections and populated with the help of the SyncStat
 // classes defined above.
 scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
-    ProfileSyncService* service) {
+    sync_driver::SyncService* service,
+    SigninManagerBase* signin,
+    version_info::Channel channel) {
   scoped_ptr<base::DictionaryValue> about_info(new base::DictionaryValue());
 
   // 'details': A list of sections.
@@ -313,7 +317,7 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
   about_info->Set(kDetailsKey, stats_list);
 
   // Populate all the fields we declared above.
-  client_version.SetValue(GetVersionString());
+  client_version.SetValue(GetVersionString(channel));
 
   if (!service) {
     summary_string.SetValue("Sync service does not exist");
@@ -335,10 +339,10 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
     sync_id.SetValue(full_status.sync_id);
   if (is_status_valid && !full_status.invalidator_client_id.empty())
     invalidator_id.SetValue(full_status.invalidator_client_id);
-  if (service->signin())
-    username.SetValue(service->signin()->GetAuthenticatedAccountInfo().email);
+  if (signin)
+    username.SetValue(signin->GetAuthenticatedAccountInfo().email);
 
-  const ProfileSyncService::SyncTokenStatus& token_status =
+  const sync_driver::SyncService::SyncTokenStatus& token_status =
       service->GetSyncTokenStatus();
   server_connection.SetValue(GetConnectionStatus(token_status));
   request_token_time.SetValue(GetTimeStr(token_status.token_request_time,

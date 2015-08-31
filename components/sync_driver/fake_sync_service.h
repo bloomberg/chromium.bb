@@ -7,6 +7,7 @@
 
 #include "components/sync_driver/sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 namespace syncer {
 class BaseTransaction;
@@ -63,12 +64,24 @@ class FakeSyncService : public sync_driver::SyncService {
       sync_driver::DataTypeController* data_type_controller) override;
   void ReenableDatatype(syncer::ModelType type) override;
   void DeactivateDataType(syncer::ModelType type) override;
+  SyncTokenStatus GetSyncTokenStatus() const override;
+  std::string QuerySyncStatusSummaryString() override;
+  bool QueryDetailedSyncStatus(syncer::SyncStatus* result) override;
+  base::string16 GetLastSyncedTimeString() const override;
+  std::string GetBackendInitializationStateString() const override;
+  syncer::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const override;
+  base::Value* GetTypeStatusMap() const override;
+  const GURL& sync_service_url() const override;
+  std::string unrecoverable_error_message() const override;
+  tracked_objects::Location unrecoverable_error_location() const override;
 
   // DataTypeEncryptionHandler:
   bool IsPassphraseRequired() const override;
   syncer::ModelTypeSet GetEncryptedDataTypes() const override;
 
   GoogleServiceAuthError error_;
+  GURL sync_service_url_;
+  std::string unrecoverable_error_message_;
 };
 
 }  // namespace sync_driver

@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/quiesce_status_change_checker.h"
@@ -24,10 +23,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/invalidation/impl/p2p_invalidation_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync_driver/about_sync_util.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/base/progress_marker_map.h"
@@ -470,7 +471,8 @@ bool ProfileSyncServiceHarness::IsTypePreferred(syncer::ModelType type) {
 
 std::string ProfileSyncServiceHarness::GetServiceStatus() {
   scoped_ptr<base::DictionaryValue> value(
-      sync_ui_util::ConstructAboutInformation(service()));
+      sync_ui_util::ConstructAboutInformation(
+          service(), service()->signin(), chrome::GetChannel()));
   std::string service_status;
   base::JSONWriter::WriteWithOptions(
       *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &service_status);

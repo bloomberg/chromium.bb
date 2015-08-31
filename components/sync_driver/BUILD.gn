@@ -6,6 +6,8 @@ import("//build/config/features.gni")
 
 source_set("sync_driver") {
   sources = [
+    "about_sync_util.cc",
+    "about_sync_util.h",
     "backend_data_type_configurer.cc",
     "backend_data_type_configurer.h",
     "backend_migrator.cc",
@@ -81,6 +83,7 @@ source_set("sync_driver") {
     "sync_frontend.h",
     "sync_prefs.cc",
     "sync_prefs.h",
+    "sync_service.cc",
     "sync_service.h",
     "sync_service_observer.cc",
     "sync_service_observer.h",
@@ -105,6 +108,7 @@ source_set("sync_driver") {
     "//components/os_crypt",
     "//components/sessions",
     "//components/signin/core/browser",
+    "//components/version_info",
     "//net",
     "//sync",
     "//third_party/cacheinvalidation",
@@ -169,6 +173,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "about_sync_util_unittest.cc",
     "data_type_manager_impl_unittest.cc",
     "device_info_data_type_controller_unittest.cc",
     "device_info_sync_service_unittest.cc",
