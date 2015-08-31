@@ -908,6 +908,7 @@
     'auto_bisect': ['auto-bisect-reviews@chromium.org'],
     'autofill': ['bondd+autofillwatch@chromium.org',
                  'estade+watch@chromium.org',
+                 'jdonnelly+autofillwatch@chromium.org',
                  'rouslan+autofillwatch@chromium.org'],
     'automation': ['robertshield@chromium.org'],
     'background_sync': ['jkarlin+watch@chromium.org'],
