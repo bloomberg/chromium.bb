@@ -187,17 +187,14 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
 bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
     content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
-  if (!registry)
-    return true;
-
-  // https://crbug.com/160576 workaround: Origin lock to the extension:// scheme
-  // for a hosted app would kill processes on legitimate requests for the app's
-  // cookies.
+  // https://crbug.com/160576 workaround: Origin lock to the chrome-extension://
+  // scheme for a hosted app would kill processes on legitimate requests for the
+  // app's cookies.
   if (effective_site_url.SchemeIs(extensions::kExtensionScheme)) {
     const Extension* extension =
-        registry->enabled_extensions().GetExtensionOrAppByURL(
-            effective_site_url);
+        ExtensionRegistry::Get(browser_context)
+            ->enabled_extensions()
+            .GetExtensionOrAppByURL(effective_site_url);
     if (extension && extension->is_hosted_app())
       return false;
   }
