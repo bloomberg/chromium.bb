@@ -479,19 +479,16 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetLocalSpace(
     uint64_t* total_size,
     uint64_t* remaining_size,
     bool is_download) {
-  Profile* const profile = GetProfile();
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
 
-  if (!is_download || profile->IsGuestSession() ||
-      !drive::util::IsDriveEnabledForProfile(profile)) {
+  if (!is_download || !file_system) {
     OnGetSizeStats(total_size, remaining_size);
     return;
   }
 
   // We need to add evictable cache size to the remaining size of Downloads
   // volume if drive is available.
-  drive::FileSystemInterface* file_system =
-      drive::util::GetFileSystemByProfile(profile);
-
   file_system->CalculateEvictableCacheSize(base::Bind(
       &OnCalculateEvictableCacheSize,
       base::Bind(&FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats, this),
