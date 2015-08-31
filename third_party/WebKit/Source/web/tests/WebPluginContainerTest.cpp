@@ -131,8 +131,9 @@ WebPluginContainer* getWebPluginContainer(WebView* webView, const WebString& id)
 TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_container.html"));
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
@@ -162,9 +163,9 @@ TEST_F(WebPluginContainerTest, PrintOnePage)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("test.pdf"), WebString::fromUTF8("application/pdf"));
 
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
-    TestPluginWebFrameClient* testClient = new TestPluginWebFrameClient();
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, testClient);
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, &pluginWebFrameClient);
     ASSERT(webView);
     webView->layout();
     runPendingTasks();
@@ -178,16 +179,16 @@ TEST_F(WebPluginContainerTest, PrintOnePage)
     SkPictureRecorder recorder;
     frame->printPage(0, recorder.beginRecording(IntRect()));
     frame->printEnd();
-    ASSERT(testClient->printedAtLeastOnePage());
+    ASSERT(pluginWebFrameClient.printedAtLeastOnePage());
 }
 
 TEST_F(WebPluginContainerTest, PrintAllPages)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("test.pdf"), WebString::fromUTF8("application/pdf"));
 
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
-    TestPluginWebFrameClient* testClient = new TestPluginWebFrameClient();
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, testClient);
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, &pluginWebFrameClient);
     ASSERT(webView);
     webView->layout();
     runPendingTasks();
@@ -201,7 +202,7 @@ TEST_F(WebPluginContainerTest, PrintAllPages)
     SkPictureRecorder recorder;
     frame->printPagesWithBoundaries(recorder.beginRecording(IntRect()), WebSize());
     frame->printEnd();
-    ASSERT(testClient->printedAtLeastOnePage());
+    ASSERT(pluginWebFrameClient.printedAtLeastOnePage());
 }
 
 TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
@@ -238,8 +239,9 @@ TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
 TEST_F(WebPluginContainerTest, Copy)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_container.html"));
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
@@ -258,8 +260,9 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     URLTestHelpers::registerMockedURLFromBaseURL(
         WebString::fromUTF8(m_baseURL.c_str()),
         WebString::fromUTF8("plugin_container.html"));
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
@@ -360,8 +363,9 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin)
 TEST_F(WebPluginContainerTest, IsRectTopmostTest)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_container.html"));
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, new TestPluginWebFrameClient());
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
     ASSERT(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
