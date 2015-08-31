@@ -53,6 +53,8 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
 #if defined(USE_VGEM_MAP)
     configurations.push_back(
         {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP});
+    configurations.push_back(
+        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP});
 #endif
     return configurations;
   }
@@ -64,13 +66,11 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
 
     switch (usage) {
       case gfx::BufferUsage::MAP:
+      case gfx::BufferUsage::PERSISTENT_MAP:
 #if defined(USE_VGEM_MAP)
         return ClientNativePixmapVgem::ImportFromDmabuf(
             vgem_fd_.get(), scoped_fd.get(), size, handle.stride);
 #endif
-        NOTREACHED();
-        return nullptr;
-      case gfx::BufferUsage::PERSISTENT_MAP:
         NOTREACHED();
         return nullptr;
       case gfx::BufferUsage::SCANOUT:
