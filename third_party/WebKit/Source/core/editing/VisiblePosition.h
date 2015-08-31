@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
-#include "core/editing/EphemeralRange.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextAffinity.h"
 #include "platform/heap/Handle.h"
@@ -127,8 +126,6 @@ CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
 // |lineDirectionPointForBlockDirectionNavigationOf()| to "FrameSelection.h"
 // as static function.
 int lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition&);
-
-EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
 
 // TODO(yosin) We should move |leftPositionOf()| and |rightPositionOf()| to
 // "VisibleUnits.cpp".

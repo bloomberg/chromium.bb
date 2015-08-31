@@ -1511,6 +1511,19 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtrWillBe
     return TextIterator::rangeLength(range->startPosition(), range->endPosition(), true);
 }
 
+EphemeralRange makeRange(const VisiblePosition &start, const VisiblePosition &end)
+{
+    if (start.isNull() || end.isNull())
+        return EphemeralRange();
+
+    Position s = start.deepEquivalent().parentAnchoredEquivalent();
+    Position e = end.deepEquivalent().parentAnchoredEquivalent();
+    if (s.isNull() || e.isNull())
+        return EphemeralRange();
+
+    return EphemeralRange(s, e);
+}
+
 VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)
 {
     if (!scope)

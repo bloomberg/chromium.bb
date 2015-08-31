@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/VisiblePosition.h"
@@ -245,6 +246,7 @@ bool lineBreakExistsAtVisiblePosition(const VisiblePosition&);
 int comparePositions(const VisiblePosition&, const VisiblePosition&);
 
 int indexForVisiblePosition(const VisiblePosition&, RefPtrWillBeRawPtr<ContainerNode>& scope);
+EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
 VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 
 // -------------------------------------------------------------------------

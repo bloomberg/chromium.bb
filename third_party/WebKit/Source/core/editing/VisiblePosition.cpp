@@ -772,19 +772,6 @@ void VisiblePosition::showTreeForThis() const
 
 #endif
 
-EphemeralRange makeRange(const VisiblePosition &start, const VisiblePosition &end)
-{
-    if (start.isNull() || end.isNull())
-        return EphemeralRange();
-
-    Position s = start.deepEquivalent().parentAnchoredEquivalent();
-    Position e = end.deepEquivalent().parentAnchoredEquivalent();
-    if (s.isNull() || e.isNull())
-        return EphemeralRange();
-
-    return EphemeralRange(s, e);
-}
-
 DEFINE_TRACE(VisiblePosition)
 {
     visitor->trace(m_deepPosition);
