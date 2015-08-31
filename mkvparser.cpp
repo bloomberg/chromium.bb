@@ -1390,10 +1390,8 @@ bool Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
 }
 
 long Segment::Load() {
-  assert(m_clusters == NULL);
-  assert(m_clusterSize == 0);
-  assert(m_clusterCount == 0);
-  // assert(m_size >= 0);
+  if (m_clusters != NULL || m_clusterSize != 0 || m_clusterCount != 0)
+    return E_PARSE_FAILED;
 
   // Outermost (level 0) segment object has been constructed,
   // and pos designates start of payload.  We need to find the
