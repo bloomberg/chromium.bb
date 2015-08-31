@@ -117,7 +117,7 @@ TEST_F(StyledMarkupSerializerTest, ShadowTreeDistributeOrder)
     const char* bodyContent = "<p id=\"host\">00<b id=\"one\">11</b><b id=\"two\">22</b>33</p>";
     const char* shadowContent = "<a><content select=#two></content><content select=#one></content></a>";
     setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
+    setShadowContent(shadowContent, "host");
     EXPECT_EQ("<p id=\"host\"><b id=\"one\">11</b><b id=\"two\">22</b></p>", serialize<EditingStrategy>())
         << "00 and 33 aren't appeared since they aren't distributed.";
     EXPECT_EQ("<p id=\"host\"><a><b id=\"two\">22</b><b id=\"one\">11</b></a></p>", serialize<EditingInComposedTreeStrategy>())
@@ -129,7 +129,7 @@ TEST_F(StyledMarkupSerializerTest, ShadowTreeInput)
     const char* bodyContent = "<p id=\"host\">00<b id=\"one\">11</b><b id=\"two\"><input value=\"22\"></b>33</p>";
     const char* shadowContent = "<a><content select=#two></content><content select=#one></content></a>";
     setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
+    setShadowContent(shadowContent, "host");
     EXPECT_EQ("<p id=\"host\"><b id=\"one\">11</b><b id=\"two\"><input value=\"22\"></b></p>", serialize<EditingStrategy>())
         << "00 and 33 aren't appeared since they aren't distributed.";
     EXPECT_EQ("<p id=\"host\"><a><b id=\"two\"><input value=\"22\"></b><b id=\"one\">11</b></a></p>", serialize<EditingInComposedTreeStrategy>())
@@ -142,7 +142,7 @@ TEST_F(StyledMarkupSerializerTest, ShadowTreeNested)
     const char* shadowContent1 = "<a><content select=#two></content><b id=host2></b><content select=#one></content></a>";
     const char* shadowContent2 = "NESTED";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = setShadowContent(shadowContent1);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = setShadowContent(shadowContent1, "host");
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host2", shadowContent2);
 
     EXPECT_EQ("<p id=\"host\"><b id=\"one\">11</b><b id=\"two\">22</b></p>", serialize<EditingStrategy>())
@@ -181,7 +181,7 @@ TEST_F(StyledMarkupSerializerTest, ShadowTreeStyle)
     bodyContent = "<p id='host' style='color: red'>00<span id='one'>11</span>22</p>\n";
     const char* shadowContent = "<span style='font-weight: bold'><content select=#one></content></span>";
     setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
+    setShadowContent(shadowContent, "host");
     one = document().getElementById("one");
     text = toText(one->firstChild());
     PositionInComposedTree startICT(text, 0);

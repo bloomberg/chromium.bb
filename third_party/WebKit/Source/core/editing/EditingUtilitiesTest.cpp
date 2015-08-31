@@ -17,7 +17,7 @@ TEST_F(EditingUtilitiesTest, directionOfEnclosingBlock)
     const char* bodyContent = "<p id='host'><b id='one'></b><b id='two'>22</b></p>";
     const char* shadowContent = "<content select=#two></content><p dir=rtl><content select=#one></content><p>";
     setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
+    setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
     Node* one = document().getElementById("one");
 
@@ -30,7 +30,7 @@ TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot)
     const char* bodyContent = "<p id='host' contenteditable><b id='one'></b><b id='two'>22</b></p>";
     const char* shadowContent = "<content select=#two></content><content select=#one></content><b id='three'>333</b>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
     Node* host = document().getElementById("host");
     Node* one = document().getElementById("one");
@@ -49,7 +49,7 @@ TEST_F(EditingUtilitiesTest, enclosingBlock)
     const char* bodyContent = "<p id='host'><b id='one'>11</b></p>";
     const char* shadowContent = "<content select=#two></content><div id='three'><content select=#one></content></div>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
     Node* host = document().getElementById("host");
     Node* one = document().getElementById("one");
@@ -64,7 +64,7 @@ TEST_F(EditingUtilitiesTest, enclosingNodeOfType)
     const char* bodyContent = "<p id='host'><b id='one'>11</b></p>";
     const char* shadowContent = "<content select=#two></content><div id='three'><content select=#one></div></content>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
     Node* host = document().getElementById("host");
     Node* one = document().getElementById("one");
@@ -79,7 +79,7 @@ TEST_F(EditingUtilitiesTest, NextNodeIndex)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
     const char* shadowContent = "<content select=#two></content><content select=#one></content>";
     setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
+    setShadowContent(shadowContent, "host");
     Node* host = document().getElementById("host");
     Node* two = document().getElementById("two");
 
@@ -92,7 +92,7 @@ TEST_F(EditingUtilitiesTest, NextVisuallyDistinctCandidate)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b><b id='three'>33</b></p>";
     const char* shadowContent = "<content select=#two></content><content select=#one></content><content select=#three></content>";
     setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
+    setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
     Node* one = document().getElementById("one");
     Node* two = document().getElementById("two");

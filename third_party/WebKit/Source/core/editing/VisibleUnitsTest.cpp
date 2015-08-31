@@ -32,7 +32,7 @@ TEST_F(VisibleUnitsTest, inSameLine)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
     const char* shadowContent = "<div><span id='s4'>44</span><content select=#two></content><br><span id='s5'>55</span><br><content select=#one></content><span id='s6'>66</span></div>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     RefPtrWillBeRawPtr<Element> body = document().body();
@@ -57,7 +57,7 @@ TEST_F(VisibleUnitsTest, localCaretRectOfPosition)
     const char* bodyContent = "<p id='host'><b id='one'>1</b></p><b id='two'>22</b>";
     const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
     setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
+    setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
@@ -79,7 +79,7 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionAfterAnchor)
     const char* bodyContent = "<p id='host'><b id='one'>1</b></p><b id='two'>22</b>";
     const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
     setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
+    setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
@@ -93,7 +93,7 @@ TEST_F(VisibleUnitsTest, mostForwardCaretPositionAfterAnchor)
     const char* bodyContent = "<p id='host'><b id='one'>1</b></p>";
     const char* shadowContent = "<b id='two'>22</b><content select=#one></content><b id='three'>333</b>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     RefPtrWillBeRawPtr<Element> host = document().getElementById("host");

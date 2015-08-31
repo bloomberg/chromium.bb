@@ -18,7 +18,7 @@ TEST_F(EditingStrategyTest, caretMaxOffset)
     const char* bodyContent = "<p id='host'>00<b id='one'>1</b><b id='two'>22</b>333</p>";
     const char* shadowContent = "<content select=#two></content><content select=#one></content>";
     setBodyContent(bodyContent);
-    setShadowContent(shadowContent);
+    setShadowContent(shadowContent, "host");
     Node* host = document().getElementById("host");
     Node* one = document().getElementById("one");
     Node* two = document().getElementById("two");
