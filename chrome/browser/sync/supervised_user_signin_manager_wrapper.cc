@@ -29,7 +29,7 @@ std::string SupervisedUserSigninManagerWrapper::GetEffectiveUsername() const {
   if (profile_->IsLegacySupervised())
     return supervised_users::kSupervisedUserPseudoEmail;
 #endif
-  return original_->GetAuthenticatedUsername();
+  return original_->GetAuthenticatedAccountInfo().email;
 }
 
 std::string SupervisedUserSigninManagerWrapper::GetAccountIdToUse() const {

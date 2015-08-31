@@ -198,7 +198,7 @@ class SigninManagerTest : public testing::Test {
   void ExpectSignInWithRefreshTokenSuccess() {
     EXPECT_TRUE(manager_->IsAuthenticated());
     EXPECT_FALSE(manager_->GetAuthenticatedAccountId().empty());
-    EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
+    EXPECT_FALSE(manager_->GetAuthenticatedAccountInfo().email.empty());
 
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
@@ -315,21 +315,21 @@ TEST_F(SigninManagerTest, SignOut) {
       SigninManager::OAuthTokenFetchedCallback());
   manager_->SignOut(signin_metrics::SIGNOUT_TEST);
   EXPECT_FALSE(manager_->IsAuthenticated());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
   // Should not be persisted anymore
   ShutDownManager();
   CreateNakedSigninManager();
   manager_->Initialize(NULL);
   EXPECT_FALSE(manager_->IsAuthenticated());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
 }
 
 TEST_F(SigninManagerTest, SignOutWhileProhibited) {
   SetUpSigninManagerAsService();
   EXPECT_FALSE(manager_->IsAuthenticated());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
 
   manager_->SetAuthenticatedAccountInfo("gaia_id", "user@gmail.com");
@@ -375,7 +375,7 @@ TEST_F(SigninManagerTest, ProhibitedAtStartup) {
   CreateNakedSigninManager();
   manager_->Initialize(g_browser_process->local_state());
   // Currently signed in user is prohibited by policy, so should be signed out.
-  EXPECT_EQ("", manager_->GetAuthenticatedUsername());
+  EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
 }
 
@@ -384,19 +384,19 @@ TEST_F(SigninManagerTest, ProhibitedAfterStartup) {
   profile()->GetPrefs()->SetString(prefs::kGoogleServicesAccountId, account_id);
   CreateNakedSigninManager();
   manager_->Initialize(g_browser_process->local_state());
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
   // Update the profile - user should be signed out.
   g_browser_process->local_state()->SetString(
       prefs::kGoogleServicesUsernamePattern, ".*@google.com");
-  EXPECT_EQ("", manager_->GetAuthenticatedUsername());
+  EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
 }
 
 TEST_F(SigninManagerTest, ExternalSignIn) {
   CreateNakedSigninManager();
   manager_->Initialize(g_browser_process->local_state());
-  EXPECT_EQ("", manager_->GetAuthenticatedUsername());
+  EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
 
@@ -404,7 +404,7 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   manager_->OnExternalSigninCompleted("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
   EXPECT_EQ(0, test_observer_.num_failed_signins_);
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
 
@@ -416,7 +416,7 @@ TEST_F(SigninManagerTest, SigninNotAllowed) {
   AddToAccountTracker("gaia_id", user);
   manager_->Initialize(g_browser_process->local_state());
   // Currently signing in is prohibited by policy, so should be signed out.
-  EXPECT_EQ("", manager_->GetAuthenticatedUsername());
+  EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
 }
 
@@ -427,7 +427,7 @@ TEST_F(SigninManagerTest, UpgradeToNewPrefs) {
                                    "account_id");
   CreateNakedSigninManager();
   manager_->Initialize(g_browser_process->local_state());
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
 
   AccountTrackerService* service =
       AccountTrackerServiceFactory::GetForProfile(profile());
@@ -465,7 +465,8 @@ TEST_F(SigninManagerTest, CanonicalizesPrefs) {
 
     CreateNakedSigninManager();
     manager_->Initialize(g_browser_process->local_state());
-    EXPECT_EQ("user.C@gmail.com", manager_->GetAuthenticatedUsername());
+    EXPECT_EQ("user.C@gmail.com",
+              manager_->GetAuthenticatedAccountInfo().email);
 
     // TODO(rogerta): until the migration to gaia id, the account id will remain
     // the old username.

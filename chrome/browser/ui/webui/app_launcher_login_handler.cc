@@ -114,8 +114,9 @@ void AppLauncherLoginHandler::HandleShowSyncLoginUI(
   if (!signin::ShouldShowPromo(profile))
     return;
 
-  std::string username =
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
+  std::string username = SigninManagerFactory::GetForProfile(profile)
+                             ->GetAuthenticatedAccountInfo()
+                             .email;
   if (!username.empty())
     return;
 

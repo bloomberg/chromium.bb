@@ -319,7 +319,8 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
   signin_metrics::Source source = signin::GetSourceForPromoURL(current_url_);
 
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  std::string primary_email = signin_manager->GetAuthenticatedUsername();
+  std::string primary_email =
+      signin_manager->GetAuthenticatedAccountInfo().email;
   if (gaia::AreEmailsSame(email_, primary_email) &&
       source == signin_metrics::SOURCE_REAUTH &&
       switches::IsNewProfileManagement() &&
@@ -552,7 +553,7 @@ bool InlineLoginHandlerImpl::CanOffer(Profile* profile,
     // If the signin manager already has an authenticated name, then this is a
     // re-auth scenario.  Make sure the email just signed in corresponds to
     // the one sign in manager expects.
-    std::string current_email = manager->GetAuthenticatedUsername();
+    std::string current_email = manager->GetAuthenticatedAccountInfo().email;
     const bool same_email = gaia::AreEmailsSame(current_email, email);
     if (!current_email.empty() && !same_email) {
       UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
@@ -750,7 +751,8 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
     case signin_metrics::SOURCE_REAUTH: {
       std::string primary_username =
           SigninManagerFactory::GetForProfile(profile)
-          ->GetAuthenticatedUsername();
+              ->GetAuthenticatedAccountInfo()
+              .email;
       if (!gaia::AreEmailsSame(default_email, primary_username))
         can_offer_for = CAN_OFFER_FOR_SECONDARY_ACCOUNT;
       break;

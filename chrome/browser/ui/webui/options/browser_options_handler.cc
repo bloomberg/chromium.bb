@@ -1817,7 +1817,8 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     // in, audio history is meaningless. This is only displayed if always-on
     // hotwording is available.
     if (authenticated && always_on) {
-      std::string user_display_name = signin->GetAuthenticatedUsername();
+      std::string user_display_name =
+          signin->GetAuthenticatedAccountInfo().email;
       DCHECK(!user_display_name.empty());
       base::string16 audio_history_state =
           l10n_util::GetStringFUTF16(IDS_HOTWORD_AUDIO_HISTORY_ENABLED,

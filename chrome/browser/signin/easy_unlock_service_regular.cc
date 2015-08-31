@@ -69,7 +69,8 @@ std::string EasyUnlockServiceRegular::GetUserEmail() const {
   // |profile| has to be a signed-in profile with SigninManager already
   // created. Otherwise, just crash to collect stack.
   DCHECK(signin_manager);
-  const std::string user_email = signin_manager->GetAuthenticatedUsername();
+  const std::string user_email =
+      signin_manager->GetAuthenticatedAccountInfo().email;
   return user_email.empty() ? user_email : gaia::CanonicalizeEmail(user_email);
 }
 

@@ -127,8 +127,9 @@ void UserPolicySigninService::OnRefreshTokenAvailable(
 
   // ProfileOAuth2TokenService now has a refresh token so initialize the
   // UserCloudPolicyManager.
-  InitializeForSignedInUser(signin_manager()->GetAuthenticatedUsername(),
-                            profile_->GetRequestContext());
+  InitializeForSignedInUser(
+      signin_manager()->GetAuthenticatedAccountInfo().email,
+      profile_->GetRequestContext());
 }
 
 void UserPolicySigninService::InitializeUserCloudPolicyManager(

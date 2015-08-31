@@ -51,7 +51,7 @@ void FakeSigninManager::SignIn(const std::string& account_id) {
 void FakeSigninManager::SignOut(
     signin_metrics::ProfileSignout signout_source_metric) {
   const std::string account_id = GetAuthenticatedAccountId();
-  const std::string username = GetAuthenticatedUsername();
+  const std::string username = GetAuthenticatedAccountInfo().email;
   clear_authenticated_user();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
   FOR_EACH_OBSERVER(SigninManagerBase::Observer,

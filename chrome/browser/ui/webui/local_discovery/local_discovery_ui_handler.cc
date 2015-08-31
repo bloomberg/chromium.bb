@@ -464,7 +464,7 @@ std::string LocalDiscoveryUIHandler::GetSyncAccount() {
     return "";
   }
 
-  return signin_manager->GetAuthenticatedUsername();
+  return signin_manager->GetAuthenticatedAccountInfo().email;
 }
 
 // TODO(noamsml): Create master object for registration flow.

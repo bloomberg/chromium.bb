@@ -56,7 +56,7 @@ bool IsChromeDashboardEnabled() {
 base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
                                          const SigninManagerBase& signin,
                                          StatusLabelStyle style) {
-  std::string user_display_name = signin.GetAuthenticatedUsername();
+  std::string user_display_name = signin.GetAuthenticatedAccountInfo().email;
 
 #if defined(OS_CHROMEOS)
   if (user_manager::UserManager::IsInitialized()) {
@@ -280,7 +280,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       if (status_label) {
         base::string16 label = l10n_util::GetStringFUTF16(
             IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
-            base::UTF8ToUTF16(signin.GetAuthenticatedUsername()));
+            base::UTF8ToUTF16(signin.GetAuthenticatedAccountInfo().email));
         status_label->assign(label);
         result_type = PRE_SYNCED;
       }

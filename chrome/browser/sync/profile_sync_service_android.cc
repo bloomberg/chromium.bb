@@ -309,7 +309,9 @@ ScopedJavaLocalRef<jstring>
         JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string& sync_username =
-      SigninManagerFactory::GetForProfile(profile_)->GetAuthenticatedUsername();
+      SigninManagerFactory::GetForProfile(profile_)
+          ->GetAuthenticatedAccountInfo()
+          .email;
   return base::android::ConvertUTF16ToJavaString(env,
       l10n_util::GetStringFUTF16(
           IDS_SYNC_ACCOUNT_SYNCING_TO_USER,

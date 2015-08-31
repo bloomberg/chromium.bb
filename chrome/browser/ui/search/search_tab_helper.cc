@@ -530,8 +530,9 @@ void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {
   SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile());
   if (manager) {
     ipc_router_.SendChromeIdentityCheckResult(
-        identity, gaia::AreEmailsSame(base::UTF16ToUTF8(identity),
-                                      manager->GetAuthenticatedUsername()));
+        identity,
+        gaia::AreEmailsSame(base::UTF16ToUTF8(identity),
+                            manager->GetAuthenticatedAccountInfo().email));
   } else {
     ipc_router_.SendChromeIdentityCheckResult(identity, false);
   }

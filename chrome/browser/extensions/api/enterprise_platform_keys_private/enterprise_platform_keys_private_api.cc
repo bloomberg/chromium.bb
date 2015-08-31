@@ -156,7 +156,8 @@ std::string EPKPChallengeKeyBase::GetUserEmail() const {
   if (!signin_manager)
     return std::string();
 
-  return gaia::CanonicalizeEmail(signin_manager->GetAuthenticatedUsername());
+  return gaia::CanonicalizeEmail(
+      signin_manager->GetAuthenticatedAccountInfo().email);
 }
 
 std::string EPKPChallengeKeyBase::GetDeviceId() const {

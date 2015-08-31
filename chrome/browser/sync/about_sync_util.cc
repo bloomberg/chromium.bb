@@ -336,7 +336,7 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
   if (is_status_valid && !full_status.invalidator_client_id.empty())
     invalidator_id.SetValue(full_status.invalidator_client_id);
   if (service->signin())
-    username.SetValue(service->signin()->GetAuthenticatedUsername());
+    username.SetValue(service->signin()->GetAuthenticatedAccountInfo().email);
 
   const ProfileSyncService::SyncTokenStatus& token_status =
       service->GetSyncTokenStatus();

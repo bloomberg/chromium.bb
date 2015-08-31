@@ -176,7 +176,7 @@ void SigninManager::SignOut(
   ClearTransientSigninData();
 
   const std::string account_id = GetAuthenticatedAccountId();
-  const std::string username = GetAuthenticatedUsername();
+  const std::string username = GetAuthenticatedAccountInfo().email;
   const base::Time signin_time =
       base::Time::FromInternalValue(
           client_->GetPrefs()->GetInt64(prefs::kSignedInTime));
@@ -247,7 +247,8 @@ void SigninManager::Shutdown() {
 }
 
 void SigninManager::OnGoogleServicesUsernamePatternChanged() {
-  if (IsAuthenticated() && !IsAllowedUsername(GetAuthenticatedUsername())) {
+  if (IsAuthenticated() &&
+      !IsAllowedUsername(GetAuthenticatedAccountInfo().email)) {
     // Signed in user is invalid according to the current policy so sign
     // the user out.
     SignOut(signin_metrics::GOOGLE_SERVICE_NAME_PATTERN_CHANGED);
@@ -371,16 +372,12 @@ void SigninManager::OnSignedIn() {
   signin_manager_signed_in_ = true;
 
   FOR_EACH_OBSERVER(
-      SigninManagerBase::Observer,
-      observer_list_,
+      SigninManagerBase::Observer, observer_list_,
       GoogleSigninSucceeded(GetAuthenticatedAccountId(),
-                            GetAuthenticatedUsername(),
-                            password_));
+                            GetAuthenticatedAccountInfo().email, password_));
 
-  client_->OnSignedIn(GetAuthenticatedAccountId(),
-                      gaia_id,
-                      GetAuthenticatedUsername(),
-                      password_);
+  client_->OnSignedIn(GetAuthenticatedAccountId(), gaia_id,
+                      GetAuthenticatedAccountInfo().email, password_);
 
   signin_metrics::LogSigninProfile(client_->IsFirstRun(),
                                    client_->GetInstallDate());
@@ -395,8 +392,7 @@ void SigninManager::PostSignedIn() {
     return;
 
   client_->PostSignedIn(GetAuthenticatedAccountId(),
-                        GetAuthenticatedUsername(),
-                        password_);
+                        GetAuthenticatedAccountInfo().email, password_);
   password_.clear();
 }
 

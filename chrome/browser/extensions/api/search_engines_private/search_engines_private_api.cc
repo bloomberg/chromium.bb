@@ -251,7 +251,7 @@ SearchEnginesPrivateGetHotwordStateFunction::Run() {
   // in, audio history is meaningless. This is only displayed if always-on
   // hotwording is available.
   if (authenticated && always_on) {
-    std::string user_display_name = signin->GetAuthenticatedUsername();
+    std::string user_display_name = signin->GetAuthenticatedAccountInfo().email;
     HotwordService* hotword_service =
         HotwordServiceFactory::GetForProfile(profile);
     if (hotword_service) {

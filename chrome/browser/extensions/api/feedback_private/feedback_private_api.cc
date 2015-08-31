@@ -142,7 +142,7 @@ bool FeedbackPrivateGetUserEmailFunction::RunSync() {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(GetProfile());
   SetResult(new base::StringValue(
-      signin_manager ? signin_manager->GetAuthenticatedUsername()
+      signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
                      : std::string()));
   return true;
 }

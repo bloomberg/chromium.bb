@@ -114,7 +114,7 @@ void SupervisedUserCreateConfirmHandler::GetLocalizedValues(
       SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   if (signin) {
     localized_strings->SetString("custodianEmail",
-                                 signin->GetAuthenticatedUsername());
+                                 signin->GetAuthenticatedAccountInfo().email);
   } else {
     localized_strings->SetString("custodianEmail", std::string());
   }

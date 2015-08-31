@@ -1629,7 +1629,7 @@ void PrintPreviewHandler::StartPrivetLocalPrint(const std::string& print_ticket,
 
   if (signin_manager) {
     privet_local_print_operation_->SetUsername(
-        signin_manager->GetAuthenticatedUsername());
+        signin_manager->GetAuthenticatedAccountInfo().email);
   }
 
   privet_local_print_operation_->Start();

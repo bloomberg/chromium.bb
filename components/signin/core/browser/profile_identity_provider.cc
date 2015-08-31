@@ -22,7 +22,7 @@ ProfileIdentityProvider::~ProfileIdentityProvider() {
 }
 
 std::string ProfileIdentityProvider::GetActiveUsername() {
-  return signin_manager_->GetAuthenticatedUsername();
+  return signin_manager_->GetAuthenticatedAccountInfo().email;
 }
 
 std::string ProfileIdentityProvider::GetActiveAccountId() {

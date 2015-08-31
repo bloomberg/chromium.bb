@@ -41,7 +41,7 @@ std::string ChromeProximityAuthClient::GetAuthenticatedUsername() const {
   // |profile_| has to be a signed-in profile with SigninManager already
   // created. Otherwise, just crash to collect stack.
   DCHECK(signin_manager);
-  return signin_manager->GetAuthenticatedUsername();
+  return signin_manager->GetAuthenticatedAccountInfo().email;
 }
 
 void ChromeProximityAuthClient::UpdateScreenlockState(ScreenlockState state) {

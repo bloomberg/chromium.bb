@@ -890,8 +890,9 @@ void SupervisedUserService::OnSupervisedUserRegistered(
     InitSync(token);
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(custodian_profile);
-    profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianEmail,
-                                    signin->GetAuthenticatedUsername());
+    profile_->GetPrefs()->SetString(
+        prefs::kSupervisedUserCustodianEmail,
+        signin->GetAuthenticatedAccountInfo().email);
 
     // The supervised user profile is now ready for use.
     ProfileManager* profile_manager = g_browser_process->profile_manager();

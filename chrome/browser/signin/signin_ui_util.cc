@@ -84,7 +84,7 @@ base::string16 GetSigninMenuLabel(Profile* profile) {
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfileIfExists(profile);
     if (signin_manager)
-      username = signin_manager->GetAuthenticatedUsername();
+      username = signin_manager->GetAuthenticatedAccountInfo().email;
     if (!username.empty() && !signin_manager->AuthInProgress()) {
       const base::string16 elided = gfx::ElideText(base::UTF8ToUTF16(username),
           gfx::FontList(), kUsernameMaxWidth, gfx::ELIDE_EMAIL);

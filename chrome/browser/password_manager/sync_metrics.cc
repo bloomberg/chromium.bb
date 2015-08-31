@@ -28,7 +28,7 @@ std::string GetSyncUsername(Profile* profile) {
   if (!signin_manager)
     return std::string();
 
-  return signin_manager->GetAuthenticatedUsername();
+  return signin_manager->GetAuthenticatedAccountInfo().email;
 }
 
 bool IsSyncAccountCredential(Profile* profile,

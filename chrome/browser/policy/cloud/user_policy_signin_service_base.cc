@@ -192,7 +192,7 @@ void UserPolicySigninServiceBase::InitializeOnProfileReady(Profile* profile) {
   // (http://crbug.com/316229).
   signin_manager()->AddObserver(this);
 
-  std::string username = signin_manager()->GetAuthenticatedUsername();
+  std::string username = signin_manager()->GetAuthenticatedAccountInfo().email;
   if (username.empty())
     ShutdownUserCloudPolicyManager();
   else

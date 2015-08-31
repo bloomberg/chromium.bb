@@ -78,7 +78,7 @@ void FakeSigninManager::SignOut(
   set_auth_in_progress(std::string());
   set_password(std::string());
   const std::string account_id = GetAuthenticatedAccountId();
-  const std::string username = GetAuthenticatedUsername();
+  const std::string username = GetAuthenticatedAccountInfo().email;
   authenticated_account_id_.clear();
 
   FOR_EACH_OBSERVER(SigninManagerBase::Observer, observer_list_,

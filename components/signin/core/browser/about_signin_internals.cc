@@ -541,7 +541,7 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
     AddSectionEntry(basic_info,
                     SigninStatusFieldToLabel(
                         static_cast<UntimedSigninStatusField>(USERNAME)),
-                    signin_manager->GetAuthenticatedUsername());
+                    signin_manager->GetAuthenticatedAccountInfo().email);
     if (signin_error_controller->HasError()) {
       const std::string error_account_id =
           signin_error_controller->error_account_id();

@@ -46,7 +46,7 @@ std::string ProfileInfoWatcher::GetAuthenticatedUsername() const {
   std::string username;
   SigninManagerBase* signin_manager = GetSigninManager();
   if (signin_manager)
-    username = signin_manager->GetAuthenticatedUsername();
+    username = signin_manager->GetAuthenticatedAccountInfo().email;
   return username;
 }
 

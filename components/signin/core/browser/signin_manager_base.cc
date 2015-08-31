@@ -158,9 +158,8 @@ bool SigninManagerBase::IsSigninAllowed() const {
   return client_->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
 }
 
-std::string SigninManagerBase::GetAuthenticatedUsername() const {
-  return account_tracker_service_->GetAccountInfo(
-      GetAuthenticatedAccountId()).email;
+AccountInfo SigninManagerBase::GetAuthenticatedAccountInfo() const {
+  return account_tracker_service_->GetAccountInfo(GetAuthenticatedAccountId());
 }
 
 const std::string& SigninManagerBase::GetAuthenticatedAccountId() const {

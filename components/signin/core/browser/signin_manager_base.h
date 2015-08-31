@@ -33,6 +33,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -88,9 +89,8 @@ class SigninManagerBase : public KeyedService {
   virtual bool IsSigninAllowed() const;
 
   // If a user has previously signed in (and has not signed out), this returns
-  // the normalized email address of the account. Otherwise, it returns an empty
-  // string.
-  std::string GetAuthenticatedUsername() const;
+  // the know information of the account. Otherwise, it returns an empty struct.
+  AccountInfo GetAuthenticatedAccountInfo() const;
 
   // If a user has previously signed in (and has not signed out), this returns
   // the account id. Otherwise, it returns an empty string.  This id can be used
@@ -99,13 +99,13 @@ class SigninManagerBase : public KeyedService {
   //
   // TODO(rogerta): eventually the account id should be an obfuscated gaia id.
   // For now though, this function returns the same value as
-  // GetAuthenticatedUsername() since lots of code assumes the unique id for an
-  // account is the username.  For code that needs a unique id to represent the
-  // connected account, call this method. Example: the AccountInfoMap type
-  // in MutableProfileOAuth2TokenService.  For code that needs to know the
-  // normalized email address of the connected account, use
-  // GetAuthenticatedUsername().  Example: to show the string "Signed in as XXX"
-  // in the hotdog menu.
+  // GetAuthenticatedAccountInfo().email since lots of code assumes the unique
+  // id for an account is the username.  For code that needs a unique id to
+  // represent the connected account, call this method. Example: the
+  // AccountStatusMap type in MutableProfileOAuth2TokenService.  For code that
+  // needs to know the normalized email address of the connected account, use
+  // GetAuthenticatedAccountInfo().email.  Example: to show the string "Signed
+  // in as XXX" in the hotdog menu.
   const std::string& GetAuthenticatedAccountId() const;
 
   // Sets the authenticated user's Gaia ID and display email.  Internally,

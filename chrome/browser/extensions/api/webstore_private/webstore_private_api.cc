@@ -648,7 +648,8 @@ WebstorePrivateGetBrowserLoginFunction::Run() {
   GetBrowserLogin::Results::Info info;
   info.login = SigninManagerFactory::GetForProfile(
                    chrome_details_.GetProfile()->GetOriginalProfile())
-                       ->GetAuthenticatedUsername();
+                   ->GetAuthenticatedAccountInfo()
+                   .email;
   return RespondNow(ArgumentList(GetBrowserLogin::Results::Create(info)));
 }
 

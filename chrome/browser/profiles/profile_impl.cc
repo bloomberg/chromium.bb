@@ -700,7 +700,7 @@ std::string ProfileImpl::GetProfileUserName() const {
   const SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfileIfExists(this);
   if (signin_manager)
-    return signin_manager->GetAuthenticatedUsername();
+    return signin_manager->GetAuthenticatedAccountInfo().email;
 
   return std::string();
 }
