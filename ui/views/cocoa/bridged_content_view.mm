@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/canvas_painter.h"
@@ -16,6 +17,7 @@
 #include "ui/gfx/canvas_paint_mac.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -93,6 +95,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 
 @synthesize hostedView = hostedView_;
 @synthesize textInputClient = textInputClient_;
+@synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
 @synthesize mouseDownCanMoveWindow = mouseDownCanMoveWindow_;
 
 - (id)initWithView:(views::View*)viewToHost {
@@ -307,6 +310,14 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   // suppress calls to this when the window is known to be hidden.
   if (!hostedView_)
     return;
+
+  if (drawMenuBackgroundForBlur_) {
+    const CGFloat radius = views::MenuConfig::instance(nullptr).corner_radius;
+    [gfx::SkColorToSRGBNSColor(0x01000000) set];
+    [[NSBezierPath bezierPathWithRoundedRect:[self bounds]
+                                     xRadius:radius
+                                     yRadius:radius] fill];
+  }
 
   // If there's a layer, painting occurs in BridgedNativeWidget::OnPaintLayer().
   if (hostedView_->GetWidget()->GetLayer())

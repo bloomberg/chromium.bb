@@ -795,18 +795,7 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
 
   if (translucent) {
     [window_ setOpaque:NO];
-    NSColor* background_color;
-    if (widget_type_ == Widget::InitParams::TYPE_MENU &&
-        base::mac::IsOSYosemiteOrLater()) {
-      // Blur doesn't happen if the alpha is less than 0.2%.
-      background_color = [NSColor colorWithCalibratedWhite:0.0 alpha:0.002];
-      CGSSetWindowBackgroundBlurRadius(_CGSDefaultConnection(),
-                                       [window_ windowNumber],
-                                       kYosemiteMenuBlur);
-    } else {
-      background_color = [NSColor clearColor];
-    }
-    [window_ setBackgroundColor:background_color];
+    [window_ setBackgroundColor:[NSColor clearColor]];
   }
 
   UpdateLayerProperties();
@@ -1081,10 +1070,17 @@ void BridgedNativeWidget::AddCompositorSuperview() {
   if (widget_type_ == Widget::InitParams::TYPE_MENU) {
     // Giving the canvas opacity messes up subpixel font rendering, so use a
     // solid background, but make the CALayer transparent.
-    if (base::mac::IsOSYosemiteOrLater())
+    if (base::mac::IsOSYosemiteOrLater()) {
       [background_layer setOpacity:kYosemiteMenuOpacity];
-    else
+      CGSSetWindowBackgroundBlurRadius(
+          _CGSDefaultConnection(), [window_ windowNumber], kYosemiteMenuBlur);
+      // The blur effect does not occur with a fully transparent (or fully
+      // layer-backed) window. Setting a window background will use square
+      // corners, so ask the contentView to draw one instead.
+      [bridged_view_ setDrawMenuBackgroundForBlur:YES];
+    } else {
       [background_layer setOpacity:kMavericksMenuOpacity];
+    }
   }
 
   // Set the layer first to create a layer-hosting view (not layer-backed).
