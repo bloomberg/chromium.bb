@@ -722,8 +722,33 @@ bool WebFrameWidgetImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseW
 
 bool WebFrameWidgetImpl::handleGestureEvent(const WebGestureEvent& event)
 {
-    // FIXME: Add gesture support.
-    return false;
+    bool eventSwallowed = false;
+    bool eventCancelled = false;
+    switch (event.type) {
+    case WebInputEvent::GestureScrollBegin:
+    case WebInputEvent::GestureScrollEnd:
+    case WebInputEvent::GestureScrollUpdate:
+    case WebInputEvent::GestureTap:
+    case WebInputEvent::GestureTapUnconfirmed:
+    case WebInputEvent::GestureTapDown:
+    case WebInputEvent::GestureShowPress:
+    case WebInputEvent::GestureTapCancel:
+    case WebInputEvent::GestureDoubleTap:
+    case WebInputEvent::GestureTwoFingerTap:
+    case WebInputEvent::GestureLongPress:
+    case WebInputEvent::GestureLongTap:
+        break;
+    case WebInputEvent::GestureFlingStart:
+    case WebInputEvent::GestureFlingCancel:
+        m_client->didHandleGestureEvent(event, eventCancelled);
+        return false;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    LocalFrame* frame = m_localRoot->frame();
+    eventSwallowed = frame->eventHandler().handleGestureEvent(PlatformGestureEventBuilder(frame->view(), event));
+    m_client->didHandleGestureEvent(event, eventCancelled);
+    return eventSwallowed;
 }
 
 bool WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& event)

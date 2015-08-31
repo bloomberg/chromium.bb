@@ -101,6 +101,7 @@
 #include "public/web/WebFindOptions.h"
 #include "public/web/WebFormElement.h"
 #include "public/web/WebFrameClient.h"
+#include "public/web/WebFrameWidget.h"
 #include "public/web/WebHistoryItem.h"
 #include "public/web/WebPrintParams.h"
 #include "public/web/WebRange.h"
@@ -7588,6 +7589,40 @@ TEST_P(ParameterizedWebFrameTest, RemoteFrameInitialCommitType)
     registerMockedHttpURLLoad("foo.html");
     FrameTestHelpers::loadFrame(childFrame, m_baseURL + "foo.html");
     EXPECT_EQ(WebInitialCommitInChildFrame, childFrameClient.historyCommitType());
+    view->close();
+}
+
+class GestureEventTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
+public:
+    GestureEventTestWebViewClient() : m_didHandleGestureEvent(false) { }
+    void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) override { m_didHandleGestureEvent = true; }
+    bool didHandleGestureEvent() const { return m_didHandleGestureEvent; }
+
+private:
+    bool m_didHandleGestureEvent;
+};
+
+TEST_P(ParameterizedWebFrameTest, FrameWidgetTest)
+{
+    FrameTestHelpers::TestWebViewClient viewClient;
+    WebView* view = WebView::create(&viewClient);
+
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    view->setMainFrame(remoteClient.frame());
+
+    FrameTestHelpers::TestWebFrameClient childFrameClient;
+    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &childFrameClient, nullptr);
+
+    GestureEventTestWebViewClient childViewClient;
+    WebFrameWidget* widget = WebFrameWidget::create(&childViewClient, childFrame);
+
+    view->resize(WebSize(1000, 1000));
+    view->layout();
+
+    widget->handleInputEvent(fatTap(20, 20));
+    EXPECT_TRUE(childViewClient.didHandleGestureEvent());
+
+    widget->close();
     view->close();
 }
 
