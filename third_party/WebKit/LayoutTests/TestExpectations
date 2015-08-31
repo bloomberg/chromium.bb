@@ -153,7 +153,6 @@ crbug.com/520614 http/tests/w3c/webperf/submission/Intel/resource-timing/test_re
 crbug.com/520617 [ Mac ] webaudio/audiochannelmerger-disconnect.html [ Failure Pass ]
 crbug.com/520619 [ Android Mac Linux XP Win7 ] webexposed/global-interface-listing.html [ Pass Timeout ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
-crbug.com/520195 [ Trusty ] inspector-protocol/json-parse.html [ Pass Timeout ]
 crbug.com/520199 [ Mac ] plugins/plugin-initiate-popup-window.html [ Failure Pass ]
 crbug.com/520200 [ XP ] svg/batik/text/smallFonts.svg [ Failure Timeout ]
 crbug.com/520203 webaudio/audiobuffersource-late-start.html [ Failure Pass Timeout ]
