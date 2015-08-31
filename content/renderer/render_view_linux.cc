@@ -14,6 +14,8 @@ namespace content {
 
 namespace {
 
+const int kMaxDefaultFontSize = 999;
+
 SkPaint::Hinting RendererPreferencesToSkiaHinting(
     const RendererPreferences& prefs) {
   if (!prefs.should_antialias_text) {
@@ -62,6 +64,10 @@ void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
       prefs.subpixel_rendering !=
       gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
   WebFontRendering::setSubpixelPositioning(prefs.use_subpixel_positioning);
+  if (prefs.default_font_size > 0 &&
+      prefs.default_font_size <= kMaxDefaultFontSize) {
+    WebFontRendering::setDefaultFontSize(prefs.default_font_size);
+  }
 }
 
 }  // namespace content
