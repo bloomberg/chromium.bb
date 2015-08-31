@@ -41,6 +41,36 @@ if (use_system_harfbuzz) {
     include_dirs = [ "src" ]
   }
 
+  config("harfbuzz_warnings") {
+    cflags = []
+    if (is_clang) {
+      cflags += [
+        "-Wno-unused-value",
+
+        # Harfbuzz uses unused typedefs for its static asserts (and its
+        # static asserts are strange enough that they can't be replaced
+        # by static_assert).
+        "-Wno-unused-local-typedef",
+      ]
+    }
+    if (is_win) {
+      # Result of 32-bit shift implicitly converted to 64 bits.
+      cflags += [ "/wd4334" ]
+    }
+  }
+
+  # See also chrome/browser/ui/libgtk2ui/BUILD.gn which pulls this.
+  config("pangoft2_link_hack") {
+    if (is_linux && use_pango && !is_chromeos && !is_official_build &&
+        current_cpu != "arm" && current_cpu != "mipsel" &&
+        !is_component_build) {
+      # These symbols are referenced from libpangoft2, which will be
+      # dynamically linked later.
+      ldflags =
+          [ "-Wl,-uhb_ft_face_create_cached,-uhb_glib_get_unicode_funcs" ]
+    }
+  }
+
   static_library("harfbuzz-ng") {
     sources = [
       "src/hb-atomic-private.hh",
@@ -146,26 +176,10 @@ if (use_system_harfbuzz) {
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
-
-    config("harfbuzz_warnings") {
-      cflags = []
-      if (is_clang) {
-        cflags += [
-          "-Wno-unused-value",
-
-          # Harfbuzz uses unused typedefs for its static asserts (and its
-          # static asserts are strange enough that they can't be replaced
-          # by static_assert).
-          "-Wno-unused-local-typedef",
-        ]
-      }
-      if (is_win) {
-        cflags += [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.
-      }
-    }
-    configs += [ ":harfbuzz_warnings" ]
-
+    configs += [
+      ":harfbuzz_warnings",
+      "//build/config/compiler:no_chromium_code",
+    ]
     public_configs = [ ":harfbuzz-ng_config" ]
 
     deps = [
@@ -199,16 +213,5 @@ if (use_system_harfbuzz) {
       ]
     }
 
-    # See also chrome/browser/ui/libgtk2ui/BUILD.gn which pulls this.
-    config("pangoft2_link_hack") {
-      if (is_linux && use_pango && !is_chromeos && !is_official_build &&
-          current_cpu != "arm" && current_cpu != "mipsel" &&
-          !is_component_build) {
-        # These symbols are referenced from libpangoft2, which will be
-        # dynamically linked later.
-        ldflags =
-            [ "-Wl,-uhb_ft_face_create_cached,-uhb_glib_get_unicode_funcs" ]
-      }
-    }
   }
 }

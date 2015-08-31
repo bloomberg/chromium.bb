@@ -24,6 +24,38 @@ config("libxml_config") {
   ]
 }
 
+config("libxml_warnings") {
+  if (is_clang) {
+    cflags = [
+      # libxml passes `const unsigned char*` through `const char*`.
+      "-Wno-pointer-sign",
+
+      # pattern.c and uri.c both have an intentional `for (...);` /
+      # `while(...);` loop. I submitted a patch to move the `'` to its own
+      # line, but until that's landed suppress the warning:
+      "-Wno-empty-body",
+
+      # debugXML.c compares array 'arg' to NULL.
+      "-Wno-tautological-pointer-compare",
+
+      # threads.c attempts to forward declare a pthread_equal which doesn't
+      # match the prototype in pthreads.h
+      "-Wno-ignored-attributes",
+
+      # libxml casts from int to long to void*.
+      "-Wno-int-to-void-pointer-cast",
+
+      # libxml passes a volatile LPCRITICAL_SECTION* to a function expecting
+      # a void* volatile*.
+      "-Wno-incompatible-pointer-types",
+
+      # trio_is_special_quantity and trio_is_negative are only
+      # used with certain preprocessor defines set.
+      "-Wno-unused-function",
+    ]
+  }
+}
+
 static_library("libxml") {
   output_name = "libxml2"
   sources = [
@@ -144,7 +176,10 @@ static_library("libxml") {
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    ":libxml_warnings",
+    "//build/config/compiler:no_chromium_code",
+  ]
 
   public_configs = [ ":libxml_config" ]
   public_deps = [
@@ -166,39 +201,6 @@ static_library("libxml") {
     # build/linux/system.gyp.
     defines = [ "_REENTRANT" ]
   }
-
-  config("libxml_warnings") {
-    if (is_clang) {
-      cflags = [
-        # libxml passes `const unsigned char*` through `const char*`.
-        "-Wno-pointer-sign",
-
-        # pattern.c and uri.c both have an intentional `for (...);` /
-        # `while(...);` loop. I submitted a patch to move the `'` to its own
-        # line, but until that's landed suppress the warning:
-        "-Wno-empty-body",
-
-        # debugXML.c compares array 'arg' to NULL.
-        "-Wno-tautological-pointer-compare",
-
-        # threads.c attempts to forward declare a pthread_equal which doesn't
-        # match the prototype in pthreads.h
-        "-Wno-ignored-attributes",
-
-        # libxml casts from int to long to void*.
-        "-Wno-int-to-void-pointer-cast",
-
-        # libxml passes a volatile LPCRITICAL_SECTION* to a function expecting
-        # a void* volatile*.
-        "-Wno-incompatible-pointer-types",
-
-        # trio_is_special_quantity and trio_is_negative are only
-        # used with certain preprocessor defines set.
-        "-Wno-unused-function",
-      ]
-    }
-  }
-  configs += [ ":libxml_warnings" ]
 
   include_dirs = [ "$os_include" ]
 }

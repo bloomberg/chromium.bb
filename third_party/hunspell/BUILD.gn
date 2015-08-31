@@ -10,6 +10,12 @@ config("hunspell_config") {
   ]
 }
 
+config("hunspell_warnings") {
+  if (is_clang) {
+    cflags = [ "-Wno-unused-private-field" ]
+  }
+}
+
 source_set("hunspell") {
   sources = [
     "google/bdict.cc",
@@ -50,12 +56,6 @@ source_set("hunspell") {
     "src/parsers/textparser.cxx",
     "src/parsers/textparser.hxx",
   ]
-
-  config("hunspell_warnings") {
-    if (is_clang) {
-      cflags = [ "-Wno-unused-private-field" ]
-    }
-  }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
