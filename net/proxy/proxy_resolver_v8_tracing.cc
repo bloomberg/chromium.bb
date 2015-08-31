@@ -193,8 +193,9 @@ class Job : public base::RefCountedThreadSafe<Job>,
   void HandleAlertOrError(bool is_alert, int line_number,
                           const base::string16& message);
   void DispatchBufferedAlertsAndErrors();
-  void DispatchAlertOrError(bool is_alert, int line_number,
-                            const base::string16& message);
+  void DispatchAlertOrErrorOnOriginThread(bool is_alert,
+                                          int line_number,
+                                          const base::string16& message);
 
   // The thread which called into ProxyResolverV8TracingImpl, and on which the
   // completion callback is expected to run.
@@ -395,6 +396,7 @@ void Job::Cancel() {
   // The worker thread might be blocked waiting for DNS.
   event_.Signal();
 
+  bindings_.reset();
   owned_self_reference_ = NULL;
 }
 
@@ -410,6 +412,7 @@ LoadState Job::GetLoadState() const {
 Job::~Job() {
   DCHECK(!pending_dns_);
   DCHECK(callback_.is_null());
+  DCHECK(!bindings_);
 }
 
 void Job::CheckIsOnWorkerThread() const {
@@ -463,6 +466,13 @@ void Job::NotifyCallerOnOriginLoop(int result) {
   if (cancelled_.IsSet())
     return;
 
+  DispatchBufferedAlertsAndErrors();
+
+  // This isn't the ordinary execution flow, however it is exercised by
+  // unit-tests.
+  if (cancelled_.IsSet())
+    return;
+
   DCHECK(!callback_.is_null());
   DCHECK(!pending_dns_);
 
@@ -474,6 +484,7 @@ void Job::NotifyCallerOnOriginLoop(int result) {
   ReleaseCallback();
   callback.Run(result);
 
+  bindings_.reset();
   owned_self_reference_ = NULL;
 }
 
@@ -530,7 +541,6 @@ void Job::ExecuteNonBlocking() {
   if (abandoned_)
     return;
 
-  DispatchBufferedAlertsAndErrors();
   NotifyCaller(result);
 }
 
@@ -704,11 +714,8 @@ void Job::DoDnsOperation() {
   // Check if the request was cancelled as a side-effect of calling into the
   // HostResolver. This isn't the ordinary execution flow, however it is
   // exercised by unit-tests.
-  if (cancelled_.IsSet()) {
-    if (!pending_dns_completed_synchronously_)
-      host_resolver()->CancelRequest(dns_request);
+  if (cancelled_.IsSet())
     return;
-  }
 
   if (pending_dns_completed_synchronously_) {
     OnDnsOperationComplete(result);
@@ -841,7 +848,9 @@ void Job::HandleAlertOrError(bool is_alert,
 
   if (blocking_dns_) {
     // In blocking DNS mode the events can be dispatched immediately.
-    DispatchAlertOrError(is_alert, line_number, message);
+    origin_runner_->PostTask(
+        FROM_HERE, base::Bind(&Job::DispatchAlertOrErrorOnOriginThread, this,
+                              is_alert, line_number, message));
     return;
   }
 
@@ -857,6 +866,7 @@ void Job::HandleAlertOrError(bool is_alert,
   // memory. Consider a script which does megabytes worth of alerts().
   // Avoid this by falling back to blocking mode.
   if (alerts_and_errors_byte_cost_ > kMaxAlertsAndErrorsBytes) {
+    alerts_and_errors_.clear();
     ScheduleRestartWithBlockingDns();
     return;
   }
@@ -866,28 +876,18 @@ void Job::HandleAlertOrError(bool is_alert,
 }
 
 void Job::DispatchBufferedAlertsAndErrors() {
-  CheckIsOnWorkerThread();
-  DCHECK(!blocking_dns_);
-  DCHECK(!abandoned_);
-
+  CheckIsOnOriginThread();
   for (size_t i = 0; i < alerts_and_errors_.size(); ++i) {
     const AlertOrError& x = alerts_and_errors_[i];
-    DispatchAlertOrError(x.is_alert, x.line_number, x.message);
+    DispatchAlertOrErrorOnOriginThread(x.is_alert, x.line_number, x.message);
   }
 }
 
-void Job::DispatchAlertOrError(bool is_alert,
-                               int line_number,
-                               const base::string16& message) {
-  CheckIsOnWorkerThread();
+void Job::DispatchAlertOrErrorOnOriginThread(bool is_alert,
+                                             int line_number,
+                                             const base::string16& message) {
+  CheckIsOnOriginThread();
 
-  // Note that the handling of cancellation is racy with regard to
-  // alerts/errors. The request might get cancelled shortly after this
-  // check! (There is no lock being held to guarantee otherwise).
-  //
-  // If this happens, then some information will be logged needlessly, however
-  // the Bindings are responsible for handling this case so it shouldn't cause
-  // problems.
   if (cancelled_.IsSet())
     return;
 

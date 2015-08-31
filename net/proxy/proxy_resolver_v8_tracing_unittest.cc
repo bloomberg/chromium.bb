@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -19,6 +20,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_info.h"
+#include "net/test/event_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -58,31 +60,32 @@ scoped_refptr<ProxyResolverScriptData> LoadScriptData(const char* filename) {
 class MockBindings {
  public:
   explicit MockBindings(HostResolver* host_resolver)
-      : host_resolver_(host_resolver), event_(true, false) {}
+      : host_resolver_(host_resolver) {}
 
   void Alert(const base::string16& message) {
-    base::AutoLock l(lock_);
     alerts_.push_back(base::UTF16ToASCII(message));
   }
   void OnError(int line_number, const base::string16& error) {
-    base::AutoLock l(lock_);
+    waiter_.NotifyEvent(EVENT_ERROR);
     errors_.push_back(std::make_pair(line_number, base::UTF16ToASCII(error)));
-    event_.Signal();
+    if (!error_callback_.is_null())
+      error_callback_.Run();
   }
 
   HostResolver* host_resolver() { return host_resolver_; }
 
   std::vector<std::string> GetAlerts() {
-    base::AutoLock l(lock_);
     return alerts_;
   }
 
   std::vector<std::pair<int, std::string>> GetErrors() {
-    base::AutoLock l(lock_);
     return errors_;
   }
 
-  void WaitForError() { event_.Wait(); }
+  void RunOnError(const base::Closure& callback) {
+    error_callback_ = callback;
+    waiter_.WaitForEvent(EVENT_ERROR);
+  }
 
   scoped_ptr<ProxyResolverV8Tracing::Bindings> CreateBindings() {
     return make_scoped_ptr(new ForwardingBindings(this));
@@ -91,33 +94,43 @@ class MockBindings {
  private:
   class ForwardingBindings : public ProxyResolverV8Tracing::Bindings {
    public:
-    ForwardingBindings(MockBindings* bindings) : bindings_(bindings) {}
+    explicit ForwardingBindings(MockBindings* bindings) : bindings_(bindings) {}
 
     // ProxyResolverV8Tracing::Bindings overrides.
     void Alert(const base::string16& message) override {
+      DCHECK(thread_checker_.CalledOnValidThread());
       bindings_->Alert(message);
     }
 
     void OnError(int line_number, const base::string16& error) override {
+      DCHECK(thread_checker_.CalledOnValidThread());
       bindings_->OnError(line_number, error);
     }
 
-    BoundNetLog GetBoundNetLog() override { return BoundNetLog(); }
+    BoundNetLog GetBoundNetLog() override {
+      DCHECK(thread_checker_.CalledOnValidThread());
+      return BoundNetLog();
+    }
 
     HostResolver* GetHostResolver() override {
+      DCHECK(thread_checker_.CalledOnValidThread());
       return bindings_->host_resolver();
     }
 
    private:
     MockBindings* bindings_;
+    base::ThreadChecker thread_checker_;
   };
 
-  base::Lock lock_;
+  enum Event {
+    EVENT_ERROR,
+  };
+
   std::vector<std::string> alerts_;
   std::vector<std::pair<int, std::string>> errors_;
   HostResolver* const host_resolver_;
-
-  base::WaitableEvent event_;
+  base::Closure error_callback_;
+  EventWaiter<Event> waiter_;
 };
 
 scoped_ptr<ProxyResolverV8Tracing> CreateResolver(
@@ -629,39 +642,29 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhilePendingCompletionTask) {
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
-  ProxyInfo proxy_info3;
   ProxyResolver::RequestHandle request1;
   ProxyResolver::RequestHandle request2;
-  ProxyResolver::RequestHandle request3;
   TestCompletionCallback callback;
 
-  resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info1,
+  resolver->GetProxyForURL(GURL("http://throw-an-error/"), &proxy_info1,
                            base::Bind(&CrashCallback), &request1,
                            mock_bindings.CreateBindings());
 
-  resolver->GetProxyForURL(GURL("http://throw-an-error"), &proxy_info2,
-                           callback.callback(), &request2,
-                           mock_bindings.CreateBindings());
-
   // Wait until the first request has finished running on the worker thread.
-  // (The second request will output an error).
-  mock_bindings.WaitForError();
-
-  // Cancel the first request, while it has a pending completion task on
+  // Cancel the first request, while it is running its completion task on
   // the origin thread.
-  resolver->CancelRequest(request1);
-
-  EXPECT_EQ(ERR_PAC_SCRIPT_FAILED, callback.WaitForResult());
+  mock_bindings.RunOnError(base::Bind(&ProxyResolverV8Tracing::CancelRequest,
+                                      base::Unretained(resolver.get()),
+                                      request1));
 
   // Start another request, to make sure it is able to complete.
   resolver->GetProxyForURL(GURL("http://i-have-no-idea-what-im-doing/"),
-                           &proxy_info3, callback.callback(), &request3,
+                           &proxy_info2, callback.callback(), &request2,
                            mock_bindings.CreateBindings());
 
   EXPECT_EQ(OK, callback.WaitForResult());
 
-  EXPECT_EQ("i-approve-this-message:42",
-            proxy_info3.proxy_server().ToURI());
+  EXPECT_EQ("i-approve-this-message:42", proxy_info2.proxy_server().ToURI());
 }
 
 // This implementation of HostResolver allows blocking until a resolve request
@@ -798,11 +801,6 @@ TEST_F(ProxyResolverV8TracingTest, CancelWhileBlockedInNonBlockingDns) {
       base::Bind(CancelRequestAndPause, resolver.get(), request));
 
   host_resolver.WaitUntilRequestIsReceived();
-
-  // At this point the host resolver ran Resolve(), and should have cancelled
-  // the request.
-
-  EXPECT_EQ(1, host_resolver.num_cancelled_requests());
 }
 
 // Cancel the request while there is a pending DNS request, however before

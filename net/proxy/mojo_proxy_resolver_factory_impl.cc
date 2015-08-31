@@ -71,9 +71,6 @@ class MojoProxyResolverFactoryImpl::Job {
   scoped_ptr<net::ProxyResolverFactory::Request> request_;
   interfaces::ProxyResolverFactoryRequestClientPtr client_ptr_;
 
-  base::WeakPtrFactory<interfaces::ProxyResolverFactoryRequestClient>
-      weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
@@ -86,15 +83,15 @@ MojoProxyResolverFactoryImpl::Job::Job(
     : parent_(factory),
       proxy_request_(request.Pass()),
       factory_(proxy_resolver_factory),
-      client_ptr_(client.Pass()),
-      weak_factory_(client_ptr_.get()) {
+      client_ptr_(client.Pass()) {
   client_ptr_.set_connection_error_handler(
       base::Bind(&MojoProxyResolverFactoryImpl::Job::OnConnectionError,
                  base::Unretained(this)));
   factory_->CreateProxyResolverV8Tracing(
-      pac_script, make_scoped_ptr(new MojoProxyResolverV8TracingBindings<
+      pac_script,
+      make_scoped_ptr(new MojoProxyResolverV8TracingBindings<
                       interfaces::ProxyResolverFactoryRequestClient>(
-                      weak_factory_.GetWeakPtr())),
+          client_ptr_.get())),
       &proxy_resolver_impl_,
       base::Bind(&MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated,
                  base::Unretained(this)),

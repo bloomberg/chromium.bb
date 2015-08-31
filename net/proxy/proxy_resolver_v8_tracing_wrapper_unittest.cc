@@ -26,6 +26,7 @@
 #include "net/log/test_net_log_util.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_error_observer.h"
+#include "net/test/event_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -88,29 +89,31 @@ scoped_ptr<ProxyResolver> CreateResolver(
 
 class MockErrorObserver : public ProxyResolverErrorObserver {
  public:
-  MockErrorObserver() : event_(true, false) {}
-
   void OnPACScriptError(int line_number, const base::string16& error) override {
-    {
-      base::AutoLock l(lock_);
-      output += base::StringPrintf("Error: line %d: %s\n", line_number,
-                                   base::UTF16ToASCII(error).c_str());
-    }
-    event_.Signal();
+    output += base::StringPrintf("Error: line %d: %s\n", line_number,
+                                 base::UTF16ToASCII(error).c_str());
+    waiter_.NotifyEvent(EVENT_ERROR);
+    if (!error_callback_.is_null())
+      error_callback_.Run();
   }
 
   std::string GetOutput() {
-    base::AutoLock l(lock_);
     return output;
   }
 
-  void WaitForOutput() { event_.Wait(); }
+  void RunOnError(const base::Closure& callback) {
+    error_callback_ = callback;
+    waiter_.WaitForEvent(EVENT_ERROR);
+  }
 
  private:
-  base::Lock lock_;
+  enum Event {
+    EVENT_ERROR,
+  };
   std::string output;
 
-  base::WaitableEvent event_;
+  base::Closure error_callback_;
+  EventWaiter<Event> waiter_;
 };
 
 TEST_F(ProxyResolverV8TracingWrapperTest, Simple) {
@@ -723,40 +726,31 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhilePendingCompletionTask) {
 
   ProxyInfo proxy_info1;
   ProxyInfo proxy_info2;
-  ProxyInfo proxy_info3;
   ProxyResolver::RequestHandle request1;
   ProxyResolver::RequestHandle request2;
-  ProxyResolver::RequestHandle request3;
   TestCompletionCallback callback;
 
-  int rv = resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info1,
-                                    base::Bind(&CrashCallback), &request1,
-                                    BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-
-  rv = resolver->GetProxyForURL(GURL("http://throw-an-error/"), &proxy_info2,
-                                callback.callback(), &request2, BoundNetLog());
+  int rv = resolver->GetProxyForURL(GURL("http://throw-an-error/"),
+                                    &proxy_info1, base::Bind(&CrashCallback),
+                                    &request1, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Wait until the first request has finished running on the worker thread.
-  // (The second request will output an error).
-  error_observer->WaitForOutput();
-
   // Cancel the first request, while it has a pending completion task on
   // the origin thread.
-  resolver->CancelRequest(request1);
-
-  EXPECT_EQ(ERR_PAC_SCRIPT_FAILED, callback.WaitForResult());
+  error_observer->RunOnError(base::Bind(&ProxyResolver::CancelRequest,
+                                        base::Unretained(resolver.get()),
+                                        request1));
 
   // Start another request, to make sure it is able to complete.
   rv = resolver->GetProxyForURL(GURL("http://i-have-no-idea-what-im-doing/"),
-                                &proxy_info3, callback.callback(), &request3,
+                                &proxy_info2, callback.callback(), &request2,
                                 BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(OK, callback.WaitForResult());
 
-  EXPECT_EQ("i-approve-this-message:42", proxy_info3.proxy_server().ToURI());
+  EXPECT_EQ("i-approve-this-message:42", proxy_info2.proxy_server().ToURI());
 }
 
 // This implementation of HostResolver allows blocking until a resolve request
@@ -896,11 +890,6 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns) {
       base::Bind(CancelRequestAndPause, resolver.get(), request));
 
   host_resolver.WaitUntilRequestIsReceived();
-
-  // At this point the host resolver ran Resolve(), and should have cancelled
-  // the request.
-
-  EXPECT_EQ(1, host_resolver.num_cancelled_requests());
 }
 
 // Cancel the request while there is a pending DNS request, however before

@@ -40,8 +40,6 @@ class MojoProxyResolverImpl::Job {
   net::ProxyResolver::RequestHandle request_handle_;
   bool done_;
 
-  base::WeakPtrFactory<interfaces::ProxyResolverRequestClient> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
@@ -78,9 +76,7 @@ MojoProxyResolverImpl::Job::Job(
       client_(client.Pass()),
       url_(url),
       request_handle_(nullptr),
-      done_(false),
-      weak_factory_(client_.get()) {
-}
+      done_(false) {}
 
 MojoProxyResolverImpl::Job::~Job() {
   if (request_handle_ && !done_)
@@ -92,7 +88,7 @@ void MojoProxyResolverImpl::Job::Start() {
       url_, &result_, base::Bind(&Job::GetProxyDone, base::Unretained(this)),
       &request_handle_,
       make_scoped_ptr(new MojoProxyResolverV8TracingBindings<
-          interfaces::ProxyResolverRequestClient>(weak_factory_.GetWeakPtr())));
+                      interfaces::ProxyResolverRequestClient>(client_.get())));
   client_.set_connection_error_handler(base::Bind(
       &MojoProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
 }

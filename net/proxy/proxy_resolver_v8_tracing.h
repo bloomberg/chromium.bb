@@ -21,30 +21,24 @@ class NET_EXPORT ProxyResolverV8Tracing {
  public:
   // Bindings is an interface used by ProxyResolverV8Tracing to delegate
   // per-request functionality. Each instance will be destroyed on the origin
-  // thread of the ProxyResolverV8Tracing when the request completes or after
-  // the request is cancelled. In the cancellation case, the Bindings instance
-  // for a request may be destroyed after CancelRequest completes.
+  // thread of the ProxyResolverV8Tracing when the request completes or is
+  // cancelled. All methods will be invoked from the origin thread.
   class Bindings {
    public:
     Bindings() {}
     virtual ~Bindings() {}
 
-    // Invoked in response to an alert() call by the PAC script. This may be
-    // called after cancellation and from any thread.
+    // Invoked in response to an alert() call by the PAC script.
     virtual void Alert(const base::string16& message) = 0;
 
-    // Invoked in response to an error in the PAC script. This may be
-    // called after cancellation and from any thread.
+    // Invoked in response to an error in the PAC script.
     virtual void OnError(int line_number, const base::string16& message) = 0;
 
-    // Returns a HostResolver to use for DNS resolution. This will only be
-    // called from the origin thread and will never be called after
-    // cancellation.
+    // Returns a HostResolver to use for DNS resolution.
     virtual HostResolver* GetHostResolver() = 0;
 
     // Returns a BoundNetLog to be passed to the HostResolver returned by
-    // GetHostResolver(). This will only be called from the origin thread and
-    // will never be called after cancellation.
+    // GetHostResolver().
     virtual BoundNetLog GetBoundNetLog() = 0;
 
    private:
