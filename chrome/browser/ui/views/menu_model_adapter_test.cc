@@ -274,4 +274,10 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   scoped_ptr<views::MenuRunner> menu_runner_;
 };
 
-VIEW_TEST(MenuModelAdapterTest, RebuildMenu)
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_RebuildMenu DISABLED_RebuildMenu
+#else
+#define MAYBE_RebuildMenu RebuildMenu
+#endif
+VIEW_TEST(MenuModelAdapterTest, MAYBE_RebuildMenu)

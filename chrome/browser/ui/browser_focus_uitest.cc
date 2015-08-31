@@ -188,8 +188,9 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestInterstitialPage);
 };
 
-// Flaky on mac. http://crbug.com/67301.
-#if defined(OS_MACOSX)
+// Flaky on Mac (http://crbug.com/67301) and Windows
+// (http://crbug.com/523255).
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_ClickingMovesFocus DISABLED_ClickingMovesFocus
 #else
 #define MAYBE_ClickingMovesFocus ClickingMovesFocus

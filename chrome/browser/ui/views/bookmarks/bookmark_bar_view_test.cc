@@ -776,7 +776,12 @@ class BookmarkBarViewTest6 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-VIEW_TEST(BookmarkBarViewTest6, OpenMenuOnClickAndHold)
+#if defined(OS_WIN)  // flaky http://crbug.com/523255
+#define MAYBE_OpenMenuOnClickAndHold DISABLED_OpenMenuOnClickAndHold
+#else
+#define MAYBE_OpenMenuOnClickAndHold OpenMenuOnClickAndHold
+#endif
+VIEW_TEST(BookmarkBarViewTest6, MAYBE_OpenMenuOnClickAndHold)
 
 // Tests drag and drop to different menu.
 class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
@@ -2003,7 +2008,12 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest21, ContextMenusForEmptyFolder)
+#if defined(OS_WIN)  // flaky http://crbug.com/523255
+#define MAYBE_ContextMenusForEmptyFolder DISABLED_ContextMenusForEmptyFolder
+#else
+#define MAYBE_ContextMenusForEmptyFolder ContextMenusForEmptyFolder
+#endif
+VIEW_TEST(BookmarkBarViewTest21, MAYBE_ContextMenusForEmptyFolder)
 
 // Test that closing the source browser window while dragging a bookmark does
 // not cause a crash.

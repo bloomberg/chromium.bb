@@ -218,7 +218,13 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                 metrics_util::MANUAL_MANAGE_PASSWORDS));
 }
 
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnClick) {
+// Flaky on Windows (http://crbug.com/523255).
+#if defined(OS_WIN)
+#define MAYBE_CloseOnClick DISABLED_CloseOnClick
+#else
+#define MAYBE_CloseOnClick CloseOnClick
+#endif
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, MAYBE_CloseOnClick) {
   ManagePasswordsBubbleView::ShowBubble(
       browser()->tab_strip_model()->GetActiveWebContents(),
       ManagePasswordsBubble::AUTOMATIC);

@@ -54,8 +54,9 @@ class MenuControllerMnemonicTest : public MenuTestBase {
 typedef MenuControllerMnemonicTest<ui::VKEY_DIVIDE,1>
     MenuControllerMnemonicTestMnemonicMatch;
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_WIN)
 // ozone bringup - http://crbug.com/401304
+// flaky on windows - http://crbug.com/523255
 #define MAYBE_MnemonicMatch DISABLED_MnemonicMatch
 #else
 #define MAYBE_MnemonicMatch MnemonicMatch
@@ -68,8 +69,9 @@ VIEW_TEST(MenuControllerMnemonicTestMnemonicMatch, MAYBE_MnemonicMatch);
 typedef MenuControllerMnemonicTest<ui::VKEY_T,2>
     MenuControllerMnemonicTestTitleMatch;
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_WIN)
 // ozone bringup - http://crbug.com/401304
+// flaky on windows - http://crbug.com/523255
 #define MAYBE_TitleMatch DISABLED_TitleMatch
 #else
 #define MAYBE_TitleMatch TitleMatch

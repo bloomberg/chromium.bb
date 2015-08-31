@@ -59,7 +59,15 @@ typedef MenuItemViewTestBasic<1> MenuItemViewTestBasic1;
 typedef MenuItemViewTestBasic<2> MenuItemViewTestBasic2;
 VIEW_TEST(MenuItemViewTestBasic0, SelectItem0)
 VIEW_TEST(MenuItemViewTestBasic1, SelectItem1)
-VIEW_TEST(MenuItemViewTestBasic2, SelectItem2)
+
+
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_SelectItem2 DISABLED_SelectItem2
+#else
+#define MAYBE_SelectItem2 SelectItem2
+#endif
+VIEW_TEST(MenuItemViewTestBasic2, MAYBE_SelectItem2)
 
 // Test class for inserting a menu item while the menu is open.
 template<int INSERT_INDEX, int SELECT_INDEX>
@@ -137,12 +145,35 @@ typedef MenuItemViewTestInsert<1,0> MenuItemViewTestInsert10;
 typedef MenuItemViewTestInsert<1,2> MenuItemViewTestInsert12;
 typedef MenuItemViewTestInsert<2,0> MenuItemViewTestInsert20;
 typedef MenuItemViewTestInsert<2,2> MenuItemViewTestInsert22;
-VIEW_TEST(MenuItemViewTestInsert00, InsertItem00)
+
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_InsertItem00 DISABLED_InsertItem00
+#else
+#define MAYBE_InsertItem00 InsertItem00
+#endif
+VIEW_TEST(MenuItemViewTestInsert00, MAYBE_InsertItem00)
+
 VIEW_TEST(MenuItemViewTestInsert02, InsertItem02)
 VIEW_TEST(MenuItemViewTestInsert10, InsertItem10)
-VIEW_TEST(MenuItemViewTestInsert12, InsertItem12)
+
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_InsertItem12 DISABLED_InsertItem12
+#else
+#define MAYBE_InsertItem12 InsertItem12
+#endif
+VIEW_TEST(MenuItemViewTestInsert12, MAYBE_InsertItem12)
+
 VIEW_TEST(MenuItemViewTestInsert20, InsertItem20)
-VIEW_TEST(MenuItemViewTestInsert22, InsertItem22)
+
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_InsertItem22 DISABLED_InsertItem22
+#else
+#define MAYBE_InsertItem22 InsertItem22
+#endif
+VIEW_TEST(MenuItemViewTestInsert22, MAYBE_InsertItem22)
 
 // Test class for inserting a menu item while a submenu is open.
 template<int INSERT_INDEX>
@@ -202,8 +233,18 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
 // then inserts an item in the top-level menu at X.
 typedef MenuItemViewTestInsertWithSubmenu<0> MenuItemViewTestInsertWithSubmenu0;
 typedef MenuItemViewTestInsertWithSubmenu<1> MenuItemViewTestInsertWithSubmenu1;
-VIEW_TEST(MenuItemViewTestInsertWithSubmenu0, InsertItemWithSubmenu0)
-VIEW_TEST(MenuItemViewTestInsertWithSubmenu1, InsertItemWithSubmenu1)
+
+
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_InsertItemWithSubmenu0 DISABLED_InsertItemWithSubmenu0
+#define MAYBE_InsertItemWithSubmenu1 DISABLED_InsertItemWithSubmenu1
+#else
+#define MAYBE_InsertItemWithSubmenu0 InsertItemWithSubmenu0
+#define MAYBE_InsertItemWithSubmenu1 InsertItemWithSubmenu1
+#endif
+VIEW_TEST(MenuItemViewTestInsertWithSubmenu0, MAYBE_InsertItemWithSubmenu0)
+VIEW_TEST(MenuItemViewTestInsertWithSubmenu1, MAYBE_InsertItemWithSubmenu1)
 
 // Test class for removing a menu item while the menu is open.
 template<int REMOVE_INDEX, int SELECT_INDEX>
@@ -266,9 +307,25 @@ typedef MenuItemViewTestRemove<2,0> MenuItemViewTestRemove20;
 typedef MenuItemViewTestRemove<2,1> MenuItemViewTestRemove21;
 VIEW_TEST(MenuItemViewTestRemove00, RemoveItem00)
 VIEW_TEST(MenuItemViewTestRemove01, RemoveItem01)
-VIEW_TEST(MenuItemViewTestRemove10, RemoveItem10)
+
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_RemoveItem10 DISABLED_RemoveItem10
+#else
+#define MAYBE_RemoveItem10 RemoveItem10
+#endif
+VIEW_TEST(MenuItemViewTestRemove10, MAYBE_RemoveItem10)
+
 VIEW_TEST(MenuItemViewTestRemove11, RemoveItem11)
-VIEW_TEST(MenuItemViewTestRemove20, RemoveItem20)
+
+#if defined(OS_WIN)
+// flaky on Windows - http://crbug.com/523255
+#define MAYBE_RemoveItem20 DISABLED_RemoveItem20
+#else
+#define MAYBE_RemoveItem20 RemoveItem20
+#endif
+VIEW_TEST(MenuItemViewTestRemove20, MAYBE_RemoveItem20)
+
 VIEW_TEST(MenuItemViewTestRemove21, RemoveItem21)
 
 // Test class for removing a menu item while a submenu is open.
@@ -333,14 +390,14 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
 typedef MenuItemViewTestRemoveWithSubmenu<0> MenuItemViewTestRemoveWithSubmenu0;
 typedef MenuItemViewTestRemoveWithSubmenu<1> MenuItemViewTestRemoveWithSubmenu1;
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_WIN)
 // ozone bringup - http://crbug.com/401304
+// flaky on Windows - http://crbug.com/523255
 #define MAYBE_RemoveItemWithSubmenu0 DISABLED_RemoveItemWithSubmenu0
 #define MAYBE_RemoveItemWithSubmenu1 DISABLED_RemoveItemWithSubmenu1
 #else
 #define MAYBE_RemoveItemWithSubmenu0 RemoveItemWithSubmenu0
 #define MAYBE_RemoveItemWithSubmenu1 RemoveItemWithSubmenu1
 #endif
-
 VIEW_TEST(MenuItemViewTestRemoveWithSubmenu0, MAYBE_RemoveItemWithSubmenu0)
 VIEW_TEST(MenuItemViewTestRemoveWithSubmenu1, MAYBE_RemoveItemWithSubmenu1)
