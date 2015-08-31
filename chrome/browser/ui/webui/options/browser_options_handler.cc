@@ -74,6 +74,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/proximity_auth/switches.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -987,7 +988,7 @@ void BrowserOptionsHandler::InitializeHandler() {
                  weak_ptr_factory_.GetWeakPtr()));
 #else  // !defined(OS_CHROMEOS)
   profile_pref_registrar_.Add(
-      prefs::kProxy,
+      proxy_config::prefs::kProxy,
       base::Bind(&BrowserOptionsHandler::SetupProxySettingsSection,
                  base::Unretained(this)));
 #endif  // !defined(OS_CHROMEOS)
@@ -2050,7 +2051,7 @@ void BrowserOptionsHandler::SetupProxySettingsSection() {
 #endif
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   const PrefService::Preference* proxy_config =
-      pref_service->FindPreference(prefs::kProxy);
+      pref_service->FindPreference(proxy_config::prefs::kProxy);
   bool is_extension_controlled = (proxy_config &&
                                   proxy_config->IsExtensionControlled());
 

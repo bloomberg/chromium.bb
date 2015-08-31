@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -140,7 +141,7 @@ void CoreChromeOSOptionsHandler::InitializeHandler() {
     profile_prefs = profile->GetPrefs();
     ObservePref(prefs::kOpenNetworkConfiguration);
   }
-  ObservePref(prefs::kProxy);
+  ObservePref(proxy_config::prefs::kProxy);
   ObservePref(prefs::kDeviceOpenNetworkConfiguration);
   proxy_config_service_.SetPrefs(profile_prefs,
                                  g_browser_process->local_state());
@@ -181,8 +182,9 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
 
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!CrosSettings::IsCrosSettings(pref_name)) {
-    std::string controlling_pref =
-        pref_name == prefs::kUseSharedProxies ? prefs::kProxy : std::string();
+    std::string controlling_pref = pref_name == prefs::kUseSharedProxies
+                                       ? proxy_config::prefs::kProxy
+                                       : std::string();
     base::Value* value = CreateValueForPref(pref_name, controlling_pref);
     if (!IsSettingShared(pref_name) || !IsSecondaryUser(profile))
       return value;
@@ -384,14 +386,14 @@ void CoreChromeOSOptionsHandler::OnPreferenceChanged(
   // preferences change.
   if (pref_name == prefs::kOpenNetworkConfiguration ||
       pref_name == prefs::kDeviceOpenNetworkConfiguration ||
-      pref_name == prefs::kProxy) {
+      pref_name == proxy_config::prefs::kProxy) {
     NotifyProxyPrefsChanged();
     return;
   }
   if (pref_name == prefs::kUseSharedProxies) {
     // kProxy controls kUseSharedProxies and decides if it's managed by
     // policy/extension.
-    NotifyPrefChanged(prefs::kUseSharedProxies, prefs::kProxy);
+    NotifyPrefChanged(prefs::kUseSharedProxies, proxy_config::prefs::kProxy);
     return;
   }
   ::options::CoreOptionsHandler::OnPreferenceChanged(service, pref_name);

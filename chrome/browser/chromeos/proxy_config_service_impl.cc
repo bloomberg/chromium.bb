@@ -21,9 +21,11 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
@@ -50,8 +52,10 @@ bool GetProxyConfig(const PrefService* profile_prefs,
 
 ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* profile_prefs,
                                                PrefService* local_state_prefs)
-    : PrefProxyConfigTrackerImpl(profile_prefs ? profile_prefs
-                                               : local_state_prefs),
+    : PrefProxyConfigTrackerImpl(
+          profile_prefs ? profile_prefs : local_state_prefs,
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::IO)),
       active_config_state_(ProxyPrefs::CONFIG_UNSET),
       profile_prefs_(profile_prefs),
       local_state_prefs_(local_state_prefs),

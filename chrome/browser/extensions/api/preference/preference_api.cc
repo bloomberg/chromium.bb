@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -94,7 +95,8 @@ PrefMappingEntry kPrefMapping[] = {
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"protectedContentEnabled", prefs::kEnableDRM, APIPermission::kPrivacy,
      APIPermission::kPrivacy},
-    {"proxy", prefs::kProxy, APIPermission::kProxy, APIPermission::kProxy},
+    {"proxy", proxy_config::prefs::kProxy, APIPermission::kProxy,
+     APIPermission::kProxy},
     {"referrersEnabled", prefs::kEnableReferrers, APIPermission::kPrivacy,
      APIPermission::kPrivacy},
     {"safeBrowsingEnabled", prefs::kSafeBrowsingEnabled,
@@ -270,7 +272,8 @@ class PrefMapping {
     }
     DCHECK_EQ(arraysize(kPrefMapping), mapping_.size());
     DCHECK_EQ(arraysize(kPrefMapping), event_mapping_.size());
-    RegisterPrefTransformer(prefs::kProxy, new ProxyPrefTransformer());
+    RegisterPrefTransformer(proxy_config::prefs::kProxy,
+                            new ProxyPrefTransformer());
     RegisterPrefTransformer(prefs::kBlockThirdPartyCookies,
                             new InvertBooleanTransformer());
     RegisterPrefTransformer(prefs::kNetworkPredictionOptions,

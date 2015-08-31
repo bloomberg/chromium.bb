@@ -12,8 +12,8 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/log/net_log.h"
 #include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
@@ -94,7 +94,9 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
 #if defined(OS_CHROMEOS)
   return new chromeos::ProxyConfigServiceImpl(profile_prefs, local_state_prefs);
 #else
-  return new PrefProxyConfigTrackerImpl(profile_prefs);
+  return new PrefProxyConfigTrackerImpl(
+      profile_prefs,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -105,7 +107,9 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
 #if defined(OS_CHROMEOS)
   return new chromeos::ProxyConfigServiceImpl(NULL, local_state_prefs);
 #else
-  return new PrefProxyConfigTrackerImpl(local_state_prefs);
+  return new PrefProxyConfigTrackerImpl(
+      local_state_prefs,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif  // defined(OS_CHROMEOS)
 }
 

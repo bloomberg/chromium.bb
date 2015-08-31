@@ -2,21 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: components/proxy_config.gypi:proxy_config_component
+# GYP version: components/proxy_config.gypi:proxy_config
 component("proxy_config") {
   sources = [
+    "pref_proxy_config_tracker.cc",
+    "pref_proxy_config_tracker.h",
+    "pref_proxy_config_tracker_impl.cc",
+    "pref_proxy_config_tracker_impl.h",
     "proxy_config_dictionary.cc",
     "proxy_config_dictionary.h",
     "proxy_config_export.h",
+    "proxy_config_pref_names.cc",
+    "proxy_config_pref_names.h",
     "proxy_prefs.cc",
     "proxy_prefs.h",
   ]
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   defines = [ "PROXY_CONFIG_IMPLEMENTATION" ]
 
   deps = [
     "//base",
+    "//base:prefs",
     "//net",
+    "//url",
   ]
 }
 

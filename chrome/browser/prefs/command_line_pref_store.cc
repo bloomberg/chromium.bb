@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_CHROMEOS)
@@ -148,18 +149,18 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
 
 void CommandLinePrefStore::ApplyProxyMode() {
   if (command_line_->HasSwitch(switches::kNoProxyServer)) {
-    SetValue(prefs::kProxy,
+    SetValue(proxy_config::prefs::kProxy,
              make_scoped_ptr(ProxyConfigDictionary::CreateDirect()),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
     std::string pac_script_url =
         command_line_->GetSwitchValueASCII(switches::kProxyPacUrl);
-    SetValue(prefs::kProxy,
+    SetValue(proxy_config::prefs::kProxy,
              make_scoped_ptr(
                  ProxyConfigDictionary::CreatePacScript(pac_script_url, false)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
-    SetValue(prefs::kProxy,
+    SetValue(proxy_config::prefs::kProxy,
              make_scoped_ptr(ProxyConfigDictionary::CreateAutoDetect()),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyServer)) {
@@ -167,7 +168,7 @@ void CommandLinePrefStore::ApplyProxyMode() {
         command_line_->GetSwitchValueASCII(switches::kProxyServer);
     std::string bypass_list =
         command_line_->GetSwitchValueASCII(switches::kProxyBypassList);
-    SetValue(prefs::kProxy,
+    SetValue(proxy_config::prefs::kProxy,
              make_scoped_ptr(ProxyConfigDictionary::CreateFixedServers(
                  proxy_server, bypass_list)),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/pref_proxy_config_tracker.h"
+#include "components/proxy_config/pref_proxy_config_tracker.h"
 
 PrefProxyConfigTracker::PrefProxyConfigTracker() {
 }

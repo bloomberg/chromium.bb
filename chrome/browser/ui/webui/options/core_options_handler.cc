@@ -23,6 +23,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
@@ -416,7 +417,7 @@ PrefService* CoreOptionsHandler::FindServiceForPref(
   // Elsewhere the proxy settings are stored in local state.
   // See http://crbug.com/157147
   PrefService* user_prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  if (pref_name == prefs::kProxy)
+  if (pref_name == proxy_config::prefs::kProxy)
 #if defined(OS_CHROMEOS)
     return user_prefs;
 #else

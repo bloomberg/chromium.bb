@@ -29,6 +29,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -513,7 +514,7 @@ void PrefsTabHelper::InitIncognitoUserPrefStore(
   pref_store->RegisterOverlayPref(prefs::kBrowserWindowPlacement);
   pref_store->RegisterOverlayPref(prefs::kSaveFileDefaultDirectory);
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  pref_store->RegisterOverlayPref(prefs::kProxy);
+  pref_store->RegisterOverlayPref(proxy_config::prefs::kProxy);
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
 

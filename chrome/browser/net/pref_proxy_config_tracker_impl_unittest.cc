@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 
 #include <string>
 
@@ -12,18 +12,17 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/histogram_tester.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
-#include "content/public/test/test_browser_thread.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using testing::_;
 using testing::Mock;
 
@@ -78,9 +77,7 @@ class MockObserver : public net::ProxyConfigService::Observer {
 template<typename TESTBASE>
 class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
  protected:
-  PrefProxyConfigTrackerImplTestBase()
-      : ui_thread_(BrowserThread::UI, &loop_),
-        io_thread_(BrowserThread::IO, &loop_) {}
+  PrefProxyConfigTrackerImplTestBase() {}
 
   virtual void Init(PrefService* pref_service, PrefRegistrySimple* registry) {
     ASSERT_TRUE(pref_service);
@@ -89,11 +86,12 @@ class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
     delegate_service_ =
         new TestProxyConfigService(fixed_config_,
                                    net::ProxyConfigService::CONFIG_VALID);
-    proxy_config_tracker_.reset(new PrefProxyConfigTrackerImpl(pref_service));
+    proxy_config_tracker_.reset(new PrefProxyConfigTrackerImpl(
+        pref_service, base::ThreadTaskRunnerHandle::Get()));
     proxy_config_service_ =
         proxy_config_tracker_->CreateTrackingProxyConfigService(
             scoped_ptr<net::ProxyConfigService>(delegate_service_));
-    // SetChromeProxyConfigService triggers update of initial prefs proxy
+    // SetProxyConfigServiceImpl triggers update of initial prefs proxy
     // config by tracker to chrome proxy config service, so flush all pending
     // tasks so that tests start fresh.
     loop_.RunUntilIdle();
@@ -113,8 +111,6 @@ class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
 
  private:
   scoped_ptr<PrefProxyConfigTrackerImpl> proxy_config_tracker_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
 };
 
 class PrefProxyConfigTrackerImplTest
@@ -136,7 +132,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, BaseConfiguration) {
 }
 
 TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
-  pref_service_->SetManagedPref(prefs::kProxy,
+  pref_service_->SetManagedPref(proxy_config::prefs::kProxy,
                                 ProxyConfigDictionary::CreateFixedServers(
                                     "http://example.com:3128", std::string()));
   loop_.RunUntilIdle();
@@ -151,7 +147,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
             net::ProxyServer::FromURI("http://example.com:3128",
                                       net::ProxyServer::SCHEME_HTTP));
 
-  pref_service_->SetManagedPref(prefs::kProxy,
+  pref_service_->SetManagedPref(proxy_config::prefs::kProxy,
                                 ProxyConfigDictionary::CreateAutoDetect());
   loop_.RunUntilIdle();
 
@@ -189,7 +185,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, Observers) {
   EXPECT_CALL(observer, OnProxyConfigChanged(ProxyConfigMatches(pref_config),
                                              CONFIG_VALID)).Times(1);
   pref_service_->SetManagedPref(
-      prefs::kProxy,
+      proxy_config::prefs::kProxy,
       ProxyConfigDictionary::CreatePacScript(kFixedPacUrl, false));
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
@@ -206,7 +202,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, Observers) {
   // Clear the override should switch back to the fixed configuration.
   EXPECT_CALL(observer, OnProxyConfigChanged(ProxyConfigMatches(config3),
                                              CONFIG_VALID)).Times(1);
-  pref_service_->RemoveManagedPref(prefs::kProxy);
+  pref_service_->RemoveManagedPref(proxy_config::prefs::kProxy);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -240,9 +236,8 @@ TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
   EXPECT_CALL(observer,
               OnProxyConfigChanged(ProxyConfigMatches(recommended_config),
                                    CONFIG_VALID)).Times(1);
-  pref_service_->SetRecommendedPref(
-      prefs::kProxy,
-      ProxyConfigDictionary::CreateAutoDetect());
+  pref_service_->SetRecommendedPref(proxy_config::prefs::kProxy,
+                                    ProxyConfigDictionary::CreateAutoDetect());
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_EQ(CONFIG_VALID,
@@ -254,7 +249,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
               OnProxyConfigChanged(ProxyConfigMatches(user_config),
                                    CONFIG_VALID)).Times(1);
   pref_service_->SetManagedPref(
-      prefs::kProxy,
+      proxy_config::prefs::kProxy,
       ProxyConfigDictionary::CreatePacScript(kFixedPacUrl, false));
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
@@ -266,7 +261,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
   EXPECT_CALL(observer,
               OnProxyConfigChanged(ProxyConfigMatches(recommended_config),
                                    CONFIG_VALID)).Times(1);
-  pref_service_->RemoveManagedPref(prefs::kProxy);
+  pref_service_->RemoveManagedPref(proxy_config::prefs::kProxy);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
   EXPECT_EQ(CONFIG_VALID,
@@ -277,12 +272,10 @@ TEST_F(PrefProxyConfigTrackerImplTest, Fallback) {
 }
 
 TEST_F(PrefProxyConfigTrackerImplTest, ExplicitSystemSettings) {
-  pref_service_->SetRecommendedPref(
-      prefs::kProxy,
-      ProxyConfigDictionary::CreateAutoDetect());
-  pref_service_->SetUserPref(
-      prefs::kProxy,
-      ProxyConfigDictionary::CreateSystem());
+  pref_service_->SetRecommendedPref(proxy_config::prefs::kProxy,
+                                    ProxyConfigDictionary::CreateAutoDetect());
+  pref_service_->SetUserPref(proxy_config::prefs::kProxy,
+                             ProxyConfigDictionary::CreateSystem());
   loop_.RunUntilIdle();
 
   // Test if we actually use the system setting, which is |kFixedPacUrl|.
@@ -363,7 +356,7 @@ TEST_F(PrefProxyConfigTrackerImplTest, ExcludeGooglezipDataReductionProxies) {
   // Test setting the proxy from a user pref.
   for (const auto& test : test_cases) {
     base::HistogramTester histogram_tester;
-    pref_service_->SetUserPref(prefs::kProxy,
+    pref_service_->SetUserPref(proxy_config::prefs::kProxy,
                                ProxyConfigDictionary::CreateFixedServers(
                                    test.initial_proxy_rules, std::string()));
     loop_.RunUntilIdle();

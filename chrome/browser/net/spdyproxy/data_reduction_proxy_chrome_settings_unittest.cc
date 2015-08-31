@@ -9,11 +9,11 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -34,7 +34,7 @@ class DataReductionProxyChromeSettingsTest : public testing::Test {
     dict_ = make_scoped_ptr(new base::DictionaryValue());
 
     PrefRegistrySimple* registry = test_context_->pref_service()->registry();
-    registry->RegisterDictionaryPref(prefs::kProxy);
+    registry->RegisterDictionaryPref(proxy_config::prefs::kProxy);
   }
 
   base::MessageLoopForIO message_loop_;
@@ -50,7 +50,8 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateNonexistentProxyPref) {
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
       test_context_->pref_service());
 
-  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
+  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(
+                      proxy_config::prefs::kProxy));
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.ProxyPrefMigrationResult",
       DataReductionProxyChromeSettings::PROXY_PREF_NOT_CLEARED, 1);
@@ -79,7 +80,8 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateBadlyFormedProxyPref) {
       dict_->SetString("mode", test.proxy_mode_string);
     if (test.proxy_server_string)
       dict_->SetString("server", test.proxy_server_string);
-    test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+    test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
+                                       *dict_.get());
 
     EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
     drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
@@ -87,7 +89,7 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateBadlyFormedProxyPref) {
 
     const base::DictionaryValue* final_value;
     test_context_->pref_service()
-        ->GetUserPref(prefs::kProxy)
+        ->GetUserPref(proxy_config::prefs::kProxy)
         ->GetAsDictionary(&final_value);
     EXPECT_NE(nullptr, final_value);
     EXPECT_TRUE(dict_->Equals(final_value));
@@ -100,12 +102,13 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateBadlyFormedProxyPref) {
 
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateEmptyProxy) {
   base::HistogramTester histogram_tester;
-  test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+  test_context_->pref_service()->Set(proxy_config::prefs::kProxy, *dict_.get());
   EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
       test_context_->pref_service());
 
-  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
+  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(
+                      proxy_config::prefs::kProxy));
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.ProxyPrefMigrationResult",
       DataReductionProxyChromeSettings::PROXY_PREF_CLEARED_EMPTY, 1);
@@ -114,13 +117,14 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateEmptyProxy) {
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateSystemProxy) {
   base::HistogramTester histogram_tester;
   dict_->SetString("mode", "system");
-  test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+  test_context_->pref_service()->Set(proxy_config::prefs::kProxy, *dict_.get());
   EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
 
   drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
       test_context_->pref_service());
 
-  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
+  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(
+                      proxy_config::prefs::kProxy));
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.ProxyPrefMigrationResult",
       DataReductionProxyChromeSettings::PROXY_PREF_CLEARED_MODE_SYSTEM, 1);
@@ -136,7 +140,8 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateDataReductionProxy) {
     dict_.reset(new base::DictionaryValue());
     dict_->SetString("mode", "fixed_servers");
     dict_->SetString("server", test_server);
-    test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+    test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
+                                       *dict_.get());
     EXPECT_CALL(*config_, ContainsDataReductionProxy(_))
         .Times(1)
         .WillOnce(Return(true));
@@ -144,7 +149,8 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateDataReductionProxy) {
     drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
         test_context_->pref_service());
 
-    EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
+    EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(
+                        proxy_config::prefs::kProxy));
     histogram_tester.ExpectUniqueSample(
         "DataReductionProxy.ProxyPrefMigrationResult",
         DataReductionProxyChromeSettings::PROXY_PREF_CLEARED_DRP, 1);
@@ -165,7 +171,8 @@ TEST_F(DataReductionProxyChromeSettingsTest,
     // currently configured DRP, but the pref should still be cleared.
     dict_->SetString("mode", "fixed_servers");
     dict_->SetString("server", test_server);
-    test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+    test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
+                                       *dict_.get());
     EXPECT_CALL(*config_, ContainsDataReductionProxy(_))
         .Times(1)
         .WillOnce(Return(false));
@@ -173,7 +180,8 @@ TEST_F(DataReductionProxyChromeSettingsTest,
     drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
         test_context_->pref_service());
 
-    EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
+    EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(
+                        proxy_config::prefs::kProxy));
     histogram_tester.ExpectUniqueSample(
         "DataReductionProxy.ProxyPrefMigrationResult",
         DataReductionProxyChromeSettings::PROXY_PREF_CLEARED_GOOGLEZIP, 1);
@@ -257,15 +265,16 @@ TEST_F(DataReductionProxyChromeSettingsTest,
     dict_.reset(new base::DictionaryValue());
     dict_->SetString("mode", "pac_script");
     dict_->SetString("pac_url", test.pac_url);
-    test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+    test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
+                                       *dict_.get());
     EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(0);
 
     drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
         test_context_->pref_service());
 
     if (test.expect_pref_cleared) {
-      EXPECT_EQ(NULL,
-                test_context_->pref_service()->GetUserPref(prefs::kProxy));
+      EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(
+                          proxy_config::prefs::kProxy));
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.ProxyPrefMigrationResult",
           DataReductionProxyChromeSettings::PROXY_PREF_CLEARED_PAC_GOOGLEZIP,
@@ -273,7 +282,7 @@ TEST_F(DataReductionProxyChromeSettingsTest,
     } else {
       const base::DictionaryValue* value;
       EXPECT_TRUE(test_context_->pref_service()
-                      ->GetUserPref(prefs::kProxy)
+                      ->GetUserPref(proxy_config::prefs::kProxy)
                       ->GetAsDictionary(&value));
       std::string mode;
       EXPECT_TRUE(value->GetString("mode", &mode));
@@ -301,7 +310,8 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateIgnoreOtherProxy) {
     dict_.reset(new base::DictionaryValue());
     dict_->SetString("mode", "fixed_servers");
     dict_->SetString("server", test_server);
-    test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+    test_context_->pref_service()->Set(proxy_config::prefs::kProxy,
+                                       *dict_.get());
     EXPECT_CALL(*config_, ContainsDataReductionProxy(_))
         .Times(1)
         .WillOnce(Return(false));
@@ -311,7 +321,7 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateIgnoreOtherProxy) {
 
     base::DictionaryValue* value =
         (base::DictionaryValue*)test_context_->pref_service()->GetUserPref(
-            prefs::kProxy);
+            proxy_config::prefs::kProxy);
     std::string mode;
     EXPECT_TRUE(value->GetString("mode", &mode));
     EXPECT_EQ("fixed_servers", mode);

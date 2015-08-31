@@ -26,6 +26,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
@@ -441,8 +442,9 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
     // Managed proxy pref should take effect over recommended proxy and
     // non-existent network proxy.
     SetUserConfigInShill(nullptr);
-    pref_service_.SetManagedPref(prefs::kProxy, managed_config.DeepCopy());
-    pref_service_.SetRecommendedPref(prefs::kProxy,
+    pref_service_.SetManagedPref(::proxy_config::prefs::kProxy,
+                                 managed_config.DeepCopy());
+    pref_service_.SetRecommendedPref(::proxy_config::prefs::kProxy,
                                      recommended_config.DeepCopy());
     net::ProxyConfig actual_config;
     SyncGetLatestProxyConfig(&actual_config);
@@ -453,7 +455,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
 
     // Recommended proxy pref should take effect when managed proxy pref is
     // removed.
-    pref_service_.RemoveManagedPref(prefs::kProxy);
+    pref_service_.RemoveManagedPref(::proxy_config::prefs::kProxy);
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(recommended_params.auto_detect, actual_config.auto_detect());
     EXPECT_EQ(recommended_params.pac_url, actual_config.pac_url());
@@ -469,7 +471,8 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
         actual_config.proxy_rules()));
 
     // Managed proxy pref should take effect over network proxy.
-    pref_service_.SetManagedPref(prefs::kProxy, managed_config.DeepCopy());
+    pref_service_.SetManagedPref(::proxy_config::prefs::kProxy,
+                                 managed_config.DeepCopy());
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(managed_params.auto_detect, actual_config.auto_detect());
     EXPECT_EQ(managed_params.pac_url, actual_config.pac_url());
@@ -478,7 +481,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
 
     // Network proxy should take effect over recommended proxy pref when managed
     // proxy pref is removed.
-    pref_service_.RemoveManagedPref(prefs::kProxy);
+    pref_service_.RemoveManagedPref(::proxy_config::prefs::kProxy);
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(network_params.auto_detect, actual_config.auto_detect());
     EXPECT_EQ(network_params.pac_url, actual_config.pac_url());
@@ -486,7 +489,7 @@ TEST_F(ProxyConfigServiceImplTest, DynamicPrefsOverride) {
         actual_config.proxy_rules()));
 
     // Removing recommended proxy pref should have no effect on network proxy.
-    pref_service_.RemoveRecommendedPref(prefs::kProxy);
+    pref_service_.RemoveRecommendedPref(::proxy_config::prefs::kProxy);
     SyncGetLatestProxyConfig(&actual_config);
     EXPECT_EQ(network_params.auto_detect, actual_config.auto_detect());
     EXPECT_EQ(network_params.pac_url, actual_config.pac_url());

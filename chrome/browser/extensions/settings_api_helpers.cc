@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/common/pref_names.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
@@ -87,7 +88,8 @@ const Extension* GetExtensionOverridingProxy(
   if (!extension_prefs_value_map)
     return NULL;  // Can be null during testing.
   std::string extension_id =
-      extension_prefs_value_map->GetExtensionControllingPref(prefs::kProxy);
+      extension_prefs_value_map->GetExtensionControllingPref(
+          proxy_config::prefs::kProxy);
   if (extension_id.empty())
     return NULL;
   return ExtensionRegistry::Get(browser_context)->GetExtensionById(

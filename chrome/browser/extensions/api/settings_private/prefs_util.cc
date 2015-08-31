@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/url_formatter/url_fixer.h"
 
 #if defined(OS_CHROMEOS)
@@ -325,7 +326,7 @@ PrefService* PrefsUtil::FindServiceForPref(const std::string& pref_name) {
   // Elsewhere the proxy settings are stored in local state.
   // See http://crbug.com/157147
 
-  if (pref_name == prefs::kProxy) {
+  if (pref_name == proxy_config::prefs::kProxy) {
 #if defined(OS_CHROMEOS)
     return user_prefs;
 #else

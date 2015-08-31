@@ -11,14 +11,13 @@
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
-#include "components/proxy_config/proxy_prefs.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -138,7 +137,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
   scoped_ptr<PrefService> prefs(CreatePrefService(false));
-  ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
+  ProxyConfigDictionary dict(prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyMode(dict, ProxyPrefs::MODE_FIXED_SERVERS);
   assertProxyServer(dict, "789");
   assertPacUrl(dict, std::string());
@@ -148,7 +147,8 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
   // manual proxy policy should have removed all traces of the command
   // line and replaced them with the policy versions.
   prefs = CreatePrefService(true);
-  ProxyConfigDictionary dict2(prefs->GetDictionary(prefs::kProxy));
+  ProxyConfigDictionary dict2(
+      prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyMode(dict2, ProxyPrefs::MODE_FIXED_SERVERS);
   assertProxyServer(dict2, "ghi");
   assertPacUrl(dict2, std::string());
@@ -168,7 +168,7 @@ TEST_F(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
   scoped_ptr<PrefService> prefs = CreatePrefService(false);
-  ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
+  ProxyConfigDictionary dict(prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyMode(dict, ProxyPrefs::MODE_FIXED_SERVERS);
   assertProxyServer(dict, "789");
   assertPacUrl(dict, std::string());
@@ -179,7 +179,8 @@ TEST_F(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
   // line proxy settings, even though they were not the specific one
   // set in policy.
   prefs = CreatePrefService(true);
-  ProxyConfigDictionary dict2(prefs->GetDictionary(prefs::kProxy));
+  ProxyConfigDictionary dict2(
+      prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyModeWithoutParams(dict2, ProxyPrefs::MODE_AUTO_DETECT);
 }
 
@@ -195,14 +196,15 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineNoProxy) {
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
   scoped_ptr<PrefService> prefs = CreatePrefService(false);
-  ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
+  ProxyConfigDictionary dict(prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyModeWithoutParams(dict, ProxyPrefs::MODE_DIRECT);
 
   // Try a second time time with the managed PrefStore in place, the
   // auto-detect should be overridden. The default pref store must be
   // in place with the appropriate default value for this to work.
   prefs = CreatePrefService(true);
-  ProxyConfigDictionary dict2(prefs->GetDictionary(prefs::kProxy));
+  ProxyConfigDictionary dict2(
+      prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyModeWithoutParams(dict2, ProxyPrefs::MODE_AUTO_DETECT);
 }
 
@@ -218,14 +220,15 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineAutoDetect) {
   // First verify that the auto-detect is set if there is no managed
   // PrefStore.
   scoped_ptr<PrefService> prefs = CreatePrefService(false);
-  ProxyConfigDictionary dict(prefs->GetDictionary(prefs::kProxy));
+  ProxyConfigDictionary dict(prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyModeWithoutParams(dict, ProxyPrefs::MODE_AUTO_DETECT);
 
   // Try a second time time with the managed PrefStore in place, the
   // auto-detect should be overridden. The default pref store must be
   // in place with the appropriate default value for this to work.
   prefs = CreatePrefService(true);
-  ProxyConfigDictionary dict2(prefs->GetDictionary(prefs::kProxy));
+  ProxyConfigDictionary dict2(
+      prefs->GetDictionary(proxy_config::prefs::kProxy));
   assertProxyModeWithoutParams(dict2, ProxyPrefs::MODE_DIRECT);
 }
 

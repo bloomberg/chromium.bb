@@ -13,7 +13,7 @@
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
-#include "components/proxy_config/proxy_prefs.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "grit/components_strings.h"
 #include "policy/policy_constants.h"
 
@@ -172,18 +172,18 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 
   switch (proxy_mode) {
     case ProxyPrefs::MODE_DIRECT:
-      prefs->SetValue(prefs::kProxy,
+      prefs->SetValue(proxy_config::prefs::kProxy,
                       make_scoped_ptr(ProxyConfigDictionary::CreateDirect()));
       break;
     case ProxyPrefs::MODE_AUTO_DETECT:
       prefs->SetValue(
-          prefs::kProxy,
+          proxy_config::prefs::kProxy,
           make_scoped_ptr(ProxyConfigDictionary::CreateAutoDetect()));
       break;
     case ProxyPrefs::MODE_PAC_SCRIPT: {
       std::string pac_url_string;
       if (pac_url && pac_url->GetAsString(&pac_url_string)) {
-        prefs->SetValue(prefs::kProxy,
+        prefs->SetValue(proxy_config::prefs::kProxy,
                         make_scoped_ptr(ProxyConfigDictionary::CreatePacScript(
                             pac_url_string, false)));
       } else {
@@ -198,14 +198,14 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
         if (bypass_list)
           bypass_list->GetAsString(&bypass_list_string);
         prefs->SetValue(
-            prefs::kProxy,
+            proxy_config::prefs::kProxy,
             make_scoped_ptr(ProxyConfigDictionary::CreateFixedServers(
                 proxy_server, bypass_list_string)));
       }
       break;
     }
     case ProxyPrefs::MODE_SYSTEM:
-      prefs->SetValue(prefs::kProxy,
+      prefs->SetValue(proxy_config::prefs::kProxy,
                       make_scoped_ptr(ProxyConfigDictionary::CreateSystem()));
       break;
     case ProxyPrefs::kModeCount:

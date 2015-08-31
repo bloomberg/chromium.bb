@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_H_
-#define CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_H_
+#ifndef COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_H_
+#define COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/proxy_config/proxy_config_export.h"
 
 namespace net {
 class ProxyConfigService;
@@ -16,7 +17,7 @@ class ProxyConfigService;
 // concrete class is to track changes in the Preferences, to translates the
 // preferences to net::ProxyConfig and to push the result over to a
 // net::ProxyConfigService onto the IO thread.
-class PrefProxyConfigTracker {
+class PROXY_CONFIG_EXPORT PrefProxyConfigTracker {
  public:
   PrefProxyConfigTracker();
   virtual ~PrefProxyConfigTracker();
@@ -40,4 +41,4 @@ class PrefProxyConfigTracker {
   DISALLOW_COPY_AND_ASSIGN(PrefProxyConfigTracker);
 };
 
-#endif  // CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_H_
+#endif  // COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_H_

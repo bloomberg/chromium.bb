@@ -12,6 +12,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "net/proxy/proxy_config.h"
 
 namespace chromeos {

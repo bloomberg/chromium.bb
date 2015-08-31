@@ -18,7 +18,6 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
@@ -26,6 +25,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
@@ -94,14 +94,14 @@ void DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefs(
 DataReductionProxyChromeSettings::ProxyPrefMigrationResult
 DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
     PrefService* prefs) {
-  base::DictionaryValue* dict =
-      (base::DictionaryValue*)prefs->GetUserPrefValue(prefs::kProxy);
+  base::DictionaryValue* dict = (base::DictionaryValue*)prefs->GetUserPrefValue(
+      proxy_config::prefs::kProxy);
   if (!dict)
     return PROXY_PREF_NOT_CLEARED;
 
   // Clear empty "proxy" dictionary created by a bug. See http://crbug/448172.
   if (dict->empty()) {
-    prefs->ClearPref(prefs::kProxy);
+    prefs->ClearPref(proxy_config::prefs::kProxy);
     return PROXY_PREF_CLEARED_EMPTY;
   }
 
@@ -111,7 +111,7 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
   // Clear "system" proxy entry since this is the default. This entry was
   // created by bug (http://crbug/448172).
   if (ProxyModeToString(ProxyPrefs::MODE_SYSTEM) == mode) {
-    prefs->ClearPref(prefs::kProxy);
+    prefs->ClearPref(proxy_config::prefs::kProxy);
     return PROXY_PREF_CLEARED_MODE_SYSTEM;
   }
 
@@ -135,7 +135,7 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
     else
       return PROXY_PREF_NOT_CLEARED;
 
-    prefs->ClearPref(prefs::kProxy);
+    prefs->ClearPref(proxy_config::prefs::kProxy);
     return rv;
   }
 
@@ -157,7 +157,7 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
     if (pac_script.find(".googlezip.net:") == std::string::npos)
       return PROXY_PREF_NOT_CLEARED;
 
-    prefs->ClearPref(prefs::kProxy);
+    prefs->ClearPref(proxy_config::prefs::kProxy);
     return PROXY_PREF_CLEARED_PAC_GOOGLEZIP;
   }
 

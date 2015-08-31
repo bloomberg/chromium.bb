@@ -16,9 +16,9 @@
 #include "chrome/browser/extensions/settings_api_bubble_controller.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_pref_value_map.h"
@@ -367,8 +367,7 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
         base::Time::Now(),
         true,    // is_enabled.
         false);  // is_incognito_enabled.
-    extension_prefs_value_map->SetExtensionPref(id,
-                                                prefs::kProxy,
+    extension_prefs_value_map->SetExtensionPref(id, proxy_config::prefs::kProxy,
                                                 kExtensionPrefsScopeRegular,
                                                 new base::StringValue(id));
 

@@ -1932,7 +1932,6 @@ const char kCloudPrintPrinters[] = "cloud_print.user_settings.printers";
 const char kCloudPrintSubmitEnabled[] = "cloud_print.submit_enabled";
 
 // Preference to store proxy settings.
-const char kProxy[] = "proxy";
 const char kMaxConnectionsPerProxy[] = "net.max_connections_per_proxy";
 
 #if defined(OS_MACOSX)

@@ -1117,6 +1117,7 @@
         '../components/components.gyp:ownership',
         '../components/components.gyp:pairing',
         '../components/components.gyp:policy',
+        '../components/components.gyp:proxy_config',
         '../components/components.gyp:user_manager',
         # This depends directly on the variations target, rather than just
         # transitively via the common target because the proto sources need to

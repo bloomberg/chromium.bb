@@ -7,12 +7,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/net/proxy_policy_handler.h"
-#include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
-#include "components/proxy_config/proxy_prefs.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +42,7 @@ class ProxyPolicyHandlerTest
       const std::string& expected_proxy_bypass_list,
       const ProxyPrefs::ProxyMode& expected_proxy_mode) {
     const base::Value* value = NULL;
-    ASSERT_TRUE(store_->GetValue(prefs::kProxy, &value));
+    ASSERT_TRUE(store_->GetValue(proxy_config::prefs::kProxy, &value));
     ASSERT_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
     ProxyConfigDictionary dict(
         static_cast<const base::DictionaryValue*>(value));
@@ -138,7 +137,7 @@ TEST_F(ProxyPolicyHandlerTest, ManualOptionsInvalid) {
   UpdateProviderPolicy(policy);
 
   const base::Value* value = NULL;
-  EXPECT_FALSE(store_->GetValue(prefs::kProxy, &value));
+  EXPECT_FALSE(store_->GetValue(proxy_config::prefs::kProxy, &value));
 }
 
 TEST_F(ProxyPolicyHandlerTest, NoProxyServerMode) {
@@ -222,7 +221,7 @@ TEST_F(ProxyPolicyHandlerTest, PacScriptProxyModeInvalid) {
              NULL);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
-  EXPECT_FALSE(store_->GetValue(prefs::kProxy, &value));
+  EXPECT_FALSE(store_->GetValue(proxy_config::prefs::kProxy, &value));
 }
 
 // Regression test for http://crbug.com/78016, CPanel returns empty strings
@@ -322,7 +321,7 @@ TEST_F(ProxyPolicyHandlerTest, ProxyInvalid) {
                NULL);
     UpdateProviderPolicy(policy);
     const base::Value* value = NULL;
-    EXPECT_FALSE(store_->GetValue(prefs::kProxy, &value));
+    EXPECT_FALSE(store_->GetValue(proxy_config::prefs::kProxy, &value));
   }
 }
 

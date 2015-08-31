@@ -603,7 +603,6 @@ extern const char kCloudPrintPrinters[];
 extern const char kCloudPrintSubmitEnabled[];
 extern const char kCloudPrintUserSettings[];
 
-extern const char kProxy[];
 extern const char kMaxConnectionsPerProxy[];
 
 extern const char kAudioCaptureAllowed[];

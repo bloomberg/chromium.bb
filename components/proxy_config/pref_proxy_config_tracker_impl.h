@@ -2,21 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_IMPL_H_
-#define CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_IMPL_H_
+#ifndef COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_IMPL_H_
+#define COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/net/pref_proxy_config_tracker.h"
+#include "base/threading/thread_checker.h"
+#include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
 
 class PrefService;
 class PrefRegistrySimple;
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -27,15 +32,14 @@ class PrefRegistrySyncable;
 // configuration determined by a baseline delegate ProxyConfigService on
 // non-ChromeOS platforms. ChromeOS has its own implementation of overrides in
 // chromeos::ProxyConfigServiceImpl.
-class ChromeProxyConfigService
-    : public net::ProxyConfigService,
-      public net::ProxyConfigService::Observer {
+class ProxyConfigServiceImpl : public net::ProxyConfigService,
+                               public net::ProxyConfigService::Observer {
  public:
   // Takes ownership of the passed |base_service|.
   // GetLatestProxyConfig returns ConfigAvailability::CONFIG_PENDING until
   // UpdateProxyConfig has been called.
-  explicit ChromeProxyConfigService(net::ProxyConfigService* base_service);
-  ~ChromeProxyConfigService() override;
+  explicit ProxyConfigServiceImpl(net::ProxyConfigService* base_service);
+  ~ProxyConfigServiceImpl() override;
 
   // ProxyConfigService implementation:
   void AddObserver(net::ProxyConfigService::Observer* observer) override;
@@ -73,15 +77,20 @@ class ChromeProxyConfigService
   // Indicates whether the base service registration is done.
   bool registered_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeProxyConfigService);
+  base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyConfigServiceImpl);
 };
 
 // A class that tracks proxy preferences. It translates the configuration
 // to net::ProxyConfig and pushes the result over to the IO thread for
-// ChromeProxyConfigService::UpdateProxyConfig to use.
-class PrefProxyConfigTrackerImpl : public PrefProxyConfigTracker {
+// ProxyConfigServiceImpl::UpdateProxyConfig to use.
+class PROXY_CONFIG_EXPORT PrefProxyConfigTrackerImpl
+    : public PrefProxyConfigTracker {
  public:
-  explicit PrefProxyConfigTrackerImpl(PrefService* pref_service);
+  PrefProxyConfigTrackerImpl(
+      PrefService* pref_service,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~PrefProxyConfigTrackerImpl() override;
 
   // PrefProxyConfigTracker implementation:
@@ -155,11 +164,15 @@ class PrefProxyConfigTrackerImpl : public PrefProxyConfigTracker {
   net::ProxyConfig pref_config_;
 
   PrefService* pref_service_;
-  ChromeProxyConfigService* chrome_proxy_config_service_;  // Weak ptr.
+  ProxyConfigServiceImpl* proxy_config_service_impl_;  // Weak ptr.
   bool update_pending_;  // True if config has not been pushed to network stack.
   PrefChangeRegistrar proxy_prefs_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefProxyConfigTrackerImpl);
 };
 
-#endif  // CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_IMPL_H_
+#endif  // COMPONENTS_PROXY_CONFIG_PREF_PROXY_CONFIG_TRACKER_IMPL_H_
