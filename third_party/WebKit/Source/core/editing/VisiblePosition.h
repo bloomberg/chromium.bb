@@ -97,8 +97,6 @@ public:
     // next() and previous() will increment/decrement by a character cluster.
     VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition&) const;
     VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&) const;
-    VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition&) const;
-    VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition&) const;
 
     // TODO(yosin) This does not handle [table, 0] correctly.
     Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.anchorNode()->rootEditableElement() : 0; }

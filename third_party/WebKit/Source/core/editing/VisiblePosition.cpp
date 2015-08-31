@@ -64,6 +64,10 @@ VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinit
     init(positionWithAffinity.position(), positionWithAffinity.affinity());
 }
 
+// TODO(yosin) We should move implementation of |skipToEndOfEditingBoundary()|
+// here to avoid forward declaration.
+static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition&, const Position& anchor);
+
 // TODO(yosin) We should move |nextPositionOf()| to "VisibleUnits.cpp".
 VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
@@ -75,11 +79,15 @@ VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBo
     case CannotCrossEditingBoundary:
         return visiblePosition.honorEditingBoundaryAtOrAfter(next);
     case CanSkipOverEditingBoundary:
-        return visiblePosition.skipToEndOfEditingBoundary(next);
+        return skipToEndOfEditingBoundary(next, visiblePosition.deepEquivalent());
     }
     ASSERT_NOT_REACHED();
     return visiblePosition.honorEditingBoundaryAtOrAfter(next);
 }
+
+// TODO(yosin) We should move implementation of |skipToStartOfEditingBoundary()|
+// here to avoid forward declaration.
+static VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition&, const Position& anchor);
 
 VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
@@ -108,7 +116,7 @@ VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, Editi
     case CannotCrossEditingBoundary:
         return visiblePosition.honorEditingBoundaryAtOrBefore(prev);
     case CanSkipOverEditingBoundary:
-        return visiblePosition.skipToStartOfEditingBoundary(prev);
+        return skipToStartOfEditingBoundary(prev, visiblePosition.deepEquivalent());
     }
 
     ASSERT_NOT_REACHED();
@@ -514,12 +522,14 @@ VisiblePosition VisiblePosition::honorEditingBoundaryAtOrAfter(const VisiblePosi
     return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
-VisiblePosition VisiblePosition::skipToStartOfEditingBoundary(const VisiblePosition &pos) const
+// TODO(yosin) We should move implementation of |skipToStartOfEditingBoundary()|
+// at forward declaration and re-format comments to fit 80 chars.
+static VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition& pos, const Position& anchor)
 {
     if (pos.isNull())
         return pos;
 
-    ContainerNode* highestRoot = highestEditableRoot(deepEquivalent());
+    ContainerNode* highestRoot = highestEditableRoot(anchor);
     ContainerNode* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
 
     // Return pos itself if the two are from the very same editable region, or both are non-editable.
@@ -534,12 +544,14 @@ VisiblePosition VisiblePosition::skipToStartOfEditingBoundary(const VisiblePosit
     return lastEditableVisiblePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
-VisiblePosition VisiblePosition::skipToEndOfEditingBoundary(const VisiblePosition &pos) const
+// TODO(yosin) We should move implementation of |skipToEndOfEditingBoundary()|
+// at forward declaration and re-format comments to fit 80 chars.
+static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition& pos, const Position& anchor)
 {
     if (pos.isNull())
         return pos;
 
-    ContainerNode* highestRoot = highestEditableRoot(deepEquivalent());
+    ContainerNode* highestRoot = highestEditableRoot(anchor);
     ContainerNode* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
 
     // Return pos itself if the two are from the very same editable region, or both are non-editable.
