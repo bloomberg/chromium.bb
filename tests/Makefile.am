@@ -208,21 +208,22 @@ dist_yaml_TESTS =				\
 	da-dk-g18-dictionary_harness.yaml	\
 	da-dk-g26-dictionary_harness.yaml	\
 	da-dk-g28-dictionary_harness.yaml	\
-	en-gb-g1_harness.yaml			\
 	en-GB-g2_backward.yaml			\
 	en-GB-g2_harness.yaml			\
+	en-gb-g1_harness.yaml			\
 	en-ueb-g1_harness.yaml			\
 	en-ueb-g2-dictionary_harness.yaml	\
 	en-us-g2-dictionary_harness.yaml	\
 	en-us-g2-end-emphasis_harness.yaml	\
 	eo-g1_harness.yaml			\
 	ethio-g1_harness.yaml			\
+	example_test.yaml			\
 	fi_harness.yaml				\
 	foo.yaml				\
-	example_test.yaml			\
 	fr-bfu-g2_harness.yaml			\
 	ga-g1_harness.yaml			\
 	ga-g2_harness.yaml			\
+	hr-8dots_harness.yaml			\
 	hu-hu-comp8_backward.yaml		\
 	hu-hu-comp8_harness.yaml		\
 	hu-hu-g1_backward.yaml			\
@@ -234,6 +235,7 @@ dist_yaml_TESTS =				\
 	nl-BE-g1_harness.yaml			\
 	nocross_harness.yaml			\
 	pl-pl-comp8_harness.yaml		\
+	sr-g1_harness.yaml			\
 	ta-ta-g1_harness.yaml
 
 TEST_EXTENSIONS = .yaml
