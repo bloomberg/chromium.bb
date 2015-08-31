@@ -9,6 +9,7 @@
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
@@ -151,6 +152,15 @@ void PermissionManager::RequestPermission(
     return;
   }
 
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (IsPermissionBubbleManagerMissing(web_contents)) {
+    callback.Run(
+        GetPermissionStatus(permission, requesting_origin,
+                            web_contents->GetLastCommittedURL().GetOrigin()));
+    return;
+  }
+
   int render_process_id = render_frame_host->GetProcess()->GetID();
   int render_frame_id = render_frame_host->GetRoutingID();
   const PermissionRequestID request(render_process_id,
@@ -159,10 +169,8 @@ void PermissionManager::RequestPermission(
                                     requesting_origin);
 
   context->RequestPermission(
-      content::WebContents::FromRenderFrameHost(render_frame_host),
-      request, requesting_origin, user_gesture,
-      base::Bind(&PermissionStatusCallbackWrapper,
-                 callback));
+      web_contents, request, requesting_origin, user_gesture,
+      base::Bind(&PermissionStatusCallbackWrapper, callback));
 }
 
 void PermissionManager::CancelPermissionRequest(
@@ -174,6 +182,11 @@ void PermissionManager::CancelPermissionRequest(
   if (!context)
     return;
 
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (IsPermissionBubbleManagerMissing(web_contents))
+    return;
+
   int render_process_id = render_frame_host->GetProcess()->GetID();
   int render_frame_id = render_frame_host->GetRoutingID();
   const PermissionRequestID request(render_process_id,
@@ -181,8 +194,7 @@ void PermissionManager::CancelPermissionRequest(
                                     request_id,
                                     requesting_origin);
 
-  context->CancelPermissionRequest(
-      content::WebContents::FromRenderFrameHost(render_frame_host), request);
+  context->CancelPermissionRequest(web_contents, request);
 }
 
 void PermissionManager::ResetPermission(PermissionType permission,
@@ -258,6 +270,15 @@ void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {
 
   if (subscriptions_.IsEmpty())
     profile_->GetHostContentSettingsMap()->RemoveObserver(this);
+}
+
+bool PermissionManager::IsPermissionBubbleManagerMissing(
+    content::WebContents* web_contents) {
+  // Can't be missing if it isn't needed to begin with.
+  if (!PermissionBubbleManager::Enabled())
+    return false;
+
+  return PermissionBubbleManager::FromWebContents(web_contents) == nullptr;
 }
 
 void PermissionManager::OnContentSettingChanged(

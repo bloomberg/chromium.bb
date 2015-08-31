@@ -1912,8 +1912,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
 // Also note that these are run separately because OverrideGeolocation() doesn't
 // mock out geolocation for multiple navigator.geolocation calls properly and
 // the tests become flaky.
+//
 // GeolocationAPI* test 1 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessAllow) {
+// Currently disabled until crbug.com/526788 is fixed.
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       DISABLED_GeolocationAPIEmbedderHasAccessAllow) {
   TestHelper("testAllow",
              "web_view/geolocation/embedder_has_permission",
              NEEDS_TEST_SERVER);
@@ -1927,8 +1930,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
 }
 
 // GeolocationAPI* test 3 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
+// Currently disabled until crbug.com/526788 is fixed.
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    DISABLED_GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
   TestHelper("testMultipleBridgeIdAllow",
              "web_view/geolocation/embedder_has_permission",
              NEEDS_TEST_SERVER);

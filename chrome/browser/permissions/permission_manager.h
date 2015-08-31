@@ -17,6 +17,7 @@ class Profile;
 
 namespace content {
 enum class PermissionType;
+class WebContents;
 };  // namespace content
 
 class PermissionManager : public KeyedService,
@@ -58,6 +59,10 @@ class PermissionManager : public KeyedService,
  private:
   struct Subscription;
   using SubscriptionsMap = IDMap<Subscription, IDMapOwnPointer>;
+
+  // Not all WebContents are able to display permission requests. If the PBM
+  // is required but missing for |web_contents|, don't pass along the request.
+  bool IsPermissionBubbleManagerMissing(content::WebContents* web_contents);
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
