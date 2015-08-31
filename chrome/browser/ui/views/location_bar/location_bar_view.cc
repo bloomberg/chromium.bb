@@ -488,18 +488,12 @@ void LocationBarView::GetOmniboxPopupPositioningInfo(
     gfx::Point* top_left_screen_coord,
     int* popup_width,
     int* left_margin,
-    int* right_margin) {
-  // Because the popup might appear atop the attached bookmark bar, there won't
-  // necessarily be a client edge separating it from the rest of the toolbar.
-  // Therefore we position the popup high enough so it can draw its own client
-  // edge at the top, in the same place the toolbar would normally draw the
-  // client edge.
-  *top_left_screen_coord = gfx::Point(
-      0,
-      parent()->height() - views::NonClientFrameView::kClientEdgeThickness);
+    int* right_margin,
+    int top_edge_overlap) {
+  *top_left_screen_coord = gfx::Point(0, parent()->height() - top_edge_overlap);
   views::View::ConvertPointToScreen(parent(), top_left_screen_coord);
-  *popup_width = parent()->width();
 
+  *popup_width = parent()->width();
   gfx::Rect location_bar_bounds(bounds());
   location_bar_bounds.Inset(kNormalEdgeThickness, 0);
   *left_margin = location_bar_bounds.x();

@@ -69,6 +69,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   set_owned_by_client();
 
   ui::ThemeProvider* theme = location_bar_view_->GetThemeProvider();
+  top_shadow_ = theme->GetImageSkiaNamed(IDR_OMNIBOX_DROPDOWN_SHADOW_TOP);
   int bottom_shadow_asset = ui::MaterialDesignController::IsModeMaterial() ?
       IDR_OMNIBOX_DROPDOWN_SHADOW_BOTTOM : IDR_BUBBLE_B;
   bottom_shadow_ = theme->GetImageSkiaNamed(bottom_shadow_asset);
@@ -194,10 +195,30 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   for (size_t i = result_size; i < AutocompleteResult::kMaxMatches; ++i)
     child_at(i)->SetVisible(false);
 
+  // In non-material mode, we want the popup to appear as if it's overlaying
+  // the top of the page content, i.e., is flush against the client edge at the
+  // bottom of the toolbar. However, if the bookmarks bar is attached, we want
+  // to draw over it (so as not to push the results below it), but that means
+  // the toolbar won't be drawing a client edge separating itself from the
+  // popup. So we unconditionally overlap the toolbar by the thickness of the
+  // client edge and draw our own edge (see OnPaint()), which fixes the
+  // attached bookmark bar case without breaking the other case.
+  int top_edge_overlap = views::NonClientFrameView::kClientEdgeThickness;
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    // In material mode, we cover the bookmark bar similarly, but instead of
+    // appearing below the client edge, we want the popup to appear to overlay
+    // the bottom of the toolbar. So instead of drawing a client edge atop the
+    // popup, we shift the popup to completely cover the client edge, and then
+    // draw an additional semitransparent shadow above that. So the total
+    // overlap necessary is the client edge thickness plus the shadow height.
+    top_edge_overlap += top_shadow_->height();
+  }
+
   gfx::Point top_left_screen_coord;
   int width;
   location_bar_view_->GetOmniboxPopupPositioningInfo(
-      &top_left_screen_coord, &width, &start_margin_, &end_margin_);
+      &top_left_screen_coord, &width, &start_margin_,
+      &end_margin_, top_edge_overlap);
   gfx::Rect new_target_bounds(top_left_screen_coord,
                               gfx::Size(width, CalculatePopupHeight()));
 
@@ -431,10 +452,15 @@ const char* OmniboxPopupContentsView::GetClassName() const {
 
 void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
   // Top border.
-  canvas->FillRect(
-      gfx::Rect(0, 0, width(), views::NonClientFrameView::kClientEdgeThickness),
-      ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    canvas->TileImageInt(*top_shadow_, 0, 0, width(), top_shadow_->height());
+  } else {
+    canvas->FillRect(
+        gfx::Rect(0, 0, width(),
+                  views::NonClientFrameView::kClientEdgeThickness),
+        ThemeProperties::GetDefaultColor(
+            ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+  }
 
   // Bottom border.
   canvas->TileImageInt(*bottom_shadow_, 0, height() - bottom_shadow_->height(),

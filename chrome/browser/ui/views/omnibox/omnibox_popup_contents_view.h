@@ -156,7 +156,9 @@ class OmniboxPopupContentsView : public views::View,
   int start_margin_;
   int end_margin_;
 
-  const gfx::ImageSkia* bottom_shadow_;  // Ptr owned by resource bundle.
+  // These pointers are owned by the resource bundle.
+  const gfx::ImageSkia* top_shadow_;
+  const gfx::ImageSkia* bottom_shadow_;
 
   // When the dropdown is not wide enough while displaying postfix suggestions,
   // we use the width of widest match contents to shift the suggestions so that
