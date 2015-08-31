@@ -94,9 +94,11 @@ long long ReadUInt(IMkvReader* pReader, long long pos, long& len) {
 
 long long ReadID(IMkvReader* pReader, long long pos, long& len) {
   const long long id = ReadUInt(pReader, pos, len);
-  if (id < 0 || len < 1 || len > 4) {
-    // An ID must be at least 1 byte long, and cannot exceed 4.
-    // See EBMLMaxIDLength: http://www.matroska.org/technical/specs/index.html
+  if (id <= 0 || len < 1 || len > 4) {
+    // An ID must at least 1 byte long, cannot exceed 4, and its value must be
+    // greater than 0.
+    // See known EBML values and EBMLMaxIDLength:
+    // http://www.matroska.org/technical/specs/index.html
     return E_FILE_FORMAT_INVALID;
   }
   return id;
@@ -1336,14 +1338,14 @@ bool Segment::AppendCluster(Cluster* pCluster) {
 }
 
 bool Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
-  assert(pCluster);
-  assert(pCluster->m_index < 0);
-  assert(idx >= m_clusterCount);
+  if (pCluster == NULL || pCluster->m_index >= 0 || idx < m_clusterCount)
+    return false;
 
   const long count = m_clusterCount + m_clusterPreloadCount;
 
   long& size = m_clusterSize;
-  assert(size >= count);
+  if (size < count)
+    return false;
 
   if (count >= size) {
     const long n = (size <= 0) ? 2048 : 2 * size;
@@ -1365,17 +1367,20 @@ bool Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
     size = n;
   }
 
-  assert(m_clusters);
+  if (m_clusters == NULL)
+    return false;
 
   Cluster** const p = m_clusters + idx;
 
   Cluster** q = m_clusters + count;
-  assert(q >= p);
-  assert(q < (m_clusters + size));
+  if (q < p || q >= (m_clusters + size))
+    return false;
 
   while (q > p) {
     Cluster** const qq = q - 1;
-    assert((*qq)->m_index < 0);
+
+    if ((*qq)->m_index >= 0)
+      return false;
 
     *q = *qq;
     q = qq;
@@ -1387,10 +1392,8 @@ bool Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
 }
 
 long Segment::Load() {
-  assert(m_clusters == NULL);
-  assert(m_clusterSize == 0);
-  assert(m_clusterCount == 0);
-  // assert(m_size >= 0);
+  if (m_clusters != NULL || m_clusterSize != 0 || m_clusterCount != 0)
+    return E_PARSE_FAILED;
 
   // Outermost (level 0) segment object has been constructed,
   // and pos designates start of payload.  We need to find the
@@ -5649,97 +5652,87 @@ const Track* Tracks::GetTrackByIndex(unsigned long idx) const {
 }
 
 long Cluster::Load(long long& pos, long& len) const {
-  assert(m_pSegment);
-  assert(m_pos >= m_element_start);
+  if (m_pSegment == NULL)
+    return E_PARSE_FAILED;
 
   if (m_timecode >= 0)  // at least partially loaded
     return 0;
 
-  assert(m_pos == m_element_start);
-  assert(m_element_size < 0);
+  if (m_pos != m_element_start || m_element_size >= 0)
+    return E_PARSE_FAILED;
 
   IMkvReader* const pReader = m_pSegment->m_pReader;
-
   long long total, avail;
-
   const int status = pReader->Length(&total, &avail);
 
   if (status < 0)  // error
     return status;
 
-  assert((total < 0) || (avail <= total));
-  assert((total < 0) || (m_pos <= total));  // TODO: verify this
+  if (total >= 0 && (avail > total || m_pos > total))
+    return E_FILE_FORMAT_INVALID;
 
   pos = m_pos;
 
   long long cluster_size = -1;
 
-  {
-    if ((pos + 1) > avail) {
-      len = 1;
-      return E_BUFFER_NOT_FULL;
-    }
-
-    long long result = GetUIntLength(pReader, pos, len);
-
-    if (result < 0)  // error or underflow
-      return static_cast<long>(result);
-
-    if (result > 0)  // underflow (weird)
-      return E_BUFFER_NOT_FULL;
-
-    // if ((pos + len) > segment_stop)
-    //    return E_FILE_FORMAT_INVALID;
-
-    if ((pos + len) > avail)
-      return E_BUFFER_NOT_FULL;
-
-    const long long id_ = ReadUInt(pReader, pos, len);
-
-    if (id_ < 0)  // error
-      return static_cast<long>(id_);
-
-    if (id_ != 0x0F43B675)  // Cluster ID
-      return E_FILE_FORMAT_INVALID;
-
-    pos += len;  // consume id
-
-    // read cluster size
-
-    if ((pos + 1) > avail) {
-      len = 1;
-      return E_BUFFER_NOT_FULL;
-    }
-
-    result = GetUIntLength(pReader, pos, len);
-
-    if (result < 0)  // error
-      return static_cast<long>(result);
-
-    if (result > 0)  // weird
-      return E_BUFFER_NOT_FULL;
-
-    // if ((pos + len) > segment_stop)
-    //    return E_FILE_FORMAT_INVALID;
-
-    if ((pos + len) > avail)
-      return E_BUFFER_NOT_FULL;
-
-    const long long size = ReadUInt(pReader, pos, len);
-
-    if (size < 0)  // error
-      return static_cast<long>(cluster_size);
-
-    if (size == 0)
-      return E_FILE_FORMAT_INVALID;  // TODO: verify this
-
-    pos += len;  // consume length of size of element
-
-    const long long unknown_size = (1LL << (7 * len)) - 1;
-
-    if (size != unknown_size)
-      cluster_size = size;
+  if ((pos + 1) > avail) {
+    len = 1;
+    return E_BUFFER_NOT_FULL;
   }
+
+  long long result = GetUIntLength(pReader, pos, len);
+
+  if (result < 0)  // error or underflow
+    return static_cast<long>(result);
+
+  if (result > 0)
+    return E_BUFFER_NOT_FULL;
+
+  if ((pos + len) > avail)
+    return E_BUFFER_NOT_FULL;
+
+  const long long id_ = ReadUInt(pReader, pos, len);
+
+  if (id_ < 0)  // error
+    return static_cast<long>(id_);
+
+  if (id_ != 0x0F43B675)  // Cluster ID
+    return E_FILE_FORMAT_INVALID;
+
+  pos += len;  // consume id
+
+  // read cluster size
+
+  if ((pos + 1) > avail) {
+    len = 1;
+    return E_BUFFER_NOT_FULL;
+  }
+
+  result = GetUIntLength(pReader, pos, len);
+
+  if (result < 0)  // error
+    return static_cast<long>(result);
+
+  if (result > 0)
+    return E_BUFFER_NOT_FULL;
+
+  if ((pos + len) > avail)
+    return E_BUFFER_NOT_FULL;
+
+  const long long size = ReadUInt(pReader, pos, len);
+
+  if (size < 0)  // error
+    return static_cast<long>(cluster_size);
+
+  if (size == 0)
+    return E_FILE_FORMAT_INVALID;
+
+  pos += len;  // consume length of size of element
+
+  const long long unknown_size = (1LL << (7 * len)) - 1;
+
+  if (size != unknown_size)
+    cluster_size = size;
 
   // pos points to start of payload
   long long timecode = -1;
@@ -5764,7 +5757,7 @@ long Cluster::Load(long long& pos, long& len) const {
     if (result < 0)  // error
       return static_cast<long>(result);
 
-    if (result > 0)  // weird
+    if (result > 0)
       return E_BUFFER_NOT_FULL;
 
     if ((cluster_stop >= 0) && ((pos + len) > cluster_stop))
@@ -5805,7 +5798,7 @@ long Cluster::Load(long long& pos, long& len) const {
     if (result < 0)  // error
       return static_cast<long>(result);
 
-    if (result > 0)  // weird
+    if (result > 0)
       return E_BUFFER_NOT_FULL;
 
     if ((cluster_stop >= 0) && ((pos + len) > cluster_stop))
@@ -5831,7 +5824,7 @@ long Cluster::Load(long long& pos, long& len) const {
 
     // pos now points to start of payload
 
-    if (size == 0)  // weird
+    if (size == 0)
       continue;
 
     if ((cluster_stop >= 0) && ((pos + size) > cluster_stop))
@@ -5889,10 +5882,8 @@ long Cluster::Parse(long long& pos, long& len) const {
   if (status < 0)
     return status;
 
-  assert(m_pos >= m_element_start);
-  assert(m_timecode >= 0);
-  // assert(m_size > 0);
-  // assert(m_element_size > m_size);
+  if (m_pos < m_element_start || m_timecode < 0)
+    return E_PARSE_FAILED;
 
   const long long cluster_stop =
       (m_element_size < 0) ? -1 : m_element_start + m_element_size;
@@ -5909,7 +5900,8 @@ long Cluster::Parse(long long& pos, long& len) const {
   if (status < 0)  // error
     return status;
 
-  assert((total < 0) || (avail <= total));
+  if (total >= 0 && avail > total)
+    return E_FILE_FORMAT_INVALID;
 
   pos = m_pos;
 
@@ -5936,7 +5928,7 @@ long Cluster::Parse(long long& pos, long& len) const {
     if (result < 0)  // error
       return static_cast<long>(result);
 
-    if (result > 0)  // weird
+    if (result > 0)
       return E_BUFFER_NOT_FULL;
 
     if ((cluster_stop >= 0) && ((pos + len) > cluster_stop))
@@ -5945,12 +5937,9 @@ long Cluster::Parse(long long& pos, long& len) const {
     if ((pos + len) > avail)
       return E_BUFFER_NOT_FULL;
 
-    const long long id = ReadUInt(pReader, pos, len);
+    const long long id = ReadID(pReader, pos, len);
 
-    if (id < 0)  // error
-      return static_cast<long>(id);
-
-    if (id == 0)  // weird
+    if (id < 0)
       return E_FILE_FORMAT_INVALID;
 
     // This is the distinguished set of ID's we use to determine
@@ -5978,7 +5967,7 @@ long Cluster::Parse(long long& pos, long& len) const {
     if (result < 0)  // error
       return static_cast<long>(result);
 
-    if (result > 0)  // weird
+    if (result > 0)
       return E_BUFFER_NOT_FULL;
 
     if ((cluster_stop >= 0) && ((pos + len) > cluster_stop))
@@ -6004,7 +5993,7 @@ long Cluster::Parse(long long& pos, long& len) const {
 
     // pos now points to start of payload
 
-    if (size == 0)  // weird
+    if (size == 0)
       continue;
 
     // const long long block_start = pos;
@@ -6040,7 +6029,8 @@ long Cluster::Parse(long long& pos, long& len) const {
       return E_FILE_FORMAT_INVALID;
   }
 
-  assert(m_element_size > 0);
+  if (m_element_size < 1)
+    return E_FILE_FORMAT_INVALID;
 
   m_pos = pos;
   if (cluster_stop >= 0 && m_pos > cluster_stop)
@@ -6050,23 +6040,26 @@ long Cluster::Parse(long long& pos, long& len) const {
     const long idx = m_entries_count - 1;
 
     const BlockEntry* const pLast = m_entries[idx];
-    assert(pLast);
+    if (pLast == NULL)
+      return E_PARSE_FAILED;
 
     const Block* const pBlock = pLast->GetBlock();
-    assert(pBlock);
+    if (pBlock == NULL)
+      return E_PARSE_FAILED;
 
     const long long start = pBlock->m_start;
 
     if ((total >= 0) && (start > total))
-      return -1;  // defend against trucated stream
+      return E_PARSE_FAILED;  // defend against trucated stream
 
     const long long size = pBlock->m_size;
 
     const long long stop = start + size;
-    assert((cluster_stop < 0) || (stop <= cluster_stop));
+    if (cluster_stop >= 0 && stop > cluster_stop)
+      return E_FILE_FORMAT_INVALID;
 
     if ((total >= 0) && (stop > total))
-      return -1;  // defend against trucated stream
+      return E_PARSE_FAILED;  // defend against trucated stream
   }
 
   return 1;  // no more entries
