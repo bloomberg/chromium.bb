@@ -9,7 +9,6 @@
 #include "ui/message_center/views/message_center_view.h"
 #include "ui/message_center/views/message_list_view.h"
 #include "ui/message_center/views/message_view.h"
-#include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
@@ -29,6 +28,7 @@ MessageListView::MessageListView(MessageCenterView* message_center_view,
       has_deferred_task_(false),
       clear_all_started_(false),
       top_down_(top_down),
+      animator_(this),
       weak_ptr_factory_(this) {
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
@@ -47,15 +47,15 @@ MessageListView::MessageListView(MessageCenterView* message_center_view,
       kMarginBetweenItems - shadow_insets.left(),                  /* left */
       top_down ? kMarginBetweenItems - shadow_insets.bottom() : 0, /* bottom */
       kMarginBetweenItems - shadow_insets.right() /* right */));
+  animator_.AddObserver(this);
 }
 
 MessageListView::~MessageListView() {
-  if (animator_.get())
-    animator_->RemoveObserver(this);
+  animator_.RemoveObserver(this);
 }
 
 void MessageListView::Layout() {
-  if (animator_.get() && animator_->IsAnimating())
+  if (animator_.IsAnimating())
     return;
 
   gfx::Rect child_area = GetContentsBounds();
@@ -104,8 +104,7 @@ void MessageListView::RemoveNotification(MessageView* view) {
     if (view->layer()) {
       deleting_views_.insert(view);
     } else {
-      if (animator_.get())
-        animator_->StopAnimatingView(view);
+      animator_.StopAnimatingView(view);
       delete view;
     }
     DoUpdateIfPossible();
@@ -117,8 +116,7 @@ void MessageListView::UpdateNotification(MessageView* view,
   int index = GetIndexOf(view);
   DCHECK_LE(0, index);  // GetIndexOf is negative if not a child.
 
-  if (animator_.get())
-    animator_->StopAnimatingView(view);
+  animator_.StopAnimatingView(view);
   if (deleting_views_.find(view) != deleting_views_.end())
     deleting_views_.erase(view);
   if (deleted_when_done_.find(view) != deleted_when_done_.end())
@@ -184,14 +182,13 @@ void MessageListView::ResetRepositionSession() {
   // Don't call DoUpdateIfPossible(), but let Layout() do the task without
   // animation. Reset will cause the change of the bubble size itself, and
   // animation from the old location will look weird.
-  if (reposition_top_ >= 0 && animator_.get()) {
+  if (reposition_top_ >= 0) {
     has_deferred_task_ = false;
     // cancel cause OnBoundsAnimatorDone which deletes |deleted_when_done_|.
-    animator_->Cancel();
+    animator_.Cancel();
     STLDeleteContainerPointers(deleting_views_.begin(), deleting_views_.end());
     deleting_views_.clear();
     adding_views_.clear();
-    animator_.reset();
   }
 
   reposition_top_ = -1;
@@ -213,7 +210,7 @@ void MessageListView::ClearAllNotifications(
 
 void MessageListView::OnBoundsAnimatorProgressed(
     views::BoundsAnimator* animator) {
-  DCHECK_EQ(animator_.get(), animator);
+  DCHECK_EQ(&animator_, animator);
   for (std::set<views::View*>::iterator iter = deleted_when_done_.begin();
        iter != deleted_when_done_.end(); ++iter) {
     const gfx::SlideAnimation* animation = animator->GetAnimationForView(*iter);
@@ -254,14 +251,9 @@ void MessageListView::DoUpdateIfPossible() {
   if (child_area.IsEmpty())
     return;
 
-  if (animator_.get() && animator_->IsAnimating()) {
+  if (animator_.IsAnimating()) {
     has_deferred_task_ = true;
     return;
-  }
-
-  if (!animator_.get()) {
-    animator_.reset(new views::BoundsAnimator(this));
-    animator_->AddObserver(this);
   }
 
   if (!clearing_all_views_.empty()) {
@@ -339,18 +331,18 @@ bool MessageListView::AnimateChild(views::View* child, int top, int height) {
   gfx::Rect child_area = GetContentsBounds();
   if (adding_views_.find(child) != adding_views_.end()) {
     child->SetBounds(child_area.right(), top, child_area.width(), height);
-    animator_->AnimateViewTo(
+    animator_.AnimateViewTo(
         child, gfx::Rect(child_area.x(), top, child_area.width(), height));
   } else if (deleting_views_.find(child) != deleting_views_.end()) {
     DCHECK(child->layer());
     // No moves, but animate to fade-out.
-    animator_->AnimateViewTo(child, child->bounds());
+    animator_.AnimateViewTo(child, child->bounds());
     deleted_when_done_.insert(child);
     return false;
   } else {
     gfx::Rect target(child_area.x(), top, child_area.width(), height);
     if (child->bounds().origin() != target.origin())
-      animator_->AnimateViewTo(child, target);
+      animator_.AnimateViewTo(child, target);
     else
       child->SetBoundsRect(target);
   }
@@ -368,7 +360,7 @@ void MessageListView::AnimateClearingOneNotification() {
   // Slide from left to right.
   gfx::Rect new_bounds = child->bounds();
   new_bounds.set_x(new_bounds.right() + kMarginBetweenItems);
-  animator_->AnimateViewTo(child, new_bounds);
+  animator_.AnimateViewTo(child, new_bounds);
 
   // Schedule to start sliding out next notification after a short delay.
   if (!clearing_all_views_.empty()) {

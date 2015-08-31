@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/notification.h"
+#include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/view.h"
 
@@ -21,10 +22,6 @@ class Canvas;
 
 namespace ui {
 class Layer;
-}
-
-namespace views {
-class BoundsAnimator;
 }
 
 namespace message_center {
@@ -93,7 +90,7 @@ class MessageListView : public views::View,
   std::set<views::View*> deleting_views_;
   std::set<views::View*> deleted_when_done_;
   std::list<views::View*> clearing_all_views_;
-  scoped_ptr<views::BoundsAnimator> animator_;
+  views::BoundsAnimator animator_;
   base::WeakPtrFactory<MessageListView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageListView);
