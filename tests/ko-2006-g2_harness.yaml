@@ -20,13 +20,13 @@ tests:
     - ⠇⠌⠊⠲
   - # Korean word 4: vacuum cleaner
     - 진공 청소기
-    - ⠨⠟⠈⠿⠀⠰⠻⠠⠥⠈⠕
+    - ⠨⠟⠈⠿ ⠰⠻⠠⠥⠈⠕
     - {xfail: true}
   - # Words within parentheses.
     - 신라의 수도는 서라벌(오늘날 경주)였다.
-    - ⠠⠟⠐⠣⠺⠀⠠⠍⠊⠥⠉⠵⠀⠠⠎⠐⠣⠘⠞⠤⠥⠉⠮⠉⠂⠀⠈⠻⠨⠍⠤⠱⠌⠊⠚
+    - ⠠⠟⠐⠣⠺ ⠠⠍⠊⠥⠉⠵ ⠠⠎⠐⠣⠘⠞⠤⠥⠉⠮⠉⠂ ⠈⠻⠨⠍⠤⠱⠌⠊⠚
     - {xfail: true}
   - # English followed by Korean: name of a broadcasting company
     - YTN 연합뉴스
-    - ⠴⠠⠠⠽⠞⠝⠀⠡⠚⠃⠉⠩⠠⠪
+    - ⠴⠠⠠⠽⠞⠝ ⠡⠚⠃⠉⠩⠠⠪
     - {xfail: true}
