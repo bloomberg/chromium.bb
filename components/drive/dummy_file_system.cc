@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/dummy_file_system.h"
+#include "components/drive/dummy_file_system.h"
 
 namespace drive {
 

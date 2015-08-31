@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
+#include "components/drive/sync/entry_update_performer.h"
 
 #include <set>
 
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
-#include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
-#include "chrome/browser/chromeos/drive/sync/remove_performer.h"
 #include "components/drive/change_list_loader.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_cache.h"
@@ -18,6 +16,8 @@
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
 #include "components/drive/resource_metadata.h"
+#include "components/drive/sync/entry_revert_performer.h"
+#include "components/drive/sync/remove_performer.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

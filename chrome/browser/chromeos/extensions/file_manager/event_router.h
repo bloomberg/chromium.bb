@@ -14,8 +14,6 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system_observer.h"
-#include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/job_event_router.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
@@ -25,7 +23,9 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "components/drive/file_system_observer.h"
 #include "components/drive/service/drive_service_interface.h"
+#include "components/drive/sync_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 

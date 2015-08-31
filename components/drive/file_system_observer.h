@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OBSERVER_H_
+#ifndef COMPONENTS_DRIVE_FILE_SYSTEM_OBSERVER_H_
+#define COMPONENTS_DRIVE_FILE_SYSTEM_OBSERVER_H_
 
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system/operation_delegate.h"
@@ -38,4 +38,4 @@ class FileSystemObserver {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OBSERVER_H_
+#endif  // COMPONENTS_DRIVE_FILE_SYSTEM_OBSERVER_H_

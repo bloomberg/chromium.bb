@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_system.h"
+#include "components/drive/file_system.h"
 
 #include <string>
 #include <vector>
@@ -16,8 +16,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/drive/file_system_observer.h"
-#include "chrome/browser/chromeos/drive/sync_client.h"
 #include "components/drive/change_list_loader.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
@@ -26,9 +24,11 @@
 #include "components/drive/fake_free_disk_space_getter.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_system_core_util.h"
+#include "components/drive/file_system_observer.h"
 #include "components/drive/job_scheduler.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
+#include "components/drive/sync_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"

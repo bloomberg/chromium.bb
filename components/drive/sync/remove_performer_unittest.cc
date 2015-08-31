@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/sync/remove_performer.h"
+#include "components/drive/sync/remove_performer.h"
 
 #include "base/task_runner_util.h"
 #include "components/drive/file_system/operation_test_base.h"

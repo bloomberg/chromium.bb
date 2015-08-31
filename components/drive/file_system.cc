@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_system.h"
+#include "components/drive/file_system.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chromeos/drive/directory_loader.h"
-#include "chrome/browser/chromeos/drive/file_system_observer.h"
-#include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
-#include "chrome/browser/chromeos/drive/search_metadata.h"
-#include "chrome/browser/chromeos/drive/sync_client.h"
 #include "components/drive/change_list_loader.h"
+#include "components/drive/directory_loader.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/file_cache.h"
@@ -30,8 +26,12 @@
 #include "components/drive/file_system/touch_operation.h"
 #include "components/drive/file_system/truncate_operation.h"
 #include "components/drive/file_system_core_util.h"
+#include "components/drive/file_system_observer.h"
 #include "components/drive/job_scheduler.h"
+#include "components/drive/remove_stale_cache_files.h"
 #include "components/drive/resource_entry_conversion.h"
+#include "components/drive/search_metadata.h"
+#include "components/drive/sync_client.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

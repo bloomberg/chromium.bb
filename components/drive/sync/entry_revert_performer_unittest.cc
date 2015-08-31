@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/sync/entry_revert_performer.h"
+#include "components/drive/sync/entry_revert_performer.h"
 
 #include "base/task_runner_util.h"
 #include "components/drive/file_change.h"

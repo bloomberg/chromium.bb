@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DIRECTORY_LOADER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DIRECTORY_LOADER_H_
+#ifndef COMPONENTS_DRIVE_DIRECTORY_LOADER_H_
+#define COMPONENTS_DRIVE_DIRECTORY_LOADER_H_
 
 #include <map>
 #include <set>
@@ -147,4 +147,4 @@ class DirectoryLoader {
 }  // namespace internal
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DIRECTORY_LOADER_H_
+#endif  // COMPONENTS_DRIVE_DIRECTORY_LOADER_H_
