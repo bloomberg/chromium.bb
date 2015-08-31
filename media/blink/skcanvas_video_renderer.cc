@@ -18,6 +18,7 @@
 #include "third_party/skia/include/gpu/GrPaint.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
 #include "third_party/skia/include/gpu/GrTextureProvider.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 // Skia internal format depends on a platform. On Android it is ABGR, on others
 // it is ARGB.
@@ -394,7 +395,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
 void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
                                  SkCanvas* canvas,
                                  const Context3D& context_3d) {
-  Paint(video_frame, canvas, video_frame->visible_rect(), 0xff,
+  Paint(video_frame, canvas, gfx::RectF(video_frame->visible_rect()), 0xff,
         SkXfermode::kSrc_Mode, media::VIDEO_ROTATION_0, context_3d);
 }
 

@@ -15,10 +15,13 @@
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkXfermode.h"
-#include "ui/gfx/geometry/rect.h"
 
 class SkCanvas;
 class SkImage;
+
+namespace gfx {
+class RectF;
+}
 
 namespace media {
 class VideoImageGenerator;

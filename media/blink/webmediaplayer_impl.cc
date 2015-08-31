@@ -571,8 +571,9 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
     if (!context_3d.gl)
       return;
   }
-  skcanvas_video_renderer_.Paint(video_frame, canvas, gfx_rect, alpha, mode,
-                                 pipeline_metadata_.video_rotation, context_3d);
+  skcanvas_video_renderer_.Paint(video_frame, canvas, gfx::RectF(gfx_rect),
+                                 alpha, mode, pipeline_metadata_.video_rotation,
+                                 context_3d);
 }
 
 bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
