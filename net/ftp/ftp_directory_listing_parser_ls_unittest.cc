@@ -84,7 +84,7 @@ TEST_F(FtpDirectoryListingParserLsTest, Good) {
     // Tests for "ls -l" style listing with owning group name
     // not separated from file size (http://crbug.com/58963).
     { "-rw-r--r-- 1 ftpadmin ftpadmin125435904 Apr  9  2008 .pureftpd-upload",
-      FtpDirectoryListingEntry::FILE, ".pureftpd-upload", 0,
+      FtpDirectoryListingEntry::FILE, ".pureftpd-upload", -1,
       2008, 4, 9, 0, 0 },
 
     // Tests for "ls -l" style listing with number of links

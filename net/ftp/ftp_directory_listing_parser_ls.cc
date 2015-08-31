@@ -187,8 +187,7 @@ bool ParseFtpDirectoryListingLs(
       // entry, but can't really get the size (What if the group is named
       // "group1", and the size is in fact 234? We can't distinguish between
       // that and "group" with size 1234). Use a dummy value for the size.
-      // TODO(phajdan.jr): Use a value that means "unknown" instead of 0 bytes.
-      entry.size = 0;
+      entry.size = -1;
     }
     if (entry.size < 0) {
       // Some FTP servers have bugs that cause them to display the file size
