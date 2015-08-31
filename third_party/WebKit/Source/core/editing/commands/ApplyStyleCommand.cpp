@@ -304,7 +304,7 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
 static PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyStyleOrCreateEmpty(const StylePropertySet* style)
 {
     if (!style)
-        return MutableStylePropertySet::create();
+        return MutableStylePropertySet::create(HTMLQuirksMode);
     return style->mutableCopy();
 }
 

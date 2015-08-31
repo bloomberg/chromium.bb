@@ -49,7 +49,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value)
     ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
 
     // This will return false when !important is present
-    RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create(HTMLQuirksMode);
     return CSSParser::parseValue(dummyStyle.get(), unresolvedProperty, value, false, HTMLStandardMode, 0);
 }
 

@@ -186,7 +186,7 @@ DEFINE_TYPE_CASTS(ImmutableStylePropertySet, StylePropertySet, set, !set->isMuta
 class CORE_EXPORT MutableStylePropertySet : public StylePropertySet {
 public:
     ~MutableStylePropertySet() { }
-    static PassRefPtrWillBeRawPtr<MutableStylePropertySet> create(CSSParserMode = HTMLQuirksMode);
+    static PassRefPtrWillBeRawPtr<MutableStylePropertySet> create(CSSParserMode);
     static PassRefPtrWillBeRawPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
 
     unsigned propertyCount() const { return m_propertyVector.size(); }

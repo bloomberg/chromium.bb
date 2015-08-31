@@ -78,7 +78,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseSingleValue(CSSPropertyID prope
         return nullptr;
     if (RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(propertyID, string, context.mode()))
         return value;
-    RefPtrWillBeRawPtr<MutableStylePropertySet> stylePropertySet = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> stylePropertySet = MutableStylePropertySet::create(HTMLQuirksMode);
     bool changed = parseValue(stylePropertySet.get(), propertyID, string, false, context);
     ASSERT_UNUSED(changed, changed == stylePropertySet->hasProperty(propertyID));
     return stylePropertySet->getPropertyCSSValue(propertyID);

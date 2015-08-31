@@ -57,7 +57,7 @@ protected:
     {
         CSSPrimitiveValue::CSSLengthTypeArray lengthTypeArray;
         initLengthArray(lengthArray);
-        RefPtrWillBeRawPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create();
+        RefPtrWillBeRawPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create(HTMLQuirksMode);
         propertySet->setProperty(CSSPropertyLeft, text);
         toCSSPrimitiveValue(propertySet->getPropertyCSSValue(CSSPropertyLeft).get())->accumulateLengthArray(lengthArray);
         return lengthArray;

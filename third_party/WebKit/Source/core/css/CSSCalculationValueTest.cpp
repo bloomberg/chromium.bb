@@ -68,7 +68,7 @@ void initLengthArray(CSSLengthArray& lengthArray)
 CSSLengthArray& setLengthArray(CSSLengthArray& lengthArray, String text)
 {
     initLengthArray(lengthArray);
-    RefPtrWillBeRawPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create(HTMLQuirksMode);
     propertySet->setProperty(CSSPropertyLeft, text);
     toCSSPrimitiveValue(propertySet->getPropertyCSSValue(CSSPropertyLeft).get())->accumulateLengthArray(lengthArray);
     return lengthArray;

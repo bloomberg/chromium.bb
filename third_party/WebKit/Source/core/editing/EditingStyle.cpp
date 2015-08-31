@@ -142,7 +142,7 @@ static inline bool isEditingProperty(int id)
 static PassRefPtrWillBeRawPtr<MutableStylePropertySet> editingStyleFromComputedStyle(PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> style, EditingPropertiesType type = OnlyInheritableEditingProperties)
 {
     if (!style)
-        return MutableStylePropertySet::create();
+        return MutableStylePropertySet::create(HTMLQuirksMode);
     return copyEditingProperties(style.get(), type);
 }
 
@@ -316,7 +316,7 @@ PassRefPtrWillBeRawPtr<CSSValue> HTMLAttributeEquivalent::attributeValueAsCSSVal
         return nullptr;
 
     RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = nullptr;
-    dummyStyle = MutableStylePropertySet::create();
+    dummyStyle = MutableStylePropertySet::create(HTMLQuirksMode);
     dummyStyle->setProperty(m_propertyID, value);
     return dummyStyle->getPropertyCSSValue(m_propertyID);
 }
@@ -503,7 +503,7 @@ void EditingStyle::removeTextFillAndStrokeColorsIfNeeded(const ComputedStyle* co
 void EditingStyle::setProperty(CSSPropertyID propertyID, const String& value, bool important)
 {
     if (!m_mutableStyle)
-        m_mutableStyle = MutableStylePropertySet::create();
+        m_mutableStyle = MutableStylePropertySet::create(HTMLQuirksMode);
 
     m_mutableStyle->setProperty(propertyID, value, important);
 }
@@ -580,7 +580,7 @@ void EditingStyle::overrideWithStyle(const StylePropertySet* style)
     if (!style || style->isEmpty())
         return;
     if (!m_mutableStyle)
-        m_mutableStyle = MutableStylePropertySet::create();
+        m_mutableStyle = MutableStylePropertySet::create(HTMLQuirksMode);
     m_mutableStyle->mergeAndOverrideOnConflict(style);
     extractFontSizeDelta();
 }
@@ -648,7 +648,7 @@ PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::extractAndRemoveBlockProperti
 PassRefPtrWillBeRawPtr<EditingStyle> EditingStyle::extractAndRemoveTextDirection()
 {
     RefPtrWillBeRawPtr<EditingStyle> textDirection = EditingStyle::create();
-    textDirection->m_mutableStyle = MutableStylePropertySet::create();
+    textDirection->m_mutableStyle = MutableStylePropertySet::create(HTMLQuirksMode);
     textDirection->m_mutableStyle->setProperty(CSSPropertyUnicodeBidi, CSSValueEmbed, m_mutableStyle->propertyIsImportant(CSSPropertyUnicodeBidi));
     textDirection->m_mutableStyle->setProperty(CSSPropertyDirection, m_mutableStyle->getPropertyValue(CSSPropertyDirection),
         m_mutableStyle->propertyIsImportant(CSSPropertyDirection));
@@ -1172,7 +1172,7 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
 
 static PassRefPtrWillBeRawPtr<MutableStylePropertySet> styleFromMatchedRulesForElement(Element* element, unsigned rulesToInclude)
 {
-    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(HTMLQuirksMode);
     RefPtrWillBeRawPtr<StyleRuleList> matchedRules = element->document().ensureStyleResolver().styleRulesForElement(element, rulesToInclude);
     if (matchedRules) {
         for (unsigned i = 0; i < matchedRules->size(); ++i)
@@ -1202,7 +1202,7 @@ void EditingStyle::mergeStyleFromRulesForSerialization(Element* element)
     // For example: style="height: 1%; overflow: visible;" in quirksmode
     // FIXME: There are others like this, see <rdar://problem/5195123> Slashdot copy/paste fidelity problem
     RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleForElement = CSSComputedStyleDeclaration::create(element);
-    RefPtrWillBeRawPtr<MutableStylePropertySet> fromComputedStyle = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> fromComputedStyle = MutableStylePropertySet::create(HTMLQuirksMode);
     {
         unsigned propertyCount = m_mutableStyle->propertyCount();
         for (unsigned i = 0; i < propertyCount; ++i) {
@@ -1298,7 +1298,7 @@ void EditingStyle::addAbsolutePositioningFromElement(const Element& element)
 void EditingStyle::forceInline()
 {
     if (!m_mutableStyle)
-        m_mutableStyle = MutableStylePropertySet::create();
+        m_mutableStyle = MutableStylePropertySet::create(HTMLQuirksMode);
     const bool propertyIsImportant = true;
     m_mutableStyle->setProperty(CSSPropertyDisplay, CSSValueInline, propertyIsImportant);
 }
