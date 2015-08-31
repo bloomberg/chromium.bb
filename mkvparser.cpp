@@ -1336,14 +1336,14 @@ bool Segment::AppendCluster(Cluster* pCluster) {
 }
 
 bool Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
-  assert(pCluster);
-  assert(pCluster->m_index < 0);
-  assert(idx >= m_clusterCount);
+  if (pCluster == NULL || pCluster->m_index >= 0 || idx < m_clusterCount)
+    return false;
 
   const long count = m_clusterCount + m_clusterPreloadCount;
 
   long& size = m_clusterSize;
-  assert(size >= count);
+  if (size < count)
+    return false;
 
   if (count >= size) {
     const long n = (size <= 0) ? 2048 : 2 * size;
@@ -1365,17 +1365,20 @@ bool Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
     size = n;
   }
 
-  assert(m_clusters);
+  if (m_clusters == NULL)
+    return false;
 
   Cluster** const p = m_clusters + idx;
 
   Cluster** q = m_clusters + count;
-  assert(q >= p);
-  assert(q < (m_clusters + size));
+  if (q < p || q >= (m_clusters + size))
+    return false;
 
   while (q > p) {
     Cluster** const qq = q - 1;
-    assert((*qq)->m_index < 0);
+
+    if ((*qq)->m_index >= 0)
+      return false;
 
     *q = *qq;
     q = qq;
