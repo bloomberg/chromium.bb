@@ -11,6 +11,10 @@ executable("codesighs") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  deps = [
+    "//build/config/sanitizers:deps",
+  ]
 }
 
 executable("maptsvdifftool") {
@@ -20,6 +24,10 @@ executable("maptsvdifftool") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  deps = [
+    "//build/config/sanitizers:deps",
+  ]
 }
 
 if (is_win) {
@@ -32,6 +40,10 @@ if (is_win) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 
   executable("msdump2symdb") {
@@ -41,6 +53,10 @@ if (is_win) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 } else {
   executable("nm2tsv") {
@@ -50,5 +66,9 @@ if (is_win) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 }

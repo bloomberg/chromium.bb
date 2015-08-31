@@ -11,6 +11,7 @@ executable("jtl_compiler") {
   deps = [
     ":jtl_compiler_lib",
     "//base",
+    "//build/config/sanitizers:deps",
     "//crypto",
   ]
 }

@@ -47,6 +47,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     ]
 
     deps = [
+      "//build/config/sanitizers:deps",
       "//third_party/qcms",
     ]
 

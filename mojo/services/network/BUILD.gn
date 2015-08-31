@@ -29,6 +29,7 @@ if (is_android) {
     deps = [
       ":sources",
       "//base",
+      "//build/config/sanitizers:deps",
       "//net",
     ]
   }

@@ -169,6 +169,7 @@ executable("opus_compare") {
 
   deps = [
     ":opus",
+    "//build/config/sanitizers:deps",
   ]
 }
 
@@ -185,6 +186,7 @@ executable("opus_demo") {
 
   deps = [
     ":opus",
+    "//build/config/sanitizers:deps",
   ]
 }
 

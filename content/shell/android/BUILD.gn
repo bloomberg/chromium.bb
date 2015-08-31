@@ -21,6 +21,7 @@ shared_library("libcontent_shell_content_view") {
   testonly = true
   deps = [
     ":content_shell_jni_headers",
+    "//build/config/sanitizers:deps",
     "//content/shell:content_shell_lib",
     "//content/shell:pak",
     "//components/crash/browser",
@@ -217,6 +218,7 @@ if (current_cpu != "x64" && current_cpu != "arm64") {
 
     deps = [
       ":linker_test_jni_headers",
+      "//build/config/sanitizers:deps",
       "//content/shell:content_shell_lib",
 
       # Required to include "content/public/browser/android/compositor.h"

@@ -60,5 +60,9 @@ if (is_linux && ozone_platform_ozonex) {
     ]
 
     configs += [ "//build/config/linux:x11" ]
+
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 }

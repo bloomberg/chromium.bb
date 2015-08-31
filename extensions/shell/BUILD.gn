@@ -145,6 +145,7 @@ if (!(is_chromeos && !use_ozone)) {
                           "//extensions/shell")
     deps = [
       ":app_shell_lib",
+      "//build/config/sanitizers:deps",
       "//extensions:shell_and_test_pak",
     ]
 

@@ -206,6 +206,7 @@ executable("dump_file_system") {
   deps = [
     ":browser",
     "//base",
+    "//build/config/sanitizers:deps",
     "//storage/common",
   ]
 }

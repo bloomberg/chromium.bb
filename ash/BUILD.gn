@@ -384,6 +384,7 @@ executable("ash_shell") {
 
   deps = [
     ":ash_shell_lib",
+    "//build/config/sanitizers:deps",
     "//components/user_manager",
   ]
 

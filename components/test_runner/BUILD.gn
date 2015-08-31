@@ -179,5 +179,9 @@ if (is_mac || is_win) {
     if (is_mac) {
       libs = [ "AppKit.framework" ]
     }
+
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 }

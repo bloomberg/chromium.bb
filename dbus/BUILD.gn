@@ -124,6 +124,7 @@ executable("dbus_test_server") {
     ":dbus",
     "//base",
     "//base/test:test_support",
+    "//build/config/sanitizers:deps",
   ]
 
   configs += [ "//build/config/linux:dbus" ]

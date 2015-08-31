@@ -54,13 +54,14 @@ source_set("test_registrar_constants") {
 
 executable("test_registrar") {
   deps = [
+    ":test_registrar_constants",
     "//base",
+    "//build/config/sanitizers:deps",
 
     # Chrome is the default viewer process currently used by the tests.
     # TODO(robertshield): Investigate building a standalone metro viewer
     # process.
     "//chrome",
-    ":test_registrar_constants",
   ]
   sources = [
     "test/test_registrar.cc",

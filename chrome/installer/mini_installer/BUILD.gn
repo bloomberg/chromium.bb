@@ -182,6 +182,7 @@ executable("mini_installer") {
   deps = [
     ":archive",
     ":lib",
+    "//build/config/sanitizers:deps",
     "//build/win:default_exe_manifest",
     "//chrome/installer/setup",
   ]

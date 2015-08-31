@@ -299,4 +299,8 @@ shared_library("pocdll") {
   ]
 
   defines = [ "POCDLL_EXPORTS" ]
+
+  deps = [
+    "//build/config/sanitizers:deps",
+  ]
 }

@@ -149,6 +149,7 @@ if (!is_win) {
     deps = [
       ":cld2_data",
       ":cld2_dynamic",
+      "//build/config/sanitizers:deps",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]

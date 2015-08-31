@@ -16,6 +16,7 @@ executable("alternate_version_generator") {
     ":alternate_version_generator_lib",
     "//base",
     "//base/test:test_support",
+    "//build/config/sanitizers:deps",
     "//chrome/common:constants",
     "//chrome/installer/util",
     "//testing/gtest",

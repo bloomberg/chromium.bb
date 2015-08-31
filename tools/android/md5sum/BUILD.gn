@@ -20,6 +20,7 @@ executable("md5sum_bin") {
   ]
   deps = [
     "//base",
+    "//build/config/sanitizers:deps",
   ]
 
   # TODO(GYP)

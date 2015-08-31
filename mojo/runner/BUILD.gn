@@ -64,6 +64,7 @@ source_set("mojo_runner_lib") {
 executable("mojo_runner") {
   deps = [
     ":mojo_runner_lib",
+    "//build/config/sanitizers:deps",
   ]
 
   if (is_android) {
@@ -75,8 +76,6 @@ executable("mojo_runner") {
     # It means dynamic symbols must be preserved and exported.
     ldflags = [ "-Wl,--export-dynamic" ]
   }
-
-  deps += [ "//build/config/sanitizers:deps" ]
 }
 
 source_set("in_process_native_runner") {
@@ -257,6 +256,7 @@ if (is_android) {
       ":lib",
       ":run_android_application_function",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 

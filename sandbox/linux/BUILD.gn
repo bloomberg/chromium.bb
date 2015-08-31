@@ -198,6 +198,7 @@ shared_library("sandbox_linux_jni_unittests") {
   testonly = true
   deps = [
     ":sandbox_linux_unittests_sources",
+    "//build/config/sanitizers:deps",
   ]
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
@@ -284,6 +285,10 @@ if (is_linux) {
       # These files have a suspicious comparison.
       # TODO fix this and re-enable this warning.
       "-Wno-sign-compare",
+    ]
+
+    deps = [
+      "//build/config/sanitizers:deps",
     ]
   }
 }

@@ -138,6 +138,7 @@ if (current_toolchain == host_toolchain && !is_win) {
 
     deps = [
       ":stackwalk_common",
+      "//build/config/sanitizers:deps",
     ]
 
     defines = [ "BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR" ]
@@ -157,6 +158,7 @@ if (current_toolchain == host_toolchain && !is_win) {
 
     deps = [
       ":stackwalk_common",
+      "//build/config/sanitizers:deps",
     ]
 
     defines = [ "BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR" ]
@@ -198,6 +200,10 @@ if (current_toolchain == host_toolchain && !is_win) {
     # There are some warnings in this code.
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 }
 
@@ -259,6 +265,10 @@ if (current_toolchain == host_toolchain && is_mac) {
       configs -= [ "//build/config/compiler:optimize" ]
       cflags += [ "-O0" ]
     }
+
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 
   executable("symupload") {
@@ -273,6 +283,10 @@ if (current_toolchain == host_toolchain && is_mac) {
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 }
 
@@ -326,6 +340,7 @@ if (is_mac) {
 
     deps = [
       ":utilities",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -383,6 +398,10 @@ if (is_linux) {
     configs += [ ":tools_config" ]
 
     libs = [ "dl" ]
+
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 }
 
@@ -443,6 +462,10 @@ if (is_linux || is_android) {
       defines = [ "HAVE_A_OUT_H" ]
 
       include_dirs = [ "src" ]
+
+      deps = [
+        "//build/config/sanitizers:deps",
+      ]
     }
   }
 
@@ -628,6 +651,7 @@ if (is_linux) {
     ]
     deps = [
       ":processor_support",
+      "//build/config/sanitizers:deps",
     ]
 
     include_dirs = [ "src" ]
@@ -649,6 +673,7 @@ if (is_linux) {
 
     deps = [
       ":client",
+      "//build/config/sanitizers:deps",
     ]
 
     include_dirs = [ "src" ]
@@ -668,6 +693,7 @@ if (is_linux) {
 
     deps = [
       ":client",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -678,6 +704,7 @@ if (is_linux) {
 
     deps = [
       ":client",
+      "//build/config/sanitizers:deps",
     ]
 
     include_dirs = [ "src" ]

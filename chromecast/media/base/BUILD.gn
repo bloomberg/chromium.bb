@@ -60,6 +60,7 @@ shared_library("libcast_media_default") {
   configs += [ "//chromecast:config" ]
 
   deps = [
+    "//build/config/sanitizers:deps",
     "//chromecast/media/cma/backend",
     "//chromecast/public",
     "//chromecast/public/media",

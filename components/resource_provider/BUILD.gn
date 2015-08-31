@@ -33,6 +33,7 @@ if (is_android) {
       ":jni_headers",
       ":lib",
       "//base",
+      "//build/config/sanitizers:deps",
       "//components/resource_provider/public/interfaces",
       "//mojo/environment:chromium",
       "//third_party/mojo/src/mojo/public/c/system:for_shared_library",

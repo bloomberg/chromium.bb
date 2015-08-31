@@ -229,6 +229,7 @@ executable("gn") {
     ":gn_lib",
     ":last_commit_position",
     "//base",
+    "//build/config/sanitizers:deps",
   ]
 }
 
@@ -316,5 +317,6 @@ executable("generate_test_gn_data") {
   ]
   deps = [
     "//base",
+    "//build/config/sanitizers:deps",
   ]
 }

@@ -723,6 +723,7 @@ if (!is_android) {  # TODO(GYP) enable for Android.
       ":mesa_headers",
       ":mesa",
       ":mesa_libglslcommon",
+      "//build/config/sanitizers:deps",
     ]
 
     if (is_win) {

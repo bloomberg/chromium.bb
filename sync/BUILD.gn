@@ -800,11 +800,12 @@ if (!is_ios) {
     ]
 
     deps = [
+      ":test_support_sync_testserver",
       "//base",
       "//base/test:test_support",
+      "//build/config/sanitizers:deps",
       "//net:test_support",
       "//testing/gtest",
-      ":test_support_sync_testserver",
     ]
   }
 }

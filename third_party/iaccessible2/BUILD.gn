@@ -39,5 +39,6 @@ shared_library("IAccessible2Proxy") {
 
   deps = [
     ":iaccessible2",
+    "//build/config/sanitizers:deps",
   ]
 }

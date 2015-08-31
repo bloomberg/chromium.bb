@@ -34,6 +34,7 @@ shared_library("chrome_watcher") {
     ":client",
     "//chrome/installer/util",
     "//base",
+    "//build/config/sanitizers:deps",
     "//components/browser_watcher",
   ]
   ldflags = [ "/DEF:" + rebase_path("chrome_watcher.def", root_build_dir) ]

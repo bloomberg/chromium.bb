@@ -11,6 +11,7 @@ executable("remoting_key_tester_newlib") {
   ]
 
   deps = [
+    "//build/config/sanitizers:deps",
     "//ppapi/native_client:ppapi_lib",
     "//ppapi/cpp",
   ]

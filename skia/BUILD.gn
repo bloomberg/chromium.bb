@@ -655,6 +655,7 @@ if (is_linux && !is_chromeos) {
     deps = [
       ":skia",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -668,6 +669,7 @@ if (is_linux && !is_chromeos) {
       ":skia",
       "//base",
       "//base/test:test_support",
+      "//build/config/sanitizers:deps",
     ]
   }
 }

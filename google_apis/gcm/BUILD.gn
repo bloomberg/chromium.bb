@@ -116,6 +116,7 @@ executable("mcs_probe") {
     ":gcm",
     ":test_support",
     "//base",
+    "//build/config/sanitizers:deps",
     "//net",
     "//net:test_support",
     "//third_party/protobuf:protobuf_lite",

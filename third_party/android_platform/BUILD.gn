@@ -24,6 +24,7 @@ if (current_toolchain == host_toolchain) {
   executable("android_relocation_packer") {
     deps = [
       ":android_lib_relocation_packer",
+      "//build/config/sanitizers:deps",
       "//third_party/elfutils:libelf",
     ]
     sources = gypi_values.relocation_packer_main_source

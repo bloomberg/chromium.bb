@@ -42,6 +42,7 @@ if (!is_win && enable_remoting_host) {
 
     deps = [
       ":common",
+      "//build/config/sanitizers:deps",
       "//remoting/host",
       "//remoting/host/native_messaging",
       "//remoting/proto",

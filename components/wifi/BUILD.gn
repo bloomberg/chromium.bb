@@ -55,6 +55,7 @@ executable("wifi_test") {
   deps = [
     ":wifi",
     "//base",
+    "//build/config/sanitizers:deps",
     "//components/onc",
   ]
 }

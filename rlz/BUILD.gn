@@ -127,6 +127,7 @@ executable("rlz_id") {
   ]
   deps = [
     ":rlz_lib",
+    "//build/config/sanitizers:deps",
   ]
 }
 
@@ -138,6 +139,7 @@ if (is_win) {
     ]
     deps = [
       ":rlz_lib",
+      "//build/config/sanitizers:deps",
       "//third_party/zlib",
     ]
   }

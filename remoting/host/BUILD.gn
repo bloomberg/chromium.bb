@@ -410,6 +410,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       ]
 
       deps = [
+        "//build/config/sanitizers:deps",
         "//remoting/host/setup",
       ]
 
@@ -469,6 +470,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         deps = [
           ":remoting_me2me_host_static",
           ":credits",
+          "//build/config/sanitizers:deps",
         ]
       }
     }

@@ -247,6 +247,7 @@ shared_library("chrome_shell") {
   ]
   deps = [
     ":chrome_shell_base",
+    "//build/config/sanitizers:deps",
   ]
 }
 
@@ -627,6 +628,7 @@ jinja_template_resources("chrome_public_template_resources") {
 # GYP: //chrome/android/chrome_apk.gyp:libchrome_public
 shared_library("chrome_public") {
   deps = [
+    "//build/config/sanitizers:deps",
     "//chrome:chrome_android_core",
   ]
   gypi_values = exec_script(

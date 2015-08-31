@@ -188,6 +188,7 @@ if (enable_nacl) {
         ":nacl_linux",
         ":nacl_switches",
         "//base",
+        "//build/config/sanitizers:deps",
         "//content/public/common",
         "//crypto",
         "//ipc",

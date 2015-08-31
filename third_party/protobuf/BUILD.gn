@@ -260,6 +260,7 @@ if (current_toolchain == host_toolchain) {
 
     deps = [
       ":protobuf_full",
+      "//build/config/sanitizers:deps",
     ]
     deps += [ "//build/config/sanitizers:deps" ]
   }

@@ -241,6 +241,7 @@ if (is_linux && !is_chromeos) {
         ":app_list",
         ":test_support",
         "//base",
+        "//build/config/sanitizers:deps",
         "//content",
         "//content/public/browser",
         "//skia",

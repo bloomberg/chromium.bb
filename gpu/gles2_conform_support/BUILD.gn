@@ -26,10 +26,11 @@ executable("gles2_conform_support") {
   ]
   deps = [
     "//base",
-    "//gpu/gles2_conform_support/egl",
     "//base/third_party/dynamic_annotations",
-    "//ui/gl",
+    "//build/config/sanitizers:deps",
     "//gpu/command_buffer/client:gles2_c_lib_nocheck",
+    "//gpu/gles2_conform_support/egl",
+    "//ui/gl",
   ]
   if (is_linux) {
     sources += [
@@ -73,9 +74,10 @@ if (internal_gles2_conform_tests) {
     ]
     deps = [
       ":generate_gles2_conform_embedded_data",
+      "//build/config/sanitizers:deps",
+      "//gpu/command_buffer/client:gles2_c_libnocheck",
       "//gpu/gles2_conform_support/egl",
       "//gpu/gles2_conform_support/native:windowless",
-      "//gpu/command_buffer/client:gles2_c_libnocheck",
     ]
     configs += [ "//build/compiler:no_incompatible_pointer_warnings" ]
     if (is_linux) {

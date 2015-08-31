@@ -32,6 +32,7 @@ executable("convert_dict") {
     ":lib",
     "//base",
     "//base:i18n",
+    "//build/config/sanitizers:deps",
     "//third_party/hunspell",
   ]
 }

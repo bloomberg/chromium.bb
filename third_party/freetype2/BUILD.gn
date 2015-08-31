@@ -70,4 +70,8 @@ shared_library("freetype2") {
   public_configs = [ ":freetype2_config" ]
 
   libs = [ "z" ]
+
+  deps = [
+    "//build/config/sanitizers:deps",
+  ]
 }

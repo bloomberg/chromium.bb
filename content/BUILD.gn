@@ -55,6 +55,9 @@ if (is_component_build) {
   shared_library("content") {
     public_deps =
         content_shared_components + [ "//content/public/app:both_sources" ]
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
   }
 } else {
   group("content") {

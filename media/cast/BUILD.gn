@@ -369,6 +369,7 @@ executable("generate_barcode_video") {
   deps = [
     ":test_support",
     "//base",
+    "//build/config/sanitizers:deps",
     "//media",
   ]
 }
@@ -382,6 +383,7 @@ executable("generate_timecode_audio") {
   deps = [
     ":test_support",
     "//base",
+    "//build/config/sanitizers:deps",
     "//media",
   ]
 }
@@ -395,6 +397,7 @@ executable("udp_proxy") {
   deps = [
     ":test_support",
     "//base",
+    "//build/config/sanitizers:deps",
     "//net",
   ]
 }

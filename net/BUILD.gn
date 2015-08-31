@@ -560,9 +560,10 @@ executable("dump_cache") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
-    "//base",
     ":net",
     ":test_support",
+    "//base",
+    "//build/config/sanitizers:deps",
   ]
 }
 
@@ -862,6 +863,7 @@ if (!is_ios && !is_android) {
       ":net",
       ":test_support",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -876,6 +878,7 @@ if (!is_ios && !is_android) {
     deps = [
       ":net",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -890,6 +893,7 @@ if (!is_ios && !is_android) {
     deps = [
       ":net",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -902,6 +906,7 @@ if (!is_ios && !is_android) {
     deps = [
       ":net",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -917,6 +922,7 @@ if (!is_ios && !is_android) {
       ":net",
       "//base",
       "//base:i18n",
+      "//build/config/sanitizers:deps",
       "//url",
     ]
   }
@@ -930,8 +936,9 @@ if (!is_ios && !is_android) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
-      "//base",
       ":net",
+      "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -944,8 +951,9 @@ if (!is_ios && !is_android) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
-      "//base",
       ":net",
+      "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -958,8 +966,9 @@ if (!is_ios && !is_android) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
-      "//base",
       ":net",
+      "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -973,6 +982,7 @@ if (!is_ios && !is_android) {
         ":net",
         ":net_with_v8",
         "//base",
+        "//build/config/sanitizers:deps",
       ]
 
       if (is_desktop_linux) {
@@ -994,6 +1004,7 @@ if (!is_ios && !is_android) {
       ":test_support",
       "//base",
       "//base/test:test_support",
+      "//build/config/sanitizers:deps",
       "//testing/gtest",
     ]
   }
@@ -1010,6 +1021,7 @@ if (!is_ios && !is_android) {
       ":net",
       ":test_support",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -1023,6 +1035,7 @@ if (!is_ios && !is_android) {
     deps = [
       "//base",
       "//base:i18n",
+      "//build/config/sanitizers:deps",
       "//net/tools/tld_cleanup",
     ]
   }
@@ -1101,6 +1114,7 @@ if (is_linux) {
       ":flip_in_mem_edsm_server_base",
       ":net",
       ":test_support",
+      "//build/config/sanitizers:deps",
       "//testing/gtest",
       "//testing/gmock",
       "//third_party/boringssl",
@@ -1117,6 +1131,7 @@ if (is_linux) {
       ":flip_in_mem_edsm_server_base",
       ":net",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 
@@ -1162,6 +1177,7 @@ if (is_linux) {
       ":net",
       ":simple_quic_tools",
       "//base",
+      "//build/config/sanitizers:deps",
       "//third_party/boringssl",
     ]
   }
@@ -1177,6 +1193,7 @@ if (is_linux) {
       ":net",
       ":simple_quic_tools",
       "//base",
+      "//build/config/sanitizers:deps",
       "//third_party/boringssl",
     ]
   }
@@ -1216,6 +1233,7 @@ if (is_android || is_linux) {
     deps = [
       ":net",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
   }
 }
@@ -1268,6 +1286,7 @@ if (!is_ios) {
       ":net",
       ":simple_quic_tools",
       "//base",
+      "//build/config/sanitizers:deps",
       "//url",
     ]
   }
@@ -1279,6 +1298,7 @@ if (!is_ios) {
       ":net",
       ":simple_quic_tools",
       "//base",
+      "//build/config/sanitizers:deps",
       "//third_party/boringssl",
       "//third_party/protobuf:protobuf_lite",
     ]
@@ -1636,6 +1656,7 @@ executable("net_perftests") {
     "//base",
     "//base:i18n",
     "//base/test:test_support_perf",
+    "//build/config/sanitizers:deps",
     "//testing/gtest",
     "//url",
   ]

@@ -75,6 +75,7 @@ executable("courgette") {
   deps = [
     ":courgette_lib",
     "//base",
+    "//build/config/sanitizers:deps",
   ]
 }
 
@@ -86,6 +87,7 @@ executable("courgette_minimal_tool") {
   deps = [
     ":courgette_lib",
     "//base",
+    "//build/config/sanitizers:deps",
   ]
 }
 

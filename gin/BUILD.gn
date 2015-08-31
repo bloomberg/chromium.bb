@@ -130,6 +130,7 @@ executable("gin_shell") {
     ":gin",
     "//base",
     "//base:i18n",
+    "//build/config/sanitizers:deps",
     "//v8",
   ]
 }

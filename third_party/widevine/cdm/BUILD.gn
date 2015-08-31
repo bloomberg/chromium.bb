@@ -87,6 +87,7 @@ if (widevine_cdm_binary_files != []) {
     deps = [
       ":version_h",
       "//base",
+      "//build/config/sanitizers:deps",
     ]
 
     if (is_mac) {

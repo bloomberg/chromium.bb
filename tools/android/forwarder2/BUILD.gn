@@ -42,6 +42,7 @@ if (current_toolchain == default_toolchain) {
     ]
     deps = [
       "//base",
+      "//build/config/sanitizers:deps",
       "//tools/android/common",
     ]
     datadeps = [
@@ -85,6 +86,7 @@ if (current_toolchain != default_toolchain) {
     ]
     deps = [
       "//base",
+      "//build/config/sanitizers:deps",
       "//tools/android/common",
     ]
   }

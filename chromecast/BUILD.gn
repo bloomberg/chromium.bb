@@ -66,6 +66,7 @@ executable("cast_shell") {
   deps = [
     ":cast_shell_common",
     ":cast_shell_media",
+    "//build/config/sanitizers:deps",
     "//chromecast/app",
     "//content/public/app:both",
   ]

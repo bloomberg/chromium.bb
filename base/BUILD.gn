@@ -1067,6 +1067,7 @@ if (is_ios || is_win || (is_linux && !is_chromeos)) {
       ]
       deps = [
         ":base",
+        "//build/config/sanitizers:deps",
         "//third_party/icu:icuuc",
       ]
     }
@@ -1077,6 +1078,7 @@ if (is_ios || is_win || (is_linux && !is_chromeos)) {
       ]
       deps = [
         ":base",
+        "//build/config/sanitizers:deps",
       ]
     }
   }
@@ -1189,6 +1191,9 @@ if (is_win) {
     libs = [
       "cfgmgr32.lib",
       "shell32.lib",
+    ]
+    deps = [
+      "//build/config/sanitizers:deps",
     ]
   }
 }

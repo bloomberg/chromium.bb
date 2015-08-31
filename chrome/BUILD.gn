@@ -27,7 +27,9 @@ if (!is_android) {
     ]
     defines = []
     public_deps = []
-    deps = []
+    deps = [
+      "//build/config/sanitizers:deps",
+    ]
 
     data = [
       "$root_out_dir/resources.pak",
@@ -201,6 +203,7 @@ shared_library("main_dll") {
   deps = [
     ":browser_dependencies",
     "//base/allocator",
+    "//build/config/sanitizers:deps",
   ]
   if (is_win) {
     output_name = "chrome"
@@ -302,6 +305,7 @@ if (is_multi_dll_chrome) {
       ":chrome_child_manifest",
       ":chrome_dll_version",
       "//base/allocator",
+      "//build/config/sanitizers:deps",
       "//chrome/browser/policy:path_parser",
       "//content/public/app:child",
     ]

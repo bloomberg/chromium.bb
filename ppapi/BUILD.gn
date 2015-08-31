@@ -39,10 +39,11 @@ shared_library("ppapi_tests") {
   include_dirs = [ "lib/gl/include" ]
 
   deps = [
-    "//ppapi/cpp",
-    "//ppapi/shared_impl",
     ":copy_test_files",
     ":copy_test_files2",
+    "//build/config/sanitizers:deps",
+    "//ppapi/cpp",
+    "//ppapi/shared_impl",
   ]
 }
 
@@ -53,6 +54,7 @@ shared_library("power_saver_test_plugin") {
   ]
 
   deps = [
+    "//build/config/sanitizers:deps",
     "//ppapi/cpp",
     "//ppapi/shared_impl",
   ]
@@ -137,6 +139,7 @@ executable("pepper_hash_for_uma") {
 
   deps = [
     "//base",
+    "//build/config/sanitizers:deps",
   ]
 }
 

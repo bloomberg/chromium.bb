@@ -33,6 +33,7 @@ shared_library("chrome_elf") {
     ":chrome_elf_manifest",
     ":lib",
     ":chrome_elf_resources",
+    "//build/config/sanitizers:deps",
   ]
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
@@ -100,6 +101,7 @@ if (is_component_build) {
     ]
     deps = [
       ":lib",
+      "//build/config/sanitizers:deps",
     ]
     configs += [ "//build/config/win:windowed" ]
     ldflags = [ "/DEF:" + rebase_path("chrome_redirects.def") ]
@@ -122,11 +124,12 @@ source_set("dll_hash") {
 }
 
 executable("dll_hash_main") {
-  deps = [
-    ":dll_hash",
-  ]
   sources = [
     "dll_hash/dll_hash_main.cc",
+  ]
+  deps = [
+    ":dll_hash",
+    "//build/config/sanitizers:deps",
   ]
 }
 
@@ -182,8 +185,9 @@ shared_library("blacklist_test_main_dll") {
     "blacklist/test/blacklist_test_main_dll.cc",
   ]
   deps = [
-    "//base",
     ":blacklist",
+    "//base",
+    "//build/config/sanitizers:deps",
   ]
   ldflags =
       [ "/DEF:" + rebase_path("blacklist/test/blacklist_test_main_dll.def",
@@ -196,6 +200,9 @@ shared_library("blacklist_test_dll_1") {
   ]
   ldflags = [ "/DEF:" + rebase_path("blacklist/test/blacklist_test_dll_1.def",
                                     root_build_dir) ]
+  deps = [
+    "//build/config/sanitizers:deps",
+  ]
 }
 
 shared_library("blacklist_test_dll_2") {
@@ -204,10 +211,16 @@ shared_library("blacklist_test_dll_2") {
   ]
   ldflags = [ "/DEF:" + rebase_path("blacklist/test/blacklist_test_dll_2.def",
                                     root_build_dir) ]
+  deps = [
+    "//build/config/sanitizers:deps",
+  ]
 }
 
 shared_library("blacklist_test_dll_3") {
   sources = [
     "blacklist/test/blacklist_test_dll_3.cc",
+  ]
+  deps = [
+    "//build/config/sanitizers:deps",
   ]
 }
