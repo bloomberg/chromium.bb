@@ -21,7 +21,6 @@
 #outer {
   border: none;
   cursor: pointer;
-  position: relative;
 }
 
 #shielding {
@@ -34,11 +33,12 @@
   z-index: 2;
 }
 
-#plugin_icon {
+#plugin-icon {
+  display: block;
   opacity: 0.8;
 }
 
-#plugin_icon:hover {
+#plugin-icon:hover {
   opacity: 0.95;
 }
 
@@ -49,14 +49,14 @@
   z-index: 1;
 }
 
-#inner_container {
-  height: 100%;
-  position: relative;
-  width: 100%;
-}
-
-#inner {
-  margin-top: -25px;
+#inner-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  left: 0px;
+  position: absolute;
+  top: 0px;
+  z-index: 2;
 }
 </style>
 <base i18n-values="href:baseurl">
@@ -65,12 +65,13 @@
 <body>
   <div i18n-values="title:name" id="outer">
     <img id="poster" i18n-values="srcset:poster">
-    <div id="shielding">
-      <div id="inner_container"
-           i18n-values=".style.width:visibleWidth;.style.height:visibleHeight">
-        <div id="inner">
-          <img id="plugin_icon" src="plugin_power_saver_play.png" />
-        </div>
+    <div id="shielding"></div>
+    <div id="inner-container"
+         i18n-values=".style.width:visibleWidth;.style.height:visibleHeight">
+      <div id="inner">
+        <img id="plugin-icon" src="plugin_power_saver_play.png"
+             i18n-values=".style.maxWidth:visibleWidth;
+                          .style.maxHeight:visibleHeight" />
       </div>
     </div>
   </div>
@@ -84,7 +85,7 @@
     };
 
     window.setPosterMargin = function(marginLeft, marginTop) {
-      var container = document.getElementById('inner_container');
+      var container = document.getElementById('inner-container');
       container.style.marginLeft = marginLeft;
       container.style.marginTop = marginTop;
     };

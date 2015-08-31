@@ -31,23 +31,13 @@ p {
 }
 
 #outer {
+  align-items: center;
   border: 1px black solid;
   box-sizing: border-box;
+  display: flex;
   height: 100%;
+  justify-content: center;
   position: absolute;
-  width: 100%;
-}
-
-#inner {
-  height: 100%;
-<if expr="not is_android">
-  margin-top: -70px;
-</if>
-<if expr="is_android">
-  margin-top: -14px;
-</if>
-  position: relative;
-  top: 50%;
   width: 100%;
 }
 
