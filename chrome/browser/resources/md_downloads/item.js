@@ -61,8 +61,34 @@ cr.define('downloads', function() {
 
     /** @param {!downloads.Data} data */
     update: function(data) {
-      assert(!this.id_ || data.id == this.id_);
-      this.id_ = data.id;  // This is the only thing saved from |data|.
+      assert(!this.data_ || this.data_.id == data.id);
+
+      if (this.data_ &&
+          data.by_ext_id === this.data_.by_ext_id &&
+          data.by_ext_name === this.data_.by_ext_name &&
+          data.danger_type === this.data_.danger_type &&
+          data.date_string == this.data_.date_string &&
+          data.file_externally_removed == this.data_.file_externally_removed &&
+          data.file_name == this.data_.file_name &&
+          data.file_path == this.data_.file_path &&
+          data.file_url == this.data_.file_url &&
+          data.last_reason_text === this.data_.last_reason_text &&
+          data.otr == this.data_.otr &&
+          data.percent === this.data_.percent &&
+          data.progress_status_text === this.data_.progress_status_text &&
+          data.received === this.data_.received &&
+          data.resume == this.data_.resume &&
+          data.retry == this.data_.retry &&
+          data.since_string == this.data_.since_string &&
+          data.started == this.data_.started &&
+          data.state == this.data_.state &&
+          data.total == this.data_.total &&
+          data.url == this.data_.url) {
+        return;
+      }
+
+      /** @private {!downloads.Data} */
+      this.data_ = data;
 
       this.isIncognito_ = data.otr;
 
@@ -217,7 +243,7 @@ cr.define('downloads', function() {
 
     /** @private */
     onCancelClick_: function() {
-      this.actionService_.cancel(this.id_);
+      this.actionService_.cancel(this.data_.id);
     },
 
     /**
@@ -226,7 +252,7 @@ cr.define('downloads', function() {
      */
     onDragStart_: function(e) {
       e.preventDefault();
-      this.actionService_.drag(this.id_);
+      this.actionService_.drag(this.data_.id);
     },
 
     /**
@@ -235,33 +261,33 @@ cr.define('downloads', function() {
      */
     onFileLinkClick_: function(e) {
       e.preventDefault();
-      this.actionService_.openFile(this.id_);
+      this.actionService_.openFile(this.data_.id);
     },
 
     /** @private */
     onPauseClick_: function() {
-      this.actionService_.pause(this.id_);
+      this.actionService_.pause(this.data_.id);
     },
 
     /** @private */
     onRemoveClick_: function() {
       assert(!this.$.remove.disabled);
-      this.actionService_.remove(this.id_);
+      this.actionService_.remove(this.data_.id);
     },
 
     /** @private */
     onSaveDangerous_: function() {
-      this.actionService_.saveDangerous(this.id_);
+      this.actionService_.saveDangerous(this.data_.id);
     },
 
     /** @private */
     onDiscardDangerous_: function() {
-      this.actionService_.discardDangerous(this.id_);
+      this.actionService_.discardDangerous(this.data_.id);
     },
 
     /** @private */
     onResumeClick_: function() {
-      this.actionService_.resume(this.id_);
+      this.actionService_.resume(this.data_.id);
     },
 
     /** @private */
@@ -285,7 +311,7 @@ cr.define('downloads', function() {
 
     /** @private */
     onShowClick_: function() {
-      this.actionService_.show(this.id_);
+      this.actionService_.show(this.data_.id);
     },
   });
 
