@@ -5,6 +5,7 @@
 #include "ui/message_center/message_center_impl.h"
 
 #include <algorithm>
+#include <deque>
 
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -93,7 +94,11 @@ class ChangeQueue {
   // Called when the message center has appropriate visibility.  Modifies
   // |message_center| but does not retain it.  This also causes the queue to
   // empty itself.
-  void ApplyChanges(MessageCenter* message_center);
+  void ApplyChanges(MessageCenterImpl* message_center);
+
+  // Applies only the changes of the given ID.
+  void ApplyChangesForId(MessageCenterImpl* message_center,
+                         const std::string& id);
 
   // Causes a TYPE_ADD change to be added to the queue.
   void AddNotification(scoped_ptr<Notification> notification);
@@ -115,6 +120,9 @@ class ChangeQueue {
   Notification* GetLatestNotification(const std::string& id) const;
 
  private:
+  void ApplyChangeInternal(MessageCenterImpl* message_center,
+                           scoped_ptr<Change> change);
+
   ScopedVector<Change> changes_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeQueue);
@@ -165,29 +173,41 @@ ChangeQueue::ChangeQueue() {}
 
 ChangeQueue::~ChangeQueue() {}
 
-void ChangeQueue::ApplyChanges(MessageCenter* message_center) {
+void ChangeQueue::ApplyChanges(MessageCenterImpl* message_center) {
   // This method is re-entrant.
   while (!changes_.empty()) {
     ScopedVector<Change>::iterator iter = changes_.begin();
     scoped_ptr<Change> change(*iter);
     // TODO(dewittj): Replace changes_ with a deque.
     changes_.weak_erase(iter);
-    // |message_center| is taking ownership of each element here.
-    switch (change->type()) {
-      case CHANGE_TYPE_ADD:
-        message_center->AddNotification(change->PassNotification());
-        break;
-      case CHANGE_TYPE_UPDATE:
-        message_center->UpdateNotification(change->notification_list_id(),
-                                           change->PassNotification());
-        break;
-      case CHANGE_TYPE_DELETE:
-        message_center->RemoveNotification(change->notification_list_id(),
-                                           change->by_user());
-        break;
-      default:
-        NOTREACHED();
-    }
+    ApplyChangeInternal(message_center, change.Pass());
+  }
+}
+
+void ChangeQueue::ApplyChangesForId(MessageCenterImpl* message_center,
+                                    const std::string& id) {
+  std::deque<Change*> changes_for_id;
+  std::string interesting_id = id;
+
+  // Traverses the queue in reverse so shat we can track changes which change
+  // the notification's ID.
+  ScopedVector<Change>::iterator iter = changes_.end();
+  while (iter != changes_.begin()) {
+    --iter;
+    if (interesting_id != (*iter)->id())
+      continue;
+    scoped_ptr<Change> change(*iter);
+
+    interesting_id = change->notification_list_id();
+
+    iter = changes_.weak_erase(iter);
+    changes_for_id.push_back(change.release());
+  }
+
+  while (!changes_for_id.empty()) {
+    ApplyChangeInternal(
+        message_center, scoped_ptr<Change>(changes_for_id.back()));
+    changes_for_id.pop_back();
   }
 }
 
@@ -290,6 +310,25 @@ Notification* ChangeQueue::GetLatestNotification(const std::string& id) const {
     return NULL;
 
   return (*iter)->notification();
+}
+
+void ChangeQueue::ApplyChangeInternal(MessageCenterImpl* message_center,
+                                      scoped_ptr<Change> change) {
+  switch (change->type()) {
+    case CHANGE_TYPE_ADD:
+      message_center->AddNotificationImmediately(change->PassNotification());
+      break;
+    case CHANGE_TYPE_UPDATE:
+      message_center->UpdateNotificationImmediately(
+          change->notification_list_id(), change->PassNotification());
+      break;
+    case CHANGE_TYPE_DELETE:
+      message_center->RemoveNotificationImmediately(
+          change->notification_list_id(), change->by_user());
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -602,6 +641,10 @@ NotificationList::PopupNotifications
   return notification_list_->GetPopupNotifications(blockers_, NULL);
 }
 
+void MessageCenterImpl::ForceNotificationFlush(const std::string& id) {
+  notification_queue_->ApplyChangesForId(this, id);
+}
+
 //------------------------------------------------------------------------------
 // Client code interface.
 void MessageCenterImpl::AddNotification(scoped_ptr<Notification> notification) {
@@ -614,6 +657,13 @@ void MessageCenterImpl::AddNotification(scoped_ptr<Notification> notification) {
     notification_queue_->AddNotification(notification.Pass());
     return;
   }
+
+  AddNotificationImmediately(notification.Pass());
+}
+
+void MessageCenterImpl::AddNotificationImmediately(
+    scoped_ptr<Notification> notification) {
+  const std::string id = notification->id();
 
   // Sometimes the notification can be added with the same id and the
   // |notification_list| will replace the notification instead of adding new.
@@ -661,6 +711,12 @@ void MessageCenterImpl::UpdateNotification(
     }
   }
 
+  UpdateNotificationImmediately(old_id, new_notification.Pass());
+}
+
+void MessageCenterImpl::UpdateNotificationImmediately(
+    const std::string& old_id,
+    scoped_ptr<Notification> new_notification) {
   std::string new_id = new_notification->id();
   notification_list_->UpdateNotificationMessage(old_id,
                                                 new_notification.Pass());
@@ -684,12 +740,17 @@ void MessageCenterImpl::RemoveNotification(const std::string& id,
     return;
   }
 
+  RemoveNotificationImmediately(id, by_user);
+}
+
+void MessageCenterImpl::RemoveNotificationImmediately(
+    const std::string& id, bool by_user) {
   if (FindVisibleNotificationById(id) == NULL)
     return;
 
   // In many cases |id| is a reference to an existing notification instance
-  // but the instance can be destructed in RemoveNotification(). Hence
-  // copies the id explicitly here.
+  // but the instance can be destructed in this method. Hence copies the id
+  // explicitly here.
   std::string copied_id(id);
 
   scoped_refptr<NotificationDelegate> delegate =

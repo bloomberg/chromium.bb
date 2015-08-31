@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -21,6 +22,7 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/message_center/message_center_impl.h"
 #include "ui/views/controls/label.h"
 
 namespace {
@@ -210,10 +212,10 @@ void DownloadGroupNotification::Show() {
 
 void DownloadGroupNotification::Update() {
   if (visible_) {
+    const ProfileID profile_id =
+        NotificationUIManager::GetProfileID(profile_);
+    const std::string& notification_id = GetNotificationId();
     if (hide_next_) {
-      const ProfileID profile_id =
-          NotificationUIManager::GetProfileID(profile_);
-      const std::string& notification_id = GetNotificationId();
       g_browser_process->notification_ui_manager()->
           CancelById(notification_id, profile_id);
       visible_ = false;
@@ -221,6 +223,16 @@ void DownloadGroupNotification::Update() {
       UpdateNotificationData();
       g_browser_process->notification_ui_manager()->
           Update(*notification_, profile_);
+
+      const std::string notification_id_in_message_center =
+          ProfileNotification::GetProfileNotificationId(notification_id,
+                                                        profile_id);
+
+      auto message_center = g_browser_process->message_center();
+      // TODO(yoshiki): Remove this once in-place updating of notification is
+      // bug free.
+      InvokeUnsafeForceNotificationFlush(
+          message_center, notification_id_in_message_center);
     }
   } else {
     if (show_next_) {

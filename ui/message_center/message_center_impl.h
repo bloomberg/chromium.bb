@@ -183,6 +183,7 @@ class MessageCenterImpl : public MessageCenter,
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) override;
   void RestartPopupTimers() override;
   void PausePopupTimers() override;
+  void ForceNotificationFlush(const std::string& id) override;
 
   // NotificationBlocker::Observer overrides:
   void OnBlockingStateChanged(NotificationBlocker* blocker) override;
@@ -193,6 +194,13 @@ class MessageCenterImpl : public MessageCenter,
   void NotifierGroupChanged() override;
   void NotifierEnabledChanged(const NotifierId& notifier_id,
                               bool enabled) override;
+
+  // Unexposed methods:
+  void AddNotificationImmediately(scoped_ptr<Notification> notification);
+  void UpdateNotificationImmediately(
+      const std::string& old_id,
+      scoped_ptr<Notification> new_notification);
+  void RemoveNotificationImmediately(const std::string& id, bool by_user);
 
  protected:
   void DisableTimersForTest() override;
