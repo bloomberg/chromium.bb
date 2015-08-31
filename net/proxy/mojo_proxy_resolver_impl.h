@@ -35,7 +35,6 @@ class MojoProxyResolverImpl : public interfaces::ProxyResolver {
 
   scoped_ptr<ProxyResolverV8Tracing> resolver_;
   std::set<Job*> resolve_jobs_;
-  std::map<net::ProxyResolver::RequestHandle, Job*> request_handle_to_job_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoProxyResolverImpl);
 };

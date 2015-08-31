@@ -25,8 +25,6 @@ class MojoProxyResolverImpl::Job {
 
   void Start();
 
-  net::ProxyResolver::RequestHandle request_handle() { return request_handle_; }
-
  private:
   // Mojo error handler. This is invoked in response to the client
   // disconnecting, indicating cancellation.
@@ -67,9 +65,6 @@ void MojoProxyResolverImpl::GetProxyForUrl(
 }
 
 void MojoProxyResolverImpl::DeleteJob(Job* job) {
-  if (job->request_handle())
-    request_handle_to_job_.erase(job->request_handle());
-
   size_t num_erased = resolve_jobs_.erase(job);
   DCHECK(num_erased);
   delete job;
@@ -100,8 +95,6 @@ void MojoProxyResolverImpl::Job::Start() {
           interfaces::ProxyResolverRequestClient>(weak_factory_.GetWeakPtr())));
   client_.set_connection_error_handler(base::Bind(
       &MojoProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
-  resolver_->request_handle_to_job_.insert(
-      std::make_pair(request_handle_, this));
 }
 
 void MojoProxyResolverImpl::Job::GetProxyDone(int error) {
