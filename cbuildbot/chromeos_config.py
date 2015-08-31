@@ -591,8 +591,6 @@ _waterfall_config_map = {
         'guado_moblab-paladin',
 
         # Experimental Canaries (Group)
-        'glados-release-group',
-        'kunimitsu-release-group',
         'storm-release-group',
         'strago-release-group',
         'veyron-b-release-group',
@@ -2631,7 +2629,6 @@ def GetConfig():
   _AddGroupConfig(
       'glados', 'glados', (
       ),
-      important=False,
   )
 
   # storm-based boards
@@ -2647,7 +2644,6 @@ def GetConfig():
   _AddGroupConfig(
       'kunimitsu', 'kunimitsu', (
       ),
-      important=False,
   )
 
   # Factory and Firmware releases much inherit from these classes.

@@ -7126,7 +7126,8 @@
                 "name": "glados-release"
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: glados)"
+        "description": "Release Builds (canary) (internal); Group config (boards: glados)",
+        "important": true
     },
     "glados-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -9234,7 +9235,8 @@
                 "name": "kunimitsu-release"
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: kunimitsu)"
+        "description": "Release Builds (canary) (internal); Group config (boards: kunimitsu)",
+        "important": true
     },
     "kunimitsu-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
