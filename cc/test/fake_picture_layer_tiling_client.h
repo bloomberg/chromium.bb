@@ -21,8 +21,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   ~FakePictureLayerTilingClient() override;
 
   // PictureLayerTilingClient implementation.
-  ScopedTilePtr CreateTile(float contents_scale,
-                           const gfx::Rect& rect) override;
+  ScopedTilePtr CreateTile(const Tile::CreateInfo& info) override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
   bool HasValidTilePriorities() const override;
 

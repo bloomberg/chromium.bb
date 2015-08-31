@@ -71,16 +71,14 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   virtual gfx::Size GetSize() const = 0;
 
   // Populate the given list with all SkPixelRefs that may overlap the given
-  // rect at given scale.
+  // rect in layer space.
   virtual void GatherPixelRefs(
-      const gfx::Rect& content_rect,
-      float contents_scale,
+      const gfx::Rect& layer_rect,
       std::vector<skia::PositionPixelRef>* pixel_refs) const = 0;
 
-  // Return true iff this raster source can raster the given rect at given
-  // scale.
-  virtual bool CoversRect(const gfx::Rect& content_rect,
-                          float contents_scale) const = 0;
+  // Return true iff this raster source can raster the given rect in layer
+  // space.
+  virtual bool CoversRect(const gfx::Rect& layer_rect) const = 0;
 
   // Returns true if this raster source has anything to rasterize.
   virtual bool HasRecordings() const = 0;

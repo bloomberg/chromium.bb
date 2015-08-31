@@ -23,6 +23,26 @@ class CC_EXPORT Tile {
     void operator()(Tile* tile) const;
   };
 
+  class CC_EXPORT CreateInfo {
+   public:
+    int tiling_i_index;
+    int tiling_j_index;
+    gfx::Rect enclosing_layer_rect;
+    gfx::Rect content_rect;
+    float contents_scale;
+
+    CreateInfo(int tiling_i_index,
+               int tiling_j_index,
+               const gfx::Rect& enclosing_layer_rect,
+               const gfx::Rect& content_rect,
+               float contents_scale)
+        : tiling_i_index(tiling_i_index),
+          tiling_j_index(tiling_j_index),
+          enclosing_layer_rect(enclosing_layer_rect),
+          content_rect(content_rect),
+          contents_scale(contents_scale) {}
+  };
+
   enum TileRasterFlags { USE_PICTURE_ANALYSIS = 1 << 0 };
 
   typedef uint64 Id;
@@ -51,7 +71,10 @@ class CC_EXPORT Tile {
   TileDrawInfo& draw_info() { return draw_info_; }
 
   float contents_scale() const { return contents_scale_; }
-  gfx::Rect content_rect() const { return content_rect_; }
+  const gfx::Rect& content_rect() const { return content_rect_; }
+  const gfx::Rect& enclosing_layer_rect() const {
+    return enclosing_layer_rect_;
+  }
 
   int layer_id() const { return layer_id_; }
 
@@ -59,12 +82,8 @@ class CC_EXPORT Tile {
 
   size_t GPUMemoryUsageInBytes() const;
 
-  gfx::Size desired_texture_size() const { return desired_texture_size_; }
+  const gfx::Size& desired_texture_size() const { return content_rect_.size(); }
 
-  void set_tiling_index(int i, int j) {
-    tiling_i_index_ = i;
-    tiling_j_index_ = j;
-  }
   int tiling_i_index() const { return tiling_i_index_; }
   int tiling_j_index() const { return tiling_j_index_; }
 
@@ -86,9 +105,7 @@ class CC_EXPORT Tile {
 
   // Methods called by by tile manager.
   Tile(TileManager* tile_manager,
-       const gfx::Size& desired_texture_size,
-       const gfx::Rect& content_rect,
-       float contents_scale,
+       const CreateInfo& info,
        int layer_id,
        int source_frame_number,
        int flags);
@@ -96,18 +113,18 @@ class CC_EXPORT Tile {
 
   bool HasRasterTask() const { return !!raster_task_.get(); }
 
-  TileManager* tile_manager_;
-  gfx::Size desired_texture_size_;
-  gfx::Rect content_rect_;
-  float contents_scale_;
+  TileManager* const tile_manager_;
+  const gfx::Rect content_rect_;
+  const gfx::Rect enclosing_layer_rect_;
+  const float contents_scale_;
 
   TileDrawInfo draw_info_;
 
-  int layer_id_;
-  int source_frame_number_;
-  int flags_;
-  int tiling_i_index_;
-  int tiling_j_index_;
+  const int layer_id_;
+  const int source_frame_number_;
+  const int flags_;
+  const int tiling_i_index_;
+  const int tiling_j_index_;
   bool required_for_activation_ : 1;
   bool required_for_draw_ : 1;
 

@@ -36,9 +36,9 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 }
 
-ScopedTilePtr FakePictureLayerTilingClient::CreateTile(float content_scale,
-                                                       const gfx::Rect& rect) {
-  return tile_manager_->CreateTile(tile_size_, rect, 1, 0, 0, 0);
+ScopedTilePtr FakePictureLayerTilingClient::CreateTile(
+    const Tile::CreateInfo& info) {
+  return tile_manager_->CreateTile(info, 0, 0, 0);
 }
 
 void FakePictureLayerTilingClient::SetTileSize(const gfx::Size& tile_size) {

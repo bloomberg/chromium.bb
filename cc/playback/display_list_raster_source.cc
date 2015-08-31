@@ -162,13 +162,9 @@ void DisplayListRasterSource::PerformSolidColorAnalysis(
 }
 
 void DisplayListRasterSource::GatherPixelRefs(
-    const gfx::Rect& content_rect,
-    float contents_scale,
+    const gfx::Rect& layer_rect,
     std::vector<skia::PositionPixelRef>* pixel_refs) const {
   DCHECK_EQ(0u, pixel_refs->size());
-
-  gfx::Rect layer_rect =
-      gfx::ScaleToEnclosingRect(content_rect, 1.0f / contents_scale);
 
   PixelRefMap::Iterator iterator(layer_rect, display_list_.get());
   while (iterator) {
@@ -177,15 +173,12 @@ void DisplayListRasterSource::GatherPixelRefs(
   }
 }
 
-bool DisplayListRasterSource::CoversRect(const gfx::Rect& content_rect,
-                                         float contents_scale) const {
+bool DisplayListRasterSource::CoversRect(const gfx::Rect& layer_rect) const {
   if (size_.IsEmpty())
     return false;
-  gfx::Rect layer_rect =
-      gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale);
-  layer_rect.Intersect(gfx::Rect(size_));
-
-  return recorded_viewport_.Contains(layer_rect);
+  gfx::Rect bounded_rect = layer_rect;
+  bounded_rect.Intersect(gfx::Rect(size_));
+  return recorded_viewport_.Contains(bounded_rect);
 }
 
 gfx::Size DisplayListRasterSource::GetSize() const {

@@ -55,8 +55,7 @@ class CC_EXPORT PictureLayerImpl
   Region GetInvalidationRegion() override;
 
   // PictureLayerTilingClient overrides.
-  ScopedTilePtr CreateTile(float contents_scale,
-                           const gfx::Rect& content_rect) override;
+  ScopedTilePtr CreateTile(const Tile::CreateInfo& info) override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
   const Region* GetPendingInvalidation() override;
   const PictureLayerTiling* GetPendingOrActiveTwinTiling(

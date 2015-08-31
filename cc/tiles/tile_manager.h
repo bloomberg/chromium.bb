@@ -133,9 +133,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   // date draw information.
   void Flush();
 
-  ScopedTilePtr CreateTile(const gfx::Size& desired_texture_size,
-                           const gfx::Rect& content_rect,
-                           float contents_scale,
+  ScopedTilePtr CreateTile(const Tile::CreateInfo& info,
                            int layer_id,
                            int source_frame_number,
                            int flags);

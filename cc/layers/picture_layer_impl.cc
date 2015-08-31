@@ -627,8 +627,7 @@ Region PictureLayerImpl::GetInvalidationRegion() {
   return IntersectRegions(invalidation_, update_rect());
 }
 
-ScopedTilePtr PictureLayerImpl::CreateTile(float contents_scale,
-                                           const gfx::Rect& content_rect) {
+ScopedTilePtr PictureLayerImpl::CreateTile(const Tile::CreateInfo& info) {
   int flags = 0;
 
   // We don't handle solid color masks, so we shouldn't bother analyzing those.
@@ -637,8 +636,7 @@ ScopedTilePtr PictureLayerImpl::CreateTile(float contents_scale,
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
-      content_rect.size(), content_rect, contents_scale, id(),
-      layer_tree_impl()->source_frame_number(), flags);
+      info, id(), layer_tree_impl()->source_frame_number(), flags);
 }
 
 const Region* PictureLayerImpl::GetPendingInvalidation() {

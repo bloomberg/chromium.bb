@@ -299,32 +299,28 @@ void PicturePileImpl::PerformSolidColorAnalysis(
 }
 
 void PicturePileImpl::GatherPixelRefs(
-    const gfx::Rect& content_rect,
-    float contents_scale,
+    const gfx::Rect& layer_rect,
     std::vector<skia::PositionPixelRef>* pixel_refs) const {
   DCHECK_EQ(0u, pixel_refs->size());
-  for (PixelRefIterator iter(content_rect, contents_scale, this); iter;
-       ++iter) {
+  for (PixelRefIterator iter(layer_rect, this); iter; ++iter) {
     pixel_refs->push_back(*iter);
   }
 }
 
-bool PicturePileImpl::CoversRect(const gfx::Rect& content_rect,
-                                 float contents_scale) const {
+bool PicturePileImpl::CoversRect(const gfx::Rect& layer_rect) const {
   if (tiling_.tiling_size().IsEmpty())
     return false;
-  gfx::Rect layer_rect =
-      gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale);
-  layer_rect.Intersect(gfx::Rect(tiling_.tiling_size()));
+  gfx::Rect bounded_rect = layer_rect;
+  bounded_rect.Intersect(gfx::Rect(tiling_.tiling_size()));
 
   // Common case inside of viewport to avoid the slower map lookups.
-  if (recorded_viewport_.Contains(layer_rect)) {
+  if (recorded_viewport_.Contains(bounded_rect)) {
     // Sanity check that there are no false positives in recorded_viewport_.
-    DCHECK(CanRasterSlowTileCheck(layer_rect));
+    DCHECK(CanRasterSlowTileCheck(bounded_rect));
     return true;
   }
 
-  return CanRasterSlowTileCheck(layer_rect);
+  return CanRasterSlowTileCheck(bounded_rect);
 }
 
 gfx::Size PicturePileImpl::GetSize() const {
@@ -402,12 +398,10 @@ scoped_refptr<RasterSource> PicturePileImpl::CreateCloneWithoutLCDText() const {
 }
 
 PicturePileImpl::PixelRefIterator::PixelRefIterator(
-    const gfx::Rect& content_rect,
-    float contents_scale,
+    const gfx::Rect& layer_rect,
     const PicturePileImpl* picture_pile)
     : picture_pile_(picture_pile),
-      layer_rect_(
-          gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale)),
+      layer_rect_(layer_rect),
       tile_iterator_(&picture_pile_->tiling_,
                      layer_rect_,
                      false /* include_borders */) {

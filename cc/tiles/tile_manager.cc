@@ -680,7 +680,7 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   ImageDecodeTask::Vector decode_tasks;
   std::vector<skia::PositionPixelRef> pixel_refs;
   prioritized_tile.raster_source()->GatherPixelRefs(
-      tile->content_rect(), tile->contents_scale(), &pixel_refs);
+      tile->enclosing_layer_rect(), &pixel_refs);
   for (const skia::PositionPixelRef& pixel_ref : pixel_refs) {
     decode_tasks.push_back(image_decode_controller_.GetTaskForPixelRef(
         pixel_ref, tile->layer_id(), prepare_tiles_count_));
@@ -747,18 +747,15 @@ void TileManager::UpdateTileDrawInfo(
   client_->NotifyTileStateChanged(tile);
 }
 
-ScopedTilePtr TileManager::CreateTile(const gfx::Size& desired_texture_size,
-                                      const gfx::Rect& content_rect,
-                                      float contents_scale,
+ScopedTilePtr TileManager::CreateTile(const Tile::CreateInfo& info,
                                       int layer_id,
                                       int source_frame_number,
                                       int flags) {
   // We need to have a tile task worker pool to do anything meaningful with
   // tiles.
   DCHECK(tile_task_runner_);
-  ScopedTilePtr tile(new Tile(this, desired_texture_size, content_rect,
-                              contents_scale, layer_id, source_frame_number,
-                              flags));
+  ScopedTilePtr tile(
+      new Tile(this, info, layer_id, source_frame_number, flags));
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
   tiles_[tile->id()] = tile.get();

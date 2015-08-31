@@ -36,8 +36,7 @@ class CC_EXPORT PictureLayerTilingClient {
  public:
   // Create a tile at the given content_rect (in the contents scale of the
   // tiling) This might return null if the client cannot create such a tile.
-  virtual ScopedTilePtr CreateTile(float contents_scale,
-                                   const gfx::Rect& content_rect) = 0;
+  virtual ScopedTilePtr CreateTile(const Tile::CreateInfo& info) = 0;
   virtual gfx::Size CalculateTileSize(
     const gfx::Size& content_bounds) const = 0;
   // This invalidation region defines the area (if any, it can by null) that
@@ -285,7 +284,7 @@ class CC_EXPORT PictureLayerTiling {
                      int skewport_extrapolation_limit_in_content_pixels);
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
   void VerifyLiveTilesRect(bool is_on_recycle_tree) const;
-  Tile* CreateTile(int i, int j);
+  Tile* CreateTile(const Tile::CreateInfo& info);
   ScopedTilePtr TakeTileAt(int i, int j);
   // Returns true if the Tile existed and was removed from the tiling.
   bool RemoveTileAt(int i, int j);
@@ -326,7 +325,8 @@ class CC_EXPORT PictureLayerTiling {
       visible_rect_history_[1] = visible_rect_history_[0];
   }
   bool IsTileOccludedOnCurrentTree(const Tile* tile) const;
-  bool ShouldCreateTileAt(int i, int j) const;
+  Tile::CreateInfo CreateInfoForTile(int i, int j) const;
+  bool ShouldCreateTileAt(const Tile::CreateInfo& info) const;
   bool IsTileOccluded(const Tile* tile) const;
   void UpdateRequiredStatesOnTile(Tile* tile) const;
   PrioritizedTile MakePrioritizedTile(

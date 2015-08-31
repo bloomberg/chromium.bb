@@ -15,21 +15,19 @@
 namespace cc {
 
 Tile::Tile(TileManager* tile_manager,
-           const gfx::Size& desired_texture_size,
-           const gfx::Rect& content_rect,
-           float contents_scale,
+           const CreateInfo& info,
            int layer_id,
            int source_frame_number,
            int flags)
     : tile_manager_(tile_manager),
-      desired_texture_size_(desired_texture_size),
-      content_rect_(content_rect),
-      contents_scale_(contents_scale),
+      content_rect_(info.content_rect),
+      enclosing_layer_rect_(info.enclosing_layer_rect),
+      contents_scale_(info.contents_scale),
       layer_id_(layer_id),
       source_frame_number_(source_frame_number),
       flags_(flags),
-      tiling_i_index_(-1),
-      tiling_j_index_(-1),
+      tiling_i_index_(info.tiling_i_index),
+      tiling_j_index_(info.tiling_j_index),
       required_for_activation_(false),
       required_for_draw_(false),
       id_(tile_manager->GetUniqueTileId()),
@@ -75,8 +73,7 @@ size_t Tile::GPUMemoryUsageInBytes() const {
 }
 
 void Tile::Deleter::operator()(Tile* tile) const {
-  TileManager* tile_manager = tile->tile_manager_;
-  tile_manager->Release(tile);
+  tile->tile_manager_->Release(tile);
 }
 
 }  // namespace cc

@@ -41,11 +41,9 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
   SkColor GetSolidColor() const override;
   gfx::Size GetSize() const override;
   void GatherPixelRefs(
-      const gfx::Rect& content_rect,
-      float contents_scale,
+      const gfx::Rect& layer_rect,
       std::vector<skia::PositionPixelRef>* pixel_refs) const override;
-  bool CoversRect(const gfx::Rect& content_rect,
-                  float contents_scale) const override;
+  bool CoversRect(const gfx::Rect& layer_rect) const override;
   bool HasRecordings() const override;
   void SetShouldAttemptToUseDistanceFieldText() override;
   bool ShouldAttemptToUseDistanceFieldText() const override;

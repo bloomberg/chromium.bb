@@ -73,9 +73,8 @@ class FixedInvalidationPictureLayerTilingClient
       const Region invalidation)
       : base_client_(base_client), invalidation_(invalidation) {}
 
-  ScopedTilePtr CreateTile(float contents_scale,
-                           const gfx::Rect& content_rect) override {
-    return base_client_->CreateTile(contents_scale, content_rect);
+  ScopedTilePtr CreateTile(const Tile::CreateInfo& info) override {
+    return base_client_->CreateTile(info);
   }
 
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override {

@@ -81,7 +81,7 @@ TYPED_TEST(RecordingSourceTest, NoGatherPixelRefEmptyPixelRefs) {
   // get pixel refs.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(recorded_viewport, 1.0, &pixel_refs);
+    raster_source->GatherPixelRefs(recorded_viewport, &pixel_refs);
     EXPECT_TRUE(pixel_refs.empty());
   }
 }
@@ -101,51 +101,19 @@ TYPED_TEST(RecordingSourceTest, EmptyPixelRefs) {
   // Tile sized iterators.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), 1.0, &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), 2.0, &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 64, 64), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), &pixel_refs);
     EXPECT_TRUE(pixel_refs.empty());
   }
   // Shifted tile sized iterators.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(140, 140, 128, 128), 1.0,
-                                   &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(280, 280, 256, 256), 2.0,
-                                   &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(70, 70, 64, 64), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(140, 140, 128, 128), &pixel_refs);
     EXPECT_TRUE(pixel_refs.empty());
   }
   // Layer sized iterators.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), 1.0, &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 512, 512), 2.0, &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), &pixel_refs);
     EXPECT_TRUE(pixel_refs.empty());
   }
 }
@@ -185,51 +153,19 @@ TYPED_TEST(RecordingSourceTest, NoDiscardablePixelRefs) {
   // Tile sized iterators.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), 1.0, &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), 2.0, &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 64, 64), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), &pixel_refs);
     EXPECT_TRUE(pixel_refs.empty());
   }
   // Shifted tile sized iterators.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(140, 140, 128, 128), 1.0,
-                                   &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(280, 280, 256, 256), 2.0,
-                                   &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(70, 70, 64, 64), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(140, 140, 128, 128), &pixel_refs);
     EXPECT_TRUE(pixel_refs.empty());
   }
   // Layer sized iterators.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), 1.0, &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 512, 512), 2.0, &pixel_refs);
-    EXPECT_TRUE(pixel_refs.empty());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), &pixel_refs);
     EXPECT_TRUE(pixel_refs.empty());
   }
 }
@@ -266,23 +202,7 @@ TYPED_TEST(RecordingSourceTest, DiscardablePixelRefs) {
   // Tile sized iterators. These should find only one pixel ref.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), 1.0, &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), 2.0, &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 64, 64), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), &pixel_refs);
     EXPECT_EQ(1u, pixel_refs.size());
     EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
     EXPECT_EQ(gfx::RectF(32, 32).ToString(),
@@ -292,25 +212,7 @@ TYPED_TEST(RecordingSourceTest, DiscardablePixelRefs) {
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(140, 140, 128, 128), 1.0,
-                                   &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[1][1].pixelRef());
-    EXPECT_EQ(gfx::RectF(140, 140, 32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(280, 280, 256, 256), 2.0,
-                                   &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[1][1].pixelRef());
-    EXPECT_EQ(gfx::RectF(140, 140, 32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(70, 70, 64, 64), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(140, 140, 128, 128), &pixel_refs);
     EXPECT_EQ(1u, pixel_refs.size());
     EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[1][1].pixelRef());
     EXPECT_EQ(gfx::RectF(140, 140, 32, 32).ToString(),
@@ -320,43 +222,14 @@ TYPED_TEST(RecordingSourceTest, DiscardablePixelRefs) {
   // Ensure there's no discardable pixel refs in the empty cell
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(140, 0, 128, 128), 1.0,
-                                   &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(140, 0, 128, 128), &pixel_refs);
     EXPECT_TRUE(pixel_refs.empty());
   }
 
   // Layer sized iterators. These should find all 3 pixel refs.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), 1.0, &pixel_refs);
-    EXPECT_EQ(3u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_TRUE(pixel_refs[1].pixel_ref == discardable_bitmap[1][0].pixelRef());
-    EXPECT_TRUE(pixel_refs[2].pixel_ref == discardable_bitmap[1][1].pixelRef());
-    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-    EXPECT_EQ(gfx::RectF(0, 130, 32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect).ToString());
-    EXPECT_EQ(gfx::RectF(140, 140, 32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 512, 512), 2.0, &pixel_refs);
-    EXPECT_EQ(3u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_TRUE(pixel_refs[1].pixel_ref == discardable_bitmap[1][0].pixelRef());
-    EXPECT_TRUE(pixel_refs[2].pixel_ref == discardable_bitmap[1][1].pixelRef());
-    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-    EXPECT_EQ(gfx::RectF(0, 130, 32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect).ToString());
-    EXPECT_EQ(gfx::RectF(140, 140, 32, 32).ToString(),
-              gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), &pixel_refs);
     EXPECT_EQ(3u, pixel_refs.size());
     EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
     EXPECT_TRUE(pixel_refs[1].pixel_ref == discardable_bitmap[1][0].pixelRef());
@@ -408,23 +281,7 @@ TYPED_TEST(RecordingSourceTest, DiscardablePixelRefsBaseNonDiscardable) {
   // Tile sized iterators. These should find only one pixel ref.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), 1.0, &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_EQ(gfx::RectF(128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 512, 512), 2.0, &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_EQ(gfx::RectF(128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 128, 128), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), &pixel_refs);
     EXPECT_EQ(1u, pixel_refs.size());
     EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
     EXPECT_EQ(gfx::RectF(128, 128).ToString(),
@@ -433,26 +290,7 @@ TYPED_TEST(RecordingSourceTest, DiscardablePixelRefsBaseNonDiscardable) {
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(260, 260, 256, 256), 1.0,
-                                   &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[1][1].pixelRef());
-    EXPECT_EQ(gfx::RectF(260, 260, 128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(520, 520, 512, 512), 2.0,
-                                   &pixel_refs);
-    EXPECT_EQ(1u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[1][1].pixelRef());
-    EXPECT_EQ(gfx::RectF(260, 260, 128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(130, 130, 128, 128), 0.5,
-                                   &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(260, 260, 256, 256), &pixel_refs);
     EXPECT_EQ(1u, pixel_refs.size());
     EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[1][1].pixelRef());
     EXPECT_EQ(gfx::RectF(260, 260, 128, 128).ToString(),
@@ -461,43 +299,13 @@ TYPED_TEST(RecordingSourceTest, DiscardablePixelRefsBaseNonDiscardable) {
   // Ensure there's no discardable pixel refs in the empty cell
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 256, 256, 256), 1.0,
-                                   &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(0, 256, 256, 256), &pixel_refs);
     EXPECT_TRUE(pixel_refs.empty());
   }
   // Layer sized iterators. These should find three pixel ref.
   {
     std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 512, 512), 1.0, &pixel_refs);
-    EXPECT_EQ(3u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_TRUE(pixel_refs[1].pixel_ref == discardable_bitmap[0][1].pixelRef());
-    EXPECT_TRUE(pixel_refs[2].pixel_ref == discardable_bitmap[1][1].pixelRef());
-    EXPECT_EQ(gfx::RectF(128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-    EXPECT_EQ(gfx::RectF(260, 0, 128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect).ToString());
-    EXPECT_EQ(gfx::RectF(260, 260, 128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 1024, 1024), 2.0,
-                                   &pixel_refs);
-    EXPECT_EQ(3u, pixel_refs.size());
-    EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
-    EXPECT_TRUE(pixel_refs[1].pixel_ref == discardable_bitmap[0][1].pixelRef());
-    EXPECT_TRUE(pixel_refs[2].pixel_ref == discardable_bitmap[1][1].pixelRef());
-    EXPECT_EQ(gfx::RectF(128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect).ToString());
-    EXPECT_EQ(gfx::RectF(260, 0, 128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect).ToString());
-    EXPECT_EQ(gfx::RectF(260, 260, 128, 128).ToString(),
-              gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect).ToString());
-  }
-  {
-    std::vector<skia::PositionPixelRef> pixel_refs;
-    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 256, 256), 0.5, &pixel_refs);
+    raster_source->GatherPixelRefs(gfx::Rect(0, 0, 512, 512), &pixel_refs);
     EXPECT_EQ(3u, pixel_refs.size());
     EXPECT_TRUE(pixel_refs[0].pixel_ref == discardable_bitmap[0][0].pixelRef());
     EXPECT_TRUE(pixel_refs[1].pixel_ref == discardable_bitmap[0][1].pixelRef());
