@@ -14,7 +14,9 @@
 #include "base/sys_info.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
+#include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
+#include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/credentials.h"
@@ -62,7 +64,7 @@ intptr_t SandboxSIGSYSHandler(const struct sandbox::arch_seccomp_data& args,
   }
 }
 
-class SandboxPolicy : public sandbox::bpf_dsl::Policy {
+class SandboxPolicy : public sandbox::BaselinePolicy {
  public:
   explicit SandboxPolicy(sandbox::syscall_broker::BrokerProcess* broker_process)
       : broker_process_(broker_process) {}
@@ -77,9 +79,15 @@ class SandboxPolicy : public sandbox::bpf_dsl::Policy {
       case __NR_faccessat:
       case __NR_openat:
         return sandbox::bpf_dsl::Trap(SandboxSIGSYSHandler, broker_process_);
+      case __NR_sched_getaffinity:
+        return sandbox::RestrictSchedTarget(policy_pid(), sysno);
+      case __NR_ftruncate:
+      case __NR_getrlimit:
+      case __NR_uname:
+        return sandbox::bpf_dsl::Allow();
     }
 
-    return sandbox::bpf_dsl::Allow();
+    return BaselinePolicy::EvaluateSyscall(sysno);
   }
 
  private:
