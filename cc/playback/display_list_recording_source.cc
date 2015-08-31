@@ -18,7 +18,7 @@ namespace {
 // Layout pixel buffer around the visible layer rect to record.  Any base
 // picture that intersects the visible layer rect expanded by this distance
 // will be recorded.
-const int kPixelDistanceToRecord = 8000;
+const int kPixelDistanceToRecord = 4000;
 
 // This is the distance, in layer space, by which the recorded viewport has to
 // change before causing a paint of the new content. For example, it means
