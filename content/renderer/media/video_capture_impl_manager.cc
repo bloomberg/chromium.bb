@@ -58,12 +58,11 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
 base::Closure VideoCaptureImplManager::UseDevice(
     media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-
-  const VideoCaptureDeviceMap::iterator it = devices_.find(id);
-  if (it != devices_.end()) {
-    LOG(FATAL) << "UseDevice: This VideoCaptureSessionId is already in use.";
+  VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
+  DCHECK(it == devices_.end())
+      << "UseDevice: This VideoCaptureSessionId is already in use.";
+  if (it != devices_.end())
     return base::Closure();
-  }
 
   VideoCaptureImpl* impl = CreateVideoCaptureImplForTesting(id, filter_.get());
   if (!impl)
