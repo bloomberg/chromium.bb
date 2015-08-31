@@ -808,6 +808,18 @@ jboolean TabAndroid::IsOfflinePage(JNIEnv* env, jobject obj) {
   return GetOfflinePage(url) != nullptr;
 }
 
+ScopedJavaLocalRef<jstring> TabAndroid::GetOfflinePageOriginalUrl(JNIEnv* env,
+                                                                  jobject obj) {
+  GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+      web_contents()->GetURL());
+  const offline_pages::OfflinePageItem* offline_page = GetOfflinePage(url);
+  if (offline_page == nullptr)
+    return ScopedJavaLocalRef<jstring>();
+
+  return ScopedJavaLocalRef<jstring>(
+      ConvertUTF8ToJavaString(env, offline_page->url.spec()));
+}
+
 const offline_pages::OfflinePageItem* TabAndroid::GetOfflinePage(
     const GURL& url) const {
   if (!offline_pages::IsOfflinePagesEnabled())

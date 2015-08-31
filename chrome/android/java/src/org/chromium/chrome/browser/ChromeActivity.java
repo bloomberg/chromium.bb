@@ -17,6 +17,8 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -502,21 +504,36 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 // If an offline page is being opened, show the hint.
-                // TODO(jianli): Show a reload button when there is a network.
                 if (tab.isOfflinePage()) {
+                    ConnectivityManager connectivityManager =
+                            (ConnectivityManager) getBaseContext().getSystemService(
+                                    Context.CONNECTIVITY_SERVICE);
+                    NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+                    boolean hasConnection = networkInfo != null && networkInfo.isConnected();
+
+                    final String originalUrl = tab.getOfflinePageOriginalUrl();
+                    boolean showButton = hasConnection && originalUrl != null;
+                    final int tabId = tab.getId();
+
                     getSnackbarManager().showSnackbar(Snackbar.make(
                             getString(R.string.enhanced_bookmark_viewing_offline_page),
                             new SnackbarController() {
                                 @Override
-                                public void onAction(Object actionData) {}
+                                public void onAction(Object actionData) {
+                                    Tab tab = mTabModelSelector.getTabById(tabId);
+                                    if (tab != null) {
+                                        tab.loadUrl(new LoadUrlParams(originalUrl,
+                                                PageTransition.RELOAD));
+                                    }
+                                }
 
                                 @Override
                                 public void onDismissNoAction(Object actionData) {}
 
                                 @Override
                                 public void onDismissForEachType(boolean isTimeout) {}
-                            }
-                    ));
+                            })
+                            .setAction(showButton ? getString(R.string.reload) : null, null));
                 }
             }
 

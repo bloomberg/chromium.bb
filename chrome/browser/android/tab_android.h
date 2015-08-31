@@ -203,6 +203,10 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   jboolean IsOfflinePage(JNIEnv* env, jobject obj);
 
+  base::android::ScopedJavaLocalRef<jstring> GetOfflinePageOriginalUrl(
+      JNIEnv* env,
+      jobject obj);
+
   void SetInterceptNavigationDelegate(JNIEnv* env,
                                       jobject obj,
                                       jobject delegate);

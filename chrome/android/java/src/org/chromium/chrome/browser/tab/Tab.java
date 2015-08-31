@@ -2677,6 +2677,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return Url of the original page, if tab currently displays offline copy of it,
+     * <code>null</code> otherwise.
+     */
+    public String getOfflinePageOriginalUrl() {
+        return isFrozen() ? null : nativeGetOfflinePageOriginalUrl(mNativeTabAndroid);
+    }
+
+    /**
      * Request that this tab receive focus. Currently, this function requests focus for the main
      * View (usually a ContentView).
      */
@@ -2863,6 +2871,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native void nativeSearchByImageInNewTabAsync(long nativeTabAndroid);
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
     private native boolean nativeIsOfflinePage(long nativeTabAndroid);
+    private native String nativeGetOfflinePageOriginalUrl(long nativeTabAndroid);
     private native void nativeSetInterceptNavigationDelegate(long nativeTabAndroid,
             InterceptNavigationDelegate delegate);
     private native void nativeAttachToTabContentManager(long nativeTabAndroid,
