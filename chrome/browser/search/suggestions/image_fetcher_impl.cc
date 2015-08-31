@@ -14,7 +14,7 @@ namespace suggestions {
 
 ImageFetcherImpl::ImageFetcherImpl(
     net::URLRequestContextGetter* url_request_context)
-    : url_request_context_(url_request_context) {}
+    : delegate_(NULL), url_request_context_(url_request_context) {}
 
 ImageFetcherImpl::~ImageFetcherImpl() {}
 

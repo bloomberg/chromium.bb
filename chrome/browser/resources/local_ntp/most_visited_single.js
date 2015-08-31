@@ -277,9 +277,6 @@ var addTile = function(args) {
   if (args.rid) {
     var data = chrome.embeddedSearch.searchBox.getMostVisitedItemData(args.rid);
     data.tid = data.rid;
-    if (!data.thumbnailUrls) {
-      data.thumbnailUrls = [data.thumbnailUrl];
-    }
     if (!data.faviconUrl) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
@@ -531,19 +528,23 @@ var renderTile = function(data) {
     thumb.appendChild(img);
     logEvent(LOG_TYPE.NTP_THUMBNAIL_TILE);
 
-    // Get all thumbnailUrls for the tile.
-    // They are ordered from best one to be used to worst.
-    for (var i = 0; i < data.thumbnailUrls.length; ++i) {
-      results.push(null);
-    }
-    for (var i = 0; i < data.thumbnailUrls.length; ++i) {
-      if (data.thumbnailUrls[i]) {
-        var image = new Image();
-        image.src = data.thumbnailUrls[i];
-        image.onload = acceptImage(i, data.thumbnailUrls[i]);
-        image.onerror = rejectImage(i);
-      } else {
-        rejectImage(i)(null);
+    if (data.thumbnailUrl) {
+      img.src = data.thumbnailUrl;
+    } else {
+      // Get all thumbnailUrls for the tile.
+      // They are ordered from best one to be used to worst.
+      for (var i = 0; i < data.thumbnailUrls.length; ++i) {
+        results.push(null);
+      }
+      for (var i = 0; i < data.thumbnailUrls.length; ++i) {
+        if (data.thumbnailUrls[i]) {
+          var image = new Image();
+          image.src = data.thumbnailUrls[i];
+          image.onload = acceptImage(i, data.thumbnailUrls[i]);
+          image.onerror = rejectImage(i);
+        } else {
+          rejectImage(i)(null);
+        }
       }
     }
 
