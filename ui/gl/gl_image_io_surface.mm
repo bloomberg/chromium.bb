@@ -26,6 +26,7 @@ bool ValidInternalFormat(unsigned internalformat) {
     case GL_R8:
     case GL_BGRA_EXT:
     case GL_RGB:
+    case GL_RGB_YCBCR_422_CHROMIUM:
       return true;
     default:
       return false;
