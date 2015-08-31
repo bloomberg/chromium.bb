@@ -13515,6 +13515,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GoogleUpdate.InfoBar.InternalStorageSizeAvailable" units="MB">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    (Android-only) The amount of internal memory storage available on the user's
+    device when the InfoBar is shown.
+  </summary>
+</histogram>
+
 <histogram name="GoogleUpdate.InfoBar.TimeShown" units="milliseconds">
   <owner>yfriedman@chromium.org</owner>
   <owner>dfalcantara@chromium.org</owner>

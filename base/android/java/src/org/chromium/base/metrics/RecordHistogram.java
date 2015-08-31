@@ -78,6 +78,21 @@ public class RecordHistogram {
     }
 
     /**
+     * Records a sample in a linear histogram. This is the Java equivalent for using
+     * base::LinearHistogram.
+     * @param name name of the histogram
+     * @param sample sample to be recorded, at least |min| and at most |max| - 1.
+     * @param min lower bound for expected sample values, should be at least 1.
+     * @param max upper bounds for expected sample values
+     * @param numBuckets the number of buckets
+     */
+    public static void recordLinearCountHistogram(
+            String name, int sample, int min, int max, int numBuckets) {
+        nativeRecordLinearCountHistogram(
+                name, System.identityHashCode(name), sample, min, max, numBuckets);
+    }
+
+    /**
     * Records a sparse histogram. This is the Java equivalent of UMA_HISTOGRAM_SPARSE_SLOWLY.
     * @param name name of the histogram
     * @param sample sample to be recorded. All values of |sample| are valid, including negative
@@ -169,6 +184,8 @@ public class RecordHistogram {
     private static native void nativeRecordEnumeratedHistogram(
             String name, int key, int sample, int boundary);
     private static native void nativeRecordCustomCountHistogram(
+            String name, int key, int sample, int min, int max, int numBuckets);
+    private static native void nativeRecordLinearCountHistogram(
             String name, int key, int sample, int min, int max, int numBuckets);
     private static native void nativeRecordSparseHistogram(String name, int key, int sample);
 

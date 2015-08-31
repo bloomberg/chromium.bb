@@ -85,6 +85,30 @@ class HistogramCache {
     return InsertLocked(j_histogram_key, histogram);
   }
 
+  HistogramBase* LinearCountHistogram(JNIEnv* env,
+                                      jstring j_histogram_name,
+                                      jint j_histogram_key,
+                                      jint j_min,
+                                      jint j_max,
+                                      jint j_num_buckets) {
+    DCHECK(j_histogram_name);
+    DCHECK(j_histogram_key);
+    int64 min = static_cast<int64>(j_min);
+    int64 max = static_cast<int64>(j_max);
+    int num_buckets = static_cast<int>(j_num_buckets);
+    HistogramBase* histogram = FindLocked(j_histogram_key);
+    if (histogram) {
+      DCHECK(histogram->HasConstructionArguments(min, max, num_buckets));
+      return histogram;
+    }
+
+    std::string histogram_name = ConvertJavaStringToUTF8(env, j_histogram_name);
+    histogram =
+        LinearHistogram::FactoryGet(histogram_name, min, max, num_buckets,
+                                    HistogramBase::kUmaTargetedHistogramFlag);
+    return InsertLocked(j_histogram_key, histogram);
+  }
+
   HistogramBase* SparseHistogram(JNIEnv* env,
                                  jstring j_histogram_name,
                                  jint j_histogram_key) {
@@ -185,6 +209,22 @@ void RecordCustomCountHistogram(JNIEnv* env,
 
   g_histograms.Get()
       .CustomCountHistogram(env, j_histogram_name, j_histogram_key, j_min,
+                            j_max, j_num_buckets)
+      ->Add(sample);
+}
+
+void RecordLinearCountHistogram(JNIEnv* env,
+                                jclass clazz,
+                                jstring j_histogram_name,
+                                jint j_histogram_key,
+                                jint j_sample,
+                                jint j_min,
+                                jint j_max,
+                                jint j_num_buckets) {
+  int sample = static_cast<int>(j_sample);
+
+  g_histograms.Get()
+      .LinearCountHistogram(env, j_histogram_name, j_histogram_key, j_min,
                             j_max, j_num_buckets)
       ->Add(sample);
 }
