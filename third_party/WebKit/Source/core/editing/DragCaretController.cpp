@@ -107,6 +107,11 @@ LayoutBlock* DragCaretController::caretLayoutObject() const
     return CaretBase::caretLayoutObject(m_position.deepEquivalent().anchorNode());
 }
 
+bool DragCaretController::isContentEditable() const
+{
+    return rootEditableElementOf(m_position);
+}
+
 void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext* p, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
 {
     if (m_position.deepEquivalent().anchorNode()->document().frame() == frame)

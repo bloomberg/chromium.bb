@@ -277,6 +277,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> createBlockPlaceholderElement(Document&);
 
 Element* editableRootForPosition(const Position&, EditableType = ContentIsEditable);
 Element* editableRootForPosition(const PositionInComposedTree&, EditableType = ContentIsEditable);
+Element* rootEditableElementOf(const VisiblePosition&);
 Element* unsplittableElementForPosition(const Position&);
 
 // Boolean functions on Element

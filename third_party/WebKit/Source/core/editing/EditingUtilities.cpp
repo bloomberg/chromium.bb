@@ -303,6 +303,13 @@ Element* editableRootForPosition(const PositionInComposedTree& p, EditableType e
     return editableRootForPosition(toPositionInDOMTree(p), editableType);
 }
 
+// TODO(yosin) This does not handle [table, 0] correctly.
+Element* rootEditableElementOf(const VisiblePosition& visiblePosition)
+{
+    Node* anchorNode = visiblePosition.deepEquivalent().anchorNode();
+    return anchorNode ? anchorNode->rootEditableElement() : nullptr;
+}
+
 // Finds the enclosing element until which the tree can be split.
 // When a user hits ENTER, he/she won't expect this element to be split into two.
 // You may pass it as the second argument of splitTreeToNode.

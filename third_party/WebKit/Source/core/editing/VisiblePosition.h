@@ -100,9 +100,6 @@ public:
     PositionWithAffinity toPositionWithAffinity() const { return PositionWithAffinity(m_deepPosition, m_affinity); }
     TextAffinity affinity() const { return m_affinity; }
 
-    // TODO(yosin) This does not handle [table, 0] correctly.
-    Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.anchorNode()->rootEditableElement() : 0; }
-
     DECLARE_TRACE();
 
 #ifndef NDEBUG

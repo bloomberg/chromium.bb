@@ -179,7 +179,7 @@ void InsertListCommand::doApply()
                     // If endOfSelection is null, then some contents have been deleted from the document.
                     // This should never happen and if it did, exit early immediately because we've lost the loop invariant.
                     ASSERT(endOfSelection.isNotNull());
-                    if (endOfSelection.isNull() || !endOfSelection.rootEditableElement())
+                    if (endOfSelection.isNull() || !rootEditableElementOf(endOfSelection))
                         return;
                     startOfLastParagraph = startOfParagraph(endOfSelection, CanSkipOverEditingBoundary);
                 }

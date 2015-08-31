@@ -39,7 +39,7 @@ public:
     LayoutBlock* caretLayoutObject() const;
     void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
 
-    bool isContentEditable() const { return m_position.rootEditableElement(); }
+    bool isContentEditable() const;
     bool isContentRichlyEditable() const;
 
     bool hasCaret() const { return m_position.isNotNull(); }
