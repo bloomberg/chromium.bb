@@ -54,6 +54,11 @@
             "group_name": "Enabled"
         }
     ],
+    "IntelligentSessionRestore": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "NewProfileManagement": [
         {
             "group_name": "Enabled"
