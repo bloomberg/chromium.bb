@@ -34,10 +34,12 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 struct HeapInfo {
+    DISALLOW_ALLOCATION();
     HeapInfo()
         : usedJSHeapSize(0)
         , totalJSHeapSize(0)

@@ -43,6 +43,7 @@ class KURL;
 
 // A proxy to talk to the worker global scope.
 class CORE_EXPORT WorkerGlobalScopeProxy {
+    WTF_MAKE_FAST_ALLOCATED(WorkerGlobalScopeProxy);
 public:
     virtual ~WorkerGlobalScopeProxy() { }
 

@@ -34,6 +34,7 @@
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDisplayMode.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -55,6 +56,7 @@ class InternalSettings final : public InternalSettingsGenerated {
     DEFINE_WRAPPERTYPEINFO();
 public:
     class Backup {
+        DISALLOW_ALLOCATION();
     public:
         explicit Backup(Settings*);
         void restoreTo(Settings*);

@@ -20,6 +20,7 @@ class WorkerThread;
 // A proxy for talking to the worker inspector on the worker thread.
 // All of these methods should be called on the main thread.
 class CORE_EXPORT WorkerInspectorProxy final {
+    WTF_MAKE_FAST_ALLOCATED(WorkerInspectorProxy);
 public:
     static PassOwnPtr<WorkerInspectorProxy> create();
 

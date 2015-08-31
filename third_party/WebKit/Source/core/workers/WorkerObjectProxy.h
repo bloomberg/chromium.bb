@@ -51,6 +51,8 @@ class WorkerMessagingProxy;
 //
 // Used only by in-process workers (DedicatedWorker and CompositorWorker.)
 class CORE_EXPORT WorkerObjectProxy : public WorkerReportingProxy {
+    WTF_MAKE_FAST_ALLOCATED(WorkerObjectProxy);
+    WTF_MAKE_NONCOPYABLE(WorkerObjectProxy);
 public:
     static PassOwnPtr<WorkerObjectProxy> create(ExecutionContext*, WorkerMessagingProxy*);
     ~WorkerObjectProxy() override { }
