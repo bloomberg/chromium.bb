@@ -4,11 +4,11 @@
 <script src="../../resources/js-test.js"></script>
 </head>
 <body>
-<form method="GET" target="target">
+<form method="GET" target="target" action="data:text/html,a">
       <input name="query" value="AAA" />
       <input type="submit" id="submitButton"/>
 </form>
-<form method="GET" target="target1">
+<form method="GET" target="target1" action="data:text/html,b">
       <input name="query1" value="AAA" />
       <input type="submit" id="submitButton1"/>
 </form>
@@ -16,16 +16,6 @@
 <iframe id="target1" name="target1"></iframe>
 <script>
 description('Test that form submit within onsubmit event handlers are not delayed and sends the form data when invoked');
-var count = 2;
-
-function asyncTest(query) {
-    if (query === '?query=AAA' || query === '?query1=BBB') {
-        if (--count == 0) {
-            testPassed('Both query events received, with correct values: AAA and BBB');
-            finishJSTest();
-        }
-    }
-}
 
 document.forms[0].onsubmit = function (event) {
     document.forms[0].submit();
@@ -39,19 +29,20 @@ document.forms[1].onsubmit = function (event) {
     return true;
 }
 
-document.getElementById('target').onload = function(event) {
-    // This should return back query AAA
-    asyncTest(event.target.contentWindow.location.search);
-}
-
-document.getElementById('target1').onload = function(event) {
-    // This should return back query BBB
-    asyncTest(event.target.contentWindow.location.search);
-}
-
 window.onload = function() {
+    document.getElementById('target').onload = function(event) {
+        // This should return back query AAA
+        shouldBeEqualToString('event.target.contentWindow.location.search', '?query=AAA');
+        document.getElementById('submitButton1').click();
+    }
+
+    document.getElementById('target1').onload = function(event) {
+        // This should return back query BBB
+        shouldBeEqualToString('event.target.contentWindow.location.search', '?query1=BBB');
+        finishJSTest();
+    }
+
     document.getElementById('submitButton').click();
-    document.getElementById('submitButton1').click();
 }
 
 if (window.testRunner)
