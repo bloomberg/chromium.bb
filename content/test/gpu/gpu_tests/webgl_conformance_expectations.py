@@ -623,12 +623,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/rendering/instanced-arrays.html',
         ['mac'], bug=483282)
-    self.Fail('conformance2/vertex_arrays/vertex-array-object.html',
+    self.Fail('deqp/functional/gles3/vertexarrayobject.html',
         ['mac'], bug=483282)
-
-    # Mac/AMD only.
     self.Fail('deqp/functional/gles3/shaderswitch.html',
-        ['mac', 'amd'], bug=483282)
+        ['mac'], bug=483282)
 
     # Linux only.
     self.Fail('deqp/functional/gles3/shaderswitch.html',
