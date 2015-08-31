@@ -35,10 +35,6 @@ namespace net {
 
 namespace {
 
-static const char kTestUrl[] = "http://www.example.org/";
-static const char kTestHost[] = "www.example.org";
-static const int kTestPort = 80;
-
 const char kBodyData[] = "Body data";
 const size_t kBodyDataSize = arraysize(kBodyData);
 const base::StringPiece kBodyDataStringPiece(kBodyData, kBodyDataSize);
@@ -102,8 +98,8 @@ class SpdySessionTest : public PlatformTest,
         spdy_util_(GetParam()),
         session_deps_(GetParam()),
         spdy_session_pool_(nullptr),
-        test_url_(kTestUrl),
-        test_host_port_pair_(kTestHost, kTestPort),
+        test_url_(kDefaultURL),
+        test_host_port_pair_(HostPortPair::FromURL(test_url_)),
         key_(test_host_port_pair_,
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED) {}
@@ -347,19 +343,18 @@ TEST_P(SpdySessionTest, GoAwayWithActiveStreams) {
 
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate2(spdy_stream2);
   spdy_stream2->SetDelegate(&delegate2);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   scoped_ptr<SpdyHeaderBlock> headers2(new SpdyHeaderBlock(*headers));
 
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
@@ -428,19 +423,18 @@ TEST_P(SpdySessionTest, GoAwayTwice) {
 
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate2(spdy_stream2);
   spdy_stream2->SetDelegate(&delegate2);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   scoped_ptr<SpdyHeaderBlock> headers2(new SpdyHeaderBlock(*headers));
 
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
@@ -502,19 +496,18 @@ TEST_P(SpdySessionTest, GoAwayWithActiveStreamsThenClose) {
 
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate2(spdy_stream2);
   spdy_stream2->SetDelegate(&delegate2);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   scoped_ptr<SpdyHeaderBlock> headers2(new SpdyHeaderBlock(*headers));
 
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
@@ -591,14 +584,13 @@ TEST_P(SpdySessionTest, GoAwayWhileDraining) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
 
@@ -636,14 +628,13 @@ TEST_P(SpdySessionTest, CreateStreamAfterGoAway) {
 
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
 
@@ -661,9 +652,9 @@ TEST_P(SpdySessionTest, CreateStreamAfterGoAway) {
   EXPECT_TRUE(session_->IsStreamActive(1));
 
   SpdyStreamRequest stream_request;
-  int rv =
-      stream_request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, url,
-                                  MEDIUM, BoundNetLog(), CompletionCallback());
+  int rv = stream_request.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                       test_url_, MEDIUM, BoundNetLog(),
+                                       CompletionCallback());
   EXPECT_EQ(ERR_FAILED, rv);
 
   EXPECT_TRUE(session_);
@@ -700,14 +691,13 @@ TEST_P(SpdySessionTest, SynStreamAfterGoAway) {
 
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
 
@@ -752,9 +742,8 @@ TEST_P(SpdySessionTest, NetworkChangeWithActiveStreams) {
 
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
-  base::WeakPtr<SpdyStream> spdy_stream =
-      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
-                                GURL(kDefaultURL), MEDIUM, BoundNetLog());
+  base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
@@ -909,14 +898,13 @@ TEST_P(SpdySessionTest, PingAndWriteLoop) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
 
   // Shift time so that a ping will be sent out.
@@ -981,27 +969,27 @@ TEST_P(SpdySessionTest, StreamIdSpaceExhausted) {
   session_->max_concurrent_streams_ = 3;
 
   // Create three streams synchronously, and begin a fourth (which is stalled).
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate1(stream1);
   stream1->SetDelegate(&delegate1);
 
   base::WeakPtr<SpdyStream> stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate2(stream2);
   stream2->SetDelegate(&delegate2);
 
   base::WeakPtr<SpdyStream> stream3 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate3(stream3);
   stream3->SetDelegate(&delegate3);
 
   SpdyStreamRequest request4;
   TestCompletionCallback callback4;
-  EXPECT_EQ(ERR_IO_PENDING,
-            request4.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, url,
-                                  MEDIUM, BoundNetLog(), callback4.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request4.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
+                            MEDIUM, BoundNetLog(), callback4.callback()));
 
   // Streams 1-3 were created. 4th is stalled. No streams are active yet.
   EXPECT_EQ(0u, session_->num_active_streams());
@@ -1011,7 +999,7 @@ TEST_P(SpdySessionTest, StreamIdSpaceExhausted) {
   // Activate stream 1. One ID remains available.
   stream1->SendRequestHeaders(
       scoped_ptr<SpdyHeaderBlock>(
-          spdy_util_.ConstructGetHeaderBlock(url.spec())),
+          spdy_util_.ConstructGetHeaderBlock(kDefaultURL)),
       NO_MORE_DATA_TO_SEND);
   base::RunLoop().RunUntilIdle();
 
@@ -1023,7 +1011,7 @@ TEST_P(SpdySessionTest, StreamIdSpaceExhausted) {
   // Activate stream 2. ID space is exhausted.
   stream2->SendRequestHeaders(
       scoped_ptr<SpdyHeaderBlock>(
-          spdy_util_.ConstructGetHeaderBlock(url.spec())),
+          spdy_util_.ConstructGetHeaderBlock(kDefaultURL)),
       NO_MORE_DATA_TO_SEND);
   base::RunLoop().RunUntilIdle();
 
@@ -1070,15 +1058,15 @@ TEST_P(SpdySessionTest, UnstallRacesWithStreamCreation) {
   session_->max_concurrent_streams_ = 1;
 
   // Create two streams: one synchronously, and one which stalls.
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
 
   SpdyStreamRequest request2;
   TestCompletionCallback callback2;
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, url,
-                                  MEDIUM, BoundNetLog(), callback2.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
+                            MEDIUM, BoundNetLog(), callback2.callback()));
 
   EXPECT_EQ(1u, session_->num_created_streams());
   EXPECT_EQ(1u, session_->pending_create_stream_queue_size(MEDIUM));
@@ -1092,7 +1080,7 @@ TEST_P(SpdySessionTest, UnstallRacesWithStreamCreation) {
 
   // Create a third stream prior to the second stream's callback.
   base::WeakPtr<SpdyStream> stream3 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
 
   EXPECT_EQ(1u, session_->num_created_streams());
   EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
@@ -1146,14 +1134,13 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   CreateInsecureSpdySession();
 
   // Process the principal request, and the first push stream request & body.
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
 
   base::RunLoop().RunUntilIdle();
@@ -1652,14 +1639,13 @@ TEST_P(SpdySessionTest, SynCompressionHistograms) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
 
@@ -1726,17 +1712,16 @@ TEST_P(SpdySessionTest, OutOfOrderSynStreams) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kDefaultURL);
-
   base::WeakPtr<SpdyStream> spdy_stream_lowest = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream_lowest);
   EXPECT_EQ(0u, spdy_stream_lowest->stream_id());
   test::StreamDelegateDoNothing delegate_lowest(spdy_stream_lowest);
   spdy_stream_lowest->SetDelegate(&delegate_lowest);
 
-  base::WeakPtr<SpdyStream> spdy_stream_highest = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, HIGHEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> spdy_stream_highest =
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                test_url_, HIGHEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream_highest);
   EXPECT_EQ(0u, spdy_stream_highest->stream_id());
   test::StreamDelegateDoNothing delegate_highest(spdy_stream_highest);
@@ -1745,13 +1730,13 @@ TEST_P(SpdySessionTest, OutOfOrderSynStreams) {
   // Queue the lower priority one first.
 
   scoped_ptr<SpdyHeaderBlock> headers_lowest(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream_lowest->SendRequestHeaders(
       headers_lowest.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream_lowest->HasUrlFromHeaders());
 
   scoped_ptr<SpdyHeaderBlock> headers_highest(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream_highest->SendRequestHeaders(
       headers_highest.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream_highest->HasUrlFromHeaders());
@@ -1791,29 +1776,28 @@ TEST_P(SpdySessionTest, CancelStream) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
-  base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, HIGHEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> spdy_stream1 =
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                test_url_, HIGHEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
-  GURL url2(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url2, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream2.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
   test::StreamDelegateDoNothing delegate2(spdy_stream2);
   spdy_stream2->SetDelegate(&delegate2);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
   scoped_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructGetHeaderBlock(url2.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream2->SendRequestHeaders(headers2.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream2->HasUrlFromHeaders());
 
@@ -1854,15 +1838,13 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoCreatedSelfClosingStreams) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_BIDIRECTIONAL_STREAM, session_, url1, HIGHEST, BoundNetLog());
+      SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, HIGHEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  GURL url2(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_BIDIRECTIONAL_STREAM, session_, url2, LOWEST, BoundNetLog());
+      SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream2.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
@@ -1873,12 +1855,12 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoCreatedSelfClosingStreams) {
   spdy_stream2->SetDelegate(&delegate2);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
   scoped_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructGetHeaderBlock(url2.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream2->SendRequestHeaders(headers2.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream2->HasUrlFromHeaders());
 
@@ -1910,15 +1892,13 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoCreatedMutuallyClosingStreams) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_BIDIRECTIONAL_STREAM, session_, url1, HIGHEST, BoundNetLog());
+      SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, HIGHEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  GURL url2(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_BIDIRECTIONAL_STREAM, session_, url2, LOWEST, BoundNetLog());
+      SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream2);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
@@ -1931,12 +1911,12 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoCreatedMutuallyClosingStreams) {
   spdy_stream2->SetDelegate(&delegate2);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
   scoped_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructGetHeaderBlock(url2.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream2->SendRequestHeaders(headers2.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream2->HasUrlFromHeaders());
 
@@ -1981,15 +1961,13 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedSelfClosingStreams) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  GURL url2(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url2, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream2.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
@@ -2000,12 +1978,12 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedSelfClosingStreams) {
   spdy_stream2->SetDelegate(&delegate2);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
   scoped_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructGetHeaderBlock(url2.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream2->SendRequestHeaders(headers2.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream2->HasUrlFromHeaders());
 
@@ -2057,15 +2035,13 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedMutuallyClosingStreams) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
-  GURL url2(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url2, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream2);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
@@ -2078,12 +2054,12 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedMutuallyClosingStreams) {
   spdy_stream2->SetDelegate(&delegate2);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
   scoped_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructGetHeaderBlock(url2.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream2->SendRequestHeaders(headers2.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream2->HasUrlFromHeaders());
 
@@ -2157,9 +2133,8 @@ TEST_P(SpdySessionTest, CloseActivatedStreamThatClosesSession) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream->stream_id());
 
@@ -2167,7 +2142,7 @@ TEST_P(SpdySessionTest, CloseActivatedStreamThatClosesSession) {
   spdy_stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
 
@@ -2310,34 +2285,33 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   // Read the settings frame.
   base::RunLoop().RunUntilIdle();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   TestCompletionCallback callback2;
-  GURL url2(kDefaultURL);
   SpdyStreamRequest request2;
-  ASSERT_EQ(ERR_IO_PENDING,
-            request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, url2,
-                                  LOWEST, BoundNetLog(), callback2.callback()));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
+                            LOWEST, BoundNetLog(), callback2.callback()));
 
   TestCompletionCallback callback3;
-  GURL url3(kDefaultURL);
   SpdyStreamRequest request3;
-  ASSERT_EQ(ERR_IO_PENDING,
-            request3.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, url3,
-                                  LOWEST, BoundNetLog(), callback3.callback()));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      request3.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
+                            LOWEST, BoundNetLog(), callback3.callback()));
 
   EXPECT_EQ(0u, session_->num_active_streams());
   EXPECT_EQ(1u, session_->num_created_streams());
   EXPECT_EQ(2u, session_->pending_create_stream_queue_size(LOWEST));
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
@@ -2362,7 +2336,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   test::StreamDelegateDoNothing delegate2(stream2);
   stream2->SetDelegate(&delegate2);
   scoped_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructGetHeaderBlock(url2.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   stream2->SendRequestHeaders(headers2.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(stream2->HasUrlFromHeaders());
 
@@ -2387,7 +2361,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   test::StreamDelegateDoNothing delegate3(stream3);
   stream3->SetDelegate(&delegate3);
   scoped_ptr<SpdyHeaderBlock> headers3(
-      spdy_util_.ConstructGetHeaderBlock(url3.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   stream3->SendRequestHeaders(headers3.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(stream3->HasUrlFromHeaders());
 
@@ -2425,25 +2399,22 @@ TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
     ASSERT_TRUE(spdy_stream != nullptr);
   }
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_BIDIRECTIONAL_STREAM, session_, url1, LOWEST, BoundNetLog());
+      SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   TestCompletionCallback callback2;
-  GURL url2(kDefaultURL);
   SpdyStreamRequest request2;
-  ASSERT_EQ(ERR_IO_PENDING,
-            request2.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, url2,
-                                  LOWEST, BoundNetLog(), callback2.callback()));
+  ASSERT_EQ(ERR_IO_PENDING, request2.StartRequest(
+                                SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
+                                LOWEST, BoundNetLog(), callback2.callback()));
 
   TestCompletionCallback callback3;
-  GURL url3(kDefaultURL);
   SpdyStreamRequest request3;
-  ASSERT_EQ(ERR_IO_PENDING,
-            request3.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, url3,
-                                  LOWEST, BoundNetLog(), callback3.callback()));
+  ASSERT_EQ(ERR_IO_PENDING, request3.StartRequest(
+                                SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
+                                LOWEST, BoundNetLog(), callback3.callback()));
 
   EXPECT_EQ(0u, session_->num_active_streams());
   EXPECT_EQ(kInitialMaxConcurrentStreams, session_->num_created_streams());
@@ -2530,16 +2501,15 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
@@ -2595,16 +2565,15 @@ TEST_P(SpdySessionTest, TestYieldingSlowReads) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
@@ -2682,16 +2651,15 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
@@ -2789,16 +2757,15 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
@@ -2858,16 +2825,15 @@ TEST_P(SpdySessionTest, GoAwayWhileInDoReadLoop) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
@@ -2934,10 +2900,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnection) {
           HttpNetworkSession::NORMAL_SOCKET_POOL);
 
   // Create an idle SPDY session.
-  SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
-                      PRIVACY_MODE_DISABLED);
-  base::WeakPtr<SpdySession> session1 =
-      ::net::CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
+  CreateInsecureSpdySession();
   EXPECT_FALSE(pool->IsStalled());
 
   // Trying to create a new connection should cause the pool to be stalled, and
@@ -2958,7 +2921,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnection) {
   // new connection.
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_FALSE(pool->IsStalled());
-  EXPECT_FALSE(session1);
+  EXPECT_FALSE(session_);
 }
 
 // Tests the case of a non-SPDY request closing an idle SPDY session when no
@@ -3075,26 +3038,21 @@ TEST_P(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
           HttpNetworkSession::NORMAL_SOCKET_POOL);
 
   // Create a SPDY session.
-  GURL url1(kDefaultURL);
-  SpdySessionKey key1(HostPortPair(url1.host(), 80),
-                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
-  base::WeakPtr<SpdySession> session1 =
-      ::net::CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
+  CreateInsecureSpdySession();
   EXPECT_FALSE(pool->IsStalled());
 
   // Create a stream using the session, and send a request.
 
   TestCompletionCallback callback1;
   base::WeakPtr<SpdyStream> spdy_stream1 =
-      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM,
-                                session1, url1, DEFAULT_PRIORITY,
-                                BoundNetLog());
+      CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                test_url_, DEFAULT_PRIORITY, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   EXPECT_EQ(ERR_IO_PENDING,
             spdy_stream1->SendRequestHeaders(
                 headers1.Pass(), NO_MORE_DATA_TO_SEND));
@@ -3216,9 +3174,8 @@ TEST_P(SpdySessionTest, CreateStreamOnStreamReset) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(spdy_stream.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream->stream_id());
 
@@ -3226,7 +3183,7 @@ TEST_P(SpdySessionTest, CreateStreamOnStreamReset) {
   spdy_stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
 
@@ -3509,9 +3466,8 @@ TEST_P(SpdySessionTest, StreamFlowControlTooMuchData) {
   CreateInsecureSpdySession();
   EXPECT_LE(SpdySession::FLOW_CONTROL_STREAM, session_->flow_control_state());
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   EXPECT_EQ(stream_max_recv_window_size, spdy_stream->recv_window_size());
 
   test::StreamDelegateDoNothing delegate(spdy_stream);
@@ -3709,13 +3665,11 @@ class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
 // data. The receive window should still increase to its original
 // value, i.e. we shouldn't "leak" receive window bytes.
 TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
-  const char kStreamUrl[] = "http://www.example.org/";
-
   const int32 msg_data_size = 100;
   const std::string msg_data(msg_data_size, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 1, msg_data_size, MEDIUM, nullptr, 0));
+      kDefaultURL, 1, msg_data_size, MEDIUM, nullptr, 0));
   scoped_ptr<SpdyFrame> msg(
       spdy_util_.ConstructSpdyBodyFrame(
           1, msg_data.data(), msg_data_size, false));
@@ -3747,9 +3701,8 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kStreamUrl);
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
-      SPDY_BIDIRECTIONAL_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(stream.get() != nullptr);
   EXPECT_EQ(0u, stream->stream_id());
 
@@ -3757,7 +3710,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
   stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructPostHeaderBlock(url.spec(), msg_data_size));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, msg_data_size));
   EXPECT_EQ(ERR_IO_PENDING,
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
@@ -3789,13 +3742,11 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
 // can be written to the socket. The send window should then increase
 // to its original value, i.e. we shouldn't "leak" send window bytes.
 TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
-  const char kStreamUrl[] = "http://www.example.org/";
-
   const int32 msg_data_size = 100;
   const std::string msg_data(msg_data_size, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 1, msg_data_size, MEDIUM, nullptr, 0));
+      kDefaultURL, 1, msg_data_size, MEDIUM, nullptr, 0));
   MockWrite writes[] = {
       CreateMockWrite(*req, 0),
   };
@@ -3816,9 +3767,8 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kStreamUrl);
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
-      SPDY_BIDIRECTIONAL_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(stream.get() != nullptr);
   EXPECT_EQ(0u, stream->stream_id());
 
@@ -3826,7 +3776,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
   stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructPostHeaderBlock(url.spec(), msg_data_size));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, msg_data_size));
   EXPECT_EQ(ERR_IO_PENDING,
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
@@ -3865,13 +3815,11 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
 // Send data back and forth; the send and receive windows should
 // change appropriately.
 TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
-  const char kStreamUrl[] = "http://www.example.org/";
-
   const int32 msg_data_size = 100;
   const std::string msg_data(msg_data_size, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 1, msg_data_size, MEDIUM, nullptr, 0));
+      kDefaultURL, 1, msg_data_size, MEDIUM, nullptr, 0));
   scoped_ptr<SpdyFrame> msg(
       spdy_util_.ConstructSpdyBodyFrame(
           1, msg_data.data(), msg_data_size, false));
@@ -3906,9 +3854,8 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kStreamUrl);
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
-      SPDY_BIDIRECTIONAL_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(stream.get() != nullptr);
   EXPECT_EQ(0u, stream->stream_id());
 
@@ -3916,7 +3863,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
   stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructPostHeaderBlock(url.spec(), msg_data_size));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, msg_data_size));
   EXPECT_EQ(ERR_IO_PENDING,
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
@@ -3981,13 +3928,11 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
 void SpdySessionTest::RunResumeAfterUnstallTest(
     const base::Callback<void(SpdyStream*)>& stall_function,
     const base::Callback<void(SpdyStream*, int32)>& unstall_function) {
-  const char kStreamUrl[] = "http://www.example.org/";
-  GURL url(kStreamUrl);
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 1, kBodyDataSize, LOWEST, nullptr, 0));
+      kDefaultURL, 1, kBodyDataSize, LOWEST, nullptr, 0));
   scoped_ptr<SpdyFrame> body(
       spdy_util_.ConstructSpdyBodyFrame(1, kBodyData, kBodyDataSize, true));
   MockWrite writes[] = {
@@ -4012,7 +3957,7 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
             session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream.get() != nullptr);
 
   test::StreamDelegateWithBody delegate(stream, kBodyDataStringPiece);
@@ -4022,11 +3967,11 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream->HasUrlFromHeaders());
-  EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultURL, stream->GetUrlFromHeaders().spec());
 
   stall_function.Run(stream.get());
 
@@ -4104,15 +4049,12 @@ TEST_P(SpdySessionTest, StallSessionStreamResumeAfterUnstallStreamSession) {
 // streams should resume in priority order when that window is then
 // increased.
 TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
-  const char kStreamUrl[] = "http://www.example.org/";
-  GURL url(kStreamUrl);
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   scoped_ptr<SpdyFrame> req1(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 1, kBodyDataSize, LOWEST, nullptr, 0));
+      kDefaultURL, 1, kBodyDataSize, LOWEST, nullptr, 0));
   scoped_ptr<SpdyFrame> req2(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 3, kBodyDataSize, MEDIUM, nullptr, 0));
+      kDefaultURL, 3, kBodyDataSize, MEDIUM, nullptr, 0));
   scoped_ptr<SpdyFrame> body1(
       spdy_util_.ConstructSpdyBodyFrame(1, kBodyData, kBodyDataSize, true));
   scoped_ptr<SpdyFrame> body2(
@@ -4143,7 +4085,7 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
             session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream1.get() != nullptr);
 
   test::StreamDelegateWithBody delegate1(stream1, kBodyDataStringPiece);
@@ -4152,7 +4094,7 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
   EXPECT_FALSE(stream1->HasUrlFromHeaders());
 
   base::WeakPtr<SpdyStream> stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, MEDIUM, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   ASSERT_TRUE(stream2.get() != nullptr);
 
   test::StreamDelegateWithBody delegate2(stream2, kBodyDataStringPiece);
@@ -4166,22 +4108,22 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
   StallSessionSend();
 
   scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream1->SendRequestHeaders(headers1.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream1->HasUrlFromHeaders());
-  EXPECT_EQ(kStreamUrl, stream1->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultURL, stream1->GetUrlFromHeaders().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, stream1->stream_id());
   EXPECT_TRUE(stream1->send_stalled_by_flow_control());
 
   scoped_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream2->SendRequestHeaders(headers2.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream2->HasUrlFromHeaders());
-  EXPECT_EQ(kStreamUrl, stream2->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultURL, stream2->GetUrlFromHeaders().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, stream2->stream_id());
@@ -4250,17 +4192,14 @@ class StreamClosingDelegate : public test::StreamDelegateWithBody {
 // Cause a stall by reducing the flow control send window to
 // 0. Unstalling the session should properly handle deleted streams.
 TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
-  const char kStreamUrl[] = "http://www.example.org/";
-  GURL url(kStreamUrl);
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   scoped_ptr<SpdyFrame> req1(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 1, kBodyDataSize, LOWEST, nullptr, 0));
+      kDefaultURL, 1, kBodyDataSize, LOWEST, nullptr, 0));
   scoped_ptr<SpdyFrame> req2(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 3, kBodyDataSize, LOWEST, nullptr, 0));
+      kDefaultURL, 3, kBodyDataSize, LOWEST, nullptr, 0));
   scoped_ptr<SpdyFrame> req3(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 5, kBodyDataSize, LOWEST, nullptr, 0));
+      kDefaultURL, 5, kBodyDataSize, LOWEST, nullptr, 0));
   scoped_ptr<SpdyFrame> body2(
       spdy_util_.ConstructSpdyBodyFrame(3, kBodyData, kBodyDataSize, true));
   MockWrite writes[] = {
@@ -4287,7 +4226,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
             session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream1.get() != nullptr);
 
   test::StreamDelegateWithBody delegate1(stream1, kBodyDataStringPiece);
@@ -4296,7 +4235,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   EXPECT_FALSE(stream1->HasUrlFromHeaders());
 
   base::WeakPtr<SpdyStream> stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream2.get() != nullptr);
 
   StreamClosingDelegate delegate2(stream2, kBodyDataStringPiece);
@@ -4305,7 +4244,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   EXPECT_FALSE(stream2->HasUrlFromHeaders());
 
   base::WeakPtr<SpdyStream> stream3 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream3.get() != nullptr);
 
   test::StreamDelegateWithBody delegate3(stream3, kBodyDataStringPiece);
@@ -4320,33 +4259,33 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   StallSessionSend();
 
   scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream1->SendRequestHeaders(headers1.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream1->HasUrlFromHeaders());
-  EXPECT_EQ(kStreamUrl, stream1->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultURL, stream1->GetUrlFromHeaders().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, stream1->stream_id());
   EXPECT_TRUE(stream1->send_stalled_by_flow_control());
 
   scoped_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream2->SendRequestHeaders(headers2.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream2->HasUrlFromHeaders());
-  EXPECT_EQ(kStreamUrl, stream2->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultURL, stream2->GetUrlFromHeaders().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, stream2->stream_id());
   EXPECT_TRUE(stream2->send_stalled_by_flow_control());
 
   scoped_ptr<SpdyHeaderBlock> headers3(
-      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream3->SendRequestHeaders(headers3.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream3->HasUrlFromHeaders());
-  EXPECT_EQ(kStreamUrl, stream3->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultURL, stream3->GetUrlFromHeaders().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5u, stream3->stream_id());
@@ -4402,15 +4341,12 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
 // 0. Unstalling the session should properly handle the session itself
 // being closed.
 TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
-  const char kStreamUrl[] = "http://www.example.org/";
-  GURL url(kStreamUrl);
-
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   scoped_ptr<SpdyFrame> req1(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 1, kBodyDataSize, LOWEST, nullptr, 0));
+      kDefaultURL, 1, kBodyDataSize, LOWEST, nullptr, 0));
   scoped_ptr<SpdyFrame> req2(spdy_util_.ConstructSpdyPost(
-      kStreamUrl, 3, kBodyDataSize, LOWEST, nullptr, 0));
+      kDefaultURL, 3, kBodyDataSize, LOWEST, nullptr, 0));
   scoped_ptr<SpdyFrame> body1(
       spdy_util_.ConstructSpdyBodyFrame(1, kBodyData, kBodyDataSize, false));
   MockWrite writes[] = {
@@ -4431,7 +4367,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
             session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream1.get() != nullptr);
 
   test::StreamDelegateWithBody delegate1(stream1, kBodyDataStringPiece);
@@ -4440,7 +4376,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   EXPECT_FALSE(stream1->HasUrlFromHeaders());
 
   base::WeakPtr<SpdyStream> stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(stream2.get() != nullptr);
 
   test::StreamDelegateWithBody delegate2(stream2, kBodyDataStringPiece);
@@ -4454,22 +4390,22 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   StallSessionSend();
 
   scoped_ptr<SpdyHeaderBlock> headers1(
-      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream1->SendRequestHeaders(headers1.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream1->HasUrlFromHeaders());
-  EXPECT_EQ(kStreamUrl, stream1->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultURL, stream1->GetUrlFromHeaders().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, stream1->stream_id());
   EXPECT_TRUE(stream1->send_stalled_by_flow_control());
 
   scoped_ptr<SpdyHeaderBlock> headers2(
-      spdy_util_.ConstructPostHeaderBlock(kStreamUrl, kBodyDataSize));
+      spdy_util_.ConstructPostHeaderBlock(kDefaultURL, kBodyDataSize));
   EXPECT_EQ(ERR_IO_PENDING,
             stream2->SendRequestHeaders(headers2.Pass(), MORE_DATA_TO_SEND));
   EXPECT_TRUE(stream2->HasUrlFromHeaders());
-  EXPECT_EQ(kStreamUrl, stream2->GetUrlFromHeaders().spec());
+  EXPECT_EQ(kDefaultURL, stream2->GetUrlFromHeaders().spec());
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, stream2->stream_id());
@@ -4527,15 +4463,14 @@ TEST_P(SpdySessionTest, GoAwayOnSessionFlowControlError) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream.get() != nullptr);
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
 
   // Write request.
@@ -4609,9 +4544,8 @@ TEST_P(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
   // Read the settings frame.
   base::RunLoop().RunUntilIdle();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
@@ -4623,7 +4557,7 @@ TEST_P(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
   EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
@@ -4648,7 +4582,7 @@ TEST_P(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
   // one of them is push stream and should not be taken into account when we
   // create streams on the client.
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   EXPECT_TRUE(spdy_stream2);
   EXPECT_EQ(2u, session_->num_active_streams());
   EXPECT_EQ(1u, session_->num_created_streams());
@@ -4690,9 +4624,8 @@ TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   CreateInsecureSpdySession();
   session_->set_max_concurrent_pushed_streams(1);
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
@@ -4704,7 +4637,7 @@ TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
@@ -4779,9 +4712,8 @@ TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
   CreateInsecureSpdySession();
   session_->set_max_concurrent_pushed_streams(1);
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
@@ -4793,7 +4725,7 @@ TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
   EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
@@ -4872,9 +4804,8 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   CreateNetworkSession();
   CreateInsecureSpdySession();
 
-  GURL url1(kDefaultURL);
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session_, url1, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
   ASSERT_TRUE(spdy_stream1.get() != nullptr);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
@@ -4886,7 +4817,7 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   scoped_ptr<SpdyHeaderBlock> headers(
-      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
   spdy_stream1->SendRequestHeaders(headers.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 

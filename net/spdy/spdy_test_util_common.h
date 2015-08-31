@@ -44,7 +44,7 @@ class SpdyStreamRequest;
 
 // Default upload data used by both, mock objects and framer when creating
 // data frames.
-const char kDefaultURL[] = "http://www.example.org";
+const char kDefaultURL[] = "http://www.example.org/";
 const char kUploadData[] = "hello!";
 const int kUploadDataSize = arraysize(kUploadData)-1;
 
