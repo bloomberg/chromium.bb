@@ -37,11 +37,6 @@ SVGRect::SVGRect()
 {
 }
 
-SVGRect::SVGRect(InvalidSVGRectTag)
-{
-    setInvalid();
-}
-
 SVGRect::SVGRect(const FloatRect& rect)
     : m_isValid(true)
     , m_value(rect)

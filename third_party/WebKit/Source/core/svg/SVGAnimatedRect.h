@@ -46,7 +46,7 @@ public:
 
 protected:
     SVGAnimatedRect(SVGElement* contextElement, const QualifiedName& attributeName)
-        : SVGAnimatedProperty<SVGRect>(contextElement, attributeName, SVGRect::create(SVGRect::InvalidSVGRectTag()))
+        : SVGAnimatedProperty<SVGRect>(contextElement, attributeName, SVGRect::createInvalid())
     {
     }
 };

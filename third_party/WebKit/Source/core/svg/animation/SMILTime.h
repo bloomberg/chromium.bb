@@ -26,6 +26,7 @@
 #ifndef SMILTime_h
 #define SMILTime_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashTraits.h"
 #include "wtf/MathExtras.h"
@@ -33,6 +34,7 @@
 namespace blink {
 
 class SMILTime {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     SMILTime() : m_time(0) { }
     SMILTime(double time) : m_time(time) { }
@@ -51,6 +53,7 @@ private:
 };
 
 class SMILTimeWithOrigin {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     enum Origin {
         ParserOrigin,
@@ -77,6 +80,7 @@ private:
 };
 
 struct SMILInterval {
+    DISALLOW_ALLOCATION();
     SMILInterval() { }
     SMILInterval(const SMILTime& begin, const SMILTime& end) : begin(begin), end(end) { }
 
@@ -109,6 +113,7 @@ inline bool operator!=(const SMILInterval& a, const SMILInterval& b)
 }
 
 struct SMILTimeHash {
+    STATIC_ONLY(SMILTimeHash);
     static unsigned hash(const SMILTime& key) { return WTF::FloatHash<double>::hash(key.value()); }
     static bool equal(const SMILTime& a, const SMILTime& b) { return WTF::FloatHash<double>::equal(a.value(), b.value()); }
     static const bool safeToCompareToEmptyOrDeleted = true;

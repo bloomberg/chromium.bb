@@ -22,6 +22,7 @@
 
 #include "core/svg/properties/SVGPropertyHelper.h"
 #include "platform/geometry/FloatRect.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -31,16 +32,16 @@ class SVGRect : public SVGPropertyHelper<SVGRect> {
 public:
     typedef SVGRectTearOff TearOffType;
 
-    struct InvalidSVGRectTag { };
-
     static PassRefPtrWillBeRawPtr<SVGRect> create()
     {
         return adoptRefWillBeNoop(new SVGRect());
     }
 
-    static PassRefPtrWillBeRawPtr<SVGRect> create(InvalidSVGRectTag)
+    static PassRefPtrWillBeRawPtr<SVGRect> createInvalid()
     {
-        return adoptRefWillBeNoop(new SVGRect(InvalidSVGRectTag()));
+        RefPtrWillBeRawPtr<SVGRect> rect = adoptRefWillBeNoop(new SVGRect());
+        rect->setInvalid();
+        return rect.release();
     }
 
     static PassRefPtrWillBeRawPtr<SVGRect> create(const FloatRect& rect)
@@ -76,7 +77,6 @@ public:
 
 private:
     SVGRect();
-    SVGRect(InvalidSVGRectTag);
     SVGRect(const FloatRect&);
 
     template<typename CharType>

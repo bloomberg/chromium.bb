@@ -21,12 +21,14 @@
 #define SVGTransformDistance_h
 
 #include "core/svg/SVGTransform.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class AffineTransform;
 
 class SVGTransformDistance {
+    STACK_ALLOCATED();
 public:
     SVGTransformDistance();
     SVGTransformDistance(PassRefPtrWillBeRawPtr<SVGTransform> fromTransform, PassRefPtrWillBeRawPtr<SVGTransform> toTransform);

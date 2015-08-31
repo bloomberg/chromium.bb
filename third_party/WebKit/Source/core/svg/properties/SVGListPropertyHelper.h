@@ -36,6 +36,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/properties/SVGPropertyHelper.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
@@ -74,6 +75,7 @@ public:
     }
 
     class ConstIterator {
+        STACK_ALLOCATED();
     private:
         typedef typename WillBeHeapVector<RefPtrWillBeMember<ItemPropertyType>>::const_iterator WrappedType;
 

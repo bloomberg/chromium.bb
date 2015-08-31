@@ -31,6 +31,7 @@
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -113,6 +114,7 @@ private:
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);
 
 class ImageObserverDisabler {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ImageObserverDisabler);
 public:
     ImageObserverDisabler(Image* image)

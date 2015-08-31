@@ -20,11 +20,14 @@
 #ifndef ColorDistance_h
 #define ColorDistance_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class Color;
 
 class ColorDistance {
+    STATIC_ONLY(ColorDistance);
 public:
     static Color addColors(const Color&, const Color&);
     static float distance(const Color& fromColor, const Color& toColor);

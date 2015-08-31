@@ -40,6 +40,7 @@ namespace blink {
 
 template<typename ItemProperty>
 class ListItemPropertyTraits {
+    STATIC_ONLY(ListItemPropertyTraits);
 public:
     typedef ItemProperty ItemPropertyType;
     typedef typename ItemPropertyType::TearOffType ItemTearOffType;

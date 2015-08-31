@@ -28,6 +28,7 @@
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 
@@ -245,6 +246,7 @@ private:
 };
 
 struct SVGAttributeHashTranslator {
+    STATIC_ONLY(SVGAttributeHashTranslator);
     static unsigned hash(const QualifiedName& key)
     {
         if (key.hasPrefix()) {

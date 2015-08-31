@@ -24,6 +24,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -73,6 +74,7 @@ static inline bool isAbsolutePathSegType(const SVGPathSegType type)
 }
 
 struct PathSegmentData {
+    STACK_ALLOCATED();
     PathSegmentData()
         : command(PathSegUnknown)
         , arcSweep(false)
