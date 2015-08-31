@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "sync/engine/commit_queue.h"
 #include "sync/engine/model_type_entity.h"
-#include "sync/engine/model_type_sync_worker.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/syncable/syncable_util.h"
 
@@ -87,7 +87,7 @@ base::WeakPtr<ModelTypeSyncProxyImpl> ModelTypeSyncProxyImpl::AsWeakPtrForUI() {
   return weak_ptr_factory_for_ui_.GetWeakPtr();
 }
 
-void ModelTypeSyncProxyImpl::OnConnect(scoped_ptr<ModelTypeSyncWorker> worker) {
+void ModelTypeSyncProxyImpl::OnConnect(scoped_ptr<CommitQueue> worker) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
 

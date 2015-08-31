@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/observer_list.h"
 #include "base/thread_task_runner_handle.h"
+#include "sync/engine/commit_queue.h"
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"
-#include "sync/engine/model_type_sync_proxy.h"
+#include "sync/engine/model_type_processor.h"
 #include "sync/engine/model_type_sync_proxy_impl.h"
-#include "sync/engine/model_type_sync_worker.h"
 #include "sync/engine/model_type_sync_worker_impl.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
@@ -21,7 +21,7 @@ namespace syncer {
 
 namespace {
 
-class ModelTypeSyncProxyWrapper : public syncer_v2::ModelTypeSyncProxy {
+class ModelTypeSyncProxyWrapper : public syncer_v2::ModelTypeProcessor {
  public:
   ModelTypeSyncProxyWrapper(
       const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& proxy,
@@ -68,7 +68,7 @@ void ModelTypeSyncProxyWrapper::OnUpdateReceived(
                  processor_, type_state, response_list, pending_updates));
 }
 
-class ModelTypeSyncWorkerWrapper : public syncer_v2::ModelTypeSyncWorker {
+class ModelTypeSyncWorkerWrapper : public syncer_v2::CommitQueue {
  public:
   ModelTypeSyncWorkerWrapper(
       const base::WeakPtr<syncer_v2::ModelTypeSyncWorkerImpl>& worker,
@@ -190,7 +190,7 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
   // Initialize Worker -> Proxy communication channel.
-  scoped_ptr<syncer_v2::ModelTypeSyncProxy> proxy(
+  scoped_ptr<syncer_v2::ModelTypeProcessor> proxy(
       new ModelTypeSyncProxyWrapper(proxy_impl, type_task_runner));
   scoped_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
@@ -202,7 +202,7 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
           cryptographer_copy.Pass(), nudge_handler_, proxy.Pass()));
 
   // Initialize Proxy -> Worker communication channel.
-  scoped_ptr<syncer_v2::ModelTypeSyncWorker> wrapped_worker(
+  scoped_ptr<syncer_v2::CommitQueue> wrapped_worker(
       new ModelTypeSyncWorkerWrapper(worker->AsWeakPtr(),
                                      scoped_refptr<base::SequencedTaskRunner>(
                                          base::ThreadTaskRunnerHandle::Get())));

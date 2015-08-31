@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_type_sync_proxy.h"
+#include "sync/engine/model_type_processor.h"
 
 namespace syncer_v2 {
 
-ModelTypeSyncProxy::ModelTypeSyncProxy() {
+ModelTypeProcessor::ModelTypeProcessor() {
 }
 
-ModelTypeSyncProxy::~ModelTypeSyncProxy() {
+ModelTypeProcessor::~ModelTypeProcessor() {
 }
 
 }  // namespace syncer

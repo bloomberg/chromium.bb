@@ -16,9 +16,9 @@ namespace syncer_v2 {
 
 // Some simple tests for the EntityTracker.
 //
-// The EntityTracker is an implementation detail of the ModelTypeSyncWorker.
+// The EntityTracker is an implementation detail of the ModelTypeWorker.
 // As such, it doesn't make much sense to test it exhaustively, since it
-// already gets a lot of test coverage from the ModelTypeSyncWorker unit tests.
+// already gets a lot of test coverage from the ModelTypeWorker unit tests.
 //
 // These tests are intended as a basic sanity check.  Anything more complicated
 // would be redundant.

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_type_sync_worker.h"
+#include "sync/engine/commit_queue.h"
 
 namespace syncer_v2 {
 
-ModelTypeSyncWorker::ModelTypeSyncWorker() {
+CommitQueue::CommitQueue() {
 }
 
-ModelTypeSyncWorker::~ModelTypeSyncWorker() {
+CommitQueue::~CommitQueue() {
 }
 
 }  // namespace syncer

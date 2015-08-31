@@ -15,12 +15,13 @@
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer_v2 {
-class SyncContextProxy;
+class CommitQueue;
 class ModelTypeEntity;
-class ModelTypeSyncWorker;
+class SyncContextProxy;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
+// TODO(gangwu): 526617 Derive this class from ModelTypeProcessor
 class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
  public:
   ModelTypeSyncProxyImpl(syncer::ModelType type);
@@ -56,7 +57,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   void Disconnect();
 
   // Callback used to process the handshake response.
-  void OnConnect(scoped_ptr<ModelTypeSyncWorker> worker);
+  void OnConnect(scoped_ptr<CommitQueue> worker);
 
   // Requests that an item be stored in sync.
   void Put(const std::string& client_tag,
@@ -98,7 +99,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   void FlushPendingCommitRequests();
 
   // Clears any state related to outstanding communications with the
-  // ModelTypeSyncWorker.  Used when we want to disconnect from
+  // CommitQueue.  Used when we want to disconnect from
   // the current worker.
   void ClearTransientSyncState();
 
@@ -124,12 +125,12 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   // connected to sync.
   scoped_ptr<SyncContextProxy> sync_context_proxy_;
 
-  // Reference to the ModelTypeSyncWorker.
+  // Reference to the CommitQueue.
   //
   // The interface hides the posting of tasks across threads as well as the
-  // ModelTypeSyncWorker's implementation.  Both of these features are
+  // CommitQueue's implementation.  Both of these features are
   // useful in tests.
-  scoped_ptr<ModelTypeSyncWorker> worker_;
+  scoped_ptr<CommitQueue> worker_;
 
   // The set of sync entities known to this object.
   EntityMap entities_;

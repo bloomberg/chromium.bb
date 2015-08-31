@@ -6,13 +6,13 @@
 
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
-#include "sync/engine/model_type_sync_proxy.h"
+#include "sync/engine/model_type_processor.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable_util.h"
-#include "sync/test/engine/mock_model_type_sync_proxy.h"
+#include "sync/test/engine/mock_model_type_processor.h"
 #include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/single_type_mock_server.h"
 #include "sync/test/fake_encryptor.h"
@@ -52,7 +52,7 @@ using syncer::sessions::StatusController;
 // - Update responses to the model thread.
 // - Nudges to the sync scheduler.
 //
-// We use the MockModelTypeSyncProxy to stub out all communication
+// We use the MockModelTypeProcessor to stub out all communication
 // with the model thread.  That interface is synchronous, which makes it
 // much easier to test races.
 //
@@ -174,7 +174,7 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
   int GetNumInitialDownloadNudges() const;
 
   // Returns the name of the encryption key in the cryptographer last passed to
-  // the ModelTypeSyncWorker.  Returns an empty string if no crypgorapher is
+  // the CommitQueue.  Returns an empty string if no crypgorapher is
   // in use.  See also: UpdateLocalCryptographer().
   std::string GetLocalCryptographerKeyName() const;
 
@@ -218,14 +218,14 @@ class ModelTypeSyncWorkerImplTest : public ::testing::Test {
 
   // Non-owned, possibly NULL pointer.  This object belongs to the
   // ModelTypeSyncWorkerImpl under test.
-  MockModelTypeSyncProxy* mock_type_sync_proxy_;
+  MockModelTypeProcessor* mock_type_sync_proxy_;
 
   // A mock that emulates enough of the sync server that it can be used
   // a single UpdateHandler and CommitContributor pair.  In this test
   // harness, the |worker_| is both of them.
   syncer::SingleTypeMockServer mock_server_;
 
-  // A mock to track the number of times the ModelTypeSyncWorker requests to
+  // A mock to track the number of times the CommitQueue requests to
   // sync.
   syncer::MockNudgeHandler mock_nudge_handler_;
 };
@@ -272,8 +272,8 @@ void ModelTypeSyncWorkerImplTest::InitializeWithState(
   DCHECK(!worker_);
 
   // We don't get to own this object.  The |worker_| keeps a scoped_ptr to it.
-  mock_type_sync_proxy_ = new MockModelTypeSyncProxy();
-  scoped_ptr<ModelTypeSyncProxy> proxy(mock_type_sync_proxy_);
+  mock_type_sync_proxy_ = new MockModelTypeProcessor();
+  scoped_ptr<ModelTypeProcessor> proxy(mock_type_sync_proxy_);
 
   scoped_ptr<Cryptographer> cryptographer_copy;
   if (cryptographer_) {
@@ -949,7 +949,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, ReceiveDecryptableEntities) {
   EXPECT_FALSE(update2.encryption_key_name.empty());
 }
 
-// Test initializing a ModelTypeSyncWorker with a cryptographer at startup.
+// Test initializing a CommitQueue with a cryptographer at startup.
 TEST_F(ModelTypeSyncWorkerImplTest, InitializeWithCryptographer) {
   // Set up some encryption state.
   NewForeignEncryptionKey();
@@ -1035,7 +1035,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, RestorePendingEntries) {
   update.specifics = GenerateSpecifics("tag1", "value1");
   EncryptUpdate(GetNthKeyParams(1), &(update.specifics));
 
-  // Inject the update during ModelTypeSyncWorker initialization.
+  // Inject the update during CommitQueue initialization.
   UpdateResponseDataList saved_pending_updates;
   saved_pending_updates.push_back(update);
   InitializeWithPendingUpdates(saved_pending_updates);
@@ -1054,7 +1054,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, RestorePendingEntries) {
 
 // Test decryption of pending updates saved across a restart.  This test
 // differs from the previous one in that the restored updates can be decrypted
-// immediately after the ModelTypeSyncWorker is constructed.
+// immediately after the CommitQueue is constructed.
 TEST_F(ModelTypeSyncWorkerImplTest, RestoreApplicableEntries) {
   // Update the cryptographer so it can decrypt that update.
   NewForeignEncryptionKey();
@@ -1073,7 +1073,7 @@ TEST_F(ModelTypeSyncWorkerImplTest, RestoreApplicableEntries) {
   update.specifics = GenerateSpecifics("tag1", "value1");
   EncryptUpdate(GetNthKeyParams(1), &(update.specifics));
 
-  // Inject the update during ModelTypeSyncWorker initialization.
+  // Inject the update during CommitQueue initialization.
   UpdateResponseDataList saved_pending_updates;
   saved_pending_updates.push_back(update);
   InitializeWithPendingUpdates(saved_pending_updates);

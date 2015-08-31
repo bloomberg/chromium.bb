@@ -12,7 +12,7 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 
 namespace syncer {
-class ModelTypeSyncProxy;
+class ModelTypeProcessor;
 }
 
 namespace sync_driver_v2 {
@@ -22,10 +22,10 @@ namespace sync_driver_v2 {
 //
 // There are three main parts to this controller:
 // - The SyncContextProxy, represening the sync thread.
-// - The ModelTypeSyncProxy, representing the model type thread.
+// - The ModelTypeProcessor, representing the model type thread.
 // - The user-set state for this type (prefs), which lives on the UI thread.
 //
-// The ModelTypeSyncProxy can exist in three different states.  Those
+// The ModelTypeProcessor can exist in three different states.  Those
 // states are:
 // - Enabled: Changes are being synced.
 // - Disconnected: Changes would be synced, but there is no connection between
@@ -38,7 +38,7 @@ namespace sync_driver_v2 {
 // of these states.  It does this by posting tasks to the model type thread.
 //
 // The type proxy is enabled when the user has indicated a desire to sync this
-// type, and the ModelTypeSyncProxy and SyncContextProxy are available.
+// type, and the ModelTypeProcessor and SyncContextProxy are available.
 //
 // The type proxy is disconnected during initialization, or when either the
 // NonBlockingDataTypeController or SyncContextProxy have not yet registered.
@@ -57,7 +57,7 @@ class NonBlockingDataTypeController {
   NonBlockingDataTypeController(syncer::ModelType type, bool is_preferred);
   ~NonBlockingDataTypeController();
 
-  // Connects the ModelTypeSyncProxy to this controller.
+  // Connects the ModelTypeProcessor to this controller.
   //
   // There is no "undo" for this operation.  The NonBlockingDataTypeController
   // will only ever deal with a single type proxy.

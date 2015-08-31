@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_PROXY_H_
-#define SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_PROXY_H_
+#ifndef SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_PROCESSOR_H_
+#define SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_PROCESSOR_H_
 
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "sync/engine/model_type_sync_proxy.h"
+#include "sync/engine/model_type_processor.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer_v2 {
 
-// Mocks the ModelTypeSyncProxy.
+// Mocks the ModelTypeProcessor.
 //
 // This mock is made simpler by not using any threads.  It does still have the
 // ability to defer execution if we need to test race conditions, though.
@@ -25,12 +25,12 @@ namespace syncer_v2 {
 //
 // It keeps a log of all received messages so tests can make assertions based
 // on their value.
-class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
+class MockModelTypeProcessor : public ModelTypeProcessor {
  public:
-  MockModelTypeSyncProxy();
-  ~MockModelTypeSyncProxy() override;
+  MockModelTypeProcessor();
+  ~MockModelTypeProcessor() override;
 
-  // Implementation of ModelTypeSyncProxy.
+  // Implementation of ModelTypeProcessor.
   void OnCommitCompleted(const DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const DataTypeState& type_state,
@@ -51,8 +51,8 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   // Generate commit or deletion requests to be sent to the server.
   // These functions update local state to keep sequence numbers consistent.
   //
-  // A real ModelTypeSyncProxy would forward these kinds of messages
-  // directly to its attached ModelTypeSyncWorker.  These methods
+  // A real ModelTypeProcessor would forward these kinds of messages
+  // directly to its attached CommitQueue.  These methods
   // return the value to the caller so the test framework can handle them as it
   // sees fit.
   CommitRequestData CommitRequest(const std::string& tag_hash,
@@ -130,9 +130,9 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   std::map<const std::string, int64> base_versions_;
   std::map<const std::string, std::string> assigned_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockModelTypeSyncProxy);
+  DISALLOW_COPY_AND_ASSIGN(MockModelTypeProcessor);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_PROXY_H_
+#endif  // SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_PROCESSOR_H_

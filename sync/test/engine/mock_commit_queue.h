@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_WORKER_H_
-#define SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_WORKER_H_
+#ifndef SYNC_TEST_ENGINE_MOCK_COMMIT_QUEUE_H_
+#define SYNC_TEST_ENGINE_MOCK_COMMIT_QUEUE_H_
 
 #include <vector>
 
 #include "base/macros.h"
-#include "sync/engine/model_type_sync_worker.h"
+#include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer_v2 {
 
-// Receives and records commit requests sent through the ModelTypeSyncWorker.
+// Receives and records commit requests sent through the CommitQueue.
 //
 // This class also includes features intended to help mock out server behavior.
 // It has some basic functionality to keep track of server state and generate
 // plausible UpdateResponseData and CommitResponseData messages.
-class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
+class MockCommitQueue : public CommitQueue {
  public:
-  MockModelTypeSyncWorker();
-  ~MockModelTypeSyncWorker() override;
+  MockCommitQueue();
+  ~MockCommitQueue() override;
 
-  // Implementation of ModelTypeSyncWorker.
+  // Implementation of CommitQueue.
   void EnqueueForCommit(const CommitRequestDataList& list) override;
 
   // Getters to inspect the requests sent to this object.
@@ -34,7 +34,7 @@ class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
       const std::string& tag_hash) const;
 
   // Functions to produce state as though it came from a real server and had
-  // been filtered through a real ModelTypeSyncWorker.
+  // been filtered through a real CommitQueue.
 
   // Returns an UpdateResponseData representing an update received from
   // the server.  Updates server state accordingly.
@@ -80,9 +80,9 @@ class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
   // Name of the encryption key in use on other clients.
   std::string server_encryption_key_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockModelTypeSyncWorker);
+  DISALLOW_COPY_AND_ASSIGN(MockCommitQueue);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_SYNC_WORKER_H_
+#endif  // SYNC_TEST_ENGINE_MOCK_COMMIT_QUEUE_H_

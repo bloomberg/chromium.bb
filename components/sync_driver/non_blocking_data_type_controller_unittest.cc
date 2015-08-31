@@ -11,8 +11,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
+#include "sync/engine/commit_queue.h"
 #include "sync/engine/model_type_sync_proxy_impl.h"
-#include "sync/engine/model_type_sync_worker.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,22 +21,22 @@ namespace sync_driver_v2 {
 
 namespace {
 
-// A useless instance of ModelTypeSyncWorker.
-class NullModelTypeSyncWorker : public syncer_v2::ModelTypeSyncWorker {
+// A useless instance of CommitQueue.
+class NullCommitQueue : public syncer_v2::CommitQueue {
  public:
-  NullModelTypeSyncWorker();
-  ~NullModelTypeSyncWorker() override;
+  NullCommitQueue();
+  ~NullCommitQueue() override;
 
   void EnqueueForCommit(const syncer_v2::CommitRequestDataList& list) override;
 };
 
-NullModelTypeSyncWorker::NullModelTypeSyncWorker() {
+NullCommitQueue::NullCommitQueue() {
 }
 
-NullModelTypeSyncWorker::~NullModelTypeSyncWorker() {
+NullCommitQueue::~NullCommitQueue() {
 }
 
-void NullModelTypeSyncWorker::EnqueueForCommit(
+void NullCommitQueue::EnqueueForCommit(
     const syncer_v2::CommitRequestDataList& list) {
   NOTREACHED() << "Not implemented.";
 }
@@ -52,8 +52,8 @@ class MockSyncContext {
     model_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::OnConnect, type_proxy,
-                   base::Passed(scoped_ptr<syncer_v2::ModelTypeSyncWorker>(
-                                    new NullModelTypeSyncWorker())
+                   base::Passed(scoped_ptr<syncer_v2::CommitQueue>(
+                                    new NullCommitQueue())
                                     .Pass())));
   }
 

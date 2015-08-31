@@ -4,14 +4,14 @@
 
 #include "sync/engine/model_type_sync_proxy_impl.h"
 
-#include "sync/engine/model_type_sync_worker.h"
+#include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/test/engine/injectable_sync_context_proxy.h"
-#include "sync/test/engine/mock_model_type_sync_worker.h"
+#include "sync/test/engine/mock_commit_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer_v2 {
@@ -38,7 +38,7 @@ static const syncer::ModelType kModelType = syncer::PREFERENCES;
 // Outputs:
 // - Writes to permanent storage. (TODO)
 // - Callbacks into the model. (TODO)
-// - Requests to the sync thread.  Tested with MockModelTypeSyncWorker.
+// - Requests to the sync thread.  Tested with MockCommitQueue.
 class ModelTypeSyncProxyImplTest : public ::testing::Test {
  public:
   ModelTypeSyncProxyImplTest();
@@ -51,7 +51,7 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState();
 
-  // Disconnect the ModelTypeSyncWorker from our ModelTypeSyncProxyImpl.
+  // Disconnect the CommitQueue from our ModelTypeSyncProxyImpl.
   void Disconnect();
 
   // Disable sync for this ModelTypeSyncProxyImpl.  Should cause sync state to
@@ -66,7 +66,7 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
   void DeleteItem(const std::string& tag);
 
   // Emulates an "initial sync done" message from the
-  // ModelTypeSyncWorker.
+  // CommitQueue.
   void OnInitialSyncDone();
 
   // Emulate updates from the server.
@@ -108,7 +108,7 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
   // the desired encryption key has changed.
   void UpdateDesiredEncryptionKey(const std::string& key_name);
 
-  // Sets the key_name that the mock ModelTypeSyncWorker will claim is in use
+  // Sets the key_name that the mock CommitQueue will claim is in use
   // when receiving items.
   void SetServerEncryptionKey(const std::string& key_name);
 
@@ -124,7 +124,7 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
   int64 GetServerVersion(const std::string& tag);
   void SetServerVersion(const std::string& tag, int64 version);
 
-  MockModelTypeSyncWorker* mock_worker_;
+  MockCommitQueue* mock_queue_;
   scoped_ptr<InjectableSyncContextProxy> injectable_sync_context_proxy_;
   scoped_ptr<ModelTypeSyncProxyImpl> type_sync_proxy_;
 
@@ -132,9 +132,9 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
 };
 
 ModelTypeSyncProxyImplTest::ModelTypeSyncProxyImplTest()
-    : mock_worker_(new MockModelTypeSyncWorker()),
+    : mock_queue_(new MockCommitQueue()),
       injectable_sync_context_proxy_(
-          new InjectableSyncContextProxy(mock_worker_)),
+          new InjectableSyncContextProxy(mock_queue_)),
       type_sync_proxy_(new ModelTypeSyncProxyImpl(kModelType)) {
 }
 
@@ -157,25 +157,25 @@ void ModelTypeSyncProxyImplTest::InitializeToReadyState() {
 void ModelTypeSyncProxyImplTest::Disconnect() {
   type_sync_proxy_->Disconnect();
   injectable_sync_context_proxy_.reset();
-  mock_worker_ = NULL;
+  mock_queue_ = NULL;
 }
 
 void ModelTypeSyncProxyImplTest::Disable() {
   type_sync_proxy_->Disable();
   injectable_sync_context_proxy_.reset();
-  mock_worker_ = NULL;
+  mock_queue_ = NULL;
 }
 
 void ModelTypeSyncProxyImplTest::ReEnable() {
   DCHECK(!type_sync_proxy_->IsConnected());
 
-  // Prepare a new MockModelTypeSyncWorker instance, just as we would
+  // Prepare a new MockCommitQueue instance, just as we would
   // if this happened in the real world.
-  mock_worker_ = new MockModelTypeSyncWorker();
+  mock_queue_ = new MockCommitQueue();
   injectable_sync_context_proxy_.reset(
-      new InjectableSyncContextProxy(mock_worker_));
+      new InjectableSyncContextProxy(mock_queue_));
 
-  // Re-enable sync with the new ModelTypeSyncWorker.
+  // Re-enable sync with the new CommitQueue.
   type_sync_proxy_->Enable(injectable_sync_context_proxy_->Clone());
 }
 
@@ -201,7 +201,7 @@ void ModelTypeSyncProxyImplTest::UpdateFromServer(int64 version_offset,
                                                   const std::string& tag,
                                                   const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
-  UpdateResponseData data = mock_worker_->UpdateFromServer(
+  UpdateResponseData data = mock_queue_->UpdateFromServer(
       version_offset, tag_hash, GenerateSpecifics(tag, value));
 
   UpdateResponseDataList list;
@@ -216,7 +216,7 @@ void ModelTypeSyncProxyImplTest::PendingUpdateFromServer(
     const std::string& value,
     const std::string& key_name) {
   const std::string tag_hash = GenerateTagHash(tag);
-  UpdateResponseData data = mock_worker_->UpdateFromServer(
+  UpdateResponseData data = mock_queue_->UpdateFromServer(
       version_offset, tag_hash,
       GenerateEncryptedSpecifics(tag, value, key_name));
 
@@ -232,7 +232,7 @@ void ModelTypeSyncProxyImplTest::TombstoneFromServer(int64 version_offset,
   std::string tag_hash = GenerateTagHash(tag);
 
   UpdateResponseData data =
-      mock_worker_->TombstoneFromServer(version_offset, tag_hash);
+      mock_queue_->TombstoneFromServer(version_offset, tag_hash);
 
   UpdateResponseDataList list;
   list.push_back(data);
@@ -273,7 +273,7 @@ size_t ModelTypeSyncProxyImplTest::GetNumPendingUpdates() const {
 void ModelTypeSyncProxyImplTest::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
   CommitResponseDataList list;
-  list.push_back(mock_worker_->SuccessfulCommitResponse(request_data));
+  list.push_back(mock_queue_->SuccessfulCommitResponse(request_data));
   type_sync_proxy_->OnCommitCompleted(data_type_state_, list);
 }
 
@@ -286,7 +286,7 @@ void ModelTypeSyncProxyImplTest::UpdateDesiredEncryptionKey(
 
 void ModelTypeSyncProxyImplTest::SetServerEncryptionKey(
     const std::string& key_name) {
-  mock_worker_->SetServerEncryptionKey(key_name);
+  mock_queue_->SetServerEncryptionKey(key_name);
 }
 
 std::string ModelTypeSyncProxyImplTest::GenerateTagHash(
@@ -317,24 +317,24 @@ sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateEncryptedSpecifics(
 }
 
 size_t ModelTypeSyncProxyImplTest::GetNumCommitRequestLists() {
-  return mock_worker_->GetNumCommitRequestLists();
+  return mock_queue_->GetNumCommitRequestLists();
 }
 
 CommitRequestDataList ModelTypeSyncProxyImplTest::GetNthCommitRequestList(
     size_t n) {
-  return mock_worker_->GetNthCommitRequestList(n);
+  return mock_queue_->GetNthCommitRequestList(n);
 }
 
 bool ModelTypeSyncProxyImplTest::HasCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_worker_->HasCommitRequestForTagHash(tag_hash);
+  return mock_queue_->HasCommitRequestForTagHash(tag_hash);
 }
 
 CommitRequestData ModelTypeSyncProxyImplTest::GetLatestCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
-  return mock_worker_->GetLatestCommitRequestForTagHash(tag_hash);
+  return mock_queue_->GetLatestCommitRequestForTagHash(tag_hash);
 }
 
 // Creates a new item locally.

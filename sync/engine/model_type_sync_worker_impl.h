@@ -11,7 +11,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/commit_contributor.h"
-#include "sync/engine/model_type_sync_worker.h"
+#include "sync/engine/commit_queue.h"
 #include "sync/engine/nudge_handler.h"
 #include "sync/engine/update_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -26,7 +26,7 @@ class SingleThreadTaskRunner;
 
 namespace syncer_v2 {
 
-class ModelTypeSyncProxy;
+class ModelTypeProcessor;
 class EntityTracker;
 
 // A smart cache for sync types that use message passing (rather than
@@ -51,7 +51,7 @@ class EntityTracker;
 // cancel the pending commit.
 class SYNC_EXPORT ModelTypeSyncWorkerImpl : public syncer::UpdateHandler,
                                             public syncer::CommitContributor,
-                                            public ModelTypeSyncWorker,
+                                            public CommitQueue,
                                             public base::NonThreadSafe {
  public:
   ModelTypeSyncWorkerImpl(syncer::ModelType type,
@@ -59,7 +59,7 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public syncer::UpdateHandler,
                           const UpdateResponseDataList& saved_pending_updates,
                           scoped_ptr<syncer::Cryptographer> cryptographer,
                           syncer::NudgeHandler* nudge_handler,
-                          scoped_ptr<ModelTypeSyncProxy> type_sync_proxy);
+                          scoped_ptr<ModelTypeProcessor> type_sync_proxy);
   ~ModelTypeSyncWorkerImpl() override;
 
   syncer::ModelType GetModelType() const;
@@ -79,7 +79,7 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public syncer::UpdateHandler,
   void ApplyUpdates(syncer::sessions::StatusController* status) override;
   void PassiveApplyUpdates(syncer::sessions::StatusController* status) override;
 
-  // ModelTypeSyncWorker implementation.
+  // CommitQueue implementation.
   void EnqueueForCommit(const CommitRequestDataList& request_list) override;
 
   // CommitContributor implementation.
@@ -137,9 +137,9 @@ class SYNC_EXPORT ModelTypeSyncWorkerImpl : public syncer::UpdateHandler,
   // State that applies to the entire model type.
   DataTypeState data_type_state_;
 
-  // Pointer to the ModelTypeSyncProxy associated with this worker.
+  // Pointer to the ModelTypeProcessor associated with this worker.
   // This is NULL when no proxy is connected..
-  scoped_ptr<ModelTypeSyncProxy> type_sync_proxy_;
+  scoped_ptr<ModelTypeProcessor> type_sync_proxy_;
 
   // A private copy of the most recent cryptographer known to sync.
   // Initialized at construction time and updated with UpdateCryptographer().

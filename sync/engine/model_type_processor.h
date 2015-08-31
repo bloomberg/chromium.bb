@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_H_
-#define SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_H_
+#ifndef SYNC_ENGINE_MODEL_TYPE_PROCESSOR_H_
+#define SYNC_ENGINE_MODEL_TYPE_PROCESSOR_H_
 
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
@@ -11,11 +11,13 @@
 namespace syncer_v2 {
 
 // Interface used by sync backend to issue requests to a synced data type.
-class SYNC_EXPORT_PRIVATE ModelTypeSyncProxy {
+class SYNC_EXPORT_PRIVATE ModelTypeProcessor {
  public:
-  ModelTypeSyncProxy();
-  virtual ~ModelTypeSyncProxy();
+  ModelTypeProcessor();
+  virtual ~ModelTypeProcessor();
 
+  // TODO(gangwu): 525830 add OnConnect method here. And also add comments for
+  // all the functions.
   virtual void OnCommitCompleted(
       const DataTypeState& type_state,
       const CommitResponseDataList& response_list) = 0;
@@ -27,4 +29,4 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxy {
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_MODEL_TYPE_SYNC_PROXY_H_
+#endif  // SYNC_ENGINE_MODEL_TYPE_PROCESSOR_H_

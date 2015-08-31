@@ -20,7 +20,7 @@ struct UpdateResponseData;
 // thread.
 //
 // It should be considered a helper class internal to the
-// ModelTypeSyncWorker.
+// ModelTypeWorker.
 //
 // Maintains the state associated with a particular sync entity which is
 // necessary for decision-making on the sync thread.  It can track pending

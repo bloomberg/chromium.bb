@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
 #include "sync/engine/entity_tracker.h"
-#include "sync/engine/model_type_sync_proxy.h"
+#include "sync/engine/model_type_processor.h"
 #include "sync/engine/non_blocking_type_commit_contribution.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/util/cryptographer.h"
@@ -31,7 +31,7 @@ ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
     const UpdateResponseDataList& saved_pending_updates,
     scoped_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
-    scoped_ptr<ModelTypeSyncProxy> type_sync_proxy)
+    scoped_ptr<ModelTypeProcessor> type_sync_proxy)
     : type_(type),
       data_type_state_(initial_state),
       type_sync_proxy_(type_sync_proxy.Pass()),
@@ -199,7 +199,7 @@ void ModelTypeSyncWorkerImpl::ApplyUpdates(
   DCHECK(CalledOnValidThread());
   // This function is called only when we've finished a download cycle, ie. we
   // got a response with changes_remaining == 0.  If this is our first download
-  // cycle, we should update our state so the ModelTypeSyncProxy knows that
+  // cycle, we should update our state so the ModelTypeProcessor knows that
   // it's safe to commit items now.
   if (!data_type_state_.initial_sync_done) {
     DVLOG(1) << "Delivering 'initial sync done' ping.";

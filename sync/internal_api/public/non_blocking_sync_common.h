@@ -37,7 +37,7 @@ struct SYNC_EXPORT_PRIVATE DataTypeState {
   std::string encryption_key_name;
 
   // This flag is set to true when the first download cycle is complete.  The
-  // ModelTypeSyncProxy should not attempt to commit any items until this
+  // ModelTypeProcessor should not attempt to commit any items until this
   // flag is set.
   bool initial_sync_done;
 };

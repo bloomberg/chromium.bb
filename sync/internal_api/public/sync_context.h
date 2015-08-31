@@ -42,7 +42,7 @@ class SYNC_EXPORT_PRIVATE SyncContext {
   //
   // By the time this is called, the model thread should have already
   // invalidated the WeakPtr it sent to us in the connect request.  Any
-  // messages sent to that ModelTypeSyncProxy will not be recived.
+  // messages sent to that ModelTypeProcessor will not be recived.
   //
   // This is the sync thread's chance to clear state associated with the type.
   // It also causes the syncer to stop requesting updates for this type, and to

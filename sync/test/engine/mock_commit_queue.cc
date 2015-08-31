@@ -2,34 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/test/engine/mock_model_type_sync_worker.h"
+#include "sync/test/engine/mock_commit_queue.h"
 
 #include "base/logging.h"
 
 namespace syncer_v2 {
 
-MockModelTypeSyncWorker::MockModelTypeSyncWorker() {
+MockCommitQueue::MockCommitQueue() {
 }
 
-MockModelTypeSyncWorker::~MockModelTypeSyncWorker() {
+MockCommitQueue::~MockCommitQueue() {
 }
 
-void MockModelTypeSyncWorker::EnqueueForCommit(
+void MockCommitQueue::EnqueueForCommit(
     const CommitRequestDataList& list) {
   commit_request_lists_.push_back(list);
 }
 
-size_t MockModelTypeSyncWorker::GetNumCommitRequestLists() const {
+size_t MockCommitQueue::GetNumCommitRequestLists() const {
   return commit_request_lists_.size();
 }
 
-CommitRequestDataList MockModelTypeSyncWorker::GetNthCommitRequestList(
+CommitRequestDataList MockCommitQueue::GetNthCommitRequestList(
     size_t n) const {
   DCHECK_LT(n, GetNumCommitRequestLists());
   return commit_request_lists_[n];
 }
 
-bool MockModelTypeSyncWorker::HasCommitRequestForTagHash(
+bool MockCommitQueue::HasCommitRequestForTagHash(
     const std::string& tag_hash) const {
   // Iterate backward through the sets of commit requests to find the most
   // recent one that applies to the specified tag_hash.
@@ -47,7 +47,7 @@ bool MockModelTypeSyncWorker::HasCommitRequestForTagHash(
   return false;
 }
 
-CommitRequestData MockModelTypeSyncWorker::GetLatestCommitRequestForTagHash(
+CommitRequestData MockCommitQueue::GetLatestCommitRequestForTagHash(
     const std::string& tag_hash) const {
   // Iterate backward through the sets of commit requests to find the most
   // recent one that applies to the specified tag_hash.
@@ -66,7 +66,7 @@ CommitRequestData MockModelTypeSyncWorker::GetLatestCommitRequestForTagHash(
   return CommitRequestData();
 }
 
-UpdateResponseData MockModelTypeSyncWorker::UpdateFromServer(
+UpdateResponseData MockCommitQueue::UpdateFromServer(
     int64 version_offset,
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
@@ -95,7 +95,7 @@ UpdateResponseData MockModelTypeSyncWorker::UpdateFromServer(
   return data;
 }
 
-UpdateResponseData MockModelTypeSyncWorker::TombstoneFromServer(
+UpdateResponseData MockCommitQueue::TombstoneFromServer(
     int64 version_offset,
     const std::string& tag_hash) {
   int64 old_version = GetServerVersion(tag_hash);
@@ -121,7 +121,7 @@ UpdateResponseData MockModelTypeSyncWorker::TombstoneFromServer(
   return data;
 }
 
-CommitResponseData MockModelTypeSyncWorker::SuccessfulCommitResponse(
+CommitResponseData MockCommitQueue::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
   const std::string& client_tag_hash = request_data.client_tag_hash;
 
@@ -149,16 +149,16 @@ CommitResponseData MockModelTypeSyncWorker::SuccessfulCommitResponse(
   return response_data;
 }
 
-void MockModelTypeSyncWorker::SetServerEncryptionKey(
+void MockCommitQueue::SetServerEncryptionKey(
     const std::string& key_name) {
   server_encryption_key_name_ = key_name;
 }
 
-std::string MockModelTypeSyncWorker::GenerateId(const std::string& tag_hash) {
+std::string MockCommitQueue::GenerateId(const std::string& tag_hash) {
   return "FakeId:" + tag_hash;
 }
 
-int64 MockModelTypeSyncWorker::GetServerVersion(const std::string& tag_hash) {
+int64 MockCommitQueue::GetServerVersion(const std::string& tag_hash) {
   std::map<const std::string, int64>::const_iterator it;
   it = server_versions_.find(tag_hash);
   if (it == server_versions_.end()) {
@@ -168,7 +168,7 @@ int64 MockModelTypeSyncWorker::GetServerVersion(const std::string& tag_hash) {
   }
 }
 
-void MockModelTypeSyncWorker::SetServerVersion(const std::string& tag_hash,
+void MockCommitQueue::SetServerVersion(const std::string& tag_hash,
                                                int64 version) {
   server_versions_[tag_hash] = version;
 }

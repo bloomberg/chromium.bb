@@ -12,13 +12,13 @@
 namespace syncer_v2 {
 
 class ModelTypeSyncProxyImpl;
-class ModelTypeSyncWorker;
+class CommitQueue;
 
 // A SyncContextProxy implementation that, when a connection request is made,
 // initalizes a connection to a previously injected ModelTypeSyncProxyImpl.
 class InjectableSyncContextProxy : public SyncContextProxy {
  public:
-  explicit InjectableSyncContextProxy(ModelTypeSyncWorker* worker);
+  explicit InjectableSyncContextProxy(CommitQueue* queue);
   ~InjectableSyncContextProxy() override;
 
   void ConnectTypeToSync(
@@ -29,18 +29,18 @@ class InjectableSyncContextProxy : public SyncContextProxy {
   void Disconnect(syncer::ModelType type) override;
   scoped_ptr<SyncContextProxy> Clone() const override;
 
-  ModelTypeSyncWorker* GetWorker();
+  CommitQueue* GetQueue();
 
  private:
   // A flag to ensure ConnectTypeToSync is called at most once.
   bool is_worker_connected_;
 
-  // The ModelTypeSyncProxy's contract expects that it gets to own this object,
+  // The ModelTypeProcessor's contract expects that it gets to own this object,
   // so we can retain only a non-owned pointer to it.
   //
   // This is very unsafe, but we can get away with it since these tests are not
   // exercising the proxy <-> worker connection code.
-  ModelTypeSyncWorker* worker_;
+  CommitQueue* queue_;
 };
 
 }  // namespace syncer
