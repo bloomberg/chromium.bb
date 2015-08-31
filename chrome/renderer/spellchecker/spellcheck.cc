@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -595,6 +596,9 @@ void SpellCheck::CreateTextCheckingResults(
 
 bool SpellCheck::IsSpellcheckEnabled() {
 #if defined(OS_ANDROID)
+  if (base::SysInfo::IsLowEndDevice())
+    return false;
+
   version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::DEV ||
       channel == version_info::Channel::CANARY) {
