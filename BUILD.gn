@@ -8,21 +8,21 @@ config("flac_config") {
   ]
 }
 
-source_set("flac") {
-  # Need a separate config to ensure the warnings are added to the end.
-  config("flac_private_config") {
-    if (is_clang) {
-      cflags = [
-        # libflac converts between FLAC__StreamDecoderState and
-        # FLAC__StreamDecoderInitStatus a lot in stream_decoder.c.
-        "-Wno-conversion",
-        # libflac contains constants that are only used in certain compile-time
-        # cases, which triggers unused-const-variable warnings in other cases.
-        "-Wno-unused-const-variable",
-      ]
-    }
+# Need a separate config to ensure the warnings are added to the end.
+config("flac_private_config") {
+  if (is_clang) {
+    cflags = [
+      # libflac converts between FLAC__StreamDecoderState and
+      # FLAC__StreamDecoderInitStatus a lot in stream_decoder.c.
+      "-Wno-conversion",
+      # libflac contains constants that are only used in certain compile-time
+      # cases, which triggers unused-const-variable warnings in other cases.
+      "-Wno-unused-const-variable",
+    ]
   }
+}
 
+source_set("flac") {
   sources = [
     "include/FLAC/all.h",
     "include/FLAC/assert.h",
@@ -73,9 +73,9 @@ source_set("flac") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     ":flac_config",
+    ":flac_private_config",
     "//build/config/compiler:no_chromium_code",
   ]
-  configs += [ ":flac_private_config" ]
   public_configs = [ ":flac_config" ]
 
   include_dirs = [
