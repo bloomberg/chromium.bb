@@ -31,6 +31,7 @@
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutRubyText.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -161,7 +162,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
             if (childStyle.letterSpacing() < 0 || childStyle.textShadow() || childStyle.textEmphasisMark() != TextEmphasisMarkNone || childStyle.textStrokeWidth())
                 child->clearKnownToHaveNoOverflow();
         } else if (child->layoutObject().isReplaced()) {
-            LayoutBox& box = toLayoutBox(child->layoutObject());
+            LineLayoutBox box = LineLayoutBox(child->lineLayoutItem());
             if (box.hasOverflowModel() || box.hasSelfPaintingLayer())
                 child->clearKnownToHaveNoOverflow();
         } else if (!child->layoutObject().isBR() && (child->layoutObject().style(isFirstLineStyle())->boxShadow() || child->boxModelObject().hasSelfPaintingLayer()
@@ -630,7 +631,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             }
             newLogicalTopIncludingMargins = newLogicalTop;
         } else if (!curr->layoutObject().isBR()) {
-            LayoutBox& box = toLayoutBox(curr->layoutObject());
+            LineLayoutBox box = LineLayoutBox(curr->lineLayoutItem());
             newLogicalTopIncludingMargins = newLogicalTop;
             LayoutUnit overSideMargin = curr->isHorizontal() ? box.marginTop() : box.marginRight();
             LayoutUnit underSideMargin = curr->isHorizontal() ? box.marginBottom() : box.marginLeft();
@@ -867,7 +868,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
 
 inline void InlineFlowBox::addReplacedChildOverflow(const InlineBox* inlineBox, LayoutRect& logicalLayoutOverflow, LayoutRect& logicalVisualOverflow)
 {
-    LayoutBox& box = toLayoutBox(inlineBox->layoutObject());
+    LineLayoutBox box = LineLayoutBox(inlineBox->lineLayoutItem());
 
     // Visual overflow only propagates if the box doesn't have a self-painting layer.  This rectangle does not include
     // transforms or relative positioning (since those objects always have self-painting layers), but it does need to be adjusted

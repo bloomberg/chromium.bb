@@ -49,6 +49,19 @@ public:
         toBox()->moveWithEdgeOfInlineContainerIfNecessary(isHorizontal);
     }
 
+    bool hasOverflowModel() const
+    {
+        return toBox()->hasOverflowModel();
+    }
+    LayoutRect logicalVisualOverflowRectForPropagation(const ComputedStyle& style) const
+    {
+        return toBox()->logicalVisualOverflowRectForPropagation(style);
+    }
+    LayoutRect logicalLayoutOverflowRectForPropagation(const ComputedStyle& style) const
+    {
+        return toBox()->logicalLayoutOverflowRectForPropagation(style);
+    }
+
 private:
     LayoutBox* toBox()
     {
