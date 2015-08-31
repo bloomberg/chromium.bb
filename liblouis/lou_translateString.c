@@ -996,12 +996,10 @@ insertBrailleIndicators (int finish)
 	    }
 	  break;
 	case checkNumber:
-	  if (brailleIndicatorDefined
-	      (table->numberSign) &&
-	      checkAttr (currentInput[src], CTC_Digit, 0) &&
-	      (prevTransOpcode == CTO_ExactDots
-	       || !(beforeAttributes & CTC_Digit))
-	      && prevTransOpcode != CTO_MidNum)
+	  if (brailleIndicatorDefined(table->numberSign) &&
+	      checkAttr_safe(currentInput, src, CTC_Digit, 0) &&
+	      (prevTransOpcode == CTO_ExactDots || !(beforeAttributes & CTC_Digit)) &&
+	      prevTransOpcode != CTO_MidNum)
 	    {
 	      ok = 1;
 	      checkWhat = checkNothing;
@@ -1022,10 +1020,10 @@ insertBrailleIndicators (int finish)
 	      checkWhat = checkBeginMultCaps;
 	      break;
 	    }
-	  if ((checkAttr (currentInput[src], CTC_Letter, 0)
-	       && !(beforeAttributes & CTC_Letter))
-	      && (!checkAttr (currentInput[src + 1], CTC_Letter, 0)
-		  || (beforeAttributes & CTC_Digit)))
+	  if ((checkAttr_safe(currentInput, src, CTC_Letter, 0) &&
+	       !(beforeAttributes & CTC_Letter)) &&
+	      (!checkAttr_safe(currentInput, src + 1, CTC_Letter, 0) ||
+	       (beforeAttributes & CTC_Digit)))
 	    {
 	      ok = 1;
 	      if (src > 0)
@@ -1065,9 +1063,9 @@ insertBrailleIndicators (int finish)
 	  break;
 	case checkEndMultCaps:
 	  if (brailleIndicatorDefined (table->endCapitalSign) &&
-	      (prevPrevAttr & CTC_UpperCase)
-	      && (beforeAttributes & CTC_UpperCase)
-	      && checkAttr (currentInput[src], CTC_LowerCase, 0))
+	      (prevPrevAttr & CTC_UpperCase) &&
+	      (beforeAttributes & CTC_UpperCase) &&
+	      checkAttr_safe(currentInput, src, CTC_LowerCase, 0))
 	    {
 	      ok = 1;
 	      if (table->capsNoCont)
@@ -1076,8 +1074,9 @@ insertBrailleIndicators (int finish)
 	  checkWhat = checkNothing;
 	  break;
 	case checkSingleCap:
-	  if (brailleIndicatorDefined (table->capitalSign) && src < srcmax
-	      && checkAttr (currentInput[src], CTC_UpperCase, 0) &&
+	  if (brailleIndicatorDefined (table->capitalSign) &&
+	      src < srcmax &&
+	      checkAttr_safe(currentInput, src, CTC_UpperCase, 0) &&
 	      (!(beforeAttributes & CTC_UpperCase) ||
 	       table->beginCapitalSign == 0))
 	    {

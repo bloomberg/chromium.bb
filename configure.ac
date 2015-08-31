@@ -26,6 +26,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
 # Checks for libraries.
+AC_CHECK_LIB([yaml], [yaml_parser_initialize])
 
 # Checks for header files.
 AC_HEADER_STDC

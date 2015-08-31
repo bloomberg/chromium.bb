@@ -131,6 +131,13 @@ checkAttr (const widechar c, const TranslationTableCharacterAttributes
 }
 
 static int
+checkAttr_safe (const widechar *currentInput, int src,
+                const TranslationTableCharacterAttributes a, int m)
+{
+  return ((src < srcmax) ? checkAttr(currentInput[src], a, m) : 0);
+}
+
+static int
 findAttribOrSwapRules ()
 {
   int save_transCharslen = transCharslen;
