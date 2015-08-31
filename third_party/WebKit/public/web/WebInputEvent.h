@@ -185,7 +185,7 @@ public:
 
     static const int InputModifiers = ShiftKey | ControlKey | AltKey | MetaKey;
 
-    double timeStampSeconds; // Seconds since epoch.
+    double timeStampSeconds; // Seconds since platform start with microsecond resolution.
     unsigned size; // The size of this structure, for serialization.
     Type type;
     int modifiers;
