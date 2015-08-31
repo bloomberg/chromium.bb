@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
@@ -56,6 +57,8 @@ class PermissionMenuButton : public views::MenuButton,
   PermissionMenuModel* menu_model_;  // Owned by |PermissionSelectorView|.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
+  bool is_rtl_display_;
+
   DISALLOW_COPY_AND_ASSIGN(PermissionMenuButton);
 };
 
@@ -73,6 +76,9 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
   // PermissionMenuButton called that from its override, the NativeTheme would
   // be available, and the button would get native GTK styling on Linux.
   UpdateThemedBorder();
+
+  is_rtl_display_ =
+      base::i18n::RIGHT_TO_LEFT == base::i18n::GetStringDirection(text);
 }
 
 PermissionMenuButton::~PermissionMenuButton() {
@@ -98,7 +104,7 @@ void PermissionMenuButton::OnMenuButtonClicked(View* source,
       new views::MenuRunner(menu_model_, views::MenuRunner::HAS_MNEMONICS));
 
   gfx::Point p(point);
-  p.Offset(-source->width(), 0);
+  p.Offset(is_rtl_display_ ? source->width() : -source->width(), 0);
   if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                               this,
                               gfx::Rect(p, gfx::Size()),
