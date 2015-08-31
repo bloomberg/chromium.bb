@@ -9,6 +9,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/LayoutVideo.h"
+#include "core/paint/FloatClipRecorder.h"
 #include "core/paint/ImagePainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
@@ -29,19 +30,19 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     rect.moveBy(paintOffset);
 
     GraphicsContext* context = paintInfo.context;
+    LayoutRect contentRect = m_layoutVideo.contentBoxRect();
+    contentRect.moveBy(paintOffset);
+
+    Optional<FloatClipRecorder> clipRecorder;
+    if (!contentRect.contains(rect)) {
+        // TODO(chrishtr): this should be pixel-snapped.
+        clipRecorder.emplace(*context, m_layoutVideo, paintInfo.phase, FloatRect(contentRect));
+    }
+
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutVideo, paintInfo.phase))
         return;
 
-    LayoutRect contentRect = m_layoutVideo.contentBoxRect();
-    contentRect.moveBy(paintOffset);
     LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutVideo, paintInfo.phase, contentRect);
-
-    bool clip = !contentRect.contains(rect);
-    if (clip) {
-        context->save();
-        // TODO(chrishtr): this should be pixel-snapped.
-        context->clip(FloatRect(contentRect));
-    }
 
     if (displayingPoster) {
         ImagePainter(m_layoutVideo).paintIntoRect(context, rect);
@@ -50,8 +51,6 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         videoPaint.setColor(SK_ColorBLACK);
         m_layoutVideo.videoElement()->paintCurrentFrame(context->canvas(), pixelSnappedIntRect(rect), &videoPaint);
     }
-    if (clip)
-        context->restore();
 }
 
 } // namespace blink

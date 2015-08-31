@@ -16,6 +16,7 @@
 #include "core/layout/TextRunConstructor.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/FloatClipRecorder.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -97,25 +98,23 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
             context->drawRect(paintRect);
         }
     } else if (cWidth > 0 && cHeight > 0) {
-        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutImage, paintInfo.phase))
-            return;
         LayoutRect contentRect = m_layoutImage.contentBoxRect();
         contentRect.moveBy(paintOffset);
         LayoutRect paintRect = m_layoutImage.replacedContentRect();
         paintRect.moveBy(paintOffset);
 
-        LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, contentRect);
-        bool clip = !contentRect.contains(paintRect);
-        if (clip) {
-            context->save();
+        Optional<FloatClipRecorder> clipRecorder;
+        if (!contentRect.contains(paintRect)) {
             // TODO(chrishtr): this should be pixel-snapped.
-            context->clip(FloatRect(contentRect));
+            // TODO(fmalita): can we get rid of this clip and adjust the image src/dst rect instead?
+            clipRecorder.emplace(*context, m_layoutImage, paintInfo.phase, FloatRect(contentRect));
         }
 
-        paintIntoRect(context, paintRect);
+        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutImage, paintInfo.phase))
+            return;
 
-        if (clip)
-            context->restore();
+        LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, contentRect);
+        paintIntoRect(context, paintRect);
     }
 }
 
