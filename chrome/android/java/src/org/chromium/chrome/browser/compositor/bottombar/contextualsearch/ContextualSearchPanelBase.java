@@ -63,7 +63,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     /**
      * The minimum width a screen should have in order to trigger the small version of the Panel.
      */
-    private static final float SMALL_PANEL_WIDTH_THRESHOLD_DP = 620.f;
+    private static final float SMALL_PANEL_WIDTH_THRESHOLD_DP = 680.f;
 
     /**
      * The height of the Contextual Search Panel's Shadow in dps.
