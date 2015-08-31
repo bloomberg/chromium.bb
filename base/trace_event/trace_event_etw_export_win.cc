@@ -91,6 +91,7 @@ const char kDisabledOtherEventsGroupName[] =
     "__DISABLED_OTHER_EVENTS";  // 0x4000000000000000
 const uint64 kOtherEventsKeywordBit = 1ULL << 61;
 const uint64 kDisabledOtherEventsKeywordBit = 1ULL << 62;
+const size_t kNumberOfCategories = ARRAYSIZE(kFilteredEventGroupNames) + 2U;
 
 }  // namespace
 
@@ -171,6 +172,16 @@ TraceEventETWExport::TraceEventETWExport()
     // calls will fail (on XP this call will do nothing).
     EventRegisterChrome();
   }
+
+  // Make sure to initialize the map with all the group names. Subsequent
+  // modifications will be made by the background thread and only affect the
+  // values of the keys (no key addition/deletion). Therefore, the map does not
+  // require a lock for access.
+  for (int i = 0; i < ARRAYSIZE(kFilteredEventGroupNames); i++)
+    categories_status_[kFilteredEventGroupNames[i]] = false;
+  categories_status_[kOtherEventsGroupName] = false;
+  categories_status_[kDisabledOtherEventsGroupName] = false;
+  DCHECK_EQ(kNumberOfCategories, categories_status_.size());
 }
 
 TraceEventETWExport::~TraceEventETWExport() {
@@ -393,6 +404,8 @@ bool TraceEventETWExport::UpdateEnabledCategories() {
     categories_status_[kDisabledOtherEventsGroupName] = false;
   }
 
+  DCHECK_EQ(kNumberOfCategories, categories_status_.size());
+
   // Update the categories in TraceLog.
   TraceLog::GetInstance()->UpdateETWCategoryGroupEnabledFlags();
 
@@ -400,6 +413,7 @@ bool TraceEventETWExport::UpdateEnabledCategories() {
 }
 
 bool TraceEventETWExport::IsCategoryEnabled(const char* category_name) const {
+  DCHECK_EQ(kNumberOfCategories, categories_status_.size());
   // Try to find the category and return its status if found
   auto it = categories_status_.find(category_name);
   if (it != categories_status_.end())
