@@ -159,10 +159,8 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
     }
   }
 
-  gfx::RectF clip(clip_rect);
-  clip.Intersect(picture->LayerRect());
-  clip.Scale(scale);
-  gfx::Rect snapped_clip = gfx::ToEnclosingRect(clip);
+  clip_rect.Intersect(picture->LayerRect());
+  gfx::Rect snapped_clip = gfx::ScaleToEnclosingRect(clip_rect, scale);
 
   SkBitmap bitmap;
   if (!bitmap.tryAllocN32Pixels(snapped_clip.width(), snapped_clip.height()))
@@ -170,7 +168,8 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   bitmap.eraseARGB(0, 0, 0, 0);
 
   SkCanvas canvas(bitmap);
-  canvas.translate(SkFloatToScalar(-clip.x()), SkFloatToScalar(-clip.y()));
+  canvas.translate(SkIntToScalar(-clip_rect.x()),
+                   SkIntToScalar(-clip_rect.y()));
   canvas.clipRect(gfx::RectToSkRect(snapped_clip));
   canvas.scale(scale, scale);
   canvas.translate(picture->LayerRect().x(), picture->LayerRect().y());

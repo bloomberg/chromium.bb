@@ -318,7 +318,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   gfx::Size frame_size_in_dip =
       gfx::ConvertSizeToDIP(frame_device_scale_factor, frame_size);
 
-  gfx::Rect damage_rect = gfx::ToEnclosingRect(root_pass->damage_rect);
+  gfx::Rect damage_rect = root_pass->damage_rect;
   damage_rect.Intersect(gfx::Rect(frame_size));
   gfx::Rect damage_rect_in_dip =
       gfx::ConvertRectToDIP(frame_device_scale_factor, damage_rect);

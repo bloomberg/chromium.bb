@@ -802,14 +802,14 @@ bool PepperGraphics2DHost::ConvertToLogicalPixels(float scale,
   // Take the enclosing rectangle after scaling so a rectangle scaled down then
   // scaled back up by the inverse scale would fully contain the entire area
   // affected by the original rectangle.
-  *op_rect = gfx::ToEnclosingRect(gfx::ScaleRect(*op_rect, scale));
+  *op_rect = gfx::ScaleToEnclosingRect(*op_rect, scale);
   if (delta) {
     gfx::Point original_delta = *delta;
     float inverse_scale = 1.0f / scale;
     *delta = gfx::ToFlooredPoint(gfx::ScalePoint(*delta, scale));
 
     gfx::Rect inverse_scaled_rect =
-        gfx::ToEnclosingRect(gfx::ScaleRect(*op_rect, inverse_scale));
+        gfx::ScaleToEnclosingRect(*op_rect, inverse_scale);
     if (original_rect != inverse_scaled_rect)
       return false;
     gfx::Point inverse_scaled_point =

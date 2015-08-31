@@ -467,7 +467,7 @@ void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
 
 gfx::Rect RenderWidget::ScreenMetricsEmulator::AdjustValidationMessageAnchor(
     const gfx::Rect& anchor) {
-  gfx::Rect scaled = gfx::ToEnclosedRect(gfx::ScaleRect(anchor, scale_));
+  gfx::Rect scaled = gfx::ScaleToEnclosedRect(anchor, scale_);
   scaled.set_x(scaled.x() + offset_.x());
   scaled.set_y(scaled.y() + offset_.y());
   return scaled;
