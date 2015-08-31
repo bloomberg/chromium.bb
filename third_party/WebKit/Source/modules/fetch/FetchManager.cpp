@@ -34,6 +34,7 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/HashSet.h"
@@ -396,7 +397,9 @@ void FetchManager::Loader::start()
     }
 
     // "- |request|'s url's scheme is not one of 'http' and 'https'"
-    if (!m_request->url().protocolIsInHTTPFamily()) {
+    // This may include other HTTP-like schemes if the embedder has added them
+    // to SchemeRegistry::registerURLSchemeAsSupportingFetchAPI.
+    if (!SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(m_request->url().protocol())) {
         // "A network error."
         performNetworkError("Fetch API cannot load " + m_request->url().string() + ". URL scheme must be \"http\" or \"https\" for CORS request.");
         return;
@@ -440,7 +443,7 @@ void FetchManager::Loader::performBasicFetch()
 {
     // "To perform a basic fetch using |request|, switch on |request|'s url's
     // scheme, and run the associated steps:"
-    if (m_request->url().protocolIsInHTTPFamily()) {
+    if (SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(m_request->url().protocol())) {
         // "Return the result of performing an HTTP fetch using |request|."
         performHTTPFetch(false, false);
     } else {
@@ -456,7 +459,7 @@ void FetchManager::Loader::performNetworkError(const String& message)
 
 void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFlag)
 {
-    ASSERT(m_request->url().protocolIsInHTTPFamily());
+    ASSERT(SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(m_request->url().protocol()));
     // CORS preflight fetch procedure is implemented inside DocumentThreadableLoader.
 
     // "1. Let |HTTPRequest| be a copy of |request|, except that |HTTPRequest|'s

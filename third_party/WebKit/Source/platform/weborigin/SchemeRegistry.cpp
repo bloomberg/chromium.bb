@@ -176,6 +176,19 @@ static URLSchemesSet& serviceWorkerSchemes()
     return serviceWorkerSchemes;
 }
 
+static URLSchemesSet& fetchAPISchemes()
+{
+    assertLockHeld();
+    DEFINE_STATIC_LOCAL_NOASSERT(URLSchemesSet, fetchAPISchemes, ());
+
+    if (fetchAPISchemes.isEmpty()) {
+        fetchAPISchemes.add("http");
+        fetchAPISchemes.add("https");
+    }
+
+    return fetchAPISchemes;
+}
+
 static URLSchemesMap<SchemeRegistry::PolicyAreas>& ContentSecurityPolicyBypassingSchemes()
 {
     assertLockHeld();
@@ -351,6 +364,20 @@ bool SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(const String& 
         return false;
     MutexLocker locker(mutex());
     return serviceWorkerSchemes().contains(scheme);
+}
+
+void SchemeRegistry::registerURLSchemeAsSupportingFetchAPI(const String& scheme)
+{
+    MutexLocker locker(mutex());
+    fetchAPISchemes().add(scheme);
+}
+
+bool SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(const String& scheme)
+{
+    if (scheme.isEmpty())
+        return false;
+    MutexLocker locker(mutex());
+    return fetchAPISchemes().contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme, PolicyAreas policyAreas)

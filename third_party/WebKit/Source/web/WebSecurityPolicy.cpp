@@ -81,6 +81,11 @@ void WebSecurityPolicy::registerURLSchemeAsAllowingServiceWorkers(const WebStrin
     SchemeRegistry::registerURLSchemeAsAllowingServiceWorkers(scheme);
 }
 
+void WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI(const WebString& scheme)
+{
+    SchemeRegistry::registerURLSchemeAsSupportingFetchAPI(scheme);
+}
+
 void WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(const WebString& scheme)
 {
     SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme);

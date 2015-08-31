@@ -76,6 +76,9 @@ public:
     // Registers a URL scheme that can register a ServiceWorker.
     BLINK_EXPORT static void registerURLSchemeAsAllowingServiceWorkers(const WebString&);
 
+    // Registers an HTTP-like URL scheme that supports the Fetch API.
+    BLINK_EXPORT static void registerURLSchemeAsSupportingFetchAPI(const WebString&);
+
     // Registers a URL scheme whose resources can be loaded regardless of a page's Content Security Policy.
     BLINK_EXPORT static void registerURLSchemeAsBypassingContentSecurityPolicy(const WebString&);
 

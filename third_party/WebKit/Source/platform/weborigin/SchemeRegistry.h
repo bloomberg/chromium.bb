@@ -91,6 +91,10 @@ public:
     static void registerURLSchemeAsAllowingServiceWorkers(const String& scheme);
     static bool shouldTreatURLSchemeAsAllowingServiceWorkers(const String& scheme);
 
+    // HTTP-like schemes that are treated as supporting the Fetch API.
+    static void registerURLSchemeAsSupportingFetchAPI(const String& scheme);
+    static bool shouldTreatURLSchemeAsSupportingFetchAPI(const String& scheme);
+
     // Allow resources from some schemes to load on a page, regardless of its
     // Content Security Policy.
     // This enum should be kept in sync with public/web/WebSecurityPolicy.h.
