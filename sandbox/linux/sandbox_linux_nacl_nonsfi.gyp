@@ -29,12 +29,10 @@
               # nacl_helper_nonsfi's sandbox implementation.
               'bpf_dsl/bpf_dsl.cc',
               'bpf_dsl/codegen.cc',
-              'bpf_dsl/dump_bpf.cc',
               'bpf_dsl/errorcode.cc',
               'bpf_dsl/policy.cc',
               'bpf_dsl/policy_compiler.cc',
               'bpf_dsl/syscall_set.cc',
-              'bpf_dsl/verifier.cc',
               'seccomp-bpf-helpers/sigsys_handlers.cc',
               'seccomp-bpf-helpers/syscall_parameters_restrictions.cc',
               'seccomp-bpf/die.cc',

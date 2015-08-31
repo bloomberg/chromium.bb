@@ -217,11 +217,7 @@ intptr_t SandboxBPF::ForwardSyscall(const struct arch_seccomp_data& args) {
       static_cast<intptr_t>(args.args[5]));
 }
 
-scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter(
-    bool force_verification) {
-#if !defined(NDEBUG)
-  force_verification = true;
-#endif
+scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter() {
   DCHECK(policy_);
 
   bpf_dsl::PolicyCompiler compiler(policy_.get(), Trap::Registry());
@@ -229,7 +225,7 @@ scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter(
     compiler.DangerousSetEscapePC(EscapePC());
   }
   compiler.SetPanicFunc(SandboxPanic);
-  return compiler.Compile(force_verification);
+  return compiler.Compile();
 }
 
 void SandboxBPF::InstallFilter(bool must_sync_threads) {
@@ -244,7 +240,7 @@ void SandboxBPF::InstallFilter(bool must_sync_threads) {
   // installed the BPF filter program in the kernel. Depending on the
   // system memory allocator that is in effect, these operators can result
   // in system calls to things like munmap() or brk().
-  CodeGen::Program* program = AssembleFilter(false).release();
+  CodeGen::Program* program = AssembleFilter().release();
 
   struct sock_filter bpf[program->size()];
   const struct sock_fprog prog = {static_cast<unsigned short>(program->size()),

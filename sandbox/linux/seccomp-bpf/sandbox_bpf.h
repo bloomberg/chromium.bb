@@ -95,11 +95,7 @@ class SANDBOX_EXPORT SandboxBPF {
   // function, you must not call any other sandboxing function.
   // Typically, AssembleFilter() is only used by unit tests and by sandbox
   // internals. It should not be used by production code.
-  // For performance reasons, we normally only run the assembled BPF program
-  // through the verifier, iff the program was built in debug mode.
-  // But by setting "force_verification", the caller can request that the
-  // verifier is run unconditionally. This is useful for unittests.
-  scoped_ptr<CodeGen::Program> AssembleFilter(bool force_verification);
+  scoped_ptr<CodeGen::Program> AssembleFilter();
 
  private:
   // Assembles and installs a filter based on the policy that has previously

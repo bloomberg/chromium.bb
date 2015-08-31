@@ -51,7 +51,7 @@ void SandboxBPFTestRunner::Run() {
     // Call the compiler and verify the policy. That's the least we can do,
     // if we don't have kernel support.
     sandbox::SandboxBPF sandbox(policy.release());
-    sandbox.AssembleFilter(true /* force_verification */);
+    sandbox.AssembleFilter();
     sandbox::UnitTests::IgnoreThisTest();
   }
 }

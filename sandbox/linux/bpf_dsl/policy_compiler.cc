@@ -14,12 +14,10 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
-#include "sandbox/linux/bpf_dsl/dump_bpf.h"
 #include "sandbox/linux/bpf_dsl/errorcode.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/seccomp_macros.h"
 #include "sandbox/linux/bpf_dsl/syscall_set.h"
-#include "sandbox/linux/bpf_dsl/verifier.h"
 #include "sandbox/linux/system_headers/linux_filter.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
@@ -102,7 +100,7 @@ PolicyCompiler::PolicyCompiler(const Policy* policy, TrapRegistry* registry)
 PolicyCompiler::~PolicyCompiler() {
 }
 
-scoped_ptr<CodeGen::Program> PolicyCompiler::Compile(bool verify) {
+scoped_ptr<CodeGen::Program> PolicyCompiler::Compile() {
   CHECK(policy_->InvalidSyscall()->IsDeny())
       << "Policies should deny invalid system calls";
 
@@ -123,18 +121,6 @@ scoped_ptr<CodeGen::Program> PolicyCompiler::Compile(bool verify) {
   // Assemble the BPF filter program.
   scoped_ptr<CodeGen::Program> program(new CodeGen::Program());
   gen_.Compile(AssemblePolicy(), program.get());
-
-  // Make sure compilation resulted in a BPF program that executes
-  // correctly. Otherwise, there is an internal error in our BPF compiler.
-  // There is really nothing the caller can do until the bug is fixed.
-  if (verify) {
-    const char* err = nullptr;
-    if (!Verifier::VerifyBPF(this, *program, *policy_, &err)) {
-      DumpBPF::PrintProgram(*program);
-      LOG(FATAL) << err;
-    }
-  }
-
   return program.Pass();
 }
 
