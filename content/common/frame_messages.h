@@ -994,6 +994,17 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_UnregisterProtocolHandler,
                     GURL /* url */,
                     bool /* user_gesture */)
 
+// Sent when the renderer loads a resource from its memory cache.
+// The security info is non empty if the resource was originally loaded over
+// a secure connection.
+// Note: May only be sent once per URL per frame per committed load.
+IPC_MESSAGE_ROUTED5(FrameHostMsg_DidLoadResourceFromMemoryCache,
+                    GURL /* url */,
+                    std::string /* security info */,
+                    std::string /* http method */,
+                    std::string /* mime type */,
+                    content::ResourceType /* resource type */)
+
 // PlzNavigate
 // Tells the browser to perform a navigation.
 IPC_MESSAGE_ROUTED3(FrameHostMsg_BeginNavigation,

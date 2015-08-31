@@ -3452,13 +3452,9 @@ void RenderFrameImpl::didLoadResourceFromMemoryCache(
 
   // Let the browser know we loaded a resource from the memory cache.  This
   // message is needed to display the correct SSL indicators.
-  render_view_->Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(
-      render_view_->GetRoutingID(),
-      url,
-      response.securityInfo(),
-      request.httpMethod().utf8(),
-      response.mimeType().utf8(),
-      WebURLRequestToResourceType(request)));
+  Send(new FrameHostMsg_DidLoadResourceFromMemoryCache(
+      routing_id_, url, response.securityInfo(), request.httpMethod().utf8(),
+      response.mimeType().utf8(), WebURLRequestToResourceType(request)));
 }
 
 void RenderFrameImpl::didDisplayInsecureContent(blink::WebLocalFrame* frame) {
