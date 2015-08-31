@@ -103,11 +103,15 @@ void V4L2Webcam::GetZoom(const GetPTZCompleteCallback& callback) {
   callback.Run(success, value);
 }
 
-void V4L2Webcam::SetPan(int value, const SetPTZCompleteCallback& callback) {
+void V4L2Webcam::SetPan(int value,
+                        int pan_speed,
+                        const SetPTZCompleteCallback& callback) {
   callback.Run(SetWebcamParameter(fd_.get(), V4L2_CID_PAN_ABSOLUTE, value));
 }
 
-void V4L2Webcam::SetTilt(int value, const SetPTZCompleteCallback& callback) {
+void V4L2Webcam::SetTilt(int value,
+                         int tilt_speed,
+                         const SetPTZCompleteCallback& callback) {
   callback.Run(SetWebcamParameter(fd_.get(), V4L2_CID_TILT_ABSOLUTE, value));
 }
 
@@ -116,6 +120,7 @@ void V4L2Webcam::SetZoom(int value, const SetPTZCompleteCallback& callback) {
 }
 
 void V4L2Webcam::SetPanDirection(PanDirection direction,
+                                 int pan_speed,
                                  const SetPTZCompleteCallback& callback) {
   int direction_value = 0;
   switch (direction) {
@@ -136,6 +141,7 @@ void V4L2Webcam::SetPanDirection(PanDirection direction,
 }
 
 void V4L2Webcam::SetTiltDirection(TiltDirection direction,
+                                  int tilt_speed,
                                   const SetPTZCompleteCallback& callback) {
   int direction_value = 0;
   switch (direction) {

@@ -241,9 +241,17 @@ bool WebcamPrivateSetFunction::RunAsync() {
     return false;
   }
 
+  int pan_speed = 0;
+  int tilt_speed = 0;
+  if (params->config.pan_speed)
+    pan_speed = *(params->config.pan_speed);
+
+  if (params->config.tilt_speed)
+    tilt_speed = *(params->config.tilt_speed);
+
   if (params->config.pan) {
     webcam->SetPan(
-        *(params->config.pan),
+        *(params->config.pan), pan_speed,
         base::Bind(&WebcamPrivateSetFunction::OnSetWebcamParameters, this));
   }
 
@@ -264,13 +272,13 @@ bool WebcamPrivateSetFunction::RunAsync() {
         break;
     }
     webcam->SetPanDirection(
-        direction,
+        direction, pan_speed,
         base::Bind(&WebcamPrivateSetFunction::OnSetWebcamParameters, this));
   }
 
   if (params->config.tilt) {
     webcam->SetTilt(
-        *(params->config.tilt),
+        *(params->config.tilt), tilt_speed,
         base::Bind(&WebcamPrivateSetFunction::OnSetWebcamParameters, this));
   }
 
@@ -291,7 +299,7 @@ bool WebcamPrivateSetFunction::RunAsync() {
         break;
     }
     webcam->SetTiltDirection(
-        direction,
+        direction, tilt_speed,
         base::Bind(&WebcamPrivateSetFunction::OnSetWebcamParameters, this));
   }
 

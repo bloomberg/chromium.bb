@@ -20,6 +20,11 @@ const char VISCA_RESPONSE_NETWORK_CHANGE = 0x38;
 const char VISCA_RESPONSE_ACK = 0x40;
 const char VISCA_RESPONSE_ERROR = 0x60;
 
+// The default pan speed is MAX_PAN_SPEED /2 and the default tilt speed is
+// MAX_TILT_SPEED / 2.
+const int MAX_PAN_SPEED = 0x18;
+const int MAX_TILT_SPEED = 0x14;
+
 // Pan-Tilt-Zoom movement comands from http://www.manualslib.com/manual/...
 // 557364/Cisco-Precisionhd-1080p12x.html?page=31#manual
 
@@ -41,11 +46,12 @@ const std::vector<char> kClearCommand = {0x81, 0x01, 0x00, 0x01, 0xFF};
 // Y = socket number; pqrs: pan position; tuvw: tilt position.
 const std::vector<char> kGetPanTiltCommand = {0x81, 0x09, 0x06, 0x12, 0xFF};
 
-// Command: {0x8X, 0x01, 0x06, 0x20, 0x0p, 0x0t, 0x0q, 0x0r, 0x0s, 0x0u, 0x0v,
+// Command: {0x8X, 0x01, 0x06, 0x02, 0x0p, 0x0t, 0x0q, 0x0r, 0x0s, 0x0u, 0x0v,
 // 0x0w, 0x0y, 0x0z, 0xFF}, X = 1 to 7: target device address; p = pan speed;
 // t = tilt speed; qrsu = pan position; vwyz = tilt position.
-const std::vector<char> kSetPanTiltCommand = {0x81, 0x01, 0x06, 0x02, 0x05,
-    0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF};
+const std::vector<char> kSetPanTiltCommand = {0x81, 0x01, 0x06, 0x02, 0x00,
+                                              0x00, 0x00, 0x00, 0x00, 0x00,
+                                              0x00, 0x00, 0x00, 0x00, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x05, 0xFF}, X = 1 to 7: target device address.
 const std::vector<char> kResetPanTiltCommand = {0x81, 0x01, 0x06, 0x05, 0xFF};
@@ -62,23 +68,23 @@ const std::vector<char> kSetZoomCommand =
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x0p, 0x0t, 0x03, 0x01, 0xFF}, X = 1 to 7:
 // target device address; p: pan speed; t: tilt speed.
-const std::vector<char> kPTUpCommand =
-    {0x81, 0x01, 0x06, 0x01, 0x05, 0x05, 0x03, 0x01, 0xFF};
+const std::vector<char> kPTUpCommand = {0x81, 0x01, 0x06, 0x01, 0x00,
+                                        0x00, 0x03, 0x01, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x0p, 0x0t, 0x03, 0x02, 0xFF}, X = 1 to 7:
 // target device address; p: pan speed; t: tilt speed.
-const std::vector<char> kPTDownCommand =
-    {0x81, 0x01, 0x06, 0x01, 0x05, 0x05, 0x03, 0x02, 0xFF};
+const std::vector<char> kPTDownCommand = {0x81, 0x01, 0x06, 0x01, 0x00,
+                                          0x00, 0x03, 0x02, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x0p, 0x0t, 0x0, 0x03, 0xFF}, X = 1 to 7:
 // target device address; p: pan speed; t: tilt speed.
-const std::vector<char> kPTLeftCommand =
-    {0x81, 0x01, 0x06, 0x01, 0x05, 0x05, 0x01, 0x03, 0xFF};
+const std::vector<char> kPTLeftCommand = {0x81, 0x01, 0x06, 0x01, 0x00,
+                                          0x00, 0x01, 0x03, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x0p, 0x0t, 0x02, 0x03, 0xFF}, X = 1 to 7:
 // target device address; p: pan speed; t: tilt speed.
-const std::vector<char> kPTRightCommand =
-    {0x81, 0x01, 0x06, 0x01, 0x05, 0x05, 0x02, 0x03, 0xFF};
+const std::vector<char> kPTRightCommand = {0x81, 0x01, 0x06, 0x01, 0x00,
+                                           0x00, 0x02, 0x03, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x03, 0x03, 0x03, 0x03, 0xFF}, X = 1 to 7:
 // target device address.
@@ -95,8 +101,7 @@ ViscaWebcam::ViscaWebcam(const std::string& path,
       extension_id_(extension_id),
       pan_(0),
       tilt_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 ViscaWebcam::~ViscaWebcam() {
 }
@@ -317,9 +322,15 @@ void ViscaWebcam::GetZoom(const GetPTZCompleteCallback& callback) {
                   weak_ptr_factory_.GetWeakPtr(), INQUIRY_ZOOM, callback));
 }
 
-void ViscaWebcam::SetPan(int value, const SetPTZCompleteCallback& callback) {
+void ViscaWebcam::SetPan(int value,
+                         int pan_speed,
+                         const SetPTZCompleteCallback& callback) {
+  pan_speed = std::min(pan_speed, MAX_PAN_SPEED);
+  pan_speed = pan_speed > 0 ? pan_speed : MAX_PAN_SPEED / 2;
   pan_ = value;
   std::vector<char> command = kSetPanTiltCommand;
+  command[4] |= pan_speed;
+  command[5] |= (MAX_TILT_SPEED / 2);
   command[6] |= ((pan_ & 0xF000) >> 12);
   command[7] |= ((pan_ & 0x0F00) >> 8);
   command[8] |= ((pan_ & 0x00F0) >> 4);
@@ -332,9 +343,15 @@ void ViscaWebcam::SetPan(int value, const SetPTZCompleteCallback& callback) {
                            weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void ViscaWebcam::SetTilt(int value, const SetPTZCompleteCallback& callback) {
+void ViscaWebcam::SetTilt(int value,
+                          int tilt_speed,
+                          const SetPTZCompleteCallback& callback) {
+  tilt_speed = std::min(tilt_speed, MAX_TILT_SPEED);
+  tilt_speed = tilt_speed > 0 ? tilt_speed : MAX_TILT_SPEED / 2;
   tilt_ = value;
   std::vector<char> command = kSetPanTiltCommand;
+  command[4] |= (MAX_PAN_SPEED / 2);
+  command[5] |= tilt_speed;
   command[6] |= ((pan_ & 0xF000) >> 12);
   command[7] |= ((pan_ & 0x0F00) >> 8);
   command[8] |= ((pan_ & 0x00F0) >> 4);
@@ -358,16 +375,23 @@ void ViscaWebcam::SetZoom(int value, const SetPTZCompleteCallback& callback) {
 }
 
 void ViscaWebcam::SetPanDirection(PanDirection direction,
+                                  int pan_speed,
                                   const SetPTZCompleteCallback& callback) {
+  pan_speed = std::min(pan_speed, MAX_PAN_SPEED);
+  pan_speed = pan_speed > 0 ? pan_speed : MAX_PAN_SPEED / 2;
   std::vector<char> command = kPTStopCommand;
   switch (direction) {
     case PAN_STOP:
       break;
     case PAN_RIGHT:
       command = kPTRightCommand;
+      command[4] |= pan_speed;
+      command[5] |= (MAX_TILT_SPEED / 2);
       break;
     case PAN_LEFT:
       command = kPTLeftCommand;
+      command[4] |= pan_speed;
+      command[5] |= (MAX_TILT_SPEED / 2);
       break;
   }
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
@@ -375,16 +399,23 @@ void ViscaWebcam::SetPanDirection(PanDirection direction,
 }
 
 void ViscaWebcam::SetTiltDirection(TiltDirection direction,
+                                   int tilt_speed,
                                    const SetPTZCompleteCallback& callback) {
+  tilt_speed = std::min(tilt_speed, MAX_TILT_SPEED);
+  tilt_speed = tilt_speed > 0 ? tilt_speed : MAX_TILT_SPEED / 2;
   std::vector<char> command = kPTStopCommand;
   switch (direction) {
     case TILT_STOP:
       break;
     case TILT_UP:
       command = kPTUpCommand;
+      command[4] |= (MAX_PAN_SPEED / 2);
+      command[5] |= tilt_speed;
       break;
     case TILT_DOWN:
       command = kPTDownCommand;
+      command[4] |= (MAX_PAN_SPEED / 2);
+      command[5] |= tilt_speed;
       break;
   }
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,

@@ -14,8 +14,10 @@ namespace webcamPrivate {
 
   dictionary WebcamConfiguration {
     double? pan;
+    double? panSpeed;
     PanDirection? panDirection;
     double? tilt;
+    double? tiltSpeed;
     TiltDirection? tiltDirection;
     double? zoom;
   };
