@@ -32,22 +32,22 @@
 
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/Pair.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/BasicShapes.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForCenterCoordinate(CSSValuePool& pool, const ComputedStyle& style, const BasicShapeCenterCoordinate& center, EBoxOrient orientation)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForCenterCoordinate(CSSValuePool& pool, const ComputedStyle& style, const BasicShapeCenterCoordinate& center, EBoxOrient orientation)
 {
     if (center.direction() == BasicShapeCenterCoordinate::TopLeft)
         return pool.createValue(center.length(), style);
 
     CSSValueID keyword = orientation == HORIZONTAL ? CSSValueRight : CSSValueBottom;
 
-    return pool.createValue(Pair::create(pool.createIdentifierValue(keyword), pool.createValue(center.length(), style), Pair::DropIdenticalValues));
+    return CSSValuePair::create(pool.createIdentifierValue(keyword), pool.createValue(center.length(), style), CSSValuePair::DropIdenticalValues);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> basicShapeRadiusToCSSValue(CSSValuePool& pool, const ComputedStyle& style, const BasicShapeRadius& radius)
@@ -113,10 +113,10 @@ PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const ComputedStyle& style, 
         insetValue->setBottom(pool.createValue(inset->bottom(), style));
         insetValue->setLeft(pool.createValue(inset->left(), style));
 
-        insetValue->setTopLeftRadius(CSSPrimitiveValue::create(inset->topLeftRadius(), style));
-        insetValue->setTopRightRadius(CSSPrimitiveValue::create(inset->topRightRadius(), style));
-        insetValue->setBottomRightRadius(CSSPrimitiveValue::create(inset->bottomRightRadius(), style));
-        insetValue->setBottomLeftRadius(CSSPrimitiveValue::create(inset->bottomLeftRadius(), style));
+        insetValue->setTopLeftRadius(CSSValuePair::create(inset->topLeftRadius(), style));
+        insetValue->setTopRightRadius(CSSValuePair::create(inset->topRightRadius(), style));
+        insetValue->setBottomRightRadius(CSSValuePair::create(inset->bottomRightRadius(), style));
+        insetValue->setBottomLeftRadius(CSSValuePair::create(inset->bottomLeftRadius(), style));
 
         basicShapeValue = insetValue.release();
         break;
@@ -135,16 +135,15 @@ static Length convertToLength(const StyleResolverState& state, CSSPrimitiveValue
     return value->convertToLength(state.cssToLengthConversionData());
 }
 
-static LengthSize convertToLengthSize(const StyleResolverState& state, CSSPrimitiveValue* value)
+static LengthSize convertToLengthSize(const StyleResolverState& state, CSSValuePair* value)
 {
     if (!value)
         return LengthSize(Length(0, Fixed), Length(0, Fixed));
 
-    Pair* pair = value->getPairValue();
-    return LengthSize(convertToLength(state, pair->first()), convertToLength(state, pair->second()));
+    return LengthSize(convertToLength(state, toCSSPrimitiveValue(value->first())), convertToLength(state, toCSSPrimitiveValue(value->second())));
 }
 
-static BasicShapeCenterCoordinate convertToCenterCoordinate(const StyleResolverState& state, CSSPrimitiveValue* value)
+static BasicShapeCenterCoordinate convertToCenterCoordinate(const StyleResolverState& state, CSSValue* value)
 {
     BasicShapeCenterCoordinate::Direction direction;
     Length offset = Length(0, Fixed);
@@ -152,13 +151,13 @@ static BasicShapeCenterCoordinate convertToCenterCoordinate(const StyleResolverS
     CSSValueID keyword = CSSValueTop;
     if (!value) {
         keyword = CSSValueCenter;
-    } else if (value->isValueID()) {
-        keyword = value->getValueID();
-    } else if (Pair* pair = value->getPairValue()) {
-        keyword = pair->first()->getValueID();
-        offset = convertToLength(state, pair->second());
+    } else if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->isValueID()) {
+        keyword = toCSSPrimitiveValue(value)->getValueID();
+    } else if (value->isValuePair()) {
+        keyword = toCSSPrimitiveValue(toCSSValuePair(value)->first())->getValueID();
+        offset = convertToLength(state, toCSSPrimitiveValue(toCSSValuePair(value)->second()));
     } else {
-        offset = convertToLength(state, value);
+        offset = convertToLength(state, toCSSPrimitiveValue(value));
     }
 
     switch (keyword) {

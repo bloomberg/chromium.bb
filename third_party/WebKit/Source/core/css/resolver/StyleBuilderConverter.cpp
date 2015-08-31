@@ -36,7 +36,7 @@
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
-#include "core/css/Pair.h"
+#include "core/css/CSSValuePair.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/transforms/RotateTransformOperation.h"
@@ -335,17 +335,17 @@ EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverSt
 StyleSelfAlignmentData StyleBuilderConverter::convertSelfOrDefaultAlignmentData(StyleResolverState&, CSSValue* value)
 {
     StyleSelfAlignmentData alignmentData = ComputedStyle::initialSelfAlignment();
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (Pair* pairValue = primitiveValue->getPairValue()) {
-        if (pairValue->first()->getValueID() == CSSValueLegacy) {
+    if (value->isValuePair()) {
+        const CSSValuePair* pair = toCSSValuePair(value);
+        if (toCSSPrimitiveValue(pair->first())->getValueID() == CSSValueLegacy) {
             alignmentData.setPositionType(LegacyPosition);
-            alignmentData.setPosition(*pairValue->second());
+            alignmentData.setPosition(*toCSSPrimitiveValue(pair->second()));
         } else {
-            alignmentData.setPosition(*pairValue->first());
-            alignmentData.setOverflow(*pairValue->second());
+            alignmentData.setPosition(*toCSSPrimitiveValue(pair->first()));
+            alignmentData.setOverflow(*toCSSPrimitiveValue(pair->second()));
         }
     } else {
-        alignmentData.setPosition(*primitiveValue);
+        alignmentData.setPosition(*toCSSPrimitiveValue(value));
     }
     return alignmentData;
 }
@@ -635,23 +635,23 @@ float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state
 }
 
 template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
-static Length convertPositionLength(StyleResolverState& state, CSSPrimitiveValue* primitiveValue)
+static Length convertPositionLength(StyleResolverState& state, CSSValue* value)
 {
-    if (Pair* pair = primitiveValue->getPairValue()) {
+    if (value->isValuePair()) {
+        const CSSValuePair* pair = toCSSValuePair(value);
         Length length = StyleBuilderConverter::convertLength(state, pair->second());
-        if (pair->first()->getValueID() == cssValueFor0)
+        if (toCSSPrimitiveValue(pair->first())->getValueID() == cssValueFor0)
             return length;
-        ASSERT(pair->first()->getValueID() == cssValueFor100);
+        ASSERT(toCSSPrimitiveValue(pair->first())->getValueID() == cssValueFor100);
         return length.subtractFromOneHundredPercent();
     }
 
-    return StyleBuilderConverter::convertLength(state, primitiveValue);
+    return StyleBuilderConverter::convertLength(state, value);
 }
 
 LengthPoint StyleBuilderConverter::convertPosition(StyleResolverState& state, CSSValue* value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Pair* pair = primitiveValue->getPairValue();
+    const CSSValuePair* pair = toCSSValuePair(value);
     return LengthPoint(
         convertPositionLength<CSSValueLeft, CSSValueRight>(state, pair->first()),
         convertPositionLength<CSSValueTop, CSSValueBottom>(state, pair->second())
@@ -755,10 +755,9 @@ PassRefPtr<QuotesData> StyleBuilderConverter::convertQuotes(StyleResolverState&,
 
 LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSValue* value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Pair* pair = primitiveValue->getPairValue();
-    Length radiusWidth = pair->first()->convertToLength(state.cssToLengthConversionData());
-    Length radiusHeight = pair->second()->convertToLength(state.cssToLengthConversionData());
+    const CSSValuePair* pair = toCSSValuePair(value);
+    Length radiusWidth = toCSSPrimitiveValue(pair->first())->convertToLength(state.cssToLengthConversionData());
+    Length radiusHeight = toCSSPrimitiveValue(pair->second())->convertToLength(state.cssToLengthConversionData());
     float width = radiusWidth.value();
     float height = radiusHeight.value();
     ASSERT(width >= 0 && height >= 0);

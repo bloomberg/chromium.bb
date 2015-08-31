@@ -59,6 +59,7 @@ public:
     String cssText() const;
 
     bool isPrimitiveValue() const { return m_classType == PrimitiveClass; }
+    bool isValuePair() const { return m_classType == ValuePairClass; }
     bool isValueList() const { return m_classType >= ValueListClass; }
 
     bool isBaseValueList() const { return m_classType == ValueListClass; }
@@ -116,6 +117,7 @@ protected:
         PrimitiveClass,
         CounterClass,
         QuadClass,
+        ValuePairClass,
 
         // Image classes.
         ImageClass,

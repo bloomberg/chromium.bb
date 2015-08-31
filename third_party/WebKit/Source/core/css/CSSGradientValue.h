@@ -85,10 +85,10 @@ class CSSGradientValue : public CSSImageGeneratorValue {
 public:
     PassRefPtr<Image> image(LayoutObject*, const IntSize&);
 
-    void setFirstX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_firstX = val; }
-    void setFirstY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_firstY = val; }
-    void setSecondX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_secondX = val; }
-    void setSecondY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_secondY = val; }
+    void setFirstX(PassRefPtrWillBeRawPtr<CSSValue> val) { m_firstX = val; }
+    void setFirstY(PassRefPtrWillBeRawPtr<CSSValue> val) { m_firstY = val; }
+    void setSecondX(PassRefPtrWillBeRawPtr<CSSValue> val) { m_secondX = val; }
+    void setSecondY(PassRefPtrWillBeRawPtr<CSSValue> val) { m_secondY = val; }
 
     void addStop(const CSSGradientColorStop& stop) { m_stops.append(stop); }
 
@@ -136,16 +136,16 @@ protected:
     void addDeprecatedStops(Gradient*, const LayoutObject&);
 
     // Resolve points/radii to front end values.
-    FloatPoint computeEndPoint(CSSPrimitiveValue*, CSSPrimitiveValue*, const CSSToLengthConversionData&, const IntSize&);
+    FloatPoint computeEndPoint(CSSValue*, CSSValue*, const CSSToLengthConversionData&, const IntSize&);
 
     bool isCacheable() const;
 
     // Points. Some of these may be null.
-    RefPtrWillBeMember<CSSPrimitiveValue> m_firstX;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_firstY;
+    RefPtrWillBeMember<CSSValue> m_firstX;
+    RefPtrWillBeMember<CSSValue> m_firstY;
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_secondX;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_secondY;
+    RefPtrWillBeMember<CSSValue> m_secondX;
+    RefPtrWillBeMember<CSSValue> m_secondY;
 
     // Stops
     WillBeHeapVector<CSSGradientColorStop, 2> m_stops;

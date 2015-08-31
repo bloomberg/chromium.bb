@@ -52,9 +52,9 @@
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/HashTools.h"
-#include "core/css/Pair.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/frame/UseCounter.h"
@@ -73,11 +73,6 @@ static bool equalIgnoringCase(const CSSParserString& a, const char (&b)[N])
         return false;
 
     return a.is8Bit() ? WTF::equalIgnoringCase(b, a.characters8(), length) : WTF::equalIgnoringCase(b, a.characters16(), length);
-}
-
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveValuePair(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> first, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> second, Pair::IdenticalValuesPolicy identicalValuesPolicy = Pair::DropIdenticalValues)
-{
-    return cssValuePool().createValue(Pair::create(first, second, identicalValuesPolicy));
 }
 
 CSSPropertyParser::CSSPropertyParser(CSSParserValueList* valueList,
@@ -987,7 +982,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
         if (m_valueList->next())
             return false;
-        addProperty(propId, createPrimitiveValuePair(parsedValue1.release(), parsedValue2.release()), important);
+        addProperty(propId, CSSValuePair::create(parsedValue1.release(), parsedValue2.release(), CSSValuePair::DropIdenticalValues), important);
         return true;
     }
     case CSSPropertyTabSize:
@@ -2499,8 +2494,8 @@ void CSSPropertyParser::parse4ValuesFillPosition(CSSParserValueList* valueList, 
     if (isFillPositionKeyword(value4->getValueID()))
         return;
 
-    value1 = createPrimitiveValuePair(parsedValue1, parsedValue2);
-    value2 = createPrimitiveValuePair(value3, value4);
+    value1 = CSSValuePair::create(parsedValue1, parsedValue2, CSSValuePair::DropIdenticalValues);
+    value2 = CSSValuePair::create(value3, value4, CSSValuePair::DropIdenticalValues);
 
     if (ident1 == CSSValueTop || ident1 == CSSValueBottom)
         value1.swap(value2);
@@ -2541,8 +2536,8 @@ void CSSPropertyParser::parse3ValuesFillPosition(CSSParserValueList* valueList, 
             firstPositionKeyword = CSSValueTop;
             swapNeeded = true;
         }
-        value1 = createPrimitiveValuePair(cssValuePool().createIdentifierValue(firstPositionKeyword), cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage));
-        value2 = createPrimitiveValuePair(parsedValue2, value3);
+        value1 = CSSValuePair::create(cssValuePool().createIdentifierValue(firstPositionKeyword), cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage), CSSValuePair::DropIdenticalValues);
+        value2 = CSSValuePair::create(parsedValue2, value3, CSSValuePair::DropIdenticalValues);
     } else if (ident3 == CSSValueCenter) {
         if (isFillPositionKeyword(ident2))
             return;
@@ -2552,8 +2547,8 @@ void CSSPropertyParser::parse3ValuesFillPosition(CSSParserValueList* valueList, 
             secondPositionKeyword = CSSValueLeft;
             swapNeeded = true;
         }
-        value1 = createPrimitiveValuePair(parsedValue1, parsedValue2);
-        value2 = createPrimitiveValuePair(cssValuePool().createIdentifierValue(secondPositionKeyword), cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage));
+        value1 = CSSValuePair::create(parsedValue1, parsedValue2, CSSValuePair::DropIdenticalValues);
+        value2 = CSSValuePair::create(cssValuePool().createIdentifierValue(secondPositionKeyword), cssValuePool().createValue(50, CSSPrimitiveValue::UnitType::Percentage), CSSValuePair::DropIdenticalValues);
     } else {
         RefPtrWillBeRawPtr<CSSPrimitiveValue> firstPositionValue = nullptr;
         RefPtrWillBeRawPtr<CSSPrimitiveValue> secondPositionValue = nullptr;
@@ -2581,18 +2576,18 @@ void CSSPropertyParser::parse3ValuesFillPosition(CSSParserValueList* valueList, 
         if (isValueConflictingWithCurrentEdge(ident1, secondPositionKeyword))
             return;
 
-        value1 = createPrimitiveValuePair(parsedValue1, firstPositionValue);
-        value2 = createPrimitiveValuePair(cssValuePool().createIdentifierValue(secondPositionKeyword), secondPositionValue);
+        value1 = CSSValuePair::create(parsedValue1, firstPositionValue, CSSValuePair::DropIdenticalValues);
+        value2 = CSSValuePair::create(cssValuePool().createIdentifierValue(secondPositionKeyword), secondPositionValue, CSSValuePair::DropIdenticalValues);
     }
 
     if (ident1 == CSSValueTop || ident1 == CSSValueBottom || swapNeeded)
         value1.swap(value2);
 
 #if ENABLE(ASSERT)
-    CSSPrimitiveValue* first = toCSSPrimitiveValue(value1.get());
-    CSSPrimitiveValue* second = toCSSPrimitiveValue(value2.get());
-    ident1 = first->getPairValue()->first()->getValueID();
-    ident2 = second->getPairValue()->first()->getValueID();
+    const CSSValuePair* first = toCSSValuePair(value1.get());
+    const CSSValuePair* second = toCSSValuePair(value2.get());
+    ident1 = toCSSPrimitiveValue(first->first())->getValueID();
+    ident2 = toCSSPrimitiveValue(second->first())->getValueID();
     ASSERT(ident1 == CSSValueLeft || ident1 == CSSValueRight);
     ASSERT(ident2 == CSSValueBottom || ident2 == CSSValueTop);
 #endif
@@ -2788,7 +2783,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseFillSize(CSSPropertyID 
     if (!parsedValue2)
         return parsedValue1;
 
-    return createPrimitiveValuePair(parsedValue1.release(), parsedValue2.release(), Pair::KeepIdenticalValues);
+    return CSSValuePair::create(parsedValue1.release(), parsedValue2.release(), CSSValuePair::KeepIdenticalValues);
 }
 
 bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2,
@@ -4106,10 +4101,10 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseInsetRoundedCorner
     } else {
         completeBorderRadii(radii[1]);
     }
-    shape->setTopLeftRadius(createPrimitiveValuePair(radii[0][0].release(), radii[1][0].release()));
-    shape->setTopRightRadius(createPrimitiveValuePair(radii[0][1].release(), radii[1][1].release()));
-    shape->setBottomRightRadius(createPrimitiveValuePair(radii[0][2].release(), radii[1][2].release()));
-    shape->setBottomLeftRadius(createPrimitiveValuePair(radii[0][3].release(), radii[1][3].release()));
+    shape->setTopLeftRadius(CSSValuePair::create(radii[0][0].release(), radii[1][0].release(), CSSValuePair::DropIdenticalValues));
+    shape->setTopRightRadius(CSSValuePair::create(radii[0][1].release(), radii[1][1].release(), CSSValuePair::DropIdenticalValues));
+    shape->setBottomRightRadius(CSSValuePair::create(radii[0][2].release(), radii[1][2].release(), CSSValuePair::DropIdenticalValues));
+    shape->setBottomLeftRadius(CSSValuePair::create(radii[0][3].release(), radii[1][3].release(), CSSValuePair::DropIdenticalValues));
 
     return shape;
 }
@@ -4214,7 +4209,7 @@ bool CSSPropertyParser::parseLegacyPosition(CSSPropertyID propId, bool important
         return false;
     }
 
-    addProperty(propId, createPrimitiveValuePair(cssValuePool().createIdentifierValue(CSSValueLegacy), cssValuePool().createIdentifierValue(value->id)), important);
+    addProperty(propId, CSSValuePair::create(cssValuePool().createIdentifierValue(CSSValueLegacy), cssValuePool().createIdentifierValue(value->id), CSSValuePair::DropIdenticalValues), important);
     return !m_valueList->next();
 }
 
@@ -4312,7 +4307,7 @@ bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, 
 
     ASSERT(position);
     if (overflowAlignmentKeyword)
-        addProperty(propId, createPrimitiveValuePair(position, overflowAlignmentKeyword), important);
+        addProperty(propId, CSSValuePair::create(position, overflowAlignmentKeyword, CSSValuePair::DropIdenticalValues), important);
     else
         addProperty(propId, position.release(), important);
 
@@ -4361,10 +4356,8 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeCircle(C
             RefPtrWillBeRawPtr<CSSValue> centerY = nullptr;
             parseFillPosition(args, centerX, centerY);
             if (centerX && centerY && !args->current()) {
-                ASSERT(centerX->isPrimitiveValue());
-                ASSERT(centerY->isPrimitiveValue());
-                shape->setCenterX(toCSSPrimitiveValue(centerX.get()));
-                shape->setCenterY(toCSSPrimitiveValue(centerY.get()));
+                shape->setCenterX(centerX);
+                shape->setCenterY(centerY);
             } else {
                 return nullptr;
             }
@@ -4415,10 +4408,8 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(
         if (!centerX || !centerY || args->current())
             return nullptr;
 
-        ASSERT(centerX->isPrimitiveValue());
-        ASSERT(centerY->isPrimitiveValue());
-        shape->setCenterX(toCSSPrimitiveValue(centerX.get()));
-        shape->setCenterY(toCSSPrimitiveValue(centerY.get()));
+        shape->setCenterX(centerX);
+        shape->setCenterY(centerY);
     }
 
     return shape;
@@ -5418,7 +5409,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePosition(CSSParserValue
     parseFillPosition(valueList, xValue, yValue);
     if (!xValue || !yValue)
         return nullptr;
-    return createPrimitiveValuePair(toCSSPrimitiveValue(xValue.get()), toCSSPrimitiveValue(yValue.get()), Pair::KeepIdenticalValues);
+    return CSSValuePair::create(xValue.release(), yValue.release(), CSSValuePair::KeepIdenticalValues);
 }
 
 // Parses a list of comma separated positions. i.e., <position>#
@@ -5708,7 +5699,7 @@ bool CSSPropertyParser::parseBorderImageRepeat(RefPtrWillBeRawPtr<CSSValue>& res
     } else
         secondValue = firstValue;
 
-    result = createPrimitiveValuePair(firstValue, secondValue);
+    result = CSSValuePair::create(firstValue, secondValue, CSSValuePair::DropIdenticalValues);
     return true;
 }
 
@@ -5966,10 +5957,10 @@ bool CSSPropertyParser::parseBorderRadius(CSSPropertyID unresolvedProperty, bool
         completeBorderRadii(radii[1]);
 
     ImplicitScope implicitScope(this);
-    addProperty(CSSPropertyBorderTopLeftRadius, createPrimitiveValuePair(radii[0][0].release(), radii[1][0].release()), important);
-    addProperty(CSSPropertyBorderTopRightRadius, createPrimitiveValuePair(radii[0][1].release(), radii[1][1].release()), important);
-    addProperty(CSSPropertyBorderBottomRightRadius, createPrimitiveValuePair(radii[0][2].release(), radii[1][2].release()), important);
-    addProperty(CSSPropertyBorderBottomLeftRadius, createPrimitiveValuePair(radii[0][3].release(), radii[1][3].release()), important);
+    addProperty(CSSPropertyBorderTopLeftRadius, CSSValuePair::create(radii[0][0].release(), radii[1][0].release(), CSSValuePair::DropIdenticalValues), important);
+    addProperty(CSSPropertyBorderTopRightRadius, CSSValuePair::create(radii[0][1].release(), radii[1][1].release(), CSSValuePair::DropIdenticalValues), important);
+    addProperty(CSSPropertyBorderBottomRightRadius, CSSValuePair::create(radii[0][2].release(), radii[1][2].release(), CSSValuePair::DropIdenticalValues), important);
+    addProperty(CSSPropertyBorderBottomLeftRadius, CSSValuePair::create(radii[0][3].release(), radii[1][3].release(), CSSValuePair::DropIdenticalValues), important);
     return true;
 }
 
@@ -5991,8 +5982,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounter(int defaultValu
             m_valueList->next();
         }
 
-        list->append(createPrimitiveValuePair(counterName.release(),
-            cssValuePool().createValue(i, CSSPrimitiveValue::UnitType::Number)));
+        list->append(CSSValuePair::create(counterName.release(),
+            cssValuePool().createValue(i, CSSPrimitiveValue::UnitType::Number),
+            CSSValuePair::DropIdenticalValues));
     }
 
     if (!list->length())
@@ -6597,11 +6589,11 @@ bool CSSPropertyParser::parseRadialGradient(CSSParserValueList* valueList, RefPt
         a = args->current();
         if (!a)
             return false;
-        result->setFirstX(toCSSPrimitiveValue(centerX.get()));
-        result->setFirstY(toCSSPrimitiveValue(centerY.get()));
+        result->setFirstX(centerX);
+        result->setFirstY(centerY);
         // Right now, CSS radial gradients have the same start and end centers.
-        result->setSecondX(toCSSPrimitiveValue(centerX.get()));
-        result->setSecondY(toCSSPrimitiveValue(centerY.get()));
+        result->setSecondX(centerX);
+        result->setSecondY(centerY);
     }
 
     if (shapeValue || sizeValue || horizontalSize || centerX || centerY)

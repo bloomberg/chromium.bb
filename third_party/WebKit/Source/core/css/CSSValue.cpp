@@ -54,6 +54,7 @@
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePair.h"
 
 namespace blink {
 
@@ -144,6 +145,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSUnicodeRangeValue>(*this, other);
         case ValueListClass:
             return compareCSSValues<CSSValueList>(*this, other);
+        case ValuePairClass:
+            return compareCSSValues<CSSValuePair>(*this, other);
         case LineBoxContainClass:
             return compareCSSValues<CSSLineBoxContainValue>(*this, other);
         case ImageSetClass:
@@ -210,6 +213,8 @@ String CSSValue::cssText() const
         return toCSSStepsTimingFunctionValue(this)->customCSSText();
     case UnicodeRangeClass:
         return toCSSUnicodeRangeValue(this)->customCSSText();
+    case ValuePairClass:
+        return toCSSValuePair(this)->customCSSText();
     case ValueListClass:
         return toCSSValueList(this)->customCSSText();
     case LineBoxContainClass:
@@ -299,6 +304,9 @@ void CSSValue::destroy()
         return;
     case UnicodeRangeClass:
         delete toCSSUnicodeRangeValue(this);
+        return;
+    case ValuePairClass:
+        delete toCSSValuePair(this);
         return;
     case ValueListClass:
         delete toCSSValueList(this);
@@ -397,6 +405,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case ValueListClass:
         toCSSValueList(this)->~CSSValueList();
         return;
+    case ValuePairClass:
+        toCSSValuePair(this)->~CSSValuePair();
+        return;
     case LineBoxContainClass:
         toCSSLineBoxContainValue(this)->~CSSLineBoxContainValue();
         return;
@@ -490,6 +501,9 @@ DEFINE_TRACE(CSSValue)
         return;
     case ValueListClass:
         toCSSValueList(this)->traceAfterDispatch(visitor);
+        return;
+    case ValuePairClass:
+        toCSSValuePair(this)->traceAfterDispatch(visitor);
         return;
     case LineBoxContainClass:
         toCSSLineBoxContainValue(this)->traceAfterDispatch(visitor);

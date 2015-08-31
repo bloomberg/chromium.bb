@@ -30,7 +30,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSToLengthConversionData.h"
-#include "core/css/Pair.h"
+#include "core/css/CSSValuePair.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/layout/LayoutObject.h"
@@ -480,7 +480,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
     }
 }
 
-static float positionFromValue(CSSPrimitiveValue* value, const CSSToLengthConversionData& conversionData, const IntSize& size, bool isHorizontal)
+static float positionFromValue(CSSValue* value, const CSSToLengthConversionData& conversionData, const IntSize& size, bool isHorizontal)
 {
     int origin = 0;
     int sign = 1;
@@ -488,8 +488,9 @@ static float positionFromValue(CSSPrimitiveValue* value, const CSSToLengthConver
 
     // In this case the center of the gradient is given relative to an edge in the form of:
     // [ top | bottom | right | left ] [ <percentage> | <length> ].
-    if (Pair* pair = value->getPairValue()) {
-        CSSValueID originID = pair->first()->getValueID();
+    if (value->isValuePair()) {
+        CSSValuePair* pair = toCSSValuePair(value);
+        CSSValueID originID = toCSSPrimitiveValue(pair->first())->getValueID();
         value = pair->second();
 
         if (originID == CSSValueRight || originID == CSSValueBottom) {
@@ -499,16 +500,18 @@ static float positionFromValue(CSSPrimitiveValue* value, const CSSToLengthConver
         }
     }
 
-    if (value->isNumber())
-        return origin + sign * value->getFloatValue() * conversionData.zoom();
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
-    if (value->isPercentage())
-        return origin + sign * value->getFloatValue() / 100.f * edgeDistance;
+    if (primitiveValue->isNumber())
+        return origin + sign * primitiveValue->getFloatValue() * conversionData.zoom();
 
-    if (value->isCalculatedPercentageWithLength())
-        return origin + sign * value->cssCalcValue()->toCalcValue(conversionData)->evaluate(edgeDistance);
+    if (primitiveValue->isPercentage())
+        return origin + sign * primitiveValue->getFloatValue() / 100.f * edgeDistance;
 
-    switch (value->getValueID()) {
+    if (primitiveValue->isCalculatedPercentageWithLength())
+        return origin + sign * primitiveValue->cssCalcValue()->toCalcValue(conversionData)->evaluate(edgeDistance);
+
+    switch (primitiveValue->getValueID()) {
     case CSSValueTop:
         ASSERT(!isHorizontal);
         return 0;
@@ -525,10 +528,10 @@ static float positionFromValue(CSSPrimitiveValue* value, const CSSToLengthConver
         break;
     }
 
-    return origin + sign * value->computeLength<float>(conversionData);
+    return origin + sign * primitiveValue->computeLength<float>(conversionData);
 }
 
-FloatPoint CSSGradientValue::computeEndPoint(CSSPrimitiveValue* horizontal, CSSPrimitiveValue* vertical, const CSSToLengthConversionData& conversionData, const IntSize& size)
+FloatPoint CSSGradientValue::computeEndPoint(CSSValue* horizontal, CSSValue* vertical, const CSSToLengthConversionData& conversionData, const IntSize& size)
 {
     FloatPoint result;
 
@@ -636,7 +639,7 @@ String CSSLinearGradientValue::customCSSText() const
         if (m_angle && m_angle->computeDegrees() != 180) {
             result.append(m_angle->cssText());
             wroteSomething = true;
-        } else if ((m_firstX || m_firstY) && !(!m_firstX && m_firstY && m_firstY->getValueID() == CSSValueBottom)) {
+        } else if ((m_firstX || m_firstY) && !(!m_firstX && m_firstY && m_firstY->isPrimitiveValue() && toCSSPrimitiveValue(m_firstY.get())->getValueID() == CSSValueBottom)) {
             result.appendLiteral("to ");
             if (m_firstX && m_firstY) {
                 result.append(m_firstX->cssText());
@@ -772,9 +775,9 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(const CSSToLengthCon
                 // "Magic" corners, so the 50% line touches two corners.
                 float rise = size.width();
                 float run = size.height();
-                if (m_firstX && m_firstX->getValueID() == CSSValueLeft)
+                if (m_firstX && m_firstX->isPrimitiveValue() && toCSSPrimitiveValue(m_firstX.get())->getValueID() == CSSValueLeft)
                     run *= -1;
-                if (m_firstY && m_firstY->getValueID() == CSSValueBottom)
+                if (m_firstY && m_firstY->isPrimitiveValue() && toCSSPrimitiveValue(m_firstY.get())->getValueID() == CSSValueBottom)
                     rise *= -1;
                 // Compute angle, and flip it back to "bearing angle" degrees.
                 float angle = 90 - rad2deg(atan2(rise, run));

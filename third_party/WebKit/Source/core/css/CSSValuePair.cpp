@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/css/Pair.h"
+#include "core/css/CSSValuePair.h"
 
 namespace blink {
 
-DEFINE_TRACE(Pair)
+DEFINE_TRACE_AFTER_DISPATCH(CSSValuePair)
 {
     visitor->trace(m_first);
     visitor->trace(m_second);
+    CSSValue::traceAfterDispatch(visitor);
 }
 
 }

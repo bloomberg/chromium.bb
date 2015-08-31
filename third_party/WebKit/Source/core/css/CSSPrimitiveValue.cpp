@@ -26,7 +26,6 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSToLengthConversionData.h"
-#include "core/css/Pair.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Node.h"
 #include "core/style/ComputedStyle.h"
@@ -243,12 +242,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(const String& str, UnitType type)
         m_value.string->ref();
 }
 
-CSSPrimitiveValue::CSSPrimitiveValue(const LengthSize& lengthSize, const ComputedStyle& style)
-    : CSSValue(PrimitiveClass)
-{
-    init(lengthSize, style);
-}
-
 CSSPrimitiveValue::CSSPrimitiveValue(RGBA32 color)
     : CSSValue(PrimitiveClass)
 {
@@ -333,20 +326,6 @@ void CSSPrimitiveValue::init(UnitType type)
     m_primitiveUnitType = static_cast<unsigned>(type);
 }
 
-void CSSPrimitiveValue::init(const LengthSize& lengthSize, const ComputedStyle& style)
-{
-    init(UnitType::Pair);
-    m_hasCachedCSSText = false;
-    m_value.pair = Pair::create(create(lengthSize.width(), style.effectiveZoom()), create(lengthSize.height(), style.effectiveZoom()), Pair::KeepIdenticalValues).leakRef();
-}
-
-void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<Pair> p)
-{
-    init(UnitType::Pair);
-    m_hasCachedCSSText = false;
-    m_value.pair = p.leakRef();
-}
-
 void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<CSSCalcValue> c)
 {
     init(UnitType::Calc);
@@ -375,12 +354,6 @@ void CSSPrimitiveValue::cleanup()
     case UnitType::Attribute:
         if (m_value.string)
             m_value.string->deref();
-        break;
-    case UnitType::Pair:
-        // We must not call deref() when oilpan is enabled because m_value.pair is traced.
-#if !ENABLE(OILPAN)
-        m_value.pair->deref();
-#endif
         break;
     case UnitType::Calc:
         // We must not call deref() when oilpan is enabled because m_value.calc is traced.
@@ -875,7 +848,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::PropertyID:
     case UnitType::Attribute:
     case UnitType::RGBColor:
-    case UnitType::Pair:
     case UnitType::Calc:
     case UnitType::Shape:
     case UnitType::CalcPercentageWithNumber:
@@ -962,9 +934,6 @@ String CSSPrimitiveValue::customCSSText() const
         text = Color(m_value.rgbcolor).serializedAsCSSComponentValue();
         break;
     }
-    case UnitType::Pair:
-        text = getPairValue()->cssText();
-        break;
     case UnitType::Calc:
         text = m_value.calc->customCSSText();
         break;
@@ -1031,8 +1000,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
         return equal(m_value.string, other.m_value.string);
     case UnitType::RGBColor:
         return m_value.rgbcolor == other.m_value.rgbcolor;
-    case UnitType::Pair:
-        return m_value.pair && other.m_value.pair && m_value.pair->equals(*other.m_value.pair);
     case UnitType::Calc:
         return m_value.calc && other.m_value.calc && m_value.calc->equals(*other.m_value.calc);
     case UnitType::Shape:
@@ -1051,9 +1018,6 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSPrimitiveValue)
 {
 #if ENABLE(OILPAN)
     switch (type()) {
-    case UnitType::Pair:
-        visitor->trace(m_value.pair);
-        break;
     case UnitType::Calc:
         visitor->trace(m_value.calc);
         break;

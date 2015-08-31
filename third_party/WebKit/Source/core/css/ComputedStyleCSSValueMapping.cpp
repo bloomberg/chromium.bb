@@ -41,8 +41,8 @@
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/Pair.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
@@ -311,7 +311,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForNinePieceImageRepeat(const NineP
         verticalRepeat = horizontalRepeat;
     else
         verticalRepeat = cssValuePool().createIdentifierValue(valueForRepeatRule(image.verticalRule()));
-    return cssValuePool().createValue(Pair::create(horizontalRepeat.release(), verticalRepeat.release(), Pair::DropIdenticalValues));
+    return CSSValuePair::create(horizontalRepeat.release(), verticalRepeat.release(), CSSValuePair::DropIdenticalValues);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> valueForNinePieceImage(const NinePieceImage& image, const ComputedStyle& style)
@@ -1819,11 +1819,10 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyObjectFit:
         return cssValuePool().createValue(style.objectFit());
     case CSSPropertyObjectPosition:
-        return cssValuePool().createValue(
-            Pair::create(
-                zoomAdjustedPixelValueForLength(style.objectPosition().x(), style),
-                zoomAdjustedPixelValueForLength(style.objectPosition().y(), style),
-                Pair::KeepIdenticalValues));
+        return CSSValuePair::create(
+            zoomAdjustedPixelValueForLength(style.objectPosition().x(), style),
+            zoomAdjustedPixelValueForLength(style.objectPosition().y(), style),
+            CSSValuePair::KeepIdenticalValues);
     case CSSPropertyOpacity:
         return cssValuePool().createValue(style.opacity(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyOrphans:

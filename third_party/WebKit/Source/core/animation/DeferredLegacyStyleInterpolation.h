@@ -19,6 +19,7 @@ class CSSQuadValue;
 class CSSShadowValue;
 class CSSSVGDocumentValue;
 class CSSValueList;
+class CSSValuePair;
 
 class CORE_EXPORT DeferredLegacyStyleInterpolation : public StyleInterpolation {
 public:
@@ -37,6 +38,7 @@ public:
     static bool interpolationRequiresStyleResolve(const CSSShadowValue&);
     static bool interpolationRequiresStyleResolve(const CSSSVGDocumentValue&);
     static bool interpolationRequiresStyleResolve(const CSSValueList&);
+    static bool interpolationRequiresStyleResolve(const CSSValuePair&);
     static bool interpolationRequiresStyleResolve(const CSSBasicShape&);
     static bool interpolationRequiresStyleResolve(const CSSQuadValue&);
 

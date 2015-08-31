@@ -13,7 +13,7 @@
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/Pair.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/resolver/StyleResolverState.h"
 
 {% macro declare_initial_function(property_id) %}
@@ -346,10 +346,9 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
 
     int length = list ? list->length() : 0;
     for (int i = 0; i < length; ++i) {
-        CSSValue* currValue = list->item(i);
-        Pair* pair = toCSSPrimitiveValue(currValue)->getPairValue();
-        AtomicString identifier(pair->first()->getStringValue());
-        int value = pair->second()->getIntValue();
+        const CSSValuePair* pair = toCSSValuePair(list->item(i));
+        AtomicString identifier(toCSSPrimitiveValue(pair->first())->getStringValue());
+        int value = toCSSPrimitiveValue(pair->second())->getIntValue();
         CounterDirectives& directives = map.add(identifier, CounterDirectives()).storedValue->value;
         {% if action == 'Reset' %}
         directives.setResetValue(value);

@@ -39,8 +39,6 @@ class CSSBasicShape;
 class CSSCalcValue;
 class CSSToLengthConversionData;
 class Length;
-class LengthSize;
-class Pair;
 class RGBColor;
 class ComputedStyle;
 
@@ -102,7 +100,6 @@ public:
         DotsPerCentimeter,
         Fraction,
         Integer,
-        Pair,
         Rems,
         Chs,
         Shape,
@@ -221,10 +218,6 @@ public:
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(value, zoom));
     }
-    static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(const LengthSize& value, const ComputedStyle& style)
-    {
-        return adoptRefWillBeNoop(new CSSPrimitiveValue(value, style));
-    }
     template<typename T> static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> create(T value)
     {
         return adoptRefWillBeNoop(new CSSPrimitiveValue(value));
@@ -264,9 +257,6 @@ public:
     String getStringValue() const;
     RGBA32 getRGBA32Value() const { ASSERT(isRGBColor()); return m_value.rgbcolor; }
 
-    // TODO(timloh): Add isPair() and update callers so we can ASSERT(isPair())
-    Pair* getPairValue() const { return type() != UnitType::Pair ? 0 : m_value.pair; }
-
     CSSBasicShape* getShapeValue() const { ASSERT(isShape()); return m_value.shape; }
     CSSCalcValue* cssCalcValue() const { ASSERT(isCalculated()); return m_value.calc; }
     CSSPropertyID getPropertyID() const { ASSERT(isPropertyID()); return m_value.propertyID; }
@@ -296,7 +286,6 @@ private:
     CSSPrimitiveValue(CSSPropertyID);
     CSSPrimitiveValue(RGBA32 color);
     CSSPrimitiveValue(const Length&, float zoom);
-    CSSPrimitiveValue(const LengthSize&, const ComputedStyle&);
     CSSPrimitiveValue(const String&, UnitType);
     CSSPrimitiveValue(double, UnitType);
 
@@ -319,8 +308,6 @@ private:
 
     void init(UnitType);
     void init(const Length&);
-    void init(const LengthSize&, const ComputedStyle&);
-    void init(PassRefPtrWillBeRawPtr<Pair>);
     void init(PassRefPtrWillBeRawPtr<CSSBasicShape>);
     void init(PassRefPtrWillBeRawPtr<CSSCalcValue>);
 
@@ -337,7 +324,6 @@ private:
         // FIXME: oilpan: Should be members, but no support for members in unions. Just trace the raw ptr for now.
         CSSBasicShape* shape;
         CSSCalcValue* calc;
-        Pair* pair;
     } m_value;
 };
 

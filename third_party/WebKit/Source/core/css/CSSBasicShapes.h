@@ -31,6 +31,7 @@
 #define CSSBasicShapes_h
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValuePair.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -70,12 +71,12 @@ public:
     String cssText() const override;
     bool equals(const CSSBasicShape&) const override;
 
-    CSSPrimitiveValue* centerX() const { return m_centerX.get(); }
-    CSSPrimitiveValue* centerY() const { return m_centerY.get(); }
+    CSSValue* centerX() const { return m_centerX.get(); }
+    CSSValue* centerY() const { return m_centerY.get(); }
     CSSPrimitiveValue* radius() const { return m_radius.get(); }
 
-    void setCenterX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
-    void setCenterY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
+    void setCenterX(PassRefPtrWillBeRawPtr<CSSValue> centerX) { m_centerX = centerX; }
+    void setCenterY(PassRefPtrWillBeRawPtr<CSSValue> centerY) { m_centerY = centerY; }
     void setRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_radius = radius; }
 
     DECLARE_VIRTUAL_TRACE();
@@ -85,8 +86,8 @@ private:
 
     Type type() const override { return CSSBasicShapeCircleType; }
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_centerX;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_centerY;
+    RefPtrWillBeMember<CSSValue> m_centerX;
+    RefPtrWillBeMember<CSSValue> m_centerY;
     RefPtrWillBeMember<CSSPrimitiveValue> m_radius;
 };
 
@@ -97,13 +98,13 @@ public:
     String cssText() const override;
     bool equals(const CSSBasicShape&) const override;
 
-    CSSPrimitiveValue* centerX() const { return m_centerX.get(); }
-    CSSPrimitiveValue* centerY() const { return m_centerY.get(); }
+    CSSValue* centerX() const { return m_centerX.get(); }
+    CSSValue* centerY() const { return m_centerY.get(); }
     CSSPrimitiveValue* radiusX() const { return m_radiusX.get(); }
     CSSPrimitiveValue* radiusY() const { return m_radiusY.get(); }
 
-    void setCenterX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerX) { m_centerX = centerX; }
-    void setCenterY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> centerY) { m_centerY = centerY; }
+    void setCenterX(PassRefPtrWillBeRawPtr<CSSValue> centerX) { m_centerX = centerX; }
+    void setCenterY(PassRefPtrWillBeRawPtr<CSSValue> centerY) { m_centerY = centerY; }
     void setRadiusX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
     void setRadiusY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
@@ -114,8 +115,8 @@ private:
 
     Type type() const override { return CSSBasicShapeEllipseType; }
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_centerX;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_centerY;
+    RefPtrWillBeMember<CSSValue> m_centerX;
+    RefPtrWillBeMember<CSSValue> m_centerY;
     RefPtrWillBeMember<CSSPrimitiveValue> m_radiusX;
     RefPtrWillBeMember<CSSPrimitiveValue> m_radiusY;
 };
@@ -163,10 +164,10 @@ public:
     CSSPrimitiveValue* bottom() const { return m_bottom.get(); }
     CSSPrimitiveValue* left() const { return m_left.get(); }
 
-    CSSPrimitiveValue* topLeftRadius() const { return m_topLeftRadius.get(); }
-    CSSPrimitiveValue* topRightRadius() const { return m_topRightRadius.get(); }
-    CSSPrimitiveValue* bottomRightRadius() const { return m_bottomRightRadius.get(); }
-    CSSPrimitiveValue* bottomLeftRadius() const { return m_bottomLeftRadius.get(); }
+    CSSValuePair* topLeftRadius() const { return m_topLeftRadius.get(); }
+    CSSValuePair* topRightRadius() const { return m_topRightRadius.get(); }
+    CSSValuePair* bottomRightRadius() const { return m_bottomRightRadius.get(); }
+    CSSValuePair* bottomLeftRadius() const { return m_bottomLeftRadius.get(); }
 
     void setTop(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top) { m_top = top; }
     void setRight(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right) { m_right = right; }
@@ -197,10 +198,10 @@ public:
     }
 
 
-    void setTopLeftRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_topLeftRadius = radius; }
-    void setTopRightRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_topRightRadius = radius; }
-    void setBottomRightRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_bottomRightRadius = radius; }
-    void setBottomLeftRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_bottomLeftRadius = radius; }
+    void setTopLeftRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_topLeftRadius = radius; }
+    void setTopRightRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_topRightRadius = radius; }
+    void setBottomRightRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_bottomRightRadius = radius; }
+    void setBottomLeftRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_bottomLeftRadius = radius; }
 
     String cssText() const override;
     bool equals(const CSSBasicShape&) const override;
@@ -217,10 +218,10 @@ private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_bottom;
     RefPtrWillBeMember<CSSPrimitiveValue> m_left;
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_topLeftRadius;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_topRightRadius;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_bottomRightRadius;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_bottomLeftRadius;
+    RefPtrWillBeMember<CSSValuePair> m_topLeftRadius;
+    RefPtrWillBeMember<CSSValuePair> m_topRightRadius;
+    RefPtrWillBeMember<CSSValuePair> m_bottomRightRadius;
+    RefPtrWillBeMember<CSSValuePair> m_bottomLeftRadius;
 };
 
 DEFINE_TYPE_CASTS(CSSBasicShapeCircle, CSSBasicShape, shape, shape->isCircle(), shape.isCircle());
