@@ -196,3 +196,6 @@ virtual/threaded/printing/width-overflow.html [ WontFix ]
 
 # This test only fails with an ASSERT in Debug build.
 [ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]
+
+# See crbug.com/522326
+imported/web-platform-tests/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
