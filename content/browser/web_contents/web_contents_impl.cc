@@ -616,7 +616,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnMediaPlayingNotification)
     IPC_MESSAGE_HANDLER(FrameHostMsg_MediaPausedNotification,
                         OnMediaPausedNotification)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFirstVisuallyNonEmptyPaint,
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
                         OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)

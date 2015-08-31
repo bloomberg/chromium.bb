@@ -98,7 +98,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
   }
 
   void ReceivePaintUpdate() {
-    FrameHostMsg_DidFirstVisuallyNonEmptyPaint msg(
+    ViewHostMsg_DidFirstVisuallyNonEmptyPaint msg(
         main_test_rfh()->GetRoutingID());
     RenderViewHostTester::TestOnMessageReceived(test_rvh(), msg);
   }

@@ -1001,10 +1001,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_BeginNavigation,
                     content::BeginNavigationParams,
                     scoped_refptr<content::ResourceRequestBody>)
 
-// Sent once a paint happens after the first non empty layout. In other words
-// after the frame has painted something.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFirstVisuallyNonEmptyPaint)
-
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64 /* id */)

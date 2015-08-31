@@ -3299,7 +3299,7 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   // propagate the current theme color to the delegates.
   RenderViewHostTester::TestOnMessageReceived(
       test_rvh(),
-      FrameHostMsg_DidFirstVisuallyNonEmptyPaint(rfh->GetRoutingID()));
+      ViewHostMsg_DidFirstVisuallyNonEmptyPaint(rfh->GetRoutingID()));
 
   EXPECT_EQ(SK_ColorRED, contents()->GetThemeColor());
   EXPECT_EQ(SK_ColorRED, observer.last_theme_color());

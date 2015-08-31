@@ -493,7 +493,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void willReleaseScriptContext(blink::WebLocalFrame* frame,
                                         v8::Local<v8::Context> context,
                                         int world_id);
-  virtual void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame);
   virtual void didChangeScrollOffset(blink::WebLocalFrame* frame);
   virtual void willInsertBody(blink::WebLocalFrame* frame);
   virtual void reportFindInPageMatchCount(int request_id,

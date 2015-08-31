@@ -1406,6 +1406,22 @@ blink::WebLayerTreeView* RenderWidget::layerTreeView() {
   return compositor_.get();
 }
 
+void RenderWidget::didFirstVisuallyNonEmptyLayout() {
+  // TODO(dglazkov): Remove this -- we should just pass background color
+  // in CompositorFrameMetadata.
+#if defined(OS_ANDROID)
+  DidChangeBodyBackgroundColor(webwidget_->backgroundColor());
+#endif
+
+  QueueMessage(
+      new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_),
+      MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
+}
+
+void RenderWidget::didFirstLayoutAfterFinishedParsing() {
+  // TODO(dglazkov): Use this hook to drive CapturePageInfo.
+}
+
 void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 

@@ -1516,6 +1516,10 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_HideValidationMessage)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_MoveValidationMessage,
                     gfx::Rect /* anchor rectangle in root view coordinate */)
 
+// Sent once a paint happens after the first non empty layout. In other words,
+// after the frame widget has painted something.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
+
 #if defined(OS_ANDROID)
 // Response to ViewMsg_FindMatchRects.
 //

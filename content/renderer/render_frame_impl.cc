@@ -3511,22 +3511,6 @@ void RenderFrameImpl::willReleaseScriptContext(blink::WebLocalFrame* frame,
                     WillReleaseScriptContext(context, world_id));
 }
 
-void RenderFrameImpl::didFirstVisuallyNonEmptyLayout(
-    blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
-  if (frame->parent())
-    return;
-
-#if defined(OS_ANDROID)
-  GetRenderWidget()->DidChangeBodyBackgroundColor(
-      render_view_->webwidget_->backgroundColor());
-#endif
-
-  GetRenderWidget()->QueueMessage(
-      new FrameHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_),
-      MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
-}
-
 void RenderFrameImpl::didChangeScrollOffset(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
   // TODO(nasko): Move implementation here. Needed methods:

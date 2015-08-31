@@ -172,6 +172,8 @@ class CONTENT_EXPORT RenderWidget
   virtual void didAutoResize(const blink::WebSize& new_size);
   virtual void initializeLayerTreeView();
   virtual blink::WebLayerTreeView* layerTreeView();
+  virtual void didFirstVisuallyNonEmptyLayout();
+  virtual void didFirstLayoutAfterFinishedParsing();
   virtual void didFocus();
   virtual void didBlur();
   virtual void didChangeCursor(const blink::WebCursorInfo&);
