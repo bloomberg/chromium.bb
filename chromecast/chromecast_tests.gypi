@@ -12,6 +12,7 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         'chromecast.gyp:cast_base',
+        'chromecast.gyp:cast_crypto',
         '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
       ],
@@ -21,6 +22,7 @@
         'base/process_utils_unittest.cc',
         'base/serializers_unittest.cc',
         'base/system_time_change_notifier_unittest.cc',
+        'crypto/signature_cache_unittest.cc',
       ],
       'conditions': [
         ['OS == "android"', {

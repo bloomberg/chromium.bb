@@ -178,6 +178,17 @@
       ],
     },  # end of target 'cast_crash_client'
     {
+      'target_name': 'cast_crypto',
+      'type': '<(component)',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'crypto/signature_cache.cc',
+        'crypto/signature_cache.h',
+      ],
+    },
+    {
       'target_name': 'cast_net',
       'type': '<(component)',
       'sources': [
