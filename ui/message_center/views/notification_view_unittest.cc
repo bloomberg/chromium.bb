@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -25,6 +26,7 @@
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace message_center {
@@ -412,11 +414,14 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
   // Now construct a mouse move event 1 pixel inside the boundary of the action
   // button.
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToWidget(notification_view()->action_buttons_[0],
+  views::View::ConvertPointToScreen(notification_view()->action_buttons_[0],
                                     &cursor_location);
   ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-  widget()->OnMouseEvent(&move);
+  ui::EventDispatchDetails details =
+      views::test::WidgetTest::GetEventProcessor(widget())->
+          OnEventFromSource(&move);
+  EXPECT_FALSE(details.dispatcher_destroyed);
 
   EXPECT_EQ(views::CustomButton::STATE_HOVERED,
             notification_view()->action_buttons_[0]->state());

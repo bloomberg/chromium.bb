@@ -1697,28 +1697,44 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
 TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
   Widget* widget = CreateTopLevelNativeWidget();
   View* root_view = widget->GetRootView();
+  root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
 
   EventCountView* v1 = new EventCountView();
-  v1->SetBounds(0, 0, 10, 10);
+  v1->SetBounds(5, 5, 10, 10);
   root_view->AddChildView(v1);
   EventCountView* v2 = new EventCountView();
-  v2->SetBounds(0, 10, 10, 10);
+  v2->SetBounds(5, 15, 10, 10);
   root_view->AddChildView(v2);
 
+  widget->Show();
+
+  // SynthesizeMouseMoveEvent does nothing until the mouse is entered.
+  widget->SynthesizeMouseMoveEvent();
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_MOVED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_MOVED));
+
   gfx::Point cursor_location(5, 5);
+  View::ConvertPointToScreen(widget->GetRootView(), &cursor_location);
   ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-  widget->OnMouseEvent(&move);
+  ui::EventDispatchDetails details =
+      WidgetTest::GetEventProcessor(widget)->OnEventFromSource(&move);
+  EXPECT_FALSE(details.dispatcher_destroyed);
 
-  EXPECT_EQ(1, v1->GetEventCount(ui::ET_MOUSE_ENTERED));
-  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, v1->GetEventCount(ui::ET_MOUSE_MOVED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_MOVED));
+
+  // SynthesizeMouseMoveEvent dispatches an mousemove event.
+  widget->SynthesizeMouseMoveEvent();
+  EXPECT_EQ(2, v1->GetEventCount(ui::ET_MOUSE_MOVED));
 
   delete v1;
-  v2->SetBounds(0, 0, 10, 10);
-  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_MOVED));
+  v2->SetBounds(5, 5, 10, 10);
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_MOVED));
 
   widget->SynthesizeMouseMoveEvent();
-  EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_MOVED));
 
   widget->CloseNow();
 }

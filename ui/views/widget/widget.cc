@@ -21,6 +21,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/view_storage.h"
@@ -988,9 +989,16 @@ gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
 }
 
 void Widget::SynthesizeMouseMoveEvent() {
+  // In screen coordinate.
+  gfx::Point mouse_location = EventMonitor::GetLastMouseLocation();
+  if (!GetWindowBoundsInScreen().Contains(mouse_location))
+      return;
+
+  // Convert: screen coordinate -> widget coordinate.
+  View::ConvertPointFromScreen(root_view_.get(), &mouse_location);
   last_mouse_event_was_move_ = false;
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, last_mouse_event_position_,
-                             last_mouse_event_position_, ui::EventTimeForNow(),
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, mouse_location,
+                             mouse_location, ui::EventTimeForNow(),
                              ui::EF_IS_SYNTHESIZED, 0);
   root_view_->OnMouseMoved(mouse_event);
 }
