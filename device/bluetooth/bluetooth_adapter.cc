@@ -162,7 +162,7 @@ BluetoothAdapter::~BluetoothAdapter() {
 void BluetoothAdapter::OnStartDiscoverySession(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const DiscoverySessionCallback& callback) {
-  VLOG(1) << "Discovery session started!";
+  VLOG(1) << "BluetoothAdapter::OnStartDiscoverySession";
   RecordBluetoothDiscoverySessionStartOutcome(
       UMABluetoothDiscoverySessionOutcome::SUCCESS);
 
@@ -176,6 +176,7 @@ void BluetoothAdapter::OnStartDiscoverySession(
 void BluetoothAdapter::OnStartDiscoverySessionError(
     const ErrorCallback& callback,
     UMABluetoothDiscoverySessionOutcome outcome) {
+  VLOG(1) << "OnStartDiscoverySessionError: " << static_cast<int>(outcome);
   RecordBluetoothDiscoverySessionStartOutcome(outcome);
   callback.Run();
 }

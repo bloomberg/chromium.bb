@@ -4,6 +4,8 @@
 
 #include "content/browser/bluetooth/first_device_bluetooth_chooser.h"
 
+#include "base/logging.h"
+
 namespace content {
 
 FirstDeviceBluetoothChooser::FirstDeviceBluetoothChooser(
@@ -31,6 +33,7 @@ void FirstDeviceBluetoothChooser::ShowDiscoveryState(DiscoveryState state) {
     case DiscoveryState::IDLE:
       // Without a user-visible dialog, if discovery finishes without finding a
       // device, we'll never find one, so we should cancel.
+      VLOG(1) << "FirstDeviceBluetoothChooser found nothing before going idle.";
       event_handler_.Run(Event::CANCELLED, "");
       break;
     case DiscoveryState::DISCOVERING:

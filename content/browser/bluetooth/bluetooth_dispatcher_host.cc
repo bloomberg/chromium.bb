@@ -394,7 +394,8 @@ void BluetoothDispatcherHost::OnRequestDevice(
   }
 
   // Populate the initial list of devices.
-  VLOG(1) << "Populating devices in chooser " << chooser_id;
+  VLOG(1) << "Populating " << adapter_->GetDevices().size()
+          << " devices in chooser " << chooser_id;
   for (const device::BluetoothDevice* device : adapter_->GetDevices()) {
     VLOG(1) << "\t" << device->GetIdentifier();
     session->AddFilteredDevice(*device);
