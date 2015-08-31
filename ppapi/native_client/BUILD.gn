@@ -60,6 +60,6 @@ if (is_nacl) {
 
 group("irt") {
   deps = [
-    ":nacl_irt_copy(//native_client/build/toolchain/nacl:irt_${target_cpu})",
+    ":nacl_irt_copy(//build/toolchain/nacl:irt_${target_cpu})",
   ]
 }

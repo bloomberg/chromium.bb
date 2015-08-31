@@ -7,8 +7,8 @@ if (!is_nacl) {
   # A library for launching a NaCl sandbox connected to a Mojo embedder.
   source_set("monacl_sel") {
     sources = [
-      "mojo_syscall_internal.h",
       "mojo_syscall.cc",
+      "mojo_syscall_internal.h",
       "monacl_sel_main.cc",
     ]
     deps = [
@@ -16,7 +16,7 @@ if (!is_nacl) {
 
       # This target makes sure we have all the pre-processor defines needed to
       # use NaCl's headers.
-      "//native_client/build/config/nacl:nacl_base",
+      "//build/config/nacl:nacl_base",
       "//native_client/src/trusted/desc:nrd_xfer",
       "//native_client/src/trusted/service_runtime:sel_main_chrome",
     ]
@@ -34,7 +34,7 @@ if (is_nacl) {
     ]
     deps = [
       "../mojo/public/c/system",
-      "//native_client/build/config/nacl:nacl_base",
+      "//build/config/nacl:nacl_base",
       "//native_client/src/untrusted/irt:irt_core_lib",
       "//native_client/src/untrusted/nacl:imc_syscalls",
     ]

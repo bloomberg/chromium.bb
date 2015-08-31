@@ -1,0 +1,81 @@
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Native Client Definitions
+config("nacl_defines") {
+  defines = [
+    "NACL_ANDROID=0",
+    "_DEFAULT_SOURCE=1",
+    "_BSD_SOURCE=1",
+    "_POSIX_C_SOURCE=199506",
+    "_XOPEN_SOURCE=600",
+    "_GNU_SOURCE=1",
+    "__STDC_LIMIT_MACROS=1",
+  ]
+
+  if (is_win) {
+    defines += [ "NACL_WINDOWS=1" ]
+  } else {
+    defines += [ "NACL_WINDOWS=0" ]
+  }
+
+  if (is_linux) {
+    defines += [ "NACL_LINUX=1" ]
+  } else {
+    defines += [ "NACL_LINUX=0" ]
+  }
+
+  if (is_mac) {
+    defines += [ "NACL_OSX=1" ]
+  } else {
+    defines += [ "NACL_OSX=0" ]
+  }
+
+  if (current_cpu == "arm") {
+    defines += [
+      "NACL_BUILD_ARCH=arm",
+      "NACL_BUILD_SUBARCH=32",
+    ]
+  }
+
+  if (current_cpu == "mips") {
+    defines += [
+      "NACL_BUILD_ARCH=mips",
+      "NACL_BUILD_SUBARCH=32",
+    ]
+  }
+
+  if (current_cpu == "x86") {
+    defines += [
+      "NACL_BUILD_ARCH=x86",
+      "NACL_BUILD_SUBARCH=32",
+    ]
+  }
+
+  if (current_cpu == "x64") {
+    defines += [
+      "NACL_BUILD_ARCH=x86",
+      "NACL_BUILD_SUBARCH=64",
+    ]
+  }
+}
+
+config("nexe_defines") {
+  defines = [
+    "DYNAMIC_ANNOTATIONS_ENABLED=1",
+    "DYNAMIC_ANNOTATIONS_PREFIX=NACL_",
+  ]
+}
+
+# The base target that all targets in the NaCl build should depend on.
+# This allows configs to be modified for everything in the NaCl build, even when
+# the NaCl build is composed into the Chrome build.  (GN has no functionality to
+# add flags to everythin in //native_client, having a base target works around
+# that limitation.)
+source_set("nacl_base") {
+  public_configs = [ ":nacl_defines" ]
+  if (current_os == "nacl") {
+    public_configs += [ ":nexe_defines" ]
+  }
+}

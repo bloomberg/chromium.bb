@@ -25,7 +25,8 @@ if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
     # (x86-64 sandbox base address hiding). One thing we don't want is the
     # IRT's secondary TLS, but that is handled by tls_edit and not compiler
     # flags (so IRT compiler flags should be fine).
-    shim_toolchain_base = "//native_client/build/toolchain/nacl:irt_"
+    shim_toolchain_base = "//build/toolchain/nacl:irt_"
+
     shim_target_tc_label = "$shim_target_label($shim_toolchain_base$target_cpu)"
     deps = [
       shim_target_tc_label,

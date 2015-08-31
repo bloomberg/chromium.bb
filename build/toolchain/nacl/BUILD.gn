@@ -1,63 +1,203 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-toolchain("x86_newlib") {
-  toolprefix = "gen/sdk/toolchain/linux_x86_newlib/bin/x86_64-nacl-"
+import("//build/config/sysroot.gni")
+import("//build/toolchain/nacl_toolchain.gni")
+
+nacl_toolchain_dir = rebase_path("//native_client/toolchain", root_build_dir)
+os_toolchain_dir = "${nacl_toolchain_dir}/${current_os}_x86"
+
+# Add the toolchain revision as a preprocessor define so that sources are
+# rebuilt when a toolchain is updated.
+# Idea we could use the toolchain deps feature, but currently that feature is
+# bugged and does not trigger a rebuild.
+# https://code.google.com/p/chromium/issues/detail?id=431880
+# Calls to get the toolchain revision are relatively slow, so do them all in a
+# single batch to amortize python startup, etc.
+revisions = exec_script("//native_client/build/get_toolchain_revision.py",
+                        [
+                          "nacl_arm_newlib",
+                          "nacl_x86_newlib",
+                          "nacl_x86_glibc",
+                          "pnacl_newlib",
+                        ],
+                        "trim list lines")
+nacl_arm_newlib_rev = revisions[0]
+nacl_x86_newlib_rev = revisions[1]
+nacl_x86_glibc_rev = revisions[2]
+pnacl_newlib_rev = revisions[3]
+
+nacl_toolchain("newlib_arm") {
+  toolchain_package = "nacl_arm_newlib"
+  toolchain_revision = nacl_arm_newlib_rev
+  toolchain_cpu = "arm"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/arm-nacl-"
+
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
-  ld = toolprefix + "g++"
+  ar = toolprefix + "ar"
+  ld = cxx
+}
 
-  tool("cc") {
-    command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c -c \$in -o \$out"
-    description = "CC(NaCl x86 Newlib) \$out"
-    depfile = "\$out.d"
-    depsformat = "gcc"
-  }
-  tool("cxx") {
-    # cflags_pch_cc
-    command = "$cxx -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_cc -c \$in -o \$out"
-    description = "CXX(NaCl x86 Newlib) \$out"
-    depfile = "\$out.d"
-    depsformat = "gcc"
-  }
-  tool("alink") {
-    command = "rm -f \$out && ${toolprefix}ar rcs \$out \$in"
-    description = "AR(NaCl x86 Newlib) \$out"
-  }
-  tool("solink") {
-    command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ]; then $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
-    description = "SOLINK(NaCl x86 Newlib) \$lib"
+nacl_toolchain("newlib_x86") {
+  toolchain_package = "nacl_x86_newlib"
+  toolchain_revision = nacl_x86_newlib_rev
+  toolchain_cpu = "x86"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
 
-    #pool = "link_pool"
-    restat = "1"
-  }
-  tool("link") {
-    command = "$ld \$ldflags -o \$out -Wl,--start-group \$in \$solibs -Wl,--end-group \$libs"
-    description = "LINK(NaCl x86 Newlib) \$out"
+  cc = toolprefix + "gcc"
+  cxx = toolprefix + "g++"
+  ar = toolprefix + "ar"
+  ld = cxx
+}
 
-    #pool = "link_pool"
-  }
+nacl_toolchain("newlib_x64") {
+  toolchain_package = "nacl_x86_newlib"
+  toolchain_revision = nacl_x86_newlib_rev
+  toolchain_cpu = "x64"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
 
-  if (is_win) {
-    tool("stamp") {
-      command = "$python_path gyp-win-tool stamp \$out"
-      description = "STAMP \$out"
-    }
-  } else {
-    tool("stamp") {
-      command = "touch \$out"
-      description = "STAMP \$out"
-    }
-  }
+  cc = toolprefix + "gcc"
+  cxx = toolprefix + "g++"
+  ar = toolprefix + "ar"
+  ld = cxx
+}
 
-  toolchain_args() {
-    # Override the default OS detection. The build config will set the is_*
-    # flags accordingly.
-    current_os = "nacl"
+nacl_toolchain("newlib_pnacl") {
+  toolchain_package = "pnacl_newlib"
+  toolchain_revision = pnacl_newlib_rev
+  toolchain_cpu = "pnacl"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/pnacl-"
 
-    # Component build not supported in NaCl, since it does not support shared
-    # libraries.
-    is_component_build = false
-  }
+  cc = toolprefix + "clang"
+  cxx = toolprefix + "clang++"
+  ar = toolprefix + "ar"
+  ld = cxx
+  executable_extension = ".pexe-debug"
+
+  finalize = toolprefix + "finalize"
+  nonfinal_file =
+      "{{root_out_dir}}/{{target_output_name}}${executable_extension}"
+  finalized_file = "{{root_out_dir}}/{{target_output_name}}.pexe"
+  postlink = "$finalize $nonfinal_file -o $finalized_file"
+  link_outputs = [ finalized_file ]
+}
+
+nacl_toolchain("glibc_x86") {
+  toolchain_package = "nacl_x86_glibc"
+  toolchain_revision = nacl_x86_glibc_rev
+  toolchain_cpu = "x86"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
+
+  cc = toolprefix + "gcc"
+  cxx = toolprefix + "g++"
+  ar = toolprefix + "ar"
+  ld = cxx
+}
+
+nacl_toolchain("glibc_x64") {
+  toolchain_package = "nacl_x86_glibc"
+  toolchain_revision = nacl_x86_glibc_rev
+  toolchain_cpu = "x64"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
+
+  cc = toolprefix + "gcc"
+  cxx = toolprefix + "g++"
+  ar = toolprefix + "ar"
+  ld = cxx
+}
+
+nacl_toolchain("clang_newlib_x86") {
+  toolchain_package = "pnacl_newlib"
+  toolchain_revision = pnacl_newlib_rev
+  toolchain_cpu = "x86"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
+  is_clang = true
+
+  cc = toolprefix + "clang"
+  cxx = toolprefix + "clang++"
+  ar = toolprefix + "ar"
+  ld = cxx
+}
+
+nacl_toolchain("clang_newlib_x64") {
+  toolchain_package = "pnacl_newlib"
+  toolchain_revision = pnacl_newlib_rev
+  toolchain_cpu = "x64"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
+  is_clang = true
+
+  cc = toolprefix + "clang"
+  cxx = toolprefix + "clang++"
+  ar = toolprefix + "ar"
+  ld = cxx
+}
+
+link_irt = rebase_path("//native_client/build/link_irt.py", root_build_dir)
+
+nacl_toolchain("irt_x86") {
+  toolchain_package = "pnacl_newlib"
+  toolchain_revision = pnacl_newlib_rev
+  toolchain_cpu = "x86"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
+  is_clang = true
+
+  cc = toolprefix + "clang"
+  cxx = toolprefix + "clang++"
+  ar = toolprefix + "ar"
+  readelf = toolprefix + "readelf"
+
+  # Some IRT implementations (notably, Chromium's) contain C++ code,
+  # so we need to link w/ the C++ linker.
+  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
+
+  # TODO(ncbray): depend on link script
+  deps = [
+    "//native_client/src/tools/tls_edit:tls_edit($host_toolchain)",
+  ]
+}
+
+nacl_toolchain("irt_x64") {
+  toolchain_package = "pnacl_newlib"
+  toolchain_revision = pnacl_newlib_rev
+  toolchain_cpu = "x64"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
+  is_clang = true
+
+  cc = toolprefix + "clang"
+  cxx = toolprefix + "clang++"
+  ar = toolprefix + "ar"
+  readelf = toolprefix + "readelf"
+
+  # Some IRT implementations (notably, Chromium's) contain C++ code,
+  # so we need to link w/ the C++ linker.
+  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
+
+  # TODO(ncbray): depend on link script
+  deps = [
+    "//native_client/src/tools/tls_edit:tls_edit($host_toolchain)",
+  ]
+}
+
+# Uses newlib to match the Chrome build.
+nacl_toolchain("irt_arm") {
+  toolchain_package = "nacl_arm_newlib"
+  toolchain_revision = nacl_arm_newlib_rev
+  toolchain_cpu = "arm"
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/arm-nacl-"
+
+  cc = toolprefix + "gcc"
+  cxx = toolprefix + "g++"
+  ar = toolprefix + "ar"
+  readelf = toolprefix + "readelf"
+
+  # Some IRT implementations (notably, Chromium's) contain C++ code,
+  # so we need to link w/ the C++ linker.
+  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cxx} --readelf-cmd=${readelf}"
+
+  # TODO(ncbray): depend on link script
+  deps = [
+    "//native_client/src/tools/tls_edit:tls_edit($host_toolchain)",
+  ]
 }
