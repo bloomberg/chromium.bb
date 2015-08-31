@@ -1569,15 +1569,8 @@ void WebGLRenderingContextBase::bufferDataImpl(GLenum target, long long size, co
     if (!buffer)
         return;
 
-    switch (usage) {
-    case GL_STREAM_DRAW:
-    case GL_STATIC_DRAW:
-    case GL_DYNAMIC_DRAW:
-        break;
-    default:
-        synthesizeGLError(GL_INVALID_ENUM, "bufferData", "invalid usage");
+    if (!validateBufferDataUsage("bufferData", usage))
         return;
-    }
 
     if (!validateValueFitNonNegInt32("bufferData", "size", size))
         return;
@@ -6128,6 +6121,19 @@ WebGLBuffer* WebGLRenderingContextBase::validateBufferDataTarget(const char* fun
         return nullptr;
     }
     return buffer;
+}
+
+bool WebGLRenderingContextBase::validateBufferDataUsage(const char* functionName, GLenum usage)
+{
+    switch (usage) {
+    case GL_STREAM_DRAW:
+    case GL_STATIC_DRAW:
+    case GL_DYNAMIC_DRAW:
+        return true;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid usage");
+        return false;
+    }
 }
 
 void WebGLRenderingContextBase::removeBoundBuffer(WebGLBuffer* buffer)

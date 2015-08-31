@@ -1594,9 +1594,13 @@ void WebGL2RenderingContextBase::resumeTransformFeedback()
 
 void WebGL2RenderingContextBase::bindBufferBase(GLenum target, GLuint index, WebGLBuffer* buffer)
 {
-    if (isContextLost() || !validateWebGLObject("bindBufferBase", buffer))
+    if (isContextLost())
         return;
-
+    bool deleted;
+    if (!checkObjectToBeBound("bindBufferBase", buffer, deleted))
+        return;
+    if (deleted)
+        buffer = 0;
     webContext()->bindBufferBase(target, index, objectOrZero(buffer));
 }
 
@@ -2448,6 +2452,21 @@ WebGLBuffer* WebGL2RenderingContextBase::validateBufferDataTarget(const char* fu
         return nullptr;
     }
     return buffer;
+}
+
+bool WebGL2RenderingContextBase::validateBufferDataUsage(const char* functionName, GLenum usage)
+{
+    switch (usage) {
+    case GL_STREAM_READ:
+    case GL_STREAM_COPY:
+    case GL_STATIC_READ:
+    case GL_STATIC_COPY:
+    case GL_DYNAMIC_READ:
+    case GL_DYNAMIC_COPY:
+        return true;
+    default:
+        return WebGLRenderingContextBase::validateBufferDataUsage(functionName, usage);
+    }
 }
 
 void WebGL2RenderingContextBase::removeBoundBuffer(WebGLBuffer* buffer)

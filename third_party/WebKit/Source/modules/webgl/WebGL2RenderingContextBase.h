@@ -206,6 +206,7 @@ protected:
     GLenum boundFramebufferColorFormat() override;
 
     WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target) override;
+    bool validateBufferDataUsage(const char* functionName, GLenum usage) override;
 
     void removeBoundBuffer(WebGLBuffer*) override;
 

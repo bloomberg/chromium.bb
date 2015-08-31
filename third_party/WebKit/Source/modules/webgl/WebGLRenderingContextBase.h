@@ -969,6 +969,8 @@ protected:
     // Helper function to validate the target for bufferData.
     // Return the current bound buffer to target, or 0 if the target is invalid.
     virtual WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target);
+    // Helper function to validate the usage for bufferData.
+    virtual bool validateBufferDataUsage(const char* functionName, GLenum usage);
 
     virtual bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum target, WebGLBuffer*);
 
