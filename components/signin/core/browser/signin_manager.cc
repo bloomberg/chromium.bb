@@ -348,7 +348,7 @@ void SigninManager::CompletePendingSignin() {
 }
 
 void SigninManager::OnExternalSigninCompleted(const std::string& username) {
-  AccountTrackerService::AccountInfo info =
+  AccountInfo info =
       account_tracker_service()->FindAccountInfoByEmail(username);
   DCHECK(!info.gaia.empty());
   DCHECK(!info.email.empty());
@@ -400,8 +400,7 @@ void SigninManager::PostSignedIn() {
   password_.clear();
 }
 
-void SigninManager::OnAccountUpdated(
-    const AccountTrackerService::AccountInfo& info) {
+void SigninManager::OnAccountUpdated(const AccountInfo& info) {
   user_info_fetched_by_account_tracker_ = true;
   PostSignedIn();
 }

@@ -32,6 +32,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_internals_util.h"
@@ -177,8 +178,7 @@ class SigninManager : public SigninManagerBase,
   void PostSignedIn();
 
   // AccountTrackerService::Observer implementation.
-  void OnAccountUpdated(const AccountTrackerService::AccountInfo& info)
-      override;
+  void OnAccountUpdated(const AccountInfo& info) override;
   void OnAccountUpdateFailed(const std::string& account_id) override;
 
   // OAuth2TokenService::Observer

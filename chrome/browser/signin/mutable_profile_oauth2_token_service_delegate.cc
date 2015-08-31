@@ -84,7 +84,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
                 token_service_delegate_->server_revokes_.end(), this));
 }
 
-MutableProfileOAuth2TokenServiceDelegate::AccountInfo::AccountInfo(
+MutableProfileOAuth2TokenServiceDelegate::AccountStatus::AccountStatus(
     SigninErrorController* signin_error_controller,
     const std::string& account_id,
     const std::string& refresh_token)
@@ -97,11 +97,11 @@ MutableProfileOAuth2TokenServiceDelegate::AccountInfo::AccountInfo(
   signin_error_controller_->AddProvider(this);
 }
 
-MutableProfileOAuth2TokenServiceDelegate::AccountInfo::~AccountInfo() {
+MutableProfileOAuth2TokenServiceDelegate::AccountStatus::~AccountStatus() {
   signin_error_controller_->RemoveProvider(this);
 }
 
-void MutableProfileOAuth2TokenServiceDelegate::AccountInfo::SetLastAuthError(
+void MutableProfileOAuth2TokenServiceDelegate::AccountStatus::SetLastAuthError(
     const GoogleServiceAuthError& error) {
   if (error.state() != last_auth_error_.state()) {
     last_auth_error_ = error;
@@ -110,12 +110,12 @@ void MutableProfileOAuth2TokenServiceDelegate::AccountInfo::SetLastAuthError(
 }
 
 std::string
-MutableProfileOAuth2TokenServiceDelegate::AccountInfo::GetAccountId() const {
+MutableProfileOAuth2TokenServiceDelegate::AccountStatus::GetAccountId() const {
   return account_id_;
 }
 
 GoogleServiceAuthError
-MutableProfileOAuth2TokenServiceDelegate::AccountInfo::GetAuthStatus() const {
+MutableProfileOAuth2TokenServiceDelegate::AccountStatus::GetAuthStatus() const {
   return last_auth_error_;
 }
 
@@ -213,7 +213,7 @@ bool MutableProfileOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
 
 std::string MutableProfileOAuth2TokenServiceDelegate::GetRefreshToken(
     const std::string& account_id) const {
-  AccountInfoMap::const_iterator iter = refresh_tokens_.find(account_id);
+  AccountStatusMap::const_iterator iter = refresh_tokens_.find(account_id);
   if (iter != refresh_tokens_.end())
     return iter->second->refresh_token();
   return std::string();
@@ -222,9 +222,8 @@ std::string MutableProfileOAuth2TokenServiceDelegate::GetRefreshToken(
 std::vector<std::string>
 MutableProfileOAuth2TokenServiceDelegate::GetAccounts() {
   std::vector<std::string> account_ids;
-  for (AccountInfoMap::const_iterator iter = refresh_tokens_.begin();
-       iter != refresh_tokens_.end(); ++iter) {
-    account_ids.push_back(iter->first);
+  for (auto& token : refresh_tokens_) {
+    account_ids.push_back(token.first);
   }
   return account_ids;
 }
@@ -285,15 +284,14 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   // while this profile is connected to an account.
   DCHECK(!loading_primary_account_id_.empty());
   if (refresh_tokens_.count(loading_primary_account_id_) == 0) {
-    refresh_tokens_[loading_primary_account_id_].reset(new AccountInfo(
+    refresh_tokens_[loading_primary_account_id_].reset(new AccountStatus(
         signin_error_controller_, loading_primary_account_id_, std::string()));
   }
 
   // If we don't have a refresh token for a known account, signal an error.
-  for (AccountInfoMap::const_iterator i = refresh_tokens_.begin();
-       i != refresh_tokens_.end(); ++i) {
-    if (!RefreshTokenIsAvailable(i->first)) {
-      UpdateAuthError(i->first,
+  for (auto& token : refresh_tokens_) {
+    if (!RefreshTokenIsAvailable(token.first)) {
+      UpdateAuthError(token.first,
                       GoogleServiceAuthError(
                           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
       break;
@@ -333,7 +331,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
 
         if (migration_state == AccountTrackerService::MIGRATION_IN_PROGRESS) {
           // Migrate to gaia-ids.
-          AccountTrackerService::AccountInfo account_info =
+          AccountInfo account_info =
               account_tracker_service_->FindAccountInfoByEmail(account_id);
           // |account_info.gaia| could be empty if |account_id| is already gaia
           // id. This could happen if the chrome was closed in the middle of
@@ -368,7 +366,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
           account_id = canon_account_id;
         }
 
-        refresh_tokens_[account_id].reset(new AccountInfo(
+        refresh_tokens_[account_id].reset(new AccountStatus(
             signin_error_controller_, account_id, refresh_token));
         FireRefreshTokenAvailable(account_id);
       }
@@ -409,8 +407,8 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentials(
     } else {
       VLOG(1) << "MutablePO2TS::UpdateCredentials; Refresh Token was absent. "
               << "account_id=" << account_id;
-      refresh_tokens_[account_id].reset(
-          new AccountInfo(signin_error_controller_, account_id, refresh_token));
+      refresh_tokens_[account_id].reset(new AccountStatus(
+          signin_error_controller_, account_id, refresh_token));
     }
 
     // Save the token in memory and in persistent store.
@@ -441,9 +439,9 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
 
   VLOG(1) << "MutablePO2TS::RevokeAllCredentials";
   CancelWebTokenFetch();
-  AccountInfoMap tokens = refresh_tokens_;
-  for (AccountInfoMap::iterator i = tokens.begin(); i != tokens.end(); ++i)
-    RevokeCredentials(i->first);
+  AccountStatusMap tokens = refresh_tokens_;
+  for (auto& token : tokens)
+    RevokeCredentials(token.first);
 
   DCHECK_EQ(0u, refresh_tokens_.size());
 

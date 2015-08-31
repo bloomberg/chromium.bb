@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -67,7 +68,7 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  public:
   SSOAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
                         ProfileOAuth2TokenServiceIOSProvider* provider,
-                        const AccountTrackerService::AccountInfo& account);
+                        const AccountInfo& account);
   ~SSOAccessTokenFetcher() override;
 
   void Start(const std::string& client_id,
@@ -83,7 +84,7 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
 
  private:
   ProfileOAuth2TokenServiceIOSProvider* provider_;  // weak
-  AccountTrackerService::AccountInfo account_;
+  AccountInfo account_;
   bool request_was_cancelled_;
   base::WeakPtrFactory<SSOAccessTokenFetcher> weak_factory_;
 
@@ -93,7 +94,7 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
 SSOAccessTokenFetcher::SSOAccessTokenFetcher(
     OAuth2AccessTokenConsumer* consumer,
     ProfileOAuth2TokenServiceIOSProvider* provider,
-    const AccountTrackerService::AccountInfo& account)
+    const AccountInfo& account)
     : OAuth2AccessTokenFetcher(consumer),
       provider_(provider),
       account_(account),
@@ -139,7 +140,7 @@ void SSOAccessTokenFetcher::OnAccessTokenResponse(NSString* token,
 
 }  // namespace
 
-ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::AccountInfo(
+ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::AccountStatus(
     SigninErrorController* signin_error_controller,
     const std::string& account_id)
     : signin_error_controller_(signin_error_controller),
@@ -150,11 +151,11 @@ ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::AccountInfo(
   signin_error_controller_->AddProvider(this);
 }
 
-ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::~AccountInfo() {
+ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::~AccountStatus() {
   signin_error_controller_->RemoveProvider(this);
 }
 
-void ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::SetLastAuthError(
+void ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::SetLastAuthError(
     const GoogleServiceAuthError& error) {
   if (error.state() != last_auth_error_.state()) {
     last_auth_error_ = error;
@@ -162,13 +163,13 @@ void ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::SetLastAuthError(
   }
 }
 
-std::string ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::GetAccountId()
+std::string ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::GetAccountId()
     const {
   return account_id_;
 }
 
 GoogleServiceAuthError
-ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::GetAuthStatus() const {
+ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::GetAuthStatus() const {
   return last_auth_error_;
 }
 
@@ -284,9 +285,9 @@ void ProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ScopedBatchChange batch(this);
-  AccountInfoMap toRemove = accounts_;
-  for (AccountInfoMap::iterator i = toRemove.begin(); i != toRemove.end(); ++i)
-    RemoveAccount(i->first);
+  AccountStatusMap toRemove = accounts_;
+  for (auto& accountStatus : toRemove)
+    RemoveAccount(accountStatus.first);
 
   DCHECK_EQ(0u, accounts_.size());
   primary_account_id_.clear();
@@ -298,7 +299,7 @@ ProfileOAuth2TokenServiceIOSDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
     OAuth2AccessTokenConsumer* consumer) {
-  AccountTrackerService::AccountInfo account_info =
+  AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
   return new SSOAccessTokenFetcher(consumer, provider_, account_info);
 }
@@ -367,7 +368,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
 
   if (!account_present) {
     accounts_[account_id].reset(
-        new AccountInfo(signin_error_controller_, account_id));
+        new AccountStatus(signin_error_controller_, account_id));
   }
 
   UpdateAuthError(account_id, GoogleServiceAuthError::AuthErrorNone());

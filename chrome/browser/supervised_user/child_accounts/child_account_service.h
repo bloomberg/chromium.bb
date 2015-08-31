@@ -70,8 +70,7 @@ class ChildAccountService : public KeyedService,
   bool SetActive(bool active) override;
 
   // AccountTrackerService::Observer implementation.
-  void OnAccountUpdated(
-      const AccountTrackerService::AccountInfo& info) override;
+  void OnAccountUpdated(const AccountInfo& info) override;
 
   // FamilyInfoFetcher::Consumer implementation.
   void OnGetFamilyMembersSuccess(

@@ -79,8 +79,7 @@ TestSigninClient::AddCookieChangedCallback(
       new SigninClient::CookieChangedSubscription);
 }
 
-bool TestSigninClient::UpdateAccountInfo(
-    AccountTrackerService::AccountInfo* out_account_info) {
+bool TestSigninClient::UpdateAccountInfo(AccountInfo* out_account_info) {
   return false;
 }
 

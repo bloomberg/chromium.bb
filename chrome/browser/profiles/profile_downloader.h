@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/image_decoder.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -107,8 +108,7 @@ class ProfileDownloader : public net::URLFetcherDelegate,
 
 
   // Implementation of AccountTrackerService::Observer.
-  void OnAccountUpdated(
-      const AccountTrackerService::AccountInfo& info) override;
+  void OnAccountUpdated(const AccountInfo& info) override;
 
   // Returns true if the image url is url of the default profile picture.
   static bool IsDefaultProfileImageURL(const std::string& url);
@@ -128,7 +128,7 @@ class ProfileDownloader : public net::URLFetcherDelegate,
   std::string auth_token_;
   scoped_ptr<net::URLFetcher> profile_image_fetcher_;
   scoped_ptr<OAuth2TokenService::Request> oauth2_access_token_request_;
-  AccountTrackerService::AccountInfo account_info_;
+  AccountInfo account_info_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_;
   AccountTrackerService* account_tracker_service_;

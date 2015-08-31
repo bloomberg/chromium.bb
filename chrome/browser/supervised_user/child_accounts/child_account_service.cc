@@ -212,8 +212,7 @@ bool ChildAccountService::SetActive(bool active) {
   return true;
 }
 
-void ChildAccountService::OnAccountUpdated(
-    const AccountTrackerService::AccountInfo& info) {
+void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
   std::string auth_account_id = SigninManagerFactory::GetForProfile(profile_)
       ->GetAuthenticatedAccountId();
   if (!info.IsValid() || info.account_id != auth_account_id)

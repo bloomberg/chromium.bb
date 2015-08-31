@@ -53,15 +53,6 @@ const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
 // This must be a string which can never be a valid picture URL.
 const char AccountTrackerService::kNoPictureURLFound[] = "NO_PICTURE_URL";
 
-AccountTrackerService::AccountInfo::AccountInfo() {}
-AccountTrackerService::AccountInfo::~AccountInfo() {}
-
-bool AccountTrackerService::AccountInfo::IsValid() const {
-  return !account_id.empty() && !email.empty() && !gaia.empty() &&
-         !hosted_domain.empty() && !full_name.empty() && !given_name.empty() &&
-         !locale.empty() && !picture_url.empty();
-}
-
 AccountTrackerService::AccountTrackerService() : signin_client_(nullptr) {}
 
 AccountTrackerService::~AccountTrackerService() {
@@ -95,8 +86,7 @@ void AccountTrackerService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-std::vector<AccountTrackerService::AccountInfo>
-AccountTrackerService::GetAccounts() const {
+std::vector<AccountInfo> AccountTrackerService::GetAccounts() const {
   std::vector<AccountInfo> accounts;
 
   for (std::map<std::string, AccountState>::const_iterator it =
@@ -109,7 +99,7 @@ AccountTrackerService::GetAccounts() const {
   return accounts;
 }
 
-AccountTrackerService::AccountInfo AccountTrackerService::GetAccountInfo(
+AccountInfo AccountTrackerService::GetAccountInfo(
     const std::string& account_id) {
   if (ContainsKey(accounts_, account_id))
     return accounts_[account_id].info;
@@ -117,8 +107,7 @@ AccountTrackerService::AccountInfo AccountTrackerService::GetAccountInfo(
   return AccountInfo();
 }
 
-AccountTrackerService::AccountInfo
-AccountTrackerService::FindAccountInfoByGaiaId(
+AccountInfo AccountTrackerService::FindAccountInfoByGaiaId(
     const std::string& gaia_id) {
   if (!gaia_id.empty()) {
     for (std::map<std::string, AccountState>::const_iterator it =
@@ -134,8 +123,7 @@ AccountTrackerService::FindAccountInfoByGaiaId(
   return AccountInfo();
 }
 
-AccountTrackerService::AccountInfo
-AccountTrackerService::FindAccountInfoByEmail(
+AccountInfo AccountTrackerService::FindAccountInfoByEmail(
     const std::string& email) {
   if (!email.empty()) {
     for (std::map<std::string, AccountState>::const_iterator it =
@@ -496,8 +484,7 @@ std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
   return account_id;
 }
 
-void AccountTrackerService::SeedAccountInfo(
-    AccountTrackerService::AccountInfo info) {
+void AccountTrackerService::SeedAccountInfo(AccountInfo info) {
   info.account_id = PickAccountIdForAccount(info.gaia, info.email);
   if (info.hosted_domain.empty()) {
     info.hosted_domain = kNoHostedDomainFound;

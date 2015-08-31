@@ -447,8 +447,8 @@ TEST_F(SigninManagerTest, UpgradeToNewPrefs) {
             profile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
 
   // Make sure account tracker was updated.
-  AccountTrackerService::AccountInfo info = service->GetAccountInfo(
-      manager_->GetAuthenticatedAccountId());
+  AccountInfo info =
+      service->GetAccountInfo(manager_->GetAuthenticatedAccountId());
   EXPECT_EQ("user@gmail.com", info.email);
   EXPECT_EQ("account_id", info.gaia);
 }
@@ -476,7 +476,7 @@ TEST_F(SigninManagerTest, CanonicalizesPrefs) {
               profile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
 
     // Make sure account tracker has a canonicalized username.
-    AccountTrackerService::AccountInfo info =
+    AccountInfo info =
         service->GetAccountInfo(manager_->GetAuthenticatedAccountId());
     EXPECT_EQ("user.C@gmail.com", info.email);
     EXPECT_EQ("userc@gmail.com", info.account_id);

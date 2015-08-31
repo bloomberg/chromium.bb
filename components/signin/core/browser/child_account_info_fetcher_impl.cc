@@ -10,6 +10,7 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"

@@ -1301,9 +1301,8 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
       SigninManagerFactory::GetForProfile(profile);
   AccountTrackerService* account_tracker =
       AccountTrackerServiceFactory::GetForProfile(profile);
-  AccountTrackerService::AccountInfo account_info =
-      account_tracker->GetAccountInfo(
-          signin_manager->GetAuthenticatedAccountId());
+  AccountInfo account_info = account_tracker->GetAccountInfo(
+      signin_manager->GetAuthenticatedAccountId());
   base::string16 username = base::UTF8ToUTF16(account_info.email);
 
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());

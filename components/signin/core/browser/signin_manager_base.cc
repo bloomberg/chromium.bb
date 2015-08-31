@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -106,9 +107,8 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
       // in this case the account tracker should have the gaia_id so fetch it
       // from there.
       if (pref_gaia_id.empty()) {
-        AccountTrackerService::AccountInfo info =
-            account_tracker_service_->FindAccountInfoByEmail(
-                pref_account_username);
+        AccountInfo info = account_tracker_service_->FindAccountInfoByEmail(
+            pref_account_username);
         pref_gaia_id = info.gaia;
       }
 
@@ -139,7 +139,7 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
   if (!account_id.empty()) {
     if (account_tracker_service_->GetMigrationState() ==
         AccountTrackerService::MIGRATION_IN_PROGRESS) {
-      AccountTrackerService::AccountInfo account_info =
+      AccountInfo account_info =
           account_tracker_service_->FindAccountInfoByEmail(account_id);
       // |account_info.gaia| could be empty if |account_id| is already gaia id.
       if (!account_info.gaia.empty()) {
@@ -198,8 +198,7 @@ void SigninManagerBase::SetAuthenticatedAccountId(
 
   // This preference is set so that code on I/O thread has access to the
   // Gaia id of the signed in user.
-  AccountTrackerService::AccountInfo info =
-      account_tracker_service_->GetAccountInfo(account_id);
+  AccountInfo info = account_tracker_service_->GetAccountInfo(account_id);
 
   // When this function is called from Initialize(), it's possible for
   // |info.gaia| to be empty when migrating from a really old profile.

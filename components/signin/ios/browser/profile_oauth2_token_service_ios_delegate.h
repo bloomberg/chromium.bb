@@ -84,11 +84,11 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSDelegateTest,
                            LoadRevokeCredentialsClearsExcludedAccounts);
 
-  class AccountInfo : public SigninErrorController::AuthStatusProvider {
+  class AccountStatus : public SigninErrorController::AuthStatusProvider {
    public:
-    AccountInfo(SigninErrorController* signin_error_controller,
-                const std::string& account_id);
-    ~AccountInfo() override;
+    AccountStatus(SigninErrorController* signin_error_controller,
+                  const std::string& account_id);
+    ~AccountStatus() override;
 
     void SetLastAuthError(const GoogleServiceAuthError& error);
 
@@ -101,12 +101,12 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
     std::string account_id_;
     GoogleServiceAuthError last_auth_error_;
 
-    DISALLOW_COPY_AND_ASSIGN(AccountInfo);
+    DISALLOW_COPY_AND_ASSIGN(AccountStatus);
   };
 
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.
-  typedef std::map<std::string, linked_ptr<AccountInfo>> AccountInfoMap;
+  typedef std::map<std::string, linked_ptr<AccountStatus>> AccountStatusMap;
 
   // Returns the account ids that should be ignored by this token service.
   std::set<std::string> GetExcludedSecondaryAccounts();
@@ -130,7 +130,7 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   std::string primary_account_id_;
 
   // Info about the existing accounts.
-  AccountInfoMap accounts_;
+  AccountStatusMap accounts_;
 
   // Calls to this class are expected to be made from the browser UI thread.
   // The purpose of this checker is to detect access to

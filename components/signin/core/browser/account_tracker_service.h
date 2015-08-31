@@ -15,6 +15,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 
@@ -50,24 +51,6 @@ class AccountTrackerService : public KeyedService,
   // have been migrated from preferences.
   // Child account service flag name.
   static const char kChildAccountServiceFlag[];
-
-  // Information about a specific account.
-  struct AccountInfo {
-    AccountInfo();
-    ~AccountInfo();
-
-    std::string account_id;  // The account ID used by OAuth2TokenService.
-    std::string gaia;
-    std::string email;
-    std::string full_name;
-    std::string given_name;
-    std::string hosted_domain;
-    std::string locale;
-    std::string picture_url;
-    bool is_child_account;
-
-    bool IsValid() const;
-  };
 
   // Clients of AccountTrackerService can implement this interface and register
   // with AddObserver() to learn about account information changes.

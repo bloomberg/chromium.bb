@@ -221,7 +221,7 @@ class UserImageManagerTest : public LoginManagerTest,
   // retrieve the picture URL and fetch the image.
   void SeedAccountTrackerService(const std::string& username,
                                  Profile* profile) {
-    AccountTrackerService::AccountInfo info;
+    AccountInfo info;
     info.account_id = std::string();
     info.gaia = username;
     info.email = username;

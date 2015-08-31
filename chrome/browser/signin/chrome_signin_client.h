@@ -76,8 +76,7 @@ class ChromeSigninClient
   void PostSignedIn(const std::string& account_id,
                     const std::string& username,
                     const std::string& password) override;
-  bool UpdateAccountInfo(
-      AccountTrackerService::AccountInfo* out_account_info) override;
+  bool UpdateAccountInfo(AccountInfo* out_account_info) override;
 
   // SigninErrorController::Observer implementation.
   void OnErrorChanged() override;

@@ -251,8 +251,7 @@ void ChromeSigninClient::PostSignedIn(const std::string& account_id,
 #endif
 }
 
-bool ChromeSigninClient::UpdateAccountInfo(
-    AccountTrackerService::AccountInfo* out_account_info) {
+bool ChromeSigninClient::UpdateAccountInfo(AccountInfo* out_account_info) {
   return false;
 }
 

@@ -861,7 +861,7 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
     return RespondNow(Error(identity_constants::kOffTheRecord));
   }
 
-  AccountTrackerService::AccountInfo account =
+  AccountInfo account =
       AccountTrackerServiceFactory::GetForProfile(GetProfile())
           ->GetAccountInfo(GetPrimaryAccountId(GetProfile()));
   api::identity::ProfileUserInfo profile_user_info;

@@ -965,7 +965,7 @@ void UserSessionManager::InitProfilePreferences(
     if (gaia_id.empty()) {
       AccountTrackerService* account_tracker =
           AccountTrackerServiceFactory::GetForProfile(profile);
-      AccountTrackerService::AccountInfo info =
+      AccountInfo info =
           account_tracker->FindAccountInfoByEmail(user_context.GetUserID());
       gaia_id = info.gaia;
       DCHECK(!gaia_id.empty());

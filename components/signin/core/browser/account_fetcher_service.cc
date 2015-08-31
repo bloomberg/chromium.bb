@@ -225,7 +225,7 @@ void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
   DVLOG(1) << "AVAILABLE " << account_id;
 
   account_tracker_service_->StartTrackingAccount(account_id);
-  const AccountTrackerService::AccountInfo& info =
+  const AccountInfo& info =
       account_tracker_service_->GetAccountInfo(account_id);
   if (!AccountSupportsUserInfo(account_id))
     return;

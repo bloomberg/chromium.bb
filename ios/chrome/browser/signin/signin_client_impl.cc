@@ -161,8 +161,7 @@ void SigninClientImpl::OnSignedIn(const std::string& account_id,
 // TODO(msarda): http://crbug.com/522454 The account info is seeded by the token
 // service each timea new account is added. Remove the method
 // UpdateAccountInfo| as it is now obsolete.
-bool SigninClientImpl::UpdateAccountInfo(
-    AccountTrackerService::AccountInfo* out_account_info) {
+bool SigninClientImpl::UpdateAccountInfo(AccountInfo* out_account_info) {
   DCHECK(!out_account_info->account_id.empty());
   ProfileOAuth2TokenServiceIOSProvider* provider =
       ios::GetChromeBrowserProvider()

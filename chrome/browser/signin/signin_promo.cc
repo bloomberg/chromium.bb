@@ -191,9 +191,8 @@ GURL GetPromoURL(signin_metrics::Source source,
 }
 
 GURL GetReauthURL(Profile* profile, const std::string& account_id) {
-  AccountTrackerService::AccountInfo info =
-      AccountTrackerServiceFactory::GetForProfile(profile)->
-          GetAccountInfo(account_id);
+  AccountInfo info = AccountTrackerServiceFactory::GetForProfile(profile)
+                         ->GetAccountInfo(account_id);
   return GetReauthURLWithEmail(info.email);
 }
 
