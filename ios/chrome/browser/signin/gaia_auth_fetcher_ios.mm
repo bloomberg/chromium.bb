@@ -26,6 +26,55 @@ namespace {
 // Whether the iOS specialization of the GaiaAuthFetcher should be used.
 bool g_should_use_gaia_auth_fetcher_ios = true;
 
+// JavaScript template to do a POST request using an XMLHttpRequest.
+// The request is retried once on failure, as it can be marked as failing to
+// load the resource because of 302s on POST request (the cookies of the first
+// response are correctly set).
+//
+// The template takes three arguments (in order):
+// * The URL to send a POST request to.
+// * The HTTP headers of the request. They should be written as valid JavaScript
+//   statements, adding headers to the XMLHttpRequest variable named 'req'
+//   (e.g. 'req.setRequestHeader("Foo", "Bar");').
+// * The body of the POST request.
+NSString* const kPostRequestTemplate =
+    @"<html><script>"
+     "function __gCrWebDoPostRequest() {"
+     "  function createAndSendPostRequest() {"
+     "    var req = new XMLHttpRequest();"
+     "    req.open(\"POST\", \"%@\", false);"
+     "    req.setRequestHeader(\"Content-Type\","
+     "\"application/x-www-form-urlencoded\");"
+     "%@"
+     "    req.send(\"%@\");"
+     "    if (req.status != 200) {"
+     "      throw req.status;"
+     "    }"
+     "    return req.responseText;"
+     "  }"
+     "  try {"
+     "    return createAndSendPostRequest();"
+     "  } catch(err) {"
+     "    return createAndSendPostRequest();"
+     "  }"
+     "}"
+     "</script></html>";
+
+// JavaScript template to read the reponse to a GET or POST request. There is
+// two different cases:
+// * GET request, which was made by simply loading a request to the correct
+//   URL. The response is the inner text (to avoid formatting in case of JSON
+//   answers) of the body.
+// * POST request, in case the "__gCrWebDoPostRequest" function is defined.
+//   Running the function will do a POST request via a XMLHttpRequest and
+//   return the response. See DoPostRequest below to know why this is necessary.
+NSString* const kReadResponseTemplate =
+    @"if (typeof __gCrWebDoPostRequest === 'function') {"
+     "  __gCrWebDoPostRequest();"
+     "} else {"
+     "  document.body.innerText;"
+     "}";
+
 // Creates an NSURLRequest to |url| that can be loaded by a WebView from |body|
 // and |headers|.
 // The request is a GET if |body| is empty and a POST otherwise.
@@ -41,8 +90,6 @@ NSURLRequest* GetRequest(const std::string& body,
         forHTTPHeaderField:base::SysUTF8ToNSString(it.name())];
   }
   if (!body.empty()) {
-    // TODO(bzanotti): HTTPBody is currently ignored in POST Request on
-    // WKWebView. Add a workaround here.
     NSData* post_data =
         [base::SysUTF8ToNSString(body) dataUsingEncoding:NSUTF8StringEncoding];
     [request setHTTPBody:post_data];
@@ -53,7 +100,40 @@ NSURLRequest* GetRequest(const std::string& body,
   }
   return request.autorelease();
 }
+
+// Simulates a POST request on |web_view| using a XMLHttpRequest in
+// JavaScript.
+// This is needed because WKWebView ignores the HTTPBody in a POST request.
+// See
+// https://bugs.webkit.org/show_bug.cgi?id=145410
+void DoPostRequest(WKWebView* web_view,
+                   const std::string& body,
+                   const std::string& headers,
+                   const GURL& url) {
+  GURL origin_url = url;
+  NSMutableString* header_data = [NSMutableString string];
+  net::HttpRequestHeaders request_headers;
+  request_headers.AddHeadersFromString(headers);
+  for (net::HttpRequestHeaders::Iterator it(request_headers); it.GetNext();) {
+    if (it.name() == "Origin") {
+      // The Origin request header cannot be set on an XMLHttpRequest. Set it
+      // by loading the script as if it was at the origin URL.
+      origin_url = GURL(it.value());
+      continue;
+    }
+    // The value doesn't need to be escaped here, as it is already handled by
+    // net::HttpRequestHeaders.
+    [header_data appendFormat:@"req.setRequestHeader(\"%@\", \"%@\");",
+                              base::SysUTF8ToNSString(it.name()),
+                              base::SysUTF8ToNSString(it.value())];
+  }
+  NSString* html_string =
+      [NSString stringWithFormat:kPostRequestTemplate,
+                                 base::SysUTF8ToNSString(url.spec()),
+                                 header_data, base::SysUTF8ToNSString(body)];
+  [web_view loadHTMLString:html_string baseURL:net::NSURLWithGURL(origin_url)];
 }
+}  // namespace
 
 #pragma mark - GaiaAuthFetcherNavigationDelegate
 
@@ -91,15 +171,16 @@ NSURLRequest* GetRequest(const std::string& body,
     didFinishNavigation:(WKNavigation*)navigation {
   // A WKNavigation is an opaque object. The only way to access the body of the
   // response is via Javascript.
-  [webView evaluateJavaScript:@"document.body.innerText"
-            completionHandler:^(id result, NSError* error) {
-              NSString* data = base::mac::ObjCCast<NSString>(result);
-              if (error || !data) {
+  DVLOG(2) << "WKWebView loaded:" << net::GURLWithNSURL(webView.URL);
+  [webView evaluateJavaScript:kReadResponseTemplate
+            completionHandler:^(NSString* result, NSError* error) {
+              if (error || !result) {
                 DVLOG(1) << "Gaia fetcher extract body failed:"
                          << base::SysNSStringToUTF8(error.localizedDescription);
                 bridge_->URLFetchFailure(false /* is_cancelled */);
               } else {
-                bridge_->URLFetchSuccess(base::SysNSStringToUTF8(data));
+                DCHECK([result isKindOfClass:[NSString class]]);
+                bridge_->URLFetchSuccess(base::SysNSStringToUTF8(result));
               }
             }];
 }
@@ -175,8 +256,13 @@ void GaiaAuthFetcherIOSBridge::URLFetchFailure(bool is_cancelled) {
 void GaiaAuthFetcherIOSBridge::FetchPendingRequest() {
   if (!request_.pending)
     return;
+  if (!request_.body.empty()) {
+    DoPostRequest(GetWKWebView(), request_.body, request_.headers,
+                  request_.url);
+  } else {
   [GetWKWebView()
       loadRequest:GetRequest(request_.body, request_.headers, request_.url)];
+  }
 }
 
 GURL GaiaAuthFetcherIOSBridge::FinishPendingRequest() {
