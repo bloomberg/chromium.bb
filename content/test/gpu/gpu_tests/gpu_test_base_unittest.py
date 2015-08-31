@@ -11,7 +11,6 @@ from telemetry.core import util
 from telemetry.story import story_set as story_set_module
 from telemetry.testing import fakes
 
-util.AddDirToPythonPath(util.GetTelemetryDir(), 'third_party', 'mock')
 import mock # pylint: disable=import-error
 
 import gpu_test_base
@@ -161,6 +160,18 @@ class PageWhichFailsNTimes(FakePage):
       self._times_to_fail = self._times_to_fail - 1
       raise Exception('Deliberate exception')
 
+class PageRunExecutionTest(unittest.TestCase):
+  def testNoGarbageCollectionCalls(self):
+    mock_shared_state = mock.Mock()
+    p = gpu_test_base.PageBase('file://foo.html')
+    p.Run(mock_shared_state)
+    expected = [mock.call.page_test.WillNavigateToPage(
+                  p, mock_shared_state.current_tab),
+                mock.call.page_test.RunNavigateSteps(
+                  p, mock_shared_state.current_tab),
+                mock.call.page_test.DidNavigateToPage(
+                  p, mock_shared_state.current_tab)]
+    self.assertEquals(mock_shared_state.mock_calls, expected)
 
 class PageExecutionTest(unittest.TestCase):
   def setupTest(self, manager_mock=None):
@@ -180,6 +191,21 @@ class PageExecutionTest(unittest.TestCase):
     testclass.ProcessCommandLineArgs(parser, options)
     test = testclass(manager_mock=manager_mock)
     return test, finder_options
+
+  # Test page.Run() method is called by telemetry framework before
+  # ValidateAndMeasurePageInner.
+  def testPageRunMethodIsCalledBeforeValidateAndMeasurePage(self):
+    manager = mock.Mock()
+    test, finder_options = self.setupTest(manager)
+    page = FakePage(test, 'page1')
+    page.Run = manager.Run
+    test.AddFakePage(page)
+    self.assertEqual(test.Run(finder_options), 0,
+                     'Test should run with no errors')
+    expected = [mock.call.Run(mock.ANY),
+                mock.call.validator.ValidateAndMeasurePageInner(
+                  page, mock.ANY, mock.ANY)]
+    self.assertEquals(manager.mock_calls, expected)
 
   def testPassingPage(self):
     manager = mock.Mock()

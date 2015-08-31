@@ -40,10 +40,6 @@ class Smoothness(page_test.PageTest):
     options.AppendExtraBrowserArgs('--running-performance-benchmark')
 
   def WillNavigateToPage(self, page, tab):
-    # Collect garbage from previous run several times to make the results more
-    # stable.
-    for _ in xrange(0, 5):
-      tab.CollectGarbage()
     tracing_controller = tab.browser.platform.tracing_controller
     # FIXME: Remove webkit.console when blink.console lands in chromium and
     # the ref builds are updated. crbug.com/386847

@@ -200,6 +200,9 @@ class PageBase(page_module.Page):
       url=url, page_set=page_set, base_dir=base_dir, name=name,
       shared_page_state_class=shared_page_state_class,
       make_javascript_deterministic=make_javascript_deterministic)
+    # Disable automatic garbage collection to reduce the test's cycle time.
+    self._collect_garbage_before_run = False
+
     # TODO(kbr): this is fragile -- if someone changes the
     # shared_page_state_class to something that doesn't handle skip
     # expectations, then they'll hit the exception in
