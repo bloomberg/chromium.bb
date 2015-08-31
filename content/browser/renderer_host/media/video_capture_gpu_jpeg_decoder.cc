@@ -129,7 +129,7 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
           gfx::Rect(dimensions),                      // visible_rect
           dimensions,                                 // natural_size
           static_cast<uint8_t*>(out_buffer->data()),  // data
-          out_buffer->size(),                         // data_size
+          out_buffer->mapped_size(),                  // data_size
           out_handle,                                 // handle
           0,                                          // shared_memory_offset
           base::TimeDelta());                         // timestamp

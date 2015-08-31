@@ -119,7 +119,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     *storage = VideoFrame::WrapExternalData(
         media::PIXEL_FORMAT_I420, coded_size, gfx::Rect(visible_size),
         visible_size, static_cast<uint8*>(output_buffer->data()),
-        output_buffer->size(), base::TimeDelta());
+        output_buffer->mapped_size(), base::TimeDelta());
     DCHECK(*storage);
   }
   *callback =

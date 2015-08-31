@@ -181,7 +181,8 @@ class MEDIA_EXPORT VideoCaptureDevice {
      public:
       virtual ~Buffer() = 0;
       virtual int id() const = 0;
-      virtual size_t size() const = 0;
+      virtual gfx::Size dimensions() const = 0;
+      virtual size_t mapped_size() const = 0;
       virtual void* data(int plane) = 0;
       void* data() { return data(0); }
       virtual ClientBuffer AsClientBuffer(int plane) = 0;

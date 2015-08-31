@@ -124,7 +124,7 @@ class VideoCaptureBufferPoolTest
         : id_(id), pool_(pool), buffer_handle_(buffer_handle.Pass()) {}
     ~Buffer() { pool_->RelinquishProducerReservation(id()); }
     int id() const { return id_; }
-    size_t size() { return buffer_handle_->size(); }
+    size_t mapped_size() { return buffer_handle_->mapped_size(); }
     void* data() { return buffer_handle_->data(0); }
 
    private:
@@ -217,9 +217,9 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
 
   // GMB backed frames have their platform and format specific allocations.
   if (GetParam().pixel_storage != media::PIXEL_STORAGE_GPUMEMORYBUFFER) {
-    ASSERT_LE(format_lo.ImageAllocationSize(), buffer1->size());
-    ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->size());
-    ASSERT_LE(format_lo.ImageAllocationSize(), buffer3->size());
+    ASSERT_LE(format_lo.ImageAllocationSize(), buffer1->mapped_size());
+    ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->mapped_size());
+    ASSERT_LE(format_lo.ImageAllocationSize(), buffer3->mapped_size());
   }
 
   // Texture backed Frames cannot be manipulated via mapping.
@@ -230,11 +230,11 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   }
   // Touch the memory.
   if (buffer1->data() != nullptr)
-    memset(buffer1->data(), 0x11, buffer1->size());
+    memset(buffer1->data(), 0x11, buffer1->mapped_size());
   if (buffer2->data() != nullptr)
-    memset(buffer2->data(), 0x44, buffer2->size());
+    memset(buffer2->data(), 0x44, buffer2->mapped_size());
   if (buffer3->data() != nullptr)
-    memset(buffer3->data(), 0x77, buffer3->size());
+    memset(buffer3->data(), 0x77, buffer3->mapped_size());
 
   // Fourth buffer should fail.  Buffer pool utilization should be at 100%.
   ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
@@ -326,7 +326,7 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   buffer2 = ReserveBuffer(size_hi, GetParam());
   ASSERT_NE(nullptr, buffer2.get());
   if (GetParam().pixel_storage != media::PIXEL_STORAGE_GPUMEMORYBUFFER)
-    ASSERT_LE(format_hi.ImageAllocationSize(), buffer2->size());
+    ASSERT_LE(format_hi.ImageAllocationSize(), buffer2->mapped_size());
   ASSERT_EQ(3, buffer2->id());
   ASSERT_EQ(3.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
   void* const memory_pointer_hi = buffer2->data();
@@ -340,7 +340,7 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   ASSERT_NE(nullptr, buffer2.get());
   ASSERT_EQ(3, buffer2->id());
   if (GetParam().pixel_storage != media::PIXEL_STORAGE_GPUMEMORYBUFFER)
-    ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->size());
+    ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->mapped_size());
   ASSERT_EQ(3.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
   ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
   ASSERT_EQ(1.0, pool_->GetBufferPoolUtilization());
@@ -353,13 +353,13 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
 
   // Touch the memory.
   if (buffer2->data() != nullptr)
-    memset(buffer2->data(), 0x22, buffer2->size());
+    memset(buffer2->data(), 0x22, buffer2->mapped_size());
   if (buffer4->data() != nullptr)
-    memset(buffer4->data(), 0x55, buffer4->size());
+    memset(buffer4->data(), 0x55, buffer4->mapped_size());
   buffer2.reset();
 
   if (buffer4->data() != nullptr)
-    memset(buffer4->data(), 0x77, buffer4->size());
+    memset(buffer4->data(), 0x77, buffer4->mapped_size());
   buffer4.reset();
 }
 

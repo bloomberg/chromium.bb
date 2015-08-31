@@ -310,31 +310,46 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     scoped_ptr<base::DictionaryValue> metadata(new base::DictionaryValue());
     frame->metadata()->MergeInternalValuesInto(metadata.get());
 
+    DCHECK(
+        (frame->IsMappable() && frame->format() == media::PIXEL_FORMAT_I420) ||
+        (frame->HasTextures() && (frame->format() == media::PIXEL_FORMAT_ARGB ||
+                                  frame->format() == media::PIXEL_FORMAT_I420)))
+        << "Format and/or storage type combination not supported (received: "
+        << media::VideoPixelFormatToString(frame->format()) << ")";
+
     for (const auto& client : controller_clients_) {
       if (client->session_closed || client->paused)
         continue;
 
-      CHECK((frame->IsMappable() &&
-             frame->format() == media::PIXEL_FORMAT_I420) ||
-            (!frame->IsMappable() && frame->HasTextures() &&
-             frame->format() == media::PIXEL_FORMAT_ARGB))
-          << "Format and/or storage type combination not supported (received: "
-          << media::VideoPixelFormatToString(frame->format()) << ")";
+      // On the first use of a buffer on a client, share the memory handles.
+      const bool is_new_buffer = client->known_buffers.insert(buffer_id).second;
+      if (is_new_buffer) {
+        if (frame->HasTextures()) {
+          DCHECK(frame->coded_size() == frame->visible_rect().size())
+              << "Textures are always supposed to be tightly packed.";
 
-      if (frame->HasTextures()) {
-        DCHECK(frame->coded_size() == frame->visible_rect().size())
-            << "Textures are always supposed to be tightly packed.";
-        DCHECK_EQ(1u, VideoFrame::NumPlanes(frame->format()));
-      } else if (frame->format() == media::PIXEL_FORMAT_I420) {
-        const bool is_new_buffer =
-            client->known_buffers.insert(buffer_id).second;
-        if (is_new_buffer) {
-          // On the first use of a buffer on a client, share the memory handle.
-          size_t memory_size = 0;
-          base::SharedMemoryHandle remote_handle = buffer_pool_->ShareToProcess(
-              buffer_id, client->render_process_handle, &memory_size);
+          if (frame->format() == media::PIXEL_FORMAT_I420) {
+            std::vector<gfx::GpuMemoryBufferHandle> handles(
+                VideoFrame::NumPlanes(frame->format()));
+            for (size_t i = 0; i < handles.size(); ++i)
+              buffer_pool_->ShareToProcess2(
+                  buffer_id, i, client->render_process_handle, &handles[i]);
+
+            client->event_handler->OnBufferCreated2(
+                client->controller_id, handles, buffer->dimensions(),
+                buffer_id);
+          } else {
+            DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_ARGB);
+          }
+        } else if (frame->IsMappable()) {
+          DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_I420);
+          base::SharedMemoryHandle remote_handle;
+          buffer_pool_->ShareToProcess(
+              buffer_id, client->render_process_handle, &remote_handle);
+
           client->event_handler->OnBufferCreated(
-              client->controller_id, remote_handle, memory_size, buffer_id);
+              client->controller_id, remote_handle, buffer->mapped_size(),
+              buffer_id);
         }
       }
 

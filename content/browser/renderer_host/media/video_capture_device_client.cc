@@ -121,7 +121,8 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
     DCHECK(pool_.get());
   }
   int id() const override { return id_; }
-  size_t size() const override { return buffer_handle_->size(); }
+  gfx::Size dimensions() const override { return buffer_handle_->dimensions(); }
+  size_t mapped_size() const override { return buffer_handle_->mapped_size(); }
   void* data(int plane) override { return buffer_handle_->data(plane); }
   ClientBuffer AsClientBuffer(int plane) override {
     return buffer_handle_->AsClientBuffer(plane);

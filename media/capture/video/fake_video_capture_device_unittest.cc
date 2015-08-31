@@ -27,12 +27,15 @@ namespace {
 // This class is a Client::Buffer that allocates and frees the requested |size|.
 class MockBuffer : public VideoCaptureDevice::Client::Buffer {
  public:
-  MockBuffer(int buffer_id, size_t size)
-      : id_(buffer_id), size_(size), data_(new uint8[size_]) {}
+  MockBuffer(int buffer_id, size_t mapped_size)
+      : id_(buffer_id),
+        mapped_size_(mapped_size),
+        data_(new uint8[mapped_size]) {}
   ~MockBuffer() override { delete[] data_; }
 
   int id() const override { return id_; }
-  size_t size() const override { return size_; }
+  gfx::Size dimensions() const override { return gfx::Size(); }
+  size_t mapped_size() const override { return mapped_size_; }
   void* data(int plane) override { return data_; }
   ClientBuffer AsClientBuffer(int plane) override { return nullptr; }
 #if defined(OS_POSIX)
@@ -43,7 +46,7 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
 
  private:
   const int id_;
-  const size_t size_;
+  const size_t mapped_size_;
   uint8* const data_;
 };
 

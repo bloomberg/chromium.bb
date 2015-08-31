@@ -28,9 +28,14 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   MockVideoCaptureDelegate() : device_id_(0) {}
 
   // VideoCaptureMessageFilter::Delegate implementation.
-  MOCK_METHOD3(OnBufferCreated, void(base::SharedMemoryHandle handle,
-                                     int length,
-                                     int buffer_id));
+  MOCK_METHOD3(OnBufferCreated,
+               void(base::SharedMemoryHandle handle,
+                    int length,
+                    int buffer_id));
+  MOCK_METHOD3(OnBufferCreated2,
+               void(const std::vector<gfx::GpuMemoryBufferHandle>& handles,
+                    const gfx::Size& size,
+                    int buffer_id));
   MOCK_METHOD1(OnBufferDestroyed, void(int buffer_id));
   MOCK_METHOD8(OnBufferReceived,
                void(int buffer_id,
@@ -40,7 +45,7 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
                     media::VideoFrame::StorageType storage_type,
                     const gfx::Size& coded_size,
                     const gfx::Rect& visible_rect,
-                    const gpu::MailboxHolder& mailbox_holder));
+                    const gpu::MailboxHolder& mailbox_holders));
   MOCK_METHOD1(OnStateChanged, void(VideoCaptureState state));
   MOCK_METHOD1(OnDeviceSupportedFormatsEnumerated,
                void(const media::VideoCaptureFormats& formats));

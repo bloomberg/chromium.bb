@@ -8,6 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
 class VideoFrame;
@@ -30,6 +32,13 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
                                base::SharedMemoryHandle handle,
                                int length,
                                int buffer_id) = 0;
+
+  // A GpuMemoryBuffer backed buffer has been newly created.
+  virtual void OnBufferCreated2(
+      VideoCaptureControllerID id,
+      const std::vector<gfx::GpuMemoryBufferHandle>& handles,
+      const gfx::Size& size,
+      int buffer_id) = 0;
 
   // A previously created buffer has been freed and will no longer be used.
   virtual void OnBufferDestroyed(VideoCaptureControllerID id,

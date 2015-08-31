@@ -198,7 +198,7 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
     DCHECK_EQ(capture_format_.pixel_storage, PIXEL_STORAGE_CPU);
     DCHECK_EQ(capture_format_.pixel_format, VIDEO_CAPTURE_PIXEL_FORMAT_ARGB);
     uint8_t* data_ptr = static_cast<uint8_t*>(capture_buffer->data());
-    memset(data_ptr, 0, capture_buffer->size());
+    memset(data_ptr, 0, capture_buffer->mapped_size());
     DrawPacman(true /* use_argb */, data_ptr, frame_count_,
                kFakeCapturePeriodMs, capture_format_.frame_size);
   }

@@ -18,6 +18,7 @@
 #include "content/common/media/video_capture.h"
 #include "ipc/message_filter.h"
 #include "media/base/video_capture_types.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 struct VideoCaptureMsg_BufferReady_Params;
 
@@ -36,18 +37,26 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
                                  int length,
                                  int buffer_id) = 0;
 
+    // Called when a GpuMemoryBuffer backed video frame buffer is created in the
+    // browser process.
+    virtual void OnBufferCreated2(
+        const std::vector<gfx::GpuMemoryBufferHandle>& handles,
+        const gfx::Size& size,
+        int buffer_id) = 0;
+
     virtual void OnBufferDestroyed(int buffer_id) = 0;
 
     // Called when a buffer referencing a captured VideoFrame is received from
     // Browser process.
-    virtual void OnBufferReceived(int buffer_id,
-                                  base::TimeTicks timestamp,
-                                  const base::DictionaryValue& metadata,
-                                  media::VideoPixelFormat pixel_format,
-                                  media::VideoFrame::StorageType storage_type,
-                                  const gfx::Size& coded_size,
-                                  const gfx::Rect& visible_rect,
-                                  const gpu::MailboxHolder& mailbox_holder) = 0;
+    virtual void OnBufferReceived(
+        int buffer_id,
+        base::TimeTicks timestamp,
+        const base::DictionaryValue& metadata,
+        media::VideoPixelFormat pixel_format,
+        media::VideoFrame::StorageType storage_type,
+        const gfx::Size& coded_size,
+        const gfx::Rect& visible_rect,
+        const gpu::MailboxHolder& mailbox_holder) = 0;
 
     // Called when state of a video capture device has changed in the browser
     // process.
@@ -97,6 +106,13 @@ class CONTENT_EXPORT VideoCaptureMessageFilter : public IPC::MessageFilter {
                        base::SharedMemoryHandle handle,
                        int length,
                        int buffer_id);
+
+  // Receive a newly created GpuMemoryBuffer backed buffer from browser process.
+  void OnBufferCreated2(
+      int device_id,
+      const std::vector<gfx::GpuMemoryBufferHandle>& handles,
+      const gfx::Size& size,
+      int buffer_id);
 
   // Release a buffer received by OnBufferCreated.
   void OnBufferDestroyed(int device_id,

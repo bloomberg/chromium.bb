@@ -419,7 +419,10 @@ class StubClient : public media::VideoCaptureDevice::Client {
       DCHECK(pool_.get());
     }
     int id() const override { return id_; }
-    size_t size() const override { return buffer_handle_->size(); }
+    gfx::Size dimensions() const override { return gfx::Size(); }
+    size_t mapped_size() const override {
+      return buffer_handle_->mapped_size();
+    }
     void* data(int plane) override { return buffer_handle_->data(plane); }
     ClientBuffer AsClientBuffer(int plane) override { return nullptr; }
 #if defined(OS_POSIX)

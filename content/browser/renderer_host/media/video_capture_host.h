@@ -82,6 +82,10 @@ class CONTENT_EXPORT VideoCaptureHost
                        base::SharedMemoryHandle handle,
                        int length,
                        int buffer_id) override;
+  void OnBufferCreated2(VideoCaptureControllerID id,
+                        const std::vector<gfx::GpuMemoryBufferHandle>& handles,
+                        const gfx::Size& size,
+                        int buffer_id) override;
   void OnBufferDestroyed(VideoCaptureControllerID id,
                          int buffer_id) override;
   void OnBufferReady(VideoCaptureControllerID id,

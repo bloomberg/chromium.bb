@@ -51,6 +51,7 @@ class MockVideoCaptureControllerEventHandler
   // These mock methods are delegated to by our fake implementation of
   // VideoCaptureControllerEventHandler, to be used in EXPECT_CALL().
   MOCK_METHOD1(DoBufferCreated, void(VideoCaptureControllerID));
+  MOCK_METHOD1(DoBufferCreated2, void(VideoCaptureControllerID));
   MOCK_METHOD1(DoBufferDestroyed, void(VideoCaptureControllerID));
   MOCK_METHOD2(DoI420BufferReady,
                void(VideoCaptureControllerID, const gfx::Size&));
@@ -66,6 +67,13 @@ class MockVideoCaptureControllerEventHandler
                        base::SharedMemoryHandle handle,
                        int length, int buffer_id) override {
     DoBufferCreated(id);
+  }
+  void OnBufferCreated2(
+      VideoCaptureControllerID id,
+      const std::vector<gfx::GpuMemoryBufferHandle>& handles,
+      const gfx::Size& size,
+      int buffer_id) override {
+    DoBufferCreated2(id);
   }
   void OnBufferDestroyed(VideoCaptureControllerID id, int buffer_id) override {
     DoBufferDestroyed(id);
@@ -318,7 +326,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                    media::PIXEL_STORAGE_CPU));
   ASSERT_TRUE(buffer.get());
   ASSERT_EQ(1.0 / kPoolSize, device_->GetBufferPoolUtilization());
-  memset(buffer->data(), buffer_no++, buffer->size());
+  memset(buffer->data(), buffer_no++, buffer->mapped_size());
   {
     InSequence s;
     EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1)).Times(1);
@@ -368,7 +376,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                    media::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
                                    media::PIXEL_STORAGE_CPU);
   ASSERT_TRUE(buffer2.get());
-  memset(buffer2->data(), buffer_no++, buffer2->size());
+  memset(buffer2->data(), buffer_no++, buffer2->mapped_size());
   video_frame =
       WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer2->data()));
   ASSERT_FALSE(video_frame->metadata()->HasKey(
@@ -414,7 +422,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
                                      media::PIXEL_STORAGE_CPU);
     ASSERT_TRUE(buffer.get());
-    memset(buffer->data(), buffer_no++, buffer->size());
+    memset(buffer->data(), buffer_no++, buffer->mapped_size());
     video_frame =
         WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer->data()));
     device_->OnIncomingCapturedVideoFrame(buffer.Pass(), video_frame,
@@ -462,7 +470,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                    media::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
                                    media::PIXEL_STORAGE_CPU);
   ASSERT_TRUE(buffer3.get());
-  memset(buffer3->data(), buffer_no++, buffer3->size());
+  memset(buffer3->data(), buffer_no++, buffer3->mapped_size());
   video_frame =
       WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer3->data()));
   device_->OnIncomingCapturedVideoFrame(buffer3.Pass(), video_frame,
@@ -479,7 +487,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     controller_->StopSession(200);
   }
   ASSERT_TRUE(buffer4.get());
-  memset(buffer4->data(), buffer_no++, buffer4->size());
+  memset(buffer4->data(), buffer_no++, buffer4->mapped_size());
   video_frame =
       WrapI420Buffer(capture_resolution, static_cast<uint8*>(buffer4->data()));
   device_->OnIncomingCapturedVideoFrame(buffer4.Pass(), video_frame,
