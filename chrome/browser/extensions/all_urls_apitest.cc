@@ -57,7 +57,8 @@ class AllUrlsApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(AllUrlsApiTest);
 };
 
-#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_CHROMEOS)
+#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_CHROMEOS) || \
+    (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
 // http://crbug.com/174341
 #define MAYBE_WhitelistedExtension DISABLED_WhitelistedExtension
 #else
