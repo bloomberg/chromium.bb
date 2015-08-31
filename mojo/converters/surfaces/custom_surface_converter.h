@@ -16,9 +16,12 @@ namespace mojo {
 // for converting a mojo::SurfaceDrawState to something cc understands.
 class CustomSurfaceConverter {
  public:
-  virtual bool ConvertSurfaceDrawQuad(const QuadPtr& input,
-                                      cc::SharedQuadState* sqs,
-                                      cc::RenderPass* render_pass) = 0;
+  virtual bool ConvertSurfaceDrawQuad(
+      const QuadPtr& input,
+      const CompositorFrameMetadataPtr& metadata,
+      cc::SharedQuadState* sqs,
+      cc::RenderPass* render_pass) = 0;
+
  protected:
   virtual ~CustomSurfaceConverter() {}
 };

@@ -53,8 +53,14 @@ struct TransferableResource {
   bool is_software;
 };
 
+// See cc/output/compositor_frame_metadata.h.
+struct CompositorFrameMetadata {
+  float device_scale_factor;
+};
+
 // See src/cc/output/compositor_frame.h.
 struct CompositorFrame {
+  CompositorFrameMetadata metadata;
   array<TransferableResource> resources;
   array<Pass> passes;
 };

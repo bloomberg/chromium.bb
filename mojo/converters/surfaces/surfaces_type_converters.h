@@ -19,6 +19,7 @@
 
 namespace cc {
 class CompositorFrame;
+class CompositorFrameMetadata;
 class DrawQuad;
 class RenderPass;
 class RenderPassId;
@@ -72,6 +73,7 @@ TypeConverter<SharedQuadStatePtr, cc::SharedQuadState> {
 
 scoped_ptr<cc::RenderPass> ConvertToRenderPass(
     const mojo::PassPtr& input,
+    const mojo::CompositorFrameMetadataPtr& metadata,
     CustomSurfaceConverter* custom_converter);
 
 template <>
@@ -151,6 +153,19 @@ struct MOJO_SURFACES_EXPORT
     TypeConverter<cc::ReturnedResourceArray, Array<ReturnedResourcePtr>> {
   static cc::ReturnedResourceArray Convert(
       const Array<ReturnedResourcePtr>& input);
+};
+
+template <>
+struct MOJO_SURFACES_EXPORT
+    TypeConverter<CompositorFrameMetadataPtr, cc::CompositorFrameMetadata> {
+  static CompositorFrameMetadataPtr Convert(
+      const cc::CompositorFrameMetadata& input);
+};
+template <>
+struct MOJO_SURFACES_EXPORT
+    TypeConverter<cc::CompositorFrameMetadata, CompositorFrameMetadataPtr> {
+  static cc::CompositorFrameMetadata Convert(
+      const CompositorFrameMetadataPtr& input);
 };
 
 scoped_ptr<cc::CompositorFrame> ConvertToCompositorFrame(

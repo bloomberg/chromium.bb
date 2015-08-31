@@ -267,6 +267,7 @@ class ConnectionManager : public ServerViewDelegate,
 
   // Overriden from CustomSurfaceConverter:
   bool ConvertSurfaceDrawQuad(const mojo::QuadPtr& input,
+                              const mojo::CompositorFrameMetadataPtr& metadata,
                               cc::SharedQuadState* sqs,
                               cc::RenderPass* render_pass) override;
 

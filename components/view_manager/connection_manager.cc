@@ -19,6 +19,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 using mojo::ConnectionSpecificId;
 
@@ -729,12 +730,18 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
     old_host->UpdateTextInputState(ui::TextInputState());
 }
 
-bool ConnectionManager::ConvertSurfaceDrawQuad(const mojo::QuadPtr& input,
-                                               cc::SharedQuadState* sqs,
-                                               cc::RenderPass* render_pass) {
+bool ConnectionManager::ConvertSurfaceDrawQuad(
+    const mojo::QuadPtr& input,
+    const mojo::CompositorFrameMetadataPtr& metadata,
+    cc::SharedQuadState* sqs,
+    cc::RenderPass* render_pass) {
   unsigned int id = static_cast<unsigned int>(
       input->surface_quad_state->surface.To<cc::SurfaceId>().id);
-  // TODO(fsamuel): Security check.
+  // TODO(fsamuel): Security checks:
+  // 1. We need to make sure the embedder can only position views it's allowed
+  //    to access.
+  // 2. We need to make sure that the embedder cannot place views in areas
+  //    outside of its own bounds.
   ServerView* view = GetView(ViewIdFromTransportId(id));
   // If a CompositorFrame message arrives late, say during a navigation, then
   // it may contain view IDs that no longer exist.
@@ -744,6 +751,11 @@ bool ConnectionManager::ConvertSurfaceDrawQuad(const mojo::QuadPtr& input,
   gfx::Point p;
   sqs->quad_to_target_transform.TransformPoint(&p);
   bounds.set_origin(p);
+  // TODO(fsamuel): This seems like a crude way to set the size that probably
+  // doesn't work correctly in the general case. We need to get transforms
+  // working correctly in the general case.
+  bounds.set_size(gfx::ToRoundedSize(
+      gfx::ScaleSize(bounds.size(), metadata->device_scale_factor)));
   view->SetBounds(bounds);
   return true;
 }
