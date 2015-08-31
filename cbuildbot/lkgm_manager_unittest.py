@@ -428,3 +428,35 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
           element.getAttribute(cros_patch.ATTR_TOTAL_FAIL_COUNT),
           str(gerrit_patch.total_fail_count))
 
+  def testAddPatchesToManifestWithUnicode(self):
+    """Tests to add a fake patch with unicode to an empty manifest file.
+
+    Test whether _AddPatchesToManifest can add to a patch with unicode to
+    manifest file without any UnicodeError exception and that the decoded
+    manifest has the original unicode string.
+    """
+    with TemporaryManifest() as f:
+      gerrit_patch = cros_patch.GerritFetchOnlyPatch(
+          'https://host/chromite/tacos',
+          'chromite/tacos',
+          'refs/changes/11/12345/4',
+          'master',
+          'cros-internal',
+          '7181e4b5e182b6f7d68461b04253de095bad74f9',
+          'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
+          '12345',
+          '4',
+          u'foo\xe9@chromium.org',
+          1,
+          1,
+          3)
+
+      self.manager._AddPatchesToManifest(f.name, [gerrit_patch])
+
+      new_doc = minidom.parse(f.name)
+      element = new_doc.getElementsByTagName(
+          lkgm_manager.PALADIN_COMMIT_ELEMENT)[0]
+
+      self.assertEqual(
+          element.getAttribute(cros_patch.ATTR_OWNER_EMAIL),
+          gerrit_patch.owner_email)

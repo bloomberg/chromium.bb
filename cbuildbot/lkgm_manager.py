@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import codecs
 import os
 import re
 from xml.dom import minidom
@@ -152,6 +153,16 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                               chrome_branch=version_info.chrome_branch,
                               incr_type=self.incr_type)
 
+  def _WriteXml(self, dom_instance, file_path):
+    """Wrapper function to write xml encoded in a proper way.
+
+    Args:
+      dom_instance: A DOM document instance contains contents to be written.
+      file_path: Path to the file to write into.
+    """
+    with codecs.open(file_path, 'w+', 'utf-8') as f:
+      dom_instance.writexml(f)
+
   def _AddLKGMToManifest(self, manifest):
     """Write the last known good version string to the manifest.
 
@@ -170,8 +181,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     lkgm_element = manifest_dom.createElement(LKGM_ELEMENT)
     lkgm_element.setAttribute(LKGM_VERSION_ATTR, lkgm_version)
     manifest_dom.documentElement.appendChild(lkgm_element)
-    with open(manifest, 'w+') as manifest_file:
-      manifest_dom.writexml(manifest_file)
+    self._WriteXml(manifest_dom, manifest)
 
   def _AddChromeVersionToManifest(self, manifest, chrome_version):
     """Adds the chrome element with version |chrome_version| to |manifest|.
@@ -188,8 +198,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     chrome = manifest_dom.createElement(CHROME_ELEMENT)
     chrome.setAttribute(CHROME_VERSION_ATTR, chrome_version)
     manifest_dom.documentElement.appendChild(chrome)
-    with open(manifest, 'w+') as manifest_file:
-      manifest_dom.writexml(manifest_file)
+    self._WriteXml(manifest_dom, manifest)
 
   def _AddPatchesToManifest(self, manifest, patches):
     """Adds list of |patches| to given |manifest|.
@@ -210,8 +219,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         pending_commit.setAttribute(k, v)
       manifest_dom.documentElement.appendChild(pending_commit)
 
-    with open(manifest, 'w+') as manifest_file:
-      manifest_dom.writexml(manifest_file)
+    self._WriteXml(manifest_dom, manifest)
 
   def CreateNewCandidate(self, validation_pool=None,
                          chrome_version=None,
