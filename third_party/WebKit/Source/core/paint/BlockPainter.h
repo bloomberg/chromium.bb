@@ -42,7 +42,6 @@ private:
     bool hasCaret() const;
     void paintCarets(const PaintInfo&, const LayoutPoint&);
     void paintContents(const PaintInfo&, const LayoutPoint&);
-    void paintContinuationOutlines(const PaintInfo&, const LayoutPoint&);
 
     LayoutBlock& m_layoutBlock;
 };

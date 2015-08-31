@@ -24,12 +24,8 @@ public:
     InlinePainter(LayoutInline& layoutInline) : m_layoutInline(layoutInline) { }
 
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
-    void paintOutline(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
-    LayoutRect outlinePaintRect(const Vector<LayoutRect>&, const LayoutPoint& paintOffset) const;
-    void paintOutlineForLine(GraphicsContext*, const LayoutPoint&, const LayoutRect& prevLine, const LayoutRect& thisLine,
-        const LayoutRect& nextLine, const Color);
     LayoutInline& m_layoutInline;
 };
 

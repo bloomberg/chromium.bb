@@ -64,10 +64,6 @@ public:
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || LayoutObject::isOfType(type); }
 
-    // TODO(pdr): The outline extent should be included in paintInvalidationRectInLocalCoordinates.
-    // Returns the paint invalidation size inflated for the outline extent.
-    LayoutRect outlineVisualOverflowRect() const;
-
 protected:
     void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const final;
     void willBeDestroyed() override;

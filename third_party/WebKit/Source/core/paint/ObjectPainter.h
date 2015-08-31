@@ -25,8 +25,8 @@ class ObjectPainter {
 public:
     ObjectPainter(LayoutObject& layoutObject) : m_layoutObject(layoutObject) { }
 
-    void paintOutline(const PaintInfo&, const LayoutRect& visualOverflowRect, const LayoutSize& objectSize, const LayoutPoint& paintOffset);
-    void paintFocusRing(const PaintInfo&, const ComputedStyle&, const Vector<LayoutRect>& focusRingRects);
+    void paintOutline(const PaintInfo&, const LayoutPoint& paintOffset);
+    void paintInlineChildrenOutlines(const PaintInfo&, const LayoutPoint& paintOffset);
     void addPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paintOffset);
 
     static void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);

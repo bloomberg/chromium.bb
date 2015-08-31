@@ -34,6 +34,8 @@ void ImagePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
 
 void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
 {
+    // TODO(wangxianzhu): In other places, we just paint focus ring if outline style is auto.
+    // We should also do that here to keep consistency.
     Document& document = m_layoutImage.document();
 
     if (paintInfo.isPrinting() || !document.frame()->selection().isFocusedAndActive())

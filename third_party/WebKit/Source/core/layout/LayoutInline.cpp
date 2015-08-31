@@ -68,19 +68,6 @@ LayoutInline* LayoutInline::createAnonymous(Document* document)
 
 void LayoutInline::willBeDestroyed()
 {
-#if ENABLE(ASSERT)
-    // Make sure we do not retain "this" in the continuation outline table map of our containing blocks.
-    if (parent() && style()->visibility() == VISIBLE && style()->hasOutline()) {
-        bool containingBlockPaintsContinuationOutline = continuation() || isInlineElementContinuation();
-        if (containingBlockPaintsContinuationOutline) {
-            if (LayoutBlock* cb = containingBlock()) {
-                if (LayoutBlock* cbCb = cb->containingBlock())
-                    ASSERT(!cbCb->paintsContinuationOutline(this));
-            }
-        }
-    }
-#endif
-
     // Make sure to destroy anonymous children first while they are still connected to the rest of the tree, so that they will
     // properly dirty line boxes that they are removed from.  Effects that do :before/:after only on hover could crash otherwise.
     children()->destroyLeftoverChildren();
@@ -152,31 +139,19 @@ static LayoutObject* inFlowPositionedInlineAncestor(LayoutObject* p)
     return nullptr;
 }
 
-static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const ComputedStyle& newStyle, const ComputedStyle& oldStyle, LayoutObject* containingBlockOfEndOfContinuation)
+static void updateInFlowPositionOfAnonymousBlockContinuations(LayoutObject* block, const ComputedStyle& newStyle, const ComputedStyle& oldStyle, LayoutObject* containingBlockOfEndOfContinuation)
 {
-    // If an inline's outline or in-flow positioning has changed then any descendant blocks will need to change their styles accordingly.
-    bool updateOutline = !newStyle.isOutlineEquivalent(&oldStyle);
-    bool updatePosition = newStyle.position() != oldStyle.position() && (newStyle.hasInFlowPosition() || oldStyle.hasInFlowPosition());
-    if (!updateOutline && !updatePosition)
-        return;
-
     for (; block && block != containingBlockOfEndOfContinuation && block->isAnonymousBlock(); block = block->nextSibling()) {
         if (!toLayoutBlock(block)->isAnonymousBlockContinuation())
             continue;
 
+        // If we are no longer in-flow positioned but our descendant block(s) still have an in-flow positioned ancestor then
+        // their containing anonymous block should keep its in-flow positioning.
+        if (oldStyle.hasInFlowPosition() && inFlowPositionedInlineAncestor(toLayoutBlock(block)->inlineElementContinuation()))
+            continue;
+
         RefPtr<ComputedStyle> newBlockStyle = ComputedStyle::clone(block->styleRef());
-
-        if (updateOutline)
-            newBlockStyle->setOutlineFromStyle(newStyle);
-
-        if (updatePosition) {
-            // If we are no longer in-flow positioned but our descendant block(s) still have an in-flow positioned ancestor then
-            // their containing anonymous block should keep its in-flow positioning.
-            if (oldStyle.hasInFlowPosition() && inFlowPositionedInlineAncestor(toLayoutBlock(block)->inlineElementContinuation()))
-                continue;
-            newBlockStyle->setPosition(newStyle.position());
-        }
-
+        newBlockStyle->setPosition(newStyle.position());
         block->setStyle(newBlockStyle);
     }
 }
@@ -205,8 +180,11 @@ void LayoutInline::styleDidChange(StyleDifference diff, const ComputedStyle* old
     if (continuation && oldStyle) {
         ASSERT(endOfContinuation);
         LayoutObject* block = containingBlock()->nextSibling();
-        if (block && block->isAnonymousBlock())
-            updateStyleOfAnonymousBlockContinuations(block, newStyle, *oldStyle, endOfContinuation->containingBlock());
+        // If an inline's in-flow positioning has changed then any descendant blocks will need to change their styles accordingly.
+        if (block && block->isAnonymousBlock()
+            && newStyle.position() != oldStyle->position()
+            && (newStyle.hasInFlowPosition() || oldStyle->hasInFlowPosition()))
+            updateInFlowPositionOfAnonymousBlockContinuations(block, newStyle, *oldStyle, endOfContinuation->containingBlock());
     }
 
     if (!alwaysCreateLineBoxes()) {
@@ -335,10 +313,6 @@ void LayoutInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
         // Giving the block a layer like this allows it to collect the x/y offsets from inline parents later.
         if (LayoutObject* positionedAncestor = inFlowPositionedInlineAncestor(this))
             newStyle->setPosition(positionedAncestor->style()->position());
-
-        // Push outline style to the block continuation.
-        if (!newStyle->isOutlineEquivalent(style()))
-            newStyle->setOutlineFromStyle(*style());
 
         LayoutBlockFlow* newBox = LayoutBlockFlow::createAnonymous(&document());
         newBox->setStyle(newStyle.release());

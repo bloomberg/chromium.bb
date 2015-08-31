@@ -1285,28 +1285,6 @@ LayoutInline* LayoutBlock::inlineElementContinuation() const
     return continuation && continuation->isInline() ? toLayoutInline(continuation) : 0;
 }
 
-ContinuationOutlineTableMap* continuationOutlineTable()
-{
-    DEFINE_STATIC_LOCAL(ContinuationOutlineTableMap, table, ());
-    return &table;
-}
-
-void LayoutBlock::addContinuationWithOutline(LayoutInline* flow)
-{
-    // We can't make this work if the inline is in a layer.  We'll just rely on the broken
-    // way of painting.
-    ASSERT(!flow->layer() && !flow->isInlineElementContinuation());
-
-    ContinuationOutlineTableMap* table = continuationOutlineTable();
-    ListHashSet<LayoutInline*>* continuations = table->get(this);
-    if (!continuations) {
-        continuations = new ListHashSet<LayoutInline*>;
-        table->set(this, adoptPtr(continuations));
-    }
-
-    continuations->add(flow);
-}
-
 bool LayoutBlock::isSelectionRoot() const
 {
     if (isPseudoElement())
@@ -2884,19 +2862,6 @@ void LayoutBlock::checkPositionedObjectsNeedLayout()
             ASSERT(!currBox->needsLayout());
         }
     }
-}
-
-bool LayoutBlock::paintsContinuationOutline(LayoutInline* flow)
-{
-    ContinuationOutlineTableMap* table = continuationOutlineTable();
-    if (table->isEmpty())
-        return false;
-
-    ListHashSet<LayoutInline*>* continuations = table->get(this);
-    if (!continuations)
-        return false;
-
-    return continuations->contains(flow);
 }
 
 #endif

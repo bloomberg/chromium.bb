@@ -500,7 +500,7 @@ void DeprecatedPaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const
         clipRecorder.emplace(*context, *m_paintLayer.layoutObject(), clipType, clipRect, &paintingInfo, fragment.paginationOffset, paintFlags, clippingRule);
     }
 
-    PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintingInfo.globalPaintFlags(), paintFlags, paintingRootForLayoutObject, 0, paintingInfo.rootLayer->layoutObject());
+    PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintingInfo.globalPaintFlags(), paintFlags, paintingRootForLayoutObject, paintingInfo.rootLayer->layoutObject());
     Optional<ScrollRecorder> scrollRecorder;
     LayoutPoint paintOffset = toPoint(fragment.layerBounds.location() - m_paintLayer.layoutBoxLocation());
     if (!paintingInfo.scrollOffsetAccumulation.isZero()) {

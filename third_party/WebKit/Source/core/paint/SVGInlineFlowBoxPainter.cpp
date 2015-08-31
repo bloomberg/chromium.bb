@@ -8,7 +8,7 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/paint/InlinePainter.h"
+#include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/paint/SVGPaintContext.h"
@@ -40,8 +40,11 @@ void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         }
     }
 
-    if (m_svgInlineFlowBox.layoutObject().isLayoutInline())
-        InlinePainter(toLayoutInline(m_svgInlineFlowBox.layoutObject())).paintOutline(paintInfo, paintOffset);
+    if (m_svgInlineFlowBox.layoutObject().styleRef().hasOutline()) {
+        PaintInfo outlinePaintInfo(paintInfo);
+        outlinePaintInfo.phase = PaintPhaseSelfOutline;
+        ObjectPainter(m_svgInlineFlowBox.layoutObject()).paintOutline(outlinePaintInfo, paintOffset);
+    }
 }
 
 } // namespace blink

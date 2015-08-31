@@ -41,7 +41,7 @@ void TableRowPainter::paintOutlineForRowIfNeeded(const PaintInfo& paintInfo, con
     PaintPhase paintPhase = paintInfo.phase;
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutTableRow.style()->visibility() == VISIBLE) {
         LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableRow.location();
-        ObjectPainter(m_layoutTableRow).paintOutline(paintInfo, m_layoutTableRow.visualOverflowRect(), m_layoutTableRow.size(), adjustedPaintOffset);
+        ObjectPainter(m_layoutTableRow).paintOutline(paintInfo, adjustedPaintOffset);
     }
 }
 

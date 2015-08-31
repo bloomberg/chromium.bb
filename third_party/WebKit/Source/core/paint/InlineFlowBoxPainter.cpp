@@ -22,6 +22,8 @@ namespace blink {
 
 void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutUnit lineTop, const LayoutUnit lineBottom)
 {
+    ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
+
     LayoutRect overflowRect(m_inlineFlowBox.visualOverflowRect(lineTop, lineBottom));
     m_inlineFlowBox.flipForWritingMode(overflowRect);
     overflowRect.moveBy(paintOffset);
@@ -29,66 +31,30 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!paintInfo.rect.intersects(pixelSnappedIntRect(overflowRect)))
         return;
 
-    if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) {
-        // Add ourselves to the paint info struct's list of inlines that need to paint their
-        // outlines.
-        if (m_inlineFlowBox.layoutObject().style()->visibility() == VISIBLE && m_inlineFlowBox.layoutObject().style()->hasOutline() && !m_inlineFlowBox.isRootInlineBox()) {
-            LayoutInline& inlineFlow = toLayoutInline(m_inlineFlowBox.layoutObject());
-
-            LayoutBlock* cb = 0;
-            bool containingBlockPaintsContinuationOutline = inlineFlow.continuation() || inlineFlow.isInlineElementContinuation();
-            if (containingBlockPaintsContinuationOutline) {
-                // FIXME: See https://bugs.webkit.org/show_bug.cgi?id=54690. We currently don't reconnect inline continuations
-                // after a child removal. As a result, those merged inlines do not get seperated and hence not get enclosed by
-                // anonymous blocks. In this case, it is better to bail out and paint it ourself.
-                LayoutBlock* enclosingAnonymousBlock = m_inlineFlowBox.layoutObject().containingBlock();
-                if (!enclosingAnonymousBlock->isAnonymousBlock()) {
-                    containingBlockPaintsContinuationOutline = false;
-                } else {
-                    cb = enclosingAnonymousBlock->containingBlock();
-                    for (LineLayoutBoxModel box = m_inlineFlowBox.boxModelObject(); box != cb; box = box.parent().enclosingBoxModelObject()) {
-                        if (box.hasSelfPaintingLayer()) {
-                            containingBlockPaintsContinuationOutline = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (containingBlockPaintsContinuationOutline) {
-                // Add ourselves to the containing block of the entire continuation so that it can
-                // paint us atomically.
-                cb->addContinuationWithOutline(toLayoutInline(m_inlineFlowBox.layoutObject().node()->layoutObject()));
-            } else if (!inlineFlow.isInlineElementContinuation()) {
-                paintInfo.outlineObjects()->add(&inlineFlow);
-            }
-        }
-    } else if (paintInfo.phase == PaintPhaseMask) {
+    if (paintInfo.phase == PaintPhaseMask) {
         DisplayItem::Type displayItemType = DisplayItem::paintPhaseToDrawingType(paintInfo.phase);
         if (DrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_inlineFlowBox, displayItemType))
             return;
         DrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, displayItemType, pixelSnappedIntRect(overflowRect));
         paintMask(paintInfo, paintOffset);
         return;
-    } else if (paintInfo.phase == PaintPhaseForeground) {
+    }
+
+    if (paintInfo.phase == PaintPhaseForeground) {
         // Paint our background, border and box-shadow.
         paintBoxDecorationBackground(paintInfo, paintOffset, overflowRect);
     }
 
     // Paint our children.
-    if (paintInfo.phase != PaintPhaseSelfOutline) {
-        PaintInfo childInfo(paintInfo);
-        childInfo.phase = paintInfo.phase == PaintPhaseChildOutlines ? PaintPhaseOutline : paintInfo.phase;
+    PaintInfo childInfo(paintInfo);
+    if (childInfo.paintingRoot && childInfo.paintingRoot->isDescendantOf(&m_inlineFlowBox.layoutObject()))
+        childInfo.paintingRoot = 0;
+    else
+        childInfo.updatePaintingRootForChildren(&m_inlineFlowBox.layoutObject());
 
-        if (childInfo.paintingRoot && childInfo.paintingRoot->isDescendantOf(&m_inlineFlowBox.layoutObject()))
-            childInfo.paintingRoot = 0;
-        else
-            childInfo.updatePaintingRootForChildren(&m_inlineFlowBox.layoutObject());
-
-        for (InlineBox* curr = m_inlineFlowBox.firstChild(); curr; curr = curr->nextOnLine()) {
-            if (curr->lineLayoutItem().isText() || !curr->boxModelObject().hasSelfPaintingLayer())
-                curr->paint(childInfo, paintOffset, lineTop, lineBottom);
-        }
+    for (InlineBox* curr = m_inlineFlowBox.firstChild(); curr; curr = curr->nextOnLine()) {
+        if (curr->lineLayoutItem().isText() || !curr->boxModelObject().hasSelfPaintingLayer())
+            curr->paint(childInfo, paintOffset, lineTop, lineBottom);
     }
 }
 

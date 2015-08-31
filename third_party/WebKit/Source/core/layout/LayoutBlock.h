@@ -49,10 +49,6 @@ typedef Vector<WordMeasurement, 64> WordMeasurements;
 
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
-typedef WTF::HashMap<LayoutBlock*, OwnPtr<ListHashSet<LayoutInline*>>> ContinuationOutlineTableMap;
-
-ContinuationOutlineTableMap* continuationOutlineTable();
-
 class CORE_EXPORT LayoutBlock : public LayoutBox {
 public:
     friend class LineLayoutState;
@@ -164,8 +160,6 @@ public:
     int heightForLineCount(int);
     void clearTruncation();
 
-    void addContinuationWithOutline(LayoutInline*);
-
     LayoutBoxModelObject* virtualContinuation() const final { return continuation(); }
     bool isAnonymousBlockContinuation() const { return continuation() && isAnonymousBlock(); }
     LayoutInline* inlineElementContinuation() const;
@@ -215,7 +209,6 @@ public:
 
 #if ENABLE(ASSERT)
     void checkPositionedObjectsNeedLayout();
-    bool paintsContinuationOutline(LayoutInline* flow);
 #endif
 #ifndef NDEBUG
     void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr) const;

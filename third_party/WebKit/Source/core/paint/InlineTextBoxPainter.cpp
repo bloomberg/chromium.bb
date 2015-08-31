@@ -50,11 +50,10 @@ static bool paintsMarkerHighlights(const LayoutObject& layoutObject)
 
 void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_inlineTextBox.isLineBreak() || !paintInfo.shouldPaintWithinRoot(&m_inlineTextBox.layoutObject()) || m_inlineTextBox.layoutObject().style()->visibility() != VISIBLE
-        || m_inlineTextBox.truncation() == cFullTruncation || paintInfo.phase == PaintPhaseOutline || !m_inlineTextBox.len())
+    if (m_inlineTextBox.isLineBreak() || !paintInfo.shouldPaintWithinRoot(&m_inlineTextBox.layoutObject()) || m_inlineTextBox.layoutObject().style()->visibility() != VISIBLE || m_inlineTextBox.truncation() == cFullTruncation || !m_inlineTextBox.len())
         return;
 
-    ASSERT(paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
+    ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
 
     LayoutRect logicalVisualOverflow = m_inlineTextBox.logicalOverflowRect();
     LayoutUnit logicalStart = logicalVisualOverflow.x() + (m_inlineTextBox.isHorizontal() ? paintOffset.x() : paintOffset.y());

@@ -6,6 +6,7 @@
 #include "core/paint/LineBoxListPainter.h"
 
 #include "core/layout/LayoutBoxModelObject.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/LineBoxList.h"
@@ -28,10 +29,10 @@ static void addPDFURLRectsForInlineChildrenRecursively(LayoutObject* layoutObjec
 
 void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
+    ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
+
     // Only paint during the foreground/selection phases.
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseOutline
-        && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines && paintInfo.phase != PaintPhaseTextClip
-        && paintInfo.phase != PaintPhaseMask)
+    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseTextClip && paintInfo.phase != PaintPhaseMask)
         return;
 
     ASSERT(layoutObject->isLayoutBlock() || (layoutObject->isLayoutInline() && layoutObject->hasLayer())); // The only way an inline could paint like this is if it has a layer.
@@ -49,8 +50,6 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintIn
         return;
 
     PaintInfo info(paintInfo);
-    ListHashSet<LayoutInline*> outlineObjects;
-    info.setOutlineObjects(&outlineObjects);
 
     // See if our root lines intersect with the dirty rect. If so, then we paint
     // them. Note that boxes can easily overlap, so we can't make any assumptions
@@ -60,12 +59,6 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintIn
             RootInlineBox& root = curr->root();
             curr->paint(info, paintOffset, root.lineTop(), root.lineBottom());
         }
-    }
-
-    if (info.phase == PaintPhaseOutline || info.phase == PaintPhaseSelfOutline || info.phase == PaintPhaseChildOutlines) {
-        for (LayoutInline* flow : *info.outlineObjects())
-            InlinePainter(*flow).paintOutline(info, paintOffset);
-        info.outlineObjects()->clear();
     }
 }
 

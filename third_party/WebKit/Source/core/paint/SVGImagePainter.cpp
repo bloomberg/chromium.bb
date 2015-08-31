@@ -58,8 +58,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     if (m_layoutSVGImage.style()->outlineWidth()) {
         PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
         outlinePaintInfo.phase = PaintPhaseSelfOutline;
-        LayoutRect layoutBoundingBox(boundingBox);
-        ObjectPainter(m_layoutSVGImage).paintOutline(outlinePaintInfo, m_layoutSVGImage.outlineVisualOverflowRect(), layoutBoundingBox.size(), layoutBoundingBox.location());
+        ObjectPainter(m_layoutSVGImage).paintOutline(outlinePaintInfo, LayoutPoint(boundingBox.location()));
     }
 }
 

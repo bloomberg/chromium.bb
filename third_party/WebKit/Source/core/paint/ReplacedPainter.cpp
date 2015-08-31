@@ -38,7 +38,7 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
 
     if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) {
         if (m_layoutReplaced.styleRef().outlineWidth())
-            ObjectPainter(m_layoutReplaced).paintOutline(paintInfo, m_layoutReplaced.visualOverflowRect(), borderRect.size(), adjustedPaintOffset);
+            ObjectPainter(m_layoutReplaced).paintOutline(paintInfo, adjustedPaintOffset);
         return;
     }
 

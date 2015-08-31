@@ -198,15 +198,8 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             m_layoutBlock.paintFloats(contentsPaintInfo, paintOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
     }
 
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutBlock.style()->hasOutline() && m_layoutBlock.style()->visibility() == VISIBLE) {
-        // Don't paint focus ring for anonymous block continuation because the
-        // inline element having outline-style:auto paints the whole focus ring.
-        if (!m_layoutBlock.style()->outlineStyleIsAuto() || !m_layoutBlock.isAnonymousBlockContinuation())
-            ObjectPainter(m_layoutBlock).paintOutline(paintInfo, m_layoutBlock.visualOverflowRect(), m_layoutBlock.size(), paintOffset);
-    }
-
-    if (paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)
-        paintContinuationOutlines(paintInfo, paintOffset);
+    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutBlock.style()->hasOutline() && m_layoutBlock.style()->visibility() == VISIBLE)
+        ObjectPainter(m_layoutBlock).paintOutline(paintInfo, paintOffset);
 
     // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
@@ -274,7 +267,10 @@ void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
 
     if (m_layoutBlock.childrenInline()) {
-        LineBoxListPainter(*m_layoutBlock.lineBoxes()).paint(&m_layoutBlock, paintInfo, paintOffset);
+        if (paintInfo.phase == PaintPhaseChildOutlines)
+            ObjectPainter(m_layoutBlock).paintInlineChildrenOutlines(paintInfo, paintOffset);
+        else
+            LineBoxListPainter(*m_layoutBlock.lineBoxes()).paint(&m_layoutBlock, paintInfo, paintOffset);
     } else {
         PaintPhase newPhase = (paintInfo.phase == PaintPhaseChildOutlines) ? PaintPhaseOutline : paintInfo.phase;
         newPhase = (newPhase == PaintPhaseChildBlockBackgrounds) ? PaintPhaseChildBlockBackground : newPhase;
@@ -286,55 +282,5 @@ void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& 
         m_layoutBlock.paintChildren(paintInfoForChild, paintOffset);
     }
 }
-
-void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const LayoutPoint& paintOffset)
-{
-    LayoutInline* inlineCont = m_layoutBlock.inlineElementContinuation();
-    if (inlineCont && inlineCont->style()->hasOutline() && inlineCont->style()->visibility() == VISIBLE) {
-        LayoutInline* inlineLayoutObject = toLayoutInline(inlineCont->node()->layoutObject());
-        LayoutBlock* cb = m_layoutBlock.containingBlock();
-
-        bool inlineEnclosedInSelfPaintingLayer = false;
-        for (LayoutBoxModelObject* box = inlineLayoutObject; box != cb; box = box->parent()->enclosingBoxModelObject()) {
-            if (box->hasSelfPaintingLayer()) {
-                inlineEnclosedInSelfPaintingLayer = true;
-                break;
-            }
-        }
-
-        // Do not add continuations for outline painting by our containing block if we are a relative positioned
-        // anonymous block (i.e. have our own layer), paint them straightaway instead. This is because a block depends on layoutObjects in its continuation table being
-        // in the same layer.
-        if (!inlineEnclosedInSelfPaintingLayer && !m_layoutBlock.hasLayer()) {
-            cb->addContinuationWithOutline(inlineLayoutObject);
-        } else if (!inlineLayoutObject->firstLineBox() || (!inlineEnclosedInSelfPaintingLayer && m_layoutBlock.hasLayer())) {
-            // The outline might be painted multiple times if multiple blocks have the same inline element continuation, and the inline has a self-painting layer.
-            ScopeRecorder scopeRecorder(*info.context);
-            InlinePainter(*inlineLayoutObject).paintOutline(info, paintOffset - m_layoutBlock.locationOffset() + inlineLayoutObject->containingBlock()->location());
-        }
-    }
-
-    ContinuationOutlineTableMap* table = continuationOutlineTable();
-    if (table->isEmpty())
-        return;
-
-    OwnPtr<ListHashSet<LayoutInline*>> continuations = table->take(&m_layoutBlock);
-    if (!continuations)
-        return;
-
-    LayoutPoint accumulatedPaintOffset = paintOffset;
-    // Paint each continuation outline.
-    ListHashSet<LayoutInline*>::iterator end = continuations->end();
-    for (ListHashSet<LayoutInline*>::iterator it = continuations->begin(); it != end; ++it) {
-        // Need to add in the coordinates of the intervening blocks.
-        LayoutInline* flow = *it;
-        LayoutBlock* block = flow->containingBlock();
-        for ( ; block && block != &m_layoutBlock; block = block->containingBlock())
-            accumulatedPaintOffset.moveBy(block->location());
-        ASSERT(block);
-        InlinePainter(*flow).paintOutline(info, accumulatedPaintOffset);
-    }
-}
-
 
 } // namespace blink

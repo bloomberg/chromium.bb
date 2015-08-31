@@ -38,7 +38,7 @@ void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& p
     }
 
     if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_layoutTableSection.style()->visibility() == VISIBLE)
-        ObjectPainter(m_layoutTableSection).paintOutline(paintInfo, m_layoutTableSection.visualOverflowRect(), m_layoutTableSection.size(), adjustedPaintOffset);
+        ObjectPainter(m_layoutTableSection).paintOutline(paintInfo, adjustedPaintOffset);
 }
 
 static inline bool compareCellPositions(LayoutTableCell* elem1, LayoutTableCell* elem2)
