@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/controls/image_view.h"
@@ -76,8 +75,7 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
     return;
   }
 
-  SetImage(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      content_setting_image_model_->get_icon()));
+  SetImage(content_setting_image_model_->icon().AsImageSkia());
   image()->SetTooltipText(
       base::UTF8ToUTF16(content_setting_image_model_->get_tooltip()));
   SetVisible(true);

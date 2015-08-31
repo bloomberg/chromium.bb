@@ -28,6 +28,13 @@ GFX_EXPORT ImageSkia CreateVectorIcon(VectorIconId id,
                                       size_t dip_size,
                                       SkColor color);
 
+// As above, but also paints a badge defined by |badge_id| on top of the icon.
+// The badge uses the same canvas size and default color as the icon.
+GFX_EXPORT ImageSkia CreateVectorIconWithBadge(VectorIconId id,
+                                               size_t dip_size,
+                                               SkColor color,
+                                               VectorIconId badge_id);
+
 #if defined(GFX_VECTOR_ICONS_UNSAFE) || defined(GFX_IMPLEMENTATION)
 // Takes a string of the format expected of .icon files and renders onto
 // a canvas. This should only be used as a debugging aid and should never be

@@ -24,6 +24,8 @@ enum CommandType {
   NEW_PATH,
   // Sets the color for the current path.
   PATH_COLOR_ARGB,
+  // Sets the path to clear mode (Skia's kClear_Mode).
+  PATH_MODE_CLEAR,
   // By default, the path will be filled. This changes the paint action to
   // stroke at the given width.
   STROKE,

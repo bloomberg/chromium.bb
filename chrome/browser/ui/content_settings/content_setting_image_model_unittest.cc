@@ -63,14 +63,14 @@ TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_FALSE(content_setting_image_model->is_visible());
-  EXPECT_EQ(0, content_setting_image_model->get_icon());
+  EXPECT_TRUE(content_setting_image_model->icon().IsEmpty());
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
   content_setting_image_model->UpdateFromWebContents(web_contents());
 
   EXPECT_TRUE(content_setting_image_model->is_visible());
-  EXPECT_NE(0, content_setting_image_model->get_icon());
+  EXPECT_FALSE(content_setting_image_model->icon().IsEmpty());
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
 }
 
@@ -101,7 +101,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_FALSE(content_setting_image_model->is_visible());
-  EXPECT_EQ(0, content_setting_image_model->get_icon());
+  EXPECT_TRUE(content_setting_image_model->icon().IsEmpty());
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
   net::CookieOptions options;
@@ -112,7 +112,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
                                     false);
   content_setting_image_model->UpdateFromWebContents(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
-  EXPECT_NE(0, content_setting_image_model->get_icon());
+  EXPECT_FALSE(content_setting_image_model->icon().IsEmpty());
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
 }
 

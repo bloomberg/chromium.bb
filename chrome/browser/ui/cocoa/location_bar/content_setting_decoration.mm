@@ -23,7 +23,6 @@
 #include "net/base/net_util.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -178,17 +177,13 @@ ContentSettingDecoration::~ContentSettingDecoration() {
 bool ContentSettingDecoration::UpdateFromWebContents(
     WebContents* web_contents) {
   bool was_visible = IsVisible();
-  int old_icon = content_setting_image_model_->get_icon();
+  int old_icon = content_setting_image_model_->icon_id();
   content_setting_image_model_->UpdateFromWebContents(web_contents);
   SetVisible(content_setting_image_model_->is_visible());
   bool decoration_changed = was_visible != IsVisible() ||
-      old_icon != content_setting_image_model_->get_icon();
+      old_icon != content_setting_image_model_->icon_id();
   if (IsVisible()) {
-    // TODO(thakis): We should use pdfs for these icons on OSX.
-    // http://crbug.com/35847
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SetImage(rb.GetNativeImageNamed(
-        content_setting_image_model_->get_icon()).ToNSImage());
+    SetImage(content_setting_image_model_->icon().ToNSImage());
     SetToolTip(base::SysUTF8ToNSString(
         content_setting_image_model_->get_tooltip()));
 

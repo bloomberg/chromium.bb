@@ -9,9 +9,14 @@
 
 #include "base/basictypes.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "ui/gfx/image/image.h"
 
 namespace content {
 class WebContents;
+}
+
+namespace gfx {
+enum class VectorIconId;
 }
 
 // This model provides data (icon ids and tooltip) for the content setting icons
@@ -32,7 +37,10 @@ class ContentSettingImageModel {
     return content_settings_type_;
   }
   bool is_visible() const { return is_visible_; }
-  int get_icon() const { return icon_; }
+  const gfx::Image& icon() const { return icon_; }
+#if defined(OS_MACOSX)
+  int icon_id() const { return icon_id_; }
+#endif
   // Returns the resource ID of a string to show when the icon appears, or 0 if
   // we don't wish to show anything.
   int explanatory_string_id() const { return explanatory_string_id_; }
@@ -40,8 +48,11 @@ class ContentSettingImageModel {
 
  protected:
   explicit ContentSettingImageModel(ContentSettingsType content_settings_type);
+  void SetIconByResourceId(int id);
+#if !defined(OS_MACOSX)
+  void SetIconByVectorId(gfx::VectorIconId id, bool blocked);
+#endif
   void set_visible(bool visible) { is_visible_ = visible; }
-  void set_icon(int icon) { icon_ = icon; }
   void set_explanatory_string_id(int text_id) {
     explanatory_string_id_ = text_id;
   }
@@ -50,7 +61,8 @@ class ContentSettingImageModel {
  private:
   const ContentSettingsType content_settings_type_;
   bool is_visible_;
-  int icon_;
+  int icon_id_;
+  gfx::Image icon_;
   int explanatory_string_id_;
   std::string tooltip_;
 

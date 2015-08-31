@@ -12,8 +12,29 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/resource/resource_bundle.h"
+
+#if !defined(OS_MACOSX)
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public2.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
+#endif
 
 using content::WebContents;
+
+namespace {
+
+bool UseVectorGraphics() {
+#if defined(OS_MACOSX)
+  return false;
+#else
+  return ui::MaterialDesignController::IsModeMaterial();
+#endif
+}
+
+}  // namespace
 
 class ContentSettingBlockedImageModel : public ContentSettingImageModel {
  public:
@@ -89,6 +110,7 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   if (!web_contents)
     return;
 
+  ContentSettingsType type = get_content_settings_type();
   static const ContentSettingsTypeIdEntry kBlockedIconIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDR_BLOCKED_COOKIES},
     {CONTENT_SETTINGS_TYPE_IMAGES, IDR_BLOCKED_IMAGES},
@@ -99,6 +121,45 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDR_BLOCKED_PPAPI_BROKER},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDR_BLOCKED_DOWNLOADS},
   };
+  int icon_id =
+      GetIdForContentType(kBlockedIconIDs, arraysize(kBlockedIconIDs), type);
+
+#if !defined(OS_MACOSX)
+  gfx::VectorIconId vector_icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+      vector_icon_id = gfx::VectorIconId::COOKIE;
+      break;
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+      vector_icon_id = gfx::VectorIconId::IMAGE;
+      break;
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+      vector_icon_id = gfx::VectorIconId::CODE;
+      break;
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      vector_icon_id = gfx::VectorIconId::EXTENSION;
+      break;
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      vector_icon_id = gfx::VectorIconId::WEB;
+      break;
+    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
+      vector_icon_id = gfx::VectorIconId::MIXED_CONTENT;
+      break;
+    // TODO(estade): change this one?
+    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
+      vector_icon_id = gfx::VectorIconId::EXTENSION;
+      break;
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+      vector_icon_id = gfx::VectorIconId::FILE_DOWNLOAD;
+      break;
+    default:
+      // If we didn't find a vector icon ID we shouldn't have found an
+      // asset ID either.
+      DCHECK_EQ(0, icon_id);
+      break;
+  }
+#endif
+
   static const ContentSettingsTypeIdEntry kBlockedTooltipIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_TITLE},
     {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_TITLE},
@@ -110,18 +171,15 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOAD_TITLE},
   };
+  int tooltip_id = GetIdForContentType(kBlockedTooltipIDs,
+                                       arraysize(kBlockedTooltipIDs), type);
+
   static const ContentSettingsTypeIdEntry kBlockedExplanatoryTextIDs[] = {
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT},
     {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
         IDS_BLOCKED_DOWNLOADS_EXPLANATION},
   };
-
-  ContentSettingsType type = get_content_settings_type();
-  int icon_id = GetIdForContentType(
-      kBlockedIconIDs, arraysize(kBlockedIconIDs), type);
-  int tooltip_id = GetIdForContentType(
-      kBlockedTooltipIDs, arraysize(kBlockedTooltipIDs), type);
   int explanation_id = GetIdForContentType(
       kBlockedExplanatoryTextIDs, arraysize(kBlockedExplanatoryTextIDs), type);
 
@@ -159,20 +217,27 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
       {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDR_BLOCKED_PPAPI_BROKER},
       {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDR_ALLOWED_DOWNLOADS},
     };
+    icon_id = GetIdForContentType(kAccessedIconIDs, arraysize(kAccessedIconIDs),
+                                  type);
     static const ContentSettingsTypeIdEntry kAccessedTooltipIDs[] = {
       {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_TITLE},
       {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
       {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_ALLOWED_DOWNLOAD_TITLE},
     };
-    icon_id = GetIdForContentType(
-        kAccessedIconIDs, arraysize(kAccessedIconIDs), type);
     tooltip_id = GetIdForContentType(
         kAccessedTooltipIDs, arraysize(kAccessedTooltipIDs), type);
     explanation_id = 0;
   }
   set_visible(true);
-  DCHECK(icon_id);
-  set_icon(icon_id);
+  if (!UseVectorGraphics()) {
+    DCHECK(icon_id);
+    SetIconByResourceId(icon_id);
+#if !defined(OS_MACOSX)
+  } else {
+    DCHECK(gfx::VectorIconId::VECTOR_ICON_NONE != vector_icon_id);
+    SetIconByVectorId(vector_icon_id, content_settings->IsContentBlocked(type));
+#endif
+  }
   set_explanatory_string_id(explanation_id);
   DCHECK(tooltip_id);
   set_tooltip(l10n_util::GetStringUTF8(tooltip_id));
@@ -203,7 +268,12 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
   usages_state.GetDetailedInfo(NULL, &state_flags);
   bool allowed =
       !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
-  set_icon(allowed ? IDR_ALLOWED_LOCATION : IDR_BLOCKED_LOCATION);
+  if (!UseVectorGraphics())
+    SetIconByResourceId(allowed ? IDR_ALLOWED_LOCATION : IDR_BLOCKED_LOCATION);
+#if !defined(OS_MACOSX)
+  else
+    SetIconByVectorId(gfx::VectorIconId::MY_LOCATION, !allowed);
+#endif
   set_tooltip(l10n_util::GetStringUTF8(allowed ?
       IDS_GEOLOCATION_ALLOWED_TOOLTIP : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
 }
@@ -260,11 +330,21 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
   int id = IDS_CAMERA_BLOCKED;
   if (state & (TabSpecificContentSettings::MICROPHONE_BLOCKED |
                TabSpecificContentSettings::CAMERA_BLOCKED)) {
-    set_icon(IDR_BLOCKED_CAMERA);
+    if (!UseVectorGraphics())
+      SetIconByResourceId(IDR_BLOCKED_CAMERA);
+#if !defined(OS_MACOSX)
+    else
+      SetIconByVectorId(gfx::VectorIconId::VIDEOCAM, true);
+#endif
     if (is_mic)
       id = is_cam ? IDS_MICROPHONE_CAMERA_BLOCKED : IDS_MICROPHONE_BLOCKED;
   } else {
-    set_icon(IDR_ALLOWED_CAMERA);
+    if (!UseVectorGraphics())
+      SetIconByResourceId(IDR_ALLOWED_CAMERA);
+#if !defined(OS_MACOSX)
+    else
+      SetIconByVectorId(gfx::VectorIconId::VIDEOCAM, false);
+#endif
     id = IDS_CAMERA_ACCESSED;
     if (is_mic)
       id = is_cam ? IDS_MICROPHONE_CAMERA_ALLOWED : IDS_MICROPHONE_ACCESSED;
@@ -276,7 +356,8 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
 ContentSettingRPHImageModel::ContentSettingRPHImageModel()
     : ContentSettingImageModel(
         CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
-  set_icon(IDR_REGISTER_PROTOCOL_HANDLER);
+  // TODO(estade): get an MD icon for this one.
+  SetIconByResourceId(IDR_REGISTER_PROTOCOL_HANDLER);
   set_tooltip(l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
 }
 
@@ -331,7 +412,12 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
   usages_state.GetDetailedInfo(NULL, &state_flags);
   bool allowed =
       !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
-  set_icon(allowed ? IDR_ALLOWED_MIDI_SYSEX : IDR_BLOCKED_MIDI_SYSEX);
+#if defined(OS_MACOSX)
+  SetIconByResourceId(allowed ? IDR_ALLOWED_MIDI_SYSEX
+                              : IDR_BLOCKED_MIDI_SYSEX);
+#else
+  SetIconByVectorId(gfx::VectorIconId::MIDI, !allowed);
+#endif
   set_tooltip(l10n_util::GetStringUTF8(allowed ?
       IDS_MIDI_SYSEX_ALLOWED_TOOLTIP : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
 }
@@ -340,7 +426,7 @@ ContentSettingImageModel::ContentSettingImageModel(
     ContentSettingsType content_settings_type)
     : content_settings_type_(content_settings_type),
       is_visible_(false),
-      icon_(0),
+      icon_id_(0),
       explanatory_string_id_(0) {
 }
 
@@ -365,3 +451,20 @@ ContentSettingImageModel*
       return new ContentSettingBlockedImageModel(content_settings_type);
   }
 }
+
+void ContentSettingImageModel::SetIconByResourceId(int id) {
+  icon_id_ = id;
+  icon_ = ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(id);
+}
+
+#if !defined(OS_MACOSX)
+void ContentSettingImageModel::SetIconByVectorId(gfx::VectorIconId id,
+                                                 bool blocked) {
+  SkColor icon_color;
+  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
+                                &icon_color);
+  icon_ = gfx::Image(gfx::CreateVectorIconWithBadge(
+      id, 16, icon_color, blocked ? gfx::VectorIconId::BLOCKED_BADGE
+                                  : gfx::VectorIconId::VECTOR_ICON_NONE));
+}
+#endif
