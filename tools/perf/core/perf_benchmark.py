@@ -50,7 +50,11 @@ class PerfBenchmark(benchmark.Benchmark):
   def _GetVariationsBrowserArgs(self, finder_options):
     variations_dir = os.path.join(os.path.dirname(__file__), os.pardir,
         os.pardir, os.pardir, 'testing', 'variations')
-    target_os = browser_finder.FindBrowser(finder_options).target_os
+    possible_browser = browser_finder.FindBrowser(finder_options)
+    if not possible_browser:
+      return []
+
     return fieldtrial_util.GenerateArgs(
         os.path.join(variations_dir,
-        'fieldtrial_testing_config_%s.json' % self._FixupTargetOS(target_os)))
+        'fieldtrial_testing_config_%s.json' % self._FixupTargetOS(
+            possible_browser.target_os)))
