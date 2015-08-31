@@ -50,7 +50,8 @@ const SkColor kDefaultColorTabText = SK_ColorBLACK;
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorBackgroundTabText = SK_ColorBLACK;
 #else
-const SkColor kDefaultColorBackgroundTabText = SkColorSetRGB(64, 64, 64);
+const SkColor kDefaultColorBackgroundTabText[] = {
+    SkColorSetRGB(64, 64, 64), SK_ColorBLACK };
 #endif  // OS_MACOSX
 
 const SkColor kDefaultColorBookmarkText = SK_ColorBLACK;
@@ -339,7 +340,11 @@ SkColor ThemeProperties::GetDefaultColor(int id) {
     case COLOR_TAB_TEXT:
       return kDefaultColorTabText;
     case COLOR_BACKGROUND_TAB_TEXT:
+#if defined(OS_MACOSX)
       return kDefaultColorBackgroundTabText;
+#else
+      return kDefaultColorBackgroundTabText[mode];
+#endif  // OS_MACOSX
     case COLOR_BOOKMARK_TEXT:
       return kDefaultColorBookmarkText;
     case COLOR_NTP_BACKGROUND:
