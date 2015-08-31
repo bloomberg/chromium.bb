@@ -7380,9 +7380,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE" desc="Title for 'Passwords and exceptions dialog'">
         Passwords
       </message>
-      <message name="IDS_PASSWORDS_EXCEPTIONS_SMART_LOCK_WINDOW_TITLE" desc="Title for 'Passwords and exceptions dialog'">
-        Google Smart Lock for Passwords
-      </message>
       <message name="IDS_PASSWORDS_AUTO_SIGNIN_TITLE" desc="Title for 'Auto sign-in' checkbox in the password dialog">
         Auto Sign-in
       </message>
