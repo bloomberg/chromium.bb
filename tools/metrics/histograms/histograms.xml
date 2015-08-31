@@ -37823,8 +37823,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>nparker@chromium.org</owner>
   <summary>
     Result of URL-classification API calls from Chrome via
-    RemoteSafeBrowsingApiHandler.  Logged from Java when the remote IPC returns
-    and is judged safe/not-safe, or hits a deadline.
+    RemoteSafeBrowsingApiHandler.  Logged after each URL is judged
+    safe/not-safe, or hits a deadline.
   </summary>
 </histogram>
 
@@ -69663,8 +69663,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="SAFE"/>
   <int value="3" label="UNSAFE"/>
   <int value="4" label="JSON_EMPTY"/>
-  <int value="5" label="FAILED_TO_PARSE"/>
+  <int value="5" label="JSON_FAILED_TO_PARSE"/>
   <int value="6" label="JSON_UNKNOWN_THREAT"/>
+  <int value="7" label="UNSUPPORTED"/>
 </enum>
 
 <enum name="SB2RemoteCallThreatSubType" type="int">
