@@ -168,7 +168,7 @@ public class ContextualSearchSelectionController {
                 return;
             }
         }
-        if (selection != null && !selection.isEmpty()) {
+        if (!selection.isEmpty()) {
             unscheduleInvalidTapNotification();
         }
 
@@ -179,7 +179,7 @@ public class ContextualSearchSelectionController {
             handleSelection(selection, mSelectionType);
             mWasTapGestureDetected = false;
         } else {
-            mHandler.handleSelectionModification(selection, mX, mY);
+            mHandler.handleSelectionModification(selection, isValidSelection(selection), mX, mY);
         }
     }
 

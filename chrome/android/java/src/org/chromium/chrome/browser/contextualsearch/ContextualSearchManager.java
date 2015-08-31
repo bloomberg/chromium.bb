@@ -1267,16 +1267,16 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
-    public void handleSelection(String selection, boolean isSelectionValid, SelectionType type,
+    public void handleSelection(String selection, boolean selectionValid, SelectionType type,
             float x, float y) {
         if (!selection.isEmpty()) {
             StateChangeReason stateChangeReason = type == SelectionType.TAP
                     ? StateChangeReason.TEXT_SELECT_TAP : StateChangeReason.TEXT_SELECT_LONG_PRESS;
-            ContextualSearchUma.logSelectionIsValid(isSelectionValid);
+            ContextualSearchUma.logSelectionIsValid(selectionValid);
             // Workaround to disable Contextual Search in HTML fullscreen mode. crbug.com/511977
             boolean isInFullscreenMode =
                     mActivity.getFullscreenManager().getPersistentFullscreenMode();
-            if (isSelectionValid && !isInFullscreenMode) {
+            if (selectionValid && !isInFullscreenMode) {
                 mSearchPanelDelegate.updateBasePageSelectionYPx(y);
                 showContextualSearch(stateChangeReason);
             } else {
@@ -1300,9 +1300,14 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
-    public void handleSelectionModification(String selection, float x, float y) {
+    public void handleSelectionModification(
+            String selection, boolean selectionValid, float x, float y) {
         if (mSearchPanelDelegate.isShowing()) {
-            getContextualSearchControl().setCentralText(selection);
+            if (selectionValid) {
+                getContextualSearchControl().setCentralText(selection);
+            } else {
+                hideContextualSearch(StateChangeReason.INVALID_SELECTION);
+            }
         }
     }
 
