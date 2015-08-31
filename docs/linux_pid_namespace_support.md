@@ -1,6 +1,12 @@
-The [LinuxSUIDSandbox](LinuxSUIDSandbox.md) currently relies on support for the CLONE\_NEWPID flag in Linux's [clone() system call](http://www.kernel.org/doc/man-pages/online/pages/man2/clone.2.html).  You can check whether your system supports PID namespaces with the code below, which must be run as root:
+# Linux PID Namespace Support
 
-```
+The [LinuxSUIDSandbox](linux_suid_sandbox.md) currently relies on support for
+the `CLONE_NEWPID` flag in Linux's
+[clone() system call](http://www.kernel.org/doc/man-pages/online/pages/man2/clone.2.html).
+You can check whether your system supports PID namespaces with the code below,
+which must be run as root:
+
+```c
 #define _GNU_SOURCE
 #include <unistd.h>
 #include <sched.h>

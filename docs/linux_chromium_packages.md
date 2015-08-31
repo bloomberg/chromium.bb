@@ -1,4 +1,11 @@
-Some Linux distributions package up Chromium for easy installation.  Please note that Chromium is not identical to Google Chrome -- see ChromiumBrowserVsGoogleChrome -- and that distributions may (and actually do) make their own modifications.
+# Linux Chromium Packages
+
+Some Linux distributions package up Chromium for easy installation. Please note
+that Chromium is not identical to Google Chrome -- see
+[chromium_browser_vs_google_chrome.md](chromium_browser_vs_google_chrome.md) --
+and that distributions may (and actually do) make their own modifications.
+
+TODO: Move away from tables.
 
 | **Distro** | **Contact** | **URL for packages** | **URL for distro-specific patches** |
 |:-----------|:------------|:---------------------|:------------------------------------|
@@ -12,6 +19,7 @@ Some Linux distributions package up Chromium for easy installation.  Please note
 | NixOS      | aszlig `"^[0-9]+$"@regexmail.net` | http://hydra.nixos.org/search?query=pkgs.chromium | https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/networking/browsers/chromium |
 
 ## Unofficial packages
+
 Packages in this section are not part of the distro's official repositories.
 
 | **Distro** | **Contact** | **URL for packages** | **URL for distro-specific patches** |
@@ -20,17 +28,21 @@ Packages in this section are not part of the distro's official repositories.
 | Slackware  | Eric Hameleers `alien@slackware.com` | http://www.slackware.com/~alien/slackbuilds/chromium/ | http://www.slackware.com/~alien/slackbuilds/chromium/ |
 
 ## Other Unixes
+
 | **System** | **Contact** | **URL for packages** | **URL for patches** |
 |:-----------|:------------|:---------------------|:--------------------|
 | FreeBSD    | http://lists.freebsd.org/mailman/listinfo/freebsd-chromium | http://wiki.freebsd.org/Chromium | http://trillian.chruetertee.ch/chromium |
 | OpenBSD    | Robert Nagy `robert@openbsd.org` | http://openports.se/www/chromium | http://www.openbsd.org/cgi-bin/cvsweb/ports/www/chromium/patches/ |
 
-
 ## Updating the list
 
-Are you packaging Chromium for a Linux distro? Is the information above out of date? Please contact `thestig@chromium.org` with updates.
+Are you packaging Chromium for a Linux distro? Is the information above out of
+date? Please contact `thestig@chromium.org` with updates.
 
 Before emailing, please note:
-  * This is not a support email address
-  * If you ask about a Linux distro that is not listed above, the answer will be "I don't know"
-  * Linux distros supported by Google Chrome are listed here: https://support.google.com/chrome/answer/95411
+
+*   This is not a support email address
+*   If you ask about a Linux distro that is not listed above, the answer will be
+    "I don't know"
+*   Linux distros supported by Google Chrome are listed here:
+    https://support.google.com/chrome/answer/95411
