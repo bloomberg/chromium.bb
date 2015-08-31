@@ -163,11 +163,8 @@ class PopupMenuImpl::ItemIterationContext {
     STACK_ALLOCATED();
 public:
     ItemIterationContext(const ComputedStyle& style, SharedBuffer* buffer)
-        : m_direction(style.direction())
-        , m_foregroundColor(style.visitedDependentColor(CSSPropertyColor))
+        : m_baseStyle(style)
         , m_backgroundColor(style.visitedDependentColor(CSSPropertyBackgroundColor))
-        , m_textTransform(style.textTransform())
-        , m_fontDescription(style.fontDescription())
         , m_listIndex(0)
         , m_isInGroup(false)
         , m_buffer(buffer)
@@ -185,16 +182,17 @@ public:
 
     void serializeBaseStyle()
     {
+        ASSERT(!m_isInGroup);
         PagePopupClient::addString("baseStyle: {", m_buffer);
         addProperty("backgroundColor", m_backgroundColor.serialized(), m_buffer);
-        addProperty("color", m_foregroundColor.serialized(), m_buffer);
-        addProperty("textTransform", String(textTransformToString(m_textTransform)), m_buffer);
-        addProperty("fontSize", fontSize(), m_buffer);
-        addProperty("fontStyle", String(fontStyleToString(fontStyle())), m_buffer);
-        addProperty("fontVariant", String(fontVariantToString(fontVariant())), m_buffer);
+        addProperty("color", baseStyle().visitedDependentColor(CSSPropertyColor).serialized(), m_buffer);
+        addProperty("textTransform", String(textTransformToString(baseStyle().textTransform())), m_buffer);
+        addProperty("fontSize", baseFont().computedPixelSize(), m_buffer);
+        addProperty("fontStyle", String(fontStyleToString(baseFont().style())), m_buffer);
+        addProperty("fontVariant", String(fontVariantToString(baseFont().variant())), m_buffer);
 
         PagePopupClient::addString("fontFamily: [", m_buffer);
-        for (const FontFamily* f = &fontFamily(); f; f = f->next()) {
+        for (const FontFamily* f = &baseFont().family(); f; f = f->next()) {
             addJavaScriptString(f->family().string(), m_buffer);
             if (f->next())
                 PagePopupClient::addString(",", m_buffer);
@@ -203,11 +201,17 @@ public:
         PagePopupClient::addString("},\n", m_buffer);
     }
 
-    void startGroupChildren()
+    Color backgroundColor() const { return m_isInGroup ? m_groupStyle->visitedDependentColor(CSSPropertyBackgroundColor) : m_backgroundColor; }
+    // Do not use baseStyle() for background-color, use backgroundColor()
+    // instead.
+    const ComputedStyle& baseStyle() { return m_isInGroup ? *m_groupStyle : m_baseStyle; }
+    const FontDescription& baseFont() { return m_isInGroup ? m_groupStyle->fontDescription() : m_baseStyle.fontDescription(); }
+    void startGroupChildren(const ComputedStyle& groupStyle)
     {
         ASSERT(!m_isInGroup);
         PagePopupClient::addString("children: [", m_buffer);
         m_isInGroup = true;
+        m_groupStyle = &groupStyle;
     }
     void finishGroupIfNecessary()
     {
@@ -215,18 +219,12 @@ public:
             return;
         PagePopupClient::addString("],},\n", m_buffer);
         m_isInGroup = false;
+        m_groupStyle = nullptr;
     }
 
-    int fontSize() const { return m_fontDescription.computedPixelSize(); }
-    FontStyle fontStyle() const { return m_fontDescription.style(); }
-    FontVariant fontVariant() const { return m_fontDescription.variant(); }
-    const FontFamily& fontFamily() const { return m_fontDescription.family(); }
-
-    TextDirection m_direction;
-    Color m_foregroundColor;
+    const ComputedStyle& m_baseStyle;
     Color m_backgroundColor;
-    ETextTransform m_textTransform;
-    const FontDescription& m_fontDescription;
+    const ComputedStyle* m_groupStyle;
 
     unsigned m_listIndex;
     bool m_isInGroup;
@@ -316,23 +314,25 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& 
         addProperty("visibility", String("hidden"), data);
     if (style->display() == NONE)
         addProperty("display", String("none"), data);
-    if (context.m_direction != style->direction())
+    const ComputedStyle& baseStyle = context.baseStyle();
+    if (baseStyle.direction() != style->direction())
         addProperty("direction", String(style->direction() == RTL ? "rtl" : "ltr"), data);
     if (isOverride(style->unicodeBidi()))
         addProperty("unicodeBidi", String("bidi-override"), data);
     Color foregroundColor = style->visitedDependentColor(CSSPropertyColor);
-    if (context.m_foregroundColor != foregroundColor)
+    if (baseStyle.visitedDependentColor(CSSPropertyColor) != foregroundColor)
         addProperty("color", foregroundColor.serialized(), data);
     Color backgroundColor = style->visitedDependentColor(CSSPropertyBackgroundColor);
-    if (context.m_backgroundColor != backgroundColor && backgroundColor != Color::transparent)
+    if (context.backgroundColor() != backgroundColor && backgroundColor != Color::transparent)
         addProperty("backgroundColor", backgroundColor.serialized(), data);
+    const FontDescription& baseFont = context.baseFont();
     const FontDescription& fontDescription = style->font().fontDescription();
-    if (context.fontSize() != fontDescription.computedPixelSize())
+    if (baseFont.computedPixelSize() != fontDescription.computedPixelSize())
         addProperty("fontSize", fontDescription.computedPixelSize(), data);
     // Our UA stylesheet has font-weight:normal for OPTION.
     if (FontWeightNormal != fontDescription.weight())
         addProperty("fontWeight", String(fontWeightToString(fontDescription.weight())), data);
-    if (context.fontFamily() != fontDescription.family()) {
+    if (baseFont.family() != fontDescription.family()) {
         PagePopupClient::addString("fontFamily: [\n", data);
         for (const FontFamily* f = &fontDescription.family(); f; f = f->next()) {
             addJavaScriptString(f->family().string(), data);
@@ -341,11 +341,11 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& 
         }
         PagePopupClient::addString("],\n", data);
     }
-    if (context.fontStyle() != fontDescription.style())
+    if (baseFont.style() != fontDescription.style())
         addProperty("fontStyle", String(fontStyleToString(fontDescription.style())), data);
-    if (context.fontVariant() != fontDescription.variant())
+    if (baseFont.variant() != fontDescription.variant())
         addProperty("fontVariant", String(fontVariantToString(fontDescription.variant())), data);
-    if (context.m_textTransform != style->textTransform())
+    if (baseStyle.textTransform() != style->textTransform())
         addProperty("textTransform", String(textTransformToString(style->textTransform())), data);
 
     PagePopupClient::addString("},\n", data);
@@ -378,7 +378,7 @@ void PopupMenuImpl::addOptGroup(ItemIterationContext& context, HTMLOptGroupEleme
     addProperty("ariaLabel", element.fastGetAttribute(HTMLNames::aria_labelAttr), data);
     addProperty("disabled", element.isDisabledFormControl(), data);
     addElementStyle(context, element);
-    context.startGroupChildren();
+    context.startGroupChildren(*m_ownerElement->itemComputedStyle(element));
     // We should call ItemIterationContext::finishGroupIfNecessary() later.
 }
 
