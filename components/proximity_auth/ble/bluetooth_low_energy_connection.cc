@@ -39,8 +39,9 @@ namespace {
 const int kFirstByteZero = 0;
 
 // The maximum number of bytes written in a remote characteristic with a single
-// request.
-const int kMaxChunkSize = 100;
+// write request. This is not the connection MTU, we are assuming that the
+// remote device allows for writes larger than MTU.
+const int kMaxChunkSize = 500;
 
 // This delay is necessary as a workaroud for crbug.com/507325. Reading/writing
 // characteristics immediatelly after the connection is complete fails with
@@ -79,6 +80,7 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
 }
 
 BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
+  PA_LOG(INFO) << "Connection destroyed.";
   Disconnect();
   if (adapter_) {
     adapter_->RemoveObserver(this);
@@ -168,22 +170,37 @@ void BluetoothLowEnergyConnection::SetTaskRunnerForTesting(
 void BluetoothLowEnergyConnection::SendMessageImpl(
     scoped_ptr<WireMessage> message) {
   PA_LOG(INFO) << "Sending message " << message->Serialize();
-
   std::string serialized_msg = message->Serialize();
 
+  // [First write]: Build a header with the [send signal] + [size of the
+  // message].
   WriteRequest write_request = BuildWriteRequest(
       ToByteVector(static_cast<uint32>(ControlSignal::kSendSignal)),
       ToByteVector(static_cast<uint32>(serialized_msg.size())), false);
-  WriteRemoteCharacteristic(write_request);
 
-  // Each chunk has to include a deprecated signal: |kFirstByteZero| as the
-  // first byte.
+  // [First write]: Fill the it with a prefix of |serialized_msg| up to
+  // |max_chunk_size_|.
+  size_t first_chunk_size = std::min(
+      max_chunk_size_ - write_request.value.size(), serialized_msg.size());
+  std::vector<uint8> bytes(serialized_msg.begin(),
+                           serialized_msg.begin() + first_chunk_size);
+  write_request.value.insert(write_request.value.end(), bytes.begin(),
+                             bytes.end());
+
+  bool is_last_write_request = first_chunk_size == serialized_msg.size();
+  write_request.is_last_write_for_wire_message = is_last_write_request;
+  WriteRemoteCharacteristic(write_request);
+  if (is_last_write_request)
+    return;
+
+  // [Other write requests]: Each chunk has to include a deprecated signal:
+  // |kFirstByteZero| as the first byte.
   int chunk_size = max_chunk_size_ - 1;
   std::vector<uint8> kFirstByteZeroVector;
   kFirstByteZeroVector.push_back(static_cast<uint8>(kFirstByteZero));
 
   int message_size = static_cast<int>(serialized_msg.size());
-  int start_index = 0;
+  int start_index = first_chunk_size;
   while (start_index < message_size) {
     int end_index = (start_index + chunk_size) <= message_size
                         ? (start_index + chunk_size)
@@ -274,14 +291,23 @@ void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
               << "Incoming data corrupted, expected message size not found.";
           return;
         }
-        std::vector<uint8> size(value.begin() + 4, value.end());
+        std::vector<uint8> size(value.begin() + 4, value.begin() + 8);
         expected_number_of_incoming_bytes_ =
             static_cast<size_t>(ToUint32(size));
         receiving_bytes_ = true;
         incoming_bytes_buffer_.clear();
+
+        const std::string bytes(value.begin() + 8, value.end());
+        incoming_bytes_buffer_.append(bytes);
+        if (incoming_bytes_buffer_.size() >=
+            expected_number_of_incoming_bytes_) {
+          OnBytesReceived(incoming_bytes_buffer_);
+          receiving_bytes_ = false;
+        }
         break;
       }
       case ControlSignal::kDisconnectSignal:
+        PA_LOG(INFO) << "Disconnect signal received.";
         Disconnect();
         break;
     }
@@ -458,6 +484,7 @@ void BluetoothLowEnergyConnection::ProcessNextWriteRequest() {
       characteristic) {
     write_remote_characteristic_pending_ = true;
     WriteRequest next_request = write_requests_queue_.front();
+    PA_LOG(INFO) << "Writing characteristic...";
     characteristic->WriteRemoteCharacteristic(
         next_request.value,
         base::Bind(&BluetoothLowEnergyConnection::OnRemoteCharacteristicWritten,
@@ -472,6 +499,7 @@ void BluetoothLowEnergyConnection::ProcessNextWriteRequest() {
 
 void BluetoothLowEnergyConnection::OnRemoteCharacteristicWritten(
     bool run_did_send_message_callback) {
+  PA_LOG(INFO) << "Characteristic written.";
   write_remote_characteristic_pending_ = false;
   // TODO(sacomoto): Actually pass the current message to the observer.
   if (run_did_send_message_callback)

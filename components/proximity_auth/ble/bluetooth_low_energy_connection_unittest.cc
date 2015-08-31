@@ -337,6 +337,14 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
     return value;
   }
 
+  std::vector<uint8> CreateFirstCharacteristicValue(const std::string& message,
+                                                    int size) {
+    std::vector<uint8> value(CreateSendSignalWithSize(size));
+    std::vector<uint8> bytes(message.begin(), message.end());
+    value.insert(value.end(), bytes.begin(), bytes.end());
+    return value;
+  }
+
   std::vector<uint8> ToByteVector(uint32 value) {
     std::vector<uint8> bytes(4, 0);
     bytes[0] = static_cast<uint8>(value);
@@ -521,20 +529,12 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
       .WillOnce(SaveArg<0>(&received_bytes));
 
   // Message (bytes) that is going to be received.
-  int message_size = 75;
-  std::string message(message_size, 'A');
+  std::string message(100, 'A');
 
-  // Sending the |kSendSignal| + |message_size|.
+  // Sending the |kSendSignal| + |message_size| + |message|.
   connection->GattCharacteristicValueChanged(
       adapter_.get(), from_peripheral_char_.get(),
-      CreateSendSignalWithSize(message_size));
-
-  // Sending the message.
-  std::vector<uint8> value;
-  value.push_back(0);
-  value.insert(value.end(), message.begin(), message.end());
-  connection->GattCharacteristicValueChanged(
-      adapter_.get(), from_peripheral_char_.get(), value);
+      CreateFirstCharacteristicValue(message, message.size()));
 
   EXPECT_EQ(received_bytes, message);
 }
@@ -545,30 +545,28 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
   InitializeConnection(connection.get());
 
   std::string received_bytes;
-  int chunk_size = 100;
+  int chunk_size = 500;
   EXPECT_CALL(*connection, OnBytesReceived(_))
       .WillOnce(SaveArg<0>(&received_bytes));
 
   // Message (bytes) that is going to be received.
-  int message_size = 150;
+  int message_size = 600;
   std::string message(message_size, 'A');
 
-  // Sending the |kSendSignal| + |message_size|.
+  // Sending the |kSendSignal| + |message_size| + |message| (truncated at
+  // |chunk_size|).
+  int first_write_payload_size =
+      chunk_size - CreateSendSignalWithSize(message_size).size();
   connection->GattCharacteristicValueChanged(
       adapter_.get(), from_peripheral_char_.get(),
-      CreateSendSignalWithSize(message_size));
+      CreateFirstCharacteristicValue(
+          message.substr(0, first_write_payload_size), message.size()));
 
-  // Sending the first chunk.
+  // Sending the remaining bytes.
   std::vector<uint8> value;
   value.push_back(0);
-  value.insert(value.end(), message.begin(), message.begin() + chunk_size);
-  connection->GattCharacteristicValueChanged(
-      adapter_.get(), from_peripheral_char_.get(), value);
-
-  // Sending the second chunk.
-  value.clear();
-  value.push_back(0);
-  value.insert(value.end(), message.begin() + chunk_size, message.end());
+  value.insert(value.end(), message.begin() + first_write_payload_size,
+               message.end());
   connection->GattCharacteristicValueChanged(
       adapter_.get(), from_peripheral_char_.get(), value);
 
@@ -589,34 +587,16 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
   // Message (bytes) that is going to be sent.
-  int message_size = 75;
+  int message_size = 100;
   std::string message(message_size, 'A');
   message[0] = 'B';
   connection->SendMessage(make_scoped_ptr(new FakeWireMessage(message)));
 
-  // Expecting that |kSendSignal| + |message_size| was written.
+  // Expecting that |kSendSignal| + |message_size| + |message| was written.
   EXPECT_EQ(last_value_written_on_to_peripheral_char_,
-            CreateSendSignalWithSize(message_size));
-
-  // Expecting a second call of WriteRemoteCharacteristic, after success
-  // callback is called.
-  EXPECT_CALL(*to_peripheral_char_, WriteRemoteCharacteristic(_, _, _))
-      .WillOnce(
-          DoAll(SaveArg<0>(&last_value_written_on_to_peripheral_char_),
-                SaveArg<1>(&write_remote_characteristic_success_callback_),
-                SaveArg<2>(&write_remote_characteristic_error_callback_)));
-
-  RunWriteCharacteristicSuccessCallback();
-
-  // Expecting that the message was written.
-  std::vector<uint8> expected_value(message.begin(), message.end());
-  std::vector<uint8> written_value(
-      last_value_written_on_to_peripheral_char_.begin() + 1,
-      last_value_written_on_to_peripheral_char_.end());
-  EXPECT_EQ(expected_value, written_value);
-  EXPECT_EQ(expected_value.size(), written_value.size());
-
+            CreateFirstCharacteristicValue(message, message.size()));
   EXPECT_CALL(*connection, OnDidSendMessage(_, _));
+
   RunWriteCharacteristicSuccessCallback();
 }
 
@@ -634,30 +614,23 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
                 SaveArg<2>(&write_remote_characteristic_error_callback_)));
 
   // Message (bytes) that is going to be sent.
-  int message_size = 150;
+  int message_size = 600;
   std::string message(message_size, 'A');
   message[0] = 'B';
   connection->SendMessage(make_scoped_ptr(new FakeWireMessage(message)));
 
-  // Expecting that |kSendSignal| + |message_size| was written.
-  EXPECT_EQ(last_value_written_on_to_peripheral_char_,
-            CreateSendSignalWithSize(message_size));
+  // Expecting that |kSendSignal| + |message_size| was written in the first 8
+  // bytes.
+  std::vector<uint8> prefix(
+      last_value_written_on_to_peripheral_char_.begin(),
+      last_value_written_on_to_peripheral_char_.begin() + 8);
+  EXPECT_EQ(prefix, CreateSendSignalWithSize(message_size));
+  std::vector<uint8> bytes_received(
+      last_value_written_on_to_peripheral_char_.begin() + 8,
+      last_value_written_on_to_peripheral_char_.end());
 
   // Expecting a second call of WriteRemoteCharacteristic, after success
   // callback is called.
-  EXPECT_CALL(*to_peripheral_char_, WriteRemoteCharacteristic(_, _, _))
-      .WillOnce(
-          DoAll(SaveArg<0>(&last_value_written_on_to_peripheral_char_),
-                SaveArg<1>(&write_remote_characteristic_success_callback_),
-                SaveArg<2>(&write_remote_characteristic_error_callback_)));
-
-  RunWriteCharacteristicSuccessCallback();
-  std::vector<uint8> bytes_received(
-      last_value_written_on_to_peripheral_char_.begin() + 1,
-      last_value_written_on_to_peripheral_char_.end());
-
-  // Expecting a third call of WriteRemoteCharacteristic, after success callback
-  // is called.
   EXPECT_CALL(*to_peripheral_char_, WriteRemoteCharacteristic(_, _, _))
       .WillOnce(
           DoAll(SaveArg<0>(&last_value_written_on_to_peripheral_char_),
