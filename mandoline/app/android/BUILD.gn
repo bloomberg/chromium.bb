@@ -80,8 +80,8 @@ copy_ex("copy_mandoline_assets") {
     deps += [ "//mandoline/ui" ]
 
     args += [
-      "--files=" + rebase_path("$root_out_dir/browser", root_build_dir),
       "--files=" + rebase_path("$root_out_dir/omnibox", root_build_dir),
+      "--files=" + rebase_path("$root_out_dir/phone_ui", root_build_dir),
     ]
   }
 }

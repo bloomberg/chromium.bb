@@ -68,6 +68,8 @@ class PhoneBrowserApplicationDelegate :
   mojo::View* content_;
   web_view::WebView web_view_;
 
+  mojo::String default_url_;
+
   mojo::WeakBindingSet<LaunchHandler> launch_handler_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(PhoneBrowserApplicationDelegate);

@@ -35,5 +35,6 @@ source_set("lib") {
     "//mojo/converters/geometry",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx/geometry",
+    "//url",
   ]
 }

@@ -4,6 +4,7 @@
 
 #include "mandoline/ui/phone_ui/phone_browser_application_delegate.h"
 
+#include "base/command_line.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "components/view_manager/public/cpp/view_tree_host_factory.h"
@@ -12,6 +13,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 
 namespace mandoline {
 
@@ -21,7 +23,8 @@ namespace mandoline {
 PhoneBrowserApplicationDelegate::PhoneBrowserApplicationDelegate()
     : app_(nullptr),
       content_(nullptr),
-      web_view_(this) {
+      web_view_(this),
+      default_url_("http://www.google.com/") {
 }
 
 PhoneBrowserApplicationDelegate::~PhoneBrowserApplicationDelegate() {
@@ -32,6 +35,15 @@ PhoneBrowserApplicationDelegate::~PhoneBrowserApplicationDelegate() {
 
 void PhoneBrowserApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  for (const auto& arg : command_line->GetArgs()) {
+    GURL url(arg);
+    if (url.is_valid()) {
+      default_url_ = url.spec();
+      break;
+    }
+  }
   mojo::CreateSingleViewTreeHost(app_, this, &host_);
 }
 
@@ -62,7 +74,7 @@ void PhoneBrowserApplicationDelegate::OnEmbed(mojo::View* root) {
 
   host_->SetSize(mojo::Size::From(gfx::Size(320, 640)));
   web_view_.Init(app_, content_);
-  LaunchURL("http://www.google.com/");
+  LaunchURL(default_url_);
 }
 
 void PhoneBrowserApplicationDelegate::OnConnectionLost(
