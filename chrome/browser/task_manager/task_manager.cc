@@ -1500,6 +1500,7 @@ Resource* TaskManagerModel::GetResource(int index) const {
 // static
 void TaskManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kTaskManagerWindowPlacement);
+  registry->RegisterDictionaryPref(prefs::kTaskManagerColumnVisibility);
 }
 
 bool TaskManager::IsBrowserProcess(int index) const {

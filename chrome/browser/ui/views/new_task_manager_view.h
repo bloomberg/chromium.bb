@@ -26,6 +26,44 @@ class View;
 
 namespace task_management {
 
+// A collection of data to be used in the construction of a task manager table
+// column.
+struct TableColumnData {
+  // The generated ID of the column. These can change from one build to another.
+  // Their values are controlled by the generation from generated_resources.grd.
+  int id;
+
+  // The alignment of the text displayed in this column.
+  ui::TableColumn::Alignment align;
+
+  // |width| and |percent| used to define the size of the column. See
+  // ui::TableColumn::width and ui::TableColumn::percent for details.
+  int width;
+  float percent;
+
+  // Is the column sortable.
+  bool sortable;
+
+  // Is the initial sort order ascending?
+  bool initial_sort_is_ascending;
+
+  // The default visibility of this column at startup of the table if no
+  // visibility is stored for it in the prefs.
+  bool default_visibility;
+};
+
+// The task manager table columns and their properties.
+extern const TableColumnData kColumns[];
+extern const size_t kColumnsSize;
+
+// Session Restore Keys.
+extern const char kSortColumnIdKey[];
+extern const char kSortIsAscendingKey[];
+
+// Returns the |column_id| as a string value to be used as keys in the user
+// preferences.
+std::string GetColumnIdAsString(int column_id);
+
 // The new task manager UI container.
 class NewTaskManagerView
     : public views::ButtonListener,
@@ -85,9 +123,12 @@ class NewTaskManagerView
   void ExecuteCommand(int id, int event_flags) override;
 
  private:
+  friend class NewTaskManagerViewTest;
   class TableModel;
 
   explicit NewTaskManagerView(chrome::HostDesktopType desktop_type);
+
+  static NewTaskManagerView* GetInstanceForTests();
 
   // Creates the child controls.
   void Init();
@@ -101,9 +142,25 @@ class NewTaskManagerView
   // Restores saved "always on top" state from a previous session.
   void RetriveSavedAlwaysOnTopState();
 
+  // Restores the saved columns settings from a previous session into
+  // |columns_settings_| and updates the table view.
+  void RetrieveSavedColumnsSettingsAndUpdateTable();
+
+  // Stores the current values in |column_settings_| to the user prefs so that
+  // it can be restored later next time the task manager view is opened.
+  void StoreColumnsSettings();
+
+  void ToggleColumnVisibility(int column_id);
+
   scoped_ptr<NewTaskManagerView::TableModel> table_model_;
 
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // Contains either the column settings retrieved from user preferences if it
+  // exists, or the default column settings.
+  // The columns settings are the visible columns and the last sorted column
+  // and the direction of the sort.
+  scoped_ptr<base::DictionaryValue> columns_settings_;
 
   // We need to own the text of the menu, the Windows API does not copy it.
   base::string16 always_on_top_menu_text_;
