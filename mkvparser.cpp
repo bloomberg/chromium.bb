@@ -1251,8 +1251,8 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
 }
 
 long Segment::DoLoadClusterUnknownSize(long long& pos, long& len) {
-  assert(m_pos < 0);
-  assert(m_pUnknownSize);
+  if (m_pos >= 0 || m_pUnknownSize == NULL)
+    return E_PARSE_FAILED;
 
   const long status = m_pUnknownSize->Parse(pos, len);
 
@@ -1262,12 +1262,11 @@ long Segment::DoLoadClusterUnknownSize(long long& pos, long& len) {
   if (status == 0)  // parsed a block
     return 2;  // continue parsing
 
-  assert(status > 0);  // nothing left to parse of this cluster
-
   const long long start = m_pUnknownSize->m_element_start;
-
   const long long size = m_pUnknownSize->GetElementSize();
-  assert(size >= 0);
+
+  if (size < 0)
+    return E_FILE_FORMAT_INVALID;
 
   pos = start + size;
   m_pos = pos;
