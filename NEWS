@@ -11,7 +11,7 @@ against this corpus ensuring the change doesn't break anything.
 - YAML based harness tests. Harness tests can now be written in simple
   YAML notation and they are integrated with the normal `make check`
   command. They can be used for both ucs2 and ucs4 and no Python is
-  required.
+  required. Thanks to Christian Egli.
 
 ** Bug fixes
 - Use a separate gnulib instance for the library and the tools. Use
