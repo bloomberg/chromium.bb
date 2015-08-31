@@ -1347,6 +1347,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kTestType,
     switches::kTouchEvents,
     switches::kTouchTextSelectionStrategy,
+    switches::kTraceConfigFile,
     switches::kTraceToConsole,
     // This flag needs to be propagated to the renderer process for
     // --in-process-webgl.
@@ -1416,7 +1417,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
                                  arraysize(kSwitchNames));
 
   if (browser_cmd.HasSwitch(switches::kTraceStartup) &&
-      BrowserMainLoop::GetInstance()->is_tracing_startup()) {
+      BrowserMainLoop::GetInstance()->is_tracing_startup_for_duration()) {
     // Pass kTraceStartup switch to renderer only if startup tracing has not
     // finished.
     renderer_cmd->AppendSwitchASCII(

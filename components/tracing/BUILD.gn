@@ -23,8 +23,8 @@ component("tracing") {
 
 component("startup_tracing") {
   sources = [
-    "startup_tracing.cc",
-    "startup_tracing.h",
+    "trace_config_file.cc",
+    "trace_config_file.h",
     "tracing_export.h",
     "tracing_switches.cc",
     "tracing_switches.h",
@@ -34,5 +34,19 @@ component("startup_tracing") {
 
   deps = [
     "//base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "trace_config_file_unittest.cc",
+  ]
+
+  deps = [
+    ":startup_tracing",
+    "//base/test:test_support",
+    "//testing/gtest",
   ]
 }
