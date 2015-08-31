@@ -23,15 +23,20 @@ class V4L2Webcam : public Webcam {
   bool GetWebcamParameter(int fd, uint32_t control_id, int* value);
 
   // Webcam:
-  void Reset(bool pan, bool tilt, bool zoom) override;
-  bool GetPan(int* value) override;
-  bool GetTilt(int* value) override;
-  bool GetZoom(int* value) override;
-  bool SetPan(int value) override;
-  bool SetTilt(int value) override;
-  bool SetZoom(int value) override;
-  bool SetPanDirection(PanDirection direction) override;
-  bool SetTiltDirection(TiltDirection direction) override;
+  void GetPan(const GetPTZCompleteCallback& callback) override;
+  void GetTilt(const GetPTZCompleteCallback& callback) override;
+  void GetZoom(const GetPTZCompleteCallback& callback) override;
+  void SetPan(int value, const SetPTZCompleteCallback& callback) override;
+  void SetTilt(int value, const SetPTZCompleteCallback& callback) override;
+  void SetZoom(int value, const SetPTZCompleteCallback& callback) override;
+  void SetPanDirection(PanDirection direction,
+                       const SetPTZCompleteCallback& callback) override;
+  void SetTiltDirection(TiltDirection direction,
+                        const SetPTZCompleteCallback& callback) override;
+  void Reset(bool pan,
+             bool tilt,
+             bool zoom,
+             const SetPTZCompleteCallback& callback) override;
 
   const std::string device_id_;
   base::ScopedFD fd_;

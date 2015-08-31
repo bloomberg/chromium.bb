@@ -21,8 +21,13 @@ class BrowserContext;
 }  // namespace content
 
 namespace {
+
 const char kPathInUse[] = "Path in use";
 const char kUnknownWebcam[] = "Unknown webcam id";
+const char kGetWebcamPTZError[] = "Can't get web camera pan/tilt/zoom.";
+const char kSetWebcamPTZError[] = "Can't set web camera pan/tilt/zoom.";
+const char kResetWebcamError[] = "Can't reset web camera.";
+
 }  // namespace
 
 namespace extensions {
@@ -224,7 +229,7 @@ WebcamPrivateSetFunction::WebcamPrivateSetFunction() {
 WebcamPrivateSetFunction::~WebcamPrivateSetFunction() {
 }
 
-bool WebcamPrivateSetFunction::RunSync() {
+bool WebcamPrivateSetFunction::RunAsync() {
   scoped_ptr<webcam_private::Set::Params> params(
       webcam_private::Set::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -237,7 +242,9 @@ bool WebcamPrivateSetFunction::RunSync() {
   }
 
   if (params->config.pan) {
-    webcam->SetPan(*(params->config.pan));
+    webcam->SetPan(
+        *(params->config.pan),
+        base::Bind(&WebcamPrivateSetFunction::OnSetWebcamParameters, this));
   }
 
   if (params->config.pan_direction) {
@@ -256,11 +263,15 @@ bool WebcamPrivateSetFunction::RunSync() {
         direction = Webcam::PAN_LEFT;
         break;
     }
-    webcam->SetPanDirection(direction);
+    webcam->SetPanDirection(
+        direction,
+        base::Bind(&WebcamPrivateSetFunction::OnSetWebcamParameters, this));
   }
 
   if (params->config.tilt) {
-    webcam->SetTilt(*(params->config.tilt));
+    webcam->SetTilt(
+        *(params->config.tilt),
+        base::Bind(&WebcamPrivateSetFunction::OnSetWebcamParameters, this));
   }
 
   if (params->config.tilt_direction) {
@@ -279,24 +290,38 @@ bool WebcamPrivateSetFunction::RunSync() {
         direction = Webcam::TILT_DOWN;
         break;
     }
-    webcam->SetTiltDirection(direction);
+    webcam->SetTiltDirection(
+        direction,
+        base::Bind(&WebcamPrivateSetFunction::OnSetWebcamParameters, this));
   }
 
   if (params->config.zoom) {
-    webcam->SetZoom(*(params->config.zoom));
+    webcam->SetZoom(
+        *(params->config.zoom),
+        base::Bind(&WebcamPrivateSetFunction::OnSetWebcamParameters, this));
   }
-
 
   return true;
 }
 
-WebcamPrivateGetFunction::WebcamPrivateGetFunction() {
+void WebcamPrivateSetFunction::OnSetWebcamParameters(bool success) {
+  if (!success)
+    SetError(kSetWebcamPTZError);
 }
+
+WebcamPrivateGetFunction::WebcamPrivateGetFunction()
+    : pan_(0),
+      tilt_(0),
+      zoom_(0),
+      get_pan_(false),
+      get_tilt_(false),
+      get_zoom_(false),
+      success_(true) {}
 
 WebcamPrivateGetFunction::~WebcamPrivateGetFunction() {
 }
 
-bool WebcamPrivateGetFunction::RunSync() {
+bool WebcamPrivateGetFunction::RunAsync() {
   scoped_ptr<webcam_private::Get::Params> params(
       webcam_private::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -308,23 +333,50 @@ bool WebcamPrivateGetFunction::RunSync() {
     return false;
   }
 
-  webcam_private::WebcamConfiguration result;
-
-  int pan;
-  if (webcam->GetPan(&pan))
-    result.pan.reset(new double(pan));
-
-  int tilt;
-  if (webcam->GetTilt(&tilt))
-    result.tilt.reset(new double(tilt));
-
-  int zoom;
-  if (webcam->GetZoom(&zoom))
-    result.zoom.reset(new double(zoom));
-
-  SetResult(result.ToValue().release());
+  webcam->GetPan(base::Bind(&WebcamPrivateGetFunction::OnGetWebcamParameters,
+                            this, INQUIRY_PAN));
+  webcam->GetTilt(base::Bind(&WebcamPrivateGetFunction::OnGetWebcamParameters,
+                             this, INQUIRY_TILT));
+  webcam->GetZoom(base::Bind(&WebcamPrivateGetFunction::OnGetWebcamParameters,
+                             this, INQUIRY_ZOOM));
 
   return true;
+}
+
+void WebcamPrivateGetFunction::OnGetWebcamParameters(InquiryType type,
+                                                     bool success,
+                                                     int value) {
+  if (!success_)
+    return;
+  success_ = success_ && success;
+
+  if (!success_) {
+    SetError(kGetWebcamPTZError);
+    SendResponse(false);
+  } else {
+    switch (type) {
+      case INQUIRY_PAN:
+        pan_ = value;
+        get_pan_ = true;
+        break;
+      case INQUIRY_TILT:
+        tilt_ = value;
+        get_tilt_ = true;
+        break;
+      case INQUIRY_ZOOM:
+        zoom_ = value;
+        get_zoom_ = true;
+        break;
+    }
+    if (get_pan_ && get_tilt_ && get_zoom_) {
+      webcam_private::WebcamConfiguration result;
+      result.pan.reset(new double(pan_));
+      result.tilt.reset(new double(tilt_));
+      result.zoom.reset(new double(zoom_));
+      SetResult(result.ToValue().release());
+      SendResponse(true);
+    }
+  }
 }
 
 WebcamPrivateResetFunction::WebcamPrivateResetFunction() {
@@ -333,7 +385,7 @@ WebcamPrivateResetFunction::WebcamPrivateResetFunction() {
 WebcamPrivateResetFunction::~WebcamPrivateResetFunction() {
 }
 
-bool WebcamPrivateResetFunction::RunSync() {
+bool WebcamPrivateResetFunction::RunAsync() {
   scoped_ptr<webcam_private::Reset::Params> params(
       webcam_private::Reset::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -345,9 +397,15 @@ bool WebcamPrivateResetFunction::RunSync() {
     return false;
   }
 
-  webcam->Reset(params->config.pan, params->config.tilt, params->config.zoom);
+  webcam->Reset(params->config.pan, params->config.tilt, params->config.zoom,
+                base::Bind(&WebcamPrivateResetFunction::OnResetWebcam, this));
 
   return true;
+}
+
+void WebcamPrivateResetFunction::OnResetWebcam(bool success) {
+  if (!success)
+    SetError(kResetWebcamError);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<WebcamPrivateAPI>>

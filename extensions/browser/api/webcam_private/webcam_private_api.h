@@ -91,8 +91,6 @@ class WebcamPrivateOpenSerialWebcamFunction : public AsyncExtensionFunction {
 
  protected:
   ~WebcamPrivateOpenSerialWebcamFunction() override;
-
-  // AsyncExtensionFunction:
   bool RunAsync() override;
 
  private:
@@ -109,50 +107,67 @@ class WebcamPrivateCloseWebcamFunction : public AsyncExtensionFunction {
 
  protected:
   ~WebcamPrivateCloseWebcamFunction() override;
-
-  // AsyncApiFunction:
   bool RunAsync() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateCloseWebcamFunction);
 };
 
-class WebcamPrivateSetFunction : public SyncExtensionFunction {
+class WebcamPrivateSetFunction : public AsyncExtensionFunction {
  public:
   WebcamPrivateSetFunction();
   DECLARE_EXTENSION_FUNCTION("webcamPrivate.set", WEBCAMPRIVATE_SET);
 
  protected:
   ~WebcamPrivateSetFunction() override;
-  bool RunSync() override;
+  bool RunAsync() override;
 
  private:
+  void OnSetWebcamParameters(bool success);
+
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateSetFunction);
 };
 
-class WebcamPrivateGetFunction : public SyncExtensionFunction {
+class WebcamPrivateGetFunction : public AsyncExtensionFunction {
  public:
   WebcamPrivateGetFunction();
   DECLARE_EXTENSION_FUNCTION("webcamPrivate.get", WEBCAMPRIVATE_GET);
 
  protected:
   ~WebcamPrivateGetFunction() override;
-  bool RunSync() override;
+  bool RunAsync() override;
 
  private:
+  enum InquiryType {
+    INQUIRY_PAN,
+    INQUIRY_TILT,
+    INQUIRY_ZOOM,
+  };
+  void OnGetWebcamParameters(InquiryType type, bool success, int value);
+
+  int pan_;
+  int tilt_;
+  int zoom_;
+  bool get_pan_;
+  bool get_tilt_;
+  bool get_zoom_;
+  bool success_;
+
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateGetFunction);
 };
 
-class WebcamPrivateResetFunction : public SyncExtensionFunction {
+class WebcamPrivateResetFunction : public AsyncExtensionFunction {
  public:
   WebcamPrivateResetFunction();
   DECLARE_EXTENSION_FUNCTION("webcamPrivate.reset", WEBCAMPRIVATE_RESET);
 
  protected:
   ~WebcamPrivateResetFunction() override;
-  bool RunSync() override;
+  bool RunAsync() override;
 
  private:
+  void OnResetWebcam(bool success);
+
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateResetFunction);
 };
 

@@ -31,15 +31,23 @@ class Webcam : public base::RefCounted<Webcam> {
 
   Webcam();
 
-  virtual void Reset(bool pan, bool tilt, bool zoom) = 0;
-  virtual bool GetPan(int* value) = 0;
-  virtual bool GetTilt(int* value) = 0;
-  virtual bool GetZoom(int* value) = 0;
-  virtual bool SetPan(int value) = 0;
-  virtual bool SetTilt(int value) = 0;
-  virtual bool SetZoom(int value) = 0;
-  virtual bool SetPanDirection(PanDirection direction) = 0;
-  virtual bool SetTiltDirection(TiltDirection direction) = 0;
+  using GetPTZCompleteCallback = base::Callback<void(bool, int)>;
+  using SetPTZCompleteCallback = base::Callback<void(bool)>;
+
+  virtual void GetPan(const GetPTZCompleteCallback& callback) = 0;
+  virtual void GetTilt(const GetPTZCompleteCallback& callback) = 0;
+  virtual void GetZoom(const GetPTZCompleteCallback& callback) = 0;
+  virtual void SetPan(int value, const SetPTZCompleteCallback& callback) = 0;
+  virtual void SetTilt(int value, const SetPTZCompleteCallback& callback) = 0;
+  virtual void SetZoom(int value, const SetPTZCompleteCallback& callback) = 0;
+  virtual void SetPanDirection(PanDirection direction,
+                               const SetPTZCompleteCallback& callback) = 0;
+  virtual void SetTiltDirection(TiltDirection direction,
+                                const SetPTZCompleteCallback& callback) = 0;
+  virtual void Reset(bool pan,
+                     bool tilt,
+                     bool zoom,
+                     const SetPTZCompleteCallback& callback) = 0;
 
  protected:
   friend class base::RefCounted<Webcam>;

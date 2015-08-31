@@ -85,55 +85,38 @@ bool V4L2Webcam::GetWebcamParameter(int fd, uint32_t control_id, int* value) {
   return true;
 }
 
-void V4L2Webcam::Reset(bool pan, bool tilt, bool zoom) {
-  if (pan || tilt) {
-    if (EnsureLogitechCommandsMapped()) {
-      SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD,
-                         kLogitechMenuIndexGoHome);
-    } else {
-      if (pan) {
-        struct v4l2_control v4l2_ctrl = {V4L2_CID_PAN_RESET};
-        HANDLE_EINTR(ioctl(fd_.get(), VIDIOC_S_CTRL, &v4l2_ctrl));
-      }
-
-      if (tilt) {
-        struct v4l2_control v4l2_ctrl = {V4L2_CID_TILT_RESET};
-        HANDLE_EINTR(ioctl(fd_.get(), VIDIOC_S_CTRL, &v4l2_ctrl));
-      }
-    }
-  }
-
-  if (zoom) {
-    const int kDefaultZoom = 100;
-    SetWebcamParameter(fd_.get(), V4L2_CID_ZOOM_ABSOLUTE, kDefaultZoom);
-  }
+void V4L2Webcam::GetPan(const GetPTZCompleteCallback& callback) {
+  int value = 0;
+  bool success = GetWebcamParameter(fd_.get(), V4L2_CID_PAN_ABSOLUTE, &value);
+  callback.Run(success, value);
 }
 
-bool V4L2Webcam::GetPan(int* value) {
-  return GetWebcamParameter(fd_.get(), V4L2_CID_PAN_ABSOLUTE, value);
+void V4L2Webcam::GetTilt(const GetPTZCompleteCallback& callback) {
+  int value = 0;
+  bool success = GetWebcamParameter(fd_.get(), V4L2_CID_TILT_ABSOLUTE, &value);
+  callback.Run(success, value);
 }
 
-bool V4L2Webcam::GetTilt(int* value) {
-  return GetWebcamParameter(fd_.get(), V4L2_CID_TILT_ABSOLUTE, value);
+void V4L2Webcam::GetZoom(const GetPTZCompleteCallback& callback) {
+  int value = 0;
+  bool success = GetWebcamParameter(fd_.get(), V4L2_CID_ZOOM_ABSOLUTE, &value);
+  callback.Run(success, value);
 }
 
-bool V4L2Webcam::GetZoom(int* value) {
-  return GetWebcamParameter(fd_.get(), V4L2_CID_ZOOM_ABSOLUTE, value);
+void V4L2Webcam::SetPan(int value, const SetPTZCompleteCallback& callback) {
+  callback.Run(SetWebcamParameter(fd_.get(), V4L2_CID_PAN_ABSOLUTE, value));
 }
 
-bool V4L2Webcam::SetPan(int value) {
-  return SetWebcamParameter(fd_.get(), V4L2_CID_PAN_ABSOLUTE, value);
+void V4L2Webcam::SetTilt(int value, const SetPTZCompleteCallback& callback) {
+  callback.Run(SetWebcamParameter(fd_.get(), V4L2_CID_TILT_ABSOLUTE, value));
 }
 
-bool V4L2Webcam::SetTilt(int value) {
-  return SetWebcamParameter(fd_.get(), V4L2_CID_TILT_ABSOLUTE, value);
+void V4L2Webcam::SetZoom(int value, const SetPTZCompleteCallback& callback) {
+  callback.Run(SetWebcamParameter(fd_.get(), V4L2_CID_ZOOM_ABSOLUTE, value));
 }
 
-bool V4L2Webcam::SetZoom(int value) {
-  return SetWebcamParameter(fd_.get(), V4L2_CID_ZOOM_ABSOLUTE, value);
-}
-
-bool V4L2Webcam::SetPanDirection(PanDirection direction) {
+void V4L2Webcam::SetPanDirection(PanDirection direction,
+                                 const SetPTZCompleteCallback& callback) {
   int direction_value = 0;
   switch (direction) {
     case PAN_STOP:
@@ -148,10 +131,12 @@ bool V4L2Webcam::SetPanDirection(PanDirection direction) {
       direction_value = -1;
       break;
   }
-  return SetWebcamParameter(fd_.get(), V4L2_CID_PAN_SPEED, direction_value);
+  callback.Run(
+      SetWebcamParameter(fd_.get(), V4L2_CID_PAN_SPEED, direction_value));
 }
 
-bool V4L2Webcam::SetTiltDirection(TiltDirection direction) {
+void V4L2Webcam::SetTiltDirection(TiltDirection direction,
+                                  const SetPTZCompleteCallback& callback) {
   int direction_value = 0;
   switch (direction) {
     case TILT_STOP:
@@ -166,7 +151,49 @@ bool V4L2Webcam::SetTiltDirection(TiltDirection direction) {
       direction_value = -1;
       break;
   }
-  return SetWebcamParameter(fd_.get(), V4L2_CID_TILT_SPEED, direction_value);
+  callback.Run(
+      SetWebcamParameter(fd_.get(), V4L2_CID_TILT_SPEED, direction_value));
+}
+
+void V4L2Webcam::Reset(bool pan,
+                       bool tilt,
+                       bool zoom,
+                       const SetPTZCompleteCallback& callback) {
+  if (pan || tilt) {
+    if (EnsureLogitechCommandsMapped()) {
+      if (!SetWebcamParameter(fd_.get(), V4L2_CID_PANTILT_CMD,
+                              kLogitechMenuIndexGoHome)) {
+        callback.Run(false);
+        return;
+      }
+    } else {
+      if (pan) {
+        struct v4l2_control v4l2_ctrl = {V4L2_CID_PAN_RESET};
+        if (!HANDLE_EINTR(ioctl(fd_.get(), VIDIOC_S_CTRL, &v4l2_ctrl))) {
+          callback.Run(false);
+          return;
+        }
+      }
+
+      if (tilt) {
+        struct v4l2_control v4l2_ctrl = {V4L2_CID_TILT_RESET};
+        if (!HANDLE_EINTR(ioctl(fd_.get(), VIDIOC_S_CTRL, &v4l2_ctrl))) {
+          callback.Run(false);
+          return;
+        }
+      }
+    }
+  }
+
+  if (zoom) {
+    const int kDefaultZoom = 100;
+    if (!SetWebcamParameter(fd_.get(), V4L2_CID_ZOOM_ABSOLUTE, kDefaultZoom)) {
+      callback.Run(false);
+      return;
+    }
+  }
+
+  callback.Run(true);
 }
 
 }  // namespace extensions

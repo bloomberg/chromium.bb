@@ -30,11 +30,9 @@ class ViscaWebcam : public Webcam {
  private:
   ~ViscaWebcam() override;
 
-  enum CommandType {
-    COMMAND,
+  enum InquiryType {
     INQUIRY_PAN,
     INQUIRY_TILT,
-    INQUIRY_PAN_TILT,
     INQUIRY_ZOOM,
   };
 
@@ -66,24 +64,34 @@ class ViscaWebcam : public Webcam {
   void OnReceiveCompleted(const CommandCompleteCallback& callback,
                           const std::vector<char>& data,
                           api::serial::ReceiveError error);
+
   // Callback function that will be called after the send and reply of a command
-  // are both completed. Update |value| according to |type| and |response| if
-  // necessory.
-  void OnCommandCompleted(CommandType type,
-                          int* value,
+  // are both completed.
+  void OnCommandCompleted(const SetPTZCompleteCallback& callback,
+                          bool success,
+                          const std::vector<char>& response);
+  // Callback function that will be called after the send and reply of an
+  // inquiry are both completed.
+  void OnInquiryCompleted(InquiryType type,
+                          const GetPTZCompleteCallback& callback,
                           bool success,
                           const std::vector<char>& response);
 
   // Webcam Overrides:
-  void Reset(bool pan, bool tilt, bool zoom) override;
-  bool GetPan(int* value) override;
-  bool GetTilt(int* value) override;
-  bool GetZoom(int* value) override;
-  bool SetPan(int value) override;
-  bool SetTilt(int value) override;
-  bool SetZoom(int value) override;
-  bool SetPanDirection(PanDirection direction) override;
-  bool SetTiltDirection(TiltDirection direction) override;
+  void GetPan(const GetPTZCompleteCallback& callback) override;
+  void GetTilt(const GetPTZCompleteCallback& callback) override;
+  void GetZoom(const GetPTZCompleteCallback& callback) override;
+  void SetPan(int value, const SetPTZCompleteCallback& callback) override;
+  void SetTilt(int value, const SetPTZCompleteCallback& callback) override;
+  void SetZoom(int value, const SetPTZCompleteCallback& callback) override;
+  void SetPanDirection(PanDirection direction,
+                       const SetPTZCompleteCallback& callback) override;
+  void SetTiltDirection(TiltDirection direction,
+                        const SetPTZCompleteCallback& callback) override;
+  void Reset(bool pan,
+             bool tilt,
+             bool zoom,
+             const SetPTZCompleteCallback& callback) override;
 
   const std::string path_;
   const std::string extension_id_;

@@ -146,6 +146,7 @@ void ViscaWebcam::OnAddressSetCompleted(
     const OpenCompleteCallback& open_callback,
     bool success,
     const std::vector<char>& response) {
+  commands_.pop_front();
   if (!success) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(open_callback, false));
@@ -159,27 +160,24 @@ void ViscaWebcam::OnAddressSetCompleted(
 void ViscaWebcam::OnClearAllCompleted(const OpenCompleteCallback& open_callback,
                                       bool success,
                                       const std::vector<char>& response) {
+  commands_.pop_front();
   if (!success) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(open_callback, false));
   } else {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(open_callback, true));
-    // Get the current pan and tilt position to initilize |pan| and |tilt|.
-    int value;
-    Send(kGetPanTiltCommand,
-         base::Bind(&ViscaWebcam::OnCommandCompleted,
-                    weak_ptr_factory_.GetWeakPtr(), INQUIRY_PAN_TILT, &value));
   }
 }
 
 void ViscaWebcam::Send(const std::vector<char>& command,
                        const CommandCompleteCallback& callback) {
-  if (!commands_.empty() ||
-      !serial_connection_->Send(
-          command, base::Bind(&ViscaWebcam::OnSendCompleted,
-                              weak_ptr_factory_.GetWeakPtr(), callback))) {
-    commands_.push_back(std::make_pair(command, callback));
+  commands_.push_back(std::make_pair(command, callback));
+  // If this is the only command in the queue, send it now.
+  if (commands_.size() == 1) {
+    serial_connection_->Send(
+        command, base::Bind(&ViscaWebcam::OnSendCompleted,
+                            weak_ptr_factory_.GetWeakPtr(), callback));
   }
 }
 
@@ -235,91 +233,91 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
   }
 }
 
-void ViscaWebcam::OnCommandCompleted(CommandType type,
-                                     int* value,
+void ViscaWebcam::OnCommandCompleted(const SetPTZCompleteCallback& callback,
                                      bool success,
                                      const std::vector<char>& response) {
   // TODO(xdai): Error handling according to |response|.
-  if (!success)
-    return;
-
-  switch (type) {
-    case COMMAND:
-      break;
-    case INQUIRY_PAN:
-      pan_ = ((int(response[2]) & 0x0F) << 12) +
-             ((int(response[3]) & 0x0F) << 8) +
-             ((int(response[4]) & 0x0F) << 4) + (int(response[5]) & 0x0F);
-      *value = pan_;
-      break;
-    case INQUIRY_TILT:
-      tilt_ = ((int(response[6]) & 0x0F) << 12) +
-              ((int(response[7]) & 0x0F) << 8) +
-              ((int(response[8]) & 0x0F) << 4) + (int(response[9]) & 0x0F);
-      *value = tilt_;
-      break;
-    case INQUIRY_PAN_TILT:
-      pan_ = ((int(response[2]) & 0x0F) << 12) +
-             ((int(response[3]) & 0x0F) << 8) +
-             ((int(response[4]) & 0x0F) << 4) + (int(response[5]) & 0x0F);
-      tilt_ = ((int(response[6]) & 0x0F) << 12) +
-              ((int(response[7]) & 0x0F) << 8) +
-              ((int(response[8]) & 0x0F) << 4) + (int(response[9]) & 0x0F);
-      break;
-    case INQUIRY_ZOOM:
-      *value = ((int(response[2]) & 0x0F) << 12) +
-               ((int(response[3]) & 0x0F) << 8) +
-               ((int(response[4]) & 0x0F) << 4) + (int(response[5]) & 0x0F);
-      break;
-  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, success));
+  commands_.pop_front();
 
   // If there are pending commands, process the next one.
   if (!commands_.empty()) {
-    const std::vector<char> command = commands_.front().first;
-    const CommandCompleteCallback callback = commands_.front().second;
-    commands_.pop_front();
+    const std::vector<char> next_command = commands_.front().first;
+    const CommandCompleteCallback next_callback = commands_.front().second;
     serial_connection_->Send(
-        command, base::Bind(&ViscaWebcam::OnSendCompleted,
-                            weak_ptr_factory_.GetWeakPtr(), callback));
+        next_command,
+        base::Bind(&ViscaWebcam::OnSendCompleted,
+                   weak_ptr_factory_.GetWeakPtr(), next_callback));
   }
 }
 
-void ViscaWebcam::Reset(bool pan, bool tilt, bool zoom) {
-  int value;
-  // pan and tilt are always reset together in Visca Webcams.
-  if (pan || tilt) {
-    Send(kResetPanTiltCommand,
-         base::Bind(&ViscaWebcam::OnCommandCompleted,
-                    weak_ptr_factory_.GetWeakPtr(), COMMAND, &value));
+void ViscaWebcam::OnInquiryCompleted(InquiryType type,
+                                     const GetPTZCompleteCallback& callback,
+                                     bool success,
+                                     const std::vector<char>& response) {
+  int value = 0;
+  if (!success) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, false, value));
+  } else {
+    switch (type) {
+      case INQUIRY_PAN:
+        // See kGetPanTiltCommand for the format of response.
+        pan_ = ((int(response[2]) & 0x0F) << 12) +
+               ((int(response[3]) & 0x0F) << 8) +
+               ((int(response[4]) & 0x0F) << 4) + (int(response[5]) & 0x0F);
+        value = pan_;
+        break;
+      case INQUIRY_TILT:
+        // See kGetPanTiltCommand for the format of response.
+        tilt_ = ((int(response[6]) & 0x0F) << 12) +
+                ((int(response[7]) & 0x0F) << 8) +
+                ((int(response[8]) & 0x0F) << 4) + (int(response[9]) & 0x0F);
+        value = tilt_;
+        break;
+      case INQUIRY_ZOOM:
+        // See kGetZoomCommand for the format of response.
+        value = ((int(response[2]) & 0x0F) << 12) +
+                ((int(response[3]) & 0x0F) << 8) +
+                ((int(response[4]) & 0x0F) << 4) + (int(response[5]) & 0x0F);
+        break;
+    }
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, true, value));
   }
-  if (zoom) {
-    const int default_zoom = 1;
-    SetZoom(default_zoom);
+  commands_.pop_front();
+
+  // If there are pending commands, process the next one.
+  if (!commands_.empty()) {
+    const std::vector<char> next_command = commands_.front().first;
+    const CommandCompleteCallback next_callback = commands_.front().second;
+    serial_connection_->Send(
+        next_command,
+        base::Bind(&ViscaWebcam::OnSendCompleted,
+                   weak_ptr_factory_.GetWeakPtr(), next_callback));
   }
 }
 
-bool ViscaWebcam::GetPan(int* value) {
+void ViscaWebcam::GetPan(const GetPTZCompleteCallback& callback) {
   Send(kGetPanTiltCommand,
-       base::Bind(&ViscaWebcam::OnCommandCompleted,
-                  weak_ptr_factory_.GetWeakPtr(), INQUIRY_PAN, value));
-  return true;
+       base::Bind(&ViscaWebcam::OnInquiryCompleted,
+                  weak_ptr_factory_.GetWeakPtr(), INQUIRY_PAN, callback));
 }
 
-bool ViscaWebcam::GetTilt(int* value) {
+void ViscaWebcam::GetTilt(const GetPTZCompleteCallback& callback) {
   Send(kGetPanTiltCommand,
-       base::Bind(&ViscaWebcam::OnCommandCompleted,
-                  weak_ptr_factory_.GetWeakPtr(), INQUIRY_TILT, value));
-  return true;
+       base::Bind(&ViscaWebcam::OnInquiryCompleted,
+                  weak_ptr_factory_.GetWeakPtr(), INQUIRY_TILT, callback));
 }
 
-bool ViscaWebcam::GetZoom(int* value) {
+void ViscaWebcam::GetZoom(const GetPTZCompleteCallback& callback) {
   Send(kGetZoomCommand,
-       base::Bind(&ViscaWebcam::OnCommandCompleted,
-                  weak_ptr_factory_.GetWeakPtr(), INQUIRY_ZOOM, value));
-  return true;
+       base::Bind(&ViscaWebcam::OnInquiryCompleted,
+                  weak_ptr_factory_.GetWeakPtr(), INQUIRY_ZOOM, callback));
 }
 
-bool ViscaWebcam::SetPan(int value) {
+void ViscaWebcam::SetPan(int value, const SetPTZCompleteCallback& callback) {
   pan_ = value;
   std::vector<char> command = kSetPanTiltCommand;
   command[6] |= ((pan_ & 0xF000) >> 12);
@@ -331,11 +329,10 @@ bool ViscaWebcam::SetPan(int value) {
   command[12] |= ((tilt_ & 0x00F0) >> 4);
   command[13] |= (tilt_ & 0x000F);
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           weak_ptr_factory_.GetWeakPtr(), COMMAND, &value));
-  return true;
+                           weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-bool ViscaWebcam::SetTilt(int value) {
+void ViscaWebcam::SetTilt(int value, const SetPTZCompleteCallback& callback) {
   tilt_ = value;
   std::vector<char> command = kSetPanTiltCommand;
   command[6] |= ((pan_ & 0xF000) >> 12);
@@ -347,22 +344,21 @@ bool ViscaWebcam::SetTilt(int value) {
   command[12] |= ((tilt_ & 0x00F0) >> 4);
   command[13] |= (tilt_ & 0x000F);
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           weak_ptr_factory_.GetWeakPtr(), COMMAND, &value));
-  return true;
+                           weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-bool ViscaWebcam::SetZoom(int value) {
+void ViscaWebcam::SetZoom(int value, const SetPTZCompleteCallback& callback) {
   std::vector<char> command = kSetZoomCommand;
   command[4] |= ((value & 0xF000) >> 12);
   command[5] |= ((value & 0x0F00) >> 8);
   command[6] |= ((value & 0x00F0) >> 4);
   command[7] |= (value & 0x000F);
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           weak_ptr_factory_.GetWeakPtr(), COMMAND, &value));
-  return true;
+                           weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-bool ViscaWebcam::SetPanDirection(PanDirection direction) {
+void ViscaWebcam::SetPanDirection(PanDirection direction,
+                                  const SetPTZCompleteCallback& callback) {
   std::vector<char> command = kPTStopCommand;
   switch (direction) {
     case PAN_STOP:
@@ -375,11 +371,11 @@ bool ViscaWebcam::SetPanDirection(PanDirection direction) {
       break;
   }
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           weak_ptr_factory_.GetWeakPtr(), COMMAND, &pan_));
-  return true;
+                           weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-bool ViscaWebcam::SetTiltDirection(TiltDirection direction) {
+void ViscaWebcam::SetTiltDirection(TiltDirection direction,
+                                   const SetPTZCompleteCallback& callback) {
   std::vector<char> command = kPTStopCommand;
   switch (direction) {
     case TILT_STOP:
@@ -392,8 +388,23 @@ bool ViscaWebcam::SetTiltDirection(TiltDirection direction) {
       break;
   }
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           weak_ptr_factory_.GetWeakPtr(), COMMAND, &tilt_));
-  return true;
+                           weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void ViscaWebcam::Reset(bool pan,
+                        bool tilt,
+                        bool zoom,
+                        const SetPTZCompleteCallback& callback) {
+  // pan and tilt are always reset together in Visca Webcams.
+  if (pan || tilt) {
+    Send(kResetPanTiltCommand,
+         base::Bind(&ViscaWebcam::OnCommandCompleted,
+                    weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+  if (zoom) {
+    const int default_zoom = 1;
+    SetZoom(default_zoom, callback);
+  }
 }
 
 }  // namespace extensions
