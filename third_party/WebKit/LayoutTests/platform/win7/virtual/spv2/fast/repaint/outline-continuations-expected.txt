@@ -6,14 +6,10 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [18, 166, 200, 20],
         [18, 148, 200, 18],
-        [18, 128, 200, 20],
         [18, 110, 200, 18],
-        [16, 164, 204, 24],
         [16, 146, 204, 42],
         [16, 146, 202, 21],
-        [16, 126, 204, 62],
         [16, 108, 204, 80],
         [16, 108, 204, 80]
       ],
@@ -26,10 +22,8 @@
         "LayoutInline SPAN id='outer'",
         "InlineFlowBox",
         "LayoutBlockFlow (anonymous)",
-        "LayoutBlockFlow (anonymous)",
         "LayoutInline SPAN id='outer'",
         "InlineFlowBox",
-        "LayoutBlockFlow (anonymous)",
         "LayoutBlockFlow (anonymous)",
         "LayoutInline SPAN id='outer'"
       ]
