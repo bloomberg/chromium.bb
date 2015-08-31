@@ -1229,6 +1229,15 @@ scoped_ptr<google_breakpad::ExceptionHandler> InitializeCrashReporting(
   base::string16 pipe_name = kGoogleUpdatePipeName;
   pipe_name += user_sid;
 
+#ifdef _WIN64
+  // The protocol for connecting to the out-of-process Breakpad crash
+  // reporter is different for x86-32 and x86-64: the message sizes
+  // are different because the message struct contains a pointer.  As
+  // a result, there are two different named pipes to connect to.  The
+  // 64-bit one is distinguished with an "-x64" suffix.
+  pipe_name += L"-x64";
+#endif
+
   return scoped_ptr<google_breakpad::ExceptionHandler>(
       new google_breakpad::ExceptionHandler(
           temp_directory.value(), NULL, NULL, NULL,
