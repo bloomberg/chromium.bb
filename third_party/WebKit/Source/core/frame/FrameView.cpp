@@ -631,6 +631,11 @@ void FrameView::recalcOverflowAfterStyleChange()
 
     layoutView->recalcOverflowAfterStyleChange();
 
+    // Changing overflow should notify scrolling coordinator to ensures that it
+    // updates non-fast scroll rects even if there is no layout.
+    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+        scrollingCoordinator->notifyOverflowUpdated();
+
     IntRect documentRect = layoutView->documentRect();
     if (scrollOrigin() == -documentRect.location() && contentsSize() == documentRect.size())
         return;

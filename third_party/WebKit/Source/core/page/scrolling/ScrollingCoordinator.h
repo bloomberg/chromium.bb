@@ -66,6 +66,8 @@ public:
 
     // Called when any frame has done its layout.
     void notifyLayoutUpdated();
+    // Called when any frame recalculates its overflows after style change.
+    void notifyOverflowUpdated();
 
     void updateAfterCompositingChangeIfNeeded();
 

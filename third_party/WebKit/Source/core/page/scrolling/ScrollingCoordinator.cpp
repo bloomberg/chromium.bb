@@ -137,6 +137,11 @@ void ScrollingCoordinator::notifyLayoutUpdated()
     m_shouldScrollOnMainThreadDirty = true;
 }
 
+void ScrollingCoordinator::notifyOverflowUpdated()
+{
+    m_scrollGestureRegionIsDirty = true;
+}
+
 void ScrollingCoordinator::scrollableAreasDidChange()
 {
     ASSERT(m_page);
