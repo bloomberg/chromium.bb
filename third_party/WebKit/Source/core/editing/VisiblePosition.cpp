@@ -709,17 +709,10 @@ UChar32 characterBefore(const VisiblePosition& visiblePosition)
     return characterAfter(previousPositionOf(visiblePosition));
 }
 
-// TODO(yosin) We should move |localCaretRect()| to "VisibleUnits.cpp".
-static LayoutRect localCaretRectOf(const VisiblePosition& visiblePosition, LayoutObject*& layoutObject)
-{
-    PositionWithAffinity positionWithAffinity(visiblePosition.deepEquivalent(), visiblePosition.affinity());
-    return localCaretRectOfPosition(positionWithAffinity, layoutObject);
-}
-
 IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition)
 {
     LayoutObject* layoutObject;
-    LayoutRect localRect = localCaretRectOf(visiblePosition, layoutObject);
+    LayoutRect localRect = localCaretRectOfPosition(visiblePosition.toPositionWithAffinity(), layoutObject);
     if (localRect.isEmpty() || !layoutObject)
         return IntRect();
 
@@ -735,7 +728,7 @@ int lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition& visib
         return 0;
 
     LayoutObject* layoutObject;
-    LayoutRect localRect = localCaretRectOf(visiblePosition, layoutObject);
+    LayoutRect localRect = localCaretRectOfPosition(visiblePosition.toPositionWithAffinity(), layoutObject);
     if (localRect.isEmpty() || !layoutObject)
         return 0;
 
