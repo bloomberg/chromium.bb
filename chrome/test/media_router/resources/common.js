@@ -12,8 +12,12 @@ var startedSession = null;
 var joinedSession = null;
 var presentationUrl = "http://www.google.com/#__testprovider__=true";
 var startSessionRequest = new PresentationRequest(presentationUrl);
+var defaultRequestSessionId = null;
 
 window.navigator.presentation.defaultRequest = startSessionRequest;
+window.navigator.presentation.defaultRequest.onsessionconnect = function(e) {
+  defaultRequestSessionId = e.session.id;
+};
 
 /**
  * Waits until one device is available.

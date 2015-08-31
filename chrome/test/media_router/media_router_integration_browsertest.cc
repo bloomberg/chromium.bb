@@ -40,11 +40,21 @@ const std::string kStartSessionScript = "startSession();";
 const std::string kStopSessionScript = "stopSession()";
 const std::string kWaitDeviceScript = "waitUntilDeviceAvailable();";
 
-void GetStartedSessionId(content::WebContents* web_contents,
-                         std::string* session_id) {
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+std::string GetStartedSessionId(content::WebContents* web_contents) {
+  std::string session_id;
+  CHECK(content::ExecuteScriptAndExtractString(
       web_contents, "window.domAutomationController.send(startedSession.id)",
-      session_id));
+      &session_id));
+  return session_id;
+}
+
+std::string GetDefaultRequestSessionId(content::WebContents* web_contents) {
+  std::string session_id;
+  CHECK(content::ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send(defaultRequestSessionId)",
+      &session_id));
+  return session_id;
 }
 
 }  // namespace
@@ -225,6 +235,14 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   ChooseSink(web_contents, "id1", "");
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
   Wait(base::TimeDelta::FromSeconds(5));
+
+  std::string session_id(GetStartedSessionId(web_contents));
+  EXPECT_FALSE(session_id.empty());
+
+  std::string default_request_session_id(
+      GetDefaultRequestSessionId(web_contents));
+  EXPECT_EQ(session_id, default_request_session_id);
+
   ExecuteJavaScriptAPI(web_contents, kStopSessionScript);
 }
 
@@ -263,8 +281,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_JoinSession) {
   StartSession(web_contents);
   ChooseSink(web_contents, "id1", "");
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
-  std::string session_id;
-  GetStartedSessionId(web_contents, &session_id);
+  std::string session_id(GetStartedSessionId(web_contents));
 
   OpenTestPageInNewTab(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* new_web_contents =
@@ -292,8 +309,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   StartSession(web_contents);
   ChooseSink(web_contents, "id1", "");
   ExecuteJavaScriptAPI(web_contents, kCheckSessionScript);
-  std::string session_id;
-  GetStartedSessionId(web_contents, &session_id);
+  std::string session_id(GetStartedSessionId(web_contents));
 
   SetTestData(FILE_PATH_LITERAL("fail_join_session.json"));
   OpenTestPage(FILE_PATH_LITERAL("fail_join_session.html"));
