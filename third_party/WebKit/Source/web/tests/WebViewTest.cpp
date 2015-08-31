@@ -31,6 +31,7 @@
 #include "config.h"
 #include "public/web/WebView.h"
 
+#include "bindings/core/v8/V8Document.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/FrameSelection.h"
@@ -3047,6 +3048,23 @@ TEST_F(WebViewTest, TestRecordFrameTimingEvents)
         double docDuration = docFinishTime - docStartTime;
         ASSERT_DOUBLE_EQ(docDuration, renders[i]->duration());
     }
+}
+
+
+TEST_F(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult)
+{
+    ViewCreatingWebViewClient client;
+    FrameTestHelpers::WebViewHelper mainWebView;
+    mainWebView.initializeAndLoad("about:blank", true, 0, &client);
+    mainWebView.webViewImpl()->page()->settings().setJavaScriptCanOpenWindowsAutomatically(true);
+
+    WebFrame* frame = mainWebView.webView()->mainFrame();
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    v8::Local<v8::Value> v8Value = frame->executeScriptAndReturnValue(WebScriptSource("var win = window.open('javascript:false'); win.document"));
+    ASSERT_TRUE(v8Value->IsObject());
+    Document* document = V8Document::toImplWithTypeCheck(v8::Isolate::GetCurrent(), v8Value);
+    ASSERT_TRUE(document);
+    EXPECT_FALSE(document->frame()->isLoading());
 }
 
 } // namespace blink

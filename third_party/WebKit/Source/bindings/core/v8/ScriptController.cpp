@@ -484,7 +484,8 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
         || (!shouldBypassMainWorldContentSecurityPolicy && !frame()->document()->contentSecurityPolicy()->allowJavaScriptURLs(frame()->document()->url(), eventHandlerPosition().m_line)))
         return true;
 
-    if (frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument())
+    bool progressNotificationsNeeded = frame()->loader().stateMachine()->isDisplayingInitialEmptyDocument() && !frame()->isLoading();
+    if (progressNotificationsNeeded)
         frame()->loader().progress().progressStarted();
 
     // We need to hold onto the LocalFrame here because executing script can
@@ -505,8 +506,11 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
     if (!frame()->page())
         return true;
 
-    if (result.IsEmpty() || !result->IsString())
+    if (result.IsEmpty() || !result->IsString()) {
+        if (progressNotificationsNeeded)
+            frame()->loader().progress().progressCompleted();
         return true;
+    }
     String scriptResult = toCoreString(v8::Local<v8::String>::Cast(result));
 
     // We're still in a frame, so there should be a DocumentLoader.
