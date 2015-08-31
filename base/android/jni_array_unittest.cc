@@ -112,6 +112,61 @@ TEST(JniArray, JavaIntArrayToIntVector) {
   }
 }
 
+TEST(JniArray, JavaLongArrayToInt64Vector) {
+  const int64 kInt64s[] = {0LL, 1LL, -1LL};
+  const size_t kLen = arraysize(kInt64s);
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jlongArray> jlongs(env, env->NewLongArray(kLen));
+  ASSERT_TRUE(jlongs.obj());
+
+  for (size_t i = 0; i < kLen; ++i) {
+    jlong j = static_cast<jlong>(kInt64s[i]);
+    env->SetLongArrayRegion(jlongs.obj(), i, 1, &j);
+    ASSERT_FALSE(HasException(env));
+  }
+
+  std::vector<int64> int64s;
+  JavaLongArrayToInt64Vector(env, jlongs.obj(), &int64s);
+
+  ASSERT_EQ(static_cast<jsize>(int64s.size()),
+            env->GetArrayLength(jlongs.obj()));
+
+  jlong value;
+  for (size_t i = 0; i < kLen; ++i) {
+    env->GetLongArrayRegion(jlongs.obj(), i, 1, &value);
+    ASSERT_EQ(int64s[i], value);
+    ASSERT_EQ(kInt64s[i], int64s[i]);
+  }
+}
+
+TEST(JniArray, JavaLongArrayToLongVector) {
+  const int64 kInt64s[] = {0LL, 1LL, -1LL};
+  const size_t kLen = arraysize(kInt64s);
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jlongArray> jlongs(env, env->NewLongArray(kLen));
+  ASSERT_TRUE(jlongs.obj());
+
+  for (size_t i = 0; i < kLen; ++i) {
+    jlong j = static_cast<jlong>(kInt64s[i]);
+    env->SetLongArrayRegion(jlongs.obj(), i, 1, &j);
+    ASSERT_FALSE(HasException(env));
+  }
+
+  std::vector<jlong> jlongs_vector;
+  JavaLongArrayToLongVector(env, jlongs.obj(), &jlongs_vector);
+
+  ASSERT_EQ(static_cast<jsize>(jlongs_vector.size()),
+            env->GetArrayLength(jlongs.obj()));
+
+  jlong value;
+  for (size_t i = 0; i < kLen; ++i) {
+    env->GetLongArrayRegion(jlongs.obj(), i, 1, &value);
+    ASSERT_EQ(jlongs_vector[i], value);
+  }
+}
+
 TEST(JniArray, JavaFloatArrayToFloatVector) {
   const float kFloats[] = {0.0, 0.5, -0.5};
   const size_t kLen = arraysize(kFloats);
