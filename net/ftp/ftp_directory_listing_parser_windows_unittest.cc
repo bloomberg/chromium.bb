@@ -39,7 +39,8 @@ TEST_F(FtpDirectoryListingParserWindowsTest, Good) {
       FtpDirectoryListingEntry::FILE, "Corner3.txt", 458,
       1980, 1, 6, 2, 42 },
 #if !defined(OS_LINUX) && !defined(OS_ANDROID)
-    // TODO(phajdan.jr): Re-enable when 2038-year problem is fixed on Linux.
+    // TODO(phajdan.jr): https://crbug.com/28792: Re-enable when 2038-year
+    // problem is fixed on Linux.
     { "01-06-79  02:42AM                  458 Corner4",
       FtpDirectoryListingEntry::FILE, "Corner4", 458,
       2079, 1, 6, 2, 42 },

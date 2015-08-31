@@ -370,7 +370,8 @@ int FtpNetworkTransaction::ProcessCtrlResponse() {
   int rv = OK;
   switch (command_sent_) {
     case COMMAND_NONE:
-      // TODO(phajdan.jr): Check for errors in the welcome message.
+      // TODO(phajdan.jr): https://crbug.com/526721: Check for errors in the
+      // welcome message.
       next_state_ = STATE_CTRL_WRITE_USER;
       break;
     case COMMAND_USER:
@@ -1084,7 +1085,7 @@ int FtpNetworkTransaction::ProcessResponseSIZE(
       break;
     case ERROR_CLASS_PERMANENT_ERROR:
       // It's possible that SIZE failed because the path is a directory.
-      // TODO(xunjieli): Add a test for this case.
+      // TODO(xunjieli): https://crbug.com/526724: Add a test for this case.
       if (resource_type_ == RESOURCE_TYPE_UNKNOWN &&
           response.status_code != 550) {
         return Stop(GetNetErrorCodeForFtpResponseCode(response.status_code));
@@ -1241,8 +1242,8 @@ int FtpNetworkTransaction::DoDataConnectComplete(int result) {
   if (result != OK && use_epsv_) {
     // It's possible we hit a broken server, sadly. They can break in different
     // ways. Some time out, some reset a connection. Fall back to PASV.
-    // TODO(phajdan.jr): remember it for future transactions with this server.
-    // TODO(phajdan.jr): write a test for this code path.
+    // TODO(phajdan.jr): https://crbug.com/526723: remember it for future
+    // transactions with this server.
     use_epsv_ = false;
     next_state_ = STATE_CTRL_WRITE_PASV;
     return OK;
