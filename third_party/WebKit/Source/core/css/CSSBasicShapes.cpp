@@ -41,7 +41,7 @@ namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CSSBasicShape)
 
-static String buildCircleString(const String& radius, const String& centerX, const String& centerY, const String& box)
+static String buildCircleString(const String& radius, const String& centerX, const String& centerY)
 {
     char at[] = "at";
     char separator[] = " ";
@@ -60,10 +60,6 @@ static String buildCircleString(const String& radius, const String& centerX, con
         result.append(centerY);
     }
     result.append(')');
-    if (box.length()) {
-        result.appendLiteral(separator);
-        result.append(box);
-    }
     return result.toString();
 }
 
@@ -120,8 +116,7 @@ String CSSBasicShapeCircle::cssText() const
 
     return buildCircleString(radius,
         serializePositionOffset(*normalizedCX->getPairValue(), *normalizedCY->getPairValue()),
-        serializePositionOffset(*normalizedCY->getPairValue(), *normalizedCX->getPairValue()),
-        m_referenceBox ? m_referenceBox->cssText() : String());
+        serializePositionOffset(*normalizedCY->getPairValue(), *normalizedCX->getPairValue()));
 }
 
 bool CSSBasicShapeCircle::equals(const CSSBasicShape& shape) const
@@ -132,8 +127,7 @@ bool CSSBasicShapeCircle::equals(const CSSBasicShape& shape) const
     const CSSBasicShapeCircle& other = toCSSBasicShapeCircle(shape);
     return compareCSSValuePtr(m_centerX, other.m_centerX)
         && compareCSSValuePtr(m_centerY, other.m_centerY)
-        && compareCSSValuePtr(m_radius, other.m_radius)
-        && compareCSSValuePtr(m_referenceBox, other.m_referenceBox);
+        && compareCSSValuePtr(m_radius, other.m_radius);
 }
 
 DEFINE_TRACE(CSSBasicShapeCircle)
@@ -144,7 +138,7 @@ DEFINE_TRACE(CSSBasicShapeCircle)
     CSSBasicShape::trace(visitor);
 }
 
-static String buildEllipseString(const String& radiusX, const String& radiusY, const String& centerX, const String& centerY, const String& box)
+static String buildEllipseString(const String& radiusX, const String& radiusY, const String& centerX, const String& centerY)
 {
     char at[] = "at";
     char separator[] = " ";
@@ -172,10 +166,6 @@ static String buildEllipseString(const String& radiusX, const String& radiusY, c
         result.append(centerY);
     }
     result.append(')');
-    if (box.length()) {
-        result.appendLiteral(separator);
-        result.append(box);
-    }
     return result.toString();
 }
 
@@ -201,8 +191,7 @@ String CSSBasicShapeEllipse::cssText() const
 
     return buildEllipseString(radiusX, radiusY,
         serializePositionOffset(*normalizedCX->getPairValue(), *normalizedCY->getPairValue()),
-        serializePositionOffset(*normalizedCY->getPairValue(), *normalizedCX->getPairValue()),
-        m_referenceBox ? m_referenceBox->cssText() : String());
+        serializePositionOffset(*normalizedCY->getPairValue(), *normalizedCX->getPairValue()));
 }
 
 bool CSSBasicShapeEllipse::equals(const CSSBasicShape& shape) const
@@ -214,8 +203,7 @@ bool CSSBasicShapeEllipse::equals(const CSSBasicShape& shape) const
     return compareCSSValuePtr(m_centerX, other.m_centerX)
         && compareCSSValuePtr(m_centerY, other.m_centerY)
         && compareCSSValuePtr(m_radiusX, other.m_radiusX)
-        && compareCSSValuePtr(m_radiusY, other.m_radiusY)
-        && compareCSSValuePtr(m_referenceBox, other.m_referenceBox);
+        && compareCSSValuePtr(m_radiusY, other.m_radiusY);
 }
 
 DEFINE_TRACE(CSSBasicShapeEllipse)
@@ -227,7 +215,7 @@ DEFINE_TRACE(CSSBasicShapeEllipse)
     CSSBasicShape::trace(visitor);
 }
 
-static String buildPolygonString(const WindRule& windRule, const Vector<String>& points, const String& box)
+static String buildPolygonString(const WindRule& windRule, const Vector<String>& points)
 {
     ASSERT(!(points.size() % 2));
 
@@ -245,8 +233,6 @@ static String buildPolygonString(const WindRule& windRule, const Vector<String>&
         // add length of two strings, plus one for the space separator.
         length += points[i].length() + 1 + points[i + 1].length();
     }
-    if (!box.isEmpty())
-        length += box.length() + 1;
     result.reserveCapacity(length);
 
     if (windRule == RULE_EVENODD)
@@ -263,12 +249,6 @@ static String buildPolygonString(const WindRule& windRule, const Vector<String>&
     }
 
     result.append(')');
-
-    if (!box.isEmpty()) {
-        result.append(' ');
-        result.append(box);
-    }
-
     return result.toString();
 }
 
@@ -280,7 +260,7 @@ String CSSBasicShapePolygon::cssText() const
     for (size_t i = 0; i < m_values.size(); ++i)
         points.append(m_values.at(i)->cssText());
 
-    return buildPolygonString(m_windRule, points, m_referenceBox ? m_referenceBox->cssText() : String());
+    return buildPolygonString(m_windRule, points);
 }
 
 bool CSSBasicShapePolygon::equals(const CSSBasicShape& shape) const
@@ -289,10 +269,6 @@ bool CSSBasicShapePolygon::equals(const CSSBasicShape& shape) const
         return false;
 
     const CSSBasicShapePolygon& rhs = toCSSBasicShapePolygon(shape);
-
-    if (!compareCSSValuePtr(m_referenceBox, rhs.m_referenceBox))
-        return false;
-
     return compareCSSValueVector(m_values, rhs.m_values);
 }
 

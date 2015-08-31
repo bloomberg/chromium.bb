@@ -52,19 +52,15 @@ public:
     virtual String cssText() const = 0;
     virtual bool equals(const CSSBasicShape&) const = 0;
 
-    CSSPrimitiveValue* referenceBox() const { return m_referenceBox.get(); }
-    void setReferenceBox(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> referenceBox) { m_referenceBox = referenceBox; }
-
     bool isEllipse() const { return type() == CSSBasicShapeEllipseType; }
     bool isPolygon() const { return type() == CSSBasicShapePolygonType; }
     bool isCircle() const { return type() == CSSBasicShapeCircleType; }
     bool isInset() const { return type() == CSSBasicShapeInsetType; }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_referenceBox); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     CSSBasicShape() { }
-    RefPtrWillBeMember<CSSPrimitiveValue> m_referenceBox;
 };
 
 class CSSBasicShapeCircle final : public CSSBasicShape {
