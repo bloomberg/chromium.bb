@@ -69,65 +69,6 @@ VisiblePosition VisiblePosition::createWithoutCanonicalization(const PositionWit
     return visiblePosition;
 }
 
-// TODO(yosin) We should move implementation of |skipToEndOfEditingBoundary()|
-// here to avoid forward declaration.
-static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition&, const Position& anchor);
-
-// TODO(yosin) We should move |nextPositionOf()| to "VisibleUnits.cpp".
-VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
-{
-    VisiblePosition next(nextVisuallyDistinctCandidate(visiblePosition.deepEquivalent()), visiblePosition.affinity());
-
-    switch (rule) {
-    case CanCrossEditingBoundary:
-        return next;
-    case CannotCrossEditingBoundary:
-        return honorEditingBoundaryAtOrAfter(next, visiblePosition.deepEquivalent());
-    case CanSkipOverEditingBoundary:
-        return skipToEndOfEditingBoundary(next, visiblePosition.deepEquivalent());
-    }
-    ASSERT_NOT_REACHED();
-    return honorEditingBoundaryAtOrAfter(next, visiblePosition.deepEquivalent());
-}
-
-// TODO(yosin) We should move implementation of |skipToStartOfEditingBoundary()|
-// here to avoid forward declaration.
-static VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition&, const Position& anchor);
-
-VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
-{
-    Position pos = previousVisuallyDistinctCandidate(visiblePosition.deepEquivalent());
-
-    // return null visible position if there is no previous visible position
-    if (pos.atStartOfTree())
-        return VisiblePosition();
-
-    VisiblePosition prev = VisiblePosition(pos);
-    ASSERT(prev.deepEquivalent() != visiblePosition.deepEquivalent());
-
-#if ENABLE(ASSERT)
-    // we should always be able to make the affinity |TextAffinity::Downstream|,
-    // because going previous from an |TextAffinity::Upstream| position can
-    // never yield another |TextAffinity::Upstream position| (unless line wrap
-    // length is 0!).
-    if (prev.isNotNull() && visiblePosition.affinity() == TextAffinity::Upstream) {
-        ASSERT(inSameLine(PositionWithAffinity(prev.deepEquivalent()), PositionWithAffinity(prev.deepEquivalent(), TextAffinity::Upstream)));
-    }
-#endif
-
-    switch (rule) {
-    case CanCrossEditingBoundary:
-        return prev;
-    case CannotCrossEditingBoundary:
-        return honorEditingBoundaryAtOrBefore(prev, visiblePosition.deepEquivalent());
-    case CanSkipOverEditingBoundary:
-        return skipToStartOfEditingBoundary(prev, visiblePosition.deepEquivalent());
-    }
-
-    ASSERT_NOT_REACHED();
-    return honorEditingBoundaryAtOrBefore(prev, visiblePosition.deepEquivalent());
-}
-
 // TODO(yosin) We should move |rightVisuallyDistinctCandidate()| with
 // |rightPositionOf()| to "VisibleUnits.cpp".
 static Position leftVisuallyDistinctCandidate(const VisiblePosition& visiblePosition)
@@ -524,50 +465,6 @@ VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition& pos, const 
         return VisiblePosition();
 
     // Return the next position after pos that is in the same editable region as this position
-    return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
-}
-
-// TODO(yosin) We should move implementation of |skipToStartOfEditingBoundary()|
-// at forward declaration and re-format comments to fit 80 chars.
-static VisiblePosition skipToStartOfEditingBoundary(const VisiblePosition& pos, const Position& anchor)
-{
-    if (pos.isNull())
-        return pos;
-
-    ContainerNode* highestRoot = highestEditableRoot(anchor);
-    ContainerNode* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
-
-    // Return pos itself if the two are from the very same editable region, or both are non-editable.
-    if (highestRootOfPos == highestRoot)
-        return pos;
-
-    // If this is not editable but |pos| has an editable root, skip to the start
-    if (!highestRoot && highestRootOfPos)
-        return VisiblePosition(previousVisuallyDistinctCandidate(Position(highestRootOfPos, PositionAnchorType::BeforeAnchor).parentAnchoredEquivalent()));
-
-    // That must mean that |pos| is not editable. Return the last position before pos that is in the same editable region as this position
-    return lastEditableVisiblePositionBeforePositionInRoot(pos.deepEquivalent(), highestRoot);
-}
-
-// TODO(yosin) We should move implementation of |skipToEndOfEditingBoundary()|
-// at forward declaration and re-format comments to fit 80 chars.
-static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition& pos, const Position& anchor)
-{
-    if (pos.isNull())
-        return pos;
-
-    ContainerNode* highestRoot = highestEditableRoot(anchor);
-    ContainerNode* highestRootOfPos = highestEditableRoot(pos.deepEquivalent());
-
-    // Return pos itself if the two are from the very same editable region, or both are non-editable.
-    if (highestRootOfPos == highestRoot)
-        return pos;
-
-    // If this is not editable but |pos| has an editable root, skip to the end
-    if (!highestRoot && highestRootOfPos)
-        return VisiblePosition(Position(highestRootOfPos, PositionAnchorType::AfterAnchor).parentAnchoredEquivalent());
-
-    // That must mean that |pos| is not editable. Return the next position after pos that is in the same editable region as this position
     return firstEditableVisiblePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 

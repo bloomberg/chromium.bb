@@ -27,11 +27,9 @@
 #define VisiblePosition_h
 
 #include "core/CoreExport.h"
-#include "core/editing/EditingBoundary.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextAffinity.h"
 #include "platform/heap/Handle.h"
-#include "platform/text/TextDirection.h"
 
 namespace blink {
 
@@ -146,11 +144,6 @@ VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition&, const Pos
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
 PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
 VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&, const Position& anchor);
-
-// TODO(yosin) We should move |nextPositionOf()| to "VisibleUnits.cpp".
-VisiblePosition nextPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
-// TODO(yosin) We should move |previousPositionOf()| to "VisibleUnits.cpp"
-VisiblePosition previousPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 
 CORE_EXPORT VisiblePosition visiblePositionOf(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePosition visiblePositionOf(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
