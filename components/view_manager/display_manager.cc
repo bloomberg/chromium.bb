@@ -255,6 +255,8 @@ void DefaultDisplayManager::OnBoundsChanged(const gfx::Rect& new_bounds) {
 }
 
 void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
+  dirty_rect_.Union(damaged_region);
+  WantToDraw();
 }
 
 void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
