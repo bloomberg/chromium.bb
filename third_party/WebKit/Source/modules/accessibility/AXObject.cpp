@@ -671,7 +671,7 @@ bool AXObject::isPresentationalChild() const
     return m_cachedIsPresentationalChild;
 }
 
-String AXObject::name(AXNameFrom& nameFrom, AXObjectVector& nameObjects) const
+String AXObject::name(AXNameFrom& nameFrom, AXObjectVector* nameObjects) const
 {
     WillBeHeapHashSet<RawPtrWillBeMember<const AXObject>> visited;
     return textAlternative(false, false, visited, nameFrom, nameObjects, nullptr);
@@ -682,14 +682,13 @@ String AXObject::name(NameSources* nameSources) const
     AXObjectSet visited;
     AXNameFrom tmpNameFrom;
     AXObjectVector tmpNameObjects;
-    return textAlternative(false, false, visited, tmpNameFrom, tmpNameObjects, nameSources);
+    return textAlternative(false, false, visited, tmpNameFrom, &tmpNameObjects, nameSources);
 }
 
 String AXObject::recursiveTextAlternative(const AXObject& axObj, bool inAriaLabelledByTraversal, AXObjectSet& visited)
 {
-    AXNameFrom unusedRecursiveNameFrom;
-    AXObjectVector unusedRecursiveNameObjects;
-    return axObj.textAlternative(true, inAriaLabelledByTraversal, visited, unusedRecursiveNameFrom, unusedRecursiveNameObjects, nullptr);
+    AXNameFrom tmpNameFrom;
+    return axObj.textAlternative(true, inAriaLabelledByTraversal, visited, tmpNameFrom, nullptr, nullptr);
 }
 
 // In ARIA 1.1, the default value for aria-orientation changed from horizontal to undefined.

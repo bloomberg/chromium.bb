@@ -553,6 +553,7 @@ public:
     bool isPresentational() const { return roleValue() == NoneRole || roleValue() == PresentationalRole; }
     virtual bool isProgressIndicator() const { return false; }
     bool isRadioButton() const { return roleValue() == RadioButtonRole; }
+    bool isRange() const { return roleValue() == ProgressIndicatorRole || roleValue() == ScrollBarRole || roleValue() == SliderRole || roleValue() == SpinButtonRole; }
     bool isScrollbar() const { return roleValue() == ScrollBarRole; }
     virtual bool isSlider() const { return false; }
     virtual bool isNativeSlider() const { return false; }
@@ -633,7 +634,7 @@ public:
 
     // Retrieves the accessible name of the object, an enum indicating where the name
     // was derived from, and a list of objects that were used to derive the name, if any.
-    virtual String name(AXNameFrom&, AXObjectVector& nameObjects) const;
+    virtual String name(AXNameFrom&, AXObjectVector* nameObjects) const;
 
     typedef WillBeHeapVector<NameSource> NameSources;
     // Retrieves the accessible name of the object and a list of all potential sources
@@ -644,7 +645,7 @@ public:
     // accessible description of the object, which is secondary to |name|, an enum indicating
     // where the description was derived from, and a list of objects that were used to
     // derive the description, if any.
-    virtual String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector& descriptionObjects) { return String(); }
+    virtual String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector* descriptionObjects) { return String(); }
 
     // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
     // above, and retrieves the placeholder of the object, if present and if it wasn't already
@@ -653,7 +654,7 @@ public:
 
     // Internal function used by name and description, above.
     typedef WillBeHeapHashSet<RawPtrWillBeMember<const AXObject>> AXObjectSet;
-    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXObjectVector& nameObjects, NameSources* nameSources) const { return String(); }
+    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXObjectVector* nameObjects, NameSources* nameSources) const { return String(); }
 
     // Returns result of Accessible Name Calculation algorithm.
     // This is a simpler high-level interface to |name| used by Inspector.

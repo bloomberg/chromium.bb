@@ -126,11 +126,6 @@ bool roleAllowsSort(AccessibilityRole role)
     return role == ColumnHeaderRole || role == RowHeaderRole;
 }
 
-bool roleAllowsRangeValues(AccessibilityRole role)
-{
-    return role == ProgressIndicatorRole || role == ScrollBarRole || role == SliderRole || role == SpinButtonRole;
-}
-
 bool roleAllowsChecked(AccessibilityRole role)
 {
     return role == MenuItemCheckBoxRole || role == MenuItemRadioRole || role == RadioButtonRole || role == CheckBoxRole || role == TreeItemRole || role == ListBoxOptionRole || role == SwitchRole;
@@ -194,7 +189,7 @@ void fillWidgetProperties(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPr
         // TODO(aboxhall): sort
     }
 
-    if (roleAllowsRangeValues(role)) {
+    if (axObject->isRange()) {
         properties->addItem(createProperty(AXWidgetAttributes::Valuemin, createValue(axObject->minValueForRange())));
         properties->addItem(createProperty(AXWidgetAttributes::Valuemax, createValue(axObject->maxValueForRange())));
         properties->addItem(createProperty(AXWidgetAttributes::Valuetext, createValue(axObject->valueDescription())));

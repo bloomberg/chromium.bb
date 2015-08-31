@@ -1105,7 +1105,7 @@ WebString WebAXObject::name(WebAXNameFrom& outNameFrom, WebVector<WebAXObject>& 
 
     AXNameFrom nameFrom = AXNameFromAttribute;
     WillBeHeapVector<RawPtrWillBeMember<AXObject>> nameObjects;
-    WebString result = m_private->name(nameFrom, nameObjects);
+    WebString result = m_private->name(nameFrom, &nameObjects);
     outNameFrom = static_cast<WebAXNameFrom>(nameFrom);
 
     WebVector<WebAXObject> webNameObjects(nameObjects.size());
@@ -1123,7 +1123,7 @@ WebString WebAXObject::description(WebAXNameFrom nameFrom, WebAXDescriptionFrom&
 
     AXDescriptionFrom descriptionFrom;
     WillBeHeapVector<RawPtrWillBeMember<AXObject>> descriptionObjects;
-    String result = m_private->description(static_cast<AXNameFrom>(nameFrom), descriptionFrom, descriptionObjects);
+    String result = m_private->description(static_cast<AXNameFrom>(nameFrom), descriptionFrom, &descriptionObjects);
     outDescriptionFrom = static_cast<WebAXDescriptionFrom>(descriptionFrom);
 
     WebVector<WebAXObject> webDescriptionObjects(descriptionObjects.size());
