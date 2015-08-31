@@ -6,15 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/google/google_brand.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/web/public/web_thread.h"
@@ -42,14 +39,14 @@ bool RLZTrackerDelegateImpl::IsGoogleDefaultSearch(
 // static
 bool RLZTrackerDelegateImpl::IsGoogleHomepage(
     ios::ChromeBrowserState* browser_state) {
-  return google_util::IsGoogleHomePageUrl(
-      GURL(browser_state->GetPrefs()->GetString(ios::prefs::kHomePage)));
+  // iOS does not have a notion of home page.
+  return false;
 }
 
 // static
 bool RLZTrackerDelegateImpl::IsGoogleInStartpages(
     ios::ChromeBrowserState* browser_state) {
-  // iOS does not have a notion of startpages.
+  // iOS does not have a notion of start pages.
   return false;
 }
 
