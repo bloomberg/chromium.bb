@@ -49,19 +49,24 @@ namespace blink {
 
 using namespace HTMLNames;
 
-VisiblePosition::VisiblePosition(const Position &pos, TextAffinity affinity)
+VisiblePosition::VisiblePosition(const Position& position, TextAffinity affinity)
 {
-    init(pos, affinity);
-}
-
-VisiblePosition::VisiblePosition(const PositionInComposedTree& pos, TextAffinity affinity)
-{
-    init(pos, affinity);
+    // TODO(yosin) We should make |VisiblePosition| private and make this
+    // constructor to populate member variables by using |visiblePositionOf()|.
+    *this = visiblePositionOf(position, affinity);
 }
 
 VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinity)
+    : VisiblePosition(positionWithAffinity.position(), positionWithAffinity.affinity())
 {
-    init(positionWithAffinity.position(), positionWithAffinity.affinity());
+}
+
+VisiblePosition VisiblePosition::createWithoutCanonicalization(const PositionWithAffinity& canonicalized)
+{
+    VisiblePosition visiblePosition;
+    visiblePosition.m_deepPosition = canonicalized.position();
+    visiblePosition.m_affinity = canonicalized.affinity();
+    return visiblePosition;
 }
 
 // TODO(yosin) We should move implementation of |skipToEndOfEditingBoundary()|
@@ -662,26 +667,30 @@ PositionInComposedTree canonicalPositionOf(const PositionInComposedTree& positio
 }
 
 template<typename Strategy>
-void VisiblePosition::init(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
+static PositionWithAffinityTemplate<Strategy> visiblePositionOfAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
 {
-    m_affinity = affinity;
-
-    PositionAlgorithm<Strategy> deepPosition = canonicalPosition(position);
-    m_deepPosition = toPositionInDOMTree(deepPosition);
-
-    if (m_affinity != TextAffinity::Upstream)
-        return;
-
-    if (isNull()) {
-        m_affinity = TextAffinity::Downstream;
-        return;
-    }
+    const PositionAlgorithm<Strategy> deepPosition = canonicalPosition(position);
+    if (deepPosition.isNull())
+        return PositionWithAffinityTemplate<Strategy>();
+    if (affinity == TextAffinity::Downstream)
+        return PositionWithAffinityTemplate<Strategy>(deepPosition);
 
     // When not at a line wrap, make sure to end up with
     // |TextAffinity::Downstream| affinity.
-    if (!inSameLine(PositionWithAffinityTemplate<Strategy>(deepPosition), PositionWithAffinityTemplate<Strategy>(deepPosition, TextAffinity::Upstream)))
-        return;
-    m_affinity = TextAffinity::Downstream;
+    if (inSameLine(PositionWithAffinityTemplate<Strategy>(deepPosition), PositionWithAffinityTemplate<Strategy>(deepPosition, TextAffinity::Upstream)))
+        return PositionWithAffinityTemplate<Strategy>(deepPosition);
+    return PositionWithAffinityTemplate<Strategy>(deepPosition, TextAffinity::Upstream);
+}
+
+VisiblePosition visiblePositionOf(const Position& position, TextAffinity affinity)
+{
+    return VisiblePosition::createWithoutCanonicalization(visiblePositionOfAlgorithm<EditingStrategy>(position, affinity));
+}
+
+VisiblePosition visiblePositionOf(const PositionInComposedTree& position, TextAffinity affinity)
+{
+    PositionInComposedTreeWithAffinity canonicalized = visiblePositionOfAlgorithm<EditingInComposedTreeStrategy>(position, affinity);
+    return VisiblePosition::createWithoutCanonicalization(PositionWithAffinity(toPositionInDOMTree(canonicalized.position()), canonicalized.affinity()));
 }
 
 UChar32 characterAfter(const VisiblePosition& visiblePosition)

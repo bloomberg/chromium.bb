@@ -155,7 +155,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     }
 
     PositionWithAffinity eventPos = innerNode->layoutObject()->positionForPoint(event.localPoint());
-    VisiblePosition visiblePos(Strategy::toPositionType(eventPos.position()), eventPos.affinity());
+    VisiblePosition visiblePos = visiblePositionOf(Strategy::toPositionType(eventPos.position()), eventPos.affinity());
     if (visiblePos.isNull())
         visiblePos = VisiblePosition(firstPositionInOrBeforeNode(innerNode));
     PositionType pos = Strategy::toPositionType(visiblePos.deepEquivalent());
@@ -164,7 +164,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     TextGranularity granularity = CharacterGranularity;
 
     if (extendSelection && newSelection.isCaretOrRange()) {
-        VisibleSelection selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(VisiblePosition(pos))));
+        VisibleSelection selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(visiblePositionOf(pos))));
         if (selectionInUserSelectAll.isRange()) {
             if (Strategy::selectionStart(selectionInUserSelectAll).compareTo(Strategy::selectionStart(newSelection)) < 0)
                 pos = Strategy::selectionStart(selectionInUserSelectAll);
@@ -215,7 +215,7 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
         return;
 
     PositionWithAffinity rawTargetPosition = selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
-    VisiblePosition targetPosition = VisiblePosition(Strategy::toPositionType(rawTargetPosition.position()), rawTargetPosition.affinity());
+    VisiblePosition targetPosition = visiblePositionOf(Strategy::toPositionType(rawTargetPosition.position()), rawTargetPosition.affinity());
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())
         return;

@@ -175,8 +175,8 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
     Node* pastEnd = m_end.nodeAsRangePastLastNode();
 
     Node* firstNode = m_start.nodeAsRangeFirstNode();
-    VisiblePosition visibleStart(m_start);
-    VisiblePosition visibleEnd(m_end);
+    VisiblePosition visibleStart = visiblePositionOf(m_start);
+    VisiblePosition visibleEnd = visiblePositionOf(m_end);
     if (shouldAnnotate() && needInterchangeNewlineAfter(visibleStart)) {
         markupAccumulator.appendInterchangeNewline();
         if (visibleStart.deepEquivalent() == previousPositionOf(visibleEnd).deepEquivalent())

@@ -73,9 +73,16 @@ class CORE_EXPORT VisiblePosition final {
     DISALLOW_ALLOCATION();
 public:
     VisiblePosition() : m_affinity(VP_DEFAULT_AFFINITY) { }
+
+    // TODO(yosin) We should use |visiblePositionOf()| instead of constructor,
+    // and make constructors to have private accessibility, since constructors
+    // aren't simple, e.g. they update layout tree.
     explicit VisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
-    explicit VisiblePosition(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
     explicit VisiblePosition(const PositionWithAffinity&);
+
+    // Node: Other than |visiblePositionOf()|, we should not use
+    // |createWithoutCanonicalization()|.
+    static VisiblePosition createWithoutCanonicalization(const PositionWithAffinity& canonicalized);
 
     // Intentionally delete |operator==()| and |operator!=()| for reducing
     // compilation error message.
@@ -105,9 +112,8 @@ public:
 #endif
 
 private:
-    template<typename Strategy>
-    void init(const PositionAlgorithm<Strategy>&, TextAffinity);
-
+    // TODO(yosin) We should use |PositionWithAffinity| to make
+    // |toPositionWithAffinity()| simpler.
     Position m_deepPosition;
     TextAffinity m_affinity;
 };
@@ -130,6 +136,7 @@ VisiblePosition rightPositionOf(const VisiblePosition&);
 
 CORE_EXPORT Position canonicalPositionOf(const Position&);
 CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
+
 // TODO(yosin) We should move |characterAfter()| and |characterBefore()| to
 // "VisibleUnits.cpp"
 UChar32 characterAfter(const VisiblePosition&);
@@ -147,6 +154,9 @@ VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&, const Posi
 VisiblePosition nextPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 // TODO(yosin) We should move |previousPositionOf()| to "VisibleUnits.cpp"
 VisiblePosition previousPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
+
+CORE_EXPORT VisiblePosition visiblePositionOf(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePosition visiblePositionOf(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
 
 } // namespace blink
 

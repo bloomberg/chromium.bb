@@ -202,9 +202,9 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
     VisibleSelection newSelection = passedNewSelection;
     bool isDirectional = shouldAlwaysUseDirectionalSelection(m_frame) || newSelection.isDirectional();
 
-    VisiblePosition base = m_originalBase.isNotNull() ? m_originalBase : VisiblePosition(Strategy::selectionBase(newSelection));
+    VisiblePosition base = m_originalBase.isNotNull() ? m_originalBase : visiblePositionOf(Strategy::selectionBase(newSelection));
     VisiblePosition newBase = base;
-    VisiblePosition extent(Strategy::selectionExtent(newSelection));
+    VisiblePosition extent = visiblePositionOf(Strategy::selectionExtent(newSelection));
     VisiblePosition newExtent = extent;
     if (endpointsAdjustmentMode == AdjustEndpointsAtBidiBoundary)
         adjustEndpointsAtBidiBoundary(newBase, newExtent);

@@ -82,11 +82,11 @@ public:
         static SelectionType selectionType(const VisibleSelection& selection) { return selection.selectionTypeInComposedTree(); }
         static VisiblePosition selectionVisibleStart(const VisibleSelection& selection)
         {
-            return VisiblePosition(selectionStart(selection), isRange(selection) ? TextAffinity::Downstream : selection.affinity());
+            return visiblePositionOf(selectionStart(selection), isRange(selection) ? TextAffinity::Downstream : selection.affinity());
         }
         static VisiblePosition selectionVisibleEnd(const VisibleSelection& selection)
         {
-            return VisiblePosition(selectionEnd(selection), isRange(selection) ? TextAffinity::Upstream : selection.affinity());
+            return visiblePositionOf(selectionEnd(selection), isRange(selection) ? TextAffinity::Upstream : selection.affinity());
         }
         static PositionType toPositionType(const Position& position) { return toPositionInComposedTree(position); }
     };
