@@ -11,7 +11,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 class GURL;
 
