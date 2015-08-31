@@ -2037,8 +2037,11 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     if (GetTickDuration(info.time) <
         base::TimeDelta::FromMinutes(kRequestTimeoutMinutes))
       break;
-    if (OnRequestTimeout(info))
+    if (MaybeTimeOutRequest(info)) {
       request_timed_out = true;
+      UMA_HISTOGRAM_ENUMERATION("ServiceWorker.RequestTimeouts.Count",
+                                info.type, NUM_REQUEST_TYPES);
+    }
     requests_.pop();
   }
   if (request_timed_out && running_status() != STOPPING)
@@ -2158,9 +2161,7 @@ int ServiceWorkerVersion::AddRequest(
   return request_id;
 }
 
-bool ServiceWorkerVersion::OnRequestTimeout(const RequestInfo& info) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.RequestTimeouts.Count", info.type,
-                            NUM_REQUEST_TYPES);
+bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
   switch (info.type) {
     case REQUEST_ACTIVATE:
       return RunIDMapCallback(&activate_requests_, info.id,

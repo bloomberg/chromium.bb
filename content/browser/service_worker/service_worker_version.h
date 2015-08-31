@@ -528,7 +528,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
       RequestType request_type);
 
-  bool OnRequestTimeout(const RequestInfo& info);
+  bool MaybeTimeOutRequest(const RequestInfo& info);
   void SetAllRequestTimes(const base::TimeTicks& ticks);
 
   // Returns the reason the embedded worker failed to start, using information
