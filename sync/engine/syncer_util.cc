@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -293,15 +292,16 @@ UniquePosition GetUpdatePosition(const sync_pb::SyncEntity& update,
   } else if (update.has_unique_position()) {
     UniquePosition proto_position =
         UniquePosition::FromProto(update.unique_position());
-    if (!proto_position.IsValid()) {
-      // If download a bookmark with an invalid unique position, creating valid
-      // one for the bookmark. crbug.com/332371: This is a server bug, but for
-      // avoid crash, we made this fix.
-      base::debug::DumpWithoutCrashing();
-      return UniquePosition::FromInt64(0, suffix);
+    if (proto_position.IsValid()) {
+      return proto_position;
     }
-    return proto_position;
-  } else if (update.has_position_in_parent()) {
+  }
+
+  // Now, there are two cases hit here.
+  // 1. Did not receive unique_position for this update.
+  // 2. Received unique_position, but it is invalid(ex. empty).
+  // And we will create a valid position for this two cases.
+  if (update.has_position_in_parent()) {
     return UniquePosition::FromInt64(update.position_in_parent(), suffix);
   } else {
     LOG(ERROR) << "No position information in update. This is a server bug.";
