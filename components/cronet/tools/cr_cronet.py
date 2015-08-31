@@ -67,8 +67,7 @@ def main():
   print options
   print extra_options_list
   gyp_defines = 'GYP_DEFINES="OS=android run_findbugs=1 enable_websockets=0 '+ \
-      'disable_file_support=1 disable_ftp_support=1 '+ \
-      'use_icu_alternatives_on_android=1" '
+      'disable_file_support=1 disable_ftp_support=1" '
   out_dir = 'out/Debug'
   release_arg = ''
   extra_options = ' '.join(extra_options_list)
