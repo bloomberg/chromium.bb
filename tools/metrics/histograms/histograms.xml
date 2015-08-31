@@ -53142,6 +53142,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="93" label="OBSOLETE_BDH_DUPLICATE_REQUEST_DEVICE_ID"/>
   <int value="94" label="CSDH_INVALID_ORIGIN"/>
   <int value="95" label="RDH_ILLEGAL_ORIGIN"/>
+  <int value="96" label="RDH_UNAUTHORIZED_HEADER_REQUEST"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

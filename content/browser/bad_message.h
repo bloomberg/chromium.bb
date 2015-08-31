@@ -117,6 +117,7 @@ enum BadMessageReason {
   OBSOLETE_BDH_DUPLICATE_REQUEST_DEVICE_ID = 93,
   CSDH_INVALID_ORIGIN = 94,
   RDH_ILLEGAL_ORIGIN = 95,
+  RDH_UNAUTHORIZED_HEADER_REQUEST = 96,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

@@ -1277,9 +1277,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
       ChildProcessSecurityPolicyImpl::GetInstance();
   bool report_raw_headers = request_data.report_raw_headers;
   if (report_raw_headers && !policy->CanReadRawCookies(child_id)) {
-    // TODO: crbug.com/523063 can we call bad_message::ReceivedBadMessage here?
-    VLOG(1) << "Denied unauthorized request for raw headers";
-    report_raw_headers = false;
+    bad_message::ReceivedBadMessage(
+        filter_, bad_message::RDH_UNAUTHORIZED_HEADER_REQUEST);
+    delete sync_result;
+    return;
   }
   int load_flags =
       BuildLoadFlagsForRequest(request_data, child_id, is_sync_load);

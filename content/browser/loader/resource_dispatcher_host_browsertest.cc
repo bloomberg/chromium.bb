@@ -8,12 +8,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/resource_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/appcache_info.h"
+#include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -22,12 +27,14 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_network_delegate.h"
+#include "ipc/ipc_security_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 
 using base::ASCIIToUTF16;
 
@@ -524,6 +531,89 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 
   EXPECT_TRUE(
       delegate.page_transition() & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+}
+
+IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+                       UnauthorizedReportRawHeadersAsyncRequest) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
+  GURL url = embedded_test_server()->GetURL("/title2.html");
+  ResourceHostMsg_Request request;
+  request.method = std::string("GET");
+  request.url = url;
+  request.first_party_for_cookies = url;  // Bypass third-party cookie blocking.
+  request.referrer_policy = blink::WebReferrerPolicyDefault;
+  request.load_flags = 0;
+  request.origin_pid = 0;
+  request.resource_type = RESOURCE_TYPE_MAIN_FRAME;
+  request.request_context = 0;
+  request.appcache_host_id = kAppCacheNoHostId;
+  request.download_to_file = false;
+  request.should_reset_appcache = false;
+  request.is_main_frame = true;
+  request.parent_is_main_frame = false;
+  request.parent_render_frame_id = -1;
+  request.transition_type = ui::PAGE_TRANSITION_LINK;
+  request.allow_download = true;
+
+  // Request raw headers without devtools open or read cookie permission.
+  // The browser should kill the renderer without proper access.
+  request.report_raw_headers = true;
+
+  RenderFrameHost* main_frame = shell()->web_contents()->GetMainFrame();
+  RenderProcessHostWatcher frame_killed(
+      main_frame->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  ResourceHostMsg_RequestResource msg(
+      main_frame->GetRoutingID(), 1, request);
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      main_frame->GetProcess()->GetChannel(), msg);
+  frame_killed.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+                       UnauthorizedReportRawHeadersSyncRequest) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
+  GURL url = embedded_test_server()->GetURL("/title2.html");
+  ResourceHostMsg_Request request;
+  request.method = std::string("GET");
+  request.url = url;
+  request.first_party_for_cookies = url;  // Bypass third-party cookie blocking.
+  request.referrer_policy = blink::WebReferrerPolicyDefault;
+  request.load_flags = 0;
+  request.origin_pid = 0;
+  request.resource_type = RESOURCE_TYPE_MAIN_FRAME;
+  request.request_context = 0;
+  request.appcache_host_id = kAppCacheNoHostId;
+  request.download_to_file = false;
+  request.should_reset_appcache = false;
+  request.is_main_frame = true;
+  request.parent_is_main_frame = false;
+  request.parent_render_frame_id = -1;
+  request.transition_type = ui::PAGE_TRANSITION_LINK;
+  request.allow_download = true;
+
+  // Request raw headers without devtools open or read cookie permission.
+  // The browser should kill the renderer without proper access.
+  request.report_raw_headers = true;
+
+  RenderFrameHost* main_frame = shell()->web_contents()->GetMainFrame();
+  RenderProcessHostWatcher frame_killed(
+      main_frame->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  SyncLoadResult result;
+  ResourceHostMsg_SyncLoad msg(
+      main_frame->GetRoutingID(), 1, request, &result);
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      main_frame->GetProcess()->GetChannel(), msg);
+  frame_killed.Wait();
 }
 
 }  // namespace content
