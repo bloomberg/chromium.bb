@@ -397,10 +397,13 @@ void BubbleFrameView::MirrorArrowIfOffScreen(
     // Otherwise it should invoke parent's Layout() to layout the content based
     // on the new bubble border.
     if (GetOffScreenLength(available_bounds, mirror_bounds, vertical) >=
-        GetOffScreenLength(available_bounds, window_bounds, vertical))
+        GetOffScreenLength(available_bounds, window_bounds, vertical)) {
       bubble_border_->set_arrow(arrow);
-    else if (parent())
-      parent()->Layout();
+    } else {
+      if (parent())
+        parent()->Layout();
+      SchedulePaint();
+    }
   }
 }
 
