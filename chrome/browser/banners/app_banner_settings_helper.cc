@@ -32,10 +32,6 @@ const size_t kMaxAppsPerSite = 3;
 // Oldest could show banner event we care about, in days.
 const unsigned int kOldestCouldShowBannerEventInDays = 14;
 
-// Total site engagements where a banner could have been shown before
-// a banner will actually be triggered.
-const double kTotalEngagementToTrigger = 2;
-
 // Number of days that showing the banner will prevent it being seen again for.
 const unsigned int kMinimumDaysBetweenBannerShows = 60;
 
@@ -60,6 +56,10 @@ const char* kBannerEventKeys[] = {
 // Keys to use when storing BannerEvent structs.
 const char kBannerTimeKey[] = "time";
 const char kBannerEngagementKey[] = "engagement";
+
+// Total site engagements where a banner could have been shown before
+// a banner will actually be triggered.
+double gTotalEngagementToTrigger = 2;
 
 // Engagement weight assigned to direct and indirect navigations.
 // By default, a direct navigation is a page visit via ui::PAGE_TRANSITION_TYPED
@@ -113,8 +113,9 @@ double GetEventEngagement(ui::PageTransition transition_type) {
 // Queries a field trial for updates to the default engagement values assigned
 // to direct and indirect navigations.
 void UpdateEngagementWeights() {
-  // Expect a field trial value of "X:Y", where X is the direct engagement
-  // value and Y is the indirect engagement value.
+  // Expect a field trial value of "X:Y:Z", where X is the direct engagement
+  // value, Y is the indirect engagement value, and Z is the total required
+  // engagement to trigger the banner.
   std::string weights =
       base::FieldTrialList::FindFullName("AppBannersEngagementWeights");
   if (weights.empty())
@@ -122,20 +123,23 @@ void UpdateEngagementWeights() {
 
   std::vector<std::string> tokens = base::SplitString(
       weights, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (tokens.size() == 2) {
+  if (tokens.size() == 3) {
     double direct_engagement = -1;
     double indirect_engagement = -1;
+    double total_engagement = -1;
 
     // Ensure that we get valid doubles from the field trial, and that both
     // values are greater than or equal to zero and less than or equal to the
     // total engagement required to trigger the banner.
     if (base::StringToDouble(tokens[0], &direct_engagement) &&
         base::StringToDouble(tokens[1], &indirect_engagement) &&
+        base::StringToDouble(tokens[2], &total_engagement) &&
         direct_engagement >= 0 && indirect_engagement >= 0 &&
-        direct_engagement <= kTotalEngagementToTrigger &&
-        indirect_engagement <= kTotalEngagementToTrigger) {
+        total_engagement > 0 && direct_engagement <= total_engagement &&
+        indirect_engagement <= total_engagement) {
       AppBannerSettingsHelper::SetEngagementWeights(direct_engagement,
                                                     indirect_engagement);
+      AppBannerSettingsHelper::SetTotalEngagementToTrigger(total_engagement);
     }
   }
 }
@@ -393,7 +397,7 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
   for (const auto& event : could_show_events)
     total_engagement += event.engagement;
 
-  if (total_engagement < kTotalEngagementToTrigger) {
+  if (total_engagement < gTotalEngagementToTrigger) {
     banners::TrackDisplayEvent(banners::DISPLAY_EVENT_NOT_VISITED_ENOUGH);
     return false;
   }
@@ -489,6 +493,11 @@ void AppBannerSettingsHelper::SetEngagementWeights(double direct_engagement,
 void AppBannerSettingsHelper::SetMinimumMinutesBetweenVisits(
     unsigned int minutes) {
   gMinimumMinutesBetweenVisits = minutes;
+}
+
+void AppBannerSettingsHelper::SetTotalEngagementToTrigger(
+    double total_engagement) {
+  gTotalEngagementToTrigger = total_engagement;
 }
 
 // Given a time, returns that time scoped to the nearest minute resolution

@@ -118,7 +118,6 @@ class AppBannerSettingsHelper {
       AppBannerEvent event);
 
   // Set the engagement weights assigned to direct and indirect navigations.
-  // This is only exposed for testing.
   static void SetEngagementWeights(double direct_engagement,
                                    double indirect_engagement);
 
@@ -127,6 +126,9 @@ class AppBannerSettingsHelper {
   // number of minutes in a day, and evenly divide the number of minutes
   // in a day.
   static void SetMinimumMinutesBetweenVisits(unsigned int minutes);
+
+  // Set the total engagement weight required to trigger a banner.
+  static void SetTotalEngagementToTrigger(double total_engagement);
 
   // Bucket a given time to the given resolution in local time.
   static base::Time BucketTimeToResolution(base::Time time,

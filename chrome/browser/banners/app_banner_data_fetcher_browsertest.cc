@@ -64,6 +64,7 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
 
   void SetUpOnMainThread() override {
     AppBannerSettingsHelper::SetEngagementWeights(1, 1);
+    AppBannerSettingsHelper::SetTotalEngagementToTrigger(2);
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -149,6 +150,20 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedDirectLargerTotal) {
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(4);
+  RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_TYPED,
+                3, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedDirectSmallerTotal) {
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(1);
+  RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_TYPED,
+                0, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                        WebAppBannerCreatedDirectSingle) {
   AppBannerSettingsHelper::SetEngagementWeights(2, 1);
   RunBannerTest("/banners/manifest_test_page.html",
@@ -163,9 +178,39 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedDirectMultipleLargerTotal) {
+  AppBannerSettingsHelper::SetEngagementWeights(0.5, 1);
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(3);
+  RunBannerTest("/banners/manifest_test_page.html",
+                ui::PAGE_TRANSITION_GENERATED, 5, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedDirectMultipleSmallerTotal) {
+  AppBannerSettingsHelper::SetEngagementWeights(0.5, 1);
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(1);
+  RunBannerTest("/banners/manifest_test_page.html",
+                ui::PAGE_TRANSITION_GENERATED, 1, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
                        WebAppBannerCreatedIndirect) {
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
                 1, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedIndirectLargerTotal) {
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(5);
+  RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
+                4, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedIndirectSmallerTotal) {
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(1);
+  RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
+                0, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
@@ -180,6 +225,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
   AppBannerSettingsHelper::SetEngagementWeights(1, 0.5);
   RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
                 3, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerCreatedIndirectMultipleLargerTotal) {
+  AppBannerSettingsHelper::SetEngagementWeights(1, 0.5);
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(4);
+  RunBannerTest("/banners/manifest_test_page.html", ui::PAGE_TRANSITION_LINK,
+                7, true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
