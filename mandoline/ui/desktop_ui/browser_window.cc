@@ -47,7 +47,6 @@ class ProgressView : public views::View {
   void OnPaint(gfx::Canvas* canvas) override {
     if (loading_) {
       canvas->FillRect(GetLocalBounds(), SK_ColorGREEN);
-
       gfx::Rect progress_rect = GetLocalBounds();
       progress_rect.set_width(progress_rect.width() * progress_);
       canvas->FillRect(progress_rect, SK_ColorRED);
@@ -100,6 +99,10 @@ void BrowserWindow::LoadURL(const GURL& url) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = url.spec();
   Embed(request.Pass());
+}
+
+float BrowserWindow::DIPSToPixels(float value) const {
+  return value * root_->viewport_metrics().device_pixel_ratio;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -228,8 +231,16 @@ gfx::Size BrowserWindow::GetPreferredSize(const views::View* view) const {
 }
 
 void BrowserWindow::Layout(views::View* host) {
-  gfx::Rect omnibox_launcher_bounds = host->bounds();
-  omnibox_launcher_bounds.Inset(10, 10, 10, host->bounds().height() - 40);
+  // TODO(fsamuel): All bounds should be in physical pixels.
+  gfx::Rect bounds_in_physical_pixels(host->bounds());
+  float inverse_device_pixel_ratio =
+      1.0f / root_->viewport_metrics().device_pixel_ratio;
+
+  gfx::Rect omnibox_launcher_bounds =
+      gfx::ToEnclosingRect(gfx::ScaleRect(bounds_in_physical_pixels,
+                                          inverse_device_pixel_ratio));
+  omnibox_launcher_bounds.Inset(10, 10, 10,
+                                omnibox_launcher_bounds.height() - 40);
   omnibox_launcher_->SetBoundsRect(omnibox_launcher_bounds);
 
   gfx::Rect progress_bar_bounds(omnibox_launcher_bounds.x(),
@@ -238,15 +249,20 @@ void BrowserWindow::Layout(views::View* host) {
                                 5);
   progress_bar_->SetBoundsRect(progress_bar_bounds);
 
+  // The content view bounds are in physical pixels.
   mojo::Rect content_bounds_mojo;
-  content_bounds_mojo.x = progress_bar_bounds.x();
-  content_bounds_mojo.y = progress_bar_bounds.bottom() + 10;
-  content_bounds_mojo.width = progress_bar_bounds.width();
+  content_bounds_mojo.x = DIPSToPixels(progress_bar_bounds.x());
+  content_bounds_mojo.y = DIPSToPixels(progress_bar_bounds.bottom()+ 10);
+  content_bounds_mojo.width = DIPSToPixels(progress_bar_bounds.width());
   content_bounds_mojo.height =
-      host->bounds().height() - content_bounds_mojo.y - 10;
+      host->bounds().height() - content_bounds_mojo.y - DIPSToPixels(10);
   content_->SetBounds(content_bounds_mojo);
+
+  // The omnibox view bounds are in physical pixels.
   omnibox_view_->SetBounds(
-      mojo::TypeConverter<mojo::Rect, gfx::Rect>::Convert(host->bounds()));
+      mojo::TypeConverter<mojo::Rect, gfx::Rect>::Convert(
+          bounds_in_physical_pixels));
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

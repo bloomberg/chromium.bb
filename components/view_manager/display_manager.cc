@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/display.h"
 #include "ui/platform_window/platform_ime_controller.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/stub/stub_window.h"
@@ -237,6 +238,8 @@ void DefaultDisplayManager::WantToDraw() {
 
 void DefaultDisplayManager::UpdateMetrics(const gfx::Size& size,
                                           float device_pixel_ratio) {
+  if (gfx::Display::HasForceDeviceScaleFactor())
+    device_pixel_ratio = gfx::Display::GetForcedDeviceScaleFactor();
   if (metrics_.size_in_pixels.To<gfx::Size>() == size &&
       metrics_.device_pixel_ratio == device_pixel_ratio)
     return;

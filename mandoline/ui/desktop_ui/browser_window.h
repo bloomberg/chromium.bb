@@ -50,6 +50,8 @@ class BrowserWindow : public mojo::ViewTreeDelegate,
   void LoadURL(const GURL& url);
 
  private:
+  float DIPSToPixels(float value) const;
+
   // Overridden from mojo::ViewTreeDelegate:
   void OnEmbed(mojo::View* root) override;
   void OnConnectionLost(mojo::ViewTreeConnection* connection) override;
