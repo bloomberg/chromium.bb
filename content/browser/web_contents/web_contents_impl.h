@@ -236,7 +236,8 @@ class CONTENT_EXPORT WebContentsImpl
   void ClosePage() override;
   RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const override;
   SkColor GetThemeColor() const override;
-  WebUI* CreateWebUI(const GURL& url) override;
+  WebUI* CreateSubframeWebUI(const GURL& url,
+                             const std::string& frame_name) override;
   WebUI* GetWebUI() const override;
   WebUI* GetCommittedWebUI() const override;
   void SetUserAgentOverride(const std::string& override) override;
@@ -1004,6 +1005,12 @@ class CONTENT_EXPORT WebContentsImpl
   // Removes all entries from |player_map| for |render_frame_host|.
   void RemoveAllMediaPlayerEntries(RenderFrameHost* render_frame_host,
                                    ActiveMediaPlayerMap* player_map);
+
+  // Internal helper to create WebUI objects associated with |this|. |url| is
+  // used to determine which WebUI should be created (if any). |frame_name|
+  // corresponds to the name of a frame that the WebUI should be created for (or
+  // the main frame if empty).
+  WebUI* CreateWebUI(const GURL& url, const std::string& frame_name);
 
   // Data for core operation ---------------------------------------------------
 

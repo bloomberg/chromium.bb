@@ -43,10 +43,11 @@ base::string16 WebUI::GetJavascriptCall(
       base::char16('(') + parameters + base::char16(')') + base::char16(';');
 }
 
-WebUIImpl::WebUIImpl(WebContents* contents)
+WebUIImpl::WebUIImpl(WebContents* contents, const std::string& frame_name)
     : link_transition_type_(ui::PAGE_TRANSITION_LINK),
       bindings_(BINDINGS_POLICY_WEB_UI),
-      web_contents_(contents) {
+      web_contents_(contents),
+      frame_name_(frame_name) {
   DCHECK(contents);
 }
 
@@ -115,10 +116,6 @@ int WebUIImpl::GetBindings() const {
 
 void WebUIImpl::SetBindings(int bindings) {
   bindings_ = bindings;
-}
-
-void WebUIImpl::OverrideJavaScriptFrame(const std::string& frame_name) {
-  frame_name_ = frame_name;
 }
 
 WebUIController* WebUIImpl::GetController() const {

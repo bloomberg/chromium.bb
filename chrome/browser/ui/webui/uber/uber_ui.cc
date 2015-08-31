@@ -152,11 +152,8 @@ UberUI::~UberUI() {
 
 void UberUI::RegisterSubpage(const std::string& page_url,
                              const std::string& page_host) {
-  GURL page_gurl(page_url);
-  content::WebUI* webui = web_ui()->GetWebContents()->CreateWebUI(page_gurl);
-
-  webui->OverrideJavaScriptFrame(page_host);
-  sub_uis_[page_url] = webui;
+  sub_uis_[page_url] = web_ui()->GetWebContents()->CreateSubframeWebUI(
+      GURL(page_url), page_host);
 }
 
 content::WebUI* UberUI::GetSubpage(const std::string& page_url) {

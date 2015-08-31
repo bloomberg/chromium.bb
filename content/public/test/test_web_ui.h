@@ -37,7 +37,6 @@ class TestWebUI : public WebUI {
   void SetLinkTransitionType(ui::PageTransition type) override {}
   int GetBindings() const override;
   void SetBindings(int bindings) override {}
-  void OverrideJavaScriptFrame(const std::string& frame_name) override {}
   void AddMessageHandler(WebUIMessageHandler* handler) override;
   void RegisterMessageCallback(const std::string& message,
                                const MessageCallback& callback) override {}
