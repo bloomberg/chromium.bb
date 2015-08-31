@@ -757,7 +757,14 @@ AutomationRootNodeImpl.prototype = {
   axNodeDataCache_: null,
 
   get id() {
-    return GetRootID(this.treeID);
+    var result = GetRootID(this.treeID);
+
+    // Don't return undefined, because the id is often passed directly
+    // as an argument to a native binding that expects only a valid number.
+    if (result === undefined)
+      return -1;
+
+    return result;
   },
 
   get: function(id) {

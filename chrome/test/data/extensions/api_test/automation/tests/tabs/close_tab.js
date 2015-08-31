@@ -8,10 +8,15 @@ var allTests = [
       chrome.tabs.create({'url': url}, function(tab) {
         chrome.automation.getTree(function(rootNode) {
           rootNode.addEventListener(EventType.destroyed, function() {
-            // Should get a 'destroyed' event when the tab is closed.
-            // TODO(aboxhall): assert actual cleanup has occurred once
-            // crbug.com/387954 makes it possible.
-            chrome.test.succeed();
+            // Poll until the root node doesn't have a role anymore
+            // indicating that it really did get cleaned up.
+            function checkSuccess() {
+              if (rootNode.role === undefined)
+                chrome.test.succeed();
+              else
+                window.setTimeout(checkSuccess, 10);
+            }
+            checkSuccess();
           });
           chrome.tabs.remove(tab.id);
         });
