@@ -434,7 +434,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
 VisiblePosition leftWordPosition(const VisiblePosition& visiblePosition, bool skipsSpaceWhenMovingRight)
 {
     VisiblePosition leftWordBreak = visualWordPosition(visiblePosition, MoveLeft, skipsSpaceWhenMovingRight);
-    leftWordBreak = visiblePosition.honorEditingBoundaryAtOrBefore(leftWordBreak);
+    leftWordBreak = honorEditingBoundaryAtOrBefore(leftWordBreak, visiblePosition.deepEquivalent());
 
     // FIXME: How should we handle a non-editable position?
     if (leftWordBreak.isNull() && isEditablePosition(visiblePosition.deepEquivalent())) {
@@ -447,7 +447,7 @@ VisiblePosition leftWordPosition(const VisiblePosition& visiblePosition, bool sk
 VisiblePosition rightWordPosition(const VisiblePosition& visiblePosition, bool skipsSpaceWhenMovingRight)
 {
     VisiblePosition rightWordBreak = visualWordPosition(visiblePosition, MoveRight, skipsSpaceWhenMovingRight);
-    rightWordBreak = visiblePosition.honorEditingBoundaryAtOrBefore(rightWordBreak);
+    rightWordBreak = honorEditingBoundaryAtOrBefore(rightWordBreak, visiblePosition.deepEquivalent());
 
     // FIXME: How should we handle a non-editable position?
     if (rightWordBreak.isNull() && isEditablePosition(visiblePosition.deepEquivalent())) {
@@ -720,7 +720,7 @@ static unsigned previousWordPositionBoundary(const UChar* characters, unsigned l
 VisiblePosition previousWordPosition(const VisiblePosition& c)
 {
     VisiblePosition prev = previousBoundary(c, previousWordPositionBoundary);
-    return c.honorEditingBoundaryAtOrBefore(prev);
+    return honorEditingBoundaryAtOrBefore(prev, c.deepEquivalent());
 }
 
 static unsigned nextWordPositionBoundary(const UChar* characters, unsigned length, unsigned offset, BoundarySearchContextAvailability mayHaveMoreContext, bool& needMoreContext)
@@ -736,7 +736,7 @@ static unsigned nextWordPositionBoundary(const UChar* characters, unsigned lengt
 VisiblePosition nextWordPosition(const VisiblePosition& c)
 {
     VisiblePosition next = nextBoundary(c, nextWordPositionBoundary);
-    return c.honorEditingBoundaryAtOrAfter(next);
+    return honorEditingBoundaryAtOrAfter(next, c.deepEquivalent());
 }
 
 // ---------
@@ -900,7 +900,7 @@ static VisiblePosition endOfLine(const VisiblePosition& c, LineEndpointComputati
                 return VisiblePosition(lastPositionInNode(editableRoot));
         }
 
-        return c.honorEditingBoundaryAtOrAfter(visPos);
+        return honorEditingBoundaryAtOrAfter(visPos, c.deepEquivalent());
     }
 
     // Make sure the end of line is at the same line as the given input position. Else use the previous position to
@@ -915,7 +915,7 @@ static VisiblePosition endOfLine(const VisiblePosition& c, LineEndpointComputati
         visPos = endPositionForLine(visPos, UseInlineBoxOrdering);
     }
 
-    return c.honorEditingBoundaryAtOrAfter(visPos);
+    return honorEditingBoundaryAtOrAfter(visPos, c.deepEquivalent());
 }
 
 // FIXME: Rename this function to reflect the fact it ignores bidi levels.
@@ -1134,7 +1134,7 @@ static unsigned previousSentencePositionBoundary(const UChar* characters, unsign
 VisiblePosition previousSentencePosition(const VisiblePosition& c)
 {
     VisiblePosition prev = previousBoundary(c, previousSentencePositionBoundary);
-    return c.honorEditingBoundaryAtOrBefore(prev);
+    return honorEditingBoundaryAtOrBefore(prev, c.deepEquivalent());
 }
 
 static unsigned nextSentencePositionBoundary(const UChar* characters, unsigned length, unsigned, BoundarySearchContextAvailability, bool&)
@@ -1148,7 +1148,7 @@ static unsigned nextSentencePositionBoundary(const UChar* characters, unsigned l
 VisiblePosition nextSentencePosition(const VisiblePosition& c)
 {
     VisiblePosition next = nextBoundary(c, nextSentencePositionBoundary);
-    return c.honorEditingBoundaryAtOrAfter(next);
+    return honorEditingBoundaryAtOrAfter(next, c.deepEquivalent());
 }
 
 VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)

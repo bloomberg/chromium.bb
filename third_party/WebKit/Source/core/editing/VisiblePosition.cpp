@@ -77,12 +77,12 @@ VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBo
     case CanCrossEditingBoundary:
         return next;
     case CannotCrossEditingBoundary:
-        return visiblePosition.honorEditingBoundaryAtOrAfter(next);
+        return honorEditingBoundaryAtOrAfter(next, visiblePosition.deepEquivalent());
     case CanSkipOverEditingBoundary:
         return skipToEndOfEditingBoundary(next, visiblePosition.deepEquivalent());
     }
     ASSERT_NOT_REACHED();
-    return visiblePosition.honorEditingBoundaryAtOrAfter(next);
+    return honorEditingBoundaryAtOrAfter(next, visiblePosition.deepEquivalent());
 }
 
 // TODO(yosin) We should move implementation of |skipToStartOfEditingBoundary()|
@@ -114,13 +114,13 @@ VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, Editi
     case CanCrossEditingBoundary:
         return prev;
     case CannotCrossEditingBoundary:
-        return visiblePosition.honorEditingBoundaryAtOrBefore(prev);
+        return honorEditingBoundaryAtOrBefore(prev, visiblePosition.deepEquivalent());
     case CanSkipOverEditingBoundary:
         return skipToStartOfEditingBoundary(prev, visiblePosition.deepEquivalent());
     }
 
     ASSERT_NOT_REACHED();
-    return visiblePosition.honorEditingBoundaryAtOrBefore(prev);
+    return honorEditingBoundaryAtOrBefore(prev, visiblePosition.deepEquivalent());
 }
 
 // TODO(yosin) We should move |rightVisuallyDistinctCandidate()| with
@@ -284,7 +284,7 @@ VisiblePosition leftPositionOf(const VisiblePosition& visiblePosition)
     VisiblePosition left = VisiblePosition(pos);
     ASSERT(left.deepEquivalent() != visiblePosition.deepEquivalent());
 
-    return directionOfEnclosingBlock(left.deepEquivalent()) == LTR ? visiblePosition.honorEditingBoundaryAtOrBefore(left) : visiblePosition.honorEditingBoundaryAtOrAfter(left);
+    return directionOfEnclosingBlock(left.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrBefore(left, visiblePosition.deepEquivalent()) : honorEditingBoundaryAtOrAfter(left, visiblePosition.deepEquivalent());
 }
 
 // TODO(yosin) We should move |rightVisuallyDistinctCandidate()| with
@@ -451,7 +451,7 @@ VisiblePosition rightPositionOf(const VisiblePosition& visiblePosition)
     VisiblePosition right = VisiblePosition(pos);
     ASSERT(right.deepEquivalent() != visiblePosition.deepEquivalent());
 
-    return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? visiblePosition.honorEditingBoundaryAtOrAfter(right) : visiblePosition.honorEditingBoundaryAtOrBefore(right);
+    return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right, visiblePosition.deepEquivalent()) : honorEditingBoundaryAtOrBefore(right, visiblePosition.deepEquivalent());
 }
 
 template <typename Strategy>
@@ -491,17 +491,17 @@ PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const Positi
     return honorEditingBoundaryAtOrBeforeAlgorithm(pos, anchor);
 }
 
-VisiblePosition VisiblePosition::honorEditingBoundaryAtOrBefore(const VisiblePosition &pos) const
+VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition& pos, const Position& anchor)
 {
-    return VisiblePosition(honorEditingBoundaryAtOrBeforeOf(pos.toPositionWithAffinity(), deepEquivalent()));
+    return VisiblePosition(honorEditingBoundaryAtOrBeforeOf(pos.toPositionWithAffinity(), anchor));
 }
 
-VisiblePosition VisiblePosition::honorEditingBoundaryAtOrAfter(const VisiblePosition &pos) const
+VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition& pos, const Position& anchor)
 {
     if (pos.isNull())
         return pos;
 
-    ContainerNode* highestRoot = highestEditableRoot(deepEquivalent());
+    ContainerNode* highestRoot = highestEditableRoot(anchor);
 
     // Return empty position if pos is not somewhere inside the editable region containing this position
     if (highestRoot && !pos.deepEquivalent().anchorNode()->isDescendantOf(highestRoot))

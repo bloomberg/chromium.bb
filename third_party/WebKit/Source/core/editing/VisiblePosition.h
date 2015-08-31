@@ -93,10 +93,6 @@ public:
     PositionWithAffinity toPositionWithAffinity() const { return PositionWithAffinity(m_deepPosition, m_affinity); }
     TextAffinity affinity() const { return m_affinity; }
 
-    // next() and previous() will increment/decrement by a character cluster.
-    VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition&) const;
-    VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&) const;
-
     // TODO(yosin) This does not handle [table, 0] correctly.
     Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.anchorNode()->rootEditableElement() : 0; }
 
@@ -138,8 +134,14 @@ CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedT
 // "VisibleUnits.cpp"
 UChar32 characterAfter(const VisiblePosition&);
 UChar32 characterBefore(const VisiblePosition&);
+
+// TODO(yosin) We should move |honorEditingBoundaryAtOr{Before,After} to
+// "VisibleUnits.cpp" as static function.
+// next() and previous() will increment/decrement by a character cluster.
+VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition&, const Position& anchor);
 PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity&, const Position& anchor);
 PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
+VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&, const Position& anchor);
 
 // TODO(yosin) We should move |nextPositionOf()| to "VisibleUnits.cpp".
 VisiblePosition nextPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
