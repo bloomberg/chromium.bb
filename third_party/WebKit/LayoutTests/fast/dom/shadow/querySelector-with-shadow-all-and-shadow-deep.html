@@ -82,4 +82,10 @@ shouldBe('fooHost.querySelectorAll("::shadow span").length', '3');
 shouldBe('fooHost.querySelectorAll("::shadow span")[0].id', '"not-top"');
 shouldBe('fooHost.querySelectorAll("::shadow span")[1].id', '"top"');
 shouldBe('fooHost.querySelectorAll("::shadow span")[2].id', '"inner-host"');
+
+// crbug.com/511486
+shouldBe('document.querySelectorAll("::shadow span").length', '3');
+shouldBe('document.querySelectorAll("::shadow span")[0].id', '"not-top"');
+shouldBe('document.querySelectorAll("::shadow span")[1].id', '"top"');
+shouldBe('document.querySelectorAll("::shadow span")[2].id', '"inner-host"');
 </script>
