@@ -532,7 +532,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 setVisibility(VISIBLE);
                 if (getSelectedItemPosition() != 0) setSelection(0);
             }
-            updateSuggestionsLayoutDirection(mUrlBar.getUrlDirection());
         }
 
         /**
@@ -762,7 +761,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             @Override
             public void onUrlDirectionChanged(int layoutDirection) {
                 ApiCompatibilityUtils.setLayoutDirection(LocationBarLayout.this, layoutDirection);
-                updateSuggestionsLayoutDirection(layoutDirection);
             }
         });
 
@@ -773,17 +771,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         updateLayoutParams();
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    private void updateSuggestionsLayoutDirection(int layoutDirection) {
-        if (mSuggestionList != null && mSuggestionList.isShown()) {
-            ListView listView = mSuggestionList;
-            ApiCompatibilityUtils.setLayoutDirection(listView, layoutDirection);
-            for (int i = 0; i < listView.getChildCount(); i++) {
-                ApiCompatibilityUtils.setLayoutDirection(listView.getChildAt(i),
-                        layoutDirection);
-            }
-        }
     }
 
     @Override

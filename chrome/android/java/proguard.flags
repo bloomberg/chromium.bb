@@ -113,6 +113,11 @@
   *;
 }
 
+# Used in tests.
+-keep class android.support.v4.view.ViewCompat {
+  public static int getLayoutDirection(android.view.View);
+}
+
 # flingViewport is used by Android WebView and a Chrome test.
 -keepclassmembers class org.chromium.content.browser.ContentViewCore {
   public void flingViewport(long, int, int);

@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.omnibox;
 import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 
 import android.os.SystemClock;
+import android.support.v4.view.ViewCompat;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Selection;
 import android.util.Pair;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -25,6 +27,7 @@ import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.omnibox.LocationBarLayout.OmniboxSuggestionsList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.Type;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -42,6 +45,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -634,6 +638,97 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             String expectedPrePath, String expectedPostPath, Pair<String, String> actualValues) {
         assertEquals(expectedPrePath, actualValues.first);
         assertEquals(expectedPostPath, actualValues.second);
+    }
+
+    @MediumTest
+    @Feature({"Omnibox"})
+    public void testSuggestionDirectionSwitching() throws InterruptedException {
+        final TextView urlBarView = (TextView) getActivity().findViewById(R.id.url_bar);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBarView.requestFocus();
+                urlBarView.setText("");
+            }
+        });
+
+        final LocationBarLayout locationBar =
+                ((LocationBarLayout) getActivity().findViewById(R.id.location_bar));
+
+        Map<String, List<SuggestionsResult>> suggestionsMap = buildSuggestionMap(
+                new TestSuggestionResultsBuilder()
+                        .setTextShownFor("ل")
+                        .addSuggestions(new SuggestionsResultBuilder()
+                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "للك", null)
+                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "www.test.com", null)
+                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "للكتا", null)),
+                new TestSuggestionResultsBuilder()
+                        .setTextShownFor("للك")
+                        .addSuggestions(new SuggestionsResultBuilder()
+                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "للكتاب", null)),
+                new TestSuggestionResultsBuilder()
+                        .setTextShownFor("f")
+                        .addSuggestions(new SuggestionsResultBuilder()
+                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "f", null)
+                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "fa", null)
+                                .addGeneratedSuggestion(Type.SEARCH_HISTORY, "fac", null)));
+        final TestAutocompleteController controller = new TestAutocompleteController(
+                locationBar, locationBar, suggestionsMap);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                locationBar.setAutocompleteController(controller);
+            }
+        });
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBarView.setText("ل");
+            }
+        });
+        verifyOmniboxSuggestionAlignment(locationBar, 3, View.LAYOUT_DIRECTION_RTL);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBarView.setText("للك");
+            }
+        });
+        verifyOmniboxSuggestionAlignment(locationBar, 1, View.LAYOUT_DIRECTION_RTL);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBarView.setText("f");
+            }
+        });
+        verifyOmniboxSuggestionAlignment(locationBar, 3, View.LAYOUT_DIRECTION_LTR);
+    }
+
+    private void verifyOmniboxSuggestionAlignment(
+            final LocationBarLayout locationBar, final int expectedSuggestionCount,
+            final int expectedLayoutDirection) throws InterruptedException {
+        assertTrue(OmniboxTestUtils.waitForOmniboxSuggestions(
+                locationBar, expectedSuggestionCount));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                OmniboxSuggestionsList suggestionsList = locationBar.getSuggestionList();
+                assertEquals(expectedSuggestionCount, suggestionsList.getChildCount());
+                for (int i = 0; i < suggestionsList.getChildCount(); i++) {
+                    SuggestionView suggestionView = (SuggestionView) suggestionsList.getChildAt(i);
+                    assertEquals(
+                            String.format(
+                                    Locale.getDefault(),
+                                    "Incorrect layout direction of suggestion at index %d",
+                                    i),
+                            expectedLayoutDirection,
+                            ViewCompat.getLayoutDirection(suggestionView));
+                }
+            }
+        });
     }
 
     @Override

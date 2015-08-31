@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Utility methods and classes for testing the Omnibox.
@@ -306,23 +305,35 @@ public class OmniboxTestUtils {
      */
     public static boolean waitForOmniboxSuggestions(final LocationBarLayout locationBar)
             throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                try {
-                    return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            LocationBarLayout.OmniboxSuggestionsList suggestionsList =
-                                    locationBar.getSuggestionList();
-                            return suggestionsList != null
-                                    && suggestionsList.isShown()
-                                    && suggestionsList.getCount() >= 1;
-                        }
-                    });
-                } catch (ExecutionException e) {
-                    return false;
-                }
+                LocationBarLayout.OmniboxSuggestionsList suggestionsList =
+                        locationBar.getSuggestionList();
+                return suggestionsList != null
+                        && suggestionsList.isShown()
+                        && suggestionsList.getCount() >= 1;
+            }
+        });
+    }
+
+    /**
+     * Waits for a suggestion list to be shown with a specified number of entries.
+     * @param locationBar The LocationBar who owns the suggestions.
+     * @param expectedCount The number of suggestions expected to be shown.
+     * @return Whether the suggestions were shown.
+     */
+    public static boolean waitForOmniboxSuggestions(
+            final LocationBarLayout locationBar, final int expectedCount)
+            throws InterruptedException {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                LocationBarLayout.OmniboxSuggestionsList suggestionsList =
+                        locationBar.getSuggestionList();
+                return suggestionsList != null
+                        && suggestionsList.isShown()
+                        && suggestionsList.getCount() == expectedCount;
             }
         });
     }
