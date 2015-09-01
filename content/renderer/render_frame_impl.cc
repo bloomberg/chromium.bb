@@ -3709,8 +3709,8 @@ bool RenderFrameImpl::allowWebGL(blink::WebLocalFrame* frame,
     return false;
 
   bool blocked = true;
-  render_view_->Send(new ViewHostMsg_Are3DAPIsBlocked(
-      render_view_->GetRoutingID(),
+  Send(new FrameHostMsg_Are3DAPIsBlocked(
+      routing_id_,
       GURL(frame->top()->securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
       &blocked));
@@ -3720,7 +3720,7 @@ bool RenderFrameImpl::allowWebGL(blink::WebLocalFrame* frame,
 void RenderFrameImpl::didLoseWebGLContext(blink::WebLocalFrame* frame,
                                           int arb_robustness_status_code) {
   DCHECK(!frame_ || frame_ == frame);
-  render_view_->Send(new ViewHostMsg_DidLose3DContext(
+  Send(new FrameHostMsg_DidLose3DContext(
       GURL(frame->top()->securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
       arb_robustness_status_code));

@@ -227,13 +227,13 @@ void GpuDataManagerImpl::BlockDomainFrom3DAPIs(
   private_->BlockDomainFrom3DAPIs(url, guilt);
 }
 
-bool GpuDataManagerImpl::Are3DAPIsBlocked(const GURL& url,
+bool GpuDataManagerImpl::Are3DAPIsBlocked(const GURL& top_origin_url,
                                           int render_process_id,
-                                          int render_view_id,
+                                          int render_frame_id,
                                           ThreeDAPIType requester) {
   base::AutoLock auto_lock(lock_);
   return private_->Are3DAPIsBlocked(
-      url, render_process_id, render_view_id, requester);
+      top_origin_url, render_process_id, render_frame_id, requester);
 }
 
 void GpuDataManagerImpl::DisableDomainBlockingFor3DAPIsForTesting() {
@@ -261,13 +261,13 @@ bool GpuDataManagerImpl::UpdateActiveGpu(uint32 vendor_id, uint32 device_id) {
   return private_->UpdateActiveGpu(vendor_id, device_id);
 }
 
-void GpuDataManagerImpl::Notify3DAPIBlocked(const GURL& url,
+void GpuDataManagerImpl::Notify3DAPIBlocked(const GURL& top_origin_url,
                                             int render_process_id,
-                                            int render_view_id,
+                                            int render_frame_id,
                                             ThreeDAPIType requester) {
   base::AutoLock auto_lock(lock_);
   private_->Notify3DAPIBlocked(
-      url, render_process_id, render_view_id, requester);
+      top_origin_url, render_process_id, render_frame_id, requester);
 }
 
 void GpuDataManagerImpl::OnGpuProcessInitFailure() {

@@ -14,9 +14,9 @@ class ThreeDAPIObserver : public content::GpuDataManagerObserver {
   ~ThreeDAPIObserver() override;
 
  private:
-  void DidBlock3DAPIs(const GURL& url,
+  void DidBlock3DAPIs(const GURL& top_origin_url,
                       int render_process_id,
-                      int render_view_id,
+                      int render_frame_id,
                       content::ThreeDAPIType requester) override;
 
   DISALLOW_COPY_AND_ASSIGN(ThreeDAPIObserver);

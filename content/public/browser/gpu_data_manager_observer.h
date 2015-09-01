@@ -27,9 +27,9 @@ class CONTENT_EXPORT GpuDataManagerObserver {
 
   // Indicates that client 3D APIs (Pepper 3D, WebGL) were just blocked on the
   // given page, specifically because the GPU was reset recently.
-  virtual void DidBlock3DAPIs(const GURL& url,
+  virtual void DidBlock3DAPIs(const GURL& top_origin_url,
                               int render_process_id,
-                              int render_view_id,
+                              int render_frame_id,
                               ThreeDAPIType requester) {}
 
   // Called for any observer when the GPU process crashed.

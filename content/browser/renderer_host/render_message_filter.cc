@@ -449,8 +449,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnGetMonitorColorProfile)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvents, OnMediaLogEvents)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidLose3DContext, OnDidLose3DContext)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_Are3DAPIsBlocked, OnAre3DAPIsBlocked)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidLose3DContext, OnDidLose3DContext)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunWebAudioMediaCodec, OnWebAudioMediaCodec)
 #endif
@@ -1131,12 +1131,12 @@ void RenderMessageFilter::OnCompletedOpenChannelToNpapiPlugin(
   plugin_host_clients_.erase(client);
 }
 
-void RenderMessageFilter::OnAre3DAPIsBlocked(int render_view_id,
+void RenderMessageFilter::OnAre3DAPIsBlocked(int render_frame_id,
                                              const GURL& top_origin_url,
                                              ThreeDAPIType requester,
                                              bool* blocked) {
   *blocked = GpuDataManagerImpl::GetInstance()->Are3DAPIsBlocked(
-      top_origin_url, render_process_id_, render_view_id, requester);
+      top_origin_url, render_process_id_, render_frame_id, requester);
 }
 
 void RenderMessageFilter::OnDidLose3DContext(

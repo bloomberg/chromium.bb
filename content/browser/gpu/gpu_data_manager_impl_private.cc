@@ -927,11 +927,11 @@ void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(
   BlockDomainFrom3DAPIsAtTime(url, guilt, base::Time::Now());
 }
 
-bool GpuDataManagerImplPrivate::Are3DAPIsBlocked(const GURL& url,
+bool GpuDataManagerImplPrivate::Are3DAPIsBlocked(const GURL& top_origin_url,
                                                  int render_process_id,
-                                                 int render_view_id,
+                                                 int render_frame_id,
                                                  ThreeDAPIType requester) {
-  bool blocked = Are3DAPIsBlockedAtTime(url, base::Time::Now()) !=
+  bool blocked = Are3DAPIsBlockedAtTime(top_origin_url, base::Time::Now()) !=
       GpuDataManagerImpl::DOMAIN_BLOCK_STATUS_NOT_BLOCKED;
   if (blocked) {
     // Unretained is ok, because it's posted to UI thread, the thread
@@ -939,8 +939,8 @@ bool GpuDataManagerImplPrivate::Are3DAPIsBlocked(const GURL& url,
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&GpuDataManagerImpl::Notify3DAPIBlocked,
-                   base::Unretained(owner_), url, render_process_id,
-                   render_view_id, requester));
+                   base::Unretained(owner_), top_origin_url, render_process_id,
+                   render_frame_id, requester));
   }
 
   return blocked;
@@ -1191,13 +1191,14 @@ int64 GpuDataManagerImplPrivate::GetBlockAllDomainsDurationInMs() const {
   return kBlockAllDomainsMs;
 }
 
-void GpuDataManagerImplPrivate::Notify3DAPIBlocked(const GURL& url,
+void GpuDataManagerImplPrivate::Notify3DAPIBlocked(const GURL& top_origin_url,
                                                    int render_process_id,
-                                                   int render_view_id,
+                                                   int render_frame_id,
                                                    ThreeDAPIType requester) {
   GpuDataManagerImpl::UnlockedSession session(owner_);
   observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::DidBlock3DAPIs,
-                         url, render_process_id, render_view_id, requester);
+                         top_origin_url, render_process_id, render_frame_id,
+                         requester);
 }
 
 void GpuDataManagerImplPrivate::OnGpuProcessInitFailure() {

@@ -1450,22 +1450,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,
                     gfx::Size, /* Size of zoomed image */
                     cc::SharedBitmapId /* id */)
 
-// Sent by the renderer process to check whether client 3D APIs
-// (Pepper 3D, WebGL) are explicitly blocked.
-IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_Are3DAPIsBlocked,
-                            int /* render_view_id */,
-                            GURL /* top_origin_url */,
-                            content::ThreeDAPIType /* requester */,
-                            bool /* blocked */)
-
-// Sent by the renderer process to indicate that a context was lost by
-// client 3D content (Pepper 3D, WebGL) running on the page at the
-// given URL.
-IPC_MESSAGE_CONTROL3(ViewHostMsg_DidLose3DContext,
-                     GURL /* top_origin_url */,
-                     content::ThreeDAPIType /* context_type */,
-                     int /* arb_robustness_status_code */)
-
 // Notifies the browser that document has parsed the body. This is used by the
 // ResourceScheduler as an indication that bandwidth contention won't block
 // first paint.

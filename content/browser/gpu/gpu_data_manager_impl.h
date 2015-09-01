@@ -154,17 +154,17 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Note that the unblocking API must be part of the content API
   // because it is called from Chrome side code.
   void BlockDomainFrom3DAPIs(const GURL& url, DomainGuilt guilt);
-  bool Are3DAPIsBlocked(const GURL& url,
+  bool Are3DAPIsBlocked(const GURL& top_origin_url,
                         int render_process_id,
-                        int render_view_id,
+                        int render_frame_id,
                         ThreeDAPIType requester);
 
   // Disables domain blocking for 3D APIs. For use only in tests.
   void DisableDomainBlockingFor3DAPIsForTesting();
 
-  void Notify3DAPIBlocked(const GURL& url,
+  void Notify3DAPIBlocked(const GURL& top_origin_url,
                           int render_process_id,
-                          int render_view_id,
+                          int render_frame_id,
                           ThreeDAPIType requester);
 
   // Get number of features being blacklisted.

@@ -96,16 +96,16 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void BlockDomainFrom3DAPIs(
       const GURL& url, GpuDataManagerImpl::DomainGuilt guilt);
-  bool Are3DAPIsBlocked(const GURL& url,
+  bool Are3DAPIsBlocked(const GURL& top_origin_url,
                         int render_process_id,
-                        int render_view_id,
+                        int render_frame_id,
                         ThreeDAPIType requester);
 
   void DisableDomainBlockingFor3DAPIsForTesting();
 
-  void Notify3DAPIBlocked(const GURL& url,
+  void Notify3DAPIBlocked(const GURL& top_origin_url,
                           int render_process_id,
-                          int render_view_id,
+                          int render_frame_id,
                           ThreeDAPIType requester);
 
   size_t GetBlacklistedFeatureCount() const;

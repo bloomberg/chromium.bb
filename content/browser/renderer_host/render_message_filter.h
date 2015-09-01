@@ -289,7 +289,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnCompletedOpenChannelToNpapiPlugin(
       OpenChannelToNpapiPluginCallback* client);
 
-  void OnAre3DAPIsBlocked(int render_view_id,
+  void OnAre3DAPIsBlocked(int render_frame_id,
                           const GURL& top_origin_url,
                           ThreeDAPIType requester,
                           bool* blocked);

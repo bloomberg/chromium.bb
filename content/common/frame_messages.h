@@ -24,6 +24,7 @@
 #include "content/public/common/message_port_types.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/three_d_api_types.h"
 #include "content/public/common/transition_element.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
@@ -805,6 +806,22 @@ IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_CookiesEnabled,
                             GURL /* url */,
                             GURL /* first_party_for_cookies */,
                             bool /* cookies_enabled */)
+
+// Sent by the renderer process to check whether client 3D APIs
+// (Pepper 3D, WebGL) are explicitly blocked.
+IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_Are3DAPIsBlocked,
+                            int /* render_frame_id */,
+                            GURL /* top_origin_url */,
+                            content::ThreeDAPIType /* requester */,
+                            bool /* blocked */)
+
+// Sent by the renderer process to indicate that a context was lost by
+// client 3D content (Pepper 3D, WebGL) running on the page at the
+// given URL.
+IPC_MESSAGE_CONTROL3(FrameHostMsg_DidLose3DContext,
+                     GURL /* top_origin_url */,
+                     content::ThreeDAPIType /* context_type */,
+                     int /* arb_robustness_status_code */)
 
 #if defined(ENABLE_PLUGINS)
 // Notification sent from a renderer to the browser that a Pepper plugin
