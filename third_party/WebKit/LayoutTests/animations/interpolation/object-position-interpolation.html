@@ -129,5 +129,20 @@ assertInterpolation({
   {at: 1, is: '100% 0%'},
   {at: 1.5, is: '125% -25%'}
 ]);
+
+assertInterpolation({
+  property: 'object-position',
+  from: 'center',
+  to: 'right bottom 100%',
+}, [
+  {at: -0.5, is: '25% 75%'},
+  {at: 0, is: 'center'},
+  {at: 0.3, is: '65% 35%'},
+  {at: 0.5, is: '75% 25%'},
+  {at: 0.9, is: '95% 5%'},
+  {at: 1, is: 'right bottom 100%'},
+  {at: 1.5, is: '125% -25%'},
+  {at: 2, is: '150% -50%'},
+]);
 </script>
 </body>

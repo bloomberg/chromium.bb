@@ -377,11 +377,8 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderTopLeftRadius:
     case CSSPropertyBorderTopRightRadius:
-        range = RangeNonNegative;
-        // Fall through
-    case CSSPropertyObjectPosition:
         if (LengthPairStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthPairStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthPairStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
+            return LengthPairStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, RangeNonNegative);
         break;
 
     case CSSPropertyPerspectiveOrigin:
