@@ -1438,7 +1438,7 @@ if (!is_android) {
       "//ui/gfx:test_support",
       "//ui/resources",
     ]
-    data_deps = []
+    data_deps = [ "//third_party/mesa:osmesa" ]
 
     # TODO(GYP) Windows stuff
     # ['incremental_chrome_dll==1', {

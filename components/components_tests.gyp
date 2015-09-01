@@ -949,6 +949,8 @@
         'components_tests_pak',
         'mime_util/mime_util.gyp:mime_util',
         'url_formatter/url_formatter.gyp:url_formatter',
+        # Only needed at runtime.
+        '../third_party/mesa/mesa.gyp:osmesa',
       ],
       'conditions': [
         ['enable_rlz_support==1', {

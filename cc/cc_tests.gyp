@@ -296,6 +296,8 @@
         'cc.gyp:cc',
         'cc.gyp:cc_surfaces',
         'cc_test_support',
+        # Only needed at runtime.
+        '../third_party/mesa/mesa.gyp:osmesa',
       ],
       'sources': [
         'test/cc_test_suite.cc',
@@ -411,7 +413,6 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/mesa/mesa.gyp:osmesa',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gfx/gfx.gyp:gfx_test_support',
