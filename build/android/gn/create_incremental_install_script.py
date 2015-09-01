@@ -11,7 +11,8 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
-from gyp.util import build_utils
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'gyp'))
+from util import build_utils
 from pylib import constants
 
 
