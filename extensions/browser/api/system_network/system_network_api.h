@@ -7,7 +7,7 @@
 
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/system_network.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 
 namespace extensions {
 namespace api {

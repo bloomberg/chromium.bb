@@ -23,6 +23,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_interfaces.h"
 #include "net/ssl/ssl_info.h"
 #include "ui/base/l10n/l10n_util.h"
 

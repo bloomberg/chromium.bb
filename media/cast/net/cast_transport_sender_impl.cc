@@ -9,7 +9,7 @@
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/udp_transport.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 
 namespace media {
 namespace cast {

@@ -4,7 +4,7 @@
 
 #include "net/quic/network_connection.h"
 
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 
 namespace net {
 

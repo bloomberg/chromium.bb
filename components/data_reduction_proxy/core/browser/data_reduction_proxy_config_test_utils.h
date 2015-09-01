@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {

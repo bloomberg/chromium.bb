@@ -11,8 +11,8 @@
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/net/wifi_access_point_info_provider.h"
 #include "components/metrics/proto/system_profile.pb.h"
-#include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_interfaces.h"
 
 namespace metrics {
 

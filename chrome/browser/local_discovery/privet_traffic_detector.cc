@@ -10,6 +10,7 @@
 #include "base/sys_byteorder.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_interfaces.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/mdns_client.h"

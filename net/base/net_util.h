@@ -25,9 +25,6 @@
 #include "net/base/escape.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
-// TODO(eroman): Remove this header and require consumers to include it
-//               directly.
-#include "net/base/network_interfaces.h"
 
 class GURL;
 

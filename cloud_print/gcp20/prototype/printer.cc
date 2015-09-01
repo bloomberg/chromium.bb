@@ -27,7 +27,7 @@
 #include "cloud_print/gcp20/prototype/service_parameters.h"
 #include "cloud_print/gcp20/prototype/special_io.h"
 #include "cloud_print/version.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 #include "net/base/url_util.h"
 
 const char kPrinterStatePathDefault[] = "printer_state.json";

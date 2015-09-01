@@ -16,6 +16,7 @@
 #include "net/base/ip_address_number.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_interfaces.h"
 
 namespace content {
 

@@ -42,7 +42,7 @@
 #include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/net/rtp/rtp_parser.h"
 #include "media/cast/net/rtp/rtp_sender.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 
 namespace media {
 namespace cast {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 
 #include <set>
 #include <sys/types.h>

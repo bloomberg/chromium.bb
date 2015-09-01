@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier_factory.h"
+#include "net/base/network_interfaces.h"
 #include "net/dns/dns_config_service.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
