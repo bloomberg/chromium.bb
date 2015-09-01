@@ -1584,15 +1584,6 @@ crbug.com/526752 [ Win10 ] fast/css/fontfaceset-check-platform-fonts.html [ Fail
 
 # The Win10 result for fast/text/emoji-font-fallback-win.html does not match the description
 crbug.com/527044 [ Win10 ] fast/text/emoji-font-fallback-win.html [ ImageOnlyFailure Timeout ]
-crbug.com/521764 [ Win10 ] paint/inline/outline-offset.html [ NeedsRebaseline ]
-crbug.com/521764 [ Win10 ] svg/as-image/svg-object-intrinsic-size.html [ NeedsRebaseline ]
-crbug.com/521764 [ Win10 ] svg/repaint/shape-with-nested-outline.html [ NeedsRebaseline ]
-crbug.com/521764 [ Win10 ] transforms/2d/transform-borderbox.html [ NeedsRebaseline ]
-crbug.com/521764 [ Win10 ] virtual/spv2/fast/repaint/focus-continuations.html [ NeedsRebaseline ]
-crbug.com/521764 [ Win10 ] virtual/spv2/fast/repaint/focus-enable-continuations.html [ NeedsRebaseline ]
-crbug.com/521764 [ Win10 ] virtual/spv2/fast/repaint/outline-change-continuations.html [ NeedsRebaseline ]
-crbug.com/521764 [ Win10 ] virtual/spv2/fast/repaint/outline-continuations.html [ NeedsRebaseline ]
-crbug.com/521764 [ Win10 ] virtual/spv2/paint/inline/outline-offset.html [ NeedsRebaseline ]
 
 crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
 
