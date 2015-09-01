@@ -182,7 +182,9 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
     gfx::Rect visible_geometry_rect =
         scaled_occlusion.GetUnoccludedContentRect(geometry_rect);
-    if (visible_geometry_rect.IsEmpty())
+    // TODO(enne): HasRecordings is a workaround for crash in crbug.com/526402.
+    // Need proper fix for when recording does not cover visible rect.
+    if (visible_geometry_rect.IsEmpty() || !raster_source_->HasRecordings())
       return;
 
     gfx::Rect quad_content_rect = shared_quad_state->visible_quad_layer_rect;
