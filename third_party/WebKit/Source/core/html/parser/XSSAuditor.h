@@ -68,6 +68,8 @@ public:
 
     void setEncoding(const WTF::TextEncoding&);
 
+    bool isEnabled() const { return m_isEnabled; }
+
 private:
     static const size_t kMaximumFragmentLengthTarget = 100;
 

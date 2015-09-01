@@ -625,16 +625,17 @@ void HTMLDocumentParser::pumpTokenizer()
     // much we parsed as part of didWriteHTML instead of willWriteHTML.
     TRACE_EVENT_BEGIN1("devtools.timeline", "ParseHTML", "beginData", InspectorParseHtmlEvent::beginData(document(), m_input.current().currentLine().zeroBasedInt()));
 
-    m_xssAuditor.init(document(), &m_xssAuditorDelegate);
+    if (!isParsingFragment())
+        m_xssAuditor.init(document(), &m_xssAuditorDelegate);
 
     while (canTakeNextToken()) {
-        if (!isParsingFragment())
+        if (m_xssAuditor.isEnabled())
             m_sourceTracker.start(m_input.current(), m_tokenizer.get(), token());
 
         if (!m_tokenizer->nextToken(m_input.current(), token()))
             break;
 
-        if (!isParsingFragment()) {
+        if (m_xssAuditor.isEnabled()) {
             m_sourceTracker.end(m_input.current(), m_tokenizer.get(), token());
 
             // We do not XSS filter innerHTML, which means we (intentionally) fail
