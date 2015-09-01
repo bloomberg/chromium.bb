@@ -286,16 +286,5 @@
                 "Optimize": "true"
             }
         }
-    ],
-    "SafeBrowsingAndroid": [
-        {
-            "group_name": "Enabled",
-            "params": {
-                "enabled": "true"
-            }
-        },
-        {
-            "group_name": "Control"
-        }
     ]
 }
