@@ -202,34 +202,32 @@ void ImageTransportSurfaceOverlayMac::ScheduleOverlayPlaneForPartialDamage(
   }
   if (!root_plane.get())
     return;
-  bool damage_full_window = false;
 
-  // Grow the partial damage rect to include the new damage.
   gfx::Rect this_damage_dip_rect = gfx::ConvertRectToDIP(
       scale_factor_, this_damage_pixel_rect);
-  accumulated_damage_dip_rect_.Union(this_damage_dip_rect);
 
-  // If the accumulated partial damage is covered by opaque layers, then tell
-  // the root layer not to draw anything, and don't add a partial damage
-  // overlay.
-  bool overlays_cover_accumulated_damage = false;
-  bool overlays_cover_this_damage = false;
   for (const linked_ptr<OverlayPlane>& plane : pending_overlay_planes_) {
     if (plane->type == OverlayPlane::OVERLAY) {
-      overlays_cover_accumulated_damage |=
-          plane->dip_frame_rect.Contains(accumulated_damage_dip_rect_);
-      overlays_cover_this_damage |=
-          plane->dip_frame_rect.Contains(this_damage_dip_rect);
+      this_damage_dip_rect.Subtract(plane->dip_frame_rect);
+      accumulated_damage_dip_rect_.Subtract(plane->dip_frame_rect);
     }
   }
-  if (overlays_cover_accumulated_damage) {
+
+  if (this_damage_dip_rect.IsEmpty()) {
+    // Keep existing root layer unchanged.
     root_plane->io_surface.reset();
+    if (!accumulated_damage_dip_rect_.IsEmpty()) {
+      // Keep existing partial damage layer unchanged.
+      pending_overlay_planes_.push_back(linked_ptr<OverlayPlane>(
+          new OverlayPlane(OverlayPlane::ROOT_PARTIAL_DAMAGE, 0,
+                           base::ScopedCFTypeRef<IOSurfaceRef>(),
+                           accumulated_damage_dip_rect_, gfx::Rect())));
+    }
     return;
   }
-  // If the current damage is covered, but not the accumulated damage, then
-  // damage the full window, so that we might hit this path next frame.
-  if (overlays_cover_this_damage)
-    damage_full_window = true;
+
+  // Grow the partial damage rect to include the new damage.
+  accumulated_damage_dip_rect_.Union(this_damage_dip_rect);
 
   // Compute the fraction of the accumulated partial damage rect that has been
   // damaged. If this gets too small (<75%), just re-damage the full window,
@@ -238,11 +236,8 @@ void ImageTransportSurfaceOverlayMac::ScheduleOverlayPlaneForPartialDamage(
   double fraction_of_damage =
       this_damage_dip_rect.size().GetArea() / static_cast<double>(
           accumulated_damage_dip_rect_.size().GetArea());
-  if (fraction_of_damage <= kMinimumFractionOfPartialDamage)
-    damage_full_window = true;
-
-  // Early-out if we decided to damage the full window.
-  if (damage_full_window) {
+  if (fraction_of_damage <= kMinimumFractionOfPartialDamage) {
+    // Early-out if we decided to damage the full window.
     accumulated_damage_dip_rect_ = gfx::Rect();
     return;
   }
@@ -426,9 +421,9 @@ void ImageTransportSurfaceOverlayMac::UpdateCALayerTree(
         [plane_layer setContents:new_contents];
       }
     } else {
-      // A nil IOSurface indicates that partial damage is being tracked by a
-      // sub-layer.
-      DCHECK(plane->type == OverlayPlane::ROOT);
+      // No content update is needed for this layer.
+      DCHECK(plane->type == OverlayPlane::ROOT ||
+             plane->type == OverlayPlane::ROOT_PARTIAL_DAMAGE);
     }
 
     static bool show_borders =
