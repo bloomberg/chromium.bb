@@ -6,6 +6,7 @@
 #define WorkerInspectorProxy_h
 
 #include "core/CoreExport.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
 
@@ -19,18 +20,20 @@ class WorkerThread;
 
 // A proxy for talking to the worker inspector on the worker thread.
 // All of these methods should be called on the main thread.
-class CORE_EXPORT WorkerInspectorProxy final {
-    WTF_MAKE_FAST_ALLOCATED(WorkerInspectorProxy);
+class CORE_EXPORT WorkerInspectorProxy final : public NoBaseWillBeGarbageCollectedFinalized<WorkerInspectorProxy> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerInspectorProxy);
 public:
-    static PassOwnPtr<WorkerInspectorProxy> create();
+    static PassOwnPtrWillBeRawPtr<WorkerInspectorProxy> create();
 
     ~WorkerInspectorProxy();
+    DECLARE_TRACE();
 
-    class PageInspector {
+    class PageInspector : public NoBaseWillBeGarbageCollectedFinalized<PageInspector> {
     public:
         virtual ~PageInspector() { }
         virtual void dispatchMessageFromWorker(const String&) = 0;
         virtual void workerConsoleAgentEnabled(WorkerGlobalScopeProxy*) = 0;
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
     void workerThreadCreated(ExecutionContext*, WorkerThread*, const KURL&);
@@ -52,8 +55,8 @@ private:
     void addDebuggerTaskForWorker(const WebTraceLocation&, PassOwnPtr<WebThread::Task>);
 
     WorkerThread* m_workerThread;
-    ExecutionContext* m_executionContext;
-    WorkerInspectorProxy::PageInspector* m_pageInspector;
+    RawPtrWillBeMember<ExecutionContext> m_executionContext;
+    RawPtrWillBeMember<WorkerInspectorProxy::PageInspector> m_pageInspector;
     WorkerGlobalScopeProxy* m_workerGlobalScopeProxy;
 };
 

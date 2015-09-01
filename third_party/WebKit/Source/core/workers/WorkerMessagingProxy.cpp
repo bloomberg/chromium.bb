@@ -96,6 +96,7 @@ WorkerMessagingProxy::~WorkerMessagingProxy()
         || (m_executionContext->isWorkerGlobalScope() && toWorkerGlobalScope(m_executionContext.get())->thread()->isCurrentThread()));
     if (m_loaderProxy)
         m_loaderProxy->detachProvider(this);
+    m_workerInspectorProxy->setWorkerGlobalScopeProxy(nullptr);
 }
 
 void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode)

@@ -37,7 +37,6 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/PageConsoleAgent.h"
-#include "core/workers/WorkerInspectorProxy.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -48,61 +47,6 @@ namespace blink {
 namespace WorkerAgentState {
 static const char workerInspectionEnabled[] = "workerInspectionEnabled";
 static const char autoconnectToWorkers[] = "autoconnectToWorkers";
-};
-
-class InspectorWorkerAgent::WorkerAgentClient final : public WorkerInspectorProxy::PageInspector {
-    WTF_MAKE_FAST_ALLOCATED(InspectorWorkerAgent::WorkerAgentClient);
-public:
-    WorkerAgentClient(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, const String& id, PageConsoleAgent* consoleAgent)
-        : m_frontend(frontend)
-        , m_proxy(proxy)
-        , m_id(id)
-        , m_connected(false)
-        , m_consoleAgent(consoleAgent)
-    {
-        ASSERT(!proxy->pageInspector());
-    }
-    ~WorkerAgentClient() override
-    {
-        disconnectFromWorker();
-    }
-
-    String id() const { return m_id; }
-    WorkerInspectorProxy* proxy() const { return m_proxy; }
-
-    void connectToWorker()
-    {
-        if (m_connected)
-            return;
-        m_connected = true;
-        m_proxy->connectToInspector(this);
-    }
-
-    void disconnectFromWorker()
-    {
-        if (!m_connected)
-            return;
-        m_connected = false;
-        m_proxy->disconnectFromInspector();
-    }
-
-private:
-    // WorkerInspectorProxy::PageInspector implementation
-    void dispatchMessageFromWorker(const String& message) override
-    {
-        m_frontend->dispatchMessageFromWorker(m_id, message);
-    }
-    // WorkerInspectorProxy::PageInspector implementation
-    void workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy) override
-    {
-        m_consoleAgent->workerConsoleAgentEnabled(proxy);
-    }
-
-    InspectorFrontend::Worker* m_frontend;
-    WorkerInspectorProxy* m_proxy;
-    String m_id;
-    bool m_connected;
-    PageConsoleAgent* m_consoleAgent;
 };
 
 PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create(PageConsoleAgent* consoleAgent)
@@ -160,7 +104,7 @@ void InspectorWorkerAgent::disconnectFromWorker(ErrorString* error, const String
 {
     WorkerAgentClient* client = m_idToClient.get(workerId);
     if (client)
-        client->disconnectFromWorker();
+        client->dispose();
     else
         *error = "Worker is gone";
 }
@@ -209,7 +153,7 @@ void InspectorWorkerAgent::workerTerminated(WorkerInspectorProxy* proxy)
     for (WorkerClients::iterator it = m_idToClient.begin(); it != m_idToClient.end(); ++it) {
         if (proxy == it->value->proxy()) {
             frontend()->workerTerminated(it->key);
-            delete it->value;
+            it->value->dispose();
             m_idToClient.remove(it);
             return;
         }
@@ -224,29 +168,87 @@ void InspectorWorkerAgent::createWorkerAgentClientsForExistingWorkers()
 
 void InspectorWorkerAgent::destroyWorkerAgentClients()
 {
-    for (auto& client : m_idToClient) {
-        client.value->disconnectFromWorker();
-        delete client.value;
-    }
+    for (auto& client : m_idToClient)
+        client.value->dispose();
     m_idToClient.clear();
 }
 
 void InspectorWorkerAgent::createWorkerAgentClient(WorkerInspectorProxy* workerInspectorProxy, const String& url, const String& id)
 {
-    WorkerAgentClient* client = new WorkerAgentClient(frontend(), workerInspectorProxy, id, m_consoleAgent);
-    m_idToClient.set(id, client);
+    OwnPtrWillBeRawPtr<WorkerAgentClient> client = WorkerAgentClient::create(frontend(), workerInspectorProxy, id, m_consoleAgent);
+    WorkerAgentClient* rawClient = client.get();
+    m_idToClient.set(id, client.release());
 
     ASSERT(frontend());
     bool autoconnectToWorkers = m_state->getBoolean(WorkerAgentState::autoconnectToWorkers);
     if (autoconnectToWorkers)
-        client->connectToWorker();
+        rawClient->connectToWorker();
     frontend()->workerCreated(id, url, autoconnectToWorkers);
 }
 
 DEFINE_TRACE(InspectorWorkerAgent)
 {
+#if ENABLE(OILPAN)
+    visitor->trace(m_idToClient);
     visitor->trace(m_consoleAgent);
+#endif
     InspectorBaseAgent<InspectorWorkerAgent, InspectorFrontend::Worker>::trace(visitor);
+}
+
+PassOwnPtrWillBeRawPtr<InspectorWorkerAgent::WorkerAgentClient> InspectorWorkerAgent::WorkerAgentClient::create(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, const String& id, PageConsoleAgent* consoleAgent)
+{
+    return adoptPtrWillBeNoop(new InspectorWorkerAgent::WorkerAgentClient(frontend, proxy, id, consoleAgent));
+}
+
+InspectorWorkerAgent::WorkerAgentClient::WorkerAgentClient(InspectorFrontend::Worker* frontend, WorkerInspectorProxy* proxy, const String& id, PageConsoleAgent* consoleAgent)
+    : m_frontend(frontend)
+    , m_proxy(proxy)
+    , m_id(id)
+    , m_connected(false)
+    , m_consoleAgent(consoleAgent)
+{
+    ASSERT(!proxy->pageInspector());
+}
+InspectorWorkerAgent::WorkerAgentClient::~WorkerAgentClient()
+{
+    ASSERT(!m_frontend);
+    ASSERT(!m_proxy);
+    ASSERT(!m_consoleAgent);
+}
+
+void InspectorWorkerAgent::WorkerAgentClient::connectToWorker()
+{
+    if (m_connected)
+        return;
+    m_connected = true;
+    m_proxy->connectToInspector(this);
+}
+
+void InspectorWorkerAgent::WorkerAgentClient::dispose()
+{
+    if (m_connected) {
+        m_connected = false;
+        m_proxy->disconnectFromInspector();
+    }
+    m_frontend = nullptr;
+    m_proxy = nullptr;
+    m_consoleAgent = nullptr;
+}
+
+void InspectorWorkerAgent::WorkerAgentClient::dispatchMessageFromWorker(const String& message)
+{
+    m_frontend->dispatchMessageFromWorker(m_id, message);
+}
+void InspectorWorkerAgent::WorkerAgentClient::workerConsoleAgentEnabled(WorkerGlobalScopeProxy* proxy)
+{
+    m_consoleAgent->workerConsoleAgentEnabled(proxy);
+}
+
+DEFINE_TRACE(InspectorWorkerAgent::WorkerAgentClient)
+{
+    visitor->trace(m_proxy);
+    visitor->trace(m_consoleAgent);
+    WorkerInspectorProxy::PageInspector::trace(visitor);
 }
 
 } // namespace blink

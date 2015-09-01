@@ -143,7 +143,7 @@ private:
     // This one is bound to and used only on the main thread.
     OwnPtr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
-    OwnPtr<WorkerInspectorProxy> m_workerInspectorProxy;
+    OwnPtrWillBePersistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
     RefPtr<WorkerThread> m_workerThread;
 

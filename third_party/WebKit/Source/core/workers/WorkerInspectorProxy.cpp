@@ -26,9 +26,9 @@ WorkerInspectorProxy::WorkerInspectorProxy()
 {
 }
 
-PassOwnPtr<WorkerInspectorProxy> WorkerInspectorProxy::create()
+PassOwnPtrWillBeRawPtr<WorkerInspectorProxy> WorkerInspectorProxy::create()
 {
-    return adoptPtr(new WorkerInspectorProxy());
+    return adoptPtrWillBeNoop(new WorkerInspectorProxy());
 }
 
 WorkerInspectorProxy::~WorkerInspectorProxy()
@@ -106,6 +106,12 @@ void WorkerInspectorProxy::addDebuggerTaskForWorker(const WebTraceLocation& loca
 {
     m_workerThread->appendDebuggerTask(task);
     m_workerThread->backingThread().postTask(location, new Task(threadSafeBind(&runDebuggerTaskForWorker, AllowCrossThreadAccess(m_workerThread))));
+}
+
+DEFINE_TRACE(WorkerInspectorProxy)
+{
+    visitor->trace(m_executionContext);
+    visitor->trace(m_pageInspector);
 }
 
 } // namespace blink

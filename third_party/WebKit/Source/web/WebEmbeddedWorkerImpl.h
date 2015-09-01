@@ -108,7 +108,7 @@ private:
     RefPtr<WorkerThread> m_workerThread;
     RefPtr<WorkerLoaderProxy> m_loaderProxy;
     OwnPtr<ServiceWorkerGlobalScopeProxy> m_workerGlobalScopeProxy;
-    OwnPtr<WorkerInspectorProxy> m_workerInspectorProxy;
+    OwnPtrWillBePersistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
     // 'shadow page' - created to proxy loading requests from the worker.
     // Both WebView and WebFrame objects are close()'ed (where they're
