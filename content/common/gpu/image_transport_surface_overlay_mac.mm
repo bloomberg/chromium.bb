@@ -229,6 +229,11 @@ void ImageTransportSurfaceOverlayMac::ScheduleOverlayPlaneForPartialDamage(
   // Grow the partial damage rect to include the new damage.
   accumulated_damage_dip_rect_.Union(this_damage_dip_rect);
 
+  if (accumulated_damage_dip_rect_ == root_plane->dip_frame_rect) {
+    accumulated_damage_dip_rect_ = gfx::Rect();
+    return;
+  }
+
   // Compute the fraction of the accumulated partial damage rect that has been
   // damaged. If this gets too small (<75%), just re-damage the full window,
   // so we can re-create a smaller partial damage layer next frame.
@@ -441,7 +446,7 @@ void ImageTransportSurfaceOverlayMac::UpdateCALayerTree(
         // Red represents damaged contents.
         color.reset(CGColorCreateGenericRGB(1, 0, 0, 1));
       }
-      [plane_layer setBorderWidth:2];
+      [plane_layer setBorderWidth:plane_layer == root_layer ? 1 : 2];
       [plane_layer setBorderColor:color];
     }
 
@@ -494,10 +499,7 @@ void ImageTransportSurfaceOverlayMac::PostCheckPendingSwapsCallbackIfNeeded(
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffers() {
-  // Clear the accumulated damage rect, since the partial damage overlay will be
-  // removed.
-  accumulated_damage_dip_rect_ = gfx::Rect();
-  return SwapBuffersInternal();
+  return PostSubBuffer(0, 0, pixel_size_.width(), pixel_size_.height());
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::PostSubBuffer(int x,
