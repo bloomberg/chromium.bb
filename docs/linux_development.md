@@ -1,7 +1,9 @@
 # Linux Development
 
-**Please join us on IRC for the most up-to-date development discussion:
-`irc.freenode.net`, `#chromium`**
+*** promo
+Please join us on IRC for the most up-to-date development discussion:
+`irc.freenode.net`, `#chromium`.
+***
 
 ## Checkout and Build
 
@@ -9,8 +11,8 @@ See the [Linux build instructions](linux_build_instructions.md).
 
 ## What Needs Work
 
-Look at the Chromium bug tracker for open Linux issues:
-http://code.google.com/p/chromium/issues/list?can=2&q=os%3Alinux
+Look at the Chromium bug tracker for
+[open Linux issues](http://code.google.com/p/chromium/issues/list?can=2&q=os%3Alinux).
 
 Issues marked "Available" are ready for someone to claim. To claim an issue, add
 a comment and then a project member will mark it "Assigned". If none of the
@@ -31,12 +33,12 @@ issues. If you can't find a related bug, please create a
 
 ## Contributing code
 
-See [ContributingCode](http://dev.chromium.org/developers/contributing-code).
+See [Contributing code](http://dev.chromium.org/developers/contributing-code).
 
 ## Debugging
 
-See [linux_debugging.md](linux_debugging.md).
+See [Linux debugging](linux_debugging.md).
 
 ## Documents
 
-[linux_graphics_pipeline.md](linux_graphics_pipeline.md)
+[Linux Graphics Pipeline](linux_graphics_pipeline.md)

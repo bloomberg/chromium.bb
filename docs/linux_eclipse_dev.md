@@ -22,10 +22,9 @@ developing Chromium. It's unpolished, but here's what works:
 
 Eclipse 4.3 (Kepler) is known to work with Chromium for Linux.
 
-*   Download the distribution appropriate for your OS. For example, for Linux
-    64-bit/Java 64-bit, use the Linux 64 bit package from
-    http://www.eclipse.org/downloads/ (Eclipse Packages Tab -> Linux 64 bit
-    (link in bottom right)).
+*   [Download](http://www.eclipse.org/downloads/) the distribution appropriate
+    for your OS. For example, for Linux 64-bit/Java 64-bit, use the Linux 64 bit
+    package (Eclipse Packages Tab -> Linux 64 bit (link in bottom right)).
     *   Tip: The packaged version of eclipse in distros may not work correctly
         with the latest CDT plugin (installed below). Best to get them all from
         the same source.
@@ -38,8 +37,10 @@ Eclipse 4.3 (Kepler) is known to work with Chromium for Linux.
         `-Xmx3072m` (maximum heap).
     *   Googlers: Edit `~/.eclipse/init.sh` to add this:
 
-    export ECLIPSE_MEM_START="1024M"
-    export ECLIPSE_MEM_MAX="3072M"
+```
+export ECLIPSE_MEM_START="1024M"
+export ECLIPSE_MEM_MAX="3072M"
+```
 
 The large heap size prevents out of memory errors if you include many Chrome
 subprojects that Eclipse is maintaining code indices for.
@@ -93,11 +94,10 @@ same directory as your checkout.
 
 1.  From the Help menu, select Install New Software...
     1.  Select the 'Workd with' URL for the CDT
-        1.  If it's not there you can click Add... and add it.
-            1.  See https://eclipse.org/cdt/downloads.php for up to date
-                versions.
-                1.  e.g. with CDT 8.7.0 for Eclipse Mars, use
-                    http://download.eclipse.org/tools/cdt/releases/8.7
+        If it's not there you can click Add... and add it.
+        See https://eclipse.org/cdt/downloads.php for up to date versions,
+        e.g. with CDT 8.7.0 for Eclipse Mars, use
+        http://download.eclipse.org/tools/cdt/releases/8.7
     1.  Googlers: We have a local mirror, but be sure you run prodaccess before
         trying to use it.
 1.  Select & install the Main and Optional features.

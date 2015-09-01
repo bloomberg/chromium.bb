@@ -16,7 +16,9 @@ needed. Talk to security@chromium.org.
 
 ## GDB
 
-**GDB-7.7 is required in order to debug Chrome on Linux.**
+*** promo
+GDB-7.7 is required in order to debug Chrome on Linux.
+***
 
 Any prior version will fail to resolve symbols or segfault.
 
@@ -59,17 +61,19 @@ if you're also running the main process in gdb, won't work at all (the two
 instances will fight over the terminal). To auto-start the renderers in the
 debugger, send the "run" command to the debugger:
 
-    chrome --no-sandbox --renderer-cmd-prefix='xterm -title renderer -e gdb -ex \
-        run --args
+    chrome --no-sandbox --renderer-cmd-prefix='xterm -title renderer -e gdb \
+        -ex run --args
 
 If you're using Emacs and `M-x gdb`, you can do
 
     chrome "--renderer-cmd-prefix=gdb --args"
 
+*** note
 Note: using the `--renderer-cmd-prefix` option bypasses the zygote launcher, so
 the renderers won't be sandboxed. It is generally not an issue, except when you
 are trying to debug interactions with the sandbox. If that's what you are doing,
 you will need to attach your debugger to a running renderer process (see below).
+***
 
 You may also want to pass `--disable-hang-monitor` to suppress the hang monitor,
 which is rather annoying.
@@ -177,8 +181,10 @@ Same strategies as renderers above, but the flag is called `--plugin-launcher`:
 
     chrome --plugin-launcher='xterm -e gdb --args'
 
-_Note: For now, this does not currently apply to PPAPI plugins because they
-currently run in the renderer process._
+*** note
+Note: For now, this does not currently apply to PPAPI plugins because they
+currently run in the renderer process.
+***
 
 #### Single-Process mode
 
@@ -257,7 +263,7 @@ Use the `gdb-add-index` script (e.g.
 `build/gdb-add-index out/Debug/browser_tests`)
 
 Only makes sense if you run the binary multiple times or maybe if you use the
-component build since most .so files won't require reindexing on a rebuild.
+component build since most `.so` files won't require reindexing on a rebuild.
 
 See
 https://groups.google.com/a/chromium.org/forum/#!searchin/chromium-dev/gdb-add-index/chromium-dev/ELRuj1BDCL4/5Ki4LGx41CcJ
@@ -364,7 +370,7 @@ Alternatively, you can use testing/xvfb.py to set up your environment for you:
     testing/xvfb.py out/Debug out/Debug/browser_tests \
         --gtest_filter="MyBrowserTest.MyActivateWindowTest"
 
-### `BROWSER_WRAPPER`
+### BROWSER_WRAPPER
 
 You can also get the browser under a debugger by setting the `BROWSER_WRAPPER`
 environment variable.  (You can use this for `browser_tests` too, but see above
@@ -391,8 +397,7 @@ Default log level hides `LOG(INFO)`. Run with `--log-level=0` and
 `--enable-logging=stderr` flags.
 
 Newer versions of chromium with VLOG may need --v=1 too. For more VLOG tips, see
-the chromium-dev thread:
-http://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/dcd0cd7752b35de6?pli=1
+[the chromium-dev thread](http://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/dcd0cd7752b35de6?pli=1).
 
 ### Seeing IPC debug messages
 
@@ -405,9 +410,9 @@ or within gdb:
     set environment CHROME_IPC_LOGGING 1
 
 If some messages show as unknown, check if the list of IPC message headers in
-`chrome/common/logging_chrome.cc` is up-to-date. In case this file reference
-goes out of date, try looking for usage of macros like `IPC_MESSAGE_LOG_ENABLED`
-or `IPC_MESSAGE_MACROS_LOG_ENABLED`.
+[chrome/common/logging_chrome.cc](/chrome/common/logging_chrome.cc) is
+up-to-date. In case this file reference goes out of date, try looking for usage
+of macros like `IPC_MESSAGE_LOG_ENABLED` or `IPC_MESSAGE_MACROS_LOG_ENABLED`.
 
 ## Using valgrind
 
@@ -469,7 +474,7 @@ with the appropriate instructions if you know what they are.)
 
 ## Breakpad
 
-See the last section of [linux_crash_dumping.md](linux_crash_dumping.md); you
+See the last section of [Linux Crash Dumping](linux_crash_dumping.md); you
 need to set a gyp variable and an environment variable for the crash dump tests
 to work.
 
@@ -478,7 +483,7 @@ to work.
 If you break in a debugger during a drag, Chrome will have grabbed your mouse
 and keyboard so you won't be able to interact with the debugger!  To work around
 this, run via `Xephyr`. Instructions for how to use `Xephyr` are on the
-[layout_tests_linux.md](layout_tests_linux.md) page.
+[Running layout tests on Linux](layout_tests_linux.md) page.
 
 ## Tracking Down Bugs
 
@@ -486,6 +491,7 @@ this, run via `Xephyr`. Instructions for how to use `Xephyr` are on the
 
 Old builds are archived here:
 http://build.chromium.org/buildbot/snapshots/chromium-rel-linux/
+(TODO: does not exist).
 
 `tools/bisect-builds.py` in the tree automates bisecting through the archived
 builds. Despite a computer science education, I am still amazed how quickly
@@ -533,7 +539,7 @@ Some strategies are:
 
 To test on various window managers, you can use a nested X server like `Xephyr`.
 Instructions for how to use `Xephyr` are on the
-[layout_tests_linux.md](layout_tests_linux.md) page.
+[Running layout tests on Linux](layout_tests_linux.md) page.
 
 If you need to test something with hardware accelerated compositing
 (e.g., compiz), you can use `Xgl` (`sudo apt-get install xserver-xgl`). E.g.:

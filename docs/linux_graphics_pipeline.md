@@ -1,10 +1,10 @@
 # Linux Graphics Pipeline
 
 Note, this deals with `test_shell` only. See
-[BitmapPipeline](BitmapPipeline.md) for the picture in the browser.
+[Bitmap Pipeline](bitmap_pipeline.md) for the picture in the browser.
 
 ![http://chromium.googlecode.com/svn/trunk/images/linux-gfx.png](http://chromium.googlecode.com/svn/trunk/images/linux-gfx.png)
 
 TODO: Does this render correctly?
 
-(SVG source ![http://chromium.googlecode.com/svn/trunk/images/linux-gfx.svg](http://chromium.googlecode.com/svn/trunk/images/linux-gfx.svg))
+[SVG source](http://chromium.googlecode.com/svn/trunk/images/linux-gfx.svg)

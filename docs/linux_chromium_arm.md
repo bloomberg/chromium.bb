@@ -56,22 +56,22 @@ Chromium's testing infrastructure for ARM/Linux is (to say the least)
 in its infancy. There are currently two builders setup, one on the
 FYI waterfall and one the the trybot waterfall:
 
-http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM%20Cross-Compile
-http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm
+*   [Linux ARM Cross-Compile](http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM%20Cross-Compile)
+*   [linux_arm](http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm)
 
 These builders cross compile on x86-64 and then trigger testing on real ARM hard
 bots:
 
-http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM%20Tests%20%28Panda%29/
-http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm_tester
+*   [Linux ARM Tests (Panda)](http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM%20Tests%20%28Panda%29/)
+*   [linux_arm_tester](http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm_tester)
 
 Unfortunately, even those the builders are usually green, the testers are not
 yet well maintained or monitored.
 
 There is compile-only trybot and fyi bot also:
 
-http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM
-http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm_compile
+*   [Linux ARM](http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM)
+*   [linux_arm_compile](http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm_compile)
 
 ### Testing with QEMU
 

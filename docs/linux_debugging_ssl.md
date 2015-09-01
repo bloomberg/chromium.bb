@@ -10,9 +10,9 @@ In order to use a debugger with the NSS library, it helps to build NSS yourself.
 Here's how I did it:
 
 First, read
-http://www.mozilla.org/projects/security/pki/nss/nss-3.11.4/nss-3.11.4-build.html
+[Network Security Services](http://www.mozilla.org/projects/security/pki/nss/nss-3.11.4/nss-3.11.4-build.html)
 and/or
-https://developer.mozilla.org/En/NSS_reference/Building_and_installing_NSS/Build_instructions
+[Build instructions](https://developer.mozilla.org/En/NSS_reference/Building_and_installing_NSS/Build_instructions).
 
 Then, to build the most recent source tarball:
 
@@ -137,6 +137,6 @@ be set automatically.)
 
 ## Support forums
 
-If you have nonconfidential questions about NSS, check the newsgroup
-http://groups.google.com/group/mozilla.dev.tech.crypto The NSS maintainer
-monitors that group and gives good answers.
+If you have nonconfidential questions about NSS, check
+[the newsgroup](http://groups.google.com/group/mozilla.dev.tech.crypto).
+The NSS maintainer monitors that group and gives good answers.

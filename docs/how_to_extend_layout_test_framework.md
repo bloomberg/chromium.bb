@@ -31,17 +31,12 @@ what exactly exactly is being tested.
 This part isn’t too difficult. There are basically two classes that need to be
 extended (ideally, just inherited from). These classes are:
 
-    Driver
-
-Located in `layout_tests/port/driver.py`. Each instance of this is the class
-that will actually an instance of the program that produces the test data
-(program in Part 2).
-
-    Port
-
-Located in `layout_tests/port/base.py`. This class is responsible creating
-drivers with the correct settings, giving access to certain OS functionality to
-access expected files, etc.
+*   `Driver`. Located in `layout_tests/port/driver.py`. Each instance of this is
+    the class that will actually an instance of the program that produces the
+    test data (program in Part 2).
+*   `Port`. Located in `layout_tests/port/base.py`. This class is responsible
+    creating drivers with the correct settings, giving access to certain OS
+    functionality to access expected files, etc.
 
 #### Extending Driver
 
@@ -119,6 +114,7 @@ tests in that directory, but it will find the correct TestExpectations file, the
 platform specific expected files, etc.
 
 Here are some of the functions that most likely need to be overridden.
+
 *   `driver_class`
     *   This should be overridden to allow the testing program to actually run.
         By default the code will run content_shell, which might or might not be

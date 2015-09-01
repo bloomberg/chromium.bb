@@ -106,7 +106,7 @@ I actually tried this locally. There's a sort of uncanny valley effect going on;
 as the frame looks more native, it's more obvious that it isn't behaving like a
 native frame. (Also my implementation added a startup time hit.)
 
-### Why use style properties instead of (i.e.) `bg[STATE]`?
+### Why use style properties instead of (i.e.) bg[STATE]?
 
 There's no way to distinguish between colors set on different classes. Using
 style properties allows us to be backwards compatible and maintain the

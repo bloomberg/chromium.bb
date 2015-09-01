@@ -26,10 +26,12 @@ Here's an overview of the steps you'll run:
 *   [Get the Code](http://dev.chromium.org/developers/how-tos/get-the-code):
     check out the source code.
 
-**Note**. If you are working on Chromium OS and already have sources in
+*** note
+Note: if you are working on Chromium OS and already have sources in
 `chromiumos/chromium`, you **must** run `chrome_set_ver --runhooks` to set the
 correct dependencies. This step is otherwise performed by `gclient` as part of
 your checkout.
+***
 
 ## First Time Build Bootstrap
 

@@ -144,9 +144,11 @@ As root:
 
     mount -t tmpfs -o size=20G,nr_inodes=40k,mode=1777 tmpfs /path/to/out
 
+*** note
 **Caveat:** You need to have enough RAM + swap to back the tmpfs. For a full
 debug build, you will need about 20 GB. Less for just building the chrome target
 or for a release build.
+***
 
 Quick and dirty benchmark numbers on a HP Z600 (Intel core i7, 16 cores
 hyperthreaded, 12 GB RAM)

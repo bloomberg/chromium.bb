@@ -54,7 +54,7 @@ gtkparasite, you can do:
     scp bunny.sfo:/usr/lib/gtk-2.0/modules/libgtkparasite.so /tmp
     sudo cp /tmp/libgtkparasite.so /usr/lib/gtk-2.0/modules/libgtkparasite.so
 
-## `GDK_DEBUG`
+## GDK_DEBUG
 
 Use `GDK_DEBUG=nograbs` to run GTK+ without grabs. This is useful for gdb
 sessions.

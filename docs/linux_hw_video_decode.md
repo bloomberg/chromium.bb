@@ -1,4 +1,4 @@
-# Enabling hardware `<video>` decode codepaths on linux
+# Enabling hardware <video> decode codepaths on linux
 
 Hardware acceleration of video decode on Linux is
 [unsupported](https://crbug.com/137247) in Chrome for user-facing builds. During
@@ -59,8 +59,10 @@ on a gprecise setup.
     `--vmodule=*content/common/gpu/media/*=10,gpu_video*=1` might be
     enlightening.
 
-**NOTE THIS IS AN UNSUPPORTED CONFIGURATION AND LIKELY TO BE BROKEN AT ANY
-POINT IN TIME**
+** note
+NOTE THIS IS AN UNSUPPORTED CONFIGURATION AND LIKELY TO BE BROKEN AT ANY
+POINT IN TIME
+**
 
 This page is purely here to help developers targeting supported HW `<video>`
 decode platforms be more effective. Do not expect help if this setup fails to

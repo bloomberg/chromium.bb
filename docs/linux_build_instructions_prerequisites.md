@@ -45,7 +45,7 @@ Before setting up the environment, make sure you install the
 
 ### Ubuntu Setup
 
-Run [build/install-build-deps.sh](build/install-build-deps.sh) The script only
+Run [build/install-build-deps.sh](/build/install-build-deps.sh) The script only
 supports current releases as listed on https://wiki.ubuntu.com/Releases.
 
 Building on Linux requires software not usually installed with the
@@ -98,6 +98,7 @@ The msttcorefonts packages can be obtained by following the instructions present
 here: http://www.fedorafaq.org/#installfonts
 
 For the optional packages:
+
 *   php-cgi is provided by the php-cli package
 *   wdiff doesn't exist in Fedora repositories, a possible alternative would be
     dwdiff
@@ -105,14 +106,13 @@ For the optional packages:
 
     su -c 'yum install httpd mod_ssl php php-cli wdiff'
 
-
 #### Arch Linux Setup
 
 Most of these packages are probably already installed since they're often used,
 and the parameter --needed ensures that packages up to date are not reinstalled.
 
 ```shell
-$ sudo pacman -S --needed python perl gcc gcc-libs bison flex gperf pkgconfig \
+sudo pacman -S --needed python perl gcc gcc-libs bison flex gperf pkgconfig \
   nss alsa-lib gconf glib2 gtk2 nspr ttf-ms-fonts freetype2 cairo dbus \
   libgnome-keyring
 ```
@@ -139,17 +139,24 @@ lib64pango1.0-devel lib64cairo-devel lib64nss-devel lib64nspr-devel g++ python \
 perl bison flex subversion gperf
 ```
 
+*** note
 Note 1: msttcorefonts are not available, you will need to build your own (see
 instructions, not hard to do, see
 [mandriva_msttcorefonts.md](mandriva_msttcorefonts.md)) or use drakfont to
 import the fonts from a windows installation
+***
 
+*** note
 Note 2: these packages are for 64 bit, to download the 32 bit packages,
 substitute lib64 with lib
+***
 
+*** note
 Note 3: some of these packages might not be explicitly necessary as they come as
 dependencies, there is no harm in including them however.
+***
 
+*** note
 Note 4: to build on 64 bit systems use, instead of
 `GYP_DEFINES=target_arch=x64`, as mentioned in the general notes for building on
 64 bit:
@@ -158,6 +165,7 @@ Note 4: to build on 64 bit systems use, instead of
 export GYP_DEFINES="target_arch=x64"
 gclient runhooks --force
 ```
+***
 
 #### Gentoo setup
 
