@@ -605,26 +605,27 @@ void WebGLFramebuffer::drawBuffers(const Vector<GLenum>& bufs)
 
 void WebGLFramebuffer::drawBuffersIfNecessary(bool force)
 {
-    if (!context()->extensionEnabled(WebGLDrawBuffersName))
-        return;
-    bool reset = force;
-    // This filtering works around graphics driver bugs on Mac OS X.
-    for (size_t i = 0; i < m_drawBuffers.size(); ++i) {
-        if (m_drawBuffers[i] != GL_NONE && getAttachment(m_drawBuffers[i])) {
-            if (m_filteredDrawBuffers[i] != m_drawBuffers[i]) {
-                m_filteredDrawBuffers[i] = m_drawBuffers[i];
-                reset = true;
-            }
-        } else {
-            if (m_filteredDrawBuffers[i] != GL_NONE) {
-                m_filteredDrawBuffers[i] = GL_NONE;
-                reset = true;
+    if (context()->isWebGL2OrHigher()
+        || context()->extensionEnabled(WebGLDrawBuffersName)) {
+        bool reset = force;
+        // This filtering works around graphics driver bugs on Mac OS X.
+        for (size_t i = 0; i < m_drawBuffers.size(); ++i) {
+            if (m_drawBuffers[i] != GL_NONE && getAttachment(m_drawBuffers[i])) {
+                if (m_filteredDrawBuffers[i] != m_drawBuffers[i]) {
+                    m_filteredDrawBuffers[i] = m_drawBuffers[i];
+                    reset = true;
+                }
+            } else {
+                if (m_filteredDrawBuffers[i] != GL_NONE) {
+                    m_filteredDrawBuffers[i] = GL_NONE;
+                    reset = true;
+                }
             }
         }
-    }
-    if (reset) {
-        context()->webContext()->drawBuffersEXT(
-            m_filteredDrawBuffers.size(), m_filteredDrawBuffers.data());
+        if (reset) {
+            context()->webContext()->drawBuffersEXT(
+                m_filteredDrawBuffers.size(), m_filteredDrawBuffers.data());
+        }
     }
 }
 
