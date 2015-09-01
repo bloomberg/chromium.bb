@@ -353,6 +353,10 @@ void BrowserNonClientFrameViewAsh::Layout() {
   }
   header_painter_->SetHeaderHeightForPainting(painted_height);
 
+  if (avatar_button()) {
+    LayoutAvatar();
+    header_painter_->UpdateLeftViewXInset(avatar_button()->bounds().right());
+  }
 #if defined(FRAME_AVATAR_BUTTON)
   if (new_avatar_button())
     LayoutNewStyleAvatar();
