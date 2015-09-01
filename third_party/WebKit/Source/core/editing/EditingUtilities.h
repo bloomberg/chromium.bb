@@ -247,6 +247,8 @@ int comparePositions(const VisiblePosition&, const VisiblePosition&);
 
 int indexForVisiblePosition(const VisiblePosition&, RefPtrWillBeRawPtr<ContainerNode>& scope);
 EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
+EphemeralRange normalizeRange(const EphemeralRange&);
+EphemeralRangeInComposedTree normalizeRange(const EphemeralRangeInComposedTree&);
 VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 
 // -------------------------------------------------------------------------

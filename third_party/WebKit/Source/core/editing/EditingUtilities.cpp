@@ -1531,6 +1531,33 @@ EphemeralRange makeRange(const VisiblePosition &start, const VisiblePosition &en
     return EphemeralRange(s, e);
 }
 
+template <typename Strategy>
+static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralRangeTemplate<Strategy>& range)
+{
+    ASSERT(range.isNotNull());
+    range.document().updateLayoutIgnorePendingStylesheets();
+
+    // TODO(yosin) We should not call |parentAnchoredEquivalent()|, it is
+    // redundant.
+    const PositionAlgorithm<Strategy> normalizedStart = mostForwardCaretPosition(range.startPosition()).parentAnchoredEquivalent();
+    const PositionAlgorithm<Strategy> normalizedEnd = mostBackwardCaretPosition(range.endPosition()).parentAnchoredEquivalent();
+    // The order of the positions of |start| and |end| can be swapped after
+    // upstream/downstream. e.g. editing/pasteboard/copy-display-none.html
+    if (normalizedStart.compareTo(normalizedEnd) > 0)
+        return EphemeralRangeTemplate<Strategy>(normalizedEnd, normalizedStart);
+    return EphemeralRangeTemplate<Strategy>(normalizedStart, normalizedEnd);
+}
+
+EphemeralRange normalizeRange(const EphemeralRange& range)
+{
+    return normalizeRangeAlgorithm<EditingStrategy>(range);
+}
+
+EphemeralRangeInComposedTree normalizeRange(const EphemeralRangeInComposedTree& range)
+{
+    return normalizeRangeAlgorithm<EditingInComposedTreeStrategy>(range);
+}
+
 VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)
 {
     if (!scope)

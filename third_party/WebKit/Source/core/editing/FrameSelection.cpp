@@ -1765,7 +1765,7 @@ template <typename SelectionType>
 String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIteratorBehavior behavior)
 {
     VisibleSelection visibleSelection = selection.selection();
-    EphemeralRangeTemplate<typename SelectionType::Strategy> range = VisibleSelection::normalizeRange(SelectionType::asRange(visibleSelection));
+    EphemeralRangeTemplate<typename SelectionType::Strategy> range = normalizeRange(SelectionType::asRange(visibleSelection));
     // We remove '\0' characters because they are not visibly rendered to the user.
     return plainText(range, behavior).replace(0, "");
 }
@@ -1781,7 +1781,7 @@ template <typename SelectionType>
 static String extractSelectedHTMLAlgorithm(const FrameSelection& selection)
 {
     VisibleSelection visibleSelection = selection.selection();
-    EphemeralRangeTemplate<typename SelectionType::Strategy> range = VisibleSelection::normalizeRange(SelectionType::asRange(visibleSelection));
+    EphemeralRangeTemplate<typename SelectionType::Strategy> range = normalizeRange(SelectionType::asRange(visibleSelection));
     return createMarkup(range.startPosition(), range.endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
 }
 

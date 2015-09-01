@@ -158,8 +158,6 @@ public:
     // contracts the range around text, and moves the caret most backward
     // visually equivalent position before returning the range/positions.
     EphemeralRange toNormalizedEphemeralRange() const;
-    static EphemeralRange normalizeRange(const EphemeralRange&);
-    static EphemeralRangeInComposedTree normalizeRange(const EphemeralRangeInComposedTree&);
 
     Element* rootEditableElement() const;
     bool isContentEditable() const;

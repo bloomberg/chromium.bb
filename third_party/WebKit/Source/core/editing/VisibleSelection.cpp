@@ -230,33 +230,6 @@ PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection& selection)
     return Range::create(*start.document(), start, end);
 }
 
-template <typename Strategy>
-static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralRangeTemplate<Strategy>& range)
-{
-    ASSERT(range.isNotNull());
-    range.document().updateLayoutIgnorePendingStylesheets();
-
-    // TODO(yosin) We should not call |parentAnchoredEquivalent()|, it is
-    // redundant.
-    const PositionAlgorithm<Strategy> normalizedStart = mostForwardCaretPosition(range.startPosition()).parentAnchoredEquivalent();
-    const PositionAlgorithm<Strategy> normalizedEnd = mostBackwardCaretPosition(range.endPosition()).parentAnchoredEquivalent();
-    // The order of the positions of |start| and |end| can be swapped after
-    // upstream/downstream. e.g. editing/pasteboard/copy-display-none.html
-    if (normalizedStart.compareTo(normalizedEnd) > 0)
-        return EphemeralRangeTemplate<Strategy>(normalizedEnd, normalizedStart);
-    return EphemeralRangeTemplate<Strategy>(normalizedStart, normalizedEnd);
-}
-
-EphemeralRange VisibleSelection::normalizeRange(const EphemeralRange& range)
-{
-    return normalizeRangeAlgorithm<EditingStrategy>(range);
-}
-
-EphemeralRangeInComposedTree VisibleSelection::normalizeRange(const EphemeralRangeInComposedTree& range)
-{
-    return normalizeRangeAlgorithm<EditingInComposedTreeStrategy>(range);
-}
-
 EphemeralRange VisibleSelection::toNormalizedEphemeralRange() const
 {
     if (isNone())

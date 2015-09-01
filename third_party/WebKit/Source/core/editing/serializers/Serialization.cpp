@@ -195,7 +195,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const PositionAlgorithm<Strategy
         specialCommonAncestor = ancestorToRetainStructureAndAppearance(commonAncestor);
         if (Node* parentListNode = enclosingNodeOfType(firstPositionInOrBeforeNode(firstNode), isListItem)) {
             EphemeralRangeTemplate<Strategy> markupRange = EphemeralRangeTemplate<Strategy>(startPosition, endPosition);
-            EphemeralRangeTemplate<Strategy> nodeRange = VisibleSelection::normalizeRange(EphemeralRangeTemplate<Strategy>::rangeOfContents(*parentListNode));
+            EphemeralRangeTemplate<Strategy> nodeRange = normalizeRange(EphemeralRangeTemplate<Strategy>::rangeOfContents(*parentListNode));
             if (nodeRange == markupRange) {
                 ContainerNode* ancestor = parentListNode->parentNode();
                 while (ancestor && !isHTMLListElement(ancestor))
