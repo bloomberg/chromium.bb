@@ -15,13 +15,19 @@
 #include "url/gurl.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/clipboard/clipboard.h"
 #endif
 
 namespace base {
 class Pickle;
 class PickleIterator;
 }
+
+#if defined(TOOLKIT_VIEWS)
+namespace ui {
+class OSExchangeData;
+}
+#endif
 
 namespace bookmarks {
 
@@ -98,7 +104,7 @@ struct BookmarkNodeData {
   ~BookmarkNodeData();
 
 #if defined(TOOLKIT_VIEWS)
-  static const ui::OSExchangeData::CustomFormat& GetBookmarkCustomFormat();
+  static const ui::Clipboard::FormatType& GetBookmarkFormatType();
 #endif
 
   static bool ClipboardContainsBookmarks();

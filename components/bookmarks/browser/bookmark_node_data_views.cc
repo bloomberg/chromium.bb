@@ -7,16 +7,15 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "url/url_constants.h"
 
 namespace bookmarks {
 
 // static
-const ui::OSExchangeData::CustomFormat&
-BookmarkNodeData::GetBookmarkCustomFormat() {
+const ui::Clipboard::FormatType& BookmarkNodeData::GetBookmarkFormatType() {
   CR_DEFINE_STATIC_LOCAL(
-      ui::OSExchangeData::CustomFormat,
+      ui::Clipboard::FormatType,
       format,
       (ui::Clipboard::GetFormatType(BookmarkNodeData::kClipboardFormatString)));
 
@@ -40,7 +39,7 @@ void BookmarkNodeData::Write(const base::FilePath& profile_path,
   base::Pickle data_pickle;
   WriteToPickle(profile_path, &data_pickle);
 
-  data->SetPickledData(GetBookmarkCustomFormat(), data_pickle);
+  data->SetPickledData(GetBookmarkFormatType(), data_pickle);
 }
 
 bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
@@ -48,9 +47,9 @@ bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
 
   profile_path_.clear();
 
-  if (data.HasCustomFormat(GetBookmarkCustomFormat())) {
+  if (data.HasCustomFormat(GetBookmarkFormatType())) {
     base::Pickle drag_data_pickle;
-    if (data.GetPickledData(GetBookmarkCustomFormat(), &drag_data_pickle)) {
+    if (data.GetPickledData(GetBookmarkFormatType(), &drag_data_pickle)) {
       if (!ReadFromPickle(&drag_data_pickle))
         return false;
     }
