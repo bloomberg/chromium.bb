@@ -252,27 +252,6 @@ UScriptCode GetScriptOfFontPref(const char* pref_name) {
   return static_cast<UScriptCode>(code);
 }
 
-// If |scriptCode| is a member of a family of "similar" script codes, returns
-// the script code in that family that is used in font pref names.  For example,
-// USCRIPT_HANGUL and USCRIPT_KOREAN are considered equivalent for the purposes
-// of font selection.  Chrome uses the script code USCRIPT_HANGUL (script name
-// "Hang") in Korean font pref names (for example,
-// "webkit.webprefs.fonts.serif.Hang").  So, if |scriptCode| is USCRIPT_KOREAN,
-// the function returns USCRIPT_HANGUL.  If |scriptCode| is not a member of such
-// a family, returns |scriptCode|.
-UScriptCode GetScriptForFontPrefMatching(UScriptCode scriptCode) {
-  switch (scriptCode) {
-  case USCRIPT_HIRAGANA:
-  case USCRIPT_KATAKANA:
-  case USCRIPT_KATAKANA_OR_HIRAGANA:
-    return USCRIPT_JAPANESE;
-  case USCRIPT_KOREAN:
-    return USCRIPT_HANGUL;
-  default:
-    return scriptCode;
-  }
-}
-
 // Returns the primary script used by the browser's UI locale.  For example, if
 // the locale is "ru", the function returns USCRIPT_CYRILLIC, and if the locale
 // is "en", the function returns USCRIPT_LATIN.
@@ -286,16 +265,22 @@ UScriptCode GetScriptOfBrowserLocale() {
     return USCRIPT_SIMPLIFIED_HAN;
   if (locale == "zh-TW")
     return USCRIPT_TRADITIONAL_HAN;
+  // For Korean and Japanese, multiple scripts are returned by
+  // |uscript_getCode|, but we're passing a one entry buffer leading
+  // the buffer to be filled by USCRIPT_INVALID_CODE. We need to
+  // hard-code the results for them.
+  if (locale == "ko")
+    return USCRIPT_HANGUL;
+  if (locale == "ja")
+    return USCRIPT_JAPANESE;
 
   UScriptCode code = USCRIPT_INVALID_CODE;
   UErrorCode err = U_ZERO_ERROR;
   uscript_getCode(locale.c_str(), &code, 1, &err);
 
-  // Ignore the error that multiple scripts could be returned, since we only
-  // want one script.
-  if (U_FAILURE(err) && err != U_BUFFER_OVERFLOW_ERROR)
+  if (U_FAILURE(err))
     code = USCRIPT_INVALID_CODE;
-  return GetScriptForFontPrefMatching(code);
+  return code;
 }
 
 // Sets a font family pref in |prefs| to |pref_value|.
