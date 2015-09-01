@@ -1310,7 +1310,7 @@ using content::WebContents;
   if (newContents) {
     manager = PermissionBubbleManager::FromWebContents(newContents);
     if (manager)
-      manager->DisplayPendingRequests(browser_.get());
+      manager->DisplayPendingRequests();
   }
 }
 

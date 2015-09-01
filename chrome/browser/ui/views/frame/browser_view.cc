@@ -878,7 +878,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
 
   if (new_contents && PermissionBubbleManager::FromWebContents(new_contents)) {
     PermissionBubbleManager::FromWebContents(new_contents)
-        ->DisplayPendingRequests(browser_.get());
+        ->DisplayPendingRequests();
   }
 
   UpdateUIForContents(new_contents);

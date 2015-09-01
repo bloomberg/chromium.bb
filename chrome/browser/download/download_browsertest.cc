@@ -2830,7 +2830,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsBubble) {
   PermissionBubbleManager* permission_bubble_manager =
       PermissionBubbleManager::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
-  permission_bubble_manager->DisplayPendingRequests(browser());
+  permission_bubble_manager->DisplayPendingRequests();
   permission_bubble_manager->set_auto_response_for_test(
       PermissionBubbleManager::ACCEPT_ALL);
 

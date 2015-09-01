@@ -73,7 +73,7 @@ class PermissionBubbleManager
 
   // Will show a permission bubble if there is a pending permission request on
   // the web contents that the PermissionBubbleManager belongs to.
-  void DisplayPendingRequests(Browser* browser);
+  void DisplayPendingRequests();
 
   // Will reposition the bubble (may change parent if necessary).
   void UpdateAnchorPosition();

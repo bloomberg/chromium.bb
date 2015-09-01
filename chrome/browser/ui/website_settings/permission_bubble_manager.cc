@@ -12,6 +12,10 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/user_metrics.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser_finder.h"
+#endif
+
 namespace {
 
 class CancelledRequest : public PermissionBubbleRequest {
@@ -209,12 +213,17 @@ void PermissionBubbleManager::HideBubble() {
   view_.reset();
 }
 
-void PermissionBubbleManager::DisplayPendingRequests(Browser* browser) {
+void PermissionBubbleManager::DisplayPendingRequests() {
   if (IsBubbleVisible())
     return;
 
-  view_ = view_factory_.Run(browser);
+#if defined(OS_ANDROID)
+  NOTREACHED();
+  return;
+#else
+  view_ = view_factory_.Run(chrome::FindBrowserWithWebContents(web_contents()));
   view_->SetDelegate(this);
+#endif
 
   TriggerShowBubble();
 }

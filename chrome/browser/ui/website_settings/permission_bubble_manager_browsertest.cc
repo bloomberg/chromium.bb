@@ -24,7 +24,7 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     PermissionBubbleManager* manager = GetPermissionBubbleManager();
     MockPermissionBubbleView::SetFactory(manager, true);
-    manager->DisplayPendingRequests(browser());
+    manager->DisplayPendingRequests();
     InProcessBrowserTest::SetUpOnMainThread();
   }
 

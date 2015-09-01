@@ -238,11 +238,13 @@ void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
   extensions::SetViewType(new_tab, extensions::VIEW_TYPE_TAB_CONTENTS);
 #endif
   InfoBarService::CreateForWebContents(new_tab);
-  PermissionBubbleManager::CreateForWebContents(new_tab);
-  PermissionBubbleManager* permission_bubble_manager =
-      PermissionBubbleManager::FromWebContents(new_tab);
-  MockPermissionBubbleView::SetFactory(permission_bubble_manager, false);
-  permission_bubble_manager->DisplayPendingRequests(nullptr);
+  if (BubbleEnabled()) {
+    PermissionBubbleManager::CreateForWebContents(new_tab);
+    PermissionBubbleManager* permission_bubble_manager =
+        PermissionBubbleManager::FromWebContents(new_tab);
+    MockPermissionBubbleView::SetFactory(permission_bubble_manager, false);
+    permission_bubble_manager->DisplayPendingRequests();
+  }
 
   extra_tabs_.push_back(new_tab);
 }
@@ -281,11 +283,13 @@ void GeolocationPermissionContextTests::SetUp() {
           scoped_ptr<LocationSettings>(new MockLocationSettings()));
   MockLocationSettings::SetLocationStatus(true, true);
 #endif
-  PermissionBubbleManager::CreateForWebContents(web_contents());
-  PermissionBubbleManager* permission_bubble_manager =
-      PermissionBubbleManager::FromWebContents(web_contents());
-  MockPermissionBubbleView::SetFactory(permission_bubble_manager, false);
-  permission_bubble_manager->DisplayPendingRequests(nullptr);
+  if (BubbleEnabled()) {
+    PermissionBubbleManager::CreateForWebContents(web_contents());
+    PermissionBubbleManager* permission_bubble_manager =
+        PermissionBubbleManager::FromWebContents(web_contents());
+    MockPermissionBubbleView::SetFactory(permission_bubble_manager, false);
+    permission_bubble_manager->DisplayPendingRequests();
+  }
 }
 
 void GeolocationPermissionContextTests::TearDown() {
@@ -331,11 +335,7 @@ ContentSetting GeolocationPermissionContextTests::GetGeolocationContentSetting(
 }
 
 bool GeolocationPermissionContextTests::BubbleEnabled() const {
-#if defined (OS_ANDROID)
-  return false;
-#else
-  return true;
-#endif
+  return PermissionBubbleManager::Enabled();
 }
 
 size_t GeolocationPermissionContextTests::GetNumberOfPrompts() {

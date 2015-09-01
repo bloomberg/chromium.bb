@@ -84,13 +84,15 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     profile_.reset(new TestingProfile());
     InfoBarService::CreateForWebContents(web_contents());
 
-    PermissionBubbleManager::CreateForWebContents(web_contents());
-    scoped_refptr<FakePermissionBubbleView::Factory> factory =
-        new FakePermissionBubbleView::Factory(this);
-    PermissionBubbleManager::FromWebContents(web_contents())->view_factory_ =
-        base::Bind(&FakePermissionBubbleView::Factory::Create, factory);
-    PermissionBubbleManager::FromWebContents(web_contents())
-        ->DisplayPendingRequests(nullptr);
+    if (PermissionBubbleManager::Enabled()) {
+      PermissionBubbleManager::CreateForWebContents(web_contents());
+      scoped_refptr<FakePermissionBubbleView::Factory> factory =
+          new FakePermissionBubbleView::Factory(this);
+      PermissionBubbleManager::FromWebContents(web_contents())->view_factory_ =
+          base::Bind(&FakePermissionBubbleView::Factory::Create, factory);
+      PermissionBubbleManager::FromWebContents(web_contents())
+          ->DisplayPendingRequests();
+    }
 
     testing_action_ = ACCEPT;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;
