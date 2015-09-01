@@ -32,26 +32,16 @@ std::string RuleToString(const ChromePermissionMessageRule& rule) {
 
 bool MakesRedundant(const ChromePermissionMessageRule& first_rule,
                     const ChromePermissionMessageRule& second_rule) {
-  if (!first_rule.required_permissions().empty()) {
-    // The second rule is redundant if the first rule has a (non-strict) subset
-    // of its required permissions - the first rule will always "steal" those
-    // permissions, so the second rule can never apply.
-    // Example: Say rule 1 has required permissions A, B, and rule 2 has A, B,
-    // and C. So 1 is a subset of 2. If the requirements for 2 are satisfied
-    // (i.e., A, B, and C are all there), then the requirements for 1 are also
-    // satisfied. Since 1 comes first, it will always take A and B, and so the
-    // requirements for 2 can never be satisfied by the time it's applied.
-    return base::STLIncludes(second_rule.required_permissions(),
-                             first_rule.required_permissions());
-  } else {
-    // The first rule has no required permissions, so it will take any of its
-    // optional permissions. If those overlap with the second rule's required
-    // permissions, then the second rule can never apply.
-    return !base::STLSetIntersection<std::set<APIPermission::ID>>(
-                second_rule.required_permissions(),
-                first_rule.optional_permissions())
-                .empty();
-  }
+  // The second rule is redundant if the first rule has a (non-strict) subset
+  // of its required permissions - the first rule will always "steal" those
+  // permissions, so the second rule can never apply.
+  // Example: Say rule 1 has required permissions A, B, and rule 2 has A, B,
+  // and C. So 1 is a subset of 2. If the requirements for 2 are satisfied
+  // (i.e., A, B, and C are all there), then the requirements for 1 are also
+  // satisfied. Since 1 comes first, it will always take A and B, and so the
+  // requirements for 2 can never be satisfied by the time it's applied.
+  return base::STLIncludes(second_rule.required_permissions(),
+                           first_rule.required_permissions());
 }
 
 }  // namespace

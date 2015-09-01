@@ -318,9 +318,10 @@ ChromePermissionMessageRule::ChromePermissionMessageRule(
     int message_id,
     const PermissionIDSetInitializer& required,
     const PermissionIDSetInitializer& optional)
-    : required_permissions_(required),
-      optional_permissions_(optional),
-      formatter_(new DefaultPermissionMessageFormatter(message_id)) {}
+    : ChromePermissionMessageRule(
+          new DefaultPermissionMessageFormatter(message_id),
+          required,
+          optional) {}
 
 ChromePermissionMessageRule::ChromePermissionMessageRule(
     ChromePermissionMessageFormatter* formatter,
@@ -328,7 +329,9 @@ ChromePermissionMessageRule::ChromePermissionMessageRule(
     const PermissionIDSetInitializer& optional)
     : required_permissions_(required),
       optional_permissions_(optional),
-      formatter_(formatter) {}
+      formatter_(formatter) {
+  DCHECK(!required_permissions_.empty());
+}
 
 ChromePermissionMessageRule::~ChromePermissionMessageRule() {
 }
@@ -427,11 +430,17 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kHostReadWrite},
        {}},
 
-      // USB Device Permission rules:
+      // USB Device Permission rules. Think of these three rules as a single one
+      // that applies when any of the three kUsb* IDs is there, and pulls them
+      // all into a single formatter.
       {new USBDevicesFormatter,
-       {},
-       {APIPermission::kUsbDevice, APIPermission::kUsbDeviceUnknownProduct,
+       {APIPermission::kUsbDevice},
+       {APIPermission::kUsbDeviceUnknownProduct,
         APIPermission::kUsbDeviceUnknownVendor}},
+      {new USBDevicesFormatter,
+       {APIPermission::kUsbDeviceUnknownProduct},
+       {APIPermission::kUsbDeviceUnknownVendor}},
+      {new USBDevicesFormatter, {APIPermission::kUsbDeviceUnknownVendor}, {}},
 
       // Coalesced message rules taken from
       // ChromePermissionMessageProvider::GetWarningMessages():
