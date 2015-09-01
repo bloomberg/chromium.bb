@@ -3461,8 +3461,7 @@ void RenderFrameImpl::didLoadResourceFromMemoryCache(
 
 void RenderFrameImpl::didDisplayInsecureContent(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
-  render_view_->Send(new ViewHostMsg_DidDisplayInsecureContent(
-      render_view_->GetRoutingID()));
+  Send(new FrameHostMsg_DidDisplayInsecureContent(routing_id_));
 }
 
 void RenderFrameImpl::didRunInsecureContent(
@@ -3470,10 +3469,8 @@ void RenderFrameImpl::didRunInsecureContent(
     const blink::WebSecurityOrigin& origin,
     const blink::WebURL& target) {
   DCHECK(!frame_ || frame_ == frame);
-  render_view_->Send(new ViewHostMsg_DidRunInsecureContent(
-      render_view_->GetRoutingID(),
-      origin.toString().utf8(),
-      target));
+  Send(new FrameHostMsg_DidRunInsecureContent(
+      routing_id_, origin.toString().utf8(), target));
   GetContentClient()->renderer()->RecordRapporURL(
       "ContentSettings.MixedScript.RanMixedScript",
       GURL(origin.toString().utf8()));

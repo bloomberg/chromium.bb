@@ -1120,14 +1120,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateTargetURL,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentAvailableInMainFrame,
                     bool /* uses_temporary_zoom_level */)
 
-// Sent when the renderer displays insecure content in a secure page.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidDisplayInsecureContent)
-
-// Sent when the renderer runs insecure content in a secure origin.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
-                    std::string  /* security_origin */,
-                    GURL         /* target URL */)
-
 // Sent to update part of the view.  In response to this message, the host
 // generates a ViewMsg_UpdateRect_ACK message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,

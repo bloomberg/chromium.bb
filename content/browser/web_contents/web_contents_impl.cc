@@ -620,9 +620,9 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisplayInsecureContent,
                         OnDidDisplayInsecureContent)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidRunInsecureContent,
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunInsecureContent,
                         OnDidRunInsecureContent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)

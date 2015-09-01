@@ -1029,6 +1029,14 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DispatchLoad)
 IPC_MESSAGE_ROUTED1(FrameHostMsg_RouteMessageEvent,
                     FrameMsg_PostMessage_Params)
 
+// Sent when the renderer displays insecure content in a secure origin.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDisplayInsecureContent)
+
+// Sent when the renderer runs insecure content in a secure origin.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunInsecureContent,
+                    std::string /* security_origin */,
+                    GURL /* target URL */)
+
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 
 // Message to show/hide a popup menu using native controls.
