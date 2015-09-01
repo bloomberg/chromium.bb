@@ -2584,10 +2584,10 @@ void CSSPropertyParser::parse3ValuesFillPosition(CSSParserValueList* valueList, 
         value1.swap(value2);
 
 #if ENABLE(ASSERT)
-    const CSSValuePair* first = toCSSValuePair(value1.get());
-    const CSSValuePair* second = toCSSValuePair(value2.get());
-    ident1 = toCSSPrimitiveValue(first->first())->getValueID();
-    ident2 = toCSSPrimitiveValue(second->first())->getValueID();
+    const CSSValuePair& first = toCSSValuePair(*value1);
+    const CSSValuePair& second = toCSSValuePair(*value2);
+    ident1 = toCSSPrimitiveValue(first.first()).getValueID();
+    ident2 = toCSSPrimitiveValue(second.first()).getValueID();
     ASSERT(ident1 == CSSValueLeft || ident1 == CSSValueRight);
     ASSERT(ident2 == CSSValueBottom || ident2 == CSSValueTop);
 #endif

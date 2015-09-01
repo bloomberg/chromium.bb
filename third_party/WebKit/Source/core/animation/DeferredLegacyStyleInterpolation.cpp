@@ -130,8 +130,8 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
 
 bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSValuePair& pair)
 {
-    return interpolationRequiresStyleResolve(*pair.first())
-        || interpolationRequiresStyleResolve(*pair.second());
+    return interpolationRequiresStyleResolve(pair.first())
+        || interpolationRequiresStyleResolve(pair.second());
 }
 
 bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSBasicShape& shape)

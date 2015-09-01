@@ -489,9 +489,9 @@ static float positionFromValue(CSSValue* value, const CSSToLengthConversionData&
     // In this case the center of the gradient is given relative to an edge in the form of:
     // [ top | bottom | right | left ] [ <percentage> | <length> ].
     if (value->isValuePair()) {
-        CSSValuePair* pair = toCSSValuePair(value);
-        CSSValueID originID = toCSSPrimitiveValue(pair->first())->getValueID();
-        value = pair->second();
+        CSSValuePair& pair = toCSSValuePair(*value);
+        CSSValueID originID = toCSSPrimitiveValue(pair.first()).getValueID();
+        value = &pair.second();
 
         if (originID == CSSValueRight || originID == CSSValueBottom) {
             // For right/bottom, the offset is relative to the far edge.

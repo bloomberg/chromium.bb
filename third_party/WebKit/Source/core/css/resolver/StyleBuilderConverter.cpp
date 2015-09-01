@@ -337,12 +337,12 @@ StyleSelfAlignmentData StyleBuilderConverter::convertSelfOrDefaultAlignmentData(
     StyleSelfAlignmentData alignmentData = ComputedStyle::initialSelfAlignment();
     if (value->isValuePair()) {
         const CSSValuePair* pair = toCSSValuePair(value);
-        if (toCSSPrimitiveValue(pair->first())->getValueID() == CSSValueLegacy) {
+        if (toCSSPrimitiveValue(pair->first()).getValueID() == CSSValueLegacy) {
             alignmentData.setPositionType(LegacyPosition);
-            alignmentData.setPosition(*toCSSPrimitiveValue(pair->second()));
+            alignmentData.setPosition(toCSSPrimitiveValue(pair->second()));
         } else {
-            alignmentData.setPosition(*toCSSPrimitiveValue(pair->first()));
-            alignmentData.setOverflow(*toCSSPrimitiveValue(pair->second()));
+            alignmentData.setPosition(toCSSPrimitiveValue(pair->first()));
+            alignmentData.setOverflow(toCSSPrimitiveValue(pair->second()));
         }
     } else {
         alignmentData.setPosition(*toCSSPrimitiveValue(value));
@@ -537,10 +537,10 @@ UnzoomedLength StyleBuilderConverter::convertUnzoomedLength(const StyleResolverS
 
 Length StyleBuilderConverter::convertLengthOrAuto(const StyleResolverState& state, CSSValue* value)
 {
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueAuto)
+    const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*value);
+    if (primitiveValue.getValueID() == CSSValueAuto)
         return Length(Auto);
-    return primitiveValue->convertToLength(state.cssToLengthConversionData());
+    return primitiveValue.convertToLength(state.cssToLengthConversionData());
 }
 
 Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, CSSValue* value)
@@ -638,11 +638,11 @@ template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
 static Length convertPositionLength(StyleResolverState& state, CSSValue* value)
 {
     if (value->isValuePair()) {
-        const CSSValuePair* pair = toCSSValuePair(value);
-        Length length = StyleBuilderConverter::convertLength(state, pair->second());
-        if (toCSSPrimitiveValue(pair->first())->getValueID() == cssValueFor0)
+        CSSValuePair* pair = toCSSValuePair(value);
+        Length length = StyleBuilderConverter::convertLength(state, &pair->second());
+        if (toCSSPrimitiveValue(pair->first()).getValueID() == cssValueFor0)
             return length;
-        ASSERT(toCSSPrimitiveValue(pair->first())->getValueID() == cssValueFor100);
+        ASSERT(toCSSPrimitiveValue(pair->first()).getValueID() == cssValueFor100);
         return length.subtractFromOneHundredPercent();
     }
 
@@ -651,10 +651,10 @@ static Length convertPositionLength(StyleResolverState& state, CSSValue* value)
 
 LengthPoint StyleBuilderConverter::convertPosition(StyleResolverState& state, CSSValue* value)
 {
-    const CSSValuePair* pair = toCSSValuePair(value);
+    CSSValuePair* pair = toCSSValuePair(value);
     return LengthPoint(
-        convertPositionLength<CSSValueLeft, CSSValueRight>(state, pair->first()),
-        convertPositionLength<CSSValueTop, CSSValueBottom>(state, pair->second())
+        convertPositionLength<CSSValueLeft, CSSValueRight>(state, &pair->first()),
+        convertPositionLength<CSSValueTop, CSSValueBottom>(state, &pair->second())
     );
 }
 
@@ -756,8 +756,8 @@ PassRefPtr<QuotesData> StyleBuilderConverter::convertQuotes(StyleResolverState&,
 LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSValue* value)
 {
     const CSSValuePair* pair = toCSSValuePair(value);
-    Length radiusWidth = toCSSPrimitiveValue(pair->first())->convertToLength(state.cssToLengthConversionData());
-    Length radiusHeight = toCSSPrimitiveValue(pair->second())->convertToLength(state.cssToLengthConversionData());
+    Length radiusWidth = toCSSPrimitiveValue(pair->first()).convertToLength(state.cssToLengthConversionData());
+    Length radiusHeight = toCSSPrimitiveValue(pair->second()).convertToLength(state.cssToLengthConversionData());
     float width = radiusWidth.value();
     float height = radiusHeight.value();
     ASSERT(width >= 0 && height >= 0);
@@ -837,8 +837,7 @@ PassRefPtr<SVGDashArray> StyleBuilderConverter::convertStrokeDasharray(StyleReso
     RefPtr<SVGDashArray> array = SVGDashArray::create();
     size_t length = dashes->length();
     for (size_t i = 0; i < length; ++i) {
-        CSSPrimitiveValue* dash = toCSSPrimitiveValue(dashes->item(i));
-        array->append(convertLength(state, dash));
+        array->append(convertLength(state, toCSSPrimitiveValue(dashes->item(i))));
     }
 
     return array.release();

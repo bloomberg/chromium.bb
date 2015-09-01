@@ -21,8 +21,8 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> LengthPairStyleInterpolation::lengthPa
     OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(2);
     const CSSValuePair& pair = toCSSValuePair(value);
 
-    result->set(0, LengthStyleInterpolation::toInterpolableValue(*pair.first()));
-    result->set(1, LengthStyleInterpolation::toInterpolableValue(*pair.second()));
+    result->set(0, LengthStyleInterpolation::toInterpolableValue(pair.first()));
+    result->set(1, LengthStyleInterpolation::toInterpolableValue(pair.second()));
     return result.release();
 }
 

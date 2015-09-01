@@ -194,9 +194,9 @@ void CSSToStyleMap::mapFillSize(StyleResolverState& state, FillLayer* layer, CSS
     Length secondLength;
 
     if (value->isValuePair()) {
-        const CSSValuePair* pair = toCSSValuePair(value);
-        firstLength = StyleBuilderConverter::convertLengthOrAuto(state, pair->first());
-        secondLength = StyleBuilderConverter::convertLengthOrAuto(state, pair->second());
+        CSSValuePair* pair = toCSSValuePair(value);
+        firstLength = StyleBuilderConverter::convertLengthOrAuto(state, &pair->first());
+        secondLength = StyleBuilderConverter::convertLengthOrAuto(state, &pair->second());
     } else {
         ASSERT(value->isPrimitiveValue());
         firstLength = StyleBuilderConverter::convertLengthOrAuto(state, value);
@@ -218,17 +218,15 @@ void CSSToStyleMap::mapFillXPosition(StyleResolverState& state, FillLayer* layer
     if (!value->isPrimitiveValue() && !value->isValuePair())
         return;
 
-    CSSPrimitiveValue* primitiveValue;
+    Length length;
     if (value->isValuePair())
-        primitiveValue = toCSSPrimitiveValue(toCSSValuePair(value)->second());
+        length = toCSSPrimitiveValue(toCSSValuePair(value)->second()).convertToLength(state.cssToLengthConversionData());
     else
-        primitiveValue = toCSSPrimitiveValue(value);
-
-    Length length = primitiveValue->convertToLength(state.cssToLengthConversionData());
+        length = toCSSPrimitiveValue(value)->convertToLength(state.cssToLengthConversionData());
 
     layer->setXPosition(length);
     if (value->isValuePair())
-        layer->setBackgroundXOrigin(*toCSSPrimitiveValue(toCSSValuePair(value)->first()));
+        layer->setBackgroundXOrigin(toCSSPrimitiveValue(toCSSValuePair(value)->first()));
 }
 
 void CSSToStyleMap::mapFillYPosition(StyleResolverState& state, FillLayer* layer, CSSValue* value)
@@ -243,7 +241,7 @@ void CSSToStyleMap::mapFillYPosition(StyleResolverState& state, FillLayer* layer
 
     CSSPrimitiveValue* primitiveValue;
     if (value->isValuePair())
-        primitiveValue = toCSSPrimitiveValue(toCSSValuePair(value)->second());
+        primitiveValue = &toCSSPrimitiveValue(toCSSValuePair(value)->second());
     else
         primitiveValue = toCSSPrimitiveValue(value);
 
@@ -251,7 +249,7 @@ void CSSToStyleMap::mapFillYPosition(StyleResolverState& state, FillLayer* layer
 
     layer->setYPosition(length);
     if (value->isValuePair())
-        layer->setBackgroundYOrigin(*toCSSPrimitiveValue(toCSSValuePair(value)->first()));
+        layer->setBackgroundYOrigin(toCSSPrimitiveValue(toCSSValuePair(value)->first()));
 }
 
 void CSSToStyleMap::mapFillMaskSourceType(StyleResolverState&, FillLayer* layer, CSSValue* value)
@@ -549,12 +547,9 @@ void CSSToStyleMap::mapNinePieceImageRepeat(StyleResolverState&, CSSValue* value
     if (!value || !value->isValuePair())
         return;
 
-    const CSSValuePair* pair = toCSSValuePair(value);
-    if (!pair || !pair->first() || !pair->second())
-        return;
-
-    CSSValueID firstIdentifier = toCSSPrimitiveValue(pair->first())->getValueID();
-    CSSValueID secondIdentifier = toCSSPrimitiveValue(pair->second())->getValueID();
+    const CSSValuePair& pair = toCSSValuePair(*value);
+    CSSValueID firstIdentifier = toCSSPrimitiveValue(pair.first()).getValueID();
+    CSSValueID secondIdentifier = toCSSPrimitiveValue(pair.second()).getValueID();
 
     ENinePieceImageRule horizontalRule;
     switch (firstIdentifier) {

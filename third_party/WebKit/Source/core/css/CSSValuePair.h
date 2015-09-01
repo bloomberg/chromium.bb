@@ -47,8 +47,11 @@ public:
         return adoptRefWillBeNoop(new CSSValuePair(CSSPrimitiveValue::create(lengthSize.width(), style.effectiveZoom()), CSSPrimitiveValue::create(lengthSize.height(), style.effectiveZoom()), KeepIdenticalValues));
     }
 
-    CSSValue* first() const { return m_first.get(); }
-    CSSValue* second() const { return m_second.get(); }
+    // TODO(sashab): Remove these non-const versions.
+    CSSValue& first() { return *m_first; }
+    CSSValue& second() { return *m_second; }
+    const CSSValue& first() const { return *m_first; }
+    const CSSValue& second() const { return *m_second; }
 
     String customCSSText() const
     {
@@ -73,7 +76,11 @@ private:
         : CSSValue(ValuePairClass)
         , m_first(first)
         , m_second(second)
-        , m_identicalValuesPolicy(identicalValuesPolicy) { }
+        , m_identicalValuesPolicy(identicalValuesPolicy)
+    {
+        ASSERT(m_first);
+        ASSERT(m_second);
+    }
 
     RefPtrWillBeMember<CSSValue> m_first;
     RefPtrWillBeMember<CSSValue> m_second;

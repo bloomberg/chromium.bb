@@ -65,9 +65,9 @@ static String buildCircleString(const String& radius, const String& centerX, con
 
 static String serializePositionOffset(const CSSValuePair& offset, const CSSValuePair& other)
 {
-    if ((toCSSPrimitiveValue(offset.first())->getValueID() == CSSValueLeft && toCSSPrimitiveValue(other.first())->getValueID() == CSSValueTop)
-        || (toCSSPrimitiveValue(offset.first())->getValueID() == CSSValueTop && toCSSPrimitiveValue(other.first())->getValueID() == CSSValueLeft))
-        return offset.second()->cssText();
+    if ((toCSSPrimitiveValue(offset.first()).getValueID() == CSSValueLeft && toCSSPrimitiveValue(other.first()).getValueID() == CSSValueTop)
+        || (toCSSPrimitiveValue(offset.first()).getValueID() == CSSValueTop && toCSSPrimitiveValue(other.first()).getValueID() == CSSValueLeft))
+        return offset.second().cssText();
     return offset.cssText();
 }
 
@@ -81,8 +81,8 @@ static PassRefPtrWillBeRawPtr<CSSValuePair> buildSerializablePositionOffset(Pass
     } else if (offset->isPrimitiveValue() && toCSSPrimitiveValue(offset.get())->isValueID()) {
         side = toCSSPrimitiveValue(offset.get())->getValueID();
     } else if (offset->isValuePair()) {
-        side = toCSSPrimitiveValue(toCSSValuePair(offset.get())->first())->getValueID();
-        amount = toCSSPrimitiveValue(toCSSValuePair(offset.get())->second());
+        side = toCSSPrimitiveValue(toCSSValuePair(*offset).first()).getValueID();
+        amount = &toCSSPrimitiveValue(toCSSValuePair(*offset).second());
     } else {
         amount = toCSSPrimitiveValue(offset.get());
     }
@@ -354,14 +354,13 @@ static String buildInsetString(const String& top, const String& right, const Str
     return result.toString();
 }
 
-static inline void updateCornerRadiusWidthAndHeight(CSSValuePair* cornerRadius, String& width, String& height)
+static inline void updateCornerRadiusWidthAndHeight(const CSSValuePair* cornerRadius, String& width, String& height)
 {
     if (!cornerRadius)
         return;
 
-    width = cornerRadius->first() ? cornerRadius->first()->cssText() : String("0");
-    if (cornerRadius->second())
-        height = cornerRadius->second()->cssText();
+    width = cornerRadius->first().cssText();
+    height = cornerRadius->second().cssText();
 }
 
 String CSSBasicShapeInset::cssText() const

@@ -140,7 +140,7 @@ static LengthSize convertToLengthSize(const StyleResolverState& state, CSSValueP
     if (!value)
         return LengthSize(Length(0, Fixed), Length(0, Fixed));
 
-    return LengthSize(convertToLength(state, toCSSPrimitiveValue(value->first())), convertToLength(state, toCSSPrimitiveValue(value->second())));
+    return LengthSize(convertToLength(state, &toCSSPrimitiveValue(value->first())), convertToLength(state, &toCSSPrimitiveValue(value->second())));
 }
 
 static BasicShapeCenterCoordinate convertToCenterCoordinate(const StyleResolverState& state, CSSValue* value)
@@ -154,8 +154,8 @@ static BasicShapeCenterCoordinate convertToCenterCoordinate(const StyleResolverS
     } else if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->isValueID()) {
         keyword = toCSSPrimitiveValue(value)->getValueID();
     } else if (value->isValuePair()) {
-        keyword = toCSSPrimitiveValue(toCSSValuePair(value)->first())->getValueID();
-        offset = convertToLength(state, toCSSPrimitiveValue(toCSSValuePair(value)->second()));
+        keyword = toCSSPrimitiveValue(toCSSValuePair(value)->first()).getValueID();
+        offset = convertToLength(state, &toCSSPrimitiveValue(toCSSValuePair(value)->second()));
     } else {
         offset = convertToLength(state, toCSSPrimitiveValue(value));
     }

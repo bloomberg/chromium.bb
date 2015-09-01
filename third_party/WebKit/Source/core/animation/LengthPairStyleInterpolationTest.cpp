@@ -35,15 +35,13 @@ protected:
     static void testPrimitiveValue(RefPtrWillBeRawPtr<CSSValue> value, double first, double second, CSSPrimitiveValue::UnitType unitType)
     {
         EXPECT_TRUE(value->isValuePair());
+        const CSSValuePair& pair = toCSSValuePair(*value);
 
-        CSSValuePair* pair = toCSSValuePair(value.get());
-        ASSERT_TRUE(pair);
+        EXPECT_EQ(toCSSPrimitiveValue(pair.first()).getDoubleValue(), first);
+        EXPECT_EQ(toCSSPrimitiveValue(pair.second()).getDoubleValue(), second);
 
-        EXPECT_EQ(toCSSPrimitiveValue(pair->first())->getDoubleValue(), first);
-        EXPECT_EQ(toCSSPrimitiveValue(pair->second())->getDoubleValue(), second);
-
-        EXPECT_EQ(toCSSPrimitiveValue(pair->first())->typeWithCalcResolved(), unitType);
-        EXPECT_EQ(toCSSPrimitiveValue(pair->second())->typeWithCalcResolved(), unitType);
+        EXPECT_EQ(toCSSPrimitiveValue(pair.first()).typeWithCalcResolved(), unitType);
+        EXPECT_EQ(toCSSPrimitiveValue(pair.second()).typeWithCalcResolved(), unitType);
     }
 };
 

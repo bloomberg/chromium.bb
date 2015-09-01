@@ -347,8 +347,8 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     int length = list ? list->length() : 0;
     for (int i = 0; i < length; ++i) {
         const CSSValuePair* pair = toCSSValuePair(list->item(i));
-        AtomicString identifier(toCSSPrimitiveValue(pair->first())->getStringValue());
-        int value = toCSSPrimitiveValue(pair->second())->getIntValue();
+        AtomicString identifier(toCSSPrimitiveValue(pair->first()).getStringValue());
+        int value = toCSSPrimitiveValue(pair->second()).getIntValue();
         CounterDirectives& directives = map.add(identifier, CounterDirectives()).storedValue->value;
         {% if action == 'Reset' %}
         directives.setResetValue(value);
