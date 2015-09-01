@@ -21,6 +21,8 @@ class DesktopBackgroundView : public views::View,
   ~DesktopBackgroundView() override;
 
  private:
+  friend class DesktopBackgroundControllerTest;
+
   // Overridden from views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
