@@ -527,6 +527,7 @@ def UpdateClang(args):
 
   cmake_args = base_cmake_args + [
       '-DLLVM_BINUTILS_INCDIR=' + binutils_incdir,
+      '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly',
       '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
       '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
       '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
