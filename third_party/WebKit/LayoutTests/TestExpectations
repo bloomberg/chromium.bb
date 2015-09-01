@@ -1594,8 +1594,6 @@ crbug.com/521764 [ Win10 ] virtual/spv2/paint/inline/outline-offset.html [ Needs
 
 crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
 
-crbug.com/525286 fast/hidpi/image-srcset-intrinsic-size-zero.html [ Timeout Pass ]
-
 crbug.com/525295 fast/block/float/trailing-float-layout-2.html [ Failure Pass ]
 crbug.com/525295 fast/block/float/trailing-float-layout.html [ Failure Pass ]
 
