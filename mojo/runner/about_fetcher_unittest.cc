@@ -14,6 +14,7 @@
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/runner/about_fetcher.h"
+#include "mojo/runner/context.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -142,6 +143,7 @@ class AboutFetcherTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
+    Context::EnsureEmbedderIsInitialized();
     application_manager_.reset(new shell::ApplicationManager(&test_delegate_));
     application_manager_->SetLoaderForURL(
         make_scoped_ptr(new TestLoader(&html_content_handler_)),
