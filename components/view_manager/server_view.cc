@@ -68,6 +68,12 @@ void ServerView::RemoveObserver(ServerViewObserver* observer) {
 void ServerView::Bind(mojo::InterfaceRequest<Surface> request,
                       mojo::SurfaceClientPtr client) {
   if (binding_.is_bound()) {
+    if (surface_factory_) {
+      // Destroy frame surfaces submitted by the old client before replacing
+      // client_, so those surfaces will be returned to the old client.
+      surface_factory_->DestroyAll();
+      SetSurfaceId(cc::SurfaceId());
+    }
     binding_.Close();
     client_ = nullptr;
   }
