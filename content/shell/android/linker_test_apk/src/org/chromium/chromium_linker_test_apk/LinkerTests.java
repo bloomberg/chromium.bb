@@ -24,7 +24,7 @@ public class LinkerTests implements Linker.TestRunner {
         boolean checkSharedRelro;
         if (isBrowserProcess) {
             Linker linker = Linker.getInstance();
-            int linkerImplementation = linker.getLinkerImplementationForTesting();
+            int linkerImplementation = linker.getImplementationForTesting();
 
             if (linkerImplementation == Linker.LINKER_IMPLEMENTATION_LEGACY) {
                 // LegacyLinker may share RELROs in the browser.

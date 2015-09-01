@@ -296,10 +296,9 @@ public class ChildProcessLauncher {
     private static long sLinkerLoadAddress = 0;
 
     private static ChromiumLinkerParams getLinkerParamsForNewConnection() {
-        Linker linker = Linker.getInstance();
         if (!sLinkerInitialized) {
-            if (linker.isUsed()) {
-                sLinkerLoadAddress = linker.getBaseLoadAddress();
+            if (Linker.isUsed()) {
+                sLinkerLoadAddress = Linker.getInstance().getBaseLoadAddress();
                 if (sLinkerLoadAddress == 0) {
                     Log.i(TAG, "Shared RELRO support disabled!");
                 }
@@ -311,11 +310,12 @@ public class ChildProcessLauncher {
 
         // Always wait for the shared RELROs in service processes.
         final boolean waitForSharedRelros = true;
-        if (Linker.areLinkerTestsEnabled()) {
+        if (Linker.areTestsEnabled()) {
+            Linker linker = Linker.getInstance();
             return new ChromiumLinkerParams(sLinkerLoadAddress,
                                             waitForSharedRelros,
                                             linker.getTestRunnerClassNameForTesting(),
-                                            linker.getLinkerImplementationForTesting());
+                                            linker.getImplementationForTesting());
         } else {
             return new ChromiumLinkerParams(sLinkerLoadAddress,
                                             waitForSharedRelros);

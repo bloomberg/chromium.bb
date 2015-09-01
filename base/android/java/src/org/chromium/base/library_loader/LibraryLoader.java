@@ -219,13 +219,10 @@ public class LibraryLoader {
                 assert !mInitialized;
 
                 long startTime = SystemClock.uptimeMillis();
-                Linker linker = Linker.getInstance();
-                boolean useChromiumLinker = linker.isUsed();
 
-                if (useChromiumLinker) {
-                    // Determine the APK file path.
-                    String apkFilePath = getLibraryApkPath(context);
+                if (Linker.isUsed()) {
                     // Load libraries using the Chromium linker.
+                    Linker linker = Linker.getInstance();
                     linker.prepareLibraryLoad();
 
                     for (String library : NativeLibraries.LIBRARIES) {
@@ -242,8 +239,8 @@ public class LibraryLoader {
                         String libFilePath = System.mapLibraryName(library);
                         if (linker.isInZipFile()) {
                             // Load directly from the APK.
-                            zipFilePath = apkFilePath;
-                            Log.i(TAG, "Loading " + library + " from within " + apkFilePath);
+                            zipFilePath = getLibraryApkPath(context);
+                            Log.i(TAG, "Loading " + library + " from within " + zipFilePath);
                         } else {
                             // The library is in its own file.
                             Log.i(TAG, "Loading " + library);

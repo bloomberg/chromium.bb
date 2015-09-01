@@ -97,11 +97,14 @@ public class ChromiumLinkerTestActivity extends Activity {
             finish();
         }
 
-        // Set the requested Linker implementation from the command-line.
+        // Set the requested Linker implementation from the command-line, and
+        // register the test runner class by name.
         if (hasModernLinkerSwitch) {
-            Linker.setLinkerImplementationForTesting(Linker.LINKER_IMPLEMENTATION_MODERN);
+            Linker.setupForTesting(Linker.LINKER_IMPLEMENTATION_MODERN,
+                                   LinkerTests.class.getName());
         } else {
-            Linker.setLinkerImplementationForTesting(Linker.LINKER_IMPLEMENTATION_LEGACY);
+            Linker.setupForTesting(Linker.LINKER_IMPLEMENTATION_LEGACY,
+                                   LinkerTests.class.getName());
         }
 
         // Determine which kind of device to simulate from the command-line.
@@ -111,9 +114,6 @@ public class ChromiumLinkerTestActivity extends Activity {
         }
         Linker linker = Linker.getInstance();
         linker.setMemoryDeviceConfigForTesting(memoryDeviceConfig);
-
-        // Register the test runner class by name.
-        linker.setTestRunnerClassNameForTesting(LinkerTests.class.getName());
 
         // Load the library in the browser process, this will also run the test
         // runner in this process.

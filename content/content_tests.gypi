@@ -1960,7 +1960,7 @@
           'target_name': 'chromium_linker_test_apk',
           'type': 'none',
           'conditions': [
-            ['target_arch != "x64" and target_arch != "arm64"', {
+            ['target_arch != "x64"', {
               'dependencies': [
                 'chromium_android_linker_test',
                 'content.gyp:content_icudata',

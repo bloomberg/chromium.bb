@@ -69,6 +69,19 @@ public class ChildProcessService extends Service {
 
     private final Semaphore mActivitySemaphore = new Semaphore(1);
 
+    // Return a Linker instance. If testing, the Linker needs special setup.
+    private Linker getLinker() {
+        if (Linker.areTestsEnabled()) {
+            // For testing, set the Linker implementation and the test runner
+            // class name to match those used by the parent.
+            assert mLinkerParams != null;
+            Linker.setupForTesting(
+                    mLinkerParams.mLinkerImplementationForTesting,
+                    mLinkerParams.mTestRunnerClassNameForTesting);
+        }
+        return Linker.getInstance();
+    }
+
     // Binder object used by clients for this service.
     private final IChildProcessService.Stub mBinder = new IChildProcessService.Stub() {
         // NOTE: Implement any IChildProcessService methods here.
@@ -97,7 +110,7 @@ public class ChildProcessService extends Service {
                 System.arraycopy(fdInfosAsParcelable, 0, mFdInfos, 0, fdInfosAsParcelable.length);
                 Bundle sharedRelros = args.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
                 if (sharedRelros != null) {
-                    Linker.getInstance().useSharedRelros(sharedRelros);
+                    getLinker().useSharedRelros(sharedRelros);
                     sharedRelros = null;
                 }
                 mMainThread.notifyAll();
@@ -115,23 +128,6 @@ public class ChildProcessService extends Service {
         return sContext.get();
     }
 
-    // Return a new Linker instance. If testing, the Linker needs special setup.
-    private Linker getLinker() {
-        if (Linker.areLinkerTestsEnabled()) {
-            // If testing, set the Linker implementation and the test runner
-            // class name to match the one used by the parent.
-            assert mLinkerParams != null;
-            Linker.setLinkerImplementationForTesting(
-                    mLinkerParams.mLinkerImplementationForTesting);
-            Linker linker = Linker.getInstance();
-            linker.setTestRunnerClassNameForTesting(
-                    mLinkerParams.mTestRunnerClassNameForTesting);
-            return linker;
-        }
-        // Not testing, so return a normal the Linker instantiation.
-        return Linker.getInstance();
-    }
-
     @Override
     public void onCreate() {
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
@@ -146,23 +142,23 @@ public class ChildProcessService extends Service {
             @SuppressFBWarnings("DM_EXIT")
             public void run()  {
                 try {
-                    // CommandLine must be initialized before others, e.g., Linker.isUsed()
-                    // may check the command line options.
+                    // CommandLine must be initialized before everything else.
                     synchronized (mMainThread) {
                         while (mCommandLineParams == null) {
                             mMainThread.wait();
                         }
                     }
                     CommandLine.init(mCommandLineParams);
-                    Linker linker = getLinker();
-                    boolean useLinker = linker.isUsed();
+
+                    Linker linker = null;
                     boolean requestedSharedRelro = false;
-                    if (useLinker) {
+                    if (Linker.isUsed()) {
                         synchronized (mMainThread) {
                             while (!mIsBound) {
                                 mMainThread.wait();
                             }
                         }
+                        linker = getLinker();
                         if (mLinkerParams.mWaitForSharedRelro) {
                             requestedSharedRelro = true;
                             linker.initServiceProcess(mLinkerParams.mBaseLoadAddress);

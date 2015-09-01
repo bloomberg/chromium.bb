@@ -70,29 +70,17 @@ class ModernLinker extends Linker {
         return new ModernLinker();
     }
 
-    // Used internally to initialize the linker's data. Assume lock is held.
+    // Used internally to initialize the linker's data. Assumes lock is held.
     private void ensureInitializedLocked() {
         assert Thread.holdsLock(mLock);
         assert NativeLibraries.sUseLinker;
 
-        // On first call, load libchromium_android_linker.so.
+        // On first call, load libchromium_android_linker.so. Cannot be done in the
+        // constructor because the instance is constructed on the UI thread.
         if (!mInitialized) {
-            loadLinkerJNILibrary();
+            loadLinkerJniLibrary();
             mInitialized = true;
         }
-    }
-
-    /**
-     * Call this method to determine if this chromium project must
-     * use this linker. If not, System.loadLibrary() should be used to load
-     * libraries instead.
-     */
-    @Override
-    public boolean isUsed() {
-        // Only GYP targets that are APKs and have the 'use_chromium_linker' variable
-        // defined as 1 will use this linker. For all others (the default), the
-        // auto-generated NativeLibraries.sUseLinker variable will be false.
-        return NativeLibraries.sUseLinker;
     }
 
     /**

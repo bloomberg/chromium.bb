@@ -148,6 +148,9 @@ public abstract class Linker {
     // Log tag for this class.
     private static final String TAG = "cr.library_loader";
 
+    // Name of the library that contains our JNI code.
+    private static final String LINKER_JNI_LIBRARY = "chromium_android_linker";
+
     // Constants used to control the behaviour of the browser process with
     // regards to the shared RELRO section. Not applicable to ModernLinker.
     //   NEVER        -> The browser never uses it itself.
@@ -179,9 +182,6 @@ public abstract class Linker {
     // for testing by calling setMemoryDeviceConfigForTesting().
     // Not used by ModernLinker.
     protected int mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_INIT;
-
-    // Name of the library that contains our JNI code.
-    protected static final String LINKER_JNI_LIBRARY = "chromium_android_linker";
 
     // Set to true to enable debug logs.
     protected static final boolean DEBUG = false;
@@ -257,7 +257,7 @@ public abstract class Linker {
      *
      * @return true if native library linker tests are enabled.
      */
-    public static boolean areLinkerTestsEnabled() {
+    public static boolean areTestsEnabled() {
         return NativeLibraries.sEnableLinkerTests;
     }
 
@@ -292,7 +292,7 @@ public abstract class Linker {
      *
      * @param type LINKER_IMPLEMENTATION_LEGACY or LINKER_IMPLEMENTATION_MODERN
      */
-    public static final void setLinkerImplementationForTesting(int type) {
+    public static final void setImplementationForTesting(int type) {
         // Sanity check. This method may only be called during tests.
         assertLinkerTestsAreEnabled();
         assertForTesting(type == LINKER_IMPLEMENTATION_LEGACY
@@ -318,18 +318,21 @@ public abstract class Linker {
      *
      * @return LINKER_IMPLEMENTATION_LEGACY or LINKER_IMPLEMENTATION_MODERN
      */
-    public int getLinkerImplementationForTesting() {
+    public int getImplementationForTesting() {
         // Sanity check. This method may only be called during tests.
         assertLinkerTestsAreEnabled();
-        assertForTesting(sSingleton != null);
 
-        if (sSingleton instanceof ModernLinker) {
-            return LINKER_IMPLEMENTATION_MODERN;
-        } else if (sSingleton instanceof LegacyLinker) {
-            return LINKER_IMPLEMENTATION_LEGACY;
+        synchronized (sSingletonLock) {
+            assertForTesting(sSingleton != null);
+
+            if (sSingleton instanceof ModernLinker) {
+                return LINKER_IMPLEMENTATION_MODERN;
+            } else if (sSingleton instanceof LegacyLinker) {
+                return LINKER_IMPLEMENTATION_LEGACY;
+            }
+            Log.e(TAG, "Invalid linker: " + sSingleton.getClass().getName());
+            return 0;
         }
-        Log.e(TAG, "Invalid linker: " + sSingleton.getClass().getName());
-        return 0;
     }
 
     /**
@@ -358,7 +361,7 @@ public abstract class Linker {
      */
     public void setTestRunnerClassNameForTesting(String testRunnerClassName) {
         if (DEBUG) {
-            Log.i(TAG, "setTestRunnerByClassNameForTesting(" + testRunnerClassName + ") called");
+            Log.i(TAG, "setTestRunnerClassNameForTesting(" + testRunnerClassName + ") called");
         }
         // Sanity check. This method may only be called during tests.
         assertLinkerTestsAreEnabled();
@@ -383,6 +386,42 @@ public abstract class Linker {
 
         synchronized (mLock) {
             return mTestRunnerClassName;
+        }
+    }
+
+    /**
+     * Set up the Linker for a test.
+     * Convenience function that calls setImplementationForTesting() to force an
+     * implementation, and then setTestRunnerClassNameForTesting() to set the test
+     * class name.
+     *
+     * On first call, instantiates a Linker of the requested type and sets its test
+     * runner class name. On subsequent calls, checks that the singleton produced by
+     * the first call matches the requested type and test runner class name.
+     */
+    public static void setupForTesting(int type, String testRunnerClassName) {
+        if (DEBUG) {
+            Log.i(TAG, "setupForTesting(" + type + ", " + testRunnerClassName + ") called");
+        }
+        // Sanity check. This method may only be called during tests.
+        assertLinkerTestsAreEnabled();
+
+        synchronized (sSingletonLock) {
+            // If this is the first call, configure the Linker to the given type and test class.
+            if (sSingleton == null) {
+                setImplementationForTesting(type);
+                sSingleton.setTestRunnerClassNameForTesting(testRunnerClassName);
+                return;
+            }
+
+            // If not the first call, check that the Linker configuration matches this request.
+            assertForTesting(sSingleton.getImplementationForTesting() == type);
+            String ourTestRunnerClassName = sSingleton.getTestRunnerClassNameForTesting();
+            if (testRunnerClassName == null) {
+                assertForTesting(ourTestRunnerClassName == null);
+            } else {
+                assertForTesting(ourTestRunnerClassName.equals(testRunnerClassName));
+            }
         }
     }
 
@@ -472,15 +511,15 @@ public abstract class Linker {
      * In a component build, the suffix ".cr" is added to each library name, so
      * if the initial load fails we retry with a suffix.
      */
-    protected void loadLinkerJNILibrary() {
+    protected static void loadLinkerJniLibrary() {
         String libName = "lib" + LINKER_JNI_LIBRARY + ".so";
         if (DEBUG) {
             Log.i(TAG, "Loading " + libName);
         }
         try {
             System.loadLibrary(LINKER_JNI_LIBRARY);
-        } catch (UnsatisfiedLinkError  e) {
-            Log.w(TAG, "Couldn't load " + libName + ", trying " + libName + ".so");
+        } catch (UnsatisfiedLinkError e) {
+            Log.w(TAG, "Couldn't load " + libName + ", trying " + libName + ".cr");
             System.loadLibrary(LINKER_JNI_LIBRARY + ".cr");
         }
     }
@@ -554,7 +593,7 @@ public abstract class Linker {
      * Call this method to determine if the chromium project must load the library
      * directly from a zip file.
      */
-    public boolean isInZipFile() {
+    public static boolean isInZipFile() {
         // The auto-generated NativeLibraries.sUseLibraryInZipFile variable will be true
         // if the library remains embedded in the APK zip file on the target.
         return NativeLibraries.sUseLibraryInZipFile;
@@ -565,7 +604,11 @@ public abstract class Linker {
      * use this linker. If not, System.loadLibrary() should be used to load
      * libraries instead.
      */
-    public abstract boolean isUsed();
+    public static boolean isUsed() {
+        // The auto-generated NativeLibraries.sUseLinker variable will be true if the
+        // build has not explicitly disabled Linker features.
+        return NativeLibraries.sUseLinker;
+    }
 
     /**
      * Call this method to determine if the linker will try to use shared RELROs

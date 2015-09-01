@@ -71,73 +71,51 @@ class LegacyLinker extends Linker {
         return new LegacyLinker();
     }
 
-    // Used internally to initialize the linker's data. Assume lock is held.
+    // Used internally to initialize the linker's data. Assumes lock is held.
+    // Loads JNI, and sets mMemoryDeviceConfig and mBrowserUsesSharedRelro.
     private void ensureInitializedLocked() {
         assert Thread.holdsLock(mLock);
 
-        if (mInitialized) {
+        if (mInitialized || !NativeLibraries.sUseLinker) {
             return;
         }
 
-        if (NativeLibraries.sUseLinker) {
-            // Load libchromium_android_linker.so.
-            loadLinkerJNILibrary();
+        // On first call, load libchromium_android_linker.so. Cannot be done in the
+        // constructor because instantiation occurs on the UI thread.
+        loadLinkerJniLibrary();
 
-            if (mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT) {
-                if (SysUtils.isLowEndDevice()) {
-                    mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_LOW;
-                } else {
-                    mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_NORMAL;
-                }
+        if (mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT) {
+            if (SysUtils.isLowEndDevice()) {
+                mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_LOW;
+            } else {
+                mMemoryDeviceConfig = MEMORY_DEVICE_CONFIG_NORMAL;
             }
+        }
 
-            switch (BROWSER_SHARED_RELRO_CONFIG) {
-                case BROWSER_SHARED_RELRO_CONFIG_NEVER:
-                    mBrowserUsesSharedRelro = false;
-                    break;
-                case BROWSER_SHARED_RELRO_CONFIG_LOW_RAM_ONLY:
-                    if (mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW) {
-                        mBrowserUsesSharedRelro = true;
-                        Log.w(TAG, "Low-memory device: shared RELROs used in all processes");
-                    } else {
-                        mBrowserUsesSharedRelro = false;
-                    }
-                    break;
-                case BROWSER_SHARED_RELRO_CONFIG_ALWAYS:
-                    Log.w(TAG, "Beware: shared RELROs used in all processes!");
+        // Cannot run in the constructor because SysUtils.isLowEndDevice() relies
+        // on CommandLine, which may not be available at instantiation.
+        switch (BROWSER_SHARED_RELRO_CONFIG) {
+            case BROWSER_SHARED_RELRO_CONFIG_NEVER:
+                mBrowserUsesSharedRelro = false;
+                break;
+            case BROWSER_SHARED_RELRO_CONFIG_LOW_RAM_ONLY:
+                if (mMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW) {
                     mBrowserUsesSharedRelro = true;
-                    break;
-                default:
-                    assert false : "Unreached";
-                    break;
-            }
-        } else {
-            if (DEBUG) {
-                Log.i(TAG, "Linker disabled");
-            }
+                    Log.w(TAG, "Low-memory device: shared RELROs used in all processes");
+                } else {
+                    mBrowserUsesSharedRelro = false;
+                }
+                break;
+            case BROWSER_SHARED_RELRO_CONFIG_ALWAYS:
+                Log.w(TAG, "Beware: shared RELROs used in all processes!");
+                mBrowserUsesSharedRelro = true;
+                break;
+            default:
+                assert false : "Unreached";
+                break;
         }
 
         mInitialized = true;
-    }
-
-    /**
-     * Call this method to determine if this chromium project must
-     * use this linker. If not, System.loadLibrary() should be used to load
-     * libraries instead.
-     */
-    @Override
-    public boolean isUsed() {
-        // Only GYP targets that are APKs and have the 'use_chromium_linker' variable
-        // defined as 1 will use this linker. For all others (the default), the
-        // auto-generated NativeLibraries.sUseLinker variable will be false.
-        if (!NativeLibraries.sUseLinker) {
-            return false;
-        }
-
-        synchronized (mLock) {
-            ensureInitializedLocked();
-            return true;
-        }
     }
 
     /**
@@ -187,10 +165,8 @@ class LegacyLinker extends Linker {
             if (DEBUG) {
                 Log.i(TAG, String.format(
                         Locale.US,
-                        "mInBrowserProcess=%s mBrowserUsesSharedRelro=%s mWaitForSharedRelros=%s",
-                        mInBrowserProcess ? "true" : "false",
-                        mBrowserUsesSharedRelro ? "true" : "false",
-                        mWaitForSharedRelros ? "true" : "false"));
+                        "mInBrowserProcess=%b mBrowserUsesSharedRelro=%b mWaitForSharedRelros=%b",
+                        mInBrowserProcess, mBrowserUsesSharedRelro, mWaitForSharedRelros));
             }
 
             if (mLoadedLibraries == null) {
@@ -316,6 +292,7 @@ class LegacyLinker extends Linker {
             Log.i(TAG, "disableSharedRelros() called");
         }
         synchronized (mLock) {
+            ensureInitializedLocked();
             mInBrowserProcess = false;
             mWaitForSharedRelros = false;
             mBrowserUsesSharedRelro = false;
@@ -444,7 +421,9 @@ class LegacyLinker extends Linker {
         }
 
         // In service processes, close all file descriptors from the map now.
-        if (!mInBrowserProcess) closeLibInfoMap(relroMap);
+        if (!mInBrowserProcess) {
+            closeLibInfoMap(relroMap);
+        }
 
         if (DEBUG) {
             Log.i(TAG, "Linker.useSharedRelrosLocked() exiting");

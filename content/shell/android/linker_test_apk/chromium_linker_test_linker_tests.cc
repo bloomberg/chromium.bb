@@ -79,8 +79,8 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
   const RE2 legacy_linker_re(kLegacyRelroSectionPattern);
   const RE2 modern_linker_re(kModernRelroSectionPattern);
 
-  size_t num_shared_relros = 0;
-  size_t num_bad_shared_relros = 0;
+  int num_shared_relros = 0;
+  int num_bad_shared_relros = 0;
 
   for (size_t n = 0; n < regions.size(); ++n) {
     MappedMemoryRegion& region = regions[n];
