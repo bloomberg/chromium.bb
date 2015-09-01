@@ -249,6 +249,12 @@ class FilesAuthorizeRequest : public DriveApiDataRequest<FileResource> {
 
 //============================ FilesInsertRequest =============================
 
+// Enumeration type for specifying visibility of files.
+enum FileVisibility {
+  FILE_VISIBILITY_DEFAULT,
+  FILE_VISIBILITY_PRIVATE,
+};
+
 // This class performs the request for creating a resource.
 // This request is mapped to
 // https://developers.google.com/drive/v2/reference/files/insert
@@ -262,8 +268,7 @@ class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
   ~FilesInsertRequest() override;
 
   // Optional parameter
-  const std::string& visibility() const { return visibility_; }
-  void set_visibility(const std::string& visibility) {
+  void set_visibility(FileVisibility visibility) {
     visibility_ = visibility;
   }
 
@@ -308,7 +313,7 @@ class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
  private:
   const DriveApiUrlGenerator url_generator_;
 
-  std::string visibility_;
+  FileVisibility visibility_;
   base::Time last_viewed_by_me_date_;
   std::string mime_type_;
   base::Time modified_date_;
@@ -417,8 +422,7 @@ class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
   void set_file_id(const std::string& file_id) { file_id_ = file_id; }
 
   // Optional parameter
-  const std::string& visibility() const { return visibility_; }
-  void set_visibility(const std::string& visibility) {
+  void set_visibility(FileVisibility visibility) {
     visibility_ = visibility;
   }
 
@@ -447,7 +451,7 @@ class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
   const DriveApiUrlGenerator url_generator_;
 
   std::string file_id_;
-  std::string visibility_;
+  FileVisibility visibility_;
   base::Time modified_date_;
   std::vector<std::string> parents_;
   std::string title_;

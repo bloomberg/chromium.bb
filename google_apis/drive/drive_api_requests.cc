@@ -385,7 +385,8 @@ FilesInsertRequest::FilesInsertRequest(
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
     : DriveApiDataRequest<FileResource>(sender, callback),
-      url_generator_(url_generator) {
+      url_generator_(url_generator),
+      visibility_(FILE_VISIBILITY_DEFAULT) {
   DCHECK(!callback.is_null());
 }
 
@@ -434,7 +435,8 @@ bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
 }
 
 GURL FilesInsertRequest::GetURLInternal() const {
-  return url_generator_.GetFilesInsertUrl(visibility_);
+  return url_generator_.GetFilesInsertUrl(
+      visibility_ == FILE_VISIBILITY_PRIVATE ? "PRIVATE" : "");
 }
 
 //============================== FilesPatchRequest ============================
@@ -514,7 +516,8 @@ FilesCopyRequest::FilesCopyRequest(
     const DriveApiUrlGenerator& url_generator,
     const FileResourceCallback& callback)
     : DriveApiDataRequest<FileResource>(sender, callback),
-      url_generator_(url_generator) {
+      url_generator_(url_generator),
+      visibility_(FILE_VISIBILITY_DEFAULT) {
   DCHECK(!callback.is_null());
 }
 
@@ -526,7 +529,8 @@ net::URLFetcher::RequestType FilesCopyRequest::GetRequestType() const {
 }
 
 GURL FilesCopyRequest::GetURLInternal() const {
-  return url_generator_.GetFilesCopyUrl(file_id_, visibility_);
+  return url_generator_.GetFilesCopyUrl(
+      file_id_, visibility_ == FILE_VISIBILITY_PRIVATE ? "PRIVATE" : "");
 }
 
 bool FilesCopyRequest::GetContentData(std::string* upload_content_type,
