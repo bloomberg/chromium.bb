@@ -326,6 +326,7 @@ void MDnsClientImpl::Core::NotifyNsecRecord(const RecordParsed* record) {
 
 void MDnsClientImpl::Core::OnConnectionError(int error) {
   // TODO(noamsml): On connection error, recreate connection and flush cache.
+  VLOG(1) << "MDNS OnConnectionError (code: " << error << ")";
 }
 
 void MDnsClientImpl::Core::AlertListeners(
