@@ -131,7 +131,7 @@ public:
 
     virtual ~ScriptPromisePropertyTestBase()
     {
-        ScriptPromisePropertyTestBase::destroyContext();
+        destroyContext();
     }
 
     Document& document() { return m_page->document(); }
@@ -142,15 +142,13 @@ public:
     DOMWrapperWorld& otherWorld() { return m_otherScriptState->world(); }
     ScriptState* currentScriptState() { return ScriptState::current(isolate()); }
 
-    virtual void destroyContext()
+    void destroyContext()
     {
         m_page.clear();
         if (m_otherScriptState) {
             m_otherScriptState->disposePerContextData();
             m_otherScriptState = nullptr;
         }
-        gc();
-        Heap::collectAllGarbage();
     }
 
     void gc() { V8GCController::collectGarbage(v8::Isolate::GetCurrent()); }
@@ -187,12 +185,6 @@ public:
     GarbageCollectedHolder* holder() { return m_holder; }
     Property* property() { return m_holder->property(); }
     ScriptPromise promise(DOMWrapperWorld& world) { return property()->promise(world); }
-
-    void destroyContext() override
-    {
-        m_holder = nullptr;
-        ScriptPromisePropertyTestBase::destroyContext();
-    }
 
 private:
     Persistent<GarbageCollectedHolder> m_holder;
@@ -362,29 +354,26 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reject_RejectsScriptPromise)
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Promise_DeadContext)
 {
-    Persistent<Property> property = this->property();
-    property->resolve(new GarbageCollectedScriptWrappable("value"));
-    EXPECT_EQ(Property::Resolved, property->state());
+    property()->resolve(new GarbageCollectedScriptWrappable("value"));
+    EXPECT_EQ(Property::Resolved, property()->state());
 
     destroyContext();
 
-    EXPECT_TRUE(property->promise(DOMWrapperWorld::mainWorld()).isEmpty());
+    EXPECT_TRUE(property()->promise(DOMWrapperWorld::mainWorld()).isEmpty());
 }
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_DeadContext)
 {
-    Persistent<Property> property = this->property();
-
     {
         ScriptState::Scope scope(mainScriptState());
-        property->promise(DOMWrapperWorld::mainWorld()).then(notReached(currentScriptState()), notReached(currentScriptState()));
+        property()->promise(DOMWrapperWorld::mainWorld()).then(notReached(currentScriptState()), notReached(currentScriptState()));
     }
 
     destroyContext();
-    EXPECT_TRUE(!property->executionContext() || property->executionContext()->activeDOMObjectsAreStopped());
+    EXPECT_TRUE(!property()->executionContext() || property()->executionContext()->activeDOMObjectsAreStopped());
 
-    property->resolve(new GarbageCollectedScriptWrappable("value"));
-    EXPECT_EQ(Property::Pending, property->state());
+    property()->resolve(new GarbageCollectedScriptWrappable("value"));
+    EXPECT_EQ(Property::Pending, property()->state());
 
     v8::Isolate::GetCurrent()->RunMicrotasks();
 }
