@@ -73,7 +73,6 @@ BackgroundSyncManager::RegistrationKey::RegistrationKey(
 void BackgroundSyncManager::Register(
     int64 sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
-    bool requested_from_service_worker,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -94,10 +93,10 @@ void BackgroundSyncManager::Register(
     return;
   }
 
-  op_scheduler_.ScheduleOperation(base::Bind(
-      &BackgroundSyncManager::RegisterImpl, weak_ptr_factory_.GetWeakPtr(),
-      sw_registration_id, options, requested_from_service_worker,
-      MakeStatusAndRegistrationCompletion(callback)));
+  op_scheduler_.ScheduleOperation(
+      base::Bind(&BackgroundSyncManager::RegisterImpl,
+                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
+                 MakeStatusAndRegistrationCompletion(callback)));
 }
 
 void BackgroundSyncManager::Unregister(
@@ -302,7 +301,6 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
 void BackgroundSyncManager::RegisterImpl(
     int64 sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
-    bool requested_from_service_worker,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -337,8 +335,7 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
-  if (requested_from_service_worker &&
-      !sw_registration->active_version()->HasWindowClients()) {
+  if (!sw_registration->active_version()->HasWindowClients()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_NOT_ALLOWED,
                               BackgroundSyncRegistration()));

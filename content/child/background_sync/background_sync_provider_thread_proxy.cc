@@ -101,7 +101,6 @@ BackgroundSyncProviderThreadProxy::GetThreadInstance(
 void BackgroundSyncProviderThreadProxy::registerBackgroundSync(
     const blink::WebSyncRegistration* options,
     blink::WebServiceWorkerRegistration* service_worker_registration,
-    bool requested_from_service_worker,
     blink::WebSyncRegistrationCallbacks* callbacks) {
   DCHECK(options);
   DCHECK(service_worker_registration);
@@ -110,7 +109,7 @@ void BackgroundSyncProviderThreadProxy::registerBackgroundSync(
       FROM_HERE,
       base::Bind(&BackgroundSyncProvider::registerBackgroundSync,
                  base::Unretained(sync_provider_), options,
-                 service_worker_registration, requested_from_service_worker,
+                 service_worker_registration,
                  new CallbackThreadAdapter<blink::WebSyncRegistrationCallbacks>(
                      make_scoped_ptr(callbacks),
                      WorkerTaskRunner::Instance()->CurrentWorkerId())));
