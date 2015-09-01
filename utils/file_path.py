@@ -818,13 +818,21 @@ def make_tree_deleteable(root):
   assert os.path.isabs(root), root
   if sys.platform != 'win32':
     set_read_only(root, False)
-  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
-    if sys.platform == 'win32':
-      for filename in filenames:
-        set_read_only(os.path.join(dirpath, filename), False)
-    else:
-      for dirname in dirnames:
-        set_read_only(os.path.join(dirpath, dirname), False)
+  try:
+    for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+      if sys.platform == 'win32':
+        for filename in filenames:
+          set_read_only(os.path.join(dirpath, filename), False)
+      else:
+        for dirname in dirnames:
+          set_read_only(os.path.join(dirpath, dirname), False)
+  except UnicodeEncodeError as e:
+    # Please appreciate the irony here. It fails due to os.walk(), calling
+    # os.path.join(), which internally uses "path += '/' + b", which converts
+    # the unicode instance back into a str, which then throws in os.stat() when
+    # you pass a ascii root but non-ascii files inside the directory. Using
+    # fix_encoding.fix_encoding() permits to go a tad farther, but not by much.
+    logging.exception('Failed to make tree deletable: %s: %s', root, e)
 
 
 def change_acl_for_delete_win(path):
