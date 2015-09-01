@@ -1863,17 +1863,17 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_OFFLINE_PAGES_PAGE_SAVED_STORAGE_NEAR_FULL" desc="Message shown after user adds a new offline page and the storage is almost full.">
         Page saved offline. Storage almost full.
       </message>
-      <message name="IDS_OFFLINE_PAGES_PAGE_FAILED_TO_SAVE" desc="Message shown after a new offline page failed to be added.">
-        Saved page not available offline. Please try again later.
-      </message>
-      <message name="IDS_OFFLINE_PAGES_PAGE_FAILED_TO_SAVE_STORAGE_NEAR_FULL" desc="Message shown after a new offline page failed to be added, probably due to that the storage is almost full.">
-        Saved page not available offline.
+      <message name="IDS_OFFLINE_PAGES_PAGE_FAILED_TO_SAVE" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to storage or other problems.">
+        Page saved, but not available offline
       </message>
       <message name="IDS_OFFLINE_PAGES_STORAGE_SPACE_TITLE" desc="Title of the promo header for managing offline pages storage. [CHAR-LIMIT=32]">
         Storage space
       </message>
       <message name="IDS_OFFLINE_PAGES_STORAGE_SPACE_MESSAGE" desc="Text explaining how much storage is currently used for offline copies of saved pages.">
         Saved pages are currently taking up <ph name="TOTAL_OFFLINE_STORAGE_SIZE">%1$s<ex>780 MB</ex></ph>.
+      </message>
+      <message name="IDS_OFFLINE_PAGES_STORAGE_CLEARED" desc="Text for the snackbar confirming clearing of the offline page storage space.">
+        Storage cleared
       </message>
 
       <!-- Find in page -->

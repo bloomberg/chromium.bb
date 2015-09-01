@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.offlinepages;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -13,6 +14,8 @@ import android.text.format.Formatter;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
+import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
@@ -42,6 +45,21 @@ public class OfflinePageFreeUpSpaceDialog
         dialog.mOfflinePageBridge = offlinePageBridge;
         dialog.mCallback = callback;
         return dialog;
+    }
+
+    /**
+     * Creates a snackbar informing user that the storage has been cleared.
+     */
+    public static Snackbar createStorageClearedSnackbar(Context context) {
+        return Snackbar.make(context.getString(R.string.offline_pages_storage_cleared),
+                new SnackbarController() {
+                    @Override
+                    public void onDismissForEachType(boolean isTimeout) {}
+                    @Override
+                    public void onDismissNoAction(Object actionData) {}
+                    @Override
+                    public void onAction(Object actionData) {}
+                });
     }
 
     @Override
