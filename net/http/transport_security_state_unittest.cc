@@ -45,7 +45,7 @@ namespace {
 const char kHost[] = "example.test";
 const char kSubdomain[] = "foo.example.test";
 const uint16_t kPort = 443;
-const char kReportUri[] = "http://example.test/test";
+const char kReportUri[] = "http://report-example.test/test";
 
 // kGoodPath is blog.torproject.org.
 const char* const kGoodPath[] = {
@@ -1349,9 +1349,20 @@ TEST_F(TransportSecurityStateTest, HPKPReportOnly) {
   ASSERT_NO_FATAL_FAILURE(CheckHPKPReport(report, host_port_pair, true, kHost,
                                           cert1.get(), cert2.get(),
                                           ssl_info.public_key_hashes));
+
+  // HTTPS report URIs on the same host as the pin violation should not
+  // be allowed, to avoid going into a report-sending loop.
+  mock_report_sender.Clear();
+  header = "pin-sha256=\"" + std::string(kGoodPin1) + "\";pin-sha256=\"" +
+           std::string(kGoodPin2) + "\";pin-sha256=\"" +
+           std::string(kGoodPin3) + "\";report-uri=\"https://" +
+           host_port_pair.host() + "/report\";includeSubdomains";
+  EXPECT_TRUE(
+      state.ProcessHPKPReportOnlyHeader(header, host_port_pair, ssl_info));
+  EXPECT_TRUE(mock_report_sender.latest_report_uri().is_empty());
 }
 
-// Test that Report-Only reports are not sent on certs that chain to
+// Tests that Report-Only reports are not sent on certs that chain to
 // local roots.
 TEST_F(TransportSecurityStateTest, HPKPReportOnlyOnLocalRoot) {
   HostPortPair host_port_pair(kHost, kPort);
@@ -1388,7 +1399,7 @@ TEST_F(TransportSecurityStateTest, HPKPReportOnlyOnLocalRoot) {
   EXPECT_EQ(std::string(), mock_report_sender.latest_report());
 }
 
-// Test that ProcessHPKPReportOnlyHeader() returns false if a report-uri
+// Tests that ProcessHPKPReportOnlyHeader() returns false if a report-uri
 // wasn't specified or if the header fails to parse.
 TEST_F(TransportSecurityStateTest, HPKPReportOnlyParseErrors) {
   HostPortPair host_port_pair(kHost, kPort);
@@ -1475,6 +1486,56 @@ TEST_F(TransportSecurityStateTest, PreloadedPKPReportUri) {
   ASSERT_NO_FATAL_FAILURE(CheckHPKPReport(
       report, host_port_pair, pkp_state.include_subdomains, pkp_state.domain,
       cert1.get(), cert2.get(), pkp_state.spki_hashes));
+}
+
+// Tests that report URIs are thrown out if they point to the same host,
+// over HTTPS, for which a pin was violated.
+TEST_F(TransportSecurityStateTest, HPKPReportUriToSameHost) {
+  HostPortPair host_port_pair(kHost, kPort);
+  GURL https_report_uri("https://example.test/report");
+  GURL http_report_uri("http://example.test/report");
+  TransportSecurityState state;
+  MockCertificateReportSender mock_report_sender;
+  state.SetReportSender(&mock_report_sender);
+
+  const base::Time current_time = base::Time::Now();
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  HashValueVector good_hashes;
+  for (size_t i = 0; kGoodPath[i]; i++)
+    EXPECT_TRUE(AddHash(kGoodPath[i], &good_hashes));
+
+  // Two dummy certs to use as the server-sent and validated chains. The
+  // contents don't matter, as long as they are not the real google.com
+  // certs in the pins.
+  scoped_refptr<X509Certificate> cert1 =
+      ImportCertFromFile(GetTestCertsDirectory(), "test_mail_google_com.pem");
+  scoped_refptr<X509Certificate> cert2 =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert1);
+  ASSERT_TRUE(cert2);
+
+  HashValueVector bad_hashes;
+  for (size_t i = 0; kBadPath[i]; i++)
+    EXPECT_TRUE(AddHash(kBadPath[i], &bad_hashes));
+
+  state.AddHPKP(kHost, expiry, true, good_hashes, https_report_uri);
+
+  // Trigger a violation and check that it does not send a report
+  // because the report-uri is HTTPS and same-host as the pins.
+  std::string failure_log;
+  EXPECT_FALSE(state.CheckPublicKeyPins(
+      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+
+  EXPECT_TRUE(mock_report_sender.latest_report_uri().is_empty());
+
+  // An HTTP report uri to the same host should be okay.
+  state.AddHPKP("example.test", expiry, true, good_hashes, http_report_uri);
+  EXPECT_FALSE(state.CheckPublicKeyPins(
+      host_port_pair, true, bad_hashes, cert1.get(), cert2.get(),
+      TransportSecurityState::ENABLE_PIN_REPORTS, &failure_log));
+
+  EXPECT_EQ(http_report_uri, mock_report_sender.latest_report_uri());
 }
 
 }  // namespace net

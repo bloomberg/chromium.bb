@@ -135,6 +135,15 @@ bool GetHPKPReport(const HostPortPair& host_port_pair,
   return true;
 }
 
+// Do not send a report over HTTPS to the same host that set the
+// pin. Such report URIs will result in loops. (A.com has a pinning
+// violation which results in a report being sent to A.com, which
+// results in a pinning violation which results in a report being sent
+// to A.com, etc.)
+bool IsReportUriValidForHost(const GURL& report_uri, const std::string& host) {
+  return (report_uri.host() != host || !report_uri.SchemeIsCryptographic());
+}
+
 bool CheckPinsAndMaybeSendReport(
     const HostPortPair& host_port_pair,
     const TransportSecurityState::PKPState& pkp_state,
@@ -154,6 +163,10 @@ bool CheckPinsAndMaybeSendReport(
   }
 
   DCHECK(pkp_state.report_uri.is_valid());
+  // Report URIs should not be used if they are the same host as the pin
+  // and are HTTPS, to avoid going into a report-sending loop.
+  if (!IsReportUriValidForHost(pkp_state.report_uri, host_port_pair.host()))
+    return false;
 
   std::string serialized_report;
 
@@ -918,8 +931,9 @@ bool TransportSecurityState::ProcessHPKPReportOnlyHeader(
 
   if (!ParseHPKPReportOnlyHeader(value, &include_subdomains, &spki_hashes,
                                  &report_uri) ||
-      !report_uri.is_valid() || report_uri.is_empty())
+      !report_uri.is_valid() || report_uri.is_empty()) {
     return false;
+  }
 
   PKPState pkp_state;
   pkp_state.last_observed = now;
