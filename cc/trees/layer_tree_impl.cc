@@ -114,11 +114,6 @@ void LayerTreeImpl::GatherFrameTimingRequestIds(
       });
 }
 
-bool LayerTreeImpl::IsExternalScrollActive() const {
-  return root_layer_scroll_offset_delegate_ &&
-         root_layer_scroll_offset_delegate_->IsExternalScrollActive();
-}
-
 void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
   int inner_layer_id = InnerViewportScrollLayer()
                            ? InnerViewportScrollLayer()->id()

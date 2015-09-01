@@ -93,8 +93,4 @@ gfx::Point RenderingTest::GetLocationOnScreen() {
   return gfx::Point();
 }
 
-bool RenderingTest::IsSmoothScrollingActive() const {
-  return false;
-}
-
 }  // namespace android_webview

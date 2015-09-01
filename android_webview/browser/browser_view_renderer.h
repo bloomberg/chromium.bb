@@ -107,7 +107,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
                             float page_scale_factor,
                             float min_page_scale_factor,
                             float max_page_scale_factor) override;
-  bool IsExternalScrollActive() const override;
   void SetNeedsAnimateScroll(
       const AnimationCallback& scroll_animation) override;
   void DidOverscroll(gfx::Vector2dF accumulated_overscroll,

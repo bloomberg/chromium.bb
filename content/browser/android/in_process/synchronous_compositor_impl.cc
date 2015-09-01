@@ -358,14 +358,6 @@ gfx::ScrollOffset SynchronousCompositorImpl::GetTotalScrollOffset() {
       compositor_client_->GetTotalRootLayerScrollOffset());
 }
 
-bool SynchronousCompositorImpl::IsExternalScrollActive() const {
-  DCHECK(CalledOnValidThread());
-  DCHECK(compositor_client_);
-  if (!registered_with_client_)
-    return false;
-  return compositor_client_->IsExternalScrollActive();
-}
-
 void SynchronousCompositorImpl::SetNeedsAnimate(
     const AnimationCallback& animation) {
   DCHECK(CalledOnValidThread());

@@ -564,10 +564,6 @@ gfx::Vector2dF BrowserViewRenderer::GetTotalRootLayerScrollOffset() {
   return scroll_offset_dip_;
 }
 
-bool BrowserViewRenderer::IsExternalScrollActive() const {
-  return client_->IsSmoothScrollingActive();
-}
-
 void BrowserViewRenderer::UpdateRootLayerState(
     const gfx::Vector2dF& total_scroll_offset_dip,
     const gfx::Vector2dF& max_scroll_offset_dip,

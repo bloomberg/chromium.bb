@@ -439,8 +439,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetBoundsDelta(const gfx::Vector2dF& bounds_delta);
   gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
 
-  bool IsExternalScrollActive() const;
-
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
   void SetCurrentScrollOffsetFromDelegate(
       const gfx::ScrollOffset& scroll_offset);

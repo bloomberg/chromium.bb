@@ -1013,15 +1013,6 @@ void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
       env, obj.obj(), new_value.x(), new_value.y());
 }
 
-bool AwContents::IsSmoothScrollingActive() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
-  return Java_AwContents_isSmoothScrollingActive(env, obj.obj());
-}
-
 void AwContents::UpdateScrollState(gfx::Vector2d max_scroll_offset,
                                    gfx::SizeF contents_size_dip,
                                    float page_scale_factor,

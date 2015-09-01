@@ -40,9 +40,6 @@ class BrowserViewRendererClient {
   // Try to set the view's scroll offset to |new_value|.
   virtual void ScrollContainerViewTo(gfx::Vector2d new_value) = 0;
 
-  // Is a Android view system managed fling in progress?
-  virtual bool IsSmoothScrollingActive() const = 0;
-
   // Sets the following:
   // view's scroll offset cap to |max_scroll_offset|,
   // current contents_size to |contents_size_dip|,

@@ -36,7 +36,6 @@ class RenderingTest : public testing::Test,
   void DetachFunctorFromView() override;
   gfx::Point GetLocationOnScreen() override;
   void ScrollContainerViewTo(gfx::Vector2d new_value) override {}
-  bool IsSmoothScrollingActive() const override;
   void UpdateScrollState(gfx::Vector2d max_scroll_offset,
                          gfx::SizeF contents_size_dip,
                          float page_scale_factor,

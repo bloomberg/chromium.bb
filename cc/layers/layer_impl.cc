@@ -1381,10 +1381,6 @@ void LayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {
   damage_rect_.Union(damage_rect);
 }
 
-bool LayerImpl::IsExternalScrollActive() const {
-  return layer_tree_impl_->IsExternalScrollActive();
-}
-
 void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsActive());
   if (scroll_offset_->SetCurrent(scroll_offset))

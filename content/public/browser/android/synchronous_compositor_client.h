@@ -35,7 +35,6 @@ class SynchronousCompositorClient {
                                     float page_scale_factor,
                                     float min_page_scale_factor,
                                     float max_page_scale_factor) = 0;
-  virtual bool IsExternalScrollActive() const = 0;
 
   typedef base::Callback<void(base::TimeTicks)> AnimationCallback;
   virtual void SetNeedsAnimateScroll(const AnimationCallback& animation) = 0;

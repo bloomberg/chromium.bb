@@ -2619,7 +2619,6 @@ public class AwContents implements SmartClipProvider,
         mScrollOffsetManager.scrollContainerViewTo(x, y);
     }
 
-    @CalledByNative
     public boolean isSmoothScrollingActive() {
         return mScrollOffsetManager.isSmoothScrollingActive();
     }

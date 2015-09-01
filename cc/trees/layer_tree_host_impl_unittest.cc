@@ -4508,8 +4508,6 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
     return getter_return_value_;
   }
 
-  bool IsExternalScrollActive() const override { return false; }
-
   void SetNeedsAnimate(const AnimationCallback&) override {
     needs_animate_ = true;
   }
