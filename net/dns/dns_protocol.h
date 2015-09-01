@@ -74,7 +74,7 @@ static const uint16 kDefaultPortMulticast = 5353;
 #pragma pack(1)
 
 // On-the-wire header. All uint16 are in network order.
-// Used internally in DnsQuery and DnsResponseParser.
+// Used internally in DnsQuery and DnsResponse.
 struct NET_EXPORT_PRIVATE Header {
   uint16 id;
   uint16 flags;
