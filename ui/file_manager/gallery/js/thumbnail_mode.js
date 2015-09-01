@@ -719,17 +719,17 @@ ThumbnailView.prototype.performEnterAnimation = function(index, rect) {
   this.animationThumbnail_.height = ThumbnailView.ROW_HEIGHT;
 
   var animationPlayer = this.animationThumbnail_.animate([{
-    height: rect.height,
-    left: rect.left,
-    top: rect.top,
-    width: rect.width,
+    height: rect.height + 'px',
+    left: rect.left + 'px',
+    top: rect.top + 'px',
+    width: rect.width + 'px',
     offset: 0,
     easing: 'linear'
   }, {
-    height: thumbnailRect.height,
-    left: thumbnailRect.left,
-    top: thumbnailRect.top,
-    width: thumbnailRect.width,
+    height: thumbnailRect.height + 'px',
+    left: thumbnailRect.left + 'px',
+    top: thumbnailRect.top + 'px',
+    width: thumbnailRect.width + 'px',
     offset: 1
   }], 250);
 
