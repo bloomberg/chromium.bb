@@ -263,7 +263,7 @@ void ContextState::RestoreBufferBindings() const {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GetBufferId(element_array_buffer));
   }
   glBindBuffer(GL_ARRAY_BUFFER, GetBufferId(bound_array_buffer.get()));
-  if (feature_info_->IsES3Enabled()) {
+  if (feature_info_->IsES3Capable()) {
     glBindBuffer(GL_COPY_READ_BUFFER,
                  GetBufferId(bound_copy_read_buffer.get()));
     glBindBuffer(GL_COPY_WRITE_BUFFER,
