@@ -11,34 +11,20 @@
 
 namespace password_manager {
 
-namespace {
-
-// This filter does not filter out anything, it is a dummy implementation of
-// the filter interface.
-class PassThroughCredentialsFilter : public CredentialsFilter {
- public:
-  ScopedVector<autofill::PasswordForm> FilterResults(
-      ScopedVector<autofill::PasswordForm> results) const override {
-    return results.Pass();
-  }
-};
+ScopedVector<autofill::PasswordForm>
+StubPasswordManagerClient::PassThroughCredentialsFilter::FilterResults(
+    ScopedVector<autofill::PasswordForm> results) const {
+  return results.Pass();
 }
 
-StubPasswordManagerClient::StubPasswordManagerClient() {
+bool StubPasswordManagerClient::PassThroughCredentialsFilter::ShouldSave(
+    const autofill::PasswordForm& form) const {
+  return true;
 }
 
-StubPasswordManagerClient::~StubPasswordManagerClient() {
-}
+StubPasswordManagerClient::StubPasswordManagerClient() {}
 
-std::string StubPasswordManagerClient::GetSyncUsername() const {
-  return std::string();
-}
-
-bool StubPasswordManagerClient::IsSyncAccountCredential(
-    const std::string& username,
-    const std::string& realm) const {
-  return false;
-}
+StubPasswordManagerClient::~StubPasswordManagerClient() {}
 
 bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     scoped_ptr<PasswordFormManager> form_to_save,
@@ -75,9 +61,9 @@ const GURL& StubPasswordManagerClient::GetLastCommittedEntryURL() const {
   return GURL::EmptyGURL();
 }
 
-scoped_ptr<CredentialsFilter>
-StubPasswordManagerClient::CreateStoreResultFilter() const {
-  return make_scoped_ptr(new PassThroughCredentialsFilter);
+const CredentialsFilter* StubPasswordManagerClient::GetStoreResultFilter()
+    const {
+  return &credentials_filter_;
 }
 
 }  // namespace password_manager

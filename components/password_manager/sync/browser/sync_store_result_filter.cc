@@ -9,10 +9,9 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
+#include "base/metrics/user_metrics.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
+#include "components/password_manager/sync/browser/password_sync_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 
@@ -37,8 +36,12 @@ bool LastLoadWasTransactionalReauthPage(const GURL& last_load_url) {
 }  // namespace
 
 SyncStoreResultFilter::SyncStoreResultFilter(
-    const PasswordManagerClient* client)
-    : client_(client) {}
+    const PasswordManagerClient* client,
+    SyncServiceFactoryFunction sync_service_factory_function,
+    SigninManagerFactoryFunction signin_manager_factory_function)
+    : client_(client),
+      sync_service_factory_function_(sync_service_factory_function),
+      signin_manager_factory_function_(signin_manager_factory_function) {}
 
 SyncStoreResultFilter::~SyncStoreResultFilter() {
 }
@@ -55,19 +58,32 @@ ScopedVector<PasswordForm> SyncStoreResultFilter::FilterResults(
     return results.Pass();
   }
 
-  const PasswordManagerClient* client = client_;
-  auto begin_of_removed = std::partition(
-      results.begin(), results.end(), [client](PasswordForm* form) {
-        return !client->IsSyncAccountCredential(
-            base::UTF16ToUTF8(form->username_value), form->signon_realm);
-      });
+  auto begin_of_removed =
+      std::partition(results.begin(), results.end(),
+                     [this](PasswordForm* form) { return ShouldSave(*form); });
 
+  // TODO(vabr): Improve the description of the histogram to mention that it is
+  // only reported for forms where the sync credentials would have been filled
+  // in.
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.SyncCredentialFiltered",
                         begin_of_removed != results.end());
 
   results.erase(begin_of_removed, results.end());
 
   return results.Pass();
+}
+
+bool SyncStoreResultFilter::ShouldSave(
+    const autofill::PasswordForm& form) const {
+  return !sync_util::IsSyncAccountCredential(
+      form, sync_service_factory_function_.Run(),
+      signin_manager_factory_function_.Run());
+}
+
+void SyncStoreResultFilter::ReportFormUsed(
+    const autofill::PasswordForm& form) const {
+  base::RecordAction(
+      base::UserMetricsAction("PasswordManager_SyncCredentialUsed"));
 }
 
 // static

@@ -12,8 +12,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/password_manager/sync_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -23,6 +25,7 @@
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/password_manager/sync/browser/password_sync_util.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
@@ -138,10 +141,15 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
       return;
   }
 
-  if (password_manager_sync_metrics::IsSyncAccountCredential(
-          password_view_->GetProfile(),
-          base::UTF16ToUTF8(password_list_[index]->username_value),
-          password_list_[index]->signon_realm)) {
+  sync_driver::SyncService* sync_service = nullptr;
+  if (ProfileSyncServiceFactory::HasProfileSyncService(
+          password_view_->GetProfile())) {
+    sync_service =
+        ProfileSyncServiceFactory::GetForProfile(password_view_->GetProfile());
+  }
+  if (password_manager::sync_util::IsSyncAccountCredential(
+          *password_list_[index], sync_service,
+          SigninManagerFactory::GetForProfile(password_view_->GetProfile()))) {
     content::RecordAction(
         base::UserMetricsAction("PasswordManager_SyncCredentialShown"));
   }

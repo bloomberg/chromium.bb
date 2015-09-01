@@ -6,6 +6,8 @@ source_set("browser") {
   sources = [
     "password_model_worker.cc",
     "password_model_worker.h",
+    "password_sync_util.cc",
+    "password_sync_util.h",
     "sync_store_result_filter.cc",
     "sync_store_result_filter.h",
   ]
@@ -15,17 +17,26 @@ source_set("browser") {
     "//google_apis",
     "//components/autofill/core/common",
     "//components/password_manager/core/browser",
+    "//components/signin/core/browser",
+    "//components/sync_driver",
     "//net",
+    "//url",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "password_sync_util_unittest.cc",
     "sync_store_result_filter_unittest.cc",
+    "sync_username_test_base.cc",
+    "sync_username_test_base.h",
   ]
   deps = [
     ":browser",
+    "//components/pref_registry",
+    "//components/signin/core/common",
+    "//sync",
     "//testing/gmock",
     "//testing/gtest",
   ]
