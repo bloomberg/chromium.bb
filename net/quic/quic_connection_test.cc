@@ -2666,9 +2666,11 @@ TEST_P(QuicConnectionTest, ReviveMissingPacketWithVaryingSeqNumLengths) {
   connection_.set_debug_visitor(fec_visitor.get());
 
   QuicPacketNumber fec_packet = 0;
+  // clang-format off
   QuicPacketNumberLength lengths[] = {
-      PACKET_6BYTE_PACKET_NUMBER, PACKET_4BYTE_PACKET_NUMBER,
-      PACKET_2BYTE_PACKET_NUMBER, PACKET_1BYTE_PACKET_NUMBER};
+    PACKET_6BYTE_PACKET_NUMBER, PACKET_4BYTE_PACKET_NUMBER,
+    PACKET_2BYTE_PACKET_NUMBER, PACKET_1BYTE_PACKET_NUMBER};
+  // clang-format on
   // For each packet number length size, revive a packet and check sequence
   // number length in the revived packet.
   for (size_t i = 0; i < arraysize(lengths); ++i) {

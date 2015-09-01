@@ -289,9 +289,7 @@ TEST_F(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
 
   QuicPacketNumber unacked2[] = {1, 3, 4};
   VerifyUnackedPackets(unacked2, arraysize(unacked2));
-  QuicPacketNumber pending2[] = {
-      3, 4,
-  };
+  QuicPacketNumber pending2[] = {3, 4};
   VerifyInFlightPackets(pending2, arraysize(pending2));
   QuicPacketNumber retransmittable2[] = {3, 4};
   VerifyRetransmittablePackets(retransmittable2, arraysize(retransmittable2));

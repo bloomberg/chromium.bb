@@ -85,9 +85,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
           packet_number_length(packet_number_length) {}
 
     QuicPacketNumber packet_number;
-        TransmissionType transmission_type;
-        const RetransmittableFrames& retransmittable_frames;
-        QuicPacketNumberLength packet_number_length;
+    TransmissionType transmission_type;
+    const RetransmittableFrames& retransmittable_frames;
+    QuicPacketNumberLength packet_number_length;
   };
 
   QuicSentPacketManager(Perspective perspective,

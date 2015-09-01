@@ -16,7 +16,8 @@ bool QuicPacketCreatorPeer::SendVersionInPacket(QuicPacketCreator* creator) {
 
 // static
 void QuicPacketCreatorPeer::SetSendVersionInPacket(
-    QuicPacketCreator* creator, bool send_version_in_packet) {
+    QuicPacketCreator* creator,
+    bool send_version_in_packet) {
   creator->send_version_in_packet_ = send_version_in_packet;
 }
 

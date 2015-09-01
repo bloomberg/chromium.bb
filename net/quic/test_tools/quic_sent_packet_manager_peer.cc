@@ -21,7 +21,8 @@ size_t QuicSentPacketManagerPeer::GetMaxTailLossProbes(
 
 // static
 void QuicSentPacketManagerPeer::SetMaxTailLossProbes(
-    QuicSentPacketManager* sent_packet_manager, size_t max_tail_loss_probes) {
+    QuicSentPacketManager* sent_packet_manager,
+    size_t max_tail_loss_probes) {
   sent_packet_manager->max_tail_loss_probes_ = max_tail_loss_probes;
 }
 
