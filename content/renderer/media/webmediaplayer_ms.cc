@@ -46,9 +46,10 @@ namespace {
 scoped_refptr<media::VideoFrame> CopyFrameToYV12(
     const scoped_refptr<media::VideoFrame>& frame,
     media::SkCanvasVideoRenderer* video_renderer) {
-  scoped_refptr<media::VideoFrame> new_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_YV12, frame->coded_size(), frame->visible_rect(),
-      frame->natural_size(), frame->timestamp());
+  const scoped_refptr<media::VideoFrame> new_frame =
+      media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12,
+                                     frame->coded_size(), frame->visible_rect(),
+                                     frame->natural_size(), frame->timestamp());
 
   if (frame->HasTextures()) {
     DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
@@ -154,27 +155,26 @@ void WebMediaPlayerMS::load(LoadType load_type,
       base::Bind(&WebMediaPlayerMS::OnSourceError, AsWeakPtr()),
       base::Bind(&WebMediaPlayerMS::OnFrameAvailable, AsWeakPtr()));
 
-  RenderFrame* frame = RenderFrame::FromWebFrame(frame_);
+  RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
   audio_renderer_ = renderer_factory_->GetAudioRenderer(
     url,
     frame->GetRoutingID());
 
-  if (video_frame_provider_.get() || audio_renderer_.get()) {
-    if (audio_renderer_.get()) {
-      audio_renderer_->SetVolume(volume_);
-      audio_renderer_->Start();
-    }
-
-    if (video_frame_provider_.get()) {
-      video_frame_provider_->Start();
-    } else {
-      // This is audio-only mode.
-      DCHECK(audio_renderer_.get());
-      SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
-      SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
-    }
-  } else {
+  if (!video_frame_provider_ && !audio_renderer_) {
     SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);
+    return;
+  }
+
+  if (audio_renderer_) {
+    audio_renderer_->SetVolume(volume_);
+    audio_renderer_->Start();
+  }
+  if (video_frame_provider_)
+    video_frame_provider_->Start();
+  if (audio_renderer_ && !video_frame_provider_) {
+    // This is audio-only mode.
+    SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+    SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
   }
 }
 
@@ -261,8 +261,8 @@ void WebMediaPlayerMS::setSinkId(const blink::WebString& device_id,
   if (audio_renderer_.get()) {
     media::OutputDevice* output_device = audio_renderer_->GetOutputDevice();
     if (output_device) {
-      std::string device_id_str(device_id.utf8());
-      GURL security_origin(frame_->securityOrigin().toString().utf8());
+      const std::string device_id_str(device_id.utf8());
+      const GURL security_origin(frame_->securityOrigin().toString().utf8());
       output_device->SwitchOutputDevice(device_id_str, security_origin,
                                         callback);
       return;
@@ -288,9 +288,10 @@ bool WebMediaPlayerMS::hasAudio() const {
 blink::WebSize WebMediaPlayerMS::naturalSize() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  gfx::Size size;
-  if (current_frame_.get())
-    size = current_frame_->natural_size();
+  if (!current_frame_.get())
+    return blink::WebSize();
+
+  const gfx::Size& size = current_frame_->natural_size();
   DVLOG(3) << "WebMediaPlayerMS::naturalSize, " << size.ToString();
   return blink::WebSize(size);
 }
@@ -436,7 +437,7 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
 
   // TODO(dshwang): need more elegant way to convert WebGraphicsContext3D to
   // GLES2Interface.
-  gpu::gles2::GLES2Interface* gl =
+  gpu::gles2::GLES2Interface* const gl =
       static_cast<gpu_blink::WebGraphicsContext3DImpl*>(web_graphics_context)
           ->GetGLInterface();
   media::SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
@@ -509,8 +510,9 @@ void WebMediaPlayerMS::OnFrameAvailable(
   if (paused_)
     return;
 
-  bool size_changed = !current_frame_.get() ||
-                      current_frame_->natural_size() != frame->natural_size();
+  const bool size_changed =
+      !current_frame_.get() ||
+      current_frame_->natural_size() != frame->natural_size();
 
   {
     base::AutoLock auto_lock(current_frame_lock_);

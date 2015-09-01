@@ -151,21 +151,18 @@ class WebMediaPlayerMS
   // Getter method to |client_|.
   blink::WebMediaPlayerClient* GetClient();
 
-  blink::WebFrame* frame_;
+  blink::WebFrame* const frame_;
 
   blink::WebMediaPlayer::NetworkState network_state_;
   blink::WebMediaPlayer::ReadyState ready_state_;
 
-  blink::WebTimeRanges buffered_;
+  const blink::WebTimeRanges buffered_;
 
   float volume_;
 
-  // Used for DCHECKs to ensure methods calls executed in the correct thread.
-  base::ThreadChecker thread_checker_;
+  blink::WebMediaPlayerClient* const client_;
 
-  blink::WebMediaPlayerClient* client_;
-
-  base::WeakPtr<media::WebMediaPlayerDelegate> delegate_;
+  const base::WeakPtr<media::WebMediaPlayerDelegate> delegate_;
 
   // Specify content:: to disambiguate from cc::.
   scoped_refptr<content::VideoFrameProvider> video_frame_provider_;
@@ -201,6 +198,9 @@ class WebMediaPlayerMS
   scoped_refptr<media::MediaLog> media_log_;
 
   scoped_ptr<MediaStreamRendererFactory> renderer_factory_;
+
+  // Used for DCHECKs to ensure methods calls executed in the correct thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };
