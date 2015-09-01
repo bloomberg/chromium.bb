@@ -5,9 +5,11 @@
 #ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_CHROME_PERMISSION_MESSAGE_RULES_H_
 #define CHROME_COMMON_EXTENSIONS_PERMISSIONS_CHROME_PERMISSION_MESSAGE_RULES_H_
 
+#include <set>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_message.h"
 
@@ -51,57 +53,11 @@ class ChromePermissionMessageFormatter {
 // provider class and remove ownership from ChromePermissionMessageRule.
 class ChromePermissionMessageRule {
  public:
+  virtual ~ChromePermissionMessageRule();
+
   // Returns all the rules used to generate permission messages for Chrome apps
   // and extensions.
   static std::vector<ChromePermissionMessageRule> GetAllRules();
-
-  // Convenience constructors to allow inline initialization of the permission
-  // ID sets.
-  class PermissionIDSetInitializer : public std::set<APIPermission::ID> {
-   public:
-    // Don't make the constructor explicit to make the usage convenient.
-    PermissionIDSetInitializer();
-    PermissionIDSetInitializer(
-        APIPermission::ID a);  // NOLINT(runtime/explicit)
-    PermissionIDSetInitializer(APIPermission::ID a, APIPermission::ID b);
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c);
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c,
-                               APIPermission::ID d);
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c,
-                               APIPermission::ID d,
-                               APIPermission::ID e);
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c,
-                               APIPermission::ID d,
-                               APIPermission::ID e,
-                               APIPermission::ID f);
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c,
-                               APIPermission::ID d,
-                               APIPermission::ID e,
-                               APIPermission::ID f,
-                               APIPermission::ID g);
-    virtual ~PermissionIDSetInitializer();
-  };
-
-  // Create a rule using the default formatter (display the message with ID
-  // |message_id|).
-  ChromePermissionMessageRule(int message_id,
-                              PermissionIDSetInitializer required,
-                              PermissionIDSetInitializer optional);
-  // Create a rule with a custom formatter. Takes ownership of |formatter|.
-  ChromePermissionMessageRule(ChromePermissionMessageFormatter* formatter,
-                              PermissionIDSetInitializer required,
-                              PermissionIDSetInitializer optional);
-  virtual ~ChromePermissionMessageRule();
 
   std::set<APIPermission::ID> required_permissions() const;
   std::set<APIPermission::ID> optional_permissions() const;
@@ -111,14 +67,24 @@ class ChromePermissionMessageRule {
       const PermissionIDSet& permissions) const;
 
  private:
+  class PermissionIDSetInitializer;
+
+  // Create a rule using the default formatter (display the message with ID
+  // |message_id|).
+  ChromePermissionMessageRule(int message_id,
+                              const PermissionIDSetInitializer& required,
+                              const PermissionIDSetInitializer& optional);
+  // Create a rule with a custom formatter. Takes ownership of |formatter|.
+  ChromePermissionMessageRule(ChromePermissionMessageFormatter* formatter,
+                              const PermissionIDSetInitializer& required,
+                              const PermissionIDSetInitializer& optional);
+
   std::set<APIPermission::ID> required_permissions_;
   std::set<APIPermission::ID> optional_permissions_;
 
   // Owned by this class. linked_ptr is needed because this object is copyable
   // and stored in a returned vector.
   linked_ptr<ChromePermissionMessageFormatter> formatter_;
-
-  // DISALLOW_COPY_AND_ASSIGN(ChromePermissionMessageRule);
 };
 
 }  // namespace extensions

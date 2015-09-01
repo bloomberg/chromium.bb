@@ -249,23 +249,86 @@ class USBDevicesFormatter : public ChromePermissionMessageFormatter {
 
 }  // namespace
 
+// Convenience constructors to allow inline initialization of the permission
+// ID sets.
+class ChromePermissionMessageRule::PermissionIDSetInitializer
+    : public std::set<APIPermission::ID> {
+ public:
+  PermissionIDSetInitializer() {}
+
+  // Don't make the constructor explicit to make the usage convenient.
+  PermissionIDSetInitializer(APIPermission::ID a) {  // NOLINT(runtime/explicit)
+    insert(a);
+  }
+
+  PermissionIDSetInitializer(APIPermission::ID a, APIPermission::ID b)
+      : PermissionIDSetInitializer(a) {
+    insert(b);
+  }
+
+  PermissionIDSetInitializer(APIPermission::ID a,
+                             APIPermission::ID b,
+                             APIPermission::ID c)
+      : PermissionIDSetInitializer(a, b) {
+    insert(c);
+  }
+
+  PermissionIDSetInitializer(APIPermission::ID a,
+                             APIPermission::ID b,
+                             APIPermission::ID c,
+                             APIPermission::ID d)
+      : PermissionIDSetInitializer(a, b, c) {
+    insert(d);
+  }
+
+  PermissionIDSetInitializer(APIPermission::ID a,
+                             APIPermission::ID b,
+                             APIPermission::ID c,
+                             APIPermission::ID d,
+                             APIPermission::ID e)
+      : PermissionIDSetInitializer(a, b, c, d) {
+    insert(e);
+  }
+
+  PermissionIDSetInitializer(APIPermission::ID a,
+                             APIPermission::ID b,
+                             APIPermission::ID c,
+                             APIPermission::ID d,
+                             APIPermission::ID e,
+                             APIPermission::ID f)
+      : PermissionIDSetInitializer(a, b, c, d, e) {
+    insert(f);
+  }
+
+  PermissionIDSetInitializer(APIPermission::ID a,
+                             APIPermission::ID b,
+                             APIPermission::ID c,
+                             APIPermission::ID d,
+                             APIPermission::ID e,
+                             APIPermission::ID f,
+                             APIPermission::ID g)
+      : PermissionIDSetInitializer(a, b, c, d, e, f) {
+    insert(g);
+  }
+
+  virtual ~PermissionIDSetInitializer() {}
+};
+
 ChromePermissionMessageRule::ChromePermissionMessageRule(
     int message_id,
-    PermissionIDSetInitializer required,
-    PermissionIDSetInitializer optional)
+    const PermissionIDSetInitializer& required,
+    const PermissionIDSetInitializer& optional)
     : required_permissions_(required),
       optional_permissions_(optional),
-      formatter_(new DefaultPermissionMessageFormatter(message_id)) {
-}
+      formatter_(new DefaultPermissionMessageFormatter(message_id)) {}
 
 ChromePermissionMessageRule::ChromePermissionMessageRule(
     ChromePermissionMessageFormatter* formatter,
-    PermissionIDSetInitializer required,
-    PermissionIDSetInitializer optional)
+    const PermissionIDSetInitializer& required,
+    const PermissionIDSetInitializer& optional)
     : required_permissions_(required),
       optional_permissions_(optional),
-      formatter_(formatter) {
-}
+      formatter_(formatter) {}
 
 ChromePermissionMessageRule::~ChromePermissionMessageRule() {
 }
@@ -652,68 +715,6 @@ ChromePermissionMessageRule::GetAllRules() {
 
   return std::vector<ChromePermissionMessageRule>(
       rules_arr, rules_arr + arraysize(rules_arr));
-}
-
-ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer() {
-}
-ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID a) {
-  insert(a);
-}
-ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID a, APIPermission::ID b)
-    : PermissionIDSetInitializer(a) {
-  insert(b);
-}
-ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c)
-    : PermissionIDSetInitializer(a, b) {
-  insert(c);
-}
-ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c,
-                               APIPermission::ID d)
-    : PermissionIDSetInitializer(a, b, c) {
-  insert(d);
-}
-ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c,
-                               APIPermission::ID d,
-                               APIPermission::ID e)
-    : PermissionIDSetInitializer(a, b, c, d) {
-  insert(e);
-}
-ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c,
-                               APIPermission::ID d,
-                               APIPermission::ID e,
-                               APIPermission::ID f)
-    : PermissionIDSetInitializer(a, b, c, d, e) {
-  insert(f);
-}
-ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID a,
-                               APIPermission::ID b,
-                               APIPermission::ID c,
-                               APIPermission::ID d,
-                               APIPermission::ID e,
-                               APIPermission::ID f,
-                               APIPermission::ID g)
-    : PermissionIDSetInitializer(a, b, c, d, e, f) {
-  insert(g);
-}
-
-ChromePermissionMessageRule::PermissionIDSetInitializer::
-    ~PermissionIDSetInitializer() {
 }
 
 }  // namespace extensions
