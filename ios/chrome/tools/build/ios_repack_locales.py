@@ -42,25 +42,22 @@ def calc_inputs(options, locale):
   """Determine the files that need processing for the given locale."""
   inputs = []
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/components/strings/
-  # components_strings_da.pak',
+  #e.g. 'out/Debug/gen/components/strings/components_strings_da.pak'
   inputs.append(os.path.join(options.share_int_dir, 'components', 'strings',
                 'components_strings_%s.pak' % locale))
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_da.pak',
+  #e.g. 'out/Debug/gen/ui/strings/ui_strings_da.pak'
   inputs.append(os.path.join(options.share_int_dir, 'ui', 'strings',
                 'ui_strings_%s.pak' % locale))
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/ios_strings_resources_da.pak'
+  #e.g. 'out/Debug/gen/ios/chrome/ios_strings_da.pak'
   inputs.append(os.path.join(options.share_int_dir, 'ios', 'chrome',
-                'ios_strings_resources_%s.pak' % locale))
+                'ios_strings_%s.pak' % locale))
 
-  if options.branding:
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/google_chrome_strings_da.pak'
-    #     or
-    #     '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/chromium_strings_da.pak'
-    inputs.append(os.path.join(options.share_int_dir, 'ios', 'chrome',
-        '%s_strings_%s.pak' % (options.branding, locale)))
+  #e.g. 'out/Debug/gen/ios/chrome/ios_chromium_strings_da.pak'
+  # or  'out/Debug/gen/ios/chrome/ios_google_chrome_strings_da.pak'
+  inputs.append(os.path.join(options.share_int_dir, 'ios', 'chrome',
+                'ios_%s_strings_%s.pak' % (options.branding, locale)))
 
   # Add any extra input files.
   for extra_file in options.extra_input:
@@ -140,6 +137,9 @@ def DoMain(argv):
     parser.error('Please specify all of "-x" and "-s".\n')
   if options.print_inputs and options.print_outputs:
     parser.error('Please specify only one of "-i" or "-o".\n')
+  # Need to know the branding, unless we're just listing the outputs.
+  if not options.print_outputs and not options.branding:
+    parser.error('Please specify "-b" to determine the input files.\n')
 
   if options.print_inputs:
     return quote_filenames(list_inputs(options, locales))

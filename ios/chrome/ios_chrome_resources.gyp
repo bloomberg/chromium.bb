@@ -13,20 +13,36 @@
       'target_name': 'ios_chrome_resources',
       'type': 'none',
       'dependencies': [
-        'ios_strings_resources_gen',
+        'ios_strings_gen',
         'ios_theme_resources_gen',
       ],
     },
     {
-      'target_name': 'ios_strings_resources_gen',
+      'target_name': 'ios_strings_gen',
       'type': 'none',
       'hard_dependency': 1,
       'actions': [
         {
-          'action_name': 'ios_strings_resources',
+          'action_name': 'generate_ios_strings',
           'variables': {
             'grit_whitelist': '',
-            'grit_grd_file': 'app/strings/ios_strings_resources.grd',
+            'grit_grd_file': 'app/strings/ios_strings.grd',
+          },
+          'includes': [ '../../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'generate_ios_chromium_strings',
+          'variables': {
+            'grit_whitelist': '',
+            'grit_grd_file': 'app/strings/ios_chromium_strings.grd',
+          },
+          'includes': [ '../../build/grit_action.gypi' ],
+        },
+        {
+          'action_name': 'generate_ios_google_chrome_strings',
+          'variables': {
+            'grit_whitelist': '',
+            'grit_grd_file': 'app/strings/ios_google_chrome_strings.grd',
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
@@ -91,6 +107,7 @@
             '<!@pymod_do_main(ios_repack_locales -i '
               '-s <(SHARED_INTERMEDIATE_DIR) '
               '-x <(SHARED_INTERMEDIATE_DIR)/repack_ios '
+              '-b <(branding_path_component) '
               '<(locales))'
           ],
           'outputs': [
@@ -104,6 +121,7 @@
             'tools/build/ios_repack_locales.py',
             '-x', '<(SHARED_INTERMEDIATE_DIR)/repack_ios',
             '-s', '<(SHARED_INTERMEDIATE_DIR)',
+            '-b', '<(branding_path_component)',
             '<@(locales)',
           ],
         },

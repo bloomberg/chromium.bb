@@ -454,7 +454,7 @@
           ],
         }, {  # else
           'dependencies': [  # Update duplicate logic in repack_locales.py
-            '<(DEPTH)/ios/chrome/ios_chrome_resources.gyp:ios_strings_resources_gen',
+            '<(DEPTH)/ios/chrome/ios_chrome_resources.gyp:ios_strings_gen',
           ],
           'actions': [
             {
