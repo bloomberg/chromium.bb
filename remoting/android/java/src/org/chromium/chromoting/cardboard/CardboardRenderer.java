@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.chromoting.cardboard;
 
 import android.app.Activity;
 import android.graphics.Point;
@@ -22,7 +22,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 /**
  * Renderer for Cardboard view.
  */
-public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
+public class CardboardRenderer implements CardboardView.StereoRenderer {
     private static final String TAG = "cr.CardboardRenderer";
 
     private static final int BYTE_PER_FLOAT = 4;
@@ -74,10 +74,10 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     // Eye position at the menu bar distance;
     private PointF mEyeMenuBarPosition;
 
-    private CardboardActivityDesktop mDesktop;
-    private CardboardActivityEyePoint mEyePoint;
-    private CardboardActivitySkybox mSkybox;
-    private CardboardActivityMenuBar mMenuBar;
+    private Desktop mDesktop;
+    private EyePoint mEyePoint;
+    private Skybox mSkybox;
+    private MenuBar mMenuBar;
 
     // Lock for eye position related operations.
     // This protects access to mEyeDesktopPosition.
@@ -86,7 +86,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     // Flag to indicate whether to show menu bar.
     private boolean mMenuBarVisible;
 
-    public CardboardDesktopRenderer(Activity activity) {
+    public CardboardRenderer(Activity activity) {
         mActivity = activity;
         mCameraPosition = 0.0f;
 
@@ -123,10 +123,10 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         // Enable depth testing.
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-        mDesktop = new CardboardActivityDesktop();
-        mEyePoint = new CardboardActivityEyePoint();
-        mSkybox = new CardboardActivitySkybox(mActivity);
-        mMenuBar = new CardboardActivityMenuBar(mActivity);
+        mDesktop = new Desktop();
+        mEyePoint = new EyePoint();
+        mSkybox = new Skybox(mActivity);
+        mMenuBar = new MenuBar(mActivity);
 
         attachRedrawCallback();
     }
@@ -249,7 +249,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     /**
      * Return menu item that is currently looking at or null if not looking at menu bar.
      */
-    public CardboardActivityMenuItem getMenuItem() {
+    public MenuItem getMenuItem() {
         // Transform world view to model view.
         return mMenuBar.getLookingItem(new PointF(mEyeMenuBarPosition.x - MENU_BAR_POSITION_X,
                 mEyeMenuBarPosition.y - MENU_BAR_POSITION_Y));

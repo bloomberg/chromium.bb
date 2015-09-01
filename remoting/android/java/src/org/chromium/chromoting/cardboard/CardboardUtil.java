@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.chromoting.cardboard;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -11,7 +11,7 @@ import java.nio.FloatBuffer;
 /**
  * Utility class for Cardboard activity.
  */
-public class CardboardActivityUtility {
+public class CardboardUtil {
     private static final int BYTE_PER_FLOAT = 4;
 
     /**

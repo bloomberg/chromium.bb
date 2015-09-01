@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import org.chromium.chromoting.cardboard.DesktopActivity;
 import org.chromium.chromoting.jni.JniInterface;
 
 import java.util.Set;
@@ -204,7 +205,7 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
 
         if (id == R.id.actionbar_cardboard) {
             mSwitchToCardboardDesktopActivity = true;
-            Intent intent = new Intent(this, CardboardDesktopActivity.class);
+            Intent intent = new Intent(this, DesktopActivity.class);
             startActivityForResult(intent, Chromoting.CARDBOARD_DESKTOP_ACTIVITY);
             return true;
         }

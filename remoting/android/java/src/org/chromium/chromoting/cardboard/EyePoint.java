@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.chromoting.cardboard;
 
 import android.opengl.GLES20;
 
@@ -10,7 +10,7 @@ import android.opengl.GLES20;
  * Chromoting Cardboard activity eye point, which represents the location on the desktop
  * where user is looking at.
  */
-public class CardboardActivityEyePoint {
+public class EyePoint {
     private static final String VERTEX_SHADER =
             "uniform mat4 u_CombinedMatrix;"
             + "attribute vec4 a_EyePosition;"
@@ -34,7 +34,7 @@ public class CardboardActivityEyePoint {
     private int mCombinedMatrixHandle;
     private int mPositionHandle;
 
-    public CardboardActivityEyePoint() {
+    public EyePoint() {
         // Set handlers for eye point drawing.
         mVertexShaderHandle =
                 ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER);

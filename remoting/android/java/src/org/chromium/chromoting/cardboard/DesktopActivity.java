@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.chromoting.cardboard;
 
 import android.content.Intent;
 import android.graphics.PointF;
@@ -14,6 +14,8 @@ import android.speech.SpeechRecognizer;
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
 
+import org.chromium.chromoting.R;
+import org.chromium.chromoting.TouchInputHandler;
 import org.chromium.chromoting.jni.JniInterface;
 
 import java.util.ArrayList;
@@ -21,12 +23,12 @@ import java.util.ArrayList;
 /**
  * Virtual desktop activity for Cardboard.
  */
-public class CardboardDesktopActivity extends CardboardActivity {
+public class DesktopActivity extends CardboardActivity {
     // Flag to indicate whether the current activity is going to switch to normal
     // desktop activity.
     private boolean mSwitchToDesktopActivity;
 
-    private CardboardDesktopRenderer mRenderer;
+    private CardboardRenderer mRenderer;
     private SpeechRecognizer mSpeechRecognizer;
 
     // Flag to indicate whether the speech recognizer is listening or not.
@@ -38,7 +40,7 @@ public class CardboardDesktopActivity extends CardboardActivity {
         setContentView(R.layout.cardboard_desktop);
         mSwitchToDesktopActivity = false;
         CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
-        mRenderer = new CardboardDesktopRenderer(this);
+        mRenderer = new CardboardRenderer(this);
         mIsListening = false;
 
         // Associate a CardboardView.StereoRenderer with cardboardView.

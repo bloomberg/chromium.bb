@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.chromoting.cardboard;
 
-import static org.chromium.chromoting.CardboardActivityUtility.makeFloatBuffer;
+import static org.chromium.chromoting.cardboard.CardboardUtil.makeFloatBuffer;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 
 import org.chromium.base.Log;
+import org.chromium.chromoting.ChromotingDownloadManager;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -19,7 +20,7 @@ import java.nio.FloatBuffer;
 /**
  * Cardboard Activity skybox, which is used to draw the activity environment.
  */
-public class CardboardActivitySkybox {
+public class Skybox {
     private static final String TAG = "cr.CardboardSkybox";
 
     private static final String VERTEX_SHADER =
@@ -118,7 +119,7 @@ public class CardboardActivitySkybox {
 
     ChromotingDownloadManager mDownloadManager;
 
-    public CardboardActivitySkybox(Activity activity) {
+    public Skybox(Activity activity) {
         mActivity = activity;
 
         GLES20.glEnable(GLES20.GL_TEXTURE_CUBE_MAP);

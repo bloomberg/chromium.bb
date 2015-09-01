@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.chromoting.cardboard;
 
-import static org.chromium.chromoting.CardboardActivityUtility.makeFloatBuffer;
-import static org.chromium.chromoting.CardboardActivityUtility.makeRectangularTextureBuffer;
+import static org.chromium.chromoting.cardboard.CardboardUtil.makeFloatBuffer;
+import static org.chromium.chromoting.cardboard.CardboardUtil.makeRectangularTextureBuffer;
 
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -18,7 +18,7 @@ import java.nio.FloatBuffer;
 /**
  * Chromoting Cardboard activity desktop, which is used to display host desktop.
  */
-public class CardboardActivityDesktop {
+public class Desktop {
     private static final String VERTEX_SHADER =
             "uniform mat4 u_CombinedMatrix;"
             + "attribute vec4 a_Position;"
@@ -81,7 +81,7 @@ public class CardboardActivityDesktop {
     // Lock to allow multithreaded access to mReloadTexture.
     private final Object mReloadTextureLock = new Object();
 
-    public CardboardActivityDesktop() {
+    public Desktop() {
         mVertexShaderHandle =
                 ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER);
         mFragmentShaderHandle =

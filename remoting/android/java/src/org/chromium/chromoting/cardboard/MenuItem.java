@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.chromoting.cardboard;
 
-import static org.chromium.chromoting.CardboardActivityUtility.makeFloatBuffer;
-import static org.chromium.chromoting.CardboardActivityUtility.makeRectangularTextureBuffer;
+import static org.chromium.chromoting.cardboard.CardboardUtil.makeFloatBuffer;
+import static org.chromium.chromoting.cardboard.CardboardUtil.makeRectangularTextureBuffer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,14 +14,14 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.opengl.GLES20;
 
-import org.chromium.chromoting.CardboardActivityMenuBar.MenuItemType;
+import org.chromium.chromoting.cardboard.MenuBar.MenuItemType;
 
 import java.nio.FloatBuffer;
 
 /**
  * Cardboard activity menu item representing a corresponding function.
  */
-public class CardboardActivityMenuItem {
+public class MenuItem {
     private static final String VERTEX_SHADER =
             "uniform mat4 u_CombinedMatrix;"
             + "attribute vec4 a_Position;"
@@ -74,7 +74,7 @@ public class CardboardActivityMenuItem {
 
     private RectF mRect;
 
-    public CardboardActivityMenuItem(Context context, MenuItemType type, RectF rect) {
+    public MenuItem(Context context, MenuItemType type, RectF rect) {
         mType = type;
         mRect = new RectF(rect);
         float halfHeight = mRect.height() / 2;

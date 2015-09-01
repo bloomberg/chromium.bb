@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromoting;
+package org.chromium.chromoting.cardboard;
 
 import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.opengl.Matrix;
 
+import org.chromium.chromoting.R;
+
 /**
  * Cardboard activity menu bar that contains multiple menu items.
  */
-public class CardboardActivityMenuBar {
+public class MenuBar {
     public enum MenuItemType {
         HOME(R.drawable.ic_home),
         VOICE_INPUT(R.drawable.ic_voice_input),
@@ -34,12 +36,12 @@ public class CardboardActivityMenuBar {
 
     private final RectF mMenuBarRect;
 
-    private final CardboardActivityMenuItem[] mItems;
+    private final MenuItem[] mItems;
 
     private float[] mModelMatrix;
     private float[] mCombinedMatrix;
 
-    public CardboardActivityMenuBar(Context context) {
+    public MenuBar(Context context) {
         MenuItemType[] menuItemTypes = MenuItemType.values();
         final int numItem = menuItemTypes.length;
         mCombinedMatrix = new float[16];
@@ -51,9 +53,9 @@ public class CardboardActivityMenuBar {
 
         RectF currentRect = new RectF(-halfMenuWidth, -halfMenuHeight,
                 -halfMenuWidth + MENU_ITEM_SIZE, halfMenuHeight);
-        mItems = new CardboardActivityMenuItem[numItem];
+        mItems = new MenuItem[numItem];
         for (int i = 0; i < numItem; i++) {
-            mItems[i] = new CardboardActivityMenuItem(context, menuItemTypes[i], currentRect);
+            mItems[i] = new MenuItem(context, menuItemTypes[i], currentRect);
             currentRect.offset(MENU_ITEM_SIZE, 0);
         }
     }
@@ -63,8 +65,8 @@ public class CardboardActivityMenuBar {
      * Return the CardboardActivity menu item that contains the passed in coordinates or
      * null if none of menu items contains the passed in coordinates.
      */
-    public CardboardActivityMenuItem getLookingItem(PointF lookingPosition) {
-        for (CardboardActivityMenuItem item : mItems) {
+    public MenuItem getLookingItem(PointF lookingPosition) {
+        for (MenuItem item : mItems) {
             if (item.contains(lookingPosition)) {
                 return item;
             }
@@ -75,7 +77,7 @@ public class CardboardActivityMenuBar {
 
     public void draw(float[] viewMatrix, float[] projectionMatrix, PointF eyeMenuBarPosition,
             float centerX, float centerY, float centerZ) {
-        for (CardboardActivityMenuItem item : mItems) {
+        for (MenuItem item : mItems) {
             Matrix.setIdentityM(mModelMatrix, 0);
             Matrix.translateM(mModelMatrix, 0, item.getPosition().x + centerX,
                     item.getPosition().y + centerY, centerZ);
@@ -98,7 +100,7 @@ public class CardboardActivityMenuBar {
      * Clean up opengl data.
      */
     public void cleanup() {
-        for (CardboardActivityMenuItem item : mItems) {
+        for (MenuItem item : mItems) {
             item.clean();
         }
     }
