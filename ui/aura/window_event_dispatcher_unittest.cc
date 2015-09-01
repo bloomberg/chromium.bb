@@ -354,6 +354,7 @@ TEST_F(WindowEventDispatcherTest, DontIgnoreUnknownKeys) {
   DispatchEventUsingWindowDispatcher(&unknown_key_with_char_event);
   EXPECT_TRUE(unknown_key_with_char_event.handled());
   EXPECT_EQ(1, handler.num_key_events());
+  root_window()->RemovePreTargetHandler(&handler);
 }
 
 TEST_F(WindowEventDispatcherTest, NoDelegateWindowReceivesKeyEvents) {
@@ -391,6 +392,7 @@ TEST_F(WindowEventDispatcherTest, TouchEventsOutsideBounds) {
       ui::ET_TOUCH_RELEASED, position, 0, ui::EventTimeForNow());
   DispatchEventUsingWindowDispatcher(&release);
   EXPECT_EQ(2, handler.num_touch_events());
+  root_window()->RemovePreTargetHandler(&handler);
 }
 
 // Tests that scroll events are dispatched correctly.
@@ -815,6 +817,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeld) {
   host()->dispatcher()->ReleasePointerMoves();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(recorder.events().empty());
+  root_window()->RemovePreTargetHandler(&recorder);
 }
 
 // Tests that mouse move event has a right location
@@ -946,6 +949,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesHeldOnScroll) {
             recorder.touch_locations()[0].ToString());
   EXPECT_EQ(gfx::Point(-40, 10).ToString(),
             recorder.touch_locations()[1].ToString());
+  root_window()->RemovePreTargetHandler(&recorder);
 }
 
 // Tests that a 'held' touch-event does contribute to gesture event when it is
@@ -2086,6 +2090,7 @@ TEST_F(WindowEventDispatcherTestInHighDPI, TouchMovesHeldOnScroll) {
             recorder.touch_locations()[0].ToString());
   EXPECT_EQ(gfx::Point(-40, 10).ToString(),
             recorder.touch_locations()[1].ToString());
+  root_window()->RemovePreTargetHandler(&recorder);
 }
 
 // This handler triggers a nested message loop when it receives a right click
@@ -2520,6 +2525,7 @@ TEST_F(WindowEventDispatcherTest, GestureEventCoordinates) {
   ASSERT_EQ(2u, recorder.gesture_locations().size());
   EXPECT_EQ(gfx::Point(kX - kWindowOffset, kY - kWindowOffset).ToString(),
             recorder.gesture_locations()[0].ToString());
+  root_window()->RemovePreTargetHandler(&recorder);
 }
 
 // Tests that a scroll-generating touch-event is marked as such.
