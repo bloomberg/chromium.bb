@@ -430,8 +430,6 @@
             '<(libjingle_source)/talk/session/media/mediasink.h',
             '<(libjingle_source)/talk/session/media/rtcpmuxfilter.cc',
             '<(libjingle_source)/talk/session/media/rtcpmuxfilter.h',
-            '<(libjingle_source)/talk/session/media/soundclip.cc',
-            '<(libjingle_source)/talk/session/media/soundclip.h',
             '<(libjingle_source)/talk/session/media/srtpfilter.cc',
             '<(libjingle_source)/talk/session/media/srtpfilter.h',
             '<(libjingle_source)/talk/session/media/typingmonitor.cc',

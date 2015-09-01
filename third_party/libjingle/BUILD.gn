@@ -439,8 +439,6 @@ if (enable_webrtc) {
       "source/talk/session/media/mediasink.h",
       "source/talk/session/media/rtcpmuxfilter.cc",
       "source/talk/session/media/rtcpmuxfilter.h",
-      "source/talk/session/media/soundclip.cc",
-      "source/talk/session/media/soundclip.h",
       "source/talk/session/media/srtpfilter.cc",
       "source/talk/session/media/srtpfilter.h",
       "source/talk/session/media/typingmonitor.cc",
