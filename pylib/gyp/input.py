@@ -893,11 +893,15 @@ def ExpandVariables(input, phase, variables, build_file):
         else:
           # Fix up command with platform specific workarounds.
           contents = FixupPlatformCommand(contents)
-          p = subprocess.Popen(contents, shell=use_shell,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               stdin=subprocess.PIPE,
-                               cwd=build_file_dir)
+          try:
+            p = subprocess.Popen(contents, shell=use_shell,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 stdin=subprocess.PIPE,
+                                 cwd=build_file_dir)
+          except Exception, e:
+            raise GypError("%s while executing command '%s' in %s" %
+                           (e, contents, build_file))
 
           p_stdout, p_stderr = p.communicate('')
 
@@ -905,8 +909,8 @@ def ExpandVariables(input, phase, variables, build_file):
             sys.stderr.write(p_stderr)
             # Simulate check_call behavior, since check_call only exists
             # in python 2.5 and later.
-            raise GypError("Call to '%s' returned exit status %d." %
-                           (contents, p.returncode))
+            raise GypError("Call to '%s' returned exit status %d while in %s." %
+                           (contents, p.returncode, build_file))
           replacement = p_stdout.rstrip()
 
         cached_command_results[cache_key] = replacement

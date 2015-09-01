@@ -65,4 +65,16 @@ stderr = ("gyp: Dependency '.*missing_dep.gyp:missing.gyp#target' not found "
 test.run_gyp('missing_dep.gyp', status=1, stderr=stderr,
              match=TestCmd.match_re)
 
+# Make sure invalid <!() command invocations say what command it was and
+# mention the gyp file name. Use a "random" command name to trigger an ENOENT.
+stderr = (".*invalid-command-name-egtyevNif3.*netDurj9.*missing_command.gyp.*")
+test.run_gyp('missing_command.gyp', status=1, stderr=stderr,
+             match=TestCmd.match_re_dotall)
+
+# Make sure <!() commands that error out result in a message that mentions
+# the command and gyp file name
+stderr = (".*python.*-c.*import sys.*sys.exit.*3.*error_command.gyp.*")
+test.run_gyp('error_command.gyp', status=1, stderr=stderr,
+             match=TestCmd.match_re_dotall)
+
 test.pass_test()
