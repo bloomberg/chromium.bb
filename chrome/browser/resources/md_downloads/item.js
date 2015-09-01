@@ -22,7 +22,7 @@ cr.define('downloads', function() {
       hideDate: {
         reflectToAttribute: true,
         type: Boolean,
-        value: false,
+        value: true,
       },
 
       readyPromise: {
@@ -45,13 +45,14 @@ cr.define('downloads', function() {
         value: false,
       },
 
-      isIncognito_: {
-        type: Boolean,
-        value: false,
-      },
-
       /** Only set when |isDangerous| is true. */
       isMalware_: Boolean,
+
+      // TODO(dbeam): move all properties to |data_|.
+      data_: {
+        type: Object,
+        value: function() { return {}; },
+      },
     },
 
     ready: function() {
@@ -61,7 +62,7 @@ cr.define('downloads', function() {
 
     /** @param {!downloads.Data} data */
     update: function(data) {
-      assert(!this.data_ || this.data_.id == data.id);
+      assert(!('id' in this.data_) || this.data_.id == data.id);
 
       if (this.data_ &&
           data.by_ext_id === this.data_.by_ext_id &&
@@ -84,18 +85,13 @@ cr.define('downloads', function() {
           data.state == this.data_.state &&
           data.total == this.data_.total &&
           data.url == this.data_.url) {
+        // TODO(dbeam): remove this once data binding is fully in place.
         return;
       }
 
-      /** @private {!downloads.Data} */
-      this.data_ = data;
-
-      this.isIncognito_ = data.otr;
-
-      // Danger-independent UI and controls.
-      var since = data.since_string;
-      this.ensureTextIs_(this.$.since, since);
-      this.ensureTextIs_(this.$.date, since ? '' : data.date_string);
+      for (var key in data) {
+        this.set('data_.' + key, data[key]);
+      }
 
       /** @const */ var isActive =
           data.state != downloads.States.CANCELLED &&
@@ -103,10 +99,6 @@ cr.define('downloads', function() {
           !data.file_externally_removed;
       this.$.content.classList.toggle('is-active', isActive);
       this.$.content.elevation = isActive ? 1 : 0;
-
-      this.ensureTextIs_(this.$.name, data.file_name);
-      this.ensureTextIs_(this.$.url, data.url);
-      this.$.url.href = data.url;
 
       // Danger-dependent UI and controls.
       var dangerText = this.getDangerText_(data);
@@ -190,6 +182,12 @@ cr.define('downloads', function() {
     ensureTextIs_: function(el, text) {
       if (el.textContent != text)
         el.textContent = text;
+    },
+
+    /** @private */
+    computeDate_: function() {
+      assert(!this.hideDate);
+      return assert(this.data_.since_string || this.data_.date_string);
     },
 
     /**

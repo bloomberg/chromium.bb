@@ -12,8 +12,9 @@
 <dom-module id="downloads-item">
   <template>
     <div id="date-container">
-      <div id="since"></div>
-      <div id="date"></div>
+      <template is="dom-if" if="[[!hideDate]]">
+        <div>[[computeDate_(data_.since_string, data_.date_string)]]</div>
+      </template>
     </div>
 
     <paper-material id="content" on-dragstart="onDragStart_">
@@ -26,11 +27,11 @@
         <div id="title-area"><!-- Can't have any line breaks.
           --><a is="action-link" id="file-link"
               on-click="onFileLinkClick_"></a><!-- Before #name.
-          --><span id="name"></span>
+          --><span id="name">[[data_.file_name]]</span>
           <span id="tag"></span>
         </div>
 
-        <a id="url" target="_blank"></a>
+        <a id="url" target="_blank" href="[[data_.url]]">[[data_.url]]</a>
 
         <div id="description"></div>
 
@@ -75,7 +76,7 @@
             on-click="onRemoveClick_"></paper-icon-button>
       </div>
 
-      <div id="incognito" hidden$="[[!isIncognito_]]"></div>
+      <div id="incognito" hidden$="[[!data_.otr]]"></div>
     </paper-material>
 
     <div id="end-cap"></div>
