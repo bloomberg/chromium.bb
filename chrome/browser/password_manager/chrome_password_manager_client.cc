@@ -4,17 +4,18 @@
 
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
-#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate.h"
+#include "chrome/browser/password_manager/sync_metrics.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
@@ -39,8 +40,7 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
-#include "components/password_manager/sync/browser/password_sync_util.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/password_manager/sync/browser/sync_store_result_filter.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -66,25 +66,13 @@ typedef autofill::SavePasswordProgressLogger Logger;
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
 
 namespace {
-
-const sync_driver::SyncService* GetSyncService(Profile* profile) {
-  if (ProfileSyncServiceFactory::HasProfileSyncService(profile))
-    return ProfileSyncServiceFactory::GetForProfile(profile);
-  return nullptr;
-}
-
-const SigninManagerBase* GetSigninManager(Profile* profile) {
-  return SigninManagerFactory::GetForProfile(profile);
-}
-
 // This routine is called when PasswordManagerClient is constructed.
 // Currently we report metrics only once at startup. We require
 // that this is only ever called from a single thread in order to
 // avoid needing to lock (a static boolean flag is then sufficient to
 // guarantee running only once).
 void ReportMetrics(bool password_manager_enabled,
-                   password_manager::PasswordManagerClient* client,
-                   Profile* profile) {
+                   password_manager::PasswordManagerClient* client) {
   static base::PlatformThreadId initial_thread_id =
       base::PlatformThread::CurrentId();
   DCHECK_EQ(base::PlatformThread::CurrentId(), initial_thread_id);
@@ -97,11 +85,9 @@ void ReportMetrics(bool password_manager_enabled,
   password_manager::PasswordStore* store = client->GetPasswordStore();
   // May be null in tests.
   if (store) {
-    store->ReportMetrics(
-        password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
-            GetSyncService(profile), GetSigninManager(profile)),
-        client->GetPasswordSyncState() ==
-            password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE);
+    store->ReportMetrics(client->GetSyncUsername(),
+                         client->GetPasswordSyncState() ==
+                             password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE);
   }
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
 }
@@ -129,10 +115,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       driver_factory_(nullptr),
       credential_manager_dispatcher_(web_contents, this),
       observer_(nullptr),
-      can_use_log_router_(false),
-      credentials_filter_(this,
-                          base::Bind(&GetSyncService, profile_),
-                          base::Bind(&GetSigninManager, profile_)) {
+      can_use_log_router_(false) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
                                                             autofill_client);
   driver_factory_ =
@@ -144,7 +127,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     can_use_log_router_ = service->RegisterClient(this);
   saving_passwords_enabled_.Init(
       password_manager::prefs::kPasswordManagerSavingEnabled, GetPrefs());
-  ReportMetrics(*saving_passwords_enabled_, this, profile_);
+  ReportMetrics(*saving_passwords_enabled_, this);
 }
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {
@@ -193,6 +176,17 @@ bool ChromePasswordManagerClient::IsSavingEnabledForCurrentPage() const {
   return *saving_passwords_enabled_ && !IsOffTheRecord() &&
          !DidLastPageLoadEncounterSSLErrors() &&
          IsPasswordManagementEnabledForCurrentPage();
+}
+
+std::string ChromePasswordManagerClient::GetSyncUsername() const {
+  return password_manager_sync_metrics::GetSyncUsername(profile_);
+}
+
+bool ChromePasswordManagerClient::IsSyncAccountCredential(
+    const std::string& username,
+    const std::string& realm) const {
+  return password_manager_sync_metrics::IsSyncAccountCredential(
+      profile_, username, realm);
 }
 
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
@@ -561,7 +555,7 @@ const GURL& ChromePasswordManagerClient::GetLastCommittedEntryURL() const {
   return entry->GetURL();
 }
 
-const password_manager::CredentialsFilter*
-ChromePasswordManagerClient::GetStoreResultFilter() const {
-  return &credentials_filter_;
+scoped_ptr<password_manager::CredentialsFilter>
+ChromePasswordManagerClient::CreateStoreResultFilter() const {
+  return make_scoped_ptr(new password_manager::SyncStoreResultFilter(this));
 }

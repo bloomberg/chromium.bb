@@ -14,7 +14,6 @@
 #include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/sync/browser/sync_store_result_filter.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/geometry/rect.h"
@@ -48,6 +47,9 @@ class ChromePasswordManagerClient
   bool IsAutomaticPasswordSavingEnabled() const override;
   bool IsPasswordManagementEnabledForCurrentPage() const override;
   bool IsSavingEnabledForCurrentPage() const override;
+  std::string GetSyncUsername() const override;
+  bool IsSyncAccountCredential(const std::string& username,
+                               const std::string& realm) const override;
   bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       password_manager::CredentialSourceType type,
@@ -81,7 +83,7 @@ class ChromePasswordManagerClient
   const GURL& GetMainFrameURL() const override;
   bool IsUpdatePasswordUIEnabled() const override;
   const GURL& GetLastCommittedEntryURL() const override;
-  const password_manager::CredentialsFilter* GetStoreResultFilter()
+  scoped_ptr<password_manager::CredentialsFilter> CreateStoreResultFilter()
       const override;
 
   // Hides any visible generation UI.
@@ -164,8 +166,6 @@ class ChromePasswordManagerClient
   // Set to false to disable password saving (will no longer ask if you
   // want to save passwords but will continue to fill passwords).
   BooleanPrefMember saving_passwords_enabled_;
-
-  const password_manager::SyncStoreResultFilter credentials_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

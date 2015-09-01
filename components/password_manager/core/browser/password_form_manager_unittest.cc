@@ -105,9 +105,6 @@ class MockStoreResultFilter : public CredentialsFilter {
   MOCK_CONST_METHOD1(FilterResultsPtr,
                      void(ScopedVector<autofill::PasswordForm>* results));
 
-  // This method is not relevant here.
-  MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
-
   // GMock cannot handle move-only arguments.
   ScopedVector<autofill::PasswordForm> FilterResults(
       ScopedVector<autofill::PasswordForm> results) const override {
@@ -127,20 +124,20 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
                                            true);
   }
 
-  // After this method is called, the filter returned by GetStoreResultFilter()
+  // After this method is called, the filter returned by CreateStoreResultFilter
   // will filter out all forms.
-  void FilterAllResults() {
-    filter_all_results_ = true;
+  void FilterAllResults() { filter_all_results_ = true; }
 
-    // EXPECT_CALL rather than ON_CALL, because if the test needs the
-    // filtering, then it needs it called.
-    EXPECT_CALL(all_filter_, FilterResultsPtr(_))
-        .Times(testing::AtLeast(1))
-        .WillRepeatedly(testing::Invoke(ClearVector));
-  }
-
-  const CredentialsFilter* GetStoreResultFilter() const override {
-    return filter_all_results_ ? &all_filter_ : &none_filter_;
+  scoped_ptr<CredentialsFilter> CreateStoreResultFilter() const override {
+    scoped_ptr<NiceMock<MockStoreResultFilter>> stub_filter(
+        new NiceMock<MockStoreResultFilter>);
+    if (filter_all_results_) {
+      // EXPECT_CALL rather than ON_CALL, because if the test needs the
+      // filtering, then it needs it called.
+      EXPECT_CALL(*stub_filter, FilterResultsPtr(_))
+          .WillRepeatedly(testing::Invoke(ClearVector));
+    }
+    return stub_filter.Pass();
   }
 
   PrefService* GetPrefs() override { return &prefs_; }
@@ -168,10 +165,6 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   PasswordStore* password_store_;
   scoped_ptr<MockPasswordManagerDriver> driver_;
   bool is_update_password_ui_enabled_;
-
-  // Filters to remove all and no results, respectively, in FilterResults.
-  NiceMock<MockStoreResultFilter> all_filter_;
-  NiceMock<MockStoreResultFilter> none_filter_;
   bool filter_all_results_;
 };
 
