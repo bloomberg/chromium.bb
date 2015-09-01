@@ -600,29 +600,6 @@ IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition)
     return layoutObject->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
 }
 
-// TODO(yosin) We should move a global function
-// |lineDirectionPointForBlockDirectionNavigationOf()| to "FrameSelection.h"
-// as static function.
-int lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition& visiblePosition)
-{
-    if (visiblePosition.isNull())
-        return 0;
-
-    LayoutObject* layoutObject;
-    LayoutRect localRect = localCaretRectOfPosition(visiblePosition.toPositionWithAffinity(), layoutObject);
-    if (localRect.isEmpty() || !layoutObject)
-        return 0;
-
-    // This ignores transforms on purpose, for now. Vertical navigation is done
-    // without consulting transforms, so that 'up' in transformed text is 'up'
-    // relative to the text, not absolute 'up'.
-    FloatPoint caretPoint = layoutObject->localToAbsolute(FloatPoint(localRect.location()));
-    LayoutObject* containingBlock = layoutObject->containingBlock();
-    if (!containingBlock)
-        containingBlock = layoutObject; // Just use ourselves to determine the writing mode if we have no containing block.
-    return containingBlock->isHorizontalWritingMode() ? caretPoint.x() : caretPoint.y();
-}
-
 #ifndef NDEBUG
 
 void VisiblePosition::debugPosition(const char* msg) const

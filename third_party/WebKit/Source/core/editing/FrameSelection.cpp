@@ -1180,6 +1180,28 @@ bool FrameSelection::modify(EAlteration alter, unsigned verticalDistance, Vertic
     return true;
 }
 
+// Abs x/y position of the caret ignoring transforms.
+// TODO(yosin) navigation with transforms should be smarter.
+static int lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition& visiblePosition)
+{
+    if (visiblePosition.isNull())
+        return 0;
+
+    LayoutObject* layoutObject;
+    LayoutRect localRect = localCaretRectOfPosition(visiblePosition.toPositionWithAffinity(), layoutObject);
+    if (localRect.isEmpty() || !layoutObject)
+        return 0;
+
+    // This ignores transforms on purpose, for now. Vertical navigation is done
+    // without consulting transforms, so that 'up' in transformed text is 'up'
+    // relative to the text, not absolute 'up'.
+    FloatPoint caretPoint = layoutObject->localToAbsolute(FloatPoint(localRect.location()));
+    LayoutObject* containingBlock = layoutObject->containingBlock();
+    if (!containingBlock)
+        containingBlock = layoutObject; // Just use ourselves to determine the writing mode if we have no containing block.
+    return containingBlock->isHorizontalWritingMode() ? caretPoint.x() : caretPoint.y();
+}
+
 LayoutUnit FrameSelection::lineDirectionPointForBlockDirectionNavigation(EPositionType type)
 {
     LayoutUnit x = 0;

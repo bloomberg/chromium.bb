@@ -116,13 +116,6 @@ private:
 // Bounds of (possibly transformed) caret in absolute coords
 CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
 
-// Abs x/y position of the caret ignoring transforms.
-// TODO(yosin) navigation with transforms should be smarter.
-// TODO(yosin) We should move a glboal funciton
-// |lineDirectionPointForBlockDirectionNavigationOf()| to "FrameSelection.h"
-// as static function.
-int lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition&);
-
 // TODO(yosin) We should move |leftPositionOf()| and |rightPositionOf()| to
 // "VisibleUnits.cpp".
 VisiblePosition leftPositionOf(const VisiblePosition&);
