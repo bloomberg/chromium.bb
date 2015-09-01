@@ -43,43 +43,6 @@
       },
     },
     {
-      'target_name': 'crnet_shared',
-      'product_name': 'crnet',
-      'type': 'shared_library',
-      'dependencies': [
-        '../../components/components.gyp:webp_transcode',
-        '../../ios/net/ios_net.gyp:ios_net',
-        '../../ios/web/ios_web.gyp:user_agent',
-        '../../net/net.gyp:net',
-        'crnet_resources',
-      ],
-      'mac_framework_headers': [
-        'CrNet.h',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [ '.' ],
-      },
-      'sources': [
-        # TODO(ellyjones): http://crbug.com/485144
-        '../../net/url_request/sdch_dictionary_fetcher.cc',
-        '../../net/url_request/sdch_dictionary_fetcher.h',
-        'CrNet.h',
-        'CrNet.mm',
-        'crnet_environment.h',
-        'crnet_environment.mm',
-      ],
-      'defines': [
-        # TODO(stuartmorgan): Revisit the way this is set, and the above is
-        # built, once the web/ layer is complete. Note that this setting doesn't
-        # propagate to any included targets.
-        'CRNET=1',
-        'CRNET_SHARED_LIBRARY=1',
-      ],
-      'xcode_settings': {
-        'DYLIB_INSTALL_NAME_BASE': '@loader_path',
-      },
-    },
-    {
       # This bundle contains "Accept-Languages" header values for known locales.
       # TODO(huey): These strings should be auto-generated from chrome's .xtb
       # files, not hardcoded.
