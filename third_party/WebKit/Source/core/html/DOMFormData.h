@@ -70,14 +70,18 @@ public:
     void append(ExecutionContext*, const String& name, Blob*, const String& filename = String());
     void get(const String& name, FormDataEntryValue& result);
     HeapVector<FormDataEntryValue> getAll(const String& name);
+    bool has(const String& name);
     void set(const String& name, const String& value);
     void set(const String& name, Blob*, const String& filename = String());
+
+    void makeOpaque() { m_opaque = true; }
 
 private:
     explicit DOMFormData(const WTF::TextEncoding&);
     explicit DOMFormData(HTMLFormElement*);
 
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+    bool m_opaque;
 };
 
 } // namespace blink

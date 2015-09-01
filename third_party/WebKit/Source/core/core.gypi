@@ -3797,6 +3797,7 @@
             'frame/csp/CSPSourceListTest.cpp',
             'frame/csp/CSPSourceTest.cpp',
             'frame/csp/ContentSecurityPolicyTest.cpp',
+            'html/DOMFormDataTest.cpp',
             'html/HTMLDimensionTest.cpp',
             'html/HTMLFormControlElementTest.cpp',
             'html/HTMLImageElementTest.cpp',

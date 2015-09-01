@@ -77,11 +77,13 @@ private:
 
 DOMFormData::DOMFormData(const WTF::TextEncoding& encoding)
     : FormDataList(encoding)
+    , m_opaque(false)
 {
 }
 
 DOMFormData::DOMFormData(HTMLFormElement* form)
     : FormDataList(UTF8Encoding())
+    , m_opaque(false)
 {
     if (!form)
         return;
@@ -120,6 +122,8 @@ void DOMFormData::append(ExecutionContext* context, const String& name, Blob* bl
 
 void DOMFormData::get(const String& name, FormDataEntryValue& result)
 {
+    if (m_opaque)
+        return;
     Entry entry = getEntry(name);
     if (entry.isString())
         result.setUSVString(entry.string());
@@ -132,6 +136,10 @@ void DOMFormData::get(const String& name, FormDataEntryValue& result)
 HeapVector<FormDataEntryValue> DOMFormData::getAll(const String& name)
 {
     HeapVector<FormDataEntryValue> results;
+
+    if (m_opaque)
+        return results;
+
     HeapVector<FormDataList::Entry> entries = FormDataList::getAll(name);
     for (const FormDataList::Entry& entry : entries) {
         ASSERT(entry.name() == name);
@@ -148,6 +156,13 @@ HeapVector<FormDataEntryValue> DOMFormData::getAll(const String& name)
     return results;
 }
 
+bool DOMFormData::has(const String& name)
+{
+    if (m_opaque)
+        return false;
+    return hasEntry(name);
+}
+
 void DOMFormData::set(const String& name, const String& value)
 {
     setData(name, value);
@@ -160,6 +175,9 @@ void DOMFormData::set(const String& name, Blob* blob, const String& filename)
 
 PairIterable<String, FormDataEntryValue>::IterationSource* DOMFormData::startIteration(ScriptState*, ExceptionState&)
 {
+    if (m_opaque)
+        return new DOMFormDataIterationSource(new DOMFormData(nullptr));
+
     return new DOMFormDataIterationSource(this);
 }
 
