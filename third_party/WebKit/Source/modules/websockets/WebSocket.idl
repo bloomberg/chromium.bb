@@ -35,7 +35,6 @@ enum BinaryType { "blob", "arraybuffer" };
 
 [
     ActiveDOMObject,
-    // FIXME: Spec has DOMString[]. https://www.w3.org/Bugs/Public/show_bug.cgi?id=28102
     Constructor(DOMString url, optional (DOMString or sequence<DOMString>) protocols),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
