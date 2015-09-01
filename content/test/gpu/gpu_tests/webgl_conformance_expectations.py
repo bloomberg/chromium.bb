@@ -524,7 +524,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/functional/gles3/shadercommonfunction.html', bug=483282)
     self.Fail('deqp/functional/gles3/shaderderivate.html', bug=483282)
     self.Fail('deqp/functional/gles3/shaderindexing.html', bug=483282)
-    self.Fail('deqp/functional/gles3/shaderloop.html', bug=483282)
+    self.Skip('deqp/functional/gles3/shaderloop.html', bug=483282)
     self.Fail('deqp/functional/gles3/shadermatrix.html', bug=483282)
     self.Fail('deqp/functional/gles3/shaderpackingfunction.html', bug=483282)
     self.Fail('deqp/functional/gles3/shaderprecision.html', bug=483282)
