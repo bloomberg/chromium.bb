@@ -49,6 +49,7 @@ class SmoothnessToughPathRenderingCases(perf_benchmark.PerfBenchmark):
     return 'smoothness.tough_path_rendering_cases'
 
 
+@benchmark.Disabled('android')  # crbug.com/526901
 class SmoothnessToughCanvasCases(perf_benchmark.PerfBenchmark):
   """Measures frame rate and a variety of other statistics.
 
