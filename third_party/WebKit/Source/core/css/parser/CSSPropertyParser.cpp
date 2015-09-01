@@ -2267,7 +2267,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAttr(CSSParserValueList
     if (m_context.isHTMLDocument())
         attrName = attrName.lower();
 
-    return cssValuePool().createValue(attrName, CSSPrimitiveValue::UnitType::Attribute);
+    RefPtrWillBeRawPtr<CSSFunctionValue> attrValue = CSSFunctionValue::create(CSSValueAttr);
+    attrValue->append(CSSPrimitiveValue::create(attrName, CSSPrimitiveValue::UnitType::CustomIdentifier));
+    return attrValue.release();
 }
 
 bool CSSPropertyParser::acceptQuirkyColors(CSSPropertyID propertyId) const

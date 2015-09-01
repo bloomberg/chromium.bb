@@ -351,7 +351,6 @@ void CSSPrimitiveValue::cleanup()
     case UnitType::CustomIdentifier:
     case UnitType::String:
     case UnitType::URI:
-    case UnitType::Attribute:
         if (m_value.string)
             m_value.string->deref();
         break;
@@ -745,7 +744,6 @@ String CSSPrimitiveValue::getStringValue() const
     switch (type()) {
     case UnitType::CustomIdentifier:
     case UnitType::String:
-    case UnitType::Attribute:
     case UnitType::URI:
         return m_value.string;
     default:
@@ -846,7 +844,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::URI:
     case UnitType::ValueID:
     case UnitType::PropertyID:
-    case UnitType::Attribute:
     case UnitType::RGBColor:
     case UnitType::Calc:
     case UnitType::Shape:
@@ -920,16 +917,6 @@ String CSSPrimitiveValue::customCSSText() const
     case UnitType::PropertyID:
         text = propertyName(m_value.propertyID);
         break;
-    case UnitType::Attribute: {
-        StringBuilder result;
-        result.reserveCapacity(6 + m_value.string->length());
-        result.appendLiteral("attr(");
-        result.append(m_value.string);
-        result.append(')');
-
-        text = result.toString();
-        break;
-    }
     case UnitType::RGBColor: {
         text = Color(m_value.rgbcolor).serializedAsCSSComponentValue();
         break;
@@ -996,7 +983,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case UnitType::CustomIdentifier:
     case UnitType::String:
     case UnitType::URI:
-    case UnitType::Attribute:
         return equal(m_value.string, other.m_value.string);
     case UnitType::RGBColor:
         return m_value.rgbcolor == other.m_value.rgbcolor;

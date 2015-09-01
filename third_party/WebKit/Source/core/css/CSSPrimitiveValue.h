@@ -89,7 +89,6 @@ public:
         Kilohertz,
         CustomIdentifier,
         URI,
-        Attribute,
         RGBColor,
         ViewportWidth,
         ViewportHeight,
@@ -158,7 +157,6 @@ public:
             || type() == UnitType::Gradians
             || type() == UnitType::Turns;
     }
-    bool isAttr() const { return type() == UnitType::Attribute; }
     bool isCustomIdent() const { return type() == UnitType::CustomIdentifier; }
     bool isFontRelativeLength() const
     {

@@ -45,6 +45,7 @@
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCursorImageValue.h"
+#include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSHelper.h"
@@ -728,6 +729,20 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
             didSet = true;
         }
 
+        if (item->isFunctionValue()) {
+            CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
+            ASSERT(functionValue->functionType() == CSSValueAttr);
+            // FIXME: Can a namespace be specified for an attr(foo)?
+            if (state.style()->styleType() == NOPSEUDO)
+                state.style()->setUnique();
+            else
+                state.parentStyle()->setUnique();
+            QualifiedName attr(nullAtom, AtomicString(toCSSPrimitiveValue(functionValue->item(0))->getStringValue()), nullAtom);
+            const AtomicString& value = state.element()->getAttribute(attr);
+            state.style()->setContent(value.isNull() ? emptyString() : value.string(), didSet);
+            didSet = true;
+        }
+
         if (!item->isPrimitiveValue())
             continue;
 
@@ -735,16 +750,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
 
         if (contentValue->isString()) {
             state.style()->setContent(contentValue->getStringValue().impl(), didSet);
-            didSet = true;
-        } else if (contentValue->isAttr()) {
-            // FIXME: Can a namespace be specified for an attr(foo)?
-            if (state.style()->styleType() == NOPSEUDO)
-                state.style()->setUnique();
-            else
-                state.parentStyle()->setUnique();
-            QualifiedName attr(nullAtom, AtomicString(contentValue->getStringValue()), nullAtom);
-            const AtomicString& value = state.element()->getAttribute(attr);
-            state.style()->setContent(value.isNull() ? emptyString() : value.string(), didSet);
             didSet = true;
         } else {
             switch (contentValue->getValueID()) {

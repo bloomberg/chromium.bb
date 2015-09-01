@@ -30,6 +30,7 @@
 #include "core/css/RuleFeature.h"
 
 #include "core/HTMLNames.h"
+#include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/CSSValueList.h"
@@ -310,12 +311,12 @@ void RuleFeatureSet::updateInvalidationSetsForContentAttribute(const RuleData& r
         return;
 
     for (auto& item : toCSSValueList(*contentValue)) {
-        if (!item->isPrimitiveValue())
+        if (!item->isFunctionValue())
             continue;
-        CSSPrimitiveValue* primitiveItem = toCSSPrimitiveValue(item.get());
-        if (!primitiveItem->isAttr())
+        CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
+        if (functionValue->functionType() != CSSValueAttr)
             continue;
-        ensureAttributeInvalidationSet(AtomicString(primitiveItem->getStringValue()));
+        ensureAttributeInvalidationSet(AtomicString(toCSSPrimitiveValue(functionValue->item(0))->getStringValue()));
     }
 }
 
