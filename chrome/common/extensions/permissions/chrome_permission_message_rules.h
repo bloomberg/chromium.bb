@@ -62,27 +62,33 @@ class ChromePermissionMessageRule {
     // Don't make the constructor explicit to make the usage convenient.
     PermissionIDSetInitializer();
     PermissionIDSetInitializer(
-        APIPermission::ID permission_one);  // NOLINT(runtime/explicit)
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two);
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two,
-                               APIPermission::ID permission_three);
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two,
-                               APIPermission::ID permission_three,
-                               APIPermission::ID permission_four);
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two,
-                               APIPermission::ID permission_three,
-                               APIPermission::ID permission_four,
-                               APIPermission::ID permission_five);
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two,
-                               APIPermission::ID permission_three,
-                               APIPermission::ID permission_four,
-                               APIPermission::ID permission_five,
-                               APIPermission::ID permission_six);
+        APIPermission::ID a);  // NOLINT(runtime/explicit)
+    PermissionIDSetInitializer(APIPermission::ID a, APIPermission::ID b);
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c);
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c,
+                               APIPermission::ID d);
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c,
+                               APIPermission::ID d,
+                               APIPermission::ID e);
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c,
+                               APIPermission::ID d,
+                               APIPermission::ID e,
+                               APIPermission::ID f);
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c,
+                               APIPermission::ID d,
+                               APIPermission::ID e,
+                               APIPermission::ID f,
+                               APIPermission::ID g);
     virtual ~PermissionIDSetInitializer();
   };
 

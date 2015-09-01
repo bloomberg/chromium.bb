@@ -440,13 +440,15 @@ ChromePermissionMessageRule::GetAllRules() {
       // are required.
       {IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS,
        {APIPermission::kHostsAll},
-       {APIPermission::kDeclarativeWebRequest, APIPermission::kTopSites,
-        APIPermission::kTab, APIPermission::kFavicon, APIPermission::kTopSites,
-        APIPermission::kHostsAllReadOnly}},
+       {APIPermission::kDeclarativeWebRequest, APIPermission::kFavicon,
+        APIPermission::kHostsAllReadOnly, APIPermission::kProcesses,
+        APIPermission::kTab, APIPermission::kTopSites,
+        APIPermission::kWebNavigation}},
       // AutomationManifestPermission:
       {IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_READ_ONLY,
        {APIPermission::kHostsAllReadOnly},
-       {}},  // TODO(treib): This should probably include kTab?
+       {APIPermission::kFavicon, APIPermission::kProcesses, APIPermission::kTab,
+        APIPermission::kTopSites, APIPermission::kWebNavigation}},
       // Tabs already allows reading favicons and reading the list of most
       // frequently visited sites.
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ,
@@ -491,9 +493,6 @@ ChromePermissionMessageRule::GetAllRules() {
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_DOCUMENT_SCAN,
        {APIPermission::kDocumentScan},
-       {}},
-      {IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE,
-       {APIPermission::kHistory},
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_INPUT, {APIPermission::kInput}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
@@ -659,58 +658,58 @@ ChromePermissionMessageRule::PermissionIDSetInitializer::
     PermissionIDSetInitializer() {
 }
 ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID permission_one) {
-  insert(permission_one);
+    PermissionIDSetInitializer(APIPermission::ID a) {
+  insert(a);
 }
 ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two) {
-  insert(permission_one);
-  insert(permission_two);
+    PermissionIDSetInitializer(APIPermission::ID a, APIPermission::ID b)
+    : PermissionIDSetInitializer(a) {
+  insert(b);
 }
 ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two,
-                               APIPermission::ID permission_three) {
-  insert(permission_one);
-  insert(permission_two);
-  insert(permission_three);
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c)
+    : PermissionIDSetInitializer(a, b) {
+  insert(c);
 }
 ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two,
-                               APIPermission::ID permission_three,
-                               APIPermission::ID permission_four) {
-  insert(permission_one);
-  insert(permission_two);
-  insert(permission_three);
-  insert(permission_four);
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c,
+                               APIPermission::ID d)
+    : PermissionIDSetInitializer(a, b, c) {
+  insert(d);
 }
 ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two,
-                               APIPermission::ID permission_three,
-                               APIPermission::ID permission_four,
-                               APIPermission::ID permission_five) {
-  insert(permission_one);
-  insert(permission_two);
-  insert(permission_three);
-  insert(permission_four);
-  insert(permission_five);
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c,
+                               APIPermission::ID d,
+                               APIPermission::ID e)
+    : PermissionIDSetInitializer(a, b, c, d) {
+  insert(e);
 }
 ChromePermissionMessageRule::PermissionIDSetInitializer::
-    PermissionIDSetInitializer(APIPermission::ID permission_one,
-                               APIPermission::ID permission_two,
-                               APIPermission::ID permission_three,
-                               APIPermission::ID permission_four,
-                               APIPermission::ID permission_five,
-                               APIPermission::ID permission_six) {
-  insert(permission_one);
-  insert(permission_two);
-  insert(permission_three);
-  insert(permission_four);
-  insert(permission_five);
-  insert(permission_six);
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c,
+                               APIPermission::ID d,
+                               APIPermission::ID e,
+                               APIPermission::ID f)
+    : PermissionIDSetInitializer(a, b, c, d, e) {
+  insert(f);
+}
+ChromePermissionMessageRule::PermissionIDSetInitializer::
+    PermissionIDSetInitializer(APIPermission::ID a,
+                               APIPermission::ID b,
+                               APIPermission::ID c,
+                               APIPermission::ID d,
+                               APIPermission::ID e,
+                               APIPermission::ID f,
+                               APIPermission::ID g)
+    : PermissionIDSetInitializer(a, b, c, d, e, f) {
+  insert(g);
 }
 
 ChromePermissionMessageRule::PermissionIDSetInitializer::
