@@ -81,17 +81,22 @@ void MediaRouterBaseBrowserTest::UninstallMRExtension() {
   }
 }
 
-void MediaRouterBaseBrowserTest::ConditionalWait(
+bool MediaRouterBaseBrowserTest::ConditionalWait(
     base::TimeDelta timeout,
     base::TimeDelta interval,
     const base::Callback<bool(void)>& callback) {
   base::ElapsedTimer timer;
-  while (!callback.Run() && timer.Elapsed() < timeout) {
+  do {
+    if (callback.Run())
+      return true;
+
     base::RunLoop run_loop;
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), interval);
     run_loop.Run();
-  }
+  } while (timer.Elapsed() < timeout);
+
+  return false;
 }
 
 void MediaRouterBaseBrowserTest::Wait(base::TimeDelta timeout) {

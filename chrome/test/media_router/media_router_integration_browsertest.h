@@ -69,6 +69,8 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   bool IsRouteCreatedOnUI();
 
+  // Wait for the route to show up in the UI with a timeout. Fails if the
+  // route did not show up before the timeout.
   void WaitUntilRouteCreated();
 
  private:

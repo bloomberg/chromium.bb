@@ -53,8 +53,9 @@ class MediaRouterBaseBrowserTest : public ExtensionBrowserTest,
   void OnBackgroundHostCreated(extensions::ExtensionHost* host) override;
 
   // Wait until get the successful callback or timeout.
+  // Returns true if the condition is satisfied before the timeout.
   // TODO(leilei): Replace this method with WaitableEvent class.
-  void ConditionalWait(base::TimeDelta timeout,
+  bool ConditionalWait(base::TimeDelta timeout,
                        base::TimeDelta interval,
                        const base::Callback<bool(void)>& callback);
 

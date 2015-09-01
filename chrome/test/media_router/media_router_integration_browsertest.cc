@@ -219,10 +219,10 @@ bool MediaRouterIntegrationBrowserTest::IsRouteCreatedOnUI() {
 }
 
 void MediaRouterIntegrationBrowserTest::WaitUntilRouteCreated() {
-  ConditionalWait(
+  ASSERT_TRUE(ConditionalWait(
       base::TimeDelta::FromSeconds(10), base::TimeDelta::FromSeconds(1),
       base::Bind(&MediaRouterIntegrationBrowserTest::IsRouteCreatedOnUI,
-                 base::Unretained(this)));
+                 base::Unretained(this))));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
