@@ -346,7 +346,7 @@ TEST(StackSamplingProfilerTest, MAYBE_StopDuringInterBurstInterval) {
   EXPECT_EQ(1u, profiles[0].samples.size());
 }
 
-// Checks that only completed call stack profiles are captured.
+// Checks that incomplete call stack profiles are captured.
 #if defined(STACK_SAMPLING_PROFILER_SUPPORTED)
 #define MAYBE_StopDuringInterSampleInterval StopDuringInterSampleInterval
 #else
@@ -361,7 +361,8 @@ TEST(StackSamplingProfilerTest, MAYBE_StopDuringInterSampleInterval) {
   std::vector<CallStackProfile> profiles;
   CaptureProfiles(params, TimeDelta::FromMilliseconds(50), &profiles);
 
-  EXPECT_TRUE(profiles.empty());
+  ASSERT_EQ(1u, profiles.size());
+  EXPECT_EQ(1u, profiles[0].samples.size());
 }
 
 // Checks that we can destroy the profiler while profiling.
