@@ -42,6 +42,15 @@ sync_driver::FakeSyncService* FakeSyncServiceFactory::GetForBrowserState(
                  browser_state, true))->fake_sync_service();
 }
 
+// static
+sync_driver::FakeSyncService*
+FakeSyncServiceFactory::GetForBrowserStateIfExists(
+    ios::ChromeBrowserState* browser_state) {
+  return static_cast<KeyedFakeSyncService*>(
+             FakeSyncServiceFactory::GetInstance()->GetServiceForBrowserState(
+                 browser_state, false))->fake_sync_service();
+}
+
 FakeSyncServiceFactory::FakeSyncServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "FakeSyncService",

@@ -29,6 +29,10 @@ class FakeSyncServiceFactory : public BrowserStateKeyedServiceFactory {
   static sync_driver::FakeSyncService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
+  // Returns the FakeSyncService associated to |browser_state|, if it exists.
+  static sync_driver::FakeSyncService* GetForBrowserStateIfExists(
+      ios::ChromeBrowserState* browser_state);
+
  private:
   friend struct DefaultSingletonTraits<FakeSyncServiceFactory>;
 
