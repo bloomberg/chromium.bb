@@ -38,6 +38,14 @@
         'infobars/core/simple_alert_infobar_delegate.cc',
         'infobars/core/simple_alert_infobar_delegate.h',
       ],
+      'conditions': [
+        ['OS != "ios" and OS != "android"', {
+          'dependencies': [
+            '../ui/gfx/gfx.gyp:gfx_vector_icons',
+            '../ui/native_theme/native_theme.gyp:native_theme',
+          ],
+        }],
+      ],
     },
   ],
 }

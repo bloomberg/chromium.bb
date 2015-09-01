@@ -26,6 +26,7 @@ class TranslateInfoBarDelegate;
 
 namespace gfx {
 class Image;
+enum class VectorIconId;
 }
 
 namespace infobars {
@@ -82,6 +83,11 @@ class InfoBarDelegate {
   // Returns the resource ID of the icon to be shown for this InfoBar.  If the
   // value is equal to |kNoIconID|, GetIcon() will not show an icon by default.
   virtual int GetIconID() const;
+
+  // Returns the vector icon identifier to be shown for this InfoBar. This will
+  // take precedent over GetIconID() (although typically only one of the two
+  // should be defined for any given infobar).
+  virtual gfx::VectorIconId GetVectorIconId() const;
 
   // Returns the icon to be shown for this InfoBar. If the returned Image is
   // empty, no icon is shown.

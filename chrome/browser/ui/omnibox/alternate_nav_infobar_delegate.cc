@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
+#include "ui/gfx/vector_icons_public.h"
 
 AlternateNavInfoBarDelegate::~AlternateNavInfoBarDelegate() {
 }
@@ -100,4 +100,12 @@ AlternateNavInfoBarDelegate::GetInfoBarType() const {
 
 int AlternateNavInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_ALT_NAV_URL;
+}
+
+gfx::VectorIconId AlternateNavInfoBarDelegate::GetVectorIconId() const {
+#if defined(OS_MACOSX)
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+#else
+  return gfx::VectorIconId::GLOBE;
+#endif
 }

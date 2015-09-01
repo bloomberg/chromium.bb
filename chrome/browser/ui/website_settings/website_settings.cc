@@ -28,7 +28,6 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -55,6 +54,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -322,6 +325,9 @@ void WebsiteSettings::OnSiteDataAccessed() {
 }
 
 void WebsiteSettings::OnUIClosing() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
   if (show_info_bar_ && web_contents_) {
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents_);
@@ -336,6 +342,7 @@ void WebsiteSettings::OnUIClosing() {
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.did_user_revoke_decisions",
                             user_decision,
                             END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM);
+#endif
 }
 
 void WebsiteSettings::OnRevokeSSLErrorBypassButtonPressed() {

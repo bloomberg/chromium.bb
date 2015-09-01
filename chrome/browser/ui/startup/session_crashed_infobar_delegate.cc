@@ -19,7 +19,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
+#include "ui/gfx/vector_icons_public.h"
 
 // static
 void SessionCrashedInfoBarDelegate::Create(Browser* browser) {
@@ -57,6 +57,14 @@ SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
 
 int SessionCrashedInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_RESTORE_SESSION;
+}
+
+gfx::VectorIconId SessionCrashedInfoBarDelegate::GetVectorIconId() const {
+#if defined(OS_MACOSX)
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+#else
+  return gfx::VectorIconId::SAD_TAB;
+#endif
 }
 
 base::string16 SessionCrashedInfoBarDelegate::GetMessageText() const {

@@ -65,6 +65,7 @@ class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
 
   Type GetInfoBarType() const override;
   int GetIconID() const override;
+  gfx::VectorIconId GetVectorIconId() const override;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateDesktop);
 };

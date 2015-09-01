@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace banners {
 
@@ -58,6 +59,14 @@ AppBannerInfoBarDelegateDesktop::GetInfoBarType() const {
 
 int AppBannerInfoBarDelegateDesktop::GetIconID() const {
   return IDR_INFOBAR_APP_BANNER;
+}
+
+gfx::VectorIconId AppBannerInfoBarDelegateDesktop::GetVectorIconId() const {
+#if defined(OS_MACOSX)
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+#else
+  return gfx::VectorIconId::APPS;
+#endif
 }
 
 base::string16 AppBannerInfoBarDelegateDesktop::GetMessageText() const {

@@ -8,7 +8,15 @@
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/vector_icons_public.h"
+
+#if !defined(OS_MACOSX) && !defined(OS_IOS) && !defined(OS_ANDROID)
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
+#endif
 
 namespace infobars {
 
@@ -30,9 +38,29 @@ int InfoBarDelegate::GetIconID() const {
   return kNoIconID;
 }
 
+gfx::VectorIconId InfoBarDelegate::GetVectorIconId() const {
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+}
+
 gfx::Image InfoBarDelegate::GetIcon() const {
+#if !defined(OS_MACOSX) && !defined(OS_IOS) && !defined(OS_ANDROID)
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    gfx::VectorIconId vector_id = GetVectorIconId();
+    if (vector_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
+      SkColor icon_color;
+      if (GetInfoBarType() == WARNING_TYPE) {
+        icon_color = SkColorSetRGB(0xFF, 0x6F, 0x00);
+      } else {
+        ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_GoogleBlue,
+                                      &icon_color);
+      }
+      return gfx::Image(gfx::CreateVectorIcon(vector_id, 16, icon_color));
+    }
+  }
+#endif
+
   int icon_id = GetIconID();
-  return (icon_id == kNoIconID) ? gfx::Image() :
+  return icon_id == kNoIconID ? gfx::Image() :
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(icon_id);
 }
 

@@ -18,7 +18,7 @@ TEST(ResourcesUtil, SpotCheckIds) {
     int id;
   } kCases[] = {
     // IDRs from chrome/app/theme/theme_resources.grd should be valid.
-    {"IDR_INFOBAR_COOKIE", IDR_INFOBAR_COOKIE},
+    {"IDR_ERROR_NETWORK_GENERIC", IDR_ERROR_NETWORK_GENERIC},
     {"IDR_PAGEINFO_BAD", IDR_PAGEINFO_BAD},
     // IDRs from ui/resources/ui_resources.grd should be valid.
     {"IDR_FOLDER_CLOSED", IDR_FOLDER_CLOSED},

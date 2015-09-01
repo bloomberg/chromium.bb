@@ -404,6 +404,7 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
   EXPECT_EQ(base::string16(), website_settings()->organization_name());
 }
 
+#if !defined(OS_ANDROID)
 TEST_F(WebsiteSettingsTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
@@ -437,6 +438,7 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
 
   infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
 }
+#endif
 
 TEST_F(WebsiteSettingsTest, AboutBlankPage) {
   SetURL("about:blank");
