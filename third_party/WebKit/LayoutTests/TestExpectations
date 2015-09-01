@@ -1578,6 +1578,19 @@ crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed
 
 crbug.com/526752 [ Win10 ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
+# The following Win10 tests likely need a win10 specific rebaseline,
+# see https://codereview.chromium.org/1322933003
+crbug.com/521730 [ Win10 ] fast/text/emoji-font-fallback-win.html [ ImageOnlyFailure Timeout ]
+crbug.com/521764 [ Win10 ] paint/inline/outline-offset.html [ ImageOnlyFailure Timeout ]
+crbug.com/521764 [ Win10 ] svg/as-image/svg-object-intrinsic-size.html [ Failure Timeout ]
+crbug.com/521764 [ Win10 ] svg/repaint/shape-with-nested-outline.html [ Failure Timeout ]
+crbug.com/521764 [ Win10 ] transforms/2d/transform-borderbox.html [ ImageOnlyFailure Timeout ]
+crbug.com/521764 [ Win10 ] virtual/spv2/fast/repaint/focus-continuations.html [ Failure ]
+crbug.com/521764 [ Win10 ] virtual/spv2/fast/repaint/focus-enable-continuations.html [ Failure ]
+crbug.com/521764 [ Win10 ] virtual/spv2/fast/repaint/outline-change-continuations.html [ Failure ]
+crbug.com/521764 [ Win10 ] virtual/spv2/fast/repaint/outline-continuations.html [ Failure ]
+crbug.com/521764 [ Win10 ] virtual/spv2/paint/inline/outline-offset.html [ ImageOnlyFailure Timeout ]
+
 crbug.com/525065 webaudio/audionode-disconnect-audioparam.html [ Failure Pass ]
 
 crbug.com/525286 fast/hidpi/image-srcset-intrinsic-size-zero.html [ Timeout Pass ]
