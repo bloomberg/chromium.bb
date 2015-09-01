@@ -156,8 +156,8 @@ video::-internal-media-controls-overlay-cast-button {
     -webkit-appearance: -internal-media-overlay-cast-off-button;
     display: flex;
     position: absolute;
-    top: 5%;
-    left: 5%;
+    top: 8px;
+    left: 8px;
     margin-left: 0px;
     margin-top: 0px;
     border: none;
