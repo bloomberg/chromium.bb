@@ -21,11 +21,13 @@ class JSChecker {
   JSChecker();
   explicit JSChecker(content::WebContents* web_contents);
 
-  // Evaluates |expression|.
+  // Evaluates |expression|. Evaluation will be completed when this function
+  // call returns.
   void Evaluate(const std::string& expression);
 
-  // Executes |expression|. Doesn't require a correct command.
-  void Execute(const std::string& expression);
+  // Executes |expression|. Doesn't require a correct command. Command will be
+  // queued up and executed later. This function will return immediately.
+  void ExecuteAsync(const std::string& expression);
 
   // Evaluates |expression| and returns its result.
   bool GetBool(const std::string& expression);

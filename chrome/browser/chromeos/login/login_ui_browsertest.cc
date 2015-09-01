@@ -94,9 +94,9 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, LoginNoExceptions) {
 
 IN_PROC_BROWSER_TEST_F(LoginUITest, OobeCatchException) {
   JSExpect("cr.ErrorStore.getInstance().length == 0");
-  js_checker().Execute("aelrt('misprint')");
+  js_checker().ExecuteAsync("aelrt('misprint')");
   JSExpect("cr.ErrorStore.getInstance().length == 1");
-  js_checker().Execute("consle.error('Some error')");
+  js_checker().ExecuteAsync("consle.error('Some error')");
   JSExpect("cr.ErrorStore.getInstance().length == 2");
 }
 

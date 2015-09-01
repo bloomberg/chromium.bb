@@ -33,7 +33,7 @@ void JSChecker::Evaluate(const std::string& expression) {
   ASSERT_TRUE(content::ExecuteScript(web_contents_, expression));
 }
 
-void JSChecker::Execute(const std::string& expression) {
+void JSChecker::ExecuteAsync(const std::string& expression) {
   CHECK(web_contents_);
   std::string new_script = expression + ";";
   web_contents_->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
