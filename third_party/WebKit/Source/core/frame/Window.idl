@@ -78,8 +78,6 @@
     DOMString? prompt(optional DOMString message = "", optional DOMString defaultValue = "");
     void print();
 
-    // FIXME: requestAnimationFrame should take a FrameRequestCallback:
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28152
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(FrameRequestCallback callback);
     void cancelAnimationFrame(long handle);
 
