@@ -2685,6 +2685,10 @@ bool GLES2DecoderImpl::Initialize(
     }
     feature_info_->EnableES3Validators();
     set_unsafe_es3_apis_enabled(true);
+
+    frag_depth_explicitly_enabled_ = true;
+    draw_buffers_explicitly_enabled_ = true;
+    // TODO(zmo): Look into shader_texture_lod_explicitly_enabled_ situation.
   }
 
   state_.attrib_values.resize(group_->max_vertex_attribs());
