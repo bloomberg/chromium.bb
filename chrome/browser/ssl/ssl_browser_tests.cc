@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/net/certificate_error_reporter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/cert_logger.pb.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
 #include "chrome/browser/ssl/connection_security.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -777,6 +780,26 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreLocalhostCertErrors,
   base::string16 expected_title = base::ASCIIToUTF16("This script has loaded");
   ui_test_utils::GetCurrentTabTitle(browser(), &title);
   EXPECT_EQ(title, expected_title);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClock) {
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  // Set up the build and current clock times to be more than a year apart.
+  scoped_ptr<base::SimpleTestClock> mock_clock(new base::SimpleTestClock());
+  mock_clock->SetNow(base::Time::NowFromSystemTime());
+  mock_clock->Advance(base::TimeDelta::FromDays(367));
+  SSLErrorHandler::SetClockForTest(mock_clock.get());
+  SSLErrorClassification::SetBuildTimeForTesting(
+      base::Time::NowFromSystemTime());
+
+  ui_test_utils::NavigateToURL(browser(), https_server_expired_.GetURL("/"));
+  WebContents* clock_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForInterstitialAttach(clock_tab);
+  InterstitialPage* clock_interstitial = clock_tab->GetInterstitialPage();
+  ASSERT_TRUE(clock_interstitial);
+  EXPECT_EQ(BadClockBlockingPage::kTypeForTesting,
+            clock_interstitial->GetDelegateForTesting()->GetTypeForTesting());
 }
 
 // Visits a page with https error and then goes back using Browser::GoBack.

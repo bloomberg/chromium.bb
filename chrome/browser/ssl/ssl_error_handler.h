@@ -21,23 +21,28 @@
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
-class Profile;
 class CommonNameMismatchHandler;
+class Profile;
+
+namespace base {
+class Clock;
+}
 
 namespace content {
 class RenderViewHost;
 class WebContents;
 }
 
-// Decides between showing an SSL warning, showing a captive portal interstitial
-// or redirecting to a name-mismatch suggested URL. This is done by delaying the
-// display of the interstitial for a few seconds (2 by default), and waiting for
-// name-mismatch suggested URL or a captive portal result to arrive during this
-// window. If there is a name mismatch error and a corresponding suggested URL
-// available result arrives in this window, the user is redirected to the
-// suggested URL. Failing that, if a captive portal detected result arrives in
-// the same time window, a captive portal error page is shown. Otherwise, an
-// SSL interstitial is shown.
+// This class is responsible for deciding what type of interstitial to show for
+// an SSL validation error. The display of the interstitial might be delayed by
+// a few seconds (2 by default) while trying to determine the cause of the
+// error. During this window, the class will: check for a clock error, wait for
+// a name-mismatch suggested URL, or wait for a captive portal result to arrive.
+// If there is a name mismatch error and a corresponding suggested URL
+// result arrives in this window, the user is redirected to the suggested URL.
+// Failing that, if a captive portal detected result arrives in the time window,
+// a captive portal error page is shown. If none of these potential error
+// causes match, an SSL interstitial is shown.
 //
 // This class should only be used on the UI thread because its implementation
 // uses captive_portal::CaptivePortalService which can only be accessed on the
@@ -58,11 +63,12 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                              scoped_ptr<SSLCertReporter> ssl_cert_reporter,
                              const base::Callback<void(bool)>& callback);
 
+  // Testing methods.
   static void SetInterstitialDelayForTest(base::TimeDelta delay);
-
   // The callback pointer must remain valid for the duration of error handling.
   static void SetInterstitialTimerStartedCallbackForTest(
       TimerStartedCallback* callback);
+  static void SetClockForTest(base::Clock* testing_clock);
 
  protected:
   // The parameters are the same as SSLBlockingPage's constructor.
@@ -93,6 +99,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   virtual bool IsErrorOverridable() const;
   virtual void ShowCaptivePortalInterstitial(const GURL& landing_url);
   virtual void ShowSSLInterstitial();
+
+  void ShowBadClockInterstitial(const base::Time& now);
 
   // Gets the result of whether the suggested URL is valid. Displays
   // common name mismatch interstitial or ssl interstitial accordingly.

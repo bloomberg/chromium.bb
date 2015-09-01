@@ -117,6 +117,9 @@ int GetLevensteinDistance(const std::string& str1,
   return kSecondRow[str2.size()];
 }
 
+// The time to use when doing build time operations in browser tests.
+base::Time g_testing_build_time;
+
 } // namespace
 
 SSLErrorClassification::SSLErrorClassification(
@@ -242,26 +245,44 @@ base::TimeDelta SSLErrorClassification::TimePassedSinceExpiry() const {
 }
 
 bool SSLErrorClassification::IsUserClockInThePast(const base::Time& time_now) {
+  base::Time build_time;
+  if (!g_testing_build_time.is_null()) {
+    build_time = g_testing_build_time;
+  } else {
 #if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
-  return false;
+    return false;
 #else
-  base::Time build_time = base::GetBuildTime();
+    build_time = base::GetBuildTime();
+#endif
+  }
+
   if (time_now < build_time - base::TimeDelta::FromDays(2))
     return true;
   return false;
-#endif
 }
 
 bool SSLErrorClassification::IsUserClockInTheFuture(
     const base::Time& time_now) {
+  base::Time build_time;
+  if (!g_testing_build_time.is_null()) {
+    build_time = g_testing_build_time;
+  } else {
 #if defined(DONT_EMBED_BUILD_METADATA) && !defined(OFFICIAL_BUILD)
-  return false;
+    return false;
 #else
-  base::Time build_time = base::GetBuildTime();
+    build_time = base::GetBuildTime();
+#endif
+  }
+
   if (time_now > build_time + base::TimeDelta::FromDays(365))
     return true;
   return false;
-#endif
+}
+
+// static
+void SSLErrorClassification::SetBuildTimeForTesting(
+    const base::Time& testing_time) {
+  g_testing_build_time = testing_time;
 }
 
 bool SSLErrorClassification::MaybeWindowsLacksSHA256Support() {

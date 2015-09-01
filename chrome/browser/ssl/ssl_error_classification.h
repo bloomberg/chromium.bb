@@ -40,6 +40,10 @@ class SSLErrorClassification : public content::NotificationObserver {
   // using a version of Chrome which is more than 1 year old.
   static bool IsUserClockInTheFuture(const base::Time& time_now);
 
+  // Sets a clock for browser tests that check the build time. Used by
+  // IsUserClockInThePast and IsUserClockInTheFuture.
+  static void SetBuildTimeForTesting(const base::Time& testing_time);
+
   // Returns true if the Windows platform is likely to not have SHA-256 support.
   // On other platforms, returns false always.
   static bool MaybeWindowsLacksSHA256Support();

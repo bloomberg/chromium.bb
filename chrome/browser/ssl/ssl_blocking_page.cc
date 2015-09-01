@@ -6,14 +6,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/build_time.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "base/process/launch.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -56,23 +53,6 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "base/base_paths_win.h"
-#include "base/path_service.h"
-#include "base/strings/string16.h"
-#include "base/win/windows_version.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/intent_helper.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/common/url_constants.h"
-#endif
-
 using base::ASCIIToUTF16;
 using base::TimeTicks;
 using content::InterstitialPage;
@@ -99,7 +79,8 @@ enum SSLExpirationAndDecision {
   END_OF_SSL_EXPIRATION_AND_DECISION,
 };
 
-// Rappor prefix
+// Rappor prefix, which is used for both overridable and non-overridable
+// interstitials so we don't leak the "overridable" bit.
 const char kSSLRapporPrefix[] = "ssl2";
 
 void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
@@ -126,100 +107,6 @@ void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
         event,
         END_OF_SSL_EXPIRATION_AND_DECISION);
   }
-}
-
-void LaunchDateAndTimeSettings() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-  // The code for each OS is completely separate, in order to avoid bugs like
-  // https://crbug.com/430877 .
-#if defined(OS_ANDROID)
-  chrome::android::OpenDateAndTimeSettings();
-
-#elif defined(OS_CHROMEOS)
-  std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
-  chrome::ShowSettingsSubPageForProfile(
-      ProfileManager::GetActiveUserProfile(), sub_page);
-
-#elif defined(OS_IOS)
-  // iOS does not have a way to launch the date and time settings.
-  NOTREACHED();
-
-#elif defined(OS_LINUX)
-  struct ClockCommand {
-    const char* pathname;
-    const char* argument;
-  };
-  static const ClockCommand kClockCommands[] = {
-    // Unity
-    { "/usr/bin/unity-control-center", "datetime" },
-    // GNOME
-    //
-    // NOTE: On old Ubuntu, naming control panels doesn't work, so it
-    // opens the overview. This will have to be good enough.
-    { "/usr/bin/gnome-control-center", "datetime" },
-    { "/usr/local/bin/gnome-control-center", "datetime" },
-    { "/opt/bin/gnome-control-center", "datetime" },
-    // KDE
-    { "/usr/bin/kcmshell4", "clock" },
-    { "/usr/local/bin/kcmshell4", "clock" },
-    { "/opt/bin/kcmshell4", "clock" },
-  };
-
-  base::CommandLine command(base::FilePath(""));
-  for (size_t i = 0; i < arraysize(kClockCommands); ++i) {
-    base::FilePath pathname(kClockCommands[i].pathname);
-    if (base::PathExists(pathname)) {
-      command.SetProgram(pathname);
-      command.AppendArg(kClockCommands[i].argument);
-      break;
-    }
-  }
-  if (command.GetProgram().empty()) {
-    // Alas, there is nothing we can do.
-    return;
-  }
-
-  base::LaunchOptions options;
-  options.wait = false;
-  options.allow_new_privs = true;
-  base::LaunchProcess(command, options);
-
-#elif defined(OS_MACOSX)
-  base::CommandLine command(base::FilePath("/usr/bin/open"));
-  command.AppendArg("/System/Library/PreferencePanes/DateAndTime.prefPane");
-
-  base::LaunchOptions options;
-  options.wait = false;
-  base::LaunchProcess(command, options);
-
-#elif defined(OS_WIN)
-  base::FilePath path;
-  PathService::Get(base::DIR_SYSTEM, &path);
-  static const base::char16 kControlPanelExe[] = L"control.exe";
-  path = path.Append(base::string16(kControlPanelExe));
-  base::CommandLine command(path);
-  command.AppendArg(std::string("/name"));
-  command.AppendArg(std::string("Microsoft.DateAndTime"));
-
-  base::LaunchOptions options;
-  options.wait = false;
-  base::LaunchProcess(command, options);
-
-#else
-  NOTREACHED();
-
-#endif
-  // Don't add code here! (See the comment at the beginning of the function.)
-}
-
-bool IsErrorDueToBadClock(const base::Time& now, int error) {
-  if (SSLErrorInfo::NetErrorToErrorType(error) !=
-          SSLErrorInfo::CERT_DATE_INVALID) {
-    return false;
-  }
-  return SSLErrorClassification::IsUserClockInThePast(now) ||
-      SSLErrorClassification::IsUserClockInTheFuture(now);
 }
 
 }  // namespace
@@ -251,18 +138,10 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       expired_but_previously_allowed_(
           (options_mask & EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
       time_triggered_(time_triggered) {
-  interstitial_reason_ =
-      IsErrorDueToBadClock(time_triggered_, cert_error_) ?
-      SSL_REASON_BAD_CLOCK : SSL_REASON_SSL;
-
-  // We collapse the Rappor metric name to just "ssl" so we don't leak
-  // the "overridable" bit. We skip Rappor altogether for bad clocks.
-  // This must be done after calculating |interstitial_reason_| above.
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = GetUmaHistogramPrefix();
   reporting_info.rappor_prefix = kSSLRapporPrefix;
-  if (interstitial_reason_ != SSL_REASON_BAD_CLOCK)
-    reporting_info.rappor_report_type = rappor::UMA_RAPPOR_TYPE;
+  reporting_info.rappor_report_type = rappor::UMA_RAPPOR_TYPE;
   set_metrics_helper(new ChromeMetricsHelper(
       web_contents, request_url, reporting_info, GetSamplingEventName()));
   metrics_helper()->RecordUserDecision(
@@ -270,9 +149,10 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
   metrics_helper()->RecordUserInteraction(
       security_interstitials::MetricsHelper::TOTAL_VISITS);
 
-  cert_report_helper_.reset(new CertReportHelper(
-      ssl_cert_reporter.Pass(), web_contents, request_url, ssl_info,
-      GetCertReportInterstitialReason(), overridable_, metrics_helper()));
+  cert_report_helper_.reset(
+      new CertReportHelper(ssl_cert_reporter.Pass(), web_contents, request_url,
+                           ssl_info, CertificateErrorReport::INTERSTITIAL_SSL,
+                           overridable_, metrics_helper()));
 
   ssl_error_classification_.reset(new SSLErrorClassification(
       web_contents,
@@ -317,6 +197,7 @@ void SSLBlockingPage::PopulateInterstitialStrings(
   base::string16 url(GetFormattedHostName());
   // Shared values for both the overridable and non-overridable versions.
   load_time_data->SetString("type", "SSL");
+  load_time_data->SetBoolean("bad_clock", false);
 
   // Shared UI configuration for all SSL interstitials.
   load_time_data->SetString("errorCode", net::ErrorToString(cert_error_));
@@ -327,119 +208,66 @@ void SSLBlockingPage::PopulateInterstitialStrings(
       "closeDetails",
       l10n_util::GetStringUTF16(IDS_SSL_V2_CLOSE_DETAILS_BUTTON));
 
-  // Conditional UI configuration.
-  if (interstitial_reason_ == SSL_REASON_BAD_CLOCK) {
-    load_time_data->SetBoolean("bad_clock", true);
-    load_time_data->SetBoolean("overridable", false);
+  load_time_data->SetString("tabTitle",
+                            l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
+  load_time_data->SetString("heading",
+                            l10n_util::GetStringUTF16(IDS_SSL_V2_HEADING));
+  load_time_data->SetString(
+      "primaryParagraph",
+      l10n_util::GetStringFUTF16(IDS_SSL_V2_PRIMARY_PARAGRAPH, url));
 
-#if defined(OS_IOS)
-    load_time_data->SetBoolean("hide_primary_button", true);
-#else
-    load_time_data->SetBoolean("hide_primary_button", false);
-#endif
+  if (overridable_) {
+    load_time_data->SetBoolean("overridable", true);
 
-    // We're showing the SSL clock warning to be helpful, but we haven't warned
-    // them about the risks. (And there might still be an SSL error after they
-    // fix their clock.) Thus, we don't allow the "danger" override in this
-    // case.
-    danger_overridable_ = false;
-
-    int heading_string =
-        SSLErrorClassification::IsUserClockInTheFuture(time_triggered_) ?
-        IDS_SSL_V2_CLOCK_AHEAD_HEADING :
-        IDS_SSL_V2_CLOCK_BEHIND_HEADING;
-
-    load_time_data->SetString(
-        "tabTitle",
-        l10n_util::GetStringUTF16(IDS_SSL_V2_CLOCK_TITLE));
-    load_time_data->SetString(
-        "heading",
-        l10n_util::GetStringUTF16(heading_string));
-    load_time_data->SetString(
-        "primaryParagraph",
-        l10n_util::GetStringFUTF16(
-            IDS_SSL_V2_CLOCK_PRIMARY_PARAGRAPH,
-            url,
-            base::TimeFormatFriendlyDateAndTime(time_triggered_)));
-
+    SSLErrorInfo error_info = SSLErrorInfo::CreateError(
+        SSLErrorInfo::NetErrorToErrorType(cert_error_), ssl_info_.cert.get(),
+        request_url());
+    load_time_data->SetString("explanationParagraph", error_info.details());
     load_time_data->SetString(
         "primaryButtonText",
-        l10n_util::GetStringUTF16(IDS_SSL_V2_CLOCK_UPDATE_DATE_AND_TIME));
+        l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
     load_time_data->SetString(
-        "explanationParagraph",
-        l10n_util::GetStringUTF16(IDS_SSL_V2_CLOCK_EXPLANATION));
-
-    // The interstitial template expects this string, but we're not using it. So
-    // we send a blank string for now.
-    load_time_data->SetString("finalParagraph", std::string());
+        "finalParagraph",
+        l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH, url));
   } else {
-    load_time_data->SetBoolean("bad_clock", false);
+    load_time_data->SetBoolean("overridable", false);
 
-    load_time_data->SetString(
-        "tabTitle", l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
-    load_time_data->SetString(
-        "heading", l10n_util::GetStringUTF16(IDS_SSL_V2_HEADING));
-    load_time_data->SetString(
-        "primaryParagraph",
-        l10n_util::GetStringFUTF16(IDS_SSL_V2_PRIMARY_PARAGRAPH, url));
-
-    if (overridable_) {
-      load_time_data->SetBoolean("overridable", true);
-
-      SSLErrorInfo error_info =
-          SSLErrorInfo::CreateError(
-              SSLErrorInfo::NetErrorToErrorType(cert_error_),
-              ssl_info_.cert.get(),
-              request_url());
-      load_time_data->SetString("explanationParagraph", error_info.details());
+    SSLErrorInfo::ErrorType type =
+        SSLErrorInfo::NetErrorToErrorType(cert_error_);
+    if (type == SSLErrorInfo::CERT_INVALID &&
+        SSLErrorClassification::MaybeWindowsLacksSHA256Support()) {
       load_time_data->SetString(
-          "primaryButtonText",
-          l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
-      load_time_data->SetString(
-          "finalParagraph",
-          l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH,
-                                   url));
+          "explanationParagraph",
+          l10n_util::GetStringFUTF16(IDS_SSL_NONOVERRIDABLE_MORE_INVALID_SP3,
+                                     url));
     } else {
-      load_time_data->SetBoolean("overridable", false);
-
-      SSLErrorInfo::ErrorType type =
-          SSLErrorInfo::NetErrorToErrorType(cert_error_);
-      if (type == SSLErrorInfo::CERT_INVALID && SSLErrorClassification::
-          MaybeWindowsLacksSHA256Support()) {
-        load_time_data->SetString(
-            "explanationParagraph",
-            l10n_util::GetStringFUTF16(
-                IDS_SSL_NONOVERRIDABLE_MORE_INVALID_SP3, url));
-      } else {
-        load_time_data->SetString("explanationParagraph",
-                                 l10n_util::GetStringFUTF16(
-                                     IDS_SSL_NONOVERRIDABLE_MORE, url));
-      }
       load_time_data->SetString(
-          "primaryButtonText",
-          l10n_util::GetStringUTF16(IDS_SSL_RELOAD));
-      // Customize the help link depending on the specific error type.
-      // Only mark as HSTS if none of the more specific error types apply,
-      // and use INVALID as a fallback if no other string is appropriate.
-      load_time_data->SetInteger("errorType", type);
-      int help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
-      switch (type) {
-        case SSLErrorInfo::CERT_REVOKED:
-          help_string = IDS_SSL_NONOVERRIDABLE_REVOKED;
-          break;
-        case SSLErrorInfo::CERT_PINNED_KEY_MISSING:
-          help_string = IDS_SSL_NONOVERRIDABLE_PINNED;
-          break;
-        case SSLErrorInfo::CERT_INVALID:
-          help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
-          break;
-        default:
-          if (strict_enforcement_)
-            help_string = IDS_SSL_NONOVERRIDABLE_HSTS;
-      }
-      load_time_data->SetString(
-          "finalParagraph", l10n_util::GetStringFUTF16(help_string, url));
+          "explanationParagraph",
+          l10n_util::GetStringFUTF16(IDS_SSL_NONOVERRIDABLE_MORE, url));
     }
+    load_time_data->SetString("primaryButtonText",
+                              l10n_util::GetStringUTF16(IDS_SSL_RELOAD));
+    // Customize the help link depending on the specific error type.
+    // Only mark as HSTS if none of the more specific error types apply,
+    // and use INVALID as a fallback if no other string is appropriate.
+    load_time_data->SetInteger("errorType", type);
+    int help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
+    switch (type) {
+      case SSLErrorInfo::CERT_REVOKED:
+        help_string = IDS_SSL_NONOVERRIDABLE_REVOKED;
+        break;
+      case SSLErrorInfo::CERT_PINNED_KEY_MISSING:
+        help_string = IDS_SSL_NONOVERRIDABLE_PINNED;
+        break;
+      case SSLErrorInfo::CERT_INVALID:
+        help_string = IDS_SSL_NONOVERRIDABLE_INVALID;
+        break;
+      default:
+        if (strict_enforcement_)
+          help_string = IDS_SSL_NONOVERRIDABLE_HSTS;
+    }
+    load_time_data->SetString("finalParagraph",
+                              l10n_util::GetStringFUTF16(help_string, url));
   }
 
   // Set debugging information at the bottom of the warning.
@@ -530,18 +358,12 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       web_contents()->GetController().Reload(true);
       break;
     }
-    case CMD_OPEN_DATE_SETTINGS: {
-      metrics_helper()->RecordUserInteraction(
-          security_interstitials::MetricsHelper::OPEN_TIME_SETTINGS);
-      content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-                                       base::Bind(&LaunchDateAndTimeSettings));
-      break;
-    }
     case CMD_OPEN_REPORTING_PRIVACY:
       OpenExtendedReportingPrivacyPolicy();
       break;
+    case CMD_OPEN_DATE_SETTINGS:
     case CMD_OPEN_DIAGNOSTIC:
-      // Google doesn't currently have a transparency report for SSL.
+      // Commands not supported by the SSL interstitial.
       NOTREACHED() << "Unexpected command: " << command;
   }
 }
@@ -601,31 +423,8 @@ void SSLBlockingPage::NotifyAllowCertificate() {
   callback_.Reset();
 }
 
-CertificateErrorReport::InterstitialReason
-SSLBlockingPage::GetCertReportInterstitialReason() {
-  switch (interstitial_reason_) {
-    case SSL_REASON_SSL:
-      return CertificateErrorReport::INTERSTITIAL_SSL;
-    case SSL_REASON_BAD_CLOCK:
-      return CertificateErrorReport::INTERSTITIAL_CLOCK;
-  }
-
-  NOTREACHED();
-  return CertificateErrorReport::INTERSTITIAL_SSL;
-}
-
 std::string SSLBlockingPage::GetUmaHistogramPrefix() const {
-  switch (interstitial_reason_) {
-    case SSL_REASON_SSL:
-      if (overridable_)
-        return "ssl_overridable";
-      else
-        return "ssl_nonoverridable";
-    case SSL_REASON_BAD_CLOCK:
-      return "bad_clock";
-  }
-  NOTREACHED();
-  return std::string();
+  return overridable_ ? "ssl_overridable" : "ssl_nonoverridable";
 }
 
 std::string SSLBlockingPage::GetSamplingEventName() const {

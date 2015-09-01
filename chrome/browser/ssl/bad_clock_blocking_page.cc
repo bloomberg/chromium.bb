@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/ssl_error_classification.h"
@@ -69,6 +70,8 @@ using content::NavigationController;
 using content::NavigationEntry;
 
 namespace {
+
+const char kMetricsName[] = "bad_clock";
 
 void LaunchDateAndTimeSettings() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
@@ -177,7 +180,20 @@ BadClockBlockingPage::BadClockBlockingPage(
       callback_(callback),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
-      time_triggered_(time_triggered) {}
+      time_triggered_(time_triggered) {
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = kMetricsName;
+  set_metrics_helper(new ChromeMetricsHelper(web_contents, request_url,
+                                             reporting_info, kMetricsName));
+  metrics_helper()->RecordUserInteraction(
+      security_interstitials::MetricsHelper::TOTAL_VISITS);
+
+  // TODO(felt): Separate the clock statistics from the main ssl statistics.
+  scoped_ptr<SSLErrorClassification> classifier(
+      new SSLErrorClassification(web_contents, time_triggered_, request_url,
+                                 cert_error_, *ssl_info_.cert.get()));
+  classifier->RecordUMAStatistics(false);
+}
 
 bool BadClockBlockingPage::ShouldCreateNewNavigation() const {
   return true;
@@ -294,8 +310,12 @@ void BadClockBlockingPage::CommandReceived(const std::string& command) {
       SetReportingPreference(false);
       break;
     case CMD_SHOW_MORE_SECTION:
+      metrics_helper()->RecordUserInteraction(
+          security_interstitials::MetricsHelper::SHOW_ADVANCED);
       break;
     case CMD_OPEN_DATE_SETTINGS:
+      metrics_helper()->RecordUserInteraction(
+          security_interstitials::MetricsHelper::OPEN_TIME_SETTINGS);
       content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
                                        base::Bind(&LaunchDateAndTimeSettings));
       break;
