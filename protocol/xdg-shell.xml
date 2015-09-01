@@ -398,8 +398,8 @@
       <description summary="ack a configure event">
         When a configure event is received, if a client commits the
         surface in response to the configure event, then the client
-        must make a ack_configure request before the commit request,
-        passing along the serial of the configure event.
+        must make an ack_configure request sometime before the commit
+        request, passing along the serial of the configure event.
 
         For instance, the compositor might use this information to move
         a surface to the top left only when the client has drawn itself
@@ -407,6 +407,14 @@
 
         If the client receives multiple configure events before it
         can respond to one, it only has to ack the last configure event.
+
+        A client is not required to commit immediately after sending
+        an ack_configure request - it may even ack_configure several times
+        before its next surface commit.
+
+        The compositor expects that the most recently received
+        ack_configure request at the time of a commit indicates which
+        configure event the client is responding to.
       </description>
       <arg name="serial" type="uint" summary="the serial from the configure event"/>
     </request>
