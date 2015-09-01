@@ -46,6 +46,9 @@ class GL_EXPORT GLImageMemory : public GLImage {
                             OverlayTransform transform,
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
+
+  // Only dumps the GLTexture portion of the memory usage. Subclasses are
+  // responsible for dumping the CPU-side memory.
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;

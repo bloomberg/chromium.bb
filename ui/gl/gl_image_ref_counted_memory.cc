@@ -41,11 +41,20 @@ void GLImageRefCountedMemory::OnMemoryDump(
   // Log size 0 if |ref_counted_memory_| has been released.
   size_t size_in_bytes = ref_counted_memory_ ? ref_counted_memory_->size() : 0;
 
+  // Dump under "/private_memory", as the base class may also dump to
+  // "/texture_memory".
   base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(dump_name);
+      pmd->CreateAllocatorDump(dump_name + "/private_memory");
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                   static_cast<uint64_t>(size_in_bytes));
+
+  pmd->AddSuballocation(dump->guid(),
+                        base::trace_event::MemoryDumpManager::GetInstance()
+                            ->system_allocator_pool_name());
+
+  // Also dump the base class's texture memory.
+  GLImageMemory::OnMemoryDump(pmd, process_tracing_id, dump_name);
 }
 
 }  // namespace gfx

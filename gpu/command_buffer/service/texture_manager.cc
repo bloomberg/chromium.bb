@@ -1264,6 +1264,10 @@ void Texture::SetLevelImage(
   info.image = image;
   UpdateCanRenderCondition();
   UpdateHasImages();
+
+  // TODO(ericrk): Images may have complex sizing not accounted for by
+  // |estimated_size_|, we should add logic here to update |estimated_size_|
+  // based on the new GLImage. crbug.com/526298
 }
 
 gfx::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
