@@ -2510,6 +2510,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BackgroundMode.BackgroundModeEnabledPrefChanged"
+    enum="BooleanEnabled">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    Logged if BackgroundModeManager is running and listening for pref changes,
+    and the pref does indeed change. The new value is logged.
+  </summary>
+</histogram>
+
+<histogram name="BackgroundMode.MenuItemClick" enum="BackgroundModeMenuItem">
+  <owner>mvanouwerkerk@chromium.org</owner>
+  <summary>
+    Logged when an item in the system tray icon menu is clicked.
+  </summary>
+</histogram>
+
 <histogram name="BackgroundMode.OnStartup.AutoLaunchState"
     enum="AutoLaunchState">
   <owner>gab@chromium.org</owner>
@@ -53057,6 +53073,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="AUTO_LAUNCH_BACKGROUND"/>
   <int value="2" label="AUTO_LAUNCH_FOREGROUND"/>
   <int value="3" label="AUTO_LAUNCH_FOREGROUND_USELESS"/>
+</enum>
+
+<enum name="BackgroundModeMenuItem" type="int">
+  <int value="0" label="About"/>
+  <int value="1" label="Task manager"/>
+  <int value="2" label="Background client"/>
+  <int value="3" label="Let run in background"/>
+  <int value="4" label="Exit"/>
 </enum>
 
 <enum name="BackgroundSyncStatus" type="int">

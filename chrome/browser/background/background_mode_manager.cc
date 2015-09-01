@@ -106,6 +106,22 @@ void RecordAutoLaunchState(const base::CommandLine& command_line) {
                             auto_launch_state, AUTO_LAUNCH_NUM_STATES);
 }
 
+// Enum for recording menu item clicks in UMA.
+// NOTE: Do not renumber these as that would confuse interpretation of
+// previously logged data. When making changes, also update histograms.xml.
+enum MenuItem {
+  MENU_ITEM_ABOUT = 0,
+  MENU_ITEM_TASK_MANAGER = 1,
+  MENU_ITEM_BACKGROUND_CLIENT = 2,
+  MENU_ITEM_KEEP_RUNNING = 3,
+  MENU_ITEM_EXIT = 4,
+  MENU_ITEM_NUM_STATES
+};
+
+void RecordMenuItemClick(MenuItem item) {
+  UMA_HISTOGRAM_ENUMERATION("BackgroundMode.MenuItemClick", item,
+                            MENU_ITEM_NUM_STATES);
+}
 }  // namespace
 
 BackgroundModeManager::BackgroundModeData::BackgroundModeData(
@@ -130,6 +146,7 @@ void BackgroundModeManager::BackgroundModeData::ExecuteCommand(
       break;
     default:
       DCHECK(!command_id_handler_vector_->at(command_id).is_null());
+      RecordMenuItemClick(MENU_ITEM_BACKGROUND_CLIENT);
       command_id_handler_vector_->at(command_id).Run();
       break;
   }
@@ -518,7 +535,10 @@ void BackgroundModeManager::OnExtensionsReady() {
 }
 
 void BackgroundModeManager::OnBackgroundModeEnabledPrefChanged() {
-  if (IsBackgroundModePrefEnabled())
+  bool enabled = IsBackgroundModePrefEnabled();
+  UMA_HISTOGRAM_BOOLEAN("BackgroundMode.BackgroundModeEnabledPrefChanged",
+                        enabled);
+  if (enabled)
     EnableBackgroundMode();
   else
     DisableBackgroundMode();
@@ -637,6 +657,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
   BackgroundModeData* bmd = GetBackgroundModeDataForLastProfile();
   switch (command_id) {
     case IDC_ABOUT:
+      RecordMenuItemClick(MENU_ITEM_ABOUT);
       if (bmd) {
         chrome::ShowAboutChrome(bmd->GetBrowserWindow());
       } else {
@@ -646,6 +667,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
       }
       break;
     case IDC_TASK_MANAGER:
+    RecordMenuItemClick(MENU_ITEM_TASK_MANAGER);
       if (bmd) {
         chrome::OpenTaskManager(bmd->GetBrowserWindow());
       } else {
@@ -655,6 +677,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
       }
       break;
     case IDC_EXIT:
+      RecordMenuItemClick(MENU_ITEM_EXIT);
 #if defined(OS_WIN)
       browser_watcher::ExitFunnel::RecordSingleEvent(
             chrome::kBrowserExitCodesRegistryPath, L"TraybarExit");
@@ -667,6 +690,8 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
       // not be visible).
       DCHECK(IsBackgroundModePrefEnabled());
       DCHECK(chrome::WillKeepAlive());
+
+      RecordMenuItemClick(MENU_ITEM_KEEP_RUNNING);
 
       // Set the background mode pref to "disabled" - the resulting notification
       // will result in a call to DisableBackgroundMode().
