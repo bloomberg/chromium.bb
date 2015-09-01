@@ -303,13 +303,13 @@ void WebMediaPlayerImpl::seek(double seconds) {
   if (seeking_) {
     if (new_seek_time == seek_time_) {
       if (chunk_demuxer_) {
-        if (!pending_seek_) {
-          // If using media source demuxer, only suppress redundant seeks if
-          // there is no pending seek. This enforces that any pending seek that
-          // results in a demuxer seek is preceded by matching
-          // CancelPendingSeek() and StartWaitingForSeek() calls.
-          return;
-        }
+        // Don't suppress any redundant in-progress MSE seek. There could have
+        // been changes to the underlying buffers after seeking the demuxer and
+        // before receiving OnPipelineSeeked() for the currently in-progress
+        // seek.
+        MEDIA_LOG(DEBUG, media_log_)
+            << "Detected MediaSource seek to same time as in-progress seek to "
+            << seek_time_ << ".";
       } else {
         // Suppress all redundant seeks if unrestricted by media source demuxer
         // API.
@@ -329,11 +329,16 @@ void WebMediaPlayerImpl::seek(double seconds) {
   media_log_->AddEvent(media_log_->CreateSeekEvent(seconds));
 
   // Update our paused time.
-  // In paused state ignore the seek operations to current time if the loading
-  // is completed and generate OnPipelineBufferingStateChanged event to
-  // eventually fire seeking and seeked events
+  // For non-MSE playbacks, in paused state ignore the seek operations to
+  // current time if the loading is completed and generate
+  // OnPipelineBufferingStateChanged event to eventually fire seeking and seeked
+  // events. We don't short-circuit MSE seeks in this logic because the
+  // underlying buffers around the seek time might have changed (or even been
+  // removed) since previous seek/preroll/pause action, and the pipeline might
+  // need to flush so the new buffers are decoded and rendered instead of the
+  // old ones.
   if (paused_) {
-    if (paused_time_ != new_seek_time) {
+    if (paused_time_ != new_seek_time || chunk_demuxer_) {
       paused_time_ = new_seek_time;
     } else if (old_state == ReadyStateHaveEnoughData) {
       main_task_runner_->PostTask(

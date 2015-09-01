@@ -72,6 +72,8 @@ using blink::WebSize;
 using blink::WebString;
 using blink::WebURL;
 using gpu::gles2::GLES2Interface;
+using media::LogHelper;
+using media::MediaLog;
 using media::MediaPlayerAndroid;
 using media::VideoFrame;
 
@@ -426,13 +428,12 @@ void WebMediaPlayerAndroid::seek(double seconds) {
   if (seeking_) {
     if (new_seek_time == seek_time_) {
       if (media_source_delegate_) {
-        if (!pending_seek_) {
-          // If using media source demuxer, only suppress redundant seeks if
-          // there is no pending seek. This enforces that any pending seek that
-          // results in a demuxer seek is preceded by matching
-          // CancelPendingSeek() and StartWaitingForSeek() calls.
-          return;
-        }
+        // Don't suppress any redundant in-progress MSE seek. There could have
+        // been changes to the underlying buffers after seeking the demuxer and
+        // before receiving OnSeekComplete() for the currently in-progress seek.
+        MEDIA_LOG(DEBUG, media_log_)
+            << "Detected MediaSource seek to same time as in-progress seek to "
+            << seek_time_ << ".";
       } else {
         // Suppress all redundant seeks if unrestricted by media source
         // demuxer API.
