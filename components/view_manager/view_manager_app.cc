@@ -40,6 +40,8 @@ ViewManagerApp::ViewManagerApp()
 ViewManagerApp::~ViewManagerApp() {
   if (gpu_state_)
     gpu_state_->StopControlThread();
+  // Destroy |connection_manager_| first, since it depends on |event_source_|.
+  connection_manager_.reset();
 }
 
 void ViewManagerApp::Initialize(ApplicationImpl* app) {

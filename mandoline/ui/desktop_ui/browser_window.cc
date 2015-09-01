@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/view_manager/public/cpp/scoped_view_ptr.h"
 #include "components/view_manager/public/cpp/view_tree_host_factory.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 #include "mandoline/ui/desktop_ui/browser_commands.h"
@@ -81,8 +82,6 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
   mojo::CreateViewTreeHost(host_factory, host_client.Pass(), this, &host_);
 }
 
-BrowserWindow::~BrowserWindow() {}
-
 void BrowserWindow::LoadURL(const GURL& url) {
   // Haven't been embedded yet, can't embed.
   // TODO(beng): remove this.
@@ -99,6 +98,18 @@ void BrowserWindow::LoadURL(const GURL& url) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = url.spec();
   Embed(request.Pass());
+}
+
+void BrowserWindow::Close() {
+  if (root_)
+    mojo::ScopedViewPtr::DeleteViewOrViewManager(root_);
+  else
+    delete this;
+}
+
+BrowserWindow::~BrowserWindow() {
+  DCHECK(!root_);
+  manager_->BrowserWindowClosed(this);
 }
 
 float BrowserWindow::DIPSToPixels(float value) const {
@@ -131,6 +142,8 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
 
   web_view_.Init(app_, content_);
 
+  host_->AddAccelerator(BrowserCommand_Close, mojo::KEYBOARD_CODE_W,
+                        mojo::EVENT_FLAGS_CONTROL_DOWN);
   host_->AddAccelerator(BrowserCommand_FocusOmnibox, mojo::KEYBOARD_CODE_L,
                         mojo::EVENT_FLAGS_CONTROL_DOWN);
   host_->AddAccelerator(BrowserCommand_NewWindow, mojo::KEYBOARD_CODE_N,
@@ -161,7 +174,7 @@ void BrowserWindow::OnEmbed(mojo::View* root) {
 
 void BrowserWindow::OnConnectionLost(mojo::ViewTreeConnection* connection) {
   root_ = nullptr;
-  manager_->BrowserWindowClosed(this);
+  delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,6 +182,9 @@ void BrowserWindow::OnConnectionLost(mojo::ViewTreeConnection* connection) {
 
 void BrowserWindow::OnAccelerator(uint32_t id, mojo::EventPtr event) {
   switch (id) {
+    case BrowserCommand_Close:
+      Close();
+      break;
     case BrowserCommand_NewWindow:
       manager_->CreateBrowser(GURL());
       break;

@@ -7,7 +7,11 @@
 
 namespace mandoline {
 
-enum BrowserCommand { BrowserCommand_FocusOmnibox, BrowserCommand_NewWindow };
+enum BrowserCommand {
+  BrowserCommand_Close,
+  BrowserCommand_FocusOmnibox,
+  BrowserCommand_NewWindow,
+};
 
 }  // namespace mandoline
 

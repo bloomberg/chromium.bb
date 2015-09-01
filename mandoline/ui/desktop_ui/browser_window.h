@@ -45,11 +45,13 @@ class BrowserWindow : public mojo::ViewTreeDelegate,
   BrowserWindow(mojo::ApplicationImpl* app,
                 mojo::ViewTreeHostFactory* host_factory,
                 BrowserManager* manager);
-  ~BrowserWindow() override;
 
   void LoadURL(const GURL& url);
+  void Close();
 
  private:
+  ~BrowserWindow() override;
+
   float DIPSToPixels(float value) const;
 
   // Overridden from mojo::ViewTreeDelegate:

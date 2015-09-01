@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "components/devtools_service/public/cpp/switches.h"
+#include "components/view_manager/public/cpp/scoped_view_ptr.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_tree_connection.h"
 #include "mandoline/tab/frame.h"
@@ -41,12 +42,20 @@ WebViewImpl::WebViewImpl(mojo::ApplicationImpl* app,
     : app_(app),
       client_(client.Pass()),
       binding_(this, request.Pass()),
+      root_(nullptr),
       content_(nullptr) {
   if (EnableRemoteDebugging())
     devtools_agent_.reset(new FrameDevToolsAgent(app_, this));
 }
 
-WebViewImpl::~WebViewImpl() {}
+WebViewImpl::~WebViewImpl() {
+  if (content_)
+    content_->RemoveObserver(this);
+  if (root_) {
+    root_->RemoveObserver(this);
+    mojo::ScopedViewPtr::DeleteViewOrViewManager(root_);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, WebView implementation:
@@ -86,6 +95,7 @@ void WebViewImpl::GetViewTreeClient(
 void WebViewImpl::OnEmbed(mojo::View* root) {
   root->connection()->SetEmbedRoot();
   root->AddObserver(this);
+  root_ = root;
   content_ = root->connection()->CreateView();
   content_->SetBounds(*mojo::Rect::From(gfx::Rect(0, 0, root->bounds().width,
                                                   root->bounds().height)));
@@ -98,6 +108,7 @@ void WebViewImpl::OnEmbed(mojo::View* root) {
 }
 
 void WebViewImpl::OnConnectionLost(mojo::ViewTreeConnection* connection) {
+  root_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -156,7 +156,9 @@ void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
 
 DefaultDisplayManager::~DefaultDisplayManager() {
   // Destroy the PlatformWindow early on as it may call us back during
-  // destruction and we want to be in a known state.
+  // destruction and we want to be in a known state. But destroy the surface
+  // first because it can still be using the platform window.
+  top_level_display_client_.reset();
   platform_window_.reset();
 }
 

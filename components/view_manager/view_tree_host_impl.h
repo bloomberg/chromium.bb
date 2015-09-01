@@ -80,6 +80,8 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   void RemoveAccelerator(uint32_t id) override;
 
  private:
+  void OnClientClosed();
+
   // DisplayManagerDelegate:
   ServerView* GetRootView() override;
   void OnEvent(mojo::EventPtr event) override;

@@ -82,6 +82,7 @@ class WebViewImpl : public mojom::WebView,
   mojo::ApplicationImpl* app_;
   mojom::WebViewClientPtr client_;
   mojo::StrongBinding<WebView> binding_;
+  mojo::View* root_;
   mojo::View* content_;
   scoped_ptr<FrameTree> frame_tree_;
 

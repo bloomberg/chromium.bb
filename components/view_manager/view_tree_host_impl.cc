@@ -28,6 +28,11 @@ ViewTreeHostImpl::ViewTreeHostImpl(
                                  gpu_state,
                                  surfaces_state)) {
   display_manager_->Init(this);
+  if (client_) {
+    client_.set_connection_error_handler(
+        base::Bind(&ViewTreeHostImpl::OnClientClosed,
+                   base::Unretained(this)));
+  }
 }
 
 ViewTreeHostImpl::~ViewTreeHostImpl() {
@@ -61,6 +66,8 @@ const mojo::ViewportMetrics& ViewTreeHostImpl::GetViewportMetrics() const {
 }
 
 void ViewTreeHostImpl::UpdateTextInputState(const ui::TextInputState& state) {
+  if (!display_manager_)
+    return;
   display_manager_->UpdateTextInputState(state);
 }
 
@@ -80,6 +87,15 @@ void ViewTreeHostImpl::AddAccelerator(uint32_t id,
 
 void ViewTreeHostImpl::RemoveAccelerator(uint32_t id) {
   connection_manager_->RemoveAccelerator(this, id);
+}
+
+void ViewTreeHostImpl::OnClientClosed() {
+  // |display_manager_.reset()| destroys the display-manager first, and then
+  // sets |display_manager_| to nullptr. However, destroying |display_manager_|
+  // can destroy the corresponding ViewTreeHostConnection, and |this|. So
+  // setting it to nullptr afterwards in reset() ends up writing on free'd
+  // memory. So transfer over to a local scoped_ptr<> before destroying it.
+  scoped_ptr<DisplayManager> temp = display_manager_.Pass();
 }
 
 ServerView* ViewTreeHostImpl::GetRootView() {

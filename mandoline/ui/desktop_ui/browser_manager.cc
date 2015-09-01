@@ -32,7 +32,6 @@ BrowserWindow* BrowserManager::CreateBrowser(const GURL& default_url) {
 }
 
 void BrowserManager::BrowserWindowClosed(BrowserWindow* browser) {
-  scoped_ptr<BrowserWindow> browser_owner(browser);
   DCHECK_GT(browsers_.count(browser), 0u);
   browsers_.erase(browser);
   if (browsers_.empty())

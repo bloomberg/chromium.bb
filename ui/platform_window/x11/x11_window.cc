@@ -54,6 +54,7 @@ X11Window::X11Window(PlatformWindowDelegate* delegate)
 }
 
 X11Window::~X11Window() {
+  Destroy();
 }
 
 void X11Window::Destroy() {
