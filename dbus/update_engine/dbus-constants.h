@@ -10,6 +10,10 @@ const char kUpdateEngineInterface[] = "org.chromium.UpdateEngineInterface";
 const char kUpdateEngineServicePath[] = "/org/chromium/UpdateEngine";
 const char kUpdateEngineServiceName[] = "org.chromium.UpdateEngine";
 
+// Generic UpdateEngine D-Bus error.
+const char kUpdateEngineServiceErrorFailed[] =
+    "org.chromium.UpdateEngine.Error.Failed";
+
 // Methods.
 const char kAttemptUpdate[] = "AttemptUpdate";
 const char kGetStatus[] = "GetStatus";
@@ -21,6 +25,11 @@ const char kCanRollback[] = "CanRollback";
 
 // Signals.
 const char kStatusUpdate[] = "StatusUpdate";
+
+// Flags used in the AttemptUpdateWithFlags() D-Bus method.
+typedef enum {
+  kAttemptUpdateFlagNonInteractive = (1 << 0)
+} AttemptUpdateFlags;
 
 // Operations contained in StatusUpdate signals.
 const char kUpdateStatusIdle[] = "UPDATE_STATUS_IDLE";
