@@ -60,7 +60,12 @@ public class Log {
         return "[" + getCallOrigin() + "] " + formatLog(messageTemplate, params);
     }
 
-    /** Convenience function, forwards to {@link android.util.Log#isLoggable(String, int)}. */
+    /**
+     * Convenience function, forwards to {@link android.util.Log#isLoggable(String, int)}.
+     *
+     * Note: Has no effect on whether logs are sent or not. Use a method with
+     * {@link RemovableInRelease} to log something in Debug builds only.
+     */
     public static boolean isLoggable(String tag, int level) {
         return android.util.Log.isLoggable(tag, level);
     }
@@ -79,14 +84,12 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     private static void verbose(String tag, String messageTemplate, Object... args) {
-        if (Log.isLoggable(tag, Log.VERBOSE)) {
-            String message = formatLogWithStack(messageTemplate, args);
-            Throwable tr = getThrowableToLog(args);
-            if (tr != null) {
-                android.util.Log.v(tag, message, tr);
-            } else {
-                android.util.Log.v(tag, message);
-            }
+        String message = formatLogWithStack(messageTemplate, args);
+        Throwable tr = getThrowableToLog(args);
+        if (tr != null) {
+            android.util.Log.v(tag, message, tr);
+        } else {
+            android.util.Log.v(tag, message);
         }
     }
 
@@ -165,14 +168,12 @@ public class Log {
      *             one is a {@link Throwable}, its trace will be printed.
      */
     private static void debug(String tag, String messageTemplate, Object... args) {
-        if (isLoggable(tag, Log.DEBUG)) {
-            String message = formatLogWithStack(messageTemplate, args);
-            Throwable tr = getThrowableToLog(args);
-            if (tr != null) {
-                android.util.Log.d(tag, message, tr);
-            } else {
-                android.util.Log.d(tag, message);
-            }
+        String message = formatLogWithStack(messageTemplate, args);
+        Throwable tr = getThrowableToLog(args);
+        if (tr != null) {
+            android.util.Log.d(tag, message, tr);
+        } else {
+            android.util.Log.d(tag, message);
         }
     }
 
@@ -246,14 +247,12 @@ public class Log {
      */
     @VisibleForTesting
     public static void i(String tag, String messageTemplate, Object... args) {
-        if (Log.isLoggable(tag, Log.INFO)) {
-            String message = formatLog(messageTemplate, args);
-            Throwable tr = getThrowableToLog(args);
-            if (tr != null) {
-                android.util.Log.i(tag, message, tr);
-            } else {
-                android.util.Log.i(tag, message);
-            }
+        String message = formatLog(messageTemplate, args);
+        Throwable tr = getThrowableToLog(args);
+        if (tr != null) {
+            android.util.Log.i(tag, message, tr);
+        } else {
+            android.util.Log.i(tag, message);
         }
     }
 
@@ -268,14 +267,12 @@ public class Log {
      */
     @VisibleForTesting
     public static void w(String tag, String messageTemplate, Object... args) {
-        if (Log.isLoggable(tag, Log.WARN)) {
-            String message = formatLog(messageTemplate, args);
-            Throwable tr = getThrowableToLog(args);
-            if (tr != null) {
-                android.util.Log.w(tag, message, tr);
-            } else {
-                android.util.Log.w(tag, message);
-            }
+        String message = formatLog(messageTemplate, args);
+        Throwable tr = getThrowableToLog(args);
+        if (tr != null) {
+            android.util.Log.w(tag, message, tr);
+        } else {
+            android.util.Log.w(tag, message);
         }
     }
 
@@ -290,14 +287,12 @@ public class Log {
      */
     @VisibleForTesting
     public static void e(String tag, String messageTemplate, Object... args) {
-        if (Log.isLoggable(tag, Log.ERROR)) {
-            String message = formatLog(messageTemplate, args);
-            Throwable tr = getThrowableToLog(args);
-            if (tr != null) {
-                android.util.Log.e(tag, message, tr);
-            } else {
-                android.util.Log.e(tag, message);
-            }
+        String message = formatLog(messageTemplate, args);
+        Throwable tr = getThrowableToLog(args);
+        if (tr != null) {
+            android.util.Log.e(tag, message, tr);
+        } else {
+            android.util.Log.e(tag, message);
         }
     }
 
@@ -316,14 +311,12 @@ public class Log {
      */
     @VisibleForTesting
     public static void wtf(String tag, String messageTemplate, Object... args) {
-        if (Log.isLoggable(tag, Log.ASSERT)) {
-            String message = formatLog(messageTemplate, args);
-            Throwable tr = getThrowableToLog(args);
-            if (tr != null) {
-                android.util.Log.wtf(tag, message, tr);
-            } else {
-                android.util.Log.wtf(tag, message);
-            }
+        String message = formatLog(messageTemplate, args);
+        Throwable tr = getThrowableToLog(args);
+        if (tr != null) {
+            android.util.Log.wtf(tag, message, tr);
+        } else {
+            android.util.Log.wtf(tag, message);
         }
     }
 

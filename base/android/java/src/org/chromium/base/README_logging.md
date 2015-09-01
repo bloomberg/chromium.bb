@@ -22,26 +22,14 @@ Output:
 Here, **TAG** will be a feature or package name, "MediaRemote" or "NFC" for example. In most
 cases, the class name is not needed.
 
-**Caveat:** Property keys are limited to 23 characters. If the tag is too long, `Log#isLoggable`
-throws a RuntimeException.
-
 ### Verbose and Debug logs have special handling ###
 
 *   `Log.v` and `Log.d` Calls made using `org.chromium.base.Log` are stripped
     out of production binaries using Proguard. There is no way to get those logs
-	in release builds.
+    in release builds.
 
 *   The file name and line number will be prepended to the log message.
     For higher priority logs, those are not added for performance concerns.
-
-*   By default, Verbose and Debug logs are not enabled, see guarding:
-
-### Log calls are guarded: Tag groups can be enabled or disabled using ADB ###
-
-    adb shell setprop log.tag.cr.YourModuleTag <LEVEL>
-
-Level here is either `VERBOSE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `ASSERT`, or `SUPPRESS`
-By default, the level for all tags is `INFO`.
 
 ### An exception trace is printed when the exception is the last parameter ###
 
@@ -72,14 +60,9 @@ recover the full data through rainbow tables and similar methods.
 
 Similarly, avoid dumping API keys, cookies, etc...
 
-#### Rule #2: Do not write debug logs in production code:
+#### Rule #2: Do not build debug logs in production code:
 
-The kernel log buffer is global and of limited size. Any extra debug log you add to your activity
-or service makes it more difficult to diagnose problems on other parts of the system, because they
-tend to push the interesting bit out of the buffer too soon. This is a recurring problem on
-Android, so avoid participating into it.
-
-Logs can be disabled using system properties. Because log messages might not be
+The log methods are removed in release builds using Proguard. Because log messages might not be
 written, the cost of creating them should also be avoided. This can be done using three
 complementary ways:
 
@@ -91,27 +74,15 @@ complementary ways:
         // BETTER
         Log.d(TAG, "I %s writing logs.", preference);
 
-    If logging is disabled, the function's arguments will still have to be computed and provided
-    as input. The first call above will always lead to the creation of a `StringBuilder` and a few
-    concatenations, while the second just passes the arguments and won't need that.
+    Proguard removes the method call itself, but doesn't do anything about the arguments. The
+    method's arguments will still be computed and provided as input. The first call above will
+    always lead to the creation of a `StringBuilder` and a few concatenations, while the second just
+    passes the arguments and won't need that.
 
 -   Guard expensive calls
 
     Sometimes the values to log aren't readily available and need to be computed specially. This
     should be avoided when logging is disabled.
-
-    Using `Log#isLoggable` will return whether logging for a specific tag is allowed or not. It is
-    the call used inside the log functions and using allows to know when running the expensive
-    functions is needed.
-
-        if (Log.isLoggable(TAG, Log.DEBUG) {
-          Log.d(TAG, "Something happened: %s", dumpDom(tab));
-        }
-
-    For more info, See the [android framework documentation]
-    (http://developer.android.com/tools/debugging/debugging-log.html).
-
-    Using a debug constant is a less flexible, but more perfomance oriented alternative.
 
         static private final boolean DEBUG = false;  // set to 'true' to enable debug
         ...
@@ -121,9 +92,7 @@ complementary ways:
 
     Because the variable is a `static final` that can be evaluated at compile time, the Java
     compiler will optimize out all guarded calls from the generated `.class` file. Changing it
-    however requires editing each of the files for which debug should be enabled and recompiling,
-    while the previous method can enable or disable debugging for a whole feature without changing
-    any source file.
+    however requires editing each of the files for which debug should be enabled and recompiling.
 
 -   Annotate debug functions with the `@RemovableInRelease` annotation.
 
@@ -132,15 +101,11 @@ complementary ways:
     function is not called at all, it will also be removed. Since Proguard is already used to
     strip debug and verbose calls out of release builds, this annotation allows it to have a
     deeper action by removing also function calls used to generate the log call's arguments.
-  
+
         /* If that function is only used in Log.d calls, proguard should completely remove it from
          * the release builds. */
         @RemovableInRelease
         private static String getSomeDebugLogString(Thing[] things) {
-          /* Still needs to be guarded to avoid impacting debug builds, or in case it's used for
-           * some other log levels. But at least it is done only once, inside the function. */
-          if (!Log.isLoggable(TAG, Log.DEBUG)) return null;
-
           StringBuilder sb = new StringBuilder("Reporting " + thing.length + " things:");
           for (Thing thing : things) {
             sb.append('\n').append(thing.id).append(' ').append(report.foo);
@@ -150,14 +115,14 @@ complementary ways:
 
         public void bar() {
           ...
-          Log.d(TAG, getSomeDebugLogString(things)); /* In debug builds, the function does nothing
-                                                      * is debug is disabled, and the entire line 
-                                                      * is removed in release builds. */
+          Log.d(TAG, getSomeDebugLogString(things)); /* The line is removed in release builds. */
         }
 
     Again, this is useful only if the input to that function are variables already available in
     the scope. The idea is to move computations, concatenations, etc. to a place where that can be
-    removed when not needed, without invading the main function's logic.
+    removed when not needed, without invading the main function's logic. It can then have a similar
+    effect as guarding with a static final property that would be enabled in Debug and disabled in
+    Release.
 
 #### Rule #3: Favor small log messages
 
@@ -179,3 +144,19 @@ log entry also implies a small, but non-trivial header, in the kernel log buffer
 And since every byte count, you can also try something even shorter, as in:
 
     Log.d(TAG, "fields [%s,%s,%s]", value1, value2, value3);
+
+### Filtering logs
+
+Logcat allows filtering by specifying tags and the associated level:
+
+    adb logcat [TAG_EXPR:LEVEL]...
+    adb logcat cr.YourModuleTag:D *:S
+
+This shows only logs having a level higher or equal to DEBUG for `cr.YourModuleTag`, and SILENT
+(nothing is logged at this level or higher, so it silences the tags) for everything else. You can
+persist a filter by setting an environment variable:
+
+    export ANDROID_LOG_TAGS="cr.YourModuleTag:D *:S"
+
+For more, see the [related page on developer.android.com]
+(http://developer.android.com/tools/debugging/debugging-log.html#filteringOutput)
