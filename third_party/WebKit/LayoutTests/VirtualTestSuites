@@ -79,7 +79,7 @@
     "args": ["--enable-threaded-compositing",
              "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
              "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
-             "--enable-overlay-fullscreen-video", "--enable-overlay-scrollbars", "--enable-overscroll-notifications",
+             "--force-overlay-fullscreen-video", "--enable-overlay-scrollbars", "--enable-overscroll-notifications",
              "--enable-fixed-layout", "--enable-viewport", "--disable-canvas-aa",
              "--disable-composited-antialiasing"]
   },
