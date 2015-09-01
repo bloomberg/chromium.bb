@@ -2651,6 +2651,8 @@
       'browser/ui/omnibox/chrome_omnibox_edit_controller.h',
       'browser/ui/omnibox/chrome_omnibox_navigation_observer.cc',
       'browser/ui/omnibox/chrome_omnibox_navigation_observer.h',
+      'browser/ui/omnibox/clipboard_utils.cc',
+      'browser/ui/omnibox/clipboard_utils.h',
     ],
     'chrome_browser_ui_plugin_sources': [
       'browser/ui/hung_plugin_tab_helper.cc',

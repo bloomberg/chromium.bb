@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
@@ -510,8 +511,8 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   // from the clipboard already sanitized. The second case is needed to handle
   // drag-and-drop value and it has to be sanitazed before setting it into the
   // omnibox.
-  base::string16 text_to_paste = text.empty() ? omnibox->GetClipboardText() :
-      omnibox->SanitizeTextForPaste(text);
+  base::string16 text_to_paste =
+      text.empty() ? GetClipboardText() : omnibox->SanitizeTextForPaste(text);
 
   if (text_to_paste.empty())
     return;

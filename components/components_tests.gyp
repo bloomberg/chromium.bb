@@ -364,6 +364,8 @@
       'omnibox/browser/in_memory_url_index_types_unittest.cc',
       'omnibox/browser/keyword_provider_unittest.cc',
       'omnibox/browser/omnibox_field_trial_unittest.cc',
+      'omnibox/browser/omnibox_popup_model_unittest.cc',
+      'omnibox/browser/omnibox_view_unittest.cc',
       'omnibox/browser/scored_history_match_unittest.cc',
       'omnibox/browser/suggestion_answer_unittest.cc',
     ],

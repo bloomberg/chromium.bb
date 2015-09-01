@@ -227,11 +227,6 @@ class OmniboxView {
   // this case, runs of whitespace are collapsed down to single spaces.
   static base::string16 SanitizeTextForPaste(const base::string16& text);
 
-  // Returns the current clipboard contents as a string that can be pasted in.
-  // In addition to just getting CF_UNICODETEXT out, this can also extract URLs
-  // from bookmarks on the clipboard.
-  static base::string16 GetClipboardText();
-
  protected:
   OmniboxView(OmniboxEditController* controller,
               scoped_ptr<OmniboxClient> client);
