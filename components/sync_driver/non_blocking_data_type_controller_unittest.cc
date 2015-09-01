@@ -12,7 +12,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
 #include "sync/engine/commit_queue.h"
-#include "sync/engine/model_type_sync_proxy_impl.h"
+#include "sync/engine/model_type_processor_impl.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,11 +47,11 @@ class MockSyncContext {
   void Connect(
       syncer::ModelType type,
       const scoped_refptr<base::SingleThreadTaskRunner>& model_task_runner,
-      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_proxy) {
+      const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_proxy) {
     enabled_types_.Put(type);
     model_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::OnConnect, type_proxy,
+        base::Bind(&syncer_v2::ModelTypeProcessorImpl::OnConnect, type_proxy,
                    base::Passed(scoped_ptr<syncer_v2::CommitQueue>(
                                     new NullCommitQueue())
                                     .Pass())));
@@ -83,7 +83,7 @@ class MockSyncContextProxy : public syncer_v2::SyncContextProxy {
       syncer::ModelType type,
       const syncer_v2::DataTypeState& data_type_state,
       const syncer_v2::UpdateResponseDataList& saved_pending_updates,
-      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_proxy)
+      const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_proxy)
       override {
     // Normally we'd use ThreadTaskRunnerHandle::Get() as the TaskRunner
     // argument
@@ -182,7 +182,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
   }
 
  protected:
-  syncer_v2::ModelTypeSyncProxyImpl type_sync_proxy_;
+  syncer_v2::ModelTypeProcessorImpl type_sync_proxy_;
   scoped_refptr<base::TestSimpleTaskRunner> model_thread_;
   scoped_refptr<base::TestSimpleTaskRunner> sync_thread_;
 

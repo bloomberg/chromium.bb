@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_type_sync_proxy_impl.h"
+#include "sync/engine/model_type_processor_impl.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -13,32 +13,32 @@
 
 namespace syncer_v2 {
 
-ModelTypeSyncProxyImpl::ModelTypeSyncProxyImpl(syncer::ModelType type)
+ModelTypeProcessorImpl::ModelTypeProcessorImpl(syncer::ModelType type)
     : type_(type),
       is_preferred_(false),
       is_connected_(false),
       weak_ptr_factory_for_ui_(this),
       weak_ptr_factory_for_sync_(this) {}
 
-ModelTypeSyncProxyImpl::~ModelTypeSyncProxyImpl() {
+ModelTypeProcessorImpl::~ModelTypeProcessorImpl() {
 }
 
-bool ModelTypeSyncProxyImpl::IsPreferred() const {
+bool ModelTypeProcessorImpl::IsPreferred() const {
   DCHECK(CalledOnValidThread());
   return is_preferred_;
 }
 
-bool ModelTypeSyncProxyImpl::IsConnected() const {
+bool ModelTypeProcessorImpl::IsConnected() const {
   DCHECK(CalledOnValidThread());
   return is_connected_;
 }
 
-syncer::ModelType ModelTypeSyncProxyImpl::GetModelType() const {
+syncer::ModelType ModelTypeProcessorImpl::GetModelType() const {
   DCHECK(CalledOnValidThread());
   return type_;
 }
 
-void ModelTypeSyncProxyImpl::Enable(
+void ModelTypeProcessorImpl::Enable(
     scoped_ptr<SyncContextProxy> sync_context_proxy) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Asked to enable " << ModelTypeToString(type_);
@@ -58,7 +58,7 @@ void ModelTypeSyncProxyImpl::Enable(
       weak_ptr_factory_for_sync_.GetWeakPtr());
 }
 
-void ModelTypeSyncProxyImpl::Disable() {
+void ModelTypeProcessorImpl::Disable() {
   DCHECK(CalledOnValidThread());
   is_preferred_ = false;
   Disconnect();
@@ -66,7 +66,7 @@ void ModelTypeSyncProxyImpl::Disable() {
   ClearSyncState();
 }
 
-void ModelTypeSyncProxyImpl::Disconnect() {
+void ModelTypeProcessorImpl::Disconnect() {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Asked to disconnect " << ModelTypeToString(type_);
   is_connected_ = false;
@@ -82,12 +82,12 @@ void ModelTypeSyncProxyImpl::Disconnect() {
   ClearTransientSyncState();
 }
 
-base::WeakPtr<ModelTypeSyncProxyImpl> ModelTypeSyncProxyImpl::AsWeakPtrForUI() {
+base::WeakPtr<ModelTypeProcessorImpl> ModelTypeProcessorImpl::AsWeakPtrForUI() {
   DCHECK(CalledOnValidThread());
   return weak_ptr_factory_for_ui_.GetWeakPtr();
 }
 
-void ModelTypeSyncProxyImpl::OnConnect(scoped_ptr<CommitQueue> worker) {
+void ModelTypeProcessorImpl::OnConnect(scoped_ptr<CommitQueue> worker) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
 
@@ -97,7 +97,7 @@ void ModelTypeSyncProxyImpl::OnConnect(scoped_ptr<CommitQueue> worker) {
   FlushPendingCommitRequests();
 }
 
-void ModelTypeSyncProxyImpl::Put(const std::string& client_tag,
+void ModelTypeProcessorImpl::Put(const std::string& client_tag,
                                  const sync_pb::EntitySpecifics& specifics) {
   DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(specifics));
 
@@ -117,7 +117,7 @@ void ModelTypeSyncProxyImpl::Put(const std::string& client_tag,
   FlushPendingCommitRequests();
 }
 
-void ModelTypeSyncProxyImpl::Delete(const std::string& client_tag) {
+void ModelTypeProcessorImpl::Delete(const std::string& client_tag) {
   const std::string client_tag_hash(
       syncer::syncable::GenerateSyncableHash(type_, client_tag));
 
@@ -135,7 +135,7 @@ void ModelTypeSyncProxyImpl::Delete(const std::string& client_tag) {
   FlushPendingCommitRequests();
 }
 
-void ModelTypeSyncProxyImpl::FlushPendingCommitRequests() {
+void ModelTypeProcessorImpl::FlushPendingCommitRequests() {
   CommitRequestDataList commit_requests;
 
   // Don't bother sending anything if there's no one to send to.
@@ -161,7 +161,7 @@ void ModelTypeSyncProxyImpl::FlushPendingCommitRequests() {
     worker_->EnqueueForCommit(commit_requests);
 }
 
-void ModelTypeSyncProxyImpl::OnCommitCompleted(
+void ModelTypeProcessorImpl::OnCommitCompleted(
     const DataTypeState& type_state,
     const CommitResponseDataList& response_list) {
   data_type_state_ = type_state;
@@ -185,7 +185,7 @@ void ModelTypeSyncProxyImpl::OnCommitCompleted(
   }
 }
 
-void ModelTypeSyncProxyImpl::OnUpdateReceived(
+void ModelTypeProcessorImpl::OnUpdateReceived(
     const DataTypeState& data_type_state,
     const UpdateResponseDataList& response_list,
     const UpdateResponseDataList& pending_updates) {
@@ -275,7 +275,7 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
   // TODO: Persist the new data on disk.
 }
 
-UpdateResponseDataList ModelTypeSyncProxyImpl::GetPendingUpdates() {
+UpdateResponseDataList ModelTypeProcessorImpl::GetPendingUpdates() {
   UpdateResponseDataList pending_updates_list;
   for (UpdateMap::const_iterator it = pending_updates_map_.begin();
        it != pending_updates_map_.end();
@@ -285,14 +285,14 @@ UpdateResponseDataList ModelTypeSyncProxyImpl::GetPendingUpdates() {
   return pending_updates_list;
 }
 
-void ModelTypeSyncProxyImpl::ClearTransientSyncState() {
+void ModelTypeProcessorImpl::ClearTransientSyncState() {
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     it->second->ClearTransientSyncState();
   }
 }
 
-void ModelTypeSyncProxyImpl::ClearSyncState() {
+void ModelTypeProcessorImpl::ClearSyncState() {
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     it->second->ClearSyncState();

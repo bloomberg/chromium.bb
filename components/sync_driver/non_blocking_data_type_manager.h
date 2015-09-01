@@ -16,7 +16,7 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace syncer_v2 {
-class ModelTypeSyncProxyImpl;
+class ModelTypeProcessorImpl;
 class SyncContextProxy;
 }  // namespace syncer_v2
 
@@ -40,12 +40,12 @@ class NonBlockingDataTypeManager {
   // The |preferred| flag indicates whether or not this type should be synced.
   void RegisterType(syncer::ModelType type, bool preferred);
 
-  // Connects the ModelTypeSyncProxyImpl and associated model type
+  // Connects the ModelTypeProcessorImpl and associated model type
   // thread to its NonBlockingDataTypeController on the UI thread.
   void InitializeType(
       syncer::ModelType type,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_sync_proxy);
+      const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor);
 
   // Connects the sync backend, as represented by a SyncContextProxy, to the
   // NonBlockingDataTypeController on the UI thread.

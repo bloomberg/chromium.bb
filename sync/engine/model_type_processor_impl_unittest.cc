@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/model_type_sync_proxy_impl.h"
+#include "sync/engine/model_type_processor_impl.h"
 
 #include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -18,9 +18,9 @@ namespace syncer_v2 {
 
 static const syncer::ModelType kModelType = syncer::PREFERENCES;
 
-// Tests the sync engine parts of ModelTypeSyncProxyImpl.
+// Tests the sync engine parts of ModelTypeProcessorImpl.
 //
-// The ModelTypeSyncProxyImpl contains a non-trivial amount of code dedicated
+// The ModelTypeProcessorImpl contains a non-trivial amount of code dedicated
 // to turning the sync engine on and off again.  That code is fairly well
 // tested in the NonBlockingDataTypeController unit tests and it doesn't need
 // to be re-tested here.
@@ -39,10 +39,10 @@ static const syncer::ModelType kModelType = syncer::PREFERENCES;
 // - Writes to permanent storage. (TODO)
 // - Callbacks into the model. (TODO)
 // - Requests to the sync thread.  Tested with MockCommitQueue.
-class ModelTypeSyncProxyImplTest : public ::testing::Test {
+class ModelTypeProcessorImplTest : public ::testing::Test {
  public:
-  ModelTypeSyncProxyImplTest();
-  ~ModelTypeSyncProxyImplTest() override;
+  ModelTypeProcessorImplTest();
+  ~ModelTypeProcessorImplTest() override;
 
   // Initialize with no local state.  The type sync proxy will be unable to
   // commit until it receives notification that initial sync has completed.
@@ -51,10 +51,10 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState();
 
-  // Disconnect the CommitQueue from our ModelTypeSyncProxyImpl.
+  // Disconnect the CommitQueue from our ModelTypeProcessorImpl.
   void Disconnect();
 
-  // Disable sync for this ModelTypeSyncProxyImpl.  Should cause sync state to
+  // Disable sync for this ModelTypeProcessorImpl.  Should cause sync state to
   // be discarded.
   void Disable();
 
@@ -126,26 +126,26 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
 
   MockCommitQueue* mock_queue_;
   scoped_ptr<InjectableSyncContextProxy> injectable_sync_context_proxy_;
-  scoped_ptr<ModelTypeSyncProxyImpl> type_sync_proxy_;
+  scoped_ptr<ModelTypeProcessorImpl> type_sync_proxy_;
 
   DataTypeState data_type_state_;
 };
 
-ModelTypeSyncProxyImplTest::ModelTypeSyncProxyImplTest()
+ModelTypeProcessorImplTest::ModelTypeProcessorImplTest()
     : mock_queue_(new MockCommitQueue()),
       injectable_sync_context_proxy_(
           new InjectableSyncContextProxy(mock_queue_)),
-      type_sync_proxy_(new ModelTypeSyncProxyImpl(kModelType)) {
+      type_sync_proxy_(new ModelTypeProcessorImpl(kModelType)) {
 }
 
-ModelTypeSyncProxyImplTest::~ModelTypeSyncProxyImplTest() {
+ModelTypeProcessorImplTest::~ModelTypeProcessorImplTest() {
 }
 
-void ModelTypeSyncProxyImplTest::FirstTimeInitialize() {
+void ModelTypeProcessorImplTest::FirstTimeInitialize() {
   type_sync_proxy_->Enable(injectable_sync_context_proxy_->Clone());
 }
 
-void ModelTypeSyncProxyImplTest::InitializeToReadyState() {
+void ModelTypeProcessorImplTest::InitializeToReadyState() {
   // TODO(rlarocque): This should be updated to inject on-disk state.
   // At the time this code was written, there was no support for on-disk
   // state so this was the only way to inject a data_type_state into
@@ -154,19 +154,19 @@ void ModelTypeSyncProxyImplTest::InitializeToReadyState() {
   OnInitialSyncDone();
 }
 
-void ModelTypeSyncProxyImplTest::Disconnect() {
+void ModelTypeProcessorImplTest::Disconnect() {
   type_sync_proxy_->Disconnect();
   injectable_sync_context_proxy_.reset();
   mock_queue_ = NULL;
 }
 
-void ModelTypeSyncProxyImplTest::Disable() {
+void ModelTypeProcessorImplTest::Disable() {
   type_sync_proxy_->Disable();
   injectable_sync_context_proxy_.reset();
   mock_queue_ = NULL;
 }
 
-void ModelTypeSyncProxyImplTest::ReEnable() {
+void ModelTypeProcessorImplTest::ReEnable() {
   DCHECK(!type_sync_proxy_->IsConnected());
 
   // Prepare a new MockCommitQueue instance, just as we would
@@ -179,17 +179,17 @@ void ModelTypeSyncProxyImplTest::ReEnable() {
   type_sync_proxy_->Enable(injectable_sync_context_proxy_->Clone());
 }
 
-void ModelTypeSyncProxyImplTest::WriteItem(const std::string& tag,
+void ModelTypeProcessorImplTest::WriteItem(const std::string& tag,
                                            const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
   type_sync_proxy_->Put(tag, GenerateSpecifics(tag, value));
 }
 
-void ModelTypeSyncProxyImplTest::DeleteItem(const std::string& tag) {
+void ModelTypeProcessorImplTest::DeleteItem(const std::string& tag) {
   type_sync_proxy_->Delete(tag);
 }
 
-void ModelTypeSyncProxyImplTest::OnInitialSyncDone() {
+void ModelTypeProcessorImplTest::OnInitialSyncDone() {
   data_type_state_.initial_sync_done = true;
   UpdateResponseDataList empty_update_list;
 
@@ -197,7 +197,7 @@ void ModelTypeSyncProxyImplTest::OnInitialSyncDone() {
       data_type_state_, empty_update_list, empty_update_list);
 }
 
-void ModelTypeSyncProxyImplTest::UpdateFromServer(int64 version_offset,
+void ModelTypeProcessorImplTest::UpdateFromServer(int64 version_offset,
                                                   const std::string& tag,
                                                   const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
@@ -210,7 +210,7 @@ void ModelTypeSyncProxyImplTest::UpdateFromServer(int64 version_offset,
                                      UpdateResponseDataList());
 }
 
-void ModelTypeSyncProxyImplTest::PendingUpdateFromServer(
+void ModelTypeProcessorImplTest::PendingUpdateFromServer(
     int64 version_offset,
     const std::string& tag,
     const std::string& value,
@@ -226,7 +226,7 @@ void ModelTypeSyncProxyImplTest::PendingUpdateFromServer(
                                      list);
 }
 
-void ModelTypeSyncProxyImplTest::TombstoneFromServer(int64 version_offset,
+void ModelTypeProcessorImplTest::TombstoneFromServer(int64 version_offset,
                                                      const std::string& tag) {
   // Overwrite the existing server version if this is the new highest version.
   std::string tag_hash = GenerateTagHash(tag);
@@ -240,7 +240,7 @@ void ModelTypeSyncProxyImplTest::TombstoneFromServer(int64 version_offset,
                                      UpdateResponseDataList());
 }
 
-bool ModelTypeSyncProxyImplTest::HasPendingUpdate(
+bool ModelTypeProcessorImplTest::HasPendingUpdate(
     const std::string& tag) const {
   const std::string client_tag_hash = GenerateTagHash(tag);
   const UpdateResponseDataList list = type_sync_proxy_->GetPendingUpdates();
@@ -252,7 +252,7 @@ bool ModelTypeSyncProxyImplTest::HasPendingUpdate(
   return false;
 }
 
-UpdateResponseData ModelTypeSyncProxyImplTest::GetPendingUpdate(
+UpdateResponseData ModelTypeProcessorImplTest::GetPendingUpdate(
     const std::string& tag) const {
   DCHECK(HasPendingUpdate(tag));
   const std::string client_tag_hash = GenerateTagHash(tag);
@@ -266,35 +266,35 @@ UpdateResponseData ModelTypeSyncProxyImplTest::GetPendingUpdate(
   return UpdateResponseData();
 }
 
-size_t ModelTypeSyncProxyImplTest::GetNumPendingUpdates() const {
+size_t ModelTypeProcessorImplTest::GetNumPendingUpdates() const {
   return type_sync_proxy_->GetPendingUpdates().size();
 }
 
-void ModelTypeSyncProxyImplTest::SuccessfulCommitResponse(
+void ModelTypeProcessorImplTest::SuccessfulCommitResponse(
     const CommitRequestData& request_data) {
   CommitResponseDataList list;
   list.push_back(mock_queue_->SuccessfulCommitResponse(request_data));
   type_sync_proxy_->OnCommitCompleted(data_type_state_, list);
 }
 
-void ModelTypeSyncProxyImplTest::UpdateDesiredEncryptionKey(
+void ModelTypeProcessorImplTest::UpdateDesiredEncryptionKey(
     const std::string& key_name) {
   data_type_state_.encryption_key_name = key_name;
   type_sync_proxy_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
                                      UpdateResponseDataList());
 }
 
-void ModelTypeSyncProxyImplTest::SetServerEncryptionKey(
+void ModelTypeProcessorImplTest::SetServerEncryptionKey(
     const std::string& key_name) {
   mock_queue_->SetServerEncryptionKey(key_name);
 }
 
-std::string ModelTypeSyncProxyImplTest::GenerateTagHash(
+std::string ModelTypeProcessorImplTest::GenerateTagHash(
     const std::string& tag) {
   return syncer::syncable::GenerateSyncableHash(kModelType, tag);
 }
 
-sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateSpecifics(
+sync_pb::EntitySpecifics ModelTypeProcessorImplTest::GenerateSpecifics(
     const std::string& tag,
     const std::string& value) {
   sync_pb::EntitySpecifics specifics;
@@ -305,7 +305,7 @@ sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateSpecifics(
 
 // These tests never decrypt anything, so we can get away with faking the
 // encryption for now.
-sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateEncryptedSpecifics(
+sync_pb::EntitySpecifics ModelTypeProcessorImplTest::GenerateEncryptedSpecifics(
     const std::string& tag,
     const std::string& value,
     const std::string& key_name) {
@@ -316,22 +316,22 @@ sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateEncryptedSpecifics(
   return specifics;
 }
 
-size_t ModelTypeSyncProxyImplTest::GetNumCommitRequestLists() {
+size_t ModelTypeProcessorImplTest::GetNumCommitRequestLists() {
   return mock_queue_->GetNumCommitRequestLists();
 }
 
-CommitRequestDataList ModelTypeSyncProxyImplTest::GetNthCommitRequestList(
+CommitRequestDataList ModelTypeProcessorImplTest::GetNthCommitRequestList(
     size_t n) {
   return mock_queue_->GetNthCommitRequestList(n);
 }
 
-bool ModelTypeSyncProxyImplTest::HasCommitRequestForTag(
+bool ModelTypeProcessorImplTest::HasCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_queue_->HasCommitRequestForTagHash(tag_hash);
 }
 
-CommitRequestData ModelTypeSyncProxyImplTest::GetLatestCommitRequestForTag(
+CommitRequestData ModelTypeProcessorImplTest::GetLatestCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_queue_->GetLatestCommitRequestForTagHash(tag_hash);
@@ -339,7 +339,7 @@ CommitRequestData ModelTypeSyncProxyImplTest::GetLatestCommitRequestForTag(
 
 // Creates a new item locally.
 // Thoroughly tests the data generated by a local item creation.
-TEST_F(ModelTypeSyncProxyImplTest, CreateLocalItem) {
+TEST_F(ModelTypeProcessorImplTest, CreateLocalItem) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
@@ -362,7 +362,7 @@ TEST_F(ModelTypeSyncProxyImplTest, CreateLocalItem) {
 
 // Creates a new local item then modifies it.
 // Thoroughly tests data generated by modification of server-unknown item.
-TEST_F(ModelTypeSyncProxyImplTest, CreateAndModifyLocalItem) {
+TEST_F(ModelTypeProcessorImplTest, CreateAndModifyLocalItem) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
@@ -394,7 +394,7 @@ TEST_F(ModelTypeSyncProxyImplTest, CreateAndModifyLocalItem) {
 
 // Deletes an item we've never seen before.
 // Should have no effect and not crash.
-TEST_F(ModelTypeSyncProxyImplTest, DeleteUnknown) {
+TEST_F(ModelTypeProcessorImplTest, DeleteUnknown) {
   InitializeToReadyState();
 
   DeleteItem("tag1");
@@ -406,7 +406,7 @@ TEST_F(ModelTypeSyncProxyImplTest, DeleteUnknown) {
 // In this test, no commit responses are received, so the deleted item is
 // server-unknown as far as the model thread is concerned.  That behavior
 // is race-dependent; other tests are used to test other races.
-TEST_F(ModelTypeSyncProxyImplTest, DeleteServerUnknown) {
+TEST_F(ModelTypeProcessorImplTest, DeleteServerUnknown) {
   InitializeToReadyState();
 
   WriteItem("tag1", "value1");
@@ -431,7 +431,7 @@ TEST_F(ModelTypeSyncProxyImplTest, DeleteServerUnknown) {
 // The item is created locally then enqueued for commit.  The sync thread
 // successfully commits it, but, before the commit response is picked up
 // by the model thread, the item is deleted by the model thread.
-TEST_F(ModelTypeSyncProxyImplTest, DeleteServerUnknown_RacyCommitResponse) {
+TEST_F(ModelTypeProcessorImplTest, DeleteServerUnknown_RacyCommitResponse) {
   InitializeToReadyState();
 
   WriteItem("tag1", "value1");
@@ -455,7 +455,7 @@ TEST_F(ModelTypeSyncProxyImplTest, DeleteServerUnknown_RacyCommitResponse) {
 
 // Creates two different sync items.
 // Verifies that the second has no effect on the first.
-TEST_F(ModelTypeSyncProxyImplTest, TwoIndependentItems) {
+TEST_F(ModelTypeProcessorImplTest, TwoIndependentItems) {
   InitializeToReadyState();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
 
@@ -477,7 +477,7 @@ TEST_F(ModelTypeSyncProxyImplTest, TwoIndependentItems) {
 // Starts the type sync proxy with no local state.
 // Verify that it waits until initial sync is complete before requesting
 // commits.
-TEST_F(ModelTypeSyncProxyImplTest, NoCommitsUntilInitialSyncDone) {
+TEST_F(ModelTypeProcessorImplTest, NoCommitsUntilInitialSyncDone) {
   FirstTimeInitialize();
 
   WriteItem("tag1", "value1");
@@ -492,7 +492,7 @@ TEST_F(ModelTypeSyncProxyImplTest, NoCommitsUntilInitialSyncDone) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on reconnect.
-TEST_F(ModelTypeSyncProxyImplTest, Disconnect) {
+TEST_F(ModelTypeProcessorImplTest, Disconnect) {
   InitializeToReadyState();
 
   // The first item is fully committed.
@@ -528,7 +528,7 @@ TEST_F(ModelTypeSyncProxyImplTest, Disconnect) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on re-enable.
-TEST_F(ModelTypeSyncProxyImplTest, Disable) {
+TEST_F(ModelTypeProcessorImplTest, Disable) {
   InitializeToReadyState();
 
   // The first item is fully committed.
@@ -563,7 +563,7 @@ TEST_F(ModelTypeSyncProxyImplTest, Disable) {
 }
 
 // Test receipt of pending updates.
-TEST_F(ModelTypeSyncProxyImplTest, ReceivePendingUpdates) {
+TEST_F(ModelTypeProcessorImplTest, ReceivePendingUpdates) {
   InitializeToReadyState();
 
   EXPECT_FALSE(HasPendingUpdate("tag1"));
@@ -594,7 +594,7 @@ TEST_F(ModelTypeSyncProxyImplTest, ReceivePendingUpdates) {
 }
 
 // Test that Disable clears pending update state.
-TEST_F(ModelTypeSyncProxyImplTest, DisableWithPendingUpdates) {
+TEST_F(ModelTypeProcessorImplTest, DisableWithPendingUpdates) {
   InitializeToReadyState();
 
   PendingUpdateFromServer(5, "tag1", "value1", "key1");
@@ -609,7 +609,7 @@ TEST_F(ModelTypeSyncProxyImplTest, DisableWithPendingUpdates) {
 }
 
 // Test that Disconnect does not clear pending update state.
-TEST_F(ModelTypeSyncProxyImplTest, DisconnectWithPendingUpdates) {
+TEST_F(ModelTypeProcessorImplTest, DisconnectWithPendingUpdates) {
   InitializeToReadyState();
 
   PendingUpdateFromServer(5, "tag1", "value1", "key1");
@@ -624,7 +624,7 @@ TEST_F(ModelTypeSyncProxyImplTest, DisconnectWithPendingUpdates) {
 }
 
 // Test re-encrypt everything when desired encryption key changes.
-TEST_F(ModelTypeSyncProxyImplTest, ReEncryptCommitsWithNewKey) {
+TEST_F(ModelTypeProcessorImplTest, ReEncryptCommitsWithNewKey) {
   InitializeToReadyState();
 
   // Commit an item.
@@ -656,7 +656,7 @@ TEST_F(ModelTypeSyncProxyImplTest, ReEncryptCommitsWithNewKey) {
 }
 
 // Test receipt of updates with new and old keys.
-TEST_F(ModelTypeSyncProxyImplTest, ReEncryptUpdatesWithNewKey) {
+TEST_F(ModelTypeProcessorImplTest, ReEncryptUpdatesWithNewKey) {
   InitializeToReadyState();
 
   // Receive an unencrpted update.

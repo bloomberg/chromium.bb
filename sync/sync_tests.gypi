@@ -278,7 +278,7 @@
         'engine/entity_tracker_unittest.cc',
         'engine/get_updates_processor_unittest.cc',
         'engine/model_type_entity_unittest.cc',
-        'engine/model_type_sync_proxy_impl_unittest.cc',
+        'engine/model_type_processor_impl_unittest.cc',
         'engine/model_type_sync_worker_impl_unittest.cc',
         'engine/sync_scheduler_unittest.cc',
         'engine/syncer_proto_util_unittest.cc',

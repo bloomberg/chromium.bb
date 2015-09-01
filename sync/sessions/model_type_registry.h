@@ -23,7 +23,7 @@
 namespace syncer_v2 {
 struct DataTypeState;
 class ModelTypeSyncWorkerImpl;
-class ModelTypeSyncProxyImpl;
+class ModelTypeProcessorImpl;
 }
 
 namespace syncer {
@@ -66,7 +66,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
       const syncer_v2::DataTypeState& data_type_state,
       const syncer_v2::UpdateResponseDataList& saved_pending_updates,
       const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
-      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& proxy) override;
+      const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& proxy) override;
 
   // Disables the syncing of an off-thread type.
   //

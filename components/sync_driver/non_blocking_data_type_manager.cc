@@ -6,7 +6,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
-#include "sync/engine/model_type_sync_proxy_impl.h"
+#include "sync/engine/model_type_processor_impl.h"
 
 namespace sync_driver_v2 {
 
@@ -29,11 +29,11 @@ void NonBlockingDataTypeManager::RegisterType(
 void NonBlockingDataTypeManager::InitializeType(
     syncer::ModelType type,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& proxy_impl) {
+    const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor) {
   NonBlockingDataTypeControllerMap::const_iterator it =
       non_blocking_data_type_controllers_.find(type);
   DCHECK(it != non_blocking_data_type_controllers_.end());
-  it->second->InitializeType(task_runner, proxy_impl);
+  it->second->InitializeType(task_runner, type_processor);
 }
 
 void NonBlockingDataTypeManager::ConnectSyncBackend(

@@ -22,10 +22,10 @@ class SyncContextProxy;
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
 // TODO(gangwu): 526617 Derive this class from ModelTypeProcessor
-class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
+class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : base::NonThreadSafe {
  public:
-  ModelTypeSyncProxyImpl(syncer::ModelType type);
-  virtual ~ModelTypeSyncProxyImpl();
+  ModelTypeProcessorImpl(syncer::ModelType type);
+  virtual ~ModelTypeProcessorImpl();
 
   // Returns true if this object believes that sync is preferred for this type.
   //
@@ -87,7 +87,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
 
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.
-  base::WeakPtr<ModelTypeSyncProxyImpl> AsWeakPtrForUI();
+  base::WeakPtr<ModelTypeProcessorImpl> AsWeakPtrForUI();
 
  private:
   typedef base::ScopedPtrMap<std::string, scoped_ptr<ModelTypeEntity>>
@@ -145,8 +145,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   // thread, we want to make sure that no tasks generated as part of the
   // now-obsolete connection to affect us.  But we also want the WeakPtr we
   // sent to the UI thread to remain valid.
-  base::WeakPtrFactory<ModelTypeSyncProxyImpl> weak_ptr_factory_for_ui_;
-  base::WeakPtrFactory<ModelTypeSyncProxyImpl> weak_ptr_factory_for_sync_;
+  base::WeakPtrFactory<ModelTypeProcessorImpl> weak_ptr_factory_for_ui_;
+  base::WeakPtrFactory<ModelTypeProcessorImpl> weak_ptr_factory_for_sync_;
 };
 
 }  // namespace syncer

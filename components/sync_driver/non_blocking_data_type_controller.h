@@ -63,7 +63,7 @@ class NonBlockingDataTypeController {
   // will only ever deal with a single type proxy.
   void InitializeType(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_sync_proxy);
+      const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor);
 
   // Initialize the connection to the SyncContextProxy.
   //
@@ -87,19 +87,19 @@ class NonBlockingDataTypeController {
   // Figures out which signals need to be sent then send then sends them.
   void UpdateState();
 
-  // Sends an enable signal to the ModelTypeSyncProxyImpl.
+  // Sends an enable signal to the ModelTypeProcessorImpl.
   void SendEnableSignal();
 
-  // Sends a disable signal to the ModelTypeSyncProxyImpl.
+  // Sends a disable signal to the ModelTypeProcessorImpl.
   void SendDisableSignal();
 
-  // Sends a disconnect signal to the ModelTypeSyncProxyImpl.
+  // Sends a disconnect signal to the ModelTypeProcessorImpl.
   void SendDisconnectSignal();
 
   // Returns true if this type should be synced.
   bool IsPreferred() const;
 
-  // Returns true if this object has access to the ModelTypeSyncProxyImpl.
+  // Returns true if this object has access to the ModelTypeProcessorImpl.
   bool IsSyncProxyConnected() const;
 
   // Returns true if this object has access to the SyncContextProxy.
@@ -123,9 +123,9 @@ class NonBlockingDataTypeController {
   // Whether or not the user wants to sync this type.
   bool is_preferred_;
 
-  // The ModelTypeSyncProxyImpl and its associated thread.  May be NULL.
+  // The ModelTypeProcessorImpl and its associated thread.  May be NULL.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl> type_sync_proxy_;
+  base::WeakPtr<syncer_v2::ModelTypeProcessorImpl> type_processor_;
 
   // The SyncContextProxy that connects to the current sync backend.  May be
   // NULL.

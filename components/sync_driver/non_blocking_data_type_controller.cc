@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "sync/engine/model_type_sync_proxy_impl.h"
+#include "sync/engine/model_type_processor_impl.h"
 
 namespace sync_driver_v2 {
 
@@ -21,10 +21,10 @@ NonBlockingDataTypeController::~NonBlockingDataTypeController() {}
 
 void NonBlockingDataTypeController::InitializeType(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_sync_proxy) {
+    const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& type_processor) {
   DCHECK(!IsSyncProxyConnected());
   task_runner_ = task_runner;
-  type_sync_proxy_ = type_sync_proxy;
+  type_processor_ = type_processor;
   DCHECK(IsSyncProxyConnected());
 
   UpdateState();
@@ -86,7 +86,7 @@ void NonBlockingDataTypeController::SendEnableSignal() {
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::Enable, type_sync_proxy_,
+      base::Bind(&syncer_v2::ModelTypeProcessorImpl::Enable, type_processor_,
                  base::Passed(sync_context_proxy_->Clone())));
   current_state_ = ENABLED;
 }
@@ -95,8 +95,8 @@ void NonBlockingDataTypeController::SendDisableSignal() {
   DCHECK_EQ(DISABLED, GetDesiredState());
   DVLOG(1) << "Disabling non-blocking sync type " << ModelTypeToString(type_);
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::Disable,
-                                    type_sync_proxy_));
+                         base::Bind(&syncer_v2::ModelTypeProcessorImpl::Disable,
+                                    type_processor_));
   current_state_ = DISABLED;
 }
 
@@ -105,8 +105,8 @@ void NonBlockingDataTypeController::SendDisconnectSignal() {
   DVLOG(1) << "Disconnecting non-blocking sync type "
            << ModelTypeToString(type_);
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::Disconnect,
-                            type_sync_proxy_));
+      FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessorImpl::Disconnect,
+                            type_processor_));
   current_state_ = DISCONNECTED;
 }
 

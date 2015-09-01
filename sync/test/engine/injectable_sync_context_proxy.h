@@ -11,11 +11,11 @@
 
 namespace syncer_v2 {
 
-class ModelTypeSyncProxyImpl;
+class ModelTypeProcessorImpl;
 class CommitQueue;
 
 // A SyncContextProxy implementation that, when a connection request is made,
-// initalizes a connection to a previously injected ModelTypeSyncProxyImpl.
+// initalizes a connection to a previously injected ModelTypeProcessorImpl.
 class InjectableSyncContextProxy : public SyncContextProxy {
  public:
   explicit InjectableSyncContextProxy(CommitQueue* queue);
@@ -25,7 +25,7 @@ class InjectableSyncContextProxy : public SyncContextProxy {
       syncer::ModelType type,
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& pending_updates,
-      const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) override;
+      const base::WeakPtr<ModelTypeProcessorImpl>& type_sync_proxy) override;
   void Disconnect(syncer::ModelType type) override;
   scoped_ptr<SyncContextProxy> Clone() const override;
 

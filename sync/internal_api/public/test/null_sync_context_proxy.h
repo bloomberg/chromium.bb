@@ -10,7 +10,7 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 
 namespace syncer_v2 {
-class ModelTypeSyncProxyImpl;
+class ModelTypeProcessorImpl;
 
 // A non-functional implementation of SyncContextProxy.
 //
@@ -24,7 +24,7 @@ class NullSyncContextProxy : public SyncContextProxy {
       syncer::ModelType type,
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& saved_pending_updates,
-      const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) override;
+      const base::WeakPtr<ModelTypeProcessorImpl>& type_sync_proxy) override;
   void Disconnect(syncer::ModelType type) override;
   scoped_ptr<SyncContextProxy> Clone() const override;
 };

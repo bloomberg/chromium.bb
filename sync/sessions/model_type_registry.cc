@@ -11,7 +11,7 @@
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"
 #include "sync/engine/model_type_processor.h"
-#include "sync/engine/model_type_sync_proxy_impl.h"
+#include "sync/engine/model_type_processor_impl.h"
 #include "sync/engine/model_type_sync_worker_impl.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
@@ -24,7 +24,7 @@ namespace {
 class ModelTypeSyncProxyWrapper : public syncer_v2::ModelTypeProcessor {
  public:
   ModelTypeSyncProxyWrapper(
-      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& proxy,
+      const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& processor,
       const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
   ~ModelTypeSyncProxyWrapper() override;
 
@@ -37,14 +37,14 @@ class ModelTypeSyncProxyWrapper : public syncer_v2::ModelTypeProcessor {
       const syncer_v2::UpdateResponseDataList& pending_updates) override;
 
  private:
-  base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl> processor_;
+  base::WeakPtr<syncer_v2::ModelTypeProcessorImpl> processor_;
   scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
 };
 
 ModelTypeSyncProxyWrapper::ModelTypeSyncProxyWrapper(
-    const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& proxy,
+    const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& processor,
     const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner)
-    : processor_(proxy), processor_task_runner_(processor_task_runner) {}
+    : processor_(processor), processor_task_runner_(processor_task_runner) {}
 
 ModelTypeSyncProxyWrapper::~ModelTypeSyncProxyWrapper() {
 }
@@ -54,7 +54,7 @@ void ModelTypeSyncProxyWrapper::OnCommitCompleted(
     const syncer_v2::CommitResponseDataList& response_list) {
   processor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::OnCommitCompleted,
+      base::Bind(&syncer_v2::ModelTypeProcessorImpl::OnCommitCompleted,
                  processor_, type_state, response_list));
 }
 
@@ -64,7 +64,7 @@ void ModelTypeSyncProxyWrapper::OnUpdateReceived(
     const syncer_v2::UpdateResponseDataList& pending_updates) {
   processor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::OnUpdateReceived,
+      base::Bind(&syncer_v2::ModelTypeProcessorImpl::OnUpdateReceived,
                  processor_, type_state, response_list, pending_updates));
 }
 
@@ -186,12 +186,12 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
     const syncer_v2::DataTypeState& data_type_state,
     const syncer_v2::UpdateResponseDataList& saved_pending_updates,
     const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
-    const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& proxy_impl) {
+    const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& processor_impl) {
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
-  // Initialize Worker -> Proxy communication channel.
-  scoped_ptr<syncer_v2::ModelTypeProcessor> proxy(
-      new ModelTypeSyncProxyWrapper(proxy_impl, type_task_runner));
+  // Initialize Worker -> Processor communication channel.
+  scoped_ptr<syncer_v2::ModelTypeProcessor> processor(
+      new ModelTypeSyncProxyWrapper(processor_impl, type_task_runner));
   scoped_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
@@ -199,16 +199,16 @@ void ModelTypeRegistry::ConnectSyncTypeToWorker(
   scoped_ptr<syncer_v2::ModelTypeSyncWorkerImpl> worker(
       new syncer_v2::ModelTypeSyncWorkerImpl(
           type, data_type_state, saved_pending_updates,
-          cryptographer_copy.Pass(), nudge_handler_, proxy.Pass()));
+          cryptographer_copy.Pass(), nudge_handler_, processor.Pass()));
 
-  // Initialize Proxy -> Worker communication channel.
+  // Initialize Processor -> Worker communication channel.
   scoped_ptr<syncer_v2::CommitQueue> wrapped_worker(
       new ModelTypeSyncWorkerWrapper(worker->AsWeakPtr(),
                                      scoped_refptr<base::SequencedTaskRunner>(
                                          base::ThreadTaskRunnerHandle::Get())));
   type_task_runner->PostTask(
-      FROM_HERE, base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::OnConnect,
-                            proxy_impl, base::Passed(&wrapped_worker)));
+      FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessorImpl::OnConnect,
+                            processor_impl, base::Passed(&wrapped_worker)));
 
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
