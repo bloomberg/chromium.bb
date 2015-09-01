@@ -51437,7 +51437,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of received bits per second for a received video stream. Recorded
-    when a stream is removed.
+    when a stream is removed. The total number of bytes is divided by the time
+    the video stream exists.
   </summary>
 </histogram>
 
@@ -51445,7 +51446,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of sent bits per second for a sent video stream. Recorded when a
-    stream is removed.
+    stream is removed. The total number of bytes is divided by the time the
+    video stream exists.
   </summary>
 </histogram>
 
@@ -51453,7 +51455,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of complete frames received per second for a received video
-    stream. Recorded when a stream is removed.
+    stream. Recorded when a stream is removed. The total number of frames is
+    divided by the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51461,7 +51464,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of decoded frames per second for a received video stream.
-    Recorded when a stream is removed.
+    Recorded when a stream is removed. The total number of frames is divided by
+    the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51517,7 +51521,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of received FEC bits per second for a received video stream.
-    Recorded when a stream is removed.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51525,7 +51530,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of sent FEC bits per second for a sent video stream. Recorded
-    when a stream is removed.
+    when a stream is removed. The total number of bytes is divided by the time
+    the video stream exists.
   </summary>
 </histogram>
 
@@ -51593,7 +51599,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of received media payload bits per second for a received video
-    stream. Recorded when a stream is removed.
+    stream. Recorded when a stream is removed. The total number of bytes is
+    divided by the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51601,7 +51608,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of sent media payload bits per second for a sent video stream.
-    Recorded when a stream is removed.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51628,7 +51636,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of received padding bits per second for a received video stream.
-    Recorded when a stream is removed.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51636,7 +51645,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of sent padding bits per second for a sent video stream. Recorded
-    when a stream is removed.
+    when a stream is removed. The total number of bytes is divided by the time
+    the video stream exists.
   </summary>
 </histogram>
 
@@ -51703,7 +51713,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of sent frames to the renderer per second for a received video
-    stream. Recorded when a stream is removed.
+    stream. Recorded when a stream is removed. The total number of frames is
+    divided by the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51711,7 +51722,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of retransmitted bits per second for a received video stream.
-    Recorded when a stream is removed.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51719,7 +51731,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of retransmitted bits per second for a sent video stream.
-    Recorded when a stream is removed.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51727,7 +51740,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of received bits over RTX per second for a received video stream.
-    Recorded when a stream is removed.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
   </summary>
 </histogram>
 
@@ -51735,7 +51749,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asapersson@chromium.org</owner>
   <summary>
     The number of sent bits over RTX per second for a sent video stream.
-    Recorded when a stream is removed.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
   </summary>
 </histogram>
 
