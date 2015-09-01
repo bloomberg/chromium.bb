@@ -1180,6 +1180,38 @@
       }
     ]
   },
+  "WebKit Win x64 Builder": {
+    "gtest_tests": [
+      {
+        "test": "blink_heap_unittests"
+      },
+      {
+        "test": "blink_platform_unittests"
+      },
+      {
+        "test": "webkit_unit_tests"
+      },
+      {
+        "test": "wtf_unittests"
+      }
+    ]
+  },
+  "WebKit Win x64 Builder (dbg)": {
+    "gtest_tests": [
+      {
+        "test": "blink_heap_unittests"
+      },
+      {
+        "test": "blink_platform_unittests"
+      },
+      {
+        "test": "webkit_unit_tests"
+      },
+      {
+        "test": "wtf_unittests"
+      }
+    ]
+  },
   "WebKit Win10": {
     "gtest_tests": [
       {
@@ -1281,38 +1313,6 @@
       {
         "name": "webkit_python_tests",
         "script": "webkit_python_tests.py"
-      }
-    ]
-  },
-  "WebKit x64 Builder": {
-    "gtest_tests": [
-      {
-        "test": "blink_heap_unittests"
-      },
-      {
-        "test": "blink_platform_unittests"
-      },
-      {
-        "test": "webkit_unit_tests"
-      },
-      {
-        "test": "wtf_unittests"
-      }
-    ]
-  },
-  "WebKit x64 Builder (dbg)": {
-    "gtest_tests": [
-      {
-        "test": "blink_heap_unittests"
-      },
-      {
-        "test": "blink_platform_unittests"
-      },
-      {
-        "test": "webkit_unit_tests"
-      },
-      {
-        "test": "wtf_unittests"
       }
     ]
   }
