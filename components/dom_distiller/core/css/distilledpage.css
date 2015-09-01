@@ -77,7 +77,12 @@ th {
 
 html {
   font-size: 14px;
-  height: 100%;
+}
+
+@media screen {
+  html {
+    height: 100%;
+  }
 }
 
 body {
@@ -259,6 +264,9 @@ h6 {
   #closeReaderView {
     display: none;
   }
+  #feedbackContainer {
+    display: none;
+  }
 
   /* Remove backgrounds and custom colors. */
   .light, .dark, .sepia {
@@ -280,8 +288,13 @@ h6 {
 #mainContent {
   flex: 1 1 auto;
   margin: 0px auto;
-  max-width: 35em;
   width: 100%;
+}
+
+@media screen {
+  #mainContent {
+    max-width: 35em;
+  }
 }
 
 #articleHeader {
@@ -369,7 +382,7 @@ pre {
   white-space: pre-wrap;
 }
 
-.hidden {
+body .hidden {
   display: none;
 }
 
@@ -383,19 +396,14 @@ pre {
   z-index: 1;
 }
 
-#feedbackContainer {
-  font-size: 14px;
-  position: relative;
-  z-index: 2;
-}
-
 .footerFeedback {
+  display: flex;
+  flex-flow: column;
+  font-size: 14px;
+  z-index: 2;
   background-color: #4285F4;
-  clear: both;
   color: #fff;
-  display: none;
   height: 120px;
-  margin-top: -120px;
   width: 100%;
 }
 

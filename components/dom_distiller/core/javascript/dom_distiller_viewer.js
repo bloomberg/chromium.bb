@@ -149,18 +149,7 @@ function showFeedbackForm(questionText, yesText, noText) {
   document.getElementById('feedbackNo').innerText = noText;
   document.getElementById('feedbackQuestion').innerText = questionText;
 
-  document.getElementById('contentWrap').style.paddingBottom = '120px';
-  document.getElementById('feedbackContainer').style.display = 'block';
-  var mediaQuery = window.matchMedia("print");
-  mediaQuery.addListener(function (query) {
-    if (query.matches) {
-      document.getElementById('contentWrap').style.paddingBottom = '0px';
-      document.getElementById('feedbackContainer').style.display = 'none';
-    } else {
-      document.getElementById('contentWrap').style.paddingBottom = '120px';
-      document.getElementById('feedbackContainer').style.display = 'block';
-    }
-  });
+  document.getElementById('feedbackContainer').classList.remove("hidden");
 }
 
 /**
@@ -199,11 +188,16 @@ document.getElementById('feedbackNo').addEventListener('click', function(e) {
 
 document.getElementById('feedbackContainer').addEventListener('animationend',
     function(e) {
-      document.getElementById('feedbackContainer').style.display = 'none';
-      // Close the gap where the feedback form was.
-      var contentWrap = document.getElementById('contentWrap');
-      contentWrap.style.transition = '0.5s';
-      contentWrap.style.paddingBottom = '0px';
+      var feedbackContainer = document.getElementById('feedbackContainer');
+      feedbackContainer.classList.remove("fadeOut");
+      feedbackContainer.className += " hidden";
+      document.getElementById('contentWrap').style.paddingBottom = '120px';
+      setTimeout(function() {
+        // Close the gap where the feedback form was.
+        var contentWrap = document.getElementById('contentWrap');
+        contentWrap.style.transition = '0.5s';
+        contentWrap.style.paddingBottom = '';
+      }, 0);
     }, true);
 
 document.getElementById('contentWrap').addEventListener('transitionend',
