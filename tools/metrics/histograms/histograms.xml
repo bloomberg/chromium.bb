@@ -60137,6 +60137,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="937" label="CSSAnimationsStackedNeutralKeyframe"/>
   <int value="938" label="ReadingCheckedInClickHandler"/>
   <int value="939" label="FlexboxIntrinsicSizeAlgorithmIsDifferent"/>
+  <int value="940" label="HTMLImportsHasStyleSheets"/>
+  <int value="941" label="WebkitTextInClipProperty"/>
+  <int value="942" label="WebkitTextInColorProperty"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
