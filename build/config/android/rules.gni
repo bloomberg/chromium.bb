@@ -1271,6 +1271,8 @@ template("android_apk") {
       defined(invoker.create_abi_split) && invoker.create_abi_split
   _create_density_splits =
       defined(invoker.create_density_splits) && invoker.create_density_splits
+  _create_language_splits =
+      defined(invoker.language_splits) && invoker.language_splits != []
 
   # Help GN understand that _create_abi_split is not unused (bug in GN).
   assert(_create_abi_split || true)
@@ -1574,6 +1576,41 @@ template("android_apk") {
         ":${_template_name}__prepare_native",
         ":${_manifest_rule}",
       ]
+    }
+  }
+
+  _create_incremental_script_rule_name = "${_template_name}__incremental_script"
+  _incremental_final_deps += [ ":${_create_incremental_script_rule_name}" ]
+  action(_create_incremental_script_rule_name) {
+    script = "//build/android/gn/create_incremental_install_script.py"
+    depfile = "$target_gen_dir/$target_name.d"
+
+    _generated_script_path =
+        "${root_out_dir}/bin/install_incremental_${_template_name}"
+    outputs = [
+      depfile,
+      _generated_script_path,
+    ]
+
+    _rebased_apk_path_no_ext =
+        rebase_path(_final_apk_path_no_ext, root_build_dir)
+    _rebased_generated_script_path =
+        rebase_path(_generated_script_path, root_build_dir)
+    _rebased_depfile = rebase_path(depfile, root_build_dir)
+    args = [
+      "--apk-path=${_rebased_apk_path_no_ext}_incremental.apk",
+      "--script-output-path=$_rebased_generated_script_path",
+      "--depfile=$_rebased_depfile",
+    ]
+    if (defined(_native_libs_dir)) {
+      _rebased_native_libs_dir = rebase_path(_native_libs_dir, root_build_dir)
+      args += [ "--lib-dir=$_rebased_native_libs_dir/$android_app_abi" ]
+    }
+    if (_create_density_splits) {
+      args += [ "--split=${_rebased_apk_path_no_ext}-density-*.apk" ]
+    }
+    if (_create_language_splits) {
+      args += [ "--split=${_rebased_apk_path_no_ext}-language-*.apk" ]
     }
   }
 

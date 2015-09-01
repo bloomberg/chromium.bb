@@ -323,9 +323,13 @@ def GetPythonDependencies():
 
 
 def AddDepfileOption(parser):
-  parser.add_option('--depfile',
-                    help='Path to depfile. This must be specified as the '
-                    'action\'s first output.')
+  # TODO(agrieve): Get rid of this once we've moved to argparse.
+  if hasattr(parser, 'add_option'):
+    func = parser.add_option
+  else:
+    func = parser.add_argument
+  func('--depfile',
+       help='Path to depfile. Must be specified as the action\'s first output.')
 
 
 def WriteDepfile(path, dependencies):

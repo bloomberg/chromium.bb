@@ -1901,7 +1901,7 @@ class DeviceUtils(object):
       return parallelizer.SyncParallelizer(devices)
 
   @classmethod
-  def HealthyDevices(cls, blacklist=None):
+  def HealthyDevices(cls, blacklist=None, **kwargs):
     if not blacklist:
       # TODO(jbudorick): Remove once clients pass in the blacklist.
       blacklist = device_blacklist.Blacklist(device_blacklist.BLACKLIST_JSON)
@@ -1913,7 +1913,7 @@ class DeviceUtils(object):
         return True
       return False
 
-    return [cls(adb) for adb in adb_wrapper.AdbWrapper.Devices()
+    return [cls(adb, **kwargs) for adb in adb_wrapper.AdbWrapper.Devices()
             if not blacklisted(adb)]
 
   @decorators.WithTimeoutAndRetriesFromInstance()
