@@ -894,6 +894,8 @@
       'browser/ui/cocoa/bubble_view.mm',
       'browser/ui/cocoa/chrome_browser_window.h',
       'browser/ui/cocoa/chrome_browser_window.mm',
+      'browser/ui/cocoa/chrome_command_dispatcher_delegate.h',
+      'browser/ui/cocoa/chrome_command_dispatcher_delegate.mm',
       'browser/ui/cocoa/chrome_event_processing_window.h',
       'browser/ui/cocoa/chrome_event_processing_window.mm',
       'browser/ui/cocoa/clickhold_button_cell.h',

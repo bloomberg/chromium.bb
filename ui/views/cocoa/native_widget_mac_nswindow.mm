@@ -20,7 +20,23 @@
 - (BOOL)_isTitleHidden;
 @end
 
-@implementation NativeWidgetMacNSWindow
+@implementation NativeWidgetMacNSWindow {
+ @private
+  base::scoped_nsobject<CommandDispatcher> commandDispatcher_;
+}
+
+- (instancetype)initWithContentRect:(NSRect)contentRect
+                          styleMask:(NSUInteger)windowStyle
+                            backing:(NSBackingStoreType)bufferingType
+                              defer:(BOOL)deferCreation {
+  if ((self = [super initWithContentRect:contentRect
+                               styleMask:windowStyle
+                                 backing:bufferingType
+                                   defer:deferCreation])) {
+    commandDispatcher_.reset([[CommandDispatcher alloc] initWithOwner:self]);
+  }
+  return self;
+}
 
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate {
   return base::mac::ObjCCastStrict<ViewsNSWindowDelegate>([self delegate]);
@@ -64,6 +80,10 @@
 // menu while it is active, and while still allowing any native subview to
 // retain firstResponder status.
 - (void)sendEvent:(NSEvent*)event {
+  // Let CommandDispatcher check if this is a redispatched event.
+  if ([commandDispatcher_ preSendEvent:event])
+    return;
+
   NSEventType type = [event type];
   if ((type != NSKeyDown && type != NSKeyUp) || ![self hasViewsMenuActive]) {
     [super sendEvent:event];
@@ -104,6 +124,10 @@
 
 // NSResponder implementation.
 
+- (BOOL)performKeyEquivalent:(NSEvent*)event {
+  return [commandDispatcher_ performKeyEquivalent:event];
+}
+
 - (void)cursorUpdate:(NSEvent*)theEvent {
   // The cursor provided by the delegate should only be applied within the
   // content area. This is because we rely on the contentView to track the
@@ -122,6 +146,16 @@
     [cursor set];
   else
     [super cursorUpdate:theEvent];
+}
+
+// CommandDispatchingWindow implementation.
+
+- (BOOL)redispatchKeyEvent:(NSEvent*)event {
+  return [commandDispatcher_ redispatchKeyEvent:event];
+}
+
+- (BOOL)defaultPerformKeyEquivalent:(NSEvent*)event {
+  return [super performKeyEquivalent:event];
 }
 
 @end

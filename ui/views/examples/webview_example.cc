@@ -23,11 +23,19 @@ WebViewExample::~WebViewExample() {
 
 void WebViewExample::CreateExampleView(View* container) {
   webview_ = new WebView(browser_context_);
+  webview_->GetWebContents()->SetDelegate(this);
   container->SetLayoutManager(new FillLayout);
   container->AddChildView(webview_);
 
   webview_->LoadInitialURL(GURL("http://www.google.com/"));
-  webview_->web_contents()->Focus();
+  webview_->GetWebContents()->Focus();
+}
+
+void WebViewExample::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+      event, webview_->GetFocusManager());
 }
 
 }  // namespace examples

@@ -4,13 +4,17 @@
 
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 
+#import "base/mac/foundation_util.h"
+#import "ui/views/cocoa/native_widget_mac_nswindow.h"
+
 namespace views {
 
 // static
 void UnhandledKeyboardEventHandler::HandleNativeKeyboardEvent(
     gfx::NativeEvent event,
     FocusManager* focus_manager) {
-  NOTIMPLEMENTED();
+  [base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>([event window])
+      redispatchKeyEvent:event];
 }
 
 }  // namespace views

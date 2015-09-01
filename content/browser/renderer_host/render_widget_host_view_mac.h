@@ -25,12 +25,12 @@
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"
-#import "content/public/browser/render_widget_host_view_mac_base.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/accelerated_widget_mac/io_surface_layer.h"
+#import "ui/base/cocoa/command_dispatcher.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
 #include "ui/gfx/display_observer.h"
@@ -61,7 +61,7 @@ class Layer;
 // but that means that the view needs to own the delegate and will dispose of it
 // when it's removed from the view system.
 @interface RenderWidgetHostViewCocoa
-    : ToolTipBaseView<RenderWidgetHostViewMacBase,
+    : ToolTipBaseView<CommandDispatcherTarget,
                       RenderWidgetHostViewMacOwner,
                       NSTextInputClient> {
  @private
