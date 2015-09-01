@@ -54,7 +54,7 @@ if (!is_win && enable_remoting_host) {
     }
 
     if (is_linux) {
-      deps += [ "//build/config/linux/gtk" ]
+      deps += [ "//build/config/linux/gtk2" ]
     }
   }
 }

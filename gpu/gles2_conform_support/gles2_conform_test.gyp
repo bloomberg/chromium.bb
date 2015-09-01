@@ -108,7 +108,7 @@
             ['OS=="linux"', {
               'conditions': [
                 [ 'chromeos==0', {
-                  'dependencies': ['../../build/linux/system.gyp:gtk']
+                  'dependencies': ['../../build/linux/system.gyp:gtk2']
                 }],
                 [ 'clang==1', {
                   'cflags': [

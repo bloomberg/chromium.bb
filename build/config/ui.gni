@@ -35,6 +35,9 @@ declare_args() {
 
   # Whether the entire browser uses toolkit-views on Mac instead of Cocoa.
   mac_views_browser = false
+
+  # Whether we should use GTKv3 instead of GTKv2.
+  use_gtk3 = false
 }
 
 # Additional dependent variables -----------------------------------------------

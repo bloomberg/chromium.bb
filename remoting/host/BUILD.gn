@@ -91,7 +91,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         "//build/config/linux:xrandr",
       ]
       if (!is_chromeos) {
-        deps += [ "//build/config/linux/gtk" ]
+        deps += [ "//build/config/linux/gtk2" ]
       }
     } else {
       sources -= [
@@ -453,7 +453,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       }
 
       if (is_linux) {
-        deps += [ "//build/config/linux/gtk" ]
+        deps += [ "//build/config/linux/gtk2" ]
       }
       if (is_linux || is_mac) {
         libs = [ "pam" ]

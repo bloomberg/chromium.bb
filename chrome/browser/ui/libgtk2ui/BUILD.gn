@@ -5,6 +5,7 @@
 assert(is_linux, "This file should only be referenced on Linux")
 
 import("//build/config/features.gni")
+import("//build/config/ui.gni")
 
 component("libgtk2ui") {
   sources = [
@@ -63,14 +64,10 @@ component("libgtk2ui") {
   }
   defines = [ "LIBGTK2UI_IMPLEMENTATION" ]
 
-  configs += [
-    "//build/config/linux:gconf",
-  ]
+  configs += [ "//build/config/linux:gconf" ]
 
   if (use_cups) {
-    configs += [
-      "//printing:cups",
-    ]
+    configs += [ "//printing:cups" ]
   }
 
   # GTK2 pulls pangoft2 as dependency, and pangoft2 depends on harfbuzz.
@@ -104,8 +101,6 @@ component("libgtk2ui") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//base:i18n",
-    "//build/config/linux/gtk",
-    "//build/config/linux/gtk:gtkprint",
     "//chrome/app/theme:theme_resources",
     "//chrome:extra_resources",
     "//chrome:resources",
@@ -129,4 +124,16 @@ component("libgtk2ui") {
     "//ui/strings",
     "//ui/views",
   ]
+
+  if (use_gtk3) {
+    deps += [
+      "//build/config/linux/gtk3",
+      "//build/config/linux/gtk3:gtkprint3",
+    ]
+  } else {
+    deps += [
+      "//build/config/linux/gtk2",
+      "//build/config/linux/gtk2:gtkprint2",
+    ]
+  }
 }

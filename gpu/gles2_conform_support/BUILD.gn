@@ -82,7 +82,7 @@ if (internal_gles2_conform_tests) {
     configs += [ "//build/compiler:no_incompatible_pointer_warnings" ]
     if (is_linux) {
       if (!is_chromeos) {
-        deps += [ "//build/linux/system/gtk" ]
+        deps += [ "//build/linux/system/gtk2" ]
 
         if (is_clang) {
           cflags = [

@@ -72,7 +72,7 @@
                 ['chromeos==0 and use_ozone==0', {
                   'dependencies': [
                     # use GTK on Linux, even for Aura builds.
-                    '../build/linux/system.gyp:gtk',
+                    '../build/linux/system.gyp:gtk2',
                   ],
                 }]
               ],
@@ -674,7 +674,7 @@
                 ['OS=="linux" and chromeos==0 and use_ozone==0', {
                   'dependencies': [
                     # Always use GTK on Linux, even for Aura builds.
-                    '../build/linux/system.gyp:gtk',
+                    '../build/linux/system.gyp:gtk2',
                   ],
                 }],
                 ['OS=="linux" and use_allocator!="none"', {

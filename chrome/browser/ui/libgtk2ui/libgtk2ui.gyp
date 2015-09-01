@@ -16,8 +16,6 @@
         '../../../../base/base.gyp:base_i18n',
         '../../../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../../../build/linux/system.gyp:gconf',
-        '../../../../build/linux/system.gyp:gtk',
-        '../../../../build/linux/system.gyp:gtkprint',
         '../../../../build/linux/system.gyp:x11',
         '../../../../components/components_resources.gyp:components_resources',
         '../../../../content/content.gyp:content',
@@ -104,6 +102,17 @@
           'sources!': [
             'gconf_listener.cc',
             'gconf_listener.h',
+          ],
+        }],
+        ['use_gtk3==1', {
+          'dependencies': [
+            '../../../../build/linux/system.gyp:gtk3',
+            '../../../../build/linux/system.gyp:gtkprint3',
+          ],
+        }, {
+          'dependencies': [
+            '../../../../build/linux/system.gyp:gtk2',
+            '../../../../build/linux/system.gyp:gtkprint2',
           ],
         }],
         [ 'clang==1', {

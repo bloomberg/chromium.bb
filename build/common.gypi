@@ -702,6 +702,9 @@
       # Libxkbcommon usage.
       'use_xkbcommon%': 0,
 
+      # Whether we use GTKv3 on linux.
+      'use_gtk3%': 0,
+
       # Control Flow Integrity for virtual calls and casts.
       # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
       'cfi_vptr%': 0,
@@ -1138,6 +1141,7 @@
     'use_ozone%': '<(use_ozone)',
     'use_ozone_evdev%': '<(use_ozone_evdev)',
     'use_xkbcommon%': '<(use_xkbcommon)',
+    'use_gtk3%': '<(use_gtk3)',
     'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
     'desktop_linux%': '<(desktop_linux)',
     'use_x11%': '<(use_x11)',
