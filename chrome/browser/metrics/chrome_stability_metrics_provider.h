@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_METRICS_CHROME_STABILITY_METRICS_PROVIDER_H_
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/process/kill.h"
 #include "components/metrics/metrics_provider.h"
@@ -21,8 +20,6 @@ class RenderProcessHost;
 class WebContents;
 }
 
-class PrefService;
-
 // ChromeStabilityMetricsProvider gathers and logs Chrome-specific stability-
 // related metrics.
 class ChromeStabilityMetricsProvider
@@ -30,7 +27,7 @@ class ChromeStabilityMetricsProvider
       public content::BrowserChildProcessObserver,
       public content::NotificationObserver {
  public:
-  explicit ChromeStabilityMetricsProvider(PrefService* local_state);
+  ChromeStabilityMetricsProvider();
   ~ChromeStabilityMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
@@ -44,11 +41,6 @@ class ChromeStabilityMetricsProvider
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ChromeStabilityMetricsProviderTest,
-                           BrowserChildProcessObserver);
-  FRIEND_TEST_ALL_PREFIXES(ChromeStabilityMetricsProviderTest,
-                           NotificationObserver);
-
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -68,16 +60,8 @@ class ChromeStabilityMetricsProvider
                         base::TerminationStatus status,
                         int exit_code);
 
-  // Increment an Integer pref value specified by |path|
-  void IncrementPrefValue(const char* path);
-
-  // Increment a 64-bit Integer pref value specified by |path|
-  void IncrementLongPrefsValue(const char* path);
-
   // Records a renderer process hang.
   void LogRendererHang();
-
-  PrefService* local_state_;
 
   // Registrar for receiving stability-related notifications.
   content::NotificationRegistrar registrar_;
