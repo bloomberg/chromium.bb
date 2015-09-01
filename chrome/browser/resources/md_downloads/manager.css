@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 :host {
-  @apply(--downloads-shared-style);
   display: flex;
   flex: 1 0;
   flex-direction: column;

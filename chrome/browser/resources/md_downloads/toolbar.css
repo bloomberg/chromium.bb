@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 :host {
-  @apply(--downloads-shared-style);
   align-items: center;
   background: rgb(63, 85, 102);
   color: white;
