@@ -59,6 +59,7 @@
 
 #if defined(OS_IOS)
 #include "components/autofill/ios/browser/autofill_field_trial_ios.h"
+#include "components/autofill/ios/browser/keyboard_accessory_metrics_logger.h"
 #endif
 
 namespace autofill {
@@ -1415,8 +1416,15 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   for (FormStructure* structure : non_queryable_forms)
     form_structures_.push_back(structure);
 
-  if (!form_structures_.empty())
+  if (!form_structures_.empty()) {
     AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED);
+#if defined(OS_IOS)
+    // Log this from same location as AutofillMetrics::FORMS_LOADED to ensure
+    // that KeyboardAccessoryButtonsIOS and UserHappiness UMA metrics will be
+    // directly comparable.
+    KeyboardAccessoryMetricsLogger::OnFormsLoaded();
+#endif
+  }
 
   // For the |non_queryable_forms|, we have all the field type info we're ever
   // going to get about them.  For the other forms, we'll wait until we get a

@@ -305,10 +305,12 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
                  forField:base::SysUTF8ToNSString(_suggestionState->field_name)
                      form:base::SysUTF8ToNSString(_suggestionState->form_name)
         completionHandler:^{
-          if (autofill::AutofillFieldTrialIOS::IsFullFormAutofillEnabled())
-            [[weakSelf accessoryViewDelegate] closeKeyboard];
-          else
-            [[weakSelf accessoryViewDelegate] selectNextElement];
+          if (autofill::AutofillFieldTrialIOS::IsFullFormAutofillEnabled()) {
+            [[weakSelf accessoryViewDelegate] closeKeyboardWithoutButtonPress];
+          } else {
+            [[weakSelf accessoryViewDelegate]
+                selectNextElementWithoutButtonPress];
+          }
         }];
   _provider = nil;
 }
@@ -363,6 +365,10 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
 - (void)resizeAccessoryView {
   [self updateKeyboard:_suggestionState.get()];
+}
+
+- (BOOL)getLogKeyboardAccessoryMetrics {
+  return YES;
 }
 
 @end

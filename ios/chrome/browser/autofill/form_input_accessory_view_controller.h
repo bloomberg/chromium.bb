@@ -68,6 +68,10 @@ typedef void (^AccessoryViewReadyCompletion)(
 // set using |accessoryViewUpdateBlock|.
 - (void)resizeAccessoryView;
 
+// Returns YES if UMA metrics for keyboard accessory button presses should be
+// logged for this provider.
+- (BOOL)getLogKeyboardAccessoryMetrics;
+
 @end
 
 // Creates and manages a custom input accessory view while the user is

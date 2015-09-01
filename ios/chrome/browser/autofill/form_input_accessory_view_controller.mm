@@ -11,6 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#import "components/autofill/ios/browser/keyboard_accessory_metrics_logger.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
@@ -194,6 +195,10 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 
   // The object that manages the currently-shown custom accessory view.
   base::WeakNSProtocol<id<FormInputAccessoryViewProvider>> _currentProvider;
+
+  // Logs UMA metrics for the keyboard accessory.
+  scoped_ptr<autofill::KeyboardAccessoryMetricsLogger>
+      _keyboardAccessoryMetricsLogger;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState
@@ -218,6 +223,8 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
         new web::WebStateObserverBridge(webState, self));
     _providers.reset([providers copy]);
     _suggestionsHaveBeenShown = NO;
+    _keyboardAccessoryMetricsLogger.reset(
+        new autofill::KeyboardAccessoryMetricsLogger());
   }
   return self;
 }
@@ -349,7 +356,13 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   [_hiddenOriginalSubviews removeAllObjects];
 }
 
-- (void)closeKeyboard {
+- (void)closeKeyboardWithButtonPress {
+  [self closeKeyboardWithoutButtonPress];
+  if (_currentProvider && [_currentProvider getLogKeyboardAccessoryMetrics])
+    _keyboardAccessoryMetricsLogger->OnCloseButtonPressed();
+}
+
+- (void)closeKeyboardWithoutButtonPress {
   BOOL performedAction =
       [self executeFormAssistAction:autofill::kFormSuggestionAssistButtonDone];
 
@@ -391,7 +404,13 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 #pragma mark -
 #pragma mark FormInputAccessoryViewDelegate
 
-- (void)selectPreviousElement {
+- (void)selectPreviousElementWithButtonPress {
+  [self selectPreviousElementWithoutButtonPress];
+  if (_currentProvider && [_currentProvider getLogKeyboardAccessoryMetrics])
+    _keyboardAccessoryMetricsLogger->OnPreviousButtonPressed();
+}
+
+- (void)selectPreviousElementWithoutButtonPress {
   BOOL performedAction =
       [self executeFormAssistAction:
                 autofill::kFormSuggestionAssistButtonPreviousElement];
@@ -404,7 +423,13 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   }
 }
 
-- (void)selectNextElement {
+- (void)selectNextElementWithButtonPress {
+  [self selectNextElementWithoutButtonPress];
+  if (_currentProvider && [_currentProvider getLogKeyboardAccessoryMetrics])
+    _keyboardAccessoryMetricsLogger->OnNextButtonPressed();
+}
+
+- (void)selectNextElementWithoutButtonPress {
   BOOL performedAction = [self
       executeFormAssistAction:autofill::kFormSuggestionAssistButtonNextElement];
 
@@ -469,6 +494,9 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     _currentProvider.reset();
   }
   [self restoreDefaultInputAccessoryView];
+
+  _keyboardAccessoryMetricsLogger.reset(
+      new autofill::KeyboardAccessoryMetricsLogger());
 }
 
 - (void)retrieveAccessoryViewForForm:(const std::string&)formName

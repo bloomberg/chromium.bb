@@ -453,6 +453,8 @@
             'autofill/ios/browser/js_autofill_manager.mm',
             'autofill/ios/browser/js_suggestion_manager.h',
             'autofill/ios/browser/js_suggestion_manager.mm',
+            'autofill/ios/browser/keyboard_accessory_metrics_logger.h',
+            'autofill/ios/browser/keyboard_accessory_metrics_logger.mm',
             'autofill/ios/browser/personal_data_manager_observer_bridge.h',
             'autofill/ios/browser/personal_data_manager_observer_bridge.mm',
           ],

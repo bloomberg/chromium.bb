@@ -10,14 +10,23 @@
 // Handles user interaction with a FormInputAccessoryView.
 @protocol FormInputAccessoryViewDelegate<NSObject>
 
-// Called when the close button is clicked.
-- (void)closeKeyboard;
+// Called when the close button is pressed by the user.
+- (void)closeKeyboardWithButtonPress;
+// Called to close the keyboard when the user did not press the close button
+// directly.
+- (void)closeKeyboardWithoutButtonPress;
 
-// Called when the previous button is clicked.
-- (void)selectPreviousElement;
+// Called when the previous button is pressed by the user.
+- (void)selectPreviousElementWithButtonPress;
+// Called to select the previous element when the user did not press the
+// previous button directly.
+- (void)selectPreviousElementWithoutButtonPress;
 
-// Called when the next button is clicked.
-- (void)selectNextElement;
+// Called when the next button is pressed by the user.
+- (void)selectNextElementWithButtonPress;
+// Called to select the next element when the user did not press the next button
+// directly.
+- (void)selectNextElementWithoutButtonPress;
 
 // Called when updating the keyboard view. Checks if the page contains a next
 // and a previous element.

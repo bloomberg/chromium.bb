@@ -258,7 +258,8 @@ UIImage* ButtonImage(NSString* name) {
                           pressedImage:ButtonImage(@"autofill_prev_pressed")
                          disabledImage:ButtonImage(@"autofill_prev_inactive")
                                 target:_delegate
-                                action:@selector(selectPreviousElement)
+                                action:@selector(
+                                           selectPreviousElementWithButtonPress)
                                enabled:NO
                                originX:currentX
                                originY:firstRow
@@ -282,7 +283,8 @@ UIImage* ButtonImage(NSString* name) {
                           pressedImage:ButtonImage(@"autofill_next_pressed")
                          disabledImage:ButtonImage(@"autofill_next_inactive")
                                 target:_delegate
-                                action:@selector(selectNextElement)
+                                action:@selector(
+                                           selectNextElementWithButtonPress)
                                enabled:NO
                                originX:currentX
                                originY:firstRow
@@ -312,7 +314,7 @@ UIImage* ButtonImage(NSString* name) {
                             pressedImage:ButtonImage(@"autofill_close_pressed")
                            disabledImage:nil
                                   target:_delegate
-                                  action:@selector(closeKeyboard)
+                                  action:@selector(closeKeyboardWithButtonPress)
                                  enabled:YES
                                  originX:currentX
                                  originY:firstRow
