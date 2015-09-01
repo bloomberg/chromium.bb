@@ -221,8 +221,8 @@ void PermissionDispatcher::GetNextPermissionChangeForWorker(
 // static
 void PermissionDispatcher::RunCallbackOnWorkerThread(
     blink::WebPermissionCallback* callback,
-    scoped_ptr<blink::WebPermissionStatus> status) {
-  callback->onSuccess(status.release());
+    blink::WebPermissionStatus status) {
+  callback->onSuccess(status);
   delete callback;
 }
 
@@ -297,8 +297,7 @@ void PermissionDispatcher::OnPermissionResponse(int request_id,
   CallbackInformation* callback_information =
       pending_callbacks_.Lookup(request_id);
   DCHECK(callback_information && callback_information->callback());
-  scoped_ptr<blink::WebPermissionStatus> status(
-      new blink::WebPermissionStatus(GetWebPermissionStatus(result)));
+  blink::WebPermissionStatus status = GetWebPermissionStatus(result);
 
   if (callback_information->worker_thread_id() != kNoWorkerThread) {
     blink::WebPermissionCallback* callback =
@@ -311,12 +310,11 @@ void PermissionDispatcher::OnPermissionResponse(int request_id,
     WorkerTaskRunner::Instance()->PostTask(
         worker_thread_id,
         base::Bind(&PermissionDispatcher::RunCallbackOnWorkerThread,
-                   base::Unretained(callback),
-                   base::Passed(&status)));
+                   base::Unretained(callback), status));
     return;
   }
 
-  callback_information->callback()->onSuccess(status.release());
+  callback_information->callback()->onSuccess(status);
   pending_callbacks_.Remove(request_id);
 }
 

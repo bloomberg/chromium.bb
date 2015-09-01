@@ -57,7 +57,7 @@ void VRDispatcher::OnGetDevices(int request_id,
     web_devices[i] = devices[i].To<blink::WebVRDevice>();
   }
 
-  callback->onSuccess(&web_devices);
+  callback->onSuccess(web_devices);
   pending_requests_.Remove(request_id);
 }
 

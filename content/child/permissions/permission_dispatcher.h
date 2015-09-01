@@ -79,9 +79,8 @@ class PermissionDispatcher : public blink::WebPermissionClient,
  private:
   // Runs the given |callback| with |status| as a parameter. It has to be run
   // on a worker thread.
-  static void RunCallbackOnWorkerThread(
-      blink::WebPermissionCallback* callback,
-      scoped_ptr<blink::WebPermissionStatus> status);
+  static void RunCallbackOnWorkerThread(blink::WebPermissionCallback* callback,
+                                        blink::WebPermissionStatus status);
 
   // Helper method that returns an initialized PermissionServicePtr.
   PermissionServicePtr& GetPermissionServicePtr();
