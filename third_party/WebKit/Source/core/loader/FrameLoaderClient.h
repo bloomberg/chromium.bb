@@ -96,8 +96,6 @@ public:
     virtual void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) = 0;
     virtual void dispatchDidFinishDocumentLoad(bool documentIsEmpty) = 0;
     virtual void dispatchDidFinishLoad() = 0;
-    // TODO(dglazkov): Remove after https://codereview.chromium.org/1319073003 lands
-    virtual void dispatchDidFirstVisuallyNonEmptyLayout() = 0;
     virtual void dispatchDidChangeThemeColor() = 0;
 
     virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) = 0;

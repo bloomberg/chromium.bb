@@ -466,9 +466,6 @@ public:
 
     // Geometry notifications ----------------------------------------------
 
-    // The frame's document finished the initial non-empty layout of a page.
-    virtual void didFirstVisuallyNonEmptyLayout(WebLocalFrame*) { }
-
     // The main frame scrolled.
     virtual void didChangeScrollOffset(WebLocalFrame*) { }
 

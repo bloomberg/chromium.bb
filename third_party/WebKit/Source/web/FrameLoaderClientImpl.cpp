@@ -490,12 +490,6 @@ void FrameLoaderClientImpl::dispatchDidFinishLoad()
     // provisional load succeeds or fails, not the "real" one.
 }
 
-void FrameLoaderClientImpl::dispatchDidFirstVisuallyNonEmptyLayout()
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->didFirstVisuallyNonEmptyLayout(m_webFrame);
-}
-
 void FrameLoaderClientImpl::dispatchDidChangeThemeColor()
 {
     if (m_webFrame->client())

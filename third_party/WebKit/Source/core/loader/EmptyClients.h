@@ -202,7 +202,6 @@ public:
     void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) override {}
     void dispatchDidFinishDocumentLoad(bool) override {}
     void dispatchDidFinishLoad() override {}
-    void dispatchDidFirstVisuallyNonEmptyLayout() override {}
     void dispatchDidChangeThemeColor() override {}
 
     NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) override;
