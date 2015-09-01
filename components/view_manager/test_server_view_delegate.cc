@@ -23,18 +23,6 @@ surfaces::SurfacesState* TestServerViewDelegate::GetSurfacesState() {
   return nullptr;
 }
 
-void TestServerViewDelegate::PrepareToDestroyView(ServerView* view) {
-}
-
-void TestServerViewDelegate::PrepareToChangeViewHierarchy(
-    ServerView* view,
-    ServerView* new_parent,
-    ServerView* old_parent) {
-}
-
-void TestServerViewDelegate::PrepareToChangeViewVisibility(ServerView* view) {
-}
-
 void TestServerViewDelegate::OnScheduleViewPaint(const ServerView* view) {
 }
 

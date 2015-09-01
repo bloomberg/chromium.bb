@@ -24,81 +24,6 @@
 using mojo::ConnectionSpecificId;
 
 namespace view_manager {
-namespace {
-
-// Creates a copy of |view|. The copied view has |delegate| as its delegate.
-// This does not recurse.
-ServerView* CloneView(const ServerView* view, ServerViewDelegate* delegate) {
-  ServerView* clone = new ServerView(delegate, ClonedViewId());
-  clone->SetBounds(view->bounds());
-  clone->SetSurfaceId(view->surface_id());
-  clone->SetOpacity(view->opacity());
-  return clone;
-}
-
-// Creates copies of all the visible children of |parent|. Newly cloned views
-// are added to |cloned_parent| and have |delegate| as their delegate. The
-// stacking order of the cloned views is preseved.
-void CloneViewTree(const ServerView* parent,
-                   ServerView* cloned_parent,
-                   ServerViewDelegate* delegate) {
-  DCHECK(parent->visible());
-  for (const ServerView* to_clone : parent->GetChildren()) {
-    if (to_clone->visible()) {
-      ServerView* cloned = CloneView(to_clone, delegate);
-      cloned_parent->Add(cloned);
-      CloneViewTree(to_clone, cloned, delegate);
-    }
-  }
-}
-
-// Recurses through all the children of |view| moving any cloned views to
-// |new_parent| stacked above |stack_above|. |stack_above| is updated as views
-// are moved.
-void ReparentClonedViews(ServerView* new_parent,
-                         ServerView** stack_above,
-                         ServerView* view) {
-  if (view->id() == ClonedViewId()) {
-    const gfx::Rect new_bounds(ConvertRectBetweenViews(
-        view, new_parent, gfx::Rect(view->bounds().size())));
-    new_parent->Add(view);
-    new_parent->Reorder(view, *stack_above, mojo::ORDER_DIRECTION_ABOVE);
-    view->SetBounds(new_bounds);
-    *stack_above = view;
-    return;
-  }
-
-  for (ServerView* child : view->GetChildren())
-    ReparentClonedViews(new_parent, stack_above, child);
-}
-
-// Deletes |view| and all its descendants.
-void DeleteViewTree(ServerView* view) {
-  for (ServerView* child : view->GetChildren())
-    DeleteViewTree(child);
-
-  delete view;
-}
-
-// TODO(sky): nuke, proof of concept.
-bool DecrementAnimatingViewsOpacity(ServerView* view) {
-  if (view->id() == ClonedViewId()) {
-    const float new_opacity = view->opacity() - .05f;
-    if (new_opacity <= 0)
-      DeleteViewTree(view);
-    else
-      view->SetOpacity(new_opacity);
-    return true;
-  }
-  bool ret_value = false;
-  for (ServerView* child : view->GetChildren()) {
-    if (DecrementAnimatingViewsOpacity(child))
-      ret_value = true;
-  }
-  return ret_value;
-}
-
-}  // namespace
 
 ConnectionManager::ScopedChange::ScopedChange(
     ViewTreeImpl* connection,
@@ -124,7 +49,6 @@ ConnectionManager::ConnectionManager(
       event_dispatcher_(this),
       current_change_(nullptr),
       in_destructor_(false),
-      animation_runner_(base::TimeTicks::Now()),
       focus_controller_(new FocusController(this)) {
 }
 
@@ -357,21 +281,6 @@ ViewTreeImpl* ConnectionManager::GetEmbedRoot(ViewTreeImpl* service) {
   return nullptr;
 }
 
-bool ConnectionManager::CloneAndAnimate(const ViewId& view_id) {
-  ServerView* view = GetView(view_id);
-  if (!view || !view->IsDrawn() || (view->GetRoot() == view))
-    return false;
-  if (!animation_timer_.IsRunning()) {
-    animation_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
-                           this, &ConnectionManager::DoAnimation);
-  }
-  ServerView* clone = CloneView(view, this);
-  CloneViewTree(view, clone, this);
-  view->parent()->Add(clone);
-  view->parent()->Reorder(clone, view, mojo::ORDER_DIRECTION_ABOVE);
-  return true;
-}
-
 void ConnectionManager::DispatchInputEventToView(const ServerView* view,
                                                  mojo::EventPtr event) {
   // If the view is an embed root, forward to the embedded view, not the owner.
@@ -476,16 +385,6 @@ void ConnectionManager::FinishChange() {
   current_change_ = NULL;
 }
 
-void ConnectionManager::DoAnimation() {
-  // TODO(fsamuel): This is probably not right. We probably want a per-root
-  // animation.
-  bool animating = false;
-  for (auto& pair : host_connection_map_)
-    animating |= DecrementAnimatingViewsOpacity(pair.first->root_view());
-  if (!animating)
-    animation_timer_.Stop();
-}
-
 void ConnectionManager::AddConnection(ClientConnection* connection) {
   DCHECK_EQ(0u, connection_map_.count(connection->service()->id()));
   connection_map_[connection->service()->id()] = connection;
@@ -512,54 +411,6 @@ surfaces::SurfacesState* ConnectionManager::GetSurfacesState() {
   return surfaces_state_.get();
 }
 
-void ConnectionManager::PrepareToDestroyView(ServerView* view) {
-  if (!in_destructor_ && IsViewAttachedToRoot(view) &&
-      view->id() != ClonedViewId()) {
-    // We're about to destroy a view. Any cloned views need to be reparented
-    // else the animation would no longer be visible. By moving to a visible
-    // view, view->parent(), we ensure the animation is still visible.
-    ServerView* parent_above = view;
-    ReparentClonedViews(view->parent(), &parent_above, view);
-  }
-
-  animation_runner_.CancelAnimationForView(view);
-}
-
-void ConnectionManager::PrepareToChangeViewHierarchy(ServerView* view,
-                                                     ServerView* new_parent,
-                                                     ServerView* old_parent) {
-  if (view->id() == ClonedViewId() || in_destructor_)
-    return;
-
-  if (IsViewAttachedToRoot(view)) {
-    // We're about to reparent a view. Any cloned views need to be reparented
-    // else the animation may be effected in unusual ways. For example, the view
-    // could move to a new location such that the animation is entirely clipped.
-    // By moving to view->parent() we ensure the animation is still visible.
-    ServerView* parent_above = view;
-    ReparentClonedViews(view->parent(), &parent_above, view);
-  }
-
-  animation_runner_.CancelAnimationForView(view);
-}
-
-void ConnectionManager::PrepareToChangeViewVisibility(ServerView* view) {
-  if (in_destructor_)
-    return;
-
-  if (IsViewAttachedToRoot(view) && view->id() != ClonedViewId() &&
-      view->IsDrawn()) {
-    // We're about to hide |view|, this would implicitly make any cloned views
-    // hide too. Reparent so that animations are still visible.
-    ServerView* parent_above = view;
-    ReparentClonedViews(view->parent(), &parent_above, view);
-  }
-
-  const bool is_parent_drawn = view->parent() && view->parent()->IsDrawn();
-  if (!is_parent_drawn || !view->visible())
-    animation_runner_.CancelAnimationForView(view);
-}
-
 void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
   if (!in_destructor_)
     SchedulePaint(view, gfx::Rect(view->bounds().size()));
@@ -578,7 +429,7 @@ void ConnectionManager::OnViewDestroyed(ServerView* view) {
 void ConnectionManager::OnWillChangeViewHierarchy(ServerView* view,
                                                   ServerView* new_parent,
                                                   ServerView* old_parent) {
-  if (view->id() == ClonedViewId() || in_destructor_)
+  if (in_destructor_)
     return;
 
   ProcessWillChangeViewHierarchy(view, new_parent, old_parent);
@@ -657,10 +508,6 @@ void ConnectionManager::OnViewTextInputStateChanged(
 
   ViewTreeHostImpl* host = GetViewTreeHostByView(view);
   host->UpdateTextInputState(state);
-}
-
-void ConnectionManager::CloneAndAnimate(mojo::Id transport_view_id) {
-  CloneAndAnimate(ViewIdFromTransportId(transport_view_id));
 }
 
 void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,

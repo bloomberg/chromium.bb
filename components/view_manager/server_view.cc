@@ -40,7 +40,6 @@ ServerView::ServerView(ServerViewDelegate* delegate,
 }
 
 ServerView::~ServerView() {
-  delegate_->PrepareToDestroyView(this);
   FOR_EACH_OBSERVER(ServerViewObserver, observers_, OnWillDestroyView(this));
 
   while (!children_.empty())
@@ -94,7 +93,6 @@ void ServerView::Add(ServerView* child) {
   }
 
   ServerView* old_parent = child->parent();
-  child->delegate_->PrepareToChangeViewHierarchy(child, this, old_parent);
   FOR_EACH_OBSERVER(ServerViewObserver, child->observers_,
                     OnWillChangeViewHierarchy(child, this, old_parent));
 
@@ -113,7 +111,6 @@ void ServerView::Remove(ServerView* child) {
   DCHECK(child != this);
   DCHECK(child->parent() == this);
 
-  child->delegate_->PrepareToChangeViewHierarchy(child, NULL, this);
   FOR_EACH_OBSERVER(ServerViewObserver, child->observers_,
                     OnWillChangeViewHierarchy(child, nullptr, this));
   RemoveImpl(child);
@@ -180,7 +177,6 @@ void ServerView::SetVisible(bool value) {
   if (visible_ == value)
     return;
 
-  delegate_->PrepareToChangeViewVisibility(this);
   FOR_EACH_OBSERVER(ServerViewObserver, observers_,
                     OnWillChangeViewVisibility(this));
   visible_ = value;

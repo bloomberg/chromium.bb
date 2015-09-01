@@ -213,13 +213,6 @@ bool WaitForAllMessages(ViewTree* vm) {
   return result != ERROR_CODE_NONE;
 }
 
-bool HasClonedView(const std::vector<TestView>& views) {
-  for (size_t i = 0; i < views.size(); ++i)
-    if (views[i].view_id == ViewIdToTransportId(ClonedViewId()))
-      return true;
-  return false;
-}
-
 const Id kNullParentId = 0;
 std::string IdToString(Id id) {
   return (id == kNullParentId)

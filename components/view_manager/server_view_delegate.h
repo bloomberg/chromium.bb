@@ -13,14 +13,6 @@ namespace cc {
 class CompositorFrame;
 }
 
-namespace gfx {
-class Rect;
-}
-
-namespace mojo {
-class ViewportMetrics;
-}
-
 namespace surfaces {
 class SurfacesState;
 }
@@ -29,28 +21,12 @@ namespace view_manager {
 
 class ServerView;
 
-// ServerViewDelegate is notified at key points in the lifetime of a
-// ServerView. Some of the functions are similar to that of
-// ServerViewObserver. For example, ServerViewDelegate::PrepareToDestroyView()
-// and ServerViewObserver::OnWillDestroyView(). The key difference between
-// the two are the ServerViewDelegate ones are always notified first, and
-// ServerViewDelegate gets non-const arguments.
 class ServerViewDelegate {
  public:
   virtual scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
       const mojo::CompositorFramePtr& input) = 0;
 
   virtual surfaces::SurfacesState* GetSurfacesState() = 0;
-
-  // Invoked when a view is about to be destroyed; before any of the children
-  // have been removed and before the view has been removed from its parent.
-  virtual void PrepareToDestroyView(ServerView* view) = 0;
-
-  virtual void PrepareToChangeViewHierarchy(ServerView* view,
-                                            ServerView* new_parent,
-                                            ServerView* old_parent) = 0;
-
-  virtual void PrepareToChangeViewVisibility(ServerView* view) = 0;
 
   virtual void OnScheduleViewPaint(const ServerView* view) = 0;
 

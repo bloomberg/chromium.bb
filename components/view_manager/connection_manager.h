@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
-#include "components/view_manager/animation_runner.h"
 #include "components/view_manager/event_dispatcher.h"
 #include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/ids.h"
@@ -216,10 +215,6 @@ class ConnectionManager : public ServerViewDelegate,
     return current_change_ && current_change_->connection_id() == connection_id;
   }
 
-  // Callback from animation timer.
-  // TODO(sky): make this real (move to a different class).
-  void DoAnimation();
-
   // Adds |connection| to internal maps.
   void AddConnection(ClientConnection* connection);
 
@@ -229,11 +224,6 @@ class ConnectionManager : public ServerViewDelegate,
   scoped_ptr<cc::CompositorFrame> UpdateViewTreeFromCompositorFrame(
       const mojo::CompositorFramePtr& input) override;
   surfaces::SurfacesState* GetSurfacesState() override;
-  void PrepareToDestroyView(ServerView* view) override;
-  void PrepareToChangeViewHierarchy(ServerView* view,
-                                    ServerView* new_parent,
-                                    ServerView* old_parent) override;
-  void PrepareToChangeViewVisibility(ServerView* view) override;
   void OnScheduleViewPaint(const ServerView* view) override;
   const ServerView* GetRootView(const ServerView* view) const override;
 
@@ -258,8 +248,6 @@ class ConnectionManager : public ServerViewDelegate,
       const std::vector<uint8_t>* new_data) override;
   void OnViewTextInputStateChanged(ServerView* view,
                                    const ui::TextInputState& state) override;
-
-  void CloneAndAnimate(mojo::Id transport_view_id);
 
   // FocusControllerDelegate:
   void OnFocusChanged(ServerView* old_focused_view,
@@ -295,11 +283,6 @@ class ConnectionManager : public ServerViewDelegate,
   ScopedChange* current_change_;
 
   bool in_destructor_;
-
-  // TODO(sky): nuke! Just a proof of concept until get real animation api.
-  base::RepeatingTimer<ConnectionManager> animation_timer_;
-
-  AnimationRunner animation_runner_;
 
   scoped_ptr<FocusController> focus_controller_;
 
