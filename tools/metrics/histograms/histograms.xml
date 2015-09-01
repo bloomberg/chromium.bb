@@ -13744,6 +13744,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.ProgramCache.CacheHit" enum="BooleanSuccess">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    If a successfully linked program was found in the GPU program cache during a
+    program link call.
+  </summary>
+</histogram>
+
 <histogram name="GPU.TextureRG" enum="BooleanAvailable">
   <owner>reveman@chromium.org</owner>
   <summary>
