@@ -456,58 +456,37 @@ _x86_external_boards = frozenset([
     'x86-generic_freon',
 ])
 
-_mips_internal_release_boards = frozenset([
-])
-
-_mips_external_boards = frozenset([
-    'mipseb-n32-generic',
-    'mipseb-n64-generic',
-    'mipseb-o32-generic',
-    'mipsel-n32-generic',
-    'mipsel-n64-generic',
-    'mipsel-o32-generic',
-])
-
 # Every board should be in only 1 of the above sets.
 _distinct_board_sets = [
     _arm_internal_release_boards,
     _arm_external_boards,
     _x86_internal_release_boards,
     _x86_external_boards,
-    _mips_internal_release_boards,
-    _mips_external_boards,
 ]
 
 _arm_full_boards = (_arm_internal_release_boards |
                     _arm_external_boards)
 _x86_full_boards = (_x86_internal_release_boards |
                     _x86_external_boards)
-_mips_full_boards = (_mips_internal_release_boards |
-                     _mips_external_boards)
 
 _arm_boards = _arm_full_boards
 _x86_boards = _x86_full_boards
-_mips_boards = _mips_full_boards
 
 _all_release_boards = (
     _arm_internal_release_boards |
-    _x86_internal_release_boards |
-    _mips_internal_release_boards
+    _x86_internal_release_boards
 )
 _all_full_boards = (
     _arm_full_boards |
-    _x86_full_boards |
-    _mips_full_boards
+    _x86_full_boards
 )
 _all_boards = (
     _x86_boards |
-    _arm_boards |
-    _mips_boards
+    _arm_boards
 )
 
 _arm_release_boards = _arm_internal_release_boards
 _x86_release_boards = _x86_internal_release_boards
-_mips_release_boards = _mips_internal_release_boards
 
 _internal_boards = _all_release_boards
 
@@ -540,11 +519,6 @@ _nofactory_boards = frozenset([
 ])
 
 _toolchains_from_source = frozenset([
-    'mipseb-n32-generic',
-    'mipseb-n64-generic',
-    'mipseb-o32-generic',
-    'mipsel-n32-generic',
-    'mipsel-n64-generic',
     'x32-generic',
 ])
 
@@ -575,7 +549,7 @@ _upload_gce_images_boards = frozenset([
     'lakitu_mobbuild',
 ])
 
-_no_vmtest_boards = _arm_boards | _mips_boards | _brillo_boards
+_no_vmtest_boards = _arm_boards | _brillo_boards
 
 
 # This is a list of configs that should be included on the main waterfall, but
@@ -595,7 +569,6 @@ _waterfall_config_map = {
         'amd64-generic-full',
         'arm-generic-full',
         'daisy-full',
-        'mipsel-o32-generic-full',
         'oak-full',
         'x86-generic-full',
 
@@ -932,7 +905,7 @@ def GetConfig():
       # The amd64-host has to be last as that is when the toolchains
       # are bundled up for inclusion in the sdk.
       boards=[
-          'x86-generic', 'arm-generic', 'amd64-generic', 'mipsel-o32-generic'
+          'x86-generic', 'arm-generic', 'amd64-generic'
       ],
       build_type=constants.CHROOT_BUILDER_TYPE,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
@@ -1153,7 +1126,6 @@ def GetConfig():
       'arm-generic_freon',
       'arm-generic',
       'daisy',
-      'mipsel-o32-generic',
       'veyron_minnie',
       'x86-generic',
   ])
@@ -1633,7 +1605,6 @@ def GetConfig():
       'leon',
       'link',
       'lumpy',
-      'mipsel-o32-generic',
       'monroe',
       'nyan',
       'oak',
@@ -2246,14 +2217,6 @@ def GetConfig():
       # Hw Lab can't test storm, yet.
       paygen_skip_testing=True,
       signer_tests=False,
-  )
-
-  site_config.AddConfig(
-      _release, 'mipsel-o32-generic-release',
-      _base_configs['mipsel-o32-generic'],
-      paygen_skip_delta_payloads=True,
-      afdo_use=False,
-      hw_tests=[],
   )
 
   site_config.AddConfig(
