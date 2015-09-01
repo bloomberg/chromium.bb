@@ -76,9 +76,9 @@ class TraceNetLogObserverTest : public testing::Test {
     trace_buffer_.Finish();
 
     scoped_ptr<base::Value> trace_value;
-    trace_value.reset(base::JSONReader::DeprecatedRead(
+    trace_value = base::JSONReader::Read(
         json_output_.json_output,
-        base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN));
+        base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN);
 
     ASSERT_TRUE(trace_value) << json_output_.json_output;
     base::ListValue* trace_events = NULL;

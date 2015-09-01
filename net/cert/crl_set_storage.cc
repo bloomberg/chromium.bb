@@ -125,8 +125,8 @@ static base::DictionaryValue* ReadHeader(base::StringPiece* data) {
   const base::StringPiece header_bytes(data->data(), header_len);
   data->remove_prefix(header_len);
 
-  scoped_ptr<base::Value> header(base::JSONReader::DeprecatedRead(
-      header_bytes, base::JSON_ALLOW_TRAILING_COMMAS));
+  scoped_ptr<base::Value> header =
+      base::JSONReader::Read(header_bytes, base::JSON_ALLOW_TRAILING_COMMAS);
   if (header.get() == NULL)
     return NULL;
 
