@@ -11,6 +11,7 @@
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_context.h"
@@ -351,9 +352,10 @@ bool CastContentBrowserClient::CanCreateWindow(
 }
 
 void CastContentBrowserClient::RegisterUnsandboxedOutOfProcessMojoApplications(
-    std::vector<GURL>* urls) {
+    std::map<GURL, base::string16>* apps) {
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  urls->push_back("mojo:media");
+  apps->insert(std::make_pair(GURL("mojo:media"),
+                              base::UTF8ToUTF16("Media Renderer")));
 #endif
 }
 

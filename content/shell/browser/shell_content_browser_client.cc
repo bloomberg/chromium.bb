@@ -18,6 +18,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "content/public/test/test_mojo_app.h"
 #include "content/shell/browser/blink_test_controller.h"
 #include "content/shell/browser/ipc_echo_message_filter.h"
 #include "content/shell/browser/layout_test/layout_test_browser_main_parts.h"
@@ -206,6 +207,12 @@ bool ShellContentBrowserClient::IsNPAPIEnabled() {
 #else
   return false;
 #endif
+}
+
+void ShellContentBrowserClient::RegisterOutOfProcessMojoApplications(
+      OutOfProcessMojoApplicationMap* apps) {
+  apps->insert(std::make_pair(GURL(kTestMojoAppUrl),
+                              base::UTF8ToUTF16("Test Mojo App")));
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(

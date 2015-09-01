@@ -623,16 +623,23 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void RegisterInProcessMojoApplications(
       StaticMojoApplicationMap* apps) {}
 
+  using OutOfProcessMojoApplicationMap = std::map<GURL, base::string16>;
+
+  // Registers Mojo applications to be loaded out of the browser process, in a
+  // sandboxed utility process. The value of each map entry should be the
+  // process name to use for the application's host process when launched.
+  virtual void RegisterOutOfProcessMojoApplications(
+      OutOfProcessMojoApplicationMap* apps) {}
+
   // Registers Mojo applications to be loaded out of the browser process (in
-  // a utility process) without the sandbox. By default, the utility process
-  // thats runs Mojo applications are sandboxed.
+  // a utility process) without the sandbox.
   //
   // WARNING: This path is NOT recommended! If a Mojo application needs a
   // service that is only available out of the sandbox, it could ask the browser
   // process to provide it (e.g. through OverrideFrameMojoShellServices()). Only
   // use this method when that approach does not work.
   virtual void RegisterUnsandboxedOutOfProcessMojoApplications(
-      std::vector<GURL>* urls) {}
+      OutOfProcessMojoApplicationMap* apps) {}
 
   // Registers additional navigator.connect service factories available in a
   // particular NavigatorConnectContext.
