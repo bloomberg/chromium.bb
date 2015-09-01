@@ -21,6 +21,11 @@
             "$ref": "types.ChromeSetting",
             "value": ["webRTCMultipleRoutesEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome will explore all possible routing options when using WebRTC to find the most performant path, possibly exposing user's private IP address. Otherwise, WebRTC traffic will be routed the same way as regular HTTP. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
+          "webRTCNonProxiedUdpEnabled": {
+            "$ref": "types.ChromeSetting",
+            "value": ["webRTCNonProxiedUdpEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome is allowed to use non-proxied UDP to connect to peers or TURN servers when using WebRTC. Since most proxy servers don't handle UDP, using UDP possibly exposes user's IP address. Turning this off effectively forces WebRTC to only use TCP for now, until UDP proxy support is available in Chrome and such proxies are widely deployed. As a result, it also might hurt media performance and increase the load for proxy servers. This preference's value is a boolean, defaulting to <code>true</code>."
           }
         }
       },

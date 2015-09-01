@@ -10,7 +10,8 @@ var preferences_to_test = [
     root: chrome.privacy.network,
     preferences: [
       'networkPredictionEnabled',
-      'webRTCMultipleRoutesEnabled'
+      'webRTCMultipleRoutesEnabled',
+      'webRTCNonProxiedUdpEnabled'
     ]
   },
   {
@@ -41,8 +42,9 @@ var preferences_to_test = [
 // Some preferences are only present on certain platforms or are hidden
 // behind flags and might not be present when this test runs.
 var possibly_missing_preferences = new Set([
-  'protectedContentEnabled',    // Windows/ChromeOS only
-  'webRTCMultipleRoutesEnabled' // requires ENABLE_WEBRTC=1
+  'protectedContentEnabled',             // Windows/ChromeOS only
+  'webRTCMultipleRoutesEnabled',         // requires ENABLE_WEBRTC=1
+  'webRTCNonProxiedUdpEnabled'           // requires ENABLE_WEBRTC=1
 ]);
 
 function expect(expected, message) {
