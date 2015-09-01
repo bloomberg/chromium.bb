@@ -863,9 +863,15 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioningBasic) {
   // make sure we keep rendering popups correct in webview.
 }
 
+// Flaky on ChromeOS: http://crbug.com/526886
+#if defined(OS_CHROMEOS)
+#define MAYBE_PopupPositioningMoved DISABLED_PopupPositioningMoved
+#else
+#define MAYBE_PopupPositioningMoved PopupPositioningMoved
+#endif
 // Tests that moving browser plugin (without resize/UpdateRects) correctly
 // repositions popup.
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioningMoved) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_PopupPositioningMoved) {
   TestHelper("testMoved", "web_view/popup_positioning", NO_TEST_SERVER);
   ASSERT_TRUE(guest_web_contents());
   PopupTestHelper(gfx::Point(20, 0));
