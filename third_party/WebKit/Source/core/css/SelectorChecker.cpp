@@ -960,9 +960,9 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoScope:
         if (m_mode == SharingRules)
             return true;
-        if (context.scope == element.document())
-            return element == element.document().documentElement();
-        return context.scope == element;
+        if (context.scope)
+            return context.scope == element;
+        return element == element.document().documentElement();
     case CSSSelector::PseudoUnresolved:
         return element.isUnresolvedCustomElement();
     case CSSSelector::PseudoHost:
@@ -1050,6 +1050,8 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, Ma
     if (m_mode == SharingRules)
         return true;
     // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
+    if (!context.scope)
+        return false;
     const ContainerNode* shadowHost = context.scope->shadowHost();
     if (!shadowHost || shadowHost != element)
         return false;
