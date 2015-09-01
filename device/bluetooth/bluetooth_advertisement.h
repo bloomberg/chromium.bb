@@ -71,10 +71,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
       manufacturer_data_ = manufacturer_data.Pass();
     }
     void set_solicit_uuids(scoped_ptr<UUIDList> solicit_uuids) {
-      solicit_uuids = solicit_uuids_.Pass();
+      solicit_uuids_ = solicit_uuids.Pass();
     }
     void set_service_data(scoped_ptr<ServiceData> service_data) {
-      service_data = service_data_.Pass();
+      service_data_ = service_data.Pass();
     }
 
     void set_include_tx_power(bool include_tx_power) {

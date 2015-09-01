@@ -355,7 +355,7 @@ class BluetoothAdvertisementServiceProviderImpl
 
       array_writer.OpenDictEntry(&entry_writer);
 
-      entry_writer.AppendVariantOfString(m.first);
+      entry_writer.AppendString(m.first);
       entry_writer.AppendArrayOfBytes(vector_as_array(&m.second),
                                       m.second.size());
 
