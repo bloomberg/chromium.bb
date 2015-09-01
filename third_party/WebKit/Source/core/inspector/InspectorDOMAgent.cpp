@@ -155,38 +155,6 @@ bool parseQuad(const RefPtr<JSONArray>& quadArray, FloatQuad* quad)
     return true;
 }
 
-Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootFrame, bool ignorePointerEventsNone)
-{
-    HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
-    if (ignorePointerEventsNone)
-        hitType |= HitTestRequest::IgnorePointerEventsNone;
-    HitTestRequest request(hitType);
-    HitTestResult result(request, frame->view()->rootFrameToContents(pointInRootFrame));
-    frame->contentLayoutObject()->hitTest(result);
-    Node* node = result.innerPossiblyPseudoNode();
-    while (node && node->nodeType() == Node::TEXT_NODE)
-        node = node->parentNode();
-    return node;
-}
-
-Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformGestureEvent& event, bool ignorePointerEventsNone)
-{
-    return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
-}
-
-Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
-{
-    return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
-}
-
-Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformTouchEvent& event, bool ignorePointerEventsNone)
-{
-    const Vector<PlatformTouchPoint>& points = event.touchPoints();
-    if (!points.size())
-        return nullptr;
-    return hoveredNodeForPoint(frame, roundedIntPoint(points[0].pos()), ignorePointerEventsNone);
-}
-
 ScriptValue nodeAsScriptValue(ScriptState* scriptState, Node* node)
 {
     ScriptState::Scope scope(scriptState);
@@ -313,7 +281,6 @@ InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScri
     , m_domListener(nullptr)
     , m_documentNodeToIdMap(adoptPtrWillBeNoop(new NodeToIdMap()))
     , m_lastNodeId(1)
-    , m_searchingForNode(NotSearching)
     , m_suppressAttributeModifiedEvent(false)
     , m_backendNodeIdToInspect(0)
 {
@@ -323,7 +290,6 @@ InspectorDOMAgent::~InspectorDOMAgent()
 {
 #if !ENABLE(OILPAN)
     setDocument(nullptr);
-    ASSERT(m_searchingForNode == NotSearching);
 #endif
 }
 
@@ -474,7 +440,8 @@ Element* InspectorDOMAgent::assertElement(ErrorString* errorString, int nodeId)
     return toElement(node);
 }
 
-static ShadowRoot* userAgentShadowRoot(Node* node)
+// static
+ShadowRoot* InspectorDOMAgent::userAgentShadowRoot(Node* node)
 {
     if (!node || !node->isInShadowTree())
         return nullptr;
@@ -1124,46 +1091,6 @@ void InspectorDOMAgent::discardSearchResults(ErrorString*, const String& searchI
     m_searchResults.remove(searchId);
 }
 
-bool InspectorDOMAgent::handleMousePress()
-{
-    if (m_searchingForNode == NotSearching)
-        return false;
-
-    if (m_hoveredNodeForInspectMode) {
-        inspect(m_hoveredNodeForInspectMode.get());
-        m_hoveredNodeForInspectMode.clear();
-        return true;
-    }
-    return false;
-}
-
-bool InspectorDOMAgent::handleGestureEvent(LocalFrame* frame, const PlatformGestureEvent& event)
-{
-    if (m_searchingForNode == NotSearching || event.type() != PlatformEvent::GestureTap)
-        return false;
-    Node* node = hoveredNodeForEvent(frame, event, false);
-    if (node && m_inspectModeHighlightConfig) {
-        if (m_client)
-            m_client->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig, false);
-        inspect(node);
-        return true;
-    }
-    return false;
-}
-
-bool InspectorDOMAgent::handleTouchEvent(LocalFrame* frame, const PlatformTouchEvent& event)
-{
-    if (m_searchingForNode == NotSearching)
-        return false;
-    Node* node = hoveredNodeForEvent(frame, event, false);
-    if (node && m_inspectModeHighlightConfig) {
-        if (m_client)
-            m_client->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig, false);
-        inspect(node);
-        return true;
-    }
-    return false;
-}
 
 void InspectorDOMAgent::inspect(Node* inspectedNode)
 {
@@ -1185,53 +1112,11 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
     frontend()->inspectNodeRequested(backendNodeId);
 }
 
-bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEvent& event)
-{
-    if (m_searchingForNode == NotSearching)
-        return false;
-
-    if (!frame->view() || !frame->contentLayoutObject())
-        return true;
-    Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
-
-    // Do not highlight within user agent shadow root unless requested.
-    if (m_searchingForNode != SearchingForUAShadow) {
-        ShadowRoot* shadowRoot = userAgentShadowRoot(node);
-        if (shadowRoot)
-            node = shadowRoot->host();
-    }
-
-    // Shadow roots don't have boxes - use host element instead.
-    if (node && node->isShadowRoot())
-        node = node->parentOrShadowHostNode();
-
-    if (!node)
-        return true;
-
-    Node* eventTarget = event.shiftKey() ? hoveredNodeForEvent(frame, event, false) : nullptr;
-    if (eventTarget == node)
-        eventTarget = 0;
-
-    if (node && m_inspectModeHighlightConfig) {
-        m_hoveredNodeForInspectMode = node;
-        if (m_client)
-            m_client->highlightNode(node, eventTarget, *m_inspectModeHighlightConfig, event.ctrlKey() || event.metaKey());
-    }
-    return true;
-}
 
 void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, JSONObject* highlightInspectorObject)
 {
-    // TODO(dgozman): move this to overlay.
-    m_searchingForNode = searchMode;
     if (m_client)
-        m_client->setInspectModeEnabled(searchMode != NotSearching);
-    if (searchMode != NotSearching) {
-        m_inspectModeHighlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject);
-    } else {
-        m_hoveredNodeForInspectMode.clear();
-        hideHighlight(errorString);
-    }
+        m_client->setInspectMode(searchMode, searchMode != NotSearching ? highlightConfigFromInspectorObject(errorString, highlightInspectorObject) : nullptr);
 }
 
 PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, JSONObject* highlightInspectorObject)
@@ -1363,7 +1248,7 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSO
         return;
 
     if (m_client)
-        m_client->highlightNode(node, 0 /* eventTarget */, *highlightConfig, false);
+        m_client->highlightNode(node, *highlightConfig, false);
 }
 
 void InspectorDOMAgent::highlightFrame(
@@ -1380,7 +1265,7 @@ void InspectorDOMAgent::highlightFrame(
         highlightConfig->content = parseColor(color);
         highlightConfig->contentOutline = parseColor(outlineColor);
         if (m_client)
-            m_client->highlightNode(frame->deprecatedLocalOwner(), 0 /* eventTarget */, *highlightConfig, false);
+            m_client->highlightNode(frame->deprecatedLocalOwner(), *highlightConfig, false);
     }
 }
 
@@ -2256,7 +2141,6 @@ DEFINE_TRACE(InspectorDOMAgent)
     visitor->trace(m_revalidateTask);
     visitor->trace(m_searchResults);
 #endif
-    visitor->trace(m_hoveredNodeForInspectMode);
     visitor->trace(m_history);
     visitor->trace(m_domEditor);
     InspectorBaseAgent::trace(visitor);

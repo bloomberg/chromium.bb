@@ -31,7 +31,6 @@
 
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
@@ -79,7 +78,7 @@ public:
     ~InspectorOverlayImpl() override;
     DECLARE_TRACE();
 
-    void init(InspectorCSSAgent*, InspectorDebuggerAgent*);
+    void init(InspectorCSSAgent*, InspectorDebuggerAgent*, InspectorDOMAgent*);
 
     void update();
     void clear();
@@ -109,11 +108,12 @@ private:
     void setPausedInDebuggerMessage(const String*) override;
 
     // InspectorDOMAgent::Client implementation.
-    void setInspectModeEnabled(bool) override;
     void hideHighlight() override;
-    void highlightNode(Node*, Node* eventTarget, const InspectorHighlightConfig&, bool omitTooltip) override;
+    void highlightNode(Node*, const InspectorHighlightConfig&, bool omitTooltip) override;
     void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&) override;
+    void setInspectMode(InspectorDOMAgent::SearchMode, PassOwnPtr<InspectorHighlightConfig>) override;
 
+    void highlightNode(Node*, Node* eventTarget, const InspectorHighlightConfig&, bool omitTooltip);
     bool isEmpty();
     void drawNodeHighlight();
     void drawQuadHighlight();
@@ -129,9 +129,13 @@ private:
     void rebuildOverlayPage();
     void invalidate();
 
+    bool handleMousePress();
+    bool handleGestureEvent(const PlatformGestureEvent&);
+    bool handleTouchEvent(const PlatformTouchEvent&);
+    bool handleMouseMove(const PlatformMouseEvent&);
+
     WebViewImpl* m_webViewImpl;
     String m_pausedInDebuggerMessage;
-    bool m_inspectModeEnabled;
     RefPtrWillBeMember<Node> m_highlightNode;
     RefPtrWillBeMember<Node> m_eventTargetNode;
     InspectorHighlightConfig m_nodeHighlightConfig;
@@ -149,8 +153,12 @@ private:
     bool m_inLayout;
     bool m_needsUpdate;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
+    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     OwnPtrWillBeMember<LayoutEditor> m_layoutEditor;
     OwnPtr<PageOverlay> m_pageOverlay;
+    RefPtrWillBeMember<Node> m_hoveredNodeForInspectMode;
+    InspectorDOMAgent::SearchMode m_inspectMode;
+    OwnPtr<InspectorHighlightConfig> m_inspectModeHighlightConfig;
 };
 
 } // namespace blink

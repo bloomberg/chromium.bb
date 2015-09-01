@@ -40,6 +40,7 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/LayoutEditor.h"
+#include "core/layout/LayoutView.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
@@ -57,6 +58,41 @@
 #include <v8.h>
 
 namespace blink {
+
+namespace {
+
+Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootFrame, bool ignorePointerEventsNone)
+{
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
+    if (ignorePointerEventsNone)
+        hitType |= HitTestRequest::IgnorePointerEventsNone;
+    HitTestRequest request(hitType);
+    HitTestResult result(request, frame->view()->rootFrameToContents(pointInRootFrame));
+    frame->contentLayoutObject()->hitTest(result);
+    Node* node = result.innerPossiblyPseudoNode();
+    while (node && node->nodeType() == Node::TEXT_NODE)
+        node = node->parentNode();
+    return node;
+}
+
+Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformGestureEvent& event, bool ignorePointerEventsNone)
+{
+    return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
+}
+
+Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
+{
+    return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
+}
+
+Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformTouchEvent& event, bool ignorePointerEventsNone)
+{
+    const Vector<PlatformTouchPoint>& points = event.touchPoints();
+    if (!points.size())
+        return nullptr;
+    return hoveredNodeForPoint(frame, roundedIntPoint(points[0].pos()), ignorePointerEventsNone);
+}
+} // namespace
 
 class InspectorOverlayImpl::InspectorPageOverlayDelegate final : public PageOverlay::Delegate {
 public:
@@ -136,7 +172,6 @@ private:
 
 InspectorOverlayImpl::InspectorOverlayImpl(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)
-    , m_inspectModeEnabled(false)
     , m_overlayHost(InspectorOverlayHost::create())
     , m_drawViewSize(false)
     , m_drawViewSizeWithGrid(false)
@@ -146,6 +181,7 @@ InspectorOverlayImpl::InspectorOverlayImpl(WebViewImpl* webViewImpl)
     , m_suspendCount(0)
     , m_inLayout(false)
     , m_needsUpdate(false)
+    , m_inspectMode(InspectorDOMAgent::NotSearching)
 {
 }
 
@@ -162,13 +198,16 @@ DEFINE_TRACE(InspectorOverlayImpl)
     visitor->trace(m_overlayChromeClient);
     visitor->trace(m_overlayHost);
     visitor->trace(m_debuggerAgent);
+    visitor->trace(m_domAgent);
     visitor->trace(m_layoutEditor);
+    visitor->trace(m_hoveredNodeForInspectMode);
 }
 
-void InspectorOverlayImpl::init(InspectorCSSAgent* cssAgent, InspectorDebuggerAgent* debuggerAgent)
+void InspectorOverlayImpl::init(InspectorCSSAgent* cssAgent, InspectorDebuggerAgent* debuggerAgent, InspectorDOMAgent* domAgent)
 {
     m_layoutEditor = LayoutEditor::create(cssAgent);
     m_debuggerAgent = debuggerAgent;
+    m_domAgent = domAgent;
     m_overlayHost->setListener(this);
 }
 
@@ -196,17 +235,31 @@ void InspectorOverlayImpl::layout()
 bool InspectorOverlayImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
     bool handled = false;
+
     if (isEmpty())
-        return handled;
+        return false;
 
     if (WebInputEvent::isGestureEventType(inputEvent.type) && inputEvent.type == WebInputEvent::GestureTap) {
         // Only let GestureTab in (we only need it and we know PlatformGestureEventBuilder supports it).
         PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebGestureEvent&>(inputEvent));
+        handled = handleGestureEvent(gestureEvent);
+        if (handled)
+            return true;
+
         overlayMainFrame()->eventHandler().handleGestureEvent(gestureEvent);
     }
     if (WebInputEvent::isMouseEventType(inputEvent.type) && inputEvent.type != WebInputEvent::MouseEnter) {
         // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
         PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebMouseEvent&>(inputEvent));
+
+        if (mouseEvent.type() == PlatformEvent::MouseMoved)
+            handled = handleMouseMove(mouseEvent);
+        else if (mouseEvent.type() == PlatformEvent::MousePressed)
+            handled = handleMousePress();
+
+        if (handled)
+            return true;
+
         if (mouseEvent.type() == PlatformEvent::MouseMoved)
             handled = overlayMainFrame()->eventHandler().handleMouseMoveEvent(mouseEvent);
         if (mouseEvent.type() == PlatformEvent::MousePressed)
@@ -214,8 +267,12 @@ bool InspectorOverlayImpl::handleInputEvent(const WebInputEvent& inputEvent)
         if (mouseEvent.type() == PlatformEvent::MouseReleased)
             handled = overlayMainFrame()->eventHandler().handleMouseReleaseEvent(mouseEvent);
     }
+
     if (WebInputEvent::isTouchEventType(inputEvent.type)) {
         PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebTouchEvent&>(inputEvent));
+        handled = handleTouchEvent(touchEvent);
+        if (handled)
+            return true;
         overlayMainFrame()->eventHandler().handleTouchEvent(touchEvent);
     }
     if (WebInputEvent::isKeyboardEventType(inputEvent.type)) {
@@ -232,12 +289,6 @@ void InspectorOverlayImpl::setPausedInDebuggerMessage(const String* message)
     update();
 }
 
-void InspectorOverlayImpl::setInspectModeEnabled(bool enabled)
-{
-    m_inspectModeEnabled = enabled;
-    update();
-}
-
 void InspectorOverlayImpl::hideHighlight()
 {
     if (m_layoutEditor)
@@ -246,6 +297,11 @@ void InspectorOverlayImpl::hideHighlight()
     m_eventTargetNode.clear();
     m_highlightQuad.clear();
     update();
+}
+
+void InspectorOverlayImpl::highlightNode(Node* node, const InspectorHighlightConfig& highlightConfig, bool omitTooltip)
+{
+    highlightNode(node, nullptr, highlightConfig, omitTooltip);
 }
 
 void InspectorOverlayImpl::highlightNode(Node* node, Node* eventTarget, const InspectorHighlightConfig& highlightConfig, bool omitTooltip)
@@ -257,6 +313,19 @@ void InspectorOverlayImpl::highlightNode(Node* node, Node* eventTarget, const In
     m_eventTargetNode = eventTarget;
     m_omitTooltip = omitTooltip;
     update();
+}
+
+void InspectorOverlayImpl::setInspectMode(InspectorDOMAgent::SearchMode searchMode, PassOwnPtr<InspectorHighlightConfig> highlightConfig)
+{
+    m_inspectMode = searchMode;
+    update();
+
+    if (searchMode != InspectorDOMAgent::NotSearching) {
+        m_inspectModeHighlightConfig = highlightConfig;
+    } else {
+        m_hoveredNodeForInspectMode.clear();
+        hideHighlight();
+    }
 }
 
 void InspectorOverlayImpl::highlightQuad(PassOwnPtr<FloatQuad> quad, const InspectorHighlightConfig& highlightConfig)
@@ -271,9 +340,8 @@ bool InspectorOverlayImpl::isEmpty()
 {
     if (m_suspendCount)
         return true;
-    bool hasAlwaysVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad  || (m_resizeTimerActive && m_drawViewSize);
-    bool hasInvisibleInInspectModeElements = !m_pausedInDebuggerMessage.isNull();
-    return !(hasAlwaysVisibleElements || (hasInvisibleInInspectModeElements && !m_inspectModeEnabled));
+    bool hasVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad  || (m_resizeTimerActive && m_drawViewSize) || !m_pausedInDebuggerMessage.isNull();
+    return !hasVisibleElements && m_inspectMode == InspectorDOMAgent::NotSearching;
 }
 
 void InspectorOverlayImpl::update()
@@ -300,8 +368,7 @@ void InspectorOverlayImpl::rebuildOverlayPage()
 
     drawNodeHighlight();
     drawQuadHighlight();
-    if (!m_inspectModeEnabled)
-        drawPausedInDebuggerMessage();
+    drawPausedInDebuggerMessage();
     drawViewSize();
 }
 
@@ -344,7 +411,7 @@ void InspectorOverlayImpl::drawQuadHighlight()
 
 void InspectorOverlayImpl::drawPausedInDebuggerMessage()
 {
-    if (!m_pausedInDebuggerMessage.isNull())
+    if (m_inspectMode == InspectorDOMAgent::NotSearching && !m_pausedInDebuggerMessage.isNull())
         evaluateInOverlay("drawPausedInDebuggerMessage", m_pausedInDebuggerMessage);
 }
 
@@ -467,7 +534,7 @@ void InspectorOverlayImpl::clear()
     }
     m_resizeTimerActive = false;
     m_pausedInDebuggerMessage = String();
-    m_inspectModeEnabled = false;
+    m_inspectMode = InspectorDOMAgent::NotSearching;
     m_timer.stop();
     hideHighlight();
 }
@@ -527,6 +594,83 @@ void InspectorOverlayImpl::setShowViewportSizeOnResize(bool show, bool showGrid)
 {
     m_drawViewSize = show;
     m_drawViewSizeWithGrid = showGrid;
+}
+
+bool InspectorOverlayImpl::handleMouseMove(const PlatformMouseEvent& event)
+{
+    if (m_inspectMode == InspectorDOMAgent::NotSearching)
+        return false;
+
+    LocalFrame* frame = m_webViewImpl->mainFrameImpl()->frame();
+    if (!frame->view() || !frame->contentLayoutObject())
+        return false;
+    Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
+
+    // Do not highlight within user agent shadow root unless requested.
+    if (m_inspectMode != InspectorDOMAgent::SearchingForUAShadow) {
+        ShadowRoot* shadowRoot = InspectorDOMAgent::userAgentShadowRoot(node);
+        if (shadowRoot)
+            node = shadowRoot->host();
+    }
+
+    // Shadow roots don't have boxes - use host element instead.
+    if (node && node->isShadowRoot())
+        node = node->parentOrShadowHostNode();
+
+    if (!node)
+        return true;
+
+    Node* eventTarget = event.shiftKey() ? hoveredNodeForEvent(m_webViewImpl->mainFrameImpl()->frame(), event, false) : nullptr;
+    if (eventTarget == node)
+        eventTarget = nullptr;
+
+    if (node && m_inspectModeHighlightConfig) {
+        m_hoveredNodeForInspectMode = node;
+        highlightNode(node, eventTarget, *m_inspectModeHighlightConfig, event.ctrlKey() || event.metaKey());
+    }
+    return true;
+}
+
+bool InspectorOverlayImpl::handleMousePress()
+{
+    if (m_inspectMode == InspectorDOMAgent::NotSearching)
+        return false;
+
+    if (m_hoveredNodeForInspectMode) {
+        if (m_domAgent)
+            m_domAgent->inspect(m_hoveredNodeForInspectMode.get());
+        m_hoveredNodeForInspectMode.clear();
+        return true;
+    }
+    return false;
+}
+
+bool InspectorOverlayImpl::handleGestureEvent(const PlatformGestureEvent& event)
+{
+    if (m_inspectMode == InspectorDOMAgent::NotSearching || event.type() != PlatformEvent::GestureTap)
+        return false;
+    Node* node = hoveredNodeForEvent(m_webViewImpl->mainFrameImpl()->frame(), event, false);
+    if (node && m_inspectModeHighlightConfig) {
+        highlightNode(node, *m_inspectModeHighlightConfig, false);
+        if (m_domAgent)
+            m_domAgent->inspect(node);
+        return true;
+    }
+    return false;
+}
+
+bool InspectorOverlayImpl::handleTouchEvent(const PlatformTouchEvent& event)
+{
+    if (m_inspectMode == InspectorDOMAgent::NotSearching)
+        return false;
+    Node* node = hoveredNodeForEvent(m_webViewImpl->mainFrameImpl()->frame(), event, false);
+    if (node && m_inspectModeHighlightConfig) {
+        highlightNode(node, *m_inspectModeHighlightConfig, false);
+        if (m_domAgent)
+            m_domAgent->inspect(node);
+        return true;
+    }
+    return false;
 }
 
 } // namespace blink

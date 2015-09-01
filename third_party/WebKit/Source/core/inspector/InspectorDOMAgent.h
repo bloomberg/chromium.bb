@@ -36,6 +36,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/InspectorHighlight.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/JSONValues.h"
 #include "platform/geometry/FloatQuad.h"
@@ -71,8 +72,6 @@ class PlatformTouchEvent;
 class InspectorRevalidateDOMTask;
 class ShadowRoot;
 
-struct InspectorHighlightConfig;
-
 typedef String ErrorString;
 
 class CORE_EXPORT InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>, public InspectorBackendDispatcher::DOMCommandHandler {
@@ -87,13 +86,15 @@ public:
         virtual void didModifyDOMAttr(Element*) = 0;
     };
 
+    enum SearchMode { NotSearching, SearchingForNormal, SearchingForUAShadow };
+
     class Client {
     public:
         virtual ~Client() { }
-        virtual void setInspectModeEnabled(bool) { }
         virtual void hideHighlight() { }
-        virtual void highlightNode(Node*, Node* eventTarget, const InspectorHighlightConfig&, bool omitTooltip) { }
+        virtual void highlightNode(Node*, const InspectorHighlightConfig&, bool omitTooltip) { }
         virtual void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&) { }
+        virtual void setInspectMode(SearchMode searchMode, PassOwnPtr<InspectorHighlightConfig>) { }
     };
 
     static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, Client* client)
@@ -103,6 +104,7 @@ public:
 
     static String toErrorString(ExceptionState&);
     static bool getPseudoElementType(PseudoId, TypeBuilder::DOM::PseudoType::Enum*);
+    static ShadowRoot* userAgentShadowRoot(Node*);
 
     ~InspectorDOMAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -184,10 +186,6 @@ public:
     static String documentURLString(Document*);
 
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
-    bool handleMousePress();
-    bool handleGestureEvent(LocalFrame*, const PlatformGestureEvent&);
-    bool handleTouchEvent(LocalFrame*, const PlatformTouchEvent&);
-    bool handleMouseMove(LocalFrame*, const PlatformMouseEvent&);
 
     InspectorHistory* history() { return m_history.get(); }
 
@@ -205,8 +203,6 @@ public:
     Document* assertDocument(ErrorString*, int nodeId);
 
 private:
-    enum SearchMode { NotSearching, SearchingForNormal, SearchingForUAShadow };
-
     InspectorDOMAgent(InspectorPageAgent*, InjectedScriptManager*, Client*);
 
     void setDocument(Document*);
@@ -264,9 +260,6 @@ private:
     typedef WillBeHeapHashMap<String, WillBeHeapVector<RefPtrWillBeMember<Node> > > SearchResults;
     SearchResults m_searchResults;
     OwnPtrWillBeMember<InspectorRevalidateDOMTask> m_revalidateTask;
-    SearchMode m_searchingForNode;
-    OwnPtr<InspectorHighlightConfig> m_inspectModeHighlightConfig;
-    RefPtrWillBeMember<Node> m_hoveredNodeForInspectMode;
     OwnPtrWillBeMember<InspectorHistory> m_history;
     OwnPtrWillBeMember<DOMEditor> m_domEditor;
     bool m_suppressAttributeModifiedEvent;

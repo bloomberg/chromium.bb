@@ -487,7 +487,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
         adoptPtr(new PageInjectedScriptHostClient()));
 
     if (m_overlay)
-        m_overlay->init(m_cssAgent.get(), debuggerAgent);
+        m_overlay->init(m_cssAgent.get(), debuggerAgent, m_domAgent.get());
 }
 
 void WebDevToolsAgentImpl::registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
@@ -558,56 +558,6 @@ void WebDevToolsAgentImpl::detach()
 void WebDevToolsAgentImpl::continueProgram()
 {
     ClientMessageLoopAdapter::continueProgram();
-}
-
-bool WebDevToolsAgentImpl::handleInputEvent(const WebInputEvent& inputEvent)
-{
-    if (!m_attached)
-        return false;
-
-    if (WebInputEvent::isGestureEventType(inputEvent.type) && inputEvent.type == WebInputEvent::GestureTap) {
-        // Only let GestureTab in (we only need it and we know PlatformGestureEventBuilder supports it).
-        PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(m_webLocalFrameImpl->frameView(), static_cast<const WebGestureEvent&>(inputEvent));
-        return handleGestureEvent(m_webLocalFrameImpl->frame(), gestureEvent);
-    }
-    if (WebInputEvent::isMouseEventType(inputEvent.type) && inputEvent.type != WebInputEvent::MouseEnter) {
-        // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
-        PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(m_webLocalFrameImpl->frameView(), static_cast<const WebMouseEvent&>(inputEvent));
-        return handleMouseEvent(m_webLocalFrameImpl->frame(), mouseEvent);
-    }
-    if (WebInputEvent::isTouchEventType(inputEvent.type)) {
-        PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(m_webLocalFrameImpl->frameView(), static_cast<const WebTouchEvent&>(inputEvent));
-        return handleTouchEvent(m_webLocalFrameImpl->frame(), touchEvent);
-    }
-    return false;
-}
-
-bool WebDevToolsAgentImpl::handleGestureEvent(LocalFrame* frame, const PlatformGestureEvent& event)
-{
-    if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
-        return domAgent->handleGestureEvent(frame, event);
-    return false;
-}
-
-bool WebDevToolsAgentImpl::handleMouseEvent(LocalFrame* frame, const PlatformMouseEvent& event)
-{
-    if (event.type() == PlatformEvent::MouseMoved) {
-        if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
-            return domAgent->handleMouseMove(frame, event);
-        return false;
-    }
-    if (event.type() == PlatformEvent::MousePressed) {
-        if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
-            return domAgent->handleMousePress();
-    }
-    return false;
-}
-
-bool WebDevToolsAgentImpl::handleTouchEvent(LocalFrame* frame, const PlatformTouchEvent& event)
-{
-    if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
-        return domAgent->handleTouchEvent(frame, event);
-    return false;
 }
 
 void WebDevToolsAgentImpl::didCommitLoadForLocalFrame(LocalFrame* frame)

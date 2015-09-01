@@ -2083,10 +2083,6 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     if (m_devToolsEmulator->handleInputEvent(inputEvent))
         return true;
 
-    WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl();
-    if (devTools && devTools->handleInputEvent(inputEvent))
-        return true;
-
     if (InspectorOverlayImpl* overlay = inspectorOverlay()) {
         if (overlay->handleInputEvent(inputEvent))
             return true;

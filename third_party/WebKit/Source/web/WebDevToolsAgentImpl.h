@@ -83,7 +83,6 @@ public:
     void willBeDestroyed();
     WebDevToolsAgentClient* client() { return m_client; }
     InspectorOverlayImpl* overlay() const { return m_overlay.get(); }
-    bool handleInputEvent(const WebInputEvent&);
     void flushPendingProtocolNotifications();
     void dispatchMessageFromFrontend(const String& message);
     void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
@@ -129,9 +128,6 @@ private:
     void didProcessTask() override;
 
     void initializeDeferredAgents();
-    bool handleGestureEvent(LocalFrame*, const PlatformGestureEvent&);
-    bool handleMouseEvent(LocalFrame*, const PlatformMouseEvent&);
-    bool handleTouchEvent(LocalFrame*, const PlatformTouchEvent&);
 
     WebDevToolsAgentClient* m_client;
     RawPtrWillBeMember<WebLocalFrameImpl> m_webLocalFrameImpl;
