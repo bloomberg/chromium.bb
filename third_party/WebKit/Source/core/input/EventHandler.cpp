@@ -2159,6 +2159,7 @@ bool EventHandler::handleGestureLongPress(const GestureEventWithHitTestResults& 
 
     IntPoint hitTestPoint = m_frame->view()->rootFrameToContents(gestureEvent.position());
     HitTestResult result = hitTestResultAtPoint(hitTestPoint);
+    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
     if (selectionController().handleGestureLongPress(gestureEvent, result)) {
         focusDocumentView();
         return true;
@@ -2818,7 +2819,7 @@ bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
     // The contextmenu event is a mouse event even when invoked using the keyboard.
     // This is required for web compatibility.
     PlatformEvent::Type eventType = PlatformEvent::MousePressed;
-    if (m_frame->settings()->showContextMenuOnMouseUp())
+    if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
 
     PlatformMouseEvent mouseEvent(locationInRootFrame, globalPosition, RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
@@ -2841,7 +2842,7 @@ bool EventHandler::sendContextMenuEventForGesture(const GestureEventWithHitTestR
 
     PlatformEvent::Type eventType = PlatformEvent::MousePressed;
 
-    if (m_frame->settings()->showContextMenuOnMouseUp())
+    if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
     else
         modifiers |= PlatformEvent::RightButtonDown;
