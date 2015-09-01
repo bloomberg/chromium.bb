@@ -1358,10 +1358,6 @@ const char kBrowserWindowPlacementPopup[] = "browser.window_placement_popup";
 // manager window to restore on startup.
 const char kTaskManagerWindowPlacement[] = "task_manager.window_placement";
 
-// The most recent stored column visibility of the task manager table to be
-// restored on startup.
-const char kTaskManagerColumnVisibility[] = "task_manager.column_visibility";
-
 // A collection of position, size, and other data relating to app windows to
 // restore on startup.
 const char kAppWindowPlacement[] = "browser.app_window_placement";

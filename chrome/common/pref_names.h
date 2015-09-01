@@ -477,7 +477,6 @@ extern const char kBrowserSuppressDefaultBrowserPrompt[];
 extern const char kBrowserWindowPlacement[];
 extern const char kBrowserWindowPlacementPopup[];
 extern const char kTaskManagerWindowPlacement[];
-extern const char kTaskManagerColumnVisibility[];
 extern const char kAppWindowPlacement[];
 
 extern const char kDownloadDefaultDirectory[];
