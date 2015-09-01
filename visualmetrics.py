@@ -110,12 +110,20 @@ def extract_frames(video, directory, full_resolution, viewport):
 
 def remove_orange_frames(directory, orange_file):
     frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
+    remove = []
+    found_orange = False
     for frame in frames:
         if is_orange_frame(frame, orange_file):
-            logging.debug("Removing orange frame " + frame)
-            os.remove(frame)
+            found_orange = True
+            remove.append(frame)
+        elif not found_orange:
+            remove.append(frame)
         else:
             break
+    if found_orange:
+        for frame in remove:
+            logging.debug("Removing orange frame " + frame)
+            os.remove(frame)
     for frame in reversed(frames):
         if is_orange_frame(frame, orange_file):
             logging.debug("Removing orange frame " + frame + " from the end")

@@ -7,3 +7,6 @@ target/
 /ref
 /out
 /.idea
+*.gz
+
+ios_video.mp4
