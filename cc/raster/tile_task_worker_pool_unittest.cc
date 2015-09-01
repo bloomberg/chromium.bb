@@ -133,9 +133,10 @@ class TileTaskWorkerPoolTest
 
   TileTaskWorkerPoolTest()
       : context_provider_(TestContextProvider::Create()),
-        worker_context_provider_(TestContextProvider::Create()),
+        worker_context_provider_(TestContextProvider::CreateWorker()),
         all_tile_tasks_finished_(
-            base::ThreadTaskRunnerHandle::Get().get(),
+            base::ThreadTaskRunnerHandle::Get()
+                .get(),
             base::Bind(&TileTaskWorkerPoolTest::AllTileTasksFinished,
                        base::Unretained(this))),
         timeout_seconds_(5),

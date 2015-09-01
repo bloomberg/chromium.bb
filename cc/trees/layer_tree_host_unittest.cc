@@ -463,7 +463,7 @@ class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
     explicit MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface(
         bool delegated_rendering)
         : FakeOutputSurface(TestContextProvider::Create(),
-                            TestContextProvider::Create(),
+                            TestContextProvider::CreateWorker(),
                             delegated_rendering) {}
     MOCK_METHOD1(SetWorkerContextShouldAggressivelyFreeResources,
                  void(bool is_visible));

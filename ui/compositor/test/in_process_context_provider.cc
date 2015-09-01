@@ -218,7 +218,9 @@ void InProcessContextProvider::SetMemoryPolicyChangedCallback(
 }
 
 void InProcessContextProvider::OnLostContext() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  // Note: no thread check here as this should not change the thread for which
+  // this context is currently bound. e.g. a worker context might be unbound
+  // and this should not result in it being bound to the current thread.
   {
     base::AutoLock lock(destroyed_lock_);
     if (destroyed_)

@@ -173,6 +173,14 @@ SynchronousCompositorFactoryImpl::CreateOutputSurface(
       CreateContextProviderForCompositor(surface_id, RENDER_COMPOSITOR_CONTEXT);
   scoped_refptr<cc::ContextProvider> worker_context =
       CreateContextProviderForCompositor(0, RENDER_WORKER_CONTEXT);
+  if (!worker_context->BindToCurrentThread())
+    worker_context = nullptr;
+  if (worker_context) {
+    worker_context->SetupLock();
+    // Detach from thread to allow context to be destroyed on a
+    // different thread without being used.
+    worker_context->DetachFromThread();
+  }
 
   return make_scoped_ptr(new SynchronousCompositorOutputSurface(
       onscreen_context, worker_context, routing_id, frame_swap_message_queue));

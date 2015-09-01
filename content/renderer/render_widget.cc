@@ -1022,10 +1022,15 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 
     worker_context_provider = ContextProviderCommandBuffer::Create(
         CreateGraphicsContext3D(false), RENDER_WORKER_CONTEXT);
-    if (!worker_context_provider.get()) {
+    if (!worker_context_provider.get() ||
+        !worker_context_provider->BindToCurrentThread()) {
       // Cause the compositor to wait and try again.
       return scoped_ptr<cc::OutputSurface>();
     }
+    worker_context_provider->SetupLock();
+    // Detach from thread to allow context to be destroyed on a different
+    // thread without being used.
+    worker_context_provider->DetachFromThread();
   }
 
   uint32 output_surface_id = next_output_surface_id_++;

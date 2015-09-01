@@ -25,6 +25,10 @@ class TestContextProvider : public ContextProvider {
     CreateCallback;
 
   static scoped_refptr<TestContextProvider> Create();
+  // Creates a worker context provider that doesn't need to be bound to a
+  // thread and can be used on any thread. This is equivalent to:
+  // Create(); BindToCurrentThread(); SetupLock(); DetachFromThread().
+  static scoped_refptr<TestContextProvider> CreateWorker();
   static scoped_refptr<TestContextProvider> Create(
       scoped_ptr<TestWebGraphicsContext3D> context);
 

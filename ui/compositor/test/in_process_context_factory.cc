@@ -115,6 +115,15 @@ void InProcessContextFactory::CreateOutputSurface(
   scoped_refptr<InProcessContextProvider> worker_context_provider =
       InProcessContextProvider::CreateOffscreen(&gpu_memory_buffer_manager_,
                                                 &image_factory_);
+  if (worker_context_provider &&
+      !worker_context_provider->BindToCurrentThread())
+    worker_context_provider = nullptr;
+  if (worker_context_provider) {
+    worker_context_provider->SetupLock();
+    // Detach from thread to allow context to be destroyed on a different
+    // thread without being used.
+    worker_context_provider->DetachFromThread();
+  }
 
   scoped_ptr<cc::OutputSurface> real_output_surface;
 

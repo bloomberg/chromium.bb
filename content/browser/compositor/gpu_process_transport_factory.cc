@@ -265,6 +265,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         if (shared_worker_context_provider_ &&
             !shared_worker_context_provider_->BindToCurrentThread())
           shared_worker_context_provider_ = nullptr;
+
+        if (shared_worker_context_provider_) {
+          shared_worker_context_provider_->SetupLock();
+          // Detach from thread to allow context to be destroyed on a
+          // different thread without being used.
+          shared_worker_context_provider_->DetachFromThread();
+        }
       }
     }
 

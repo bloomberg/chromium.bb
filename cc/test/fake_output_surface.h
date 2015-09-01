@@ -23,14 +23,15 @@ class FakeOutputSurface : public OutputSurface {
   ~FakeOutputSurface() override;
 
   static scoped_ptr<FakeOutputSurface> Create3d() {
-    return make_scoped_ptr(new FakeOutputSurface(
-        TestContextProvider::Create(), TestContextProvider::Create(), false));
+    return make_scoped_ptr(
+        new FakeOutputSurface(TestContextProvider::Create(),
+                              TestContextProvider::CreateWorker(), false));
   }
 
   static scoped_ptr<FakeOutputSurface> Create3d(
       scoped_refptr<ContextProvider> context_provider) {
     return make_scoped_ptr(new FakeOutputSurface(
-        context_provider, TestContextProvider::Create(), false));
+        context_provider, TestContextProvider::CreateWorker(), false));
   }
 
   static scoped_ptr<FakeOutputSurface> Create3d(
@@ -44,7 +45,7 @@ class FakeOutputSurface : public OutputSurface {
       scoped_ptr<TestWebGraphicsContext3D> context) {
     return make_scoped_ptr(
         new FakeOutputSurface(TestContextProvider::Create(context.Pass()),
-                              TestContextProvider::Create(), false));
+                              TestContextProvider::CreateWorker(), false));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateSoftware(
@@ -54,21 +55,22 @@ class FakeOutputSurface : public OutputSurface {
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d() {
-    return make_scoped_ptr(new FakeOutputSurface(
-        TestContextProvider::Create(), TestContextProvider::Create(), true));
+    return make_scoped_ptr(
+        new FakeOutputSurface(TestContextProvider::Create(),
+                              TestContextProvider::CreateWorker(), true));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
       scoped_refptr<TestContextProvider> context_provider) {
     return make_scoped_ptr(new FakeOutputSurface(
-        context_provider, TestContextProvider::Create(), true));
+        context_provider, TestContextProvider::CreateWorker(), true));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
       scoped_ptr<TestWebGraphicsContext3D> context) {
     return make_scoped_ptr(
         new FakeOutputSurface(TestContextProvider::Create(context.Pass()),
-                              TestContextProvider::Create(), true));
+                              TestContextProvider::CreateWorker(), true));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegatingSoftware(
