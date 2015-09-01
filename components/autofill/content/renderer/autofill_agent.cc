@@ -183,7 +183,7 @@ bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
     return lhs.action < rhs.action;
   if (lhs.is_form_tag != rhs.is_form_tag)
     return lhs.is_form_tag < rhs.is_form_tag;
-  return lhs.fields < rhs.fields;
+  return false;
 }
 
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
@@ -215,8 +215,19 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
 
 void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,
                                              bool is_same_page_navigation) {
-  form_cache_.Reset();
-  submitted_forms_.clear();
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  // TODO(dvadym): check if we need to check if it is main frame navigation
+  // http://crbug.com/443155
+  if (frame->parent())
+    return;  // Not a top-level navigation.
+
+  if (is_same_page_navigation) {
+    OnSamePageNavigationCompleted();
+  } else if (is_new_navigation) {
+    form_cache_.Reset();
+    submitted_forms_.clear();
+    last_interacted_form_.reset();
+  }
 }
 
 void AutofillAgent::DidFinishDocumentLoad() {
@@ -235,9 +246,11 @@ void AutofillAgent::WillSendSubmitEvent(const WebFormElement& form) {
   // no additional message is sent if AutofillAgent::WillSubmitForm() is called
   // (which is itself not guaranteed if the submit event is prevented by
   // JavaScript).
-  Send(new AutofillHostMsg_WillSubmitForm(routing_id(), form_data,
-                                          base::TimeTicks::Now()));
-  submitted_forms_.insert(form_data);
+  if (!submitted_forms_.count(form_data)) {
+    Send(new AutofillHostMsg_WillSubmitForm(routing_id(), form_data,
+                                            base::TimeTicks::Now()));
+    submitted_forms_.insert(form_data);
+  }
 }
 
 void AutofillAgent::WillSubmitForm(const WebFormElement& form) {
@@ -417,6 +430,10 @@ void AutofillAgent::TextFieldDidChangeImpl(
 
   const WebInputElement* input_element = toWebInputElement(&element);
   if (input_element) {
+    // Remember the last form the user interacted with.
+    if (!element.form().isNull())
+      last_interacted_form_ = element.form();
+
     // |password_autofill_agent_| keeps track of all text changes even if
     // it isn't displaying UI.
     password_autofill_agent_->UpdateStateForTextChange(*input_element);
@@ -519,6 +536,9 @@ void AutofillAgent::OnFillForm(int query_id, const FormData& form) {
 
   was_query_node_autofilled_ = element_.isAutofilled();
   FillForm(form, element_);
+  if (!element_.form().isNull())
+    last_interacted_form_ = element_.form();
+
   Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id(),
                                                    base::TimeTicks::Now()));
 }
@@ -595,6 +615,29 @@ void AutofillAgent::OnPreviewPasswordSuggestion(
       username,
       password);
   DCHECK(handled);
+}
+
+void AutofillAgent::OnSamePageNavigationCompleted() {
+  if (last_interacted_form_.isNull())
+    return;
+
+  // Assume form submission only if the form is now gone, either invisible or
+  // removed from the DOM.
+  blink::WebVector<blink::WebFormElement> forms;
+  render_frame()->GetWebFrame()->document().forms(forms);
+  for (size_t i = 0; i < forms.size(); ++i) {
+    const blink::WebFormElement& form = forms[i];
+    if (GetCanonicalActionForForm(last_interacted_form_) ==
+            GetCanonicalActionForForm(form) &&
+        IsWebNodeVisible(form)) {
+      // Found our candidate form, and it is still visible.
+      return;
+    }
+  }
+  // Could not find a visible form equal to our saved form, assume submission.
+  WillSendSubmitEvent(last_interacted_form_);
+  WillSubmitForm(last_interacted_form_);
+  last_interacted_form_.reset();
 }
 
 void AutofillAgent::OnRequestAutocompleteResult(
@@ -785,6 +828,7 @@ void AutofillAgent::didAssociateFormControls(const WebVector<WebNode>& nodes) {
 }
 
 void AutofillAgent::ajaxSucceeded() {
+  OnSamePageNavigationCompleted();
   password_autofill_agent_->AJAXSucceeded();
 }
 

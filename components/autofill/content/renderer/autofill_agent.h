@@ -55,7 +55,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   virtual ~AutofillAgent();
 
  private:
-  // Functor used as a simplified comparison function for FormData.
+  // Functor used as a simplified comparison function for FormData. Only
+  // compares forms at a high level (notably name, origin, action).
   struct FormDataCompare {
     bool operator()(const FormData& lhs, const FormData& rhs) const;
   };
@@ -161,6 +162,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   void OnPreviewPasswordSuggestion(const base::string16& username,
                                    const base::string16& password);
 
+  // Called when a same-page navigation is detected.
+  void OnSamePageNavigationCompleted();
+
   // Called when interactive autocomplete finishes. |message| is printed to
   // the console if non-empty.
   void OnRequestAutocompleteResult(
@@ -248,6 +252,9 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // The form element currently requesting an interactive autocomplete.
   blink::WebFormElement in_flight_request_form_;
+
+  // Last form which was interacted with by the user.
+  blink::WebFormElement last_interacted_form_;
 
   // Was the query node autofilled prior to previewing the form?
   bool was_query_node_autofilled_;
