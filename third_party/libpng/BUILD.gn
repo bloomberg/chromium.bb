@@ -25,15 +25,6 @@ config("libpng_config") {
   }
 }
 
-# Must be in a config because of how GN orders flags (otherwise -Wall will
-# appear after this, and turn it back on).
-config("clang_warnings") {
-  if (is_clang) {
-    # Upstream uses self-assignment to avoid warnings.
-    cflags = [ "-Wno-self-assign" ]
-  }
-}
-
 source_set("libpng_sources") {
   sources = [
     "png.c",
@@ -71,6 +62,14 @@ source_set("libpng_sources") {
     "//third_party/zlib",
   ]
 
+  # Must be in a config because of how GN orders flags (otherwise -Wall will
+  # appear after this, and turn it back on).
+  config("clang_warnings") {
+    if (is_clang) {
+      # Upstream uses self-assignment to avoid warnings.
+      cflags = [ "-Wno-self-assign" ]
+    }
+  }
   configs += [ ":clang_warnings" ]
 }
 

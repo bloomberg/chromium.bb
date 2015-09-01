@@ -10,17 +10,6 @@ config("libusb_config") {
   include_dirs = [ "src/libusb" ]
 }
 
-config("libusb_warnings") {
-  visibility = [ ":*" ]
-  if (is_clang) {
-    # guid_eq in windows_usb.c is unused.
-    cflags = [ "-Wno-unused-function" ]
-    if (is_linux && !use_udev) {
-      cflags += [ "-Wno-pointer-sign" ]
-    }
-  }
-}
-
 static_library("libusb") {
   sources = [
     "src/config.h",
@@ -57,6 +46,15 @@ static_library("libusb") {
   deps = []
   include_dirs = [ "src/libusb/os" ]
 
+  config("libusb_warnings") {
+    if (is_clang) {
+      # guid_eq in windows_usb.c is unused.
+      cflags = [ "-Wno-unused-function" ]
+      if (is_linux && !use_udev) {
+        cflags += [ "-Wno-pointer-sign" ]
+      }
+    }
+  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   configs += [ ":libusb_warnings" ]

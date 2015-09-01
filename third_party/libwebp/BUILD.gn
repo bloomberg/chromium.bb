@@ -162,13 +162,6 @@ source_set("libwebp_enc") {
   ]
 }
 
-config("libwebp_utils_warnings") {
-  if (is_clang) {
-    # See https://code.google.com/p/webp/issues/detail?id=253.
-    cflags = [ "-Wno-incompatible-pointer-types" ]
-  }
-}
-
 source_set("libwebp_utils") {
   sources = [
     "utils/bit_reader.c",
@@ -189,6 +182,12 @@ source_set("libwebp_utils") {
 
   all_dependent_configs = [ ":libwebp_config" ]
 
+  config("libwebp_utils_warnings") {
+    if (is_clang) {
+      # See https://code.google.com/p/webp/issues/detail?id=253.
+      cflags = [ "-Wno-incompatible-pointer-types" ]
+    }
+  }
   public_configs = [ ":libwebp_utils_warnings" ]
 }
 

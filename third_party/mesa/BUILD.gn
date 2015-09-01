@@ -148,15 +148,6 @@ config("mesa_internal_warnings") {
   }
 }
 
-config("mesa_libglslcommon_warnings") {
-  if (is_clang) {
-    cflags = [
-      # https://bugs.freedesktop.org/show_bug.cgi?id=91645:
-      "-Wno-overloaded-virtual",
-    ]
-  }
-}
-
 static_library("mesa_libglslcommon") {
   sources = [
     "$generated_src_dir/mesa/glcpp-lex.c",
@@ -260,6 +251,15 @@ static_library("mesa_libglslcommon") {
     "src/src/glsl/strtod.c",
     "src/src/glsl/strtod.h",
   ]
+
+  config("mesa_libglslcommon_warnings") {
+    if (is_clang) {
+      cflags = [
+        # https://bugs.freedesktop.org/show_bug.cgi?id=91645:
+        "-Wno-overloaded-virtual",
+      ]
+    }
+  }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
