@@ -960,12 +960,12 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     """Test if we can find the list of workon projects."""
     ply_image = 'media-gfx/ply-image'
     ply_image_project = 'chromiumos/third_party/ply-image'
-    kernel = 'sys-kernel/chromeos-kernel'
-    kernel_project = 'chromiumos/third_party/kernel'
+    this = 'chromeos-base/chromite'
+    this_project = 'chromiumos/chromite'
     matches = [
         ([ply_image], set([ply_image_project])),
-        ([kernel], set([kernel_project])),
-        ([ply_image, kernel], set([ply_image_project, kernel_project]))
+        ([this], set([this_project])),
+        ([ply_image, this], set([ply_image_project, this_project]))
     ]
     if portage_util.FindOverlays(constants.BOTH_OVERLAYS):
       for packages, projects in matches:
