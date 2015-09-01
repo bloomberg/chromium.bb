@@ -69,7 +69,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
 import java.util.Locale;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1399,22 +1398,15 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     }
 
     private void waitForStaticLayout() throws InterruptedException {
-        final Callable<Boolean> callable = new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                CompositorViewHolder compositorViewHolder = (CompositorViewHolder)
-                        getActivity().findViewById(R.id.compositor_view_holder);
-                LayoutManager layoutManager = compositorViewHolder.getLayoutManager();
-
-                return layoutManager.getActiveLayout() instanceof StaticLayout;
-            }
-        };
-
         assertTrue("Static Layout never selected after side swipe",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        return ThreadUtils.runOnUiThreadBlockingNoException(callable);
+                        CompositorViewHolder compositorViewHolder = (CompositorViewHolder)
+                                getActivity().findViewById(R.id.compositor_view_holder);
+                        LayoutManager layoutManager = compositorViewHolder.getLayoutManager();
+
+                        return layoutManager.getActiveLayout() instanceof StaticLayout;
                     }
                 }));
     }

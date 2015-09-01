@@ -20,9 +20,6 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-
 /**
  * Tests for the navigation popup.
  */
@@ -233,25 +230,16 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
         });
 
         assertTrue("All favicons did not get updated.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        try {
-                            return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                                @Override
-                                public Boolean call() throws Exception {
-                                    NavigationHistory history = controller.mHistory;
-                                    for (int i = 0; i < history.getEntryCount(); i++) {
-                                        if (history.getEntryAtIndex(i).getFavicon() == null) {
-                                            return false;
-                                        }
-                                    }
-                                    return true;
-                                }
-                            });
-                        } catch (ExecutionException e) {
-                            return false;
+                        NavigationHistory history = controller.mHistory;
+                        for (int i = 0; i < history.getEntryCount(); i++) {
+                            if (history.getEntryAtIndex(i).getFavicon() == null) {
+                                return false;
+                            }
                         }
+                        return true;
                     }
                 }));
 

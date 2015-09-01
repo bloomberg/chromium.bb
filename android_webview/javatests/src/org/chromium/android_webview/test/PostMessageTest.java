@@ -161,16 +161,10 @@ public class PostMessageTest extends AwTestBase {
     // Call on non-UI thread.
     private void expectTitle(final String title) throws Throwable {
         assertTrue("Received title " + mAwContents.getTitle() + " while expecting " + title,
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        return ThreadUtils.runOnUiThreadBlockingNoException(
-                                new Callable<Boolean>() {
-                                    @Override
-                                    public Boolean call() throws Exception {
-                                        return mAwContents.getTitle().equals(title);
-                                    }
-                                });
+                        return mAwContents.getTitle().equals(title);
                     }
                 }));
     }
@@ -634,16 +628,10 @@ public class PostMessageTest extends AwTestBase {
 
     // Call on non-UI thread.
     private void waitUntilPortReady(final AwMessagePort port) throws Throwable {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(
-                        new Callable<Boolean>() {
-                            @Override
-                            public Boolean call() throws Exception {
-                                return port.isReady();
-                            }
-                        });
+                return port.isReady();
             }
         });
     }

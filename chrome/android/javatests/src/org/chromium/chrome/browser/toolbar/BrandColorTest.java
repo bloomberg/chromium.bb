@@ -18,8 +18,6 @@ import org.chromium.content.browser.InterstitialPageDelegateAndroid;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
-import java.util.concurrent.Callable;
-
 /**
  * Contains tests for the brand color feature.
  */
@@ -180,15 +178,10 @@ public class BrandColorTest extends DocumentActivityTestBase {
                         brandColorUrl, delegate.getNative());
             }
         });
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return getActivity().getActivityTab().isShowingInterstitialPage();
-                    }
-                });
+                return getActivity().getActivityTab().isShowingInterstitialPage();
             }
         }));
         checkForBrandColor(getActivity().getResources().getColor(R.color.default_primary_color));

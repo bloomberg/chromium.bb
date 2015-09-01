@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -243,16 +242,10 @@ public final class SyncTestUtil {
      */
     public static void waitForSyncActive(final Context context) throws InterruptedException {
         Assert.assertTrue("Timed out waiting for sync to become active.",
-                CriteriaHelper.pollForCriteria(new Criteria() {
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        return ThreadUtils.runOnUiThreadBlockingNoException(
-                                new Callable<Boolean>() {
-                                    @Override
-                                    public Boolean call() throws Exception {
-                                        return ProfileSyncService.get().isSyncActive();
-                                    }
-                                });
+                        return ProfileSyncService.get().isSyncActive();
                     }
                 }, SYNC_WAIT_TIMEOUT_MS, SYNC_CHECK_INTERVAL_MS));
     }

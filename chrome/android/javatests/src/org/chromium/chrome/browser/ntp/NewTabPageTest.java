@@ -289,15 +289,10 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     }
 
     private boolean waitForTabLoading() throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return mTab.isLoading();
-                    }
-                });
+                return mTab.isLoading();
             }
         });
     }
@@ -313,16 +308,10 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
 
     private void waitForUrlFocusPercent(final NewTabPage ntp, final float percent)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return ntp.getNewTabPageView().getUrlFocusChangeAnimationPercent()
-                                == percent;
-                    }
-                });
+                return ntp.getNewTabPageView().getUrlFocusChangeAnimationPercent() == percent;
             }
         }));
     }
@@ -352,15 +341,10 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
      */
     private void waitForFakeboxTopPosition(final NewTabPage ntp, final int position)
             throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return getFakeboxTop(ntp) == position;
-                    }
-                });
+                return getFakeboxTop(ntp) == position;
             }
         }));
     }

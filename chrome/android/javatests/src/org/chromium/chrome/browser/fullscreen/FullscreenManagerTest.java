@@ -421,40 +421,20 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
     private boolean waitForFullscreenFlag(final Tab tab, final boolean state)
             throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                try {
-                    return ThreadUtils.runOnUiThread(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return isFullscreenFlagSet(tab, state);
-                        }
-                    }).get();
-                } catch (Exception e) {
-                    fail(e.getMessage());
-                    return false;
-                }
+                return isFullscreenFlagSet(tab, state);
             }
         });
     }
 
     private boolean waitForPersistentFullscreen(final ChromeWebContentsDelegateAndroid delegate,
             final boolean state) throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                try {
-                    return ThreadUtils.runOnUiThread(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return state == delegate.isFullscreenForTabOrPending();
-                        }
-                    }).get();
-                } catch (Exception e) {
-                    fail(e.getMessage());
-                    return false;
-                }
+                return state == delegate.isFullscreenForTabOrPending();
             }
         });
     }
@@ -462,67 +442,37 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
     private float waitForTopControlsPosition(final float position)
             throws InterruptedException, ExecutionException {
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                try {
-                    return ThreadUtils.runOnUiThread(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return position == fullscreenManager.getControlOffset();
-                        }
-                    }).get();
-                } catch (Exception e) {
-                    fail(e.getMessage());
-                    return false;
-                }
+                return position == fullscreenManager.getControlOffset();
             }
         });
-        return ThreadUtils.runOnUiThread(new Callable<Float>() {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Float>() {
             @Override
             public Float call() throws Exception {
                 return fullscreenManager.getControlOffset();
             }
-        }).get();
+        });
     }
 
     private boolean waitForNoBrowserTopControlsOffset() throws InterruptedException {
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                try {
-                    return ThreadUtils.runOnUiThread(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return !fullscreenManager.hasBrowserControlOffsetOverride();
-                        }
-                    }).get();
-                } catch (Exception e) {
-                    fail(e.getMessage());
-                    return false;
-                }
+                return !fullscreenManager.hasBrowserControlOffsetOverride();
             }
         });
     }
 
     private boolean waitForPageToBeScrollable(final Tab tab) throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                try {
-                    return ThreadUtils.runOnUiThread(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            ContentViewCore contentViewCore = tab.getContentViewCore();
-                            return contentViewCore.computeVerticalScrollRange()
-                                    > contentViewCore.getContainerView().getHeight();
-                        }
-                    }).get();
-                } catch (Exception e) {
-                    fail(e.getMessage());
-                    return false;
-                }
+                ContentViewCore contentViewCore = tab.getContentViewCore();
+                return contentViewCore.computeVerticalScrollRange()
+                        > contentViewCore.getContainerView().getHeight();
             }
         });
     }

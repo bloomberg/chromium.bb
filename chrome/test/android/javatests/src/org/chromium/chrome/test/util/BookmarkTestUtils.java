@@ -285,12 +285,7 @@ public class BookmarkTestUtils {
         Assert.assertTrue(message, CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                try {
-                    return ThreadUtils.runOnUiThread(criteria).get();
-                } catch (Exception e) {
-                    Assert.fail(e.getMessage());
-                    return false;
-                }
+                return ThreadUtils.runOnUiThreadBlockingNoException(criteria);
             }
         }));
     }

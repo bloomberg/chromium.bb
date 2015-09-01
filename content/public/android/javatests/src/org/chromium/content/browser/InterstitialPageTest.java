@@ -64,20 +64,11 @@ public class InterstitialPageTest extends ContentShellTestBase {
     }
 
     private boolean waitForInterstitial(final boolean shouldBeShown) throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                try {
-                    return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return shouldBeShown
-                                    == getWebContents().isShowingInterstitialPage();
-                        }
-                    });
-                } catch (ExecutionException e) {
-                    return false;
-                }
+                return shouldBeShown
+                        == getWebContents().isShowingInterstitialPage();
             }
         });
     }

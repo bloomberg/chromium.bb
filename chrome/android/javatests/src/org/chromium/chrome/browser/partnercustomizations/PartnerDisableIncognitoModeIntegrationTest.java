@@ -75,22 +75,17 @@ public class PartnerDisableIncognitoModeIntegrationTest extends
 
     private boolean waitForParentalControlsEnabledState(final boolean parentalControlsEnabled)
             throws InterruptedException {
-        return CriteriaHelper.pollForCriteria(new Criteria() {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        // areParentalControlsEnabled is updated on a background thread, so we
-                        // also wait on the isIncognitoModeEnabled to ensure the updates on the
-                        // UI thread have also triggered.
-                        boolean retVal = parentalControlsEnabled
-                                == PartnerBrowserCustomizations.isIncognitoDisabled();
-                        retVal &= parentalControlsEnabled
-                                != PrefServiceBridge.getInstance().isIncognitoModeEnabled();
-                        return retVal;
-                    }
-                });
+                // areParentalControlsEnabled is updated on a background thread, so we
+                // also wait on the isIncognitoModeEnabled to ensure the updates on the
+                // UI thread have also triggered.
+                boolean retVal = parentalControlsEnabled
+                        == PartnerBrowserCustomizations.isIncognitoDisabled();
+                retVal &= parentalControlsEnabled
+                        != PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+                return retVal;
             }
         });
     }

@@ -18,8 +18,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
-import java.util.concurrent.Callable;
-
 /**
  * Tests rich text clipboard functionality.
  */
@@ -62,15 +60,10 @@ public class ClipboardTest extends ContentShellTestBase {
         copy(webContents);
 
         // Waits until data has been made available on the Android clipboard.
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return hasPrimaryClip(clipboardManager);
-                    }
-                });
+                return hasPrimaryClip(clipboardManager);
             }
         }));
 

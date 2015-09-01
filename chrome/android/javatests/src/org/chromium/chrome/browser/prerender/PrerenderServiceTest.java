@@ -25,8 +25,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 
-import java.util.concurrent.Callable;
-
 /**
  * A test suite for the ChromeBowserPrerenderService. This makes sure the service initializes the
  * browser process and the UI and also can carry out prerendering related operations without causing
@@ -187,17 +185,10 @@ public class PrerenderServiceTest extends
     }
 
     private void assertServiceHasPrerenderedUrl(final String url) throws InterruptedException {
-        final Callable<Boolean> callable = new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return WarmupManager.getInstance().hasPrerenderedUrl(url);
-            }
-        };
-
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(callable);
+                return WarmupManager.getInstance().hasPrerenderedUrl(url);
             }
         }));
     }

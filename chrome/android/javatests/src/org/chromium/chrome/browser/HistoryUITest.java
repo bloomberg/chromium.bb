@@ -31,7 +31,6 @@ import org.chromium.content.browser.test.util.UiUtils;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Vector;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
@@ -302,18 +301,14 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
                     }
                 });
         assertNotNull("Main never resumed", mainActivity);
-        assertTrue("Main tab never restored", CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        assertTrue("Main tab never restored", CriteriaHelper.pollForUIThreadCriteria(
+                new Criteria() {
                     @Override
-                    public Boolean call() throws Exception {
+                    public boolean isSatisfied() {
                         return mainActivity.getActivityTab() != null
                                 && !mainActivity.getActivityTab().isFrozen();
                     }
-                });
-            }
-        }));
+                }));
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 mainActivity.getCurrentContentViewCore().getWebContents(), "reloadHistory()");
         assertResultCountReaches(getActivity().getCurrentContentViewCore(), 0);
