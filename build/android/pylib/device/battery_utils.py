@@ -108,11 +108,13 @@ _PACKAGE_UID_INDEX = 4
 _PACKAGE_NAME_INDEX = 5
 # The column containing the uid of the power data.
 _PWI_UID_INDEX = 1
-# The column containing the type of consumption. Only consumtion since last
+# The column containing the type of consumption. Only consumption since last
 # charge are of interest here.
 _PWI_AGGREGATION_INDEX = 2
+_PWS_AGGREGATION_INDEX = _PWI_AGGREGATION_INDEX
 # The column containing the amount of power used, in mah.
 _PWI_POWER_CONSUMPTION_INDEX = 5
+_PWS_POWER_CONSUMPTION_INDEX = _PWI_POWER_CONSUMPTION_INDEX
 
 
 class BatteryUtils(object):
@@ -226,12 +228,16 @@ class BatteryUtils(object):
       retries: number of retries
 
     Returns:
-      Dict of power data, keyed on package names.
+      Dict containing system power, and a per-package power dict keyed on
+      package names.
       {
-        package_name: {
-          'uid': uid,
-          'data': [1,2,3]
-        },
+        'system_total': 23.1,
+        'per_package' : {
+          package_name: {
+            'uid': uid,
+            'data': [1,2,3]
+          },
+        }
       }
     """
     if 'uids' not in self._cache:
@@ -241,6 +247,7 @@ class BatteryUtils(object):
         check_return=True, large_output=True)
     csvreader = csv.reader(dumpsys_output)
     pwi_entries = collections.defaultdict(list)
+    system_total = None
     for entry in csvreader:
       if entry[_DUMP_VERSION_INDEX] not in ['8', '9']:
         # Wrong dumpsys version.
@@ -253,7 +260,7 @@ class BatteryUtils(object):
             and self._cache['uids'].get(current_package)
             != entry[_PACKAGE_UID_INDEX]):
           raise device_errors.CommandFailedError(
-              'Package %s found multiple times with differnt UIDs %s and %s'
+              'Package %s found multiple times with different UIDs %s and %s'
                % (current_package, self._cache['uids'][current_package],
                entry[_PACKAGE_UID_INDEX]))
         self._cache['uids'][current_package] = entry[_PACKAGE_UID_INDEX]
@@ -262,26 +269,16 @@ class BatteryUtils(object):
           and entry[_PWI_AGGREGATION_INDEX] == 'l'):
         pwi_entries[entry[_PWI_UID_INDEX]].append(
             float(entry[_PWI_POWER_CONSUMPTION_INDEX]))
+      elif (_PWS_POWER_CONSUMPTION_INDEX < len(entry)
+          and entry[_ROW_TYPE_INDEX] == 'pws'
+          and entry[_PWS_AGGREGATION_INDEX] == 'l'):
+        # This entry should only appear once.
+        assert system_total is None
+        system_total = float(entry[_PWS_POWER_CONSUMPTION_INDEX])
 
-    return {p: {'uid': uid, 'data': pwi_entries[uid]}
-            for p, uid in self._cache['uids'].iteritems()}
-
-  @decorators.WithTimeoutAndRetriesFromInstance()
-  def GetPackagePowerData(self, package, timeout=None, retries=None):
-    """Get power data for particular package.
-
-    Args:
-      package: Package to get power data on.
-
-    returns:
-      Dict of UID and power data.
-      {
-        'uid': uid,
-        'data': [1,2,3]
-      }
-      None if the package is not found in the power data.
-    """
-    return self.GetPowerData().get(package)
+    per_package = {p: {'uid': uid, 'data': pwi_entries[uid]}
+                   for p, uid in self._cache['uids'].iteritems()}
+    return {'system_total': system_total, 'per_package': per_package}
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetBatteryInfo(self, timeout=None, retries=None):

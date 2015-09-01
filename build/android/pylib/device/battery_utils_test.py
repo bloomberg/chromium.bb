@@ -29,7 +29,8 @@ _DUMPSYS_OUTPUT = [
     '9,0,i,uid,1000,test_package1',
     '9,0,i,uid,1001,test_package2',
     '9,1000,l,pwi,uid,1',
-    '9,1001,l,pwi,uid,2'
+    '9,1001,l,pwi,uid,2',
+    '9,0,l,pws,1728,2000,190,207',
 ]
 
 
@@ -192,8 +193,11 @@ class BatteryUtilsGetPowerData(BatteryUtilsTest):
          _DUMPSYS_OUTPUT)):
       data = self.battery.GetPowerData()
       check = {
+        'system_total': 2000.0,
+        'per_package': {
           'test_package1': {'uid': '1000', 'data': [1.0]},
           'test_package2': {'uid': '1001', 'data': [2.0]}
+        }
       }
       self.assertEqual(data, check)
 
@@ -206,8 +210,11 @@ class BatteryUtilsGetPowerData(BatteryUtilsTest):
           _DUMPSYS_OUTPUT):
         data = self.battery.GetPowerData()
         check = {
+          'system_total': 2000.0,
+          'per_package': {
             'test_package1': {'uid': '1000', 'data': [1.0]},
             'test_package2': {'uid': '1001', 'data': [2.0]}
+          }
         }
         self.assertEqual(data, check)
 
@@ -230,28 +237,13 @@ class BatteryUtilsGetPowerData(BatteryUtilsTest):
       self.battery._cache.clear()
       data = self.battery.GetPowerData()
       check = {
+        'system_total': 2000.0,
+        'per_package': {
           'test_package1': {'uid': '1000', 'data': [1.0]},
           'test_package2': {'uid': '1001', 'data': [2.0]}
+        }
       }
       self.assertEqual(data, check)
-
-  def testGetPackagePowerData(self):
-    with self.assertCalls(
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'],
-            check_return=True, large_output=True),
-         _DUMPSYS_OUTPUT)):
-      data = self.battery.GetPackagePowerData('test_package2')
-      self.assertEqual(data, {'uid': '1001', 'data': [2.0]})
-
-  def testGetPackagePowerData_badPackage(self):
-    with self.assertCalls(
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'],
-            check_return=True, large_output=True),
-         _DUMPSYS_OUTPUT)):
-      data = self.battery.GetPackagePowerData('not_a_package')
-      self.assertEqual(data, None)
 
 
 class BatteryUtilsChargeDevice(BatteryUtilsTest):
