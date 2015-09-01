@@ -759,6 +759,8 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #endif
 
   manifest_manager_ = new ManifestManager(this);
+
+  GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&mojo_shell_));
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
@@ -3835,6 +3837,13 @@ blink::WebBluetooth* RenderFrameImpl::bluetooth() {
 }
 
 blink::WebUSBClient* RenderFrameImpl::usbClient() {
+#if !defined(OS_ANDROID)
+  if (!usb_client_) {
+    mojo::ServiceProviderPtr device_services =
+        ConnectToApplication(GURL(device::kDevicesMojoAppUrl));
+    usb_client_.reset(new WebUSBClientImpl(device_services.Pass()));
+  }
+#endif
   return usb_client_.get();
 }
 
@@ -5083,8 +5092,7 @@ void RenderFrameImpl::RegisterMojoServices() {
 
 mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
     const GURL& url) {
-  if (!mojo_shell_)
-    GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&mojo_shell_));
+  DCHECK(mojo_shell_);
   mojo::ServiceProviderPtr service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url);
