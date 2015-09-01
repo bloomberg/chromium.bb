@@ -21,10 +21,9 @@ public class VersionNumberGetter {
      * @return The latest version if we retrieved one from the Omaha server, or "" if we haven't.
      */
     public String getLatestKnownVersion(
-            Context applicationContext, String prefPackage, String prefLatestVersion) {
+            Context context, String prefPackage, String prefLatestVersion) {
         assert Looper.myLooper() != Looper.getMainLooper();
-        SharedPreferences prefs = applicationContext.getSharedPreferences(
-                prefPackage, Context.MODE_PRIVATE);
+        SharedPreferences prefs = context.getSharedPreferences(prefPackage, Context.MODE_PRIVATE);
         return prefs.getString(prefLatestVersion, "");
     }
 
@@ -32,7 +31,7 @@ public class VersionNumberGetter {
      * Retrieve the version of Chrome we're using.
      * @return The latest version if we retrieved one from the Omaha server, or "" if we haven't.
      */
-    public String getCurrentlyUsedVersion(Context applicationContext) {
-        return BuildInfo.getPackageVersionName(applicationContext);
+    public String getCurrentlyUsedVersion(Context context) {
+        return BuildInfo.getPackageVersionName(context);
     }
 }

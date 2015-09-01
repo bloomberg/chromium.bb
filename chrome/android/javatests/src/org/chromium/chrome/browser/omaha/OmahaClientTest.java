@@ -52,10 +52,6 @@ public class OmahaClientTest extends InstrumentationTestCase {
         SEND, DONT_SEND
     }
 
-    private enum ForceTest {
-        FORCED, NOT_FORCED
-    }
-
     private enum PostStatus {
         DUE, NOT_DUE
     }
@@ -85,7 +81,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         assertTrue("OmahaClient wasn't restarted.", mContext.mOmahaClientRestarted);
         assertNotNull(mContext.mIntentFired);
         assertEquals("POST intent not fired.",
-                OmahaClient.createPostRequestIntent(mContext, false).getAction(),
+                OmahaClient.createPostRequestIntent(mContext).getAction(),
                 mContext.mIntentFired.getAction());
     }
 
@@ -122,7 +118,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         // Send it off and don't crash when the state is restored and the XML is generated.
         HookedOmahaClient omahaClient = HookedOmahaClient.create(mockContext);
         omahaClient.mMockScheduler.setCurrentTime(1000);
-        Intent postIntent = OmahaClient.createPostRequestIntent(mockContext, false);
+        Intent postIntent = OmahaClient.createPostRequestIntent(mockContext);
         omahaClient.onHandleIntent(postIntent);
 
         // Check that the request was actually generated and tried to be sent.
@@ -140,7 +136,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
     public void testOmahaClientDoesNotGenerateRequest() {
         // Change the time so the OmahaClient thinks no request is necessary.
         mOmahaClient.mMockScheduler.setCurrentTime(-1000);
-        Intent intent = OmahaClient.createRegisterRequestIntent(mContext, false);
+        Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
         mOmahaClient.onHandleIntent(intent);
         assertFalse("OmahaClient has a registered request", mOmahaClient.hasRequest());
         assertFalse("OmahaClient was relaunched", mContext.mOmahaClientRestarted);
@@ -154,19 +150,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
     public void testOmahaClientRequestToPost() {
         // Change the time so the OmahaClient thinks a request is overdue.
         mOmahaClient.mMockScheduler.setCurrentTime(1000);
-        Intent intent = OmahaClient.createRegisterRequestIntent(mContext, false);
-        mOmahaClient.onHandleIntent(intent);
-        assertTrue("OmahaClient has no registered request", mOmahaClient.hasRequest());
-        assertTrue("OmahaClient wasn't relaunched", mContext.mOmahaClientRestarted);
-    }
-
-    /**
-     * Makes sure that forcing an XML request generates a request and triggers a post intent.
-     */
-    @SmallTest
-    @Feature({"Omaha", "Main"})
-    public void testOmahaClientForcedRequestToPost() {
-        Intent intent = OmahaClient.createRegisterRequestIntent(mContext, true);
+        Intent intent = OmahaClient.createRegisterRequestIntent(mContext);
         mOmahaClient.onHandleIntent(intent);
         assertTrue("OmahaClient has no registered request", mOmahaClient.hasRequest());
         assertTrue("OmahaClient wasn't relaunched", mContext.mOmahaClientRestarted);
@@ -219,63 +203,56 @@ public class OmahaClientTest extends InstrumentationTestCase {
     @Feature({"Omaha"})
     public void testOmahaClientPostHandsetFailure() {
         postRequestToServer(DeviceType.HANDSET, ServerResponse.FAILURE, ConnectionStatus.RESPONDS,
-                            InstallEvent.DONT_SEND, ForceTest.NOT_FORCED, PostStatus.DUE);
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
     }
 
     @SmallTest
     @Feature({"Omaha"})
     public void testOmahaClientPostHandsetSuccess() {
         postRequestToServer(DeviceType.HANDSET, ServerResponse.SUCCESS, ConnectionStatus.RESPONDS,
-                            InstallEvent.DONT_SEND, ForceTest.NOT_FORCED, PostStatus.DUE);
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
     }
 
     @SmallTest
     @Feature({"Omaha"})
     public void testOmahaClientPostTabletFailure() {
         postRequestToServer(DeviceType.TABLET, ServerResponse.FAILURE, ConnectionStatus.RESPONDS,
-                            InstallEvent.DONT_SEND, ForceTest.NOT_FORCED, PostStatus.DUE);
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
     }
 
     @SmallTest
     @Feature({"Omaha"})
     public void testOmahaClientPostTabletSuccess() {
         postRequestToServer(DeviceType.TABLET, ServerResponse.SUCCESS, ConnectionStatus.RESPONDS,
-                            InstallEvent.DONT_SEND, ForceTest.NOT_FORCED, PostStatus.DUE);
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
     }
 
     @SmallTest
     @Feature({"Omaha"})
     public void testOmahaClientPostHandsetTimeout() {
         postRequestToServer(DeviceType.HANDSET, ServerResponse.FAILURE, ConnectionStatus.TIMES_OUT,
-                            InstallEvent.DONT_SEND, ForceTest.NOT_FORCED, PostStatus.DUE);
+                            InstallEvent.DONT_SEND, PostStatus.DUE);
     }
 
     @SmallTest
     @Feature({"Omaha"})
     public void testOmahaClientPostInstallEventSuccess() {
         postRequestToServer(DeviceType.HANDSET, ServerResponse.SUCCESS, ConnectionStatus.RESPONDS,
-                            InstallEvent.SEND, ForceTest.NOT_FORCED, PostStatus.DUE);
+                            InstallEvent.SEND, PostStatus.DUE);
     }
 
     @SmallTest
     @Feature({"Omaha"})
     public void testOmahaClientPostInstallEventFailure() {
         postRequestToServer(DeviceType.HANDSET, ServerResponse.FAILURE, ConnectionStatus.RESPONDS,
-                            InstallEvent.SEND, ForceTest.NOT_FORCED, PostStatus.DUE);
-    }
-
-    @SmallTest
-    @Feature({"Omaha"})
-    public void testOmahaClientPostForcedPostWhenNotDue() {
-        postRequestToServer(DeviceType.HANDSET, ServerResponse.SUCCESS, ConnectionStatus.RESPONDS,
-                            InstallEvent.DONT_SEND, ForceTest.FORCED, PostStatus.NOT_DUE);
+                            InstallEvent.SEND, PostStatus.DUE);
     }
 
     @SmallTest
     @Feature({"Omaha"})
     public void testOmahaClientPostWhenNotDue() {
         postRequestToServer(DeviceType.HANDSET, ServerResponse.FAILURE, ConnectionStatus.RESPONDS,
-                            InstallEvent.DONT_SEND, ForceTest.NOT_FORCED, PostStatus.NOT_DUE);
+                            InstallEvent.DONT_SEND, PostStatus.NOT_DUE);
     }
 
     /**
@@ -285,12 +262,10 @@ public class OmahaClientTest extends InstrumentationTestCase {
      * @param connectionStatus Whether the connection times out when it tries to contact the
      *                         Omaha server.
      * @param installType Whether we're sending an install event or not.
-     * @param forceType Whether we're testing POSTing a request, regardless of timers.
      * @param postStatus Whether we're due for a POST or not.
      */
     public void postRequestToServer(DeviceType deviceType, ServerResponse response,
-            ConnectionStatus connectionStatus, InstallEvent installType, ForceTest forceType,
-            PostStatus postStatus) {
+            ConnectionStatus connectionStatus, InstallEvent installType, PostStatus postStatus) {
         final boolean succeeded = response == ServerResponse.SUCCESS;
         final boolean sentInstallEvent = installType == InstallEvent.SEND;
 
@@ -309,12 +284,11 @@ public class OmahaClientTest extends InstrumentationTestCase {
             // Rewind the clock so that we don't send the request yet.
             omahaClient.mMockScheduler.setCurrentTime(-1000);
         }
-        Intent postIntent =
-                OmahaClient.createPostRequestIntent(mContext, forceType == ForceTest.FORCED);
+        Intent postIntent = OmahaClient.createPostRequestIntent(mContext);
         omahaClient.onHandleIntent(postIntent);
 
         assertTrue("hasRequest() returned wrong value", succeeded != omahaClient.hasRequest());
-        if (postStatus == PostStatus.NOT_DUE && forceType == ForceTest.NOT_FORCED) {
+        if (postStatus == PostStatus.NOT_DUE) {
             // No POST attempt was made.
             assertTrue("POST was attempted and failed.",
                     omahaClient.getCumulativeFailedAttempts() == 0);
@@ -372,7 +346,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
 
         // Send the POST request.
         mOmahaClient.registerNewRequest(0);
-        Intent postIntent = OmahaClient.createPostRequestIntent(mContext, true);
+        Intent postIntent = OmahaClient.createPostRequestIntent(mContext);
         mOmahaClient.onHandleIntent(postIntent);
 
         // If we're sending an install event, we will immediately attempt to send a ping in a
@@ -402,7 +376,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         assertFalse("OmahaPingService is going to send another install <event>.",
                 mOmahaClient.isSendInstallEvent());
         mOmahaClient.registerNewRequest(0);
-        postIntent = OmahaClient.createPostRequestIntent(mContext, true);
+        postIntent = OmahaClient.createPostRequestIntent(mContext);
         mOmahaClient.onHandleIntent(postIntent);
 
         assertEquals("Didn't send the correct number of XML requests.", numRequests + 1,
@@ -481,13 +455,13 @@ public class OmahaClientTest extends InstrumentationTestCase {
     public void testInstallSource() {
         HookedOmahaClient organicClient = new HookedOmahaClient(mContext, DeviceType.TABLET,
                 ServerResponse.SUCCESS, ConnectionStatus.RESPONDS, false);
-        String organicInstallSource = organicClient.determineInstallSource(mContext);
+        String organicInstallSource = organicClient.determineInstallSource();
         assertEquals("Install source should have been treated as organic.",
                 OmahaClient.INSTALL_SOURCE_ORGANIC, organicInstallSource);
 
         HookedOmahaClient systemImageClient = new HookedOmahaClient(mContext, DeviceType.TABLET,
                 ServerResponse.SUCCESS, ConnectionStatus.RESPONDS, true);
-        String systemImageInstallSource = systemImageClient.determineInstallSource(mContext);
+        String systemImageInstallSource = systemImageClient.determineInstallSource();
         assertEquals("Install source should have been treated as system image.",
                 OmahaClient.INSTALL_SOURCE_SYSTEM, systemImageInstallSource);
     }
@@ -579,17 +553,14 @@ public class OmahaClientTest extends InstrumentationTestCase {
             mSendInstallEvent = state;
         }
 
-        MockExponentialBackoffScheduler getBackoffScheduler() {
-            return mMockScheduler;
-        }
-
         /**
          * Mocks out the scheduler so that no alarms are really created.
          */
         @Override
-        ExponentialBackoffScheduler createBackoffScheduler(String prefPackage, Context context,
-                long base, long max) {
-            mMockScheduler = new MockExponentialBackoffScheduler(prefPackage, context, base, max);
+        ExponentialBackoffScheduler createBackoffScheduler(
+                String prefPackage, Context context, long base, long max) {
+            mMockScheduler =
+                    new MockExponentialBackoffScheduler(prefPackage, context, base, max);
             return mMockScheduler;
         }
 
@@ -604,7 +575,7 @@ public class OmahaClientTest extends InstrumentationTestCase {
         protected HttpURLConnection createConnection() throws RequestFailureException {
             MockConnection connection = null;
             try {
-                URL url = new URL(mMockGenerator.getServerUrl());
+                URL url = new URL(getRequestGenerator().getServerUrl());
                 connection = new MockConnection(url, mIsOnTablet, mSendValidResponse,
                         mSendInstallEvent, mConnectionTimesOut);
                 mMockConnections.addLast(connection);
