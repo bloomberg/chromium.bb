@@ -386,11 +386,13 @@ bool HitTestResult::isLiveLink() const
     return m_innerURLElement && m_innerURLElement->isLiveLink();
 }
 
+// TODO(yosin) We should move |HitTestResult::isMisspelled()| to
+// "SelectionController.cpp" as static function.
 bool HitTestResult::isMisspelled() const
 {
     if (!innerNode() || !innerNode()->layoutObject())
         return false;
-    VisiblePosition pos(innerNode()->layoutObject()->positionForPoint(localPoint()));
+    VisiblePosition pos = visiblePositionOf(innerNode()->layoutObject()->positionForPoint(localPoint()));
     if (pos.isNull())
         return false;
     return m_innerNode->document().markers().markersInRange(

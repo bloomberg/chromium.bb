@@ -2318,7 +2318,7 @@ String Internals::textSurroundingNode(Node* node, int x, int y, unsigned long ma
     if (!node || !node->layoutObject())
         return String();
     blink::WebPoint point(x, y);
-    SurroundingText surroundingText(VisiblePosition(node->layoutObject()->positionForPoint(static_cast<IntPoint>(point))).deepEquivalent().parentAnchoredEquivalent(), maxLength);
+    SurroundingText surroundingText(visiblePositionOf(node->layoutObject()->positionForPoint(static_cast<IntPoint>(point))).deepEquivalent().parentAnchoredEquivalent(), maxLength);
     return surroundingText.content();
 }
 

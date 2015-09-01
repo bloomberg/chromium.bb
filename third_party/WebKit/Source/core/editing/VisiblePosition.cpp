@@ -56,11 +56,6 @@ VisiblePosition::VisiblePosition(const Position& position, TextAffinity affinity
     *this = visiblePositionOf(position, affinity);
 }
 
-VisiblePosition::VisiblePosition(const PositionWithAffinity& positionWithAffinity)
-    : VisiblePosition(positionWithAffinity.position(), positionWithAffinity.affinity())
-{
-}
-
 VisiblePosition VisiblePosition::createWithoutCanonicalization(const PositionWithAffinity& canonicalized)
 {
     VisiblePosition visiblePosition;
@@ -439,7 +434,7 @@ PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const Positi
 
 VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition& pos, const Position& anchor)
 {
-    return VisiblePosition(honorEditingBoundaryAtOrBeforeOf(pos.toPositionWithAffinity(), anchor));
+    return visiblePositionOf(honorEditingBoundaryAtOrBeforeOf(pos.toPositionWithAffinity(), anchor));
 }
 
 VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition& pos, const Position& anchor)
@@ -582,6 +577,11 @@ static PositionWithAffinityTemplate<Strategy> visiblePositionOfAlgorithm(const P
 VisiblePosition visiblePositionOf(const Position& position, TextAffinity affinity)
 {
     return VisiblePosition::createWithoutCanonicalization(visiblePositionOfAlgorithm<EditingStrategy>(position, affinity));
+}
+
+VisiblePosition visiblePositionOf(const PositionWithAffinity& positionWithAffinity)
+{
+    return visiblePositionOf(positionWithAffinity.position(), positionWithAffinity.affinity());
 }
 
 VisiblePosition visiblePositionOf(const PositionInComposedTree& position, TextAffinity affinity)

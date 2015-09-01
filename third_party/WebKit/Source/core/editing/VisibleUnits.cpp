@@ -814,12 +814,12 @@ static PositionInComposedTreeWithAffinity startOfLine(const PositionInComposedTr
 // FIXME: Rename this function to reflect the fact it ignores bidi levels.
 VisiblePosition startOfLine(const VisiblePosition& currentPosition)
 {
-    return VisiblePosition(startOfLine(currentPosition.toPositionWithAffinity(), UseInlineBoxOrdering));
+    return visiblePositionOf(startOfLine(currentPosition.toPositionWithAffinity(), UseInlineBoxOrdering));
 }
 
 VisiblePosition logicalStartOfLine(const VisiblePosition& currentPosition)
 {
-    return VisiblePosition(startOfLine(currentPosition.toPositionWithAffinity(), UseLogicalOrdering));
+    return visiblePositionOf(startOfLine(currentPosition.toPositionWithAffinity(), UseLogicalOrdering));
 }
 
 static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpointComputationMode mode)
@@ -1029,7 +1029,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
         Node* node = layoutObject.node();
         if (node && editingIgnoresContent(node))
             return VisiblePosition(positionInParentBeforeNode(*node));
-        return VisiblePosition(layoutObject.positionForPoint(pointInLine));
+        return visiblePositionOf(layoutObject.positionForPoint(pointInLine));
     }
 
     // Could not find a previous line. This means we must already be on the first line.
@@ -1085,7 +1085,7 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
         Node* node = layoutObject.node();
         if (node && editingIgnoresContent(node))
             return VisiblePosition(positionInParentBeforeNode(*node));
-        return VisiblePosition(layoutObject.positionForPoint(pointInLine));
+        return visiblePositionOf(layoutObject.positionForPoint(pointInLine));
     }
 
     // Could not find a next line. This means we must already be on the last line.

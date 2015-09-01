@@ -76,7 +76,6 @@ public:
     // and make constructors to have private accessibility, since constructors
     // aren't simple, e.g. they update layout tree.
     explicit VisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
-    explicit VisiblePosition(const PositionWithAffinity&);
 
     // Node: Other than |visiblePositionOf()|, we should not use
     // |createWithoutCanonicalization()|.
@@ -146,6 +145,7 @@ PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const Positi
 VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&, const Position& anchor);
 
 CORE_EXPORT VisiblePosition visiblePositionOf(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePosition visiblePositionOf(const PositionWithAffinity&);
 CORE_EXPORT VisiblePosition visiblePositionOf(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
 
 } // namespace blink
