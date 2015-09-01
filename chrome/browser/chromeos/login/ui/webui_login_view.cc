@@ -136,14 +136,6 @@ WebUILoginView::WebUILoginView()
   accel_map_[ui::Accelerator(ui::VKEY_RIGHT, ui::EF_NONE)] =
       kAccelFocusNext;
 
-  // Use KEY_RELEASED because Gaia consumes KEY_PRESSED for up/down key.
-  ui::Accelerator key_up(ui::VKEY_UP, ui::EF_NONE);
-  key_up.set_type(ui::ET_KEY_RELEASED);
-  ui::Accelerator key_down(ui::VKEY_DOWN, ui::EF_NONE);
-  key_down.set_type(ui::ET_KEY_RELEASED);
-  accel_map_[key_up] = kAccelFocusPrev;
-  accel_map_[key_down] = kAccelFocusNext;
-
   accel_map_[ui::Accelerator(
       ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameDeviceRequisition;
