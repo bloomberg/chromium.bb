@@ -50,6 +50,11 @@ NSString* const kXChromeConnectedCookieTemplate =
   return self;
 }
 
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
+
 #pragma mark - WKNavigationDelegate
 
 - (void)webView:(WKWebView*)webView
