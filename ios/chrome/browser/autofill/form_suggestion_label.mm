@@ -107,8 +107,13 @@ UILabel* TextLabel(NSString* text, CGFloat alpha) {
     const CGFloat frameHeight = CGRectGetHeight(proposedFrame);
     CGFloat currentX = kBorderWidth + kSpacing;
 
-    UIImage* iconImage = [UIImage imageNamed:
-        [FormSuggestionLabel imageNameForCreditCardIcon:suggestion.icon]];
+    // [UIImage imageNamed:] writes error message if nil is passed. Prevent
+    // console spam by checking the name first.
+    NSString* iconImageName =
+        [FormSuggestionLabel imageNameForCreditCardIcon:suggestion.icon];
+    UIImage* iconImage = nil;
+    if (iconImageName)
+      iconImage = [UIImage imageNamed:iconImageName];
     if (iconImage) {
       UIImageView* iconView =
           [[[UIImageView alloc] initWithImage:iconImage] autorelease];
