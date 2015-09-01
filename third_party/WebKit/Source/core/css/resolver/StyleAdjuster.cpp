@@ -201,15 +201,6 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         || hasWillChangeThatCreatesStackingContext(style)))
         style.setZIndex(0);
 
-    // will-change:transform should result in the same rendering behavior as having a transform,
-    // including the creation of a containing block for fixed position descendants.
-    // SVG elements can skip this because they implicitly have transforms.
-    bool isSVGElement = e && e->isSVGElement();
-    if (!isSVGElement && !style.hasTransform() && (style.willChangeProperties().contains(CSSPropertyAliasWebkitTransform) || style.willChangeProperties().contains(CSSPropertyTransform))) {
-        bool makeIdentity = true;
-        style.setTransform(TransformOperations(makeIdentity));
-    }
-
     if (doesNotInheritTextDecoration(style, e))
         style.clearAppliedTextDecorations();
 
@@ -236,6 +227,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         || style.hasFilter()))
         style.setTransformStyle3D(TransformStyle3DFlat);
 
+    bool isSVGElement = e && e->isSVGElement();
     if (isSVGElement) {
         // Only the root <svg> element in an SVG document fragment tree honors css position
         if (!(isSVGSVGElement(*e) && e->parentNode() && !e->parentNode()->isSVGElement()))

@@ -881,9 +881,11 @@ public:
     ObjectFit objectFit() const { return static_cast<ObjectFit>(rareNonInheritedData->m_objectFit); }
     LengthPoint objectPosition() const { return rareNonInheritedData->m_objectPosition; }
 
-    // Return true if any transform related property (currently transform/motionPath, transformStyle3D or perspective)
-    // indicates that we are transforming
-    bool hasTransformRelatedProperty() const { return hasTransform() || preserves3D() || hasPerspective(); }
+    // Return true if any transform related property (currently transform/motionPath, transformStyle3D, perspective,
+    // or will-change:transform) indicates that we are transforming. will-change:transform should result in
+    // the same rendering behavior as having a transform, including the creation of a containing block
+    // for fixed position descendants.
+    bool hasTransformRelatedProperty() const { return hasTransform() || preserves3D() || hasPerspective() || hasWillChangeTransformHint(); }
 
     enum ApplyTransformOrigin { IncludeTransformOrigin, ExcludeTransformOrigin };
     enum ApplyMotionPath { IncludeMotionPath, ExcludeMotionPath };
@@ -979,6 +981,7 @@ public:
     bool willChangeContents() const { return rareNonInheritedData->m_willChange->m_contents; }
     bool willChangeScrollPosition() const { return rareNonInheritedData->m_willChange->m_scrollPosition; }
     bool hasWillChangeCompositingHint() const;
+    bool hasWillChangeTransformHint() const;
     bool subtreeWillChangeContents() const { return rareInheritedData->m_subtreeWillChangeContents; }
 
 // attribute setter methods

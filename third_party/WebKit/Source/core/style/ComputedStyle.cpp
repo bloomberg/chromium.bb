@@ -897,6 +897,20 @@ bool ComputedStyle::hasWillChangeCompositingHint() const
     return false;
 }
 
+bool ComputedStyle::hasWillChangeTransformHint() const
+{
+    for (const auto& property: rareNonInheritedData->m_willChange->m_properties) {
+        switch (property) {
+        case CSSPropertyTransform:
+        case CSSPropertyAliasWebkitTransform:
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
 bool ComputedStyle::requireTransformOrigin(ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath) const
 {
     const Vector<RefPtr<TransformOperation>>& transformOperations = transform().operations();
