@@ -16,7 +16,7 @@ class VRDeviceProvider {
   VRDeviceProvider() {}
   virtual ~VRDeviceProvider() {}
 
-  virtual void GetDevices(std::vector<VRDevice*>& devices) = 0;
+  virtual void GetDevices(std::vector<VRDevice*>* devices) = 0;
 
   // If the VR API requires initialization that should happen here.
   virtual void Initialize() = 0;
