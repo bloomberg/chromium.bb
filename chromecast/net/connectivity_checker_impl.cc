@@ -14,6 +14,7 @@
 #include "net/http/http_status_code.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -163,6 +164,7 @@ void ConnectivityCheckerImpl::OnSSLCertificateError(
     bool fatal) {
   LOG(ERROR) << "OnSSLCertificateError: cert_status=" << ssl_info.cert_status;
   timeout_.Cancel();
+  net::SSLClientSocket::ClearSessionCache();
   OnUrlRequestError();
 }
 
