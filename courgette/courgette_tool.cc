@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "courgette/courgette.h"
+#include "courgette/courgette_config.h"
 #include "courgette/streams.h"
 #include "courgette/third_party/bsdiff.h"
 
@@ -429,6 +430,7 @@ int main(int argc, const char* argv[]) {
   base::CommandLine::Init(argc, argv);
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+  courgette::CourgetteConfig::GetInstance()->Initialize(command_line);
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_ALL;
@@ -469,6 +471,10 @@ int main(int argc, const char* argv[]) {
         "Must have exactly one of:\n"
         "  -supported -asm, -dis, -disadj, -gen or -apply, -genbsdiff"
         " or -applybsdiff.");
+
+  if (courgette::CourgetteConfig::GetInstance()->is_experimental()) {
+    fprintf(stderr, "Experimental flag enabled. Do not use in production.\n");
+  }
 
   while (repeat_count-- > 0) {
     if (cmd_sup) {
