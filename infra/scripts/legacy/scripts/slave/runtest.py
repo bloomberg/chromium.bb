@@ -240,10 +240,6 @@ def _Main(options, args, extra_env):
     command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
   command.extend(args[1:])
 
-  # Nuke anything that appears to be stale chrome items in the temporary
-  # directory from previous test runs (i.e.- from crashes or unittest leaks).
-  slave_utils.RemoveChromeTemporaryFiles()
-
   log_processor = None
   if _UsingGtestJson(options):
     log_processor = gtest_utils.GTestJSONParser(
