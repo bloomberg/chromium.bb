@@ -57,10 +57,10 @@ void ConnectivityCheckerImpl::Initialize() {
       check_url_str.empty() ? kDefaultConnectivityCheckUrl : check_url_str));
 
   net::URLRequestContextBuilder builder;
-  builder.set_proxy_config_service(
-      new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect()));
+  builder.set_proxy_config_service(make_scoped_ptr(
+      new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
   builder.DisableHttpCache();
-  url_request_context_.reset(builder.Build());
+  url_request_context_ = builder.Build().Pass();
 
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   task_runner_->PostTask(FROM_HERE,

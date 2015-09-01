@@ -14,6 +14,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
+class NetLog;
 class ProxyConfigService;
 }  // namespace net
 
@@ -37,6 +38,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextGetter);

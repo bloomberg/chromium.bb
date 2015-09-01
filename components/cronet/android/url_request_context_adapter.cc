@@ -139,11 +139,12 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
   DCHECK(config_);
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
-  context_builder.set_network_delegate(new BasicNetworkDelegate());
-  context_builder.set_proxy_config_service(proxy_config_service_.get());
+  context_builder.set_network_delegate(
+      make_scoped_ptr(new BasicNetworkDelegate()));
+  context_builder.set_proxy_config_service(proxy_config_service_.Pass());
   config_->ConfigureURLRequestContextBuilder(&context_builder);
 
-  context_.reset(context_builder.Build());
+  context_ = context_builder.Build().Pass();
 
   if (config_->enable_sdch) {
     DCHECK(context_->sdch_manager());

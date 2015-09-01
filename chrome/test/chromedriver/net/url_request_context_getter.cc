@@ -22,9 +22,9 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
     // net::HttpServer fails to parse headers if user-agent header is blank.
     builder.set_user_agent("chromedriver");
     builder.DisableHttpCache();
-    builder.set_proxy_config_service(
-        new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect()));
-    url_request_context_.reset(builder.Build());
+    builder.set_proxy_config_service(make_scoped_ptr(
+        new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
+    url_request_context_ = builder.Build().Pass();
   }
   return url_request_context_.get();
 }

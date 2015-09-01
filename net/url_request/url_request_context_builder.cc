@@ -129,6 +129,7 @@ class ContainerURLRequestContext : public URLRequestContext {
   explicit ContainerURLRequestContext(
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
       : file_task_runner_(file_task_runner), storage_(this) {}
+  ~ContainerURLRequestContext() override { AssertNoURLRequests(); }
 
   URLRequestContextStorage* storage() {
     return &storage_;
@@ -150,9 +151,6 @@ class ContainerURLRequestContext : public URLRequestContext {
       scoped_ptr<TransportSecurityPersister> transport_security_persister) {
     transport_security_persister = transport_security_persister.Pass();
   }
-
- protected:
-  ~ContainerURLRequestContext() override { AssertNoURLRequests(); }
 
  private:
   // The thread should be torn down last.
@@ -205,7 +203,8 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       http_cache_enabled_(true),
       throttling_enabled_(false),
       backoff_enabled_(false),
-      sdch_enabled_(false) {
+      sdch_enabled_(false),
+      net_log_(nullptr) {
 }
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
@@ -266,9 +265,9 @@ void URLRequestContextBuilder::SetHttpServerProperties(
   http_server_properties_ = http_server_properties.Pass();
 }
 
-URLRequestContext* URLRequestContextBuilder::Build() {
-  ContainerURLRequestContext* context =
-      new ContainerURLRequestContext(file_task_runner_);
+scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
+  scoped_ptr<ContainerURLRequestContext> context(
+      new ContainerURLRequestContext(file_task_runner_));
   URLRequestContextStorage* storage = context->storage();
 
   storage->set_http_user_agent_settings(new StaticHttpUserAgentSettings(
@@ -280,7 +279,9 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   storage->set_network_delegate(network_delegate);
 
   if (net_log_) {
-    storage->set_net_log(net_log_.release());
+    // Unlike the other builder parameters, |net_log_| is not owned by the
+    // builder or resulting context.
+    context->set_net_log(net_log_);
   } else {
     storage->set_net_log(new NetLog);
   }
@@ -365,7 +366,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     storage->set_backoff_manager(new URLRequestBackoffManager());
 
   HttpNetworkSession::Params network_session_params;
-  SetHttpNetworkSessionComponents(context, &network_session_params);
+  SetHttpNetworkSessionComponents(context.get(), &network_session_params);
 
   network_session_params.ignore_certificate_errors =
       http_network_session_params_.ignore_certificate_errors;
@@ -446,7 +447,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   storage->set_job_factory(top_job_factory.release());
   // TODO(willchan): Support sdch.
 
-  return context;
+  return context.Pass();
 }
 
 }  // namespace net

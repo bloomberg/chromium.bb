@@ -53,8 +53,8 @@ class URLRequestContextBuilderTest : public PlatformTest {
                      base::FilePath(
                          FILE_PATH_LITERAL("net/data/url_request_unittest"))) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-    builder_.set_proxy_config_service(
-        new ProxyConfigServiceFixed(ProxyConfig::CreateDirect()));
+    builder_.set_proxy_config_service(make_scoped_ptr(
+        new ProxyConfigServiceFixed(ProxyConfig::CreateDirect())));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   }
 

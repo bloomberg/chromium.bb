@@ -108,9 +108,9 @@ ServiceURLRequestContextGetter::GetURLRequestContext() {
     net::URLRequestContextBuilder builder;
     builder.set_user_agent(user_agent_);
     builder.set_accept_language("en-us,fr");
-    builder.set_proxy_config_service(proxy_config_service_.release());
+    builder.set_proxy_config_service(proxy_config_service_.Pass());
     builder.set_throttling_enabled(true);
-    url_request_context_.reset(builder.Build());
+    url_request_context_ = builder.Build().Pass();
   }
   return url_request_context_.get();
 }

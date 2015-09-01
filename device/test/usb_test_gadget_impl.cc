@@ -143,8 +143,13 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
 
   // net::URLRequestContextGetter implementation
   net::URLRequestContext* GetURLRequestContext() override {
-    context_builder_.set_proxy_service(net::ProxyService::CreateDirect());
-    return context_builder_.Build();
+    if (!context_) {
+      net::URLRequestContextBuilder context_builder;
+      context_builder.set_proxy_service(
+          make_scoped_ptr(net::ProxyService::CreateDirect()));
+      context_ = context_builder.Build().Pass();
+    }
+    return context_.get();
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
@@ -152,7 +157,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
     return network_task_runner_;
   }
 
-  net::URLRequestContextBuilder context_builder_;
+  scoped_ptr<net::URLRequestContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 };
 

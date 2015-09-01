@@ -25,10 +25,11 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_.get()) {
     net::URLRequestContextBuilder builder;
     builder.SetFileTaskRunner(file_task_runner_);
-    builder.set_net_log(new VlogNetLog());
+    net_log_.reset(new VlogNetLog());
+    builder.set_net_log(net_log_.get());
     builder.DisableHttpCache();
-    builder.set_proxy_config_service(proxy_config_service_.release());
-    url_request_context_.reset(builder.Build());
+    builder.set_proxy_config_service(proxy_config_service_.Pass());
+    url_request_context_ = builder.Build().Pass();
   }
   return url_request_context_.get();
 }

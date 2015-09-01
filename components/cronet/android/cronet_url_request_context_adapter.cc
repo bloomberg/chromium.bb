@@ -166,22 +166,18 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
 
-  scoped_ptr<net::NetLog> net_log(new net::NetLog);
+  net_log_.reset(new net::NetLog);
   scoped_ptr<net::NetworkDelegate> network_delegate(new BasicNetworkDelegate());
 #if defined(DATA_REDUCTION_PROXY_SUPPORT)
   DCHECK(!data_reduction_proxy_);
   // For now, the choice to enable the data reduction proxy happens once,
   // at initialization. It cannot be disabled thereafter.
   if (!config->data_reduction_proxy_key.empty()) {
-    data_reduction_proxy_.reset(
-        new CronetDataReductionProxy(
-            config->data_reduction_proxy_key,
-            config->data_reduction_primary_proxy,
-            config->data_reduction_fallback_proxy,
-            config->data_reduction_secure_proxy_check_url,
-            config->user_agent,
-            GetNetworkTaskRunner(),
-            net_log.get()));
+    data_reduction_proxy_.reset(new CronetDataReductionProxy(
+        config->data_reduction_proxy_key, config->data_reduction_primary_proxy,
+        config->data_reduction_fallback_proxy,
+        config->data_reduction_secure_proxy_check_url, config->user_agent,
+        GetNetworkTaskRunner(), net_log_.get()));
     network_delegate =
         data_reduction_proxy_->CreateNetworkDelegate(network_delegate.Pass());
     ScopedVector<net::URLRequestInterceptor> interceptors;
@@ -189,9 +185,9 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     context_builder.SetInterceptors(interceptors.Pass());
   }
 #endif  // defined(DATA_REDUCTION_PROXY_SUPPORT)
-  context_builder.set_network_delegate(network_delegate.release());
-  context_builder.set_net_log(net_log.release());
-  context_builder.set_proxy_config_service(proxy_config_service_.release());
+  context_builder.set_network_delegate(network_delegate.Pass());
+  context_builder.set_net_log(net_log_.get());
+  context_builder.set_proxy_config_service(proxy_config_service_.Pass());
   config->ConfigureURLRequestContextBuilder(&context_builder);
 
   // Set up pref file if storage path is specified.
@@ -220,7 +216,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         http_server_properties_manager.Pass());
   }
 
-  context_.reset(context_builder.Build());
+  context_ = context_builder.Build().Pass();
 
   default_load_flags_ = net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES;

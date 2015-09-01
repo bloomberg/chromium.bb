@@ -26,6 +26,7 @@ class SingleThreadTaskRunner;
 
 namespace net {
 class HttpServerPropertiesManager;
+class NetLog;
 class ProxyConfigService;
 class SdchOwner;
 class URLRequestContext;
@@ -111,6 +112,7 @@ class CronetURLRequestContextAdapter {
   // |pref_service_| should outlive the HttpServerPropertiesManager owned by
   // |context_|.
   scoped_ptr<PrefService> pref_service_;
+  scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::URLRequestContext> context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_refptr<JsonPrefStore> json_pref_store_;

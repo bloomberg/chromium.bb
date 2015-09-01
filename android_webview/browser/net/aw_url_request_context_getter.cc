@@ -64,7 +64,7 @@ void ApplyCmdlineOverridesToURLRequestContextBuilder(
             net::HostResolver::CreateDefaultResolver(NULL)));
     host_resolver->SetRulesFromString(
         command_line.GetSwitchValueASCII(switches::kHostResolverRules));
-    builder->set_host_resolver(host_resolver.release());
+    builder->set_host_resolver(host_resolver.Pass());
   }
 }
 
@@ -205,9 +205,11 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK(browser_context);
 
   builder.set_network_delegate(
-      browser_context->GetDataReductionProxyIOData()->CreateNetworkDelegate(
-          aw_network_delegate.Pass(),
-          false /* No UMA is produced to track bypasses. */ ).release());
+      browser_context->GetDataReductionProxyIOData()
+          ->CreateNetworkDelegate(
+              aw_network_delegate.Pass(),
+              false /* No UMA is produced to track bypasses. */)
+          .Pass());
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
@@ -216,14 +218,13 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   // Create the proxy without a resolver since we rely on this local HTTP proxy.
   // TODO(sgurun) is this behavior guaranteed through SDK?
   builder.set_proxy_service(
-      net::ProxyService::CreateWithoutProxyResolver(
-          proxy_config_service_.release(),
-          net_log_.get()));
+      make_scoped_ptr(net::ProxyService::CreateWithoutProxyResolver(
+          proxy_config_service_.release(), net_log_.get())));
   builder.set_net_log(net_log_.get());
   builder.SetCookieAndChannelIdStores(cookie_store_, NULL);
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
 
-  url_request_context_.reset(builder.Build());
+  url_request_context_ = builder.Build().Pass();
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
   net::HttpNetworkSession::Params network_session_params;
 

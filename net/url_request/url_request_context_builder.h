@@ -100,11 +100,12 @@ class NET_EXPORT URLRequestContextBuilder {
 
   // These functions are mutually exclusive.  The ProxyConfigService, if
   // set, will be used to construct a ProxyService.
-  void set_proxy_config_service(ProxyConfigService* proxy_config_service) {
-    proxy_config_service_.reset(proxy_config_service);
+  void set_proxy_config_service(
+      scoped_ptr<ProxyConfigService> proxy_config_service) {
+    proxy_config_service_ = proxy_config_service.Pass();
   }
-  void set_proxy_service(ProxyService* proxy_service) {
-    proxy_service_.reset(proxy_service);
+  void set_proxy_service(scoped_ptr<ProxyService> proxy_service) {
+    proxy_service_ = proxy_service.Pass();
   }
 
   // Call these functions to specify hard-coded Accept-Language
@@ -136,22 +137,22 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 #endif
 
+  // Unlike the other setters, the builder does not take ownership of the
+  // NetLog.
   // TODO(mmenke):  Probably makes sense to get rid of this, and have consumers
   // set their own NetLog::Observers instead.
-  void set_net_log(NetLog* net_log) {
-    net_log_.reset(net_log);
-  }
+  void set_net_log(NetLog* net_log) { net_log_ = net_log; }
 
   // By default host_resolver is constructed with CreateDefaultResolver.
-  void set_host_resolver(HostResolver* host_resolver) {
-    host_resolver_.reset(host_resolver);
+  void set_host_resolver(scoped_ptr<HostResolver> host_resolver) {
+    host_resolver_ = host_resolver.Pass();
   }
 
   // Uses BasicNetworkDelegate by default. Note that calling Build will unset
   // any custom delegate in builder, so this must be called each time before
   // Build is called.
-  void set_network_delegate(NetworkDelegate* delegate) {
-    network_delegate_.reset(delegate);
+  void set_network_delegate(scoped_ptr<NetworkDelegate> delegate) {
+    network_delegate_ = delegate.Pass();
   }
 
   // Adds additional auth handler factories to be used in addition to what is
@@ -231,7 +232,7 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetHttpServerProperties(
       scoped_ptr<HttpServerProperties> http_server_properties);
 
-  URLRequestContext* Build();
+  scoped_ptr<URLRequestContext> Build();
 
  private:
   struct NET_EXPORT SchemeFactory {
@@ -263,7 +264,7 @@ class NET_EXPORT URLRequestContextBuilder {
   HttpCacheParams http_cache_params_;
   HttpNetworkSessionParams http_network_session_params_;
   base::FilePath transport_security_persister_path_;
-  scoped_ptr<NetLog> net_log_;
+  NetLog* net_log_;
   scoped_ptr<HostResolver> host_resolver_;
   scoped_ptr<ChannelIDService> channel_id_service_;
   scoped_ptr<ProxyConfigService> proxy_config_service_;
