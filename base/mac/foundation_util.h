@@ -373,6 +373,14 @@ BASE_EXPORT NSString* FilePathToNSString(const FilePath& path);
 // Converts |str| to a FilePath. Returns an empty path if |str| is nil.
 BASE_EXPORT FilePath NSStringToFilePath(NSString* str);
 
+#if defined(__OBJC__)
+// Converts |range| to an NSRange, returning the new range in |range_out|.
+// Returns true if conversion was successful, false if the values of |range|
+// could not be converted to NSUIntegers.
+BASE_EXPORT bool CFRangeToNSRange(CFRange range,
+                                  NSRange* range_out) WARN_UNUSED_RESULT;
+#endif  // defined(__OBJC__)
+
 }  // namespace mac
 }  // namespace base
 
