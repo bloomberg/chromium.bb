@@ -21,7 +21,9 @@
           var notificationDataList = new Array(
               true, // Check Boolean type
               1024, // Check Number type
+              Number.NaN, // Check Number.NaN type
               'any data', // Check String type
+              null, // Check null
               new Array('Saab', 'Volvo', 'BMW'),  // Check Array type
               { first: 'first', second: 'second' }  // Check object
           );
@@ -63,7 +65,7 @@
 
                   var pos = event.data.notification.tag;
 
-                  if (typeof notificationDataList[pos] === 'object')
+                  if (typeof notificationDataList[pos] === 'object' && notificationDataList[pos] !== null)
                       assert_object_equals(event.data.notification.data, notificationDataList[pos], 'The data field must be the same.');
                   else
                       assert_equals(event.data.notification.data, notificationDataList[pos], 'The data field must be the same.');
