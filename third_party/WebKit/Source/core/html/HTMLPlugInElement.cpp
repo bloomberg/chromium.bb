@@ -116,6 +116,8 @@ void HTMLPlugInElement::setPersistedPluginWidget(Widget* widget)
         LocalFrame* frame = toPluginView(m_persistedPluginWidget.get())->pluginFrame();
         ASSERT(frame);
         frame->unregisterPluginElement(this);
+        if (!widget)
+            m_persistedPluginWidget->dispose();
     }
     if (widget && widget->isPluginView()) {
         LocalFrame* frame = toPluginView(widget)->pluginFrame();

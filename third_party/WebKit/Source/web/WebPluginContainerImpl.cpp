@@ -606,6 +606,15 @@ WebLayer* WebPluginContainerImpl::platformLayer() const
 
 v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isolate)
 {
+#if ENABLE(OILPAN)
+    // With Oilpan, on plugin element detach dispose() will be called to safely
+    // clear out references, including the pre-emptive destruction of the plugin.
+    //
+    // It clearly has no scriptable object if in such a disposed state.
+    if (!m_webPlugin)
+        return v8::Local<v8::Object>();
+#endif
+
     // The plugin may be destroyed due to re-entrancy when calling
     // v8ScriptableObject below. crbug.com/458776. Hold a reference to the
     // plugin container to prevent this from happening. For Oilpan, 'this'
