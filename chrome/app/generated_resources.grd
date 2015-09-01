@@ -6489,7 +6489,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable Smart Lock Bluetooth Low Energy Discovery.
       </message>
       <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_BLUETOOTH_LOW_ENERGY_DISCOVERY_DESCRIPTION" desc="Description for the flag to enable Smart Lock to discover phones over Bluetooth Low Energy in order to unlock the Chromebook.">
-        Enables a Smart Lock setting that allows Chromebook to discover phones over Bleutooth Low Energy in order to unlock the Chromebook when the phone is in its proximity.
+        Enables a Smart Lock setting that allows Chromebook to discover phones over Bluetooth Low Energy in order to unlock the Chromebook when the phone is in its proximity.
       </message>
       <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_NAME" desc="Title for the flag to enable Smart Lock to require close proximity between the phone and the Chromebook in order to unlock the Chromebook.">
         Enable Smart Lock proximity detection.
