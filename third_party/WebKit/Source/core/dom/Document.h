@@ -57,6 +57,7 @@
 #include "platform/Length.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebFocusType.h"
@@ -1125,7 +1126,7 @@ private:
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();
 
-    void executeScriptsWaitingForResourcesTimerFired(Timer<Document>*);
+    void executeScriptsWaitingForResources();
 
     void loadEventDelayTimerFired(Timer<Document>*);
     void pluginLoadingTimerFired(Timer<Document>*);
@@ -1199,7 +1200,7 @@ private:
     CompatibilityMode m_compatibilityMode;
     bool m_compatibilityModeLocked; // This is cheaper than making setCompatibilityMode virtual.
 
-    Timer<Document> m_executeScriptsWaitingForResourcesTimer;
+    CancellableTaskFactory m_executeScriptsWaitingForResourcesTask;
 
     bool m_hasAutofocused;
     Timer<Document> m_clearFocusedElementTimer;
