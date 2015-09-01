@@ -875,7 +875,7 @@ gfx::Rect DrawableContentRectFromPropertyTrees(
   gfx::Rect drawable_content_rect = MathUtil::MapEnclosingClippedRect(
       DrawTransformFromPropertyTrees(layer, transform_tree),
       gfx::Rect(layer->bounds()));
-  if (layer->is_clipped() && layer->clip_tree_index() > 0) {
+  if (layer->is_clipped()) {
     drawable_content_rect.Intersect(
         layer->clip_rect_in_target_space_from_property_trees());
   }
@@ -884,7 +884,7 @@ gfx::Rect DrawableContentRectFromPropertyTrees(
 
 gfx::Rect ClipRectFromPropertyTrees(const LayerImpl* layer,
                                     const TransformTree& transform_tree) {
-  if (layer->is_clipped() && layer->clip_tree_index() > 0)
+  if (layer->is_clipped())
     return layer->clip_rect_in_target_space_from_property_trees();
   return MathUtil::MapEnclosingClippedRect(
       DrawTransformFromPropertyTrees(layer, transform_tree),

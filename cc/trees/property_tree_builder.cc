@@ -155,9 +155,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
         data_for_children->clip_tree->Insert(node, parent_id);
   }
 
-  layer->SetClipTreeIndex(has_unclipped_surface
-                              ? kUnclippedRootClipTreeNodeId
-                              : data_for_children->clip_tree_parent);
+  layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
 
   layer->set_is_clipped(data_for_children->ancestor_clips_subtree);
 
