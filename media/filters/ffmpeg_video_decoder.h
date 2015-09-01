@@ -27,6 +27,8 @@ class DecoderBuffer;
 
 class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
  public:
+  static bool IsCodecSupported(VideoCodec codec);
+
   explicit FFmpegVideoDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~FFmpegVideoDecoder() override;

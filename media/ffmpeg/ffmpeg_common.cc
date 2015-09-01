@@ -168,7 +168,7 @@ static VideoCodec CodecIDToVideoCodec(AVCodecID codec_id) {
   return kUnknownVideoCodec;
 }
 
-static AVCodecID VideoCodecToCodecID(VideoCodec video_codec) {
+AVCodecID VideoCodecToCodecID(VideoCodec video_codec) {
   switch (video_codec) {
     case kCodecH264:
       return AV_CODEC_ID_H264;

@@ -74,7 +74,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
   class DecoderImpl;
   class YUVConverter;
 
-  void OnInitializeComplete(int32_t result);
+  void OnInitializeFailed();
   void OnDecodeComplete(int32_t result, uint32_t decode_id);
   void OnOutputComplete(scoped_ptr<PendingFrame> frame);
   void SendPictures();

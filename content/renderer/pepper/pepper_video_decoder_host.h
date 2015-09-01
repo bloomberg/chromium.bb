@@ -89,7 +89,6 @@ class CONTENT_EXPORT PepperVideoDecoderHost
 
   // These methods are needed by VideoDecodeShim, to look like a
   // VideoDecodeAccelerator.
-  void OnInitializeComplete(int32_t result);
   const uint8_t* DecodeIdToAddress(uint32_t decode_id);
   void RequestTextures(uint32 requested_num_of_buffers,
                        const gfx::Size& dimensions,
@@ -121,8 +120,6 @@ class CONTENT_EXPORT PepperVideoDecoderHost
 
   ppapi::host::ReplyMessageContext flush_reply_context_;
   ppapi::host::ReplyMessageContext reset_reply_context_;
-  // Only used when in software fallback mode.
-  ppapi::host::ReplyMessageContext initialize_reply_context_;
 
   bool initialized_;
 

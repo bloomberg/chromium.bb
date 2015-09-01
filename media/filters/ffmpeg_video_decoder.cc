@@ -65,6 +65,12 @@ static void ReleaseVideoBufferImpl(void* opaque, uint8* data) {
   video_frame.swap(reinterpret_cast<VideoFrame**>(&opaque));
 }
 
+// static
+bool FFmpegVideoDecoder::IsCodecSupported(VideoCodec codec) {
+  FFmpegGlue::InitializeFFmpeg();
+  return avcodec_find_decoder(VideoCodecToCodecID(codec)) != nullptr;
+}
+
 FFmpegVideoDecoder::FFmpegVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner), state_(kUninitialized),

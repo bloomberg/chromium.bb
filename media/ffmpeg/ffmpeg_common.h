@@ -108,9 +108,11 @@ MEDIA_EXPORT void AVCodecContextToAudioDecoderConfig(
 MEDIA_EXPORT ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout,
                                                               int channels);
 
+MEDIA_EXPORT AVCodecID VideoCodecToCodecID(VideoCodec video_codec);
+
 // Converts FFmpeg's audio sample format to Chrome's SampleFormat.
 MEDIA_EXPORT SampleFormat
-    AVSampleFormatToSampleFormat(AVSampleFormat sample_format);
+AVSampleFormatToSampleFormat(AVSampleFormat sample_format);
 
 // Converts FFmpeg's pixel formats to its corresponding supported video format.
 MEDIA_EXPORT VideoPixelFormat

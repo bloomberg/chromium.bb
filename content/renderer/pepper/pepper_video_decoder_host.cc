@@ -168,10 +168,11 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   shim_texture_pool_size = std::max(shim_texture_pool_size,
                                     min_picture_count_);
   decoder_.reset(new VideoDecoderShim(this, shim_texture_pool_size));
-  initialize_reply_context_ = context->MakeReplyMessageContext();
-  decoder_->Initialize(media_profile, this);
+  if (!decoder_->Initialize(media_profile, this))
+    return PP_ERROR_FAILED;
 
-  return PP_OK_COMPLETIONPENDING;
+  initialized_ = true;
+  return PP_OK;
 #endif
 }
 
@@ -417,16 +418,6 @@ void PepperVideoDecoderHost::NotifyError(
   }
   host()->SendUnsolicitedReply(
       pp_resource(), PpapiPluginMsg_VideoDecoder_NotifyError(pp_error));
-}
-
-void PepperVideoDecoderHost::OnInitializeComplete(int32_t result) {
-  if (!initialized_) {
-    if (result == PP_OK)
-      initialized_ = true;
-    initialize_reply_context_.params.set_result(result);
-    host()->SendReply(initialize_reply_context_,
-                      PpapiPluginMsg_VideoDecoder_InitializeReply());
-  }
 }
 
 const uint8_t* PepperVideoDecoderHost::DecodeIdToAddress(uint32_t decode_id) {

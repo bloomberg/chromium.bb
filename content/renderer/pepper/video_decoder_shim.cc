@@ -39,6 +39,19 @@ static const uint32_t kGrInvalidateState =
     kView_GrGLBackendState | kVertex_GrGLBackendState |
     kProgram_GrGLBackendState | kPixelStore_GrGLBackendState;
 
+namespace {
+
+bool IsCodecSupported(media::VideoCodec codec) {
+#if !defined(MEDIA_DISABLE_LIBVPX)
+  if (codec == media::kCodecVP9)
+    return true;
+#endif
+
+  return media::FFmpegVideoDecoder::IsCodecSupported(codec);
+}
+
+}  // namespace
+
 // YUV->RGB converter class using a shader and FBO.
 class VideoDecoderShim::YUVConverter {
  public:
@@ -638,17 +651,18 @@ class VideoDecoderShim::DecoderImpl {
   // WeakPtr is bound to main_message_loop_. Use only in shim callbacks.
   base::WeakPtr<VideoDecoderShim> shim_;
   scoped_ptr<media::VideoDecoder> decoder_;
+  bool initialized_ = false;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   // Queue of decodes waiting for the decoder.
   typedef std::queue<PendingDecode> PendingDecodeQueue;
   PendingDecodeQueue pending_decodes_;
-  bool awaiting_decoder_;
+  bool awaiting_decoder_ = false;
   // VideoDecoder returns pictures without information about the decode buffer
   // that generated it, but VideoDecoder implementations used in this class
   // (media::FFmpegVideoDecoder and media::VpxVideoDecoder) always generate
   // corresponding frames before decode is finished. |decode_id_| is used to
   // store id of the current buffer while Decode() call is pending.
-  uint32_t decode_id_;
+  uint32_t decode_id_ = 0;
 
   base::WeakPtrFactory<DecoderImpl> weak_ptr_factory_;
 };
@@ -657,8 +671,6 @@ VideoDecoderShim::DecoderImpl::DecoderImpl(
     const base::WeakPtr<VideoDecoderShim>& proxy)
     : shim_(proxy),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      awaiting_decoder_(false),
-      decode_id_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -713,6 +725,12 @@ void VideoDecoderShim::DecoderImpl::Reset() {
                               media::VideoDecoder::kAborted, decode.decode_id));
     pending_decodes_.pop();
   }
+  // Don't need to call Reset() if the |decoder_| hasn't been initialized.
+  if (!initialized_) {
+    OnResetComplete();
+    return;
+  }
+
   decoder_->Reset(base::Bind(&VideoDecoderShim::DecoderImpl::OnResetComplete,
                              weak_ptr_factory_.GetWeakPtr()));
 }
@@ -728,15 +746,18 @@ void VideoDecoderShim::DecoderImpl::Stop() {
 }
 
 void VideoDecoderShim::DecoderImpl::OnInitDone(bool success) {
-  int32_t result = success ? PP_OK : PP_ERROR_NOTSUPPORTED;
+  if (!success) {
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoDecoderShim::OnInitializeFailed, shim_));
+    return;
+  }
 
-  main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoDecoderShim::OnInitializeComplete, shim_,
-                            result));
+  initialized_ = true;
+  DoDecode();
 }
 
 void VideoDecoderShim::DecoderImpl::DoDecode() {
-  if (pending_decodes_.empty() || awaiting_decoder_)
+  if (!initialized_ || pending_decodes_.empty() || awaiting_decoder_)
     return;
 
   awaiting_decoder_ = true;
@@ -851,9 +872,11 @@ bool VideoDecoderShim::Initialize(
     codec = media::kCodecVP9;
   DCHECK_NE(codec, media::kUnknownVideoCodec);
 
-  if (!yuv_converter_->Initialize()) {
+  if (!IsCodecSupported(codec))
     return false;
-  }
+
+  if (!yuv_converter_->Initialize())
+    return false;
 
   media::VideoDecoderConfig config(
       codec, profile, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_UNSPECIFIED,
@@ -867,6 +890,9 @@ bool VideoDecoderShim::Initialize(
       base::Bind(&VideoDecoderShim::DecoderImpl::Initialize,
                  base::Unretained(decoder_impl_.get()),
                  config));
+
+  state_ = DECODING;
+
   // Return success, even though we are asynchronous, to mimic
   // media::VideoDecodeAccelerator.
   return true;
@@ -893,7 +919,7 @@ void VideoDecoderShim::Decode(const media::BitstreamBuffer& bitstream_buffer) {
 void VideoDecoderShim::AssignPictureBuffers(
     const std::vector<media::PictureBuffer>& buffers) {
   DCHECK(RenderThreadImpl::current());
-  DCHECK_EQ(state_, DECODING);
+  DCHECK_NE(state_, UNINITIALIZED);
   if (buffers.empty()) {
     NOTREACHED();
     return;
@@ -947,15 +973,11 @@ void VideoDecoderShim::Destroy() {
   delete this;
 }
 
-void VideoDecoderShim::OnInitializeComplete(int32_t result) {
+void VideoDecoderShim::OnInitializeFailed() {
   DCHECK(RenderThreadImpl::current());
   DCHECK(host_);
 
-  if (result == PP_OK) {
-    state_ = DECODING;
-  }
-
-  host_->OnInitializeComplete(result);
+  host_->NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
 }
 
 void VideoDecoderShim::OnDecodeComplete(int32_t result, uint32_t decode_id) {
