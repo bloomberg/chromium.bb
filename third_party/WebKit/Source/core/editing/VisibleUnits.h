@@ -88,6 +88,9 @@ CORE_EXPORT bool isVisuallyEquivalentCandidate(const PositionInComposedTree&);
 CORE_EXPORT Position canonicalPositionOf(const Position&);
 CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
 
+// Bounds of (possibly transformed) caret in absolute coords
+CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
+
 UChar32 characterAfter(const VisiblePosition&);
 UChar32 characterBefore(const VisiblePosition&);
 

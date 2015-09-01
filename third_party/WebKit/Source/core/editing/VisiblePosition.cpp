@@ -495,16 +495,6 @@ VisiblePosition createVisiblePosition(const PositionInComposedTree& position, Te
     return VisiblePosition::createWithoutCanonicalization(PositionWithAffinity(toPositionInDOMTree(canonicalized.position()), canonicalized.affinity()));
 }
 
-IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition)
-{
-    LayoutObject* layoutObject;
-    LayoutRect localRect = localCaretRectOfPosition(visiblePosition.toPositionWithAffinity(), layoutObject);
-    if (localRect.isEmpty() || !layoutObject)
-        return IntRect();
-
-    return layoutObject->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
-}
-
 #ifndef NDEBUG
 
 void VisiblePosition::debugPosition(const char* msg) const

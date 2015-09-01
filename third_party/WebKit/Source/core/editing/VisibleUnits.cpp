@@ -2437,6 +2437,16 @@ bool isVisuallyEquivalentCandidate(const PositionInComposedTree& position)
     return isVisuallyEquivalentCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
+IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition)
+{
+    LayoutObject* layoutObject;
+    LayoutRect localRect = localCaretRectOfPosition(visiblePosition.toPositionWithAffinity(), layoutObject);
+    if (localRect.isEmpty() || !layoutObject)
+        return IntRect();
+
+    return layoutObject->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
+}
+
 static VisiblePosition skipToEndOfEditingBoundary(const VisiblePosition& pos, const Position& anchor)
 {
     if (pos.isNull())

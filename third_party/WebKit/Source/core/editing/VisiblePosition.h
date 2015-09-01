@@ -112,10 +112,6 @@ private:
     TextAffinity m_affinity;
 };
 
-// TODO(yosin) We should move |absoluteCaretBoundsOf()| to "VisibleUnits.cpp".
-// Bounds of (possibly transformed) caret in absolute coords
-CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
-
 // TODO(yosin) We should move |leftPositionOf()| and |rightPositionOf()| to
 // "VisibleUnits.cpp".
 VisiblePosition leftPositionOf(const VisiblePosition&);
