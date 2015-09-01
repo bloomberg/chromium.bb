@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/find_in_page_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -81,6 +83,13 @@ class FindInPageControllerTest : public InProcessBrowserTest {
  public:
   FindInPageControllerTest() {
     chrome::DisableFindBarAnimationsDuringTesting(true);
+  }
+
+  // Disable new downloads UI as it is very very slow. https://crbug.com/526577
+  // TODO(dbeam): remove this once the downloads UI is not slow.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableMaterialDesignDownloads);
   }
 
  protected:

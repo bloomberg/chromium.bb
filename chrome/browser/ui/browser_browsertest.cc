@@ -1341,10 +1341,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
   ui_test_utils::NavigateToURL(browser(), history_url);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 
-  GURL downloads_url(chrome::kChromeUIDownloadsURL);
-  ui_test_utils::NavigateToURL(browser(), downloads_url);
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
-
   GURL blank_url(url::kAboutBlankURL);
   ui_test_utils::NavigateToURL(browser(), blank_url);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));

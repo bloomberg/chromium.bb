@@ -202,6 +202,10 @@ void BrowserNavigatorTest::SetUpCommandLine(base::CommandLine* command_line) {
   // Disable settings-in-a-window so that we can use the settings page and
   // sub-pages to test browser navigation.
   command_line->AppendSwitch(::switches::kDisableSettingsWindow);
+
+  // Disable new downloads UI as it is very very slow. https://crbug.com/526577
+  // TODO(dbeam): remove this once the downloads UI is not slow.
+  command_line->AppendSwitch(switches::kDisableMaterialDesignDownloads);
 }
 
 void BrowserNavigatorTest::Observe(

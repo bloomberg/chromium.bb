@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browser_test.h"
@@ -27,6 +29,13 @@ class WebUIBrowserExpectFailTest : public WebUIBrowserTest {
   WebUIBrowserExpectFailTest() {
     EXPECT_FALSE(s_test_);
     s_test_ = this;
+  }
+
+  // Disable new downloads UI as it is very very slow. https://crbug.com/526577
+  // TODO(dbeam): remove this once the downloads UI is not slow.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebUIBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableMaterialDesignDownloads);
   }
 
  protected:
