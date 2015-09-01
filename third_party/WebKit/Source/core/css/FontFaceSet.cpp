@@ -504,8 +504,8 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
         return false;
 
     // Interpret fontString in the same way as the 'font' attribute of CanvasRenderingContext2D.
-    RefPtrWillBeRawPtr<MutableStylePropertySet> parsedStyle = MutableStylePropertySet::create(HTMLQuirksMode);
-    CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, fontString, true, HTMLStandardMode, 0);
+    RefPtrWillBeRawPtr<MutableStylePropertySet> parsedStyle = MutableStylePropertySet::create(HTMLStandardMode);
+    CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, fontString, true, 0);
     if (parsedStyle->isEmpty())
         return false;
 

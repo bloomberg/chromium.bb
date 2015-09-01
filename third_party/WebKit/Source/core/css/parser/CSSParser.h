@@ -33,7 +33,7 @@ public:
     static void parseSelector(const CSSParserContext&, const String&, CSSSelectorList&);
     static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&);
     // Returns whether anything was changed.
-    static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, CSSParserMode, StyleSheetContents*);
+    static bool parseValue(MutableStylePropertySet*, CSSPropertyID unresolvedProperty, const String&, bool important, StyleSheetContents*);
 
     // This is for non-shorthands only
     static PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID, const String&, const CSSParserContext& = strictCSSParserContext());

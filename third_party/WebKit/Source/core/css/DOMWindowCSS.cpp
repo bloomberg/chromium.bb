@@ -49,8 +49,8 @@ bool DOMWindowCSS::supports(const String& property, const String& value)
     ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
 
     // This will return false when !important is present
-    RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create(HTMLQuirksMode);
-    return CSSParser::parseValue(dummyStyle.get(), unresolvedProperty, value, false, HTMLStandardMode, 0);
+    RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create(HTMLStandardMode);
+    return CSSParser::parseValue(dummyStyle.get(), unresolvedProperty, value, false, 0);
 }
 
 bool DOMWindowCSS::supports(const String& conditionText)

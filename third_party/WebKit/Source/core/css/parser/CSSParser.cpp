@@ -51,11 +51,12 @@ void CSSParser::parseSheetForInspector(const CSSParserContext& context, StyleShe
     return CSSParserImpl::parseStyleSheetForInspector(text, context, styleSheet, observer);
 }
 
-bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, CSSParserMode parserMode, StyleSheetContents* styleSheet)
+bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID unresolvedProperty, const String& string, bool important, StyleSheetContents* styleSheet)
 {
     if (string.isEmpty())
         return false;
     CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
+    CSSParserMode parserMode = declaration->cssParserMode();
     RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(resolvedProperty, string, parserMode);
     if (value)
         return declaration->setProperty(CSSProperty(resolvedProperty, value.release(), important));
