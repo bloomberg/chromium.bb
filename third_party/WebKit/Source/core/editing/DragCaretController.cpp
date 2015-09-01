@@ -56,7 +56,7 @@ void DragCaretController::setCaretPosition(const PositionWithAffinity& position)
 
     if (Node* node = m_position.deepEquivalent().anchorNode())
         invalidateCaretRect(node);
-    m_position = visiblePositionOf(position);
+    m_position = createVisiblePosition(position);
     Document* document = nullptr;
     if (Node* node = m_position.deepEquivalent().anchorNode()) {
         invalidateCaretRect(node);

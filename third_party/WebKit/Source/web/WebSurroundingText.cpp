@@ -43,7 +43,7 @@ void WebSurroundingText::initialize(const WebNode& webNode, const WebPoint& node
     if (!node || !node->layoutObject())
         return;
 
-    m_private.reset(new SurroundingText(visiblePositionOf(node->layoutObject()->positionForPoint(static_cast<IntPoint>(nodePoint))).deepEquivalent().parentAnchoredEquivalent(), maxLength));
+    m_private.reset(new SurroundingText(createVisiblePosition(node->layoutObject()->positionForPoint(static_cast<IntPoint>(nodePoint))).deepEquivalent().parentAnchoredEquivalent(), maxLength));
 }
 
 void WebSurroundingText::initialize(const WebRange& webRange, size_t maxLength)

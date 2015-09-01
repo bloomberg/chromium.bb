@@ -72,12 +72,12 @@ class CORE_EXPORT VisiblePosition final {
 public:
     VisiblePosition() : m_affinity(VP_DEFAULT_AFFINITY) { }
 
-    // TODO(yosin) We should use |visiblePositionOf()| instead of constructor,
-    // and make constructors to have private accessibility, since constructors
-    // aren't simple, e.g. they update layout tree.
+    // TODO(yosin) We should use |createVisiblePosition()| instead of
+    // constructor, and make constructors to have private accessibility, since
+    // constructors aren't simple, e.g. they update layout tree.
     explicit VisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
 
-    // Node: Other than |visiblePositionOf()|, we should not use
+    // Node: Other than |createVisiblePosition()|, we should not use
     // |createWithoutCanonicalization()|.
     static VisiblePosition createWithoutCanonicalization(const PositionWithAffinity& canonicalized);
 
@@ -129,9 +129,9 @@ PositionWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionWithAffinity
 PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const PositionInComposedTreeWithAffinity&, const PositionInComposedTree& anchor);
 VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition&, const Position& anchor);
 
-CORE_EXPORT VisiblePosition visiblePositionOf(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
-CORE_EXPORT VisiblePosition visiblePositionOf(const PositionWithAffinity&);
-CORE_EXPORT VisiblePosition visiblePositionOf(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePosition createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);
+CORE_EXPORT VisiblePosition createVisiblePosition(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
 
 } // namespace blink
 

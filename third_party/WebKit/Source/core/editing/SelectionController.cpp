@@ -155,7 +155,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     }
 
     PositionWithAffinity eventPos = innerNode->layoutObject()->positionForPoint(event.localPoint());
-    VisiblePosition visiblePos = visiblePositionOf(Strategy::toPositionType(eventPos.position()), eventPos.affinity());
+    VisiblePosition visiblePos = createVisiblePosition(Strategy::toPositionType(eventPos.position()), eventPos.affinity());
     if (visiblePos.isNull())
         visiblePos = VisiblePosition(firstPositionInOrBeforeNode(innerNode));
     PositionType pos = Strategy::toPositionType(visiblePos.deepEquivalent());
@@ -164,7 +164,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     TextGranularity granularity = CharacterGranularity;
 
     if (extendSelection && newSelection.isCaretOrRange()) {
-        VisibleSelection selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(visiblePositionOf(pos))));
+        VisibleSelection selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(createVisiblePosition(pos))));
         if (selectionInUserSelectAll.isRange()) {
             if (Strategy::selectionStart(selectionInUserSelectAll).compareTo(Strategy::selectionStart(newSelection)) < 0)
                 pos = Strategy::selectionStart(selectionInUserSelectAll);
@@ -215,7 +215,7 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
         return;
 
     PositionWithAffinity rawTargetPosition = selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
-    VisiblePosition targetPosition = visiblePositionOf(Strategy::toPositionType(rawTargetPosition.position()), rawTargetPosition.affinity());
+    VisiblePosition targetPosition = createVisiblePosition(Strategy::toPositionType(rawTargetPosition.position()), rawTargetPosition.affinity());
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())
         return;
@@ -313,7 +313,7 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
     if (!innerNode || !innerNode->layoutObject())
         return;
 
-    VisiblePosition pos = visiblePositionOf(innerNode->layoutObject()->positionForPoint(result.localPoint()));
+    VisiblePosition pos = createVisiblePosition(innerNode->layoutObject()->positionForPoint(result.localPoint()));
     if (pos.isNotNull()) {
         newSelection = VisibleSelection(pos);
         expandSelectionUsingGranularity(newSelection, WordGranularity);
@@ -344,7 +344,7 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(const HitTes
     if (!innerNode || !innerNode->layoutObject())
         return;
 
-    VisiblePosition pos = visiblePositionOf(innerNode->layoutObject()->positionForPoint(result.localPoint()));
+    VisiblePosition pos = createVisiblePosition(innerNode->layoutObject()->positionForPoint(result.localPoint()));
     if (pos.isNotNull()) {
         const Position markerPosition = pos.deepEquivalent().parentAnchoredEquivalent();
         DocumentMarkerVector markers = innerNode->document().markers().markersInRange(EphemeralRange(markerPosition), DocumentMarker::MisspellingMarkers());
@@ -393,7 +393,7 @@ void SelectionController::selectClosestWordOrLinkFromMouseEvent(const MouseEvent
 
     VisibleSelection newSelection;
     Element* URLElement = result.hitTestResult().URLElement();
-    VisiblePosition pos = visiblePositionOf(innerNode->layoutObject()->positionForPoint(result.localPoint()));
+    VisiblePosition pos = createVisiblePosition(innerNode->layoutObject()->positionForPoint(result.localPoint()));
     if (pos.isNotNull() && pos.deepEquivalent().anchorNode()->isDescendantOf(URLElement))
         newSelection = VisibleSelection::selectionFromContentsOfNode(URLElement);
 
@@ -432,7 +432,7 @@ bool SelectionController::handleMousePressEventTripleClick(const MouseEventWithH
         return false;
 
     VisibleSelection newSelection;
-    VisiblePosition pos = visiblePositionOf(innerNode->layoutObject()->positionForPoint(event.localPoint()));
+    VisiblePosition pos = createVisiblePosition(innerNode->layoutObject()->positionForPoint(event.localPoint()));
     if (pos.isNotNull()) {
         newSelection = VisibleSelection(pos);
         expandSelectionUsingGranularity(newSelection, ParagraphGranularity);
@@ -506,7 +506,7 @@ bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestRes
         Node* node = event.innerNode();
         bool caretBrowsing = m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
         if (node && node->layoutObject() && (caretBrowsing || node->hasEditableStyle())) {
-            VisiblePosition pos = visiblePositionOf(node->layoutObject()->positionForPoint(event.localPoint()));
+            VisiblePosition pos = createVisiblePosition(node->layoutObject()->positionForPoint(event.localPoint()));
             newSelection = VisibleSelection(pos);
         }
 
@@ -615,7 +615,7 @@ void SelectionController::passMousePressEventToSubframe(const MouseEventWithHitT
     if (!selection().contains(p))
         return;
 
-    VisiblePosition visiblePos = visiblePositionOf(
+    VisiblePosition visiblePos = createVisiblePosition(
         mev.innerNode()->layoutObject()->positionForPoint(mev.localPoint()));
     VisibleSelection newSelection(visiblePos);
     selection().setSelection(newSelection);

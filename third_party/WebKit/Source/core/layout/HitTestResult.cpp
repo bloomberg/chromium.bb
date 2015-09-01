@@ -392,7 +392,7 @@ bool HitTestResult::isMisspelled() const
 {
     if (!innerNode() || !innerNode()->layoutObject())
         return false;
-    VisiblePosition pos = visiblePositionOf(innerNode()->layoutObject()->positionForPoint(localPoint()));
+    VisiblePosition pos = createVisiblePosition(innerNode()->layoutObject()->positionForPoint(localPoint()));
     if (pos.isNull())
         return false;
     return m_innerNode->document().markers().markersInRange(

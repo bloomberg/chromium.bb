@@ -52,8 +52,8 @@ using namespace HTMLNames;
 VisiblePosition::VisiblePosition(const Position& position, TextAffinity affinity)
 {
     // TODO(yosin) We should make |VisiblePosition| private and make this
-    // constructor to populate member variables by using |visiblePositionOf()|.
-    *this = visiblePositionOf(position, affinity);
+    // constructor to populate member variables by using |createVisiblePosition()|.
+    *this = createVisiblePosition(position, affinity);
 }
 
 VisiblePosition VisiblePosition::createWithoutCanonicalization(const PositionWithAffinity& canonicalized)
@@ -434,7 +434,7 @@ PositionInComposedTreeWithAffinity honorEditingBoundaryAtOrBeforeOf(const Positi
 
 VisiblePosition honorEditingBoundaryAtOrBefore(const VisiblePosition& pos, const Position& anchor)
 {
-    return visiblePositionOf(honorEditingBoundaryAtOrBeforeOf(pos.toPositionWithAffinity(), anchor));
+    return createVisiblePosition(honorEditingBoundaryAtOrBeforeOf(pos.toPositionWithAffinity(), anchor));
 }
 
 VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition& pos, const Position& anchor)
@@ -464,7 +464,7 @@ VisiblePosition honorEditingBoundaryAtOrAfter(const VisiblePosition& pos, const 
 }
 
 template<typename Strategy>
-static PositionWithAffinityTemplate<Strategy> visiblePositionOfAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
+static PositionWithAffinityTemplate<Strategy> createVisiblePositionAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
 {
     const PositionAlgorithm<Strategy> deepPosition = canonicalPositionOf(position);
     if (deepPosition.isNull())
@@ -479,19 +479,19 @@ static PositionWithAffinityTemplate<Strategy> visiblePositionOfAlgorithm(const P
     return PositionWithAffinityTemplate<Strategy>(deepPosition, TextAffinity::Upstream);
 }
 
-VisiblePosition visiblePositionOf(const Position& position, TextAffinity affinity)
+VisiblePosition createVisiblePosition(const Position& position, TextAffinity affinity)
 {
-    return VisiblePosition::createWithoutCanonicalization(visiblePositionOfAlgorithm<EditingStrategy>(position, affinity));
+    return VisiblePosition::createWithoutCanonicalization(createVisiblePositionAlgorithm<EditingStrategy>(position, affinity));
 }
 
-VisiblePosition visiblePositionOf(const PositionWithAffinity& positionWithAffinity)
+VisiblePosition createVisiblePosition(const PositionWithAffinity& positionWithAffinity)
 {
-    return visiblePositionOf(positionWithAffinity.position(), positionWithAffinity.affinity());
+    return createVisiblePosition(positionWithAffinity.position(), positionWithAffinity.affinity());
 }
 
-VisiblePosition visiblePositionOf(const PositionInComposedTree& position, TextAffinity affinity)
+VisiblePosition createVisiblePosition(const PositionInComposedTree& position, TextAffinity affinity)
 {
-    PositionInComposedTreeWithAffinity canonicalized = visiblePositionOfAlgorithm<EditingInComposedTreeStrategy>(position, affinity);
+    PositionInComposedTreeWithAffinity canonicalized = createVisiblePositionAlgorithm<EditingInComposedTreeStrategy>(position, affinity);
     return VisiblePosition::createWithoutCanonicalization(PositionWithAffinity(toPositionInDOMTree(canonicalized.position()), canonicalized.affinity()));
 }
 

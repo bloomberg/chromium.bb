@@ -129,7 +129,7 @@ static String selectMisspelledWord(LocalFrame* selectedFrame)
     HitTestResult hitTestResult = selectedFrame->eventHandler().
         hitTestResultAtPoint(selectedFrame->page()->contextMenuController().hitTestResult().pointInInnerNodeFrame());
     Node* innerNode = hitTestResult.innerNode();
-    VisiblePosition pos = visiblePositionOf(innerNode->layoutObject()->positionForPoint(
+    VisiblePosition pos = createVisiblePosition(innerNode->layoutObject()->positionForPoint(
         hitTestResult.localPoint()));
 
     if (pos.isNull())

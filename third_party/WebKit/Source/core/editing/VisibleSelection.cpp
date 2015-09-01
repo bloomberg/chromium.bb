@@ -1026,7 +1026,7 @@ void VisibleSelection::adjustStartAndEndInComposedTree()
 
 VisiblePosition VisibleSelection::visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const
 {
-    return visiblePositionOf(positionRespectingEditingBoundary(localPoint, targetNode));
+    return createVisiblePosition(positionRespectingEditingBoundary(localPoint, targetNode));
 }
 
 PositionWithAffinity VisibleSelection::positionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const
