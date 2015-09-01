@@ -28,6 +28,10 @@ class PageNavigator;
 class WebContents;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace ui {
 class DropTargetEvent;
 }
@@ -145,6 +149,13 @@ bool IsValidBookmarkDropLocation(Profile* profile,
                                  const bookmarks::BookmarkNodeData& data,
                                  const bookmarks::BookmarkNode* drop_parent,
                                  int index);
+
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+// TODO(estade): If Mac wants to use these, return gfx::Image instead.
+gfx::ImageSkia GetBookmarkFolderIcon();
+gfx::ImageSkia GetBookmarkSupervisedFolderIcon();
+gfx::ImageSkia GetBookmarkManagedFolderIcon();
+#endif
 
 }  // namespace chrome
 

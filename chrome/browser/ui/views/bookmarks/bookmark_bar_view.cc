@@ -1341,20 +1341,17 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
       const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(i);
-      const gfx::ImageSkia* icon = nullptr;
+      gfx::ImageSkia icon;
       if (node->is_url()) {
         const gfx::Image& image = model_->GetFavicon(node);
-        icon = image.IsEmpty() ? GetImageSkiaNamed(IDR_DEFAULT_FAVICON)
-                               : image.ToImageSkia();
+        icon = image.IsEmpty() ? *GetImageSkiaNamed(IDR_DEFAULT_FAVICON)
+                               : image.AsImageSkia();
       } else {
-        icon = GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
+        icon = chrome::GetBookmarkFolderIcon();
       }
 
-      button_drag_utils::SetDragImage(node->url(),
-                                      node->GetTitle(),
-                                      *icon,
-                                      &press_pt,
-                                      data,
+      button_drag_utils::SetDragImage(node->url(), node->GetTitle(), icon,
+                                      &press_pt, data,
                                       GetBookmarkButton(i)->GetWidget());
       WriteBookmarkDragData(node, data);
       return;
@@ -1623,7 +1620,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarksButton() {
       new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_OTHER_BOOKMARKS);
   button->SetImage(views::Button::STATE_NORMAL,
-                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER));
+                   chrome::GetBookmarkFolderIcon());
   button->set_context_menu_controller(this);
   button->set_tag(kOtherFolderButtonTag);
   return button;
@@ -1635,7 +1632,7 @@ MenuButton* BookmarkBarView::CreateManagedBookmarksButton() {
       new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_MANAGED_BOOKMARKS);
   button->SetImage(views::Button::STATE_NORMAL,
-                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED));
+                   chrome::GetBookmarkManagedFolderIcon());
   button->set_context_menu_controller(this);
   button->set_tag(kManagedFolderButtonTag);
   return button;
@@ -1647,7 +1644,7 @@ MenuButton* BookmarkBarView::CreateSupervisedBookmarksButton() {
       new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_SUPERVISED_BOOKMARKS);
   button->SetImage(views::Button::STATE_NORMAL,
-                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER_SUPERVISED));
+                   chrome::GetBookmarkSupervisedFolderIcon());
   button->set_context_menu_controller(this);
   button->set_tag(kSupervisedFolderButtonTag);
   return button;
@@ -1685,7 +1682,7 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   views::MenuButton* button =
       new BookmarkFolderButton(this, node->GetTitle(), this, false);
   button->SetImage(views::Button::STATE_NORMAL,
-                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER));
+                   chrome::GetBookmarkFolderIcon());
   ConfigureButton(node, button);
   return button;
 }

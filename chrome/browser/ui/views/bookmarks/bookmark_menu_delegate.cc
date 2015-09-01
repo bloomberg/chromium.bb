@@ -454,17 +454,18 @@ void BookmarkMenuDelegate::BuildMenusForPermanentNodes(
     views::MenuItemView* menu) {
   BookmarkModel* model = GetBookmarkModel();
   bool added_separator = false;
-  BuildMenuForPermanentNode(model->other_node(), IDR_BOOKMARK_BAR_FOLDER, menu,
+  BuildMenuForPermanentNode(model->other_node(),
+                            chrome::GetBookmarkFolderIcon(), menu,
                             &added_separator);
-  BuildMenuForPermanentNode(model->mobile_node(), IDR_BOOKMARK_BAR_FOLDER, menu,
+  BuildMenuForPermanentNode(model->mobile_node(),
+                            chrome::GetBookmarkFolderIcon(), menu,
                             &added_separator);
 }
 
-void BookmarkMenuDelegate::BuildMenuForPermanentNode(
-    const BookmarkNode* node,
-    int icon_resource_id,
-    MenuItemView* menu,
-    bool* added_separator) {
+void BookmarkMenuDelegate::BuildMenuForPermanentNode(const BookmarkNode* node,
+                                                     const gfx::ImageSkia& icon,
+                                                     MenuItemView* menu,
+                                                     bool* added_separator) {
   if (!node->IsVisible() || node->GetTotalNodeCount() == 1)
     return;  // No children, don't create a menu.
 
@@ -473,18 +474,16 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(
     menu->AppendSeparator();
   }
 
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* folder_icon = rb->GetImageSkiaNamed(icon_resource_id);
-  AddMenuToMaps(menu->AppendSubMenuWithIcon(next_menu_id_++, node->GetTitle(),
-                                            *folder_icon),
-                node);
+  AddMenuToMaps(
+      menu->AppendSubMenuWithIcon(next_menu_id_++, node->GetTitle(), icon),
+      node);
 }
 
 void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu) {
   // Don't add a separator for this menu.
   bool added_separator = true;
   const BookmarkNode* node = GetManagedBookmarkService()->managed_node();
-  BuildMenuForPermanentNode(node, IDR_BOOKMARK_BAR_FOLDER_MANAGED, menu,
+  BuildMenuForPermanentNode(node, chrome::GetBookmarkManagedFolderIcon(), menu,
                             &added_separator);
 }
 
@@ -492,8 +491,8 @@ void BookmarkMenuDelegate::BuildMenuForSupervisedNode(MenuItemView* menu) {
   // Don't add a separator for this menu.
   bool added_separator = true;
   const BookmarkNode* node = GetManagedBookmarkService()->supervised_node();
-  BuildMenuForPermanentNode(node, IDR_BOOKMARK_BAR_FOLDER_SUPERVISED, menu,
-                            &added_separator);
+  BuildMenuForPermanentNode(node, chrome::GetBookmarkSupervisedFolderIcon(),
+                            menu, &added_separator);
 }
 
 void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
@@ -513,10 +512,8 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
           menu->AppendMenuItemWithIcon(id, node->GetTitle(), *icon);
     } else {
       DCHECK(node->is_folder());
-      gfx::ImageSkia* folder_icon =
-          rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
-      child_menu_item =
-          menu->AppendSubMenuWithIcon(id, node->GetTitle(), *folder_icon);
+      child_menu_item = menu->AppendSubMenuWithIcon(
+          id, node->GetTitle(), chrome::GetBookmarkFolderIcon());
     }
     AddMenuToMaps(child_menu_item, node);
   }
