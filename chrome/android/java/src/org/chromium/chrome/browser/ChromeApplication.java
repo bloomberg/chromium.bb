@@ -603,9 +603,10 @@ public class ChromeApplication extends ContentApplication {
     }
 
     /**
-     * @return A provider of network quality.
+     * @return A provider of external estimates.
+     * @param nativePtr Pointer to the native ExternalEstimateProviderAndroid object.
      */
-    public ExternalEstimateProviderAndroid createExternalEstimateProviderAndroid() {
+    public ExternalEstimateProviderAndroid createExternalEstimateProviderAndroid(long nativePtr) {
         return new ExternalEstimateProviderAndroid();
     }
 

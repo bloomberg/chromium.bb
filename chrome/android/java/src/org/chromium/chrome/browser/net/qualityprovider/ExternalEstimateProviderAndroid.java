@@ -26,14 +26,15 @@ public class ExternalEstimateProviderAndroid {
     private static ExternalEstimateProviderAndroid sExternalEstimateProviderAndroid;
 
     @CalledByNative
-    private static ExternalEstimateProviderAndroid create(Context context) {
+    private static ExternalEstimateProviderAndroid create(Context context, long nativePtr) {
         synchronized (LOCK) {
             if (sExternalEstimateProviderAndroid == null) {
                 assert sThreadCheck == null;
                 assert sExternalEstimateProviderAndroid == null;
                 sThreadCheck = new NonThreadSafe();
                 sExternalEstimateProviderAndroid =
-                        ((ChromeApplication) context).createExternalEstimateProviderAndroid();
+                        ((ChromeApplication) context)
+                                .createExternalEstimateProviderAndroid(nativePtr);
             }
         }
         return sExternalEstimateProviderAndroid;
@@ -98,4 +99,7 @@ public class ExternalEstimateProviderAndroid {
         assert sThreadCheck.calledOnValidThread();
         return NO_VALUE;
     }
+
+    public native void nativeNotifyExternalEstimateProviderAndroidUpdate(
+            long nativeExternalEstimateProviderAndroid);
 }

@@ -6,18 +6,23 @@
 
 #include <stdint.h>
 
+#include "base/message_loop/message_loop.h"
+#include "content/public/browser/browser_thread.h"
 #include "jni/ExternalEstimateProviderAndroid_jni.h"
 
 namespace chrome {
 namespace android {
 
 ExternalEstimateProviderAndroid::ExternalEstimateProviderAndroid()
-    : delegate_(nullptr) {
+    : task_runner_(nullptr), delegate_(nullptr), weak_factory_(this) {
+  if (base::MessageLoop::current())
+    task_runner_ = base::MessageLoop::current()->task_runner();
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(j_external_estimate_provider_.is_null());
   j_external_estimate_provider_.Reset(
       Java_ExternalEstimateProviderAndroid_create(
-          env, base::android::GetApplicationContext()));
+          env, base::android::GetApplicationContext(),
+          reinterpret_cast<intptr_t>(this)));
   DCHECK(!j_external_estimate_provider_.is_null());
   no_value_ = Java_ExternalEstimateProviderAndroid_getNoValue(env);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
@@ -89,6 +94,23 @@ bool ExternalEstimateProviderAndroid::GetTimeSinceLastUpdate(
   }
   *time_since_last_update = base::TimeDelta::FromMilliseconds(seconds);
   return true;
+}
+
+void ExternalEstimateProviderAndroid::
+    NotifyExternalEstimateProviderAndroidUpdate(JNIEnv* env, jobject obj) {
+  if (!task_runner_)
+    return;
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &ExternalEstimateProviderAndroid::NotifyUpdatedEstimateAvailable,
+          weak_factory_.GetWeakPtr()));
+}
+
+void ExternalEstimateProviderAndroid::NotifyUpdatedEstimateAvailable() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (delegate_)
+    delegate_->OnUpdatedEstimateAvailable();
 }
 
 void ExternalEstimateProviderAndroid::OnConnectionTypeChanged(
