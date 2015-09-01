@@ -404,7 +404,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
       ui::ResourceBundle::SmallFont));
   never_button_ = new views::LabelButton(
       this,
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON1));
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
   never_button_->SetStyle(views::Button::STYLE_BUTTON);
   never_button_->SetFontList(
       ui::ResourceBundle::GetSharedInstance().GetFontList(
