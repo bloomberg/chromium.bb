@@ -112,7 +112,7 @@ MixedContentChecker::ContextType MixedContentChecker::contextTypeFromContext(Web
     // Plugins! Oh how dearly we love plugin-loaded content!
     case WebURLRequest::RequestContextPlugin: {
         Settings* settings = frame->settings();
-        return settings || settings->strictMixedContentCheckingForPlugin() ? ContextTypeBlockable : ContextTypeOptionallyBlockable;
+        return settings && settings->strictMixedContentCheckingForPlugin() ? ContextTypeBlockable : ContextTypeOptionallyBlockable;
     }
 
     // "Blockable" mixed content
