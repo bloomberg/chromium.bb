@@ -95,6 +95,11 @@ def CalculateDeviceMd5Sums(paths, device):
     # Push the binary only if it is found to not exist
     # (faster than checking up-front).
     if e.status == 2:
+      # If files were previously pushed as root (adbd running as root), trying
+      # to re-push as non-root causes the push command to report success, but
+      # actually fail. So, wipe the directory first.
+      device.RunShellCommand(['rm', '-rf', MD5SUM_DEVICE_LIB_PATH],
+                             as_root=True, check_return=True)
       device.adb.Push(md5sum_dist_path, MD5SUM_DEVICE_LIB_PATH)
       out = device.RunShellCommand(md5sum_script, check_return=True)
     else:

@@ -213,7 +213,7 @@ class Md5SumTest(unittest.TestCase):
     ]
     error = device_errors.AdbShellCommandFailedError('cmd', 'out', 2)
     device.RunShellCommand = mock.Mock(
-        side_effect=(error, device_md5sum_output))
+        side_effect=(error, '', device_md5sum_output))
 
     with mock.patch('os.path.getsize', return_value=1337):
       out = md5sum.CalculateDeviceMd5Sums(test_path, device)
@@ -221,7 +221,7 @@ class Md5SumTest(unittest.TestCase):
       self.assertTrue('/storage/emulated/legacy/test/file.dat' in out)
       self.assertEquals('0123456789abcdeffedcba9876543210',
                         out['/storage/emulated/legacy/test/file.dat'])
-      self.assertEquals(2, len(device.RunShellCommand.call_args_list))
+      self.assertEquals(3, len(device.RunShellCommand.call_args_list))
       device.adb.Push.assert_called_once_with(
           'test/out/directory/md5sum_dist', '/data/local/tmp/md5sum/')
 
