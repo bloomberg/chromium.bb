@@ -347,22 +347,6 @@ Response InputHandler::SynthesizeScrollGesture(
     const int* y_overscroll,
     const bool* prevent_fling,
     const int* speed,
-    const std::string* gesture_source_type) {
-  return SynthesizeScrollGesture(
-      command_id, x, y, x_distance, y_distance, x_overscroll, y_overscroll,
-      prevent_fling, speed, gesture_source_type, nullptr, nullptr, nullptr);
-}
-
-Response InputHandler::SynthesizeScrollGesture(
-    DevToolsCommandId command_id,
-    int x,
-    int y,
-    const int* x_distance,
-    const int* y_distance,
-    const int* x_overscroll,
-    const int* y_overscroll,
-    const bool* prevent_fling,
-    const int* speed,
     const std::string* gesture_source_type,
     const int* repeat_count,
     const int* repeat_delay_ms,

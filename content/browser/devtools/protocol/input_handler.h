@@ -76,18 +76,6 @@ class InputHandler {
                                   const int* relative_speed,
                                   const std::string* gesture_source_type);
 
-  // TODO(alexclarke): remove this once the protocol patch lands.
-  Response SynthesizeScrollGesture(DevToolsCommandId command_id,
-                                   int x,
-                                   int y,
-                                   const int* x_distance,
-                                   const int* y_distance,
-                                   const int* x_overscroll,
-                                   const int* y_overscroll,
-                                   const bool* prevent_fling,
-                                   const int* speed,
-                                   const std::string* gesture_source_type);
-
   Response SynthesizeScrollGesture(DevToolsCommandId command_id,
                                    int x,
                                    int y,
