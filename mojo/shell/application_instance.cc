@@ -10,9 +10,11 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/content_handler_connection.h"
 
 namespace mojo {
 namespace shell {
+namespace {
 
 // It's valid to specify mojo: URLs in the filter either as mojo:foo or
 // mojo://foo/ - but we store the filter in the latter form.
@@ -29,6 +31,8 @@ CapabilityFilter CanonicalizeFilter(const CapabilityFilter& filter) {
   return canonicalized;
 }
 
+}  // namespace
+
 ApplicationInstance::QueuedClientRequest::QueuedClientRequest()
     : originator(nullptr) {}
 
@@ -41,12 +45,14 @@ ApplicationInstance::ApplicationInstance(
     const Identity& originator_identity,
     const Identity& identity,
     const CapabilityFilter& filter,
+    uint32_t requesting_content_handler_id,
     const base::Closure& on_application_end)
     : manager_(manager),
       originator_identity_(originator_identity),
       identity_(identity),
       filter_(CanonicalizeFilter(filter)),
       allow_any_application_(filter.size() == 1 && filter.count("*") == 1),
+      requesting_content_handler_id_(requesting_content_handler_id),
       on_application_end_(on_application_end),
       application_(application.Pass()),
       binding_(this),
@@ -70,7 +76,9 @@ void ApplicationInstance::ConnectToClient(
     const GURL& requestor_url,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
-    const CapabilityFilter& filter) {
+    const CapabilityFilter& filter,
+    const ConnectToApplicationCallback& callback) {
+  callback.Run(requesting_content_handler_id_);
   if (queue_requests_) {
     QueuedClientRequest* queued_request = new QueuedClientRequest();
     queued_request->originator = originator;
@@ -108,24 +116,26 @@ void ApplicationInstance::ConnectToApplication(
     URLRequestPtr app_request,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
-    CapabilityFilterPtr filter) {
+    CapabilityFilterPtr filter,
+    const ConnectToApplicationCallback& callback) {
   std::string url_string = app_request->url.To<std::string>();
   GURL url(url_string);
   if (!url.is_valid()) {
     LOG(ERROR) << "Error: invalid URL: " << url_string;
+    callback.Run(kInvalidContentHandlerID);
     return;
   }
   if (allow_any_application_ || filter_.find(url.spec()) != filter_.end()) {
     CapabilityFilter capability_filter = GetPermissiveCapabilityFilter();
     if (!filter.is_null())
       capability_filter = filter->filter.To<CapabilityFilter>();
-    manager_->ConnectToApplication(this, app_request.Pass(), std::string(),
-                                   identity_.url, services.Pass(),
-                                   exposed_services.Pass(), capability_filter,
-                                   base::Closure());
+    manager_->ConnectToApplication(
+        this, app_request.Pass(), std::string(), identity_.url, services.Pass(),
+        exposed_services.Pass(), capability_filter, base::Closure(), callback);
   } else {
     LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
         identity_.url << " to: " << url.spec();
+    callback.Run(kInvalidContentHandlerID);
   }
 }
 
@@ -167,12 +177,10 @@ void ApplicationInstance::OnConnectionError() {
     url->url = mojo::String::From(request->requested_url.spec());
     ApplicationInstance* originator =
         manager->GetApplicationInstance(originator_identity_);
-    manager->ConnectToApplication(originator, url.Pass(), std::string(),
-                                  request->requestor_url,
-                                  request->services.Pass(),
-                                  request->exposed_services.Pass(),
-                                  request->filter,
-                                  base::Closure());
+    manager->ConnectToApplication(
+        originator, url.Pass(), std::string(), request->requestor_url,
+        request->services.Pass(), request->exposed_services.Pass(),
+        request->filter, base::Closure(), EmptyConnectCallback());
   }
   STLDeleteElements(&queued_client_requests);
 }
@@ -183,11 +191,9 @@ void ApplicationInstance::OnQuitRequestedResult(bool can_quit) {
 
   queue_requests_ = false;
   for (auto request : queued_client_requests_) {
-    CallAcceptConnection(request->originator,
-                         request->requestor_url,
-                         request->services.Pass(),
-                         request->exposed_services.Pass(),
-                         request->requested_url);
+    CallAcceptConnection(
+        request->originator, request->requestor_url, request->services.Pass(),
+        request->exposed_services.Pass(), request->requested_url);
   }
   STLDeleteElements(&queued_client_requests_);
 }

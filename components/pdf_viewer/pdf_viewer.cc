@@ -53,6 +53,8 @@ void LostContext(void*) {
   DCHECK(false);
 }
 
+void OnGotContentHandlerID(uint32_t content_handler_id) {}
+
 // BitmapUploader is useful if you want to draw a bitmap or color in a View.
 class BitmapUploader : public mojo::SurfaceClient {
  public:
@@ -79,7 +81,7 @@ class BitmapUploader : public mojo::SurfaceClient {
     request2->url = mojo::String::From("mojo:view_manager");
     shell->ConnectToApplication(request2.Pass(),
                                 mojo::GetProxy(&gpu_service_provider), nullptr,
-                                nullptr);
+                                nullptr, base::Bind(&OnGotContentHandlerID));
     ConnectToService(gpu_service_provider.get(), &gpu_service_);
 
     mojo::CommandBufferPtr gles2_client;

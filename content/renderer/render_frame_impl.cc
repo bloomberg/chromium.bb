@@ -537,6 +537,8 @@ bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
+void OnGotContentHandlerID(uint32_t content_handler_id) {}
+
 }  // namespace
 
 // static
@@ -5090,7 +5092,8 @@ mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(url);
   mojo_shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
-                                    nullptr, nullptr);
+                                    nullptr, nullptr,
+                                    base::Bind(&OnGotContentHandlerID));
   return service_provider.Pass();
 }
 

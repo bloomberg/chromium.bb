@@ -7,10 +7,12 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
@@ -31,8 +33,10 @@ const char kTestMimeType[] = "test/mime-type";
 
 class TestMimeTypeFetcher : public Fetcher {
  public:
-  explicit TestMimeTypeFetcher(const FetchCallback& fetch_callback)
-      : Fetcher(fetch_callback), url_("xxx") {
+  TestMimeTypeFetcher(const FetchCallback& fetch_callback,
+                      const GURL& url,
+                      const std::string& mime_type)
+      : Fetcher(fetch_callback), url_(url), mime_type_(mime_type) {
     loader_callback_.Run(make_scoped_ptr(this));
   }
   ~TestMimeTypeFetcher() override {}
@@ -48,12 +52,13 @@ class TestMimeTypeFetcher : public Fetcher {
   void AsPath(
       base::TaskRunner* task_runner,
       base::Callback<void(const base::FilePath&, bool)> callback) override {}
-  std::string MimeType() override { return kTestMimeType; }
+  std::string MimeType() override { return mime_type_; }
   bool HasMojoMagic() override { return false; }
   bool PeekFirstLine(std::string* line) override { return false; }
 
  private:
   const GURL url_;
+  const std::string mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMimeTypeFetcher);
 };
@@ -118,16 +123,41 @@ class TestClient {
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
+class TestContentHandler : public ContentHandler, public ApplicationDelegate {
+ public:
+  TestContentHandler(ApplicationConnection* connection,
+                     InterfaceRequest<ContentHandler> request)
+      : binding_(this, request.Pass()) {}
+
+  // ContentHandler:
+  void StartApplication(InterfaceRequest<Application> application_request,
+                        URLResponsePtr response) override {
+    apps_.push_back(new ApplicationImpl(this, application_request.Pass()));
+  }
+
+ private:
+  StrongBinding<ContentHandler> binding_;
+  ScopedVector<ApplicationImpl> apps_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestContentHandler);
+};
+
 class TestApplicationLoader : public ApplicationLoader,
                               public ApplicationDelegate,
-                              public InterfaceFactory<TestService> {
+                              public InterfaceFactory<TestService>,
+                              public InterfaceFactory<ContentHandler> {
  public:
-  TestApplicationLoader() : context_(nullptr), num_loads_(0) {}
+  TestApplicationLoader()
+      : context_(nullptr), num_loads_(0), create_content_handler_(false) {}
 
   ~TestApplicationLoader() override {
     if (context_)
       ++context_->num_loader_deletes;
     test_app_.reset();
+  }
+
+  void set_create_content_handler(bool value) {
+    create_content_handler_ = true;
   }
 
   void set_context(TestContext* context) { context_ = context; }
@@ -144,21 +174,30 @@ class TestApplicationLoader : public ApplicationLoader,
 
   // ApplicationDelegate implementation.
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
-    connection->AddService(this);
+    connection->AddService<TestService>(this);
+    if (create_content_handler_)
+      connection->AddService<ContentHandler>(this);
     last_requestor_url_ = GURL(connection->GetRemoteApplicationURL());
     return true;
   }
 
-  // InterfaceFactory implementation.
+  // InterfaceFactory<TestService> implementation.
   void Create(ApplicationConnection* connection,
               InterfaceRequest<TestService> request) override {
     new TestServiceImpl(context_, request.Pass());
+  }
+
+  // InterfaceFactory<ContentHandler> implementation.
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<ContentHandler> request) override {
+    new TestContentHandler(connection, request.Pass());
   }
 
   scoped_ptr<ApplicationImpl> test_app_;
   TestContext* context_;
   int num_loads_;
   GURL last_requestor_url_;
+  bool create_content_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TestApplicationLoader);
 };
@@ -418,7 +457,10 @@ class Tester : public ApplicationDelegate,
 
 class TestDelegate : public ApplicationManager::Delegate {
  public:
-  TestDelegate() : create_test_fetcher_(false) {}
+  TestDelegate()
+      : create_test_fetcher_(false),
+        fetcher_url_("xxx"),
+        mime_type_(kTestMimeType) {}
   ~TestDelegate() override {}
 
   void AddMapping(const GURL& from, const GURL& to) { mappings_[from] = to; }
@@ -426,6 +468,10 @@ class TestDelegate : public ApplicationManager::Delegate {
   void set_create_test_fetcher(bool create_test_fetcher) {
     create_test_fetcher_ = create_test_fetcher;
   }
+
+  void set_fetcher_url(const GURL& url) { fetcher_url_ = url; }
+
+  void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
 
   // ApplicationManager::Delegate
   GURL ResolveMappings(const GURL& url) override {
@@ -448,13 +494,15 @@ class TestDelegate : public ApplicationManager::Delegate {
                      const Fetcher::FetchCallback& loader_callback) override {
     if (!create_test_fetcher_)
       return false;
-    new TestMimeTypeFetcher(loader_callback);
+    new TestMimeTypeFetcher(loader_callback, fetcher_url_, mime_type_);
     return true;
   }
 
  private:
   std::map<GURL, GURL> mappings_;
   bool create_test_fetcher_;
+  GURL fetcher_url_;
+  std::string mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
@@ -763,7 +811,8 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
   application_manager_->ConnectToApplication(
       nullptr, request.Pass(), std::string(), GURL(), nullptr, nullptr,
       GetPermissiveCapabilityFilter(),
-      base::Bind(&QuitClosure, base::Unretained(&called)));
+      base::Bind(&QuitClosure, base::Unretained(&called)),
+      EmptyConnectCallback());
   loop_.Run();
   EXPECT_TRUE(called);
 }
@@ -791,7 +840,8 @@ TEST(ApplicationManagerTest2, ContentHandlerConnectionGetsRequestorURL) {
   application_manager.ConnectToApplication(
       nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
       GetPermissiveCapabilityFilter(),
-      base::Bind(&QuitClosure, base::Unretained(&called)));
+      base::Bind(&QuitClosure, base::Unretained(&called)),
+      EmptyConnectCallback());
   loop.Run();
   EXPECT_TRUE(called);
 
@@ -828,6 +878,143 @@ TEST_F(ApplicationManagerTest, SameIdentityShouldNotCauseDuplicateLoad) {
   application_manager_->ConnectToService(
       GURL("http://www.another_domain.org/abc"), &test_service);
   EXPECT_EQ(4, test_loader_->num_loads());
+}
+
+TEST(ApplicationManagerTest2,
+     MultipleConnectionsToContentHandlerGetSameContentHandlerId) {
+  base::MessageLoop loop;
+  const GURL content_handler_url("http://test.content.handler");
+  const GURL requestor_url("http://requestor.url");
+  TestContext test_context;
+  TestDelegate test_delegate;
+  test_delegate.set_fetcher_url(GURL("test:test"));
+  test_delegate.set_create_test_fetcher(true);
+  ApplicationManager application_manager(&test_delegate);
+  application_manager.set_default_loader(nullptr);
+  application_manager.RegisterContentHandler(kTestMimeType,
+                                             content_handler_url);
+
+  TestApplicationLoader* content_handler_loader = new TestApplicationLoader;
+  content_handler_loader->set_create_content_handler(true);
+  content_handler_loader->set_context(&test_context);
+  application_manager.SetLoaderForURL(
+      scoped_ptr<ApplicationLoader>(content_handler_loader),
+      content_handler_url);
+
+  uint32_t content_handler_id;
+  {
+    base::RunLoop run_loop;
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("test:test");
+    application_manager.ConnectToApplication(
+        nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
+        GetPermissiveCapabilityFilter(), base::Closure(),
+        [&content_handler_id, &run_loop](uint32_t t) {
+          content_handler_id = t;
+          run_loop.Quit();
+        });
+    run_loop.Run();
+    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
+  }
+
+  uint32_t content_handler_id2;
+  {
+    base::RunLoop run_loop;
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("test:test");
+    application_manager.ConnectToApplication(
+        nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
+        GetPermissiveCapabilityFilter(), base::Closure(),
+        [&content_handler_id2, &run_loop](uint32_t t) {
+          content_handler_id2 = t;
+          run_loop.Quit();
+        });
+    run_loop.Run();
+    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
+  }
+  EXPECT_EQ(content_handler_id, content_handler_id2);
+}
+
+TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
+  base::MessageLoop loop;
+  const GURL content_handler_url("http://test.content.handler");
+  const GURL requestor_url("http://requestor.url");
+  TestContext test_context;
+  TestDelegate test_delegate;
+  test_delegate.set_fetcher_url(GURL("test:test"));
+  test_delegate.set_create_test_fetcher(true);
+  ApplicationManager application_manager(&test_delegate);
+  application_manager.set_default_loader(nullptr);
+  application_manager.RegisterContentHandler(kTestMimeType,
+                                             content_handler_url);
+
+  TestApplicationLoader* content_handler_loader = new TestApplicationLoader;
+  content_handler_loader->set_create_content_handler(true);
+  content_handler_loader->set_context(&test_context);
+  application_manager.SetLoaderForURL(
+      scoped_ptr<ApplicationLoader>(content_handler_loader),
+      content_handler_url);
+
+  uint32_t content_handler_id;
+  {
+    base::RunLoop run_loop;
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("test:test");
+    application_manager.ConnectToApplication(
+        nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
+        GetPermissiveCapabilityFilter(), base::Closure(),
+        [&content_handler_id, &run_loop](uint32_t t) {
+          content_handler_id = t;
+          run_loop.Quit();
+        });
+    run_loop.Run();
+    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
+  }
+
+  const std::string mime_type2("test/mime-type2");
+  const GURL content_handler_url2("http://test.content2.handler");
+  test_delegate.set_fetcher_url(GURL("test2:test2"));
+  test_delegate.set_mime_type(mime_type2);
+  application_manager.RegisterContentHandler(mime_type2, content_handler_url2);
+
+  TestApplicationLoader* content_handler_loader2 = new TestApplicationLoader;
+  content_handler_loader->set_create_content_handler(true);
+  content_handler_loader->set_context(&test_context);
+  application_manager.SetLoaderForURL(
+      scoped_ptr<ApplicationLoader>(content_handler_loader2),
+      content_handler_url2);
+
+  uint32_t content_handler_id2;
+  {
+    base::RunLoop run_loop;
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("test2:test2");
+    application_manager.ConnectToApplication(
+        nullptr, request.Pass(), std::string(), requestor_url, nullptr, nullptr,
+        GetPermissiveCapabilityFilter(), base::Closure(),
+        [&content_handler_id2, &run_loop](uint32_t t) {
+          content_handler_id2 = t;
+          run_loop.Quit();
+        });
+    run_loop.Run();
+    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
+  }
+  EXPECT_NE(content_handler_id, content_handler_id2);
+}
+
+TEST_F(ApplicationManagerTest,
+       ConnectWithNoContentHandlerGetsInvalidContentHandlerId) {
+  application_manager_->SetLoaderForScheme(
+      scoped_ptr<ApplicationLoader>(new TestApplicationLoader), "test");
+
+  uint32_t content_handler_id = 1u;
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("test:test");
+  application_manager_->ConnectToApplication(
+      nullptr, request.Pass(), std::string(), GURL(), nullptr, nullptr,
+      GetPermissiveCapabilityFilter(), base::Closure(),
+      [&content_handler_id](uint32_t t) { content_handler_id = t; });
+  EXPECT_EQ(0u, content_handler_id);
 }
 
 }  // namespace

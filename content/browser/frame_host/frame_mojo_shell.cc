@@ -32,7 +32,8 @@ void FrameMojoShell::ConnectToApplication(
     mojo::URLRequestPtr application_url,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr /* exposed_services */,
-    mojo::CapabilityFilterPtr filter) {
+    mojo::CapabilityFilterPtr filter,
+    const ConnectToApplicationCallback& callback) {
   mojo::ServiceProviderPtr frame_services;
   service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));
@@ -43,7 +44,7 @@ void FrameMojoShell::ConnectToApplication(
     capability_filter = filter->filter.To<mojo::shell::CapabilityFilter>();
   MojoShellContext::ConnectToApplication(
       GURL(application_url->url), frame_host_->GetSiteInstance()->GetSiteURL(),
-      services.Pass(), frame_services.Pass(), capability_filter);
+      services.Pass(), frame_services.Pass(), capability_filter, callback);
 }
 
 void FrameMojoShell::QuitApplication() {

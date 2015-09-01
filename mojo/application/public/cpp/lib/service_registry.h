@@ -11,6 +11,7 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/lib/service_connector_registry.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
@@ -32,6 +33,8 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
                   const std::set<std::string>& allowed_interfaces);
   ~ServiceRegistry() override;
 
+  Shell::ConnectToApplicationCallback GetConnectToApplicationCallback();
+
   // ApplicationConnection overrides.
   void SetServiceConnector(ServiceConnector* service_connector) override;
   bool SetServiceConnectorForName(ServiceConnector* service_connector,
@@ -42,11 +45,15 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   ServiceProvider* GetLocalServiceProvider() override;
   void SetRemoteServiceProviderConnectionErrorHandler(
       const Closure& handler) override;
+  bool GetContentHandlerID(uint32_t* target_id) override;
+  void AddContentHandlerIDCallback(const Closure& callback) override;
   base::WeakPtr<ApplicationConnection> GetWeakPtr() override;
 
   void RemoveServiceConnectorForName(const std::string& interface_name);
 
  private:
+  void OnGotContentHandlerID(uint32_t content_handler_id);
+
   // ServiceProvider method.
   void ConnectToService(const mojo::String& service_name,
                         ScopedMessagePipeHandle client_handle) override;
@@ -58,7 +65,12 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   ServiceConnectorRegistry service_connector_registry_;
   const std::set<std::string> allowed_interfaces_;
   const bool allow_all_interfaces_;
-  base::WeakPtrFactory<ApplicationConnection> weak_factory_;
+  // The id of the content_handler is only available once the callback from
+  // establishing the connection is made.
+  uint32_t content_handler_id_;
+  bool is_content_handler_id_valid_;
+  std::vector<Closure> content_handler_id_callbacks_;
+  base::WeakPtrFactory<ServiceRegistry> weak_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ServiceRegistry);
 };

@@ -116,6 +116,17 @@ class ApplicationConnection {
   virtual void SetRemoteServiceProviderConnectionErrorHandler(
       const Closure& handler) = 0;
 
+  // Returns the id of the deepest content handler used in connecting to
+  // the application. If the content handler id has not yet been determined
+  // this returns false, use AddContentHandlerIDCallback() to schedule a
+  // callback when the content handler is has been obtained. A value of 0
+  // indicates no content handler was used in connecting to the application.
+  virtual bool GetContentHandlerID(uint32_t* content_handler_id) = 0;
+
+  // See description in GetTargetID(). If the id of the content handler has
+  // been obtained |callback| is run immediately.
+  virtual void AddContentHandlerIDCallback(const Closure& callback) = 0;
+
  protected:
   // Returns true if the connector was set, false if it was not set (e.g. by
   // some filtering policy preventing this interface from being exposed).

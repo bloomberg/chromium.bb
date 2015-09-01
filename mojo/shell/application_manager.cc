@@ -30,6 +30,8 @@ namespace {
 // Used by TestAPI.
 bool has_created_instance = false;
 
+void OnEmptyOnConnectCallback(uint32_t content_handler_id) {}
+
 }  // namespace
 
 // static
@@ -51,8 +53,10 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
 }
 
 ApplicationManager::ApplicationManager(Delegate* delegate)
-    : delegate_(delegate), weak_ptr_factory_(this) {
-}
+    : delegate_(delegate),
+      disable_cache_(false),
+      content_handler_id_counter_(0u),
+      weak_ptr_factory_(this) {}
 
 ApplicationManager::~ApplicationManager() {
   URLToContentHandlerMap url_to_content_handler(url_to_content_handler_);
@@ -75,7 +79,8 @@ void ApplicationManager::ConnectToApplication(
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
     const CapabilityFilter& filter,
-    const base::Closure& on_application_end) {
+    const base::Closure& on_application_end,
+    const Shell::ConnectToApplicationCallback& connect_callback) {
   GURL requested_gurl(requested_url->url.To<std::string>());
   TRACE_EVENT_INSTANT1(
       "mojo_shell", "ApplicationManager::ConnectToApplication",
@@ -87,15 +92,15 @@ void ApplicationManager::ConnectToApplication(
 
   GURL mapped_url = delegate_->ResolveMappings(requested_gurl);
   if (ConnectToRunningApplication(originator, mapped_url, qualifier,
-                                  requestor_url, &services,
-                                  &exposed_services, filter)) {
+                                  requestor_url, &services, &exposed_services,
+                                  filter, connect_callback)) {
     return;
   }
 
   GURL resolved_url = delegate_->ResolveMojoURL(mapped_url);
   if (ConnectToRunningApplication(originator, resolved_url, qualifier,
-                                  requestor_url, &services,
-                                  &exposed_services, filter)) {
+                                  requestor_url, &services, &exposed_services,
+                                  filter, connect_callback)) {
     return;
   }
 
@@ -103,21 +108,21 @@ void ApplicationManager::ConnectToApplication(
   if (ConnectToApplicationWithLoader(
           originator, requested_gurl, qualifier, mapped_url, requestor_url,
           &services, &exposed_services, filter, on_application_end,
-          GetLoaderForURL(mapped_url))) {
+          connect_callback, GetLoaderForURL(mapped_url))) {
     return;
   }
 
   if (ConnectToApplicationWithLoader(
           originator, requested_gurl, qualifier, resolved_url, requestor_url,
           &services, &exposed_services, filter, on_application_end,
-          GetLoaderForURL(resolved_url))) {
+          connect_callback, GetLoaderForURL(resolved_url))) {
     return;
   }
 
   if (ConnectToApplicationWithLoader(
           originator, requested_gurl, qualifier, resolved_url, requestor_url,
           &services, &exposed_services, filter, on_application_end,
-          default_loader_.get())) {
+          connect_callback, default_loader_.get())) {
     return;
   }
 
@@ -125,7 +130,7 @@ void ApplicationManager::ConnectToApplication(
       &ApplicationManager::HandleFetchCallback, weak_ptr_factory_.GetWeakPtr(),
       originator, requested_gurl, qualifier, requestor_url,
       base::Passed(services.Pass()), base::Passed(exposed_services.Pass()),
-      filter, on_application_end);
+      filter, on_application_end, connect_callback);
 
   if (delegate_->CreateFetcher(
           resolved_url,
@@ -185,15 +190,16 @@ bool ApplicationManager::ConnectToRunningApplication(
     const GURL& requestor_url,
     InterfaceRequest<ServiceProvider>* services,
     ServiceProviderPtr* exposed_services,
-    const CapabilityFilter& filter) {
+    const CapabilityFilter& filter,
+    const Shell::ConnectToApplicationCallback& connect_callback) {
   ApplicationInstance* instance =
       GetApplicationInstance(Identity(resolved_url, qualifier));
   if (!instance)
     return false;
 
   instance->ConnectToClient(originator, resolved_url, requestor_url,
-                            services->Pass(), exposed_services->Pass(),
-                            filter);
+                            services->Pass(), exposed_services->Pass(), filter,
+                            connect_callback);
   return true;
 }
 
@@ -207,6 +213,7 @@ bool ApplicationManager::ConnectToApplicationWithLoader(
     ServiceProviderPtr* exposed_services,
     const CapabilityFilter& filter,
     const base::Closure& on_application_end,
+    const Shell::ConnectToApplicationCallback& connect_callback,
     ApplicationLoader* loader) {
   if (!loader)
     return false;
@@ -217,8 +224,8 @@ bool ApplicationManager::ConnectToApplicationWithLoader(
   loader->Load(
       resolved_url,
       RegisterInstance(originator, app_url, qualifier, requestor_url,
-                       services->Pass(), exposed_services->Pass(),
-                       filter, on_application_end));
+                       services->Pass(), exposed_services->Pass(), filter,
+                       on_application_end, connect_callback, nullptr));
   return true;
 }
 
@@ -230,7 +237,9 @@ InterfaceRequest<Application> ApplicationManager::RegisterInstance(
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
     const CapabilityFilter& filter,
-    const base::Closure& on_application_end) {
+    const base::Closure& on_application_end,
+    const Shell::ConnectToApplicationCallback& connect_callback,
+    ApplicationInstance** resulting_instance) {
   Identity app_identity(app_url, qualifier);
 
   ApplicationPtr application;
@@ -238,13 +247,15 @@ InterfaceRequest<Application> ApplicationManager::RegisterInstance(
   ApplicationInstance* instance = new ApplicationInstance(
       application.Pass(), this,
       originator ? originator->identity() : Identity(GURL()), app_identity,
-      filter, on_application_end);
+      filter, Shell::kInvalidContentHandlerID, on_application_end);
   DCHECK(identity_to_instance_.find(app_identity) ==
          identity_to_instance_.end());
   identity_to_instance_[app_identity] = instance;
   instance->InitializeApplication();
   instance->ConnectToClient(originator, app_url, requestor_url, services.Pass(),
-                            exposed_services.Pass(), filter);
+                            exposed_services.Pass(), filter, connect_callback);
+  if (resulting_instance)
+    *resulting_instance = instance;
   return application_request.Pass();
 }
 
@@ -265,10 +276,12 @@ void ApplicationManager::HandleFetchCallback(
     ServiceProviderPtr exposed_services,
     const CapabilityFilter& filter,
     const base::Closure& on_application_end,
+    const Shell::ConnectToApplicationCallback& connect_callback,
     NativeApplicationCleanup cleanup,
     scoped_ptr<Fetcher> fetcher) {
   if (!fetcher) {
     // Network error. Drop |application_request| to tell requestor.
+    connect_callback.Run(Shell::kInvalidContentHandlerID);
     return;
   }
 
@@ -284,7 +297,7 @@ void ApplicationManager::HandleFetchCallback(
     request->headers.push_back(header.Pass());
     ConnectToApplication(originator, request.Pass(), qualifier, requestor_url,
                          services.Pass(), exposed_services.Pass(), filter,
-                         on_application_end);
+                         on_application_end, connect_callback);
     return;
   }
 
@@ -295,18 +308,19 @@ void ApplicationManager::HandleFetchCallback(
   // Also, it's possible the original URL was redirected to an app that is
   // already running.
   if (ConnectToRunningApplication(originator, requested_url, qualifier,
-                                  requestor_url, &services,
-                                  &exposed_services, filter)) {
+                                  requestor_url, &services, &exposed_services,
+                                  filter, connect_callback)) {
     return;
   }
 
   const GURL app_url =
       requested_url.scheme() == "mojo" ? requested_url : fetcher->GetURL();
 
+  ApplicationInstance* app = nullptr;
   InterfaceRequest<Application> request(
       RegisterInstance(originator, app_url, qualifier, requestor_url,
                        services.Pass(), exposed_services.Pass(), filter,
-                       on_application_end));
+                       on_application_end, EmptyConnectCallback(), &app));
 
   // For resources that are loaded with content handlers, we group app instances
   // by site.
@@ -323,7 +337,8 @@ void ApplicationManager::HandleFetchCallback(
     std::string site =
         enable_multi_process ? response->site.To<std::string>() : std::string();
     LoadWithContentHandler(originator, content_handler_url, requestor_url, site,
-                           filter, request.Pass(), response.Pass());
+                           filter, connect_callback, app, request.Pass(),
+                           response.Pass());
     return;
   }
 
@@ -333,7 +348,8 @@ void ApplicationManager::HandleFetchCallback(
     std::string site =
         enable_multi_process ? response->site.To<std::string>() : std::string();
     LoadWithContentHandler(originator, iter->second, requestor_url, site,
-                           filter, request.Pass(), response.Pass());
+                           filter, connect_callback, app, request.Pass(),
+                           response.Pass());
     return;
   }
 
@@ -359,8 +375,8 @@ void ApplicationManager::HandleFetchCallback(
     }
 
     LoadWithContentHandler(originator, alias_iter->second.first, requestor_url,
-                           qualifier, filter, request.Pass(),
-                           response.Pass());
+                           qualifier, filter, connect_callback, app,
+                           request.Pass(), response.Pass());
     return;
   }
 
@@ -389,6 +405,8 @@ void ApplicationManager::HandleFetchCallback(
     else if (app_url == GURL("mojo://html_viewer/"))
       start_sandboxed = true;
   }
+
+  connect_callback.Run(Shell::kInvalidContentHandlerID);
 
   fetcher->AsPath(blocking_pool_,
                   base::Bind(&ApplicationManager::RunNativeApplication,
@@ -447,6 +465,8 @@ void ApplicationManager::LoadWithContentHandler(
     const GURL& requestor_url,
     const std::string& qualifier,
     const CapabilityFilter& filter,
+    const Shell::ConnectToApplicationCallback& connect_callback,
+    ApplicationInstance* app,
     InterfaceRequest<Application> application_request,
     URLResponsePtr url_response) {
   ContentHandlerConnection* connection = nullptr;
@@ -458,13 +478,15 @@ void ApplicationManager::LoadWithContentHandler(
     connection = iter->second;
   } else {
     connection = new ContentHandlerConnection(
-        originator, this, content_handler_url, requestor_url, qualifier,
-        filter);
+        originator, this, content_handler_url, requestor_url, qualifier, filter,
+        ++content_handler_id_counter_);
     url_to_content_handler_[key] = connection;
   }
 
+  app->set_requesting_content_handler_id(connection->id());
   connection->content_handler()->StartApplication(application_request.Pass(),
                                                   url_response.Pass());
+  connect_callback.Run(connection->id());
 }
 
 void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
@@ -546,10 +568,15 @@ ScopedMessagePipeHandle ApplicationManager::ConnectToServiceByName(
   request->url = mojo::String::From(application_url.spec());
   ConnectToApplication(nullptr, request.Pass(), std::string(), GURL(),
                        GetProxy(&services), nullptr,
-                       GetPermissiveCapabilityFilter(), base::Closure());
+                       GetPermissiveCapabilityFilter(), base::Closure(),
+                       EmptyConnectCallback());
   MessagePipe pipe;
   services->ConnectToService(interface_name, pipe.handle1.Pass());
   return pipe.handle0.Pass();
+}
+
+Shell::ConnectToApplicationCallback EmptyConnectCallback() {
+  return base::Bind(&OnEmptyOnConnectCallback);
 }
 
 }  // namespace shell

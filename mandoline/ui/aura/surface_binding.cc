@@ -27,6 +27,9 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mandoline {
+namespace {
+void OnGotContentHandlerID(uint32_t content_handler_id) {}
+}  // namespace
 
 // PerConnectionState ----------------------------------------------------------
 
@@ -121,10 +124,9 @@ void SurfaceBinding::PerConnectionState::Init() {
   mojo::ServiceProviderPtr service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:view_manager");
-  shell_->ConnectToApplication(request.Pass(),
-                               GetProxy(&service_provider),
-                               nullptr,
-                               nullptr);
+  shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
+                               nullptr, nullptr,
+                               base::Bind(&OnGotContentHandlerID));
   ConnectToService(service_provider.get(), &gpu_);
 }
 

@@ -106,7 +106,7 @@ TEST_F(NativeApplicationLoaderTest, DoesNotExist) {
   application_manager_.ConnectToApplication(
       nullptr, request.Pass(), std::string(), GURL(), services.Pass(),
       service_provider.Pass(), shell::GetPermissiveCapabilityFilter(),
-      base::Closure());
+      base::Closure(), shell::EmptyConnectCallback());
   EXPECT_FALSE(state_.runner_was_created);
   EXPECT_FALSE(state_.runner_was_started);
   EXPECT_FALSE(state_.runner_was_destroyed);

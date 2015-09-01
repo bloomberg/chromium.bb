@@ -60,17 +60,20 @@ scoped_ptr<ApplicationConnection>
   InterfaceRequest<ServiceProvider> local_request = GetProxy(&local_services);
   ServiceProviderPtr remote_services;
   std::string application_url = request->url.To<std::string>();
-  shell_->ConnectToApplication(request.Pass(), GetProxy(&remote_services),
-                               local_services.Pass(), filter.Pass());
   // We allow all interfaces on outgoing connections since we are presumably in
   // a position to know who we're talking to.
   // TODO(beng): is this a valid assumption or do we need to figure some way to
   //             filter here too?
   std::set<std::string> allowed;
   allowed.insert("*");
-  scoped_ptr<ApplicationConnection> registry(new internal::ServiceRegistry(
+  InterfaceRequest<ServiceProvider> remote_services_proxy =
+      GetProxy(&remote_services);
+  scoped_ptr<internal::ServiceRegistry> registry(new internal::ServiceRegistry(
       application_url, application_url, remote_services.Pass(),
       local_request.Pass(), allowed));
+  shell_->ConnectToApplication(request.Pass(), remote_services_proxy.Pass(),
+                               local_services.Pass(), filter.Pass(),
+                               registry->GetConnectToApplicationCallback());
   if (!delegate_->ConfigureOutgoingConnection(registry.get()))
     return nullptr;
   return registry.Pass();

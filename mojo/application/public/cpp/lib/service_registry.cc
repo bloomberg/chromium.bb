@@ -4,6 +4,7 @@
 
 #include "mojo/application/public/cpp/lib/service_registry.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/service_connector.h"
@@ -24,6 +25,8 @@ ServiceRegistry::ServiceRegistry(
       allowed_interfaces_(allowed_interfaces),
       allow_all_interfaces_(allowed_interfaces_.size() == 1 &&
                             allowed_interfaces_.count("*") == 1),
+      content_handler_id_(0u),
+      is_content_handler_id_valid_(false),
       weak_factory_(this) {
   if (local_services.is_pending())
     local_binding_.Bind(local_services.Pass());
@@ -36,6 +39,12 @@ ServiceRegistry::ServiceRegistry()
 }
 
 ServiceRegistry::~ServiceRegistry() {
+}
+
+Shell::ConnectToApplicationCallback
+ServiceRegistry::GetConnectToApplicationCallback() {
+  return base::Bind(&ServiceRegistry::OnGotContentHandlerID,
+                    weak_factory_.GetWeakPtr());
 }
 
 void ServiceRegistry::SetServiceConnector(ServiceConnector* connector) {
@@ -65,6 +74,22 @@ void ServiceRegistry::SetRemoteServiceProviderConnectionErrorHandler(
   remote_service_provider_.set_connection_error_handler(handler);
 }
 
+bool ServiceRegistry::GetContentHandlerID(uint32_t* content_handler_id) {
+  if (!is_content_handler_id_valid_)
+    return false;
+
+  *content_handler_id = content_handler_id_;
+  return true;
+}
+
+void ServiceRegistry::AddContentHandlerIDCallback(const Closure& callback) {
+  if (is_content_handler_id_valid_) {
+    callback.Run();
+    return;
+  }
+  content_handler_id_callbacks_.push_back(callback);
+}
+
 base::WeakPtr<ApplicationConnection> ServiceRegistry::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -86,6 +111,16 @@ const std::string& ServiceRegistry::GetRemoteApplicationURL() {
 
 ServiceProvider* ServiceRegistry::GetServiceProvider() {
   return remote_service_provider_.get();
+}
+
+void ServiceRegistry::OnGotContentHandlerID(uint32_t content_handler_id) {
+  DCHECK(!is_content_handler_id_valid_);
+  is_content_handler_id_valid_ = true;
+  content_handler_id_ = content_handler_id;
+  std::vector<Closure> callbacks;
+  callbacks.swap(content_handler_id_callbacks_);
+  for (auto callback : callbacks)
+    callback.Run();
 }
 
 void ServiceRegistry::ConnectToService(const mojo::String& service_name,

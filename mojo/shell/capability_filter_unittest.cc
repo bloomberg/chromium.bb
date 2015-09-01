@@ -352,7 +352,7 @@ class CapabilityFilterTest : public testing::Test {
     application_manager_->ConnectToApplication(
         nullptr, request.Pass(), std::string(), GURL(), GetProxy(&services),
         exposed_services.Pass(), filter,
-        base::MessageLoop::QuitWhenIdleClosure());
+        base::MessageLoop::QuitWhenIdleClosure(), EmptyConnectCallback());
   }
 
   void InitValidator(const std::set<std::string>& expectations) {

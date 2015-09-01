@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/shell/application_manager.h"
 
 class GURL;
@@ -43,7 +44,8 @@ class CONTENT_EXPORT MojoShellContext
       const GURL& requestor_url,
       mojo::InterfaceRequest<mojo::ServiceProvider> request,
       mojo::ServiceProviderPtr exposed_services,
-      const mojo::shell::CapabilityFilter& filter);
+      const mojo::shell::CapabilityFilter& filter,
+      const mojo::Shell::ConnectToApplicationCallback& callback);
 
   static void SetApplicationsForTest(const StaticApplicationMap* apps);
 
@@ -56,7 +58,8 @@ class CONTENT_EXPORT MojoShellContext
       const GURL& requestor_url,
       mojo::InterfaceRequest<mojo::ServiceProvider> request,
       mojo::ServiceProviderPtr exposed_services,
-      const mojo::shell::CapabilityFilter& filter);
+      const mojo::shell::CapabilityFilter& filter,
+      const mojo::Shell::ConnectToApplicationCallback& callback);
 
   // mojo::shell::ApplicationManager::Delegate:
   GURL ResolveMappings(const GURL& url) override;

@@ -99,12 +99,13 @@ class MojoShellContext::Proxy {
       const GURL& requestor_url,
       mojo::InterfaceRequest<mojo::ServiceProvider> request,
       mojo::ServiceProviderPtr exposed_services,
-      const mojo::shell::CapabilityFilter& filter) {
+      const mojo::shell::CapabilityFilter& filter,
+      const mojo::Shell::ConnectToApplicationCallback& callback) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
       if (shell_context_) {
         shell_context_->ConnectToApplicationOnOwnThread(
-            url, requestor_url, request.Pass(), exposed_services.Pass(),
-            filter);
+            url, requestor_url, request.Pass(), exposed_services.Pass(), filter,
+            callback);
       }
     } else {
       // |shell_context_| outlives the main MessageLoop, so it's safe for it to
@@ -114,7 +115,7 @@ class MojoShellContext::Proxy {
           base::Bind(&MojoShellContext::ConnectToApplicationOnOwnThread,
                      base::Unretained(shell_context_), url, requestor_url,
                      base::Passed(&request), base::Passed(&exposed_services),
-                     filter));
+                     filter, callback));
     }
   }
 
@@ -186,9 +187,10 @@ void MojoShellContext::ConnectToApplication(
     const GURL& requestor_url,
     mojo::InterfaceRequest<mojo::ServiceProvider> request,
     mojo::ServiceProviderPtr exposed_services,
-    const mojo::shell::CapabilityFilter& filter) {
+    const mojo::shell::CapabilityFilter& filter,
+    const mojo::Shell::ConnectToApplicationCallback& callback) {
   proxy_.Get()->ConnectToApplication(url, requestor_url, request.Pass(),
-                                     exposed_services.Pass(), filter);
+                                     exposed_services.Pass(), filter, callback);
 }
 
 void MojoShellContext::ConnectToApplicationOnOwnThread(
@@ -196,12 +198,13 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     const GURL& requestor_url,
     mojo::InterfaceRequest<mojo::ServiceProvider> request,
     mojo::ServiceProviderPtr exposed_services,
-    const mojo::shell::CapabilityFilter& filter) {
+    const mojo::shell::CapabilityFilter& filter,
+    const mojo::Shell::ConnectToApplicationCallback& callback) {
   mojo::URLRequestPtr url_request = mojo::URLRequest::New();
   url_request->url = mojo::String::From(url);
   application_manager_->ConnectToApplication(
       nullptr, url_request.Pass(), std::string(), requestor_url, request.Pass(),
-      exposed_services.Pass(), filter, base::Bind(&base::DoNothing));
+      exposed_services.Pass(), filter, base::Bind(&base::DoNothing), callback);
 }
 
 GURL MojoShellContext::ResolveMappings(const GURL& url) {

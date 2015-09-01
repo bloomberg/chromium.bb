@@ -4,12 +4,17 @@
 
 #include "content/browser/mojo/mojo_app_connection_impl.h"
 
+#include "base/bind.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "mojo/shell/capability_filter.h"
 
 namespace content {
 
 const char kBrowserMojoAppUrl[] = "system:content_browser";
+
+namespace {
+void OnGotContentHandlerID(uint32_t content_handler_id) {}
+}  // namespace
 
 // static
 scoped_ptr<MojoAppConnection> MojoAppConnection::Create(
@@ -23,7 +28,8 @@ MojoAppConnectionImpl::MojoAppConnectionImpl(const GURL& url,
                                              const GURL& requestor_url) {
   MojoShellContext::ConnectToApplication(
       url, requestor_url, mojo::GetProxy(&services_),
-      mojo::ServiceProviderPtr(), mojo::shell::GetPermissiveCapabilityFilter());
+      mojo::ServiceProviderPtr(), mojo::shell::GetPermissiveCapabilityFilter(),
+      base::Bind(&OnGotContentHandlerID));
 }
 
 MojoAppConnectionImpl::~MojoAppConnectionImpl() {

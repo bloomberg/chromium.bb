@@ -193,10 +193,11 @@ void InitDevToolsServiceIfNeeded(shell::ApplicationManager* manager,
   ServiceProviderPtr devtools_service_provider;
   URLRequestPtr request(URLRequest::New());
   request->url = "mojo:devtools_service";
-  manager->ConnectToApplication(
-      nullptr, request.Pass(), std::string(), GURL("mojo:shell"),
-      GetProxy(&devtools_service_provider), nullptr,
-      shell::GetPermissiveCapabilityFilter(), base::Closure());
+  manager->ConnectToApplication(nullptr, request.Pass(), std::string(),
+                                GURL("mojo:shell"),
+                                GetProxy(&devtools_service_provider), nullptr,
+                                shell::GetPermissiveCapabilityFilter(),
+                                base::Closure(), shell::EmptyConnectCallback());
 
   devtools_service::DevToolsCoordinatorPtr devtools_coordinator;
   devtools_service_provider->ConnectToService(
@@ -314,7 +315,8 @@ bool Context::Init() {
   application_manager_.ConnectToApplication(
       nullptr, request.Pass(), std::string(), GURL(),
       GetProxy(&service_provider_ptr), tracing_service_provider_ptr.Pass(),
-      shell::GetPermissiveCapabilityFilter(), base::Closure());
+      shell::GetPermissiveCapabilityFilter(), base::Closure(),
+      shell::EmptyConnectCallback());
 
   // Record the shell startup metrics used for performance testing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -381,7 +383,8 @@ void Context::Run(const GURL& url) {
   application_manager_.ConnectToApplication(
       nullptr, request.Pass(), std::string(), GURL(), GetProxy(&services),
       exposed_services.Pass(), shell::GetPermissiveCapabilityFilter(),
-      base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url));
+      base::Bind(&Context::OnApplicationEnd, base::Unretained(this), url),
+      shell::EmptyConnectCallback());
 }
 
 void Context::RunCommandLineApplication(const base::Closure& callback) {

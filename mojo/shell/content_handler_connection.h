@@ -25,12 +25,14 @@ class ApplicationManager;
 // destruction.
 class ContentHandlerConnection {
  public:
+  // |id| is a unique identifier for this content handler.
   ContentHandlerConnection(ApplicationInstance* originator,
                            ApplicationManager* manager,
                            const GURL& content_handler_url,
                            const GURL& requestor_url,
                            const std::string& qualifier,
-                           const CapabilityFilter& filter);
+                           const CapabilityFilter& filter,
+                           uint32_t id);
 
   // Closes the connection and destroys |this| object.
   void CloseConnection();
@@ -40,6 +42,7 @@ class ContentHandlerConnection {
   const std::string& content_handler_qualifier() {
     return content_handler_qualifier_;
   }
+  uint32_t id() const { return id_; }
 
  private:
   ~ContentHandlerConnection();
@@ -49,6 +52,8 @@ class ContentHandlerConnection {
   std::string content_handler_qualifier_;
   ContentHandlerPtr content_handler_;
   bool connection_closed_;
+  // The id for this content handler.
+  const uint32_t id_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerConnection);
 };

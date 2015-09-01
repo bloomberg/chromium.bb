@@ -29,10 +29,9 @@ ResourceLoader::ResourceLoader(mojo::Shell* shell,
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:resource_provider");
   mojo::ServiceProviderPtr resource_provider_service_provider;
-  shell->ConnectToApplication(request.Pass(),
-                              GetProxy(&resource_provider_service_provider),
-                              nullptr,
-                              nullptr);
+  shell->ConnectToApplication(
+      request.Pass(), GetProxy(&resource_provider_service_provider), nullptr,
+      nullptr, mojo::Shell::ConnectToApplicationCallback());
   mojo::ConnectToService(resource_provider_service_provider.get(),
                          &resource_provider_);
   std::vector<std::string> paths_vector(paths.begin(), paths.end());

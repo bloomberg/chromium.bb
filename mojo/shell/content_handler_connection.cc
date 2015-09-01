@@ -15,17 +15,19 @@ ContentHandlerConnection::ContentHandlerConnection(
     const GURL& content_handler_url,
     const GURL& requestor_url,
     const std::string& qualifier,
-    const CapabilityFilter& filter)
+    const CapabilityFilter& filter,
+    uint32_t id)
     : manager_(manager),
       content_handler_url_(content_handler_url),
       content_handler_qualifier_(qualifier),
-      connection_closed_(false) {
+      connection_closed_(false),
+      id_(id) {
   ServiceProviderPtr services;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(content_handler_url.spec());
   manager->ConnectToApplication(
       originator, request.Pass(), qualifier, requestor_url, GetProxy(&services),
-      nullptr, filter, base::Closure());
+      nullptr, filter, base::Closure(), EmptyConnectCallback());
   MessagePipe pipe;
   content_handler_.Bind(
       InterfacePtrInfo<ContentHandler>(pipe.handle0.Pass(), 0u));

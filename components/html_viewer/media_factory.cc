@@ -44,6 +44,8 @@ bool AreSecureCodecsSupported() {
   return false;
 }
 
+void OnGotContentHandlerID(uint32_t content_handler_id) {}
+
 }  // namespace
 
 MediaFactory::MediaFactory(
@@ -120,7 +122,8 @@ media::interfaces::ServiceFactory* MediaFactory::GetMediaServiceFactory() {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:media");
     shell_->ConnectToApplication(request.Pass(), GetProxy(&service_provider),
-                                 nullptr, nullptr);
+                                 nullptr, nullptr,
+                                 base::Bind(&OnGotContentHandlerID));
     mojo::ConnectToService(service_provider.get(), &media_service_factory_);
   }
 
