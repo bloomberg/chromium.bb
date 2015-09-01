@@ -381,6 +381,7 @@ GLRenderer::~GLRenderer() {
     pending_async_read_pixels_.pop_back();
   }
 
+  previous_swap_overlay_resources_.clear();
   in_use_overlay_resources_.clear();
 
   CleanupSharedObjects();
@@ -2619,8 +2620,14 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   output_surface_->SwapBuffers(&compositor_frame);
 
   // Release previously used overlay resources and hold onto the pending ones
-  // until the next swap buffers.
-  in_use_overlay_resources_.clear();
+  // until the next swap buffers. On some platforms, hold onto resources for
+  // an extra frame.
+  if (settings_->delay_releasing_overlay_resources) {
+    previous_swap_overlay_resources_.clear();
+    previous_swap_overlay_resources_.swap(in_use_overlay_resources_);
+  } else {
+    in_use_overlay_resources_.clear();
+  }
   in_use_overlay_resources_.swap(pending_overlay_resources_);
 
   swap_buffer_rect_ = gfx::Rect();

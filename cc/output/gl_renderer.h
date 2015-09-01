@@ -263,6 +263,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       OverlayResourceLockList;
   OverlayResourceLockList pending_overlay_resources_;
   OverlayResourceLockList in_use_overlay_resources_;
+  OverlayResourceLockList previous_swap_overlay_resources_;
 
   RendererCapabilitiesImpl capabilities_;
 
