@@ -49,10 +49,8 @@ namespace content {
 
 namespace {
 
-// TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
 const char kChromeURLContentSecurityPolicyHeaderBase[] =
-    "Content-Security-Policy: script-src chrome://resources "
-    "'self' 'unsafe-eval'; ";
+    "Content-Security-Policy: script-src chrome://resources 'self'";
 
 const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
 
@@ -188,6 +186,9 @@ class URLRequestChromeJob : public net::URLRequestJob {
       const GURL& url,
       const base::WeakPtr<URLRequestChromeJob>& job);
 
+  // Specific resources require unsafe-eval in the Content Security Policy.
+  bool RequiresUnsafeEval() const;
+
   // Do the actual copy from data_ (the data we're serving) into |buf|.
   // Separate from ReadRawData so we can handle async I/O.
   void CompleteRead(net::IOBuffer* buf, int buf_size, int* bytes_read);
@@ -301,6 +302,7 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
   // response headers.
   if (add_content_security_policy_) {
     std::string base = kChromeURLContentSecurityPolicyHeaderBase;
+    base.append(RequiresUnsafeEval() ? " 'unsafe-eval'; " : "; ");
     base.append(content_security_policy_object_source_);
     base.append(content_security_policy_frame_source_);
     info->headers->AddHeader(base);
@@ -433,6 +435,12 @@ void URLRequestChromeJob::StartAsync(bool allowed) {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_INVALID_URL));
   }
+}
+
+// TODO(tsepez,mfoltz): Refine this method when tests have been fixed to not use
+// eval()/new Function().  http://crbug.com/525224
+bool URLRequestChromeJob::RequiresUnsafeEval() const {
+  return true;
 }
 
 namespace {
