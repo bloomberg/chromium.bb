@@ -864,6 +864,7 @@
       'common/extensions/manifest_tests/extension_manifests_webview_accessible_resources_unittest.cc',
       'common/extensions/manifest_unittest.cc',
       'common/extensions/permissions/chrome_permission_message_provider_unittest.cc',
+      'common/extensions/permissions/chrome_permission_message_rules_unittest.cc',
       'common/extensions/permissions/media_galleries_permission_unittest.cc',
       'common/extensions/permissions/permission_set_unittest.cc',
       'common/extensions/permissions/permissions_data_unittest.cc',

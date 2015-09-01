@@ -547,7 +547,6 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ,
        {APIPermission::kAccessibilityFeaturesRead},
        {}},
-      {IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS, {APIPermission::kBookmark}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,
        {APIPermission::kContentSettings},
        {}},
@@ -680,7 +679,6 @@ ChromePermissionMessageRule::GetAllRules() {
 
       // Rules from ManifestPermissions:
       // BluetoothManifestPermission:
-      {IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH, {APIPermission::kBluetooth}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICES,
        {APIPermission::kBluetoothDevices},
        {}},
