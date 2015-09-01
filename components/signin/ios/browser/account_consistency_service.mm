@@ -21,7 +21,7 @@ namespace {
 // date.
 NSString* const kXChromeConnectedCookieTemplate =
     @"<html><script>document.cookie=\"X-CHROME-CONNECTED=%@; path=/; domain=%@;"
-     "expires=\" + new Date(%f);</script></html>";
+     " expires=\" + new Date(%f).toGMTString();</script></html>";
 }
 
 // WKWebView navigation delegate that calls its callback every time a navigation
@@ -129,7 +129,7 @@ void AccountConsistencyService::ApplyCookieRequests() {
   switch (cookie_requests_.front().request_type) {
     case ADD_COOKIE:
       cookie_value = signin::BuildMirrorRequestHeaderIfPossible(
-          url, signin_manager_->GetAuthenticatedAccountId(),
+          url, signin_manager_->GetAuthenticatedAccountInfo().gaia,
           cookie_settings_.get(), signin::PROFILE_MODE_DEFAULT);
       // Create expiration date of Now+2y to roughly follow the APISID cookie.
       expiration_date =
