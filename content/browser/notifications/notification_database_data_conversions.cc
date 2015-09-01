@@ -56,6 +56,7 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   }
 
   notification_data->silent = payload.silent();
+  notification_data->require_interaction = payload.require_interaction();
 
   if (payload.data().length()) {
     notification_data->data.assign(payload.data().begin(),
@@ -107,6 +108,7 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
     payload->add_vibration_pattern(notification_data.vibration_pattern[i]);
 
   payload->set_silent(notification_data.silent);
+  payload->set_require_interaction(notification_data.require_interaction);
 
   if (notification_data.data.size()) {
     payload->set_data(&notification_data.data.front(),

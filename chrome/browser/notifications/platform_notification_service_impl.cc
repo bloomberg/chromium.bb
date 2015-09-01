@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/notification_event_dispatcher.h"
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/platform_notification_data.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/url_constants.h"
@@ -343,8 +345,14 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
 
   notification.set_buttons(buttons);
 
-  // Web Notifications do not timeout.
-  notification.set_never_timeout(true);
+  // On desktop, notifications with require_interaction==true stay on-screen
+  // rather than minimizing to the notification center after a timeout.
+  // On mobile, this is ignored (notifications are minimized at all times).
+  if (notification_data.require_interaction ||
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    notification.set_never_timeout(true);
+  }
 
   return notification;
 }

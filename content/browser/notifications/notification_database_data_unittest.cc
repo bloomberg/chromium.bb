@@ -43,6 +43,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.icon = GURL(kNotificationIconUrl);
   notification_data.vibration_pattern = vibration_pattern;
   notification_data.silent = true;
+  notification_data.require_interaction = true;
   notification_data.data = developer_data;
   for (size_t i = 0; i < kPlatformNotificationMaxActions; i++) {
     PlatformNotificationAction notification_action;
@@ -88,6 +89,8 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
       testing::ElementsAreArray(kNotificationVibrationPattern));
 
   EXPECT_EQ(notification_data.silent, copied_notification_data.silent);
+  EXPECT_EQ(notification_data.require_interaction,
+            copied_notification_data.require_interaction);
 
   ASSERT_EQ(developer_data.size(), copied_notification_data.data.size());
   for (size_t i = 0; i < developer_data.size(); ++i)

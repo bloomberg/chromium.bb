@@ -72,6 +72,10 @@ struct CONTENT_EXPORT PlatformNotificationData {
   // be suppressed.
   bool silent = false;
 
+  // Whether the notification should remain onscreen indefinitely, rather than
+  // being auto-minimized to the notification center (if allowed by platform).
+  bool require_interaction = false;
+
   // Developer-provided data associated with the notification, in the form of
   // a serialized string. Must not exceed |kMaximumDeveloperDataSize| bytes.
   std::vector<char> data;

@@ -41,6 +41,7 @@ PlatformNotificationData ToPlatformNotificationData(
   platform_data.vibration_pattern.assign(web_data.vibrate.begin(),
                                          web_data.vibrate.end());
   platform_data.silent = web_data.silent;
+  platform_data.require_interaction = web_data.requireInteraction;
   platform_data.data.assign(web_data.data.begin(), web_data.data.end());
   platform_data.actions.resize(web_data.actions.size());
   for (size_t i = 0; i < web_data.actions.size(); ++i) {
@@ -75,6 +76,7 @@ WebNotificationData ToWebNotificationData(
   web_data.icon = blink::WebURL(platform_data.icon);
   web_data.vibrate = platform_data.vibration_pattern;
   web_data.silent = platform_data.silent;
+  web_data.requireInteraction = platform_data.require_interaction;
   web_data.data = platform_data.data;
   blink::WebVector<blink::WebNotificationAction> resized(
       platform_data.actions.size());
