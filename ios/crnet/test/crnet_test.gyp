@@ -16,20 +16,27 @@
           'target_name': 'crnet_test',
           'type': 'executable',
           'dependencies': [
-            '../../../ios/crnet/crnet.gyp:crnet',
+            '../../../base/base.gyp:base',
+            '../../../ios/crnet/crnet.gyp:crnet_shared',
             '../../../ios/third_party/gcdwebserver/gcdwebserver.gyp:gcdwebserver',
+            '../../../net/net.gyp:net',
             '../../../testing/gtest.gyp:gtest',
+            '../../../url/url.gyp:url_lib',
           ],
           'sources': [
             'crnet_http_tests.mm',
             'crnet_test_runner.mm',
           ],
+          'copies': [
+            {
+              'files': [ '<(PRODUCT_DIR)/libcrnet.dylib' ],
+              'destination': '<(PRODUCT_DIR)/crnet_test.app',
+            },
+          ],
           'include_dirs': [
             '../../..',
             '..',
           ],
-          'link_settings': {
-          },
         },
       ],
     }],

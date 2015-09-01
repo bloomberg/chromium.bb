@@ -4,6 +4,12 @@
 
 #import <Foundation/Foundation.h>
 
+#if defined(CRNET_SHARED_LIBRARY)
+#define CRNET_EXPORT __attribute__((visibility("default")))
+#else
+#define CRNET_EXPORT
+#endif
+
 // A block, that takes a request, and returns YES if the request should
 // be handled.
 typedef BOOL(^RequestFilterBlock)(NSURLRequest *request);
@@ -18,7 +24,7 @@ typedef BOOL(^RequestFilterBlock)(NSURLRequest *request);
 typedef void(^ClearCacheCallback)(int errorCode);
 
 // Interface for installing CrNet.
-@interface CrNet : NSObject
+CRNET_EXPORT @interface CrNet : NSObject
 
 // Sets whether SPDY should be supported by CrNet. This method only has any
 // effect before |install| is called.
