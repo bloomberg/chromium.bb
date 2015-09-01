@@ -17365,6 +17365,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Session.Stop" enum="MediaSessionActionSource">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    The number of times the user stopped a media session using other means than
+    the pause button on the page.
+  </summary>
+</histogram>
+
 <histogram name="Media.TimeToPipelineStarted" units="ms">
   <obsolete>
     Removed from code 2014/6/18.
@@ -64930,7 +64939,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="MediaSessionActionSource" type="int">
-  <int value="0" label="MediaNotification"/>
+  <int value="0" label="Media Notification"/>
+  <int value="1" label="MediaSession (Android)"/>
 </enum>
 
 <enum name="MediaStreamRequestResult" type="int">

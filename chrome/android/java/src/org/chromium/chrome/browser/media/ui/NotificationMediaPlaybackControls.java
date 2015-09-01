@@ -110,17 +110,25 @@ public class NotificationMediaPlaybackControls {
                 switch (event.getKeyCode()) {
                     case KeyEvent.KEYCODE_MEDIA_PLAY:
                         if (!sInstance.mMediaNotificationInfo.isPaused) break;
+                        MediaSessionUMA.recordPlay(
+                                MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
                         sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PLAYING);
                         break;
                     case KeyEvent.KEYCODE_MEDIA_PAUSE:
                         if (sInstance.mMediaNotificationInfo.isPaused) break;
+                        MediaSessionUMA.recordPause(
+                                MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
                         sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PAUSED);
                         break;
                     case KeyEvent.KEYCODE_HEADSETHOOK:
                     case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                         if (sInstance.mMediaNotificationInfo.isPaused) {
+                            MediaSessionUMA.recordPlay(
+                                    MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
                             sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PLAYING);
                         } else {
+                            MediaSessionUMA.recordPause(
+                                    MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
                             sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PAUSED);
                         }
                         break;
@@ -131,6 +139,8 @@ public class NotificationMediaPlaybackControls {
             }
 
             if (ACTION_STOP.equals(action)) {
+                MediaSessionUMA.recordStop(
+                        MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_NOTIFICATION);
                 sInstance.mMediaNotificationInfo.listener.onStop();
                 stopSelf();
                 return START_NOT_STICKY;
@@ -234,12 +244,16 @@ public class NotificationMediaPlaybackControls {
                 @Override
                 public void onPlay() {
                     if (!sInstance.mMediaNotificationInfo.isPaused) return;
+                    MediaSessionUMA.recordPlay(
+                            MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
                     sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PLAYING);
                 }
 
                 @Override
                 public void onPause() {
                     if (sInstance.mMediaNotificationInfo.isPaused) return;
+                    MediaSessionUMA.recordPause(
+                            MediaSessionUMA.MEDIA_SESSION_ACTION_SOURCE_MEDIA_SESSION);
                     sInstance.onPlaybackStateChanged(PLAYBACK_STATE_PAUSED);
                 }
     };
