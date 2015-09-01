@@ -46,6 +46,8 @@
          disable_post_sub_buffers_for_onscreen_surfaces)     \
   GPU_OP(DISABLE_PROGRAM_CACHE,                              \
          disable_program_cache)                              \
+  GPU_OP(DISABLE_TEXTURE_STORAGE,                            \
+         disable_texture_storage)                            \
   GPU_OP(DISABLE_TIMESTAMP_QUERIES,                          \
          disable_timestamp_queries)                          \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \

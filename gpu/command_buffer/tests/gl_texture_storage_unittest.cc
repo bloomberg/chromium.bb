@@ -51,6 +51,11 @@ TEST_F(TextureStorageTest, CorrectPixels) {
 
   glTexStorage2DEXT(GL_TEXTURE_2D, 2, GL_RGBA8_OES, 2, 2);
 
+  // Mesa dirvers crash without rebinding to FBO. It's why
+  // DISABLE_TEXTURE_STORAGE workaround is introduced. crbug.com/521904
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         tex_, 0);
+
   uint8 source_pixels[16] = {
       1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4
   };

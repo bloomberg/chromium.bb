@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.24",
+  "version": "8.25",
   "entries": [
     {
       "id": 1,
@@ -1526,6 +1526,22 @@ LONG_STRING_CONST(
       "gl_vendor": "NVIDIA.*",
       "features": [
         "force_cube_complete"
+      ]
+    },
+    {
+      "id": 131,
+      "description": "Linux Mesa drivers crash on glTexSubImage2D() to texture storage bound to FBO",
+      "cr_bugs": [521904],
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": "<",
+        "value": "10.6"
+      },
+      "features": [
+        "disable_texture_storage"
       ]
     }
   ]
