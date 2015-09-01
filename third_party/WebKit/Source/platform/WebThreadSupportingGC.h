@@ -21,10 +21,14 @@ namespace blink {
 // thread allocates any objects managed by the Blink GC. The shutdown
 // method must be called on the WebThread during shutdown when the thread
 // no longer needs to access objects managed by the Blink GC.
+//
+// WebThreadSupportingGC usually internally creates and owns WebThread unless
+// an existing WebThread is given via createForThread.
 class PLATFORM_EXPORT WebThreadSupportingGC final {
     WTF_MAKE_NONCOPYABLE(WebThreadSupportingGC);
 public:
-    static PassOwnPtr<WebThreadSupportingGC> create(const char*);
+    static PassOwnPtr<WebThreadSupportingGC> create(const char* name);
+    static PassOwnPtr<WebThreadSupportingGC> createForThread(WebThread*);
     ~WebThreadSupportingGC();
 
     void postTask(const WebTraceLocation& location, WebThread::Task* task)
@@ -62,10 +66,15 @@ public:
     }
 
 private:
-    explicit WebThreadSupportingGC(const char*);
+    WebThreadSupportingGC(const char* name, WebThread*);
 
     OwnPtr<PendingGCRunner> m_pendingGCRunner;
-    OwnPtr<WebThread> m_thread;
+
+    // m_thread is guaranteed to be non-null after this instance is constructed.
+    // m_owningThread is non-null unless this instance is constructed for an
+    // existing thread via createForThread().
+    WebThread* m_thread = nullptr;
+    OwnPtr<WebThread> m_owningThread;
 };
 
 }
