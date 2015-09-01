@@ -407,21 +407,6 @@ const Experiment::Choice kFillOnAccountSelectChoices[] = {
     autofill::switches::kEnableFillOnAccountSelectNoHighlighting, "" },
 };
 
-#if defined(USE_ASH)
-const Experiment::Choice kAshScreenRotationAnimationChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    ash::switches::kAshEnableScreenRotationAnimation,
-    "none" },
-  { IDS_ASH_SCREEN_ROTATION_ANIMATION_PARTIAL_ROTATION,
-    ash::switches::kAshEnableScreenRotationAnimation,
-    "partial-rotation" },
-  { IDS_ASH_SCREEN_ROTATION_ANIMATION_FULL_ROTATION,
-    ash::switches::kAshEnableScreenRotationAnimation,
-    "full-rotation" }
-};
-#endif
-
 #if defined(ENABLE_TOPCHROME_MD)
 const Experiment::Choice kTopChromeMaterialDesignChoices[] = {
     {IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL, "", ""},
@@ -1017,11 +1002,6 @@ const Experiment kExperiments[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),
     },
-    {"ash-enable-screen-rotation-animations",
-     IDS_FLAGS_ASH_ENABLE_SCREEN_ROTATION_ANIMATION_NAME,
-     IDS_FLAGS_ASH_ENABLE_SCREEN_ROTATION_ANIMATION_DESCRIPTION,
-     kOsCrOS,
-     MULTI_VALUE_TYPE(kAshScreenRotationAnimationChoices)},
     {
      "ash-stable-overview-order",
      IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_NAME,

@@ -13,7 +13,6 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/point3_f.h"
 
 namespace ui {
 class InterpolatedTransform;
@@ -27,16 +26,13 @@ namespace ash {
 class ASH_EXPORT ScreenRotationAnimation : public ui::LayerAnimationElement {
  public:
   // Creates an animation element that will rotate |layer| from |start_degrees|
-  // to |end_degrees| around the given |pivot|.  The animation will take
-  // |duration| amount of time and |layer| will be scaled as defined by the
-  // |initial_scale| and |target_scale| values.
+  // to |end_degrees| around the given |pivot| and will take |duration| amount
+  // of time.
   ScreenRotationAnimation(ui::Layer* layer,
                           int start_degrees,
                           int end_degrees,
                           float initial_opacity,
                           float target_opacity,
-                          const gfx::Point3F& initial_scale,
-                          const gfx::Point3F& target_scale,
                           gfx::Point pivot,
                           base::TimeDelta duration,
                           gfx::Tween::Type twen_type);

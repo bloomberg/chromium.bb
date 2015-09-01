@@ -25,8 +25,7 @@ class ASH_EXPORT ScreenRotationAnimator {
 
   // Rotates the gfx::Display specified by |display_id_| to the |new_rotation|
   // orientation, for the given |source|. The rotation will also become active.
-  // Clients should only call |Rotate(gfx::Display::Rotation)| if |CanAnimate()|
-  // returns true.
+  // Clients should only call |Rotate()| if |CanAnimate()| returns true.
   void Rotate(gfx::Display::Rotation new_rotation,
               gfx::Display::RotationSource source);
 

@@ -20,8 +20,6 @@ ScreenRotationAnimation::ScreenRotationAnimation(
     int end_degrees,
     float initial_opacity,
     float target_opacity,
-    const gfx::Point3F& initial_scale,
-    const gfx::Point3F& target_scale,
     gfx::Point pivot,
     base::TimeDelta duration,
     gfx::Tween::Type tween_type)
@@ -31,10 +29,6 @@ ScreenRotationAnimation::ScreenRotationAnimation(
       tween_type_(tween_type),
       initial_opacity_(initial_opacity),
       target_opacity_(target_opacity) {
-  scoped_ptr<ui::InterpolatedTransform> scale(
-      new ui::InterpolatedTransformAboutPivot(
-          pivot, new ui::InterpolatedScale(initial_scale, target_scale)));
-
   scoped_ptr<ui::InterpolatedTransform> rotation(
       new ui::InterpolatedTransformAboutPivot(
           pivot, new ui::InterpolatedRotation(start_degrees, end_degrees)));
@@ -43,8 +37,7 @@ ScreenRotationAnimation::ScreenRotationAnimation(
   gfx::Transform current_transform = layer->GetTargetTransform();
   interpolated_transform_.reset(
       new ui::InterpolatedConstantTransform(current_transform));
-  scale->SetChild(rotation.release());
-  interpolated_transform_->SetChild(scale.release());
+  interpolated_transform_->SetChild(rotation.release());
 }
 
 ScreenRotationAnimation::~ScreenRotationAnimation() {

@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/ash_switches.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -35,28 +34,8 @@ namespace ash {
 
 namespace {
 
-// Switch value for the default animation.
-const char kRotationAnimation_Default[] = "";
-
-// Switch value for no animation.
-const char kRotationAnimation_None[] = "none";
-
-// Switch value for an animation that will rotate the initial orientation's
-// layer towards the new orientation and the new orientation's layer in to
-// position from the initial orientation through an arc of
-// |kPartialRotationDegrees| degrees. The initial orientation's layer will be
-// faded out as well.
-const char kRotationAnimation_Partial[] = "partial-rotation";
-
-// Switch value for an animation that will rotate both the initial and target
-// orientation's layers from the initial orientation into the target
-// orientation. The initial orientation's layer will be faded out as well and an
-// interpolated scaling factor is applied to the animation so that the initial
-// and target layers are both the same size throughout the animation.
-const char kRotationAnimation_Full[] = "full-rotation";
-
-// The number of degrees the partial rotation animations animate through.
-const int kPartialRotationDegrees = 20;
+// The number of degrees that the rotation animations animate through.
+const int kRotationDegrees = 20;
 
 // The time it takes for the rotation animations to run.
 const int kRotationDurationInMs = 250;
@@ -161,16 +140,14 @@ void LayerCleanupObserver::AbortAnimations(ui::Layer* layer) {
   layer->GetAnimator()->AbortAllAnimations();
 }
 
-// Set the screen orientation for the given |display| to |new_rotation| and
-// animate the change.
+// Set the screen orientation for the given |display_id| to |new_rotation| and
+// animate the change. The animation will rotate the initial orientation's
+// layer towards the new orientation through |rotation_degrees| while fading
+// out, and the new orientation's layer will be rotated in to the
+// |new_orientation| through |rotation_degrees| arc.
 void RotateScreen(int64 display_id,
                   gfx::Display::Rotation new_rotation,
-                  gfx::Display::RotationSource source,
-                  base::TimeDelta duration,
-                  int rotation_degrees,
-                  int rotation_degree_offset,
-                  gfx::Tween::Type tween_type,
-                  bool should_scale) {
+                  gfx::Display::RotationSource source) {
   aura::Window* root_window = Shell::GetInstance()
                                   ->window_tree_host_manager()
                                   ->GetRootWindowForDisplayId(display_id);
@@ -182,6 +159,14 @@ void RotateScreen(int64 display_id,
   // 180 degree rotations should animate clock-wise.
   const int rotation_factor =
       (initial_orientation + 3) % 4 == new_rotation ? 1 : -1;
+
+  const int old_layer_initial_rotation_degrees =
+      (Is180DegreeFlip(initial_orientation, new_rotation) ? 180 : 90);
+
+  const base::TimeDelta duration =
+      base::TimeDelta::FromMilliseconds(kRotationDurationInMs);
+
+  const gfx::Tween::Type tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
 
   scoped_ptr<ui::LayerTreeOwner> old_layer_tree =
       wm::RecreateLayers(root_window);
@@ -200,25 +185,6 @@ void RotateScreen(int64 display_id,
   const gfx::Point pivot = gfx::Point(rotated_screen_bounds.width() / 2,
                                       rotated_screen_bounds.height() / 2);
 
-  gfx::Point3F new_layer_initial_scale = gfx::Point3F(1.0f, 1.0f, 1.0f);
-  gfx::Point3F old_layer_target_scale = gfx::Point3F(1.0f, 1.0f, 1.0f);
-
-  if (should_scale) {
-    new_layer_initial_scale =
-        gfx::Point3F(static_cast<float>(original_screen_bounds.width()) /
-                         rotated_screen_bounds.width(),
-                     static_cast<float>(original_screen_bounds.height()) /
-                         rotated_screen_bounds.height(),
-                     1.0f);
-
-    old_layer_target_scale =
-        gfx::Point3F(static_cast<float>(rotated_screen_bounds.width()) /
-                         original_screen_bounds.width(),
-                     static_cast<float>(rotated_screen_bounds.height()) /
-                         original_screen_bounds.height(),
-                     1.0f);
-  }
-
   // We must animate each non-cloned child layer individually because the cloned
   // layer was added as a child to |root_window|'s layer so that it will be
   // rendered.
@@ -232,10 +198,9 @@ void RotateScreen(int64 display_id,
 
     scoped_ptr<ScreenRotationAnimation> screen_rotation(
         new ScreenRotationAnimation(
-            child_layer, rotation_degrees * rotation_factor,
+            child_layer, kRotationDegrees * rotation_factor,
             0 /* end_degrees */, child_layer->opacity(),
-            1.0f /* target_opacity */, new_layer_initial_scale,
-            gfx::Point3F(1.0f, 1.0f, 1.0f), pivot, duration, tween_type));
+            1.0f /* target_opacity */, pivot, duration, tween_type));
 
     ui::LayerAnimator* animator = child_layer->GetAnimator();
     animator->set_preemption_strategy(
@@ -258,11 +223,11 @@ void RotateScreen(int64 display_id,
   scoped_ptr<ScreenRotationAnimation> screen_rotation(
       new ScreenRotationAnimation(
           layer_cleanup_observer->GetRootLayer(),
-          (rotation_degrees + rotation_degree_offset) * rotation_factor,
-          rotation_degree_offset * rotation_factor,
+          old_layer_initial_rotation_degrees * rotation_factor,
+          (old_layer_initial_rotation_degrees - kRotationDegrees) *
+              rotation_factor,
           layer_cleanup_observer->GetRootLayer()->opacity(),
-          0.0f /* target_opacity */, gfx::Point3F(1.0f, 1.0f, 1.0f),
-          old_layer_target_scale, pivot, duration, tween_type));
+          0.0f /* target_opacity */, pivot, duration, tween_type));
 
   ui::LayerAnimator* animator =
       layer_cleanup_observer->GetRootLayer()->GetAnimator();
@@ -300,35 +265,7 @@ void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation,
   if (current_rotation == new_rotation)
     return;
 
-  const std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAshEnableScreenRotationAnimation);
-
-  if (switch_value == kRotationAnimation_None) {
-    Shell::GetInstance()->display_manager()->SetDisplayRotation(
-        display_id_, new_rotation, source);
-  } else if (kRotationAnimation_Default == switch_value ||
-             kRotationAnimation_Partial == switch_value) {
-    const int rotation_degree_offset =
-        Is180DegreeFlip(current_rotation, new_rotation)
-            ? 180 - kPartialRotationDegrees
-            : 90 - kPartialRotationDegrees;
-
-    RotateScreen(display_id_, new_rotation, source,
-                 base::TimeDelta::FromMilliseconds(kRotationDurationInMs),
-                 kPartialRotationDegrees, rotation_degree_offset,
-                 gfx::Tween::FAST_OUT_LINEAR_IN, false /* should_scale */);
-  } else if (kRotationAnimation_Full == switch_value) {
-    const int rotation_degrees =
-        Is180DegreeFlip(current_rotation, new_rotation) ? 180 : 90;
-
-    RotateScreen(display_id_, new_rotation, source,
-                 base::TimeDelta::FromMilliseconds(kRotationDurationInMs),
-                 rotation_degrees, 0 /* rotation_degree_offset */,
-                 gfx::Tween::FAST_OUT_LINEAR_IN, true /* should_scale */);
-  } else {
-    NOTREACHED();
-  }
+  RotateScreen(display_id_, new_rotation, source);
 }
 
 }  // namespace ash

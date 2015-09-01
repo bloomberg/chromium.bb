@@ -69,13 +69,6 @@ const char kAshEnableStableOverviewOrder[] = "ash-enable-stable-overview-order";
 const char kAshEnablePowerButtonQuickLock[] =
     "ash-enable-power-button-quick-lock";
 
-// Specifies the screen rotation animation to use. Possible values are:
-// "partial-rotation", "partial-rotation-slow", "full-rotation", and
-// "full-rotation-slow". See ash/rotator/screen_rotation_animator.cc for more
-// details.
-const char kAshEnableScreenRotationAnimation[] =
-    "ash-screen-rotation-animation";
-
 // Enables software based mirroring.
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 

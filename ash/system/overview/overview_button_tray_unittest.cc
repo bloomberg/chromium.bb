@@ -69,8 +69,6 @@ class OverviewButtonTrayTest : public test::AshTestBase {
 void OverviewButtonTrayTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAshUseFirstDisplayAsInternal);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableScreenRotationAnimation);
   AshTestBase::SetUp();
 }
 
