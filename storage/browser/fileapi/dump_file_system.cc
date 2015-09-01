@@ -93,7 +93,7 @@ static void DumpDirectoryTree(const std::string& origin_name,
 
     SandboxDirectoryDatabase::FileInfo info;
     if (!directory_db.GetFileInfo(id, &info)) {
-      ShowMessageAndExit(base::StringPrintf("GetFileInfo failed for %"PRId64,
+      ShowMessageAndExit(base::StringPrintf("GetFileInfo failed for %" PRId64,
                                             id));
     }
 
@@ -103,7 +103,7 @@ static void DumpDirectoryTree(const std::string& origin_name,
     if (info.is_directory()) {
       if (!directory_db.ListChildren(id, &children)) {
         ShowMessageAndExit(base::StringPrintf(
-            "ListChildren failed for %s (%"PRId64")",
+            "ListChildren failed for %s (%" PRId64 ")",
             info.name.c_str(), id));
       }
 
@@ -122,7 +122,7 @@ static void DumpDirectoryTree(const std::string& origin_name,
         base::GetFileSize(origin_dir.Append(info.data_path), &size);
       }
       // TODO(hamaji): Modification time?
-      printf("%s%s %"PRId64" %"PRId64" %s\n",
+      printf("%s%s %" PRId64 " %" PRId64 " %s\n",
              display_name,
              directory_suffix,
              id,
