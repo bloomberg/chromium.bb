@@ -26,6 +26,8 @@ source_set("proximity_auth") {
     "connection_finder.h",
     "connection_observer.h",
     "controller.h",
+    "cryptauth_enroller_factory_impl.cc",
+    "cryptauth_enroller_factory_impl.h",
     "device_to_device_authenticator.cc",
     "device_to_device_authenticator.h",
     "device_to_device_initiator_operations.cc",

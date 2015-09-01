@@ -52,6 +52,8 @@
         "proximity_auth/client_impl.cc",
         "proximity_auth/client_impl.h",
         "proximity_auth/client_observer.h",
+        "proximity_auth/cryptauth_enroller_factory_impl.cc",
+        "proximity_auth/cryptauth_enroller_factory_impl.h",
         "proximity_auth/connection.cc",
         "proximity_auth/connection.h",
         "proximity_auth/connection_finder.h",

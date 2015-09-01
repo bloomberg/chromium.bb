@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace proximity_auth {

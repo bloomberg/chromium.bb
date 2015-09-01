@@ -36,6 +36,9 @@ class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
   void FinalizeSignin(const std::string& secret) override;
 
  private:
+  // Returns the EasyUnlockService instance used inside user sessions.
+  EasyUnlockServiceRegular* GetEasyUnlockServiceRegular();
+
   Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeProximityAuthClient);

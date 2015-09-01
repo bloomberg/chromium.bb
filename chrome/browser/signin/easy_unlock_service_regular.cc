@@ -5,13 +5,19 @@
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/sys_info.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_profile_service.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -20,9 +26,19 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
+#include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
+#include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/proximity_auth/cryptauth/cryptauth_enrollment_utils.h"
+#include "components/proximity_auth/cryptauth/cryptauth_gcm_manager_impl.h"
+#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
+#include "components/proximity_auth/cryptauth_enroller_factory_impl.h"
+#include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/translate/core/browser/translate_download_manager.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/constants.h"
@@ -30,6 +46,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "apps/app_lifetime_monitor_factory.h"
+#include "ash/display/display_info.h"
+#include "ash/display/display_manager.h"
+#include "ash/shell.h"
+#include "base/linux_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_reauth.h"
@@ -57,6 +77,16 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(Profile* profile)
 }
 
 EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
+}
+
+proximity_auth::CryptAuthEnrollmentManager*
+EasyUnlockServiceRegular::GetCryptAuthEnrollmentManager() {
+  return enrollment_manager_.get();
+}
+
+proximity_auth::CryptAuthDeviceManager*
+EasyUnlockServiceRegular::GetCryptAuthDeviceManager() {
+  return device_manager_.get();
 }
 
 EasyUnlockService::Type EasyUnlockServiceRegular::GetType() const {
@@ -160,7 +190,6 @@ const base::ListValue* EasyUnlockServiceRegular::GetRemoteDevices() const {
   const base::ListValue* devices = NULL;
   if (pairing_dict && pairing_dict->GetList(kKeyDevices, &devices))
     return devices;
-
   return NULL;
 }
 
@@ -284,6 +313,13 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   registrar_.Add(prefs::kEasyUnlockProximityRequired,
                  base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
                             base::Unretained(this)));
+
+#if defined(OS_CHROMEOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
+    InitializeCryptAuth();
+#endif
+
   OnPrefsChanged();
 }
 
@@ -328,6 +364,18 @@ void EasyUnlockServiceRegular::OnWillFinalizeUnlock(bool success) {
 
 void EasyUnlockServiceRegular::OnSuspendDone() {
   lock_screen_last_shown_timestamp_ = base::TimeTicks::Now();
+}
+
+void EasyUnlockServiceRegular::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  if (account_id == proximity_auth_client()->GetAccountId()) {
+    OAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+    token_service->RemoveObserver(this);
+#if defined(OS_CHROMEOS)
+    InitializeCryptAuth();
+#endif
+  }
 }
 
 void EasyUnlockServiceRegular::OnScreenDidLock(
@@ -410,3 +458,86 @@ void EasyUnlockServiceRegular::SyncProfilePrefsToLocalState() {
   std::string user_email = GetUserEmail();
   update->SetWithoutPathExpansion(user_email, user_prefs_dict.Pass());
 }
+
+cryptauth::GcmDeviceInfo EasyUnlockServiceRegular::GetGcmDeviceInfo() {
+  cryptauth::GcmDeviceInfo device_info;
+  device_info.set_long_device_id(EasyUnlockService::GetDeviceId());
+  device_info.set_device_type(cryptauth::CHROME);
+  device_info.set_device_software_version(version_info::GetVersionNumber());
+  google::protobuf::int64 software_version_code =
+      proximity_auth::HashStringToInt64(version_info::GetLastChange());
+  device_info.set_device_software_version_code(software_version_code);
+  device_info.set_locale(
+      translate::TranslateDownloadManager::GetInstance()->application_locale());
+
+#if defined(OS_CHROMEOS)
+  device_info.set_device_model(base::SysInfo::GetLsbReleaseBoard());
+  device_info.set_device_os_version(base::GetLinuxDistro());
+  // The Chrome OS version tracks the Chrome version, so fill in the same value
+  // as |device_software_version_code|.
+  device_info.set_device_os_version_code(software_version_code);
+
+  // There may not be a Shell instance in tests.
+  if (!ash::Shell::HasInstance())
+    return device_info;
+
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+  int64 primary_display_id = display_manager->GetPrimaryDisplayCandidate().id();
+  ash::DisplayInfo display_info =
+      display_manager->GetDisplayInfo(primary_display_id);
+  gfx::Rect bounds = display_info.bounds_in_native();
+
+  // TODO(tengs): This is a heuristic to deterimine the DPI of the display, as
+  // there is no convenient way of getting this information right now.
+  const double dpi = display_info.device_scale_factor() > 1.0f ? 239.0f : 96.0f;
+  double width_in_inches = (bounds.width() - bounds.x()) / dpi;
+  double height_in_inches = (bounds.height() - bounds.y()) / dpi;
+  double diagonal_in_inches = sqrt(width_in_inches * width_in_inches +
+                                   height_in_inches * height_in_inches);
+
+  // Note: The unit of this measument is in milli-inches.
+  device_info.set_device_display_diagonal_mils(diagonal_in_inches * 1000.0);
+#else
+// TODO(tengs): Fill in device information for other platforms.
+#endif
+  return device_info;
+}
+
+#if defined(OS_CHROMEOS)
+void EasyUnlockServiceRegular::InitializeCryptAuth() {
+  OAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+  if (!token_service->RefreshTokenIsAvailable(
+          proximity_auth_client()->GetAccountId())) {
+    PA_LOG(INFO) << "Refresh token not yet available.";
+    token_service->AddObserver(this);
+    return;
+  }
+
+  PA_LOG(INFO) << "Initializing CryptAuth managers.";
+  // Initialize GCM manager.
+  gcm_manager_.reset(new proximity_auth::CryptAuthGCMManagerImpl(
+      gcm::GCMProfileServiceFactory::GetForProfile(profile())->driver(),
+      proximity_auth_client()->GetPrefService()));
+  gcm_manager_->StartListening();
+
+  // Initialize enrollment manager.
+  cryptauth::GcmDeviceInfo device_info;
+  enrollment_manager_.reset(new proximity_auth::CryptAuthEnrollmentManager(
+      make_scoped_ptr(new base::DefaultClock()),
+      make_scoped_ptr(new proximity_auth::CryptAuthEnrollerFactoryImpl(
+          proximity_auth_client())),
+      proximity_auth_client()->CreateSecureMessageDelegate(),
+      GetGcmDeviceInfo(), gcm_manager_.get(),
+      proximity_auth_client()->GetPrefService()));
+  enrollment_manager_->Start();
+
+  // Initialize device manager.
+  device_manager_.reset(new proximity_auth::CryptAuthDeviceManager(
+      make_scoped_ptr(new base::DefaultClock()),
+      proximity_auth_client()->CreateCryptAuthClientFactory(),
+      gcm_manager_.get(), proximity_auth_client()->GetPrefService()));
+  device_manager_->Start();
+}
+#endif

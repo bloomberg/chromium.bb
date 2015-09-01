@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "components/proximity_auth/screenlock_bridge.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
@@ -30,6 +31,9 @@ class ToggleEasyUnlockResponse;
 
 namespace proximity_auth {
 class CryptAuthClient;
+class CryptAuthGCMManager;
+class CryptAuthEnrollmentManager;
+class CryptAuthDeviceManager;
 }
 
 class EasyUnlockAppManager;
@@ -40,10 +44,19 @@ class Profile;
 // profiles.
 class EasyUnlockServiceRegular
     : public EasyUnlockService,
-      public proximity_auth::ScreenlockBridge::Observer {
+      public proximity_auth::ScreenlockBridge::Observer,
+      public OAuth2TokenService::Observer {
  public:
   explicit EasyUnlockServiceRegular(Profile* profile);
   ~EasyUnlockServiceRegular() override;
+
+  // Returns the CryptAuthEnrollmentManager, which manages the profile's
+  // CryptAuth enrollment.
+  proximity_auth::CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager();
+
+  // Returns the CryptAuthEnrollmentManager, which manages the profile's
+  // synced devices from CryptAuth.
+  proximity_auth::CryptAuthDeviceManager* GetCryptAuthDeviceManager();
 
  private:
   // EasyUnlockService implementation:
@@ -70,6 +83,9 @@ class EasyUnlockServiceRegular
   bool IsAllowedInternal() const override;
   void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDone() override;
+
+  // OAuth2TokenService::Observer:
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // proximity_auth::ScreenlockBridge::Observer implementation:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
@@ -102,12 +118,19 @@ class EasyUnlockServiceRegular
       EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
       bool success);
 
+  // Initializes the managers that communicate with CryptAuth.
+  void InitializeCryptAuth();
+
   scoped_ptr<chromeos::ShortLivedUserContext> short_lived_user_context_;
 #endif
 
   // Updates local state with the preference from the user's profile, so they
   // can be accessed on the sign-in screen.
   void SyncProfilePrefsToLocalState();
+
+  // Returns the base GcmDeviceInfo proto containing the device's platform and
+  // version information.
+  cryptauth::GcmDeviceInfo GetGcmDeviceInfo();
 
   PrefChangeRegistrar registrar_;
 
@@ -126,6 +149,12 @@ class EasyUnlockServiceRegular
   // sleep -- e.g. by opening the lid -- but can also be shown if the screen is
   // locked but the computer does not go to sleep.
   base::TimeTicks lock_screen_last_shown_timestamp_;
+
+  // Managers responsible for handling syncing and communications with
+  // CryptAuth.
+  scoped_ptr<proximity_auth::CryptAuthGCMManager> gcm_manager_;
+  scoped_ptr<proximity_auth::CryptAuthEnrollmentManager> enrollment_manager_;
+  scoped_ptr<proximity_auth::CryptAuthDeviceManager> device_manager_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
 
