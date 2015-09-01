@@ -1972,6 +1972,59 @@ void TextureManager::ValidateAndDoTexImage(
     return;
   }
 
+  // ValidateTexImage is passed already.
+  Texture* texture = texture_ref->texture();
+  bool need_cube_map_workaround =
+      texture->target() == GL_TEXTURE_CUBE_MAP &&
+      (texture_state->force_cube_complete ||
+       (texture_state->force_cube_map_positive_x_allocation &&
+        args.target != GL_TEXTURE_CUBE_MAP_POSITIVE_X));
+  if (need_cube_map_workaround) {
+    std::vector<GLenum> undefined_faces;
+    if (texture_state->force_cube_complete) {
+      int width = 0;
+      int height = 0;
+      for (unsigned i = 0; i < 6; i++) {
+        bool defined =
+            texture->GetLevelSize(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                                  args.level, &width, &height, nullptr);
+        if (!defined || GL_TEXTURE_CUBE_MAP_POSITIVE_X + i == args.target)
+          undefined_faces.push_back(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+      }
+    } else if (texture_state->force_cube_map_positive_x_allocation &&
+               args.target != GL_TEXTURE_CUBE_MAP_POSITIVE_X) {
+      int width = 0;
+      int height = 0;
+      if (!texture->GetLevelSize(GL_TEXTURE_CUBE_MAP_POSITIVE_X, args.level,
+                                 &width, &height, nullptr)) {
+        undefined_faces.push_back(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+      }
+      undefined_faces.push_back(args.target);
+    }
+
+    DCHECK(undefined_faces.size());
+    if (!memory_tracker_managed_->EnsureGPUMemoryAvailable(
+            undefined_faces.size() * args.pixels_size)) {
+      ERRORSTATE_SET_GL_ERROR(state->GetErrorState(), GL_OUT_OF_MEMORY,
+                              function_name, "out of memory");
+      return;
+    }
+    DoTexImageArguments new_args = args;
+    scoped_ptr<char[]> zero(new char[args.pixels_size]);
+    memset(zero.get(), 0, args.pixels_size);
+    for (GLenum face : undefined_faces) {
+      new_args.target = face;
+      if (face == args.target) {
+        new_args.pixels = args.pixels;
+      } else {
+        new_args.pixels = zero.get();
+      }
+      DoTexImage(texture_state, state->GetErrorState(), framebuffer_state,
+                 function_name, texture_ref, new_args);
+    }
+    return;
+  }
+
   DoTexImage(texture_state, state->GetErrorState(), framebuffer_state,
              function_name, texture_ref, args);
 }

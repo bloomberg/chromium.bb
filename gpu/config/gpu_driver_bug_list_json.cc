@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.23",
+  "version": "8.24",
   "entries": [
     {
       "id": 1,
@@ -1480,6 +1480,52 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno \\(TM\\) 3.*",
       "features": [
         "disable_program_cache"
+      ]
+    },
+    {
+      "id": 127,
+      "description": "Android Adreno crashes on binding incomplete cube map texture to FBO",
+      "cr_bugs": [518889],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno.*",
+      "features": [
+        "force_cube_map_positive_x_allocation"
+      ]
+    },
+    {
+      "id": 128,
+      "description": "Linux ATI drivers crash on binding incomplete cube map texture to FBO",
+      "cr_bugs": [518889],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "force_cube_map_positive_x_allocation"
+      ]
+    },
+    {
+      "id": 129,
+      // TODO(dshwang): Fix ANGLE crash. crbug.com/518889
+      "description": "ANGLE crash on glReadPixels from incomplete cube map texture",
+      "cr_bugs": [518889],
+      "os": {
+        "type": "win"
+      },
+      "gl_renderer": "ANGLE.*",
+      "features": [
+        "force_cube_complete"
+      ]
+    },
+    {
+      "id": 130,
+      "description": "NVIDIA fails glReadPixels from incomplete cube map texture",
+      "cr_bugs": [518889],
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "force_cube_complete"
       ]
     }
   ]
