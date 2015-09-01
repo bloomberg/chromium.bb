@@ -21,7 +21,6 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -219,23 +218,6 @@ class OpenChannelToPpapiBrokerCallback
 };
 #endif  // defined(ENABLE_PLUGINS)
 
-void CreateChildFrameOnUI(int process_id,
-                          int parent_routing_id,
-                          blink::WebTreeScopeType scope,
-                          const std::string& frame_name,
-                          blink::WebSandboxFlags sandbox_flags,
-                          int new_routing_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(process_id, parent_routing_id);
-  // Handles the RenderFrameHost being deleted on the UI thread while
-  // processing a subframe creation message.
-  if (render_frame_host) {
-    render_frame_host->OnCreateChildFrame(new_routing_id, scope, frame_name,
-                                          sandbox_flags);
-  }
-}
-
 }  // namespace
 
 class RenderMessageFilter::OpenChannelToNpapiPluginCallback
@@ -384,7 +366,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnGetProcessMemorySizes)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GenerateRoutingID, OnGenerateRoutingID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_CreateChildFrame, OnCreateChildFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
                         OnCreateFullscreenWidget)
@@ -534,19 +515,6 @@ void RenderMessageFilter::OnCreateWindow(
                                          main_frame_route_id,
                                          surface_id,
                                          cloned_namespace.get());
-}
-
-void RenderMessageFilter::OnCreateChildFrame(
-    int parent_routing_id,
-    blink::WebTreeScopeType scope,
-    const std::string& frame_name,
-    blink::WebSandboxFlags sandbox_flags,
-    int* new_routing_id) {
-  *new_routing_id = render_widget_helper_->GetNextRoutingID();
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&CreateChildFrameOnUI, render_process_id_, parent_routing_id,
-                 scope, frame_name, sandbox_flags, *new_routing_id));
 }
 
 void RenderMessageFilter::OnCreateWidget(int opener_id,
