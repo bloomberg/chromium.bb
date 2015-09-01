@@ -183,17 +183,11 @@ bool TargetGenerator::FillDependentConfigs() {
   if (!FillGenericConfigs(variables::kAllDependentConfigs,
                           &target_->all_dependent_configs()))
     return false;
+
   if (!FillGenericConfigs(variables::kPublicConfigs,
                           &target_->public_configs()))
     return false;
 
-  // "public_configs" was previously named "direct_dependent_configs", fall
-  // back to that if public_configs was undefined.
-  if (!scope_->GetValue(variables::kPublicConfigs, false)) {
-    if (!FillGenericConfigs("direct_dependent_configs",
-                            &target_->public_configs()))
-      return false;
-  }
   return true;
 }
 
