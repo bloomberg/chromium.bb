@@ -31,7 +31,7 @@ class WebHistoryServiceFactory : public BrowserContextKeyedServiceFactory {
  private:
   friend struct DefaultSingletonTraits<WebHistoryServiceFactory>;
 
-  explicit WebHistoryServiceFactory();
+  WebHistoryServiceFactory();
   ~WebHistoryServiceFactory() override;
 
   DISALLOW_COPY_AND_ASSIGN(WebHistoryServiceFactory);
