@@ -482,7 +482,7 @@ int amdgpu_bo_cpu_unmap(amdgpu_bo_handle bo)
 	if (bo->cpu_map_count == 0) {
 		/* not mapped */
 		pthread_mutex_unlock(&bo->cpu_access_mutex);
-		return -EBADMSG;
+		return -EINVAL;
 	}
 
 	bo->cpu_map_count--;
