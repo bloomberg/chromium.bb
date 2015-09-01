@@ -17,17 +17,9 @@
 namespace blink {
 
 // static
-PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver, WebPermissionStatus* status, WebPermissionType type)
+PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver, WebPermissionStatus status, WebPermissionType type)
 {
-    PermissionStatus* permissionStatus = PermissionStatus::createAndListen(resolver->executionContext(), *status, type);
-    delete status;
-    return permissionStatus;
-}
-
-// static
-void PermissionStatus::dispose(WebPermissionStatus* status)
-{
-    delete status;
+    return PermissionStatus::createAndListen(resolver->executionContext(), status, type);
 }
 
 PermissionStatus* PermissionStatus::createAndListen(ExecutionContext* executionContext, WebPermissionStatus status, WebPermissionType type)

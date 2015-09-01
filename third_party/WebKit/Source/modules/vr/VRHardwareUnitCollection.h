@@ -18,7 +18,7 @@ class VRHardwareUnitCollection final : public GarbageCollected<VRHardwareUnitCol
 public:
     explicit VRHardwareUnitCollection(VRController*);
 
-    VRDeviceVector updateVRHardwareUnits(const WebVector<WebVRDevice>*);
+    VRDeviceVector updateVRHardwareUnits(const WebVector<WebVRDevice>&);
     VRHardwareUnit* getHardwareUnitForIndex(unsigned index);
 
     DECLARE_VIRTUAL_TRACE();

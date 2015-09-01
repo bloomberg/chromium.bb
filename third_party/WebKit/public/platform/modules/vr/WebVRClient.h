@@ -12,7 +12,11 @@
 namespace blink {
 
 // Success and failure callbacks for getDevices.
-typedef WebCallbacks<WebVector<blink::WebVRDevice>*, void> WebVRGetDevicesCallback;
+class WebVRGetDevicesCallback : public WebCallbacks<const WebVector<WebVRDevice>&, void> {
+public:
+    virtual void onSuccess(const WebVector<WebVRDevice>&) = 0;
+    void onSuccess(WebVector<WebVRDevice>* r) { onSuccess(*r); }
+};
 
 // Client handling VR device communication for a given WebFrame.
 class WebVRClient {

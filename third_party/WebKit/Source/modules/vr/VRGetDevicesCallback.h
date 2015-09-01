@@ -19,7 +19,7 @@ public:
     VRGetDevicesCallback(ScriptPromiseResolver*, VRHardwareUnitCollection*);
     ~VRGetDevicesCallback() override;
 
-    void onSuccess(WebVector<WebVRDevice>*) override;
+    void onSuccess(const WebVector<WebVRDevice>&) override;
     void onError() override;
 
 private:

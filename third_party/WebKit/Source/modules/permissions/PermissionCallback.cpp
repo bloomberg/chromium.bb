@@ -21,10 +21,9 @@ PermissionCallback::~PermissionCallback()
 {
 }
 
-void PermissionCallback::onSuccess(WebPermissionStatus* permissionStatus)
+void PermissionCallback::onSuccess(WebPermissionStatus permissionStatus)
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        PermissionStatus::dispose(permissionStatus);
         return;
     }
     m_resolver->resolve(PermissionStatus::take(m_resolver.get(), permissionStatus, m_permissionType));

@@ -18,18 +18,17 @@ namespace blink {
 
 namespace {
 
-class DurableStorageQueryCallbacks final : public WebCallbacks<WebPermissionStatus*, void> {
+class DurableStorageQueryCallbacks final : public WebPermissionCallback {
 public:
     DurableStorageQueryCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver)
     {
     }
 
-    void onSuccess(WebPermissionStatus* rawStatus) override
+    void onSuccess(WebPermissionStatus status) override
     {
-        OwnPtr<WebPermissionStatus> status = adoptPtr(rawStatus);
         String toReturn;
-        switch (*status) {
+        switch (status) {
         case WebPermissionStatusGranted:
             toReturn = "granted";
             break;
@@ -51,17 +50,16 @@ private:
     Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-class DurableStorageRequestCallbacks final : public WebCallbacks<WebPermissionStatus*, void> {
+class DurableStorageRequestCallbacks final : public WebPermissionCallback {
 public:
     DurableStorageRequestCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver)
     {
     }
 
-    void onSuccess(WebPermissionStatus* rawStatus) override
+    void onSuccess(WebPermissionStatus status) override
     {
-        OwnPtr<WebPermissionStatus> status = adoptPtr(rawStatus);
-        m_resolver->resolve(*status == WebPermissionStatusGranted);
+        m_resolver->resolve(status == WebPermissionStatusGranted);
     }
     void onError() override
     {

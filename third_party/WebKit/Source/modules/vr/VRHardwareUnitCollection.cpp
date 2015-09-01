@@ -27,16 +27,11 @@ VRHardwareUnitCollection::VRHardwareUnitCollection(VRController* controller)
 {
 }
 
-HeapVector<Member<VRDevice>> VRHardwareUnitCollection::updateVRHardwareUnits(const WebVector<WebVRDevice>* devices)
+HeapVector<Member<VRDevice>> VRHardwareUnitCollection::updateVRHardwareUnits(const WebVector<WebVRDevice>& devices)
 {
     VRDeviceVector vrDevices;
 
-    if (!devices)
-        return vrDevices;
-
-    for (size_t i = 0; i < devices->size(); ++i) {
-        const WebVRDevice& device = (*devices)[i];
-
+    for (const auto& device : devices) {
         VRHardwareUnit* hardwareUnit = getHardwareUnitForIndex(device.index);
         if (!hardwareUnit) {
             hardwareUnit = new VRHardwareUnit(m_controller);

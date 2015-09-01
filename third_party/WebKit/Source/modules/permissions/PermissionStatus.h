@@ -29,8 +29,7 @@ class PermissionStatus final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PermissionStatus* take(ScriptPromiseResolver*, WebPermissionStatus*, WebPermissionType);
-    static void dispose(WebPermissionStatus*);
+    static PermissionStatus* take(ScriptPromiseResolver*, WebPermissionStatus, WebPermissionType);
 
     static PermissionStatus* createAndListen(ExecutionContext*, WebPermissionStatus, WebPermissionType);
     ~PermissionStatus() override;

@@ -6,7 +6,7 @@
 #define PermissionCallback_h
 
 #include "platform/heap/Handle.h"
-#include "public/platform/WebCallbacks.h"
+#include "public/platform/modules/permissions/WebPermissionClient.h"
 #include "public/platform/modules/permissions/WebPermissionStatus.h"
 #include "public/platform/modules/permissions/WebPermissionType.h"
 #include "wtf/Noncopyable.h"
@@ -19,13 +19,12 @@ class ScriptPromiseResolver;
 // that will resolve the underlying promise depending on the result passed to
 // the callback. It takes a WebPermissionType in its constructor and will pass
 // it to the PermissionStatus.
-class PermissionCallback final
-    : public WebCallbacks<WebPermissionStatus*, void> {
+class PermissionCallback final : public WebPermissionCallback {
 public:
     PermissionCallback(ScriptPromiseResolver*, WebPermissionType);
     ~PermissionCallback() override;
 
-    void onSuccess(WebPermissionStatus*) override;
+    void onSuccess(WebPermissionStatus) override;
     void onError() override;
 
 private:
