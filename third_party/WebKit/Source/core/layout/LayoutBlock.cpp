@@ -88,7 +88,21 @@ struct SameSizeAsLayoutBlock : public LayoutBox {
 
 static_assert(sizeof(LayoutBlock) == sizeof(SameSizeAsLayoutBlock), "LayoutBlock should stay small");
 
+// This map keeps track of the positioned objects associated with a containing
+// block.
+//
+// This map is populated during layout. It is kept across layouts to handle
+// that we skip unchanged sub-trees during layout, in such a way that we are
+// able to lay out deeply nested out-of-flow descendants if their containing
+// block got laid out. The map could be invalidated during style change but
+// keeping track of containing blocks at that time is complicated (we are in
+// the middle of recomputing the style so we can't rely on any of its
+// information), which is why it's easier to just update it for every layout.
 static TrackedDescendantsMap* gPositionedDescendantsMap = nullptr;
+
+// This map keeps track of the descendants whose 'height' is percentage associated
+// with a containing block. Like |gPositionedDescendantsMap|, it is also recomputed
+// for every layout (see the comment above about why).
 static TrackedDescendantsMap* gPercentHeightDescendantsMap = nullptr;
 
 static TrackedContainerMap* gPositionedContainerMap = nullptr;

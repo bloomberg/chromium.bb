@@ -49,6 +49,52 @@ typedef Vector<WordMeasurement, 64> WordMeasurements;
 
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
+// LayoutBlock is the class that is used by any LayoutObject
+// that is a containing block.
+// http://www.w3.org/TR/CSS2/visuren.html#containing-block
+// See also LayoutObject::containingBlock() that is the function
+// used to get the containing block of a LayoutObject.
+//
+// CSS is inconsistent and allows inline elements (LayoutInline) to be
+// containing blocks, even though they are not blocks. Our
+// implementation is as confused with inlines. See e.g.
+// LayoutObject::containingBlock() vs LayoutObject::container().
+//
+// Containing blocks are a central concept for layout, in
+// particular to the layout of out-of-flow positioned
+// elements. They are used to determine the sizing as well
+// as the positioning of the LayoutObjects.
+//
+// Out-of-flow positioned elements are laid out by their
+// containing blocks so LayoutBlock keeps track of them
+// through |gPositionedDescendantsMap| (see LayoutBlock.cpp).
+// See LayoutBlock::layoutPositionedObjects() for the logic
+// to lay them out.
+//
+//
+// ***** HANDLING OUT-OF-FLOW POSITIONED OBJECTS *****
+// Care should be taken to handle out-of-flow positioned objects during
+// certain tree walks (e.g. layout()). The rule is that anything that
+// cares about containing blocks should skip the out-of-flow elements
+// in the normal tree walk and do an optional follow-up pass for them
+// using LayoutBlock::positionedObjects().
+// Not doing so will result in passing the wrong containing
+// block as tree walks will always pass the parent as the
+// containing block.
+//
+// Sample code of how to handle positioned objects in LayoutBlock:
+//
+// for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
+//     if (child->isOutOfFlowPositioned())
+//         continue;
+//
+//     // Handle normal flow children.
+//     ...
+// }
+// for (LayoutObject positionedObject : positionedObjects()) {
+//     // Handle out-of-flow positioned objects.
+//     ...
+// }
 class CORE_EXPORT LayoutBlock : public LayoutBox {
 public:
     friend class LineLayoutState;
