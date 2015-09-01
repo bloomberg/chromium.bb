@@ -61,29 +61,31 @@ if (is_win) {
     libs = [ rebase_path("$target_gen_dir/allocator/libcmt.lib") ]
   }
 
-  action("prep_libc") {
-    script = "prep_libc.py"
-    outputs = [
-      "$target_gen_dir/allocator/libcmt.lib",
-    ]
-    args = [
-      visual_studio_path + "/vc/lib",
-      rebase_path("$target_gen_dir/allocator"),
-      current_cpu,
-    ]
-  }
+  if (!is_component_build) {
+    action("prep_libc") {
+      script = "prep_libc.py"
+      outputs = [
+        "$target_gen_dir/allocator/libcmt.lib",
+      ]
+      args = [
+        visual_studio_path + "/vc/lib",
+        rebase_path("$target_gen_dir/allocator"),
+        current_cpu,
+      ]
+    }
 
-  source_set("allocator_shim") {
-    sources = [
-      "allocator_shim_win.cc",
-    ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    source_set("allocator_shim") {
+      sources = [
+        "allocator_shim_win.cc",
+      ]
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [ "//build/config/compiler:no_chromium_code" ]
 
-    public_configs = [ ":nocmt" ]
-    deps = [
-      ":prep_libc",
-    ]
+      public_configs = [ ":nocmt" ]
+      deps = [
+        ":prep_libc",
+      ]
+    }
   }
 }
 

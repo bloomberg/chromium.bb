@@ -309,7 +309,7 @@
             '-fintercept-allocation-functions',
           ],
         }],
-        ['OS=="win"', {
+        ['OS=="win" and component!="shared_library"', {
           'dependencies': [
             'libcmt',
           ],
@@ -397,7 +397,7 @@
     },
    ],
   'conditions': [
-    ['OS=="win"', {
+    ['OS=="win" and component!="shared_library"', {
       'targets': [
         {
           'target_name': 'libcmt',
