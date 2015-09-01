@@ -33,7 +33,7 @@ vars = {
   'googlecode_url': 'http://%s.googlecode.com/svn',
   'webkit_revision': '072c6e3244fb421002c02720524d3c1161b677e0', # from svn revision 201511
   'chromium_git': 'https://chromium.googlesource.com',
-  'libvpx_revision': 'a208ecae8e6fff1c0d4286bdc000d7c5efaab411',
+  'libvpx_revision': '70e938fdf048b4efb436ed6bf8a1b194528870c9',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': '9389b871c3b0f06bb34626cf9bdbfe0c93779327',
   # Three lines of non-changing comments so that
