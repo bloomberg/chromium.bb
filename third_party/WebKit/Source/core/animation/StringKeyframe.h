@@ -95,7 +95,7 @@ public:
 
 private:
     StringKeyframe()
-        : m_propertySet(MutableStylePropertySet::create(HTMLQuirksMode))
+        : m_propertySet(MutableStylePropertySet::create(HTMLStandardMode))
     { }
 
     StringKeyframe(const StringKeyframe& copyFrom);
