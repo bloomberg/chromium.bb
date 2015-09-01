@@ -128,6 +128,12 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
     }
   }
 
+  if (success && worker_context_provider_.get()) {
+    success = worker_context_provider_->BindToCurrentThread();
+    if (success)
+      worker_context_provider_->SetupLock();
+  }
+
   if (!success)
     client_ = NULL;
 

@@ -19,18 +19,7 @@ namespace cc {
 
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::Create() {
-  return Create(TestWebGraphicsContext3D::Create());
-}
-
-// static
-scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
-  scoped_refptr<TestContextProvider> worker_context_provider =
-      Create(TestWebGraphicsContext3D::Create());
-  if (!worker_context_provider)
-    return nullptr;
-  // Worker context is initially bound but not attached to a specific thread.
-  worker_context_provider->bound_ = true;
-  return worker_context_provider;
+  return Create(TestWebGraphicsContext3D::Create().Pass());
 }
 
 // static
