@@ -598,6 +598,16 @@
           'dependencies': [
             '../third_party/protobuf/protobuf.gyp:py_proto',
           ],
+        }, {
+          'sources!': [
+            'test/spawned_test_server/base_test_server.cc',
+            'test/spawned_test_server/base_test_server.h',
+            'test/spawned_test_server/local_test_server.cc',
+            'test/spawned_test_server/local_test_server.h',
+            'test/spawned_test_server/local_test_server_posix.cc',
+            'test/spawned_test_server/local_test_server_win.cc',
+            'test/spawned_test_server/spawned_test_server.h',
+          ],
         }],
         ['use_nss_certs == 1 or OS == "ios"', {
           'conditions': [

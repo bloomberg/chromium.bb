@@ -636,17 +636,6 @@ source_set("test_support") {
     "test/net_test_suite.h",
     "test/python_utils.cc",
     "test/python_utils.h",
-    "test/spawned_test_server/base_test_server.cc",
-    "test/spawned_test_server/base_test_server.h",
-    "test/spawned_test_server/local_test_server.cc",
-    "test/spawned_test_server/local_test_server.h",
-    "test/spawned_test_server/local_test_server_posix.cc",
-    "test/spawned_test_server/local_test_server_win.cc",
-    "test/spawned_test_server/remote_test_server.cc",
-    "test/spawned_test_server/remote_test_server.h",
-    "test/spawned_test_server/spawned_test_server.h",
-    "test/spawned_test_server/spawner_communicator.cc",
-    "test/spawned_test_server/spawner_communicator.h",
     "test/url_request/ssl_certificate_error_job.cc",
     "test/url_request/ssl_certificate_error_job.h",
     "test/url_request/url_request_failed_job.cc",
@@ -660,6 +649,17 @@ source_set("test_support") {
     "url_request/url_request_test_util.cc",
     "url_request/url_request_test_util.h",
   ]
+  if (!is_ios) {
+    sources += [
+      "test/spawned_test_server/base_test_server.cc",
+      "test/spawned_test_server/base_test_server.h",
+      "test/spawned_test_server/local_test_server.cc",
+      "test/spawned_test_server/local_test_server.h",
+      "test/spawned_test_server/local_test_server_posix.cc",
+      "test/spawned_test_server/local_test_server_win.cc",
+      "test/spawned_test_server/spawned_test_server.h",
+    ]
+  }
 
   configs += [
     "//build/config:precompiled_headers",
@@ -687,8 +687,8 @@ source_set("test_support") {
     public_deps += [ "//crypto:platform" ]
   }
 
-  if (!is_android) {
-    sources -= [
+  if (is_android) {
+    sources += [
       "test/spawned_test_server/remote_test_server.cc",
       "test/spawned_test_server/remote_test_server.h",
       "test/spawned_test_server/spawner_communicator.cc",
