@@ -6,7 +6,8 @@
 
 namespace drive {
 
-AddNewDirectoryOptions::AddNewDirectoryOptions() {
+AddNewDirectoryOptions::AddNewDirectoryOptions()
+    : visibility(google_apis::drive::FILE_VISIBILITY_DEFAULT) {
 }
 
 AddNewDirectoryOptions::~AddNewDirectoryOptions() {

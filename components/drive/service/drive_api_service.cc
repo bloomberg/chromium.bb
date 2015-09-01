@@ -530,6 +530,7 @@ CancelCallback DriveAPIService::AddNewDirectory(
 
   FilesInsertRequest* request = new FilesInsertRequest(
       sender_.get(), url_generator_, callback);
+  request->set_visibility(options.visibility);
   request->set_last_viewed_by_me_date(options.last_viewed_by_me_date);
   request->set_mime_type(kFolderMimeType);
   request->set_modified_date(options.modified_date);

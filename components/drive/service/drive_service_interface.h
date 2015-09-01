@@ -37,6 +37,9 @@ struct AddNewDirectoryOptions {
   AddNewDirectoryOptions();
   ~AddNewDirectoryOptions();
 
+  // visibility of the new directory.
+  google_apis::drive::FileVisibility visibility;
+
   // modified_date of the directory.
   // Pass the null Time if you are not interested in setting this property.
   base::Time modified_date;
