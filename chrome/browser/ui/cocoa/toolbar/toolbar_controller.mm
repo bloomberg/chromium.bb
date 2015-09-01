@@ -120,6 +120,10 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 
 }  // namespace
 
+@interface ToolbarController (YosemiteSDK)
+- (void)viewDidLoad;
+@end
+
 @interface ToolbarController()
 @property(assign, nonatomic) Browser* browser;
 - (void)cleanUp;
@@ -247,9 +251,28 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 }
 
 // Called after the view is done loading and the outlets have been hooked up.
-// Now we can hook up bridges that rely on UI objects such as the location
-// bar and button state.
+// Now we can hook up bridges that rely on UI objects such as the location bar
+// and button state. -viewDidLoad is the recommended way to do this in 10.10
+// SDK. When running on 10.10 or above -awakeFromNib still works but for some
+// reason is not guaranteed to be called (http://crbug.com/526276), so implement
+// both.
 - (void)awakeFromNib {
+  [self viewDidLoad];
+}
+
+- (void)viewDidLoad {
+  // When linking and running on 10.10+, both -awakeFromNib and -viewDidLoad may
+  // be called, don't initialize twice.
+  if (locationBarView_) {
+#if defined(MAC_OS_X_VERSION_10_10) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_10
+    DCHECK(base::mac::IsOSYosemiteOrLater());
+#else
+    NOTREACHED();
+#endif
+    return;
+  }
+
   [[backButton_ cell] setImageID:IDR_BACK
                   forButtonState:image_button_cell::kDefaultState];
   [[backButton_ cell] setImageID:IDR_BACK_H
