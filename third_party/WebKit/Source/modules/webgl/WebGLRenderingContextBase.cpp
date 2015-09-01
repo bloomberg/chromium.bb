@@ -4115,8 +4115,8 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     GLsizei width, GLsizei height, GLint border,
     GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    if (isContextLost() || !validateTexFuncData("texImage2D", level, width, height, internalformat, format, type, pixels, NullAllowed)
-        || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceArrayBufferView, target, level, internalformat, width, height, border, format, type, 0, 0))
+    if (isContextLost() || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceArrayBufferView, target, level, internalformat, width, height, border, format, type, 0, 0)
+        || !validateTexFuncData("texImage2D", level, width, height, internalformat, format, type, pixels, NullAllowed))
         return;
     void* data = pixels ? pixels->baseAddress() : 0;
     Vector<uint8_t> tempData;
@@ -4441,8 +4441,8 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         return;
 
     GLenum internalformat = texture->getInternalFormat(target, level);
-    if (isContextLost() || !validateTexFuncData("texSubImage2D", level, width, height, internalformat, format, type, pixels, NullNotAllowed)
-        || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceArrayBufferView, target, level, 0, width, height, 0, format, type, xoffset, yoffset))
+    if (isContextLost() || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceArrayBufferView, target, level, 0, width, height, 0, format, type, xoffset, yoffset)
+        || !validateTexFuncData("texSubImage2D", level, width, height, internalformat, format, type, pixels, NullNotAllowed))
         return;
     void* data = pixels->baseAddress();
     Vector<uint8_t> tempData;
@@ -5524,8 +5524,6 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
         return false;
     }
 
-    if (!validateTexFuncFormatAndType(functionName, internalformat, format, type, level))
-        return false;
     if (!validateSettableTexFormat(functionName, format))
         return false;
 
