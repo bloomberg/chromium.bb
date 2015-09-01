@@ -8079,7 +8079,7 @@
         ],
         "usepkg_build_packages": false
     },
-    "ivybridge-freon-full-group": {
+    "ivybridge-full-group": {
         "_template": "full",
         "boards": [
             "stout"
@@ -8137,7 +8137,7 @@
             "-chrome_internal"
         ]
     },
-    "ivybridge-freon-release-group": {
+    "ivybridge-release-group": {
         "_template": "release",
         "active_waterfall": "chromeos",
         "boards": [

@@ -2447,7 +2447,7 @@ def GetConfig():
 
   # ivybridge chipset boards
   _AddGroupConfig(
-      'ivybridge-freon', 'stout', (
+      'ivybridge', 'stout', (
           'link',
       ), (
           'parrot_ivb',
