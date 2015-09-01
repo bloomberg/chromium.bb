@@ -8,6 +8,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
@@ -55,11 +56,21 @@ using namespace password_manager::mac::ui;
   return YES;
 }
 
+- (base::scoped_nsobject<NSButton>)newCloseButton {
+  const int dimension = chrome_style::GetCloseButtonSize();
+  NSRect frame = NSMakeRect(0, 0, dimension, dimension);
+  base::scoped_nsobject<NSButton> button(
+      [[WebUIHoverCloseButton alloc] initWithFrame:frame]);
+  [button setAction:@selector(viewShouldDismiss)];
+  [button setTarget:delegate_];
+  return button;
+}
+
 - (void)loadView {
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
 
   // -----------------------------------
-  // |  Title                          |
+  // |  Title                        x |
   // |  username   password            |
   // |                [Never]  [Save]  |
   // -----------------------------------
@@ -74,6 +85,10 @@ using namespace password_manager::mac::ui;
   // kDesiredBubbleWidth.
 
   // Create the elements and add them to the view.
+
+  // Close button.
+  closeButton_ = [self newCloseButton];
+  [view addSubview:closeButton_];
 
   // Title.
   titleView_.reset([[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
@@ -106,11 +121,13 @@ using namespace password_manager::mac::ui;
   }
 
   // Force the text to wrap to fit in the bubble size.
+  int titleRightPadding =
+      2 * chrome_style::kCloseButtonPadding + NSWidth([closeButton_ frame]);
+  int titleWidth = kDesiredBubbleWidth - kFramePadding - titleRightPadding;
   [titleView_ setVerticallyResizable:YES];
-  [titleView_ setFrameSize:NSMakeSize(kDesiredBubbleWidth - 2 * kFramePadding,
-                                      MAXFLOAT)];
-  [titleView_ sizeToFit];
+  [titleView_ setFrameSize:NSMakeSize(titleWidth, MAXFLOAT)];
   [[titleView_ textContainer] setLineFragmentPadding:0];
+  [titleView_ sizeToFit];
 
   [view addSubview:titleView_];
 
@@ -141,7 +158,7 @@ using namespace password_manager::mac::ui;
 
   // Compute the bubble width using the password item.
   const CGFloat contentWidth =
-      kFramePadding + NSWidth([titleView_ frame]) + kFramePadding;
+      kFramePadding + NSWidth([titleView_ frame]) + titleRightPadding;
   const CGFloat width = std::max(kDesiredBubbleWidth, contentWidth);
 
   // Layout the elements, starting at the bottom and moving up.
@@ -164,9 +181,17 @@ using namespace password_manager::mac::ui;
   // Title goes at the top after some padding.
   curY = NSMaxY([password frame]) + kUnrelatedControlVerticalPadding;
   [titleView_ setFrameOrigin:NSMakePoint(curX, curY)];
+  const CGFloat height = NSMaxY([titleView_ frame]) + kFramePadding;
+
+  // The close button is in the corner.
+  NSPoint closeButtonOrigin = NSMakePoint(
+      width - NSWidth([closeButton_ frame]) - chrome_style::kCloseButtonPadding,
+      height - NSHeight([closeButton_ frame]) -
+          chrome_style::kCloseButtonPadding);
+  [closeButton_ setFrameOrigin:closeButtonOrigin];
 
   // Update the bubble size.
-  const CGFloat height = NSMaxY([titleView_ frame]) + kFramePadding;
+
   [view setFrame:NSMakeRect(0, 0, width, height)];
 
   [self setView:view];
@@ -182,6 +207,10 @@ using namespace password_manager::mac::ui;
 
 - (NSButton*)neverButton {
   return neverButton_.get();
+}
+
+- (NSButton*)closeButton {
+  return closeButton_.get();
 }
 
 @end

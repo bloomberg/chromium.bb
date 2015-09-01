@@ -925,6 +925,10 @@ void ManagePasswordsBubbleView::OnWidgetClosing(views::Widget* /*widget*/) {
     anchor_view_->SetActive(false);
 }
 
+bool ManagePasswordsBubbleView::ShouldShowCloseButton() const {
+  return model()->state() == password_manager::ui::PENDING_PASSWORD_STATE;
+}
+
 void ManagePasswordsBubbleView::Refresh() {
   RemoveAllChildViews(true);
   initially_focused_view_ = NULL;

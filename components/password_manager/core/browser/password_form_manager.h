@@ -297,7 +297,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for OnGetPasswordStoreResults to score an individual result
   // against the observed_form_.
-  uint32_t ScoreResult(const autofill::PasswordForm& form) const;
+  uint32_t ScoreResult(const autofill::PasswordForm& candidate) const;
+
+  // For the blacklisted |form| returns true iff it blacklists |observed_form_|.
+  bool IsBlacklistMatch(const autofill::PasswordForm& form) const;
 
   // Helper for Save in the case that best_matches.size() > 0, meaning
   // we have at least one match for this form/username/password. This
@@ -378,7 +381,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // frequently require lookups by username value in IsNewLogin.
   autofill::PasswordFormMap best_matches_;
 
-  // Set of blacklisted forms from the DB that best match the current form.
+  // Set of blacklisted forms from the PasswordStore that best match the current
+  // form.
   ScopedVector<autofill::PasswordForm> blacklisted_matches_;
 
   // The PasswordForm from the page or dialog managed by |this|.

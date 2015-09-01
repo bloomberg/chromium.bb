@@ -63,4 +63,13 @@ TEST_F(ManagePasswordsBubblePendingViewControllerTest,
   EXPECT_TRUE(ui_controller()->never_saved_password());
 }
 
+TEST_F(ManagePasswordsBubblePendingViewControllerTest,
+       ShouldDismissWhenCrossClicked) {
+  [controller().closeButton performClick:nil];
+
+  EXPECT_TRUE([delegate() dismissed]);
+  EXPECT_FALSE(ui_controller()->saved_password());
+  EXPECT_FALSE(ui_controller()->never_saved_password());
+}
+
 }  // namespace

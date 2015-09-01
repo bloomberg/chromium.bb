@@ -440,6 +440,47 @@ TEST_F(PasswordFormManagerTest, TestBlacklist) {
               ElementsAre(Pointee(actual_add_form)));
 }
 
+TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
+  observed_form()->origin = GURL("http://accounts.google.com/a/LoginAuth");
+  observed_form()->action = GURL("http://accounts.google.com/a/Login");
+  observed_form()->signon_realm = "http://accounts.google.com";
+  PasswordFormManager form_manager(nullptr, client(), kNoDriver,
+                                   *observed_form(), false);
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+
+  // Doesn't match because of PSL.
+  PasswordForm blacklisted_psl = *observed_form();
+  blacklisted_psl.original_signon_realm = "http://m.accounts.google.com";
+  blacklisted_psl.blacklisted_by_user = true;
+
+  // Doesn't match because of different origin.
+  PasswordForm blacklisted_not_match = *observed_form();
+  blacklisted_not_match.origin = GURL("http://google.com/a/LoginAuth");
+  blacklisted_not_match.blacklisted_by_user = true;
+
+  // Doesn't match because of different username element.
+  PasswordForm blacklisted_not_match2 = *observed_form();
+  blacklisted_not_match2.username_element = ASCIIToUTF16("Element");
+  blacklisted_not_match2.blacklisted_by_user = true;
+
+  PasswordForm blacklisted_match = *observed_form();
+  blacklisted_match.origin = GURL("http://accounts.google.com/a/LoginAuth1234");
+  blacklisted_match.blacklisted_by_user = true;
+
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(blacklisted_psl));
+  result.push_back(new PasswordForm(blacklisted_not_match));
+  result.push_back(new PasswordForm(blacklisted_not_match2));
+  result.push_back(new PasswordForm(blacklisted_match));
+  result.push_back(new PasswordForm(*saved_match()));
+  form_manager.OnGetPasswordStoreResults(result.Pass());
+  EXPECT_TRUE(form_manager.IsBlacklisted());
+  EXPECT_THAT(form_manager.blacklisted_matches(),
+              ElementsAre(Pointee(blacklisted_match)));
+  EXPECT_EQ(1u, form_manager.best_matches().size());
+  EXPECT_EQ(*saved_match(), *form_manager.preferred_match());
+}
+
 TEST_F(PasswordFormManagerTest, AutofillBlacklisted) {
   TestPasswordManager password_manager(client());
   PasswordFormManager form_manager(&password_manager, client(),
@@ -997,12 +1038,11 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
 
   // Signing up on a previously visited site. Credentials are found in the
   // password store, but they are blacklisted. AllowPasswordGenerationForForm
-  // should not be called and no "not blacklisted" message sent.
+  // is still called.
   PasswordFormManager manager_blacklisted(password_manager(), client(),
                                           client()->driver(), *observed_form(),
                                           false);
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
-      .Times(0);
+  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
   manager_blacklisted.SimulateFetchMatchingLoginsFromPasswordStore();
   simulated_results.push_back(CreateSavedMatch(true));
   manager_blacklisted.OnGetPasswordStoreResults(simulated_results.Pass());

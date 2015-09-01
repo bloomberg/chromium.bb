@@ -22,6 +22,7 @@ class ManagePasswordsBubbleModel;
   ManagePasswordsBubbleModel* model_;  // weak
   base::scoped_nsobject<NSButton> saveButton_;
   base::scoped_nsobject<NSButton> neverButton_;
+  base::scoped_nsobject<NSButton> closeButton_;
   base::scoped_nsobject<HyperlinkTextView> titleView_;
   base::scoped_nsobject<ManagePasswordItemViewController> passwordItem_;
 }
@@ -32,6 +33,7 @@ class ManagePasswordsBubbleModel;
 @interface ManagePasswordsBubblePendingViewController (Testing)
 @property(readonly) NSButton* saveButton;
 @property(readonly) NSButton* neverButton;
+@property(readonly) NSButton* closeButton;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_PENDING_VIEW_CONTROLLER_H_

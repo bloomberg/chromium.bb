@@ -75,6 +75,9 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
 
+  // WidgetDelegate:
+  bool ShouldShowCloseButton() const override;
+
   // Refreshes the bubble's state: called to display a confirmation screen after
   // a user selects "Never for this site", for instance.
   void Refresh();
