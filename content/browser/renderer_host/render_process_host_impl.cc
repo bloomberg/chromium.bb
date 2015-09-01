@@ -58,7 +58,6 @@
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
-#include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/geofencing/geofencing_dispatcher_host.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -765,8 +764,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           media_internals,
           storage_partition_impl_->GetDOMStorageContext()));
   AddFilter(render_message_filter.get());
-  AddFilter(
-      new RenderFrameMessageFilter(GetID(), widget_helper_.get()));
   BrowserContext* browser_context = GetBrowserContext();
   ResourceContext* resource_context = browser_context->GetResourceContext();
 

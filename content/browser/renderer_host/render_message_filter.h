@@ -29,6 +29,8 @@
 #include "media/base/channel_layout.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
+#include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -144,6 +146,11 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                       int* main_frame_route_id,
                       int* surface_id,
                       int64* cloned_session_storage_namespace_id);
+  void OnCreateChildFrame(int parent_routing_id,
+                          blink::WebTreeScopeType scope,
+                          const std::string& frame_name,
+                          blink::WebSandboxFlags sandbox_flags,
+                          int* new_render_frame_id);
   void OnCreateWidget(int opener_id,
                       blink::WebPopupType popup_type,
                       int* route_id,
