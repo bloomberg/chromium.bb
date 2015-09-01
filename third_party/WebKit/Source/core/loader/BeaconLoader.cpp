@@ -148,12 +148,9 @@ void BeaconLoader::willSendRequest(WebURLLoader*, WebURLRequest& passedNewReques
     StoredCredentials withCredentials = AllowStoredCredentials;
     ResourceLoaderOptions options;
     if (!CrossOriginAccessControl::handleRedirect(m_beaconOrigin.get(), newRequest, redirectResponse, withCredentials, options, errorDescription)) {
-        if (page() && page()->mainFrame()) {
-            if (page()->mainFrame()->isLocalFrame()) {
-                LocalFrame* localFrame = toLocalFrame(page()->mainFrame());
-                if (localFrame->document())
-                    localFrame->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorDescription));
-            }
+        if (LocalFrame* localFrame = frame()) {
+            if (localFrame->document())
+                localFrame->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorDescription));
         }
         // Cancel the load and self destruct.
         dispose();

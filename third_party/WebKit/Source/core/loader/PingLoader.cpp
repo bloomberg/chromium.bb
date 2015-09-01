@@ -134,7 +134,7 @@ void PingLoader::start(LocalFrame* frame, ResourceRequest& request, const FetchI
 }
 
 PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
-    : PageLifecycleObserver(frame->page())
+    : LocalFrameLifecycleObserver(frame)
     , m_timeout(this, &PingLoader::timeout)
     , m_url(request.url())
     , m_identifier(createUniqueIdentifier())
@@ -172,61 +172,60 @@ void PingLoader::dispose()
 
 void PingLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& response)
 {
-    if (Page* page = this->page()) {
+    if (LocalFrame* frame = this->frame()) {
         TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         const ResourceResponse& resourceResponse = response.toResourceResponse();
-        InspectorInstrumentation::didReceiveResourceResponse(page->deprecatedLocalMainFrame(), m_identifier, 0, resourceResponse, 0);
-        didFailLoading(page);
+        InspectorInstrumentation::didReceiveResourceResponse(frame, m_identifier, 0, resourceResponse, 0);
+        didFailLoading(frame);
     }
     dispose();
 }
 
 void PingLoader::didReceiveData(WebURLLoader*, const char*, int, int)
 {
-    if (Page* page = this->page()) {
+    if (LocalFrame* frame = this->frame()) {
         TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        didFailLoading(page);
+        didFailLoading(frame);
     }
     dispose();
 }
 
 void PingLoader::didFinishLoading(WebURLLoader*, double, int64_t)
 {
-    if (Page* page = this->page()) {
+    if (LocalFrame* frame = this->frame()) {
         TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        didFailLoading(page);
+        didFailLoading(frame);
     }
     dispose();
 }
 
 void PingLoader::didFail(WebURLLoader*, const WebURLError& resourceError)
 {
-    if (Page* page = this->page()) {
+    if (LocalFrame* frame = this->frame()) {
         TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        didFailLoading(page);
+        didFailLoading(frame);
     }
     dispose();
 }
 
 void PingLoader::timeout(Timer<PingLoader>*)
 {
-    if (Page* page = this->page()) {
+    if (LocalFrame* frame = this->frame()) {
         TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
-        didFailLoading(page);
+        didFailLoading(frame);
     }
     dispose();
 }
 
-void PingLoader::didFailLoading(Page* page)
+void PingLoader::didFailLoading(LocalFrame* frame)
 {
-    LocalFrame* frame = page->deprecatedLocalMainFrame();
     InspectorInstrumentation::didFailLoading(frame, m_identifier, ResourceError::cancelledError(m_url));
     frame->console().didFailLoading(m_identifier, ResourceError::cancelledError(m_url));
 }
 
 DEFINE_TRACE(PingLoader)
 {
-    PageLifecycleObserver::trace(visitor);
+    LocalFrameLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

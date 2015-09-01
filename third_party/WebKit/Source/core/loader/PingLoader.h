@@ -34,7 +34,7 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/page/PageLifecycleObserver.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebURLLoaderClient.h"
@@ -57,7 +57,7 @@ class ResourceRequest;
 // The ping loader is used by audit pings, beacon transmissions and image loads
 // during page unloading.
 //
-class CORE_EXPORT PingLoader : public RefCountedWillBeRefCountedGarbageCollected<PingLoader>, public PageLifecycleObserver, private WebURLLoaderClient {
+class CORE_EXPORT PingLoader : public RefCountedWillBeRefCountedGarbageCollected<PingLoader>, public LocalFrameLifecycleObserver, private WebURLLoaderClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PingLoader);
     WTF_MAKE_NONCOPYABLE(PingLoader);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PingLoader);
@@ -83,14 +83,14 @@ protected:
     void dispose();
 
 private:
-    void didReceiveResponse(WebURLLoader*, const WebURLResponse&) override;
-    void didReceiveData(WebURLLoader*, const char*, int, int) override;
-    void didFinishLoading(WebURLLoader*, double, int64_t) override;
-    void didFail(WebURLLoader*, const WebURLError&) override;
+    void didReceiveResponse(WebURLLoader*, const WebURLResponse&) final;
+    void didReceiveData(WebURLLoader*, const char*, int, int) final;
+    void didFinishLoading(WebURLLoader*, double, int64_t) final;
+    void didFail(WebURLLoader*, const WebURLError&) final;
 
     void timeout(Timer<PingLoader>*);
 
-    void didFailLoading(Page*);
+    void didFailLoading(LocalFrame*);
 
     OwnPtr<WebURLLoader> m_loader;
     Timer<PingLoader> m_timeout;

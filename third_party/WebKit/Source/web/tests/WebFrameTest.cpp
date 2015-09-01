@@ -7793,6 +7793,28 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
     view->close();
 }
 
+TEST_P(ParameterizedWebFrameTest, SendBeaconFromChildWithRemoteMainFrame)
+{
+    FrameTestHelpers::TestWebViewClient viewClient;
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebView* view = WebView::create(&viewClient);
+    view->settings()->setJavaScriptEnabled(true);
+    view->setMainFrame(remoteClient.frame());
+    WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
+    root->setReplicatedOrigin(SecurityOrigin::createUnique());
+
+    FrameTestHelpers::TestWebFrameClient localFrameClient;
+    WebLocalFrame* localFrame = root->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, &localFrameClient, nullptr);
+
+    // Finally, make sure an embedder triggered load in the local frame swapped
+    // back in works.
+    registerMockedHttpURLLoad("send_beacon.html");
+    registerMockedHttpURLLoad("reload_post.html"); // url param to sendBeacon()
+    FrameTestHelpers::loadFrame(localFrame, m_baseURL + "send_beacon.html");
+
+    view->close();
+}
+
 class OverscrollWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     MOCK_METHOD4(didOverscroll, void(const WebFloatSize&, const WebFloatSize&, const WebFloatPoint&, const WebFloatSize&));

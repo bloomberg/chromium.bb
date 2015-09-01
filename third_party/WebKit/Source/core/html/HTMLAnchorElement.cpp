@@ -29,6 +29,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutImage.h"
