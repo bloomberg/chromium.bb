@@ -3332,6 +3332,16 @@
               },
             },
           }],
+          ['OS=="win" and MSVS_VERSION == "2015"', {
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  # Work around crbug.com/526851, bug in VS 2015 RTM compiler.
+                  '/Zc:sizedDealloc-',
+                ],
+              },
+            },
+          }],
         ],
       },
       'x86_Base': {
