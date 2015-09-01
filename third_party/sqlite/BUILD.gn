@@ -10,6 +10,8 @@ declare_args() {
 }
 
 if (!use_system_sqlite) {
+  # TODO(shess): This cannot possibly be the right thing to do.  AFAICT it is
+  # only necessary so that WebDatabase can #include <sqlite3.h>.
   config("sqlite_config") {
     include_dirs = [ "." ]
   }
@@ -35,7 +37,9 @@ if (!use_system_sqlite) {
     }
   }
 
-  source_set("sqlite") {
+  component("sqlite_build") {
+    visibility = [ ":*" ]
+
     sources = [
       "amalgamation/sqlite3.c",
       "amalgamation/sqlite3.h",
@@ -52,6 +56,13 @@ if (!use_system_sqlite) {
       "SQLITE_SEPARATE_CACHE_POOLS",
       "THREADSAFE",
     ]
+    if (is_component_build) {
+      if (is_win) {
+        defines += [ "SQLITE_API=__declspec(dllexport)" ]
+      } else {
+        defines += [ "SQLITE_API=__attribute__((visibility(\"default\")))" ]
+      }
+    }
     if (is_chromeos) {
       defines += [
         # Despite obvious warnings about not using this flag in deployment, we
@@ -85,7 +96,10 @@ if (!use_system_sqlite) {
     if (is_linux) {
       libs = [ "dl" ]
     } else if (is_mac || is_ios) {
-      libs = [ "CoreFoundation.framework" ]
+      libs = [
+        "CoreFoundation.framework",
+        "CoreServices.framework",
+      ]
     } else if (is_android) {
       defines += [
         "SQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576",
@@ -99,8 +113,19 @@ if (!use_system_sqlite) {
     deps = [
       "//third_party/icu",
     ]
+  }
 
-    public_configs = [ ":sqlite_config" ]
+  config("sqlite_export") {
+    if (is_component_build && is_win) {
+      defines = [ "SQLITE_API=__declspec(dllimport)" ]
+    }
+  }
+
+  # This is used to allow the SQLITE_API definition to be different when
+  # building sqlite3.c than it is when clients include sqlite3.h.
+  group("sqlite") {
+    public_deps = [ ":sqlite_build" ]
+    public_configs = [ ":sqlite_export", ":sqlite_config" ]
   }
 
   if (is_linux) {
