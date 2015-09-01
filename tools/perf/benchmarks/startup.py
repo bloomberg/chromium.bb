@@ -5,7 +5,6 @@
 from core import perf_benchmark
 from measurements import startup
 import page_sets
-
 from telemetry import benchmark
 
 
@@ -37,7 +36,6 @@ class _StartupWarm(perf_benchmark.PerfBenchmark):
     return startup.Startup(cold=False)
 
 
-@benchmark.Enabled('has tabs')
 @benchmark.Disabled('snowleopard') # crbug.com/336913
 class StartupColdBlankPage(_StartupCold):
   """Measures cold startup time with a clean profile."""
@@ -49,7 +47,6 @@ class StartupColdBlankPage(_StartupCold):
     return 'startup.cold.blank_page'
 
 
-@benchmark.Enabled('has tabs')
 class StartupWarmBlankPage(_StartupWarm):
   """Measures warm startup time with a clean profile."""
   tag = 'warm'
@@ -59,9 +56,10 @@ class StartupWarmBlankPage(_StartupWarm):
   def Name(cls):
     return 'startup.warm.blank_page'
 
-@benchmark.Enabled('has tabs')
-@benchmark.Enabled('win', 'linux', 'mac')
-@benchmark.Disabled('reference', 'android')  # http://crbug.com/481919
+
+@benchmark.Disabled('reference',                   # http://crbug.com/476882
+                    'android',                     # http://crbug.com/481919
+                    'content-shell', 'mandoline')  # No pregenerated profiles.
 class StartupLargeProfileColdBlankPage(_StartupCold):
   """Measures cold startup time with a large profile."""
   tag = 'cold'
@@ -78,9 +76,10 @@ class StartupLargeProfileColdBlankPage(_StartupCold):
   def Name(cls):
     return 'startup.large_profile.cold.blank_page'
 
-@benchmark.Enabled('has tabs')
-@benchmark.Enabled('win', 'linux', 'mac')
-@benchmark.Disabled('reference', 'android')  # http://crbug.com/481919
+
+@benchmark.Disabled('reference',                   # http://crbug.com/476882
+                    'android',                     # http://crbug.com/481919
+                    'content-shell', 'mandoline')  # No pregenerated profiles.
 class StartupLargeProfileWarmBlankPage(_StartupWarm):
   """Measures warm startup time with a large profile."""
   tag = 'warm'
