@@ -937,9 +937,8 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
   scoped_refptr<Layer> layer_;
 };
 
-// Flaky: http://crbug.com/527087
-// SINGLE_AND_MULTI_THREAD_TEST_F(
-//    LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit);
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit);
 
 // When a layer with an animation is removed from the tree and later re-added,
 // the animation should resume.
