@@ -108,14 +108,14 @@ TEST_F(ChromePermissionMessageProviderUnittest,
   auto it = messages.begin();
   const PermissionMessage& message0 = *it++;
   EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ),
       message0.message());
-  EXPECT_FALSE(message0.submessages().empty());
+  EXPECT_TRUE(message0.submessages().empty());
   const PermissionMessage& message1 = *it++;
   EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ),
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
       message1.message());
-  EXPECT_TRUE(message1.submessages().empty());
+  EXPECT_FALSE(message1.submessages().empty());
 }
 
 }  // namespace extensions
