@@ -66,6 +66,106 @@ namespace blink {
 using namespace HTMLNames;
 using namespace WTF::Unicode;
 
+template <typename PositionType>
+static PositionType canonicalizeCandidate(const PositionType& candidate)
+{
+    if (candidate.isNull())
+        return PositionType();
+    ASSERT(isVisuallyEquivalentCandidate(candidate));
+    PositionType upstream = mostBackwardCaretPosition(candidate);
+    if (isVisuallyEquivalentCandidate(upstream))
+        return upstream;
+    return candidate;
+}
+
+template <typename PositionType>
+static PositionType canonicalPosition(const PositionType& passedPosition)
+{
+    // Sometimes updating selection positions can be extremely expensive and
+    // occur frequently.  Often calling preventDefault on mousedown events can
+    // avoid doing unnecessary text selection work.  http://crbug.com/472258.
+    TRACE_EVENT0("blink", "VisiblePosition::canonicalPosition");
+
+    // The updateLayout call below can do so much that even the position passed
+    // in to us might get changed as a side effect. Specifically, there are code
+    // paths that pass selection endpoints, and updateLayout can change the
+    // selection.
+    PositionType position = passedPosition;
+
+    // FIXME (9535):  Canonicalizing to the leftmost candidate means that if
+    // we're at a line wrap, we will ask layoutObjects to paint downstream
+    // carets for other layoutObjects. To fix this, we need to either a) add
+    // code to all paintCarets to pass the responsibility off to the appropriate
+    // layoutObject for VisiblePosition's like these, or b) canonicalize to the
+    // rightmost candidate unless the affinity is upstream.
+    if (position.isNull())
+        return PositionType();
+
+    ASSERT(position.document());
+    position.document()->updateLayoutIgnorePendingStylesheets();
+
+    Node* node = position.computeContainerNode();
+
+    PositionType candidate = mostBackwardCaretPosition(position);
+    if (isVisuallyEquivalentCandidate(candidate))
+        return candidate;
+    candidate = mostForwardCaretPosition(position);
+    if (isVisuallyEquivalentCandidate(candidate))
+        return candidate;
+
+    // When neither upstream or downstream gets us to a candidate
+    // (upstream/downstream won't leave blocks or enter new ones), we search
+    // forward and backward until we find one.
+    PositionType next = canonicalizeCandidate(nextCandidate(position));
+    PositionType prev = canonicalizeCandidate(previousCandidate(position));
+    Node* nextNode = next.anchorNode();
+    Node* prevNode = prev.anchorNode();
+
+    // The new position must be in the same editable element. Enforce that
+    // first. Unless the descent is from a non-editable html element to an
+    // editable body.
+    if (isHTMLHtmlElement(node) && !node->hasEditableStyle() && node->document().body() && node->document().body()->hasEditableStyle())
+        return next.isNotNull() ? next : prev;
+
+    Element* editingRoot = editableRootForPosition(position);
+
+    // If the html element is editable, descending into its body will look like
+    // a descent from non-editable to editable content since
+    // |rootEditableElementOf()| always stops at the body.
+    if (isHTMLHtmlElement(editingRoot) || position.anchorNode()->isDocumentNode())
+        return next.isNotNull() ? next : prev;
+
+    bool prevIsInSameEditableElement = prevNode && editableRootForPosition(prev) == editingRoot;
+    bool nextIsInSameEditableElement = nextNode && editableRootForPosition(next) == editingRoot;
+    if (prevIsInSameEditableElement && !nextIsInSameEditableElement)
+        return prev;
+
+    if (nextIsInSameEditableElement && !prevIsInSameEditableElement)
+        return next;
+
+    if (!nextIsInSameEditableElement && !prevIsInSameEditableElement)
+        return PositionType();
+
+    // The new position should be in the same block flow element. Favor that.
+    Element* originalBlock = node ? enclosingBlockFlowElement(*node) : 0;
+    bool nextIsOutsideOriginalBlock = !nextNode->isDescendantOf(originalBlock) && nextNode != originalBlock;
+    bool prevIsOutsideOriginalBlock = !prevNode->isDescendantOf(originalBlock) && prevNode != originalBlock;
+    if (nextIsOutsideOriginalBlock && !prevIsOutsideOriginalBlock)
+        return prev;
+
+    return next;
+}
+
+Position canonicalPositionOf(const Position& position)
+{
+    return canonicalPosition(position);
+}
+
+PositionInComposedTree canonicalPositionOf(const PositionInComposedTree& position)
+{
+    return canonicalPosition(position);
+}
+
 static Node* previousLeafWithSameEditability(Node* node, EditableType editableType)
 {
     bool editable = node->hasEditableStyle(editableType);

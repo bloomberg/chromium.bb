@@ -85,6 +85,9 @@ CORE_EXPORT PositionInComposedTree mostForwardCaretPosition(const PositionInComp
 CORE_EXPORT bool isVisuallyEquivalentCandidate(const Position&);
 CORE_EXPORT bool isVisuallyEquivalentCandidate(const PositionInComposedTree&);
 
+CORE_EXPORT Position canonicalPositionOf(const Position&);
+CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
+
 UChar32 characterAfter(const VisiblePosition&);
 UChar32 characterBefore(const VisiblePosition&);
 

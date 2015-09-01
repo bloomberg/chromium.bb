@@ -6,6 +6,7 @@
 #include "core/editing/VisiblePosition.h"
 
 #include "core/editing/EditingTestBase.h"
+#include "core/editing/VisibleUnits.h"
 
 namespace blink {
 

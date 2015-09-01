@@ -121,9 +121,6 @@ CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
 VisiblePosition leftPositionOf(const VisiblePosition&);
 VisiblePosition rightPositionOf(const VisiblePosition&);
 
-CORE_EXPORT Position canonicalPositionOf(const Position&);
-CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
-
 // TODO(yosin) We should move |honorEditingBoundaryAtOr{Before,After} to
 // "VisibleUnits.cpp" as static function.
 // next() and previous() will increment/decrement by a character cluster.
