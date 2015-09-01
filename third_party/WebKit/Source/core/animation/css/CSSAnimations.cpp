@@ -100,6 +100,11 @@ static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffectMod
                     timingFunction = CSSTimingData::initialTimingFunction();
                 }
                 keyframe->setEasing(timingFunction.release());
+            } else if (property == CSSPropertyFilter) {
+                // TODO(alancutter): We will not support animating filter until -webkit-filter is an alias for it.
+                // This is to prevent animations on both -webkit-filter and filter from being run on the main thread when
+                // they would otherwise run on the compositor.
+                continue;
             } else if (CSSAnimations::isAnimatableProperty(property)) {
                 keyframe->setPropertyValue(property, properties.propertyAt(j).value());
             }
