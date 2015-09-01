@@ -123,12 +123,10 @@ void ChildProcessTaskProvider::ChildProcessDataCollected(
 
 void ChildProcessTaskProvider::CreateTask(
     const content::ChildProcessData& data) {
-  // The following case should never happen since we start observing
-  // |BrowserChildProcessObserver| only after we collect all pre-existing child
-  // processes and are notified (on the UI thread) that the collection is
-  // completed at |ChildProcessDataCollected()|.
   if (tasks_by_handle_.find(data.handle) != tasks_by_handle_.end()) {
-    NOTREACHED();
+    // This case can happen when some of the child process data we collect upon
+    // StartUpdating() might be of BrowserChildProcessHosts whose channels
+    // hadn't connected yet. So we just return.
     return;
   }
 

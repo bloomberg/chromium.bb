@@ -241,6 +241,106 @@ class TaskManagerValuesStringifier {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// IMPORTANT: Do NOT change the below list without changing the COLUMN_LIST
+// macro below.
+const TableColumnData kColumns[] = {
+  { IDS_TASK_MANAGER_TASK_COLUMN, ui::TableColumn::LEFT, -1, 1, true, true,
+    true },
+  { IDS_TASK_MANAGER_PROFILE_NAME_COLUMN, ui::TableColumn::LEFT, -1, 0, true,
+    true, false },
+  { IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
+    false, true },
+  { IDS_TASK_MANAGER_SHARED_MEM_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
+    false, false },
+  { IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
+    false, false },
+  { IDS_TASK_MANAGER_CPU_COLUMN, ui::TableColumn::RIGHT, -1, 0, true, false,
+    true },
+  { IDS_TASK_MANAGER_NET_COLUMN, ui::TableColumn::RIGHT, -1, 0, true, false,
+    true },
+  { IDS_TASK_MANAGER_PROCESS_ID_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
+    true, true },
+
+#if defined(OS_WIN)
+  { IDS_TASK_MANAGER_GDI_HANDLES_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
+    false, false },
+  { IDS_TASK_MANAGER_USER_HANDLES_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
+    false, false },
+#endif
+
+  { IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN, ui::TableColumn::RIGHT, -1, 0,
+    true, false, false },
+  { IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN, ui::TableColumn::RIGHT, -1,
+    0, true, false, false },
+  { IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN, ui::TableColumn::RIGHT, -1, 0,
+    true, false, false },
+  { IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
+    false, false },
+  { IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN, ui::TableColumn::RIGHT, -1, 0,
+    true, false, false },
+
+#if !defined(DISABLE_NACL)
+  { IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN, ui::TableColumn::RIGHT, -1, 0,
+    true, true, false },
+#endif  // !defined(DISABLE_NACL)
+
+  { IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN, ui::TableColumn::RIGHT,
+    -1, 0, true, false, false },
+
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+  // TODO(port): Port the idle wakeups per second to platforms other than Linux
+  // and MacOS (http://crbug.com/120488).
+  { IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
+    false, false },
+#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
+};
+
+const size_t kColumnsSize = arraysize(kColumns);
+
+const char kSortColumnIdKey[] = "sort_column_id";
+const char kSortIsAscendingKey[] = "sort_is_ascending";
+
+// We can't use the integer IDs of the columns converted to strings as session
+// restore keys. These integer values can change from one build to another as
+// they are generated. Instead we use the literal string value of the column
+// ID symbol (i.e. for the ID IDS_TASK_MANAGER_TASK_COLUMN, we use the literal
+// string "IDS_TASK_MANAGER_TASK_COLUMN". The following macros help us
+// efficiently get the literal ID for the integer value.
+#define COLUMNS_LITS(def) \
+  def(IDS_TASK_MANAGER_TASK_COLUMN) \
+  def(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN) \
+  def(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) \
+  def(IDS_TASK_MANAGER_SHARED_MEM_COLUMN) \
+  def(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) \
+  def(IDS_TASK_MANAGER_CPU_COLUMN) \
+  def(IDS_TASK_MANAGER_NET_COLUMN) \
+  def(IDS_TASK_MANAGER_PROCESS_ID_COLUMN) \
+  def(IDS_TASK_MANAGER_GDI_HANDLES_COLUMN) \
+  def(IDS_TASK_MANAGER_USER_HANDLES_COLUMN) \
+  def(IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN) \
+  def(IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN) \
+  def(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN) \
+  def(IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN) \
+  def(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN) \
+  def(IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN) \
+  def(IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN) \
+  def(IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN)
+// Add to the above list in the macro any new IDs added in the future. Also
+// remove the removed ones.
+
+#define COLUMN_ID_AS_STRING(col_id) case col_id: return std::string(#col_id);
+
+std::string GetColumnIdAsString(int column_id) {
+  switch (column_id) {
+    COLUMNS_LITS(COLUMN_ID_AS_STRING)
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 // The table model of the task manager table view that will observe the
 // task manager backend and adapt its interface to match the requirements of the
 // TableView.
@@ -278,10 +378,13 @@ class NewTaskManagerView::TableModel
   // Kills the process on which the task at |row_index| is running.
   void KillTask(int row_index);
 
-  // Called when a column visibility is toggled from the context menu of the
-  // table view. This will result in enabling or disabling some resources
-  // refresh types in the task manager.
-  void ToggleColumnVisibility(views::TableView* table, int column_id);
+  // Based on the given |visibility| and the |column_id|, a particular refresh
+  // type will be enabled or disabled. Multiple columns can map to the same
+  // refresh type, for that we need |table| to determine if any is visible.
+  void UpdateRefreshTypes(views::TableView* table,
+                          int column_id,
+                          bool visibility);
+
 
   // Checks if the task at |row_index| is running on the browser process.
   bool IsBrowserProcess(int row_index) const;
@@ -618,16 +721,17 @@ void NewTaskManagerView::TableModel::KillTask(int row_index) {
   process.Terminate(content::RESULT_CODE_KILLED, false);
 }
 
-void NewTaskManagerView::TableModel::ToggleColumnVisibility(
-    views::TableView* table,
-    int column_id) {
-  DCHECK(table);
-
-  bool new_visibility = !table->IsColumnVisible(column_id);
-  table->SetColumnVisibility(column_id, new_visibility);
-
+void NewTaskManagerView::TableModel::UpdateRefreshTypes(views::TableView* table,
+                                                        int column_id,
+                                                        bool visibility) {
+  bool new_visibility = visibility;
   RefreshType type = REFRESH_TYPE_NONE;
   switch (column_id) {
+    case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:
+    case IDS_TASK_MANAGER_TASK_COLUMN:
+    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
+      return;  // The data is these columns do not change.
+
     case IDS_TASK_MANAGER_NET_COLUMN:
       type = REFRESH_TYPE_NETWORK_USAGE;
       break;
@@ -636,12 +740,12 @@ void NewTaskManagerView::TableModel::ToggleColumnVisibility(
       type = REFRESH_TYPE_CPU;
       break;
 
+    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
-    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
       type = REFRESH_TYPE_MEMORY;
-      if (table->IsColumnVisible(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) ||
-          table->IsColumnVisible(IDS_TASK_MANAGER_SHARED_MEM_COLUMN) ||
+      if (table->IsColumnVisible(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) ||
+          table->IsColumnVisible(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) ||
           table->IsColumnVisible(IDS_TASK_MANAGER_SHARED_MEM_COLUMN)) {
         new_visibility = true;
       }
@@ -894,6 +998,7 @@ void NewTaskManagerView::WindowClosing() {
     // owned by the Views hierarchy.
     g_task_manager_view = nullptr;
   }
+  StoreColumnsSettings();
   table_model_->StopUpdating();
 }
 
@@ -968,7 +1073,7 @@ bool NewTaskManagerView::GetAcceleratorForCommandId(
 }
 
 void NewTaskManagerView::ExecuteCommand(int id, int event_flags) {
-  table_model_->ToggleColumnVisibility(tab_table_, id);
+  ToggleColumnVisibility(id);
 }
 
 NewTaskManagerView::NewTaskManagerView(chrome::HostDesktopType desktop_type)
@@ -976,146 +1081,42 @@ NewTaskManagerView::NewTaskManagerView(chrome::HostDesktopType desktop_type)
         new NewTaskManagerView::TableModel(REFRESH_TYPE_CPU |
                                            REFRESH_TYPE_MEMORY |
                                            REFRESH_TYPE_NETWORK_USAGE)),
-      menu_runner_(nullptr),
-      always_on_top_menu_text_(),
       kill_button_(nullptr),
       about_memory_link_(nullptr),
       tab_table_(nullptr),
       tab_table_parent_(nullptr),
-      columns_(),
       desktop_type_(desktop_type),
       is_always_on_top_(false) {
   Init();
 }
 
+// static
+NewTaskManagerView* NewTaskManagerView::GetInstanceForTests() {
+  return g_task_manager_view;
+}
+
 void NewTaskManagerView::Init() {
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_TASK_COLUMN,
-                                     ui::TableColumn::LEFT, -1, 1));
-  columns_.back().sortable = true;
+  columns_settings_.reset(new base::DictionaryValue);
 
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN,
-                                     ui::TableColumn::LEFT, -1, 0));
-  columns_.back().sortable = true;
+  // Create the table columns.
+  for (size_t i = 0; i < kColumnsSize; ++i) {
+    const auto& col_data = kColumns[i];
+    columns_.push_back(ui::TableColumn(col_data.id, col_data.align,
+                                       col_data.width, col_data.percent));
+    columns_.back().sortable = col_data.sortable;
+    columns_.back().initial_sort_is_ascending =
+        col_data.initial_sort_is_ascending;
+  }
 
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_SHARED_MEM_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_CPU_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_NET_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_PROCESS_ID_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-
-#if defined(OS_WIN)
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_GDI_HANDLES_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_USER_HANDLES_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-#endif
-
-  columns_.push_back(ui::TableColumn(
-      IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN,
-      ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-  columns_.push_back(ui::TableColumn(
-      IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN,
-      ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-#if !defined(DISABLE_NACL)
-  columns_.push_back(ui::TableColumn(
-      IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN,
-      ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-#endif  // !defined(DISABLE_NACL)
-
-  columns_.push_back(
-      ui::TableColumn(IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN,
-                      ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-  // TODO(port): Port the idle wakeups per second to platforms other than Linux
-  // and MacOS (http://crbug.com/120488).
-  columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN,
-                                     ui::TableColumn::RIGHT, -1, 0));
-  columns_.back().sortable = true;
-  columns_.back().initial_sort_is_ascending = false;
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
-
+  // Create the table view.
   tab_table_ = new views::TableView(
       table_model_.get(), columns_, views::ICON_AND_TEXT, false);
   tab_table_->SetGrouper(table_model_.get());
-
-  // Hide some columns by default
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN, false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_SHARED_MEM_COLUMN, false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN, false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN,
-                                  false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN,
-                                  false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
-                                  false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN,
-                                  false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN,
-                                  false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN,
-                                  false);
-  tab_table_->SetColumnVisibility(
-      IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN,
-      false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_GDI_HANDLES_COLUMN, false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_USER_HANDLES_COLUMN, false);
-  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN, false);
-
   tab_table_->SetObserver(this);
   tab_table_->set_context_menu_controller(this);
   set_context_menu_controller(this);
+
+  RetrieveSavedColumnsSettingsAndUpdateTable();
 
   kill_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
@@ -1152,6 +1153,93 @@ void NewTaskManagerView::RetriveSavedAlwaysOnTopState() {
     g_browser_process->local_state()->GetDictionary(GetWindowName());
   if (dictionary)
     dictionary->GetBoolean("always_on_top", &is_always_on_top_);
+}
+
+void NewTaskManagerView::RetrieveSavedColumnsSettingsAndUpdateTable() {
+  if (!g_browser_process->local_state())
+    return;
+
+  const base::DictionaryValue* dictionary =
+      g_browser_process->local_state()->GetDictionary(
+          prefs::kTaskManagerColumnVisibility);
+  if (!dictionary)
+    return;
+
+  // Do a best effort of retrieving the correct settings from the local state.
+  // Use the default settings of the value if it fails to be retrieved.
+  std::string sorted_col_id;
+  bool sort_is_ascending = true;
+  dictionary->GetString(kSortColumnIdKey, &sorted_col_id);
+  dictionary->GetBoolean(kSortIsAscendingKey, &sort_is_ascending);
+
+  int current_visible_column_index = 0;
+  for (size_t i = 0; i < kColumnsSize; ++i) {
+    const int col_id = kColumns[i].id;
+    const std::string col_id_key(GetColumnIdAsString(col_id));
+
+    if (col_id_key.empty())
+      continue;
+
+    bool col_visibility = kColumns[i].default_visibility;
+    dictionary->GetBoolean(col_id_key, &col_visibility);
+
+    // If the above GetBoolean() fails, the |col_visibility| remains at the
+    // default visibility.
+    columns_settings_->SetBoolean(col_id_key, col_visibility);
+    tab_table_->SetColumnVisibility(col_id, col_visibility);
+    table_model_->UpdateRefreshTypes(tab_table_, col_id, col_visibility);
+
+    if (col_visibility) {
+      if (sorted_col_id == col_id_key) {
+        if (sort_is_ascending == kColumns[i].initial_sort_is_ascending) {
+          tab_table_->ToggleSortOrder(current_visible_column_index);
+        } else {
+          // Unfortunately the API of ui::TableView doesn't provide a clean way
+          // to sort by a particular column ID and a sort direction. If the
+          // retrieved sort direction is different than the initial one, we have
+          // to toggle the sort order twice!
+          // Note that the function takes the visible_column_index rather than
+          // a column ID.
+          tab_table_->ToggleSortOrder(current_visible_column_index);
+          tab_table_->ToggleSortOrder(current_visible_column_index);
+        }
+      }
+
+      ++current_visible_column_index;
+    }
+  }
+}
+
+void NewTaskManagerView::StoreColumnsSettings() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return;
+
+  DictionaryPrefUpdate dict_update(local_state,
+                                   prefs::kTaskManagerColumnVisibility);
+
+  base::DictionaryValue::Iterator it(*columns_settings_);
+  while (!it.IsAtEnd()) {
+    dict_update->Set(it.key(), it.value().CreateDeepCopy());
+    it.Advance();
+  }
+
+  // Store the current sort status to be restored again at startup.
+  if (tab_table_->sort_descriptors().empty()) {
+    dict_update->SetString(kSortColumnIdKey, "");
+  } else {
+    const auto& sort_descriptor = tab_table_->sort_descriptors().front();
+    dict_update->SetString(kSortColumnIdKey,
+                           GetColumnIdAsString(sort_descriptor.column_id));
+    dict_update->SetBoolean(kSortIsAscendingKey, sort_descriptor.ascending);
+  }
+}
+
+void NewTaskManagerView::ToggleColumnVisibility(int column_id) {
+  bool new_visibility = !tab_table_->IsColumnVisible(column_id);
+  tab_table_->SetColumnVisibility(column_id, new_visibility);
+  columns_settings_->SetBoolean(GetColumnIdAsString(column_id), new_visibility);
+  table_model_->UpdateRefreshTypes(tab_table_, column_id, new_visibility);
 }
 
 }  // namespace task_management
