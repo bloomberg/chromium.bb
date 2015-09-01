@@ -140,6 +140,10 @@ const int showTreeCharacterOffset = 39;
 // Due to the high cost of layout, a lot of effort is done to avoid doing full layouts of nodes.
 // This is why there are several types of layout available to bypass the complex operations. See the
 // comments on the layout booleans in LayoutObjectBitfields below about the different layouts.
+//
+// To save memory, especially for the common child class LayoutText, LayoutObject doesn't provide
+// storage for children. Descendant classes that do allow children have to have a LayoutObjectChildList
+// member that stores the actual children and override virtualChildren().
 class CORE_EXPORT LayoutObject : public ImageResourceClient {
     friend class LayoutObjectChildList;
     WTF_MAKE_NONCOPYABLE(LayoutObject);
@@ -178,6 +182,7 @@ public:
         return nullptr;
     }
 
+    // See comment in the class description as to why there is no child.
     virtual LayoutObjectChildList* virtualChildren() { return nullptr; }
     virtual const LayoutObjectChildList* virtualChildren() const { return nullptr; }
 
@@ -334,6 +339,21 @@ public:
     void showLayoutTreeAndMark(const LayoutObject* markedObject1 = nullptr, const char* markedLabel1 = nullptr, const LayoutObject* markedObject2 = nullptr, const char* markedLabel2 = nullptr, int depth = 0) const;
 #endif
 
+    // This function is used to create the appropriate LayoutObject based
+    // on the style, in particular 'display' and 'content'.
+    // "display: none" is the only time this function will return nullptr.
+    //
+    // For renderer creation, the inline-* values create the same renderer
+    // as the non-inline version. The difference is that inline-* sets
+    // m_isInline during initialization. This means that
+    // "display: inline-table" creates a LayoutTable, like "display: table".
+    //
+    // Ideally every Element::createLayoutObject would call this function to
+    // respond to 'display' but there are deep rooted assumptions about
+    // which LayoutObject is created on a fair number of Elements. This
+    // function also doesn't handle the default association between a tag
+    // and its renderer (e.g. <iframe> creates a LayoutIFrame even if the
+    // initial 'display' value is inline).
     static LayoutObject* createObject(Element*, const ComputedStyle&);
 
     // LayoutObjects are allocated out of the rendering partition.
@@ -1169,6 +1189,18 @@ protected:
     void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
 
 protected:
+    // This function is called before calling the destructor so that some clean-up
+    // can happen regardless of whether they call a virtual function or not. As a
+    // rule of thumb, this function should be preferred to the destructor. See
+    // destroy() that is the one calling willBeDestroyed().
+    //
+    // There are 2 types of destructions: regular destructions and tree tear-down.
+    // Regular destructions happen when the renderer is not needed anymore (e.g.
+    // 'display' changed or the DOM Node was removed).
+    // Tree tear-down is when the whole tree destroyed during navigation. It is
+    // handled in the code by checking if documentBeingDestroyed() returns 'true'.
+    // In this case, the code skips some unneeded expensive operations as we know
+    // the tree is not reused (e.g. avoid clearing the containing block's line box).
     virtual void willBeDestroyed();
 
     virtual void insertedIntoTree();
@@ -1430,7 +1462,13 @@ private:
         ADD_BOOLEAN_BITFIELD(isAnonymous, IsAnonymous);
         ADD_BOOLEAN_BITFIELD(isText, IsText);
         ADD_BOOLEAN_BITFIELD(isBox, IsBox);
+
+        // This boolean represents whether the LayoutObject is 'inline-level'
+        // (a CSS concept). Inline-level boxes are laid out inside a line. If
+        // unset, the box is 'block-level' and thus stack on top of its
+        // siblings (think of paragraph).
         ADD_BOOLEAN_BITFIELD(isInline, IsInline);
+
         ADD_BOOLEAN_BITFIELD(isReplaced, IsReplaced);
         ADD_BOOLEAN_BITFIELD(horizontalWritingMode, HorizontalWritingMode);
         ADD_BOOLEAN_BITFIELD(isDragging, IsDragging);

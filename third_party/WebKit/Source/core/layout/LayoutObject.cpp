@@ -220,6 +220,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const ComputedStyle& 
         return new LayoutGrid(element);
     }
 
+    ASSERT_NOT_REACHED();
     return nullptr;
 }
 
