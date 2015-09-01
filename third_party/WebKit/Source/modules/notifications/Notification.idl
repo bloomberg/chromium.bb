@@ -52,7 +52,7 @@ enum NotificationPermission {
     [CallWith=ExecutionContext, MeasureAs=NotificationPermission] static readonly attribute NotificationPermission permission;
 
     // TODO(peter): Only expose requestPermission() on the Window object. See https://crbug.com/442139.
-    [CallWith=ScriptState, MeasureAs=NotificationPermissionRequested] static Promise<NotificationPermission> requestPermission(optional NotificationPermissionCallback deprecatedCallback);
+    [CallWith=ScriptState, Exposed=Window, MeasureAs=NotificationPermissionRequested] static Promise<NotificationPermission> requestPermission(optional NotificationPermissionCallback deprecatedCallback);
 
     [RuntimeEnabled=NotificationExperimental] static readonly attribute unsigned long maxActions;
 

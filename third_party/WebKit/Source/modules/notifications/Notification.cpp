@@ -316,14 +316,12 @@ WebNotificationPermission Notification::checkPermission(ExecutionContext* contex
 ScriptPromise Notification::requestPermission(ScriptState* scriptState, NotificationPermissionCallback* deprecatedCallback)
 {
     ExecutionContext* context = scriptState->executionContext();
-    NotificationPermissionClient* permissionClient = NotificationPermissionClient::from(context);
-    if (!permissionClient) {
-        // TODO(peter): Assert that this code-path will only be reached for Document environments when Blink
-        // supports [Exposed] annotations on class members in IDL definitions. See https://crbug.com/442139.
-        return ScriptPromise::cast(scriptState, v8String(scriptState->isolate(), permission(context)));
-    }
+    if (NotificationPermissionClient* permissionClient = NotificationPermissionClient::from(context))
+        return permissionClient->requestPermission(scriptState, deprecatedCallback);
 
-    return permissionClient->requestPermission(scriptState, deprecatedCallback);
+    // The context has been detached. Return a promise that will never settle.
+    ASSERT(context->activeDOMObjectsAreStopped());
+    return ScriptPromise();
 }
 
 size_t Notification::maxActions()

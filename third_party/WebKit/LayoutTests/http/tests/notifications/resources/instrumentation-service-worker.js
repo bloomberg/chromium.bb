@@ -53,6 +53,11 @@ addEventListener('message', function(workerEvent) {
                 });
                 break;
 
+            case 'request-permission-exists':
+                messagePort.postMessage({ command: event.data.command,
+                                          value: 'requestPermission' in Notification });
+                break;
+
             default:
                 messagePort.postMessage({ command: 'error', message: 'Invalid command: ' + event.data.command });
                 break;
