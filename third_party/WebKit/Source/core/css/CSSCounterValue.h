@@ -35,10 +35,8 @@ public:
     }
 
     String identifier() const { return m_identifier->getStringValue(); }
-    String listStyle() const { return m_listStyle->cssText(); }
+    CSSValueID listStyle() const { return m_listStyle->getValueID(); }
     String separator() const { return m_separator->getStringValue(); }
-
-    CSSValueID listStyleIdent() const { return m_listStyle->getValueID(); }
 
     bool equals(const CSSCounterValue& other) const
     {

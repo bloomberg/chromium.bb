@@ -721,7 +721,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
         if (item->isCounterValue()) {
             CSSCounterValue* counterValue = toCSSCounterValue(item.get());
             EListStyleType listStyleType = NoneListStyle;
-            CSSValueID listStyleIdent = counterValue->listStyleIdent();
+            CSSValueID listStyleIdent = counterValue->listStyle();
             if (listStyleIdent != CSSValueNone)
                 listStyleType = static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
             OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));

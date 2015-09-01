@@ -23,10 +23,10 @@ String CSSCounterValue::customCSSText() const
         result.appendLiteral(", ");
         result.append(serializeString(separator()));
     }
-    bool isDefaultListStyle = listStyleIdent() == CSSValueDecimal;
-    if (!listStyle().isEmpty() && !isDefaultListStyle) {
+    bool isDefaultListStyle = listStyle() == CSSValueDecimal;
+    if (!isDefaultListStyle) {
         result.appendLiteral(", ");
-        result.append(listStyle());
+        result.append(m_listStyle->cssText());
     }
     result.append(')');
 
