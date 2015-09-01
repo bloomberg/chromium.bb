@@ -26,7 +26,7 @@ class NotificationWatcher : public NotificationDelegate {
   }
 
   bool HasClickedListener() override {
-    return true;
+    return item_->HasNotificationClickedListener();
   }
 
   void ButtonClick(int button_index) override {
@@ -59,6 +59,11 @@ DownloadNotification::DownloadNotification()
     : watcher_(new NotificationWatcher(this)) {}
 
 DownloadNotification::~DownloadNotification() {}
+
+bool DownloadNotification::HasNotificationClickedListener() {
+  // True by default.
+  return true;
+}
 
 NotificationDelegate* DownloadNotification::watcher() const {
   return watcher_.get();

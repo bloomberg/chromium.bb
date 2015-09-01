@@ -31,6 +31,7 @@ class DownloadNotification {
   virtual void OnDownloadUpdated(content::DownloadItem* item) = 0;
   virtual void OnDownloadRemoved(content::DownloadItem* item) = 0;
 
+  virtual bool HasNotificationClickedListener();
   virtual void OnNotificationClose() {}
   virtual void OnNotificationClick() {}
   virtual void OnNotificationButtonClick(int button_index) {}

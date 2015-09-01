@@ -187,6 +187,14 @@ DownloadItemNotification::~DownloadItemNotification() {
     ImageDecoder::Cancel(this);
 }
 
+bool DownloadItemNotification::HasNotificationClickedListener() {
+  if (item_->IsDangerous()) {
+    // Dangerous notifications don't have a click handler.
+    return false;
+  }
+  return true;
+}
+
 void DownloadItemNotification::OnNotificationClose() {
   visible_ = false;
 

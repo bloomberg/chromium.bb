@@ -33,6 +33,7 @@ class DownloadItemNotification : public DownloadNotification,
   // Methods called from NotificationWatcher.
   void OnDownloadUpdated(content::DownloadItem* item) override;
   void OnDownloadRemoved(content::DownloadItem* item) override;
+  bool HasNotificationClickedListener() override;
   void OnNotificationClose() override;
   void OnNotificationClick() override;
   void OnNotificationButtonClick(int button_index) override;
