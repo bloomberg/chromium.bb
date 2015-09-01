@@ -35,7 +35,8 @@ class SettingsPrivateDelegate : public KeyedService {
   ~SettingsPrivateDelegate() override;
 
   // Sets the pref with the given name and value in the proper PrefService.
-  virtual bool SetPref(const std::string& name, const base::Value* value);
+  virtual PrefsUtil::SetPrefResult SetPref(
+      const std::string& name, const base::Value* value);
 
   // Gets the value of the pref with the given |name|.
   virtual scoped_ptr<base::Value> GetPref(const std::string& name);

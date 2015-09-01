@@ -29,10 +29,26 @@ ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
   SettingsPrivateDelegate* delegate =
       SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
 
-  return RespondNow(OneArgument(new base::FundamentalValue(
-      delegate->SetPref(parameters->name, parameters->value.get()))));
+  PrefsUtil::SetPrefResult result =
+      delegate->SetPref(parameters->name, parameters->value.get());
+  switch (result) {
+    case PrefsUtil::SUCCESS:
+      return RespondNow(OneArgument(new base::FundamentalValue(true)));
+    case PrefsUtil::PREF_NOT_MODIFIABLE:
+      // Not an error, but return false to indicate setting the pref failed.
+      return RespondNow(OneArgument(new base::FundamentalValue(false)));
+    case PrefsUtil::PREF_NOT_FOUND:
+      return RespondNow(Error("Pref not found: *", parameters->name));
+    case PrefsUtil::PREF_TYPE_MISMATCH:
+      return RespondNow(Error("Incorrect type used for value of pref *",
+                              parameters->name));
+    case PrefsUtil::PREF_TYPE_UNSUPPORTED:
+      return RespondNow(Error("Unsupported type used for value of pref *",
+                              parameters->name));
+  }
+  NOTREACHED();
+  return RespondNow(OneArgument(new base::FundamentalValue(false)));
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // SettingsPrivateGetAllPrefsFunction

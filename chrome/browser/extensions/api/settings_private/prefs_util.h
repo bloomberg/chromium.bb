@@ -20,6 +20,15 @@ namespace extensions {
 class PrefsUtil {
 
  public:
+  // Success or error statuses from calling SetPref.
+  enum SetPrefResult {
+    SUCCESS,
+    PREF_NOT_MODIFIABLE,
+    PREF_NOT_FOUND,
+    PREF_TYPE_MISMATCH,
+    PREF_TYPE_UNSUPPORTED
+  };
+
   using TypedPrefMap = std::map<std::string, api::settings_private::PrefType>;
 
   explicit PrefsUtil(Profile* profile);
@@ -36,7 +45,8 @@ class PrefsUtil {
       const std::string& name);
 
   // Sets the pref with the given name and value in the proper PrefService.
-  virtual bool SetPref(const std::string& name, const base::Value* value);
+  virtual SetPrefResult SetPref(const std::string& name,
+                                const base::Value* value);
 
   // Appends the given |value| to the list setting specified by the path in
   // |pref_name|.
@@ -69,7 +79,8 @@ class PrefsUtil {
   scoped_ptr<api::settings_private::PrefObject> GetCrosSettingsPref(
       const std::string& name);
 
-  bool SetCrosSettingsPref(const std::string& name, const base::Value* value);
+  SetPrefResult SetCrosSettingsPref(const std::string& name,
+                                    const base::Value* value);
 
   Profile* profile_;  // weak
 };

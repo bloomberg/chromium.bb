@@ -181,20 +181,20 @@ scoped_ptr<api::settings_private::PrefObject> PrefsUtil::GetPref(
   return pref_object.Pass();
 }
 
-bool PrefsUtil::SetPref(const std::string& pref_name,
-                        const base::Value* value) {
+PrefsUtil::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,
+                                            const base::Value* value) {
   if (IsCrosSetting(pref_name))
     return SetCrosSettingsPref(pref_name, value);
 
   PrefService* pref_service = FindServiceForPref(pref_name);
 
   if (!IsPrefUserModifiable(pref_name))
-    return false;
+    return PREF_NOT_MODIFIABLE;
 
   const PrefService::Preference* pref =
       pref_service->FindPreference(pref_name);
   if (!pref)
-    return false;
+    return PREF_NOT_FOUND;
 
   DCHECK_EQ(pref->GetType(), value->GetType());
 
@@ -208,7 +208,7 @@ bool PrefsUtil::SetPref(const std::string& pref_name,
       // In JS all numbers are doubles.
       double double_value;
       if (!value->GetAsDouble(&double_value))
-        return false;
+        return PREF_TYPE_MISMATCH;
 
       pref_service->SetInteger(pref_name, static_cast<int>(double_value));
       break;
@@ -216,7 +216,7 @@ bool PrefsUtil::SetPref(const std::string& pref_name,
     case base::Value::TYPE_STRING: {
       std::string string_value;
       if (!value->GetAsString(&string_value))
-        return false;
+        return PREF_TYPE_MISMATCH;
 
       if (IsPrefTypeURL(pref_name)) {
         GURL fixed = url_formatter::FixupURL(string_value, std::string());
@@ -227,29 +227,32 @@ bool PrefsUtil::SetPref(const std::string& pref_name,
       break;
     }
     default:
-      return false;
+      return PREF_TYPE_UNSUPPORTED;
   }
 
   // TODO(orenb): Process setting metrics here and in the CrOS setting method
   // too (like "ProcessUserMetric" in CoreOptionsHandler).
-  return true;
+  return SUCCESS;
 }
 
-bool PrefsUtil::SetCrosSettingsPref(const std::string& pref_name,
-                                    const base::Value* value) {
+PrefsUtil::SetPrefResult PrefsUtil::SetCrosSettingsPref(
+    const std::string& pref_name, const base::Value* value) {
 #if defined(OS_CHROMEOS)
   chromeos::OwnerSettingsServiceChromeOS* service =
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_);
 
-  // Returns false if not the owner, for settings requiring owner.
-  if (service && service->HandlesSetting(pref_name))
-    return service->Set(pref_name, *value);
+  // Check if setting requires owner.
+  if (service && service->HandlesSetting(pref_name)) {
+    if (service->Set(pref_name, *value))
+      return SUCCESS;
+    return PREF_NOT_MODIFIABLE;
+  }
 
   chromeos::CrosSettings::Get()->Set(pref_name, *value);
-  return true;
+  return SUCCESS;
 #else
-  return false;
+  return PREF_NOT_FOUND;
 #endif
 }
 

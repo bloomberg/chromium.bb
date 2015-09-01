@@ -49,8 +49,8 @@ scoped_ptr<base::Value> SettingsPrivateDelegate::GetAllPrefs() {
   return prefs.Pass();
 }
 
-bool SettingsPrivateDelegate::SetPref(const std::string& pref_name,
-                                      const base::Value* value) {
+PrefsUtil::SetPrefResult SettingsPrivateDelegate::SetPref(
+    const std::string& pref_name, const base::Value* value) {
   return prefs_util_->SetPref(pref_name, value);
 }
 

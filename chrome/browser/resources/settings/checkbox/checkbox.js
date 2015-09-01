@@ -68,7 +68,7 @@ Polymer({
   /** @private */
   checkedChanged_: function() {
     if (this.pref) {
-      this.pref.value = this.getNewValue_(this.checked);
+      this.set('pref.value', this.getNewValue_(this.checked));
     }
   },
 

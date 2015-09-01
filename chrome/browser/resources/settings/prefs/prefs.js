@@ -4,18 +4,77 @@
 
 /**
  * @fileoverview
- * 'cr-settings-prefs' is an element which serves as a model for
- * interaction with settings which are stored in Chrome's
- * Preferences.
+ * 'cr-settings-prefs' models Chrome settings and preferences, listening for
+ * changes to Chrome prefs whitelisted in chrome.settingsPrivate.
+ * When changing prefs in this element's 'prefs' property via the UI, this
+ * element tries to set those preferences in Chrome. Whether or not the calls to
+ * settingsPrivate.setPref succeed, 'prefs' is eventually consistent with the
+ * Chrome pref store.
  *
  * Example:
  *
- *    <cr-settings-prefs id="prefs"></cr-settings-prefs>
- *    <cr-settings-a11y-page prefs="{{this.$.prefs}}"></cr-settings-a11y-page>
+ *    <cr-settings-prefs prefs="{{prefs}}"></cr-settings-prefs>
+ *    <cr-settings-a11y-page prefs="{{prefs}}"></cr-settings-a11y-page>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-a11y-page
+ * @element cr-settings-prefs
  */
+
+/**
+ * Pref state object. Copies values of PrefObjects received from
+ * settingsPrivate to determine when pref values have changed.
+ * This prototype works for primitive types, but more complex types should
+ * override these functions.
+ * @constructor
+ * @param {!chrome.settingsPrivate.PrefObject} prefObj
+ */
+function PrefWrapper(prefObj) {
+  this.key_ = prefObj.key;
+  this.value_ = prefObj.value;
+}
+
+/**
+ * Checks if other's value equals this.value_. Both prefs wrapped by the
+ * PrefWrappers should have the same keys.
+ * @param {PrefWrapper} other
+ * @return {boolean}
+ */
+PrefWrapper.prototype.equals = function(other) {
+  assert(this.key_ == other.key_);
+  return this.value_ == other.value_;
+};
+
+/**
+ * @constructor
+ * @extends {PrefWrapper}
+ * @param {!chrome.settingsPrivate.PrefObject} prefObj
+ */
+function ListPrefWrapper(prefObj) {
+  // Copy the array so changes to prefObj aren't reflected in this.value_.
+  // TODO(michaelpg): Do a deep copy to support nested lists and objects.
+  this.value_ = prefObj.value.slice();
+}
+
+  ListPrefWrapper.prototype = {
+  __proto__: PrefWrapper.prototype,
+
+  /**
+   * Tests whether two ListPrefWrapper values contain the same list items.
+   * @override
+   */
+  equals: function(other) {
+    'use strict';
+    assert(this.key_ == other.key_);
+    if (this.value_.length != other.value_.length)
+      return false;
+    for (let i = 0; i < this.value_.length; i++) {
+      if (this.value_[i] != other.value_[i])
+        return false;
+    }
+    return true;
+  },
+};
+
 (function() {
   'use strict';
 
@@ -24,138 +83,183 @@
 
     properties: {
       /**
-       * Object containing all preferences.
+       * Object containing all preferences, for use by Polymer controls.
        */
-      prefStore: {
+      prefs: {
         type: Object,
         value: function() { return {}; },
         notify: true,
       },
+
+      /**
+       * Map of pref keys to PrefWrapper objects representing the state of the
+       * Chrome pref store.
+       * @type {Object<PrefWrapper>}
+       * @private
+       */
+      prefWrappers_: {
+        type: Object,
+        value: function() { return {}; },
+      },
     },
+
+    observers: [
+      'prefsChanged_(prefs.*)',
+    ],
 
     /** @override */
     created: function() {
       CrSettingsPrefs.isInitialized = false;
 
       chrome.settingsPrivate.onPrefsChanged.addListener(
-          this.onPrefsChanged_.bind(this));
-      chrome.settingsPrivate.getAllPrefs(this.onPrefsFetched_.bind(this));
+          this.onSettingsPrivatePrefsChanged_.bind(this));
+      chrome.settingsPrivate.getAllPrefs(
+          this.onSettingsPrivatePrefsFetched_.bind(this));
+    },
+
+    /**
+     * Polymer callback for changes to this.prefs.
+     * @param {!{path: string, value: *}} change
+     * @private
+     */
+    prefsChanged_: function(change) {
+      if (!CrSettingsPrefs.isInitialized)
+        return;
+
+      var key = this.getPrefKeyFromPath_(change.path);
+      var prefWrapper = this.prefWrappers_[key];
+      if (!prefWrapper)
+        return;
+
+      var prefObj = /** @type {chrome.settingsPrivate.PrefObject} */(
+          this.get(key, this.prefs));
+
+      // If settingsPrivate already has this value, do nothing. (Otherwise,
+      // a change event from settingsPrivate could make us call
+      // settingsPrivate.setPref and potentially trigger an IPC loop.)
+      if (prefWrapper.equals(this.createPrefWrapper_(prefObj)))
+        return;
+
+      chrome.settingsPrivate.setPref(
+          key,
+          prefObj.value,
+          /* pageId */ '',
+          /* callback */ this.setPrefCallback_.bind(this, key));
     },
 
     /**
      * Called when prefs in the underlying Chrome pref store are changed.
-     * @param {!Array<!PrefObject>} prefs The prefs that changed.
+     * @param {!Array<!chrome.settingsPrivate.PrefObject>} prefs
+     *     The prefs that changed.
      * @private
      */
-    onPrefsChanged_: function(prefs) {
-      this.updatePrefs_(prefs, false);
+    onSettingsPrivatePrefsChanged_: function(prefs) {
+      if (CrSettingsPrefs.isInitialized)
+        this.updatePrefs_(prefs);
     },
 
     /**
      * Called when prefs are fetched from settingsPrivate.
-     * @param {!Array<!PrefObject>} prefs
+     * @param {!Array<!chrome.settingsPrivate.PrefObject>} prefs
      * @private
      */
-    onPrefsFetched_: function(prefs) {
-      this.updatePrefs_(prefs, true);
+    onSettingsPrivatePrefsFetched_: function(prefs) {
+      this.updatePrefs_(prefs);
 
       CrSettingsPrefs.isInitialized = true;
       document.dispatchEvent(new Event(CrSettingsPrefs.INITIALIZED));
     },
 
-
     /**
-     * Updates the settings model with the given prefs.
-     * @param {!Array<!PrefObject>} prefs
-     * @param {boolean} shouldObserve Whether each of the prefs should be
-     *     observed.
+     * Checks the result of calling settingsPrivate.setPref.
+     * @param {string} key The key used in the call to setPref.
+     * @param {boolean} success True if setting the pref succeeded.
      * @private
      */
-    updatePrefs_: function(prefs, shouldObserve) {
-      prefs.forEach(function(prefObj) {
-        let root = this.prefStore;
-        let tokens = prefObj.key.split('.');
+    setPrefCallback_: function(key, success) {
+      if (success)
+        return;
 
-        assert(tokens.length > 0);
+      // Get the current pref value from chrome.settingsPrivate to ensure the
+      // UI stays up to date.
+      chrome.settingsPrivate.getPref(key, function(pref) {
+        this.updatePrefs_([pref]);
+      }.bind(this));
+    },
 
-        for (let i = 0; i < tokens.length; i++) {
-          let token = tokens[i];
+    /**
+     * Updates the prefs model with the given prefs.
+     * @param {!Array<!chrome.settingsPrivate.PrefObject>} prefs
+     * @private
+     */
+    updatePrefs_: function(prefs) {
+      prefs.forEach(function(newPrefObj) {
+        // Use the PrefObject from settingsPrivate to create a PrefWrapper in
+        // prefWrappers_ at the pref's key.
+        this.prefWrappers_[newPrefObj.key] =
+            this.createPrefWrapper_(newPrefObj);
 
-          if (!root.hasOwnProperty(token)) {
-            let path = 'prefStore.' + tokens.slice(0, i + 1).join('.');
-            this.set(path, {});
-          }
-          root = root[token];
-        }
-
-        // NOTE: Do this copy rather than just a re-assignment, so that the
-        // observer fires.
-        for (let objKey in prefObj) {
-          let path = 'prefStore.' + prefObj.key + '.' + objKey;
-
-          // Handle lists specially. We don't want to call this.set()
-          // unconditionally upon updating a list value, since even its contents
-          // are the same as the old list, doing this set() may cause an
-          // infinite update cycle (http://crbug.com/498586).
-          if (objKey == 'value' &&
-              prefObj.type == chrome.settingsPrivate.PrefType.LIST &&
-              !this.shouldUpdateListPrefValue_(root, prefObj['value'])) {
-            continue;
-          }
-
-          this.set(path, prefObj[objKey]);
-        }
-
-        if (shouldObserve) {
-          Object.observe(root, this.propertyChangeCallback_, ['update']);
-        }
+        // Set or update the pref in |prefs|. This triggers observers in the UI,
+        // which update controls associated with the pref.
+        this.setPref_(newPrefObj);
       }, this);
     },
 
-
     /**
-     * @param {Object} root The root object for a pref that contains a list
-     *     value.
-     * @param {!Array} newValue The new list value.
-     * @return {boolean} Whether the new value is different from the one in
-     *     root, thus necessitating a pref update.
+     * Given a 'property-changed' path, returns the key of the preference the
+     * path refers to. E.g., if the path of the changed property is
+     * 'prefs.search.suggest_enabled.value', the key of the pref that changed is
+     * 'search.suggest_enabled'.
+     * @param {string} path
+     * @return {string}
+     * @private
      */
-    shouldUpdateListPrefValue_: function(root, newValue) {
-      if (root.value == null ||
-          root.value.length != newValue.length) {
-        return true;
-      }
+    getPrefKeyFromPath_: function(path) {
+      // Skip the first token, which refers to the member variable (this.prefs).
+      var parts = path.split('.');
+      assert(parts.shift() == 'prefs');
 
-      for (let i = 0; i < newValue.length; i++) {
-        if (root.value != null && root.value[i] != newValue[i]) {
-          return true;
-        }
+      for (let i = 1; i <= parts.length; i++) {
+        let key = parts.slice(0, i).join('.');
+        // The prefWrappers_ keys match the pref keys.
+        if (this.prefWrappers_[key] != undefined)
+          return key;
       }
-
-      return false;
+      return '';
     },
 
     /**
-     * Called when a property of a pref changes.
-     * @param {!Array<!Object>} changes An array of objects describing changes.
-     *     @see http://www.html5rocks.com/en/tutorials/es7/observe/
+     * Sets or updates the pref denoted by newPrefObj.key in the publicy exposed
+     * |prefs| property.
+     * @param {chrome.settingsPrivate.PrefObject} newPrefObj The pref object to
+     *     update the pref with.
      * @private
      */
-    propertyChangeCallback_: function(changes) {
-      changes.forEach(function(change) {
-        // UI should only be able to change the value of a setting for now, not
-        // disabled, etc.
-        assert(change.name == 'value');
+    setPref_: function(newPrefObj) {
+      // Check if the pref exists already in the Polymer |prefs| object.
+      if (this.get(newPrefObj.key, this.prefs)) {
+        // Update just the value, notifying listeners of the change.
+        this.set('prefs.' + newPrefObj.key + '.value', newPrefObj.value);
+      } else {
+        // Add the pref to |prefs|. cr.exportPath doesn't use Polymer.Base.set,
+        // which is OK because the nested property update events aren't useful.
+        cr.exportPath(newPrefObj.key, newPrefObj, this.prefs);
+        // Notify listeners of the change at the preference key.
+        this.notifyPath('prefs.' + newPrefObj.key, newPrefObj);
+      }
+    },
 
-        let newValue = change.object[change.name];
-        assert(newValue !== undefined);
-
-        chrome.settingsPrivate.setPref(
-            change.object['key'],
-            newValue,
-            /* pageId */ '',
-            /* callback */ function() {});
-      });
+    /**
+     * Creates a PrefWrapper object from a chrome.settingsPrivate pref.
+     * @param {!chrome.settingsPrivate.PrefObject} prefObj
+     *     PrefObject received from chrome.settingsPrivate.
+     * @return {PrefWrapper} An object containing a copy of the PrefObject's
+     *     value.
+     * @private
+     */
+    createPrefWrapper_: function(prefObj) {
+      return prefObj.type == chrome.settingsPrivate.PrefType.LIST ?
+          new ListPrefWrapper(prefObj) : new PrefWrapper(prefObj);
     },
   });
 })();
