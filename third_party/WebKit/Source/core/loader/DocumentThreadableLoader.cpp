@@ -314,6 +314,19 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
 
     RefPtr<DocumentThreadableLoader> protect(this);
 
+    if (m_actualRequest) {
+        reportResponseReceived(resource->identifier(), redirectResponse);
+
+        clearResource();
+        request = ResourceRequest();
+
+        m_requestStartedSeconds = 0.0;
+
+        handlePreflightFailure(redirectResponse.url().string(), "Response for preflight is invalid (redirect)");
+
+        return;
+    }
+
     if (m_redirectMode == WebURLRequest::FetchRedirectModeManual) {
         // We use |m_redirectMode| to check the original redirect mode.
         // |request| is a new request for redirect. So we don't set the redirect

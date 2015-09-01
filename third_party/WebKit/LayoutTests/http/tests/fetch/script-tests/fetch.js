@@ -114,6 +114,27 @@ promise_test(function(t) {
 
 promise_test(function(t) {
     var redirect_target_url =
+      OTHER_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
+    var redirect_original_url =
+      OTHER_ORIGIN + '/serviceworker/resources/redirect.php?Redirect=' +
+      redirect_target_url;
+
+    var request = new Request(redirect_original_url,
+                              {headers: [['X-Fetch-Test', 'A']],
+                               redirect: 'manual'});
+
+    // Cross-origin request with non-simple header initiates CORS preflight
+    // request.
+    return fetch(request)
+      .then(
+        t.unreached_func('Even in manual redirect mode, fetch with preflight' +
+                         ' must fail when redirect response is received'),
+        function() {});
+  }, 'Even in manual redirect mode, fetch with preflight must fail when' +
+     ' redirect response is received');
+
+promise_test(function(t) {
+    var redirect_target_url =
       BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
     var redirect_original_url =
       BASE_ORIGIN + '/serviceworker/resources/redirect.php?Redirect=' +
@@ -126,10 +147,10 @@ promise_test(function(t) {
 
     return fetch(request)
       .then(
-        t.unreached_func('Redirect response must cause an error when redirct' +
+        t.unreached_func('Redirect response must cause an error when redirect' +
                          ' mode is error.'),
         function() {});
-  }, 'Redirect response must cause an error when redirct mode is error.');
+  }, 'Redirect response must cause an error when redirect mode is error.');
 
 promise_test(function(test) {
     var url = BASE_ORIGIN + '/fetch/resources/doctype.html';
