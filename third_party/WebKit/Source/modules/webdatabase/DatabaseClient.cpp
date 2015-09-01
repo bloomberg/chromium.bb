@@ -70,7 +70,7 @@ void DatabaseClient::didOpenDatabase(Database* database, const String& domain, c
 
 void DatabaseClient::setInspectorAgent(InspectorDatabaseAgent* agent)
 {
-    ASSERT(!m_inspectorAgent);
+    // TODO(dgozman): we should not set agent twice, but it's happening in OOPIF case.
     m_inspectorAgent = agent;
 }
 
