@@ -786,6 +786,8 @@ template("create_apk") {
     forward_variables_from(invoker, [ "deps" ])
     deps += [ ":${_package_resources_target_name}" ]
 
+    data_deps = [ "//tools/android/md5sum" ]  # Used when deploying APKs
+
     if (defined(_dex_path)) {
       dex_path = _dex_path
     }
