@@ -141,8 +141,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 }
 
 // Test that a frame visibility can be overridden by the ContentBrowserClient.
+// Flaky on Mac.  http://crbug.com/525592
+#if defined(OS_MACOSX)
+#define MAYBE_GetVisibilityState_Override DISABLED_GetVisibilityState_Override
+#else
+#define MAYBE_GetVisibilityState_Override GetVisibilityState_Override
+#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       GetVisibilityState_Override) {
+                       MAYBE_GetVisibilityState_Override) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,foo")));
   WebContents* web_contents = shell()->web_contents();
 
