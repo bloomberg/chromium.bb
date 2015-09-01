@@ -174,5 +174,22 @@
                 'includes': [ '../../../../build/apk_test.gypi' ],
             }],
         }],
+        ['test_isolation_mode != "noop"', {
+            'targets': [
+                {
+                    'target_name': 'webkit_unit_tests_run',
+                    'type': 'none',
+                    'dependencies': [
+                        'webkit_unit_tests',
+                    ],
+                    'includes': [
+                        '../../../../build/isolate.gypi',
+                    ],
+                    'sources': [
+                        'webkit_unit_tests.isolate',
+                    ],
+                },
+            ],
+        }],
     ],
 }
