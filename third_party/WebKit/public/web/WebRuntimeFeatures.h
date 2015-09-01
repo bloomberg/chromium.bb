@@ -158,8 +158,6 @@ public:
 
     BLINK_EXPORT static void enablePushMessagingHasPermission(bool);
 
-    BLINK_EXPORT static void enableStaleWhileRevalidateCacheControl(bool);
-
     BLINK_EXPORT static void enableUnsafeES3APIs(bool);
 
     BLINK_EXPORT static void enableWebVR(bool);
