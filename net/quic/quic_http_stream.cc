@@ -550,6 +550,11 @@ void QuicHttpStream::ResetStream() {
     return;
   closed_stream_received_bytes_ = stream_->stream_bytes_read();
   stream_ = nullptr;
+
+  // If |request_body_stream_| is non-NULL, Reset it, to abort any in progress
+  // read.
+  if (request_body_stream_)
+    request_body_stream_->Reset();
 }
 
 void QuicHttpStream::CrashIfInvalid() const {
