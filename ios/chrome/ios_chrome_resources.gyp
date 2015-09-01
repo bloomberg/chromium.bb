@@ -48,9 +48,9 @@
         },
       ],
       'includes': [ '../../build/grit_target.gypi' ],
-      # Override the exported include-dirs; ios_strings_resources.h should only
-      # be referenceable as ios/chrome/grit/ to allow DEPS-time checking of
-      # usage.
+      # Override the exported include-dirs; ios/chrome/grit/ios_*strings.h
+      # should only be referenceable as ios/chrome/grit to allow DEPS-time
+      # checking of usage.
       'direct_dependent_settings': {
         'include_dirs': [
           '<(grit_base_dir)',
