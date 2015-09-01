@@ -37,14 +37,6 @@ namespace {
 const char kDaemonScript[] =
     "/opt/google/chrome-remote-desktop/chrome-remote-desktop";
 
-// Timeout for running daemon script. The script itself sets a timeout when
-// waiting for the host to come online, so the setting here should be at least
-// as long.
-const int64 kDaemonTimeoutMs = 60000;
-
-// Timeout for commands that require password prompt - 5 minutes.
-const int64 kSudoTimeoutSeconds = 5 * 60;
-
 base::FilePath GetConfigPath() {
   std::string filename =
       "host#" + base::MD5String(net::GetHostName()) + ".json";
@@ -62,12 +54,7 @@ bool GetScriptPath(base::FilePath* result) {
   return false;
 }
 
-bool RunHostScriptWithTimeout(
-    const std::vector<std::string>& args,
-    base::TimeDelta timeout,
-    int* exit_code) {
-  DCHECK(exit_code);
-
+bool RunHostScript(const std::vector<std::string>& args) {
   // As long as we're relying on running an external binary from the
   // PATH, don't do it as root.
   if (getuid() == 0) {
@@ -84,38 +71,15 @@ bool RunHostScriptWithTimeout(
     command_line.AppendArg(args[i]);
   }
 
-  // Redirect the child's stdout to the parent's stderr. In the case where this
-  // parent process is a Native Messaging host, its stdout is used to send
-  // messages to the web-app.
-  base::FileHandleMappingVector fds_to_remap;
-  fds_to_remap.push_back(std::pair<int, int>(STDERR_FILENO, STDOUT_FILENO));
-  base::LaunchOptions options;
-  options.fds_to_remap = &fds_to_remap;
-
-#if !defined(OS_CHROMEOS)
-  options.allow_new_privs = true;
-#endif
-
-  base::Process process = base::LaunchProcess(command_line, options);
-  if (!process.IsValid()) {
-    LOG(ERROR) << "Failed to run command: "
-               << command_line.GetCommandLineString();
-    return false;
+  std::string output;
+  bool result = base::GetAppOutputAndError(command_line, &output);
+  if (result) {
+    LOG(INFO) << output;
+  } else {
+    LOG(ERROR) << output;
   }
 
-  if (!process.WaitForExitWithTimeout(timeout, exit_code)) {
-    process.Terminate(0, false);
-    LOG(ERROR) << "Timeout exceeded for command: "
-               << command_line.GetCommandLineString();
-    return false;
-  }
-
-  return true;
-}
-
-bool RunHostScript(const std::vector<std::string>& args, int* exit_code) {
-  return RunHostScriptWithTimeout(
-      args, base::TimeDelta::FromMilliseconds(kDaemonTimeoutMs), exit_code);
+  return result;
 }
 
 }  // namespace
@@ -186,11 +150,7 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
   // Add the user to chrome-remote-desktop group first.
   std::vector<std::string> args;
   args.push_back("--add-user");
-  int exit_code;
-  if (!RunHostScriptWithTimeout(
-          args, base::TimeDelta::FromSeconds(kSudoTimeoutSeconds),
-          &exit_code) ||
-      exit_code != 0) {
+  if (!RunHostScript(args)) {
     LOG(ERROR) << "Failed to add user to chrome-remote-desktop group.";
     done.Run(DaemonController::RESULT_FAILED);
     return;
@@ -216,7 +176,7 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
   args.clear();
   args.push_back("--start");
   DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
-  if (RunHostScript(args, &exit_code) && (exit_code == 0))
+  if (RunHostScript(args))
     result = DaemonController::RESULT_OK;
 
   done.Run(result);
@@ -237,9 +197,8 @@ void DaemonControllerDelegateLinux::UpdateConfig(
 
   std::vector<std::string> args;
   args.push_back("--reload");
-  int exit_code = 0;
   DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
-  if (RunHostScript(args, &exit_code) && (exit_code == 0))
+  if (RunHostScript(args))
     result = DaemonController::RESULT_OK;
 
   done.Run(result);
@@ -249,9 +208,8 @@ void DaemonControllerDelegateLinux::Stop(
     const DaemonController::CompletionCallback& done) {
   std::vector<std::string> args;
   args.push_back("--stop");
-  int exit_code = 0;
   DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
-  if (RunHostScript(args, &exit_code) && (exit_code == 0))
+  if (RunHostScript(args))
     result = DaemonController::RESULT_OK;
 
   done.Run(result);
