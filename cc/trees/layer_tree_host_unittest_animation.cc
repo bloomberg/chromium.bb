@@ -904,6 +904,12 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
   void WillPrepareTiles(LayerTreeHostImpl* host_impl) override {
     if (host_impl->sync_tree()->source_frame_number() != 0)
       return;
+
+    // After checking this on the sync tree, we will activate, which will cause
+    // PrepareTiles to happen again (which races with the test exiting).
+    if (TestEnded())
+      return;
+
     LayerImpl* root = host_impl->sync_tree()->root_layer();
     LayerImpl* child = root->children()[0];
     LayerAnimationController* controller_impl =
