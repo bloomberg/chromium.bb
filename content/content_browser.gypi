@@ -2153,13 +2153,5 @@
         'browser/vr/vr_device_provider.h',
       ]
     }],
-    ['enable_webvr==1 and OS=="android"', {
-      'sources': [
-        'browser/vr/android/cardboard/cardboard_vr_device.cc',
-        'browser/vr/android/cardboard/cardboard_vr_device.h',
-        'browser/vr/android/cardboard/cardboard_vr_device_provider.cc',
-        'browser/vr/android/cardboard/cardboard_vr_device_provider.h',
-      ],
-    }],
   ],
 }
