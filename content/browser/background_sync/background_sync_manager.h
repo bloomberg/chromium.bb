@@ -68,6 +68,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // supplied.
   void Register(int64 sw_registration_id,
                 const BackgroundSyncRegistrationOptions& options,
+                bool requested_from_service_worker,
                 const StatusAndRegistrationCallback& callback);
 
   // Removes the background sync with tag |sync_registration_tag|, periodicity
@@ -195,6 +196,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Register callbacks
   void RegisterImpl(int64 sw_registration_id,
                     const BackgroundSyncRegistrationOptions& options,
+                    bool requested_from_service_worker,
                     const StatusAndRegistrationCallback& callback);
   void RegisterDidStore(int64 sw_registration_id,
                         const BackgroundSyncRegistration& sync_registration,

@@ -18,7 +18,8 @@ enum BackgroundSyncError {
 };
 
 interface BackgroundSyncService {
-  Register(SyncRegistration options, int64 service_worker_registration_id)
+  Register(SyncRegistration options, int64 service_worker_registration_id,
+           bool requested_from_service_worker)
       => (BackgroundSyncError err, SyncRegistration options);
   GetRegistration(BackgroundSyncPeriodicity periodicity, string tag,
                   int64 service_worker_registration_id)

@@ -32,6 +32,7 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   // BackgroundSyncService methods:
   void Register(content::SyncRegistrationPtr options,
                 int64_t sw_registration_id,
+                bool requested_from_service_worker,
                 const RegisterCallback& callback) override;
   void Unregister(BackgroundSyncPeriodicity periodicity,
                   int64_t id,

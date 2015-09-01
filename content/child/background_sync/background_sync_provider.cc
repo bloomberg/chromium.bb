@@ -40,6 +40,7 @@ BackgroundSyncProvider::~BackgroundSyncProvider() {
 void BackgroundSyncProvider::registerBackgroundSync(
     const blink::WebSyncRegistration* options,
     blink::WebServiceWorkerRegistration* service_worker_registration,
+    bool requested_from_service_worker,
     blink::WebSyncRegistrationCallbacks* callbacks) {
   DCHECK(options);
   DCHECK(service_worker_registration);
@@ -53,7 +54,7 @@ void BackgroundSyncProvider::registerBackgroundSync(
   // will wipe its callbacks) before 'this' is deleted.
   GetBackgroundSyncServicePtr()->Register(
       mojo::ConvertTo<SyncRegistrationPtr>(*(optionsPtr.get())),
-      service_worker_registration_id,
+      service_worker_registration_id, requested_from_service_worker,
       base::Bind(&BackgroundSyncProvider::RegisterCallback,
                  base::Unretained(this), base::Passed(callbacksPtr.Pass())));
 }
