@@ -1974,6 +1974,24 @@ void Internals::forceFullRepaint(Document* document, ExceptionState& exceptionSt
         layoutView->invalidatePaintForViewAndCompositedLayers();
 }
 
+void Internals::startTrackingPaintInvalidationObjects()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking()->displayItemList()->startTrackingPaintInvalidationObjects();
+}
+
+void Internals::stopTrackingPaintInvalidationObjects()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking()->displayItemList()->stopTrackingPaintInvalidationObjects();
+}
+
+Vector<String> Internals::trackedPaintInvalidationObjects()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    return toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking()->displayItemList()->trackedPaintInvalidationObjects();
+}
+
 ClientRectList* Internals::draggableRegions(Document* document, ExceptionState& exceptionState)
 {
     return annotatedRegions(document, true, exceptionState);

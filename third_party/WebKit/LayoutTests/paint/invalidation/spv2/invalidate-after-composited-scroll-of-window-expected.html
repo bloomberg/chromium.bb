@@ -1,0 +1,10 @@
+<!doctype HTML>
+<div>
+    <div class="spacer" style="width: 1px; height: 2400px;"></div>
+    <div id="target" style="width: 100px; height: 100px; background: papayawhip"></div>
+    <div class="spacer" style="width: 1px; height: 2400px;"></div>
+</div>
+Tests that invalidation of a div after scrolling invalidates just the div and no other area.
+<script>
+window.scrollBy(0, 2350);
+</script>

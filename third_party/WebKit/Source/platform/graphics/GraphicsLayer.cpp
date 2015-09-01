@@ -64,6 +64,7 @@
 
 namespace blink {
 
+// TODO(wangxianzhu): Remove this when we no longer invalidate rects.
 struct PaintInvalidationTrackingInfo {
     Vector<FloatRect> invalidationRects;
     Vector<String> invalidationObjects;
@@ -785,7 +786,7 @@ void GraphicsLayer::setSize(const FloatSize& size)
     // The red debug fill needs to be invalidated if the layer resizes.
     if (m_displayItemList) {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-        m_displayItemList->invalidate(displayItemClient());
+        m_displayItemList->invalidateUntracked(displayItemClient());
     }
 #endif
 }
@@ -986,7 +987,7 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
 void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClientWrapper& displayItemClient)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-    displayItemList()->invalidate(displayItemClient.displayItemClient());
+    displayItemList()->invalidate(displayItemClient);
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject(displayItemClient.debugName());
 }

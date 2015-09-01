@@ -1,3 +1,5 @@
+# We tests under paint/invalidation/spv2 as --enable-slimming-paint-v2 physical suite. 
+crbug.com/524134 virtual/spv2/paint/invalidation/spv2 [ Skip ]
 
 # TODO(wangxianzhu): Triage the failures
 crbug.com/524134 virtual/spv2/compositing/repaint/opacity-between-absolute.html [ ImageOnlyFailure ]
@@ -57,6 +59,7 @@ crbug.com/524236 virtual/spv2/compositing/repaint/should-not-repaint-composited-
 crbug.com/524236 virtual/spv2/compositing/repaint/should-not-repaint-composited-transform.html [ Failure ]
 crbug.com/524236 virtual/spv2/compositing/repaint/should-not-repaint-composited-z-index.html [ Failure ]
 crbug.com/524236 virtual/spv2/fast/repaint/absolute-layer-specified-left-or-right-auto-width-moved-vertically.html [ Failure ]
+crbug.com/524236 paint/invalidation/spv2/invalidate-after-composited-scroll.html [ ImageOnlyFailure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]

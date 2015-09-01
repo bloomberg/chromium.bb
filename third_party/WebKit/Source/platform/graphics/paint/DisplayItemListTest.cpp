@@ -133,7 +133,7 @@ TEST_F(DisplayItemListTest, UpdateBasic)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 
-    displayItemList().invalidate(second.displayItemClient());
+    displayItemList().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
     displayItemList().commitNewDisplayItems();
@@ -160,7 +160,7 @@ TEST_F(DisplayItemListTest, UpdateSwapOrder)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(unaffected, backgroundDrawingType));
 
-    displayItemList().invalidate(second.displayItemClient());
+    displayItemList().invalidate(second);
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
@@ -221,7 +221,7 @@ TEST_F(DisplayItemListTest, UpdateInvalidationWithPhases)
         TestDisplayItem(second, foregroundDrawingType),
         TestDisplayItem(third, foregroundDrawingType));
 
-    displayItemList().invalidate(second.displayItemClient());
+    displayItemList().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, third, backgroundDrawingType, FloatRect(300, 100, 50, 50));
@@ -253,8 +253,8 @@ TEST_F(DisplayItemListTest, UpdateAddFirstOverlap)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
-    displayItemList().invalidate(first.displayItemClient());
-    displayItemList().invalidate(second.displayItemClient());
+    displayItemList().invalidate(first);
+    displayItemList().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
@@ -267,7 +267,7 @@ TEST_F(DisplayItemListTest, UpdateAddFirstOverlap)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
-    displayItemList().invalidate(first.displayItemClient());
+    displayItemList().invalidate(first);
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
     displayItemList().commitNewDisplayItems();
@@ -291,8 +291,8 @@ TEST_F(DisplayItemListTest, UpdateAddLastOverlap)
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 
-    displayItemList().invalidate(first.displayItemClient());
-    displayItemList().invalidate(second.displayItemClient());
+    displayItemList().invalidate(first);
+    displayItemList().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
@@ -305,8 +305,8 @@ TEST_F(DisplayItemListTest, UpdateAddLastOverlap)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
-    displayItemList().invalidate(first.displayItemClient());
-    displayItemList().invalidate(second.displayItemClient());
+    displayItemList().invalidate(first);
+    displayItemList().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     displayItemList().commitNewDisplayItems();
@@ -335,7 +335,7 @@ TEST_F(DisplayItemListTest, UpdateClip)
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, DisplayItem::clipTypeToEndClipType(clipType)));
 
-    displayItemList().invalidate(first.displayItemClient());
+    displayItemList().invalidate(first);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     displayItemList().commitNewDisplayItems();
@@ -344,7 +344,7 @@ TEST_F(DisplayItemListTest, UpdateClip)
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
 
-    displayItemList().invalidate(second.displayItemClient());
+    displayItemList().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     {
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
@@ -377,7 +377,7 @@ TEST_F(DisplayItemListTest, CachedDisplayItems)
     const SkPicture* firstPicture = static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[0]).picture();
     const SkPicture* secondPicture = static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[1]).picture();
 
-    displayItemList().invalidate(first.displayItemClient());
+    displayItemList().invalidate(first);
     EXPECT_FALSE(displayItemList().clientCacheIsValid(first.displayItemClient()));
     EXPECT_TRUE(displayItemList().clientCacheIsValid(second.displayItemClient()));
 
@@ -429,7 +429,7 @@ TEST_F(DisplayItemListTest, ComplexUpdateSwapOrder)
         TestDisplayItem(container2, foregroundDrawingType));
 
     // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
-    displayItemList().invalidate(container1.displayItemClient());
+    displayItemList().invalidate(container1);
     drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
     drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
     drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
@@ -562,12 +562,12 @@ TEST_F(DisplayItemListTest, CachedNestedSubsequenceUpdate)
         TestDisplayItem(container2, DisplayItem::EndSubsequence));
 
     // Invalidate container1 but not content1.
-    displayItemList().invalidate(container1.displayItemClient());
+    displayItemList().invalidate(container1);
 
     // Container2 itself now becomes empty (but still has the 'content2' child),
     // and chooses not to output subsequence info.
-    displayItemList().invalidate(container2.displayItemClient());
-    displayItemList().invalidate(content2.displayItemClient());
+    displayItemList().invalidate(container2);
+    displayItemList().invalidate(content2);
     EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
     EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content2));
     // Content2 now outputs foreground only.
@@ -661,7 +661,7 @@ TEST_F(DisplayItemListTest, Scope)
     EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(displayItemList().displayItems()[2]).picture());
 
     // Now the multicol becomes 3 columns and repaints.
-    displayItemList().invalidate(multicol.displayItemClient());
+    displayItemList().invalidate(multicol);
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 100, 100, 100));
 
     displayItemList().beginScope();
@@ -714,7 +714,7 @@ TEST_F(DisplayItemListTest, OptimizeNoopPairs)
         TestDisplayItem(second, DisplayItem::EndClipPath),
         TestDisplayItem(third, backgroundDrawingType));
 
-    displayItemList().invalidate(second.displayItemClient());
+    displayItemList().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
@@ -728,7 +728,7 @@ TEST_F(DisplayItemListTest, OptimizeNoopPairs)
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType));
 
-    displayItemList().invalidate(second.displayItemClient());
+    displayItemList().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));

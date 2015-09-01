@@ -6,6 +6,7 @@
 #define DisplayItemList_h
 
 #include "platform/PlatformExport.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/ContiguousContainer.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
@@ -43,7 +44,8 @@ public:
     }
 
     // These methods are called during paint invalidation.
-    void invalidate(DisplayItemClient);
+    void invalidate(const DisplayItemClientWrapper&);
+    void invalidateUntracked(DisplayItemClient);
     void invalidateAll();
 
     // These methods are called during painting.
@@ -108,6 +110,22 @@ public:
 #ifndef NDEBUG
     void showDebugData() const;
 #endif
+
+    void startTrackingPaintInvalidationObjects()
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        m_trackedPaintInvalidationObjects = adoptPtr(new Vector<String>());
+    }
+    void stopTrackingPaintInvalidationObjects()
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        m_trackedPaintInvalidationObjects = nullptr;
+    }
+    Vector<String> trackedPaintInvalidationObjects()
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        return m_trackedPaintInvalidationObjects ? *m_trackedPaintInvalidationObjects : Vector<String>();
+    }
 
 protected:
     DisplayItemList()
@@ -183,6 +201,8 @@ private:
     // the duplicated ids are from.
     DisplayItemIndicesByClientMap m_newDisplayItemIndicesByClient;
 #endif
+
+    OwnPtr<Vector<String>> m_trackedPaintInvalidationObjects;
 };
 
 } // namespace blink

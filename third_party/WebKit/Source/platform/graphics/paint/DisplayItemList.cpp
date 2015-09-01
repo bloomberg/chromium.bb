@@ -6,7 +6,6 @@
 #include "platform/graphics/paint/DisplayItemList.h"
 
 #include "platform/NotImplemented.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 
@@ -112,7 +111,15 @@ void DisplayItemList::endScope()
     endSkippingCache();
 }
 
-void DisplayItemList::invalidate(DisplayItemClient client)
+void DisplayItemList::invalidate(const DisplayItemClientWrapper& client)
+{
+    invalidateUntracked(client.displayItemClient());
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
+        m_trackedPaintInvalidationObjects->append(client.debugName());
+}
+
+void DisplayItemList::invalidateUntracked(DisplayItemClient client)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     // Can only be called during layout/paintInvalidation, not during painting.
@@ -129,6 +136,9 @@ void DisplayItemList::invalidateAll()
     m_currentDisplayItems.clear();
     m_validlyCachedClients.clear();
     m_validlyCachedClientsDirty = false;
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
+        m_trackedPaintInvalidationObjects->append("##ALL##");
 }
 
 bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const

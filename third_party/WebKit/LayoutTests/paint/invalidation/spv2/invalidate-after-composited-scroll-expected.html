@@ -1,0 +1,12 @@
+<!doctype HTML>
+<div id="scroller" style="overflow:auto; will-change: transform; width: 200px; height: 200px; position: absolute; left: 300px; top: 300px;">
+    <div>
+        <div class="spacer" style="width: 1px; height: 2400px;"></div>
+        <div id="target" style="width: 100px; height: 100px; background: papayawhip"></div>
+        <div class="spacer" style="width: 1px; height: 2400px;"></div>
+    </div>
+</div>
+Tests that invalidation of a div after scrolling invalidates just the div and scrollbars, and no other area.
+<script>
+scroller.scrollTop = 2350;
+</script>
