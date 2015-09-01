@@ -30,6 +30,9 @@ const int64 kIdleTimeoutInSeconds = 10;
 
 // A usb::DeviceManagerDelegate implementation which provides origin-based
 // device access control.
+//
+// TODO(rockot/reillyg): We should just get rid of DeviceManagerDelegate, or
+// at least repurpose it as test support to provide device mocks.
 class USBDeviceManagerDelegate : public usb::DeviceManagerDelegate {
  public:
   explicit USBDeviceManagerDelegate(const GURL& remote_url)
@@ -39,17 +42,10 @@ class USBDeviceManagerDelegate : public usb::DeviceManagerDelegate {
  private:
   // usb::DeviceManagerDelegate:
   bool IsDeviceAllowed(const usb::DeviceInfo& device) override {
-    // Limited set of conditions to allow localhost connection for testing. This
-    // does not presume to catch all common local host strings.
-    if (remote_url_.host() == "127.0.0.1" || remote_url_.host() == "localhost")
-      return true;
-
     // Also let browser apps and mojo apptests talk to all devices.
     if (remote_url_.SchemeIs("system") ||
         remote_url_ == GURL("mojo://devices_apptests/"))
       return true;
-
-    // TODO(rockot/reillyg): Implement origin-based device access control.
     return false;
   }
 
