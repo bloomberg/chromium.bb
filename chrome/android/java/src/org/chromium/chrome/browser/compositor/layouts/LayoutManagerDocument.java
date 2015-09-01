@@ -445,6 +445,7 @@ public class LayoutManagerDocument extends LayoutManager
         public boolean isSwipeEnabled(ScrollDirection direction) {
             FullscreenManager manager = mHost.getFullscreenManager();
             if (getActiveLayout() != mStaticLayout
+                    || !FeatureUtilities.isDocumentModeEligible(mHost.getContext())
                     || !DeviceClassManager.enableToolbarSwipe(
                                FeatureUtilities.isDocumentMode(mHost.getContext()))
                     || (manager != null && manager.getPersistentFullscreenMode())) {
