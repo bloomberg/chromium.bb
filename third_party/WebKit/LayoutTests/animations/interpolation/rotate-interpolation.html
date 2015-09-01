@@ -104,7 +104,7 @@ assertInterpolation({
   from: '0deg 1 0 0',
   to: '10deg 0 1 0',
 }, [
-  {at: -1, is: '10deg 0 -1 0'},
+  {at: -1, is: '-10deg 0 1 0'},
   {at: 0, is: '0deg 1 0 0'},
   {at: 0.25, is: '2.5deg 0 1 0'},
   {at: 0.75, is: '7.5deg 0 1 0'},
@@ -125,4 +125,29 @@ assertInterpolation({
   {at: 2, is: '90deg 0.71 0 -0.71'},
 ]);
 
+assertInterpolation({
+  property: 'rotate',
+  from: '0deg 0 1 0',
+  to: '450deg 1 0 0',
+}, [
+  {at: -1, is: '-450deg 1 0 0'},
+  {at: 0, is: '0deg 0 1 0'},
+  {at: 0.25, is: '112.5deg 1 0 0'},
+  {at: 0.75, is: '337.5deg 1 0 0'},
+  {at: 1, is: '450deg 1 0 0'},
+  {at: 2, is: '900deg 1 0 0'},
+]);
+
+assertInterpolation({
+  property: 'rotate',
+  from: '450deg 1 0 0',
+  to: '0deg 0 1 0',
+}, [
+  {at: -1, is: '900deg 1 0 0'},
+  {at: 0, is: '450deg 1 0 0'},
+  {at: 0.25, is: '337.5deg 1 0 0'},
+  {at: 0.75, is: '112.5deg 1 0 0'},
+  {at: 1, is: '0deg 0 1 0'},
+  {at: 2, is: '-450deg 1 0 0'},
+]);
 </script>

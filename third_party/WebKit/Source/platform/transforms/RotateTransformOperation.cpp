@@ -45,8 +45,8 @@ bool RotateTransformOperation::shareSameAxis(const RotateTransformOperation* fro
     if (!from && !to)
         return true;
 
-    bool fromZero = !from || from->axis().isZero();
-    bool toZero = !to || to->axis().isZero();
+    bool fromZero = !from || from->axis().isZero() || fabs(from->angle()) < angleEpsilon;
+    bool toZero = !to || to->axis().isZero() || fabs(to->angle()) < angleEpsilon;
 
     if (fromZero && toZero)
         return true;
