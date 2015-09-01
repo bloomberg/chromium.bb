@@ -145,6 +145,8 @@ class CC_EXPORT ListContainerBase {
   // Unlike the ListContainer methods, these do not invoke element destructors.
   void RemoveLast();
   void EraseAndInvalidateAllPointers(Iterator position);
+  void InsertBeforeAndInvalidateAllPointers(Iterator* position,
+                                            size_t number_of_elements);
 
   ConstReverseIterator crbegin() const;
   ConstReverseIterator crend() const;
@@ -288,6 +290,20 @@ class ListContainer : public ListContainerBase {
   DerivedElementType* ReplaceExistingElement(Iterator at) {
     at->~BaseElementType();
     return new (*at) DerivedElementType();
+  }
+
+  // Insert |count| new elements of |DerivedElementType| before |at|. This will
+  // invalidate all outstanding pointers and iterators. Return a valid iterator
+  // for the beginning of the newly inserted segement.
+  template <typename DerivedElementType>
+  Iterator InsertBeforeAndInvalidateAllPointers(Iterator at, size_t count) {
+    ListContainerBase::InsertBeforeAndInvalidateAllPointers(&at, count);
+    Iterator result = at;
+    for (size_t i = 0; i < count; ++i) {
+      new (*at) DerivedElementType();
+      ++at;
+    }
+    return result;
   }
 
   template <typename DerivedElementType>

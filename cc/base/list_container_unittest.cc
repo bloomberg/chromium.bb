@@ -657,30 +657,130 @@ TEST(ListContainerTest, DeletionAllInAllocationReversed) {
   }
 }
 
-TEST(ListContainerTest, SimpleIterationAndManipulation) {
+TEST(ListContainerTest, InsertBeforeBegin) {
   ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize);
   std::vector<SimpleDerivedElement*> sde_list;
-  size_t size = 10;
-  for (size_t i = 0; i < size; ++i) {
-    SimpleDerivedElement* simple_dq =
-        list.AllocateAndConstruct<SimpleDerivedElement>();
-    sde_list.push_back(simple_dq);
+  const int size = 4;
+  for (int i = 0; i < size; ++i) {
+    sde_list.push_back(list.AllocateAndConstruct<SimpleDerivedElement>());
+    sde_list.back()->set_value(i);
   }
-  EXPECT_EQ(size, list.size());
+  EXPECT_EQ(static_cast<size_t>(size), list.size());
 
-  ListContainer<DerivedElement>::Iterator iter = list.begin();
-  for (int i = 0; i < 10; ++i) {
-    static_cast<SimpleDerivedElement*>(*iter)->set_value(i);
+  const int count = 2;
+  ListContainer<DerivedElement>::Iterator iter =
+      list.InsertBeforeAndInvalidateAllPointers<SimpleDerivedElement>(
+          list.begin(), count);
+  for (int i = 0; i < count; ++i) {
+    static_cast<SimpleDerivedElement*>(*iter)->set_value(100 + i);
     ++iter;
   }
 
-  int i = 0;
-  for (std::vector<SimpleDerivedElement*>::const_iterator sde_iter =
-           sde_list.begin();
-       sde_iter < sde_list.end(); ++sde_iter) {
-    EXPECT_EQ(i, (*sde_iter)->get_value());
-    ++i;
+  const int expected_result[] = {100, 101, 0, 1, 2, 3};
+  int iter_index = 0;
+  for (iter = list.begin(); iter != list.end(); ++iter) {
+    EXPECT_EQ(expected_result[iter_index],
+              static_cast<SimpleDerivedElement*>(*iter)->get_value());
+    ++iter_index;
   }
+  EXPECT_EQ(size + count, iter_index);
+}
+
+TEST(ListContainerTest, InsertBeforeEnd) {
+  ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize);
+  std::vector<SimpleDerivedElement*> sde_list;
+  const int size = 4;
+  for (int i = 0; i < size; ++i) {
+    sde_list.push_back(list.AllocateAndConstruct<SimpleDerivedElement>());
+    sde_list.back()->set_value(i);
+  }
+  EXPECT_EQ(static_cast<size_t>(size), list.size());
+
+  const int count = 3;
+  ListContainer<DerivedElement>::Iterator iter =
+      list.InsertBeforeAndInvalidateAllPointers<SimpleDerivedElement>(
+          list.end(), count);
+  for (int i = 0; i < count; ++i) {
+    static_cast<SimpleDerivedElement*>(*iter)->set_value(100 + i);
+    ++iter;
+  }
+
+  const int expected_result[] = {0, 1, 2, 3, 100, 101, 102};
+  int iter_index = 0;
+  for (iter = list.begin(); iter != list.end(); ++iter) {
+    EXPECT_EQ(expected_result[iter_index],
+              static_cast<SimpleDerivedElement*>(*iter)->get_value());
+    ++iter_index;
+  }
+  EXPECT_EQ(size + count, iter_index);
+}
+
+TEST(ListContainerTest, InsertBeforeEmpty) {
+  ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize);
+
+  const int count = 3;
+  ListContainer<DerivedElement>::Iterator iter =
+      list.InsertBeforeAndInvalidateAllPointers<SimpleDerivedElement>(
+          list.end(), count);
+  for (int i = 0; i < count; ++i) {
+    static_cast<SimpleDerivedElement*>(*iter)->set_value(100 + i);
+    ++iter;
+  }
+
+  const int expected_result[] = {100, 101, 102};
+  int iter_index = 0;
+  for (iter = list.begin(); iter != list.end(); ++iter) {
+    EXPECT_EQ(expected_result[iter_index],
+              static_cast<SimpleDerivedElement*>(*iter)->get_value());
+    ++iter_index;
+  }
+  EXPECT_EQ(count, iter_index);
+}
+
+TEST(ListContainerTest, InsertBeforeMany) {
+  ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize);
+  std::vector<SimpleDerivedElement*> sde_list;
+  // Create a partial list of 1,...,99.
+  int initial_list[] = {
+      0,  1,  4,  5,  6,  7,  8,  9,  11, 12, 17, 18, 19, 20, 21, 22,
+      23, 24, 25, 26, 27, 28, 29, 30, 32, 34, 36, 37, 51, 52, 54, 56,
+      60, 64, 65, 70, 75, 76, 80, 81, 83, 86, 87, 90, 93, 95, 97, 98,
+  };
+  const size_t size = sizeof(initial_list) / sizeof(initial_list[0]);
+  for (size_t i = 0; i < size; ++i) {
+    sde_list.push_back(list.AllocateAndConstruct<SimpleDerivedElement>());
+    sde_list.back()->set_value(initial_list[i]);
+  }
+  EXPECT_EQ(static_cast<size_t>(size), list.size());
+
+  // Insert the missing elements.
+  ListContainer<DerivedElement>::Iterator iter = list.begin();
+  while (iter != list.end()) {
+    ListContainer<DerivedElement>::Iterator iter_next = iter;
+    ++iter_next;
+
+    int value = static_cast<SimpleDerivedElement*>(*iter)->get_value();
+    int value_next =
+        iter_next != list.end()
+            ? static_cast<SimpleDerivedElement*>(*iter_next)->get_value()
+            : 100;
+    int count = value_next - value - 1;
+
+    iter = list.InsertBeforeAndInvalidateAllPointers<SimpleDerivedElement>(
+        iter_next, count);
+    for (int i = value + 1; i < value_next; ++i) {
+      static_cast<SimpleDerivedElement*>(*iter)->set_value(i);
+      ++iter;
+    }
+  }
+
+  int iter_index = 0;
+  for (iter = list.begin(); iter != list.end(); ++iter) {
+    EXPECT_EQ(iter_index,
+              static_cast<SimpleDerivedElement*>(*iter)->get_value());
+    ++iter_index;
+  }
+  EXPECT_EQ(100, iter_index);
 }
 
 TEST(ListContainerTest, SimpleManipulationWithIndexSimpleDerivedElement) {

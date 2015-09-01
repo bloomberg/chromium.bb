@@ -53,6 +53,28 @@ class ListContainerBase::ListContainerCharAllocator {
       --capacity;
     }
 
+    void InsertBefore(char** position, size_t count) {
+      DCHECK_LE(*position, LastElement() + step);
+      DCHECK_GE(*position, Begin());
+
+      // Adjust the size and capacity
+      size_t old_size = size;
+      size += count;
+      capacity = size;
+
+      // Allocate the new data and update the iterator's pointer.
+      scoped_ptr<char[]> new_data(new char[size * step]);
+      size_t position_offset = *position - Begin();
+      *position = new_data.get() + position_offset;
+
+      // Copy the data before the inserted segment
+      memcpy(new_data.get(), data.get(), position_offset);
+      // Copy the data after the inserted segment.
+      memcpy(new_data.get() + position_offset + count * step,
+             data.get() + position_offset, old_size * step - position_offset);
+      new_data.swap(data);
+    }
+
     bool IsEmpty() const { return !size; }
     bool IsFull() { return capacity == size; }
     size_t NumElementsAvailable() const { return capacity - size; }
@@ -154,6 +176,27 @@ class ListContainerBase::ListContainerCharAllocator {
     storage_[position.vector_index]->Erase(position.item_iterator);
     // TODO(weiliangc): Free the InnerList if it is empty.
     --size_;
+  }
+
+  void InsertBefore(ListContainerBase::Iterator* position, size_t count) {
+    if (!count)
+      return;
+
+    // If |position| is End(), then append |count| elements at the end. This
+    // will happen to not invalidate any iterators or memory.
+    if (!position->item_iterator) {
+      // Set |position| to be the first inserted element.
+      Allocate();
+      position->vector_index = storage_.size() - 1;
+      position->item_iterator = storage_[position->vector_index]->LastElement();
+      // Allocate the rest.
+      for (size_t i = 1; i < count; ++i)
+        Allocate();
+    } else {
+      storage_[position->vector_index]->InsertBefore(&position->item_iterator,
+                                                     count);
+      size_ += count;
+    }
   }
 
   InnerList* InnerListById(size_t id) const {
@@ -314,6 +357,12 @@ void ListContainerBase::RemoveLast() {
 void ListContainerBase::EraseAndInvalidateAllPointers(
     ListContainerBase::Iterator position) {
   data_->Erase(position);
+}
+
+void ListContainerBase::InsertBeforeAndInvalidateAllPointers(
+    ListContainerBase::Iterator* position,
+    size_t count) {
+  data_->InsertBefore(position, count);
 }
 
 ListContainerBase::ConstReverseIterator ListContainerBase::crbegin() const {
