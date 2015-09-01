@@ -22,6 +22,13 @@ class CredentialsFilter {
   virtual ScopedVector<autofill::PasswordForm> FilterResults(
       ScopedVector<autofill::PasswordForm> results) const = 0;
 
+  // Should |form| be offered to be saved?
+  virtual bool ShouldSave(const autofill::PasswordForm& form) const = 0;
+
+  // Call this if |form| was filled, and the subsequent sign-in looked like a
+  // success. Calling is optional, used only for statistics.
+  virtual void ReportFormUsed(const autofill::PasswordForm& form) const {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CredentialsFilter);
 };

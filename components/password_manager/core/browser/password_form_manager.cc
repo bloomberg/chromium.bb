@@ -8,11 +8,8 @@
 #include <set>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/histogram_tester.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
@@ -349,7 +346,7 @@ void PasswordFormManager::OnRequestDone(
         logins_result.end());
   }
   logins_result =
-      client_->CreateStoreResultFilter()->FilterResults(logins_result.Pass());
+      client_->GetStoreResultFilter()->FilterResults(logins_result.Pass());
 
   // Now compute scores for the remaining credentials in |login_result|.
   std::vector<uint32_t> credential_scores;
@@ -608,12 +605,7 @@ void PasswordFormManager::UpdateLogin() {
 
   UpdateMetadataForUsage(pending_credentials_);
 
-  if (client_->IsSyncAccountCredential(
-          base::UTF16ToUTF8(pending_credentials_.username_value),
-          pending_credentials_.signon_realm)) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_SyncCredentialUsed"));
-  }
+  client_->GetStoreResultFilter()->ReportFormUsed(pending_credentials_);
 
   // Check to see if this form is a candidate for password generation.
   SendAutofillVotes(observed_form_, &pending_credentials_);

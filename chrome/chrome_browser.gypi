@@ -2059,8 +2059,6 @@
       'browser/password_manager/save_password_infobar_delegate.h',
       'browser/password_manager/simple_password_store_mac.cc',
       'browser/password_manager/simple_password_store_mac.h',
-      'browser/password_manager/sync_metrics.cc',
-      'browser/password_manager/sync_metrics.h',
     ],
     'chrome_browser_permissions_sources': [
       'browser/permissions/permission_bubble_request_impl.cc',

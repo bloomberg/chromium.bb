@@ -34,12 +34,29 @@ namespace password_manager {
 
 namespace {
 
+class MockStoreResultFilter : public CredentialsFilter {
+ public:
+  MOCK_CONST_METHOD1(FilterResultsPtr,
+                     void(ScopedVector<autofill::PasswordForm>* results));
+  MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
+
+  // GMock cannot handle move-only arguments.
+  ScopedVector<autofill::PasswordForm> FilterResults(
+      ScopedVector<autofill::PasswordForm> results) const override {
+    FilterResultsPtr(&results);
+    return results.Pass();
+  }
+};
+
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
+  MockPasswordManagerClient() {
+    ON_CALL(*this, GetStoreResultFilter()).WillByDefault(Return(&filter_));
+    ON_CALL(filter_, ShouldSave(_)).WillByDefault(Return(true));
+  }
+
   MOCK_CONST_METHOD0(IsSavingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
-  MOCK_CONST_METHOD2(IsSyncAccountCredential,
-                     bool(const std::string&, const std::string&));
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
   // The code inside EXPECT_CALL for PromptUserToSaveOrUpdatePasswordPtr owns
   // the PasswordFormManager* argument.
@@ -48,6 +65,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD0(AutomaticPasswordSaveIndicator, void());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
+  MOCK_CONST_METHOD0(GetStoreResultFilter, const CredentialsFilter*());
 
   // Workaround for scoped_ptr<> lacking a copy constructor.
   bool PromptUserToSaveOrUpdatePassword(
@@ -60,6 +78,13 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   void AutomaticPasswordSave(scoped_ptr<PasswordFormManager> manager) override {
     AutomaticPasswordSaveIndicator();
   }
+
+  void FilterAllResultsForSaving() {
+    EXPECT_CALL(filter_, ShouldSave(_)).WillRepeatedly(Return(false));
+  }
+
+ private:
+  testing::NiceMock<MockStoreResultFilter> filter_;
 };
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
@@ -91,8 +116,6 @@ class PasswordManagerTest : public testing::Test {
     EXPECT_CALL(*store_, ReportMetrics(_, _)).Times(AnyNumber());
     CHECK(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
-    EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
-        .WillRepeatedly(Return(false));
     EXPECT_CALL(client_, GetPasswordStore())
         .WillRepeatedly(Return(store_.get()));
     EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));
@@ -534,10 +557,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   EXPECT_CALL(client_, IsSavingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
 
-  // Recognise the stored credential as a sync one. Make sure that the
-  // credentials are identified by the realm, not origin with path.
-  EXPECT_CALL(client_, IsSyncAccountCredential(_, form.signon_realm))
-      .WillRepeatedly(Return(true));
+  client_.FilterAllResultsForSaving();
 
   OnPasswordFormSubmitted(form);
   observed.clear();
@@ -552,9 +572,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
   EXPECT_CALL(*store_, GetLogins(_, _, _))
       .WillRepeatedly(WithArg<2>(InvokeConsumer(form)));
 
-  // Start recognising the stored credential as a sync one.
-  EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
-      .WillRepeatedly(Return(true));
+  client_.FilterAllResultsForSaving();
 
   std::vector<PasswordForm> observed;
   observed.push_back(form);
@@ -601,10 +619,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsDroppedWhenObsolete) {
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
   manager()->ProvisionallySavePassword(updated_form);
 
-  // Recognise the stored credential as a sync one. Make sure that the
-  // credentials are identified by the realm, not origin with path.
-  EXPECT_CALL(client_, IsSyncAccountCredential(_, form.signon_realm))
-      .WillRepeatedly(Return(true));
+  client_.FilterAllResultsForSaving();
 
   // Because the user successfully uses an updated sync password, Chrome should
   // remove the obsolete copy of it.
@@ -623,9 +638,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsStillFilled) {
   EXPECT_CALL(*store_, GetLogins(_, _, _))
       .WillRepeatedly(WithArg<2>(InvokeConsumer(form)));
 
-  // Start recognising the stored credential as a sync one.
-  EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
-      .WillRepeatedly(Return(true));
+  client_.FilterAllResultsForSaving();
 
   // Load the page.
   autofill::PasswordFormFillData form_data;

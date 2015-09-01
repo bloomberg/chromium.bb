@@ -4,123 +4,261 @@
 
 #include "components/password_manager/sync/browser/sync_store_result_filter.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/macros.h"
+#include "base/test/histogram_tester.h"
+#include "base/test/user_action_tester.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "components/password_manager/sync/browser/sync_username_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
-using testing::_;
-using testing::Return;
-using testing::ReturnRef;
 
 namespace password_manager {
 
 namespace {
 
-class MockPasswordManagerClient : public StubPasswordManagerClient {
+class FakePasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_CONST_METHOD2(IsSyncAccountCredential,
-                     bool(const std::string&, const std::string&));
-  MOCK_CONST_METHOD0(GetLastCommittedEntryURL, const GURL&());
+  ~FakePasswordManagerClient() override {}
+
+  // PasswordManagerClient:
+  const GURL& GetLastCommittedEntryURL() const override {
+    return last_committed_entry_url_;
+  }
+
+  void set_last_committed_entry_url(const char* url_spec) {
+    last_committed_entry_url_ = GURL(url_spec);
+  }
+
+  GURL last_committed_entry_url_;
 };
 
-bool IsFormFiltered(const CredentialsFilter& filter, const PasswordForm& form) {
+bool IsFormFiltered(const CredentialsFilter* filter, const PasswordForm& form) {
   ScopedVector<PasswordForm> vector;
   vector.push_back(new PasswordForm(form));
-  vector = filter.FilterResults(vector.Pass());
+  vector = filter->FilterResults(vector.Pass());
   return vector.empty();
 }
 
 }  // namespace
 
-TEST(StoreResultFilterTest, ShouldFilterAutofillResult_Reauth) {
-  // Disallow only reauth requests.
+class StoreResultFilterTest : public SyncUsernameTestBase {
+ public:
+  struct TestCase {
+    enum { SYNCING_PASSWORDS, NOT_SYNCING_PASSWORDS } password_sync;
+    PasswordForm form;
+    std::string fake_sync_username;
+    const char* const last_committed_entry_url;
+    enum { FORM_FILTERED, FORM_NOT_FILTERED } is_form_filtered;
+    enum { NO_HISTOGRAM, HISTOGRAM_REPORTED } histogram_reported;
+  };
+
+  StoreResultFilterTest()
+      : filter_(&client_,
+                base::Bind(&SyncUsernameTestBase::sync_service,
+                           base::Unretained(this)),
+                base::Bind(&SyncUsernameTestBase::signin_manager,
+                           base::Unretained(this))) {}
+
+  void CheckFilterResultsTestCase(const TestCase& test_case) {
+    SetSyncingPasswords(test_case.password_sync == TestCase::SYNCING_PASSWORDS);
+    FakeSigninAs(test_case.fake_sync_username);
+    client()->set_last_committed_entry_url(test_case.last_committed_entry_url);
+    base::HistogramTester tester;
+    const bool expected_is_form_filtered =
+        test_case.is_form_filtered == TestCase::FORM_FILTERED;
+    EXPECT_EQ(expected_is_form_filtered,
+              IsFormFiltered(filter(), test_case.form));
+    if (test_case.histogram_reported == TestCase::HISTOGRAM_REPORTED) {
+      tester.ExpectUniqueSample("PasswordManager.SyncCredentialFiltered",
+                                expected_is_form_filtered, 1);
+    } else {
+      tester.ExpectTotalCount("PasswordManager.SyncCredentialFiltered", 0);
+    }
+    FakeSignout();
+  }
+
+  SyncStoreResultFilter* filter() { return &filter_; }
+
+  FakePasswordManagerClient* client() { return &client_; }
+
+ private:
+  FakePasswordManagerClient client_;
+
+  SyncStoreResultFilter filter_;
+};
+
+TEST_F(StoreResultFilterTest, FilterResults_AllowAll) {
+  // By default, sync username is not filtered at all.
+  const TestCase kTestCases[] = {
+      // Reauth URL, not sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "another_user@example.org",
+       "https://accounts.google.com/login?rart=123&continue=blah",
+       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
+
+      // Reauth URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "user@example.org",
+       "https://accounts.google.com/login?rart=123&continue=blah",
+       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
+
+      // Slightly invalid reauth URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "user@example.org",
+       "https://accounts.google.com/addlogin?rart",  // Missing rart value.
+       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
+
+      // Non-reauth URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "user@example.org", "https://accounts.google.com/login?param=123",
+       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
+
+      // Non-GAIA "reauth" URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleNonGaiaForm("user@example.org"),
+       "user@example.org", "https://site.com/login?rart=678",
+       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    SCOPED_TRACE(testing::Message() << "i=" << i);
+    CheckFilterResultsTestCase(kTestCases[i]);
+  }
+}
+
+TEST_F(StoreResultFilterTest, FilterResults_DisallowSyncOnReauth) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(
       switches::kDisallowAutofillSyncCredentialForReauth);
-  PasswordForm form;
-  MockPasswordManagerClient client;
-  SyncStoreResultFilter filter(&client);
 
-  EXPECT_CALL(client, IsSyncAccountCredential(_, _))
-      .WillRepeatedly(Return(false));
-  GURL rart_countinue_url(
-      "https://accounts.google.com/login?rart=123&continue=blah");
-  EXPECT_CALL(client, GetLastCommittedEntryURL())
-      .WillRepeatedly(ReturnRef(rart_countinue_url));
-  EXPECT_FALSE(IsFormFiltered(filter, form));
+  const TestCase kTestCases[] = {
+      // Reauth URL, not sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "another_user@example.org",
+       "https://accounts.google.com/login?rart=123&continue=blah",
+       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED},
 
-  EXPECT_CALL(client, IsSyncAccountCredential(_, _))
-      .WillRepeatedly(Return(true));
-  EXPECT_TRUE(IsFormFiltered(filter, form));
+      // Reauth URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "user@example.org",
+       "https://accounts.google.com/login?rart=123&continue=blah",
+       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
 
-  // This counts as a reauth url, though a valid URL should have a value for
-  // "rart"
-  GURL rart_url("https://accounts.google.com/addlogin?rart");
-  EXPECT_CALL(client, GetLastCommittedEntryURL()).WillOnce(ReturnRef(rart_url));
-  EXPECT_TRUE(IsFormFiltered(filter, form));
+      // Slightly invalid reauth URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "user@example.org",
+       "https://accounts.google.com/addlogin?rart",  // Missing rart value.
+       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
 
-  GURL param_url("https://accounts.google.com/login?param=123");
-  EXPECT_CALL(client, GetLastCommittedEntryURL())
-      .WillOnce(ReturnRef(param_url));
-  EXPECT_FALSE(IsFormFiltered(filter, form));
+      // Non-reauth URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "user@example.org", "https://accounts.google.com/login?param=123",
+       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
 
-  GURL rart_value_url("https://site.com/login?rart=678");
-  EXPECT_CALL(client, GetLastCommittedEntryURL())
-      .WillOnce(ReturnRef(rart_value_url));
-  EXPECT_FALSE(IsFormFiltered(filter, form));
+      // Non-GAIA "reauth" URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleNonGaiaForm("user@example.org"),
+       "user@example.org", "https://site.com/login?rart=678",
+       TestCase::FORM_NOT_FILTERED, TestCase::NO_HISTOGRAM},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    SCOPED_TRACE(testing::Message() << "i=" << i);
+    CheckFilterResultsTestCase(kTestCases[i]);
+  }
 }
 
-TEST(StoreResultFilterTest, ShouldFilterAutofillResult) {
-  // Normally, no credentials should be filtered, even if they are the sync
-  // credential.
-  PasswordForm form;
-  MockPasswordManagerClient client;
-  SyncStoreResultFilter filter(&client);
-
-  EXPECT_CALL(client, IsSyncAccountCredential(_, _))
-      .WillRepeatedly(Return(true));
-  GURL login_url("https://accounts.google.com/Login");
-  EXPECT_CALL(client, GetLastCommittedEntryURL())
-      .WillRepeatedly(ReturnRef(login_url));
-  EXPECT_FALSE(IsFormFiltered(filter, form));
-
-  // Adding disallow switch should cause sync credential to be filtered.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kDisallowAutofillSyncCredential);
-  SyncStoreResultFilter filter_disallow_sync_cred(&client);
-  EXPECT_TRUE(IsFormFiltered(filter_disallow_sync_cred, form));
-}
-
-TEST(StoreResultFilterTest, ShouldFilterOneForm) {
-  // Adding disallow switch should cause sync credential to be filtered.
+TEST_F(StoreResultFilterTest, FilterResults_DisallowSync) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kDisallowAutofillSyncCredential);
 
-  PasswordForm form;
-  form.username_value = base::ASCIIToUTF16("test1@gmail.com");
-  form.signon_realm = "https://accounts.google.com";
+  const TestCase kTestCases[] = {
+      // Reauth URL, not sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "another_user@example.org",
+       "https://accounts.google.com/login?rart=123&continue=blah",
+       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED},
+
+      // Reauth URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "user@example.org",
+       "https://accounts.google.com/login?rart=123&continue=blah",
+       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
+
+      // Slightly invalid reauth URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "user@example.org",
+       "https://accounts.google.com/addlogin?rart",  // Missing rart value.
+       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
+
+      // Non-reauth URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleGaiaForm("user@example.org"),
+       "user@example.org", "https://accounts.google.com/login?param=123",
+       TestCase::FORM_FILTERED, TestCase::HISTOGRAM_REPORTED},
+
+      // Non-GAIA "reauth" URL, sync username.
+      {TestCase::SYNCING_PASSWORDS, SimpleNonGaiaForm("user@example.org"),
+       "user@example.org", "https://site.com/login?rart=678",
+       TestCase::FORM_NOT_FILTERED, TestCase::HISTOGRAM_REPORTED},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    SCOPED_TRACE(testing::Message() << "i=" << i);
+    CheckFilterResultsTestCase(kTestCases[i]);
+  }
+}
+
+TEST_F(StoreResultFilterTest, ReportFormUsed) {
+  base::UserActionTester tester;
+  ASSERT_EQ(0, tester.GetActionCount("PasswordManager_SyncCredentialUsed"));
+  filter()->ReportFormUsed(PasswordForm());
+  EXPECT_EQ(1, tester.GetActionCount("PasswordManager_SyncCredentialUsed"));
+}
+
+TEST_F(StoreResultFilterTest, ShouldSave_NotSyncCredential) {
+  PasswordForm form = SimpleGaiaForm("user@example.org");
+
+  ASSERT_NE("user@example.org",
+            signin_manager()->GetAuthenticatedAccountInfo().email);
+  SetSyncingPasswords(true);
+  EXPECT_TRUE(filter()->ShouldSave(form));
+}
+
+TEST_F(StoreResultFilterTest, ShouldSave_SyncCredential) {
+  PasswordForm form = SimpleGaiaForm("user@example.org");
+
+  FakeSigninAs("user@example.org");
+  SetSyncingPasswords(true);
+  EXPECT_FALSE(filter()->ShouldSave(form));
+}
+
+TEST_F(StoreResultFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
+  PasswordForm form = SimpleGaiaForm("user@example.org");
+
+  FakeSigninAs("user@example.org");
+  SetSyncingPasswords(false);
+  EXPECT_TRUE(filter()->ShouldSave(form));
+}
+
+TEST_F(StoreResultFilterTest, ShouldFilterOneForm) {
+  // Adding disallow switch should cause sync credential to be filtered.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kDisallowAutofillSyncCredential);
+
   ScopedVector<autofill::PasswordForm> results;
-  results.push_back(new PasswordForm(form));
-  form.username_value = base::ASCIIToUTF16("test2@gmail.com");
-  results.push_back(new PasswordForm(form));
+  results.push_back(new PasswordForm(SimpleGaiaForm("test1@gmail.com")));
+  results.push_back(new PasswordForm(SimpleGaiaForm("test2@gmail.com")));
 
-  MockPasswordManagerClient client;
-  SyncStoreResultFilter filter(&client);
-  EXPECT_CALL(client,
-              IsSyncAccountCredential("test1@gmail.com", form.signon_realm))
-      .WillOnce(Return(true));
-  EXPECT_CALL(client,
-              IsSyncAccountCredential("test2@gmail.com", form.signon_realm))
-      .WillOnce(Return(false));
-  results = filter.FilterResults(results.Pass());
+  FakeSigninAs("test1@gmail.com");
+
+  results = filter()->FilterResults(results.Pass());
 
   ASSERT_EQ(1u, results.size());
-  EXPECT_EQ(form, *results[0]);
+  EXPECT_EQ(SimpleGaiaForm("test2@gmail.com"), *results[0]);
 }
 
 }  // namespace password_manager

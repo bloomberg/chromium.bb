@@ -408,7 +408,10 @@
       'password_manager/core/browser/psl_matching_helper_unittest.cc',
       'password_manager/core/browser/statistics_table_unittest.cc',
       'password_manager/core/common/credential_manager_types_unittest.cc',
+      'password_manager/sync/browser/password_sync_util_unittest.cc',
       'password_manager/sync/browser/sync_store_result_filter_unittest.cc',
+      'password_manager/sync/browser/sync_username_test_base.cc',
+      'password_manager/sync/browser/sync_username_test_base.h',
     ],
     'policy_unittest_sources': [
       'policy/core/browser/android/android_combined_policy_provider_unittest.cc',

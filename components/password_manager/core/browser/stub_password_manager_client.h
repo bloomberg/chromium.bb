@@ -18,9 +18,6 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   ~StubPasswordManagerClient() override;
 
   // PasswordManagerClient:
-  std::string GetSyncUsername() const override;
-  bool IsSyncAccountCredential(const std::string& username,
-                               const std::string& realm) const override;
   bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<PasswordFormManager> form_to_save,
       password_manager::CredentialSourceType type,
@@ -38,9 +35,23 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   PrefService* GetPrefs() override;
   PasswordStore* GetPasswordStore() const override;
   const GURL& GetLastCommittedEntryURL() const override;
-  scoped_ptr<CredentialsFilter> CreateStoreResultFilter() const override;
+  const CredentialsFilter* GetStoreResultFilter() const override;
 
  private:
+  // This filter does not filter out anything, it is a dummy implementation of
+  // the filter interface.
+  class PassThroughCredentialsFilter : public CredentialsFilter {
+   public:
+    PassThroughCredentialsFilter() {}
+
+    // CredentialsFilter:
+    ScopedVector<autofill::PasswordForm> FilterResults(
+        ScopedVector<autofill::PasswordForm> results) const override;
+    bool ShouldSave(const autofill::PasswordForm& form) const override;
+  };
+
+  const PassThroughCredentialsFilter credentials_filter_;
+
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerClient);
 };
 

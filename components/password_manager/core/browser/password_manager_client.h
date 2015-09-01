@@ -60,15 +60,6 @@ class PasswordManagerClient {
   // of SSL errors on a page.
   virtual bool IsSavingEnabledForCurrentPage() const;
 
-  // Return the username that the user is syncing with. Should return an empty
-  // string if sync is not enabled for passwords.
-  virtual std::string GetSyncUsername() const = 0;
-
-  // Returns true if |username| and signon |realm| correspond to the account
-  // which is syncing.
-  virtual bool IsSyncAccountCredential(const std::string& username,
-                                       const std::string& realm) const = 0;
-
   // Informs the embedder of a password form that can be saved or updated in
   // password store if the user allows it. The embedder is not required to
   // prompt the user if it decides that this form doesn't need to be saved or
@@ -138,6 +129,7 @@ class PasswordManagerClient {
 
   // Reports whether and how passwords are synced in the embedder. The default
   // implementation always returns NOT_SYNCING_PASSWORDS.
+  // TODO(vabr): Factor this out of the client to the sync layer.
   virtual PasswordSyncState GetPasswordSyncState() const;
 
   // Only for clients which registered with a LogRouter: If called with
@@ -182,11 +174,8 @@ class PasswordManagerClient {
 
   virtual const GURL& GetLastCommittedEntryURL() const = 0;
 
-  // Creates a filter for PasswordFormManager to process password store
-  // response. One filter should be created for every batch of store results for
-  // a single observed form. The filter results should not be cached.
-  virtual scoped_ptr<password_manager::CredentialsFilter>
-  CreateStoreResultFilter() const = 0;
+  // Use this to filter credentials before handling them in password manager.
+  virtual const CredentialsFilter* GetStoreResultFilter() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

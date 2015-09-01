@@ -212,6 +212,8 @@
         # Note: sources list duplicated in GN build.
         'password_manager/sync/browser/password_model_worker.cc',
         'password_manager/sync/browser/password_model_worker.h',
+        'password_manager/sync/browser/password_sync_util.cc',
+        'password_manager/sync/browser/password_sync_util.h',
         'password_manager/sync/browser/sync_store_result_filter.cc',
         'password_manager/sync/browser/sync_store_result_filter.h',
       ],

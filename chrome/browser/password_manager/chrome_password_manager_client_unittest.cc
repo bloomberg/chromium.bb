@@ -51,9 +51,6 @@ class MockLogReceiver : public password_manager::LogReceiver {
 class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
  public:
   MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
-  MOCK_CONST_METHOD2(IsSyncAccountCredential,
-                     bool(const std::string& username,
-                          const std::string& origin));
 
   explicit MockChromePasswordManagerClient(content::WebContents* web_contents)
       : ChromePasswordManagerClient(web_contents, nullptr) {
@@ -422,14 +419,4 @@ TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL) {
       "https://passwords.google.com/settings&rart=123");
   NavigateAndCommit(kUrl);
   EXPECT_EQ(kUrl, GetClient()->GetLastCommittedEntryURL());
-}
-
-TEST_F(ChromePasswordManagerClientTest, CreateStoreResulFilter) {
-  scoped_ptr<password_manager::CredentialsFilter> filter1 =
-      GetClient()->CreateStoreResultFilter();
-  scoped_ptr<password_manager::CredentialsFilter> filter2 =
-      GetClient()->CreateStoreResultFilter();
-  EXPECT_TRUE(filter1);
-  EXPECT_TRUE(filter2);
-  EXPECT_NE(filter1.get(), filter2.get());
 }
