@@ -403,6 +403,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         L"arial",
         L"comic sans",
         L"courier new",
+        L"dotum",
         L"georgia",
         L"impact",
         L"lucida console",
