@@ -129,6 +129,7 @@
       'browser/mac/keystone_glue_unittest.mm',
       'browser/manifest/manifest_icon_downloader_unittest.cc',
       'browser/manifest/manifest_icon_selector_unittest.cc',
+      'browser/media/media_stream_device_permission_context_unittest.cc',
       'browser/media/midi_permission_context_unittest.cc',
       'browser/media/native_desktop_media_list_unittest.cc',
       'browser/memory/oom_priority_manager_delegate_chromeos_unittest.cc',

@@ -29,6 +29,10 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
       return PermissionType::PROTECTED_MEDIA_IDENTIFIER;
     case PERMISSION_NAME_DURABLE_STORAGE:
       return PermissionType::DURABLE_STORAGE;
+    case PERMISSION_NAME_AUDIO_CAPTURE:
+      return PermissionType::AUDIO_CAPTURE;
+    case PERMISSION_NAME_VIDEO_CAPTURE:
+      return PermissionType::VIDEO_CAPTURE;
   }
 
   NOTREACHED();

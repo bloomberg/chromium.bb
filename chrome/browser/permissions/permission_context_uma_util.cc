@@ -205,6 +205,10 @@ std::string PermissionTypeToString(PermissionType permission_type) {
       return "DurableStorage";
     case PermissionType::MIDI:
       return "Midi";
+    case PermissionType::AUDIO_CAPTURE:
+      return "AudioRecording";
+    case PermissionType::VIDEO_CAPTURE:
+      return "VideoRecording";
     case PermissionType::NUM:
       break;
   }

@@ -208,6 +208,8 @@ void AwPermissionManager::RequestPermission(
                              result_cache_->GetWeakPtr(), callback, permission,
                              origin, embedding_origin));
       break;
+    case PermissionType::AUDIO_CAPTURE:
+    case PermissionType::VIDEO_CAPTURE:
     case PermissionType::NOTIFICATIONS:
     case PermissionType::PUSH_MESSAGING:
     case PermissionType::DURABLE_STORAGE:
@@ -259,6 +261,8 @@ void AwPermissionManager::CancelPermissionRequest(
     case PermissionType::NOTIFICATIONS:
     case PermissionType::PUSH_MESSAGING:
     case PermissionType::DURABLE_STORAGE:
+    case PermissionType::AUDIO_CAPTURE:
+    case PermissionType::VIDEO_CAPTURE:
       NOTIMPLEMENTED() << "CancelPermission not implemented for "
                        << static_cast<int>(permission);
       break;

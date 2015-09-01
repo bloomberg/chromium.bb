@@ -6,6 +6,9 @@
 
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
+#include "chrome/browser/media/media_stream_camera_permission_context_factory.h"
+#include "chrome/browser/media/media_stream_device_permission_context.h"
+#include "chrome/browser/media/media_stream_mic_permission_context_factory.h"
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/media/midi_permission_context_factory.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
@@ -49,6 +52,10 @@ PermissionContextBase* PermissionContext::Get(Profile* profile,
       // PermissionType::MIDI is a valid permission but does not have a
       // permission context. It has a constant value instead.
       break;
+    case PermissionType::AUDIO_CAPTURE:
+      return MediaStreamMicPermissionContextFactory::GetForProfile(profile);
+    case PermissionType::VIDEO_CAPTURE:
+      return MediaStreamCameraPermissionContextFactory::GetForProfile(profile);
     default:
       NOTREACHED() << "No PermissionContext associated with "
                    << static_cast<int>(permission_type);
@@ -73,6 +80,9 @@ const std::list<KeyedServiceBaseFactory*>& PermissionContext::GetFactories() {
         ProtectedMediaIdentifierPermissionContextFactory::GetInstance());
 #endif
     factories.push_back(DurableStoragePermissionContextFactory::GetInstance());
+    factories.push_back(MediaStreamMicPermissionContextFactory::GetInstance());
+    factories.push_back(
+        MediaStreamCameraPermissionContextFactory::GetInstance());
   }
 
   return factories;
