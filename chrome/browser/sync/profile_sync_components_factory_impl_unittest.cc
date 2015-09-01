@@ -13,11 +13,12 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/sync_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync_driver/data_type_controller.h"
+#include "components/sync_driver/sync_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -104,7 +105,8 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   void TestSwitchDisablesType(syncer::ModelTypeSet types) {
     command_line_->AppendSwitchASCII(switches::kDisableSyncTypes,
                                      syncer::ModelTypeSetToString(types));
-    GURL sync_service_url = GetSyncServiceURL(*command_line_);
+    GURL sync_service_url =
+        GetSyncServiceURL(*command_line_, chrome::GetChannel());
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
     scoped_ptr<ProfileSyncService> pss(new ProfileSyncService(
@@ -112,7 +114,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
             new ProfileSyncComponentsFactoryImpl(
                 profile_.get(),
                 command_line_.get(),
-                GetSyncServiceURL(*command_line_),
+                GetSyncServiceURL(*command_line_, chrome::GetChannel()),
                 token_service,
                 profile_->GetRequestContext())),
         profile_.get(),
@@ -141,7 +143,7 @@ TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
           new ProfileSyncComponentsFactoryImpl(
               profile_.get(),
               command_line_.get(),
-              GetSyncServiceURL(*command_line_),
+              GetSyncServiceURL(*command_line_, chrome::GetChannel()),
               token_service,
               profile_->GetRequestContext())),
       profile_.get(),

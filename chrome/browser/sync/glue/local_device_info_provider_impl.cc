@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/sync_util.h"
+#include "components/sync_driver/sync_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/util/get_session_name.h"
 #include "ui/base/device_form_factor.h"
@@ -53,14 +53,14 @@ LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
 
 std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  return MakeDesktopUserAgentForSync();
+  return MakeDesktopUserAgentForSync(chrome::GetChannel());
 #elif defined(OS_CHROMEOS)
-  return MakeUserAgentForSync("CROS ");
+  return MakeUserAgentForSync("CROS ", chrome::GetChannel());
 #elif defined(OS_ANDROID)
   if (IsTabletUI()) {
-    return MakeUserAgentForSync("ANDROID-TABLET ");
+    return MakeUserAgentForSync("ANDROID-TABLET ", chrome::GetChannel());
   } else {
-    return MakeUserAgentForSync("ANDROID-PHONE ");
+    return MakeUserAgentForSync("ANDROID-PHONE ", chrome::GetChannel());
   }
 #endif
 }

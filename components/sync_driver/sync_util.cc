@@ -2,36 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/sync_util.h"
+#include "components/sync_driver/sync_util.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_switches.h"
-#include "components/version_info/version_info.h"
+#include "components/sync_driver/sync_driver_switches.h"
 #include "url/gurl.h"
-
-namespace {
-
-// Converts version_info::Channel to string for user-agent string.
-std::string ChannelToString(version_info::Channel channel) {
-  switch (channel) {
-    case version_info::Channel::UNKNOWN:
-      return "unknown";
-    case version_info::Channel::CANARY:
-      return "canary";
-    case version_info::Channel::DEV:
-      return "dev";
-    case version_info::Channel::BETA:
-      return "beta";
-    case version_info::Channel::STABLE:
-      return "stable";
-    default:
-      NOTREACHED();
-      return "unknown";
-  }
-}
-}  // namespace
 
 namespace internal {
 const char* kSyncServerUrl = "https://clients4.google.com/chrome-sync";
@@ -39,14 +15,14 @@ const char* kSyncServerUrl = "https://clients4.google.com/chrome-sync";
 const char* kSyncDevServerUrl = "https://clients4.google.com/chrome-sync/dev";
 }  // namespace internal
 
-GURL GetSyncServiceURL(const base::CommandLine& command_line) {
+GURL GetSyncServiceURL(const base::CommandLine& command_line,
+                       version_info::Channel channel) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds
   // will go to the standard sync servers.
   GURL result(internal::kSyncDevServerUrl);
 
-  version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::STABLE ||
       channel == version_info::Channel::BETA) {
     result = GURL(internal::kSyncServerUrl);
@@ -70,7 +46,7 @@ GURL GetSyncServiceURL(const base::CommandLine& command_line) {
   return result;
 }
 
-std::string MakeDesktopUserAgentForSync() {
+std::string MakeDesktopUserAgentForSync(version_info::Channel channel) {
   std::string system = "";
 #if defined(OS_WIN)
   system = "WIN ";
@@ -83,10 +59,11 @@ std::string MakeDesktopUserAgentForSync() {
 #elif defined(OS_MACOSX)
   system = "MAC ";
 #endif
-  return MakeUserAgentForSync(system);
+  return MakeUserAgentForSync(system, channel);
 }
 
-std::string MakeUserAgentForSync(const std::string& system) {
+std::string MakeUserAgentForSync(const std::string& system,
+                                 version_info::Channel channel) {
   std::string user_agent;
   user_agent = "Chrome ";
   user_agent += system;
@@ -95,7 +72,7 @@ std::string MakeUserAgentForSync(const std::string& system) {
   if (!version_info::IsOfficialBuild()) {
     user_agent += "-devel";
   } else {
-    user_agent += " channel(" + ChannelToString(chrome::GetChannel()) + ")";
+    user_agent += " channel(" + version_info::GetChannelString(channel) + ")";
   }
   return user_agent;
 }

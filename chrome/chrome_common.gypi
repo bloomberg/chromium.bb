@@ -106,8 +106,6 @@
       'common/spellcheck_marker.h',
       'common/spellcheck_messages.h',
       'common/spellcheck_result.h',
-      'common/sync_util.cc',
-      'common/sync_util.h',
       'common/switch_utils.cc',
       'common/switch_utils.h',
       'common/trace_event_args_whitelist.cc',

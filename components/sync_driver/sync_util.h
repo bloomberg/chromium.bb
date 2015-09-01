@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SYNC_UTIL_H_
-#define CHROME_COMMON_SYNC_UTIL_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SYNC_UTIL_H_
+#define COMPONENTS_SYNC_DRIVER_SYNC_UTIL_H_
 
 #include <string>
+
+#include "components/version_info/version_info.h"
 
 class GURL;
 
@@ -21,12 +23,14 @@ extern const char* kSyncServerUrl;
 extern const char* kSyncDevServerUrl;
 }
 
-GURL GetSyncServiceURL(const base::CommandLine& command_line);
+GURL GetSyncServiceURL(const base::CommandLine& command_line,
+                       version_info::Channel channel);
 
 // Helper to construct a user agent string (ASCII) suitable for use by
 // the syncapi for any HTTP communication. This string is used by the sync
 // backend for classifying client types when calculating statistics.
-std::string MakeDesktopUserAgentForSync();
-std::string MakeUserAgentForSync(const std::string& system);
+std::string MakeDesktopUserAgentForSync(version_info::Channel channel);
+std::string MakeUserAgentForSync(const std::string& system,
+                                 version_info::Channel channel);
 
-#endif  // CHROME_COMMON_SYNC_UTIL_H_
+#endif  // COMPONENTS_SYNC_DRIVER_SYNC_UTIL_H_

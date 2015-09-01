@@ -52,9 +52,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/sync_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -73,8 +73,10 @@
 #include "components/sync_driver/favicon_cache.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_api_component_factory.h"
+#include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_error_controller.h"
 #include "components/sync_driver/sync_stopped_reporter.h"
+#include "components/sync_driver/sync_util.h"
 #include "components/sync_driver/system_encryptor.h"
 #include "components/sync_driver/user_selectable_sync_type.h"
 #include "components/version_info/version_info_values.h"
@@ -216,7 +218,8 @@ ProfileSyncService::ProfileSyncService(
       profile_(profile),
       sync_prefs_(profile_->GetPrefs()),
       sync_service_url_(
-          GetSyncServiceURL(*base::CommandLine::ForCurrentProcess())),
+          GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
+                            chrome::GetChannel())),
       is_first_time_sync_configure_(false),
       backend_initialized_(false),
       sync_disabled_by_admin_(false),

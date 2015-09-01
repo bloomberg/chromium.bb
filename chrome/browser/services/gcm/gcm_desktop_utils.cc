@@ -7,12 +7,11 @@
 #include "base/command_line.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/services/gcm/gcm_desktop_utils.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/sync_util.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
+#include "components/sync_driver/sync_util.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -74,12 +73,13 @@ GCMClient::ChromeBuildInfo GetChromeBuildInfo() {
 }
 
 std::string GetChannelStatusRequestUrl() {
-  GURL sync_url(GetSyncServiceURL(*base::CommandLine::ForCurrentProcess()));
+  GURL sync_url(GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
+                                  chrome::GetChannel()));
   return sync_url.spec() + kChannelStatusRelativePath;
 }
 
 std::string GetUserAgent() {
-  return MakeDesktopUserAgentForSync();
+  return MakeDesktopUserAgentForSync(chrome::GetChannel());
 }
 
 }  // namespace

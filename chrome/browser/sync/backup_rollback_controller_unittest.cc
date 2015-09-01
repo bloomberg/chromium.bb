@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

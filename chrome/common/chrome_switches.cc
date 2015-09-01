@@ -1056,36 +1056,6 @@ const char kSupervisedUserSafeSites[]       = "supervised-user-safesites";
 // Setting this switch also causes Sync to be set up for a supervised user.
 const char kSupervisedUserSyncToken[]       = "managed-user-sync-token";
 
-// This flag causes sync to retry very quickly (see polling_constants.h) the
-// when it encounters an error, as the first step towards exponential backoff.
-const char kSyncShortInitialRetryOverride[] =
-    "sync-short-initial-retry-override";
-
-// Overrides the default server used for profile sync.
-const char kSyncServiceURL[]                = "sync-url";
-
-// Enables deferring sync backend initialization until user initiated changes
-// occur.
-const char kSyncDisableDeferredStartup[]     = "sync-disable-deferred-startup";
-
-// Allows overriding the deferred init fallback timeout.
-const char kSyncDeferredStartupTimeoutSeconds[] =
-    "sync-deferred-startup-timeout-seconds";
-
-// Enables feature to avoid unnecessary GetUpdate requests.
-const char kSyncEnableGetUpdateAvoidance[]   =
-    "sync-enable-get-update-avoidance";
-
-// Enables clearing of sync data when a user enables passphrase encryption.
-const char kSyncEnableClearDataOnPassphraseEncryption[] =
-    "enable-clear-sync-data-on-passphrase-encryption";
-
-// Disable data backup when user's not signed in.
-const char kSyncDisableBackup[] = "disable-sync-backup";
-
-// Disable sync rollback.
-const char kSyncDisableRollback[] = "disable-sync-rollback";
-
 // Frequency in Milliseconds for system log uploads. Should only be used for
 // testing purposes.
 const char kSystemLogUploadFrequency[] = "system-log-upload-frequency";

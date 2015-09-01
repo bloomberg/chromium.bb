@@ -20,6 +20,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/sync_driver/invalidation_helper.h"
+#include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/browser_thread.h"

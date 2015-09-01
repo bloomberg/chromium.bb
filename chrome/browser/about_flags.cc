@@ -36,6 +36,7 @@
 #include "components/plugins/common/plugins_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
+#include "components/sync_driver/sync_driver_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "media/base/media_switches.h"

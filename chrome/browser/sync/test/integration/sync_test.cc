@@ -64,6 +64,7 @@
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/invalidation_helper.h"
+#include "components/sync_driver/sync_driver_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"

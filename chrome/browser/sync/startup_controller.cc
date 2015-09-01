@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/sync_prefs.h"
 
 namespace browser_sync {
