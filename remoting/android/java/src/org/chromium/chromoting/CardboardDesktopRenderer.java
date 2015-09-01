@@ -17,10 +17,6 @@ import com.google.vrtoolkit.cardboard.Viewport;
 
 import org.chromium.chromoting.jni.JniInterface;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-
 import javax.microedition.khronos.egl.EGLConfig;
 
 /**
@@ -37,6 +33,9 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private static final float DESKTOP_POSITION_X = 0.0f;
     private static final float DESKTOP_POSITION_Y = 0.0f;
     private static final float DESKTOP_POSITION_Z = -2.0f;
+    private static final float MENU_BAR_POSITION_X = 0.0f;
+    private static final float MENU_BAR_POSITION_Y = 0.0f;
+    private static final float MENU_BAR_POSITION_Z = -1.5f;
     private static final float HALF_SKYBOX_SIZE = 100.0f;
     private static final float VIEW_POSITION_MIN = -1.0f;
     private static final float VIEW_POSITION_MAX = 3.0f;
@@ -69,16 +68,23 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     // Direction that user is looking towards.
     private float[] mForwardVector;
 
-    // Eye position in desktop.
-    private float[] mEyePositionVector;
+    // Eye position at the desktop distance.
+    private PointF mEyeDesktopPosition;
+
+    // Eye position at the menu bar distance;
+    private PointF mEyeMenuBarPosition;
 
     private CardboardActivityDesktop mDesktop;
     private CardboardActivityEyePoint mEyePoint;
     private CardboardActivitySkybox mSkybox;
+    private CardboardActivityMenuBar mMenuBar;
 
     // Lock for eye position related operations.
-    // This protects access to mEyePositionVector.
-    private final Object mEyePositionLock = new Object();
+    // This protects access to mEyeDesktopPosition.
+    private final Object mEyeDesktopPositionLock = new Object();
+
+    // Flag to indicate whether to show menu bar.
+    private boolean mMenuBarVisible;
 
     public CardboardDesktopRenderer(Activity activity) {
         mActivity = activity;
@@ -94,9 +100,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mSkyboxCombinedMatrix = new float[16];
 
         mForwardVector = new float[3];
-        mEyePositionVector = new float[3];
-
-        attachRedrawCallback();
     }
 
     // This can be called on any thread.
@@ -123,6 +126,9 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mDesktop = new CardboardActivityDesktop();
         mEyePoint = new CardboardActivityEyePoint();
         mSkybox = new CardboardActivitySkybox(mActivity);
+        mMenuBar = new CardboardActivityMenuBar(mActivity);
+
+        attachRedrawCallback();
     }
 
     @Override
@@ -152,7 +158,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         Matrix.setLookAtM(mCameraMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 
         headTransform.getForwardVector(mForwardVector, 0);
-        getLookingPosition();
+        mEyeDesktopPosition = getLookingPosition(DESKTOP_POSITION_Z);
+        mEyeMenuBarPosition = getLookingPosition(MENU_BAR_POSITION_Z);
         mDesktop.maybeLoadDesktopTexture();
         mSkybox.maybeLoadTextureAndCleanImages();
     }
@@ -168,6 +175,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
         drawSkybox();
         drawDesktop();
+        drawMenuBar();
         drawEyePoint();
     }
 
@@ -176,6 +184,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mDesktop.cleanup();
         mEyePoint.cleanup();
         mSkybox.cleanup();
+        mMenuBar.cleanup();
     }
 
     @Override
@@ -202,16 +211,16 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     }
 
     private void drawEyePoint() {
-        if (!isLookingAtDesktop()) {
+        if (!isLookingAtDesktop() || (isMenuBarVisible() && isLookingAtMenuBar())) {
             return;
         }
 
-        float eyePointX = clamp(mEyePositionVector[0], -mDesktop.getHalfWidth(),
+        float eyePointX = clamp(mEyeDesktopPosition.x, -mDesktop.getHalfWidth(),
                 mDesktop.getHalfWidth());
-        float eyePointY = clamp(mEyePositionVector[1], -mDesktop.getHalfHeight(),
+        float eyePointY = clamp(mEyeDesktopPosition.y, -mDesktop.getHalfHeight(),
                 mDesktop.getHalfHeight());
         Matrix.setIdentityM(mEyePointModelMatrix, 0);
-        Matrix.translateM(mEyePointModelMatrix, 0, -eyePointX, -eyePointY,
+        Matrix.translateM(mEyePointModelMatrix, 0, eyePointX, eyePointY,
                 DESKTOP_POSITION_Z);
         Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mViewMatrix, 0, mEyePointModelMatrix, 0);
         Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mProjectionMatrix,
@@ -228,6 +237,24 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mSkybox.draw(mSkyboxCombinedMatrix);
     }
 
+    private void drawMenuBar() {
+        if (!mMenuBarVisible) {
+            return;
+        }
+
+        mMenuBar.draw(mViewMatrix, mProjectionMatrix, mEyeMenuBarPosition, MENU_BAR_POSITION_X,
+                MENU_BAR_POSITION_Y, MENU_BAR_POSITION_Z);
+    }
+
+    /**
+     * Return menu item that is currently looking at or null if not looking at menu bar.
+     */
+    public CardboardActivityMenuItem getMenuItem() {
+        // Transform world view to model view.
+        return mMenuBar.getLookingItem(new PointF(mEyeMenuBarPosition.x - MENU_BAR_POSITION_X,
+                mEyeMenuBarPosition.y - MENU_BAR_POSITION_Y));
+    }
+
     /**
      * Returns coordinates in units of pixels in the desktop bitmap.
      * This can be called on any thread.
@@ -238,11 +265,11 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         int heightPixels = shapePixels.x;
         int widthPixels = shapePixels.y;
 
-        synchronized (mEyePositionLock) {
+        synchronized (mEyeDesktopPositionLock) {
             // Due to the coordinate direction, we only have to inverse x.
-            result.x = (-mEyePositionVector[0] + mDesktop.getHalfWidth())
+            result.x = (mEyeDesktopPosition.x + mDesktop.getHalfWidth())
                     / (2 * mDesktop.getHalfWidth()) * widthPixels;
-            result.y = (mEyePositionVector[1] + mDesktop.getHalfHeight())
+            result.y = (-mEyeDesktopPosition.y + mDesktop.getHalfHeight())
                     / (2 * mDesktop.getHalfHeight()) * heightPixels;
             result.x = clamp(result.x, 0, widthPixels);
             result.y = clamp(result.y, 0, heightPixels);
@@ -302,76 +329,45 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
      * This method can be called on any thread.
      */
     public boolean isLookingAtDesktop() {
-        synchronized (mEyePositionLock) {
-            return Math.abs(mEyePositionVector[0]) <= (mDesktop.getHalfWidth() + EDGE_MARGIN)
-                && Math.abs(mEyePositionVector[1]) <= (mDesktop.getHalfHeight() + EDGE_MARGIN);
+        synchronized (mEyeDesktopPositionLock) {
+            // TODO(shichengfeng): Move logic to CardboardActivityDesktop.
+            return Math.abs(mEyeDesktopPosition.x) <= (mDesktop.getHalfWidth() + EDGE_MARGIN)
+                && Math.abs(mEyeDesktopPosition.y) <= (mDesktop.getHalfHeight() + EDGE_MARGIN);
         }
     }
 
     /**
-     * Return true if user is looking at the space to the left of the desktop.
-     * This method can be called on any thread.
+     * Return true if user is looking at the menu bar.
      */
-    public boolean isLookingLeftOfDesktop() {
-        synchronized (mEyePositionLock) {
-            return mEyePositionVector[0] >= (mDesktop.getHalfWidth() + EDGE_MARGIN);
+    public boolean isLookingAtMenuBar() {
+        return mMenuBar.contains(new PointF(mEyeMenuBarPosition.x - MENU_BAR_POSITION_X,
+                mEyeMenuBarPosition.y - MENU_BAR_POSITION_Y));
+    }
+
+    /**
+     * Get eye position at the given distance.
+     */
+    private PointF getLookingPosition(float distance) {
+        if (Math.abs(mForwardVector[2]) < 0.00001f) {
+            return new PointF(-Math.signum(mForwardVector[0]) * Float.MAX_VALUE,
+                    -Math.signum(mForwardVector[1]) * Float.MAX_VALUE);
+        } else {
+            return new PointF(-mForwardVector[0] * distance / mForwardVector[2],
+                    -mForwardVector[1] * distance / mForwardVector[2]);
         }
     }
 
     /**
-     * Return true if user is looking at the space to the right of the desktop.
-     * This method can be called on any thread.
+     * Set the visibility of the menu bar.
      */
-    public boolean isLookingRightOfDesktop() {
-        synchronized (mEyePositionLock) {
-            return mEyePositionVector[0] <= -(mDesktop.getHalfWidth() + EDGE_MARGIN);
-        }
+    public void setMenuBarVisible(boolean visible) {
+        mMenuBarVisible = visible;
     }
 
     /**
-     * Return true if user is looking at the space above the desktop.
-     * This method can be called on any thread.
+     * Return true if menu bar is visible.
      */
-    public boolean isLookingAboveDesktop() {
-        synchronized (mEyePositionLock) {
-            return mEyePositionVector[1] <= -(mDesktop.getHalfHeight() + EDGE_MARGIN);
-        }
-    }
-
-    /**
-     * Return true if user is looking at the space below the desktop.
-     * This method can be called on any thread.
-     */
-    public boolean isLookingBelowDesktop() {
-        synchronized (mEyePositionLock) {
-            return mEyePositionVector[1] >= (mDesktop.getHalfHeight() + EDGE_MARGIN);
-        }
-    }
-
-    /**
-     * Get position on desktop where user is looking at.
-     */
-    private void getLookingPosition() {
-        synchronized (mEyePositionLock) {
-            if (Math.abs(mForwardVector[2]) < 0.00001f) {
-                mEyePositionVector[0] = Math.signum(mForwardVector[0]) * Float.MAX_VALUE;
-                mEyePositionVector[1] = Math.signum(mForwardVector[1]) * Float.MAX_VALUE;
-            } else {
-                mEyePositionVector[0] = mForwardVector[0] * DESKTOP_POSITION_Z / mForwardVector[2];
-                mEyePositionVector[1] = mForwardVector[1] * DESKTOP_POSITION_Z / mForwardVector[2];
-            }
-            mEyePositionVector[2] = DESKTOP_POSITION_Z;
-        }
-    }
-
-    /**
-     * Convert float array to a FloatBuffer for use in OpenGL calls.
-     */
-    public static FloatBuffer makeFloatBuffer(float[] data) {
-        FloatBuffer result = ByteBuffer
-                .allocateDirect(data.length * BYTE_PER_FLOAT)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        result.put(data).position(0);
-        return result;
+    public boolean isMenuBarVisible() {
+        return mMenuBarVisible;
     }
 }

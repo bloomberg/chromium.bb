@@ -4,7 +4,7 @@
 
 package org.chromium.chromoting;
 
-import static org.chromium.chromoting.CardboardDesktopRenderer.makeFloatBuffer;
+import static org.chromium.chromoting.CardboardActivityUtility.makeFloatBuffer;
 
 import android.app.Activity;
 import android.graphics.Bitmap;

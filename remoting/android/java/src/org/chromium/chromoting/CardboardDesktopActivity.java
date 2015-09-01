@@ -50,23 +50,36 @@ public class CardboardDesktopActivity extends CardboardActivity {
 
     @Override
     public void onCardboardTrigger() {
-        if (mRenderer.isLookingAtDesktop()) {
-            PointF coordinates = mRenderer.getMouseCoordinates();
-            JniInterface.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
-                    TouchInputHandler.BUTTON_LEFT, true);
-            JniInterface.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
-                    TouchInputHandler.BUTTON_LEFT, false);
-        } else if (mRenderer.isLookingLeftOfDesktop()) {
-            // TODO(shichengfeng): Give a more polished UI (including menu icons
-            // and visual indicator during when speech recognizer is listening).
-            mSwitchToDesktopActivity = true;
-            finish();
-        } else if (mRenderer.isLookingRightOfDesktop()) {
-            listenForVoiceInput();
-        } else if (mRenderer.isLookingAboveDesktop()) {
-            mRenderer.moveTowardsDesktop();
-        } else if (mRenderer.isLookingBelowDesktop()) {
-            mRenderer.moveAwayFromDesktop();
+        if (mRenderer.isMenuBarVisible()) {
+            if (mRenderer.isLookingAtMenuBar()) {
+                switch (mRenderer.getMenuItem().getType()) {
+                    case HOME:
+                        mSwitchToDesktopActivity = true;
+                        finish();
+                        break;
+                    case VOICE_INPUT:
+                        listenForVoiceInput();
+                        break;
+                    case MOVE_FORWARD:
+                        mRenderer.moveTowardsDesktop();
+                        break;
+                    case MOVE_BACKWARD:
+                        mRenderer.moveAwayFromDesktop();
+                        break;
+                }
+            } else {
+                mRenderer.setMenuBarVisible(false);
+            }
+        } else {
+            if (mRenderer.isLookingAtDesktop()) {
+                PointF coordinates = mRenderer.getMouseCoordinates();
+                JniInterface.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
+                        TouchInputHandler.BUTTON_LEFT, true);
+                JniInterface.sendMouseEvent((int) coordinates.x, (int) coordinates.y,
+                        TouchInputHandler.BUTTON_LEFT, false);
+            } else {
+                mRenderer.setMenuBarVisible(true);
+            }
         }
     }
 
@@ -74,7 +87,6 @@ public class CardboardDesktopActivity extends CardboardActivity {
     protected void onStart() {
         super.onStart();
         JniInterface.enableVideoChannel(true);
-        mRenderer.attachRedrawCallback();
     }
 
     @Override

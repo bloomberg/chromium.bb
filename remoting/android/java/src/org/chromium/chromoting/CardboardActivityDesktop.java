@@ -4,7 +4,8 @@
 
 package org.chromium.chromoting;
 
-import static org.chromium.chromoting.CardboardDesktopRenderer.makeFloatBuffer;
+import static org.chromium.chromoting.CardboardActivityUtility.makeFloatBuffer;
+import static org.chromium.chromoting.CardboardActivityUtility.makeRectangularTextureBuffer;
 
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -43,15 +44,8 @@ public class CardboardActivityDesktop {
             + "  }"
             + "}";
 
-    private static final FloatBuffer TEXTURE_COORDINATES = makeFloatBuffer(new float[] {
-            // Texture coordinate data.
-            0.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            1.0f, 0.0f
-    });
+    private static final FloatBuffer TEXTURE_COORDINATES = makeRectangularTextureBuffer(
+            0.0f, 1.0f, 0.0f, 1.0f);
 
     private static final int POSITION_DATA_SIZE = 3;
     private static final int TEXTURE_COORDINATE_DATA_SIZE = 2;
