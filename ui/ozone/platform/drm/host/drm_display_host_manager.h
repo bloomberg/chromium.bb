@@ -133,9 +133,6 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   // established.
   scoped_ptr<DrmDeviceHandle> primary_drm_device_handle_;
 
-  // Manages the VGEM device by itself and doesn't send it to GPU process.
-  base::ScopedFD vgem_card_device_file_;
-
   base::WeakPtrFactory<DrmDisplayHostManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDisplayHostManager);

@@ -8,7 +8,6 @@
 #include <xf86drm.h>
 
 #include "base/files/file_enumerator.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
@@ -130,14 +129,6 @@ DrmDisplayHostManager::DrmDisplayHostManager(
     drm_devices_.insert(primary_graphics_card_path_);
 
     vgem_card_path_ = GetVgemCardPath();
-    if (!vgem_card_path_.empty()) {
-      int fd = HANDLE_EINTR(
-          open(vgem_card_path_.value().c_str(), O_RDWR | O_CLOEXEC));
-      if (fd < 0) {
-        PLOG(ERROR) << "Failed to open vgem: " << vgem_card_path_.value();
-      }
-      vgem_card_device_file_.reset(fd);
-    }
   }
 
   device_manager_->AddObserver(this);
