@@ -35,6 +35,7 @@ class AccountChooserInfoBar : public InfoBarAndroid {
   AccountChooserInfoBarDelegateAndroid* GetDelegate();
   void SetJavaInfoBar(
       const base::android::JavaRef<jobject>& java_info_bar) override;
+  void OnLinkClicked(JNIEnv* env, jobject obj) override;
 
   DISALLOW_COPY_AND_ASSIGN(AccountChooserInfoBar);
 };

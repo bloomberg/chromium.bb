@@ -6,7 +6,9 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 
@@ -89,4 +91,34 @@ TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleTextAndLinkRange) {
                   base::string16::npos);
     }
   }
+}
+
+TEST(ManagePasswordsViewUtilTest,
+     GetAccountChooserDialogTitleTextAndLinkRangeSmartLockUsers) {
+  base::string16 branding =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
+  base::string16 title;
+  gfx::Range title_link_range;
+  GetAccountChooserDialogTitleTextAndLinkRange(
+      true /* is_smartlock_branding_enabled */, &title, &title_link_range);
+
+  // Check that branding string is a part of a title.
+  EXPECT_LT(title.find(branding, 0), title.size());
+  EXPECT_GT(title.find(branding, 0), 0U);
+  // Check that link range is not empty.
+  EXPECT_NE(0U, title_link_range.start());
+  EXPECT_NE(0U, title_link_range.end());
+}
+
+TEST(ManagePasswordsViewUtilTest,
+     GetAccountChooserDialogTitleTextAndLinkRangeNonSmartLockUsers) {
+  base::string16 branding =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
+  base::string16 title;
+  gfx::Range title_link_range;
+  GetAccountChooserDialogTitleTextAndLinkRange(
+      false /* is_smartlock_branding_enabled */, &title, &title_link_range);
+  EXPECT_GE(title.find(branding, 0), title.size());
+  EXPECT_EQ(0U, title_link_range.start());
+  EXPECT_EQ(0U, title_link_range.end());
 }

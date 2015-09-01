@@ -75,3 +75,21 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     *title = l10n_util::GetStringFUTF16(title_id, replacements, &offsets);
   }
 }
+
+void GetAccountChooserDialogTitleTextAndLinkRange(
+    bool is_smartlock_branding_enabled,
+    base::string16* title,
+    gfx::Range* title_link_range) {
+  if (is_smartlock_branding_enabled) {
+    size_t offset;
+    base::string16 title_link =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
+    *title = l10n_util::GetStringFUTF16(
+        IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE_SMART_LOCK, title_link,
+        &offset);
+    *title_link_range = gfx::Range(offset, offset + title_link.length());
+  } else {
+    *title =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE);
+  }
+}

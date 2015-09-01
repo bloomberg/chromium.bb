@@ -85,8 +85,7 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
 void ManagePasswordsUIController::
     UpdateAndroidAccountChooserInfoBarVisibility() {
 #if defined(OS_ANDROID)
-  AccountChooserInfoBarDelegateAndroid::Create(
-      InfoBarService::FromWebContents(web_contents()), this);
+  AccountChooserInfoBarDelegateAndroid::Create(web_contents(), this);
   should_pop_up_bubble_ = false;
 #endif
 }

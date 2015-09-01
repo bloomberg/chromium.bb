@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +33,9 @@ public class AccountChooserInfoBar extends InfoBar {
     private long mNativePtr;
     private final Credential[] mCredentials;
     private final ImageView[] mAvatarViews;
+    private final int mMessageLinkRangeStart;
+    private final int mMessageLinkRangeEnd;
+    private final String mMessage;
 
     /**
      * Creates and shows the infobar wich allows user to choose credentials for login.
@@ -37,8 +43,10 @@ public class AccountChooserInfoBar extends InfoBar {
      * @param credentials Credentials to display in the infobar.
      */
     @CalledByNative
-    private static InfoBar show(int enumeratedIconId, Credential[] credentials) {
-        return new AccountChooserInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), credentials);
+    private static InfoBar show(int enumeratedIconId, Credential[] credentials, String message,
+            int messageLinkStart, int messageLinkEnd) {
+        return new AccountChooserInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), credentials,
+                message, messageLinkStart, messageLinkEnd);
     }
 
     /**
@@ -46,11 +54,15 @@ public class AccountChooserInfoBar extends InfoBar {
      * @param iconDrawableId Drawable ID corresponding to the icon that the infobar will show.
      * @param credentials Credentials to display in the infobar.
      */
-    public AccountChooserInfoBar(int iconDrawableId, Credential[] credentials) {
+    public AccountChooserInfoBar(int iconDrawableId, Credential[] credentials, String message,
+            int messageLinkStart, int messageLinkEnd) {
         super(null /* Infobar Listener */, iconDrawableId, null /* bitmap*/,
                 null /* message to show */);
         mCredentials = credentials.clone();
         mAvatarViews = new ImageView[mCredentials.length];
+        mMessageLinkRangeStart = messageLinkStart;
+        mMessageLinkRangeEnd = messageLinkEnd;
+        mMessage = message;
     }
 
     @Override
@@ -60,7 +72,18 @@ public class AccountChooserInfoBar extends InfoBar {
 
     @Override
     public void createContent(InfoBarLayout layout) {
-        layout.setMessage(getContext().getString(R.string.account_chooser_infobar_title));
+        if (mMessageLinkRangeStart != 0 && mMessageLinkRangeEnd != 0) {
+            SpannableString message = new SpannableString(mMessage);
+            message.setSpan(new ClickableSpan() {
+                @Override
+                public void onClick(View view) {
+                    onLinkClicked();
+                }
+            }, mMessageLinkRangeStart, mMessageLinkRangeEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+            layout.setMessage(message);
+        } else {
+            layout.setMessage(mMessage);
+        }
         createAccountsView(layout);
         layout.setButtons(getContext().getString(R.string.no_thanks), null);
     }

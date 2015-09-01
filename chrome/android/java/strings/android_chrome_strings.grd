@@ -1077,11 +1077,6 @@ You are signing in with a managed account and giving its administrator control o
         Options available near bottom of the screen
       </message>
 
-      <!-- Account chooser infobar strings. -->
-      <message name="IDS_ACCOUNT_CHOOSER_INFOBAR_TITLE" desc="The title text for Account chooser infobar.">
-        Choose an account from your Google Smart Lock.
-      </message>
-
       <!-- DownloadOverwriteInfoBar -->
       <message name="IDS_DOWNLOAD_OVERWRITE_INFOBAR_TEXT" desc="Prompt text for the confirmation dialog asking whether the user really wants to replace a file when there already exists a file with the same name">
         Do you want to replace the existing <ph name="FILE_NAME">^1<ex>specialfile.pdf</ex></ph> in <ph name="DIRECTORY_NAME">^2<ex>Downloads</ex></ph>?

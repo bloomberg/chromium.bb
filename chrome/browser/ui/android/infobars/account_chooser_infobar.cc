@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/android/infobars/account_chooser_infobar.h"
 
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -114,7 +115,11 @@ AccountChooserInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       GetDelegate()->local_credentials_forms().size());
   base::android::ScopedJavaGlobalRef<jobject> java_infobar_global;
   java_infobar_global.Reset(Java_AccountChooserInfoBar_show(
-      env, GetEnumeratedIconId(), java_credentials_array.obj()));
+      env, GetEnumeratedIconId(), java_credentials_array.obj(),
+      base::android::ConvertUTF16ToJavaString(env, GetDelegate()->message())
+          .obj(),
+      GetDelegate()->message_link_range().start(),
+      GetDelegate()->message_link_range().end()));
   base::android::ScopedJavaLocalRef<jobject> java_infobar(java_infobar_global);
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(this);
@@ -146,6 +151,10 @@ void AccountChooserInfoBar::ProcessButton(int action,
   GetDelegate()->ChooseCredential(
       -1, password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
   RemoveSelf();
+}
+
+void AccountChooserInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
+  GetDelegate()->LinkClicked();
 }
 
 AccountChooserInfoBarDelegateAndroid* AccountChooserInfoBar::GetDelegate() {

@@ -38,4 +38,14 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     base::string16* title,
     gfx::Range* title_link_range);
 
+// Sets the formatted |title| in the Account Chooser UI.
+// If |is_smartlock_branding_enabled| is true, sets the |title_link_range| for
+// the "Google Smart Lock" text range to be set visibly as a hyperlink in the
+// dialog bubble otherwise chooses the title which doesn't contain Smart Lock
+// branding.
+void GetAccountChooserDialogTitleTextAndLinkRange(
+    bool is_smartlock_branding_enabled,
+    base::string16* title,
+    gfx::Range* title_link_range);
+
 #endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_VIEW_UTILS_H_
