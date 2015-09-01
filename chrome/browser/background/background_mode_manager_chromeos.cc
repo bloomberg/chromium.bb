@@ -5,15 +5,14 @@
 #include "chrome/browser/background/background_mode_manager.h"
 
 #include "chrome/grit/generated_resources.h"
-#include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 
 void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   NOTREACHED();
 }
 
-void BackgroundModeManager::DisplayAppInstalledNotification(
-    const extensions::Extension* extension) {
+void BackgroundModeManager::DisplayClientInstalledNotification(
+    const base::string16& name) {
   // No need to display anything on ChromeOS because all extensions run all
   // the time anyway.
 }

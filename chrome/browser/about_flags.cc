@@ -2079,6 +2079,14 @@ const Experiment kExperiments[] = {
       kOsWin,
       SINGLE_VALUE_TYPE(switches::kTraceExportEventsToETW)},
 #endif  // defined(OS_WIN)
+#if defined(ENABLE_BACKGROUND)
+    {"enable-push-api-background-mode",
+     IDS_FLAGS_ENABLE_PUSH_API_BACKGROUND_MODE_NAME,
+     IDS_FLAGS_ENABLE_PUSH_API_BACKGROUND_MODE_DESCRIPTION,
+     kOsMac | kOsWin | kOsLinux,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePushApiBackgroundMode,
+                               switches::kDisablePushApiBackgroundMode)},
+#endif  // defined(ENABLE_BACKGROUND)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

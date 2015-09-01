@@ -149,8 +149,8 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   }
 }
 
-void BackgroundModeManager::DisplayAppInstalledNotification(
-    const extensions::Extension* extension) {
+void BackgroundModeManager::DisplayClientInstalledNotification(
+    const base::string16& name) {
   // TODO(atwilson): Display a platform-appropriate notification here.
   // http://crbug.com/74970
 }

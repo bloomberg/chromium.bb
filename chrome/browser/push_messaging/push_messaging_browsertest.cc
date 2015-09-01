@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
@@ -40,6 +41,9 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/window_open_disposition.h"
 
+#if defined(ENABLE_BACKGROUND)
+#include "chrome/browser/background/background_mode_manager.h"
+#endif
 
 namespace {
 // Class to instantiate on the stack that is meant to be used with
@@ -1146,3 +1150,90 @@ IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest,
   ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
   ASSERT_EQ("false - not subscribed", script_result);
 }
+
+// None of the following should matter on ChromeOS: crbug.com/527045
+#if defined(ENABLE_BACKGROUND) && !defined(OS_CHROMEOS)
+// Push background mode is disabled by default.
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       BackgroundModeDisabledByDefault) {
+  // Initially background mode is inactive.
+  BackgroundModeManager* background_mode_manager =
+      g_browser_process->background_mode_manager();
+  ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
+
+  // Once there is a push subscription background mode is still inactive.
+  TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
+  ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
+
+  // After dropping the last subscription it is still inactive.
+  std::string script_result;
+  gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::SUCCESS);
+  ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
+  EXPECT_EQ("unsubscribe result: true", script_result);
+  ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
+}
+
+class PushMessagingBackgroundModeEnabledBrowserTest
+    : public PushMessagingBrowserTest {
+ public:
+  ~PushMessagingBackgroundModeEnabledBrowserTest() override {}
+
+  // PushMessagingBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kEnablePushApiBackgroundMode);
+    PushMessagingBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+// In this test the command line enables push background mode.
+IN_PROC_BROWSER_TEST_F(PushMessagingBackgroundModeEnabledBrowserTest,
+                       BackgroundModeEnabledWithCommandLine) {
+  // Initially background mode is inactive.
+  BackgroundModeManager* background_mode_manager =
+      g_browser_process->background_mode_manager();
+  ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
+
+  // Once there is a push subscription background mode is active.
+  TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
+  ASSERT_TRUE(background_mode_manager->IsBackgroundModeActive());
+
+  // Dropping the last subscription deactivates background mode.
+  std::string script_result;
+  gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::SUCCESS);
+  ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
+  EXPECT_EQ("unsubscribe result: true", script_result);
+  ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
+}
+
+class PushMessagingBackgroundModeDisabledBrowserTest
+    : public PushMessagingBrowserTest {
+ public:
+  ~PushMessagingBackgroundModeDisabledBrowserTest() override {}
+
+  // PushMessagingBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kDisablePushApiBackgroundMode);
+    PushMessagingBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+// In this test the command line disables push background mode.
+IN_PROC_BROWSER_TEST_F(PushMessagingBackgroundModeDisabledBrowserTest,
+                       BackgroundModeDisabledWithCommandLine) {
+  // Initially background mode is inactive.
+  BackgroundModeManager* background_mode_manager =
+      g_browser_process->background_mode_manager();
+  ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
+
+  // Once there is a push subscription background mode is still inactive.
+  TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
+  ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
+
+  // After dropping the last subscription background mode is still inactive.
+  std::string script_result;
+  gcm_service()->AddExpectedUnregisterResponse(gcm::GCMClient::SUCCESS);
+  ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
+  EXPECT_EQ("unsubscribe result: true", script_result);
+  ASSERT_FALSE(background_mode_manager->IsBackgroundModeActive());
+}
+#endif  // defined(ENABLE_BACKGROUND) && !defined(OS_CHROMEOS)

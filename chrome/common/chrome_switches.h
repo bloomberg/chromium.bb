@@ -146,6 +146,8 @@ extern const char kEnablePotentiallyAnnoyingSecurityFeatures[];
 extern const char kEnablePowerOverlay[];
 extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnableProfiling[];
+extern const char kEnablePushApiBackgroundMode[];
+extern const char kDisablePushApiBackgroundMode[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicPortSelection[];
 extern const char kEnableSavePasswordBubble[];

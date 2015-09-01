@@ -1353,6 +1353,7 @@
       'browser/background/background_mode_manager_chromeos.cc',
       'browser/background/background_mode_manager_mac.mm',
       'browser/background/background_mode_manager_win.cc',
+      'browser/background/background_trigger.h',
     ],
     'chrome_browser_bookmark_sources': [
       'browser/bookmarks/bookmark_model_factory.cc',

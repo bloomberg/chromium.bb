@@ -21,8 +21,10 @@
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -36,6 +38,11 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_messaging_status.h"
+#include "ui/base/l10n/l10n_util.h"
+
+#if defined(ENABLE_BACKGROUND)
+#include "chrome/browser/background/background_mode_manager.h"
+#endif
 
 namespace {
 const int kMaxRegistrations = 1000000;
@@ -73,6 +80,15 @@ void UnregisterCallbackToClosure(
     const base::Closure& closure, content::PushUnregistrationStatus status) {
   closure.Run();
 }
+
+#if defined(ENABLE_BACKGROUND)
+bool UseBackgroundMode() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisablePushApiBackgroundMode))
+    return false;
+  return command_line->HasSwitch(switches::kEnablePushApiBackgroundMode);
+}
+#endif  // defined(ENABLE_BACKGROUND)
 
 }  // namespace
 
@@ -129,6 +145,13 @@ void PushMessagingServiceImpl::IncreasePushSubscriptionCount(int add,
   if (is_pending) {
     pending_push_subscription_count_ += add;
   } else {
+#if defined(ENABLE_BACKGROUND)
+    if (UseBackgroundMode() && g_browser_process->background_mode_manager() &&
+        !push_subscription_count_) {
+      g_browser_process->background_mode_manager()->RegisterTrigger(
+          profile_, this, false /* should_notify_user */);
+    }
+#endif  // defined(ENABLE_BACKGROUND)
     push_subscription_count_ += add;
     profile_->GetPrefs()->SetInteger(prefs::kPushMessagingRegistrationCount,
                                      push_subscription_count_);
@@ -149,6 +172,13 @@ void PushMessagingServiceImpl::DecreasePushSubscriptionCount(int subtract,
   }
   if (push_subscription_count_ + pending_push_subscription_count_ == 0) {
     GetGCMDriver()->RemoveAppHandler(kPushMessagingAppIdentifierPrefix);
+
+#if defined(ENABLE_BACKGROUND)
+    if (UseBackgroundMode() && g_browser_process->background_mode_manager()) {
+      g_browser_process->background_mode_manager()->UnregisterTrigger(profile_,
+                                                                      this);
+    }
+#endif  // defined(ENABLE_BACKGROUND)
   }
 }
 
@@ -715,6 +745,31 @@ void PushMessagingServiceImpl::SetContentSettingChangedCallbackForTesting(
 
 void PushMessagingServiceImpl::Shutdown() {
   GetGCMDriver()->RemoveAppHandler(kPushMessagingAppIdentifierPrefix);
+#if defined(ENABLE_BACKGROUND)
+  // TODO(mvanouwerkerk): Ensure Push API unregisters correctly from Background
+  // Mode - crbug.com/527036.
+  if (UseBackgroundMode() && g_browser_process->background_mode_manager()) {
+    g_browser_process->background_mode_manager()->UnregisterTrigger(profile_,
+                                                                    this);
+  }
+#endif  // defined(ENABLE_BACKGROUND)
+}
+
+// BackgroundTrigger methods ---------------------------------------------------
+base::string16 PushMessagingServiceImpl::GetName() {
+  return l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_BACKGROUND_SERVICE_NAME);
+}
+
+gfx::ImageSkia* PushMessagingServiceImpl::GetIcon() {
+  return nullptr;
+}
+
+void PushMessagingServiceImpl::OnMenuClick() {
+#if defined(ENABLE_BACKGROUND)
+  chrome::ShowContentSettings(
+      BackgroundModeManager::GetBrowserWindowForProfile(profile_),
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+#endif  // defined(ENABLE_BACKGROUND)
 }
 
 // Helper methods --------------------------------------------------------------

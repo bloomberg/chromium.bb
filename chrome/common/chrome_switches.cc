@@ -502,6 +502,10 @@ const char kEnablePrintPreviewRegisterPromos[] =
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
 
+// Enable or disable background mode for the Push API.
+const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
+const char kDisablePushApiBackgroundMode[] = "disable-push-api-background-mode";
+
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";
 

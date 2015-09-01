@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/background/background_trigger.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/gcm_driver/common/gcm_messages.h"
@@ -42,7 +43,8 @@ class PrefRegistrySyncable;
 class PushMessagingServiceImpl : public content::PushMessagingService,
                                  public gcm::GCMAppHandler,
                                  public content_settings::Observer,
-                                 public KeyedService {
+                                 public KeyedService,
+                                 public BackgroundTrigger {
  public:
   // Register profile-specific prefs for GCM.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -106,6 +108,11 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // KeyedService implementation.
   void Shutdown() override;
+
+  // BackgroundTrigger implementation.
+  base::string16 GetName() override;
+  gfx::ImageSkia* GetIcon() override;
+  void OnMenuClick() override;
 
   void SetMessageCallbackForTesting(const base::Closure& callback);
   void SetContentSettingChangedCallbackForTesting(

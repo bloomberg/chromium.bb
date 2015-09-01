@@ -31,18 +31,17 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
           base::Bind(auto_launch_util::DisableBackgroundStartAtLogin));
 }
 
-void BackgroundModeManager::DisplayAppInstalledNotification(
-    const extensions::Extension* extension) {
-  // Create a status tray notification balloon explaining to the user that
-  // a background app has been installed.
+void BackgroundModeManager::DisplayClientInstalledNotification(
+    const base::string16& name) {
+  // Create a status tray notification balloon explaining to the user what has
+  // been installed.
   CreateStatusTrayIcon();
   status_icon_->DisplayBalloon(
       gfx::ImageSkia(),
       l10n_util::GetStringUTF16(IDS_BACKGROUND_APP_INSTALLED_BALLOON_TITLE),
-      l10n_util::GetStringFUTF16(
-          IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY,
-          base::UTF8ToUTF16(extension->name()),
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      l10n_util::GetStringFUTF16(IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY,
+                                 name,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
 base::string16 BackgroundModeManager::GetPreferencesMenuLabel() {
