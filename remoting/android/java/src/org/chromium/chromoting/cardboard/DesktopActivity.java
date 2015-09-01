@@ -55,17 +55,17 @@ public class DesktopActivity extends CardboardActivity {
         if (mRenderer.isMenuBarVisible()) {
             if (mRenderer.isLookingAtMenuBar()) {
                 switch (mRenderer.getMenuItem().getType()) {
-                    case HOME:
+                    case BACK:
                         mSwitchToDesktopActivity = true;
                         finish();
                         break;
                     case VOICE_INPUT:
                         listenForVoiceInput();
                         break;
-                    case MOVE_FORWARD:
+                    case ZOOM_IN:
                         mRenderer.moveTowardsDesktop();
                         break;
-                    case MOVE_BACKWARD:
+                    case ZOOM_OUT:
                         mRenderer.moveAwayFromDesktop();
                         break;
                 }

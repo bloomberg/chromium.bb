@@ -16,10 +16,10 @@ import org.chromium.chromoting.R;
  */
 public class MenuBar {
     public enum MenuItemType {
-        HOME(R.drawable.ic_home),
+        BACK(R.drawable.ic_backspace),
         VOICE_INPUT(R.drawable.ic_voice_input),
-        MOVE_FORWARD(R.drawable.ic_move_forward),
-        MOVE_BACKWARD(R.drawable.ic_move_backward);
+        ZOOM_IN(R.drawable.ic_zoom_in),
+        ZOOM_OUT(R.drawable.ic_zoom_out);
 
         private final int mResourceId;
 
