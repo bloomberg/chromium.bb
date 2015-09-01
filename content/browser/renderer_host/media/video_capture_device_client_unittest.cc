@@ -74,8 +74,8 @@ TEST_F(VideoCaptureDeviceClientTest, Minimal) {
   unsigned char data[kScratchpadSizeInBytes] = {};
   const media::VideoCaptureFormat kFrameFormat(
       gfx::Size(10, 10), 30.0f /*frame_rate*/,
-      media::VideoCapturePixelFormat::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
-      media::VideoPixelStorage::PIXEL_STORAGE_CPU);
+      media::PIXEL_FORMAT_I420,
+      media::PIXEL_STORAGE_CPU);
   DCHECK(device_client_.get());
   EXPECT_CALL(*controller_, MockDoIncomingCapturedVideoFrameOnIOThread(_))
       .Times(1);
@@ -94,7 +94,7 @@ TEST_F(VideoCaptureDeviceClientTest, FailsSilentlyGivenInvalidFrameFormat) {
   const media::VideoCaptureFormat kFrameFormat(
       gfx::Size(media::limits::kMaxDimension + 1, media::limits::kMaxDimension),
       media::limits::kMaxFramesPerSecond + 1,
-      media::VideoCapturePixelFormat::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
+      media::VideoPixelFormat::PIXEL_FORMAT_I420,
       media::VideoPixelStorage::PIXEL_STORAGE_CPU);
   DCHECK(device_client_.get());
   // Expect the the call to fail silently inside the VideoCaptureDeviceClient.
@@ -113,8 +113,8 @@ TEST_F(VideoCaptureDeviceClientTest, DropsFrameIfNoBuffer) {
   unsigned char data[kScratchpadSizeInBytes] = {};
   const media::VideoCaptureFormat kFrameFormat(
       gfx::Size(10, 10), 30.0f /*frame_rate*/,
-      media::VideoCapturePixelFormat::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
-      media::VideoPixelStorage::PIXEL_STORAGE_CPU);
+      media::PIXEL_FORMAT_I420,
+      media::PIXEL_STORAGE_CPU);
   // We expect the second frame to be silently dropped, so these should
   // only be called once despite the two frames.
   EXPECT_CALL(*controller_, MockDoIncomingCapturedVideoFrameOnIOThread(_))
@@ -142,21 +142,26 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureInEachVideoFormatInSequence) {
   ASSERT_GE(kScratchpadSizeInBytes, capture_resolution.GetArea() * 4u)
       << "Scratchpad is too small to hold the largest pixel format (ARGB).";
 
-  for (int format = 0; format < media::VIDEO_CAPTURE_PIXEL_FORMAT_MAX;
+  for (int format = 0; format < media::PIXEL_FORMAT_MAX;
        ++format) {
-    // Conversion from MJPEG to I420 seems to be unsupported.
-    if (format == media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN ||
-        format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG) {
+    // Conversion from some formats are unsupported.
+    if (format == media::PIXEL_FORMAT_UNKNOWN ||
+        format == media::PIXEL_FORMAT_YV16 ||
+        format == media::PIXEL_FORMAT_YV12A ||
+        format == media::PIXEL_FORMAT_YV24 ||
+        format == media::PIXEL_FORMAT_ARGB ||
+        format == media::PIXEL_FORMAT_XRGB ||
+        format == media::PIXEL_FORMAT_MJPEG) {
       continue;
     }
 #if !defined(OS_LINUX) && !defined(OS_WIN)
-    if (format == media::VIDEO_CAPTURE_PIXEL_FORMAT_RGB24){
+    if (format == media::PIXEL_FORMAT_RGB24){
       continue;
     }
 #endif
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
-        capture_resolution, 30.0f, media::VideoCapturePixelFormat(format));
+        capture_resolution, 30.0f, media::VideoPixelFormat(format));
     EXPECT_CALL(*controller_, MockDoIncomingCapturedVideoFrameOnIOThread(_))
         .Times(1);
     device_client_->OnIncomingCapturedData(
@@ -197,7 +202,7 @@ TEST_F(VideoCaptureDeviceClientTest, CheckRotationsAndCrops) {
         << "Scratchpad is too small to hold the largest pixel format (ARGB).";
     params.requested_format =
         media::VideoCaptureFormat(size_and_rotation.input_resolution, 30.0f,
-                                  media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB);
+                                  media::PIXEL_FORMAT_ARGB);
     gfx::Size coded_size;
     EXPECT_CALL(*controller_, MockDoIncomingCapturedVideoFrameOnIOThread(_))
         .Times(1)

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/video_capture_types.h"
 #include "media/capture/video/win/capability_list_win.h"
 
 #include <algorithm>
@@ -36,7 +37,8 @@ static bool CompareCapability(const VideoCaptureFormat& requested,
   if (diff_fps_lhs != diff_fps_rhs)
     return diff_fps_lhs < diff_fps_rhs;
 
-  return lhs.pixel_format < rhs.pixel_format;
+  return VideoCaptureFormat::ComparePixelFormatPreference(lhs.pixel_format,
+                                                          rhs.pixel_format);
 }
 
 const CapabilityWin& GetBestMatchedCapability(

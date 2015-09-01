@@ -406,11 +406,16 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     case media::PIXEL_FORMAT_I420:
       external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
       break;
-    case media::PIXEL_FORMAT_NV12:
     case media::PIXEL_FORMAT_YV12:
     case media::PIXEL_FORMAT_YV16:
     case media::PIXEL_FORMAT_YV24:
     case media::PIXEL_FORMAT_YV12A:
+    case media::PIXEL_FORMAT_NV12:
+    case media::PIXEL_FORMAT_NV21:
+    case media::PIXEL_FORMAT_YUY2:
+    case media::PIXEL_FORMAT_RGB24:
+    case media::PIXEL_FORMAT_RGB32:
+    case media::PIXEL_FORMAT_MJPEG:
     case media::PIXEL_FORMAT_UNKNOWN:
       DLOG(ERROR) << "Unsupported Texture format"
                   << media::VideoPixelFormatToString(video_frame->format());

@@ -48,7 +48,7 @@ void ParseY4MRational(const base::StringPiece& token,
 void ParseY4MTags(const std::string& file_header,
                   media::VideoCaptureFormat* video_format) {
   media::VideoCaptureFormat format;
-  format.pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  format.pixel_format = media::PIXEL_FORMAT_I420;
   size_t index = 0;
   size_t blank_position = 0;
   base::StringPiece token;
@@ -230,7 +230,7 @@ bool MjpegFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
   }
 
   VideoCaptureFormat format;
-  format.pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG;
+  format.pixel_format = media::PIXEL_FORMAT_MJPEG;
   format.frame_size.set_width(result.frame_header.visible_width);
   format.frame_size.set_height(result.frame_header.visible_height);
   format.frame_rate = kMJpegFrameRate;

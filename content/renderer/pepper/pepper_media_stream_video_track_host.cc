@@ -41,15 +41,15 @@ const char kPepperVideoSourceName[] = "PepperVideoSourceName";
 // Default config for output mode.
 const int kDefaultOutputFrameRate = 30;
 
-media::VideoCapturePixelFormat ToPixelFormat(PP_VideoFrame_Format format) {
+media::VideoPixelFormat ToPixelFormat(PP_VideoFrame_Format format) {
   switch (format) {
     case PP_VIDEOFRAME_FORMAT_YV12:
-      return media::VIDEO_CAPTURE_PIXEL_FORMAT_YV12;
+      return media::PIXEL_FORMAT_YV12;
     case PP_VIDEOFRAME_FORMAT_I420:
-      return media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+      return media::PIXEL_FORMAT_I420;
     default:
       DVLOG(1) << "Unsupported pixel format " << format;
-      return media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
+      return media::PIXEL_FORMAT_UNKNOWN;
   }
 }
 

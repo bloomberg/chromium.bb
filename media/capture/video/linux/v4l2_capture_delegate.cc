@@ -39,28 +39,28 @@ const int kTypicalFramerate = 30;
 // This list is ordered by precedence of use -- but see caveats for MJPEG.
 static struct {
   uint32_t fourcc;
-  VideoCapturePixelFormat pixel_format;
+  VideoPixelFormat pixel_format;
   size_t num_planes;
 } const kSupportedFormatsAndPlanarity[] = {
-    {V4L2_PIX_FMT_YUV420, VIDEO_CAPTURE_PIXEL_FORMAT_I420, 1},
-    {V4L2_PIX_FMT_YUYV, VIDEO_CAPTURE_PIXEL_FORMAT_YUY2, 1},
-    {V4L2_PIX_FMT_UYVY, VIDEO_CAPTURE_PIXEL_FORMAT_UYVY, 1},
-    {V4L2_PIX_FMT_RGB24, VIDEO_CAPTURE_PIXEL_FORMAT_RGB24, 1},
+    {V4L2_PIX_FMT_YUV420, PIXEL_FORMAT_I420, 1},
+    {V4L2_PIX_FMT_YUYV, PIXEL_FORMAT_YUY2, 1},
+    {V4L2_PIX_FMT_UYVY, PIXEL_FORMAT_UYVY, 1},
+    {V4L2_PIX_FMT_RGB24, PIXEL_FORMAT_RGB24, 1},
 #if !defined(OS_OPENBSD)
     // TODO(mcasas): add V4L2_PIX_FMT_YVU420M when available in bots.
-    {V4L2_PIX_FMT_YUV420M, VIDEO_CAPTURE_PIXEL_FORMAT_I420, 3},
+    {V4L2_PIX_FMT_YUV420M, PIXEL_FORMAT_I420, 3},
 #endif
     // MJPEG is usually sitting fairly low since we don't want to have to
     // decode.
     // However, is needed for large resolutions due to USB bandwidth
     // limitations,
     // so GetListOfUsableFourCcs() can duplicate it on top, see that method.
-    {V4L2_PIX_FMT_MJPEG, VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG, 1},
+    {V4L2_PIX_FMT_MJPEG, PIXEL_FORMAT_MJPEG, 1},
     // JPEG works as MJPEG on some gspca webcams from field reports, see
     // https://code.google.com/p/webrtc/issues/detail?id=529, put it as the
     // least
     // preferred format.
-    {V4L2_PIX_FMT_JPEG, VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG, 1},
+    {V4L2_PIX_FMT_JPEG, PIXEL_FORMAT_MJPEG, 1},
 };
 
 // static
@@ -95,17 +95,17 @@ size_t V4L2CaptureDelegate::GetNumPlanesForFourCc(uint32_t fourcc) {
 }
 
 // static
-VideoCapturePixelFormat V4L2CaptureDelegate::V4l2FourCcToChromiumPixelFormat(
+VideoPixelFormat V4L2CaptureDelegate::V4l2FourCcToChromiumPixelFormat(
     uint32_t v4l2_fourcc) {
   for (const auto& fourcc_and_pixel_format : kSupportedFormatsAndPlanarity) {
     if (fourcc_and_pixel_format.fourcc == v4l2_fourcc)
       return fourcc_and_pixel_format.pixel_format;
   }
   // Not finding a pixel format is OK during device capabilities enumeration.
-  // Let the caller decide if VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN is an error or
+  // Let the caller decide if PIXEL_FORMAT_UNKNOWN is an error or
   // not.
   DVLOG(1) << "Unsupported pixel format: " << FourccToString(v4l2_fourcc);
-  return VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
+  return PIXEL_FORMAT_UNKNOWN;
 }
 
 // static
@@ -224,9 +224,9 @@ void V4L2CaptureDelegate::AllocateAndStart(
     SetErrorState("Failed to set video capture format");
     return;
   }
-  const VideoCapturePixelFormat pixel_format =
+  const VideoPixelFormat pixel_format =
       V4l2FourCcToChromiumPixelFormat(video_fmt_.fmt.pix.pixelformat);
-  if (pixel_format == VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN) {
+  if (pixel_format == PIXEL_FORMAT_UNKNOWN) {
     SetErrorState("Unsupported pixel format");
     return;
   }

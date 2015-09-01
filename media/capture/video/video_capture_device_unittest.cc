@@ -99,7 +99,7 @@ class MockClient : public VideoCaptureDevice::Client {
   // Trampoline methods to workaround GMOCK problems with scoped_ptr<>.
   scoped_ptr<Buffer> ReserveOutputBuffer(
       const gfx::Size& dimensions,
-      media::VideoCapturePixelFormat format,
+      media::VideoPixelFormat format,
       media::VideoPixelStorage storage) override {
     DoReserveOutputBuffer();
     NOTREACHED() << "This should never be called";
@@ -198,7 +198,7 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
   const VideoCaptureFormat& last_format() const { return last_format_; }
 
   scoped_ptr<VideoCaptureDevice::Name> GetFirstDeviceNameSupportingPixelFormat(
-      const VideoCapturePixelFormat& pixel_format) {
+      const VideoPixelFormat& pixel_format) {
     names_ = EnumerateDevices();
     if (names_->empty()) {
       DVLOG(1) << "No camera available.";
@@ -215,9 +215,9 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
         }
       }
     }
-    DVLOG_IF(1, pixel_format != VIDEO_CAPTURE_PIXEL_FORMAT_MAX)
+    DVLOG_IF(1, pixel_format != PIXEL_FORMAT_MAX)
         << "No camera can capture the"
-        << " format: " << VideoCaptureFormat::PixelFormatToString(pixel_format);
+        << " format: " << VideoPixelFormatToString(pixel_format);
     return scoped_ptr<VideoCaptureDevice::Name>();
   }
 
@@ -286,8 +286,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
     VideoCaptureParams capture_params;
     capture_params.requested_format.frame_size.SetSize(640, 480);
     capture_params.requested_format.frame_rate = 30;
-    capture_params.requested_format.pixel_format =
-        VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+    capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
     device->AllocateAndStart(capture_params, client_.Pass());
     device->StopAndDeAllocate();
   }
@@ -318,13 +317,13 @@ TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
   capture_params.requested_format.frame_size.SetSize(width, height);
   capture_params.requested_format.frame_rate = 30.0f;
   capture_params.requested_format.pixel_format =
-      VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+      PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, client_.Pass());
   // Get captured video frames.
   WaitForCapturedFrame();
   EXPECT_EQ(last_format().frame_size.width(), width);
   EXPECT_EQ(last_format().frame_size.height(), height);
-  if (last_format().pixel_format != VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG)
+  if (last_format().pixel_format != PIXEL_FORMAT_MJPEG)
     EXPECT_EQ(size.GetArea(), last_format().frame_size.GetArea());
   device->StopAndDeAllocate();
 }
@@ -352,13 +351,13 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   capture_params.requested_format.frame_size.SetSize(637, 472);
   capture_params.requested_format.frame_rate = 35;
   capture_params.requested_format.pixel_format =
-      VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+      PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, client_.Pass());
   WaitForCapturedFrame();
   device->StopAndDeAllocate();
   EXPECT_EQ(last_format().frame_size.width(), input_size.width());
   EXPECT_EQ(last_format().frame_size.height(), input_size.height());
-  if (last_format().pixel_format != VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG)
+  if (last_format().pixel_format != PIXEL_FORMAT_MJPEG)
     EXPECT_EQ(input_size.GetArea(), last_format().frame_size.GetArea());
 }
 
@@ -390,8 +389,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_ReAllocateCamera) {
     VideoCaptureParams capture_params;
     capture_params.requested_format.frame_size = resolution;
     capture_params.requested_format.frame_rate = 30;
-    capture_params.requested_format.pixel_format =
-        VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+    capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
     device->AllocateAndStart(capture_params, client_.Pass());
     device->StopAndDeAllocate();
   }
@@ -400,8 +398,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_ReAllocateCamera) {
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(320, 240);
   capture_params.requested_format.frame_rate = 30;
-  capture_params.requested_format.pixel_format =
-      VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
 
   ResetWithNewClient();
   scoped_ptr<VideoCaptureDevice> device(
@@ -430,8 +427,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
-  capture_params.requested_format.pixel_format =
-      VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, client_.Pass());
   // Get captured video frames.
   WaitForCapturedFrame();
@@ -444,7 +440,7 @@ TEST_F(VideoCaptureDeviceTest, DeAllocateCameraWhileRunning) {
 // Start the camera in 720p to capture MJPEG instead of a raw format.
 TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   scoped_ptr<VideoCaptureDevice::Name> name =
-      GetFirstDeviceNameSupportingPixelFormat(VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG);
+      GetFirstDeviceNameSupportingPixelFormat(PIXEL_FORMAT_MJPEG);
   if (!name) {
     DVLOG(1) << "No camera supports MJPEG format. Exiting test.";
     return;
@@ -458,25 +454,24 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(1280, 720);
   capture_params.requested_format.frame_rate = 30;
-  capture_params.requested_format.pixel_format =
-      VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG;
+  capture_params.requested_format.pixel_format = PIXEL_FORMAT_MJPEG;
   device->AllocateAndStart(capture_params, client_.Pass());
   // Get captured video frames.
   WaitForCapturedFrame();
   // Verify we get MJPEG from the device. Not all devices can capture 1280x720
   // @ 30 fps, so we don't care about the exact resolution we get.
-  EXPECT_EQ(last_format().pixel_format, VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG);
+  EXPECT_EQ(last_format().pixel_format, PIXEL_FORMAT_MJPEG);
   EXPECT_GE(static_cast<size_t>(1280 * 720),
             last_format().ImageAllocationSize());
   device->StopAndDeAllocate();
 }
 
 TEST_F(VideoCaptureDeviceTest, GetDeviceSupportedFormats) {
-  // Use VIDEO_CAPTURE_PIXEL_FORMAT_MAX to iterate all device names for testing
+  // Use PIXEL_FORMAT_MAX to iterate all device names for testing
   // GetDeviceSupportedFormats().
   scoped_ptr<VideoCaptureDevice::Name> name =
-      GetFirstDeviceNameSupportingPixelFormat(VIDEO_CAPTURE_PIXEL_FORMAT_MAX);
-  // Verify no camera returned for VIDEO_CAPTURE_PIXEL_FORMAT_MAX. Nothing else
+      GetFirstDeviceNameSupportingPixelFormat(PIXEL_FORMAT_MAX);
+  // Verify no camera returned for PIXEL_FORMAT_MAX. Nothing else
   // to test here
   // since we cannot forecast the hardware capabilities.
   ASSERT_FALSE(name);

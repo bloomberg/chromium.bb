@@ -210,7 +210,7 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
       use_gpu_memory_buffers_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseGpuMemoryBuffersForCapture)),
       capture_task_runner_(capture_task_runner),
-      last_captured_pixel_format_(media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN) {
+      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
@@ -231,16 +231,15 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   if (last_captured_pixel_format_ != frame_format.pixel_format) {
     OnLog("Pixel format: " +
-          VideoCaptureFormat::PixelFormatToString(frame_format.pixel_format));
+          media::VideoPixelFormatToString(frame_format.pixel_format));
     last_captured_pixel_format_ = frame_format.pixel_format;
 
-    if (frame_format.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG &&
+    if (frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
         !external_jpeg_decoder_initialized_) {
       external_jpeg_decoder_initialized_ = true;
-      external_jpeg_decoder_.reset(new VideoCaptureGpuJpegDecoder(
-          base::Bind(
-              &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-              controller_)));
+      external_jpeg_decoder_.reset(new VideoCaptureGpuJpegDecoder(base::Bind(
+          &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
+          controller_)));
       external_jpeg_decoder_->Initialize();
     }
   }
@@ -291,33 +290,33 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   bool flip = false;
   switch (frame_format.pixel_format) {
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN:  // Color format not set.
+    case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
       break;
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_I420:
+    case media::PIXEL_FORMAT_I420:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_I420;
       break;
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_YV12:
+    case media::PIXEL_FORMAT_YV12:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_YV12;
       break;
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_NV12:
+    case media::PIXEL_FORMAT_NV12:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_NV12;
       break;
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_NV21:
+    case media::PIXEL_FORMAT_NV21:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_NV21;
       break;
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_YUY2:
+    case media::PIXEL_FORMAT_YUY2:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_YUY2;
       break;
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_UYVY:
+    case media::PIXEL_FORMAT_UYVY:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_UYVY;
       break;
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_RGB24:
+    case media::PIXEL_FORMAT_RGB24:
       // Linux RGB24 defines red at lowest byte address,
       // see http://linuxtv.org/downloads/v4l-dvb-apis/packed-rgb.html.
       // Windows RGB24 defines blue at lowest byte,
@@ -337,16 +336,16 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       flip = true;
 #endif
       break;
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_RGB32:
-// Fallback to VIDEO_CAPTURE_PIXEL_FORMAT_ARGB setting |flip| in Windows
+    case media::PIXEL_FORMAT_RGB32:
+// Fallback to PIXEL_FORMAT_ARGB setting |flip| in Windows
 // platforms.
 #if defined(OS_WIN)
       flip = true;
 #endif
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB:
+    case media::PIXEL_FORMAT_ARGB:
       origin_colorspace = libyuv::FOURCC_ARGB;
       break;
-    case media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG:
+    case media::PIXEL_FORMAT_MJPEG:
       origin_colorspace = libyuv::FOURCC_MJPG;
       break;
     default:
@@ -363,7 +362,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     if (status == VideoCaptureGpuJpegDecoder::FAILED) {
       external_jpeg_decoder_.reset();
     } else if (status == VideoCaptureGpuJpegDecoder::INIT_PASSED &&
-        frame_format.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG &&
+        frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
         rotation == 0 && !flip) {
       external_jpeg_decoder_->DecodeCapturedData(data, length, frame_format,
                                                  timestamp, buffer.Pass());
@@ -388,14 +387,13 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
                             rotation_mode,
                             origin_colorspace) != 0) {
     DLOG(WARNING) << "Failed to convert buffer's pixel format to I420 from "
-                  << VideoCaptureFormat::PixelFormatToString(
-                         frame_format.pixel_format);
+                  << media::VideoPixelFormatToString(frame_format.pixel_format);
     return;
   }
 
   const VideoCaptureFormat output_format = VideoCaptureFormat(
       dimensions, frame_format.frame_rate,
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420, output_pixel_storage);
+      media::PIXEL_FORMAT_I420, output_pixel_storage);
   OnIncomingCapturedBuffer(buffer.Pass(), output_format, timestamp);
 }
 
@@ -411,7 +409,7 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
     int clockwise_rotation,
     const base::TimeTicks& timestamp) {
   TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedYuvData");
-  DCHECK_EQ(media::VIDEO_CAPTURE_PIXEL_FORMAT_I420, frame_format.pixel_format);
+  DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_format.pixel_format);
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, frame_format.pixel_storage);
   DCHECK_EQ(0, clockwise_rotation) << "Rotation not supported";
 
@@ -453,16 +451,16 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
 scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ReserveOutputBuffer(
     const gfx::Size& frame_size,
-    media::VideoCapturePixelFormat pixel_format,
+    media::VideoPixelFormat pixel_format,
     media::VideoPixelStorage pixel_storage) {
-  DCHECK(pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 ||
-         pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB);
+  DCHECK(pixel_format == media::PIXEL_FORMAT_I420 ||
+         pixel_format == media::PIXEL_FORMAT_ARGB);
   DCHECK_GT(frame_size.width(), 0);
   DCHECK_GT(frame_size.height(), 0);
 
   if (pixel_storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER &&
       !texture_wrap_helper_) {
-    DCHECK(pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420);
+    DCHECK(pixel_format == media::PIXEL_FORMAT_I420);
     texture_wrap_helper_ =
         new TextureWrapHelper(controller_, capture_task_runner_);
   }
@@ -502,9 +500,9 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
                    timestamp));
   } else {
 #ifndef NDEBUG
-    media::VideoCapturePixelFormat pixel_format = frame_format.pixel_format;
-    DCHECK(pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 ||
-           pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB);
+    media::VideoPixelFormat pixel_format = frame_format.pixel_format;
+    DCHECK(pixel_format == media::PIXEL_FORMAT_I420 ||
+           pixel_format == media::PIXEL_FORMAT_ARGB);
 #endif
 
     scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalData(
@@ -576,7 +574,7 @@ VideoCaptureDeviceClient::ReserveI420OutputBuffer(
 
   const media::VideoPixelFormat format = media::PIXEL_FORMAT_I420;
   scoped_ptr<Buffer> buffer(ReserveOutputBuffer(
-      dimensions, media::VIDEO_CAPTURE_PIXEL_FORMAT_I420, storage));
+      dimensions, media::PIXEL_FORMAT_I420, storage));
   if (!buffer)
     return scoped_ptr<Buffer>();
 
@@ -616,7 +614,7 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
         const media::VideoCaptureFormat& frame_format,
         const base::TimeTicks& timestamp) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
-  DCHECK(media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 == frame_format.pixel_format);
+  DCHECK(media::PIXEL_FORMAT_I420 == frame_format.pixel_format);
   DCHECK_EQ(media::PIXEL_STORAGE_GPUMEMORYBUFFER, frame_format.pixel_storage);
   if (!gl_helper_) {
     // |gl_helper_| might not exist due to asynchronous initialization not

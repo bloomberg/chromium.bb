@@ -79,11 +79,11 @@ class MockClient : public VideoCaptureDevice::Client {
 
   // Virtual methods for capturing using Client's Buffers.
   scoped_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
-                                         media::VideoCapturePixelFormat format,
+                                         media::VideoPixelFormat format,
                                          media::VideoPixelStorage storage) {
-    EXPECT_TRUE((format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB &&
+    EXPECT_TRUE((format == media::PIXEL_FORMAT_ARGB &&
                  storage == media::PIXEL_STORAGE_CPU) ||
-                (format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 &&
+                (format == media::PIXEL_FORMAT_I420 &&
                  storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER));
     EXPECT_GT(dimensions.GetArea(), 0);
     const VideoCaptureFormat frame_format(dimensions, 0.0, format);
@@ -100,7 +100,7 @@ class MockClient : public VideoCaptureDevice::Client {
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) {
     VideoCaptureFormat format(frame->natural_size(), 30.0,
-                              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
+                              PIXEL_FORMAT_I420);
     frame_cb_.Run(format);
   }
 
@@ -216,23 +216,19 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     ASSERT_EQ(supported_formats.size(), 4u);
     EXPECT_EQ(supported_formats[0].frame_size.width(), 320);
     EXPECT_EQ(supported_formats[0].frame_size.height(), 240);
-    EXPECT_EQ(supported_formats[0].pixel_format,
-              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[0].pixel_format, PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[0].frame_rate, 20.0);
     EXPECT_EQ(supported_formats[1].frame_size.width(), 640);
     EXPECT_EQ(supported_formats[1].frame_size.height(), 480);
-    EXPECT_EQ(supported_formats[1].pixel_format,
-              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[1].pixel_format, PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[1].frame_rate, 20.0);
     EXPECT_EQ(supported_formats[2].frame_size.width(), 1280);
     EXPECT_EQ(supported_formats[2].frame_size.height(), 720);
-    EXPECT_EQ(supported_formats[2].pixel_format,
-              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[2].pixel_format, PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[2].frame_rate, 20.0);
     EXPECT_EQ(supported_formats[3].frame_size.width(), 1920);
     EXPECT_EQ(supported_formats[3].frame_size.height(), 1080);
-    EXPECT_EQ(supported_formats[3].pixel_format,
-              VIDEO_CAPTURE_PIXEL_FORMAT_I420);
+    EXPECT_EQ(supported_formats[3].pixel_format, PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[3].frame_rate, 20.0);
   }
 }

@@ -21,7 +21,7 @@ MockMediaStreamVideoSource::MockMediaStreamVideoSource(
       gfx::Size(MediaStreamVideoSource::kDefaultWidth,
                 MediaStreamVideoSource::kDefaultHeight),
       MediaStreamVideoSource::kDefaultFrameRate,
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420));
+      media::PIXEL_FORMAT_I420));
 }
 
 MockMediaStreamVideoSource::~MockMediaStreamVideoSource() {}

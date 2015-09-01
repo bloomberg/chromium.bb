@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "media/base/video_capture_types.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -16,17 +17,17 @@ static const int kMjpegWidthThreshold = 640;
 static const int kMjpegHeightThreshold = 480;
 
 // This function translates Mac Core Video pixel formats to Chromium pixel
-// formats. Chromium pixel formats are sorted in order of preference.
-media::VideoCapturePixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
+// formats.
+media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   switch (code) {
     case kCVPixelFormatType_422YpCbCr8:
-      return media::VIDEO_CAPTURE_PIXEL_FORMAT_UYVY;
+      return media::PIXEL_FORMAT_UYVY;
     case CoreMediaGlue::kCMPixelFormat_422YpCbCr8_yuvs:
-      return media::VIDEO_CAPTURE_PIXEL_FORMAT_YUY2;
+      return media::PIXEL_FORMAT_YUY2;
     case CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML:
-      return media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG;
+      return media::PIXEL_FORMAT_MJPEG;
     default:
-      return media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
+      return media::PIXEL_FORMAT_UNKNOWN;
   }
 }
 
@@ -61,7 +62,7 @@ media::VideoCapturePixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
 }
 
 + (void)getDevice:(const media::VideoCaptureDevice::Name&)name
-    supportedFormats:(media::VideoCaptureFormats*)formats {
+ supportedFormats:(media::VideoCaptureFormats*)formats {
   NSArray* devices = [AVCaptureDeviceGlue devices];
   CrAVCaptureDevice* device = nil;
   for (device in devices) {
@@ -73,10 +74,9 @@ media::VideoCapturePixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   for (CrAVCaptureDeviceFormat* format in device.formats) {
     // MediaSubType is a CMPixelFormatType but can be used as CVPixelFormatType
     // as well according to CMFormatDescription.h
-    const media::VideoCapturePixelFormat pixelFormat =
-        FourCCToChromiumPixelFormat(
-            CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
-                [format formatDescription]));
+    const media::VideoPixelFormat pixelFormat = FourCCToChromiumPixelFormat(
+        CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
+            [format formatDescription]));
 
     CoreMediaGlue::CMVideoDimensions dimensions =
         CoreMediaGlue::CMVideoFormatDescriptionGetDimensions(
@@ -204,9 +204,11 @@ media::VideoCapturePixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
       best_fourcc = fourcc;
       break;
     }
+
     // Compare according to Chromium preference.
-    if (FourCCToChromiumPixelFormat(fourcc) <
-        FourCCToChromiumPixelFormat(best_fourcc)) {
+    if (media::VideoCaptureFormat::ComparePixelFormatPreference(
+            FourCCToChromiumPixelFormat(fourcc),
+            FourCCToChromiumPixelFormat(best_fourcc))) {
       best_fourcc = fourcc;
     }
   }
@@ -218,7 +220,7 @@ media::VideoCapturePixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   // yes/no and preserve aspect ratio yes/no when scaling. Currently we set
   // cropping and preservation.
   NSDictionary* videoSettingsDictionary = @{
-    (id)kCVPixelBufferWidthKey : @(width), (id)
+    (id) kCVPixelBufferWidthKey : @(width), (id)
     kCVPixelBufferHeightKey : @(height), (id)
     kCVPixelBufferPixelFormatTypeKey : @(best_fourcc),
     AVFoundationGlue::AVVideoScalingModeKey() :
@@ -279,8 +281,8 @@ media::VideoCapturePixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
 
 // |captureOutput| is called by the capture device to deliver a new frame.
 - (void)captureOutput:(CrAVCaptureOutput*)captureOutput
-    didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
-           fromConnection:(CrAVCaptureConnection*)connection {
+didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
+       fromConnection:(CrAVCaptureConnection*)connection {
   // AVFoundation calls from a number of threads, depending on, at least, if
   // Chrome is on foreground or background. Sample the actual thread here.
   callback_thread_checker_.DetachFromThread();
@@ -339,9 +341,10 @@ media::VideoCapturePixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
 - (void)onVideoError:(NSNotification*)errorNotification {
   NSError* error = base::mac::ObjCCast<NSError>([[errorNotification userInfo]
       objectForKey:AVFoundationGlue::AVCaptureSessionErrorKey()]);
-  [self sendErrorString:
-            [NSString stringWithFormat:@"%@: %@", [error localizedDescription],
-                                       [error localizedFailureReason]]];
+  [self sendErrorString:[NSString
+                            stringWithFormat:@"%@: %@",
+                                             [error localizedDescription],
+                                             [error localizedFailureReason]]];
 }
 
 - (void)sendErrorString:(NSString*)error {

@@ -308,7 +308,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
 
   if (capture_params_.requested_format.pixel_storage ==
       media::PIXEL_STORAGE_TEXTURE) {
-    DCHECK_EQ(media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB,
+    DCHECK_EQ(media::PIXEL_FORMAT_ARGB,
               capture_params_.requested_format.pixel_format);
     DCHECK(!video_frame.get());
     cc::TextureMailbox texture_mailbox;

@@ -102,15 +102,15 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceSupportedFormats(
     base::android::ScopedJavaLocalRef<jobject> format(
         env, env->GetObjectArrayElement(collected_formats.obj(), i));
 
-    VideoCapturePixelFormat pixel_format =
-        media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
+    VideoPixelFormat pixel_format =
+        media::PIXEL_FORMAT_UNKNOWN;
     switch (media::Java_VideoCaptureFactory_getCaptureFormatPixelFormat(
         env, format.obj())) {
       case VideoCaptureDeviceAndroid::ANDROID_IMAGE_FORMAT_YV12:
-        pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_YV12;
+        pixel_format = media::PIXEL_FORMAT_YV12;
         break;
       case VideoCaptureDeviceAndroid::ANDROID_IMAGE_FORMAT_NV21:
-        pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_NV21;
+        pixel_format = media::PIXEL_FORMAT_NV21;
         break;
       default:
         continue;

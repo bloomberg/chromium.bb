@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "media/base/media_export.h"
+#include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -16,26 +17,6 @@ namespace media {
 // TODO(wjia): this type should be defined in a common place and
 // shared with device manager.
 typedef int VideoCaptureSessionId;
-
-// TODO(dshwang): replace it with media::VideoPixelFormat. crbug.com/489744
-// Color formats from camera. This list is sorted in order of preference.
-// TODO(emircan): http://crbug.com/521068 Consider if this list can be merged
-// with media::Format.
-// TODO(mcasas): http://crbug.com/504160 Consider making this an enum class.
-enum VideoCapturePixelFormat {
-  VIDEO_CAPTURE_PIXEL_FORMAT_I420,
-  VIDEO_CAPTURE_PIXEL_FORMAT_YV12,
-  VIDEO_CAPTURE_PIXEL_FORMAT_NV12,
-  VIDEO_CAPTURE_PIXEL_FORMAT_NV21,
-  VIDEO_CAPTURE_PIXEL_FORMAT_UYVY,
-  VIDEO_CAPTURE_PIXEL_FORMAT_YUY2,
-  VIDEO_CAPTURE_PIXEL_FORMAT_RGB24,
-  VIDEO_CAPTURE_PIXEL_FORMAT_RGB32,
-  VIDEO_CAPTURE_PIXEL_FORMAT_ARGB,
-  VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG,
-  VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN,  // Color format not set.
-  VIDEO_CAPTURE_PIXEL_FORMAT_MAX = VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN,
-};
 
 // Storage type for the pixels. In principle, all combinations of Storage and
 // Format are possible, though some are very typical, such as texture + ARGB,
@@ -101,15 +82,19 @@ struct MEDIA_EXPORT VideoCaptureFormat {
   VideoCaptureFormat();
   VideoCaptureFormat(const gfx::Size& frame_size,
                      float frame_rate,
-                     VideoCapturePixelFormat pixel_format);
+                     VideoPixelFormat pixel_format);
   VideoCaptureFormat(const gfx::Size& frame_size,
                      float frame_rate,
-                     VideoCapturePixelFormat pixel_format,
+                     VideoPixelFormat pixel_format,
                      VideoPixelStorage pixel_storage);
 
   static std::string ToString(const VideoCaptureFormat& format);
-  static std::string PixelFormatToString(VideoCapturePixelFormat format);
   static std::string PixelStorageToString(VideoPixelStorage storage);
+
+  // Compares the priority of the pixel formats. Returns true if |lhs| is the
+  // preferred pixel format in comparison with |rhs|. Returns false otherwise.
+  static bool ComparePixelFormatPreference(const VideoPixelFormat& lhs,
+                                           const VideoPixelFormat& rhs);
 
   // Returns the required buffer size to hold an image of a given
   // VideoCaptureFormat with no padding and tightly packed.
@@ -127,7 +112,7 @@ struct MEDIA_EXPORT VideoCaptureFormat {
 
   gfx::Size frame_size;
   float frame_rate;
-  VideoCapturePixelFormat pixel_format;
+  VideoPixelFormat pixel_format;
   VideoPixelStorage pixel_storage;
 };
 

@@ -143,7 +143,7 @@ static void RecordVideoCodecStats(const VideoDecoderConfig& video_config,
                              video_config.visible_rect().width());
   UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio",
                           video_config.visible_rect());
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoFramePixelFormat",
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoPixelFormatUnion",
                             video_config.format(), PIXEL_FORMAT_MAX + 1);
   UMA_HISTOGRAM_ENUMERATION("Media.VideoFrameColorSpace",
                             video_config.color_space(), COLOR_SPACE_MAX + 1);

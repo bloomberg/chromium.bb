@@ -59,11 +59,11 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   // Trampoline methods to workaround GMOCK problems with scoped_ptr<>.
   scoped_ptr<Buffer> ReserveOutputBuffer(
       const gfx::Size& dimensions,
-      media::VideoCapturePixelFormat format,
+      media::VideoPixelFormat format,
       media::VideoPixelStorage storage) override {
-    EXPECT_TRUE((format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 &&
+    EXPECT_TRUE((format == media::PIXEL_FORMAT_I420 &&
                  storage == media::PIXEL_STORAGE_CPU) ||
-                (format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB &&
+                (format == media::PIXEL_FORMAT_ARGB &&
                  storage == media::PIXEL_STORAGE_TEXTURE));
     DoReserveOutputBuffer();
     return scoped_ptr<Buffer>();
@@ -147,8 +147,7 @@ TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = kFrameRate;
-  capture_params.requested_format.pixel_format =
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
   capture_device->AllocateAndStart(capture_params, client.Pass());
   capture_device->StopAndDeAllocate();
 }

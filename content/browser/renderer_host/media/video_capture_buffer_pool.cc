@@ -111,7 +111,7 @@ class GpuMemoryBufferBufferHandle final
 class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
  public:
   SharedMemTracker();
-  bool Init(media::VideoCapturePixelFormat format,
+  bool Init(media::VideoPixelFormat format,
             media::VideoPixelStorage storage_type,
             const gfx::Size& dimensions) override;
 
@@ -141,7 +141,7 @@ class VideoCaptureBufferPool::SharedMemTracker final : public Tracker {
 class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
  public:
   GpuMemoryBufferTracker();
-  bool Init(media::VideoCapturePixelFormat format,
+  bool Init(media::VideoPixelFormat format,
             media::VideoPixelStorage storage_type,
             const gfx::Size& dimensions) override;
   ~GpuMemoryBufferTracker() override;
@@ -169,7 +169,7 @@ class VideoCaptureBufferPool::GpuMemoryBufferTracker final : public Tracker {
 VideoCaptureBufferPool::SharedMemTracker::SharedMemTracker() : Tracker() {}
 
 bool VideoCaptureBufferPool::SharedMemTracker::Init(
-    media::VideoCapturePixelFormat format,
+    media::VideoPixelFormat format,
     media::VideoPixelStorage storage_type,
     const gfx::Size& dimensions) {
   DVLOG(2) << "allocating ShMem of " << dimensions.ToString();
@@ -197,7 +197,7 @@ VideoCaptureBufferPool::GpuMemoryBufferTracker::~GpuMemoryBufferTracker() {
 }
 
 bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
-    media::VideoCapturePixelFormat format,
+    media::VideoPixelFormat format,
     media::VideoPixelStorage storage_type,
     const gfx::Size& dimensions) {
   DVLOG(2) << "allocating GMB for " << dimensions.ToString();
@@ -206,7 +206,7 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
   DCHECK(BrowserGpuMemoryBufferManager::current());
   // This class is only expected to be called with I420 buffer requests at this
   // point.
-  DCHECK_EQ(format, media::VIDEO_CAPTURE_PIXEL_FORMAT_I420);
+  DCHECK_EQ(format, media::PIXEL_FORMAT_I420);
   set_pixel_format(format);
   set_storage_type(storage_type);
   set_pixel_count(dimensions.GetArea());
@@ -340,7 +340,7 @@ VideoCaptureBufferPool::GetBufferHandle(int buffer_id) {
 }
 
 int VideoCaptureBufferPool::ReserveForProducer(
-    media::VideoCapturePixelFormat format,
+    media::VideoPixelFormat format,
     media::VideoPixelStorage storage,
     const gfx::Size& dimensions,
     int* buffer_id_to_drop) {
@@ -404,7 +404,7 @@ double VideoCaptureBufferPool::GetBufferPoolUtilization() const {
 }
 
 int VideoCaptureBufferPool::ReserveForProducerInternal(
-    media::VideoCapturePixelFormat pixel_format,
+    media::VideoPixelFormat pixel_format,
     media::VideoPixelStorage storage_type,
     const gfx::Size& dimensions,
     int* buffer_id_to_drop) {

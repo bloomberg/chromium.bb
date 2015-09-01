@@ -351,7 +351,7 @@ void PepperVideoCaptureHost::SetRequestedInfo(
 
   video_capture_params_.requested_format = media::VideoCaptureFormat(
       gfx::Size(device_info.width, device_info.height), frames_per_second,
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420);
+      media::PIXEL_FORMAT_I420);
 }
 
 void PepperVideoCaptureHost::DetachPlatformVideoCapture() {

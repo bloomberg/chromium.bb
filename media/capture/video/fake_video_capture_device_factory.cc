@@ -80,8 +80,8 @@ void FakeVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
                                        gfx::Size(1920, 1080)};
   supported_formats->clear();
   for (const auto& size : supported_sizes) {
-    supported_formats->push_back(VideoCaptureFormat(
-        size, frame_rate, media::VIDEO_CAPTURE_PIXEL_FORMAT_I420));
+    supported_formats->push_back(
+        VideoCaptureFormat(size, frame_rate, media::PIXEL_FORMAT_I420));
   }
 }
 

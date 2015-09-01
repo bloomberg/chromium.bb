@@ -390,7 +390,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
                std::min(params.requested_format.frame_rate, kMaxFrameRate));
   // Leave the pixel format selection to AVFoundation/QTKit. The pixel format
   // will be passed to |ReceiveFrame|.
-  capture_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
+  capture_format_.pixel_format = PIXEL_FORMAT_UNKNOWN;
 
   // QTKit: Set the capture resolution only if this is VGA or smaller, otherwise
   // leave it unconfigured and start capturing: QTKit will produce frames at the

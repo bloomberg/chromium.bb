@@ -32,7 +32,7 @@ const DWORD kFirstVideoStream =
 class MEDIA_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
                                              public VideoCaptureDevice {
  public:
-  static bool FormatFromGuid(const GUID& guid, VideoCapturePixelFormat* format);
+  static bool FormatFromGuid(const GUID& guid, VideoPixelFormat* format);
 
   explicit VideoCaptureDeviceMFWin(const Name& device_name);
   ~VideoCaptureDeviceMFWin() override;

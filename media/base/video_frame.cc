@@ -87,12 +87,17 @@ static gfx::Size SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_I420:
         case PIXEL_FORMAT_YV12A:
         case PIXEL_FORMAT_NV12:
+        case PIXEL_FORMAT_NV21:
           return gfx::Size(2, 2);
 
         case PIXEL_FORMAT_UNKNOWN:
+        case PIXEL_FORMAT_UYVY:
+        case PIXEL_FORMAT_YUY2:
         case PIXEL_FORMAT_ARGB:
         case PIXEL_FORMAT_XRGB:
-        case PIXEL_FORMAT_UYVY:
+        case PIXEL_FORMAT_RGB24:
+        case PIXEL_FORMAT_RGB32:
+        case PIXEL_FORMAT_MJPEG:
           break;
       }
   }
@@ -119,10 +124,15 @@ static int BytesPerElement(VideoPixelFormat format, size_t plane) {
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGB32:
       return 4;
+    case PIXEL_FORMAT_RGB24:
+      return 3;
     case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_YUY2:
       return 2;
-    case PIXEL_FORMAT_NV12: {
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21: {
       static const int bytes_per_element[] = {1, 2};
       DCHECK_LT(plane, arraysize(bytes_per_element));
       return bytes_per_element[plane];
@@ -133,6 +143,8 @@ static int BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_YV12A:
     case PIXEL_FORMAT_YV24:
       return 1;
+    case PIXEL_FORMAT_MJPEG:
+      return 0;
     case PIXEL_FORMAT_UNKNOWN:
       break;
   }
@@ -164,7 +176,7 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
     return true;
 
   // Make sure new formats are properly accounted for in the method.
-  static_assert(PIXEL_FORMAT_MAX == 9,
+  static_assert(PIXEL_FORMAT_MAX == 14,
                 "Added pixel format, please review IsValidConfig()");
 
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -519,15 +531,20 @@ scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
 // static
 size_t VideoFrame::NumPlanes(VideoPixelFormat format) {
   switch (format) {
+    case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_RGB32:
+    case PIXEL_FORMAT_MJPEG:
       return 1;
     case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21:
       return 2;
+    case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_YV16:
-    case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_YV24:
       return 3;
     case PIXEL_FORMAT_YV12A:

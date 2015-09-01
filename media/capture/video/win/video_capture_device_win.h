@@ -59,7 +59,7 @@ class VideoCaptureDeviceWin : public base::NonThreadSafe,
                                               PIN_DIRECTION pin_dir,
                                               REFGUID category,
                                               REFGUID major_type);
-  static VideoCapturePixelFormat TranslateMediaSubtypeToPixelFormat(
+  static VideoPixelFormat TranslateMediaSubtypeToPixelFormat(
       const GUID& sub_type);
 
   explicit VideoCaptureDeviceWin(const Name& device_name);

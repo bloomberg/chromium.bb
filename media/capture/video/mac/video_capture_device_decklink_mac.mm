@@ -234,14 +234,14 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(
   uint8* video_data = NULL;
   video_frame->GetBytes(reinterpret_cast<void**>(&video_data));
 
-  media::VideoCapturePixelFormat pixel_format =
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
+  media::VideoPixelFormat pixel_format =
+      media::PIXEL_FORMAT_UNKNOWN;
   switch (video_frame->GetPixelFormat()) {
     case bmdFormat8BitYUV:  // A.k.a. '2vuy';
-      pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_UYVY;
+      pixel_format = media::PIXEL_FORMAT_UYVY;
       break;
     case bmdFormat8BitARGB:
-      pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB;
+      pixel_format = media::PIXEL_FORMAT_ARGB;
       break;
     default:
       SendErrorString("Unsupported pixel format");
@@ -421,7 +421,7 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
       const media::VideoCaptureFormat format(
           gfx::Size(display_mode->GetWidth(), display_mode->GetHeight()),
           GetDisplayModeFrameRate(display_mode),
-          VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN);
+          PIXEL_FORMAT_UNKNOWN);
       supported_formats->push_back(format);
       DVLOG(2) << device.name() << " " << VideoCaptureFormat::ToString(format);
       display_mode.Release();

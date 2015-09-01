@@ -25,7 +25,7 @@ SinkInputPin::SinkInputPin(IBaseFilter* filter, SinkFilterObserver* observer)
 }
 
 void SinkInputPin::SetRequestedMediaFormat(
-    VideoCapturePixelFormat pixel_format,
+    VideoPixelFormat pixel_format,
     float frame_rate,
     const BITMAPINFOHEADER& info_header) {
   requested_pixel_format_ = pixel_format;
@@ -33,7 +33,7 @@ void SinkInputPin::SetRequestedMediaFormat(
   requested_info_header_ = info_header;
   resulting_format_.frame_size.SetSize(0, 0);
   resulting_format_.frame_rate = 0;
-  resulting_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_UNKNOWN;
+  resulting_format_.pixel_format = PIXEL_FORMAT_UNKNOWN;
 }
 
 const VideoCaptureFormat& SinkInputPin::ResultingFormat() {
@@ -67,27 +67,27 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
   }
   if (sub_type == kMediaSubTypeI420 &&
       pvi->bmiHeader.biCompression == MAKEFOURCC('I', '4', '2', '0')) {
-    resulting_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+    resulting_format_.pixel_format = PIXEL_FORMAT_I420;
     return true;
   }
   if (sub_type == MEDIASUBTYPE_YUY2 &&
       pvi->bmiHeader.biCompression == MAKEFOURCC('Y', 'U', 'Y', '2')) {
-    resulting_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_YUY2;
+    resulting_format_.pixel_format = PIXEL_FORMAT_YUY2;
     return true;
   }
   if (sub_type == MEDIASUBTYPE_MJPG &&
       pvi->bmiHeader.biCompression == MAKEFOURCC('M', 'J', 'P', 'G')) {
-    resulting_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG;
+    resulting_format_.pixel_format = PIXEL_FORMAT_MJPEG;
     return true;
   }
   if (sub_type == MEDIASUBTYPE_RGB24 &&
       pvi->bmiHeader.biCompression == BI_RGB) {
-    resulting_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_RGB24;
+    resulting_format_.pixel_format = PIXEL_FORMAT_RGB24;
     return true;
   }
   if (sub_type == MEDIASUBTYPE_RGB32 &&
       pvi->bmiHeader.biCompression == BI_RGB) {
-    resulting_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_RGB32;
+    resulting_format_.pixel_format = PIXEL_FORMAT_RGB32;
     return true;
   }
   return false;
@@ -113,7 +113,7 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
   media_type->formattype = FORMAT_VideoInfo;
   media_type->bTemporalCompression = FALSE;
 
-  if (requested_pixel_format_ == VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG) {
+  if (requested_pixel_format_ == PIXEL_FORMAT_MJPEG) {
     // If the requested pixel format is MJPEG, accept only MJPEG.
     // This is ok since the capabilities of the capturer have been
     // enumerated and we know that it is supported.

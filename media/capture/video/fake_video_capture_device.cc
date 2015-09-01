@@ -100,20 +100,20 @@ void FakeVideoCaptureDevice::AllocateAndStart(
   if (buffer_ownership_ == BufferOwnership::CLIENT_BUFFERS) {
     if (planarity_ == BufferPlanarity::PACKED) {
       capture_format_.pixel_storage = PIXEL_STORAGE_CPU;
-      capture_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_ARGB;
+      capture_format_.pixel_format = PIXEL_FORMAT_ARGB;
       DVLOG(1) << "starting with client argb buffers";
     } else if (planarity_ == BufferPlanarity::TRIPLANAR) {
       capture_format_.pixel_storage = PIXEL_STORAGE_GPUMEMORYBUFFER;
-      capture_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+      capture_format_.pixel_format = PIXEL_FORMAT_I420;
       DVLOG(1) << "starting with gmb I420 buffers";
     }
   } else if (buffer_ownership_ == BufferOwnership::OWN_BUFFERS) {
     capture_format_.pixel_storage = PIXEL_STORAGE_CPU;
-    capture_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+    capture_format_.pixel_format = PIXEL_FORMAT_I420;
     DVLOG(1) << "starting with own I420 buffers";
   }
 
-  if (capture_format_.pixel_format == VIDEO_CAPTURE_PIXEL_FORMAT_I420) {
+  if (capture_format_.pixel_format == PIXEL_FORMAT_I420) {
     fake_frame_.reset(new uint8[VideoFrame::AllocationSize(
         PIXEL_FORMAT_I420, capture_format_.frame_size)]);
   }
@@ -177,7 +177,7 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
   DCHECK(capture_buffer->data()) << "Buffer has NO backing memory";
 
   if (capture_format_.pixel_storage == PIXEL_STORAGE_GPUMEMORYBUFFER &&
-      capture_format_.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420) {
+      capture_format_.pixel_format == media::PIXEL_FORMAT_I420) {
     // Since SkBitmap expects a packed&continuous memory region for I420, we
     // need to use |fake_frame_| to draw onto.
     memset(fake_frame_.get(), 0, capture_format_.ImageAllocationSize());
@@ -196,7 +196,7 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
     }
   } else {
     DCHECK_EQ(capture_format_.pixel_storage, PIXEL_STORAGE_CPU);
-    DCHECK_EQ(capture_format_.pixel_format, VIDEO_CAPTURE_PIXEL_FORMAT_ARGB);
+    DCHECK_EQ(capture_format_.pixel_format, PIXEL_FORMAT_ARGB);
     uint8_t* data_ptr = static_cast<uint8_t*>(capture_buffer->data());
     memset(data_ptr, 0, capture_buffer->mapped_size());
     DrawPacman(true /* use_argb */, data_ptr, frame_count_,

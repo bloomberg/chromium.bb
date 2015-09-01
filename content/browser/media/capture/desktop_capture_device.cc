@@ -314,7 +314,7 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
       output_data, output_bytes,
       media::VideoCaptureFormat(
           gfx::Size(output_size.width(), output_size.height()),
-          requested_frame_rate_, media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB),
+          requested_frame_rate_, media::PIXEL_FORMAT_ARGB),
       0, base::TimeTicks::Now());
 }
 

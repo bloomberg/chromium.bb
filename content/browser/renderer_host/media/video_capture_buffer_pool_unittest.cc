@@ -23,16 +23,16 @@
 namespace content {
 
 struct PixelFormatAndStorage {
-  media::VideoCapturePixelFormat pixel_format;
+  media::VideoPixelFormat pixel_format;
   media::VideoPixelStorage pixel_storage;
 };
 
 static const PixelFormatAndStorage kCapturePixelFormatAndStorages[] = {
-    {media::VIDEO_CAPTURE_PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU},
-    {media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_CPU},
-    {media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_TEXTURE},
+    {media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU},
+    {media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_CPU},
+    {media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_TEXTURE},
 #if !defined(OS_ANDROID)
-    {media::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
+    {media::PIXEL_FORMAT_I420,
      media::PIXEL_STORAGE_GPUMEMORYBUFFER},
 #endif
 };
@@ -161,9 +161,8 @@ class VideoCaptureBufferPoolTest
     int buffer_id_to_drop = ~expected_dropped_id_;
     DVLOG(1) << media::VideoCaptureFormat::PixelStorageToString(
                     format_and_storage.pixel_storage) << " "
-             << media::VideoCaptureFormat::PixelFormatToString(
-                    format_and_storage.pixel_format) << " "
-             << dimensions.ToString();
+             << media::VideoPixelFormatToString(format_and_storage.pixel_format)
+             << " " << dimensions.ToString();
     const int buffer_id = pool_->ReserveForProducer(
         format_and_storage.pixel_format, format_and_storage.pixel_storage,
         dimensions, &buffer_id_to_drop);

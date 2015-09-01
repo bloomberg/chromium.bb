@@ -230,7 +230,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // object is destroyed or returned.
     virtual scoped_ptr<Buffer> ReserveOutputBuffer(
         const gfx::Size& dimensions,
-        VideoCapturePixelFormat format,
+        VideoPixelFormat format,
         VideoPixelStorage storage) = 0;
 
     // Captured new video data, held in |frame| or |buffer|, respectively for

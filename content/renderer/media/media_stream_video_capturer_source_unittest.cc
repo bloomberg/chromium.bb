@@ -116,8 +116,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureFixedResolutionByDefault) {
       MediaStreamVideoSource::kDefaultHeight);
   expected_params.requested_format.frame_rate =
       MediaStreamVideoSource::kDefaultFrameRate;
-  expected_params.requested_format.pixel_format =
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
   expected_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_RESOLUTION;
 
@@ -141,8 +140,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
       MediaStreamVideoSource::kDefaultHeight);
   expected_params.requested_format.frame_rate =
       MediaStreamVideoSource::kDefaultFrameRate;
-  expected_params.requested_format.pixel_format =
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
   expected_params.resolution_change_policy =
       media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
 
@@ -169,8 +167,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   media::VideoCaptureParams expected_params;
   expected_params.requested_format.frame_size.SetSize(1920, 1080);
   expected_params.requested_format.frame_rate = 60.0;
-  expected_params.requested_format.pixel_format =
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
   expected_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
 
@@ -203,8 +200,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
   media::VideoCaptureParams expected_params;
   expected_params.requested_format.frame_size.SetSize(1920, 1080);
   expected_params.requested_format.frame_rate = 60.0;
-  expected_params.requested_format.pixel_format =
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
   expected_params.resolution_change_policy =
       media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
 
@@ -230,8 +226,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
         MediaStreamVideoSource::kDefaultHeight);
     expected_params.requested_format.frame_rate =
         MediaStreamVideoSource::kDefaultFrameRate;
-    expected_params.requested_format.pixel_format =
-        media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+    expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
     expected_params.resolution_change_policy =
         media::RESOLUTION_POLICY_FIXED_RESOLUTION;
     if (frequency == 50) {
@@ -269,8 +264,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest,
       MediaStreamVideoSource::kDefaultHeight);
   expected_params.requested_format.frame_rate =
       MediaStreamVideoSource::kDefaultFrameRate;
-  expected_params.requested_format.pixel_format =
-      media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
   expected_params.resolution_change_policy =
       media::RESOLUTION_POLICY_FIXED_RESOLUTION;
   // Invalid frequencies should result in default setting.

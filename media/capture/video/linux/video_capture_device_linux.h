@@ -25,7 +25,7 @@ class V4L2CaptureDelegate;
 // Linux V4L2 implementation of VideoCaptureDevice.
 class VideoCaptureDeviceLinux : public VideoCaptureDevice {
  public:
-  static VideoCapturePixelFormat V4l2FourCcToChromiumPixelFormat(
+  static VideoPixelFormat V4l2FourCcToChromiumPixelFormat(
       uint32 v4l2_fourcc);
   static std::list<uint32_t> GetListOfUsableFourCCs(bool favour_mjpeg);
 
@@ -44,7 +44,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   static int TranslatePowerLineFrequencyToV4L2(int frequency);
 
   // Internal delegate doing the actual capture setting, buffer allocation and
-  // circulacion with the V4L2 API. Created and deleted in the thread where
+  // circulation with the V4L2 API. Created and deleted in the thread where
   // VideoCaptureDeviceLinux lives but otherwise operating on |v4l2_thread_|.
   scoped_refptr<V4L2CaptureDelegate> capture_impl_;
 

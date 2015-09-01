@@ -93,16 +93,21 @@ enum SampleFormat {
 // Kept in sync with media::VideoPixelFormat via static_asserts.
 enum VideoFormat {
   UNKNOWN = 0,
-  YV12,
   I420,
+  YV12,
   YV16,
   YV12A,
   YV24,
   NV12,
+  NV21,
+  UYVY,
+  YUY2,
   ARGB,
   XRGB,
-  UYVY,
-  FORMAT_MAX = UYVY,
+  RGB24,
+  RGB32,
+  MJPEG,
+  FORMAT_MAX = MJPEG,
 };
 
 // Kept in sync with media::ColorSpace via static_asserts.

@@ -69,7 +69,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
     kError       // Hit error. User needs to recover by destroying the object.
   };
 
-  VideoCapturePixelFormat GetColorspace();
+  VideoPixelFormat GetColorspace();
   void SetErrorState(const std::string& reason);
 
   // Prevent racing on accessing |state_| and |client_| since both could be

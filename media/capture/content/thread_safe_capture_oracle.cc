@@ -72,8 +72,8 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       client_->ReserveOutputBuffer(coded_size,
                                    (params_.requested_format.pixel_storage !=
                                     media::PIXEL_STORAGE_TEXTURE)
-                                       ? media::VIDEO_CAPTURE_PIXEL_FORMAT_I420
-                                       : media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB,
+                                       ? media::PIXEL_FORMAT_I420
+                                       : media::PIXEL_FORMAT_ARGB,
                                    params_.requested_format.pixel_storage));
   // Get the current buffer pool utilization and attenuate it: The utilization
   // reported to the oracle is in terms of a maximum sustainable amount (not the
