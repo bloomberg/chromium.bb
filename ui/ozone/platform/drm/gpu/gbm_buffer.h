@@ -26,10 +26,15 @@ class GbmBuffer : public GbmBufferBase {
       gfx::BufferFormat format,
       const gfx::Size& size,
       gfx::BufferUsage usage);
+  gfx::BufferUsage GetUsage() const { return usage_; }
 
  private:
-  GbmBuffer(const scoped_refptr<GbmDevice>& gbm, gbm_bo* bo, bool scanout);
+  GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
+            gbm_bo* bo,
+            gfx::BufferUsage usage);
   ~GbmBuffer() override;
+
+  gfx::BufferUsage usage_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);
 };

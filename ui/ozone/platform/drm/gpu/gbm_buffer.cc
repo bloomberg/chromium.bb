@@ -37,9 +37,9 @@ int GetGbmFormatFromBufferFormat(gfx::BufferFormat fmt) {
 
 GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gbm_bo* bo,
-                     bool scanout)
-    : GbmBufferBase(gbm, bo, scanout) {
-}
+                     gfx::BufferUsage usage)
+    : GbmBufferBase(gbm, bo, usage == gfx::BufferUsage::SCANOUT),
+      usage_(usage) {}
 
 GbmBuffer::~GbmBuffer() {
   if (bo())
@@ -62,11 +62,11 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   gbm_bo* bo = gbm_bo_create(gbm->device(), size.width(), size.height(),
                              GetGbmFormatFromBufferFormat(format), flags);
   if (!bo)
-    return NULL;
+    return nullptr;
 
-  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, use_scanout));
+  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, usage));
   if (use_scanout && !buffer->GetFramebufferId())
-    return NULL;
+    return nullptr;
 
   return buffer;
 }
@@ -132,6 +132,7 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      gfx::OverlayTransform plane_transform,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
+  DCHECK(buffer_->GetUsage() == gfx::BufferUsage::SCANOUT);
   gfx::Size required_size;
   if (plane_z_order &&
       ShouldApplyScaling(display_bounds, crop_rect, &required_size)) {
