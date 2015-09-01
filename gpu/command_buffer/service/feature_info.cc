@@ -537,6 +537,15 @@ void FeatureInfo::InitializeFeatures() {
     validators_.read_pixel_format.AddValue(GL_BGRA_EXT);
   }
 
+  // We only support timer queries if we also support glGetInteger64v.
+  // For GL_EXT_disjoint_timer_query, glGetInteger64v is only support under ES3.
+  if ((gl_version_info_->is_es3 &&
+       extensions.Contains("GL_EXT_disjoint_timer_query")) ||
+      extensions.Contains("GL_ARB_timer_query") ||
+      extensions.Contains("GL_EXT_timer_query")) {
+    AddExtensionString("GL_EXT_disjoint_timer_query");
+  }
+
   if (enable_render_buffer_bgra) {
     feature_flags_.ext_render_buffer_format_bgra8888 = true;
     AddExtensionString("GL_CHROMIUM_renderbuffer_format_BGRA8888");
