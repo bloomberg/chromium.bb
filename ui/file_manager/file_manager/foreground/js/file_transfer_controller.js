@@ -302,22 +302,58 @@ FileTransferController.prototype.attachCopyPasteHandlers_ = function() {
  */
 FileTransferController.prototype.cutOrCopy_ =
     function(clipboardData, effectAllowed) {
-  // Existence of the volumeInfo is checked in canXXX methods.
   var volumeInfo = this.volumeManager_.getVolumeInfo(
       this.directoryModel_.getCurrentDirEntry());
+  if (!volumeInfo)
+    return;
+
+  this.appendCutOrCopyInfo_(clipboardData, effectAllowed, volumeInfo,
+      this.selectionHandler_.selection.entries,
+      !this.selectionHandler_.isAvailable());
+  this.appendUriList_(clipboardData,
+      this.selectionHandler_.selection.entries);
+};
+
+/**
+ * Appends copy or cut information of |entries| to |clipboardData|.
+ * @param {!ClipboardData} clipboardData ClipboardData from the event.
+ * @param {string} effectAllowed Value must be valid for the
+ *     |clipboardData.effectAllowed| property.
+ * @param {!VolumeInfo} sourceVolumeInfo
+ * @param {!Array<!Entry>} entries
+ * @param {boolean} missingFileContents
+ * @private
+ */
+FileTransferController.prototype.appendCutOrCopyInfo_ = function(
+    clipboardData, effectAllowed, sourceVolumeInfo, entries,
+    missingFileContents) {
   // Tag to check it's filemanager data.
   clipboardData.setData('fs/tag', 'filemanager-data');
   clipboardData.setData('fs/sourceRootURL',
-                       volumeInfo.fileSystem.root.toURL());
-  var sourceURLs = util.entriesToURLs(this.selectionHandler_.selection.entries);
+                       sourceVolumeInfo.fileSystem.root.toURL());
+
+  var sourceURLs = util.entriesToURLs(entries);
   clipboardData.setData('fs/sources', sourceURLs.join('\n'));
+
   clipboardData.effectAllowed = effectAllowed;
   clipboardData.setData('fs/effectallowed', effectAllowed);
+
   clipboardData.setData('fs/missingFileContents',
-                       (!this.selectionHandler_.isAvailable()).toString());
+      missingFileContents.toString());
+};
+
+/**
+ * Appends uri-list of |entries| to |clipboardData|.
+ * @param {!ClipboardData} clipboardData ClipboardData from the event.
+ * @param {!Array<!Entry>} entries
+ * @private
+ */
+FileTransferController.prototype.appendUriList_ = function(
+    clipboardData, entries) {
   var externalFileUrl;
-  for (var i = 0; i < this.selectionHandler_.selection.entries.length; i++) {
-    var url = this.selectionHandler_.selection.entries[i].toURL();
+
+  for (var i = 0; i < entries.length; i++) {
+    var url = entries[i].toURL();
     if (!this.selectedAsyncData_[url])
       continue;
     if (this.selectedAsyncData_[url].file)
@@ -325,6 +361,7 @@ FileTransferController.prototype.cutOrCopy_ =
     if (!externalFileUrl)
       externalFileUrl = this.selectedAsyncData_[url].externalFileUrl;
   }
+
   if (externalFileUrl)
     clipboardData.setData('text/uri-list', externalFileUrl);
 };
@@ -951,11 +988,45 @@ FileTransferController.prototype.isDocumentWideEvent_ = function() {
  */
 FileTransferController.prototype.onCopy_ = function(event) {
   if (!this.isDocumentWideEvent_() ||
-      !this.canCopyOrDrag_()) {
+      !this.canCopy_()) {
     return;
   }
+
   event.preventDefault();
-  this.cutOrCopy_(assert(event.clipboardData), 'copy');
+
+  var clipboardData = assert(event.clipboardData);
+
+  // If current focus is on DirectoryTree, write selected item of DirectoryTree
+  // to system clipboard.
+  if (document.activeElement instanceof DirectoryTree) {
+    var selectedItem = document.activeElement.selectedItem;
+    if (selectedItem === null)
+      return;
+
+    var entry = selectedItem.entry;
+
+    var volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+    if (!volumeInfo)
+      return;
+
+    // When this value is false, we cannot copy between different sources.
+    var missingFileContents =
+        volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE &&
+        this.volumeManager_.getDriveConnectionState().type ===
+            VolumeManagerCommon.DriveConnectionType.OFFLINE;
+
+    this.appendCutOrCopyInfo_(clipboardData, 'copy', volumeInfo, [entry],
+        missingFileContents);
+
+    // Perform ripple animation.
+    var ripple = selectedItem.querySelector('paper-ripple');
+    ripple.simulatedRipple();
+    return;
+  }
+
+  // If current focus is not on DirectoryTree, write the current selection in
+  // the list to system clipboard.
+  this.cutOrCopy_(clipboardData, 'copy');
   this.blinkSelection_();
 };
 
@@ -968,8 +1039,32 @@ FileTransferController.prototype.onBeforeCopy_ = function(event) {
     return;
 
   // queryCommandEnabled returns true if event.defaultPrevented is true.
-  if (this.canCopyOrDrag_())
+  if (this.canCopy_())
     event.preventDefault();
+};
+
+/**
+ * @return {boolean}
+ * @private
+ */
+FileTransferController.prototype.canCopy_ = function() {
+  this.copyCommand_.setHidden(false);
+
+  if (document.activeElement instanceof DirectoryTree) {
+    var selectedItem = document.activeElement.selectedItem;
+    if (!selectedItem)
+      return false;
+
+    if (!CommandUtil.shouldShowMenuItemForEntry(
+        this.volumeManager_, selectedItem.entry)) {
+      this.copyCommand_.setHidden(true);
+      return false;
+    }
+
+    return true;
+  }
+
+  return this.canCopyOrDrag_();
 };
 
 /**
@@ -1169,7 +1264,7 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
       function(metadataList) {
         // |Copy| is the only menu item affected by allDriveFilesAvailable_.
         // It could be open right now, update its UI.
-        this.copyCommand_.disabled = !this.canCopyOrDrag_();
+        this.copyCommand_.disabled = !this.canCopy_();
         for (var i = 0; i < entries.length; i++) {
           if (entries[i].isFile) {
             asyncData[entries[i].toURL()].externalFileUrl =

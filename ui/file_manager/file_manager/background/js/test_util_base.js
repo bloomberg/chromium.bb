@@ -134,6 +134,31 @@ test.util.sync.getDocument_ = function(contentWindow, opt_iframeQuery) {
 };
 
 /**
+ * Gets the element specified by |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be used.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {string=} opt_iframeQuery Query for the iframe.
+ * @return {HTMLElement} If the specified element is not found, null is
+ *     returned.
+ * @private
+ */
+test.util.sync.getElement_ = function(
+    contentWindow, targetQuery, opt_iframeQuery) {
+  var doc = test.util.sync.getDocument_(contentWindow, opt_iframeQuery);
+  if (!doc)
+    return null;
+
+  var target = doc.querySelector(targetQuery);
+  if (!target) {
+    console.error('Target element for ' + targetQuery + ' not found.');
+    return null;
+  }
+
+  return target;
+};
+
+/**
  * Gets total Javascript error count from background page and each app window.
  * @return {number} Error count.
  */
@@ -262,16 +287,13 @@ test.util.sync.inputText = function(contentWindow, query, text) {
  */
 test.util.sync.sendEvent = function(
     contentWindow, targetQuery, event, opt_iframeQuery) {
-  var doc = test.util.sync.getDocument_(contentWindow, opt_iframeQuery);
-  if (doc) {
-    var target = doc.querySelector(targetQuery);
-    if (target) {
-      target.dispatchEvent(event);
-      return true;
-    }
-  }
-  console.error('Target element for ' + targetQuery + ' not found.');
-  return false;
+  var target = test.util.sync.getElement_(
+      contentWindow, targetQuery, opt_iframeQuery);
+  if (!target)
+    return false;
+
+  target.dispatchEvent(event);
+  return true;
 };
 
 /**
@@ -428,6 +450,26 @@ test.util.sync.fakeMouseUp = function(
   var event = new MouseEvent('mouseup', { bubbles: true });
   return test.util.sync.sendEvent(
       contentWindow, targetQuery, event, opt_iframeQuery);
+};
+
+/**
+ * Focuses to the element specified by |targetQuery|. This method does not
+ * provide any guarantee whether the element is actually focused or not.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {string=} opt_iframeQuery Optional iframe selector.
+ * @return {boolean} True if focus method of the element has been called, false
+ *     otherwise.
+ */
+test.util.sync.focus = function(contentWindow, targetQuery, opt_iframeQuery) {
+  var target = test.util.sync.getElement_(
+      contentWindow, targetQuery, opt_iframeQuery);
+  if (!target)
+    return false;
+
+  target.focus();
+  return true;
 };
 
 /**

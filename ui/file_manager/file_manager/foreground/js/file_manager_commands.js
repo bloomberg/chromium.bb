@@ -288,6 +288,23 @@ CommandUtil.getOnlyOneSelectedDirectory = function(selection) {
 };
 
 /**
+ * If entry is fake or root entry, we don't show menu item for it.
+ * @param {VolumeManagerWrapper} volumeManager
+ * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @return {boolean} True if we should show menu item for the entry.
+ */
+CommandUtil.shouldShowMenuItemForEntry = function(volumeManager, entry) {
+  if (!volumeManager || util.isFakeEntry(entry))
+    return false;
+
+  var volumeInfo = volumeManager.getVolumeInfo(entry);
+  if (!volumeInfo)
+    return false;
+
+  return volumeInfo.displayRoot !== entry;
+};
+
+/**
  * Handle of the command events.
  * @param {!FileManager} fileManager FileManager.
  * @constructor
@@ -702,7 +719,8 @@ CommandHandler.COMMANDS_['delete'] = (function() {
       // Execute might be called without a call of canExecute method,
       // e.g. called directly from code. Double check here not to delete
       // undeletable entries.
-      if (this.containsFakeOrRootEntry_(entries, fileManager) ||
+      if (!entries.every(CommandUtil.shouldShowMenuItemForEntry.bind(
+              null, fileManager.volumeManager)) ||
           this.containsReadOnlyEntry_(entries, fileManager))
         return;
 
@@ -723,7 +741,8 @@ CommandHandler.COMMANDS_['delete'] = (function() {
       var entries = CommandUtil.getCommandEntries(event.target);
 
       // If entries contain fake or root entry, hide delete option.
-      if (this.containsFakeOrRootEntry_(entries, fileManager)) {
+      if (!entries.every(CommandUtil.shouldShowMenuItemForEntry.bind(
+              null, fileManager.volumeManager))) {
         event.canExecute = false;
         event.command.setHidden(true);
         return;
@@ -732,24 +751,6 @@ CommandHandler.COMMANDS_['delete'] = (function() {
       event.canExecute = entries.length > 0 &&
           !this.containsReadOnlyEntry_(entries, fileManager);
       event.command.setHidden(false);
-    },
-
-    /**
-     * @param {!Array<!Entry>} entries
-     * @param {!FileManager} fileManager
-     * @return {boolean} True if entries contain fake or root entry.
-     */
-    containsFakeOrRootEntry_: function(entries, fileManager) {
-      return entries.some(function(entry) {
-        if (util.isFakeEntry(entry))
-          return true;
-
-        var volumeInfo = fileManager.volumeManager.getVolumeInfo(entry);
-        if (!volumeInfo)
-          return true;
-
-        return volumeInfo.displayRoot === entry;
-      });
     },
 
     /**

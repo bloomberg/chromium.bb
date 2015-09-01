@@ -164,6 +164,23 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       "deleteMenuItemIsDisabledWhenNoItemIsSelected"),
         TestParameter(NOT_IN_GUEST_MODE, "deleteOneItemFromToolbar")));
 
+#if defined(DISABLE_SLOW_FILESAPP_TESTS)
+#define MAYBE_DirectoryTreeContextMenu DISABLED_DirectoryTreeContextMenu
+#else
+#define MAYBE_DirectoryTreeContextMenu DirectoryTreeContextMenu
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_DirectoryTreeContextMenu,
+    FileManagerBrowserTest,
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "copyFromDirectoryTreeWithContextMenu"),
+        TestParameter(IN_GUEST_MODE, "copyFromDirectoryTreeWithContextMenu"),
+        TestParameter(NOT_IN_GUEST_MODE,
+                      "copyFromDirectoryTreeWithKeyboardShortcut"),
+        TestParameter(IN_GUEST_MODE,
+                      "copyFromDirectoryTreeWithKeyboardShortcut")));
+
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
 #define MAYBE_DriveSpecific DISABLED_DriveSpecific

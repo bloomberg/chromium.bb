@@ -357,6 +357,10 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
 
   item.dirEntry_ = dirEntry;
 
+  // Set helper attribute for testing.
+  if (window.IN_TEST)
+    item.setAttribute('full-path-for-testing', dirEntry.fullPath);
+
   // Sets up icons of the item.
   var icon = item.querySelector('.icon');
   icon.classList.add('item-icon');
@@ -419,6 +423,11 @@ function VolumeItem(modelItem, tree) {
 
   item.modelItem_ = modelItem;
   item.volumeInfo_ = modelItem.volumeInfo;
+
+  // Set helper attribute for testing.
+  if (window.IN_TEST)
+    item.setAttribute('volume-type-for-testing', item.volumeInfo_.volumeType);
+
   item.setupIcon_(item.querySelector('.icon'), item.volumeInfo_);
 
   // Attach the "eject" icon if the volume is ejectable.
