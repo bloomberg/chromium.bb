@@ -14,6 +14,7 @@ import time
 
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.mobmonitor.system import systeminfo
 
@@ -344,27 +345,31 @@ class DiskTest(cros_test_lib.MockTestCase):
 
     self.assertEquals(disk.DiskUsage(partition), mock_diskusage)
 
-  def testDiskByExisting(self):
-    """Test diskby information collection when a record exists."""
+  def testBlockDevicesExisting(self):
+    """Test block device information collection when a record exists."""
     disk = self._CreateDisk(1)
 
     device = '/dev/sda1'
-    dataname = '%s:%s' % (systeminfo.RESOURCENAME_DISKBY, device)
+    dataname = '%s:%s' % (systeminfo.RESOURCENAME_BLOCKDEVICE, device)
     data = 'testvalue'
 
     disk.Update(dataname, data)
 
-    self.assertEquals(disk.DiskBy(device), data)
+    self.assertEquals(disk.BlockDevices(device), data)
 
-  def testDiskBy(self):
-    """Test diskby info when there is no record or a record is stale."""
+  def testBlockDevice(self):
+    """Test block device info when there is no record or a record is stale."""
     disk = self._CreateDisk(1)
 
     mock_device = '/dev/sda1'
+    mock_size = 12345678987654321
     mock_ids = ['ata-ST1000DM003-1ER162_Z4Y3WQDB-part1']
     mock_labels = ['BOOT-PARTITION']
+    mock_lsblk = 'NAME="sda1" RM="0" TYPE="part" SIZE="%s"' % mock_size
 
-    # Mock the calls to cros_buil_lib.RunCommand.
+    self.StartPatcher(mock.patch('chromite.lib.osutils.ResolveSymlink'))
+    osutils.ResolveSymlink.return_value = '/dev/sda1'
+
     with cros_build_lib_unittest.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(
           partial_mock.In(systeminfo.SYSTEMFILE_DEV_DISKBY['ids']),
@@ -372,11 +377,14 @@ class DiskTest(cros_test_lib.MockTestCase):
       rc_mock.AddCmdResult(
           partial_mock.In(systeminfo.SYSTEMFILE_DEV_DISKBY['labels']),
           output='\n'.join(mock_labels))
+      rc_mock.AddCmdResult(partial_mock.In('lsblk'), output=mock_lsblk)
 
-      mock_diskby = systeminfo.RESOURCE_DISKBY(mock_device, mock_ids,
-                                               mock_labels)
+      mock_blockdevice = [systeminfo.RESOURCE_BLOCKDEVICE(mock_device,
+                                                          mock_size,
+                                                          mock_ids,
+                                                          mock_labels)]
 
-      self.assertEquals(disk.DiskBy(mock_device), mock_diskby)
+      self.assertEquals(disk.BlockDevices(mock_device), mock_blockdevice)
 
 
 class Cpu(cros_test_lib.MockTestCase):

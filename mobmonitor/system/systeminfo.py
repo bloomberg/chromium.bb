@@ -42,6 +42,7 @@ import os
 import time
 
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 
 
 SYSTEMFILE_PROC_MOUNTS = '/proc/mounts'
@@ -62,7 +63,7 @@ UPDATE_CPU_SEC = 2
 RESOURCENAME_MEMORY = 'memory'
 RESOURCENAME_DISKPARTITIONS = 'diskpartitions'
 RESOURCENAME_DISKUSAGE = 'diskusage'
-RESOURCENAME_DISKBY = 'diskby'
+RESOURCENAME_BLOCKDEVICE = 'blockdevice'
 RESOURCENAME_CPUPREVTIMES = 'cpuprevtimes'
 RESOURCENAME_CPUTIMES = 'cputimes'
 RESOURCENAME_CPULOADS = 'cpuloads'
@@ -75,7 +76,9 @@ RESOURCE_DISKPARTITION = collections.namedtuple('diskpartition',
 RESOURCE_DISKUSAGE = collections.namedtuple('diskusage', ['total', 'used',
                                                           'free',
                                                           'percent_used'])
-RESOURCE_DISKBY = collections.namedtuple('diskby', ['device', 'ids', 'labels'])
+RESOURCE_BLOCKDEVICE = collections.namedtuple('blockdevice',
+                                              ['device', 'size', 'ids',
+                                               'labels'])
 RESOURCE_CPUTIME = collections.namedtuple('cputime', ['cpu', 'total', 'idle',
                                                       'nonidle'])
 RESOURCE_CPULOAD = collections.namedtuple('cpuload', ['cpu', 'load'])
@@ -331,40 +334,62 @@ class Disk(SystemInfoStorage):
 
     return diskusage
 
-  @CheckStorage(RESOURCENAME_DISKBY)
-  def DiskBy(self, device):
-    """Collects information under the SYSTEMFILE_DEV_DISKBY directories.
+  @CheckStorage(RESOURCENAME_BLOCKDEVICE)
+  def BlockDevices(self, device=''):
+    """Collects information about block devices.
 
-    Args:
-      device: This is the same as the 'devicename' attribute given
-        in the return value of DiskPartitions.
+    This method combines information from:
+      (1) Reading through the SYSTEMFILE_DEV_DISKBY directories.
+      (2) Executing the 'lsblk' command provided by osutils.ListBlockDevices.
 
     Returns:
-      A named tuple with the following fields:
-        device: The name of the device, same as the given argument.
+      A list of named tuples. Each tuple has the following fields:
+        device: The name of the block device.
+        size: The size of the block device in bytes.
         ids: A list of ids assigned to this device.
         labels: A list of labels assigned to this device.
     """
-    ids = []
-    labels = []
+    devicefilter = os.path.basename(device)
 
-    devicename = os.path.basename(device)
+    # Data collected from the SYSTEMFILE_DEV_DISKBY directories.
+    ids = {}
+    labels = {}
+
+    # Data collected from 'lsblk'.
+    sizes = {}
+
+    # Collect diskby information.
     for prop, diskdir in SYSTEMFILE_DEV_DISKBY.iteritems():
-      cmd = ['find', diskdir, '-lname', '*%s' % devicename]
+      cmd = ['find', diskdir, '-lname', '*%s' % devicefilter]
       cmd_result = cros_build_lib.RunCommand(cmd, log_output=True)
 
       if not cmd_result.output:
         continue
 
       results = cmd_result.output.split()
-      results = [os.path.basename(p) for p in results]
+      for result in results:
+        devicename = os.path.abspath(osutils.ResolveSymlink(result))
+        result = os.path.basename(result)
 
-      if 'ids' == prop:
-        ids = results
-      elif 'labels' == prop:
-        labels = results
+        # Ensure that each of our data dicts have the same keys.
+        ids.setdefault(devicename, [])
+        labels.setdefault(devicename, [])
+        sizes.setdefault(devicename, 0)
 
-    return RESOURCE_DISKBY(device, ids, labels)
+        if 'ids' == prop:
+          ids[devicename].append(result)
+        elif 'labels' == prop:
+          labels[devicename].append(result)
+
+    # Collect lsblk information.
+    for device in osutils.ListBlockDevices(in_bytes=True):
+      devicename = os.path.join('/dev', device.NAME)
+      if devicename in ids:
+        sizes[devicename] = int(device.SIZE)
+
+    return [RESOURCE_BLOCKDEVICE(device, sizes[device], ids[device],
+                                 labels[device])
+            for device in ids.iterkeys()]
 
 
 class Cpu(SystemInfoStorage):

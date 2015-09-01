@@ -483,7 +483,7 @@ class CheckFileManager(object):
         # all services.
         self.Execute(force=True)
         self.ConsolidateServiceStates()
-      except TypeError, e:
+      except Exception, e:
         LOGGER.error('Failed to execute the repair action "%s"'
                      ' for service "%s": %s', action, service, e,
                      exc_info=True)
