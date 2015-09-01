@@ -31,6 +31,7 @@
         'usb_device_filter.h',
         'usb_device_handle_impl.cc',
         'usb_device_handle_impl.h',
+        'usb_device_handle.cc',
         'usb_device_handle.h',
         'usb_error.cc',
         'usb_error.h',

@@ -1012,7 +1012,7 @@ ExtensionFunction::ResponseAction UsbBulkTransferFunction::Run() {
     return RespondNow(Error(kErrorInvalidTimeout));
   }
 
-  device_handle->BulkTransfer(
+  device_handle->GenericTransfer(
       direction, transfer.endpoint, buffer.get(), size, timeout,
       base::Bind(&UsbBulkTransferFunction::OnCompleted, this));
   return RespondLater();
@@ -1058,7 +1058,7 @@ ExtensionFunction::ResponseAction UsbInterruptTransferFunction::Run() {
     return RespondNow(Error(kErrorInvalidTimeout));
   }
 
-  device_handle->InterruptTransfer(
+  device_handle->GenericTransfer(
       direction, transfer.endpoint, buffer.get(), size, timeout,
       base::Bind(&UsbInterruptTransferFunction::OnCompleted, this));
   return RespondLater();

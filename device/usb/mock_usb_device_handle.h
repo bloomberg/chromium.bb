@@ -50,6 +50,13 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                     unsigned int packet_length,
                     unsigned int timeout,
                     const TransferCallback& callback));
+  MOCK_METHOD6(GenericTransfer,
+               void(UsbEndpointDirection direction,
+                    uint8 endpoint,
+                    scoped_refptr<net::IOBuffer> buffer,
+                    size_t length,
+                    unsigned int timeout,
+                    const TransferCallback& callback));
   MOCK_METHOD1(ResetDevice, void(const ResultCallback& callback));
   MOCK_METHOD2(GetStringDescriptor, bool(uint8_t, base::string16*));
   MOCK_METHOD2(SetConfiguration,

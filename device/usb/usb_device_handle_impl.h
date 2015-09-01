@@ -27,6 +27,11 @@ class IOBuffer;
 
 namespace device {
 
+struct EndpointMapValue {
+  uint8_t interface_number;
+  UsbTransferType transfer_type;
+};
+
 class UsbContext;
 struct UsbConfigDescriptor;
 class UsbDeviceImpl;
@@ -84,6 +89,13 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                            unsigned int packet_length,
                            unsigned int timeout,
                            const TransferCallback& callback) override;
+
+  void GenericTransfer(UsbEndpointDirection direction,
+                       uint8 endpoint,
+                       scoped_refptr<net::IOBuffer> buffer,
+                       size_t length,
+                       unsigned int timeout,
+                       const TransferCallback& callback) override;
 
  protected:
   friend class UsbDeviceImpl;
@@ -174,6 +186,15 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
       scoped_refptr<base::TaskRunner> callback_task_runner,
       const TransferCallback& callback);
 
+  void GenericTransferInternal(
+      UsbEndpointDirection direction,
+      uint8 endpoint,
+      scoped_refptr<net::IOBuffer> buffer,
+      size_t length,
+      unsigned int timeout,
+      scoped_refptr<base::TaskRunner> callback_task_runner,
+      const TransferCallback& callback);
+
   // Submits a transfer and starts tracking it. Retains the buffer and copies
   // the completion callback until the transfer finishes, whereupon it invokes
   // the callback then releases the buffer.
@@ -196,8 +217,8 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // This set holds weak pointers to pending transfers.
   std::set<Transfer*> transfers_;
 
-  // A map from endpoints to interfaces
-  typedef std::map<int, int> EndpointMap;
+  // A map from endpoints to EndpointMapValue
+  typedef std::map<int, EndpointMapValue> EndpointMap;
   EndpointMap endpoint_map_;
 
   // Retain the UsbContext so that the platform context will not be destroyed

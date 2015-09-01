@@ -97,6 +97,13 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                    unsigned int timeout,
                                    const TransferCallback& callback) = 0;
 
+  virtual void GenericTransfer(UsbEndpointDirection direction,
+                               uint8 endpoint,
+                               scoped_refptr<net::IOBuffer> buffer,
+                               size_t length,
+                               unsigned int timeout,
+                               const TransferCallback& callback);
+
  protected:
   friend class base::RefCountedThreadSafe<UsbDeviceHandle>;
 

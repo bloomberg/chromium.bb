@@ -19,6 +19,7 @@ source_set("usb") {
     "usb_device.h",
     "usb_device_filter.cc",
     "usb_device_filter.h",
+    "usb_device_handle.cc",
     "usb_device_handle.h",
     "usb_device_handle_impl.cc",
     "usb_device_handle_impl.h",

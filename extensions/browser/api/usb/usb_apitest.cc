@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ResetDevice) {
       .WillOnce(InvokeCallback<0>(true))
       .WillOnce(InvokeCallback<0>(false));
   EXPECT_CALL(*mock_device_handle_.get(),
-              InterruptTransfer(device::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
+              GenericTransfer(device::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
   ASSERT_TRUE(RunAppTest("api_test/usb/reset_device"));
 }
@@ -164,10 +164,10 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
                               _))
       .WillOnce(InvokeUsbTransferCallback<9>(device::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(),
-              BulkTransfer(device::USB_DIRECTION_OUTBOUND, 1, _, 1, _, _))
+              GenericTransfer(device::USB_DIRECTION_OUTBOUND, 1, _, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(),
-              InterruptTransfer(device::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
+              GenericTransfer(device::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(
       *mock_device_handle_.get(),
@@ -178,14 +178,14 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, ZeroLengthTransfer) {
-  EXPECT_CALL(*mock_device_handle_.get(), BulkTransfer(_, _, _, 0, _, _))
+  EXPECT_CALL(*mock_device_handle_.get(), GenericTransfer(_, _, _, 0, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
   ASSERT_TRUE(RunAppTest("api_test/usb/zero_length_transfer"));
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
-  EXPECT_CALL(*mock_device_handle_.get(), BulkTransfer(_, _, _, _, _, _))
+  EXPECT_CALL(*mock_device_handle_.get(), GenericTransfer(_, _, _, _, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_ERROR))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_TIMEOUT));
