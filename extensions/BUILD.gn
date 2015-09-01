@@ -182,6 +182,8 @@ test("extensions_unittests") {
     "//components/user_prefs",
     "//content/test:test_support",
     "//device/bluetooth:mocks",
+    "//device/core",
+    "//device/hid",
     "//device/serial",
     "//device/serial:test_support",
     "//extensions/common",

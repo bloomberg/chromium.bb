@@ -134,6 +134,13 @@ class DevicePermissionsPrompt {
                         const std::vector<device::HidDeviceFilter>& filters,
                         const HidDevicesCallback& callback);
 
+  static scoped_refptr<Prompt> CreateHidPromptForTest(
+      const Extension* extension,
+      bool multiple);
+  static scoped_refptr<Prompt> CreateUsbPromptForTest(
+      const Extension* extension,
+      bool multiple);
+
  protected:
   virtual void ShowDialog() = 0;
 

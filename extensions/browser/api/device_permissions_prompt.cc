@@ -38,6 +38,11 @@ namespace extensions {
 
 namespace {
 
+void NoopHidCallback(const std::vector<scoped_refptr<device::HidDeviceInfo>>&) {
+}
+
+void NoopUsbCallback(const std::vector<scoped_refptr<device::UsbDevice>>&) {}
+
 class UsbDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
  public:
   UsbDeviceInfo(scoped_refptr<UsbDevice> device) : device_(device) {
@@ -371,6 +376,24 @@ void DevicePermissionsPrompt::AskForHidDevices(
   prompt_ = new HidDevicePermissionsPrompt(extension, context, multiple,
                                            filters, callback);
   ShowDialog();
+}
+
+// static
+scoped_refptr<DevicePermissionsPrompt::Prompt>
+DevicePermissionsPrompt::CreateHidPromptForTest(const Extension* extension,
+                                                bool multiple) {
+  return make_scoped_refptr(new HidDevicePermissionsPrompt(
+      extension, nullptr, multiple, std::vector<HidDeviceFilter>(),
+      base::Bind(&NoopHidCallback)));
+}
+
+// static
+scoped_refptr<DevicePermissionsPrompt::Prompt>
+DevicePermissionsPrompt::CreateUsbPromptForTest(const Extension* extension,
+                                                bool multiple) {
+  return make_scoped_refptr(new UsbDevicePermissionsPrompt(
+      extension, nullptr, multiple, std::vector<UsbDeviceFilter>(),
+      base::Bind(&NoopUsbCallback)));
 }
 
 }  // namespace extensions

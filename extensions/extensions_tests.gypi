@@ -55,6 +55,7 @@
       'browser/api/declarative/rules_registry_unittest.cc',
       'browser/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc',
       'browser/api/declarative_webrequest/webrequest_condition_unittest.cc',
+      'browser/api/device_permissions_prompt_unittest.cc',
       'browser/api/document_scan/document_scan_api_unittest.cc',
       'browser/api/document_scan/document_scan_interface_chromeos_unittest.cc',
       'browser/api/document_scan/mock_document_scan_interface.cc',
