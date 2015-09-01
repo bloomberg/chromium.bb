@@ -131,11 +131,6 @@ VisiblePosition rightPositionOf(const VisiblePosition&);
 CORE_EXPORT Position canonicalPositionOf(const Position&);
 CORE_EXPORT PositionInComposedTree canonicalPositionOf(const PositionInComposedTree&);
 
-// TODO(yosin) We should move |characterAfter()| and |characterBefore()| to
-// "VisibleUnits.cpp"
-UChar32 characterAfter(const VisiblePosition&);
-UChar32 characterBefore(const VisiblePosition&);
-
 // TODO(yosin) We should move |honorEditingBoundaryAtOr{Before,After} to
 // "VisibleUnits.cpp" as static function.
 // next() and previous() will increment/decrement by a character cluster.
