@@ -26,7 +26,7 @@ test(function() {
 test(function() {
   var request = new PresentationRequest('foo.html');
   assert_equals(typeof(request.start), "function");
-  assert_equals(typeof(request.join), "function");
+  assert_equals(typeof(request.reconnect), "function");
   assert_equals(typeof(request.getAvailability), "function");
   assert_equals(typeof(request.onsessionconnect), "object");
 

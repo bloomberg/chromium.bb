@@ -3299,7 +3299,7 @@ interface PresentationRequest
     getter onsessionconnect
     method constructor
     method getAvailability
-    method join
+    method reconnect
     method start
     setter onsessionconnect
 interface PresentationSession

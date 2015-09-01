@@ -36,7 +36,7 @@ public:
     bool hasPendingActivity() const;
 
     ScriptPromise start(ScriptState*);
-    ScriptPromise join(ScriptState*, const String& id);
+    ScriptPromise reconnect(ScriptState*, const String& id);
     ScriptPromise getAvailability(ScriptState*);
 
     const KURL& url() const;

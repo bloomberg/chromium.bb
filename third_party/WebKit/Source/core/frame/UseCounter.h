@@ -823,7 +823,7 @@ public:
         PresentationAvailabilityChangeEventListener = 927,
         PresentationRequestConstructor = 928,
         PresentationRequestStart = 929,
-        PresentationRequestJoin = 930,
+        PresentationRequestReconnect = 930,
         PresentationRequestGetAvailability = 931,
         PresentationRequestSessionConnectEventListener = 932,
         PresentationSessionClose = 933,

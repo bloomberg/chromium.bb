@@ -98,7 +98,7 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
     return promise;
 }
 
-ScriptPromise PresentationRequest::join(ScriptState* scriptState, const String& id)
+ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState, const String& id)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
