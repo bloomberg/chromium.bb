@@ -14,7 +14,7 @@ function test()
         "http://www.google.com/", "www\\.google\\.com\\b",
         "data:text/html,foo", "",
         "about:blank", "",
-        "", "",
+        "", "^$",
         "chrome-extension://extensionName/main.js", "^chrome-extension://extensionName\\b.*/main\\.js$",
         "extensions::unload_events", "^extensions::unload_events$",
     ];
