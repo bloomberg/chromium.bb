@@ -496,7 +496,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     self.Skip('deqp/functional/gles3/attriblocation.html', bug=483282)
     self.Skip('deqp/functional/gles3/buffercopy.html', bug=483282)
-    self.Fail('deqp/functional/gles3/builtinprecision.html', bug=483282)
+    self.Skip('deqp/functional/gles3/builtinprecision.html', bug=483282)
     self.Skip('deqp/functional/gles3/draw.html', bug=483282)
     self.Fail('deqp/functional/gles3/fbocolorbuffer.html', bug=483282)
     self.Fail('deqp/functional/gles3/fbocompleteness.html', bug=483282)
