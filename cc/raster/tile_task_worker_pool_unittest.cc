@@ -56,7 +56,8 @@ class TestRasterTaskImpl : public RasterTask {
   TestRasterTaskImpl(const Resource* resource,
                      const Reply& reply,
                      ImageDecodeTask::Vector* dependencies)
-      : RasterTask(resource, dependencies),
+      : RasterTask(dependencies),
+        resource_(resource),
         reply_(reply),
         picture_pile_(FakePicturePileImpl::CreateEmptyPile(gfx::Size(1, 1),
                                                            gfx::Size(1, 1))) {}
@@ -72,7 +73,7 @@ class TestRasterTaskImpl : public RasterTask {
   void ScheduleOnOriginThread(TileTaskClient* client) override {
     // The raster buffer has no tile ids associated with it for partial update,
     // so doesn't need to provide a valid dirty rect.
-    raster_buffer_ = client->AcquireBufferForRaster(resource(), 0, 0);
+    raster_buffer_ = client->AcquireBufferForRaster(resource_, 0, 0);
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
@@ -85,6 +86,7 @@ class TestRasterTaskImpl : public RasterTask {
   ~TestRasterTaskImpl() override {}
 
  private:
+  const Resource* resource_;
   const Reply reply_;
   scoped_ptr<RasterBuffer> raster_buffer_;
   scoped_refptr<PicturePileImpl> picture_pile_;

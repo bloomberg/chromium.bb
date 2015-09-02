@@ -16,14 +16,6 @@ TileTask::~TileTask() {
   DCHECK(!did_run_ || did_complete_);
 }
 
-ImageDecodeTask* TileTask::AsImageDecodeTask() {
-  return NULL;
-}
-
-RasterTask* TileTask::AsRasterTask() {
-  return NULL;
-}
-
 void TileTask::WillSchedule() {
   DCHECK(!did_schedule_);
 }
@@ -58,21 +50,11 @@ ImageDecodeTask::ImageDecodeTask() {
 ImageDecodeTask::~ImageDecodeTask() {
 }
 
-ImageDecodeTask* ImageDecodeTask::AsImageDecodeTask() {
-  return this;
-}
-
-RasterTask::RasterTask(const Resource* resource,
-                       ImageDecodeTask::Vector* dependencies)
-    : resource_(resource) {
+RasterTask::RasterTask(ImageDecodeTask::Vector* dependencies) {
   dependencies_.swap(*dependencies);
 }
 
 RasterTask::~RasterTask() {
-}
-
-RasterTask* RasterTask::AsRasterTask() {
-  return this;
 }
 
 TileTaskQueue::Item::Item(RasterTask* task, const TaskSetCollection& task_sets)

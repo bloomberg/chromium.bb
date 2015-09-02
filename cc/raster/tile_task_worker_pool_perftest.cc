@@ -151,7 +151,7 @@ class PerfRasterTaskImpl : public RasterTask {
  public:
   PerfRasterTaskImpl(scoped_ptr<ScopedResource> resource,
                      ImageDecodeTask::Vector* dependencies)
-      : RasterTask(resource.get(), dependencies), resource_(resource.Pass()) {}
+      : RasterTask(dependencies), resource_(resource.Pass()) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -159,7 +159,7 @@ class PerfRasterTaskImpl : public RasterTask {
   // Overridden from TileTask:
   void ScheduleOnOriginThread(TileTaskClient* client) override {
     // No tile ids are given to support partial updates.
-    raster_buffer_ = client->AcquireBufferForRaster(resource(), 0, 0);
+    raster_buffer_ = client->AcquireBufferForRaster(resource_.get(), 0, 0);
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());

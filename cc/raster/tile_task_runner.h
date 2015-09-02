@@ -38,10 +38,6 @@ class CC_EXPORT TileTask : public Task {
   virtual void CompleteOnOriginThread(TileTaskClient* client) = 0;
   virtual void RunReplyOnOriginThread() = 0;
 
-  // Type-checking downcast routines.
-  virtual ImageDecodeTask* AsImageDecodeTask();
-  virtual RasterTask* AsRasterTask();
-
   void WillSchedule();
   void DidSchedule();
   bool HasBeenScheduled() const;
@@ -62,9 +58,6 @@ class CC_EXPORT ImageDecodeTask : public TileTask {
  public:
   typedef std::vector<scoped_refptr<ImageDecodeTask>> Vector;
 
-  // Overridden from TileTask:
-  ImageDecodeTask* AsImageDecodeTask() override;
-
  protected:
   ImageDecodeTask();
   ~ImageDecodeTask() override;
@@ -74,18 +67,13 @@ class CC_EXPORT RasterTask : public TileTask {
  public:
   typedef std::vector<scoped_refptr<RasterTask>> Vector;
 
-  // Overridden from TileTask:
-  RasterTask* AsRasterTask() override;
-
-  const Resource* resource() const { return resource_; }
   const ImageDecodeTask::Vector& dependencies() const { return dependencies_; }
 
  protected:
-  RasterTask(const Resource* resource, ImageDecodeTask::Vector* dependencies);
+  explicit RasterTask(ImageDecodeTask::Vector* dependencies);
   ~RasterTask() override;
 
  private:
-  const Resource* resource_;
   ImageDecodeTask::Vector dependencies_;
 };
 
