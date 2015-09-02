@@ -74,7 +74,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
   // Pixel format of the hardware video frames created when GpuMemoryBuffers
   // video frames are enabled.
   virtual VideoPixelFormat VideoFrameOutputFormat() = 0;
-  virtual bool IsTextureRGSupported() = 0;
 
   virtual gpu::gles2::GLES2Interface* GetGLES2Interface() = 0;
 

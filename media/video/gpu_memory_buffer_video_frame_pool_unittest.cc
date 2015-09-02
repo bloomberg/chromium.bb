@@ -100,22 +100,21 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, NoGpuFactoryNoHardwareVideoFrame) {
   EXPECT_EQ(frame.get(), frame2.get());
 }
 
-TEST_F(GpuMemoryBufferVideoFramePoolTest, NoTextureRGNoHardwareVideoFrame) {
-  scoped_refptr<VideoFrame> frame = CreateTestYUVVideoFrame(10);
+TEST_F(GpuMemoryBufferVideoFramePoolTest, VideoFrameOutputFormatUnknown) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
   scoped_refptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories(
       new MockGpuVideoAcceleratorFactories);
   scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
       make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
           media_task_runner_, copy_task_runner_.get(), mock_gpu_factories));
 
-  EXPECT_CALL(*mock_gpu_factories.get(), IsTextureRGSupported())
-      .WillRepeatedly(testing::Return(false));
-  scoped_refptr<VideoFrame> frame2;
+  mock_gpu_factories->SetVideoFrameOutputFormat(PIXEL_FORMAT_UNKNOWN);
+  scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
-      frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame2));
+      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
   RunUntilIdle();
 
-  EXPECT_EQ(frame.get(), frame2.get());
+  EXPECT_EQ(software_frame.get(), frame.get());
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareFrame) {
@@ -128,8 +127,6 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareFrame) {
 
   EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
       .WillRepeatedly(testing::Return(gles2_.get()));
-  EXPECT_CALL(*mock_gpu_factories.get(), IsTextureRGSupported())
-      .WillRepeatedly(testing::Return(true));
 
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
@@ -151,8 +148,6 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
 
   EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
       .WillRepeatedly(testing::Return(gles2_.get()));
-  EXPECT_CALL(*mock_gpu_factories.get(), IsTextureRGSupported())
-      .WillRepeatedly(testing::Return(true));
 
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
@@ -196,8 +191,6 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, DropResourceWhenSizeIsDifferent) {
 
   EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
       .WillRepeatedly(testing::Return(gles2_.get()));
-  EXPECT_CALL(*mock_gpu_factories.get(), IsTextureRGSupported())
-      .WillRepeatedly(testing::Return(true));
 
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(

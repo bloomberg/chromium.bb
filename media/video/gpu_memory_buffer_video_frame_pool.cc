@@ -17,6 +17,7 @@
 #include "base/location.h"
 #include "base/memory/linked_ptr.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -43,8 +44,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
         gpu_factories_(gpu_factories),
         texture_target_(gpu_factories ? gpu_factories->ImageTextureTarget()
                                       : GL_TEXTURE_2D),
-        output_format_(gpu_factories ? gpu_factories->VideoFrameOutputFormat()
-                                     : PIXEL_FORMAT_I420) {
+        output_format_(PIXEL_FORMAT_UNKNOWN) {
     DCHECK(media_task_runner_);
     DCHECK(worker_task_runner_);
   }
@@ -142,8 +142,9 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   std::list<FrameResources*> resources_pool_;
 
   const unsigned texture_target_;
-  const VideoPixelFormat output_format_;
-
+  // TODO(dcastagna): change the following type from VideoPixelFormat to
+  // BufferFormat.
+  VideoPixelFormat output_format_;
   DISALLOW_COPY_AND_ASSIGN(PoolImpl);
 };
 
@@ -176,7 +177,7 @@ unsigned ImageInternalFormat(VideoPixelFormat format, size_t plane) {
       return GL_R8_EXT;
     case PIXEL_FORMAT_UYVY:
       DCHECK_EQ(0u, plane);
-      return GL_RGB;
+      return GL_RGB_YCBCR_422_CHROMIUM;
     default:
       NOTREACHED();
       return 0;
@@ -240,8 +241,17 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     const scoped_refptr<VideoFrame>& video_frame,
     const FrameReadyCB& frame_ready_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  if (!gpu_factories_ || (output_format_ == PIXEL_FORMAT_I420 &&
-                          !gpu_factories_->IsTextureRGSupported())) {
+  if (!gpu_factories_) {
+    frame_ready_cb.Run(video_frame);
+    return;
+  }
+
+  // Lazily initialize output_format_ since VideoFrameOutputFormat() has to be
+  // called on the media_thread while this object might be instantiated on any.
+  if (output_format_ == PIXEL_FORMAT_UNKNOWN)
+    output_format_ = gpu_factories_->VideoFrameOutputFormat();
+
+  if (output_format_ == PIXEL_FORMAT_UNKNOWN) {
     frame_ready_cb.Run(video_frame);
     return;
   }

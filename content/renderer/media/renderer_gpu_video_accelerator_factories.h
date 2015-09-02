@@ -49,7 +49,6 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
       unsigned image_texture_target,
-      media::VideoPixelFormat video_frame_output_format,
       bool enable_video_accelerator);
 
   bool IsGpuVideoAcceleratorEnabled() override;
@@ -73,7 +72,6 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
 
-  bool IsTextureRGSupported() override;
   bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
   unsigned ImageTextureTarget() override;
   media::VideoPixelFormat VideoFrameOutputFormat() override;
@@ -94,7 +92,6 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
       unsigned image_texture_target,
-      media::VideoPixelFormat video_frame_output_format_,
       bool enable_video_accelerator);
 
   ~RendererGpuVideoAcceleratorFactories() override;
@@ -115,9 +112,6 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // Whether gpu memory buffers should be used to hold video frames data.
   bool enable_gpu_memory_buffer_video_frames_;
   const unsigned image_texture_target_;
-  // Pixel format of the hardware video frames created when GpuMemoryBuffers
-  // video frames are enabled.
-  const media::VideoPixelFormat video_frame_output_format_;
   // Whether video acceleration encoding/decoding should be enabled.
   const bool video_accelerator_enabled_;
 

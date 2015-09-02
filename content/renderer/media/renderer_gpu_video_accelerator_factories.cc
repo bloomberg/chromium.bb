@@ -31,13 +31,12 @@ RendererGpuVideoAcceleratorFactories::Create(
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
     unsigned image_texture_target,
-    media::VideoPixelFormat video_frame_output_format,
     bool enable_video_accelerator) {
   scoped_refptr<RendererGpuVideoAcceleratorFactories> factories =
       new RendererGpuVideoAcceleratorFactories(
           gpu_channel_host, task_runner, context_provider,
           enable_gpu_memory_buffer_video_frames, image_texture_target,
-          video_frame_output_format, enable_video_accelerator);
+          enable_video_accelerator);
   // Post task from outside constructor, since AddRef()/Release() is unsafe from
   // within.
   task_runner->PostTask(
@@ -53,7 +52,6 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
     unsigned image_texture_target,
-    media::VideoPixelFormat video_frame_output_format,
     bool enable_video_accelerator)
     : task_runner_(task_runner),
       gpu_channel_host_(gpu_channel_host),
@@ -61,7 +59,6 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
       enable_gpu_memory_buffer_video_frames_(
           enable_gpu_memory_buffer_video_frames),
       image_texture_target_(image_texture_target),
-      video_frame_output_format_(video_frame_output_format),
       video_accelerator_enabled_(enable_video_accelerator),
       gpu_memory_buffer_manager_(ChildThreadImpl::current()
                                      ->gpu_memory_buffer_manager()),
@@ -219,16 +216,6 @@ RendererGpuVideoAcceleratorFactories::AllocateGpuMemoryBuffer(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(size, format, usage);
   return buffer.Pass();
 }
-
-bool RendererGpuVideoAcceleratorFactories::IsTextureRGSupported() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
-  if (!context)
-    return false;
-  return context->GetImplementation()->capabilities().texture_rg;
-}
-
 bool RendererGpuVideoAcceleratorFactories::
     ShouldUseGpuMemoryBuffersForVideoFrames() const {
   return enable_gpu_memory_buffer_video_frames_;
@@ -240,7 +227,18 @@ unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget() {
 
 media::VideoPixelFormat
 RendererGpuVideoAcceleratorFactories::VideoFrameOutputFormat() {
-  return video_frame_output_format_;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (context) {
+    gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
+    if (gles2->capabilities().image_ycbcr_422)
+      return media::PIXEL_FORMAT_UYVY;
+    if (gles2->capabilities().texture_rg)
+      return media::PIXEL_FORMAT_I420;
+  }
+
+  return media::PIXEL_FORMAT_UNKNOWN;
 }
 
 gpu::gles2::GLES2Interface*

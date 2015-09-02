@@ -61,7 +61,6 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
     video_frame_output_format_ = video_frame_output_format;
   };
 
-  MOCK_METHOD0(IsTextureRGSupported, bool());
   MOCK_METHOD0(GetGLES2Interface, gpu::gles2::GLES2Interface*());
 
   scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
