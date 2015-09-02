@@ -426,13 +426,25 @@ int GeolocationBrowserTest::GetBubblesQueueSize(PermissionBubbleManager* mgr) {
 
 // Tests ----------------------------------------------------------------------
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPrompt) {
+#if defined(OS_LINUX)
+// http://crbug.com/527437
+#define MAYBE_DisplaysPrompt DISABLED_DisplaysPrompt
+#else
+#define MAYBE_DisplaysPrompt DisplaysPrompt
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_DisplaysPrompt) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   SetFrameHost("");
   ASSERT_TRUE(RequestAndAcceptPermission());
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
+#if defined(OS_LINUX)
+// http://crbug.com/527437
+#define MAYBE_Geoposition DISABLED_Geoposition
+#else
+#define MAYBE_Geoposition Geoposition
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_Geoposition) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   SetFrameHost("");
   ASSERT_TRUE(RequestAndAcceptPermission());
@@ -446,7 +458,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, ErrorOnPermissionDenied) {
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForSecondTab) {
+#if defined(OS_LINUX)
+// http://crbug.com/527437
+#define MAYBE_NoPromptForSecondTab DISABLED_NoPromptForSecondTab
+#else
+#define MAYBE_NoPromptForSecondTab NoPromptForSecondTab
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoPromptForSecondTab) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   SetFrameHost("");
   ASSERT_TRUE(RequestAndAcceptPermission());
@@ -477,7 +495,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForDeniedOrigin) {
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForAllowedOrigin) {
+#if defined(OS_LINUX)
+// http://crbug.com/527437
+#define MAYBE_NoPromptForAllowedOrigin DISABLED_NoPromptForAllowedOrigin
+#else
+#define MAYBE_NoPromptForAllowedOrigin NoPromptForAllowedOrigin
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoPromptForAllowedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   current_browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(current_url()),
@@ -519,7 +543,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckGeoposition(fake_latitude(), fake_longitude());
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
+#if defined(OS_LINUX)
+// http://crbug.com/527437
+#define MAYBE_IFramesWithFreshPosition DISABLED_IFramesWithFreshPosition
+#else
+#define MAYBE_IFramesWithFreshPosition IFramesWithFreshPosition
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_IFramesWithFreshPosition) {
   set_html_for_tests("/geolocation/two_iframes.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
@@ -548,7 +578,14 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   CheckGeoposition(fake_latitude(), fake_longitude());
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
+#if defined(OS_LINUX)
+// http://crbug.com/527437
+#define MAYBE_IFramesWithCachedPosition DISABLED_IFramesWithCachedPosition
+#else
+#define MAYBE_IFramesWithCachedPosition IFramesWithCachedPosition
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
+                       MAYBE_IFramesWithCachedPosition) {
   set_html_for_tests("/geolocation/two_iframes.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
@@ -611,7 +648,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, InvalidUrlRequest) {
                                          original_tab->GetMainFrame());
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptBeforeStart) {
+#if defined(OS_LINUX)
+// http://crbug.com/527437
+#define MAYBE_NoPromptBeforeStart DISABLED_NoPromptBeforeStart
+#else
+#define MAYBE_NoPromptBeforeStart NoPromptBeforeStart
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoPromptBeforeStart) {
   // See http://crbug.com/42789
   set_html_for_tests("/geolocation/two_iframes.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
@@ -631,7 +674,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptBeforeStart) {
   CheckGeoposition(fake_latitude(), fake_longitude());
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
+#if defined(OS_LINUX)
+// http://crbug.com/527437
+#define MAYBE_TwoWatchesInOneFrame DISABLED_TwoWatchesInOneFrame
+#else
+#define MAYBE_TwoWatchesInOneFrame TwoWatchesInOneFrame
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_TwoWatchesInOneFrame) {
   set_html_for_tests("/geolocation/two_watches.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   SetFrameHost("");
@@ -680,7 +729,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
   EXPECT_EQ(result, true);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, LastUsageUpdated) {
+#if defined(OS_LINUX)
+// http://crbug.com/527437
+#define MAYBE_LastUsageUpdated DISABLED_LastUsageUpdated
+#else
+#define MAYBE_LastUsageUpdated LastUsageUpdated
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_LastUsageUpdated) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   base::SimpleTestClock* clock_ = new base::SimpleTestClock();
   current_browser()
