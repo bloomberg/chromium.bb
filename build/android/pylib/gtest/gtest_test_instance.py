@@ -28,7 +28,7 @@ BROWSER_TEST_SUITES = [
 _DEFAULT_ISOLATE_FILE_PATHS = {
     'base_unittests': 'base/base_unittests.isolate',
     'blink_heap_unittests':
-      'third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate',
+      'third_party/WebKit/Source/platform/heap/blink_heap_unittests.isolate',
     'breakpad_unittests': 'breakpad/breakpad_unittests.isolate',
     'cc_perftests': 'cc/cc_perftests.isolate',
     'components_browsertests': 'components/components_browsertests.isolate',
@@ -44,7 +44,7 @@ _DEFAULT_ISOLATE_FILE_PATHS = {
     'ui_base_unittests': 'ui/base/ui_base_tests.isolate',
     'unit_tests': 'chrome/unit_tests.isolate',
     'webkit_unit_tests':
-      'third_party/WebKit/Source/web/WebKitUnitTests.isolate',
+      'third_party/WebKit/Source/web/webkit_unit_tests.isolate',
 }
 
 
