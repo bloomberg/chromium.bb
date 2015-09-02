@@ -6,7 +6,9 @@
 #include "core/inspector/LayoutEditor.h"
 
 #include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/css/CSSRuleList.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
@@ -139,6 +141,22 @@ float toValidValue(CSSPropertyID propertyId, float newValue)
 
     return newValue;
 }
+
+bool comparePairs(const std::pair<unsigned, CSSStyleRule*>& lhs, const std::pair<unsigned, CSSStyleRule*>& rhs)
+{
+    return lhs.first < rhs.first;
+}
+
+InspectorHighlightConfig affectedNodesHighlightConfig()
+{
+    // TODO: find a better color
+    InspectorHighlightConfig config;
+    config.content = Color(95, 127, 162, 100);
+    config.padding = Color(95, 127, 162, 100);
+    config.margin = Color(95, 127, 162, 100);
+    return config;
+}
+
 } // namespace
 
 LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent)
@@ -156,6 +174,7 @@ DEFINE_TRACE(LayoutEditor)
     visitor->trace(m_element);
     visitor->trace(m_cssAgent);
     visitor->trace(m_domAgent);
+    visitor->trace(m_matchedRules);
 }
 
 void LayoutEditor::selectNode(Node* node)
@@ -168,7 +187,7 @@ void LayoutEditor::selectNode(Node* node)
     m_element = element;
     m_changingProperty = CSSPropertyInvalid;
     m_propertyInitialValue = 0;
-
+    initializeCSSRules();
 }
 
 PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
@@ -223,7 +242,6 @@ PassRefPtr<JSONObject> LayoutEditor::createValueDescription(const String& proper
     object->setNumber("value", cssValue ? cssValue->getFloatValue() : 0);
     CSSPrimitiveValue::UnitType unitType = cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels;
     object->setString("unit", CSSPrimitiveValue::unitTypeToString(unitType));
-    // TODO: Support an editing of other popular units like: em, rem
     object->setBoolean("mutable", isMutableUnitType(unitType));
     return object.release();
 }
@@ -296,8 +314,108 @@ void LayoutEditor::clearSelection(bool commitChanges)
 
     m_element.clear();
     m_isDirty = false;
+    m_matchedRules.clear();
+    m_cachedSelectorsInfo.clear();
+    m_currentRuleIndex = -1;
 }
 
+void LayoutEditor::initializeCSSRules()
+{
+    if (!m_element)
+        return;
 
+    Document* ownerDocument = m_element->ownerDocument();
+    // A non-active document has no styles.
+    if (!ownerDocument->isActive())
+        return;
+
+    // Matched rules.
+    StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
+    PseudoId elementPseudoId = m_element->pseudoId();
+    m_element->updateDistribution();
+    RefPtrWillBeRawPtr<CSSRuleList> matchedRules = styleResolver.pseudoCSSRulesForElement(m_element.get(), elementPseudoId, StyleResolver::AllCSSRules);
+    if (!matchedRules)
+        return;
+
+    HashSet<CSSStyleRule*> uniqRulesSet;
+    Vector<CSSStyleRule*> uniqRules;
+    for (unsigned i = matchedRules->length(); i > 0; --i) {
+        CSSRule* rule = matchedRules->item(i);
+        if (!rule || rule->type() != CSSRule::STYLE_RULE || !rule->parentStyleSheet())
+            continue;
+
+        CSSStyleRule* styleRule = toCSSStyleRule(rule);
+
+        if (uniqRulesSet.contains(styleRule))
+            continue;
+        uniqRulesSet.add(styleRule);
+        uniqRules.append(styleRule);
+    }
+    Vector<std::pair<unsigned, CSSStyleRule*>> selectors;
+    for (unsigned i = 0; i < uniqRules.size(); ++i) {
+        TrackExceptionState exceptionState;
+        RefPtrWillBeRawPtr<StaticElementList> elements = ownerDocument->querySelectorAll(AtomicString(uniqRules[i]->selectorText()), exceptionState);
+        unsigned length = exceptionState.hadException() ? 0: elements->length();
+        selectors.append(std::make_pair(length, uniqRules[i]));
+    }
+
+    std::sort(selectors.begin(), selectors.end(), &comparePairs);
+    for (size_t i = 0; i < selectors.size(); ++i)
+        m_matchedRules.append(selectors[i].second);
+};
+
+void LayoutEditor::nextSelector()
+{
+    if (static_cast<size_t>(m_currentRuleIndex + 1) == m_matchedRules.size())
+        return;
+
+    m_currentRuleIndex++;
+}
+
+void LayoutEditor::previousSelector()
+{
+    if (m_currentRuleIndex == -1)
+        return;
+
+    m_currentRuleIndex--;
+}
+
+String LayoutEditor::currentSelectorInfo()
+{
+    if (!m_element)
+        return String();
+
+    if (m_cachedSelectorsInfo.contains(m_currentRuleIndex))
+        return m_cachedSelectorsInfo.get(m_currentRuleIndex);
+
+    RefPtr<JSONObject> object = JSONObject::create();
+    String currentSelectorText = m_currentRuleIndex == -1 ? "inline style" : m_matchedRules[m_currentRuleIndex]->selectorText();
+    object->setString("selector", currentSelectorText);
+
+    Document* ownerDocument = m_element->ownerDocument();
+    if (!ownerDocument->isActive() || m_currentRuleIndex == -1)
+        return object->toJSONString();
+
+    TrackExceptionState exceptionState;
+    RefPtrWillBeRawPtr<StaticElementList> elements = ownerDocument->querySelectorAll(AtomicString(m_matchedRules[m_currentRuleIndex]->selectorText()), exceptionState);
+
+    if (!elements || exceptionState.hadException())
+        return object->toJSONString();
+
+    RefPtr<JSONArray> highlights = JSONArray::create();
+    InspectorHighlightConfig config = affectedNodesHighlightConfig();
+    for (unsigned i = 0; i < elements->length(); ++i) {
+        Element* element = elements->item(i);
+        if (element == m_element)
+            continue;
+
+        InspectorHighlight highlight(element, config, false);
+        highlights->pushObject(highlight.asJSONObject());
+    }
+
+    object->setArray("nodes", highlights.release());
+    m_cachedSelectorsInfo.add(m_currentRuleIndex, object->toJSONString());
+    return m_cachedSelectorsInfo.get(m_currentRuleIndex);
+}
 
 } // namespace blink

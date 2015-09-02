@@ -98,6 +98,9 @@ private:
     void overlayPropertyChanged(float) override;
     void overlayEndedPropertyChange() override;
     void overlayClearSelection(bool) override;
+    void overlayNextSelector() override;
+    void overlayPreviousSelector() override;
+    String overlayCurrentSelectorInfo() override;
 
     // InspectorProfilerAgent::Client implementation.
     void profilingStarted() override;

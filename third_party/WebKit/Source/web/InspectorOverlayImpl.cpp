@@ -284,6 +284,11 @@ bool InspectorOverlayImpl::handleInputEvent(const WebInputEvent& inputEvent)
         overlayMainFrame()->eventHandler().keyEvent(keyboardEvent);
     }
 
+    if (inputEvent.type == WebInputEvent::MouseWheel) {
+        PlatformWheelEvent wheelEvent = PlatformWheelEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebMouseWheelEvent&>(inputEvent));
+        handled = overlayMainFrame()->eventHandler().handleWheelEvent(wheelEvent);
+    }
+
     return handled;
 }
 
@@ -372,6 +377,7 @@ void InspectorOverlayImpl::rebuildOverlayPage()
     IntRect visibleRectInDocument = view->scrollableArea()->visibleContentRect();
     IntSize viewportSize = m_webViewImpl->page()->frameHost().visualViewport().size();
     toLocalFrame(overlayPage()->mainFrame())->view()->resize(viewportSize);
+    overlayPage()->frameHost().visualViewport().setSize(viewportSize);
     reset(viewportSize, visibleRectInDocument.location());
 
     drawNodeHighlight();
@@ -577,6 +583,21 @@ void InspectorOverlayImpl::overlayPropertyChanged(float value)
 void InspectorOverlayImpl::overlayEndedPropertyChange()
 {
     m_layoutEditor->overlayEndedPropertyChange();
+}
+
+void InspectorOverlayImpl::overlayNextSelector()
+{
+    m_layoutEditor->nextSelector();
+}
+
+void InspectorOverlayImpl::overlayPreviousSelector()
+{
+    m_layoutEditor->previousSelector();
+}
+
+String InspectorOverlayImpl::overlayCurrentSelectorInfo()
+{
+    return m_layoutEditor->currentSelectorInfo();
 }
 
 void InspectorOverlayImpl::overlayClearSelection(bool commitChanges)

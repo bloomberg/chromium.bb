@@ -8,6 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSStyleRule.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
@@ -37,6 +38,9 @@ public:
     void overlayPropertyChanged(float);
     void overlayEndedPropertyChange();
     void clearSelection(bool);
+    void nextSelector();
+    void previousSelector();
+    String currentSelectorInfo();
 
     DECLARE_TRACE();
 
@@ -45,6 +49,7 @@ private:
     RefPtrWillBeRawPtr<CSSPrimitiveValue> getPropertyCSSValue(CSSPropertyID) const;
     PassRefPtr<JSONObject> createValueDescription(const String&) const;
     void appendAnchorFor(JSONArray*, const String&, const String&, const FloatPoint&, const FloatPoint&) const;
+    void initializeCSSRules();
 
     RefPtrWillBeMember<Element> m_element;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
@@ -54,6 +59,11 @@ private:
     float m_factor;
     CSSPrimitiveValue::UnitType m_valueUnitType;
     bool m_isDirty;
+
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleRule>> m_matchedRules;
+    HashMap<int, String> m_cachedSelectorsInfo;
+    // -1 means "inline style".
+    int m_currentRuleIndex;
 };
 
 } // namespace blink

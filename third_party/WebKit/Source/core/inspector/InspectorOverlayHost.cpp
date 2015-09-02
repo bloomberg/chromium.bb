@@ -77,6 +77,26 @@ void InspectorOverlayHost::clearSelection(bool commitChanges)
         m_listener->overlayClearSelection(commitChanges);
 }
 
+void InspectorOverlayHost::nextSelector()
+{
+    if (m_listener)
+        m_listener->overlayNextSelector();
+}
+
+void InspectorOverlayHost::previousSelector()
+{
+    if (m_listener)
+        m_listener->overlayPreviousSelector();
+}
+
+String InspectorOverlayHost::currentSelectorInfo()
+{
+    if (m_listener)
+        return m_listener->overlayCurrentSelectorInfo();
+
+    return String();
+}
+
 DEFINE_TRACE(InspectorOverlayHost)
 {
     visitor->trace(m_listener);

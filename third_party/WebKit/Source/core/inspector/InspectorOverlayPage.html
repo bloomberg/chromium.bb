@@ -254,7 +254,7 @@ function drawPausedInDebuggerMessage(message)
     document.body.classList.add("dimmed");
 }
 
-function _drawGrid(rulerAtRight, rulerAtBottom)
+function _drawGrid(context, rulerAtRight, rulerAtBottom)
 {
     if (window._gridPainted)
         return;
@@ -408,7 +408,7 @@ function drawViewSize(drawViewSizeWithGrid)
     context.fillText(text, frameWidth - textWidth - 6, drawGridBoolean ? 33 : 18);
     context.restore();
     if (drawGridBoolean)
-        _drawGrid();
+        _drawGrid(context);
 }
 
 function resetCanvas(canvasElement)
@@ -432,7 +432,8 @@ function reset(resetData)
     window.canvas = document.getElementById("canvas");
     window.context = canvas.getContext("2d");
     resetCanvas(canvas);
-
+    var matchedNodesCanvas = document.getElementById("layout-editor-matched-nodes-canvas");
+    resetCanvas(matchedNodesCanvas);
     window.labelsCanvas = document.getElementById("labels-canvas");
     resetLabelCanvas();
 
@@ -446,19 +447,21 @@ function reset(resetData)
     var editor = document.getElementById("editor");
     editor.style.visibility = "hidden";
     editor.textContent = "";
+    document.getElementById("selector-tooltip").style.visibility = "hidden";
     document.body.classList.remove("dimmed");
     document.removeEventListener("mousedown", consumeEvent);
     document.removeEventListener("mousemove", onLayoutEditorMouseMove);
     document.removeEventListener("mouseup", consumeEvent);
     document.removeEventListener("click", onLayoutEditorClick);
     document.removeEventListener("keydown", onLayoutEditorKeyDown);
+    document.removeEventListener("mousewheel", onLayoutEditorMouseWheel);
 
     delete window.hoverableAreas;
     delete window.anchorsByType;
     window._gridPainted = false;
 }
 
-function _drawElementTitle(elementInfo, bounds)
+function _drawElementTitle(context, elementInfo, bounds)
 {
     document.getElementById("tag-name").textContent = elementInfo.tagName;
     document.getElementById("node-id").textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
@@ -588,7 +591,7 @@ function _drawMaterialElementTitle(elementInfo, bounds)
     }
 }
 
-function _drawRulers(bounds, rulerAtRight, rulerAtBottom)
+function _drawRulers(context, bounds, rulerAtRight, rulerAtBottom)
 {
     context.save();
     var width = canvasWidth;
@@ -632,7 +635,7 @@ function _drawRulers(bounds, rulerAtRight, rulerAtBottom)
     context.restore();
 }
 
-function drawPath(commands, fillColor, outlineColor, bounds, name)
+function drawPath(context, commands, fillColor, outlineColor, bounds, name)
 {
     var commandsIndex = 0;
 
@@ -701,8 +704,9 @@ function drawPath(commands, fillColor, outlineColor, bounds, name)
     }
 }
 
-function drawHighlight(highlight)
+function drawHighlight(highlight, context)
 {
+    context = context || window.context;
     context.save();
 
     var bounds = {
@@ -718,11 +722,11 @@ function drawHighlight(highlight)
 
     for (var paths = highlight.paths.slice(); paths.length;) {
         var path = paths.pop();
-        drawPath(path.path, path.fillColor, path.outlineColor, bounds, path.name);
+        drawPath(context, path.path, path.fillColor, path.outlineColor, bounds, path.name);
         if (paths.length) {
             context.save();
             context.globalCompositeOperation = "destination-out";
-            drawPath(paths[paths.length - 1].path, "red", null, bounds);
+            drawPath(context, paths[paths.length - 1].path, "red", null, bounds);
             context.restore();
         }
     }
@@ -731,16 +735,16 @@ function drawHighlight(highlight)
     var rulerAtBottom = highlight.paths.length && highlight.showRulers && bounds.minY < 20 && bounds.maxY + 20 < canvasHeight;
 
     if (highlight.showRulers)
-        _drawGrid(rulerAtRight, rulerAtBottom);
+        _drawGrid(context, rulerAtRight, rulerAtBottom);
 
     if (highlight.paths.length) {
         if (highlight.showExtensionLines)
-            _drawRulers(bounds, rulerAtRight, rulerAtBottom);
+            _drawRulers(context, bounds, rulerAtRight, rulerAtBottom);
 
         if (highlight.elementInfo && highlight.displayAsMaterial)
            _drawMaterialElementTitle(highlight.elementInfo, bounds);
         else if (highlight.elementInfo)
-           _drawElementTitle(highlight.elementInfo, bounds);
+           _drawElementTitle(context, highlight.elementInfo, bounds);
     }
     context.restore();
 }
@@ -820,6 +824,28 @@ function showLayoutEditor(info)
     document.addEventListener("mouseup", consumeEvent);
     document.addEventListener("click", onLayoutEditorClick);
     document.addEventListener("keydown", onLayoutEditorKeyDown);
+    document.addEventListener("mousewheel", onLayoutEditorMouseWheel);
+    showSelectorTooltip();
+}
+
+function showSelectorTooltip()
+{
+    var tooltipElement = document.getElementById("selector-tooltip");
+    tooltipElement.style.visibility = "visible";
+    tooltipElement.style.left = "100px";
+    tooltipElement.style.top = "100px";
+    var selectorInfo = JSON.parse(InspectorOverlayHost.currentSelectorInfo());
+    tooltipElement.textContent = selectorInfo.selector;
+    tooltipElement.style.backgroundColor = "#eee";
+
+    var matchedNodesCanvas = document.getElementById("layout-editor-matched-nodes-canvas");
+    resetCanvas(matchedNodesCanvas);
+
+    if (!selectorInfo.nodes)
+        return;
+
+    for (var nodeHighlight of selectorInfo.nodes)
+        drawHighlight(nodeHighlight, matchedNodesCanvas.getContext("2d"));
 }
 
 function createAnchor(anchorInfo)
@@ -1066,6 +1092,17 @@ function onLayoutEditorKeyDown(event)
     }
 }
 
+function onLayoutEditorMouseWheel(event)
+{
+    event.preventDefault();
+    if (event.wheelDelta > 0)
+        InspectorOverlayHost.previousSelector();
+    else
+        InspectorOverlayHost.nextSelector();
+
+    showSelectorTooltip();
+}
+
 function consumeEvent(event)
 {
     event.preventDefault();
@@ -1113,6 +1150,7 @@ document.addEventListener("keydown", onDocumentKeyDown);
     <div class="button" id="step-over-button" title="Step over next function call (F10)."><div class="glyph"></div></div>
 </div>
 </body>
+<canvas id="layout-editor-matched-nodes-canvas" class="fill"></canvas>
 <canvas id="canvas" class="fill"></canvas>
 <canvas id="labels-canvas" class="fill"></canvas>
 <div id="element-title">
@@ -1126,5 +1164,6 @@ document.addEventListener("keydown", onDocumentKeyDown);
     </div>
     <div id="element-tooltip-arrow"></div>
 <div id="editor" class="fill"></div>
+<div id="selector-tooltip"></div>
 <div id="log"></div>
 </html>
