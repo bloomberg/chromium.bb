@@ -109,8 +109,8 @@ class VariationsService
   // Returns the variations server URL, which can vary if a command-line flag is
   // set and/or the variations restrict pref is set in |local_prefs|. Declared
   // static for test purposes.
-  static GURL GetVariationsServerURL(PrefService* local_prefs,
-                                     const std::string& restrict_mode_override);
+  GURL GetVariationsServerURL(PrefService* local_prefs,
+                              const std::string& restrict_mode_override);
 
   // Exposed for testing.
   static std::string GetDefaultVariationsServerURLForTesting();
@@ -129,6 +129,11 @@ class VariationsService
       PrefService* local_state,
       metrics::MetricsStateManager* state_manager,
       const char* disable_network_switch);
+
+  // Factory method for creating a VariationsService in a testing context.
+  static scoped_ptr<VariationsService> CreateForTesting(
+      scoped_ptr<VariationsServiceClient> client,
+      PrefService* local_state);
 
   // Set the PrefService responsible for getting policy-related preferences,
   // such as the restrict parameter.
@@ -156,14 +161,14 @@ class VariationsService
                          bool is_delta_compressed);
 
   // Creates the VariationsService with the given |local_state| prefs service
-  // and |state_manager|. This instance will take ownership of |notifier|.
-  // Does not take ownership of |state_manager|. Caller should ensure that
-  // |state_manager| is valid for the lifetime of this class. Use the |Create|
-  // factory method to create a VariationsService.
-  VariationsService(scoped_ptr<VariationsServiceClient> client,
-                    web_resource::ResourceRequestAllowedNotifier* notifier,
-                    PrefService* local_state,
-                    metrics::MetricsStateManager* state_manager);
+  // and |state_manager|. Does not take ownership of |state_manager|. Caller
+  // should ensure that |state_manager| is valid for the lifetime of this class.
+  // Use the |Create| factory method to create a VariationsService.
+  VariationsService(
+      scoped_ptr<VariationsServiceClient> client,
+      scoped_ptr<web_resource::ResourceRequestAllowedNotifier> notifier,
+      PrefService* local_state,
+      metrics::MetricsStateManager* state_manager);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, Observer);
