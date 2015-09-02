@@ -86,10 +86,12 @@ public:
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
     void didRemoveTimer(ExecutionContext*, int timerId);
     void willFireTimer(ExecutionContext*, int timerId);
+    void didFireTimer();
     void didRequestAnimationFrame(ExecutionContext*, int callbackId);
     void didCancelAnimationFrame(ExecutionContext*, int callbackId);
     void willFireAnimationFrame(ExecutionContext*, int callbackId);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
+    void didHandleEvent();
     void willEvaluateScript();
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();

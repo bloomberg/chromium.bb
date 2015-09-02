@@ -264,16 +264,6 @@ PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyn
     return m_v8DebuggerAgent->currentAsyncStackTraceForConsole();
 }
 
-void InspectorDebuggerAgent::didFireTimer()
-{
-    m_v8DebuggerAgent->cancelPauseOnNextStatement();
-}
-
-void InspectorDebuggerAgent::didHandleEvent()
-{
-    m_v8DebuggerAgent->cancelPauseOnNextStatement();
-}
-
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
 {
     if (m_v8DebuggerAgent->debugger().pauseOnExceptionsState() == V8Debugger::DontPauseOnExceptions)

@@ -152,7 +152,7 @@ interface InspectorInstrumentation {
     [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
     InspectorInstrumentationCookie willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);
 
-    [AsyncCallTracker, Debugger, Inline=FastReturn]
+    [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
     void didHandleEvent(const InspectorInstrumentationCookie&);
 
     [AsyncCallTracker, Inline=FastReturn]
@@ -191,7 +191,7 @@ interface InspectorInstrumentation {
     [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
     InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
 
-    [AsyncCallTracker, Debugger, Inline=FastReturn]
+    [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
     void didFireTimer(const InspectorInstrumentationCookie&);
 
     [Page, Inline=FastReturn]

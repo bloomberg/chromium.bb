@@ -90,8 +90,6 @@ public:
     // Called by InspectorInstrumentation.
     bool isPaused();
     PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole();
-    void didFireTimer();
-    void didHandleEvent();
     void scriptExecutionBlockedByCSP(const String& directiveText);
     void willExecuteScript(int scriptId);
     void didExecuteScript();

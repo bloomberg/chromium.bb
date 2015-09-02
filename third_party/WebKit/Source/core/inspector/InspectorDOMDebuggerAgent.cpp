@@ -526,6 +526,11 @@ void InspectorDOMDebuggerAgent::willFireTimer(ExecutionContext*, int)
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(timerFiredEventName, 0), false);
 }
 
+void InspectorDOMDebuggerAgent::didFireTimer()
+{
+    m_debuggerAgent->cancelPauseOnNextStatement();
+}
+
 void InspectorDOMDebuggerAgent::didRequestAnimationFrame(ExecutionContext*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(requestAnimationFrameEventName, 0), true);
@@ -546,6 +551,11 @@ void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget* target, Event* even
     Node* node = target->toNode();
     String targetName = node ? node->nodeName() : target->interfaceName();
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(event->type(), &targetName), false);
+}
+
+void InspectorDOMDebuggerAgent::didHandleEvent()
+{
+    m_debuggerAgent->cancelPauseOnNextStatement();
 }
 
 void InspectorDOMDebuggerAgent::willEvaluateScript()
