@@ -94,6 +94,9 @@ CORE_EXPORT IntRect absoluteCaretBoundsOf(const VisiblePosition&);
 UChar32 characterAfter(const VisiblePosition&);
 UChar32 characterBefore(const VisiblePosition&);
 
+VisiblePosition leftPositionOf(const VisiblePosition&);
+VisiblePosition rightPositionOf(const VisiblePosition&);
+
 VisiblePosition nextPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 VisiblePosition previousPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 

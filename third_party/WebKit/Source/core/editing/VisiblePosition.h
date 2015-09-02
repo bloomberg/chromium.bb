@@ -112,11 +112,6 @@ private:
     TextAffinity m_affinity;
 };
 
-// TODO(yosin) We should move |leftPositionOf()| and |rightPositionOf()| to
-// "VisibleUnits.cpp".
-VisiblePosition leftPositionOf(const VisiblePosition&);
-VisiblePosition rightPositionOf(const VisiblePosition&);
-
 // TODO(yosin) We should move |honorEditingBoundaryAtOr{Before,After} to
 // "VisibleUnits.cpp" as static function.
 // next() and previous() will increment/decrement by a character cluster.
