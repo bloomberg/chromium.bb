@@ -88,7 +88,8 @@ def main():
       splits = []
       for split_glob in args.splits:
         splits.extend((f for f in glob.glob(split_glob)))
-      device.InstallSplitApk(args.apk_path, splits, reinstall=True)
+      device.InstallSplitApk(args.apk_path, splits, reinstall=True,
+                             allow_cached_props=True)
     else:
       device.Install(args.apk_path, reinstall=True)
 
