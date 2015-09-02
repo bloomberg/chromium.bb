@@ -95,9 +95,8 @@ class LocalFileStreamReaderTest : public testing::Test {
             expected_modification_time);
   }
 
-  void TouchTestFile() {
-    base::Time new_modified_time =
-        test_file_modification_time() - base::TimeDelta::FromSeconds(1);
+  void TouchTestFile(base::TimeDelta delta) {
+    base::Time new_modified_time = test_file_modification_time() + delta;
     ASSERT_TRUE(base::TouchFile(test_path(),
                                 test_file_modification_time(),
                                 new_modified_time));
@@ -171,7 +170,7 @@ TEST_F(LocalFileStreamReaderTest, GetLengthNormal) {
 TEST_F(LocalFileStreamReaderTest, GetLengthAfterModified) {
   // Touch file so that the file's modification time becomes different
   // from what we expect.
-  TouchTestFile();
+  TouchTestFile(base::TimeDelta::FromSeconds(-1));
 
   scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
@@ -212,23 +211,41 @@ TEST_F(LocalFileStreamReaderTest, ReadNormal) {
 
 TEST_F(LocalFileStreamReaderTest, ReadAfterModified) {
   // Touch file so that the file's modification time becomes different
-  // from what we expect.
-  TouchTestFile();
-
+  // from what we expect. Note that the resolution on some filesystems
+  // is 1s so we can't test with deltas less than that.
+  TouchTestFile(base::TimeDelta::FromSeconds(-1));
   scoped_ptr<LocalFileStreamReader> reader(
       CreateFileReader(test_path(), 0, test_file_modification_time()));
   int result = 0;
   std::string data;
   ReadFromReader(reader.get(), &data, kTestDataSize, &result);
-  ASSERT_EQ(net::ERR_UPLOAD_FILE_CHANGED, result);
-  ASSERT_EQ(0U, data.size());
+  EXPECT_EQ(net::ERR_UPLOAD_FILE_CHANGED, result);
+  EXPECT_EQ(0U, data.size());
 
-  // With NULL expected modification time this should work.
+  // Due to precision loss converting int64->double->int64 (e.g. through
+  // Blink) the expected/actual time may vary by microseconds. With
+  // modification time delta < 10us this should work.
+  TouchTestFile(base::TimeDelta::FromMicroseconds(1));
+  data.clear();
+  reader.reset(CreateFileReader(test_path(), 0, test_file_modification_time()));
+  ReadFromReader(reader.get(), &data, kTestDataSize, &result);
+  EXPECT_EQ(net::OK, result);
+  EXPECT_EQ(kTestData, data);
+
+  // With matching modification times time this should work.
+  TouchTestFile(base::TimeDelta());
+  data.clear();
+  reader.reset(CreateFileReader(test_path(), 0, test_file_modification_time()));
+  ReadFromReader(reader.get(), &data, kTestDataSize, &result);
+  EXPECT_EQ(net::OK, result);
+  EXPECT_EQ(kTestData, data);
+
+  // And with NULL expected modification time this should work.
   data.clear();
   reader.reset(CreateFileReader(test_path(), 0, base::Time()));
   ReadFromReader(reader.get(), &data, kTestDataSize, &result);
-  ASSERT_EQ(net::OK, result);
-  ASSERT_EQ(kTestData, data);
+  EXPECT_EQ(net::OK, result);
+  EXPECT_EQ(kTestData, data);
 }
 
 TEST_F(LocalFileStreamReaderTest, ReadWithOffset) {
