@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 
-#include <sqlite3.h>
+#include "third_party/sqlite/sqlite3.h"
 
 namespace blink {
 

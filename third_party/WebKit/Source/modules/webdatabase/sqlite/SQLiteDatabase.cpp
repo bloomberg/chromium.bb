@@ -27,11 +27,11 @@
 #include "config.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 
-#include <sqlite3.h>
 #include "platform/Logging.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
+#include "third_party/sqlite/sqlite3.h"
 
 namespace blink {
 

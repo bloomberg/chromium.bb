@@ -34,8 +34,8 @@
 #include "config.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 
-#include <sqlite3.h>
 #include "public/platform/Platform.h"
+#include "third_party/sqlite/sqlite3.h"
 
 #include <fcntl.h>
 #include <string.h>
