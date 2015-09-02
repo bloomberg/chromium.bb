@@ -610,6 +610,7 @@ ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
         gl->GetTransformFeedbackVaryingsCHROMIUMHelper(program, &result);
       }
       info->UpdateES3TransformFeedbackVaryings(result);
+      break;
     case kES3Uniformsiv:
       {
         base::AutoUnlock unlock(lock_);
@@ -618,6 +619,7 @@ ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
         gl->GetUniformsES3CHROMIUMHelper(program, &result);
       }
       info->UpdateES3Uniformsiv(result);
+      break;
     default:
       NOTREACHED();
       return NULL;
