@@ -5,6 +5,8 @@
 #ifndef NET_SPDY_SPDY_STREAM_H_
 #define NET_SPDY_SPDY_STREAM_H_
 
+#include <stdint.h>
+
 #include <deque>
 #include <string>
 #include <vector>
@@ -421,11 +423,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   int response_status() const { return response_status_; }
 
-  void IncrementRawReceivedBytes(size_t received_bytes) {
-    raw_received_bytes_ += received_bytes;
-  }
+  void AddRawReceivedBytes(size_t received_bytes);
+  void AddRawSentBytes(size_t sent_bytes);
 
   int64 raw_received_bytes() const { return raw_received_bytes_; }
+  int64_t raw_sent_bytes() const { return raw_sent_bytes_; }
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
@@ -570,6 +572,9 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // Number of bytes that have been received on this stream, including frame
   // overhead and headers.
   int64 raw_received_bytes_;
+  // Number of bytes that have been sent on this stream, including frame
+  // overhead and headers.
+  int64_t raw_sent_bytes_;
 
   // Number of data bytes that have been sent/received on this stream, not
   // including frame overhead. Note that this does not count headers.

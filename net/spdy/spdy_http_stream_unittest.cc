@@ -4,6 +4,8 @@
 
 #include "net/spdy/spdy_http_stream.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -186,6 +188,11 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
   // Test that there's no crash when trying to get the load timing after the
   // stream has been closed.
   TestLoadTimingNotReused(*http_stream);
+
+  EXPECT_EQ(static_cast<int64_t>(req->size()),
+            http_stream->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(resp->size()),
+            http_stream->GetTotalReceivedBytes());
 }
 
 TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
@@ -273,8 +280,19 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
 
   // Stream 1 has been read to completion.
   TestLoadTimingNotReused(*http_stream1);
+
+  EXPECT_EQ(static_cast<int64_t>(req1->size()),
+            http_stream1->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(resp1->size() + body1->size()),
+            http_stream1->GetTotalReceivedBytes());
+
   // Stream 2 still has queued body data.
   TestLoadTimingReused(*http_stream2);
+
+  EXPECT_EQ(static_cast<int64_t>(req2->size()),
+            http_stream2->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(resp2->size() + body2->size()),
+            http_stream2->GetTotalReceivedBytes());
 }
 
 TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
@@ -331,6 +349,11 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
 
   EXPECT_EQ(OK, callback.WaitForResult());
 
+  EXPECT_EQ(static_cast<int64_t>(req->size() + body->size()),
+            http_stream.GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(resp->size() + body->size()),
+            http_stream.GetTotalReceivedBytes());
+
   // Because the server closed the connection, we there shouldn't be a session
   // in the pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
@@ -383,6 +406,10 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
 
   EXPECT_EQ(OK, callback.WaitForResult());
 
+  EXPECT_EQ(static_cast<int64_t>(req->size() + body->size()),
+            http_stream.GetTotalSentBytes());
+  EXPECT_EQ(0, http_stream.GetTotalReceivedBytes());
+
   // Because the server closed the connection, we there shouldn't be a session
   // in the pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
@@ -392,6 +419,11 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   // Appending data is currently done synchronously, but seems best to be
   // paranoid.
   base::RunLoop().RunUntilIdle();
+
+  // The total sent and received bytes should be unchanged.
+  EXPECT_EQ(static_cast<int64_t>(req->size() + body->size()),
+            http_stream.GetTotalSentBytes());
+  EXPECT_EQ(0, http_stream.GetTotalReceivedBytes());
 }
 
 // Test to ensure the SpdyStream state machine does not get confused when a
@@ -460,6 +492,13 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
 
   // Finish writing all the chunks and do all reads.
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(static_cast<int64_t>(req->size() + chunk1->size() + chunk2->size() +
+                                 chunk3->size()),
+            http_stream->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(resp->size() + chunk1->size() +
+                                 chunk2->size() + chunk3->size()),
+            http_stream->GetTotalReceivedBytes());
 
   // Check response headers.
   ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
@@ -543,6 +582,10 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
 
+  EXPECT_EQ(static_cast<int64_t>(req->size() + chunk1->size()),
+            http_stream->GetTotalSentBytes());
+  EXPECT_EQ(0, http_stream->GetTotalReceivedBytes());
+
   // Now end the stream with an empty data frame and the FIN set.
   upload_stream.AppendData(NULL, 0, true);
 
@@ -551,6 +594,12 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
 
   // Check response headers.
   ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
+
+  EXPECT_EQ(static_cast<int64_t>(req->size() + chunk1->size() + chunk2->size()),
+            http_stream->GetTotalSentBytes());
+  EXPECT_EQ(
+      static_cast<int64_t>(resp->size() + chunk1->size() + chunk2->size()),
+      http_stream->GetTotalReceivedBytes());
 
   // Check |chunk1| response.
   scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
@@ -619,6 +668,11 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
 
+  EXPECT_EQ(static_cast<int64_t>(req->size() + chunk->size()),
+            http_stream->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(resp->size() + chunk->size()),
+            http_stream->GetTotalReceivedBytes());
+
   // Check response headers.
   ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
 
@@ -669,6 +723,11 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   EXPECT_EQ(base_url, http_stream->stream()->GetUrlFromHeaders().spec());
 
   callback.WaitForResult();
+
+  EXPECT_EQ(static_cast<int64_t>(req->size()),
+            http_stream->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(resp->size()),
+            http_stream->GetTotalReceivedBytes());
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
@@ -729,6 +788,10 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
 
+  EXPECT_EQ(static_cast<int64_t>(req->size()),
+            http_stream->GetTotalSentBytes());
+  EXPECT_EQ(0, http_stream->GetTotalReceivedBytes());
+
   upload_stream.AppendData(kUploadData, kUploadDataSize, true);
 
   // Verify that the window size has decreased.
@@ -740,6 +803,11 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   // Read window update.
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_EQ(static_cast<int64_t>(req->size() + chunk1->size()),
+            http_stream->GetTotalSentBytes());
+  // The window update is not counted in the total received bytes.
+  EXPECT_EQ(0, http_stream->GetTotalReceivedBytes());
+
   // Verify the window update.
   ASSERT_TRUE(http_stream->stream() != NULL);
   EXPECT_EQ(static_cast<int>(
@@ -749,6 +817,11 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   // Read rest of data.
   sequenced_data_->CompleteRead();
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(static_cast<int64_t>(req->size() + chunk1->size()),
+            http_stream->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(resp->size() + chunk1->size()),
+            http_stream->GetTotalReceivedBytes());
 
   // Check response headers.
   ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));

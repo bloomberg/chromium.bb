@@ -36,6 +36,7 @@ SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
       closed_stream_status_(ERR_FAILED),
       closed_stream_id_(0),
       closed_stream_received_bytes_(0),
+      closed_stream_sent_bytes_(0),
       request_info_(NULL),
       response_info_(NULL),
       response_headers_status_(RESPONSE_HEADERS_ARE_INCOMPLETE),
@@ -184,8 +185,13 @@ int64 SpdyHttpStream::GetTotalReceivedBytes() const {
 }
 
 int64_t SpdyHttpStream::GetTotalSentBytes() const {
-  // TODO(sclittle): Implement this for real. http://crbug.com/518897.
-  return 0;
+  if (stream_closed_)
+    return closed_stream_sent_bytes_;
+
+  if (!stream_)
+    return 0;
+
+  return stream_->raw_sent_bytes();
 }
 
 bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
@@ -381,6 +387,7 @@ void SpdyHttpStream::OnClose(int status) {
     closed_stream_has_load_timing_info_ =
         stream_->GetLoadTimingInfo(&closed_stream_load_timing_info_);
     closed_stream_received_bytes_ = stream_->raw_received_bytes();
+    closed_stream_sent_bytes_ = stream_->raw_sent_bytes();
   }
   stream_.reset();
 

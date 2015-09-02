@@ -66,7 +66,14 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   void SetConnectionReused() override;
   bool CanReuseConnection() const override;
+  // Total number of bytes received over the network of SPDY data, headers, and
+  // push_promise frames associated with this stream, including the size of
+  // frame headers, after SSL decryption and not including proxy overhead.
   int64 GetTotalReceivedBytes() const override;
+  // Total number of bytes sent over the network of SPDY frames associated with
+  // this stream, including the size of frame headers, before SSL encryption and
+  // not including proxy overhead. Note that some SPDY frames such as pings are
+  // not associated with any stream, and are not included in this value.
   int64_t GetTotalSentBytes() const override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   void GetSSLInfo(SSLInfo* ssl_info) override;
@@ -120,7 +127,12 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   SpdyStreamId closed_stream_id_;
   bool closed_stream_has_load_timing_info_;
   LoadTimingInfo closed_stream_load_timing_info_;
+  // After |stream_| has been closed, this keeps track of the total number of
+  // bytes received over the network for |stream_| while it was open.
   int64 closed_stream_received_bytes_;
+  // After |stream_| has been closed, this keeps track of the total number of
+  // bytes sent over the network for |stream_| while it was open.
+  int64_t closed_stream_sent_bytes_;
 
   // The request to send.
   const HttpRequestInfo* request_info_;

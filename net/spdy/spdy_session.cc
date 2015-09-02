@@ -1617,6 +1617,8 @@ int SpdySession::DoWriteComplete(int result) {
 
   if (result > 0) {
     in_flight_write_->Consume(static_cast<size_t>(result));
+    if (in_flight_write_stream_.get())
+      in_flight_write_stream_->AddRawSentBytes(static_cast<size_t>(result));
 
     // We only notify the stream when we've fully written the pending frame.
     if (in_flight_write_->GetRemainingSize() == 0) {
@@ -2036,7 +2038,7 @@ void SpdySession::OnDataFrameHeader(SpdyStreamId stream_id,
 
   DCHECK(buffered_spdy_framer_);
   size_t header_len = buffered_spdy_framer_->GetDataFrameMinimumSize();
-  stream->IncrementRawReceivedBytes(header_len);
+  stream->AddRawReceivedBytes(header_len);
 }
 
 void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
@@ -2081,7 +2083,7 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
   SpdyStream* stream = it->second.stream;
   CHECK_EQ(stream->stream_id(), stream_id);
 
-  stream->IncrementRawReceivedBytes(len);
+  stream->AddRawReceivedBytes(len);
 
   if (it->second.waiting_for_syn_reply) {
     const std::string& error = "Data received before SYN_REPLY.";
@@ -2318,7 +2320,7 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
   SpdyStream* stream = it->second.stream;
   CHECK_EQ(stream->stream_id(), stream_id);
 
-  stream->IncrementRawReceivedBytes(last_compressed_frame_len_);
+  stream->AddRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
 
   if (GetProtocolVersion() >= HTTP2) {
@@ -2365,7 +2367,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   SpdyStream* stream = it->second.stream;
   CHECK_EQ(stream->stream_id(), stream_id);
 
-  stream->IncrementRawReceivedBytes(last_compressed_frame_len_);
+  stream->AddRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
 
   base::Time response_time = base::Time::Now();
@@ -2696,10 +2698,10 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
   // In spdy4/http2 PUSH_PROMISE arrives on associated stream.
   if (associated_it != active_streams_.end() && GetProtocolVersion() >= HTTP2) {
-    associated_it->second.stream->IncrementRawReceivedBytes(
+    associated_it->second.stream->AddRawReceivedBytes(
         last_compressed_frame_len_);
   } else {
-    stream->IncrementRawReceivedBytes(last_compressed_frame_len_);
+    stream->AddRawReceivedBytes(last_compressed_frame_len_);
   }
 
   last_compressed_frame_len_ = 0;

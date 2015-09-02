@@ -108,6 +108,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       response_status_(OK),
       net_log_(net_log),
       raw_received_bytes_(0),
+      raw_sent_bytes_(0),
       send_bytes_(0),
       recv_bytes_(0),
       write_handler_guard_(false),
@@ -758,6 +759,14 @@ bool SpdyStream::IsReservedRemote() const {
 
 NextProto SpdyStream::GetProtocol() const {
   return session_->protocol();
+}
+
+void SpdyStream::AddRawReceivedBytes(size_t received_bytes) {
+  raw_received_bytes_ += received_bytes;
+}
+
+void SpdyStream::AddRawSentBytes(size_t sent_bytes) {
+  raw_sent_bytes_ += sent_bytes;
 }
 
 bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
