@@ -62,7 +62,11 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<const RuleData> m_ruleData;
+    // FIXME: Oilpan: RuleData is in the oilpan heap and this pointer
+    // really should be traced. However, RuleData objects are
+    // allocated inside larger TerminatedArray objects and we cannot
+    // trace a raw rule data pointer at this point.
+    const RuleData* m_ruleData;
     unsigned m_specificity;
     uint64_t m_position;
     RawPtrWillBeMember<const CSSStyleSheet> m_parentStyleSheet;
