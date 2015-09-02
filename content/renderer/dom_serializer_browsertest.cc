@@ -10,6 +10,8 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -50,13 +52,6 @@ using blink::WebString;
 using blink::WebURL;
 using blink::WebView;
 using blink::WebVector;
-
-namespace {
-
-// The first RenderFrame is routing ID 1, and the first RenderView is 2.
-const int kRenderViewRoutingId = 2;
-
-}
 
 namespace content {
 
@@ -226,9 +221,9 @@ class DomSerializerTests : public ContentBrowserTest,
   }
 
   RenderView* GetRenderView() {
-    // We could have the test on the UI thread get the WebContent's routing ID,
-    // but we know this will be the first RV so skip that and just hardcode it.
-    return RenderView::FromRoutingID(kRenderViewRoutingId);
+    content::WebContents* web_contents = shell()->web_contents();
+    return RenderView::FromRoutingID(
+        web_contents->GetRenderViewHost()->GetRoutingID());
   }
 
   WebView* GetWebView() {
