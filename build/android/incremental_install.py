@@ -12,18 +12,21 @@ import logging
 import os
 import posixpath
 import sys
+import time
 
+from devil.android import apk_helper
+from devil.android import device_utils
+from devil.android import device_errors
+from devil.utils import reraiser_thread
 from pylib import constants
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.utils import apk_helper
 
 
 def main():
+  start_time = time.time()
   logging.basicConfig(level=logging.INFO,
-                      format='%(asctime)s %(message)s')
-  parser = argparse.ArgumentParser()
+                      format='%(asctime)s (%(thread)d) %(message)s')
 
+  parser = argparse.ArgumentParser()
   parser.add_argument('apk_path',
                       help='The path to the APK to install.')
   parser.add_argument('--split',
@@ -39,6 +42,10 @@ def main():
                       action='store_true',
                       default=False,
                       help='Remove the app and all side-loaded files.')
+  parser.add_argument('--no-threading',
+                      action='store_true',
+                      default=False,
+                      help='Do not install and push concurrently')
 
   args = parser.parse_args()
 
@@ -52,10 +59,17 @@ def main():
     devices = device_utils.DeviceUtils.HealthyDevices(default_retries=0)
     if not devices:
       raise device_errors.NoDevicesError()
-    elif len(devices) > 1:
-      raise Exception('More than one device available.\n'
-                      'Use --device=SERIAL to select a device.')
-    device = devices[0]
+    elif len(devices) == 1:
+      device = devices[0]
+    else:
+      all_devices = device_utils.DeviceUtils.parallel(devices)
+      msg = ('More than one device available.\n'
+             'Use --device=SERIAL to select a device.\n'
+             'Available devices:\n')
+      descriptions = all_devices.pMap(lambda d: d.build_description).pGet(None)
+      for d, desc in zip(devices, descriptions):
+        msg += '  %s (%s)\n' % (d, desc)
+      raise Exception(msg)
 
   apk_package = apk_helper.ApkHelper(args.apk_path).GetPackageName()
   device_incremental_dir = '/data/local/tmp/incremental-app-%s' % apk_package
@@ -69,21 +83,30 @@ def main():
     return
 
   # Install .apk(s) if any of them have changed.
-  logging.info('Installing .apk')
-  if args.splits:
-    splits = []
-    for split_glob in args.splits:
-      splits.extend((f for f in glob.glob(split_glob)))
-    device.InstallSplitApk(args.apk_path, splits, reinstall=True)
-  else:
-    device.Install(args.apk_path, reinstall=True)
+  def do_install():
+    if args.splits:
+      splits = []
+      for split_glob in args.splits:
+        splits.extend((f for f in glob.glob(split_glob)))
+      device.InstallSplitApk(args.apk_path, splits, reinstall=True)
+    else:
+      device.Install(args.apk_path, reinstall=True)
 
   # Push .so files to the device (if they have changed).
-  if args.lib_dir:
-    logging.info('Pushing libraries')
-    device_lib_dir = posixpath.join(device_incremental_dir, 'lib')
-    device.PushChangedFiles([(args.lib_dir, device_lib_dir)],
-                            delete_device_stale=True)
+  def do_push_libs():
+    if args.lib_dir:
+      device_lib_dir = posixpath.join(device_incremental_dir, 'lib')
+      device.PushChangedFiles([(args.lib_dir, device_lib_dir)],
+                              delete_device_stale=True)
+  # Concurrency here speeds things up quite a bit, but DeviceUtils hasn't
+  # been designed for multi-threading. Enabling only because this is a
+  # developer-only tool.
+  if args.no_threading:
+    do_install()
+    do_push_libs()
+  else:
+    reraiser_thread.RunAsync((do_install, do_push_libs))
+  logging.info('Took %s seconds' % round(time.time() - start_time, 1))
 
 
 if __name__ == '__main__':

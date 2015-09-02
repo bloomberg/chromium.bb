@@ -92,5 +92,20 @@ class TestReraiserThreadGroup(unittest.TestCase):
     event.set()
 
 
+class TestRunAsync(unittest.TestCase):
+  """Tests for reraiser_thread.RunAsync."""
+  def testNoArgs(self):
+    results = reraiser_thread.RunAsync([])
+    self.assertEqual([], results)
+
+  def testOneArg(self):
+    results = reraiser_thread.RunAsync([lambda:1])
+    self.assertEqual([1], results)
+
+  def testTwoArgs(self):
+    a, b = reraiser_thread.RunAsync((lambda:1, lambda:2))
+    self.assertEqual(1, a)
+    self.assertEqual(2, b)
+
 if __name__ == '__main__':
   unittest.main()
