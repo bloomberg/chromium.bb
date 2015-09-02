@@ -5,7 +5,9 @@
 #ifndef SYNC_ENGINE_MODEL_TYPE_PROCESSOR_H_
 #define SYNC_ENGINE_MODEL_TYPE_PROCESSOR_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
+#include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer_v2 {
@@ -16,11 +18,17 @@ class SYNC_EXPORT_PRIVATE ModelTypeProcessor {
   ModelTypeProcessor();
   virtual ~ModelTypeProcessor();
 
-  // TODO(gangwu): 525830 add OnConnect method here. And also add comments for
-  // all the functions.
+  // Callback used to process the handshake response.
+  virtual void OnConnect(scoped_ptr<CommitQueue> commit_queue) = 0;
+
+  // Informs this object that some of its commit requests have been
+  // successfully serviced.
   virtual void OnCommitCompleted(
       const DataTypeState& type_state,
       const CommitResponseDataList& response_list) = 0;
+
+  // Informs this object that there are some incoming updates is should
+  // handle.
   virtual void OnUpdateReceived(
       const DataTypeState& type_state,
       const UpdateResponseDataList& response_list,

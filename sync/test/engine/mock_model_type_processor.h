@@ -31,6 +31,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   ~MockModelTypeProcessor() override;
 
   // Implementation of ModelTypeProcessor.
+  void OnConnect(scoped_ptr<CommitQueue> commit_queue) override;
   void OnCommitCompleted(const DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const DataTypeState& type_state,
@@ -83,6 +84,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   CommitResponseData GetCommitResponse(const std::string& tag_hash) const;
 
  private:
+
   // Process a received commit response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
@@ -113,6 +115,7 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // See SetSynchronousExecution() for details.
   bool is_synchronous_;
   std::vector<base::Closure> pending_tasks_;
+  scoped_ptr<CommitQueue> commit_queue_;
 
   // A log of messages received by this object.
   std::vector<CommitResponseDataList> received_commit_responses_;

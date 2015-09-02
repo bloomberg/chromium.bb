@@ -14,6 +14,10 @@ MockModelTypeProcessor::MockModelTypeProcessor() : is_synchronous_(true) {
 MockModelTypeProcessor::~MockModelTypeProcessor() {
 }
 
+void MockModelTypeProcessor::OnConnect(scoped_ptr<CommitQueue> commit_queue) {
+  NOTREACHED();
+}
+
 void MockModelTypeProcessor::OnCommitCompleted(
     const DataTypeState& type_state,
     const CommitResponseDataList& response_list) {

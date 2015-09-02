@@ -24,10 +24,11 @@ namespace {
 class ModelTypeProcessorProxy : public syncer_v2::ModelTypeProcessor {
  public:
   ModelTypeProcessorProxy(
-      const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& processor,
+      const base::WeakPtr<syncer_v2::ModelTypeProcessor>& processor,
       const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
   ~ModelTypeProcessorProxy() override;
 
+  void OnConnect(scoped_ptr<syncer_v2::CommitQueue> worker) override;
   void OnCommitCompleted(
       const syncer_v2::DataTypeState& type_state,
       const syncer_v2::CommitResponseDataList& response_list) override;
@@ -37,16 +38,23 @@ class ModelTypeProcessorProxy : public syncer_v2::ModelTypeProcessor {
       const syncer_v2::UpdateResponseDataList& pending_updates) override;
 
  private:
-  base::WeakPtr<syncer_v2::ModelTypeProcessorImpl> processor_;
+  base::WeakPtr<syncer_v2::ModelTypeProcessor> processor_;
   scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
 };
 
 ModelTypeProcessorProxy::ModelTypeProcessorProxy(
-    const base::WeakPtr<syncer_v2::ModelTypeProcessorImpl>& processor,
+    const base::WeakPtr<syncer_v2::ModelTypeProcessor>& processor,
     const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner)
     : processor_(processor), processor_task_runner_(processor_task_runner) {}
 
 ModelTypeProcessorProxy::~ModelTypeProcessorProxy() {
+}
+
+void ModelTypeProcessorProxy::OnConnect(
+    scoped_ptr<syncer_v2::CommitQueue> worker) {
+  processor_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&syncer_v2::ModelTypeProcessor::OnConnect,
+                            processor_, base::Passed(worker.Pass())));
 }
 
 void ModelTypeProcessorProxy::OnCommitCompleted(
@@ -54,7 +62,7 @@ void ModelTypeProcessorProxy::OnCommitCompleted(
     const syncer_v2::CommitResponseDataList& response_list) {
   processor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeProcessorImpl::OnCommitCompleted,
+      base::Bind(&syncer_v2::ModelTypeProcessor::OnCommitCompleted,
                  processor_, type_state, response_list));
 }
 
@@ -64,7 +72,7 @@ void ModelTypeProcessorProxy::OnUpdateReceived(
     const syncer_v2::UpdateResponseDataList& pending_updates) {
   processor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&syncer_v2::ModelTypeProcessorImpl::OnUpdateReceived,
+      base::Bind(&syncer_v2::ModelTypeProcessor::OnUpdateReceived,
                  processor_, type_state, response_list, pending_updates));
 }
 

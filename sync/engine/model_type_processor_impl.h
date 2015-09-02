@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "sync/base/sync_export.h"
+#include "sync/engine/model_type_processor.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/sync.pb.h"
@@ -21,11 +22,11 @@ class SyncContextProxy;
 
 // A sync component embedded on the synced type's thread that helps to handle
 // communication between sync and model type threads.
-// TODO(gangwu): 526617 Derive this class from ModelTypeProcessor
-class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : base::NonThreadSafe {
+class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : public ModelTypeProcessor,
+                                                   base::NonThreadSafe {
  public:
   ModelTypeProcessorImpl(syncer::ModelType type);
-  virtual ~ModelTypeProcessorImpl();
+  ~ModelTypeProcessorImpl() override;
 
   // Returns true if this object believes that sync is preferred for this type.
   //
@@ -57,7 +58,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : base::NonThreadSafe {
   void Disconnect();
 
   // Callback used to process the handshake response.
-  void OnConnect(scoped_ptr<CommitQueue> worker);
+  void OnConnect(scoped_ptr<CommitQueue> worker) override;
 
   // Requests that an item be stored in sync.
   void Put(const std::string& client_tag,
@@ -69,13 +70,13 @@ class SYNC_EXPORT_PRIVATE ModelTypeProcessorImpl : base::NonThreadSafe {
   // Informs this object that some of its commit requests have been
   // successfully serviced.
   void OnCommitCompleted(const DataTypeState& type_state,
-                         const CommitResponseDataList& response_list);
+                         const CommitResponseDataList& response_list) override;
 
   // Informs this object that there are some incoming updates is should
   // handle.
   void OnUpdateReceived(const DataTypeState& type_state,
                         const UpdateResponseDataList& response_list,
-                        const UpdateResponseDataList& pending_updates);
+                        const UpdateResponseDataList& pending_updates) override;
 
   // Returns the list of pending updates.
   //
