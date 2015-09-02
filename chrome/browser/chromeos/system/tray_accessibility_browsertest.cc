@@ -607,13 +607,9 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
   EXPECT_TRUE(CanCreateMenuItem());
 }
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_ClickDetailMenu DISABLED_ClickDetailMenu
-#else
-#define MAYBE_ClickDetailMenu ClickDetailMenu
-#endif
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ClickDetailMenu) {
+  SetLoginStatus(ash::user::LOGGED_IN_USER);
 
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, MAYBE_ClickDetailMenu) {
   // Confirms that the check item toggles the spoken feedback.
   EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
