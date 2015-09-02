@@ -30,6 +30,10 @@ class GLES2Implementation;
 }  // namespace gles2
 }  // namespace gpu
 
+namespace base {
+class AtExitManager;
+}  // namespace base
+
 namespace egl {
 
 class Config;
@@ -104,6 +108,7 @@ class Display : private gpu::GpuControl {
   int create_offscreen_height_;
 
   scoped_refptr<gpu::TransferBufferManagerInterface> transfer_buffer_manager_;
+  scoped_ptr<base::AtExitManager> exit_manager_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GpuScheduler> gpu_scheduler_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
