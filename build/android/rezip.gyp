@@ -33,6 +33,7 @@
           'action': [
             'python', '<(DEPTH)/build/android/gyp/javac.py',
             '--classpath=',
+            '--classes-dir=<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
             '--jar-path=<(javac_jar_path)',
             '--stamp=<(compile_stamp)',
             '>@(java_sources)',
