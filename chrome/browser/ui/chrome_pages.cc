@@ -332,11 +332,11 @@ void ShowAboutChrome(Browser* browser) {
   content::RecordAction(UserMetricsAction("AboutChrome"));
   if (::switches::SettingsWindowEnabled()) {
     SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        browser->profile(), GURL(kChromeUIUberURL));
+        browser->profile(), GURL(kChromeUIHelpURL));
     return;
   }
   NavigateParams params(
-      GetSingletonTabNavigateParams(browser, GURL(kChromeUIUberURL)));
+      GetSingletonTabNavigateParams(browser, GURL(kChromeUIHelpURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }

@@ -1473,6 +1473,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           Request tablet site
         </message>
       </if>
+      <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item in the wrench menu">
+        H&amp;elp
+      </message>
       <if expr="not use_titlecase">
         <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
           &amp;History
@@ -1506,9 +1509,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_GET_HELP" desc="The text label of the Get Help menu item">
           Get H&amp;elp
-        </message>
-        <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item">
-          H&amp;elp and about
         </message>
         <message name="IDS_EXIT" desc="The text label of the Exit menu item">
           E&amp;xit
@@ -1547,9 +1547,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_GET_HELP" desc="The text label of the Get Help menu item">
           Get H&amp;elp
-        </message>
-        <message name="IDS_HELP_MENU" desc="In Title Case: The text label of the Help sub-menu item">
-          H&amp;elp and About
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
           E&amp;xit
@@ -12077,9 +12074,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <if expr="use_titlecase">
-        <message name="IDS_HISTORY_RECENT_TABS_MENU" desc="In Title Case: The title of the History and Recent Tabs menu in the wrench menu.">
-          &amp;History and Recent Tabs
-        </message>
         <message name="IDS_RECENT_TABS_MENU" desc="In Title Case: The title of the Recent Tabs menu in the wrench menu.">
           Recent Tabs
         </message>
@@ -12094,9 +12088,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_HISTORY_RECENT_TABS_MENU" desc="The title of the History and Recent Tabs menu in the wrench menu.">
-          &amp;History and recent tabs
-        </message>
         <message name="IDS_RECENT_TABS_MENU" desc="The title of the Recent Tabs menu in the wrench menu.">
           Recent tabs
         </message>
@@ -12111,6 +12102,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
 
+      <message name="IDS_HISTORY_MENU" desc="The text label of the History (and recent tabs) sub-menu in the wrench menu.">
+        &amp;History
+      </message>
       <message name="IDS_RECENT_TABS_MORE" desc="The label in the Recent Tabs menu in the wrench menu to open the other devices and history page.">
         More...
       </message>

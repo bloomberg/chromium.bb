@@ -906,7 +906,7 @@ void WrenchMenuModel::Build() {
     recent_tabs_sub_menu_model_.reset(new RecentTabsSubMenuModel(provider_,
                                                                  browser_,
                                                                  NULL));
-    AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_HISTORY_RECENT_TABS_MENU,
+    AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_HISTORY_MENU,
                            recent_tabs_sub_menu_model_.get());
   }
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
