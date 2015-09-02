@@ -519,9 +519,8 @@ void AddSameCenterYConstraint(UIView* parentView,
 
 bool IsCompact() {
   if (base::ios::IsRunningOnIOS8OrLater()) {
-    UIViewController* rootController =
-        [UIApplication sharedApplication].keyWindow.rootViewController;
-    return [rootController.traitCollection horizontalSizeClass] ==
+    UIWindow* keyWindow = [UIApplication sharedApplication].keyWindow;
+    return [keyWindow.traitCollection horizontalSizeClass] ==
            UIUserInterfaceSizeClassCompact;
   } else {
     // Prior to iOS 8, iPad is always regular, iPhone is always compact.
