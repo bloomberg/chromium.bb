@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -124,9 +125,11 @@ void DisplayColorManager::LoadCalibrationForDisplay(
   }
 
   base::FilePath path = PathForDisplaySnapshot(display);
-  VLOG(1) << "Loading ICC file " << path.value()
+  VLOG(1) << "Checking ICC file " << path.value()
           << " for display id: " << display->display_id()
           << " with product id: " << display->product_id();
+  if (!base::PathExists(path))  // No icc file for this display.
+    return;
 
   scoped_ptr<ColorCalibrationData> data(new ColorCalibrationData());
   base::Callback<bool(void)> request(
