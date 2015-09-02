@@ -1080,6 +1080,9 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
     m_renderbufferBinding = nullptr;
     m_valuebufferBinding = nullptr;
 
+    // WebGLTexture shared objects will be detached and deleted
+    // m_contextGroup->removeContext(this), which will bring about deleteTexture() calls.
+    // We null these out to avoid accessing those members in deleteTexture().
     for (size_t i = 0; i < m_textureUnits.size(); ++i) {
         m_textureUnits[i].m_texture2DBinding = nullptr;
         m_textureUnits[i].m_textureCubeMapBinding = nullptr;

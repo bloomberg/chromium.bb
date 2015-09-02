@@ -570,7 +570,6 @@ protected:
     PersistentWillBeMember<WebGLRenderbuffer> m_renderbufferBinding;
     PersistentWillBeMember<CHROMIUMValuebuffer> m_valuebufferBinding;
 
-    GC_PLUGIN_IGNORE("crbug.com/496496")
     PersistentHeapVectorWillBeHeapVector<TextureUnitState> m_textureUnits;
     unsigned long m_activeTextureUnit;
 
