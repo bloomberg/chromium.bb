@@ -65,7 +65,6 @@ public class PrivacyPreferences extends PreferenceFragment
         super.onCreate(savedInstanceState);
         PrivacyPreferencesManager privacyPrefManager =
                 PrivacyPreferencesManager.getInstance(getActivity());
-        privacyPrefManager.migrateNetworkPredictionPreferences();
         addPreferencesFromResource(R.xml.privacy_preferences);
         getActivity().setTitle(R.string.prefs_privacy);
         setHasOptionsMenu(true);
