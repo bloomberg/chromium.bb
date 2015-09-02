@@ -1619,10 +1619,10 @@ template("android_apk") {
     deps = _final_deps
   }
   group("${target_name}_incremental") {
+    data_deps = []
+    forward_variables_from(invoker, [ "data_deps" ])
+    data_deps += [ "//build/android/pylib/device/commands" ]
     deps = _incremental_final_deps
-    if (defined(invoker.data_deps)) {
-      data_deps = invoker.data_deps
-    }
   }
 }
 

@@ -5,9 +5,7 @@
 import("//build/config/android/rules.gni")
 
 group("commands") {
-  datadeps = [
-    ":chromium_commands",
-  ]
+  data_deps = [ ":chromium_commands" ]
 }
 
 # GYP: //build/android/pylib/device/commands/commands.gyp:chromium_commands
